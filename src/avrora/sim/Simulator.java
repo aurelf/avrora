@@ -412,6 +412,10 @@ public abstract class Simulator implements IORegisterConstants {
         return microcontroller;
     }
 
+    public Program getProgram() {
+        return program;
+    }
+
 
     /**
      * The <code>getState()</code> retrieves a reference to the current

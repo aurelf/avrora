@@ -71,36 +71,14 @@ public class SimulateAction extends SimAction {
     List counters;
     List branchcounters;
 
-    StackProbe sprobe;
-
-    ProgramProfiler profile;
-
-    SleepCounter sleepCounter;
-
-    MemoryProfiler memprofile;
-
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
             "for the specified microcontroller and begins executing the program. There " +
             "are several options provided by the simulator for profiling and analysis.";
-    public int memStart;
-
     public final Option.List BREAKS = newOptionList("breakpoint", "",
             "This option is used in the simulate action. It allows the user to " +
             "insert a series of breakpoints in the program from the command line. " +
             "The address of the breakpoint can be given in hexadecimal or as a label " +
             "within the program. Hexadecimal constants are denoted by a leading '$'.");
-    public final Option.List COUNTS = newOptionList("count", "",
-            "This option is used in the simulate action. It allows the user to " +
-            "insert a list of profiling counters in the program that collect profiling " +
-            "information during the execution of the program.");
-    public final Option.List BRANCHCOUNTS = newOptionList("branchcount", "",
-            "This option is used in the simulate action. It allows the user to " +
-            "insert a list of branch counters in the program that collect information " +
-            "about taken and not taken counts for branches.");
-    public final Option.Bool PROFILE = newOption("profile", false,
-            "This option is used in the simulate action. It compiles a histogram of " +
-            "instruction counts for each instruction in the program and presents the " +
-            "results in a tabular format.");
     public final Option.Bool TIME = newOption("time", false,
             "This option is used in the simulate action. It will cause the simulator " +
             "to report the time used in executing the simulation. When combined with " +
@@ -117,23 +95,11 @@ public class SimulateAction extends SimAction {
     public final Option.Bool TRACE = newOption("trace", false,
             "This option is used in the simulate action. It will cause the simulator " +
             "to print each instruction as it is executed.");
-    public final Option.Bool MONITOR_STACK = newOption("monitor-stack", false,
-            "This option is used in the \"simulate\" action. It causes the simulator " +
-            "to report changes to the stack height.");
-    public final Option.Bool MEMORY_PROFILE = newOption("memory-profile", false,
-            "This option is used in the \"simulate\" action. It causes the simulator " +
-            "to analyze the memory traffic of the program and print out the results in " +
-            "a tabular format. This can be useful to see what portions of memory are the " +
-            "most used.");
     public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", false,
             "This option is used in the \"simulate\" action. It causes the simulator " +
             "to use the legacy (hand-written) interpreter rather than the interpreter " +
             "generated from the architecture description language. It is used for " +
             "benchmarking and regression purposes.");
-    public final Option.Bool FAST_INTERPRETER = newOption("fast-interpreter", false,
-            "This option is used in the \"simulate\" action. It causes the simulator " +
-            "to use the fast (but space inefficient) interpreter rather than the " +
-            "default interpreter. It is used for benchmarking and regression purposes.");
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -148,27 +114,13 @@ public class SimulateAction extends SimAction {
 
         public void report() {
             String cnt = StringUtil.rightJustify(count, 8);
-            String addr = addrToString(location.address);
+            String addr = StringUtil.addrToString(location.address);
             String name;
             if (location.name != null)
                 name = "    " + location.name + " @ " + addr;
             else
                 name = "    " + addr;
             reportQuantity(name, cnt, "");
-        }
-    }
-
-    private class SleepCounter implements Simulator.Event {
-        protected long sleepCycles;
-        protected long awakeCycles;
-
-        public void fire() {
-            if ( simulator.getState().isSleeping() )
-                sleepCycles++;
-            else
-                awakeCycles++;
-
-            simulator.insertEvent(this, 1);
         }
     }
 
@@ -182,7 +134,7 @@ public class SimulateAction extends SimAction {
         public void report() {
             String tcnt = StringUtil.rightJustify(takenCount, 8);
             String ntcnt = StringUtil.rightJustify(nottakenCount, 8);
-            String addr = addrToString(location.address);
+            String addr = StringUtil.addrToString(location.address);
             String name;
             if (location.name != null)
                 name = "    " + location.name + " @ " + addr;
@@ -200,40 +152,22 @@ public class SimulateAction extends SimAction {
      *                   occurs during simulation
      */
     public void run(String[] args) throws Exception {
-//        long repeat = BenchmarkAction.REPEAT.get();
-
-//        for (long cntr = 0; cntr < repeat; cntr++)
         runSimulation(args);
-
     }
 
     private void runSimulation(String[] args) throws Exception {
         program = Main.readProgram(args);
 
         Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
-        Simulator.FIF_INTERPRETER = FAST_INTERPRETER.get();
 
-        PlatformFactory pf = getPlatform();
-        if (pf != null) {
-            microcontroller = pf.newPlatform(program).getMicrocontroller();
-            simulator = microcontroller.getSimulator();
-        } else {
-            microcontroller = getMicrocontroller().newMicrocontroller(program);
-            simulator = microcontroller.getSimulator();
-        }
+        simulator = newSimulator(program);
         counters = new LinkedList();
         branchcounters = new LinkedList();
 
         processBreakPoints();
-        processCounters();
-        processBranchCounters();
         processTotal();
         processIcount();
         processTimeout();
-        processProfile();
-        processMemoryProfile();
-        processStackMonitor();
-        processSleepStats();
 
         if (TRACE.get()) {
             simulator.insertProbe(Simulator.TRACEPROBE);
@@ -245,15 +179,10 @@ public class SimulateAction extends SimAction {
         } finally {
             endms = System.currentTimeMillis();
 
-            reportCounters();
-            reportBranchCounters();
             reportTotal();
             reportCycles();
             reportTime();
-            reportProfile();
-            reportMemoryProfile();
-            reportStackMonitor();
-            reportSleepStats();
+            reportMonitors(simulator);
         }
     }
 
@@ -263,183 +192,6 @@ public class SimulateAction extends SimAction {
             Main.Location l = (Main.Location) i.next();
             simulator.insertBreakPoint(l.address);
         }
-    }
-
-    void processCounters() {
-        List locs = Main.getLocationList(program, COUNTS.get());
-        Iterator i = locs.iterator();
-        while (i.hasNext()) {
-            Main.Location l = (Main.Location) i.next();
-            Counter c = new Counter(l);
-            counters.add(c);
-            simulator.insertProbe(c, l.address);
-        }
-    }
-
-    void reportCounters() {
-        if (counters.isEmpty()) return;
-        Terminal.printGreen(" Counter results\n");
-        printSeparator();
-        Iterator i = counters.iterator();
-        while (i.hasNext()) {
-            Counter c = (Counter) i.next();
-            c.report();
-        }
-    }
-
-    void processBranchCounters() {
-        List locs = Main.getLocationList(program, BRANCHCOUNTS.get());
-        Iterator i = locs.iterator();
-        while (i.hasNext()) {
-            Main.Location l = (Main.Location) i.next();
-            BranchCounter c = new BranchCounter(l);
-            branchcounters.add(c);
-            simulator.insertProbe(c, l.address);
-        }
-    }
-
-    void reportBranchCounters() {
-        if (branchcounters.isEmpty()) return;
-        Terminal.printGreen(" Branch counter results\n");
-        printSeparator();
-        Iterator i = branchcounters.iterator();
-        while (i.hasNext()) {
-            BranchCounter c = (BranchCounter) i.next();
-            c.report();
-        }
-    }
-
-    void processProfile() {
-        if (PROFILE.get())
-            simulator.insertProbe(profile = new ProgramProfiler(program));
-    }
-
-    void reportProfile() {
-        if (profile != null) {
-            Terminal.printGreen(" Profiling results\n");
-            printSeparator();
-            double total = 0;
-            long[] icount = profile.icount;
-            int imax = icount.length;
-
-            // compute the total for percentage calculations
-            for (int cntr = 0; cntr < imax; cntr++) {
-                total += icount[cntr];
-            }
-
-            // report the profile for each instruction in the program
-            for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
-                int start = cntr;
-                int runlength = 1;
-                long c = icount[cntr];
-
-                // collapse long runs of equivalent counts (e.g. basic blocks)
-                int nextpc;
-                for (; cntr < imax - 2; cntr = nextpc) {
-                    nextpc = program.getNextPC(cntr);
-                    if (icount[nextpc] != c) break;
-                    runlength++;
-                }
-
-                // format the results appropriately (columnar)
-                String cnt = StringUtil.rightJustify(c, 8);
-                float pcnt = (float) (100 * c / total);
-                String percent = toFixedFloat(pcnt, 4) + " %";
-                String addr;
-                if (runlength > 1) {
-                    addr = addrToString(start) + "-" + addrToString(cntr);
-                    if (c != 0) {
-                        percent += "  x" + runlength;
-                        percent += "  = " + toFixedFloat(pcnt * runlength, 4) + " %";
-                    }
-                } else {
-                    addr = "     " + addrToString(start);
-                }
-
-                reportQuantity("    " + addr, cnt, "  " + percent);
-            }
-        }
-    }
-
-    void processSleepStats() {
-        if ( SLEEP_STATS.get() ) {
-            simulator.insertEvent(sleepCounter = new SleepCounter(), 1);
-        }
-    }
-
-    void processMemoryProfile() {
-        if (MEMORY_PROFILE.get()) {
-            int ramSize = microcontroller.getRamSize();
-            memStart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
-            memprofile = new MemoryProfiler(ramSize);
-            for (int cntr = memStart; cntr < ramSize; cntr++) {
-                simulator.insertWatch(memprofile, cntr);
-            }
-        }
-    }
-
-    void reportMemoryProfile() {
-        if (memprofile != null) {
-            Terminal.printGreen(" Memory Profiling results\n");
-            printSeparator();
-            Terminal.println("             Reads               Writes");
-            printSeparator();
-            double rtotal = 0;
-            long[] rcount = memprofile.rcount;
-            double wtotal = 0;
-            long[] wcount = memprofile.wcount;
-            int imax = rcount.length;
-
-            // compute the total for percentage calculations
-            for (int cntr = 0; cntr < imax; cntr++) {
-                rtotal += rcount[cntr];
-                wtotal += wcount[cntr];
-            }
-
-            int zeroes = 0;
-
-            for (int cntr = memStart; cntr < imax; cntr++) {
-                int start = cntr;
-                long r = rcount[cntr];
-                long w = wcount[cntr];
-
-                if (r == 0 && w == 0)
-                    zeroes++;
-                else
-                    zeroes = 0;
-
-                if (zeroes == 2) {
-                    Terminal.println("                 .                    .");
-                    continue;
-                } else if (zeroes > 2) continue;
-
-                String rcnt = StringUtil.rightJustify(r, 8);
-                float rpcnt = (float) (100 * r / rtotal);
-                String rpercent = toFixedFloat(rpcnt, 4) + " %";
-
-                String wcnt = StringUtil.rightJustify(w, 8);
-                float wpcnt = (float) (100 * w / wtotal);
-                String wpercent = toFixedFloat(wpcnt, 4) + " %";
-
-                String addr = addrToString(start);
-
-                Terminal.printGreen("    " + addr);
-                Terminal.print(": ");
-                Terminal.printBrightCyan(rcnt);
-                Terminal.print(" " + ("  " + rpercent));
-                Terminal.printBrightCyan(wcnt);
-                Terminal.println(" " + ("  " + wpercent));
-            }
-        }
-    }
-
-    void processStackMonitor() {
-        if (MONITOR_STACK.get())
-            simulator.insertProbe(sprobe = new StackProbe());
-    }
-
-    private void printSeparator() {
-        Terminal.printSeparator(60);
     }
 
     void processTotal() {
@@ -485,92 +237,4 @@ public class SimulateAction extends SimAction {
             }
         }
     }
-
-    void reportSleepStats() {
-        if ( SLEEP_STATS.get() ) {
-            reportQuantity("Time slept", sleepCounter.sleepCycles, "cycles");
-            reportQuantity("Time awake", sleepCounter.awakeCycles, "cycles");
-            float percent = 100*((float)sleepCounter.sleepCycles) / (sleepCounter.sleepCycles + sleepCounter.awakeCycles);
-            reportQuantity("Total", percent, "%");
-        }
-    }
-
-    void reportStackMonitor() {
-        if (sprobe == null) return;
-        reportQuantity("Minimum stack pointer #1", "0x" + StringUtil.toHex(sprobe.minStack1, 4), "");
-        reportQuantity("Minimum stack pointer #2", "0x" + StringUtil.toHex(sprobe.minStack2, 4), "");
-        reportQuantity("Minimum stack pointer #3", "0x" + StringUtil.toHex(sprobe.minStack3, 4), "");
-        reportQuantity("Maximum stack pointer", "0x" + StringUtil.toHex(sprobe.maxStack, 4), "");
-        reportQuantity("Maximum stack size #1", (sprobe.maxStack - sprobe.minStack1), "bytes");
-        reportQuantity("Maximum stack size #2", (sprobe.maxStack - sprobe.minStack2), "bytes");
-        reportQuantity("Maximum stack size #3", (sprobe.maxStack - sprobe.minStack3), "bytes");
-    }
-
-    String addrToString(int address) {
-        return StringUtil.toHex(address, 4);
-    }
-
-    // warning! only works on numbers < 100!!!!
-    public static String toFixedFloat(float f, int places) {
-        // TODO: fix this routine or find an alternative
-        StringBuffer buf = new StringBuffer();
-        float radix = 100;
-        boolean nonzero = false;
-        for (int cntr = 0; cntr < places + 3; cntr++) {
-            int digit = ((int) (f / radix)) % 10;
-            char dchar = (char) (digit + '0');
-
-            if (digit != 0) nonzero = true;
-
-            if (digit == 0 && !nonzero && cntr < 2) dchar = ' ';
-
-            buf.append(dchar);
-            if (cntr == 2) buf.append('.');
-            radix = radix / 10;
-        }
-
-        return buf.toString();
-    }
-
-
-    public static class StackProbe implements Simulator.Probe {
-        int lastStack;
-
-        int minStack1 = Integer.MAX_VALUE;
-        int minStack2 = Integer.MAX_VALUE;
-        int minStack3 = Integer.MAX_VALUE;
-        int maxStack = Integer.MIN_VALUE;
-
-        static final Verbose.Printer printer = Verbose.getVerbosePrinter("sim.stack");
-
-        public void fireBefore(Instr i, int address, State s) {
-            lastStack = s.getSP();
-        }
-
-        public void fireAfter(Instr i, int address, State s) {
-            int newStack = s.getSP();
-            if (lastStack != newStack) {
-                printer.println("new stack: " + newStack);
-                lastStack = newStack;
-            }
-
-            if (newStack < minStack1) {
-                minStack3 = minStack2;
-                minStack2 = minStack1;
-                minStack1 = newStack;
-            } else if (newStack == minStack1)
-                return;
-            else if (newStack < minStack2) {
-                minStack3 = minStack2;
-                minStack2 = newStack;
-            } else if (newStack == minStack2)
-                return;
-            else if (newStack < minStack3) {
-                minStack3 = newStack;
-            }
-
-            if (newStack > maxStack) maxStack = newStack;
-        }
-    }
-
 }

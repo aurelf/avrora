@@ -30,43 +30,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.actions;
+package avrora.monitors;
 
-import avrora.Avrora;
-import avrora.util.Option;
-import avrora.util.StringUtil;
+import avrora.util.Options;
+import avrora.util.Terminal;
+import avrora.sim.Simulator;
 
 /**
+ * The <code>MonitorFactory</code> class represents a profiling utility
+ * that is able to produce a <code>Monitor</code> for a simulation. The
+ * monitor can use probes, watches, and events to monitor the execution
+ * of the program and issue a report after the simulation is completed.
+ *
  * @author Ben L. Titzer
  */
-public class CustomAction extends Action {
-    public static final String HELP = "The \"custom\" action allows a user to specify a Java class that " +
-            "contains an action to run. This is useful for external actions that " +
-            "are not part of the standard Avrora distribution. The \"class\" option " +
-            "specifies which Java class to load, instantiate and run. This class " +
-            "must extend the avrora.Main.Action class within Avrora.";
-    public final Option.Str CLASS = newOption("class", "",
-            "This option is only used in the \"custom\" action to specify which Java " +
-            "class contains an action to load and execute.");
+public abstract class MonitorFactory {
+    public final String help;
+    public final String shortName;
 
-    public CustomAction() {
-        super("custom", HELP);
+    public final Options options;
+
+    protected MonitorFactory(String sn, String h) {
+        shortName = sn;
+        help = h;
+        options = new Options();
     }
 
-    public void run(String[] args) throws Exception {
-        String clname = CLASS.get();
-        if (clname.equals(""))
-            Avrora.userError("Custom action class must be specified in -class option");
-        try {
-            Class cl = Class.forName(clname);
-            Action a = (Action) cl.newInstance();
-            a.run(args);
-        } catch (ClassNotFoundException e) {
-            Avrora.userError("Class not found", StringUtil.quote(clname));
-        } catch (ClassCastException e) {
-            Avrora.userError("The specified class does not extend avrora.actions.Action", StringUtil.quote(clname));
-        } catch (InstantiationException e) {
-            Avrora.userError("The specified class does not have a default constructor", StringUtil.quote(clname));
-        }
+
+    public abstract Monitor newMonitor(Simulator s);
+
+    public void processOptions(Options o) {
+        options.process(o);
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    protected void reportQuantity(String name, long val, String units) {
+        reportQuantity(name, Long.toString(val), units);
+    }
+
+    protected void reportQuantity(String name, float val, String units) {
+        reportQuantity(name, Float.toString(val), units);
+    }
+
+    protected void reportQuantity(String name, String val, String units) {
+        Terminal.printGreen(name);
+        Terminal.print(": ");
+        Terminal.printBrightCyan(val);
+        Terminal.println(" " + units);
     }
 }

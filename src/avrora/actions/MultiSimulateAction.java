@@ -50,8 +50,10 @@ import java.util.*;
 /**
  * The <code>MultiSimulateAction</code> class represents an action available
  * to the simulator where multiple nodes are run in simulation.
- * 
- * @author Daniel Lee, Simon Han
+ *
+ * @author Simon Han
+ * @author Daniel Lee
+ * @author Ben L. Titzer
  */
 public class MultiSimulateAction extends SimAction {
     public static final String HELP = "The \"multi-simulate\" action launches a set of simulators with " +
@@ -101,15 +103,15 @@ public class MultiSimulateAction extends SimAction {
     }
 
     Program program;
+    LinkedList simulatorThreadList = new LinkedList();
 
     public void run(String[] args) throws Exception {
 
         Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
 
-        LinkedList simulatorThreadList = new LinkedList();
-        PlatformFactory pf = getPlatform();
-
         int cntr = 0;
+
+        // create the specified number of each type of node
         Iterator i = NODECOUNT.get().iterator();
         while (i.hasNext()) {
 
@@ -118,25 +120,14 @@ public class MultiSimulateAction extends SimAction {
             String singleArg[] = { args[cntr++] };
             Program program = Main.getProgramReader().read(singleArg);
 
+            // create a number of nodes with the same program
             int max = StringUtil.evaluateIntegerLiteral((String)i.next());
             for ( int node = 0; node < max; node++ ) {
-                Simulator simulator;
-                Microcontroller microcontroller;
-                SimulatorThread st;
+                Simulator simulator = newSimulator(program);
+                Microcontroller microcontroller = simulator.getMicrocontroller();
+                SimulatorThread st = new SimulatorThread(simulator);
 
-                if (pf != null) {
-                    microcontroller = pf.newPlatform(program).getMicrocontroller();
-                    simulator = microcontroller.getSimulator();
-                    st = new SimulatorThread(simulator);
-                    simulatorThreadList.addFirst(st);
-
-                } else {
-                    microcontroller = getMicrocontroller().newMicrocontroller(program);
-                    simulator = microcontroller.getSimulator();
-                    st = new SimulatorThread(simulator);
-                    simulatorThreadList.addFirst(st);
-                }
-
+                simulatorThreadList.addLast(st);
                 Radio radio = microcontroller.getRadio();
 
                 if (radio != null) {
@@ -151,9 +142,7 @@ public class MultiSimulateAction extends SimAction {
         }
 
         // enable channel utilization accounting
-        if ( CHANNEL_UTIL.get() ) {
-            SimpleAir.simpleAir.recordUtilization(true);
-        }
+        SimpleAir.simpleAir.recordUtilization(CHANNEL_UTIL.get());
 
         long startms = System.currentTimeMillis();
         try {
@@ -166,6 +155,25 @@ public class MultiSimulateAction extends SimAction {
             long endms = System.currentTimeMillis();
             reportTime(startms, endms);
             reportUtilization();
+            reportAllMonitors();
+        }
+    }
+
+    private void reportAllMonitors() {
+        int cntr = 1;
+        Iterator i = simulatorThreadList.iterator();
+        while ( i.hasNext() ) {
+            Simulator s = ((SimulatorThread)i.next()).getSimulator();
+            if ( hasMonitors(s) ) {
+                Terminal.printSeparator(78);
+                Terminal.printGreen(" Monitors for node ");
+                Terminal.print(": ");
+                Terminal.printCyan(""+cntr);
+                Terminal.nextln();
+                Terminal.printSeparator(78);
+            }
+            reportMonitors(s);
+            cntr++;
         }
     }
 

@@ -105,7 +105,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.22";
+    static final String VERSION = "Beta 1.1.24";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -152,8 +152,6 @@ public class Main {
             "the default choice may be hard or impossible to read. In that case, set this " +
             "option to a darker color such as \"black\" for readable output.");
 
-
-    public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 
     static {
         newAction(new MultiSimulateAction());
@@ -237,12 +235,6 @@ public class Main {
                 args = mainOptions.getArguments();
 
                 if (BANNER.get()) banner();
-
-                if (configPrinter.enabled) {
-                    listActions();
-                    listInputs();
-                    mainOptions.dump("avrora.Main.options", configPrinter);
-                }
 
                 Action a = (Action) actions.get(ACTION.get());
                 if (a == null)
@@ -410,38 +402,6 @@ public class Main {
         Terminal.println("\n");
         Terminal.println(StringUtil.makeParagraphs(paragraphs, 0, 4, 78));
         Terminal.nextln();
-    }
-
-    static void listActions() {
-        configPrinter.startblock("avrora.Main.actions");
-        printList(actions);
-        configPrinter.endblock();
-    }
-
-    private static void printList(HashMap map) {
-        List opts = Collections.list(Collections.enumeration(map.keySet()));
-        Collections.sort(opts, String.CASE_INSENSITIVE_ORDER);
-
-        int max = 0;
-
-        Iterator i = opts.iterator();
-        while (i.hasNext()) {
-            String key = (String) i.next();
-            if (key.length() > max) max = key.length();
-        }
-
-
-        i = opts.iterator();
-        while (i.hasNext()) {
-            String key = (String) i.next();
-            configPrinter.println(StringUtil.leftJustify(key, max) + " : " + map.get(key).getClass());
-        }
-    }
-
-    static void listInputs() {
-        configPrinter.startblock("avrora.Main.inputs");
-        printList(inputs);
-        configPrinter.endblock();
     }
 
     static void banner() {

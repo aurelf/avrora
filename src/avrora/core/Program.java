@@ -191,131 +191,6 @@ public class Program {
 
     private static final Instr NOP = new Instr.NOP(0);
 
-    /**
-     * The <code>Impression</code> class represents a copy of the program that
-     * is suitable for reading and writing during execution without changing the
-     * underlying program. This is used in the <code>Simulator</code> class to
-     * make a private copy of the program so that multiple instances of the program
-     * do not interfere with each other. It basically amounts to a deep copy of
-     * the instructions and data in the program segment.
-     *
-     * <p/>
-     *
-     * This class is meant as a point to do smart code sharing between multiple
-     * instances of the program so that better scalability can be achieved.
-     *
-     * @see avrora.sim.Simulator
-     */
-    public class Impression {
-
-        private Instr[] imp_instrs;
-        private byte[] imp_data;
-
-        private int imp_start;
-        private int imp_max;
-
-        Impression(int max) {
-            imp_start = program_start;
-            imp_max = max;
-
-            realloc(data, instrs, imp_start, program_end);
-        }
-
-        /**
-         * The <code>readProgramByte()</code> method reads a single byte
-         * value from the program (code) segment.
-         * @param address the byte address to read the value from
-         * @return the current value of that program location if that program location
-         * is within the valid memory space; 0 otherwise
-         */
-        public byte readProgramByte(int address) {
-            try {
-                return imp_data[address - imp_start];
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return 0;
-            }
-        }
-
-        /**
-         * The <code>writeProgramByte()</code> method writes a single byte value
-         * to the program (code) segment. This write may overwrite instructions
-         * within the program. NO EFFORT IS MADE BY THIS CLASS TO ENSURE CONSISTENCY
-         * OF THE INSTRUCTIONS. THEREFORE SELF MODIFYING CODE DOES NOT BEHAVE
-         * CORRECTLY.
-         * @param val the value to write to the location
-         * @param address the byte address in the program segment to write the value to
-         */
-        public void writeProgramByte(byte val, int address) {
-            try {
-                imp_data[address - imp_start] = val;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // writing beyond the end of flash is ignored
-                if (address < 0 || address >= imp_max) return;
-                resize(address);
-                imp_data[address - imp_start] = val;
-            }
-        }
-
-        private void resize(int address) {
-            if (address < imp_start)
-                realloc(imp_data, imp_instrs, address, imp_start + imp_data.length);
-            else {
-                // allocate 256 more bytes at the end
-                address += 256;
-                if (address > imp_max) address = imp_max;
-                realloc(imp_data, imp_instrs, imp_start, address);
-
-            }
-        }
-
-        /**
-         * The <code>readInstr()</code> method reads the instruction at the given byte
-         * address. No attempt to disassemble raw data into usable instructions is made,
-         * and unaligned accesses will return null. SELF MODIFYING CODE DOES NOT BEHAVE
-         * CORRECTLY NOR DOES ATTEMPTING TO EXECUTE DATA AS CODE.
-         * @param address the byte address in the program segment to read from
-         * @return the <code>Instr</code> instance at that address if that address is valid
-         * code from creation of the <code>Program</code> instance; an instance of
-         * <code>Instr.NOP</code> if the address is beyond valid memory; null if the instruction
-         * is misaligned or only raw data is present at that location.
-         */
-        public Instr readInstr(int address) {
-            try {
-                return imp_instrs[address - imp_start];
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return NOP;
-            }
-        }
-
-        /**
-         * The <code>writeInstr()</code> method is used to update an instruction at a
-         * particular address in memory. The address is given as a byte address but is
-         * expected to be aligned on a 2-byte boundary.
-         * This is generally used by the <code>Simulator</code>
-         * to insert probes on instructions, but could be used to achieve self-modifying code.
-         * @param i the instruction to write
-         * @param address the byte address to write the instruction that must be aligned
-         * on a 2-byte boundary.
-         */
-        public void writeInstr(Instr i, int address) {
-            try {
-                imp_instrs[address - imp_start] = i;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // writing beyond the end of flash is ignored
-                if (address < 0 || address >= imp_max) return;
-                resize(address);
-                imp_instrs[address - imp_start] = i;
-            }
-        }
-
-        private void realloc(byte[] orig_data, Instr[] orig_instrs, int new_start, int new_end) {
-            imp_instrs = new Instr[new_end - new_start];
-            System.arraycopy(orig_instrs, 0, imp_instrs, imp_start - new_start, orig_instrs.length);
-            imp_data = new byte[new_end - new_start];
-            System.arraycopy(orig_data, 0, imp_data, imp_start - new_start, orig_data.length);
-        }
-    }
-
     private final HashMap labels;
 
     private final HashMap indirectEdges;
@@ -555,17 +430,6 @@ public class Program {
     }
 
     /**
-     * The <code>makeNewImpression()</code> method creates an instance of the
-     * <code>Impression</code> class that is a deep copy of the program.
-     * @param program_max the maximum address of the program segment
-     * @return an instance of the <code>Impression</code> class trimmed to the maximum
-     * address specified.
-     */
-    public Impression makeNewImpression(int program_max) {
-        return new Impression(program_max);
-    }
-
-    /**
      * The <code>checkAddress()</code> method simply checks an address against the
      * bounds of the program and throws an error if the address is not within the bounds.
      * @param addr the byte address to check
@@ -592,7 +456,9 @@ public class Program {
         // TODO: better error checking
         if (pc > program_end)
             throw Avrora.failure("no next PC after: " + StringUtil.addrToString(pc));
-        return pc + readInstr(pc).getSize();
+        Instr i = readInstr(pc);
+        if ( i == null ) return pc + 2;
+        return pc + i.getSize();
     }
 
     /**

@@ -33,13 +33,22 @@
 package avrora.actions;
 
 import avrora.Avrora;
+import avrora.monitors.*;
+import avrora.core.Program;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
+import avrora.sim.Simulator;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Options;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer
@@ -56,18 +65,33 @@ public abstract class SimAction extends Action {
     public final Option.Str CHIP = newOption("chip", "atmega128l",
             "This option selects the microcontroller from a library of supported " +
             "microcontroller models.");
-    public final Option.Bool SLEEP_STATS = newOption("sleep-statistics", false,
-            "This option collects statistics on the sleeping behavior of the program, " +
-            "recording the length of sleeping intervals and the total amount of time " +
-            "spent in sleep modes.");
     public final Option.Str PLATFORM = newOption("platform", "",
             "This option selects the platform on which the microcontroller is built, " +
             "including the external devices such as LEDs and radio. If the platform " +
             "option is not set, the default platform is the microcontroller specified " +
             "in the \"chip\" option, with no external devices.");
+    public final Option.List MONITORS = newOptionList("monitors", "",
+            "This option specifies a list of monitors to be attached to the program. " +
+            "Monitors collect information about the execution of the program while it " +
+            "is running such as profiling data or timing information.");
+
+    protected HashMap monitorNameMap;
+    protected LinkedList monitorFactoryList;
+    protected HashMap monitorListMap;
 
     protected SimAction(String sn, String h) {
         super(sn, h);
+        monitorNameMap = new HashMap();
+        addNewMonitorType(new ProfileMonitor());
+        addNewMonitorType(new MemoryMonitor());
+        addNewMonitorType(new SleepMonitor());
+        addNewMonitorType(new StackMonitor());
+        monitorFactoryList = new LinkedList();
+        monitorListMap = new HashMap();
+    }
+
+    private void addNewMonitorType(MonitorFactory f) {
+        monitorNameMap.put(f.getShortName(), f);
     }
 
     /**
@@ -113,5 +137,68 @@ public abstract class SimAction extends Action {
         Terminal.print(": ");
         Terminal.printBrightCyan(val);
         Terminal.println(" " + units);
+    }
+
+    protected void processMonitorList() {
+        List l = MONITORS.get();
+        Iterator i = l.iterator();
+        while ( i.hasNext() ) {
+            String clname = (String)i.next();
+            MonitorFactory mf = (MonitorFactory)monitorNameMap.get(clname);
+            if ( mf == null ) {
+                try {
+                    Class mfc = Class.forName(clname);
+                    mf = (MonitorFactory)mfc.newInstance();
+                } catch (ClassNotFoundException e) {
+                    Avrora.userError("Monitor class not found", StringUtil.quote(clname));
+                } catch (ClassCastException e) {
+                    Avrora.userError("The specified class does not extend avrora.monitors.MonitorFactory", StringUtil.quote(clname));
+                } catch (InstantiationException e) {
+                    Avrora.userError("The specified class does not have a default constructor", StringUtil.quote(clname));
+                } catch (IllegalAccessException e) {
+                    Avrora.userError("Illegal access to class", StringUtil.quote(clname));
+                }
+            }
+            mf.processOptions(options);
+            monitorFactoryList.addLast(mf);
+        }
+    }
+
+    protected Simulator newSimulator(Program p) {
+        Simulator simulator;
+        PlatformFactory pf = getPlatform();
+        if (pf != null) {
+            simulator = pf.newPlatform(p).getMicrocontroller().getSimulator();
+        } else {
+            simulator = getMicrocontroller().newMicrocontroller(p).getSimulator();
+        }
+
+        processMonitorList();
+        LinkedList ml = new LinkedList();
+        Iterator i = monitorFactoryList.iterator();
+        while ( i.hasNext() ) {
+            MonitorFactory mf = (MonitorFactory)i.next();
+            Monitor m = mf.newMonitor(simulator);
+            ml.addLast(m);
+        }
+        monitorListMap.put(simulator, ml);
+
+        return simulator;
+    }
+
+    protected void reportMonitors(Simulator s) {
+        LinkedList ml = (LinkedList)monitorListMap.get(s);
+        if ( ml == null ) return;
+        Iterator i = ml.iterator();
+        while ( i.hasNext() ) {
+            Monitor m = (Monitor)i.next();
+            m.report();
+        }
+    }
+
+    protected boolean hasMonitors(Simulator s) {
+        LinkedList ml = (LinkedList)monitorListMap.get(s);
+        if ( ml == null ) return false;
+        return !ml.isEmpty();
     }
 }

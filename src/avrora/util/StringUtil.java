@@ -734,4 +734,27 @@ public class StringUtil {
         return buf.toString();
     }
 
+    // warning! only works on numbers < 100!!!!
+    public static String toFixedFloat(float f, int places) {
+        if ( f > 100 ) return Float.toString(f);
+        // TODO: fix this routine or find an alternative
+        StringBuffer buf = new StringBuffer();
+        float radix = 100;
+        boolean nonzero = false;
+        for (int cntr = 0; cntr < places + 3; cntr++) {
+            int digit = ((int) (f / radix)) % 10;
+            char dchar = (char) (digit + '0');
+
+            if (digit != 0) nonzero = true;
+
+            if (digit == 0 && !nonzero && cntr < 2) dchar = ' ';
+
+            buf.append(dchar);
+            if (cntr == 2) buf.append('.');
+            radix = radix / 10;
+        }
+
+        return buf.toString();
+    }
+
 }

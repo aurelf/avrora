@@ -179,26 +179,4 @@ public class Options {
         return knownValues.size();
     }
 
-    public void dump(String title, Printer p) {
-        List opts = Collections.list(Collections.enumeration(knownValues.keySet()));
-        Collections.sort(opts, String.CASE_INSENSITIVE_ORDER);
-        p.startblock(title);
-
-        int max = 0;
-
-        Iterator i = opts.iterator();
-        while (i.hasNext()) {
-            String key = (String) i.next();
-            if (key.length() > max) max = key.length();
-        }
-
-
-        i = opts.iterator();
-        while (i.hasNext()) {
-            String key = (String) i.next();
-            p.println(StringUtil.leftJustify(key, max) + " : " + getOptionValue(key));
-        }
-
-        p.endblock();
-    }
 }
