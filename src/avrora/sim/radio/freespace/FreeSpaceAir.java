@@ -63,7 +63,7 @@ public class FreeSpaceAir implements RadioAir {
     //one global air for everybody
     public final static FreeSpaceAir freeSpaceAir;
 
-    private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("sim.rssi");
+    private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("radio.rssi");
 
     //one global air for everybody
     static {

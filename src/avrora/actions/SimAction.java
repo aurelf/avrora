@@ -114,6 +114,7 @@ public abstract class SimAction extends Action {
         addNewMonitorType(new EnergyProfiler());
         addNewMonitorType(new PacketMonitor());
         addNewMonitorType(new GDBServer());
+        addNewMonitorType(new SimPerfMonitor());
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }
@@ -328,9 +329,10 @@ public abstract class SimAction extends Action {
      * the columns for the events outputted by the rest of the simulation.
      */
     protected void printSimHeader() {
+        Terminal.printSeparator(78, "Simulation events");
         Terminal.printGreen("Node       Time   Event");
         Terminal.nextln();
-        printSeparator();
+        Terminal.printThinSeparator(78);
     }
 
     protected void printSeparator() {

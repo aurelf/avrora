@@ -195,11 +195,7 @@ public class MultiSimulateAction extends SimAction {
         while (i.hasNext()) {
             Simulator s = ((SimulatorThread)i.next()).getSimulator();
             if (hasMonitors(s)) {
-                Terminal.printGreen(" Monitors for node ");
-                Terminal.print(": ");
-                Terminal.printCyan("" + cntr);
-                Terminal.nextln();
-                printSeparator();
+                Terminal.printSeparator(78, "Monitors for node "+cntr);
             }
             reportMonitors(s);
             cntr++;

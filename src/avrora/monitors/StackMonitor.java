@@ -62,7 +62,7 @@ public class StackMonitor extends MonitorFactory {
         int minStack3 = Integer.MAX_VALUE;
         int maxStack = Integer.MIN_VALUE;
 
-        final Verbose.Printer printer = Verbose.getVerbosePrinter("sim.stack");
+        final Simulator.Printer printer;
 
         public void fireBefore(Instr i, int address, State s) {
             // do nothing
@@ -95,6 +95,7 @@ public class StackMonitor extends MonitorFactory {
             simulator = s;
             program = s.getProgram();
             profile = new ProgramProfiler(program);
+            printer = simulator.getPrinter("monitor.stack");
             // insert the global probe
             s.insertProbe(profile);
         }

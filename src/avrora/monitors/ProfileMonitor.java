@@ -82,9 +82,10 @@ public class ProfileMonitor extends MonitorFactory {
          * number of executions of each instruction, compressed for basic blocks.
          */
         public void report() {
+            Terminal.printSeparator(78, "Profiling results");
             Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
-            Terminal.printSeparator(78);
+            Terminal.printThinSeparator(78);
             long[] icount = profile.icount;
             long[] itime = timeprofile.itime;
             int imax = icount.length;

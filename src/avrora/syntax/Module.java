@@ -69,7 +69,7 @@ public class Module implements Context {
 
     private List itemList;
 
-    static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("module");
+    static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("loader");
 
     private static final SyntacticOperand[] NO_OPERANDS = {};
 

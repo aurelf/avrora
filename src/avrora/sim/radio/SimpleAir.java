@@ -57,7 +57,7 @@ public class SimpleAir implements RadioAir {
 
     public final static SimpleAir simpleAir;
 
-    private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("sim.rssi");
+    private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("radio.rssi");
 
     static {
         simpleAir = new SimpleAir();

@@ -53,6 +53,8 @@ import java.text.CharacterIterator;
  * but is being remotely debugged by gdb. This can all be done without modifications to the
  * <code>Simulator</code> class, by simply using probes, watches, and events.
  *
+ * NOTE: This monitor is only meant for a single node simulation!
+ *
  * @author Ben L. Titzer
  */
 public class GDBServer extends MonitorFactory {
@@ -92,7 +94,7 @@ public class GDBServer extends MonitorFactory {
         GDBMonitor(Simulator s, int p) {
             simulator = s;
             port = p;
-            printer = simulator.getPrinter("sim.gdb-server");
+            printer = simulator.getPrinter("monitor.gdb");
             try {
                 serverSocket = new ServerSocket(port);
             } catch ( IOException e ) {

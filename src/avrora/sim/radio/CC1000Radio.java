@@ -181,7 +181,7 @@ public class CC1000Radio implements Radio {
         this.mcu = mcu;
         this.sim = mcu.getSimulator();
 
-        radioPrinter = sim.getPrinter("sim.cc1000");
+        radioPrinter = sim.getPrinter("radio.cc1000");
 
         MAIN_reg = new MainRegister();
 
@@ -959,7 +959,7 @@ public class CC1000Radio implements Radio {
 
         ATMega128LController() {
             ticker = new TransferTicker();
-            printer = sim.getPrinter("sim.cc100.data");
+            printer = sim.getPrinter("radio.cc1000.data");
         }
 
         public void enable() {
@@ -1241,7 +1241,7 @@ public class CC1000Radio implements Radio {
 
         SerialConfigurationInterface(Microcontroller mcu) {
 
-            readerPrinter = sim.getPrinter("sim.cc1000.pinconfig");
+            readerPrinter = sim.getPrinter("radio.cc1000.pinconfig");
 
             //install outputs
             mcu.getPin(31).connect(new PCLKOutput());

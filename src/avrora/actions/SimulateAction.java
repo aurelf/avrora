@@ -192,7 +192,7 @@ public class SimulateAction extends SimAction {
             simulator.start();
         } catch (Simulator.BreakPointException e) {
             Terminal.printYellow("Simulation terminated");
-            Terminal.println(": break at " + StringUtil.addrToString(e.address) + " reached.");
+            Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
         } catch (Simulator.TimeoutException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + simulator.getClock().getCount());

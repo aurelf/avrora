@@ -112,7 +112,7 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
 
         private void printRead(boolean result) {
-            if (pinPrinter == null) pinPrinter = simulator.getPrinter("sim.pin");
+            if (pinPrinter == null) pinPrinter = simulator.getPrinter("mcu.pin");
             if (pinPrinter.enabled) {
                 String dir = getDirection();
                 pinPrinter.println("READ PIN: " + number + ' ' + dir + "<- " + result);
@@ -139,7 +139,7 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
 
         private void printWrite(boolean value) {
-            if (pinPrinter == null) pinPrinter = simulator.getPrinter("sim.pin");
+            if (pinPrinter == null) pinPrinter = simulator.getPrinter("mcu.pin");
             if (pinPrinter.enabled) {
                 String dir = getDirection();
                 pinPrinter.println("WRITE PIN: " + number + ' ' + dir + "-> " + value);

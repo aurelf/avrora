@@ -69,10 +69,10 @@ public class MemoryMonitor extends MonitorFactory {
         }
 
         public void report() {
-            Terminal.printSeparator(78);
+            Terminal.printSeparator(78, "Memory profiling results");
             Terminal.printGreen("   Address     Reads               Writes");
             Terminal.nextln();
-            Terminal.printSeparator(78);
+            Terminal.printThinSeparator(78);
             double rtotal = 0;
             long[] rcount = memprofile.rcount;
             double wtotal = 0;

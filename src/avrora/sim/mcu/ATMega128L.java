@@ -655,7 +655,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             private Timer16Bit(BaseInterpreter ns) {
                 initValues();
 
-                timerPrinter = simulator.getPrinter("sim.timer" + n);
+                timerPrinter = simulator.getPrinter("atmega.timer" + n);
                 ticker = new Ticker();
 
                 highTempReg = new State.RWIOReg();
@@ -1363,7 +1363,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
              * mostly functional Timer2. OCRn is the offset on TIMSK that corresponds to
              */
             private Timer8Bit(BaseInterpreter ns, int n, int TCCRn, int TCNTn, int OCRn, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
-                timerPrinter = simulator.getPrinter("sim.timer" + n);
+                timerPrinter = simulator.getPrinter("atmega.timer" + n);
                 ticker = new Ticker();
                 TCCRn_reg = new ControlRegister();
                 TCNTn_reg = new TCNTnRegister();
@@ -1937,7 +1937,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             // and possibly writing back out when the simulator exits
             // to emulate a real EEPROM
             EEPROM(BaseInterpreter ns) {
-                eepromPrinter = simulator.getPrinter("sim.eeprom");
+                eepromPrinter = simulator.getPrinter("atmega.eeprom");
                 interpreter = ns;
 
                 ticker = new EEPROMTicker();
@@ -2259,7 +2259,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 connectedDevice = new SerialPrinter();
                 //connectedDevice = new LCDScreen();
 
-                usartPrinter = simulator.getPrinter("sim.usart" + n);
+                usartPrinter = simulator.getPrinter("atmega.usart" + n);
 
                 installIOReg(ns, UDRn, UDRn_reg);
                 installIOReg(ns, UCSRnA, UCSRnA_reg);
@@ -2620,7 +2620,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
              */
             protected class SerialPrinter implements USARTDevice {
 
-                Simulator.Printer serialPrinter = simulator.getPrinter("sim.serialprinter");
+                Simulator.Printer serialPrinter = simulator.getPrinter("atmega.usart.printer");
 
                 char[] stream = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd'};
 
@@ -2653,7 +2653,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
          */
         // TODO: this has major performance problems
         protected class LCDScreen implements USARTDevice {
-            Simulator.Printer lcdPrinter = simulator.getPrinter("sim.lcd");
+            Simulator.Printer lcdPrinter = simulator.getPrinter("atmega.usart.lcd");
 
             boolean mode;
 
@@ -2792,7 +2792,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             final SPSReg SPSR_reg;
             final SPIInterrupt SPI_int;
 
-            final Simulator.Printer spiPrinter = simulator.getPrinter("sim.spi");
+            final Simulator.Printer spiPrinter = simulator.getPrinter("atmega.spi");
 
             SPIDevice connectedDevice;
 
@@ -3125,7 +3125,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             public SPIDevice connectedDevice;
             private PrinterTicker ticker;
 
-            private Simulator.Printer printer = simulator.getPrinter("sim.spiPrinter");
+            private Simulator.Printer printer = simulator.getPrinter("atmega.spi.printer");
 
             public void connect(SPIDevice d) {
                 connectedDevice = d;
@@ -3175,7 +3175,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
          */
         protected class ADC {
 
-            final Simulator.Printer adcPrinter = simulator.getPrinter("sim.adc");
+            final Simulator.Printer adcPrinter = simulator.getPrinter("atmega.adc");
 
             final MUXRegister ADMUX_reg = new MUXRegister();
             final DataRegister ADC_reg = new DataRegister();
