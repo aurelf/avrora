@@ -33,8 +33,6 @@
 package avrora.syntax.atmel;
 
 import avrora.Avrora;
-import avrora.Main;
-import avrora.core.ProgramReader;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;

@@ -42,11 +42,11 @@ import avrora.util.Printer;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
 
 /**
  * The <code>CFGAction</code> is an Avrora action that allows a control flow graph to be generated and output
@@ -62,27 +62,27 @@ public class CFGAction extends Action {
             "format supported by the \"dot\" graph tool.";
 
     public final Option.Bool COLOR_PROCEDURES = newOption("color-procedures", true,
-                                                          "This option is used when outputting in the " +
-                                                          "\"dot\" output format. When this option is true, the control flow graph " +
-                                                          "utility will attempt to discover procedures and color them in the output.");
+            "This option is used when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures and color them in the output.");
     public final Option.Bool GROUP_PROCEDURES = newOption("group-procedures", true,
-                                                          "This option is used when outputting in the " +
-                                                          "\"dot\" output format. When this option is true, the control flow graph " +
-                                                          "utility will attempt to discover procedures and group them as subgraphs " +
-                                                          "in the output.");
+            "This option is used when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures and group them as subgraphs " +
+            "in the output.");
     public final Option.Bool COLLAPSE_PROCEDURES = newOption("collapse-procedures", false,
-                                                             "This option is used when outputting in the " +
-                                                             "\"dot\" output format. When this option is true, the control flow graph " +
-                                                             "utility will attempt to discover procedures within the control flow graph " +
-                                                             "and collapse whole procedures to a single node in the output.");
+            "This option is used when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures within the control flow graph " +
+            "and collapse whole procedures to a single node in the output.");
     public final Option.Str OUTPUT = newOption("output", "",
-                                               "This option selects the output format for the control flow graph. When this " +
-                                               "option is set to \"dot\", then the control flow graph will be outputted in " +
-                                               "a format suitable for parsing by the dot graph rendering tool.");
+            "This option selects the output format for the control flow graph. When this " +
+            "option is set to \"dot\", then the control flow graph will be outputted in " +
+            "a format suitable for parsing by the dot graph rendering tool.");
     public final Option.Str FILE = newOption("file", "",
-                                             "This option specifies the output file for the result of generating a" +
-                                             "\"dot\" format control flow graph. When this option is not set, a textual " +
-                                             "representation of the graph will be printed to the terminal.");
+            "This option specifies the output file for the result of generating a" +
+            "\"dot\" format control flow graph. When this option is not set, a textual " +
+            "representation of the graph will be printed to the terminal.");
 
     /**
      * The default constructor of the <code>CFGAction</code> class simply creates an empty instance with the

@@ -32,10 +32,10 @@
 
 package avrora.test;
 
+import avrora.util.ClassMap;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
-import avrora.util.ClassMap;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

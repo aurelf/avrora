@@ -32,7 +32,6 @@
 
 package avrora.sim.mcu;
 
-import avrora.core.Instr;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.sim.BaseInterpreter;
@@ -40,19 +39,11 @@ import avrora.sim.Energy;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.radio.Radio;
-
 import avrora.util.Arithmetic;
-import avrora.util.Terminal;
-import avrora.util.Verbose;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Vector;
-
-import avrora.util.Terminal;
-import avrora.sim.mcu.Microcontroller;
-
-import avrora.sim.Energy;
 
 
 /**
@@ -194,9 +185,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     public ATMega128L(boolean compatibility) {
         // TODO: this class should not serve two roles: an inner class should serve as the factory
         super(7372800,
-              compatibility ? ATMEGA128L_SRAM_SIZE_103 : ATMEGA128L_SRAM_SIZE,
-              compatibility ? ATMEGA128L_IOREG_SIZE_103 : ATMEGA128L_IOREG_SIZE,
-              128 * 1024, 4096, 65);
+                compatibility ? ATMEGA128L_SRAM_SIZE_103 : ATMEGA128L_SRAM_SIZE,
+                compatibility ? ATMEGA128L_IOREG_SIZE_103 : ATMEGA128L_IOREG_SIZE,
+                128 * 1024, 4096, 65);
         compatibilityMode = compatibility;
         simulator = null;
         interpreter = null;
@@ -204,9 +195,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
     protected ATMega128L(int id, Program p, boolean compatibility) {
         super(7372800,
-              compatibility ? ATMEGA128L_SRAM_SIZE_103 : ATMEGA128L_SRAM_SIZE,
-              compatibility ? ATMEGA128L_IOREG_SIZE_103 : ATMEGA128L_IOREG_SIZE,
-              128 * 1024, 4096, 65);
+                compatibility ? ATMEGA128L_SRAM_SIZE_103 : ATMEGA128L_SRAM_SIZE,
+                compatibility ? ATMEGA128L_IOREG_SIZE_103 : ATMEGA128L_IOREG_SIZE,
+                128 * 1024, 4096, 65);
         compatibilityMode = compatibility;
         installPins();
         simulator = new SimImpl(id, p);
@@ -215,10 +206,10 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         ((SimImpl)simulator).populateState();
         //init the energy profiling system for the CPU
         energy = new Energy("CPU",
-                            modeAmphere, modeName,
-                            this.getHz(), startMode,
-                            this.getSimulator().getEnergyControl(),
-                            this.getSimulator().getState());
+                modeAmphere, modeName,
+                this.getHz(), startMode,
+                this.getSimulator().getEnergyControl(),
+                this.getSimulator().getState());
     }
 
 
@@ -3427,8 +3418,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
                 protected void printStatus() {
                     adcPrinter.println("ADC (ADCSRA): enable: " + aden + ", start conversion: " + adsc +
-                                       ", free running: " + adfr + ", interrupt flag: " + adif + ", interrupt enable: " + adie +
-                                       ", prescaler divider: " + prescalerDivider);
+                            ", free running: " + adfr + ", interrupt flag: " + adif + ", interrupt enable: " + adie +
+                            ", prescaler divider: " + prescalerDivider);
                 }
 
                 boolean firing;

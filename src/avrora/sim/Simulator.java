@@ -32,16 +32,14 @@
 
 package avrora.sim;
 
+import avrora.Avrora;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.util.DeltaQueue;
 import avrora.sim.util.PeriodicEvent;
-import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
-import avrora.Avrora;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator for the AVR instruction set. It is
@@ -80,24 +78,6 @@ public abstract class Simulator implements IORegisterConstants {
 
     Simulator.Printer eventPrinter = getPrinter("sim.event");
     Simulator.Printer interruptPrinter = getPrinter("sim.interrupt");
-
-    /**
-     * The <code>TRACEPROBE</code> field represents a simple probe that prints an instruction to the terminal
-     * as it is encountered. This is useful for tracing program execution over simulation.
-     */
-    public final Probe TRACEPROBE = new Probe() {
-        public void fireBefore(Instr i, int pc, State s) {
-            Terminal.print(clock.getCount() + " ");
-            Terminal.printBrightCyan(StringUtil.toHex(pc, 4) + ": ");
-            Terminal.printBrightBlue(i.getVariant() + " ");
-            Terminal.print(i.getOperands());
-            Terminal.nextln();
-        }
-
-        public void fireAfter(Instr i, int pc, State s) {
-            // do nothing.
-        }
-    };
 
     /**
      * The <code>program</code> field allows descendants of the <code>Simulator</code> class to access the
@@ -447,9 +427,9 @@ public abstract class Simulator implements IORegisterConstants {
     public void reset() {
         clock = new MainClock("MAIN", microcontroller.getHz());
         interpreter = new GenInterpreter(this, program,
-                                         microcontroller.getFlashSize(),
-                                         microcontroller.getIORegSize(),
-                                         microcontroller.getRamSize());
+                microcontroller.getFlashSize(),
+                microcontroller.getIORegSize(),
+                microcontroller.getRamSize());
     }
 
     /**

@@ -33,9 +33,8 @@
 package avrora.syntax.objdump;
 
 import avrora.Avrora;
-import avrora.Main;
-import avrora.core.ProgramReader;
 import avrora.core.Program;
+import avrora.core.ProgramReader;
 
 import java.io.File;
 import java.io.Reader;

@@ -53,8 +53,8 @@ public class ProgramProfiler implements Simulator.Probe {
     public final Program program;
 
     /**
-     * The <code>icount</code> field stores the invocation count for each instruction in the program. It is
-     * indexed by byte addresses. Thus <code>icount[addr]</code> corresponds to the invocation for the
+     * The <code>itime</code> field stores the invocation count for each instruction in the program. It is
+     * indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the invocation for the
      * instruction at <code>program.getInstr(addr)</code>.
      */
     public final long icount[];

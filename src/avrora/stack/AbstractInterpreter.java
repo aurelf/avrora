@@ -1054,7 +1054,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         // merge partial results into upper and lower abstract bytes
         char RL = merge((byte)resultA, (byte)resultB, (byte)resultC, (byte)resultD);
         char RH = merge((byte)(resultA >> 8), (byte)(resultB >> 8),
-                        (byte)(resultC >> 8), (byte)(resultD >> 8));
+                (byte)(resultC >> 8), (byte)(resultD >> 8));
 
         // pack the two results into a single integer
         return RH << 16 | RL;

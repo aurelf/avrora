@@ -33,14 +33,17 @@
 package avrora.actions;
 
 import avrora.Avrora;
-import avrora.monitors.*;
 import avrora.core.Program;
+import avrora.monitors.*;
+import avrora.sim.Simulator;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
-import avrora.sim.Simulator;
-import avrora.util.*;
+import avrora.util.ClassMap;
+import avrora.util.Option;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 import java.util.*;
 
@@ -51,30 +54,30 @@ import java.util.*;
  * @author Ben L. Titzer
  */
 public abstract class SimAction extends Action {
-    public final Option.Long ICOUNT = newOption("icount", 0,
-                                                "This option is used to terminate the " +
-                                                "simulation after the specified number of instructions have been executed. " +
-                                                "It is useful for non-terminating programs.");
+    public final Option.Long ICOUNT = newOption("itime", 0,
+            "This option is used to terminate the " +
+            "simulation after the specified number of instructions have been executed. " +
+            "It is useful for non-terminating programs.");
     public final Option.Double SECONDS = newOption("seconds", 0.0,
-                                                   "This option is used to terminate the " +
-                                                   "simulation after the specified number of simulated seconds have passed. " +
-                                                   "It is useful for non-terminating programs and benchmarks.");
+            "This option is used to terminate the " +
+            "simulation after the specified number of simulated seconds have passed. " +
+            "It is useful for non-terminating programs and benchmarks.");
     public final Option.Long TIMEOUT = newOption("timeout", 0,
-                                                 "This option is used to terminate the " +
-                                                 "simulation after the specified number of clock cycles have passed. " +
-                                                 "It is useful for non-terminating programs and benchmarks.");
+            "This option is used to terminate the " +
+            "simulation after the specified number of clock cycles have passed. " +
+            "It is useful for non-terminating programs and benchmarks.");
     public final Option.Str CHIP = newOption("chip", "atmega128l",
-                                             "This option selects the microcontroller from a library of supported " +
-                                             "microcontroller models.");
+            "This option selects the microcontroller from a library of supported " +
+            "microcontroller models.");
     public final Option.Str PLATFORM = newOption("platform", "",
-                                                 "This option selects the platform on which the microcontroller is built, " +
-                                                 "including the external devices such as LEDs and radio. If the platform " +
-                                                 "option is not set, the default platform is the microcontroller specified " +
-                                                 "in the \"chip\" option, with no external devices.");
+            "This option selects the platform on which the microcontroller is built, " +
+            "including the external devices such as LEDs and radio. If the platform " +
+            "option is not set, the default platform is the microcontroller specified " +
+            "in the \"chip\" option, with no external devices.");
     public final Option.List MONITORS = newOptionList("monitors", "",
-                                                      "This option specifies a list of monitors to be attached to the program. " +
-                                                      "Monitors collect information about the execution of the program while it " +
-                                                      "is running such as profiling data or timing information.");
+            "This option specifies a list of monitors to be attached to the program. " +
+            "Monitors collect information about the execution of the program while it " +
+            "is running such as profiling data or timing information.");
 
     protected ClassMap monitorMap;
     protected LinkedList monitorFactoryList;
@@ -90,6 +93,7 @@ public abstract class SimAction extends Action {
         //add energy monitor to the list 
         //-> provides logging of energy consumption
         addNewMonitorType(new EnergyMonitor());
+        addNewMonitorType(new TraceMonitor());
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }

@@ -36,11 +36,11 @@
 
 package avrora.sim.radio.freespace;
 
-import avrora.sim.radio.*;
-import avrora.sim.radio.Radio.RadioPacket;
 import avrora.sim.Simulator;
+import avrora.sim.radio.Radio;
+import avrora.sim.radio.Radio.RadioPacket;
 
-import java.util.*;
+import java.util.Iterator;
 
 /**
  * local air each device has a local view on the global air. It sees different packets and transmission

@@ -32,7 +32,10 @@
 
 package avrora.core.isdl.gen;
 
-import avrora.core.isdl.*;
+import avrora.core.isdl.Architecture;
+import avrora.core.isdl.CodeRegion;
+import avrora.core.isdl.InstrDecl;
+import avrora.core.isdl.OperandDecl;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 

@@ -32,13 +32,12 @@
 
 package avrora.test;
 
+import avrora.Main;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
-import avrora.test.TestCase.ExpectCompilationError;
-import avrora.Main;
 
-import java.util.*;
+import java.util.Properties;
 
 /**
  * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the
@@ -48,7 +47,7 @@ import java.util.*;
  */
 public class SimplifierTestHarness implements TestHarness {
 
-    class SimplifierTest extends ExpectCompilationError {
+    class SimplifierTest extends TestCase.ExpectCompilationError {
 
         Module module;
         Program program;

@@ -36,7 +36,6 @@ import avrora.Main;
 import avrora.core.Program;
 import avrora.stack.Analyzer;
 import avrora.util.Option;
-import avrora.util.Printer;
 
 /**
  * The <code>AnalyzeStackAction</code> class is an extension of the <code>Main.Action</code> class that allows
@@ -52,28 +51,28 @@ public class AnalyzeStackAction extends Action {
             "and determines the worst-case stack depth in the presence of interrupts.";
 
     public final Option.Bool MONITOR_STATES = newOption("monitor-states", false,
-                                                        "This option is used to monitor the progress of a long-running stack analysis problem. " +
-                                                        "The analyzer will report the count of states, edges, and propagation information " +
-                                                        "produced every 5 seconds. ");
+            "This option is used to monitor the progress of a long-running stack analysis problem. " +
+            "The analyzer will report the count of states, edges, and propagation information " +
+            "produced every 5 seconds. ");
     public final Option.Bool TRACE_SUMMARY = newOption("trace-summary", true,
-                                                       "This option is used to reduce the amount of output by summarizing the error trace" +
-                                                       "that yields the maximal stack depth. When true, the analysis will shorten the error " +
-                                                       "trace by not reporting edges between states of adjacent instructions that do not " +
-                                                       "change the stack height.");
+            "This option is used to reduce the amount of output by summarizing the error trace" +
+            "that yields the maximal stack depth. When true, the analysis will shorten the error " +
+            "trace by not reporting edges between states of adjacent instructions that do not " +
+            "change the stack height.");
     public final Option.Bool TRACE = newOption("trace", false,
-                                               "This option causes the stack analyzer to print a trace of each abstract state " +
-                                               "produced, every edge between states that is inserted, and all propagations " +
-                                               "performed during the analysis. ");
+            "This option causes the stack analyzer to print a trace of each abstract state " +
+            "produced, every edge between states that is inserted, and all propagations " +
+            "performed during the analysis. ");
     public final Option.Bool DUMP_STATE_SPACE = newOption("dump-state-space", false,
-                                                          "This option causes the stack analyzer to print a dump of all " +
-                                                          "the reachable abstract states in the state space, as well as all " +
-                                                          "edges between states. This can be used for a post-mortem analysis.");
+            "This option causes the stack analyzer to print a dump of all " +
+            "the reachable abstract states in the state space, as well as all " +
+            "edges between states. This can be used for a post-mortem analysis.");
     public final Option.Long RESERVE = newOption("reserve", 0,
-                                                 "This option is used for reserving a small portion of memory before the " +
-                                                 "analysis begins, in case the Java heap space is exhausted. This can happen " +
-                                                 "with very large analyses. By reserving some space up front, there is space " +
-                                                 "left so that post mortem graph analysis can be run. The units given are " +
-                                                 "megabytes.");
+            "This option is used for reserving a small portion of memory before the " +
+            "analysis begins, in case the Java heap space is exhausted. This can happen " +
+            "with very large analyses. By reserving some space up front, there is space " +
+            "left so that post mortem graph analysis can be run. The units given are " +
+            "megabytes.");
 
     /**
      * The default constructor of the <code>AnalyzeStackAction</code> class simply creates an empty instance

@@ -530,7 +530,7 @@ public class Program {
         p.println("; -----------------------------------");
         p.println(";  Dump of program segment: ");
         p.println(";    low = 0x" + StringUtil.toHex(program_start, 4) +
-                  ", high = 0x" + StringUtil.toHex(program_end, 4));
+                ", high = 0x" + StringUtil.toHex(program_end, 4));
         p.println("; -----------------------------------");
         p.println(".cseg");
 

@@ -37,14 +37,17 @@
 
 package avrora.monitors;
 
-import avrora.sim.*;
-
-import java.io.*;
-import java.util.*;
-
-import avrora.sim.Energy;
 import avrora.Avrora;
+import avrora.sim.Energy;
+import avrora.sim.EnergyControl;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.util.Terminal;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * energy monitor implementation this class handles logging and recording of power consumption
@@ -229,7 +232,7 @@ public class EnergyMonitor extends MonitorFactory {
      */
     public EnergyMonitor() {
         super("energy", "The \"energy\" is a monitor to trace energy consumption ," +
-                        "the trace file is temp.log");
+                "the trace file is temp.log");
     }
 
 

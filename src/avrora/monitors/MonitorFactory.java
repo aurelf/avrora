@@ -32,9 +32,9 @@
 
 package avrora.monitors;
 
+import avrora.sim.Simulator;
 import avrora.util.Options;
 import avrora.util.Terminal;
-import avrora.sim.Simulator;
 
 /**
  * The <code>MonitorFactory</code> class represents a profiling utility that is able to produce a

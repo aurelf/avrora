@@ -300,8 +300,8 @@ public class Module implements Context {
 
     public Program build() {
         newprogram = new Program(programSegment.lowest_address, programSegment.highest_address,
-                                 dataSegment.lowest_address, dataSegment.highest_address,
-                                 eepromSegment.lowest_address, eepromSegment.highest_address);
+                dataSegment.lowest_address, dataSegment.highest_address,
+                eepromSegment.lowest_address, eepromSegment.highest_address);
 
         Iterator i = itemList.iterator();
         while (i.hasNext()) {

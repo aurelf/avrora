@@ -35,14 +35,13 @@ package avrora.stack;
 import avrora.Avrora;
 import avrora.core.Instr;
 import avrora.core.Program;
+import avrora.util.Printer;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
-import avrora.util.Printer;
 import avrora.util.profiling.Distribution;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -150,7 +149,7 @@ public class Analyzer {
     private void analyzeAggregationPoints() {
         Iterator i = graph.getStateCache().getStateIterator();
         Distribution sizeDist = new Distribution("Set Size Statistics", "Number of sets",
-                                                 "Aggregate size", "Distribution of Set Size");
+                "Aggregate size", "Distribution of Set Size");
         while (i.hasNext()) {
             StateCache.State state = (StateCache.State)i.next();
             StateCache.Set stateSet = state.info.stateSet;
@@ -672,7 +671,7 @@ public class Analyzer {
             List iedges = program.getIndirectEdges(callsite);
             if (iedges == null)
                 throw Avrora.failure("No control flow information for indirect call at: " +
-                                     StringUtil.addrToString(callsite));
+                        StringUtil.addrToString(callsite));
             Iterator i = iedges.iterator();
             while (i.hasNext()) {
                 int target_address = ((Integer)i.next()).intValue();
@@ -698,7 +697,7 @@ public class Analyzer {
             List iedges = program.getIndirectEdges(callsite);
             if (iedges == null)
                 throw Avrora.failure("No control flow information for indirect jump at: " +
-                                     StringUtil.addrToString(callsite));
+                        StringUtil.addrToString(callsite));
             Iterator i = iedges.iterator();
             while (i.hasNext()) {
                 int target_address = ((Integer)i.next()).intValue();

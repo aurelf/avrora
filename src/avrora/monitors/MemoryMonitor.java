@@ -32,14 +32,12 @@
 
 package avrora.monitors;
 
-import avrora.sim.util.ProgramProfiler;
-import avrora.sim.Simulator;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.mcu.Microcontroller;
 import avrora.core.Program;
-import avrora.util.Terminal;
+import avrora.sim.BaseInterpreter;
+import avrora.sim.Simulator;
+import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
-import avrora.util.Options;
+import avrora.util.Terminal;
 
 /**
  * The <code>MemoryMonitor</code> class implements a monitor that collects information about how the program
@@ -128,8 +126,8 @@ public class MemoryMonitor extends MonitorFactory {
 
     public MemoryMonitor() {
         super("memory", "The \"memory\" monitor collects information about the " +
-                        "memory usage statistics of the program, which includes the number " +
-                        "of reads and writes to every byte of data memory.");
+                "memory usage statistics of the program, which includes the number " +
+                "of reads and writes to every byte of data memory.");
     }
 
     public avrora.monitors.Monitor newMonitor(Simulator s) {

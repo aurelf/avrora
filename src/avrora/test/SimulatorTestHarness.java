@@ -32,20 +32,17 @@
 
 package avrora.test;
 
+import avrora.Main;
 import avrora.core.Program;
-import avrora.core.Register;
 import avrora.core.ProgramReader;
+import avrora.core.Register;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.Module;
-import avrora.test.TestCase;
-import avrora.test.TestHarness;
-import avrora.test.TestResult;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import avrora.Main;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
@@ -441,7 +438,7 @@ public class SimulatorTestHarness implements TestHarness {
 
         StateMismatch(StatePredicate pred, State st) {
             super("incorrect result: (" + pred.left + " -> " + pred.leftvalue + ") != ("
-                  + pred.right + " -> " + pred.rightvalue + ")");
+                    + pred.right + " -> " + pred.rightvalue + ")");
             state = st;
             predicate = pred;
         }

@@ -34,10 +34,10 @@ package avrora.util;
 
 import avrora.Avrora;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collections;
 
 /**
  * The <code>ClassMap</code> is a class that maps short names (i.e. short, lower case strings) to java classes

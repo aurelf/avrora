@@ -32,13 +32,11 @@
 
 package avrora.sim.radio;
 
-import java.util.LinkedList;
-
-import avrora.sim.mcu.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.Avrora;
-import avrora.sim.radio.freespace.*;
+import avrora.sim.mcu.Microcontroller;
+import avrora.sim.radio.freespace.LocalAir;
+import avrora.sim.radio.freespace.Position;
 
 /**
  * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and

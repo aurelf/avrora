@@ -34,8 +34,6 @@ package avrora.sim.mcu;
 
 import avrora.util.ClassMap;
 
-import java.util.HashMap;
-
 /**
  * The <code>Microcontrollers</code> class represents a static, known mapping between names and
  * implementations of microcontroller models. For example, "atmega128l" is mapped to an instance of the

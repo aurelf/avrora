@@ -34,16 +34,10 @@ package avrora.sim.platform;
 
 
 import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.core.Register;
-
+import avrora.sim.Simulator;
 import avrora.sim.mcu.ATMega128L;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.Simulator;
-import avrora.sim.State;
-
 import avrora.util.Terminal;
-import avrora.util.StringUtil;
 
 /**
  * The <code>Mica</code> class is an implementation of the <code>Platform</code> interface that represents

@@ -61,8 +61,8 @@ public class BenchmarkAction extends SimAction {
             "performace on an input program and gives tables of performance information. ";
 
     public final Option.Long REPEAT = newOption("repeat", 1,
-                                                "This option is used to specify the number of times that the benchmark should be run." +
-                                                "The benchmarks will be repeated and the average over all runs computed. ");
+            "This option is used to specify the number of times that the benchmark should be run." +
+            "The benchmarks will be repeated and the average over all runs computed. ");
 
     /**
      * The default constructor of the <code>BenchmarkAction</code> class simply creates an empty instance with

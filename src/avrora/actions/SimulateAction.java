@@ -33,19 +33,12 @@
 package avrora.actions;
 
 import avrora.Main;
-import avrora.core.Instr;
 import avrora.core.Program;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.platform.PlatformFactory;
-import avrora.sim.util.MemoryProfiler;
-import avrora.sim.util.ProgramProfiler;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import avrora.util.Verbose;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -74,31 +67,28 @@ public class SimulateAction extends SimAction {
             "for the specified microcontroller and begins executing the program. There " +
             "are several options provided by the simulator for profiling and analysis.";
     public final Option.List BREAKS = newOptionList("breakpoint", "",
-                                                    "This option is used in the simulate action. It allows the user to " +
-                                                    "insert a series of breakpoints in the program from the command line. " +
-                                                    "The address of the breakpoint can be given in hexadecimal or as a label " +
-                                                    "within the program. Hexadecimal constants are denoted by a leading '$'.");
+            "This option is used in the simulate action. It allows the user to " +
+            "insert a series of breakpoints in the program from the command line. " +
+            "The address of the breakpoint can be given in hexadecimal or as a label " +
+            "within the program. Hexadecimal constants are denoted by a leading '$'.");
     public final Option.Bool TIME = newOption("time", false,
-                                              "This option is used in the simulate action. It will cause the simulator " +
-                                              "to report the time used in executing the simulation. When combined with " +
-                                              "the \"cycles\" and \"total\" options, it will report performance " +
-                                              "information about the simulation.");
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to report the time used in executing the simulation. When combined with " +
+            "the \"cycles\" and \"total\" options, it will report performance " +
+            "information about the simulation.");
     public final Option.Bool TOTAL = newOption("total", false,
-                                               "This option is used in the simulate action. It will cause the simulator " +
-                                               "to report the total instructions executed in the simulation. When combined " +
-                                               "with the \"time\" option, it will report performance information.");
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to report the total instructions executed in the simulation. When combined " +
+            "with the \"time\" option, it will report performance information.");
     public final Option.Bool CYCLES = newOption("cycles", false,
-                                                "This option is used in the simulate action. It will cause the simulator " +
-                                                "to report the total cycles executed in the simulation. When combined " +
-                                                "with the \"time\" option, it will report performance information.");
-    public final Option.Bool TRACE = newOption("trace", false,
-                                               "This option is used in the simulate action. It will cause the simulator " +
-                                               "to print each instruction as it is executed.");
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to report the total cycles executed in the simulation. When combined " +
+            "with the \"time\" option, it will report performance information.");
     public final Option.Bool REALTIME = newOption("real-time", false,
-                                                  "This option is used in the simulate action to slow the simulation if it is too fast. " +
-                                                  "By default, the simulator will attempt to execute the program as fast as possible. " +
-                                                  "This option will cause the simulation to pause periodically for a few milliseconds in " +
-                                                  "order that it does not run faster than real-time.");
+            "This option is used in the simulate action to slow the simulation if it is too fast. " +
+            "By default, the simulator will attempt to execute the program as fast as possible. " +
+            "This option will cause the simulation to pause periodically for a few milliseconds in " +
+            "order that it does not run faster than real-time.");
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -181,10 +171,6 @@ public class SimulateAction extends SimAction {
 
         processBreakPoints();
         processTotal();
-
-        if (TRACE.get()) {
-            simulator.insertProbe(simulator.TRACEPROBE);
-        }
 
         if (REALTIME.get())
             simulator.insertEvent(new ThrottleEvent(), microcontroller.getHz() / 100);

@@ -32,11 +32,11 @@
 
 package avrora.sim.platform;
 
-import avrora.sim.mcu.Microcontroller;
+import avrora.sim.Energy;
 import avrora.sim.Simulator;
+import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import avrora.sim.Energy;
 
 /**
  * @author Ben L. Titzer

@@ -32,12 +32,13 @@
 
 package avrora.monitors;
 
-import avrora.sim.util.ProgramProfiler;
-import avrora.sim.Simulator;
 import avrora.core.Program;
-import avrora.util.Terminal;
+import avrora.sim.Simulator;
+import avrora.sim.util.ProgramProfiler;
+import avrora.sim.util.ProgramTimeProfiler;
 import avrora.util.StringUtil;
-import avrora.util.Options;
+import avrora.util.Terminal;
+import avrora.util.Option;
 
 /**
  * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as
@@ -47,6 +48,12 @@ import avrora.util.Options;
  */
 public class ProfileMonitor extends MonitorFactory {
 
+    public final Option.Bool BASIC_BLOCKS = options.newOption("basic-blocks", false,
+            "This option is used in by the profiling monitor to determine how to " +
+            "collate the profiling information. When this option is set to true, " +
+            "the profiling monitor will report the execution count and total " +
+            "cycles consumed by each basic block, rather than each instruction " +
+            "or instruction range.");
     /**
      * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
      * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
@@ -56,13 +63,16 @@ public class ProfileMonitor extends MonitorFactory {
         public final Simulator simulator;
         public final Program program;
         public final ProgramProfiler profile;
+        public final ProgramTimeProfiler timeprofile;
 
         Monitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
             profile = new ProgramProfiler(program);
+            timeprofile = new ProgramTimeProfiler(program);
             // insert the global probe
             s.insertProbe(profile);
+            s.insertProbe(timeprofile);
         }
 
         /**
@@ -71,49 +81,58 @@ public class ProfileMonitor extends MonitorFactory {
          * number of executions of each instruction, compressed for basic blocks.
          */
         public void report() {
-            Terminal.printSeparator(78);
-            Terminal.printGreen("          Address     Count    Percent   Run       Cumulative");
+            Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
             Terminal.printSeparator(78);
-            double total = 0;
             long[] icount = profile.icount;
+            long[] itime = timeprofile.itime;
             int imax = icount.length;
+            float totalcycles = 0;
 
-            // compute the total for percentage calculations
-            for (int cntr = 0; cntr < imax; cntr++) {
-                total += icount[cntr];
+            // compute the total cycle count
+            for (int cntr = 0; cntr < itime.length; cntr++) {
+                totalcycles += itime[cntr];
             }
 
             // report the profile for each instruction in the program
             for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
                 int start = cntr;
                 int runlength = 1;
-                long c = icount[cntr];
+                long curcount = icount[cntr];
+                long cumulcycles = itime[cntr];
+
 
                 // collapse long runs of equivalent counts (e.g. basic blocks)
                 int nextpc;
                 for (; cntr < imax - 2; cntr = nextpc) {
                     nextpc = program.getNextPC(cntr);
-                    if (icount[nextpc] != c) break;
+                    if (icount[nextpc] != curcount) break;
                     runlength++;
+                    cumulcycles += itime[nextpc];
                 }
 
                 // format the results appropriately (columnar)
-                String cnt = StringUtil.rightJustify(c, 8);
-                float pcnt = (float)(100 * c / total);
-                String percent = StringUtil.toFixedFloat(pcnt, 4) + " %";
+                String cnt = StringUtil.rightJustify(curcount, 8);
+                float pcnt = (float)(100 * cumulcycles / totalcycles);
+                String percent = "";
                 String addr;
                 if (runlength > 1) {
+                    // if there is a run, adjust the count and address strings appropriately
                     addr = StringUtil.addrToString(start) + "-" + StringUtil.addrToString(cntr);
-                    if (c != 0) {
-                        percent += StringUtil.leftJustify(" x" + runlength, 7);
-                        percent += " = " + StringUtil.toFixedFloat(pcnt * runlength, 4) + " %";
-                    }
+                    percent = " x" + runlength;
                 } else {
                     addr = "       " + StringUtil.addrToString(start);
                 }
 
-                reportQuantity("    " + addr, cnt, "  " + percent);
+                percent = StringUtil.leftJustify(percent, 7);
+
+                // compute the percentage of total execution time
+                if (curcount != 0) {
+                    percent += StringUtil.rightJustify(cumulcycles, 8);
+                    percent += " = " + StringUtil.toFixedFloat(pcnt, 4) + " %";
+                }
+
+                reportQuantity(" " + addr, cnt, percent);
             }
         }
 
@@ -125,8 +144,8 @@ public class ProfileMonitor extends MonitorFactory {
      */
     public ProfileMonitor() {
         super("profile", "The \"profile\" monitor profiles the execution history " +
-                         "of every instruction in the program and generates a textual report " +
-                         "of the execution frequency for all instructions.");
+                "of every instruction in the program and generates a textual report " +
+                "of the execution frequency for all instructions.");
     }
 
     /**

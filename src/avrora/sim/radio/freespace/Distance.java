@@ -36,7 +36,7 @@
 
 package avrora.sim.radio.freespace;
 
-import avrora.sim.radio.*;
+
 
 /**
  * stores the between a node and the node who own radio

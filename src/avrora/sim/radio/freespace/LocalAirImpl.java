@@ -36,17 +36,13 @@
 
 package avrora.sim.radio.freespace;
 
+import avrora.sim.Simulator;
+import avrora.sim.radio.Radio;
+import avrora.sim.radio.Radio.RadioPacket;
+
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
-import avrora.sim.radio.*;
-import avrora.sim.radio.Radio.RadioPacket;
-import avrora.sim.mcu.*;
-import avrora.sim.radio.freespace.*;
-
-import java.util.*;
+import java.util.ListIterator;
 
 /**
  * Implementation of Local Air

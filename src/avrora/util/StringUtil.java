@@ -32,8 +32,6 @@
 
 package avrora.util;
 
-import avrora.Avrora;
-
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Iterator;
@@ -197,7 +195,7 @@ public class StringUtil {
         i.next();
         if (r != c)
             throw new Exception("expected " + squote(c) + " @ "
-                                + (i.getIndex() - 1) + ", found " + squote(r));
+                    + (i.getIndex() - 1) + ", found " + squote(r));
     }
 
     /**

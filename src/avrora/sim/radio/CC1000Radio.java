@@ -32,18 +32,19 @@
 
 package avrora.sim.radio;
 
-import avrora.sim.State;
+import avrora.sim.Energy;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.mcu.Microcontroller;
+import avrora.sim.State;
 import avrora.sim.mcu.ATMega128L;
-import avrora.util.Verbose;
+import avrora.sim.mcu.Microcontroller;
+import avrora.sim.radio.freespace.FreeSpaceAir;
+import avrora.sim.radio.freespace.LocalAir;
+import avrora.sim.radio.freespace.LocalAirImpl;
+import avrora.sim.radio.freespace.Position;
 import avrora.util.Arithmetic;
 
 import java.util.LinkedList;
-
-import avrora.sim.Energy;
-import avrora.sim.radio.freespace.*;
 
 /**
  * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with avrora. The CC1000
@@ -258,12 +259,12 @@ public class CC1000Radio implements Radio {
         
         //setup energy recording
         energy = new Energy("Radio",
-                            RadioEnergy.modeAmphere,
-                            modeName,
-                            mcu.getHz(),
-                            RadioEnergy.startMode,
-                            mcu.getSimulator().getEnergyControl(),
-                            mcu.getSimulator().getState());
+                RadioEnergy.modeAmphere,
+                modeName,
+                mcu.getHz(),
+                RadioEnergy.startMode,
+                mcu.getSimulator().getEnergyControl(),
+                mcu.getSimulator().getState());
     }
 
     /**
@@ -433,8 +434,8 @@ public class CC1000Radio implements Radio {
             String fRegS = fReg ? "B" : "A";
 
             radioPrinter.println("CC1000[MAIN]: " + rxtxS + ", frequency register: " + fRegS + ", rx powerdown: "
-                                 + rxPd + ", tx powerdown: " + txPd + ", fs powerdown: " + fsPd + ", core powerdown: "
-                                 + corePd + ", bias powerdown: " + biasPd + ", reset: " + resetN);
+                    + rxPd + ", tx powerdown: " + txPd + ", fs powerdown: " + fsPd + ", core powerdown: "
+                    + corePd + ", bias powerdown: " + biasPd + ", reset: " + resetN);
         }
 
     }
@@ -556,7 +557,7 @@ public class CC1000Radio implements Radio {
 
         protected void printStatus() {
             radioPrinter.println("CC1000[CURRENT]: vco current: " + vcoCurrent + ", LO drive: " + loDrive
-                                 + ", PA drive:" + paDrive);
+                    + ", PA drive:" + paDrive);
         }
     }
 
@@ -703,8 +704,8 @@ public class CC1000Radio implements Radio {
 
         protected void printStatus() {
             radioPrinter.println("CC1000[LOCK]: lock select: " + LOCK_SELECT[lockSelect] + ", sets lock threshold: "
-                                 + setsLockThreshold + ", reset lock threshold: " + resetLockThreshold +
-                                 ", lock instant: " + lockInstant + ", lockContinuous: " + lockContinuous);
+                    + setsLockThreshold + ", reset lock threshold: " + resetLockThreshold +
+                    ", lock instant: " + lockInstant + ", lockContinuous: " + lockContinuous);
         }
 
         public byte read() {
@@ -767,8 +768,8 @@ public class CC1000Radio implements Radio {
 
         protected void printStatus() {
             radioPrinter.println("CC1000[CAL]: cal start: " + calStart + ", cal dual: " + calDual +
-                                 ", cal wait: " + calWait + ", cal current: " + calCurrent + ", calComplete: " + calComplete +
-                                 ", cal iterate: " + calIterate + " ... " + sim.getState().getCycles());
+                    ", cal wait: " + calWait + ", cal current: " + calCurrent + ", calComplete: " + calComplete +
+                    ", cal iterate: " + calIterate + " ... " + sim.getState().getCycles());
         }
 
         /** */
@@ -1063,8 +1064,8 @@ public class CC1000Radio implements Radio {
                 receivedPacket = null;
                 if (printer.enabled) {
                     printer.println(getSimulator().getClock().getCount() + " " +
-                                    getSimulator().getID() + " " +
-                                    "CC1000: received " + hex(frame.data));
+                            getSimulator().getID() + " " +
+                            "CC1000: received " + hex(frame.data));
                 }
             } else {
                 frame = new SPIFrame((byte)0x00);

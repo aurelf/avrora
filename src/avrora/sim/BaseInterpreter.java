@@ -34,7 +34,6 @@ package avrora.sim;
 
 import avrora.Avrora;
 import avrora.core.*;
-import avrora.sim.util.DeltaQueue;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.MulticastWatch;
 import avrora.util.Arithmetic;

@@ -32,12 +32,8 @@
 
 package avrora.monitors;
 
-import avrora.sim.util.ProgramProfiler;
-import avrora.sim.Simulator;
 import avrora.core.Program;
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
-import avrora.util.Options;
+import avrora.sim.Simulator;
 
 /**
  * The <code>SleepMonitor</code> class is a monitor that tracks statistics about the sleeping patterns of
@@ -81,8 +77,8 @@ public class SleepMonitor extends MonitorFactory {
 
     public SleepMonitor() {
         super("sleep", "The \"sleep\" is a monitor that tracks statistics " +
-                       "about the sleeping patterns of programs, including the total number of " +
-                       "cycles awake and the total number of cycles asleep during the simulation.");
+                "about the sleeping patterns of programs, including the total number of " +
+                "cycles awake and the total number of cycles asleep during the simulation.");
     }
 
     public avrora.monitors.Monitor newMonitor(Simulator s) {

@@ -150,7 +150,7 @@ public abstract class Option {
      */
     protected void parseError(String name, String type, String val) {
         Avrora.userError("Option Error", "invalid value for " + type + " option " +
-                                         StringUtil.quote(name) + " = " + StringUtil.quote(val));
+                StringUtil.quote(name) + " = " + StringUtil.quote(val));
     }
 
     /**

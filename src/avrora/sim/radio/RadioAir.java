@@ -32,7 +32,7 @@
 
 package avrora.sim.radio;
 
-import avrora.sim.mcu.Microcontroller;
+
 
 /**
  * Interface for the <code>RadioAir</code>. An implementation of this interface should provide the policies

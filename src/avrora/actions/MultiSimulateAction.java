@@ -32,22 +32,22 @@
 
 package avrora.actions;
 
-import avrora.Avrora;
 import avrora.Main;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.radio.SimpleAir;
-import avrora.sim.radio.Radio;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.platform.PlatformFactory;
-import avrora.util.Option;
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
-import avrora.sim.radio.freespace.*;
+import avrora.sim.radio.Radio;
+import avrora.sim.radio.SimpleAir;
+import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.topology.Topology;
+import avrora.util.Option;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Random;
 
 /**
  * The <code>MultiSimulateAction</code> class represents an action available to the simulator where multiple
@@ -62,36 +62,36 @@ public class MultiSimulateAction extends SimAction {
             "the specified program loaded onto each. This is useful for simulating a network of " +
             "sensor nodes and monitoring the behavior of the entire network. ";
     public final Option.List NODECOUNT = newOptionList("nodecount", "1",
-                                                       "This option is used in the multi-node simulation. It specifies the " +
-                                                       "number of nodes to be instantiated of each program specified as an argument.");
+            "This option is used in the multi-node simulation. It specifies the " +
+            "number of nodes to be instantiated of each program specified as an argument.");
     public final Option.Long RANDOMSEED = newOption("random-seed", 0,
-                                                    "This option is used to seed a pseudo-random number generator used in the " +
-                                                    "simulation. If this option is set to non-zero, then its value is used as " +
-                                                    "the seed for reproducible simulation results. If this option is not set, " +
-                                                    "those parts of simulation that rely on random numbers will have seeds " +
-                                                    "chosen based on system parameters that vary from run to run.");
+            "This option is used to seed a pseudo-random number generator used in the " +
+            "simulation. If this option is set to non-zero, then its value is used as " +
+            "the seed for reproducible simulation results. If this option is not set, " +
+            "those parts of simulation that rely on random numbers will have seeds " +
+            "chosen based on system parameters that vary from run to run.");
     public final Option.Str TOPOLOGY = newOption("topology", "(null)",
-                                                 "This option is used in the multi-node simulation to specify the name of " +
-                                                 "a file that contains information about the topology of the network. " +
-                                                 "When this options is specified, the free space radio model will be used " +
-                                                 "to model radio propagation. See sample.top in topology for an example.");
+            "This option is used in the multi-node simulation to specify the name of " +
+            "a file that contains information about the topology of the network. " +
+            "When this options is specified, the free space radio model will be used " +
+            "to model radio propagation. See sample.top in topology for an example.");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
-                                                          "This option causes the simulator to insert a random delay before starting " +
-                                                          "each node in order to prevent artificial cycle-level synchronization. The " +
-                                                          "starting delay is pseudo-randomly chosen with uniform distribution over the " +
-                                                          "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
-                                                          "option is set to a non-zero value, then its value is used as the seed to the " +
-                                                          "pseudo-random number generator.");
+            "This option causes the simulator to insert a random delay before starting " +
+            "each node in order to prevent artificial cycle-level synchronization. The " +
+            "starting delay is pseudo-randomly chosen with uniform distribution over the " +
+            "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
+            "option is set to a non-zero value, then its value is used as the seed to the " +
+            "pseudo-random number generator.");
     public final Option.Long STAGGER_START = newOption("stagger-start", 0,
-                                                       "This option causes the simulator to insert a progressively longer delay " +
-                                                       "before starting each node in order to avoid artificial cycle-level " +
-                                                       "synchronization between nodes. The starting times are staggered by the number " +
-                                                       "of clock cycles given as a value. For example, if this option is given the" +
-                                                       "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
-                                                       "time 2*X, etc.");
+            "This option causes the simulator to insert a progressively longer delay " +
+            "before starting each node in order to avoid artificial cycle-level " +
+            "synchronization between nodes. The starting times are staggered by the number " +
+            "of clock cycles given as a value. For example, if this option is given the" +
+            "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
+            "time 2*X, etc.");
     public final Option.Bool CHANNEL_UTIL = newOption("channel-utilization", false,
-                                                      "This option causes the simulator to record statistics about the amount of radio " +
-                                                      "traffic in the network and report it after the simulation is complete.");
+            "This option causes the simulator to record statistics about the amount of radio " +
+            "traffic in the network and report it after the simulation is complete.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);

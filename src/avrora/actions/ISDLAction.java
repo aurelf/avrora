@@ -34,13 +34,13 @@ package avrora.actions;
 
 import avrora.Avrora;
 import avrora.core.isdl.Architecture;
-import avrora.core.isdl.parser.ISDLParser;
-import avrora.core.isdl.gen.InterpreterGenerator;
 import avrora.core.isdl.gen.ClassGenerator;
 import avrora.core.isdl.gen.FIFInterpreterGenerator;
+import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.parser.ISDLParser;
+import avrora.util.Option;
 import avrora.util.Printer;
 import avrora.util.SectionFile;
-import avrora.util.Option;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,14 +59,14 @@ public class ISDLAction extends Action {
             "instruction set.";
 
     public final Option.Bool CLASSES = newOption("classes", true,
-                                                 "This option controls whether the ISDL generation tool will emit the code " +
-                                                 "for instruction classes.");
+            "This option controls whether the ISDL generation tool will emit the code " +
+            "for instruction classes.");
     public final Option.Bool INTERPRETER = newOption("interpreter", true,
-                                                     "This option controls whether the ISDL generation tool will emit the code " +
-                                                     "for the interpreter for this architecture.");
+            "This option controls whether the ISDL generation tool will emit the code " +
+            "for the interpreter for this architecture.");
     public final Option.Bool DBBC = newOption("dbbc", true,
-                                              "This option controls the generation of the dynamic basic block compiler " +
-                                              "(DBBC).");
+            "This option controls the generation of the dynamic basic block compiler " +
+            "(DBBC).");
 
     public ISDLAction() {
         super("isdl", HELP);

@@ -37,7 +37,7 @@
 
 package avrora.sim;
 
-import avrora.monitors.*;
+import avrora.monitors.EnergyMonitorBase;
 
 import java.util.LinkedList;
 

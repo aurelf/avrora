@@ -32,15 +32,11 @@
 
 package avrora.sim.util;
 
+import avrora.Avrora;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.radio.Radio;
-import avrora.sim.util.DeltaQueue;
-
 import avrora.util.Verbose;
-import avrora.Avrora;
 
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
 

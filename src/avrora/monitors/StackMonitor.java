@@ -32,14 +32,12 @@
 
 package avrora.monitors;
 
-import avrora.sim.util.ProgramProfiler;
+import avrora.core.Instr;
+import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.util.Terminal;
+import avrora.sim.util.ProgramProfiler;
 import avrora.util.StringUtil;
-import avrora.util.Options;
 import avrora.util.Verbose;
 
 /**
@@ -125,7 +123,7 @@ public class StackMonitor extends MonitorFactory {
      */
     public StackMonitor() {
         super("stack", "The \"stack\" monitor tracks the height of the stack while " +
-                       "the program executes, reporting the maximum stack height seen.");
+                "the program executes, reporting the maximum stack height seen.");
     }
 
     /**

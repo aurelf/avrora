@@ -33,15 +33,14 @@
 package avrora.core.isdl.gen;
 
 import avrora.core.isdl.Architecture;
-import avrora.util.Printer;
-import avrora.core.isdl.InstrDecl;
 import avrora.core.isdl.CodeRegion;
-import avrora.core.isdl.SubroutineDecl;
-import avrora.core.isdl.parser.Token;
+import avrora.core.isdl.InstrDecl;
 import avrora.core.isdl.ast.VarAssignStmt;
+import avrora.core.isdl.parser.Token;
+import avrora.util.Printer;
 
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * @author Ben L. Titzer

@@ -32,7 +32,6 @@
 
 package avrora.actions;
 
-import avrora.test.SimulatorTestHarness;
 import avrora.test.AutomatedTester;
 
 /**

@@ -32,9 +32,11 @@
 
 package avrora.sim.mcu;
 
-import avrora.util.Verbose;
+import avrora.sim.BaseInterpreter;
+import avrora.sim.Clock;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.util.Arithmetic;
-import avrora.sim.*;
 
 /**
  * @author Ben L. Titzer
@@ -170,7 +172,7 @@ public abstract class ATMegaFamily implements Microcontroller {
             long posted = 0;
 
             // calculate all posted interrupts at correct bit positions
-            for (int count = 0; posts != 0; count++) {
+            for (int count = 0; count < 8; count++) {
                 if (Arithmetic.getBit(posts, count)) {
                     int vnum = getVectorNum(count);
                     if (vnum >= 0) posted |= (0x1 << vnum);

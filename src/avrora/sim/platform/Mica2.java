@@ -32,16 +32,12 @@
 
 package avrora.sim.platform;
 
-import avrora.sim.mcu.Microcontroller;
-import avrora.sim.mcu.ATMega128L;
-import avrora.sim.radio.Radio;
-import avrora.sim.radio.CC1000Radio;
-import avrora.sim.radio.SimpleAir;
-import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.core.Register;
+import avrora.sim.Simulator;
+import avrora.sim.mcu.ATMega128L;
+import avrora.sim.mcu.Microcontroller;
+import avrora.sim.radio.CC1000Radio;
+import avrora.sim.radio.Radio;
 import avrora.util.Terminal;
 
 /**

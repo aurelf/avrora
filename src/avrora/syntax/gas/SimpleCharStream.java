@@ -36,7 +36,7 @@ public class SimpleCharStream {
             if (wrapAround) {
                 System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
                 System.arraycopy(buffer, 0, newbuffer,
-                                 bufsize - tokenBegin, bufpos);
+                        bufsize - tokenBegin, bufpos);
                 buffer = newbuffer;
 
                 System.arraycopy(bufline, tokenBegin, newbufline, 0, bufsize - tokenBegin);
@@ -91,7 +91,7 @@ public class SimpleCharStream {
         int i;
         try {
             if ((i = inputStream.read(buffer, maxNextCharInd,
-                                      available - maxNextCharInd)) == -1) {
+                    available - maxNextCharInd)) == -1) {
                 inputStream.close();
                 throw new java.io.IOException();
             } else
@@ -297,7 +297,7 @@ public class SimpleCharStream {
             System.arraycopy(buffer, bufpos - len + 1, ret, 0, len);
         else {
             System.arraycopy(buffer, bufsize - (len - bufpos - 1), ret, 0,
-                             len - bufpos - 1);
+                    len - bufpos - 1);
             System.arraycopy(buffer, 0, ret, len - bufpos - 1, bufpos + 1);
         }
 

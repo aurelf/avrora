@@ -82,8 +82,8 @@ public class TokenMgrError extends Error {
      * Returns a detailed message for the Error when it is thrown by the token manager to indicate a lexical
      * error. Parameters : EOFSeen     : indicates if EOF caused the lexicl error curLexState : lexical state
      * in which this error occured errorLine   : line number when the error occured errorColumn : column
-     * number when the error occured errorAfter  : prefix that was seen before this error occured curchar
-     * : the offending character Note: You can customize the lexical error message by modifying this method.
+     * number when the error occured errorAfter  : prefix that was seen before this error occured curchar :
+     * the offending character Note: You can customize the lexical error message by modifying this method.
      */
     protected static String LexicalError(boolean EOFSeen, int lexState, int errorLine, int errorColumn, String errorAfter, char curChar) {
         return ("Lexical error at line " +

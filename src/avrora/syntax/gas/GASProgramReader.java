@@ -33,9 +33,8 @@
 package avrora.syntax.gas;
 
 import avrora.Avrora;
-import avrora.Main;
-import avrora.core.ProgramReader;
 import avrora.core.Program;
+import avrora.core.ProgramReader;
 import avrora.syntax.Module;
 
 import java.io.File;
