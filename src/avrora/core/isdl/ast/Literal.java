@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 import avrora.Avrora;
 
@@ -114,10 +115,10 @@ public abstract class Literal extends Expr {
          * otherwise
          */
         public int getBitWidth() {
-            if ( token.image.charAt(1) == 'b' ) {
+            if (token.image.charAt(1) == 'b') {
                 return token.image.length() - 2;
             } else {
-                throw Avrora.failure("unknown bit width of integer constant: "+token.image);
+                throw Avrora.failure("unknown bit width of integer constant: " + token.image);
             }
         }
 

@@ -51,12 +51,12 @@ public class MemoryProfiler implements Simulator.Watch {
     }
 
     public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
-        if ( data_addr < rcount.length )
+        if (data_addr < rcount.length)
             rcount[data_addr]++;
     }
 
     public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
-        if ( data_addr < wcount.length )
+        if (data_addr < wcount.length)
             wcount[data_addr]++;
     }
 

@@ -72,7 +72,7 @@ public class AVRTestHarness implements TestHarness {
 
         public void run() throws Exception {
             String input = properties.getProperty("input");
-            if ( input == null ) input = "atmel";
+            if (input == null) input = "atmel";
             Main.ProgramReader r = Main.getProgramReader(input);
             String args[] = {filename};
             program = r.read(args);
@@ -322,7 +322,7 @@ public class AVRTestHarness implements TestHarness {
 
         public void run() throws Exception {
             String input = properties.getProperty("input");
-            if ( input == null ) input = "atmel";
+            if (input == null) input = "atmel";
             Main.ProgramReader r = Main.getProgramReader(input);
             String args[] = {filename};
             program = r.read(args);

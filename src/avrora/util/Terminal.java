@@ -129,7 +129,6 @@ public final class Terminal {
     };
 
 
-
     public static final int ERROR_COLOR = COLOR_RED;
 
     public static void print(int color, String s) {
@@ -220,7 +219,7 @@ public final class Terminal {
 
     private static void outputColor(int color, String s) {
         if (useColors) {
-            if ( htmlColors ) {
+            if (htmlColors) {
                 out.print("<font color=");
                 out.print(HTML_COLORS[color]);
                 out.print(">");

@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 
 /**
@@ -110,7 +111,7 @@ public class VarBitRangeAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return variable.image +"[" + low_bit + ":" + high_bit + "] = " + expr + ";";
+        return variable.image + "[" + low_bit + ":" + high_bit + "] = " + expr + ";";
     }
 
     /**
@@ -126,5 +127,5 @@ public class VarBitRangeAssignStmt extends AssignStmt {
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);
     }
-    
+
 }

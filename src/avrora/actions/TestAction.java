@@ -41,8 +41,8 @@ import avrora.AVRTestHarness;
  */
 public class TestAction extends Action {
     public static final String HELP = "The \"test\" action invokes the internal automated testing framework " +
-                    "that runs testcases supplied at the command line. The testcases are " +
-                    "used in regressions for diagnosing bugs.";
+            "that runs testcases supplied at the command line. The testcases are " +
+            "used in regressions for diagnosing bugs.";
 
     public TestAction() {
         super("test", HELP);

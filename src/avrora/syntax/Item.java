@@ -136,7 +136,7 @@ public abstract class Item {
         public void simplify() {
 
             // TODO: define correct error for this
-            if ( (byteAddress & 0x1) == 0x1 )
+            if ((byteAddress & 0x1) == 0x1)
                 throw Avrora.failure("misaligned instruction");
 
             for (int cntr = 0; cntr < operands.length; cntr++)
@@ -243,7 +243,7 @@ public abstract class Item {
         }
 
         private int align(int cursor, int width) {
-            if ( width > 1) {
+            if (width > 1) {
                 int i = cursor % width;
                 cursor = i == 0 ? cursor : cursor + (i - width);
             }

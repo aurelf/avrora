@@ -31,7 +31,9 @@
  */
 
 package avrora.core.isdl.ast;
+
 import java.util.List;
+
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
 
@@ -82,7 +84,7 @@ public class CallStmt extends Stmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return StringUtil.embed(method.image, StringUtil.commalist(args)) +";";
+        return StringUtil.embed(method.image, StringUtil.commalist(args)) + ";";
     }
 
     /**

@@ -99,6 +99,7 @@ public class ControlFlowGraph {
     public class Block {
 
         private final int address;
+        private int last_address;
         private int size;
         private int length;
 
@@ -107,6 +108,7 @@ public class ControlFlowGraph {
 
         Block(int addr) {
             address = addr;
+            last_address = address;
             instructions = new LinkedList();
             edges = new LinkedList();
         }
@@ -124,6 +126,7 @@ public class ControlFlowGraph {
         public void addInstr(Instr i) {
             instructions.add(i);
 
+            last_address = address + size;
             size += i.getSize();
             length++;
         }
@@ -146,9 +149,9 @@ public class ControlFlowGraph {
          * @return true if these two basic blocks are equivalent; false otherwise
          */
         public boolean equals(Object o) {
-            if ( this == o ) return true;
-            if ( !(o instanceof Block) ) return false;
-            return ((Block)o).address == this.address;
+            if (this == o) return true;
+            if (!(o instanceof Block)) return false;
+            return ((Block) o).address == this.address;
         }
 
         /**
@@ -158,6 +161,10 @@ public class ControlFlowGraph {
          */
         public int getAddress() {
             return address;
+        }
+
+        public int getLastAddress() {
+            return last_address;
         }
 
         /**
@@ -195,8 +202,8 @@ public class ControlFlowGraph {
 
     private class BlockComparator implements Comparator {
         public int compare(Object o1, Object o2) {
-            Block b1 = (Block)o1;
-            Block b2 = (Block)o2;
+            Block b1 = (Block) o1;
+            Block b2 = (Block) o2;
 
             return b1.address - b2.address;
         }
@@ -209,9 +216,15 @@ public class ControlFlowGraph {
      */
     protected final HashMap blocks;
 
+    protected final List edges;
 
-    ControlFlowGraph() {
+    protected final Program program;
+
+
+    ControlFlowGraph(Program p) {
+        program = p;
         blocks = new HashMap();
+        edges = new LinkedList();
     }
 
     /**
@@ -229,11 +242,15 @@ public class ControlFlowGraph {
     }
 
     public void addEdge(Block s, Block t, String type) {
-        s.edges.add(new Edge(type, s, t));
+        Edge edge = new Edge(type, s, t);
+        s.edges.add(edge);
+        edges.add(edge);
     }
 
     public void addEdge(Block s, Block t) {
-        s.edges.add(new Edge("", s, t));
+        Edge edge = new Edge("", s, t);
+        s.edges.add(edge);
+        edges.add(edge);
     }
 
     /**
@@ -245,7 +262,7 @@ public class ControlFlowGraph {
      * address specified, if such a block exists; null otherwise
      */
     public Block getBlockStartingAt(int address) {
-        return (Block)blocks.get(new Integer(address));
+        return (Block) blocks.get(new Integer(address));
     }
 
     /**
@@ -280,5 +297,18 @@ public class ControlFlowGraph {
         List l = Collections.list(Collections.enumeration(blocks.values()));
         Collections.sort(l, new BlockComparator());
         return l.iterator();
+    }
+
+    public Iterator getEdgeIterator() {
+        return edges.iterator();
+    }
+
+    private ProcedureMap pmap;
+
+    public synchronized ProcedureMap getProcedureMap() {
+        if ( pmap == null ) {
+            pmap = new ProcedureMapBuilder(program).buildMap();
+        }
+        return pmap;
     }
 }

@@ -86,8 +86,7 @@ public class BenchmarkAction extends Action {
      *                   occurs during simulation
      */
     public void run(String[] args) throws Exception {
-        Main.ProgramReader r = Main.getProgramReader();
-        program = r.read(args);
+        program = Main.readProgram(args);
 
         long repeat = Main.REPEAT.get();
 
@@ -95,7 +94,7 @@ public class BenchmarkAction extends Action {
         Terminal.nextln();
         Terminal.printSeparator(88);
 
-        for ( long cntr = 0; cntr < repeat; cntr++ ) {
+        for (long cntr = 0; cntr < repeat; cntr++) {
 
             long millisA = runOne(true);
             totalMillisA += millisA;
@@ -120,14 +119,13 @@ public class BenchmarkAction extends Action {
         float mhzB = reportResult(avgCyclesB, avgMillisB);
         Terminal.nextln();
         Terminal.nextln();
-        if ( mhzA > mhzB ) {
+        if (mhzA > mhzB) {
             Terminal.printGreen("Average slowdown: ");
-        }
-        else {
+        } else {
             Terminal.printGreen("Average speedup: ");
         }
-        float speedup = 100*((mhzB / mhzA) - 1);
-        Terminal.printBrightCyan(speedup+" ");
+        float speedup = 100 * ((mhzB / mhzA) - 1);
+        Terminal.printBrightCyan(speedup + " ");
         Terminal.println("%");
         Terminal.println("");
     }
@@ -141,15 +139,15 @@ public class BenchmarkAction extends Action {
 
     private float reportResult(long cyclesA, long millisA) {
         String cstrA = StringUtil.rightJustify(cyclesA, 9);
-        String timA = StringUtil.rightJustify(StringUtil.milliAsString(millisA),8);
+        String timA = StringUtil.rightJustify(StringUtil.milliAsString(millisA), 8);
         float mhzA = ((float) cyclesA) / (millisA * 1000);
         String mstrA = StringUtil.rightJustify(mhzA, 9);
 
-        Terminal.printBrightCyan(cstrA+" ");
+        Terminal.printBrightCyan(cstrA + " ");
         Terminal.print("cycles  ");
-        Terminal.printBrightCyan(timA+" ");
+        Terminal.printBrightCyan(timA + " ");
         Terminal.print("  ");
-        Terminal.printBrightCyan(mstrA+" ");
+        Terminal.printBrightCyan(mstrA + " ");
         Terminal.print("mhz  ");
         return mhzA;
     }

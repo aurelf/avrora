@@ -45,14 +45,23 @@ import java.util.List;
 public interface StmtVisitor {
 
     public void visit(CallStmt s);
+
     public void visit(DeclStmt s);
+
     public void visit(IfStmt s);
+
     public void visit(MapAssignStmt s);
+
     public void visit(MapBitAssignStmt s);
+
     public void visit(MapBitRangeAssignStmt s);
+
     public void visit(ReturnStmt s);
+
     public void visit(VarAssignStmt s);
+
     public void visit(VarBitAssignStmt s);
+
     public void visit(VarBitRangeAssignStmt s);
 
     /**
@@ -79,8 +88,8 @@ public interface StmtVisitor {
         protected void visitStmtList(List l) {
             Iterator i = l.iterator();
             // visit all the statements in the block
-            while ( i.hasNext() ) {
-                Stmt t = (Stmt)i.next();
+            while (i.hasNext()) {
+                Stmt t = (Stmt) i.next();
                 t.accept(this);
             }
         }
@@ -112,6 +121,6 @@ public interface StmtVisitor {
         public void visit(VarBitRangeAssignStmt s) {
             // terminal node
         }
-        
+
     }
 }

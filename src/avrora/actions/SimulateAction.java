@@ -77,9 +77,9 @@ public class SimulateAction extends Action {
     MemoryProfiler memprofile;
 
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
-                    "for the specified microcontroller and begins executing the program. There " +
-                    "are several options provided to the simulator for profiling and analysis, " +
-                    "so for more information, see the Options section.";
+            "for the specified microcontroller and begins executing the program. There " +
+            "are several options provided to the simulator for profiling and analysis, " +
+            "so for more information, see the Options section.";
     public int memStart;
 
     public SimulateAction() {
@@ -135,14 +135,13 @@ public class SimulateAction extends Action {
     public void run(String[] args) throws Exception {
         long repeat = Main.REPEAT.get();
 
-        for ( long cntr= 0; cntr < repeat; cntr++ )
+        for (long cntr = 0; cntr < repeat; cntr++)
             runSimulation(args);
 
     }
 
     private void runSimulation(String[] args) throws Exception {
-        Main.ProgramReader r = Main.getProgramReader();
-        program = r.read(args);
+        program = Main.readProgram(args);
 
         Simulator.LEGACY_INTERPRETER = Main.LEGACY_INTERPRETER.get();
 
@@ -263,9 +262,11 @@ public class SimulateAction extends Action {
                 int runlength = 1;
                 long c = icount[cntr];
 
-                while (cntr < imax - 2) {
+                if ( program.readInstr(cntr) == null ) continue;
+
+                for (; cntr < imax - 2; cntr+= 2) {
+                    if ( program.readInstr(cntr + 2) == null ) continue;
                     if (icount[cntr + 2] != c) break;
-                    cntr += 2;
                     runlength++;
                 }
 
@@ -293,7 +294,7 @@ public class SimulateAction extends Action {
             int ramSize = microcontroller.getRamSize();
             memStart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
             memprofile = new MemoryProfiler(ramSize);
-            for ( int cntr = memStart; cntr < ramSize; cntr++ ) {
+            for (int cntr = memStart; cntr < ramSize; cntr++) {
                 simulator.insertWatch(memprofile, cntr);
             }
         }
@@ -324,14 +325,15 @@ public class SimulateAction extends Action {
                 long r = rcount[cntr];
                 long w = wcount[cntr];
 
-                if ( r == 0 && w == 0 ) zeroes++;
-                else zeroes = 0;
+                if (r == 0 && w == 0)
+                    zeroes++;
+                else
+                    zeroes = 0;
 
-                if ( zeroes == 2 ) {
+                if (zeroes == 2) {
                     Terminal.println("                 .                    .");
                     continue;
-                }
-                else if ( zeroes > 2 ) continue;
+                } else if (zeroes > 2) continue;
 
                 String rcnt = StringUtil.rightJustify(r, 8);
                 float rpcnt = (float) (100 * r / rtotal);
@@ -354,7 +356,7 @@ public class SimulateAction extends Action {
     }
 
     void processStackMonitor() {
-        if ( Main.MONITOR_STACK.get() )
+        if (Main.MONITOR_STACK.get())
             simulator.insertProbe(sprobe = new StackProbe());
     }
 
@@ -407,11 +409,11 @@ public class SimulateAction extends Action {
     }
 
     void reportStackMonitor() {
-        if ( sprobe == null ) return;
-        reportQuantity("Minimum stack pointer #1", "0x"+StringUtil.toHex(sprobe.minStack1,4), "");
-        reportQuantity("Minimum stack pointer #2", "0x"+StringUtil.toHex(sprobe.minStack2,4), "");
-        reportQuantity("Minimum stack pointer #3", "0x"+StringUtil.toHex(sprobe.minStack3,4), "");
-        reportQuantity("Maximum stack pointer", "0x"+StringUtil.toHex(sprobe.maxStack,4), "");
+        if (sprobe == null) return;
+        reportQuantity("Minimum stack pointer #1", "0x" + StringUtil.toHex(sprobe.minStack1, 4), "");
+        reportQuantity("Minimum stack pointer #2", "0x" + StringUtil.toHex(sprobe.minStack2, 4), "");
+        reportQuantity("Minimum stack pointer #3", "0x" + StringUtil.toHex(sprobe.minStack3, 4), "");
+        reportQuantity("Maximum stack pointer", "0x" + StringUtil.toHex(sprobe.maxStack, 4), "");
         reportQuantity("Maximum stack size #1", (sprobe.maxStack - sprobe.minStack1), "bytes");
         reportQuantity("Maximum stack size #2", (sprobe.maxStack - sprobe.minStack2), "bytes");
         reportQuantity("Maximum stack size #3", (sprobe.maxStack - sprobe.minStack3), "bytes");
@@ -475,27 +477,27 @@ public class SimulateAction extends Action {
 
         public void fireAfter(Instr i, int address, State s) {
             int newStack = s.getSP();
-            if ( lastStack != newStack ) {
-                printer.println("new stack: "+newStack);
+            if (lastStack != newStack) {
+                printer.println("new stack: " + newStack);
                 lastStack = newStack;
             }
 
-            if ( newStack < minStack1 ) {
+            if (newStack < minStack1) {
                 minStack3 = minStack2;
                 minStack2 = minStack1;
                 minStack1 = newStack;
-            }
-            else if ( newStack == minStack1) return;
-            else if ( newStack < minStack2 ) {
+            } else if (newStack == minStack1)
+                return;
+            else if (newStack < minStack2) {
                 minStack3 = minStack2;
                 minStack2 = newStack;
-            }
-            else if ( newStack == minStack2) return;
-            else if ( newStack < minStack3 ) {
+            } else if (newStack == minStack2)
+                return;
+            else if (newStack < minStack3) {
                 minStack3 = newStack;
             }
 
-            if ( newStack > maxStack ) maxStack = newStack;
+            if (newStack > maxStack) maxStack = newStack;
         }
     }
 

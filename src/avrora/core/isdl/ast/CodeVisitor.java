@@ -45,36 +45,59 @@ import java.util.Iterator;
 public interface CodeVisitor {
 
     public void visit(Arith.AddExpr e);
+
     public void visit(Arith.AndExpr e);
+
     public void visit(Arith.CompExpr e);
+
     public void visit(Arith.DivExpr e);
+
     public void visit(Arith.MulExpr e);
+
     public void visit(Arith.NegExpr e);
+
     public void visit(Arith.OrExpr e);
+
     public void visit(Arith.ShiftLeftExpr e);
+
     public void visit(Arith.ShiftRightExpr e);
+
     public void visit(Arith.SubExpr e);
+
     public void visit(Arith.XorExpr e);
 
     public void visit(BitExpr e);
+
     public void visit(BitRangeExpr e);
+
     public void visit(CallExpr e);
 
     public void visit(Literal.BoolExpr e);
+
     public void visit(Literal.IntExpr e);
 
     public void visit(Logical.AndExpr e);
+
     public void visit(Logical.EquExpr e);
+
     public void visit(Logical.GreaterEquExpr e);
+
     public void visit(Logical.GreaterExpr e);
+
     public void visit(Logical.LessEquExpr e);
+
     public void visit(Logical.LessExpr e);
+
     public void visit(Logical.NequExpr e);
+
     public void visit(Logical.NotExpr e);
+
     public void visit(Logical.OrExpr e);
+
     public void visit(Logical.XorExpr e);
-    
+
     public void visit(MapExpr e);
+
     public void visit(VarExpr e);
 
 
@@ -152,8 +175,8 @@ public interface CodeVisitor {
 
         public void visit(CallExpr e) {
             Iterator i = e.args.iterator();
-            while ( i.hasNext() ) {
-                Expr a = (Expr)i.next();
+            while (i.hasNext()) {
+                Expr a = (Expr) i.next();
                 a.accept(this);
             }
         }

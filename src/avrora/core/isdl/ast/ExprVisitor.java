@@ -45,14 +45,23 @@ import java.util.Iterator;
 public interface ExprVisitor {
 
     public void visit(Arith.BinOp e);
+
     public void visit(Arith.UnOp e);
+
     public void visit(BitExpr e);
+
     public void visit(BitRangeExpr e);
+
     public void visit(CallExpr e);
+
     public void visit(Literal e);
+
     public void visit(Logical.BinOp e);
+
     public void visit(Logical.UnOp e);
+
     public void visit(MapExpr e);
+
     public void visit(VarExpr e);
 
     /**
@@ -84,8 +93,8 @@ public interface ExprVisitor {
 
         public void visit(CallExpr e) {
             Iterator i = e.args.iterator();
-            while ( i.hasNext() ) {
-                Expr a = (Expr)i.next();
+            while (i.hasNext()) {
+                Expr a = (Expr) i.next();
                 a.accept(this);
             }
         }

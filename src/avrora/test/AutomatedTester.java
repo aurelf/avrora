@@ -111,7 +111,7 @@ public class AutomatedTester {
         List mlist = new LinkedList();
 
         for (int cntr = 0; cntr < fnames.length; cntr++) {
-            printer.println("Running test "+StringUtil.quote(fnames[cntr])+"...");
+            printer.println("Running test " + StringUtil.quote(fnames[cntr]) + "...");
 
             String fname = fnames[cntr];
             TestPair pair = runTest(fname);

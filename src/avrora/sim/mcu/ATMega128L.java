@@ -35,6 +35,9 @@ package avrora.sim.mcu;
 import avrora.util.Arithmetic;
 import avrora.util.Verbose;
 import avrora.core.InstrPrototype;
+/***/
+import avrora.core.Instr;
+/***/
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
@@ -43,6 +46,8 @@ import avrora.sim.BaseInterpreter;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Vector;
+
 
 /**
  * The <code>ATMega128L</code> class represents the <code>Microcontroller</code>
@@ -248,10 +253,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         simulator = null;
         pins = new Pin[NUM_PINS];
         compatibilityMode = compatibility;
+        //compatibilityMode = true;
     }
 
     protected ATMega128L(Program p, boolean compatibility) {
         compatibilityMode = compatibility;
+        //compatibilityMode = true;
         pins = new Pin[NUM_PINS];
         installPins();
         simulator = new SimImpl(p);
@@ -874,6 +881,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             /** <code>ControlRegister</code> is an abstract class
              * describing the control registers of a 16-bit timer. */
             protected abstract class ControlRegister extends State.RWIOReg {
+
+
                 private void decode(byte val) {
                 }
 
@@ -1033,6 +1042,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 public static final int CSn0 = 0;
 
                 public void write(byte val) {
+
                     value = (byte) (val & 0xdf);
                     decode(val);
                 }
@@ -1238,6 +1248,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 public void fire() {
 
                     int count = read16(TCNTnH_reg, TCNTnL_reg);
+                    int countSave = count;
                     int compareA = read16(OCRnAH_reg, OCRnAL_reg);
                     int compareB = read16(OCRnBH_reg, OCRnBL_reg);
                     int compareC = read16(OCRnCH_reg, OCRnCL_reg);
@@ -1255,6 +1266,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     switch (timerMode) {
                         case MODE_NORMAL:
                             count++;
+                            countSave = count;
                             if (count == MAX) {
                                 overflow();
                                 count = 0;
@@ -1267,6 +1279,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                                 count++;
                             else
                                 count--;
+
+                            countSave = count;
                             if (count >= TOP[timerMode]) {
                                 //if (count >= 0x00ff) {
                                 countUp = false;
@@ -1283,6 +1297,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                         case MODE_CTC_OCRnA:
                             count++;
+
+                            countSave = count;
                             if (count == compareA) {
                                 //compareMatch();
                                 count = 0;
@@ -1295,6 +1311,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                         case MODE_FASTPWM_9_BIT:
                         case MODE_FASTPWM_10_BIT:
                             count++;
+
+                            countSave = count;
                             if (count == TOP[timerMode]) {
                                 count = 0;
                                 overflow();
@@ -1308,6 +1326,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             else
                                 count--;
 
+                            countSave = count;
                             if (count >= compareI) {
                                 countUp = false;
                                 count = compareI;
@@ -1325,6 +1344,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             else
                                 count--;
 
+                            countSave = count;
                             if (count >= compareA) {
                                 countUp = false;
                                 count = compareA;
@@ -1342,6 +1362,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             else
                                 count--;
 
+                            countSave = count;
                             if (count >= compareI) {
                                 flushOCRnx();
                                 countUp = false;
@@ -1359,6 +1380,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             else
                                 count--;
 
+                            countSave = count;
                             if (count >= compareA) {
                                 flushOCRnx();
                                 countUp = false;
@@ -1372,6 +1394,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                         case MODE_CTC_ICRn:
                             count++;
+
+                            countSave = count;
                             if (count == compareI) {
                                 count = 0;
                             }
@@ -1381,6 +1405,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                         case MODE_FASTPWM_ICRn:
                             count++;
+
+                            countSave = count;
                             if (count == compareI) {
                                 count = 0;
                                 overflow();
@@ -1389,6 +1415,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                         case MODE_FASTPWM_OCRnA:
                             count++;
+
+                            countSave = count;
                             if (count == compareA) {
                                 count = 0;
                                 overflow();
@@ -1399,20 +1427,21 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                     // the compare match should be performed in any case.
                     if (!blockCompareMatch) {
-                        if (count == compareA) {
+                        if (countSave == compareA) {
                             compareMatchA();
                         }
-                        if (count == compareB) {
+                        if (countSave == compareB) {
                             compareMatchA();
                         }
-                        if (count == compareC) {
+                        if (countSave == compareC) {
                             compareMatchC();
                         }
                     }
-                    // make sure timing on this are correct
-                    blockCompareMatch = true;
-
                     write16(count, TCNTnH_reg, TCNTnL_reg);
+                    // make sure timings on this are correct
+                    blockCompareMatch = false;
+
+
                     if (period != 0) insertEvent(this, period);
                 }
             }
@@ -1660,13 +1689,14 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     // perform one clock tick worth of work on the timer
                     int count = TCNTn_reg.read() & 0xff;
                     int compare = OCRn_reg.read() & 0xff;
-
+                    int countSave = count;
                     if (timerPrinter.enabled)
                         timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "(actual) = " + compare + ", OCR" + n + "(buffer) = " + (0xff & OCRn_reg.readBuffer()) + "]");
 
                     switch (timerMode) {
                         case MODE_NORMAL: // NORMAL MODE
                             count++;
+                            countSave = count;
                             if (count == MAX) {
                                 // is this compareMatch occuring at the correct
                                 // time? CHECK.
@@ -1683,6 +1713,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             else
                                 count--;
 
+                            countSave = count;
                             if (count >= MAX) {
                                 countUp = false;
                                 count = MAX;
@@ -1696,6 +1727,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                         case MODE_CTC: // CLEAR TIMER ON COMPARE MODE
                             count++;
+                            countSave = count;
                             if (count == compare) {
                                 //compareMatch();
                                 count = 0;
@@ -1703,6 +1735,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                         case MODE_FASTPWM: // FAST PULSE WIDTH MODULATION MODE
                             count++;
+                            countSave = count;
                             if (count == MAX) {
                                 count = 0;
                                 overflow();
@@ -1711,47 +1744,15 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                     }
 
-                    if (count == compare && !blockCompareMatch) {
+                    if (countSave == compare && !blockCompareMatch) {
                         compareMatch();
                     }
+                    TCNTn_reg.write((byte) count);
                     // I probably want to verify the timing on this.
                     blockCompareMatch = false;
-                    TCNTn_reg.write((byte) count);
+
                     if (period != 0) insertEvent(this, period);
                 }
-            }
-        }
-
-        /** Flag register for flag register that corresponds to a
-         * group of interrupts that do not necessarily have a clean,
-         * linear mapping to bits on the register.  */
-        protected class UnorderedFlagRegister extends FlagRegister {
-            final int[] mapping;
-
-            protected UnorderedFlagRegister(boolean b, int i, int[] mapping) {
-                super(b, i);
-                this.mapping = mapping;
-                maskRegister = new UnorderedMaskRegister(b, i, this, mapping);
-            }
-
-            protected int getVectorNum(int bit) {
-                return mapping[bit];
-            }
-        }
-
-        /** Mask register associated with an
-         * <code>UnorderedFlagregister</code>.*/
-        protected class UnorderedMaskRegister extends MaskRegister {
-            final int[] mapping;
-
-
-            public UnorderedMaskRegister(boolean b, int i, FlagRegister fr, int[] mapping) {
-                super(b, i, fr);
-                this.mapping = mapping;
-            }
-
-            protected int getVectorNum(int bit) {
-                return mapping[bit];
             }
         }
 
@@ -1811,9 +1812,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             new EEPROM(ns);
 
+            new USART0(ns);
+            //new USART1(ns);
 
             // Add SPI device by Simon
             new SPI(ns);
+
+
         }
 
 
@@ -1871,15 +1876,15 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
          * @author Daniel Lee
          */
         protected class EEPROM {
-            byte[] EEPROM_data = new byte[EEPROM_SIZE];
+            final byte[] EEPROM_data = new byte[EEPROM_SIZE];
             final State.RWIOReg EEDR_reg;
             final EECRReg EECR_reg;
             final State.RWIOReg EEARL_reg;
             final EEARHReg EEARH_reg;
 
-            BaseInterpreter interpreter;
+            final BaseInterpreter interpreter;
 
-            Verbose.Printer eepromPrinter;
+            final Verbose.Printer eepromPrinter;
 
             // flag bits on EECR
             final int EERIE = 3;
@@ -1892,7 +1897,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             boolean writeEnable;
             boolean readEnable;
 
-            EEPROMTicker ticker;
+            final EEPROMTicker ticker;
 
             int writeCount = -1;
             boolean writeEnableWritten;
@@ -1903,14 +1908,16 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             // and possibly writing back out when the simulator exits
             // to emulate a real EEPROM
             EEPROM(BaseInterpreter ns) {
-                eepromPrinter = Verbose.getVerbosePrinter("eeprom");
+                eepromPrinter = Verbose.getVerbosePrinter("sim.eeprom");
                 interpreter = ns;
 
                 ticker = new EEPROMTicker();
 
-                EEDR_reg = new State.RWIOReg();
+                //EEDR_reg = new State.RWIOReg();
+                EEDR_reg = new TestingRegister("EEDR");
                 EECR_reg = new EECRReg();
                 EEARL_reg = new State.RWIOReg();
+                //EEARL_reg = new TestingRegister("EEARL_reg");
                 EEARH_reg = new EEARHReg();
 
                 installIOReg(ns, EEDR, EEDR_reg);
@@ -1985,7 +1992,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             protected class EEPROMTicker implements Simulator.Event {
                 public void fire() {
-
+                    /*if(eepromPrinter.enabled) {
+                    eepromPrinter.println("EEPROM: " + EECR_reg.read() + " " + EEARH_reg.read() + " " + EEARL_reg.read());
+                    }
+                    */
+                    if (eepromPrinter.enabled) {
+                        eepromPrinter.println("Tick : " + writeCount);
+                    }
 
                     if (interruptEnable && !writeEnable) {
                         // post interrupt
@@ -2032,6 +2045,686 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         }
 
+        protected class TestingRegister extends State.RWIOReg {
+            String name;
+            Verbose.Printer uartPrinter = Verbose.getVerbosePrinter("testing");
+
+            TestingRegister(String name) {
+                this.name = name;
+            }
+
+            public void write(byte val) {
+                if (uartPrinter.enabled) uartPrinter.println("TESTING: " + name + " written to value " + Integer.toBinaryString(0xff & val));
+                super.write(val);
+            }
+
+            public void writeBit(int bit, boolean val) {
+                if (uartPrinter.enabled) uartPrinter.println("TESTING: " + name + " written to value " + Integer.toBinaryString(0xff & value));
+                super.writeBit(bit, val);
+            }
+
+            public byte read() {
+                if (uartPrinter.enabled) uartPrinter.println("TESTING: " + name + " read from, value " + Integer.toBinaryString(0xff & value));
+                return super.read();
+            }
+
+            public boolean readBit(int bit) {
+                if (uartPrinter.enabled) uartPrinter.println("TESTING: " + name + " read from, value " + Integer.toBinaryString(0xff & value));
+                return super.readBit(bit);
+            }
+        }
+
+        /** Emulates the behavior of USART0 on the ATMega128L
+         * microcontroller. */
+        protected class USART0 extends USART {
+
+            USART0(BaseInterpreter ns) {
+                super(ns);
+            }
+
+            protected void initValues() {
+                n = 0;
+                UDRn = UDR0;
+                UCSRnA = UCSR0A;
+                UCSRnB = UCSR0B;
+                UCSRnC = UCSR0C;
+                UBRRnL = UBRR0L;
+                UBRRnH = UBRR0H;
+
+                USARTnRX = 19;
+                USARTnUDRE = 20;
+                USARTnTX = 21;
+
+                int[] UCSR1A_mapping = {-1, -1, -1, -1, -1, 20, 21, 19};
+                INTERRUPT_MAPPING = UCSR1A_mapping;
+
+            }
+        }
+
+        /** Emulates the behavior of USART1 on the ATMega128L
+         * microcontroller. */
+        protected class USART1 extends USART {
+
+            USART1(BaseInterpreter ns) {
+                super(ns);
+            }
+
+            protected void initValues() {
+                n = 1;
+                UDRn = UDR1;
+                UCSRnA = UCSR1A;
+                UCSRnB = UCSR1B;
+                UCSRnC = UCSR1C;
+                UBRRnL = UBRR1L;
+                UBRRnH = UBRR1H;
+
+                USARTnRX = 31;
+                USARTnUDRE = 32;
+                USARTnTX = 33;
+            }
+        }
+
+        /** The USART class implements a Universal Synchronous
+         * Asynchronous Receiver/Transmitter, which is a serial device
+         * on the ATMega128L. The ATMega128L has two USARTs, USART0
+         * and USART1. */
+        protected abstract class USART implements USARTDevice {
+
+            // UNIMPLEMENTED:
+            // Synchronous Mode
+            // Multi-processor communication mode
+
+            /*
+              Ways in which this USART is not accurate: Whole frame
+              delayed transmission, as opposed to sending single bits
+              at a time.  Parity errors are not searched for.
+              Presumably, parity errors will not occur. Similarly,
+              frame errors are should not occur.
+             */
+
+
+            final DataRegister UDRn_reg;
+            final ControlRegisterA UCSRnA_reg;
+            final ControlRegisterB UCSRnB_reg;
+            final ControlRegisterC UCSRnC_reg;
+            final UBRRnLReg UBRRnL_reg;
+            final UBRRnHReg UBRRnH_reg;
+
+            final BaseInterpreter interpreter;
+
+            final Transmitter transmitter;
+            final Receiver receiver;
+
+            final Verbose.Printer usartPrinter;
+
+            USARTDevice connectedDevice;
+
+            int n;
+            int UDRn;
+            int UCSRnA;
+            int UCSRnB;
+            int UCSRnC;
+            int UBRRnL;
+            int UBRRnH;
+
+            int USARTnRX;
+            int USARTnUDRE;
+            int USARTnTX;
+
+            int[] INTERRUPT_MAPPING;
+
+            //boolean UDREnFlagged;
+
+            final int RXCn = 7;
+            final int TXCn = 6;
+            final int UDREn = 5;
+            final int FEn = 4;
+            final int DORn = 3;
+            final int UPEn = 2;
+            final int U2Xn = 1;
+            final int MPCMn = 0;
+
+            final int RXCIEn = 7;
+            final int TXCIEn = 6;
+            final int UDRIEn = 5;
+            final int RXENn = 4;
+            final int TXENn = 3;
+            final int UCSZn2 = 2;
+            final int RXB8n = 1;
+            final int TXB8n = 0;
+
+            // bit 7 is reserved
+            final int UMSELn = 6;
+            final int UPMn1 = 5;
+            final int UPMn0 = 4;
+            final int USBSn = 3;
+            final int UCSZn1 = 2;
+            final int UCSZn0 = 1;
+            final int UCPOLn = 0;
+
+            // parity modes
+            final int PARITY_DISABLED = 0;
+            // 2 is reserved
+            final int PARITY_EVEN = 2;
+            final int PARITY_ODD = 3;
+
+
+            final int[] SIZE = {5, 6, 7, 8, 8, 8, 8, 9};
+
+            int period = 0;
+            int UBRRMultiplier = 16;
+            int frameSize = 8; // does this default to 5?
+
+            /* *********************************************** */
+            /* Methods to implement the USARTDevice interface */
+
+            public USARTFrame transmitFrame() {
+                return new USARTFrame(UDRn_reg.transmitRegister.read(), UCSRnB_reg.readBit(TXB8n), frameSize);
+            }
+
+            public void receiveFrame(USARTFrame frame) {
+                UDRn_reg.receiveRegister.writeFrame(frame);
+            }
+
+            /* *********************************************** */
+
+            /*
+            //ETIFR_reg = new FlagRegister(true, 25);
+            int [] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
+            ETIFR_reg = new UnorderedFlagRegister(true, 25, ETIFR_mapping); // false, 0 are just placeholder falues
+            ETIMSK_reg = (UnorderedMaskRegister)ETIFR_reg.maskRegister;
+
+
+            // increasing?
+
+            int [] UCSR2A_mapping = {-1, -1, -1, -1, -1, 33, 31, 32};
+
+             */
+
+            abstract protected void initValues();
+
+            USART(BaseInterpreter ns) {
+                initValues();
+                //UDRn_reg = new TestingRegister("UDR" + n);
+                UDRn_reg = new DataRegister();
+
+                UCSRnA_reg = new ControlRegisterA();
+                UCSRnB_reg = new ControlRegisterB();
+                UCSRnC_reg = new ControlRegisterC();
+                UBRRnL_reg = new UBRRnLReg();
+                UBRRnH_reg = new UBRRnHReg();
+
+                interpreter = ns;
+
+                transmitter = new Transmitter();
+                receiver = new Receiver();
+
+                connectedDevice = new SerialPrinter();
+
+                usartPrinter = Verbose.getVerbosePrinter("sim.usart" + n);
+
+                installIOReg(ns, UDRn, UDRn_reg);
+                installIOReg(ns, UCSRnA, UCSRnA_reg);
+                installIOReg(ns, UCSRnB, UCSRnB_reg);
+                installIOReg(ns, UCSRnC, UCSRnC_reg);
+                installIOReg(ns, UBRRnL, UBRRnL_reg);
+                installIOReg(ns, UBRRnH, UBRRnH_reg);
+
+                // USART Receive Complete
+                interrupts[19] = new Simulator.MaskableInterrupt(19, UCSRnB_reg, UCSRnA_reg, 7, false);
+                // USART Data Register Empty
+                interrupts[20] = new Simulator.MaskableInterrupt(20, UCSRnB_reg, UCSRnA_reg, 5, false);
+                // USART Transmit Complete
+                interrupts[21] = new Simulator.MaskableInterrupt(21, UCSRnB_reg, UCSRnA_reg, 6, false);
+
+            }
+
+            void updatePeriod() {
+                period = read16(UBRRnH_reg, UBRRnL_reg) + 1;
+                period *= UBRRMultiplier;
+            }
+
+            protected class Transmitter {
+                boolean transmitting = false;
+                Transmit transmit = new Transmit();
+
+                protected void enableTransmit() {
+                    if (!transmitting) {
+                        //System.err.println("Enabled transmitter"  + " " + simulator.getState().getCycles() + " " + count++);
+                        transmit.frame = transmitFrame();
+                        UCSRnA_reg.flagBit(UDREn);
+                        transmitting = true;
+                        insertEvent(transmit, (1 + frameSize + stopBits) * period);
+                    }
+                }
+
+                protected class Transmit implements Simulator.Event {
+                    USARTFrame frame;
+
+                    public void fire() {
+                        connectedDevice.receiveFrame(frame);
+
+
+                        if (usartPrinter.enabled)
+                            usartPrinter.println("USART: Transmitted frame " + frame /*+ " " + simulator.getState().getCycles()*/);
+                        transmitting = false;
+                        UCSRnA_reg.flagBit(TXCn);
+                        if (!UCSRnA_reg.readBit(UDREn)) {
+                            transmitter.enableTransmit();
+                        }
+                    }
+                }
+            }
+
+            /** Initiate a receive between the UART and the connected device. */
+            public void startReceive() {
+                receiver.enableReceive();
+            }
+
+            protected class Receiver {
+
+                boolean receiving = false;
+                Receive receive = new Receive();
+
+                protected void enableReceive() {
+                    if (!receiving) {
+                        //System.err.println("Enabled receiver" /* + " " + simulator.getState().getCycles()*/);
+                        receive.frame = connectedDevice.transmitFrame();
+                        insertEvent(receive, (1 + frameSize + stopBits) * period);
+                        receiving = true;
+                    }
+                }
+
+
+                protected class Receive implements Simulator.Event {
+                    USARTFrame frame;
+
+                    public void fire() {
+                        receiveFrame(frame);
+
+                        if (usartPrinter.enabled)
+                            usartPrinter.println("USART: Received frame " + frame + " " + simulator.getState().getCycles() + " " + UBRRnH_reg.read() + " " + UBRRnL_reg.read() + " " + UBRRMultiplier + " ");
+
+                        UCSRnA_reg.flagBit(RXCn);
+
+                        receiving = false;
+
+                    }
+                }
+            }
+
+            /** The <code>DataRegister</code> class represents a Transmit
+             * Data Buffer Register for a USART. It is really two
+             * registers, a transmit register and a receive
+             * register. The transmit register is the destination of
+             * data written to the register at this address. The
+             * receive register is the source of data read from this
+             * address.*/
+            protected class DataRegister extends State.RWIOReg {
+                State.RWIOReg transmitRegister;
+                TwoLevelFIFO receiveRegister;
+                /* figure out what the two level fifo for the receive
+                   register is */
+
+                DataRegister() {
+                    //transmitRegister = new State.RWIOReg();
+                    transmitRegister = new FooReg();
+                    receiveRegister = new TwoLevelFIFO();
+                }
+
+                private class FooReg extends State.RWIOReg {
+                    public void write(byte val) {
+                        super.write(val);
+                        //System.err.println("Wrote to transmit buffer " + val);
+                    }
+                }
+
+                public void write(byte val) {
+                    // check UDREn flag
+
+                    if (UCSRnA_reg.readBit(UDREn)) {
+                        transmitRegister.write(val);
+                        //UCSRnA_reg.flagBit(UDREn);
+                        UCSRnA_reg.writeBit(UDREn, false);
+                        if (UCSRnB_reg.readBit(TXENn)) {
+                            transmitter.enableTransmit();
+                        }
+                    }
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    // check UDREn flag
+                    if (UCSRnA_reg.readBit(UDREn)) {
+                        transmitRegister.writeBit(bit, val);
+                        UCSRnA_reg.writeBit(UDREn, false);
+                        if (UCSRnB_reg.readBit(TXENn)) transmitter.enableTransmit();
+
+                    }
+                }
+
+                public byte read() {
+                    return receiveRegister.read();
+                }
+
+                public boolean readBit(int bit) {
+                    return receiveRegister.readBit(bit);
+                }
+
+                private class TwoLevelFIFO extends State.RWIOReg {
+
+                    LinkedList readyQueue;
+                    LinkedList waitQueue;
+
+                    TwoLevelFIFO() {
+                        readyQueue = new LinkedList();
+                        waitQueue = new LinkedList();
+                        waitQueue.add(new USARTFrameWrapper());
+                        waitQueue.add(new USARTFrameWrapper());
+                        waitQueue.add(new USARTFrameWrapper());
+                    }
+
+                    public boolean readBit(int bit) {
+                        return Arithmetic.getBit(bit, read());
+                    }
+
+                    public byte read() {
+                        if (readyQueue.isEmpty()) {
+                            System.err.println("read 0 empty");
+                            return (byte) 0;
+                        }
+                        USARTFrameWrapper current = (USARTFrameWrapper) readyQueue.removeLast();
+                        if (readyQueue.isEmpty()) {
+                            UCSRnA_reg.writeBit(RXCn, false);
+                        }
+                        UCSRnB_reg.writeBit(RXB8n, current.frame.high);
+                        waitQueue.add(current);
+                        System.err.println("read " + current.frame.low);
+                        return current.frame.low;
+                    }
+
+                    public void writeFrame(USARTFrame frame) {
+                        if (waitQueue.isEmpty()) {
+                            // data overrun. drop frame
+                            UCSRnA_reg.writeBit(DORn, true);
+                        } else {
+                            USARTFrameWrapper current = (USARTFrameWrapper) (waitQueue.removeLast());
+                            current.frame = frame;
+                            readyQueue.addFirst(current);
+                        }
+                    }
+
+                    protected void flush() {
+                        // clear RXCn
+                    }
+
+                    private class USARTFrameWrapper {
+                        USARTFrame frame;
+                    }
+
+                }
+
+            }
+
+
+            protected class ControlRegisterA extends UnorderedFlagRegister {
+
+                public ControlRegisterA() {
+                    super(true, 19, INTERRUPT_MAPPING);
+                    value = 0x20; // init UDREn to true
+
+
+                }
+
+                public void write(byte val) {
+                    //System.err.println("Control A BYTE " + Integer.toBinaryString(val) + " " + read() + " " + UCSRnB_reg.read());
+                    super.write((byte) (0xe3 & val));
+                    decode(val);
+
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    //System.err.println("Control A BIT  " + Integer.toBinaryString(value) + " " + bit + " " + val);
+
+
+                    byte old = value;
+                    if (bit < 1 || bit > 4) {
+                        super.writeBit(bit, val);
+                    }
+                    decode(value);
+
+                }
+
+                protected void decode(byte val) {
+                    boolean U2XnVal = readBit(U2Xn);
+                    boolean MPCMnVal = UCSRnC_reg.readBit(UMSELn);
+
+                    int multiplierState = U2XnVal ? 0x1 : 0;
+                    multiplierState |= MPCMnVal ? 0x2 : 0;
+
+
+                    switch (multiplierState) {
+                        case 0:
+                            UBRRMultiplier = 16;
+                            break;
+                        case 1:
+                            UBRRMultiplier = 8;
+                            break;
+                        case 2:
+                            UBRRMultiplier = 2;
+                            break;
+                        default:
+                            UBRRMultiplier = 2;
+                            break;
+                    }
+                }
+
+            }
+
+            protected class ControlRegisterB extends UnorderedMaskRegister {
+                int count = 0;
+
+                ControlRegisterB() {
+                    super(true, 19, UCSRnA_reg, INTERRUPT_MAPPING);
+                    UCSRnA_reg.maskRegister = this;
+                }
+
+                public void write(byte val) {
+
+                    boolean oldReadEnable = readBit(RXENn);
+                    super.write(val);
+
+                    decode(val);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    boolean oldReadEnable = readBit(RXENn);
+                    super.writeBit(bit, val);
+
+                    decode(value);
+                }
+
+                protected void decode(byte value) {
+
+
+                    if (readBit(UCSZn2) && UCSRnC_reg.readBit(UCSZn1)
+                            && UCSRnC_reg.readBit(UCSZn0)) {
+                        frameSize = 9;
+                    }
+
+                }
+            }
+
+            int stopBits = 1;
+
+            protected class ControlRegisterC extends State.RWIOReg {
+
+                protected void decode(byte val) {
+
+                    stopBits = readBit(USBSn) ? 2 : 1;
+
+                    int UCSZVal = UCSRnB_reg.readBit(UCSZn2) ? 0x4 : 0x0;
+                    UCSZVal |= readBit(UCSZn1) ? 0x2 : 0x0;
+                    UCSZVal |= readBit(UCSZn0) ? 0x1 : 0x0;
+
+                    //frameSize = SIZE[UCSZVal];
+                    // why are they using a 5 bit frame size?
+                    frameSize = 8;
+                }
+
+                public void write(byte val) {
+                    super.write((byte) (0x7f & val));
+                    decode(val);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    if (bit < 7) {
+                        super.writeBit(bit, val);
+                    }
+                    decode(value);
+                }
+
+            }
+
+            protected class UBRRnHReg extends State.RWIOReg {
+
+                public void write(byte val) {
+                    super.write((byte) (0x0f & val));
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    if (bit < 4) {
+                        super.writeBit(bit, val);
+                    }
+                }
+            }
+
+            protected class UBRRnLReg extends State.RWIOReg {
+
+                public void write(byte val) {
+                    super.write(val);
+                    updatePeriod();
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    super.writeBit(bit, val);
+                    updatePeriod();
+                }
+            }
+
+            protected class SerialPrinter implements USARTDevice {
+
+                Verbose.Printer serialPrinter = Verbose.getVerbosePrinter("serialprinter");
+                //char [] stream = {0};
+
+                //char[] stream=  {'h', 'e', 'l', 'l', 'o',  'w', 'o', 'r', 'l', 'd'};
+                char[] stream = {0, 0, 0, 2, 0, 0, 2};
+                int count = 0;
+
+                public USARTFrame transmitFrame() {
+                    //return new SerialFrame((byte)0, false, 8);
+                    return new USARTFrame((byte) stream[count++ % stream.length], false, 8);
+                }
+
+                public void receiveFrame(USARTFrame frame) {
+                    if (serialPrinter.enabled) serialPrinter.println("Serial Printer " + frame.toString());
+                    //System.err.println("Serial Printer " + frame.toString());
+                }
+
+                SerialPrinter() {
+                    PrinterTicker printerTicker = new PrinterTicker();
+
+                    insertPeriodicEvent(printerTicker, 2000);
+                }
+
+                private class PrinterTicker implements Simulator.Event {
+                    public void fire() {
+                        receiver.enableReceive();
+                    }
+                }
+
+
+            }
+
+
+        }
+
+        protected class LCDScreen implements USARTDevice {
+            Verbose.Printer lcdPrinter = Verbose.getVerbosePrinter("sim.lcd");
+
+            boolean mode;
+
+            final boolean MODE_DATA = false;
+            final boolean MODE_INSTRUCTION = true;
+
+            final int CLEAR_SCREEN = 1;
+            final int SCROLL_LEFT = 24;
+            final int SCROLL_RIGHT = 28;
+            final int HOME = 2;
+            final int CURSOR_UNDERLINE = 14;
+            final int CURSOR_BLOCK = 13;
+            final int CURSOR_INVIS = 12;
+            final int BLANK_DISPLAY = 8;
+            final int RESTORE_DISPLAY = 12;
+
+
+            int cursor;
+
+            final Character dump = new Character('c');
+
+            public Character memory(byte cursor) {
+                if (cursor < 40) {
+                    return (Character) line1.get(cursor);
+                } else if (cursor < 80) {
+                    return (Character) line2.get(cursor - 40);
+                } else {
+                    return dump;
+                }
+            }
+
+            final Vector line1 = new Vector(40);
+            final Vector line2 = new Vector(40);
+
+            public USARTFrame transmitFrame() {
+                return new USARTFrame((byte) 0, false, 8);
+            }
+
+            public void receiveFrame(USARTFrame frame) {
+                byte data = frame.low;
+
+                if (mode) { // Instruction mode
+                    switch (data) {
+                        case CLEAR_SCREEN:
+                            break;
+                        case SCROLL_LEFT:
+                            break;
+                        case SCROLL_RIGHT:
+                            break;
+                        case HOME:
+                            cursor = 128;
+                            break;
+                        default:
+                            if (data >= 192) {
+                                cursor = data + 40 - 192;
+                            } else if (data >= 128) {
+                                cursor = data - 128;
+                            }
+                            break;
+                    }
+                    mode = MODE_DATA;
+                } else if (data == 254) {
+                    mode = MODE_INSTRUCTION;
+                } else {
+                    //memory[cursor] = frame.low;
+                    cursor = (cursor + 1) % 80;
+                    lcdPrinter.print(this.toString());
+                }
+            }
+
+            public String toString() {
+                return "";
+            }
+        }
+
 
         /**
          * SPI Class by Simon
@@ -2046,7 +2739,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             byte radio_in;
             byte radio_out;
 
-            // need to complete alternative SPIF bit clear rule!!!
+// need to complete alternative SPIF bit clear rule!!!
 
             SPI(BaseInterpreter ns) {
                 ticker = new SPITicker();
@@ -2055,7 +2748,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 SPSR_reg = new SPSReg();
                 SPI_int = new SPIInterrupt();
 
-                // add SPI interrupt to simulator
+// add SPI interrupt to simulator
                 interrupts[18] = SPI_int;
 
                 installIOReg(ns, SPDR, SPDR_reg);
@@ -2070,7 +2763,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             private void postSPIInterrupt() {
                 if (SPCR_reg.readBit(7)) {
                     SPSR_reg.setSPIF();
-                    // TODO: fix access rights for this method
+// TODO: fix access rights for this method
                     interpreter.postInterrupt(18);
                 }
             }
@@ -2081,13 +2774,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             class SPITicker implements Simulator.Event {
                 public void fire() {
-                    // put raiod_out in the environment
-                    // env = raiod_out;
+// put raiod_out in the environment
+// env = raiod_out;
 
-                    // read environment and store in raido_in
-                    // radio_in = env;
+// read environment and store in raido_in
+// radio_in = env;
 
-                    // post interrupt
+// post interrupt
                     postSPIInterrupt();
 
                 }
@@ -2132,7 +2825,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                  * @return false
                  */
                 public boolean readBit(int num) {
-                    // XXX not yet implemented
+// XXX not yet implemented
                     return false;
                 }
 
@@ -2141,7 +2834,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                  * @param num
                  */
                 public void writeBit(int num, boolean val) {
-                    // XXX not yet implemented
+// XXX not yet implemented
                 }
             }
 
@@ -2197,6 +2890,84 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
         }
 
+    }
+
+    /** A <code>USARTFrame</code> is a representation of the serial
+     * frames being passed between the USART and a connected
+     * device. */
+    public class USARTFrame {
+        public byte low;
+        public boolean high;
+        int size;
+
+        public USARTFrame(byte low, boolean high, int size) {
+            this.low = low;
+            this.high = high;
+            this.size = size;
+        }
+
+        public int value() {
+            int value = 0;
+            switch (size) {
+                case 9:
+                    value = high ? 0x100 : 0x0;
+                    value |= 0xff & low;
+                    break;
+                case 8:
+                    value = 0xff & low;
+                    break;
+                case 7:
+                    value = 0x7f & low;
+                    break;
+                case 6:
+                    value = 0x3f & low;
+                    break;
+                case 5:
+                    value = 0x1f & low;
+                    break;
+            }
+            return value;
+        }
+
+        public String toString() {
+            if (size == 9) {
+                return "" + value();
+            } else {
+                return "" + (char) value() + " (" + value() + ")";
+            }
+        }
+    }
+
+    /** The <code>USARTDevice</code> interface describes USARTs and
+     * other serial devices which can be connected to the USART. For
+     * simplicity, a higher-level interface communicating by frames of
+     * data is used, rather than bits or a representation of changing
+     * voltages.  */
+    public interface USARTDevice {
+        public USARTFrame transmitFrame();
+
+        public void receiveFrame(USARTFrame frame);
+    }
+
+    private class TestWatch implements Simulator.Watch {
+        public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
+
+        }
+
+        public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+
+        }
+
+
+        public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
+
+        }
+
+        public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
+            if (data_addr == 0xcc) {
+                System.err.println("Watched address 0xcc changed to " + value);
+            }
+        }
     }
 
 }

@@ -234,6 +234,14 @@ public class Main {
             "\"dot\" output format. When this option is true, the control flow graph " +
             "utility will attempt to discover procedures and group them as subgraphs " +
             "in the output.");
+    public static final Option.List INDIRECT_EDGES = options.newOptionList("indirect-edges", "",
+            "This option can be used to specify the possible targest of indirect calls and " +
+            "jumps within a program, which may be needed in building a control flow graph " +
+            "as well performing stack analysis. Each element of the list is a pair of " +
+            "program addresses separated by a colon, where a program address can be a " +
+            "label hexadecimal number preceded by a \"$\". The first program address " +
+            "is the address of the indirect call or jump instruction and the second program " +
+            "address is a possible target of that indirect branch.");
 
     public static final Option.Bool COLLAPSE_PROCEDURES = options.newOption("collapse-procedures", false,
             "This option is used in the \"cfg\" utility when outputting in the " +
@@ -276,19 +284,19 @@ public class Main {
 
             String n = args[0];
             int offset = n.lastIndexOf(".");
-            if ( offset < 0 )
-                Avrora.userError("file "+StringUtil.quote(n)+" does not have an extension");
+            if (offset < 0)
+                Avrora.userError("file " + StringUtil.quote(n) + " does not have an extension");
 
             String extension = n.substring(offset).toLowerCase();
 
-            if ( extension.equals(".asm") )
+            if (extension.equals(".asm"))
                 return new AtmelProgramReader().read(args);
-            if ( extension.equals(".s") )
+            if (extension.equals(".s"))
                 return new GASProgramReader().read(args);
-            if ( extension.equals(".od") )
+            if (extension.equals(".od"))
                 return new ObjDumpProgramReader().read(args);
 
-            Avrora.userError("file extension "+StringUtil.quote(extension)+" unknown");
+            Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
             return null;
         }
 
@@ -332,7 +340,7 @@ public class Main {
                 args = options.getArguments();
 
 //                for (int cntr = 0; cntr < REPEAT.get(); cntr++)
-                    a.run(args);
+                a.run(args);
             }
 
         } catch (Avrora.Error e) {
@@ -476,11 +484,11 @@ public class Main {
     static void banner() {
         title();
         String notice;
-        if ( !LICENSE.get() )
+        if (!LICENSE.get())
             notice =
                     "This is a prototype simulator and analysis tool intended for evaluation " +
                     "and experimentation purposes only. It is provided with absolutely no " +
-                    "warranty, expressed or implied. For more information about the license "+
+                    "warranty, expressed or implied. For more information about the license " +
                     "that this software is provided to you under, specify the \"license\" " +
                     "option.\n\n";
         else
@@ -561,19 +569,23 @@ public class Main {
 
         while (i.hasNext()) {
             String val = (String) i.next();
-            if (val.charAt(0) == '$')
-                locset.add(new Location(StringUtil.evaluateIntegerLiteral(val)));
-            else {
-                Program.Label l = program.getLabel(val);
-                if (l == null) Avrora.userError("cannot find label " + StringUtil.quote(val) + " in specified program");
-                locset.add(new Location(l.name, l.address));
-            }
+            locset.add(getProgramLocation(val, program));
         }
 
         List loclist = Collections.list(Collections.enumeration(locset));
         Collections.sort(loclist, new LocationComparator());
 
         return loclist;
+    }
+
+    public static Location getProgramLocation(String val, Program program) {
+        if (val.charAt(0) == '$')
+            return (new Location(StringUtil.evaluateIntegerLiteral(val)));
+        else {
+            Program.Label l = program.getLabel(val);
+            if (l == null) Avrora.userError("cannot find label " + StringUtil.quote(val) + " in specified program");
+            return (new Location(l.name, l.address));
+        }
     }
 
     /**
@@ -622,6 +634,24 @@ public class Main {
         while (i.hasNext())
             Verbose.setVerbose((String) i.next(), true);
 
+    }
+
+    public static Program readProgram(String[] args) throws Exception {
+        ProgramReader reader = getProgramReader();
+        Program p = reader.read(args);
+
+        Iterator i = INDIRECT_EDGES.get().iterator();
+        while (i.hasNext()) {
+            String s = (String) i.next();
+            int ind = s.indexOf(":");
+            if (ind <= 0)
+                throw Avrora.failure("invalid indirect edge format: " + StringUtil.quote(s));
+            Location loc = getProgramLocation(s.substring(0, ind), p);
+            Location tar = getProgramLocation(s.substring(ind + 1), p);
+            p.addIndirectEdge(loc.address, tar.address);
+        }
+
+        return p;
     }
 
 }

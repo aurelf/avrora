@@ -41,10 +41,10 @@ import avrora.Avrora;
  */
 public class CustomAction extends Action {
     public static final String HELP = "The \"custom\" action allows a user to specify a Java class that " +
-                    "contains an action to run. This is useful for external actions that " +
-                    "are not part of the standard Avrora distribution. The \"class\" option " +
-                    "specifies which Java class to load, instantiate and run. This class " +
-                    "must extend the avrora.Main.Action class within Avrora.";
+            "contains an action to run. This is useful for external actions that " +
+            "are not part of the standard Avrora distribution. The \"class\" option " +
+            "specifies which Java class to load, instantiate and run. This class " +
+            "must extend the avrora.Main.Action class within Avrora.";
 
     public CustomAction() {
         super("custom", HELP);

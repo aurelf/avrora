@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 
 /**
@@ -91,5 +92,5 @@ public class VarAssignStmt extends AssignStmt {
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);
     }
-    
+
 }

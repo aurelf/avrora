@@ -65,7 +65,7 @@ public class CodeRegion {
         }
 
         public boolean isImmediate() {
-            return operandType.isImmediate();        
+            return operandType.isImmediate();
         }
 
     }

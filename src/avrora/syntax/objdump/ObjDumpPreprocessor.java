@@ -116,12 +116,12 @@ public class ObjDumpPreprocessor {
 
         while (line != null) {
             // ignore ... in output
-            if (line.indexOf("...") != - 1) {
+            if (line.indexOf("...") != -1) {
                 line = in.readLine();
                 continue;
             }
 
-            if ( line.indexOf("Address ") != -1 ) {
+            if (line.indexOf("Address ") != -1) {
                 line = line.substring(0, line.indexOf("Address "));
                 line += in.readLine();
             }
@@ -129,10 +129,9 @@ public class ObjDumpPreprocessor {
             int offset = line.indexOf("Disassembly of section");
             if (offset != -1) {
                 String section = line.substring(line.indexOf('.'), line.indexOf(':'));
-                out.append("\nstart "+section+":\n\n");
+                out.append("\nstart " + section + ":\n\n");
 
-            }
-            else {
+            } else {
 
                 if (isLabel(line)) {
                     out.append("\nlabel 0x");

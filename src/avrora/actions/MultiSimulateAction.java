@@ -40,7 +40,7 @@ import avrora.Avrora;
  */
 public class MultiSimulateAction extends Action {
     public static final String HELP = "The \"multi-simulate\" action launches a set of simulators with " +
-                    "the specified program loaded onto each.";
+            "the specified program loaded onto each.";
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);

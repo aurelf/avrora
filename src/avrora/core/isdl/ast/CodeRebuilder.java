@@ -47,36 +47,59 @@ import java.util.LinkedList;
 public interface CodeRebuilder {
 
     public Expr visit(Arith.AddExpr e);
+
     public Expr visit(Arith.AndExpr e);
+
     public Expr visit(Arith.CompExpr e);
+
     public Expr visit(Arith.DivExpr e);
+
     public Expr visit(Arith.MulExpr e);
+
     public Expr visit(Arith.NegExpr e);
+
     public Expr visit(Arith.OrExpr e);
+
     public Expr visit(Arith.ShiftLeftExpr e);
+
     public Expr visit(Arith.ShiftRightExpr e);
+
     public Expr visit(Arith.SubExpr e);
+
     public Expr visit(Arith.XorExpr e);
 
     public Expr visit(BitExpr e);
+
     public Expr visit(BitRangeExpr e);
+
     public Expr visit(CallExpr e);
 
     public Expr visit(Literal.BoolExpr e);
+
     public Expr visit(Literal.IntExpr e);
 
     public Expr visit(Logical.AndExpr e);
+
     public Expr visit(Logical.EquExpr e);
+
     public Expr visit(Logical.GreaterEquExpr e);
+
     public Expr visit(Logical.GreaterExpr e);
+
     public Expr visit(Logical.LessEquExpr e);
+
     public Expr visit(Logical.LessExpr e);
+
     public Expr visit(Logical.NequExpr e);
+
     public Expr visit(Logical.NotExpr e);
+
     public Expr visit(Logical.OrExpr e);
+
     public Expr visit(Logical.XorExpr e);
-    
+
     public Expr visit(MapExpr e);
+
     public Expr visit(VarExpr e);
 
 
@@ -92,89 +115,109 @@ public interface CodeRebuilder {
         public Expr visit(Arith.AddExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.AddExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.AddExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.AndExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.AndExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.AndExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.CompExpr e) {
             Expr o = e.operand.accept(this);
-            if ( o != e.operand ) return new Arith.CompExpr(o);
+            if (o != e.operand) return new Arith.CompExpr(o);
             return e;
         }
 
         public Expr visit(Arith.DivExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.DivExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.DivExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.MulExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.MulExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.MulExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.NegExpr e) {
             Expr o = e.operand.accept(this);
-            if ( o != e.operand ) return new Arith.NegExpr(o);
+            if (o != e.operand) return new Arith.NegExpr(o);
             return e;
         }
 
         public Expr visit(Arith.OrExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.OrExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.OrExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.ShiftLeftExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.ShiftLeftExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.ShiftLeftExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.ShiftRightExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.ShiftRightExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.ShiftRightExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.SubExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.SubExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.SubExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Arith.XorExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Arith.XorExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Arith.XorExpr(l, r);
+            else
+                return e;
         }
 
 
         public Expr visit(BitExpr e) {
             Expr i = e.expr.accept(this);
             Expr j = e.bit.accept(this);
-            if ( i != e.expr || j != e.bit ) return new BitExpr(i, j);
-            else return e;
+            if (i != e.expr || j != e.bit)
+                return new BitExpr(i, j);
+            else
+                return e;
         }
 
         public Expr visit(BitRangeExpr e) {
             Expr o = e.operand.accept(this);
-            if ( o != e.operand ) return new BitRangeExpr(o, e.low_bit, e.high_bit);
+            if (o != e.operand) return new BitRangeExpr(o, e.low_bit, e.high_bit);
             return e;
         }
 
@@ -183,21 +226,23 @@ public interface CodeRebuilder {
             boolean changed = false;
 
             Iterator i = l.iterator();
-            while ( i.hasNext() ) {
-                Expr a = (Expr)i.next();
+            while (i.hasNext()) {
+                Expr a = (Expr) i.next();
                 Expr na = a.accept(this);
-                if ( na != a ) changed = true;
+                if (na != a) changed = true;
                 nl.add(na);
             }
 
-            if ( changed ) return nl;
+            if (changed) return nl;
             return l;
         }
 
         public Expr visit(CallExpr e) {
             List nargs = visitExprList(e.args);
-            if ( nargs != e.args ) return new CallExpr(e.method,  nargs);
-            else return e;
+            if (nargs != e.args)
+                return new CallExpr(e.method, nargs);
+            else
+                return e;
         }
 
         public Expr visit(Literal.BoolExpr e) {
@@ -213,76 +258,94 @@ public interface CodeRebuilder {
         public Expr visit(Logical.AndExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.AndExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.AndExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.EquExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.EquExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.EquExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.GreaterEquExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.GreaterEquExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.GreaterEquExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.GreaterExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.GreaterExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.GreaterExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.LessEquExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.LessEquExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.LessEquExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.LessExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.LessExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.LessExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.NequExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.NequExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.NequExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.NotExpr e) {
             Expr ne = e.operand.accept(this);
-            if ( ne != e.operand ) return new Logical.NotExpr(ne);
+            if (ne != e.operand) return new Logical.NotExpr(ne);
             return e;
         }
 
         public Expr visit(Logical.OrExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.OrExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.OrExpr(l, r);
+            else
+                return e;
         }
 
         public Expr visit(Logical.XorExpr e) {
             Expr l = e.left.accept(this);
             Expr r = e.right.accept(this);
-            if ( l != e.left || r != e.right ) return new Logical.XorExpr(l, r);
-            else return e;
+            if (l != e.left || r != e.right)
+                return new Logical.XorExpr(l, r);
+            else
+                return e;
         }
 
 
         public Expr visit(MapExpr e) {
             Expr ne = e.index.accept(this);
-            if ( ne != e.index ) return new MapExpr(e.mapname, ne);
+            if (ne != e.index) return new MapExpr(e.mapname, ne);
             return e;
         }
 

@@ -79,7 +79,7 @@ public class InstrDecl extends CodeRegion {
         variant = v;
         cycles = Expr.tokenToInt(c);
         encoding = e;
-        className = "Instr."+StringUtil.trimquotes(name.image).toUpperCase();
+        className = "Instr." + StringUtil.trimquotes(name.image).toUpperCase();
     }
 
     public int getEncodingSize() {

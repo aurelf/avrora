@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
 import avrora.Avrora;
@@ -44,20 +45,19 @@ import avrora.Avrora;
  */
 public abstract class Expr {
 
-    public static final int PREC_L_OR    =  0;
-    public static final int PREC_L_XOR   =  1;
-    public static final int PREC_L_AND   =  2;
-    public static final int PREC_A_OR    =  3;
-    public static final int PREC_A_XOR   =  4;
-    public static final int PREC_A_AND   =  5;
-    public static final int PREC_L_EQU   =  6;
-    public static final int PREC_L_REL   =  7;
-    public static final int PREC_A_SHIFT =  8;
-    public static final int PREC_A_ADD   =  9;
-    public static final int PREC_A_MUL   = 10;
-    public static final int PREC_UN      = 11;
-    public static final int PREC_TERM    = 12;
-
+    public static final int PREC_L_OR = 0;
+    public static final int PREC_L_XOR = 1;
+    public static final int PREC_L_AND = 2;
+    public static final int PREC_A_OR = 3;
+    public static final int PREC_A_XOR = 4;
+    public static final int PREC_A_AND = 5;
+    public static final int PREC_L_EQU = 6;
+    public static final int PREC_L_REL = 7;
+    public static final int PREC_A_SHIFT = 8;
+    public static final int PREC_A_ADD = 9;
+    public static final int PREC_A_MUL = 10;
+    public static final int PREC_UN = 11;
+    public static final int PREC_TERM = 12;
 
 
     /**
@@ -137,7 +137,7 @@ public abstract class Expr {
      * @return the integer value of the token if it exists
      */
     public static int tokenToInt(Token i) {
-        if ( i == null ) return -1;
+        if (i == null) return -1;
         return StringUtil.evaluateIntegerLiteral(i.image);
     }
 
@@ -187,7 +187,9 @@ public abstract class Expr {
      * expression to a string and nesting it in parentheses if necessary
      */
     public String innerString(Expr e) {
-        if ( e.getPrecedence() < this.getPrecedence() ) return StringUtil.embed(e.toString());
-        else return e.toString();
+        if (e.getPrecedence() < this.getPrecedence())
+            return StringUtil.embed(e.toString());
+        else
+            return e.toString();
     }
 }

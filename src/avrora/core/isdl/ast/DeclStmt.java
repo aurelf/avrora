@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 
 /**
@@ -104,7 +105,7 @@ public class DeclStmt extends Stmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return "local "+name.image+" : "+type.image+" = "+init.toString()+";";
+        return "local " + name.image + " : " + type.image + " = " + init.toString() + ";";
     }
 
     /**

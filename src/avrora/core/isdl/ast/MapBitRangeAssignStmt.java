@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
 
@@ -122,7 +123,7 @@ public class MapBitRangeAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return StringUtil.embed("$"+mapname, index) + "[" + low_bit + ":" + high_bit + "]"
+        return StringUtil.embed("$" + mapname, index) + "[" + low_bit + ":" + high_bit + "]"
                 + " = " + expr + ";";
     }
 

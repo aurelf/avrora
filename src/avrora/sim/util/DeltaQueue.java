@@ -108,10 +108,10 @@ public class DeltaQueue {
 
                 if (pos.trigger == t) {
                     if (prev == null)
-                        // remove the whole thing.
+                    // remove the whole thing.
                         triggers = pos.next;
                     else
-                        // remove the "pos" link
+                    // remove the "pos" link
                         prev.next = pos.next;
 
                     free(pos);
@@ -190,9 +190,10 @@ public class DeltaQueue {
     }
 
     private void addAfter(Link prev, Simulator.Event t, long cycles, Link next) {
-        if ( prev != null )
+        if (prev != null)
             prev.next = newLink(t, cycles, next);
-        else head = newLink(t, cycles, next);
+        else
+            head = newLink(t, cycles, next);
     }
 
     /**
@@ -266,7 +267,7 @@ public class DeltaQueue {
      * @return the number of clock cycles until the first event will fire
      */
     public long getHeadDelta() {
-        if ( head != null ) return head.delta;
+        if (head != null) return head.delta;
         return -1;
     }
 

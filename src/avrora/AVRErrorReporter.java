@@ -44,7 +44,7 @@ import avrora.syntax.*;
  * that represents the error and throws it. One method per type of error
  * provides a convenient interface and allows pinpointing the generation
  * of each type of error within the verifier.
- * 
+ *
  * @author Ben L. Titzer
  */
 public class AVRErrorReporter extends ErrorReporter {
@@ -106,7 +106,7 @@ public class AVRErrorReporter extends ErrorReporter {
     }
 
     public void DataCannotBeInSegment(String seg, ASTNode loc) {
-        String report = "initialized data cannot be in "+seg+" segment";
+        String report = "initialized data cannot be in " + seg + " segment";
         error(report, "DataCannotBeInSegment", seg, point(loc));
     }
 

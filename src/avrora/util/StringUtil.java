@@ -331,9 +331,9 @@ public class StringUtil {
     public static String commalist(List l) {
         StringBuffer buf = new StringBuffer();
         Iterator i = l.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             buf.append(i.next().toString());
-            if ( i.hasNext() ) buf.append(',');
+            if (i.hasNext()) buf.append(',');
         }
         return buf.toString();
     }
@@ -346,7 +346,7 @@ public class StringUtil {
 
     public static void linelist(StringBuffer buf, List l) {
         Iterator i = l.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             buf.append(i.next().toString());
             buf.append('\n');
         }
@@ -503,7 +503,7 @@ public class StringUtil {
     public static String makeParagraphs(String s, int leftJust, int indent, int width) {
         int len = s.length();
         indent += leftJust;
-        int consumed = indent;
+        int consumed = indent + leftJust;
         String indstr = dup(' ', indent);
         String ljstr = dup(' ', leftJust);
         StringBuffer buf = new StringBuffer(indstr);
@@ -524,7 +524,7 @@ public class StringUtil {
             if (consumed > width) {
                 if (lastSp >= 0) {
                     buf.setCharAt(lastSp, '\n');
-                    buf.insert(lastSp+1, ljstr);
+                    buf.insert(lastSp + 1, ljstr);
                     consumed = buf.length() - lastSp + leftJust - 1;
                 }
             }

@@ -63,8 +63,7 @@ public class AnalyzeStackAction extends Action {
      * @throws java.lang.Exception if the program cannot be loaded correctly
      */
     public void run(String[] args) throws Exception {
-        Main.ProgramReader r = Main.getProgramReader();
-        Program p = r.read(args);
+        Program p = Main.readProgram(args);
         Analyzer a = new Analyzer(p);
 
         if (Main.TRACE.get()) Analyzer.TRACE = true;

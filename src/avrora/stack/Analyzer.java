@@ -37,9 +37,12 @@ import avrora.core.Program;
 import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.Avrora;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Iterator;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines
@@ -61,15 +64,15 @@ public class Analyzer {
     int maxDepth;
 
     public final int NORMAL_EDGE = 0;
-    public final int PUSH_EDGE   = 1;
-    public final int POP_EDGE    = 2;
-    public final int CALL_EDGE   = 3;
-    public final int INT_EDGE    = 4;
-    public final int RET_EDGE    = 5;
-    public final int RETI_EDGE   = 6;
-    public final int SPECIAL_EDGE   = 7;
+    public final int PUSH_EDGE = 1;
+    public final int POP_EDGE = 2;
+    public final int CALL_EDGE = 3;
+    public final int INT_EDGE = 4;
+    public final int RET_EDGE = 5;
+    public final int RETI_EDGE = 6;
+    public final int SPECIAL_EDGE = 7;
 
-    public final String[] EDGE_NAMES = { "", "PUSH", "POP", "CALL", "INT", "RET", "RETI", "SPECIAL" };
+    public final String[] EDGE_NAMES = {"", "PUSH", "POP", "CALL", "INT", "RET", "RETI", "SPECIAL"};
 
     protected final StateSpace.SpecialState returnState;
     protected final StateSpace.SpecialState returnIState;
@@ -166,28 +169,28 @@ public class Analyzer {
         stack.put(s, new Integer(depth));
 
         int maxdepth = 0;
-        for ( StateSpace.Link link = s.outgoing; link != null; link = link.next ) {
+        for (StateSpace.Link link = s.outgoing; link != null; link = link.next) {
 
             StateSpace.State t = link.target;
             if (stack.containsKey(t)) {
                 // cycle detected. check that the depth when reentering is the same
-                int prevdepth = ((Integer)stack.get(t)).intValue();
+                int prevdepth = ((Integer) stack.get(t)).intValue();
                 if (depth + link.weight != prevdepth)
                     throw new UnboundedStackException();
             } else {
                 int extra = link.weight; // maximum added stack depth by following this link
 
-                if ( link.target.mark instanceof Integer ) {
+                if (link.target.mark instanceof Integer) {
                     // node has already been visited and marked with the
                     // maximum amount of stack depth that it can add.
-                    extra += ((Integer)link.target.mark).intValue();
+                    extra += ((Integer) link.target.mark).intValue();
                 } else {
                     // node has not been seen before, traverse it
                     extra += traverse(link.target, stack, depth + link.weight);
                 }
 
                 // remember the most added stack depth from following any of the links
-                if ( extra > maxdepth ) maxdepth = extra;
+                if (extra > maxdepth) maxdepth = extra;
             }
         }
         // we are finished with this node, remember how much deeper it can take us
@@ -374,7 +377,18 @@ public class Analyzer {
          *         the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState indirectCall(MutableState s, char addr_low, char addr_hi) {
-            throw new Error("indirect calls not supported");
+            int callsite = s.pc;
+            List iedges = program.getIndirectEdges(callsite);
+            if (iedges == null)
+                throw Avrora.failure("No control flow information for indirect jump at: " +
+                        StringUtil.addrToString(callsite));
+            Iterator i = iedges.iterator();
+            while (i.hasNext()) {
+                int target_address = ((Integer) i.next()).intValue();
+                call(s, target_address);
+            }
+
+            return null;
         }
 
         /**
@@ -390,7 +404,19 @@ public class Analyzer {
          *         the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState indirectJump(MutableState s, char addr_low, char addr_hi) {
-            throw new Error("indirect jumps not supported");
+            int callsite = s.pc;
+            List iedges = program.getIndirectEdges(callsite);
+            if (iedges == null)
+                throw Avrora.failure("No control flow information for indirect call at: " +
+                        StringUtil.addrToString(callsite));
+            Iterator i = iedges.iterator();
+            while (i.hasNext()) {
+                int target_address = ((Integer) i.next()).intValue();
+                s.setPC(target_address);
+                pushState(s);
+            }
+
+            return null;
         }
 
         /**
@@ -471,12 +497,12 @@ public class Analyzer {
 
         private void pushFrontier(StateSpace.State t, FrontierInfo.CallSiteList l) {
             // CASE 4: self loop
-            if ( t == frontierState.state ) return;
+            if (t == frontierState.state) return;
 
             if (space.isExplored(t)) {
                 // CASE 3: state is already explored
                 retraverseExploredSpace(t, l);
-            } else if ( space.isFrontier(t) ) {
+            } else if (space.isFrontier(t)) {
                 // CASE 2: state is already on frontier
                 mergeFrontierStateLists(t, l);
             } else {
@@ -500,22 +526,22 @@ public class Analyzer {
 
         // propagate call sites to all reachable return states
         private void propagate(StateSpace.State t, FrontierInfo.CallSiteList newCalls, Object mark) {
-            if ( t.mark == mark ) return;
+            if (t.mark == mark) return;
             t.mark = mark;
 
-            for ( StateSpace.Link link = t.outgoing; link != null; link = link.next ) {
+            for (StateSpace.Link link = t.outgoing; link != null; link = link.next) {
 
                 // do not follow call edges
-                if ( link.type == CALL_EDGE ) continue;
+                if (link.type == CALL_EDGE) continue;
 
                 StateSpace.State r = link.target;
-                if ( r == returnState ) {
+                if (r == returnState) {
                     // add return edge
                     addReturnEdges(t.copy(), newCalls);
-                } else if ( r == returnIState ) {
+                } else if (r == returnIState) {
                     // add return from interrupt edge
                     addInterruptReturnEdges(t.copy(), newCalls);
-                } else if ( space.isFrontier(r) ) {
+                } else if (space.isFrontier(r)) {
                     // encountered a frontier state, merge callsites
                     mergeFrontierStateLists(r, newCalls);
                 } else {
@@ -538,6 +564,9 @@ public class Analyzer {
 
     private void traceState(StateSpace.State s) {
         if (TRACE) {
+            Terminal.print("Exploring ");
+            printStateName(s);
+            Terminal.nextln();
             Instr instr = program.readInstr(s.getPC());
             String str = StringUtil.leftJustify(instr.toString(), 14);
             printState(str, s);
@@ -549,8 +578,7 @@ public class Analyzer {
             String str;
             if (space.isExplored(s)) {
                 str = "        E ==> ";
-            }
-            else if (space.isFrontier(s)) {
+            } else if (space.isFrontier(s)) {
                 str = "        F ==> ";
 
             } else {
@@ -562,6 +590,7 @@ public class Analyzer {
 
     private void traceEdge(int type, StateSpace.State s, StateSpace.State t, int weight) {
         if (!TRACE) return;
+        Terminal.print("adding edge ");
         printStateName(s);
         Terminal.print(" --(");
         Terminal.print(EDGE_NAMES[type]);
@@ -624,8 +653,9 @@ public class Analyzer {
     }
 
     private String toString(char av) {
-        if ( av == AbstractArithmetic.ZERO ) return "       0";
-        else if ( av == AbstractArithmetic.UNKNOWN ) return "       .";
+        if (av == AbstractArithmetic.ZERO)
+            return "       0";
+        else if (av == AbstractArithmetic.UNKNOWN) return "       .";
         return AbstractArithmetic.toString(av);
     }
 

@@ -37,6 +37,8 @@ import avrora.core.InstrVisitor;
 import avrora.core.Program;
 import avrora.core.Register;
 import avrora.sim.IORegisterConstants;
+import avrora.Avrora;
+import avrora.util.StringUtil;
 
 /**
  * The <code>AbstractInterpreter</code> class implements the abstract transfer
@@ -91,7 +93,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         }
 
         int pc = state.getPC();
-        Instr i = program.readInstr(pc);
+        Instr i = readInstr(pc);
         i.accept(this);
 
         if (state != null) {
@@ -99,6 +101,15 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
             state.setPC(pc + i.getSize());
             policy.pushState(state);
         }
+    }
+
+    private Instr readInstr(int pc) {
+        if (pc >= program.program_end)
+            throw Avrora.failure("PC beyond end of program: " + StringUtil.addrToString(pc));
+        Instr i = program.readInstr(pc);
+        if (i == null)
+            throw Avrora.failure("Misaligned instruction access at PC: " + StringUtil.addrToString(pc));
+        return i;
     }
 
     //-----------------------------------------------------------------------
@@ -863,10 +874,13 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
         // if condition is definately true, then the not taken branch is dead
         if (cond == TRUE) state = null;
-     }
+    }
 
     private void skipOnCondition(char cond) {
-        branchOnCondition(cond, program.readInstr(state.getPC()).getSize());
+        int pc = state.getPC();
+        int npc = pc + 2;
+        int offset = program.readInstr(npc).getSize() / 2;
+        branchOnCondition(cond, offset);
     }
 
     private void relativeBranch(MutableState s, int offset) {

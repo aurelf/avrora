@@ -99,7 +99,7 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
 
         public avrora.core.Register getRegister() {
             // sanity check to avoid possibly hard to find bugs in the future
-            if ( !simplified ) throw Avrora.failure("register operand not yet simplified: "+name);
+            if (!simplified) throw Avrora.failure("register operand not yet simplified: " + name);
             return register;
         }
 
@@ -109,7 +109,7 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
         }
 
         public String toString() {
-            return "reg:"+name.image;
+            return "reg:" + name.image;
         }
 
     }
@@ -138,13 +138,13 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
 
         public int getValue() {
             // sanity check to avoid possibly hard to find bugs in the future
-            if ( !simplified ) throw Avrora.failure("expression operand not yet simplified: "+expr);
+            if (!simplified) throw Avrora.failure("expression operand not yet simplified: " + expr);
             return value;
         }
 
         public int getValueAsWord() {
-            if ( !simplified ) throw Avrora.failure("expression operand not yet simplified: "+expr);
-            if ( !useByteAddress ) // already using a word address for this.
+            if (!simplified) throw Avrora.failure("expression operand not yet simplified: " + expr);
+            if (!useByteAddress) // already using a word address for this.
                 return value;
             else {
                 return (value >> 1);

@@ -75,7 +75,7 @@ public class RawModule extends Module {
     }
 
     public void enterSection(AbstractToken sect) {
-        section = (Section)sectionMap.get(sect.image);
+        section = (Section) sectionMap.get(sect.image);
     }
 
     public void addBytes(AbstractToken b1, AbstractToken b2) {

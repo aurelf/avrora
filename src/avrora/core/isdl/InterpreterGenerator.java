@@ -59,9 +59,13 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
     protected abstract class MapRep {
         public abstract void generateWrite(Expr ind, Expr val);
+
         public abstract void generateBitWrite(Expr ind, Expr b, Expr val);
+
         public abstract void generateRead(Expr ind);
+
         public abstract void generateBitRead(Expr ind, Expr b);
+
         public abstract void generateBitRangeWrite(Expr ind, int l, int h, Expr val);
     }
 
@@ -82,9 +86,9 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
             // TODO: extract out index value if it is not a simple expression
-            printer.print(writeMeth+"(");
+            printer.print(writeMeth + "(");
             ind.accept(codeGen);
-            printer.print(", Arithmetic.setBit("+readMeth+"(");
+            printer.print(", Arithmetic.setBit(" + readMeth + "(");
             ind.accept(codeGen);
             printer.print("), ");
             b.accept(codeGen);
@@ -98,7 +102,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         }
 
         public void generateBitRead(Expr ind, Expr b) {
-            printer.print("Arithmetic.getBit("+readMeth+"(");
+            printer.print("Arithmetic.getBit(" + readMeth + "(");
             ind.accept(codeGen);
             printer.print("), ");
             b.accept(codeGen);
@@ -106,17 +110,17 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         }
 
         public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-            if ( ind.isVariable() || ind.isLiteral() ) {
-                String var = (String)operandMap.get(ind.toString());
-                if ( var == null ) var = ind.toString();
-                printer.print(writeMeth+"("+var+", ");
+            if (ind.isVariable() || ind.isLiteral()) {
+                String var = (String) operandMap.get(ind.toString());
+                if (var == null) var = ind.toString();
+                printer.print(writeMeth + "(" + var + ", ");
                 int mask = getBitRangeMask(l, h);
                 int smask = mask << l;
                 int imask = ~smask;
-                printer.print("("+readMeth+"("+var+")"+andString(imask) + ")");
+                printer.print("(" + readMeth + "(" + var + ")" + andString(imask) + ")");
                 printer.print(" | (");
                 emitAnd(val, mask);
-                if ( l != 0 ) printer.print(" << " + l);
+                if (l != 0) printer.print(" << " + l);
                 printer.println(");");
             } else {
                 throw Avrora.failure("non-constant index into map in bit-range assignment");
@@ -172,31 +176,31 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         printer.indent();
         // process all the instruction declarations
         Iterator i = architecture.getInstrIterator();
-        while ( i.hasNext() ) {
-            InstrDecl d = (InstrDecl)i.next();
+        while (i.hasNext()) {
+            InstrDecl d = (InstrDecl) i.next();
             generateCode(d);
         }
 
         // process all the subroutine declarations
         i = architecture.getSubroutineIterator();
-        while ( i.hasNext() ) {
-            SubroutineDecl d = (SubroutineDecl)i.next();
-            if ( !d.inline && d.hasBody() ) generateCode(d);
+        while (i.hasNext()) {
+            SubroutineDecl d = (SubroutineDecl) i.next();
+            if (!d.inline && d.hasBody()) generateCode(d);
         }
         printer.unindent();
     }
 
     public void generateCode(InstrDecl d) {
-        printer.startblock("public void visit("+d.getClassName()+" i) ");
+        printer.startblock("public void visit(" + d.getClassName() + " i) ");
         // emit the default next pc computation
-        printer.println("nextPC = pc + "+(d.getEncodingSize()/8)+";");
+        printer.println("nextPC = pc + " + (d.getEncodingSize() / 8) + ";");
 
         // initialize the map of local variables to operands
         initializeOperandMap(d);
         // emit the code of the body
         visitStmtList(d.getCode());
         // emit the cycle count update
-        printer.println("cyclesConsumed += "+d.cycles+";");
+        printer.println("cyclesConsumed += " + d.cycles + ";");
         printer.endblock();
     }
 
@@ -206,14 +210,14 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
         operandMap = new HashMap();
         Iterator i = d.getOperandIterator();
-        while ( i.hasNext() ) {
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+        while (i.hasNext()) {
+            CodeRegion.Operand o = (CodeRegion.Operand) i.next();
 
             String name = "i.";
-            if ( o.isRegister() ) {
-                name += "r"+(++regcount);
-            } else if ( o.isImmediate() ) {
-                name += "imm"+(++immcount);
+            if (o.isRegister()) {
+                name += "r" + (++regcount);
+            } else if (o.isImmediate()) {
+                name += "imm" + (++immcount);
             } else {
                 name += o.name.image;
             }
@@ -223,12 +227,12 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
     }
 
     public void generateCode(SubroutineDecl d) {
-        printer.print("public "+d.ret.image+" "+d.name.image+"(");
+        printer.print("public " + d.ret.image + " " + d.name.image + "(");
         Iterator i = d.getOperandIterator();
-        while ( i.hasNext() ) {
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-            printer.print(o.type.image+" "+o.name.image);
-            if ( i.hasNext() ) printer.print(", ");
+        while (i.hasNext()) {
+            CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+            printer.print(o.type.image + " " + o.name.image);
+            if (i.hasNext()) printer.print(", ");
         }
         printer.print(") ");
         printer.startblock();
@@ -238,13 +242,13 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
 
     public void visit(CallStmt s) {
-        printer.print(s.method.image+"(");
+        printer.print(s.method.image + "(");
         codeGen.visitExprList(s.args);
         printer.println(");");
     }
 
     public void visit(DeclStmt s) {
-        printer.print(s.type.image+" "+s.name.image+" = ");
+        printer.print(s.type.image + " " + s.name.image + " = ");
         s.init.accept(codeGen);
         printer.println(";");
     }
@@ -277,9 +281,9 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
     }
 
     private MapRep getMapRep(String n) {
-        MapRep mr = (MapRep)mapMap.get(n);
-        if ( mr == null )
-            throw Avrora.failure("unknown map "+ StringUtil.quote(n));
+        MapRep mr = (MapRep) mapMap.get(n);
+        if (mr == null)
+            throw Avrora.failure("unknown map " + StringUtil.quote(n));
         return mr;
     }
 
@@ -291,14 +295,14 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
     public void visit(VarAssignStmt s) {
         String var = getVariable(s.variable);
-        printer.print(var+ " = ");
+        printer.print(var + " = ");
         s.expr.accept(codeGen);
         printer.println(";");
     }
 
     public void visit(VarBitAssignStmt s) {
         String var = getVariable(s.variable);
-        printer.print(var+" = ");
+        printer.print(var + " = ");
         emitCall("Arithmetic.setBit", var, s.bit, s.expr);
         printer.println(";");
     }
@@ -311,40 +315,40 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         printer.print(var + " = (" + var + andString(imask) + ")");
         printer.print(" | (");
         emitAnd(s.expr, mask);
-        if ( s.low_bit != 0 ) printer.print(" << "+s.low_bit);
+        if (s.low_bit != 0) printer.print(" << " + s.low_bit);
         printer.println(");");
     }
 
     private String getVariable(Token variable) {
-        String var = (String)operandMap.get(variable.image);
-        if ( var == null ) var = variable.image;
+        String var = (String) operandMap.get(variable.image);
+        if (var == null) var = variable.image;
         return var;
     }
 
     private void emitBinOp(Expr e, String op, int p, int val) {
         printer.print("(");
         codeGen.inner(e, p);
-        printer.print(" "+op+" "+val+")");
+        printer.print(" " + op + " " + val + ")");
     }
 
     private String andString(int mask) {
-        return " & 0x"+StringUtil.toHex(mask,8);
+        return " & 0x" + StringUtil.toHex(mask, 8);
     }
 
     private void emitAnd(Expr e, int val) {
         printer.print("(");
         codeGen.inner(e, Expr.PREC_A_AND);
-        printer.print(andString(val)+")");
+        printer.print(andString(val) + ")");
     }
 
     private void emitCall(String s, Expr e) {
-        printer.print(s+"(");
+        printer.print(s + "(");
         e.accept(codeGen);
         printer.print(")");
     }
 
     private void emitCall(String s, Expr e1, Expr e2) {
-        printer.print(s+"(");
+        printer.print(s + "(");
         e1.accept(codeGen);
         printer.print(", ");
         e2.accept(codeGen);
@@ -352,7 +356,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
     }
 
     private void emitCall(String s, Expr e1, Expr e2, Expr e3) {
-        printer.print(s+"(");
+        printer.print(s + "(");
         e1.accept(codeGen);
         printer.print(", ");
         e2.accept(codeGen);
@@ -362,7 +366,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
     }
 
     private void emitCall(String s, String e1, Expr e2, Expr e3) {
-        printer.print(s+"("+e1+", ");
+        printer.print(s + "(" + e1 + ", ");
         e2.accept(codeGen);
         printer.print(", ");
         e3.accept(codeGen);
@@ -370,7 +374,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
     }
 
     private void emitCall(String s, String e1, Expr e2) {
-        printer.print(s+"("+e1+", ");
+        printer.print(s + "(" + e1 + ", ");
         e2.accept(codeGen);
         printer.print(")");
     }
@@ -378,7 +382,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
     public class CodeGenerator implements CodeVisitor {
 
         private void inner(Expr e, int outerPrecedence) {
-            if ( e.getPrecedence() < outerPrecedence ) {
+            if (e.getPrecedence() < outerPrecedence) {
                 printer.print("(");
                 e.accept(this);
                 printer.print(")");
@@ -389,7 +393,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
         private void binop(String op, Expr left, Expr right, int p) {
             inner(left, p);
-            printer.print(" "+op+" ");
+            printer.print(" " + op + " ");
             inner(right, p);
         }
 
@@ -441,16 +445,16 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
 
         public void visit(BitExpr e) {
-            if ( e.expr.isMap() ) {
-                MapExpr me = (MapExpr)e.expr;
+            if (e.expr.isMap()) {
+                MapExpr me = (MapExpr) e.expr;
                 MapRep mr = getMapRep(me.mapname.image);
                 mr.generateBitRead(me.index, e.bit);
             } else {
-                if ( e.bit.isLiteral() ) {
-                    int mask = getSingleBitMask(((Literal.IntExpr)e.bit).value);
+                if (e.bit.isLiteral()) {
+                    int mask = getSingleBitMask(((Literal.IntExpr) e.bit).value);
                     printer.print("((");
-                    inner(e.expr,  Expr.PREC_A_ADD);
-                    printer.print(" & "+mask+") != 0");
+                    inner(e.expr, Expr.PREC_A_ADD);
+                    printer.print(" & " + mask + ") != 0");
                     printer.print(")");
                 } else {
                     emitCall("Arithmetic.getBit", e.expr, e.bit);
@@ -461,27 +465,27 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         public void visit(BitRangeExpr e) {
             int mask = getBitRangeMask(e.low_bit, e.high_bit);
             int low = e.low_bit;
-            if ( low != 0 ) {
+            if (low != 0) {
                 printer.print("(");
                 emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
-                printer.print(" & 0x"+StringUtil.toHex(mask, 8)+")");
+                printer.print(" & 0x" + StringUtil.toHex(mask, 8) + ")");
             } else {
                 emitAnd(e.operand, mask);
             }
         }
 
         public void visit(CallExpr e) {
-            printer.print(e.method.image+"(");
+            printer.print(e.method.image + "(");
             visitExprList(e.args);
             printer.print(")");
         }
 
         private void visitExprList(List l) {
             Iterator i = l.iterator();
-            while ( i.hasNext() ) {
-                Expr a = (Expr)i.next();
+            while (i.hasNext()) {
+                Expr a = (Expr) i.next();
                 a.accept(this);
-                if ( i.hasNext() ) printer.print(", ");
+                if (i.hasNext()) printer.print(", ");
             }
         }
 

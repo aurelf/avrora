@@ -46,14 +46,23 @@ import java.util.LinkedList;
 public interface StmtRebuilder extends CodeRebuilder {
 
     public Stmt visit(CallStmt s);
+
     public Stmt visit(DeclStmt s);
+
     public Stmt visit(IfStmt s);
+
     public Stmt visit(MapAssignStmt s);
+
     public Stmt visit(MapBitAssignStmt s);
+
     public Stmt visit(MapBitRangeAssignStmt s);
+
     public Stmt visit(ReturnStmt s);
+
     public Stmt visit(VarAssignStmt s);
+
     public Stmt visit(VarBitAssignStmt s);
+
     public Stmt visit(VarBitRangeAssignStmt s);
 
     /**
@@ -66,15 +75,18 @@ public interface StmtRebuilder extends CodeRebuilder {
     public class DepthFirst extends CodeRebuilder.DepthFirst implements StmtRebuilder {
         public Stmt visit(CallStmt s) {
             List na = visitExprList(s.args);
-            if ( na != s.args )
+            if (na != s.args)
                 return new CallStmt(s.method, na);
-            else return s;
+            else
+                return s;
         }
 
         public Stmt visit(DeclStmt s) {
             Expr ni = s.init.accept(this);
-            if ( ni != s.init ) return new DeclStmt(s.name, s.type, ni);
-            else return s;
+            if (ni != s.init)
+                return new DeclStmt(s.name, s.type, ni);
+            else
+                return s;
         }
 
         public Stmt visit(IfStmt s) {
@@ -82,9 +94,10 @@ public interface StmtRebuilder extends CodeRebuilder {
             List nt = visitStmtList(s.trueBranch);
             List nf = visitStmtList(s.falseBranch);
 
-            if ( nc != s.cond || nt != s.trueBranch || nf != s.falseBranch )
+            if (nc != s.cond || nt != s.trueBranch || nf != s.falseBranch)
                 return new IfStmt(nc, nt, nf);
-            else return s;
+            else
+                return s;
         }
 
         public List visitStmtList(List l) {
@@ -92,70 +105,77 @@ public interface StmtRebuilder extends CodeRebuilder {
             boolean changed = false;
 
             Iterator i = l.iterator();
-            while ( i.hasNext() ) {
-                Stmt a = (Stmt)i.next();
+            while (i.hasNext()) {
+                Stmt a = (Stmt) i.next();
                 Stmt na = a.accept(this);
-                if ( na != a ) changed = true;
+                if (na != a) changed = true;
                 nl.add(na);
             }
 
-            if ( changed ) return nl;
+            if (changed) return nl;
             return l;
         }
 
         public Stmt visit(MapAssignStmt s) {
             Expr ni = s.index.accept(this);
             Expr ne = s.expr.accept(this);
-            if ( ni != s.index || ne != s.expr )
+            if (ni != s.index || ne != s.expr)
                 return new MapAssignStmt(s.mapname, ni, ne);
-            else return s;
+            else
+                return s;
         }
 
         public Stmt visit(MapBitAssignStmt s) {
             Expr ni = s.index.accept(this);
             Expr nb = s.bit.accept(this);
             Expr ne = s.expr.accept(this);
-            if ( ni != s.index || nb != s.bit || ne != s.expr )
+            if (ni != s.index || nb != s.bit || ne != s.expr)
                 return new MapBitAssignStmt(s.mapname, ni, nb, ne);
-            else return s;
+            else
+                return s;
         }
 
         public Stmt visit(MapBitRangeAssignStmt s) {
             Expr ni = s.index.accept(this);
             Expr ne = s.expr.accept(this);
-            if ( ni != s.index || ne != s.expr )
+            if (ni != s.index || ne != s.expr)
                 return new MapBitRangeAssignStmt(s.mapname, ni, s.low_bit, s.high_bit, ne);
-            else return s;
+            else
+                return s;
         }
 
         public Stmt visit(ReturnStmt s) {
             Expr ne = s.expr.accept(this);
-            if ( ne != s.expr )
+            if (ne != s.expr)
                 return new ReturnStmt(ne);
-            else return s;
+            else
+                return s;
         }
 
         public Stmt visit(VarAssignStmt s) {
             Expr ne = s.expr.accept(this);
-            if ( ne != s.expr )
+            if (ne != s.expr)
                 return new VarAssignStmt(s.variable, ne);
-            else return s;
+            else
+                return s;
         }
 
         public Stmt visit(VarBitAssignStmt s) {
             Expr ne = s.expr.accept(this);
             Expr nb = s.bit.accept(this);
-            if ( ne != s.expr || nb != s.bit )
+            if (ne != s.expr || nb != s.bit)
                 return new VarBitAssignStmt(s.variable, nb, ne);
-            else return s;
+            else
+                return s;
         }
 
         public Stmt visit(VarBitRangeAssignStmt s) {
             Expr ne = s.expr.accept(this);
-            if ( ne != s.expr )
+            if (ne != s.expr)
                 return new VarBitRangeAssignStmt(s.variable, s.low_bit, s.high_bit, ne);
-            else return s;
+            else
+                return s;
         }
-        
+
     }
 }

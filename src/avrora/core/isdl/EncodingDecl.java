@@ -73,7 +73,7 @@ public class EncodingDecl {
         }
 
         public int getBitWidth() {
-            if ( bitWidth < 0 )
+            if (bitWidth < 0)
                 bitWidth = parent.getBitWidth();
             return bitWidth;
         }
@@ -81,7 +81,7 @@ public class EncodingDecl {
     }
 
     public int getBitWidth() {
-        if ( bitWidth < 0 )
+        if (bitWidth < 0)
             bitWidth = computeBitWidth();
         return bitWidth;
     }
@@ -89,8 +89,8 @@ public class EncodingDecl {
     private int computeBitWidth() {
         int accum = 0;
         Iterator i = fields.iterator();
-        while ( i.hasNext() ) {
-            Expr e = (Expr)i.next();
+        while (i.hasNext()) {
+            Expr e = (Expr) i.next();
             accum += e.getBitWidth();
         }
         return accum;

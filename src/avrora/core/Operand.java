@@ -85,6 +85,7 @@ public interface Operand {
     public interface Constant extends Operand {
 
         public int getValue();
+
         public int getValueAsWord();
     }
 }

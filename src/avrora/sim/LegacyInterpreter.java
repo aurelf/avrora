@@ -79,7 +79,7 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
                 // that at least one instruction is executed after
                 // returning from an interrupt.
                 justReturnedFromInterrupt = false;
-            } else if ( I ) {
+            } else if (I) {
 
                 // check if there are any pending (posted) interrupts
                 if (postedInterrupts != 0) {
@@ -105,9 +105,9 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
                 }
             }
 
-            if ( sleeping ) {
+            if (sleeping) {
                 long delta = simulator.eventQueue.getHeadDelta();
-                if ( delta <= 0 ) delta = 1;
+                if (delta <= 0) delta = 1;
                 advanceCycles(delta);
             } else {
                 // get the current instruction

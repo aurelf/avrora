@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
 
@@ -107,7 +108,7 @@ public class MapExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return StringUtil.embed("$"+mapname, index);
+        return StringUtil.embed("$" + mapname, index);
     }
 
     /**

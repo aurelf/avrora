@@ -100,5 +100,5 @@ public class VarBitAssignStmt extends AssignStmt {
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);
     }
-    
+
 }

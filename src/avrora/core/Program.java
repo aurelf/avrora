@@ -38,6 +38,8 @@ import avrora.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>Program</code> class represents a complete program of AVR
@@ -227,7 +229,7 @@ public class Program {
         public byte readProgramByte(int address) {
             try {
                 return imp_data[address - imp_start];
-            } catch (ArrayIndexOutOfBoundsException e ) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 return 0;
             }
         }
@@ -244,21 +246,21 @@ public class Program {
         public void writeProgramByte(byte val, int address) {
             try {
                 imp_data[address - imp_start] = val;
-            } catch ( ArrayIndexOutOfBoundsException e ) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 // writing beyond the end of flash is ignored
-                if ( address < 0 || address >= imp_max ) return;
+                if (address < 0 || address >= imp_max) return;
                 resize(address);
                 imp_data[address - imp_start] = val;
             }
         }
 
         private void resize(int address) {
-            if ( address < imp_start )
+            if (address < imp_start)
                 realloc(imp_data, imp_instrs, address, imp_start + imp_data.length);
             else {
                 // allocate 256 more bytes at the end
                 address += 256;
-                if ( address > imp_max ) address = imp_max;
+                if (address > imp_max) address = imp_max;
                 realloc(imp_data, imp_instrs, imp_start, address);
 
             }
@@ -278,7 +280,7 @@ public class Program {
         public Instr readInstr(int address) {
             try {
                 return imp_instrs[address - imp_start];
-            } catch (ArrayIndexOutOfBoundsException e ) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 return NOP;
             }
         }
@@ -296,9 +298,9 @@ public class Program {
         public void writeInstr(Instr i, int address) {
             try {
                 imp_instrs[address - imp_start] = i;
-            } catch ( ArrayIndexOutOfBoundsException e ) {
+            } catch (ArrayIndexOutOfBoundsException e) {
                 // writing beyond the end of flash is ignored
-                if ( address < 0 || address >= imp_max ) return;
+                if (address < 0 || address >= imp_max) return;
                 resize(address);
                 imp_instrs[address - imp_start] = i;
             }
@@ -313,6 +315,8 @@ public class Program {
     }
 
     private final HashMap labels;
+
+    private final HashMap indirectEdges;
 
     /**
      * The <code>program_start</code> field records the lowest address in the
@@ -361,7 +365,7 @@ public class Program {
      * the raw data (bytes) of the program segment. NO EFFORT IS MADE IN THIS CLASS
      * TO KEEP THIS CONSISTENT WITH THE INSTRUCTION REPRESENTATIONS.
      */
-    protected final byte[]  data;
+    protected final byte[] data;
 
     /**
      * The <code>instrs</code> field stores a reference to the array that contains
@@ -402,6 +406,7 @@ public class Program {
         instrs = new Instr[program_end - program_start];
 
         labels = new HashMap();
+        indirectEdges = new HashMap();
     }
 
     /**
@@ -560,6 +565,26 @@ public class Program {
             throw Avrora.failure("address out of range: " + addr);
     }
 
+    public List getIndirectEdges(int callsite) {
+        return (List) indirectEdges.get(new Integer(callsite));
+    }
+
+    public void addIndirectEdge(int callsite, int target) {
+        Integer c = new Integer(callsite);
+        Integer t = new Integer(target);
+
+        List l = (List) indirectEdges.get(c);
+
+        if (l == null) {
+            l = new LinkedList();
+            l.add(t);
+            indirectEdges.put(c, l);
+        } else {
+            l.add(t);
+        }
+
+    }
+
     /**
      * The <code>dump()</code> method prints out a textual dump of the program. It
      * is useful for debugging the program building process.
@@ -592,7 +617,7 @@ public class Program {
 
         Instr i = instrs[cursor];
 
-        if ( i != null ) {
+        if (i != null) {
             p.println(i.getVariant() + " " + i.getOperands());
 
             return i.getSize();
@@ -626,4 +651,12 @@ public class Program {
         }
     }
 
+    private ControlFlowGraph cfg;
+
+    public synchronized ControlFlowGraph getCFG() {
+        if ( cfg == null ) {
+            cfg = new CFGBuilder(this).buildCFG();
+        }
+        return cfg;
+    }
 }

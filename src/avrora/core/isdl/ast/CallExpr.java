@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
 
@@ -121,6 +122,6 @@ public class CallExpr extends Expr {
      * numbers are higher precedence
      */
     public int getPrecedence() {
-        return PREC_TERM; 
+        return PREC_TERM;
     }
 }

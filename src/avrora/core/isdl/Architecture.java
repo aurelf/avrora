@@ -46,7 +46,7 @@ import java.util.Iterator;
 /**
  * The <code>Architecture</code> class represents a collection of
  * instructions, encodings, operands, and subroutines that describe
- * an instruction set architecture. 
+ * an instruction set architecture.
  *
  * @author Ben L. Titzer
  */
@@ -83,27 +83,27 @@ public class Architecture {
 
     private void processEncodings() {
         Iterator i = getEncodingIterator();
-        while ( i.hasNext() ) {
-            EncodingDecl d = (EncodingDecl)i.next();
-            if ( printer.enabled ) {
-                printer.print("processing encoding "+d.name.image+" ");
+        while (i.hasNext()) {
+            EncodingDecl d = (EncodingDecl) i.next();
+            if (printer.enabled) {
+                printer.print("processing encoding " + d.name.image + " ");
             }
 
-            if ( d instanceof EncodingDecl.Derived ) {
-                EncodingDecl.Derived dd = (EncodingDecl.Derived)d;
-                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
+            if (d instanceof EncodingDecl.Derived) {
+                EncodingDecl.Derived dd = (EncodingDecl.Derived) d;
+                EncodingDecl parent = (EncodingDecl) encodingMap.get(dd.pname.image);
                 dd.setParent(parent);
             }
 
-            printer.println("-> result: "+d.getBitWidth()+" bits");
+            printer.println("-> result: " + d.getBitWidth() + " bits");
         }
     }
 
     private void processInstructions() {
         Iterator i = getInstrIterator();
-        while ( i.hasNext() ) {
-            InstrDecl id = (InstrDecl)i.next();
-            printer.print("processing instruction "+id.name+" ");
+        while (i.hasNext()) {
+            InstrDecl id = (InstrDecl) i.next();
+            printer.print("processing instruction " + id.name + " ");
 
             // inline and optimize the body of the instruction
             List code = id.getCode();
@@ -113,31 +113,31 @@ public class Architecture {
             id.setCode(code);
 
             // find parent encoding
-            if ( id.encoding instanceof EncodingDecl.Derived ) {
-                EncodingDecl.Derived dd = (EncodingDecl.Derived)id.encoding;
-                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
+            if (id.encoding instanceof EncodingDecl.Derived) {
+                EncodingDecl.Derived dd = (EncodingDecl.Derived) id.encoding;
+                EncodingDecl parent = (EncodingDecl) encodingMap.get(dd.pname.image);
                 dd.setParent(parent);
             }
 
             int encodingSize = id.getEncodingSize();
-            if ( encodingSize % 16 != 0 )
-                throw Avrora.failure("encoding not word aligned: "+id.name.image+" is "+encodingSize+" bits");
+            if (encodingSize % 16 != 0)
+                throw Avrora.failure("encoding not word aligned: " + id.name.image + " is " + encodingSize + " bits");
 
             // find operand decl
             Iterator oi = id.getOperandIterator();
-            while ( oi.hasNext() ) {
-                CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
+            while (oi.hasNext()) {
+                CodeRegion.Operand od = (CodeRegion.Operand) oi.next();
                 OperandDecl opdec = getOperandDecl(od.type.image);
-                if ( opdec == null )
-                    throw Avrora.failure("operand type undefined "+StringUtil.quote(od.type.image));
+                if (opdec == null)
+                    throw Avrora.failure("operand type undefined " + StringUtil.quote(od.type.image));
                 od.setOperandType(opdec);
             }
 
             // check that cycles make sense
-            if ( id.cycles < 0 )
-                throw Avrora.failure("instruction "+id.name.image+" has negative cycle count");
+            if (id.cycles < 0)
+                throw Avrora.failure("instruction " + id.name.image + " has negative cycle count");
 
-            if ( printer.enabled ) {
+            if (printer.enabled) {
                 new PrettyPrinter(printer).visitStmtList(code);
             }
 
@@ -161,39 +161,39 @@ public class Architecture {
     }
 
     public void addSubroutine(SubroutineDecl d) {
-        printer.println("loading subroutine "+d.name.image+"...");
+        printer.println("loading subroutine " + d.name.image + "...");
         subroutineMap.put(d.name.image, d);
         subroutines.add(d);
     }
 
     public void addInstruction(InstrDecl i) {
-        printer.println("loading instruction "+i.name.image+"...");
+        printer.println("loading instruction " + i.name.image + "...");
         instructionMap.put(i.name.image, i);
         instructions.add(i);
     }
 
     public void addOperand(OperandDecl d) {
-        printer.println("loading operand declaration "+d.name.image+"...");
+        printer.println("loading operand declaration " + d.name.image + "...");
         operandMap.put(d.name.image, d);
         operands.add(d);
     }
 
     public void addEncoding(EncodingDecl d) {
-        printer.println("loading encoding format "+d.name.image+"...");
+        printer.println("loading encoding format " + d.name.image + "...");
         encodingMap.put(d.name.image, d);
         encodings.add(d);
     }
 
     public InstrDecl getInstruction(String name) {
-        return (InstrDecl)instructionMap.get(name);
+        return (InstrDecl) instructionMap.get(name);
     }
 
     public SubroutineDecl getSubroutine(String name) {
-        return (SubroutineDecl)subroutineMap.get(name);
+        return (SubroutineDecl) subroutineMap.get(name);
     }
 
     public OperandDecl getOperandDecl(String name) {
-        return (OperandDecl)operandMap.get(name);
+        return (OperandDecl) operandMap.get(name);
     }
 
 
@@ -239,10 +239,10 @@ public class Architecture {
         public List visitStmtList(List l) {
 
             Iterator i = l.iterator();
-            while ( i.hasNext() ) {
-                Stmt a = (Stmt)i.next();
+            while (i.hasNext()) {
+                Stmt a = (Stmt) i.next();
                 Stmt na = a.accept(this);
-                if ( na != null ) newStmts.add(na);
+                if (na != null) newStmts.add(na);
             }
 
             return newStmts;
@@ -250,18 +250,17 @@ public class Architecture {
 
         public Stmt visit(CallStmt s) {
             SubroutineDecl d = getSubroutine(s.method.image);
-            if ( shouldInline(d) ) {
-                 return super.visit(s);
-            }
-            else {
+            if (shouldInline(d)) {
+                return super.visit(s);
+            } else {
                 inlineCall(s.method, d, s.args);
                 return null;
             }
         }
 
         public Stmt visit(VarAssignStmt s) {
-             String nv = varName(s.variable);
-             return new VarAssignStmt(newToken(nv), s.expr.accept(this));
+            String nv = varName(s.variable);
+            return new VarAssignStmt(newToken(nv), s.expr.accept(this));
         }
 
         public Stmt visit(VarBitAssignStmt s) {
@@ -280,7 +279,7 @@ public class Architecture {
         }
 
         public Stmt visit(ReturnStmt s) {
-            if ( curSubroutine == null )
+            if (curSubroutine == null)
                 throw Avrora.failure("return not within subroutine!");
 
             retVal = newTemp(null);
@@ -297,25 +296,27 @@ public class Architecture {
 
         protected String newTemp(String orig) {
             String nn;
-            if ( parent != null ) nn = parent.newTemp(null);
-            else nn = "tmp_"+(tmpCount++);
+            if (parent != null)
+                nn = parent.newTemp(null);
+            else
+                nn = "tmp_" + (tmpCount++);
 
-            if ( orig != null ) varMap.put(orig, nn);
+            if (orig != null) varMap.put(orig, nn);
             return nn;
         }
 
         protected String inlineCall(Token m, SubroutineDecl d, List args) {
-            if ( d.numOperands() != args.size() )
-                Avrora.failure("arity mismatch in call to "+m.image+" @ "+m.beginLine+":"+m.beginColumn);
+            if (d.numOperands() != args.size())
+                Avrora.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ":" + m.beginColumn);
 
             Inliner bodyBuilder = new Inliner(this, newStmts);
 
             Iterator formal_iter = d.getOperandIterator();
             Iterator arg_iter = args.iterator();
 
-            while ( formal_iter.hasNext() ) {
-                CodeRegion.Operand f = (CodeRegion.Operand)formal_iter.next();
-                Expr e = (Expr)arg_iter.next();
+            while (formal_iter.hasNext()) {
+                CodeRegion.Operand f = (CodeRegion.Operand) formal_iter.next();
+                Expr e = (Expr) arg_iter.next();
 
                 // get a new temporary
                 String nn = newTemp(null);
@@ -339,7 +340,7 @@ public class Architecture {
 
         public Expr visit(CallExpr v) {
             SubroutineDecl d = getSubroutine(v.method.image);
-            if ( shouldInline(d) ) {
+            if (shouldInline(d)) {
                 return super.visit(v);
             } else {
                 String result = inlineCall(v.method, d, v.args);
@@ -348,7 +349,7 @@ public class Architecture {
         }
 
         protected boolean shouldInline(SubroutineDecl d) {
-            if ( d == null || !d.inline || !d.hasBody() ) return true;
+            if (d == null || !d.inline || !d.hasBody()) return true;
             return false;
         }
 
@@ -358,9 +359,9 @@ public class Architecture {
         }
 
         protected String varName(String n) {
-            String nn = (String)varMap.get(n);
-            if ( nn == null && parent != null) nn = parent.varName(n);
-            if ( nn == null ) return n;
+            String nn = (String) varMap.get(n);
+            if (nn == null && parent != null) nn = parent.varName(n);
+            if (nn == null) return n;
             return nn;
         }
 
@@ -387,8 +388,8 @@ public class Architecture {
         public void visitStmtList(List s) {
             p.startblock();
             Iterator i = s.iterator();
-            while ( i.hasNext() ) {
-                Stmt st = (Stmt)i.next();
+            while (i.hasNext()) {
+                Stmt st = (Stmt) i.next();
                 st.accept(this);
             }
             p.endblock();

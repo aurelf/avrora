@@ -31,6 +31,7 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
 
 /**
@@ -102,7 +103,7 @@ public class BitRangeExpr extends Expr {
      */
     public int getBitWidth() {
         int diff = (high_bit - low_bit);
-        if ( diff < 0 ) diff = -diff;
+        if (diff < 0) diff = -diff;
         return diff + 1;
     }
 

@@ -49,8 +49,8 @@ import java.io.PrintStream;
  */
 public class ISDLAction extends Action {
     public static final String HELP = "The \"isdl\" action invokes the instruction set description language " +
-                    "(ISDL) tool, which is used internally in Avrora to describe the AVR " +
-                    "instruction set.";
+            "(ISDL) tool, which is used internally in Avrora to describe the AVR " +
+            "instruction set.";
 
     public ISDLAction() {
         super("isdl", HELP);
@@ -65,7 +65,7 @@ public class ISDLAction extends Action {
         ISDLParser parser = new ISDLParser(fis);
         Architecture a = parser.Architecture();
 
-        SectionFile f = new SectionFile(args[1],"INTERPRETER GENERATOR");
+        SectionFile f = new SectionFile(args[1], "INTERPRETER GENERATOR");
         new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
         f.close();
     }

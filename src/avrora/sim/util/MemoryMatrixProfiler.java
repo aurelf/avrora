@@ -58,21 +58,22 @@ public class MemoryMatrixProfiler {
     public final int ramSize;
 
     public MemoryMatrixProfiler(Program p, int size) {
-        ramSize = size;;
+        ramSize = size;
+        ;
         rcount = new long[p.program_end][];
         wcount = new long[p.program_end][];
     }
 
     public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
-        if ( data_addr < ramSize ) {
-            if ( rcount[address] == null ) rcount[address] = new long[ramSize];
+        if (data_addr < ramSize) {
+            if (rcount[address] == null) rcount[address] = new long[ramSize];
             rcount[address][data_addr]++;
         }
     }
 
     public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
-        if ( data_addr < ramSize ) {
-            if ( wcount[address] == null ) wcount[address] = new long[ramSize];
+        if (data_addr < ramSize) {
+            if (wcount[address] == null) wcount[address] = new long[ramSize];
             wcount[address][data_addr]++;
         }
     }
@@ -94,10 +95,12 @@ public class MemoryMatrixProfiler {
     }
 
     private long getCount(long matrix[][], int data_addr, int address) {
-        if ( data_addr < ramSize )
-            if ( matrix[address] == null ) return 0;
-            else return matrix[address][data_addr];
-        throw Avrora.failure("no count for data address "+StringUtil.addrToString(data_addr));
+        if (data_addr < ramSize)
+            if (matrix[address] == null)
+                return 0;
+            else
+                return matrix[address][data_addr];
+        throw Avrora.failure("no count for data address " + StringUtil.addrToString(data_addr));
     }
 
 }

@@ -133,19 +133,19 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         public void accept(InstrVisitor v) {
 
             // if the simulator is visiting us, execute the instruction instead of accept(v).
-            if (v == BaseInterpreter.this ) {
+            if (v == BaseInterpreter.this) {
                 // breakpoint processing.
                 if (breakPoint) {
                     if (!breakFired) {
                         breakFired = true;
-                        throw new Simulator.BreakPointException(instr, address,  BaseInterpreter.this);
+                        throw new Simulator.BreakPointException(instr, address, BaseInterpreter.this);
                     } else
                         breakFired = false;
                 }
 
                 probe.fireBefore(instr, address, BaseInterpreter.this);
                 instr.accept(BaseInterpreter.this);
-                probe.fireAfter(instr, address,  BaseInterpreter.this);
+                probe.fireAfter(instr, address, BaseInterpreter.this);
             } else {
                 instr.accept(v);
             }
@@ -295,28 +295,28 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected abstract void removeBreakPoint(int addr);
 
     protected void insertWatch(Simulator.Watch p, int data_addr) {
-        if ( sram_probes == null )
+        if (sram_probes == null)
             sram_probes = new MulticastWatch[sram.length];
-        if ( data_addr < sram_start )
-            throw Avrora.failure("not a valid data address: "+StringUtil.addrToString(data_addr));
+        if (data_addr < sram_start)
+            throw Avrora.failure("not a valid data address: " + StringUtil.addrToString(data_addr));
 
         // add the probe to the multicast probe present at the location (if there is one)
         int offset = data_addr - sram_start;
         MulticastWatch w = sram_probes[offset];
-        if ( w == null ) w = sram_probes[offset] = new MulticastWatch();
+        if (w == null) w = sram_probes[offset] = new MulticastWatch();
         w.add(p);
     }
 
     protected void removeWatch(Simulator.Watch p, int data_addr) {
-        if ( sram_probes == null )
+        if (sram_probes == null)
             return;
-        if ( data_addr < sram_start )
-            throw Avrora.failure("not a valid data address: "+StringUtil.addrToString(data_addr));
+        if (data_addr < sram_start)
+            throw Avrora.failure("not a valid data address: " + StringUtil.addrToString(data_addr));
 
         // remove the probe from the multicast probe present at the location (if there is one)
         int offset = data_addr - sram_start;
         MulticastWatch w = sram_probes[offset];
-        if ( w == null ) return;
+        if (w == null) return;
         w.remove(p);
     }
 
@@ -443,7 +443,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         byte val = sram[offset];
         // write to memory, checking for any memory probes
         Simulator.Watch p;
-        if ( sram_probes != null && (p = sram_probes[offset]) != null ) {
+        if (sram_probes != null && (p = sram_probes[offset]) != null) {
             Instr i = getCurrentInstr();
             p.fireBeforeRead(i, pc, this, offset + sram_start, val);
             val = sram[offset]; // the value might have been updated by the probe
@@ -451,7 +451,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
         return val;
     }
-
 
 
     /**
@@ -494,7 +493,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private void writeDataByte(int offset, byte val) {
         // write to memory, checking for any memory probes
         Simulator.Watch p;
-        if ( sram_probes != null && (p = sram_probes[offset]) != null ) {
+        if (sram_probes != null && (p = sram_probes[offset]) != null) {
             Instr i = getCurrentInstr();
             p.fireBeforeWrite(i, pc, this, offset + sram_start, val);
             sram[offset] = val;
@@ -652,7 +651,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_I() { return I; }
+    public boolean getFlag_I() {
+        return I;
+    }
 
     /**
      * The <code>getFlag_T()</code> method returns the current value of the T bit
@@ -660,7 +661,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_T()  { return T; }
+    public boolean getFlag_T() {
+        return T;
+    }
 
     /**
      * The <code>getFlag_H()</code> method returns the current value of the H bit
@@ -668,7 +671,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_H()  { return H; }
+    public boolean getFlag_H() {
+        return H;
+    }
 
     /**
      * The <code>getFlag_S()</code> method returns the current value of the S bit
@@ -676,7 +681,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_S()  { return S; }
+    public boolean getFlag_S() {
+        return S;
+    }
 
     /**
      * The <code>getFlag_V()</code> method returns the current value of the V bit
@@ -684,7 +691,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_V() { return V; }
+    public boolean getFlag_V() {
+        return V;
+    }
 
     /**
      * The <code>getFlag_N()</code> method returns the current value of the N bit
@@ -692,7 +701,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_N()  { return N; }
+    public boolean getFlag_N() {
+        return N;
+    }
 
     /**
      * The <code>getFlag_Z()</code> method returns the current value of the Z bit
@@ -700,7 +711,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_Z()  { return Z; }
+    public boolean getFlag_Z() {
+        return Z;
+    }
 
     /**
      * The <code>getFlag_C()</code> method returns the current value of the C bit
@@ -708,7 +721,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @return the value of the flag
      */
-    public boolean getFlag_C() { return C; }
+    public boolean getFlag_C() {
+        return C;
+    }
 
     /**
      * The <code>getInstr()</code> can be used to retrieve a reference to the
@@ -839,14 +854,22 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
          */
         public boolean readBit(int num) {
             switch (num) {
-                case SREG_I: return I;
-                case SREG_T: return T;
-                case SREG_H: return H;
-                case SREG_S: return S;
-                case SREG_V: return V;
-                case SREG_N: return N;
-                case SREG_Z: return Z;
-                case SREG_C: return C;
+                case SREG_I:
+                    return I;
+                case SREG_T:
+                    return T;
+                case SREG_H:
+                    return H;
+                case SREG_S:
+                    return S;
+                case SREG_V:
+                    return V;
+                case SREG_N:
+                    return N;
+                case SREG_Z:
+                    return Z;
+                case SREG_C:
+                    return C;
             }
             throw Avrora.failure("bit out of range: " + num);
         }
@@ -854,16 +877,32 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         public void writeBit(int num, boolean value) {
             switch (num) {
                 case SREG_I:
-                    if ( value ) enableInterrupts();
-                    else disableInterrupts();
+                    if (value)
+                        enableInterrupts();
+                    else
+                        disableInterrupts();
                     break;
-                case SREG_T: T = value; break;
-                case SREG_H: H = value; break;
-                case SREG_S: S = value; break;
-                case SREG_V: V = value; break;
-                case SREG_N: N = value; break;
-                case SREG_Z: Z = value; break;
-                case SREG_C: C = value; break;
+                case SREG_T:
+                    T = value;
+                    break;
+                case SREG_H:
+                    H = value;
+                    break;
+                case SREG_S:
+                    S = value;
+                    break;
+                case SREG_V:
+                    V = value;
+                    break;
+                case SREG_N:
+                    N = value;
+                    break;
+                case SREG_Z:
+                    Z = value;
+                    break;
+                case SREG_C:
+                    C = value;
+                    break;
                 default:
                     throw Avrora.failure("bit out of range: " + num);
             }

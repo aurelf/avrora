@@ -110,23 +110,30 @@ public class Module implements Context {
         }
 
         public void writeDataBytes(ASTNode loc, int baddr, byte[] b) {
-            if ( !acceptsData ) ERROR.DataCannotBeInSegment(name, loc);
-            else  newprogram.writeProgramBytes(b, baddr);
+            if (!acceptsData)
+                ERROR.DataCannotBeInSegment(name, loc);
+            else
+                newprogram.writeProgramBytes(b, baddr);
         }
+
         public void writeDataByte(ASTNode loc, int baddr, byte b) {
-            if ( !acceptsData ) ERROR.DataCannotBeInSegment(name, loc);
-            else  newprogram.writeProgramByte(b, baddr);
+            if (!acceptsData)
+                ERROR.DataCannotBeInSegment(name, loc);
+            else
+                newprogram.writeProgramByte(b, baddr);
         }
 
         public void writeInstr(AbstractToken loc, int baddr, Instr i) {
-            if ( !acceptsInstrs ) ERROR.InstructionCannotBeInSegment(name, loc);
-            else newprogram.writeInstr(i, baddr);
+            if (!acceptsInstrs)
+                ERROR.InstructionCannotBeInSegment(name, loc);
+            else
+                newprogram.writeInstr(i, baddr);
         }
 
         public void addLabel(int baddr, String labelname) {
-            if ( name.equals("program")) newprogram.newProgramLabel(labelname, baddr);
-            if ( name.equals("eeprom")) newprogram.newEEPromLabel(labelname, baddr);
-            if ( name.equals("data")) newprogram.newDataLabel(labelname, baddr);
+            if (name.equals("program")) newprogram.newProgramLabel(labelname, baddr);
+            if (name.equals("eeprom")) newprogram.newEEPromLabel(labelname, baddr);
+            if (name.equals("data")) newprogram.newDataLabel(labelname, baddr);
         }
 
         public void setOrigin(int org) {
@@ -141,7 +148,7 @@ public class Module implements Context {
 
         public void advance(int dist) {
             cursor = align(cursor + dist, align);
-            if ( cursor > highest_address ) highest_address = cursor;
+            if (cursor > highest_address) highest_address = cursor;
         }
     }
 
@@ -169,13 +176,13 @@ public class Module implements Context {
 
     // .def directive
     public void addDefinition(AbstractToken name, AbstractToken rtok) {
-        modulePrinter.println(".def "+labelName(name)+" = "+labelName(rtok));
+        modulePrinter.println(".def " + labelName(name) + " = " + labelName(rtok));
         addItem(new Item.RegisterAlias(segment, name, rtok));
     }
 
     // .equ directive
     public void addConstant(AbstractToken name, Expr val) {
-        modulePrinter.println(".equ "+labelName(name)+" = "+val);
+        modulePrinter.println(".equ " + labelName(name) + " = " + val);
         addItem(new Item.NamedConstant(segment, name, val));
     }
 
@@ -199,12 +206,12 @@ public class Module implements Context {
 
     private void print(String what, ASTNode where) {
         String addr = StringUtil.toHex(segment.getCurrentAddress(), 4);
-        modulePrinter.println(segment.getName()+" @ 0x"+addr+": "+what+" on line "+where.getLeftMostToken().beginLine);
+        modulePrinter.println(segment.getName() + " @ 0x" + addr + ": " + what + " on line " + where.getLeftMostToken().beginLine);
     }
 
     private void print(String what, AbstractToken where) {
         String addr = StringUtil.toHex(segment.getCurrentAddress(), 4);
-        modulePrinter.println(segment.getName()+" @ 0x"+addr+": "+what+" on line "+where.beginLine);
+        modulePrinter.println(segment.getName() + " @ 0x" + addr + ": " + what + " on line " + where.beginLine);
     }
 
     // .db directive
@@ -228,7 +235,7 @@ public class Module implements Context {
     // .org directive
     public void setOrigin(Expr.Constant c) {
         int result = c.evaluate(segment.getCurrentAddress(), this);
-        modulePrinter.println("setOrigin("+c+") -> "+result);
+        modulePrinter.println("setOrigin(" + c + ") -> " + result);
         segment.setOrigin(result);
     }
 
@@ -236,14 +243,14 @@ public class Module implements Context {
     public void reserveBytes(Expr e, Expr f) {
         // TODO: fill section with particular value
         int result = e.evaluate(segment.getCurrentAddress(), this);
-        modulePrinter.println("reserveBytes("+e+") -> "+result);
+        modulePrinter.println("reserveBytes(" + e + ") -> " + result);
         addItem(new Item.UninitializedData(segment, result));
     }
 
     // .include directive
     public void includeFile(AbstractToken fname) throws AbstractParseException {
         try {
-            modulePrinter.println("includeFile("+fname.image+")");
+            modulePrinter.println("includeFile(" + fname.image + ")");
             String fn = StringUtil.trimquotes(fname.image);
             AtmelParser parser = new AtmelParser(new FileInputStream(fn), this, fn);
             // TODO: handle infinite include recursion possibility
@@ -306,7 +313,7 @@ public class Module implements Context {
 
         Iterator i = itemList.iterator();
         while (i.hasNext()) {
-            Item pos = (Item)i.next();
+            Item pos = (Item) i.next();
             simplify(pos);
         }
 
@@ -315,20 +322,20 @@ public class Module implements Context {
 
     protected void simplify(Item i) {
         Item.Instruction instr = null;
-        if ( i instanceof Item.Instruction ) instr = (Item.Instruction)i;
+        if (i instanceof Item.Instruction) instr = (Item.Instruction) i;
 
         try {
 
             i.simplify();
 
         } catch (Instr.ImmediateRequired e) {
-            ERROR.ConstantExpected((SyntacticOperand)e.operand);
+            ERROR.ConstantExpected((SyntacticOperand) e.operand);
         } catch (Instr.InvalidImmediate e) {
             ERROR.ConstantOutOfRange(instr.operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
         } catch (Instr.InvalidRegister e) {
             ERROR.IncorrectRegister(instr.operands[e.number - 1], e.register, e.set.toString());
         } catch (Instr.RegisterRequired e) {
-            ERROR.RegisterExpected((SyntacticOperand)e.operand);
+            ERROR.RegisterExpected((SyntacticOperand) e.operand);
         } catch (Instr.WrongNumberOfOperands e) {
             ERROR.WrongNumberOfOperands(instr.name, e.found, e.expected);
         }
@@ -360,8 +367,10 @@ public class Module implements Context {
         if (v == null) {
             Item.Label li = (Item.Label) labels.get(name);
             if (li == null) ERROR.UnknownVariable(tok);
-            if (li.segment == programSegment && !useByteAddresses )  return li.getByteAddress() >> 1;
-            else return li.getByteAddress();
+            if (li.segment == programSegment && !useByteAddresses)
+                return li.getByteAddress() >> 1;
+            else
+                return li.getByteAddress();
         } else
             return v.intValue();
     }
@@ -385,15 +394,18 @@ public class Module implements Context {
     }
 
     private String labelName(AbstractToken tok) {
-        if ( caseSensitivity ) return tok.image;
-        else return tok.image.toLowerCase();
+        if (caseSensitivity)
+            return tok.image;
+        else
+            return tok.image.toLowerCase();
     }
 
     private String labelName(String n) {
-        if ( caseSensitivity ) return n;
-        else return n.toLowerCase();
+        if (caseSensitivity)
+            return n;
+        else
+            return n.toLowerCase();
     }
-
 
 
     private void addGlobalConstants() {

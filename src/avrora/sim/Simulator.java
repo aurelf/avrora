@@ -322,7 +322,7 @@ public abstract class Simulator implements IORegisterConstants {
         public final long timeout;
 
         TimeoutException(Instr i, int a, State s, long t, String l) {
-            super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + " "+l);
+            super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + " " + l);
             instr = i;
             address = a;
             state = s;
@@ -446,7 +446,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void reset() {
         eventQueue = new DeltaQueue();
-        if ( LEGACY_INTERPRETER ) {
+        if (LEGACY_INTERPRETER) {
             interpreter = new LegacyInterpreter(this, program,
                     microcontroller.getFlashSize(),
                     microcontroller.getIORegSize(),
@@ -581,7 +581,7 @@ public abstract class Simulator implements IORegisterConstants {
      * @param num the interrupt number to force
      */
     public void forceInterrupt(int num) {
-        if ( interruptPrinter.enabled )
+        if (interruptPrinter.enabled)
             interruptPrinter.println("Simulator.forceInterrupt(" + num + ")");
         interrupts[num].force();
     }
@@ -594,7 +594,7 @@ public abstract class Simulator implements IORegisterConstants {
      * @param num the number of the interrupt to trigger
      */
     protected void triggerInterrupt(int num) {
-        if ( interruptPrinter.enabled )
+        if (interruptPrinter.enabled)
             interruptPrinter.println("Simulator.triggerInterrupt(" + num + ")");
         interrupts[num].fire();
     }
@@ -608,7 +608,7 @@ public abstract class Simulator implements IORegisterConstants {
      * @param cycles the number of cycles in the future at which to trigger
      */
     public void insertEvent(Event e, long cycles) {
-        if ( eventPrinter.enabled )
+        if (eventPrinter.enabled)
             eventPrinter.println("Simulator.insertEvent(" + cycles + ")");
         eventQueue.add(e, cycles);
     }
@@ -618,7 +618,7 @@ public abstract class Simulator implements IORegisterConstants {
      * event queue of the simulator that causes it to stop execution
      * and throw a <code>Simulator.TimeoutException</code> when the
      * specified number of clock cycles have expired.
-     * 
+     *
      * @param cycles the number of cycles to run before timing out
      */
     public void insertTimeout(long cycles) {
@@ -636,7 +636,7 @@ public abstract class Simulator implements IORegisterConstants {
      * @return the <code>PeriodicTrigger</code> instance inserted
      */
     public PeriodicTrigger insertPeriodicEvent(Event e, long period) {
-        if ( eventPrinter.enabled )
+        if (eventPrinter.enabled)
             eventPrinter.println("Simulator.insertPeriodicEvent(" + period + ")");
         PeriodicTrigger pt = new PeriodicTrigger(this, e, period);
         eventQueue.add(pt, period);
@@ -651,7 +651,7 @@ public abstract class Simulator implements IORegisterConstants {
      * @param e the trigger to remove
      */
     public void removeEvent(Event e) {
-        if ( eventPrinter.enabled )
+        if (eventPrinter.enabled)
             eventPrinter.println("Simulator.removeEvent()");
         eventQueue.remove(e);
     }
@@ -802,7 +802,7 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void writeBit(int bit, boolean val) {
-            if ( val ) {
+            if (val) {
                 value = Arithmetic.clearBit(value, bit);
                 interpreter.unpostInterrupt(getVectorNum(bit));
             }
@@ -824,13 +824,46 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void writeBit(int bit, boolean val) {
-            if ( val ) {
+            if (val) {
                 value = Arithmetic.setBit(value, bit);
                 update(bit, flagRegister);
             } else {
                 value = Arithmetic.clearBit(value, bit);
                 interpreter.unpostInterrupt(getVectorNum(bit));
             }
+        }
+    }
+
+    /** Flag register for flag register that corresponds to a
+     * group of interrupts that do not necessarily have a clean,
+     * linear mapping to bits on the register.  */
+    public class UnorderedFlagRegister extends FlagRegister {
+        final int[] mapping;
+
+        public UnorderedFlagRegister(boolean b, int i, int[] mapping) {
+            super(b, i);
+            this.mapping = mapping;
+            maskRegister = new UnorderedMaskRegister(b, i, this, mapping);
+        }
+
+        protected int getVectorNum(int bit) {
+            return mapping[bit];
+        }
+    }
+
+    /** Mask register associated with an
+     * <code>UnorderedFlagregister</code>.*/
+    public class UnorderedMaskRegister extends MaskRegister {
+        final int[] mapping;
+
+
+        public UnorderedMaskRegister(boolean b, int i, FlagRegister fr, int[] mapping) {
+            super(b, i, fr);
+            this.mapping = mapping;
+        }
+
+        protected int getVectorNum(int bit) {
+            return mapping[bit];
         }
     }
 

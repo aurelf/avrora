@@ -53,7 +53,7 @@ public class Optimizer {
     }
 
     public Optimizer(List stmts, HashMap cMap) {
-        constMap = (HashMap)cMap.clone();
+        constMap = (HashMap) cMap.clone();
         original = stmts;
     }
 
