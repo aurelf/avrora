@@ -55,9 +55,16 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void Header() throws ParseException {
-    jj_consume_token(PROGRAM);
-    jj_consume_token(STRING_LITERAL);
-    jj_consume_token(154);
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case PROGRAM:
+      jj_consume_token(PROGRAM);
+      jj_consume_token(STRING_LITERAL);
+      jj_consume_token(154);
+      break;
+    default:
+      jj_la1[1] = jj_gen;
+      ;
+    }
     label_2:
     while (true) {
       SectionDecl();
@@ -66,7 +73,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         ;
         break;
       default:
-        jj_la1[1] = jj_gen;
+        jj_la1[2] = jj_gen;
         break label_2;
       }
     }
@@ -111,7 +118,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         ;
         break;
       default:
-        jj_la1[2] = jj_gen;
+        jj_la1[3] = jj_gen;
         break label_3;
       }
       Statement();
@@ -127,7 +134,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       Item();
       break;
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[4] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -261,7 +268,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       Data();
       break;
     default:
-      jj_la1[4] = jj_gen;
+      jj_la1[5] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -276,7 +283,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         Raw2();
         break;
       default:
-        jj_la1[5] = jj_gen;
+        jj_la1[6] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -436,7 +443,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       InstrStore();
       break;
     default:
-      jj_la1[6] = jj_gen;
+      jj_la1[7] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -515,7 +522,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       t = jj_consume_token(MOVW);
       break;
     default:
-      jj_la1[7] = jj_gen;
+      jj_la1[8] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -579,7 +586,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       t = jj_consume_token(SWAP);
       break;
     default:
-      jj_la1[8] = jj_gen;
+      jj_la1[9] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -639,7 +646,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       t = jj_consume_token(BLD);
       break;
     default:
-      jj_la1[9] = jj_gen;
+      jj_la1[10] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -730,7 +737,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       t = jj_consume_token(BCLR);
       break;
     default:
-      jj_la1[10] = jj_gen;
+      jj_la1[11] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -769,7 +776,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       t = jj_consume_token(CBI);
       break;
     default:
-      jj_la1[11] = jj_gen;
+      jj_la1[12] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -796,7 +803,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       InstrLPM_variant();
       break;
     default:
-      jj_la1[12] = jj_gen;
+      jj_la1[13] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -822,7 +829,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         InstrLD();
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[14] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -890,7 +897,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         InstrLPMBARE();
         break;
       default:
-        jj_la1[14] = jj_gen;
+        jj_la1[15] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -932,7 +939,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       t = jj_consume_token(ELPM);
       break;
     default:
-      jj_la1[15] = jj_gen;
+      jj_la1[16] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -952,7 +959,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       InstrSTS();
       break;
     default:
-      jj_la1[16] = jj_gen;
+      jj_la1[17] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -969,7 +976,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         InstrSTPD();
         break;
       default:
-        jj_la1[17] = jj_gen;
+        jj_la1[18] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1110,7 +1117,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       t = jj_consume_token(EICALL);
       break;
     default:
-      jj_la1[18] = jj_gen;
+      jj_la1[19] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1162,7 +1169,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         e = Term();
         break;
       default:
-        jj_la1[19] = jj_gen;
+        jj_la1[20] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1183,7 +1190,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
                               e = new Expr.Constant(tok);
       break;
     default:
-      jj_la1[20] = jj_gen;
+      jj_la1[21] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1210,7 +1217,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       tok = jj_consume_token(158);
       break;
     default:
-      jj_la1[21] = jj_gen;
+      jj_la1[22] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1272,6 +1279,56 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     boolean retval = !jj_3_8();
     jj_save(7, xla);
     return retval;
+  }
+
+  final private boolean jj_3_4() {
+    if (jj_3R_7()) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_11() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_9() {
+    if (jj_scan_token(ST)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_3R_11()) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(156)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_4() {
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_14() {
+    if (jj_scan_token(ELPM)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3_7() {
+    if (jj_3R_10()) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3_6() {
+    if (jj_3R_9()) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
   }
 
   final private boolean jj_3_1() {
@@ -1381,56 +1438,6 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     return false;
   }
 
-  final private boolean jj_3_4() {
-    if (jj_3R_7()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_11() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_9() {
-    if (jj_scan_token(ST)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_11()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(156)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_4() {
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_14() {
-    if (jj_scan_token(ELPM)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3_7() {
-    if (jj_3R_10()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3_6() {
-    if (jj_3R_9()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
   public ObjDumpParserTokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -1440,7 +1447,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[22];
+  final private int[] jj_la1 = new int[23];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -1454,19 +1461,19 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       jj_la1_4();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x8000000,0x10000000,0x40000200,0x40000200,0x4000000,0x200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200,0x200,0x0,};
+      jj_la1_0 = new int[] {0x8000000,0x20000000,0x10000000,0x40000200,0x40000200,0x4000000,0x200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200,0x200,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0xfffffff8,0x0,0xfffffff8,0x58,0x100,0x4a0,0xffff6200,0x1800,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0xfffffff8,0x0,0xfffffff8,0x58,0x100,0x4a0,0xffff6200,0x1800,0x0,0x0,0x0,0x0,0x0,0x0,0x8000,0x0,0x0,0x0,};
    }
    private static void jj_la1_2() {
-      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0xffffffff,0x0,0xffffffff,0x7858000,0x40084200,0x20012,0x80000005,0x8,0x400000,0x0,0x400000,0x400000,0x0,0x0,0x18303de0,0x0,0x0,0x0,};
+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0xffffffff,0x7858000,0x40084200,0x20012,0x80000005,0x8,0x400000,0x0,0x400000,0x400000,0x0,0x0,0x18303de0,0x0,0x0,0x0,};
    }
    private static void jj_la1_3() {
-      jj_la1_3 = new int[] {0x0,0x0,0x0,0x0,0xffffffff,0x0,0xffffffff,0x2004f80,0x1861060,0xc4008000,0x480000,0x38000000,0x1f,0x1,0x10,0x10,0x0,0x0,0x302000,0x0,0x0,0x0,};
+      jj_la1_3 = new int[] {0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0xffffffff,0x2004f80,0x1861060,0xc4008000,0x480000,0x38000000,0x1f,0x1,0x10,0x10,0x0,0x0,0x302000,0x0,0x0,0x0,};
    }
    private static void jj_la1_4() {
-      jj_la1_4 = new int[] {0x0,0x0,0x0,0x0,0x1fffff,0x0,0x1fffff,0x10000,0xc0040,0x20003,0x0,0x0,0x0,0x0,0x0,0x0,0xe000,0x2000,0x101fbc,0x200000,0x200000,0x60000000,};
+      jj_la1_4 = new int[] {0x0,0x0,0x0,0x0,0x0,0x1fffff,0x0,0x1fffff,0x10000,0xc0040,0x20003,0x0,0x0,0x0,0x0,0x0,0x0,0xe000,0x2000,0x101fbc,0x200000,0x200000,0x60000000,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[8];
   private boolean jj_rescan = false;
@@ -1478,7 +1485,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 22; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 23; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1488,7 +1495,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 22; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 23; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1498,7 +1505,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 22; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 23; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1508,7 +1515,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 22; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 23; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1517,7 +1524,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 22; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 23; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1526,7 +1533,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 22; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 23; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1641,7 +1648,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 22; i++) {
+    for (int i = 0; i < 23; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {

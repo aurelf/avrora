@@ -148,7 +148,7 @@ public class Main {
     static final HashMap inputs = new HashMap();
     static final Options options = new Options();
 
-    public static final Option.Str INPUT = options.newOption("input", "atmel",
+    public static final Option.Str INPUT = options.newOption("input", "auto",
             "This option selects among the available program formats as input to Avrora. " +
             "For example, the default input format, \"atmel\" selects the assembly " +
             "language format supported by Atmel's assembler.");
@@ -250,13 +250,13 @@ public class Main {
         newAction("multi-simulate", new MultiSimulateAction());
         newAction("simulate", new SimulateAction());
         newAction("analyze-stack", new AnalyzeStackAction());
-        newAction("assemble", new AssembleAction());
         newAction("test", new TestAction());
         newAction("list", new ListAction());
         newAction("cfg", new CFGAction());
         newAction("isdl", new ISDLAction());
         newAction("custom", new CustomAction());
         newAction("benchmark", new BenchmarkAction());
+        newInput("auto", new AutoProgramReader());
         newInput("gas", new GASProgramReader());
         newInput("atmel", new AtmelProgramReader());
         newInput("objdump", new ObjDumpProgramReader());
@@ -268,6 +268,39 @@ public class Main {
 
     static void newInput(String name, ProgramReader r) {
         inputs.put(name, r);
+    }
+
+    static class AutoProgramReader extends ProgramReader {
+        public Program read(String[] args) throws Exception {
+            if (args.length == 0)
+                Avrora.userError("no input files");
+            if (args.length != 1)
+                Avrora.userError("input type \"auto\" accepts only one file at a time.");
+
+            String n = args[0];
+            int offset = n.lastIndexOf(".");
+            if ( offset < 0 )
+                Avrora.userError("file "+StringUtil.quote(n)+" does not have an extension");
+
+            String extension = n.substring(offset).toLowerCase();
+
+            if ( extension.equals(".asm") )
+                return new AtmelProgramReader().read(args);
+            if ( extension.equals(".s") )
+                return new GASProgramReader().read(args);
+            if ( extension.equals(".od") )
+                return new ObjDumpProgramReader().read(args);
+
+            Avrora.userError("cannot determine best format for extension "+StringUtil.quote(extension));
+            return null;
+        }
+
+        public String getHelp() {
+            return "The \"auto\" input format inspects the extensions of the given " +
+                    "filename and chooses the best format based on that extension. For " +
+                    "example, it assumes that the best format for the .asm extenstion is " +
+                    "the Atmel syntax.";
+        }
     }
 
     static class ISDLAction extends Action {
@@ -369,17 +402,6 @@ public class Main {
             return "The \"test\" action invokes the internal automated testing framework " +
                     "that runs testcases supplied at the command line. The testcases are " +
                     "used in regressions for diagnosing bugs.";
-        }
-    }
-
-    static class AssembleAction extends Action {
-        public void run(String[] args) {
-            throw Avrora.unimplemented();
-        }
-
-        public String getHelp() {
-            return "The \"assemble\" action will invoke the assembler. This action is " +
-                    "currently unimplemented.";
         }
     }
 

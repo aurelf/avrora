@@ -354,7 +354,7 @@ void Module() : {}
 
 void Header() : {}
 {
-    "program" <STRING_LITERAL> ":"
+    ["program" <STRING_LITERAL> ":"]
     (SectionDecl())+
 }
 
