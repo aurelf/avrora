@@ -183,6 +183,7 @@ TOKEN :
   | < TEXT: ".text" >
   | < SPACE: ".space" >
   | < GLOBAL: ".global" >
+  | < SIZE: ".size" >
 }
 
 /* Instruction MNEMONICS */
@@ -350,7 +351,9 @@ void Directive() : {}
     IncludeDirective() |
     NoListDirective() |
     ListDirective() |
-    SegDirective()
+    SegDirective() |
+    GlobalDirective() |
+    SizeDirective()
 }
 
 void Instruction() : {}
@@ -673,6 +676,11 @@ void NoListDirective() : {}
 void ListDirective() : {}
 {
     ".list"
+}
+
+void SizeDirective() : {}
+{
+    ".size" <IDENTIFIER> "," Expr()
 }
 
 void SegDirective() : {}

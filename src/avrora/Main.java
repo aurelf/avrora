@@ -14,6 +14,7 @@ import avrora.sir.Program;
 import avrora.sim.Simulator;
 import avrora.sim.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
+import avrora.syntax.gas.GASParser;
 
 /**
  * This is the main entrypoint to Avrora.
@@ -90,8 +91,18 @@ public class Main extends VPCBase {
     }
 
     static class GASInput extends ProgramReader {
-        public Program read(String[] args) {
-            throw VPCBase.unimplemented();
+        public Program read(String[] args) throws Exception {
+            if ( args.length == 0 )
+                userError("no input files");
+            if ( args.length != 1 )
+                userError("input type \"atmel\" accepts only one file at a time.");
+
+            File f = new File(args[0]);
+            Module module = new Module();
+            FileInputStream fis = new FileInputStream(f);
+            GASParser parser = new GASParser(fis, module, f.getName());
+            parser.Module();
+            return module.build();
         }
     }
 

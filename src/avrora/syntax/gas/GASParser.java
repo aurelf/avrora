@@ -53,6 +53,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
       case SKIPS:
       case TEXT:
       case SPACE:
+      case GLOBAL:
+      case SIZE:
       case ADD:
       case ADC:
       case ADIW:
@@ -199,6 +201,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
       case SKIPS:
       case TEXT:
       case SPACE:
+      case GLOBAL:
+      case SIZE:
         Directive();
         break;
       case ADD:
@@ -367,6 +371,12 @@ public class GASParser extends VPCBase implements GASParserConstants {
     case TEXT:
       SegDirective();
       break;
+    case GLOBAL:
+      GlobalDirective();
+      break;
+    case SIZE:
+      SizeDirective();
+      break;
     default:
       jj_la1[2] = jj_gen;
       jj_consume_token(-1);
@@ -521,7 +531,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                        Token t; Operand.Register r1, r2;
     t = OpcodeGPRGPR();
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r2 = Register();
       module.addInstruction(t.image, t, r1, r2);
   }
@@ -660,7 +670,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                        Token t; Operand.Register r1; Operand.Constant c1;
     t = OpcodeGPRIMM();
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
@@ -811,7 +821,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                        Token t; Operand.Constant c1, c2;
     t = OpcodeIMMIMM();
     c1 = Const();
-    jj_consume_token(155);
+    jj_consume_token(156);
     c2 = Const();
       module.addInstruction(t.image, t, c1, c2);
   }
@@ -875,7 +885,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                     Token t; Operand.Register r1; Operand.Constant c1;
     t = jj_consume_token(LDI);
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
@@ -902,7 +912,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                    Token t; Operand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r2 = Register();
       module.addInstruction("ld", t, r1, r2);
   }
@@ -911,9 +921,9 @@ public class GASParser extends VPCBase implements GASParserConstants {
                      Token t; Operand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
-    jj_consume_token(155);
-    r2 = Register();
     jj_consume_token(156);
+    r2 = Register();
+    jj_consume_token(157);
       module.addInstruction("ldpi", t, r1, r2);
   }
 
@@ -921,8 +931,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
                      Token t; Operand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
-    jj_consume_token(155);
-    jj_consume_token(157);
+    jj_consume_token(156);
+    jj_consume_token(158);
     r2 = Register();
       module.addInstruction("ldpd", t, r1, r2);
   }
@@ -931,9 +941,9 @@ public class GASParser extends VPCBase implements GASParserConstants {
                     Token t; Operand.Register r1, r2; Operand.Constant c1;
     t = jj_consume_token(LDD);
     r1 = Register();
-    jj_consume_token(155);
-    r2 = Register();
     jj_consume_token(156);
+    r2 = Register();
+    jj_consume_token(157);
     c1 = Const();
       module.addInstruction(t.image, t, r1, r2, c1);
   }
@@ -942,7 +952,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                     Token t; Operand.Register r1; Operand.Constant c1;
     t = jj_consume_token(LDS);
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
@@ -970,7 +980,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                           Token t; Operand.Register r1, r2;
     t = OpcodeLPM();
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r2 = Register();
       module.addInstruction(t.image+"d", t, r1, r2);
   }
@@ -979,9 +989,9 @@ public class GASParser extends VPCBase implements GASParserConstants {
                            Token t; Operand.Register r1, r2;
     t = OpcodeLPM();
     r1 = Register();
-    jj_consume_token(155);
-    r2 = Register();
     jj_consume_token(156);
+    r2 = Register();
+    jj_consume_token(157);
       module.addInstruction(t.image+"pi", t, r1, r2);
   }
 
@@ -1049,7 +1059,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                    Token t; Operand.Register r1, r2;
     t = jj_consume_token(ST);
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r2 = Register();
       module.addInstruction("st", t, r1, r2);
   }
@@ -1058,8 +1068,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
                      Token t; Operand.Register r1, r2;
     t = jj_consume_token(ST);
     r1 = Register();
+    jj_consume_token(157);
     jj_consume_token(156);
-    jj_consume_token(155);
     r2 = Register();
       module.addInstruction("stpi", t, r1, r2);
   }
@@ -1067,9 +1077,9 @@ public class GASParser extends VPCBase implements GASParserConstants {
   final public void InstrSTPD() throws ParseException {
                      Token t; Operand.Register r1, r2;
     t = jj_consume_token(ST);
-    jj_consume_token(157);
+    jj_consume_token(158);
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r2 = Register();
       module.addInstruction("stpd", t, r1, r2);
   }
@@ -1078,9 +1088,9 @@ public class GASParser extends VPCBase implements GASParserConstants {
                     Token t; Operand.Register r1, r2; Operand.Constant c1;
     t = jj_consume_token(STD);
     r1 = Register();
-    jj_consume_token(156);
+    jj_consume_token(157);
     c1 = Const();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r2 = Register();
       module.addInstruction(t.image, t, r1, c1, r2);
   }
@@ -1089,7 +1099,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                     Token t; Operand.Register r1; Operand.Constant c1;
     t = jj_consume_token(STS);
     c1 = Const();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r1 = Register();
       module.addInstruction(t.image, t, c1, r1);
   }
@@ -1190,7 +1200,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                       Token t; Operand.Register r1; Operand.Constant c1;
     t = jj_consume_token(IN);
     r1 = Register();
-    jj_consume_token(155);
+    jj_consume_token(156);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
@@ -1199,7 +1209,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                        Token t; Operand.Register r1; Operand.Constant c1;
     t = jj_consume_token(OUT);
     c1 = Const();
-    jj_consume_token(155);
+    jj_consume_token(156);
     r1 = Register();
       module.addInstruction(t.image, t, c1, r1);
   }
@@ -1214,7 +1224,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
   final public void Label() throws ParseException {
                  Token tok;
     tok = jj_consume_token(IDENTIFIER);
-    jj_consume_token(158);
+    jj_consume_token(159);
       module.addLabel(tok);
   }
 
@@ -1222,7 +1232,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
                         Token tok; Expr e;
     jj_consume_token(EQU);
     tok = jj_consume_token(IDENTIFIER);
-    jj_consume_token(159);
+    jj_consume_token(160);
     e = Expr();
       module.addConstant(tok, e);
   }
@@ -1230,7 +1240,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
   final public void Assignment() throws ParseException {
                       Token tok; Expr e;
     tok = jj_consume_token(IDENTIFIER);
-    jj_consume_token(159);
+    jj_consume_token(160);
     e = Expr();
       module.addConstant(tok, e);
   }
@@ -1240,8 +1250,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
     jj_consume_token(ORG);
     tok = jj_consume_token(INTEGER_LITERAL);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 155:
-      jj_consume_token(155);
+    case 156:
+      jj_consume_token(156);
       e = Expr();
       break;
     default:
@@ -1267,8 +1277,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
     }
     e = Expr();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 155:
-      jj_consume_token(155);
+    case 156:
+      jj_consume_token(156);
       f = Expr();
       break;
     default:
@@ -1286,8 +1296,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
   final public void TypeDirective() throws ParseException {
     jj_consume_token(TYPE);
     jj_consume_token(IDENTIFIER);
-    jj_consume_token(155);
-    jj_consume_token(160);
+    jj_consume_token(156);
+    jj_consume_token(161);
     jj_consume_token(IDENTIFIER);
   }
 
@@ -1355,6 +1365,13 @@ public class GASParser extends VPCBase implements GASParserConstants {
     jj_consume_token(LIST);
   }
 
+  final public void SizeDirective() throws ParseException {
+    jj_consume_token(SIZE);
+    jj_consume_token(IDENTIFIER);
+    jj_consume_token(156);
+    Expr();
+  }
+
   final public void SegDirective() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case DATA:
@@ -1386,14 +1403,14 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 155:
+      case 156:
         ;
         break;
       default:
         jj_la1[21] = jj_gen;
         break label_2;
       }
-      jj_consume_token(155);
+      jj_consume_token(156);
       e = Data();
                        list.add(e);
     }
@@ -1408,10 +1425,10 @@ public class GASParser extends VPCBase implements GASParserConstants {
     case LO8:
     case HI8:
     case IDENTIFIER:
-    case 157:
-    case 176:
+    case 158:
     case 177:
     case 178:
+    case 179:
       e = Expr();
       break;
     case STRING_LITERAL:
@@ -1440,14 +1457,14 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 161:
+      case 162:
         ;
         break;
       default:
         jj_la1[23] = jj_gen;
         break label_3;
       }
-      tok = jj_consume_token(161);
+      tok = jj_consume_token(162);
       er = LandExpr();
                                                   e = new Expr.BinOp(tok, e, er);
     }
@@ -1461,14 +1478,14 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 162:
+      case 163:
         ;
         break;
       default:
         jj_la1[24] = jj_gen;
         break label_4;
       }
-      tok = jj_consume_token(162);
+      tok = jj_consume_token(163);
       er = OrExpr();
                                               e = new Expr.BinOp(tok, e, er);
     }
@@ -1482,14 +1499,14 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 163:
+      case 164:
         ;
         break;
       default:
         jj_la1[25] = jj_gen;
         break label_5;
       }
-      tok = jj_consume_token(163);
+      tok = jj_consume_token(164);
       er = XorExpr();
                                                e = new Expr.BinOp(tok, e, er);
     }
@@ -1503,14 +1520,14 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 164:
+      case 165:
         ;
         break;
       default:
         jj_la1[26] = jj_gen;
         break label_6;
       }
-      tok = jj_consume_token(164);
+      tok = jj_consume_token(165);
       er = AndExpr();
                                                e = new Expr.BinOp(tok, e, er);
     }
@@ -1524,14 +1541,14 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 165:
+      case 166:
         ;
         break;
       default:
         jj_la1[27] = jj_gen;
         break label_7;
       }
-      tok = jj_consume_token(165);
+      tok = jj_consume_token(166);
       er = EqExpr();
                                              e = new Expr.BinOp(tok, e, er);
     }
@@ -1545,8 +1562,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 166:
       case 167:
+      case 168:
         ;
         break;
       default:
@@ -1554,11 +1571,11 @@ public class GASParser extends VPCBase implements GASParserConstants {
         break label_8;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 166:
-        tok = jj_consume_token(166);
-        break;
       case 167:
         tok = jj_consume_token(167);
+        break;
+      case 168:
+        tok = jj_consume_token(168);
         break;
       default:
         jj_la1[29] = jj_gen;
@@ -1578,10 +1595,10 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 168:
       case 169:
       case 170:
       case 171:
+      case 172:
         ;
         break;
       default:
@@ -1589,9 +1606,6 @@ public class GASParser extends VPCBase implements GASParserConstants {
         break label_9;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 168:
-        tok = jj_consume_token(168);
-        break;
       case 169:
         tok = jj_consume_token(169);
         break;
@@ -1600,6 +1614,9 @@ public class GASParser extends VPCBase implements GASParserConstants {
         break;
       case 171:
         tok = jj_consume_token(171);
+        break;
+      case 172:
+        tok = jj_consume_token(172);
         break;
       default:
         jj_la1[31] = jj_gen;
@@ -1619,8 +1636,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_10:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 172:
       case 173:
+      case 174:
         ;
         break;
       default:
@@ -1628,11 +1645,11 @@ public class GASParser extends VPCBase implements GASParserConstants {
         break label_10;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 172:
-        tok = jj_consume_token(172);
-        break;
       case 173:
         tok = jj_consume_token(173);
+        break;
+      case 174:
+        tok = jj_consume_token(174);
         break;
       default:
         jj_la1[33] = jj_gen;
@@ -1652,8 +1669,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 156:
       case 157:
+      case 158:
         ;
         break;
       default:
@@ -1661,11 +1678,11 @@ public class GASParser extends VPCBase implements GASParserConstants {
         break label_11;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 156:
-        tok = jj_consume_token(156);
-        break;
       case 157:
         tok = jj_consume_token(157);
+        break;
+      case 158:
+        tok = jj_consume_token(158);
         break;
       default:
         jj_la1[35] = jj_gen;
@@ -1685,8 +1702,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
     label_12:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 174:
       case 175:
+      case 176:
         ;
         break;
       default:
@@ -1694,11 +1711,11 @@ public class GASParser extends VPCBase implements GASParserConstants {
         break label_12;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 174:
-        tok = jj_consume_token(174);
-        break;
       case 175:
         tok = jj_consume_token(175);
+        break;
+      case 176:
+        tok = jj_consume_token(176);
         break;
       default:
         jj_la1[37] = jj_gen;
@@ -1715,18 +1732,18 @@ public class GASParser extends VPCBase implements GASParserConstants {
   final public Expr UnaryExpr() throws ParseException {
                      Token tok; Expr e;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 157:
-    case 176:
+    case 158:
     case 177:
+    case 178:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 176:
-        tok = jj_consume_token(176);
-        break;
       case 177:
         tok = jj_consume_token(177);
         break;
-      case 157:
-        tok = jj_consume_token(157);
+      case 178:
+        tok = jj_consume_token(178);
+        break;
+      case 158:
+        tok = jj_consume_token(158);
         break;
       default:
         jj_la1[38] = jj_gen;
@@ -1740,7 +1757,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
     case LO8:
     case HI8:
     case IDENTIFIER:
-    case 178:
+    case 179:
       e = Term();
       break;
     default:
@@ -1767,10 +1784,10 @@ public class GASParser extends VPCBase implements GASParserConstants {
       tok = jj_consume_token(INTEGER_LITERAL);
                               e = new Expr.Constant(tok);
       break;
-    case 178:
-      jj_consume_token(178);
-      e = Expr();
+    case 179:
       jj_consume_token(179);
+      e = Expr();
+      jj_consume_token(180);
       break;
     default:
       jj_la1[40] = jj_gen;
@@ -1784,9 +1801,9 @@ public class GASParser extends VPCBase implements GASParserConstants {
   final public Expr Func() throws ParseException {
                 Token tok; Token l; Expr e;
     tok = FuncName();
-    jj_consume_token(178);
+    jj_consume_token(179);
     e = Expr();
-    l = jj_consume_token(179);
+    l = jj_consume_token(180);
       {if (true) return new Expr.Func(tok, e, l);}
     throw new Error("Missing return statement in function");
   }
@@ -1858,24 +1875,16 @@ public class GASParser extends VPCBase implements GASParserConstants {
     return retval;
   }
 
-  final private boolean jj_3R_13() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(159)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
   final private boolean jj_3R_16() {
     if (jj_3R_21()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(155)) return true;
+    if (jj_scan_token(156)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(156)) return true;
+    if (jj_scan_token(157)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1897,7 +1906,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(155)) return true;
+    if (jj_scan_token(156)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1907,7 +1916,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(156)) return true;
+    if (jj_scan_token(157)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1935,7 +1944,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(155)) return true;
+    if (jj_scan_token(156)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1958,20 +1967,20 @@ public class GASParser extends VPCBase implements GASParserConstants {
     return false;
   }
 
-  final private boolean jj_3_1() {
-    if (jj_3R_13()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
   final private boolean jj_3R_15() {
     if (jj_scan_token(LD)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(155)) return true;
+    if (jj_scan_token(156)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(157)) return true;
+    if (jj_scan_token(158)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3_1() {
+    if (jj_3R_13()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1998,11 +2007,19 @@ public class GASParser extends VPCBase implements GASParserConstants {
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(155)) return true;
+    if (jj_scan_token(156)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(156)) return true;
+    if (jj_scan_token(157)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_13() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(160)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -2035,19 +2052,19 @@ public class GASParser extends VPCBase implements GASParserConstants {
       jj_la1_0 = new int[] {0xffc00000,0xffc00000,0xffc00000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1c00000,0x80000000,0x0,0x382000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x302000,0x302000,0x300000,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0xffffffdf,0xffffffdf,0x1f,0xffffffc0,0x2c0,0x800,0x2500,0xfffb1000,0xc000,0x0,0x0,0x0,0x0,0x0,0x0,0x40000,0x0,0x14,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0xffffffff,0xffffffff,0x7f,0xffffff80,0x580,0x1000,0x4a00,0xfff62000,0x18000,0x0,0x0,0x0,0x0,0x0,0x0,0x80000,0x0,0x14,0x0,0x0,0x8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_2() {
-      jj_la1_2 = new int[] {0xffffffff,0xffffffff,0x0,0xffffffff,0x3c2c0000,0x421000,0x100090,0x2f,0x40,0x2000000,0x0,0x2000000,0x2000000,0x0,0x0,0xc181ef00,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_2 = new int[] {0xffffffff,0xffffffff,0x0,0xffffffff,0x78580000,0x842000,0x200120,0x5f,0x80,0x4000000,0x0,0x4000000,0x4000000,0x0,0x0,0x8303de00,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_3() {
-      jj_la1_3 = new int[] {0xffffffff,0xffffffff,0x0,0xffffffff,0x10027c00,0xc308302,0x20040000,0x2400004,0xc0000000,0xf8,0x8,0x80,0x80,0x0,0x0,0x1810000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_3 = new int[] {0xffffffff,0xffffffff,0x0,0xffffffff,0x2004f800,0x18610604,0x40080000,0x4800008,0x80000000,0x1f0,0x10,0x100,0x100,0x0,0x0,0x3020001,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_4() {
-      jj_la1_4 = new int[] {0x1ffffff,0x1ffffff,0x0,0xffffff,0x80000,0x600200,0x10001e,0x0,0x1,0x0,0x0,0x0,0x0,0x70000,0x10000,0x80fde0,0x8000000,0x0,0x8000000,0x0,0x0,0x8000000,0x21000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x30000000,0x30000000,0x0,0x0,0x20000000,0x21000000,0x1000000,0x0,};
+      jj_la1_4 = new int[] {0x3ffffff,0x3ffffff,0x0,0x1ffffff,0x100000,0xc00400,0x20003c,0x0,0x3,0x0,0x0,0x0,0x0,0xe0000,0x20000,0x101fbc0,0x10000000,0x0,0x10000000,0x0,0x0,0x10000000,0x42000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x60000000,0x60000000,0x0,0x0,0x40000000,0x42000000,0x2000000,0x0,};
    }
    private static void jj_la1_5() {
-      jj_la1_5 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x70000,0x2,0x4,0x8,0x10,0x20,0xc0,0xc0,0xf00,0xf00,0x3000,0x3000,0x0,0x0,0xc000,0xc000,0x30000,0x70000,0x40000,0x0,};
+      jj_la1_5 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xe0000,0x4,0x8,0x10,0x20,0x40,0x180,0x180,0x1e00,0x1e00,0x6000,0x6000,0x0,0x0,0x18000,0x18000,0x60000,0xe0000,0x80000,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[7];
   private boolean jj_rescan = false;
@@ -2214,8 +2231,8 @@ public class GASParser extends VPCBase implements GASParserConstants {
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[180];
-    for (int i = 0; i < 180; i++) {
+    boolean[] la1tokens = new boolean[181];
+    for (int i = 0; i < 181; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -2246,7 +2263,7 @@ public class GASParser extends VPCBase implements GASParserConstants {
         }
       }
     }
-    for (int i = 0; i < 180; i++) {
+    for (int i = 0; i < 181; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
