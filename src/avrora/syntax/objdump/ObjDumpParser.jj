@@ -270,6 +270,7 @@ TOKEN :
   | < SWAP   : "swap"  >
   | < TST    : "tst"   >
   | < WDR    : "wdr"   >
+  | < WORD   : "word"  >
 }
 
 /* IDENTIFIERS */
@@ -280,7 +281,7 @@ TOKEN :
   < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
 |
   < #LETTER:
-      [ "a"-"z", "A"-"Z", "_","$"]
+      [ "a"-"z", "A"-"Z", "_", "$", "/" ]
   >
 |
   < #DIGIT:
@@ -293,31 +294,49 @@ TOKEN :
   < ADDRESS: (["0"-"9","a"-"f","A"-"F"])+ >
 }
 
-/* HEADER */
-
-TOKEN :
-{
-  < PROGRAM_NAME: <IDENTIFIER> "." <IDENTIFIER> >
-|
-  < FILE_FORMAT: "file format" >
-|
-  < FORMAT:  "elf32-avr" >
-|
-  < DISSASSEMBLY: "Disassembly of section .text:">
-}
-
 
 /* Begin GRAMMAR */
 
-
 void Module() : {}
 {
-  Header() (Statement())* <EOF> 
+  Header() Sections() Text() Data() <EOF>
+}
+
+void Text() : {}
+{ 
+   "Disassembly of section .text:"
+   (Statement())* 
+}
+
+void Data() : { } 
+{
+    "Disassembly of section .data:"
+    Address() Label()
+    Address() ":" Address() Address() <DOT_IDENTIFIER> <INTEGER_LITERAL>
 }
 
 void Header() : {}
 {
-   <PROGRAM_NAME> ":" <FILE_FORMAT> <FORMAT> <DISSASSEMBLY>
+   ProgramName() ":" "file format" "elf32-avr"
+}
+
+void ProgramName() : {}
+{
+   <IDENTIFIER> (<IDENTIFIER> | "." | "-" | <INTEGER_LITERAL> | <DOT_IDENTIFIER>) *
+}
+
+void Sections() : {Token name; Token size; Token vma; Token  lma; Token fileOff;}
+{
+  "Sections:" (<IDENTIFIER>)*  
+  (<INTEGER_LITERAL> 
+  name = <DOT_IDENTIFIER> 
+  size = Address() 
+  vma=Address()
+  lma=Address()
+  fileOff=Address()
+  <INTEGER_LITERAL> "**" <INTEGER_LITERAL>
+  (<IDENTIFIER> | ",")*
+  )*
 }
 
 void Statement() : {}
@@ -332,9 +351,10 @@ void Instruction() : {}
   Address()  ":"  InstructionChoice()
 }
 
-void Address() : {}
+Token Address() : { Token ret;}
 {
-    <ADDRESS> | <ADD> | <DEC> | <ADC> | <INTEGER_LITERAL> | <IDENTIFIER>
+    (ret = <ADDRESS> | ret =<ADD> | ret=<DEC> | ret=<ADC> | ret=<INTEGER_LITERAL> | ret=<IDENTIFIER>)
+    {return ret;}
 }
 
 void InstructionChoice() : {}

@@ -136,15 +136,12 @@ public interface ObjDumpParserConstants {
   int SWAP = 137;
   int TST = 138;
   int WDR = 139;
-  int IDENTIFIER = 140;
-  int LETTER = 141;
-  int DIGIT = 142;
-  int DOT_IDENTIFIER = 143;
-  int ADDRESS = 144;
-  int PROGRAM_NAME = 145;
-  int FILE_FORMAT = 146;
-  int FORMAT = 147;
-  int DISSASSEMBLY = 148;
+  int WORD = 140;
+  int IDENTIFIER = 141;
+  int LETTER = 142;
+  int DIGIT = 143;
+  int DOT_IDENTIFIER = 144;
+  int ADDRESS = 145;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -290,22 +287,25 @@ public interface ObjDumpParserConstants {
     "\"swap\"",
     "\"tst\"",
     "\"wdr\"",
+    "\"word\"",
     "<IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",
     "<DOT_IDENTIFIER>",
     "<ADDRESS>",
-    "<PROGRAM_NAME>",
+    "\"Disassembly of section .text:\"",
+    "\"Disassembly of section .data:\"",
+    "\":\"",
     "\"file format\"",
     "\"elf32-avr\"",
-    "\"Disassembly of section .text:\"",
-    "\":\"",
+    "\".\"",
+    "\"-\"",
+    "\"Sections:\"",
+    "\"**\"",
     "\",\"",
     "\"+\"",
-    "\"-\"",
     "\"<\"",
     "\">:\"",
-    "\".\"",
   };
 
 }
