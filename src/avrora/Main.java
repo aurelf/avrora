@@ -35,6 +35,7 @@ package avrora;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.SimulateAction;
+import avrora.sim.MultiSimulateAction;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
 import avrora.sim.mcu.Microcontrollers;
@@ -221,10 +222,14 @@ public class Main {
     public static final Option.Bool HTML = options.newOption("html", false,
             "For terminal colors. Display terminal colors as HTML tags for " +
             "easier inclusion in webpages.");
+    public static final Option.Long NODECOUNT = options.newOption("nodecount", 1,
+            "This option is used in the multi-node simulation. It specifies the " +
+            "number of nodes to be instantiated.");
 
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 
     static {
+        newAction("multi-simulate", new MultiSimulateAction());
         newAction("simulate", new SimulateAction());
         newAction("analyze-stack", new AnalyzeStackAction());
         newAction("assemble", new AssembleAction());
