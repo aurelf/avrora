@@ -247,7 +247,7 @@ public class Analyzer {
         public void visit(Instr.ADD i) { // add register to register
             char r1 = state.readRegister(i.r1);
             char r2 = state.readRegister(i.r2);
-            char result = performAddition(r1, r2, OFF);
+            char result = performAddition(r1, r2, FALSE);
             state.writeRegister(i.r1, result);
         }
 
@@ -268,7 +268,7 @@ public class Analyzer {
             state.setFlag_C(and(not(R15), Rdh7));
             state.setFlag_N(R15);
             state.setFlag_V(and(not(Rdh7), R15));
-            state.setFlag_Z(and(couldBeZero(RL), couldBeZero(RH)));
+            state.setFlag_Z(couldBeZero(RL, RH));
             state.setFlag_S(xor(state.getFlag_N(), state.getFlag_Z()));
         }
 
@@ -293,7 +293,7 @@ public class Analyzer {
         }
 
         public void visit(Instr.BCLR i) {// clear bit in status register
-            state.setSREG_bit(i.imm1, OFF);
+            state.setSREG_bit(i.imm1, FALSE);
         }
 
         public void visit(Instr.BLD i) {// load bit from T flag into register
@@ -393,7 +393,7 @@ public class Analyzer {
         }
 
         public void visit(Instr.BSET i) { // set flag in status register
-            state.setSREG_bit(i.imm1, ON);
+            state.setSREG_bit(i.imm1, TRUE);
         }
 
         public void visit(Instr.BST i) { // store bit in register into T flag
@@ -408,7 +408,7 @@ public class Analyzer {
 
         public void visit(Instr.CBI i) { // clear bit in IO register
             char val = state.readIORegister(i.imm1);
-            char result = setBit(val, i.imm2, OFF);
+            char result = setBit(val, i.imm2, FALSE);
             state.writeIORegister(i.imm1, result);
         }
 
@@ -420,43 +420,43 @@ public class Analyzer {
         }
 
         public void visit(Instr.CLC i) { // clear C flag
-            state.setFlag_C(OFF);
+            state.setFlag_C(FALSE);
         }
 
         public void visit(Instr.CLH i) { // clear H flag
-            state.setFlag_H(OFF);
+            state.setFlag_H(FALSE);
         }
 
         public void visit(Instr.CLI i) { // clear I flag
-            state.setFlag_I(OFF);
+            state.setFlag_I(FALSE);
         }
 
         public void visit(Instr.CLN i) { // clear N flag
-            state.setFlag_N(OFF);
+            state.setFlag_N(FALSE);
         }
 
         public void visit(Instr.CLR i) { // clear register (set to zero)
-            state.setFlag_S(OFF);
-            state.setFlag_V(OFF);
-            state.setFlag_N(OFF);
-            state.setFlag_Z(ON);
+            state.setFlag_S(FALSE);
+            state.setFlag_V(FALSE);
+            state.setFlag_N(FALSE);
+            state.setFlag_Z(TRUE);
             state.writeRegister(i.r1, ZERO);
         }
 
         public void visit(Instr.CLS i) { // clear S flag
-            state.setFlag_S(OFF);
+            state.setFlag_S(FALSE);
         }
 
         public void visit(Instr.CLT i) { // clear T flag
-            state.setFlag_T(OFF);
+            state.setFlag_T(FALSE);
         }
 
         public void visit(Instr.CLV i) { // clear V flag
-            state.setFlag_V(OFF);
+            state.setFlag_V(FALSE);
         }
 
         public void visit(Instr.CLZ i) { // clear Z flag
-            state.setFlag_Z(OFF);
+            state.setFlag_Z(FALSE);
         }
 
         public void visit(Instr.COM i) { // one's compliment register
@@ -464,10 +464,10 @@ public class Analyzer {
             char mask = maskOf(r1);
             char result = canon(mask, (char)~r1);
 
-            char C = ON;
+            char C = TRUE;
             char N = getBit(result, 7);
             char Z = couldBeZero(result);
-            char V = OFF;
+            char V = FALSE;
             char S = xor(N, V);
             setFlag_CNZVS(C, N, Z, V, S);
 
@@ -478,7 +478,7 @@ public class Analyzer {
             char r1 = state.readRegister(i.r1);
             char r2 = state.readRegister(i.r2);
             // perform subtraction for flag side effects.
-            performSubtraction(r1, r2, OFF);
+            performSubtraction(r1, r2, FALSE);
         }
 
         public void visit(Instr.CPC i) { // compare registers with carry
@@ -492,13 +492,13 @@ public class Analyzer {
             char r1 = state.readRegister(i.r1);
             char r2 = knownVal((byte)i.imm1);
             // perform subtraction for flag side effects.
-            performSubtraction(r1, r2, OFF);
+            performSubtraction(r1, r2, FALSE);
         }
 
         public void visit(Instr.CPSE i) { // compare registers and skip if equal
             char r1 = state.readRegister(i.r1);
             char r2 = state.readRegister(i.r2);
-            performSubtraction(r1, r2, OFF);
+            performSubtraction(r1, r2, FALSE);
             skipOnCondition(state.getFlag_Z());
         }
 
@@ -555,7 +555,7 @@ public class Analyzer {
 
             char N = getBit(result, 7);
             char Z = couldBeZero(result);
-            char V = OFF;
+            char V = FALSE;
             char S = xor(N, V);
             setFlag_NZVS(N, Z, V, S);
 
@@ -594,7 +594,7 @@ public class Analyzer {
             RH = shiftLeftOne(RH, R7);
 
             state.setFlag_C(R15);
-            state.setFlag_Z(and(couldBeZero(RL), couldBeZero(RH)));
+            state.setFlag_Z(couldBeZero(RL, RH));
             writeRegisterWord(Register.R0, RL, RH);
         }
 
@@ -674,13 +674,13 @@ public class Analyzer {
 
         public void visit(Instr.LSL i) { // logical shift left
             char val = state.readRegister(i.r1);
-            char result = performLeftShift(val, OFF);
+            char result = performLeftShift(val, FALSE);
             state.writeRegister(i.r1, result);
         }
 
         public void visit(Instr.LSR i) { // logical shift right
             char val = state.readRegister(i.r1);
-            char result = performRightShift(val, OFF);
+            char result = performRightShift(val, FALSE);
             state.writeRegister(i.r1, result);
         }
 
@@ -723,14 +723,14 @@ public class Analyzer {
             char RL = lowAbstractByte(result);
             char RH = highAbstractByte(result);
             state.setFlag_C(getBit(RH, 7));
-            state.setFlag_Z(and(couldBeZero(RL), couldBeZero(RH)));
+            state.setFlag_Z(couldBeZero(RL, RH));
             writeRegisterWord(Register.R0, RL, RH);
         }
 
 
         public void visit(Instr.NEG i) { // two's complement register
             char r1 = state.readRegister(i.r1);
-            char result = performSubtraction(ZERO, r1, OFF);
+            char result = performSubtraction(ZERO, r1, FALSE);
             state.writeRegister(i.r1, result);
         }
 
@@ -811,7 +811,7 @@ public class Analyzer {
 
         public void visit(Instr.SBI i) { // set bit in IO register
             char val = state.readIORegister(i.imm1);
-            char result = setBit(val, i.imm2, ON);
+            char result = setBit(val, i.imm2, TRUE);
             state.writeIORegister(i.imm1, result);
         }
 
@@ -867,19 +867,19 @@ public class Analyzer {
         }
 
         public void visit(Instr.SEC i) { // set C (carry) flag
-            state.setFlag_C(ON);
+            state.setFlag_C(TRUE);
         }
 
         public void visit(Instr.SEH i) { // set H (half carry) flag
-            state.setFlag_H(ON);
+            state.setFlag_H(TRUE);
         }
 
         public void visit(Instr.SEI i) { // set I (interrupt enable) flag
-            state.setFlag_I(ON);
+            state.setFlag_I(TRUE);
         }
 
         public void visit(Instr.SEN i) { // set N (negative) flag
-            state.setFlag_N(ON);
+            state.setFlag_N(TRUE);
         }
 
         public void visit(Instr.SER i) { // set bits in register
@@ -887,19 +887,19 @@ public class Analyzer {
         }
 
         public void visit(Instr.SES i) { // set S (signed) flag
-            state.setFlag_S(ON);
+            state.setFlag_S(TRUE);
         }
 
         public void visit(Instr.SET i) { // set T flag
-            state.setFlag_T(ON);
+            state.setFlag_T(TRUE);
         }
 
         public void visit(Instr.SEV i) { // set V (overflow) flag
-            state.setFlag_V(ON);
+            state.setFlag_V(TRUE);
         }
 
         public void visit(Instr.SEZ i) { // set Z (zero) flag
-            state.setFlag_Z(ON);
+            state.setFlag_Z(TRUE);
         }
 
         public void visit(Instr.SLEEP i) { // enter sleep mode
@@ -934,14 +934,14 @@ public class Analyzer {
         public void visit(Instr.SUB i) { // subtract register from register
             char r1 = state.readRegister(i.r1);
             char r2 = state.readRegister(i.r2);
-            char result = performSubtraction(r1, r2, OFF);
+            char result = performSubtraction(r1, r2, FALSE);
             state.writeRegister(i.r1, result);
         }
 
         public void visit(Instr.SUBI i) { // subtract immediate from register
             char r1 = state.readRegister(i.r1);
             char imm = knownVal((byte)i.imm1);
-            char result = performSubtraction(r1, imm, OFF);
+            char result = performSubtraction(r1, imm, FALSE);
             state.writeRegister(i.r1, result);
         }
 
@@ -955,7 +955,7 @@ public class Analyzer {
 
         public void visit(Instr.TST i) { // test for zero or minus
             char r1 = state.readRegister(i.r1);
-            state.setFlag_V(OFF);
+            state.setFlag_V(FALSE);
             state.setFlag_Z(couldBeZero(r1));
             state.setFlag_N(getBit(r1, 7));
             state.setFlag_S(xor(state.getFlag_N(), state.getFlag_V()));
@@ -976,9 +976,9 @@ public class Analyzer {
          */
 
         private void branchOnCondition(char cond, int offset) {
-            if (cond == ON) // branch is taken
+            if (cond == TRUE) // branch is taken
                 relativeBranch(offset);
-            else if (cond == OFF)
+            else if (cond == FALSE)
                 ; // branch is not taken
             else { // branch could go either way
                 AbstractState nottaken = state.copy();
@@ -1023,9 +1023,9 @@ public class Analyzer {
 
             char result = add(r1, r2);
 
-            if (carry == ON)
+            if (carry == TRUE)
                 result = increment(result);
-            else if (carry == OFF)
+            else if (carry == FALSE)
                 ; /* do nothing. */
             else
                 result = merge(result, increment(result));
@@ -1053,8 +1053,8 @@ public class Analyzer {
         private char performSubtraction(char r1, char r2, char carry) {
             char result = subtract(r1, r2);
 
-            if (carry == ON) result = decrement(result);
-            else if (carry == OFF) ; /* do nothing. */
+            if (carry == TRUE) result = decrement(result);
+            else if (carry == FALSE) ; /* do nothing. */
             else result = merge(result, decrement(result));
 
             char Rd7 = getBit(r1, 7);
@@ -1109,7 +1109,7 @@ public class Analyzer {
 
             char N = getBit(result, 7);
             char Z = couldBeZero(result);
-            char V = OFF;
+            char V = FALSE;
             char S = xor(N, V);
             setFlag_NZVS(N, Z, V, S);
 
@@ -1121,7 +1121,7 @@ public class Analyzer {
 
             char N = getBit(result, 7);
             char Z = couldBeZero(result);
-            char V = OFF;
+            char V = FALSE;
             char S = xor(N, V);
             setFlag_NZVS(N, Z, V, S);
 

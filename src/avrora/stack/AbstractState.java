@@ -69,7 +69,7 @@ public class AbstractState implements IORegisterConstants {
 
     /**
      * The <code>merge()</code> method merges this abstract state with another abstract
-     * state and returns a new copy. This abstract state is not update. The operation is
+     * state and returns a new copy. This abstract state is not updated. The operation is
      * a simple pointwise merging operation: each value is merged with its corresponding
      * abstract value in the other abstract state.
      *
