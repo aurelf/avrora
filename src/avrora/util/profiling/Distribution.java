@@ -45,10 +45,9 @@ public class Distribution extends MinMaxMean {
 
     /**
      * The <code>distrib</code> field stores an array that records the number of occurrences for each value in
-     * the distribution. The <code>distribMin</code> field stores the value which corresponds to expr 0 in
-     * the array. Therefore, <code>distrib[myval - distribMin]</code> contains the count for
-     * <code>myval</code>, provided that the array is large enough. Values outside the array have have a count
-     * of zero.
+     * the distribution. The <code>distribMin</code> field stores the value which corresponds to expr 0 in the
+     * array. Therefore, <code>distrib[myval - distribMin]</code> contains the count for <code>myval</code>,
+     * provided that the array is large enough. Values outside the array have have a count of zero.
      */
     public int distrib[]; // table of number of occurrences of each value
 

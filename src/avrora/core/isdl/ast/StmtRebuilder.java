@@ -127,7 +127,7 @@ public interface StmtRebuilder extends CodeRebuilder {
                 Stmt sa = (Stmt)i.next();
                 Stmt na = sa.accept(this, env);
                 if (na != sa) changed = true;
-                if ( na != null)
+                if (na != null)
                     newList.add(na);
             }
         }

@@ -295,7 +295,7 @@ public class Architecture {
 
         public void visitStmtList(List s) {
             p.startblock();
-            if ( s == null ) {
+            if (s == null) {
                 p.println(" // empty body");
             } else {
                 Iterator i = s.iterator();

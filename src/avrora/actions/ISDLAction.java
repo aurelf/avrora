@@ -72,7 +72,7 @@ public class ISDLAction extends Action {
     public final Option.Bool INLINE = newOption("inline", true,
             "This option controls whether the ISDL processor will inline all subroutines marked as " +
             "\"inline\" in their declaration.");
-    
+
     public ISDLAction() {
         super("isdl", HELP);
     }

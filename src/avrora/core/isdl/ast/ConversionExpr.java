@@ -49,8 +49,8 @@ public class ConversionExpr extends Expr {
     public final Token typename;
 
     /**
-     * The <code>expr</code> field stores a references to the expression which is evaluated to yield the
-     * expr into the map.
+     * The <code>expr</code> field stores a references to the expression which is evaluated to yield the expr
+     * into the map.
      */
     public final Expr expr;
 

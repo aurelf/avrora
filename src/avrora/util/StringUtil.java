@@ -407,8 +407,8 @@ public class StringUtil {
 
     /**
      * The <code>millisToDays()</code> method converts the given milliseconds into a breakdown of days, hours,
-     * minutes, seconds, and milliseconds, returning a long array where the expr 0 corresponds to days, expr
-     * 1 corresponds to hours, etc.
+     * minutes, seconds, and milliseconds, returning a long array where the expr 0 corresponds to days, expr 1
+     * corresponds to hours, etc.
      *
      * @param millis the number of milliseconds to convert
      * @return the breakdown of milliseconds into days, hours, minutes, seconds, and milliseconds in an array,

@@ -59,7 +59,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(ConversionExpr e) {
         inner(e.expr, Expr.PREC_TERM);
-        printer.print(":"+e.typename.image);
+        printer.print(":" + e.typename.image);
     }
 
     public void visit(VarExpr e) {

@@ -50,8 +50,8 @@ public class MapBitRangeAssignStmt extends AssignStmt {
     public final Token mapname;
 
     /**
-     * The <code>expr</code> field stores a references to the expression which is evaluated to yield the
-     * expr into the map.
+     * The <code>expr</code> field stores a references to the expression which is evaluated to yield the expr
+     * into the map.
      */
     public final Expr index;
 

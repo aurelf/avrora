@@ -270,7 +270,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
             String image = o.name.image;
             if (cr instanceof InstrDecl) {
-                if ( o.isRegister() )
+                if (o.isRegister())
                     image = "i." + image + ".getNumber()";
                 else
                     image = "i." + image;

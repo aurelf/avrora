@@ -76,15 +76,15 @@ public class Canonicalizer extends StmtRebuilder.DepthFirst {
     protected Expr liftExpr(Expr e, Object env) {
         Expr ne = e.accept(this, env);
 
-        if ( ne.isVariable() ) return ne;
-        if ( ne.isLiteral() ) return ne;
+        if (ne.isVariable()) return ne;
+        if (ne.isLiteral()) return ne;
 
         return extractExpr(ne);
 
     }
 
     private Expr extractExpr(Expr ne) {
-        String tmpname = "_canon_tmp_"+(tempcount++);
+        String tmpname = "_canon_tmp_" + (tempcount++);
 
         // TODO: get correct type!
         addStmt(new DeclStmt(tmpname, "int", ne));
