@@ -39,6 +39,10 @@ import avrora.sim.State;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.TermUtil;
+import avrora.util.Option;
+import avrora.Avrora;
+
+import java.util.Iterator;
 
 /**
  * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as
@@ -48,6 +52,12 @@ import avrora.util.TermUtil;
  */
 public class TraceMonitor extends MonitorFactory {
 
+    final Option.List FROMTO = options.newOptionList("trace-from", "",
+            "The \"trace-from\" option specifies the list of program point pairs for which " +
+            "to enable the tracing. The tracing will be enabled when the first point is entered " +
+            "and be disabled when the second point is reached. Nesting of multiple point pairs " +
+            "is handled correctly.");
+
     /**
      * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
      * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
@@ -56,16 +66,13 @@ public class TraceMonitor extends MonitorFactory {
     public class Monitor implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
+        public final GlobalProbe PROBE;
         public int count;
+        int nesting;
 
-        public class Probe implements Simulator.Probe {
+        public class GlobalProbe implements Simulator.Probe {
             public void fireBefore(Instr i, int addr, State s) {
-                String idstr = simulator.getIDTimeString();
-                Terminal.print(idstr);
-                Terminal.printBrightCyan(StringUtil.toHex(s.getPC(), 4) + ": ");
-                Terminal.printBrightBlue(i.getVariant() + ' ');
-                Terminal.print(i.getOperands());
-                Terminal.nextln();
+                print(s, i);
             }
 
             public void fireAfter(Instr i, int addr, State s) {
@@ -73,11 +80,117 @@ public class TraceMonitor extends MonitorFactory {
             }
         }
 
+        public class StartProbe implements Simulator.Probe {
+            int start, end;
+            String pair;
+
+            StartProbe(int s, int e) {
+                start = s;
+                end = e;
+                pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
+            }
+
+            int count;
+
+            public void fireBefore(Instr i, int addr, State s) {
+                count++;
+                if ( nesting == 0 ) {
+                    print("trace ("+pair+") begin: "+count+" --------------------------");
+                    print(s, i);
+                    simulator.insertProbe(PROBE);
+                } else {
+                    print("nested ("+pair+") begin: "+count+" --------------------------");
+                }
+                nesting++;
+            }
+
+            public void fireAfter(Instr i, int addr, State s) {
+            }
+        }
+
+        public class EndProbe implements Simulator.Probe {
+            int start, end;
+            String pair;
+
+            EndProbe(int s, int e) {
+                start = s;
+                end = e;
+                pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
+            }
+
+            public void fireBefore(Instr i, int addr, State s) {
+            }
+
+            public void fireAfter(Instr i, int addr, State s) {
+                nesting--;
+                if ( nesting == 0 ) {
+                    print("trace ("+pair+") end --------------------------");
+                    simulator.removeProbe(PROBE);
+                } else {
+                    print("nested ("+pair+") end --------------------------");
+
+                }
+            }
+        }
+
+        private void print(State s, Instr i) {
+            String idstr = simulator.getIDTimeString();
+            Terminal.print(idstr);
+            Terminal.printBrightCyan(StringUtil.toHex(s.getPC(), 4) + ": ");
+            Terminal.printBrightBlue(i.getVariant() + ' ');
+            Terminal.print(i.getOperands());
+            Terminal.nextln();
+        }
+
+        private void print(String s) {
+            String idstr = simulator.getIDTimeString();
+            Terminal.println(idstr+s);
+        }
+
         Monitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
+            PROBE = new GlobalProbe();
             // insert the global probe
-            s.insertProbe(new Probe());
+            if ( FROMTO.get().isEmpty() ){
+                s.insertProbe(PROBE);
+            }
+            else
+                addPairs();
+        }
+
+        private void addPairs() {
+            Iterator i = FROMTO.get().iterator();
+            while (i.hasNext()) {
+                String str = (String)i.next();
+                int ind = str.indexOf(":");
+                if (ind <= 0)
+                    throw Avrora.failure("invalid address format: " + StringUtil.quote(str));
+                String src = str.substring(0, ind);
+                String dst = str.substring(ind + 1);
+
+                Program.Location loc = getLocation(src);
+                Program.Location tar = getLocation(dst);
+
+                addPair(loc.address, tar.address);
+            }
+        }
+
+        private Program.Location getLocation(String src) {
+            Program.Location loc = program.getProgramLocation(src);
+            if ( loc == null )
+                Avrora.userError("Invalid program address: ", src);
+            if ( program.readInstr(loc.address) == null )
+                Avrora.userError("Invalid program address: ", src);
+            return loc;
+        }
+
+        private void addPair(int start, int end) {
+            if ( program.readInstr(start) == null ) return;
+            if ( program.readInstr(end) == null ) return;
+
+            simulator.insertProbe(new StartProbe(start, end), start);
+            simulator.insertProbe(new EndProbe(start, end), end);
         }
 
         /**

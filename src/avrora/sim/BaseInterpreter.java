@@ -430,6 +430,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param p the probe to insert
      */
     public void insertProbe(Simulator.Probe p) {
+        innerLoop = false;
         globalProbe.add(p);
     }
 
@@ -448,6 +449,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param b the probe to remove
      */
     public void removeProbe(Simulator.Probe b) {
+        innerLoop = false;
         globalProbe.remove(b);
     }
 

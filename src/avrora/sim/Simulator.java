@@ -229,7 +229,7 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>Simulator.Probe</code> interface represents a programmer-defined probe that can be inserted
+     * The <code>Simulator.GlobalProbe</code> interface represents a programmer-defined probe that can be inserted
      * at a particular instruction in the program. or at every instruction. Probes can be usedfor profiling,
      * analysis, or program understanding. The <code>fireBefore()</code> and <code>fireAfter()</code> methods
      * are called before and after the target instruction executes in simulation. Probes can also be inserted

@@ -83,7 +83,7 @@ public class EnergyProfiler extends MonitorFactory {
          */
         private final ProcedureProbe procedureProbe;
         /**
-         * <code>sleepProbe</code>: Probe for entering sleep mode
+         * <code>sleepProbe</code>: GlobalProbe for entering sleep mode
          */
         private final SleepProbe sleepProbe;
 
@@ -222,7 +222,7 @@ public class EnergyProfiler extends MonitorFactory {
         /**
          * @author Olaf Landsiedel
          *         <p/>
-         *         Class for a Probe which is called when a new basic block is entered
+         *         Class for a GlobalProbe which is called when a new basic block is entered
          */
         public class ProcedureProbe implements Simulator.Probe {
 
