@@ -1,4 +1,4 @@
-package avrora.sir;
+package avrora.core;
 
 import vpc.VPCBase;
 

@@ -1,8 +1,8 @@
 package avrora.stack;
 
-import avrora.sir.Program;
-import avrora.sir.InstrVisitor;
-import avrora.sir.Instr;
+import avrora.core.Program;
+import avrora.core.InstrVisitor;
+import avrora.core.Instr;
 
 import java.util.HashSet;
 

@@ -2,7 +2,7 @@ package avrora;
 
 import vpc.VPCBase;
 import vpc.CompilationError;
-import avrora.sir.*;
+import avrora.core.*;
 import avrora.syntax.Expr;
 import avrora.syntax.ExprList;
 import avrora.syntax.Context;

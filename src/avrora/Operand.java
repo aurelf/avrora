@@ -19,7 +19,7 @@ public abstract class Operand extends ASTNode {
 
     public static class Register extends Operand {
         public final AbstractToken name;
-        private avrora.sir.Register register;
+        private avrora.core.Register register;
 
         public Register(AbstractToken n) {
             name = n;
@@ -37,11 +37,11 @@ public abstract class Operand extends ASTNode {
             return true;
         }
 
-        public avrora.sir.Register getRegister() {
+        public avrora.core.Register getRegister() {
             return register;
         }
 
-        public void setRegister(avrora.sir.Register r) {
+        public void setRegister(avrora.core.Register r) {
             register = r;
         }
     }

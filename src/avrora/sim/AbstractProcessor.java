@@ -1,8 +1,8 @@
 package avrora.sim;
 
-import avrora.sir.Program;
-import avrora.sir.Instr;
-import avrora.sir.InstrPrototype;
+import avrora.core.Program;
+import avrora.core.Instr;
+import avrora.core.InstrPrototype;
 
 /**
  * @author Ben L. Titzer

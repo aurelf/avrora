@@ -3,7 +3,7 @@ package avrora;
 import vpc.CompilationError;
 import vpc.VPCBase;
 import vpc.ErrorReporter;
-import avrora.sir.Register;
+import avrora.core.Register;
 import avrora.syntax.ASTNode;
 import avrora.syntax.ExprList;
 import vpc.core.AbstractToken;

@@ -1,7 +1,7 @@
 package avrora.sim;
 
-import avrora.sir.Program;
-import avrora.sir.Register;
+import avrora.core.Program;
+import avrora.core.Register;
 
 /**
  * The <code>TracingState</code> class is an extended version of the <code>State</code>

@@ -1,7 +1,7 @@
 package avrora.stack;
 
 import vpc.VPCBase;
-import avrora.sir.Register;
+import avrora.core.Register;
 import avrora.sim.IORegisterConstants;
 
 /**

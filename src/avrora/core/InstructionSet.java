@@ -1,6 +1,6 @@
-package avrora.sir;
+package avrora.core;
 
-import avrora.sir.Register;
+import avrora.core.Register;
 import avrora.Operand;
 import avrora.AVRErrorReporter;
 

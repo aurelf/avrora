@@ -1,6 +1,6 @@
 package avrora.sim;
 
-import avrora.sir.*;
+import avrora.core.*;
 import avrora.Arithmetic;
 import vpc.VPCBase;
 import vpc.util.ColorTerminal;

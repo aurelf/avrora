@@ -1,4 +1,4 @@
-package avrora.sir;
+package avrora.core;
 
 /**
  * @author Ben L. Titzer

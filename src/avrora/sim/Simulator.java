@@ -1,9 +1,9 @@
 package avrora.sim;
 
-import avrora.sir.InstrVisitor;
-import avrora.sir.Instr;
-import avrora.sir.Program;
-import avrora.sir.Register;
+import avrora.core.InstrVisitor;
+import avrora.core.Instr;
+import avrora.core.Program;
+import avrora.core.Register;
 import avrora.Arithmetic;
 import avrora.Operand;
 import vpc.util.ColorTerminal;

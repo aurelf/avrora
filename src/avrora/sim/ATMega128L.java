@@ -1,7 +1,7 @@
 package avrora.sim;
 
-import avrora.sir.InstrPrototype;
-import avrora.sir.Program;
+import avrora.core.InstrPrototype;
+import avrora.core.Program;
 import avrora.Arithmetic;
 
 /**

@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.io.File;
 import java.io.FileInputStream;
 
-import avrora.sir.Program;
+import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
