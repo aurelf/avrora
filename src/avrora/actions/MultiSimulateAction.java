@@ -201,7 +201,20 @@ public class MultiSimulateAction extends SimAction {
     }
 
     private void reportTime(long startms, long endms) {
-        TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(endms - startms), "seconds");
+        long diff = endms - startms;
+        TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
+        // calculate total throughput over all threads
+        Iterator i = simulatorThreadList.iterator();
+        int numthreads = 0;
+        long aggCycles = 0;
+        while ( i.hasNext() ) {
+            SimulatorThread thread = (SimulatorThread)i.next();
+            aggCycles += thread.getSimulator().getClock().getCount();
+            numthreads++;
+        }
+        float thru = ((float)aggCycles) / (diff * 1000);
+        TermUtil.reportQuantity("Total throughput", thru, "mhz");
+        TermUtil.reportQuantity("Throughput per node", thru / numthreads, "mhz");
     }
 
     private void reportUtilization() {
