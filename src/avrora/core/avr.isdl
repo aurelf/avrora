@@ -465,21 +465,36 @@ architecture avr {
 
     instruction "icall" {
         execute = {
+            pushPC(nextPC);
+            local target: int = absolute(word($regs(0), $regs(1));
+            nextPC = target;
         };
     };
 
     instruction "ijmp" {
         execute = {
+            local target: int = absolute(word($regs(0), $regs(1));
+            nextPC = target;
         };
     };
 
     instruction "in" rd: GPR, imm: IMM6 {
         execute = {
+            $regs(rd) = $ioregs(imm);
         };
     };
 
     instruction "inc" rd: GPR {
         execute = {
+            local r1: int = $uregs(rd);
+            local result: int = r1 + 1;
+
+            N = result[7];
+            Z = low(result) == 0;
+            V = r1 == 0x7f;
+            S = N xor V;
+
+            $regs(rd) = low(result);
         };
     };
 
