@@ -35,6 +35,7 @@ package avrora.monitors;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.core.Instr;
@@ -50,15 +51,41 @@ import java.util.Iterator;
 public class IORegMonitor extends MonitorFactory {
 
     final Option.List IOREGS = options.newOptionList("ioregs", "",
-            "This option accepts a list of IO register names which will be monitored during the simulation.");
+            "This option accepts a list of IO register names which will be monitored during the " +
+            "simulation. For example, specifying \"PORTA,DDR\" as this option's value will enable monitoring " +
+            "of reads and writes to the PORTA and DDRA IO registers. " +
+            "If the string \"all\" is specified as one of the items of the list, then all " +
+            "IO registers will be monitored.");
 
     class Monitor implements avrora.monitors.Monitor {
         Simulator.Printer printer;
 
         Monitor(Simulator s) {
-            Microcontroller m = s.getMicrocontroller();
-            Iterator i = IOREGS.get().iterator();
             printer = s.getPrinter("monitors.ioregs");
+            insertWatches(s);
+            printer.enabled = true;
+        }
+
+        private void insertWatches(Simulator s) {
+            Microcontroller m = s.getMicrocontroller();
+            if ( IOREGS.get().contains("all"))
+                insertAllWatches(m, s);
+            else
+                insertSingleWatches(m, s);
+        }
+
+        private void insertAllWatches(Microcontroller m, Simulator s) {
+            MicrocontrollerProperties props = m.getProperties();
+            int size = props.ioreg_size;
+            for ( int cntr = 0; cntr < size; cntr++ ) {
+                String name = props.getIORegName(cntr);
+                if ( name == null ) name = "0x"+StringUtil.toHex(cntr,2);
+                s.insertIORWatch(new Watch(name), cntr);
+            }
+        }
+
+        private void insertSingleWatches(Microcontroller m, Simulator s) {
+            Iterator i = IOREGS.get().iterator();
             while ( i.hasNext() ) {
                 String str = (String)i.next();
                 int ior;
@@ -68,7 +95,6 @@ public class IORegMonitor extends MonitorFactory {
                     ior = m.getProperties().getIOReg(str);
                 s.insertIORWatch(new Watch(str), ior);
             }
-            printer.enabled = true;
         }
 
         public void report() {

@@ -71,7 +71,7 @@ public class Module implements Context {
     static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("loader");
 
     private static final SyntacticOperand[] NO_OPERANDS = {};
-
+    private LabelMapping labelMapping;
 
     protected class Seg {
         private final String name;
@@ -122,7 +122,11 @@ public class Module implements Context {
         }
 
         public void addLabel(int baddr, String labelname) {
-            if ("program".equals(name)) newprogram.newProgramLabel(labelname, baddr);
+            if ("program".equals(name)) {
+                newprogram.newProgramLabel(labelname, baddr);
+                // TODO: this is a hack; eventually everything should be transitioned to SourceMapping
+                labelMapping.newLocation(labelname, baddr);
+            }
             if ("eeprom".equals(name)) newprogram.newEEPromLabel(labelname, baddr);
             if ("data".equals(name)) newprogram.newDataLabel(labelname, baddr);
         }
@@ -309,6 +313,8 @@ public class Module implements Context {
                 dataSegment.lowest_address, dataSegment.highest_address,
                 eepromSegment.lowest_address, eepromSegment.highest_address);
 
+        labelMapping = new LabelMapping(newprogram);
+        newprogram.setSourceMapping(labelMapping);
         Iterator i = itemList.iterator();
         while (i.hasNext()) {
             Item pos = (Item)i.next();

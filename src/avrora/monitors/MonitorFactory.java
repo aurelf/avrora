@@ -61,8 +61,8 @@ public abstract class MonitorFactory extends HelpCategory {
         super("monitor", h);
         options = new Options();
 
-        addSection("OVERVIEW", help);
-        addOptionSection("Help for specific options is below.", options);
+        addSection("MONITOR OVERVIEW", help);
+        addOptionSection("Help for the options accepted by this monitor is below.", options);
     }
 
 

@@ -60,8 +60,8 @@ public abstract class Action extends HelpCategory {
         super("action", h);
         options = new Options();
 
-        addSection("OVERVIEW", help);
-        addOptionSection("Help for specific options is below.", options);
+        addSection("ACTION OVERVIEW", help);
+        addOptionSection("Help for the specific options accepted by this action is below.", options);
     }
 
     /**

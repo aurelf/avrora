@@ -36,6 +36,7 @@ import avrora.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.NoSuchElementException;
+import java.util.Iterator;
 
 /**
  * The <code>MicrocontrollerProperties</code> class is simply a wrapper class around several
@@ -75,6 +76,7 @@ public class MicrocontrollerProperties {
 
     protected final HashMap pinAssignments;
     protected final HashMap ioregAssignments;
+    protected final String[] ioreg_name;
 
     /**
      * The constructor for the <code>MicrocontrollerProperties</code> class creates a new
@@ -98,8 +100,17 @@ public class MicrocontrollerProperties {
         eeprom_size = es;
         num_pins = np;
 
+        ioreg_name = new String[is];
+
         pinAssignments = pa;
         ioregAssignments = ia;
+
+        Iterator i = ioregAssignments.keySet().iterator();
+        while ( i.hasNext() ) {
+            String s = (String)i.next();
+            Integer iv = (Integer)ioregAssignments.get(s);
+            ioreg_name[iv.intValue()] = s;
+        }
     }
 
     /**
@@ -128,5 +139,9 @@ public class MicrocontrollerProperties {
         if ( i == null )
             throw new NoSuchElementException(StringUtil.quote(n)+" IO register not found");
         return i.intValue();
+    }
+
+    public String getIORegName(int ioreg) {
+        return ioreg_name[ioreg];
     }
 }

@@ -40,6 +40,7 @@
     1   util  Implement Columnifier class
     1  probe  Interrupt monitor
 
+    1  probe  implemented simple call / return monitor              (1.5.42)
     1  probe  implemented simple command line probing of IORegs     (1.5.40)
     2  probe  Implement probing for IO registers                    (1.5.40)
     1   sim   new: ClockDomain, refactored MCU construction         (1.5.32)
@@ -63,9 +64,10 @@
     2  radio  RadioAir, distance calculations
   2-3  radio  RadioPacket refactoring, optimization
     3    sim  Implement one thread per processor model
-    1   util  global migrate to StringUtil.*
-    2    sim  Introduce SourceMapping class
+    1   util  migrate to StringUtil.*
+    1  probe  migrate to SourceMapping, remove Program.Location
 
+    2    sim  Introduce SourceMapping class                         (1.5.42)
     1    sim  Rename and move IOReg interface out of State          (1.5.39)
     1    sim  Move timeouts out of Simulator                        (1.5.39)
     1  input  Added help for input formats                          (1.5.38)

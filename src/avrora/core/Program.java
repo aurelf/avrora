@@ -229,6 +229,8 @@ public class Program {
 
     private final HashMap indirectEdges;
 
+    private SourceMapping sourceMapping;
+
     /**
      * The <code>program_start</code> field records the lowest address in the program segment that contains
      * valid code or data.
@@ -549,6 +551,14 @@ public class Program {
             l.add(t);
         }
 
+    }
+
+    public SourceMapping getSourceMapping() {
+        return sourceMapping;
+    }
+
+    public void setSourceMapping(SourceMapping s) {
+        sourceMapping = s;
     }
 
     /**
