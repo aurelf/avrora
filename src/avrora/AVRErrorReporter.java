@@ -2,7 +2,7 @@ package avrora;
 
 import vpc.CompilationError;
 import vpc.ErrorReporter;
-import vpc.util.StringUtil;
+import avrora.util.StringUtil;
 import avrora.core.Register;
 import avrora.syntax.ASTNode;
 import avrora.syntax.ExprList;

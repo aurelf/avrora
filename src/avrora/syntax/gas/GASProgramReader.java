@@ -9,8 +9,6 @@ import avrora.Avrora;
 import java.io.File;
 import java.io.FileInputStream;
 
-import vpc.VPCBase;
-
 /**
  * The <code>GASProgramReader</code> is an implementation of the <code>ProgramReader</code>
  * that reads a source program in the GAS-style syntax and builds a program from it.

@@ -9,9 +9,8 @@ import avrora.Operand;
 import avrora.Avrora;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.PeriodicTrigger;
-import vpc.util.Terminal;
-import vpc.util.StringUtil;
-import vpc.VPCBase;
+import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator
@@ -20,7 +19,7 @@ import vpc.VPCBase;
  *
  * @author Ben L. Titzer
  */
-public abstract class Simulator extends VPCBase implements InstrVisitor, IORegisterConstants {
+public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
     public static final Probe TRACEPROBE = new Probe() {
         public void fireBefore(Instr i, int pc, State s) {

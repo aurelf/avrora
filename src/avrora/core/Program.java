@@ -1,8 +1,7 @@
 package avrora.core;
 
-import vpc.util.Printer;
-import vpc.util.StringUtil;
-import vpc.VPCBase;
+import avrora.util.Printer;
+import avrora.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -1,6 +1,5 @@
 package avrora.core;
 
-import vpc.VPCBase;
 import avrora.Operand;
 import avrora.Avrora;
 

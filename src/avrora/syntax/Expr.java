@@ -1,7 +1,6 @@
 package avrora.syntax;
 
-import vpc.VPCBase;
-import vpc.util.StringUtil;
+import avrora.util.StringUtil;
 import vpc.core.AbstractToken;
 import avrora.syntax.ASTNode;
 import avrora.Avrora;

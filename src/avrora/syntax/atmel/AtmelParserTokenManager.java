@@ -2,7 +2,6 @@
 package avrora.syntax.atmel;
 import avrora.*;
 import avrora.syntax.*;
-import vpc.VPCBase;
 
 public class AtmelParserTokenManager implements AtmelParserConstants
 {

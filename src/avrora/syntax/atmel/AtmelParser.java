@@ -3,7 +3,6 @@ package avrora.syntax.atmel;
 
 import avrora.*;
 import avrora.syntax.*;
-import vpc.VPCBase;
 
 public class AtmelParser extends AbstractParser implements AtmelParserConstants {
 

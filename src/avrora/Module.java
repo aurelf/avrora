@@ -1,8 +1,7 @@
 package avrora;
 
-import vpc.VPCBase;
 import vpc.CompilationError;
-import vpc.util.StringUtil;
+import avrora.util.StringUtil;
 import avrora.core.*;
 import avrora.syntax.Expr;
 import avrora.syntax.ExprList;

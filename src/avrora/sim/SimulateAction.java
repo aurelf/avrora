@@ -10,9 +10,8 @@ import java.util.*;
 import java.text.StringCharacterIterator;
 import java.text.CharacterIterator;
 
-import vpc.util.Terminal;
-import vpc.util.StringUtil;
-import vpc.VPCBase;
+import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 /**
  * @author Ben L. Titzer

@@ -1,7 +1,6 @@
 package avrora.stack;
 
-import vpc.VPCBase;
-import vpc.util.StringUtil;
+import avrora.util.StringUtil;
 
 import java.util.HashSet;
 import java.util.HashMap;

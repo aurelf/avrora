@@ -1,10 +1,9 @@
 package avrora.core;
 
-import vpc.VPCBase;
-import vpc.util.Printer;
-import vpc.util.SectionFile;
-import vpc.util.Terminal;
-import vpc.util.StringUtil;
+import avrora.util.Printer;
+import avrora.util.SectionFile;
+import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 import java.io.OutputStream;
 import java.util.LinkedList;
@@ -23,7 +22,7 @@ import java.util.Iterator;
  *
  * @author Ben L. Titzer
  */
-public class Generator extends VPCBase {
+public class Generator {
 
     public static boolean CLEAR;
 

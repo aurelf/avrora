@@ -3,9 +3,8 @@ package avrora.syntax.gas;
 
 import avrora.*;
 import avrora.syntax.*;
-import vpc.VPCBase;
 
-public class GASParser extends VPCBase implements GASParserConstants {
+public class GASParser extends AbstractParser implements GASParserConstants {
 
     protected Module module;
 

@@ -3,8 +3,7 @@ package avrora.stack;
 
 import avrora.core.Register;
 import avrora.sim.IORegisterConstants;
-import vpc.util.StringUtil;
-import vpc.VPCBase;
+import avrora.util.StringUtil;
 
 /**
  * The <code>AbstractState</code> class represents an abstract state within

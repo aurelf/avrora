@@ -2,7 +2,6 @@
 package avrora.syntax.gas;
 import avrora.*;
 import avrora.syntax.*;
-import vpc.VPCBase;
 
 public class GASParserTokenManager implements GASParserConstants
 {

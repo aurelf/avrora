@@ -1,12 +1,11 @@
 package avrora;
 
 import vpc.Option;
-import vpc.VPCBase;
 import vpc.VPCError;
 import vpc.test.AutomatedTester;
-import vpc.util.Options;
-import vpc.util.Terminal;
-import vpc.util.StringUtil;
+import avrora.util.Options;
+import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 import java.util.*;
 import java.io.File;
@@ -181,7 +180,7 @@ public class Main {
 
             Terminal.useColors = COLORS.get();
             if ( BANNER.get() ) banner();
-            VPCBase.VERBOSE = VERBOSE.get();
+            // TODO: VPCBase.VERBOSE = VERBOSE.get();
 
             Action a = (Action)actions.get(ACTION.get());
             if ( a == null )

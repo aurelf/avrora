@@ -10,9 +10,8 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Stack;
 
-import vpc.VPCBase;
-import vpc.util.StringUtil;
-import vpc.util.Terminal;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines

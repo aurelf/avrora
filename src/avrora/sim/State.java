@@ -3,9 +3,8 @@ package avrora.sim;
 import avrora.core.*;
 import avrora.Arithmetic;
 import avrora.Avrora;
-import vpc.VPCBase;
-import vpc.util.Terminal;
-import vpc.util.StringUtil;
+import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 /**
  * The <code>State</code> class represents the state of the simulator, including

@@ -10,11 +10,8 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
-import vpc.VPCBase;
-import vpc.VPCError;
-import vpc.VPCInternalError;
-import vpc.util.StringUtil;
-import vpc.util.Terminal;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 import java.util.*;
 import java.io.FileInputStream;

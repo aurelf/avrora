@@ -1,0 +1,411 @@
+package avrora.util;
+
+import avrora.AVRTestHarness;
+import vpc.VPCBase;
+
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
+
+/**
+ * The <code>StringUtil</code> class implements several useful functions for dealing
+ * with strings such as parsing pieces of syntax, formatting, etc.
+ * @author Ben L. Titzer
+ */
+public class StringUtil {
+    public static char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                      '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    public static final String QUOTE = "\"".intern();
+    public static final String SQUOTE = "'".intern();
+    public static final String LPAREN = "(".intern();
+    public static final String RPAREN = ")".intern();
+    public static final String COMMA = ",".intern();
+    public static final String COMMA_SPACE = ", ".intern();
+    public static String[] EMPTY_STRING_ARRAY = {};
+
+    public static String readIdentifier(CharacterIterator i) {
+        StringBuffer buf = new StringBuffer();
+
+        while (true) {
+            char c = i.current();
+
+            if ( !Character.isLetterOrDigit(c) && (c != '_')) break;
+
+            buf.append(c);
+            i.next();
+        }
+
+        return buf.toString();
+    }
+
+    public static int readHexValue(CharacterIterator i, int max_chars) {
+        int accumul = 0;
+
+        for ( int cntr = 0; cntr < max_chars; cntr++ ) {
+            char c = i.current();
+
+            if ( c == CharacterIterator.DONE ) break;
+            if (!isHexDigit(c)) break;
+
+            accumul = (accumul << 4) | hexValueOf(c);
+            i.next();
+        }
+
+        return accumul;
+    }
+
+    public static int readOctalValue(CharacterIterator i, int max_chars) {
+        int accumul = 0;
+
+        for ( int cntr = 0; cntr < max_chars; cntr++ ) {
+            char c = i.current();
+
+            if (!isOctalDigit(c)) break;
+
+            accumul = (accumul << 3) | octalValueOf(c);
+            i.next();
+        }
+
+        return accumul;
+    }
+
+    public static int readDecimalValue(CharacterIterator i, int max_chars) {
+        StringBuffer buf = new StringBuffer();
+
+        boolean minus = false;
+
+        if (peekAndEat(i, '-')) minus = true;
+
+        for ( int cntr = 0; cntr < max_chars; cntr++ ) {
+            char c = i.current();
+
+            if (!Character.isDigit(c)) break;
+
+            buf.append(c);
+            i.next();
+        }
+
+        String cnst = buf.toString();
+        int val = Integer.parseInt(cnst);
+        if (minus) val = -val;
+        return val;
+    }
+
+    public static void skipWhiteSpace(CharacterIterator i) {
+        while (true) {
+            char c = i.current();
+            if (c == ' ' || c == '\n' || c == '\t' ) i.next();
+            else break;
+        }
+    }
+
+    public static void skipToCharacter(CharacterIterator i, char c) {
+        throw VPCBase.unimplemented();
+    }
+
+    public static char peek(CharacterIterator i) {
+        return i.current();
+    }
+
+    public static boolean peekAndEat(CharacterIterator i, char c) {
+        char r = i.current();
+        if (r == c) {
+            i.next();
+            return true;
+        }
+        return false;
+    }
+
+    private void expectChar(CharacterIterator i, char c) throws Exception {
+        char r = i.current();
+        i.next();
+        if (r != c) throw new Exception("expected " + squote(c) + " @ "
+                + (i.getIndex() - 1) + ", found " + squote(r));
+    }
+
+    public static boolean isHexDigit(char c) {
+        switch ( c ) {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case 'a':
+            case 'b':
+            case 'c':
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'A':
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'E':
+            case 'F':
+                return true;
+        }
+        return false;
+    }
+
+    public static int hexValueOf(char c) {
+        return Character.digit(c, 16);
+    }
+
+    public static int octalValueOf(char c) {
+        return Character.digit(c, 8);
+    }
+
+    public static boolean isOctalDigit(char c) {
+        switch ( c ) {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+                return true;
+        }
+        return false;
+    }
+
+    public static String rightJustify(long v, int width) {
+        return rightJustify(Long.toString(v), width);
+    }
+
+    public static String rightJustify(float v, int width) {
+        return rightJustify(Float.toString(v), width);
+    }
+
+    public static String rightJustify(String s, int width) {
+        StringBuffer buf = new StringBuffer();
+        for ( int pad = width - s.length(); pad > 0; pad-- )
+            buf.append(' ');
+        buf.append(s);
+        return buf.toString();
+    }
+
+    public static String leftJustify(long v, int width) {
+        return leftJustify(Long.toString(v), width);
+    }
+
+    public static String leftJustify(float v, int width) {
+        return leftJustify(Float.toString(v), width);
+    }
+
+    public static String leftJustify(String s, int width) {
+        StringBuffer buf = new StringBuffer(s);
+        for ( int pad = width - s.length(); pad > 0; pad-- )
+            buf.append(' ');
+        return buf.toString();
+    }
+
+    public static int SECS_PER_DAY = 3600*24;
+    public static int SECS_PER_HOUR = 3600;
+    public static int SECS_PER_MIN = 60;
+
+    public static String milliAsString(long millis) {
+        double seconds = ((double) millis) / 1000;
+        StringBuffer buf = new StringBuffer();
+
+        if (seconds >= SECS_PER_DAY ) {
+            int days = (int)(seconds / SECS_PER_DAY);
+            buf.append(days + "d ");
+            seconds = seconds - days * SECS_PER_DAY;
+        }
+
+        if (seconds >= SECS_PER_HOUR) {
+            int hours = (int)(seconds / SECS_PER_HOUR);
+            buf.append(hours + "h ");
+            seconds = seconds - hours * SECS_PER_HOUR;
+        }
+        if (seconds >= SECS_PER_MIN) {
+            int min = (int)(seconds / SECS_PER_MIN);
+            buf.append(min + "m ");
+            seconds = seconds - min * SECS_PER_MIN;
+        }
+        buf.append(seconds + "s");
+        return buf.toString();
+    }
+
+    // TODO: verify correctness of this function in presence of signs
+    public static String toHex(long value, int width) {
+        char result[] = new char[width];
+
+        if (value > (long) 1 << width * 4) return Long.toHexString(value).toUpperCase();
+
+        for (int cntr = 0; cntr < width; cntr++)
+            result[width - cntr - 1] = HEX_CHARS[(int) (value >> (cntr * 4)) & 0xf];
+
+        return new String(result);
+    }
+
+    public static String quote(Object s) {
+        return QUOTE + s + QUOTE;
+    }
+
+    public static String squote(char c) {
+        return SQUOTE + c + SQUOTE;
+    }
+
+    public static String embed(Object s) {
+        return LPAREN + s + RPAREN;
+    }
+
+    public static String embed(Object lead, Object arg) {
+        return lead + LPAREN + arg + RPAREN;
+    }
+
+    public static String embed(Object lead, Object arg1, Object arg2) {
+        return lead + LPAREN + arg1 + COMMA + arg2 + RPAREN;
+    }
+
+    public static String embed(Object lead, Object arg1, Object arg2, Object arg3) {
+        return lead + LPAREN + arg1 + COMMA + arg2 + COMMA + arg3 + RPAREN;
+    }
+
+    public static String commalist(Object o1, Object o2) {
+        return o1 + COMMA + o2;
+    }
+
+    public static String commalist(Object o1, Object o2, Object o3) {
+        return o1 + COMMA + o2 + COMMA + o3;
+    }
+
+    public static String commalist(Object o1, Object o2, Object o3, Object o4) {
+        return o1 + COMMA + o2 + COMMA + o3 + COMMA + o4;
+    }
+
+    public static String interval(int low, int high) {
+        return "[" + low + ", " + high + "]";
+    }
+
+    public static char alpha(int num) {
+        return (char) ('a' + num - 1);
+    }
+
+    public static String qembed(String s1, String s2, String s3) {
+        return s1 + " " + quote(s2) + " " + s3;
+    }
+
+    public static int evaluateIntegerLiteral(String val) {
+        if (val.startsWith("0x") || val.startsWith("0X")) // hexadecimal
+            return Integer.parseInt(val.substring(2), 16);
+        if (val.startsWith("$"))                          // hexadecimal
+            return Integer.parseInt(val.substring(1), 16);
+
+        if (val.startsWith("0b") || val.startsWith("0B")) // binary
+            return Integer.parseInt(val.substring(2), 2);
+
+        if (val.startsWith("0"))                          // octal
+            return Integer.parseInt(val, 8);
+
+        return Integer.parseInt(val);
+    }
+
+    public static String evaluateStringLiteral(String literal) {
+        StringBuffer buffer = new StringBuffer(literal.length());
+        CharacterIterator i = new StringCharacterIterator(literal);
+
+        while ( true ) {
+            char c = i.next();
+
+            if ( c == CharacterIterator.DONE ) break;
+            if ( c == '\\' ) c = escapeChar(i);
+
+            buffer.append(c);
+        }
+
+        return buffer.toString();
+    }
+
+    public static char evaluateCharLiteral(String literal) {
+        CharacterIterator i = new StringCharacterIterator(literal);
+
+        if ( !peekAndEat(i, '\'') )
+            throw invalidCharLiteral(literal);
+
+        char c = i.next();
+        if ( c == '\\' ) c = escapeChar(i);
+
+        if ( i.next() != '\'' )
+            throw invalidCharLiteral(literal);
+
+        if ( i.next() != CharacterIterator.DONE )
+            throw invalidCharLiteral(literal);
+
+        return c;
+    }
+
+    private static char escapeChar(CharacterIterator i) {
+        char c = i.next();
+        switch ( c ) {
+            case 'f': return '\f';
+            case 'b': return '\b';
+            case 'n': return '\n';
+            case 'r': return '\r';
+            case '\\': return '\\';
+            case '\'': return '\'';
+            case 't': return '\t';
+            case 'x': { /* hexadecimal constant */
+                int value = readHexValue(i, 4);
+                return (char)value;
+            }
+            case '0': /* octal constant */
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7': {
+                i.previous();
+                int value = readOctalValue(i, 3);
+                return (char)value;
+            }
+
+        }
+        return c;
+    }
+
+    private static IllegalArgumentException invalidCharLiteral(String lit) {
+        return new IllegalArgumentException("Invalid character literal: " + lit);
+    }
+
+    public static String trimallquotes(String s) {
+        int start, end;
+
+        // TODO: could use some cleanup with StringUtil
+        // TODO: this is buggy!
+
+        for (start = 0; start < s.length(); start++)
+            if (s.charAt(start) != '\"') break;
+
+        for (end = s.length() - 1; end >= 0; end--)
+            if (s.charAt(end) != '\"') break;
+
+        if (start < end)
+            return s.substring(start, end);
+        else
+            return "";
+    }
+
+    public static String trimquotes(String s) {
+        if (s.length() == 0) return s;
+
+        int start = 0, end = s.length();
+        if (s.charAt(start) == '\"') start++;
+        if (s.charAt(end - 1) == '\"') end--;
+
+        if (start < end)
+            return s.substring(start, end);
+        else
+            return "";
+    }
+
+}

@@ -9,8 +9,6 @@ import avrora.Avrora;
 import java.io.File;
 import java.io.FileInputStream;
 
-import vpc.VPCBase;
-
 /**
  * The <code>AtmelProgramReader</code> is an implementation of the <code>ProgramReader</code>
  * that reads source assembly files in the Atmel style syntax. It can handle only one file
