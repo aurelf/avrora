@@ -1,8 +1,8 @@
 package avrora.stack;
 
+import avrora.Avrora;
 import avrora.core.Register;
 import avrora.sim.IORegisterConstants;
-import avrora.Avrora;
 
 /**
  * The <code>MutableState</code> class represents an abstract state of

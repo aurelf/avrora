@@ -1,8 +1,8 @@
 
 package avrora.syntax;
 
-import vpc.core.AbstractParseException;
 import avrora.Module;
+import vpc.core.AbstractParseException;
 
 /**
  */

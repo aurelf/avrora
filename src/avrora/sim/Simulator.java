@@ -1,16 +1,16 @@
 package avrora.sim;
 
-import avrora.core.InstrVisitor;
+import avrora.Arithmetic;
+import avrora.Avrora;
+import avrora.Operand;
 import avrora.core.Instr;
+import avrora.core.InstrVisitor;
 import avrora.core.Program;
 import avrora.core.Register;
-import avrora.Arithmetic;
-import avrora.Operand;
-import avrora.Avrora;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.PeriodicTrigger;
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator

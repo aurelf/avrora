@@ -1,7 +1,6 @@
 package avrora.core;
 
 import avrora.Operand;
-import avrora.AVRErrorReporter;
 
 import java.util.HashMap;
 import java.util.HashSet;

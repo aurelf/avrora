@@ -1,8 +1,8 @@
 package avrora.sim.util;
 
+import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.core.Instr;
 
 /**
  * The <code>Counter</code> class is a utility for profiling programs. It

@@ -1,8 +1,7 @@
 package avrora.stack;
 
-import avrora.core.Program;
-import avrora.stack.Analyzer;
 import avrora.Main;
+import avrora.core.Program;
 
 /**
  * @author Ben L. Titzer

@@ -1,31 +1,25 @@
 package avrora;
 
+import avrora.core.Program;
+import avrora.sim.Microcontroller;
+import avrora.sim.SimulateAction;
+import avrora.sim.mcu.Microcontrollers;
+import avrora.stack.AnalyzeStackAction;
+import avrora.syntax.atmel.AtmelProgramReader;
+import avrora.syntax.gas.GASProgramReader;
+import avrora.util.Options;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 import vpc.Option;
 import vpc.VPCError;
 import vpc.test.AutomatedTester;
-import avrora.util.Options;
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
 
-import java.util.*;
-import java.io.File;
-import java.io.FileInputStream;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-
-import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.sim.*;
-import avrora.sim.mcu.Microcontrollers;
-import avrora.sim.util.Counter;
-import avrora.sim.util.BranchCounter;
-import avrora.sim.util.ProgramProfiler;
-import avrora.syntax.atmel.AtmelParser;
-import avrora.syntax.atmel.AtmelProgramReader;
-import avrora.syntax.gas.GASParser;
-import avrora.syntax.gas.GASProgramReader;
-import avrora.stack.Analyzer;
-import avrora.stack.AnalyzeStackAction;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * This is the main entrypoint to Avrora.

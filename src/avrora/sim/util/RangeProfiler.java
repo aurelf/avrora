@@ -1,7 +1,7 @@
 package avrora.sim.util;
 
-import avrora.core.Program;
 import avrora.core.Instr;
+import avrora.core.Program;
 import avrora.sim.State;
 
 /**

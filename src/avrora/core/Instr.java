@@ -1,9 +1,7 @@
 package avrora.core;
 
-import avrora.Operand;
 import avrora.Avrora;
-
-import java.util.NoSuchElementException;
+import avrora.Operand;
 
 /**
  * The <code>Instr</code> class and its descendants represent instructions within the

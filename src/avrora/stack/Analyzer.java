@@ -1,17 +1,13 @@
 package avrora.stack;
 
-import avrora.core.Program;
-import avrora.core.InstrVisitor;
 import avrora.core.Instr;
-import avrora.core.Register;
+import avrora.core.Program;
 import avrora.sim.IORegisterConstants;
-
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Stack;
-
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines

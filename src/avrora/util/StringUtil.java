@@ -1,6 +1,5 @@
 package avrora.util;
 
-import avrora.AVRTestHarness;
 import vpc.VPCBase;
 
 import java.text.CharacterIterator;

@@ -1,17 +1,14 @@
 package avrora.sim;
 
-import avrora.core.Program;
-import avrora.sim.Simulator;
-import avrora.sim.mcu.ATMega128L;
-import avrora.sim.util.ProgramProfiler;
 import avrora.Main;
-
-import java.util.*;
-import java.text.StringCharacterIterator;
-import java.text.CharacterIterator;
-
-import avrora.util.Terminal;
+import avrora.core.Program;
+import avrora.sim.util.ProgramProfiler;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer

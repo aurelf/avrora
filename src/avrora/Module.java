@@ -1,21 +1,17 @@
 package avrora;
 
-import vpc.CompilationError;
-import avrora.util.StringUtil;
 import avrora.core.*;
+import avrora.syntax.Context;
 import avrora.syntax.Expr;
 import avrora.syntax.ExprList;
-import avrora.syntax.Context;
 import avrora.syntax.atmel.AtmelParser;
-import avrora.syntax.atmel.ParseException;
-import vpc.core.ProgramPoint;
-import vpc.core.AbstractToken;
+import avrora.util.StringUtil;
 import vpc.core.AbstractParseException;
+import vpc.core.AbstractToken;
 
-import java.util.*;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 
 /**
  * The <code>Module</code> class collects together the instructions and data

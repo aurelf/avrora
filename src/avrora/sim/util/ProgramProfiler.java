@@ -1,9 +1,9 @@
 package avrora.sim.util;
 
-import avrora.core.Program;
 import avrora.core.Instr;
-import avrora.sim.State;
+import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>ProgramProfiler</code> class implements a probe that can be

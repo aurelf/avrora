@@ -1,10 +1,5 @@
 package avrora.core;
 
-import avrora.core.Register;
-import avrora.Operand;
-import avrora.AVRErrorReporter;
-
-import java.util.HashSet;
 import java.util.HashMap;
 
 /**

@@ -1,9 +1,5 @@
 package avrora;
 
-import vpc.test.AutomatedTester;
-import vpc.test.TestCase;
-import vpc.test.TestResult;
-import vpc.test.TestHarness;
 import avrora.core.Program;
 import avrora.core.Register;
 import avrora.sim.Simulator;
@@ -12,12 +8,15 @@ import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import vpc.test.TestCase;
+import vpc.test.TestHarness;
+import vpc.test.TestResult;
 
-import java.util.*;
-import java.io.FileInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.*;
 
 /**
  * The <code>AVRTestHarness</code> implements a test harness that interfaces the

@@ -2,7 +2,6 @@
 package avrora.syntax.gas;
 
 import vpc.core.AbstractParseException;
-import vpc.core.AbstractToken;
 
 /**
  * This exception is thrown when parse errors are encountered.

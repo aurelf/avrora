@@ -1,11 +1,10 @@
 package avrora;
 
-import vpc.CompilationError;
-import vpc.ErrorReporter;
-import avrora.util.StringUtil;
 import avrora.core.Register;
 import avrora.syntax.ASTNode;
 import avrora.syntax.ExprList;
+import avrora.util.StringUtil;
+import vpc.ErrorReporter;
 import vpc.core.AbstractToken;
 import vpc.core.ProgramPoint;
 

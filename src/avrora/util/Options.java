@@ -2,8 +2,8 @@ package avrora.util;
 
 import vpc.Option;
 
-import java.util.HashSet;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The <code>Options</code> class represents a collection of command

@@ -1,9 +1,8 @@
 package avrora.syntax;
 
+import avrora.Avrora;
 import avrora.util.StringUtil;
 import vpc.core.AbstractToken;
-import avrora.syntax.ASTNode;
-import avrora.Avrora;
 
 /**
  * @author Ben L. Titzer
@@ -40,6 +39,7 @@ public abstract class Expr extends ASTNode {
             int rval = right.evaluate(c);
             String o = op.image;
 
+            // TODO: this is a bit ugly.
             if (o.equals("*")) return lval * rval;
             if (o.equals("/")) return lval / rval;
             if (o.equals("-")) return lval - rval;

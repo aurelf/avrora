@@ -1,10 +1,9 @@
 package avrora.syntax.atmel;
 
-import avrora.core.Program;
-import avrora.syntax.atmel.AtmelParser;
+import avrora.Avrora;
 import avrora.Main;
 import avrora.Module;
-import avrora.Avrora;
+import avrora.core.Program;
 
 import java.io.File;
 import java.io.FileInputStream;

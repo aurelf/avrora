@@ -1,8 +1,7 @@
 package avrora.sim;
 
-import avrora.core.Program;
-import avrora.core.Instr;
 import avrora.core.InstrPrototype;
+import avrora.core.Program;
 
 /**
  * The <code>Microcontroller</code> interface corresponds to a hardware device

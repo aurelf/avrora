@@ -1,7 +1,5 @@
 package avrora.util;
 
-import vpc.VPCBase;
-
 import java.io.*;
 
 /**

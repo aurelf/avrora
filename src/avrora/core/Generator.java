@@ -1,14 +1,12 @@
 package avrora.core;
 
-import avrora.util.Printer;
 import avrora.util.SectionFile;
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
-import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Iterator;
 
 /**
  * The <code>Generator</code> class generates Java source code that implements

@@ -1,7 +1,5 @@
 package avrora.syntax;
 
-import avrora.syntax.ASTNode;
-import avrora.syntax.Expr;
 import vpc.core.AbstractToken;
 
 /**

@@ -1,8 +1,8 @@
 package avrora.sim.mcu;
 
+import avrora.Arithmetic;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
-import avrora.Arithmetic;
 import avrora.sim.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.State;

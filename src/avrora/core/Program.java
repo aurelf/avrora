@@ -1,12 +1,11 @@
 package avrora.core;
 
+import avrora.Avrora;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.Iterator;
-
-import avrora.Avrora;
 
 /**
  * The <code>Program</code> class represents a complete program of AVR
