@@ -1,6 +1,6 @@
 package avrora.sim;
 
-import avrora.Arithmetic;
+import avrora.util.Arithmetic;
 import avrora.Avrora;
 import avrora.core.Elem;
 import avrora.core.Instr;

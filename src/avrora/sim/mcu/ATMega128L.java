@@ -1,6 +1,6 @@
 package avrora.sim.mcu;
 
-import avrora.Arithmetic;
+import avrora.util.Arithmetic;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.sim.Microcontroller;
@@ -15,7 +15,7 @@ import avrora.sim.State;
  */
 public class ATMega128L implements Microcontroller {
 
-    public static final int HZ = 16000000;
+    public static final int HZ = 7327800;
 
     public static final int SRAM_SIZE = 4096;
     public static final int IOREG_SIZE = 256 - 32;
@@ -94,7 +94,7 @@ public class ATMega128L implements Microcontroller {
     /**
      * The <code>getHZ()</code> method returns the number of cycles per second
      * at which this hardware device is designed to run. The
-     * Atmega128L runs at 16MHz, so this method will return 16,000,000.
+     * Atmega128L runs at 7.3278MHz, so this method will return 7,327,800.
      * @return the number of cycles per second on this device
      */
     public int getHz() {
@@ -137,101 +137,133 @@ public class ATMega128L implements Microcontroller {
         public static final int RESET_VECT = 1;
         public static final int EXT_VECT = 2;
 
-        protected EIFR_class EIFR_reg;
-        protected EIMSK_class EIMSK_reg;
+        protected FlagRegister EIFR_reg;
+        protected MaskRegister EIMSK_reg;
 
-        protected State.RWIOReg TIMSK_reg;
-        protected State.RWIOReg TIFR_reg;
+        protected FlagRegister TIFR_reg;
+        protected MaskRegister TIMSK_reg;
 
-        abstract class IMRReg extends State.RWIOReg {
+        class Timer0 {
+            public static final int MODE_NORMAL = 0;
+            public static final int MODE_PWM = 1;
+            public static final int MODE_CTC = 2;
+            public static final int MODE_FASTPWM = 3;
+            public static final int MAX = 0xff;
+            public static final int BOTTOM = 0x00;
 
-            public void update() {
-                int posted = EIMSK_reg.value & EIFR_reg.value;
-                long previousPosted = state.getPostedInterrupts() & ~(0xff << EXT_VECT);
-                long newPosted = previousPosted | (posted << EXT_VECT);
-                state.setPostedInterrupts(newPosted);
+            final State.RWIOReg TCCR0_reg;
+            final State.RWIOReg TCNT0_reg;
+            final State.RWIOReg OCR0_reg;
+
+            final Ticker ticker;
+
+            boolean timerEnabled;
+            boolean countUp;
+            int mode;
+            long period;
+
+            Timer0(State ns) {
+                ticker = new Ticker();
+                TCCR0_reg = new State.RWIOReg();
+                TCNT0_reg = new State.RWIOReg();
+                OCR0_reg = new State.RWIOReg();
+
+                ns.setIOReg(TCCR0, TCCR0_reg);
+                ns.setIOReg(TCNT0, TCNT0_reg);
+                ns.setIOReg(OCR0, OCR0_reg);
             }
 
-            public void update(int bit) {
-                int posted = EIMSK_reg.value & EIFR_reg.value & (1 << bit);
-                if ( posted != 0 ) state.postInterrupt(EXT_VECT + bit);
-                else state.unpostInterrupt(EXT_VECT + bit);
-            }
-        }
-
-        class EIFR_class extends IMRReg {
-
-            public void write(byte val) {
-                value = (byte)(value & ~val);
-                update();
+            void compareMatch() {
+                // set the compare flag for this timer
+                TIFR_reg.flagBit(1);
             }
 
-            public void setBit(int bit) {
-                value = Arithmetic.clearBit(value, bit);
-                state.unpostInterrupt(EXT_VECT + bit);
+            void overflow() {
+                // set the overflow flag for this timer
+                TIFR_reg.flagBit(0);
             }
 
-            public void clearBit(int bit) {
-                // clearing a bit does nothing.
-            }
-        }
+            class Ticker implements Simulator.Trigger {
 
-        class EIMSK_class extends IMRReg {
-            public void write(byte val) {
-                value = val;
-                update();
-            }
+                public void fire() {
+                    // perform one clock tick worth of work on the timer
+                    int count = TCNT0_reg.read() & 0xff;
+                    switch ( mode ) {
+                        case MODE_NORMAL:
+                            count++;
+                            if ( count == MAX ) {
+                                compareMatch();
+                                overflow();
+                                count = 0;
+                            }
+                            break;
+                        case MODE_PWM:
+                            if ( countUp ) count++;
+                            else count--;
 
-            public void setBit(int bit) {
-                value = Arithmetic.setBit(value, bit);
-                update(bit);
-            }
-
-            public void clearBit(int bit) {
-                value = Arithmetic.clearBit(value, bit);
-                state.unpostInterrupt(EXT_VECT + bit);
-            }
-        }
-
-        class Timer8 {
-            State.RWIOReg COUNT_reg;
-            State.RWIOReg OUTPUT_reg;
-            State.RWIOReg CONTROL_reg;
-
-            int overflowVector;
-            int compareMatchVector;
-
-            void tick(int cycles) {
-                
+                            if ( count >= MAX ) {
+                                countUp = false;
+                                count = MAX;
+                            }
+                            if ( count <= 0 ) {
+                                overflow();
+                                countUp = true;
+                                count = 0;
+                            }
+                            if ( count == OCR0_reg.read() ) {
+                                compareMatch();
+                            }
+                            break;
+                        case MODE_CTC:
+                            count++;
+                            if ( count == OCR0_reg.read() ) {
+                                compareMatch();
+                                count = 0;
+                            }
+                            break;
+                        case MODE_FASTPWM:
+                            count++;
+                            if ( count == MAX ) {
+                                count = 0;
+                                overflow();
+                            }
+                            if ( count == OCR0_reg.read() ) {
+                                compareMatch();
+                            }
+                            break;
+                    }
+                    TCNT0_reg.write((byte)count);
+                    addTimerEvent(this, period);
+                }
             }
         }
 
         protected State constructState() {
             State ns = new State(program, FLASH_SIZE, IOREG_SIZE, SRAM_SIZE);
-            setupState(ns);
+            // set up the external interrupt mask and flag registers and interrupt range
+            EIFR_reg = buildInterruptRange(ns, true, EIMSK, EIFR, 2, 8);
+            EIMSK_reg = EIFR_reg.maskRegister;
+
+            // set up the timer mask and flag registers and interrupt range
+            TIFR_reg = buildInterruptRange(ns, false, TIMSK, TIFR, 17, 8);
+            TIMSK_reg = TIFR_reg.maskRegister;
+
+            // build timer 0
+            new Timer0(ns);
+
+            // TODO: build other devices
             return ns;
         }
 
-        protected State constructTracingState() {
-            State ns = new State(program, FLASH_SIZE, IOREG_SIZE, SRAM_SIZE);
-            setupState(ns);
-            return ns;
-
-        }
-
-        protected void setupState(State ns) {
-            // external interrupts, maskable, sticky
-            interrupts[2] = new Simulator.MaskableInterrupt(2, EIMSK, EIFR, 0, true);
-            interrupts[3] = new Simulator.MaskableInterrupt(3, EIMSK, EIFR, 1, true);
-            interrupts[4] = new Simulator.MaskableInterrupt(4, EIMSK, EIFR, 2, true);
-            interrupts[5] = new Simulator.MaskableInterrupt(5, EIMSK, EIFR, 3, true);
-            interrupts[6] = new Simulator.MaskableInterrupt(6, EIMSK, EIFR, 4, true);
-            interrupts[7] = new Simulator.MaskableInterrupt(7, EIMSK, EIFR, 5, true);
-            interrupts[8] = new Simulator.MaskableInterrupt(8, EIMSK, EIFR, 6, true);
-            interrupts[9] = new Simulator.MaskableInterrupt(9, EIMSK, EIFR, 7, true);
-
-            ns.setIOReg(EIMSK, EIMSK_reg = new EIMSK_class());
-            ns.setIOReg(EIFR, EIFR_reg = new EIFR_class());
+        private FlagRegister buildInterruptRange(State ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
+            FlagRegister fr = new FlagRegister(increasing, baseVect);
+            for ( int cntr = 0; cntr < numVects; cntr++ ) {
+                int inum = increasing ? baseVect + cntr : baseVect - cntr;
+                interrupts[inum] = new Simulator.MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false);
+                ns.setIOReg(maskRegNum, fr.maskRegister);
+                ns.setIOReg(flagRegNum, fr);
+            }
+            return fr;
         }
 
     }

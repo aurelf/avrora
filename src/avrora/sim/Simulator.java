@@ -1,6 +1,6 @@
 package avrora.sim;
 
-import avrora.Arithmetic;
+import avrora.util.Arithmetic;
 import avrora.Avrora;
 import avrora.Operand;
 import avrora.core.Instr;
@@ -9,6 +9,7 @@ import avrora.core.Program;
 import avrora.core.Register;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.PeriodicTrigger;
+import avrora.sim.mcu.ATMega128L;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
@@ -21,6 +22,11 @@ import avrora.util.Terminal;
  */
 public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
+    /**
+     * The <code>TRACEPROBE</code> field represents a simple probe
+     * that prints an instruction to the terminal as it is encountered.
+     * This is useful for tracing program execution over simulation.
+     */
     public static final Probe TRACEPROBE = new Probe() {
         public void fireBefore(Instr i, int pc, State s) {
             Terminal.printBrightCyan(StringUtil.toHex(pc, 4) + ": ");
@@ -29,22 +35,68 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
             Terminal.nextln();
         }
         public void fireAfter(Instr i, int pc, State s) {
-
+            // do nothing.
         }
     };
 
+    /**
+     * The <code>program</code> field allows descendants of the <code>Simulator</code>
+     * class to access the program that is currently loaded in the simulator.
+     */
     protected final Program program;
+
+    /**
+     * The <code>state</code> field stores a reference to the <code>State</code>
+     * object that represents the state of the processor in the simulation. It is
+     * protected to allow subclasses access.
+     */
     protected State state;
 
+    /**
+     * The <code>activeProbe</code> field stores a reference to a
+     * <code>MulticastProbe</code> that contains all of the probes to be fired
+     * before and after the main execution loop--i.e. before and after
+     * every instruction.
+     */
     protected final MulticastProbe activeProbe;
 
+    /**
+     * The <code>shouldRun</code> flag is used internally in the main execution
+     * loop to implement the correct semantics of <code>start()</code> and
+     * <code>stop()</code> to the clients.
+     */
     protected boolean shouldRun;
+
+    /**
+     * The <code>justReturnedFromInterrupt</code> field is used internally in
+     * maintaining the invariant stated in the hardware manual that at least one
+     * instruction following a return from an interrupt is executed before another
+     * interrupt can be processed.
+     */
     protected boolean justReturnedFromInterrupt;
+
+    /**
+     * The <code>nextPC</code> field is used internally in maintaining the correct
+     * execution order of the instructions.
+     */
     protected int nextPC;
+
+    /**
+     * The <code>interrupts</code> array stores a reference to an <code>Interrupt</code>
+     * instance for each of the interrupt vectors supported in the simulator.
+     */
     protected Interrupt[] interrupts;
 
+    /**
+     * The <code>eventQueue</code> field stores a reference to the event queue,
+     * a delta list of all events to be processed in order.
+     */
     protected DeltaQueue eventQueue;
 
+    /**
+     * The <code>MAX_INTERRUPTS</code> fields stores the maximum number of
+     * interrupt vectors supported by the simulator.
+     */
     public static int MAX_INTERRUPTS = 35;
 
     /**
@@ -240,7 +292,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * trigger within the delta queue.
          * @param e
          */
-        void remove(Trigger e) {
+        public void remove(Trigger e) {
             if ( head == null ) return;
 
             // search for first link that is "after" this cycle delta
@@ -268,7 +320,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * specified number of clock cycles, processing any triggers.
          * @param cycles the number of clock cycles to advance
          */
-        void advance(long cycles) {
+        public void advance(long cycles) {
             while ( head != null && cycles >= 0 ) {
 
                 Link pos = head;
@@ -294,7 +346,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
             }
         }
 
-        void free(Link l) {
+        private void free(Link l) {
             l.next = freeLinks;
             freeLinks = l;
 
@@ -302,12 +354,12 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
             freeTriggerLinks = l.head;
         }
 
-        void free(TriggerLink l) {
+        private void free(TriggerLink l) {
             l.next = freeTriggerLinks;
             freeTriggerLinks = l;
         }
 
-        Link newLink(Trigger t, long cycles, Link next) {
+        private Link newLink(Trigger t, long cycles, Link next) {
             Link l;
             if ( freeLinks == null )
                 // if none in the free list, allocate one
@@ -327,7 +379,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
             return l;
         }
 
-        TriggerLink newList(Trigger t) {
+        private TriggerLink newList(Trigger t) {
             TriggerLink l;
 
             if ( freeTriggerLinks == null ) {
@@ -549,20 +601,21 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * @author Ben L. Titzer
      */
     public interface Interrupt {
-        public void post();
+        public void force();
         public void fire();
     }
+
 
     public class MaskableInterrupt implements Interrupt {
         protected final int interruptNumber;
 
-        protected final int maskRegister;
-        protected final int flagRegister;
+        protected final MaskRegister maskRegister;
+        protected final FlagRegister flagRegister;
         protected final int bit;
 
         protected final boolean sticky;
 
-        public MaskableInterrupt(int num, int mr, int fr, int b, boolean e) {
+        public MaskableInterrupt(int num, MaskRegister mr, FlagRegister fr, int b, boolean e) {
             interruptNumber = num;
             maskRegister = mr;
             flagRegister = fr;
@@ -570,20 +623,14 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
             sticky = e;
         }
 
-        public void post() {
-            int flag = 1 << bit;
-            int nfr = state.getIORegisterByte(flagRegister) | flag;
-            state.setIORegisterByte((byte)nfr, flagRegister);
-            int mask = state.getIORegisterByte(maskRegister);
-            if ( (mask & flag) != 0 )
-                state.postInterrupt(interruptNumber);
+        public void force() {
+            flagRegister.flagBit(bit);
         }
 
         public void fire() {
             if ( !sticky ) {
-                int nfr = state.getIORegisterByte(flagRegister) & ~(1 << bit);
-                state.setIORegisterByte((byte)nfr, flagRegister);
-                state.unpostInterrupt(interruptNumber);
+                // setting the flag register bit will actually clear and unpost the interrupt
+                flagRegister.setBit(bit);
             }
         }
     }
@@ -595,7 +642,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * <code>Simulator</code> instance.
      */
     public static final Interrupt IGNORE = new Interrupt() {
-        public void post() { }
+        public void force() { }
         public void fire() { }
     };
 
@@ -648,7 +695,6 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     }
 
     protected abstract State constructState();
-    protected abstract State constructTracingState();
 
     private void loop() {
 
@@ -672,7 +718,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
                     int lowestbit = Arithmetic.lowestBit(interruptPostMask);
 
                     // fire the interrupt (update flag register(s) state)
-                    interrupts[lowestbit].fire();
+                    triggerInterrupt(lowestbit);
 
                     // store the return address
                     pushPC(nextPC);
@@ -814,12 +860,20 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     }
 
     /**
-     * The <code>postInterrupt()</code> method causes the specified interrupt
-     * to be posted to the simulator.
-     * @param num the interrupt number to be posted
+     * The <code>forceInterrupt()</code> method forces the simulator to post the
+     * specified interrupt regardless of the normal source of the interrupt.
+     * If there is a flag register associated with the specified interrupt, then
+     * the flag register's value will be set as if the original source of
+     * the interrupt (e.g. a timer) had posted the interrupt. As with a normal
+     * post of the interrupt, if the interrupt is masked out via a mask register
+     * or the master interrupt enable bit, the interrupt will not be delivered.
+     * The main reason that this interface exists is for forcing programs to
+     * handle interrupts and observe their behavior.
+     *
+     * @param num the interrupt number to force
      */
-    public void postInterrupt(int num) {
-        interrupts[num].post();
+    public void forceInterrupt(int num) {
+        interrupts[num].force();
     }
 
     protected void triggerInterrupt(int num) {
@@ -1868,6 +1922,94 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          */
         public void fireAfter(Instr i, int address, State state) {
             // do nothing.
+        }
+    }
+
+    abstract class IMRReg extends State.RWIOReg {
+
+        protected final int baseVect;
+        protected final boolean increasingVectors;
+
+        IMRReg(boolean inc, int bv) {
+            baseVect = bv;
+            increasingVectors = inc;
+        }
+
+        public void update(IMRReg other) {
+            int posted = this.value & other.value & 0xff;
+            int shift = baseVect;
+            if ( !increasingVectors ) {
+                shift -= 8;
+                posted = Arithmetic.reverseBits((byte)posted);
+            }
+            long previousPosted = state.getPostedInterrupts() & ~(0xff << shift);
+            long newPosted = previousPosted | (posted << shift);
+            state.setPostedInterrupts(newPosted);
+        }
+
+        public void update(int bit, IMRReg other) {
+            int posted = this.value & other.value & (1 << bit);
+            if ( posted != 0 ) state.postInterrupt(getVectorNum(bit));
+            else state.unpostInterrupt(getVectorNum(bit));
+        }
+
+        protected int getVectorNum(int bit) {
+            if ( increasingVectors ) return baseVect + bit;
+            else return baseVect - bit;
+        }
+    }
+
+    public class FlagRegister extends IMRReg {
+
+        public final MaskRegister maskRegister;
+
+        public FlagRegister(boolean inc, int baseVect) {
+            super(inc, baseVect);
+            maskRegister = new MaskRegister(inc, baseVect, this);
+        }
+
+        public void write(byte val) {
+            value = (byte)(value & ~val);
+            update(maskRegister);
+        }
+
+        public void flagBit(int bit) {
+            value = Arithmetic.setBit(value, bit);
+            update(bit, maskRegister);
+        }
+
+        public void setBit(int bit) {
+            value = Arithmetic.clearBit(value, bit);
+            state.unpostInterrupt(getVectorNum(bit));
+        }
+
+        public void clearBit(int bit) {
+            // clearing a bit does nothing.
+        }
+    }
+
+    public class MaskRegister extends IMRReg {
+
+        public final FlagRegister flagRegister;
+
+        MaskRegister(boolean inc, int baseVect, FlagRegister fr) {
+            super(inc, baseVect);
+            flagRegister = fr;
+        }
+
+        public void write(byte val) {
+            value = val;
+            update(flagRegister);
+        }
+
+        public void setBit(int bit) {
+            value = Arithmetic.setBit(value, bit);
+            update(bit, flagRegister);
+        }
+
+        public void clearBit(int bit) {
+            value = Arithmetic.clearBit(value, bit);
+            state.unpostInterrupt(getVectorNum(bit));
         }
     }
 

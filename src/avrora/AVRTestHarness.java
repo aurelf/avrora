@@ -8,6 +8,7 @@ import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Arithmetic;
 import avrora.test.TestCase;
 import avrora.test.TestHarness;
 import avrora.test.TestResult;
