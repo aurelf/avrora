@@ -85,6 +85,16 @@ public abstract class Arith extends Expr {
         public boolean isConstantExpr() {
             return left.isConstantExpr() && right.isConstantExpr();
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(ExprVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -121,6 +131,16 @@ public abstract class Arith extends Expr {
         public boolean isConstantExpr() {
             return operand.isConstantExpr();
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(ExprVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -130,6 +150,16 @@ public abstract class Arith extends Expr {
     public static class AddExpr extends BinOp {
         public AddExpr(Expr left, Expr right) {
             super(left, "+", right);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
         }
     }
 
@@ -141,6 +171,16 @@ public abstract class Arith extends Expr {
         public SubExpr(Expr left, Expr right) {
             super(left, "-", right);
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -150,6 +190,16 @@ public abstract class Arith extends Expr {
     public static class MulExpr extends BinOp {
         public MulExpr(Expr left, Expr right) {
             super(left, "*", right);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
         }
     }
 
@@ -161,6 +211,16 @@ public abstract class Arith extends Expr {
         public DivExpr(Expr left, Expr right) {
             super(left, "/", right);
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -170,6 +230,16 @@ public abstract class Arith extends Expr {
     public static class AndExpr extends BinOp {
         public AndExpr(Expr left, Expr right) {
             super(left, "&", right);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
         }
     }
 
@@ -181,6 +251,16 @@ public abstract class Arith extends Expr {
         public OrExpr(Expr left, Expr right) {
             super(left, "|", right);
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -190,6 +270,16 @@ public abstract class Arith extends Expr {
     public static class XorExpr extends BinOp {
         public XorExpr(Expr left, Expr right) {
             super(left, "^", right);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
         }
     }
 
@@ -201,6 +291,16 @@ public abstract class Arith extends Expr {
         public ShiftLeftExpr(Expr left, Expr right) {
             super(left, "<<", right);
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -210,6 +310,16 @@ public abstract class Arith extends Expr {
     public static class ShiftRightExpr extends BinOp {
         public ShiftRightExpr(Expr left, Expr right) {
             super(left, ">>", right);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
         }
     }
 
@@ -221,6 +331,16 @@ public abstract class Arith extends Expr {
         public CompExpr(Expr l) {
             super("~", l);
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -230,6 +350,16 @@ public abstract class Arith extends Expr {
     public static class NegExpr extends UnOp {
         public NegExpr(Expr l) {
             super("-", l);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
         }
     }
 }

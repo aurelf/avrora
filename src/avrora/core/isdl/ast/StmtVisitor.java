@@ -33,12 +33,22 @@
 package avrora.core.isdl.ast;
 
 /**
- * The <code>Stmt</code> class represents a statement in the IR that
- * expresses the computation of an instruction.
+ * The <code>StmtVisitor</code> interface implements the visitor pattern
+ * so that clients can visit the abstract syntax tree nodes representing
+ * statements in the program.
  *
  * @author Ben L. Titzer
  */
-public abstract class Stmt {
+public interface StmtVisitor {
 
-    public abstract void accept(StmtVisitor v);
+    public void visit(CallStmt s);
+    public void visit(DeclStmt s);
+    public void visit(IfStmt s);
+    public void visit(MapAssignStmt s);
+    public void visit(MapBitAssignStmt s);
+    public void visit(MapBitRangeAssignStmt s);
+    public void visit(ReturnStmt s);
+    public void visit(VarAssignStmt s);
+    public void visit(VarBitAssignStmt s);
+    public void visit(VarBitRangeAssignStmt s);
 }

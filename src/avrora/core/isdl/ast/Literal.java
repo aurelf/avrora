@@ -41,7 +41,7 @@ import avrora.Avrora;
  *
  * @author Ben L. Titzer
  */
-public class Literal extends Expr {
+public abstract class Literal extends Expr {
 
     /**
      * The <code>token</code> fields stores a reference to the original
@@ -55,6 +55,16 @@ public class Literal extends Expr {
 
     public boolean isConstantExpr() {
         return true;
+    }
+
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern so that client visitors can traverse the syntax tree easily
+     * and in an extensible way.
+     * @param v the visitor to accept
+     */
+    public void accept(ExprVisitor v) {
+        v.visit(this);
     }
 
     public Literal(Token t) {
@@ -103,6 +113,16 @@ public class Literal extends Expr {
                 throw Avrora.failure("unknown bit width of integer constant: "+token.image);
             }
         }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
+        }
     }
 
     /**
@@ -127,6 +147,16 @@ public class Literal extends Expr {
         public BoolExpr(Token v) {
             super(v);
             value = Expr.tokenToBool(v);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern so that client visitors can traverse the syntax tree easily
+         * and in an extensible way.
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
         }
     }
 }

@@ -64,4 +64,24 @@ public class MapExpr extends Expr {
         mapname = s;
         index = i;
     }
+
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern so that client visitors can traverse the syntax tree easily
+     * and in an extensible way.
+     * @param v the visitor to accept
+     */
+    public void accept(ExprVisitor v) {
+        v.visit(this);
+    }
+
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern so that client visitors can traverse the syntax tree easily
+     * and in an extensible way.
+     * @param v the visitor to accept
+     */
+    public void accept(CodeVisitor v) {
+        v.visit(this);
+    }
 }

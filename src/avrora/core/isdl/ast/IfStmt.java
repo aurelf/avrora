@@ -75,4 +75,13 @@ public class IfStmt extends Stmt {
         trueBranch = t;
         falseBranch = f;
     }
+
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern, allowing each statement to be visited by a client visitor.
+     * @param v the visitor to accept
+     */
+    public void accept(StmtVisitor v) {
+        v.visit(this);
+    }
 }

@@ -74,4 +74,13 @@ public class VarBitRangeAssignStmt extends AssignStmt {
         low_bit = Expr.tokenToInt(l);
         high_bit = Expr.tokenToInt(h);
     }
+
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern, allowing each statement to be visited by a client visitor.
+     * @param v the visitor to accept
+     */
+    public void accept(StmtVisitor v) {
+        v.visit(this);
+    }
 }

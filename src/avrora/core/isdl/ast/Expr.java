@@ -90,4 +90,8 @@ public abstract class Expr {
     public static boolean tokenToBool(Token i) {
         return Boolean.valueOf(i.image).booleanValue();
     }
+
+    public abstract void accept(ExprVisitor v);
+    
+    public abstract void accept(CodeVisitor v);
 }
