@@ -36,8 +36,11 @@ import avrora.Main;
 import avrora.Avrora;
 import avrora.core.Program;
 import avrora.core.Instr;
+import avrora.core.LabelMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.Clock;
+import avrora.sim.MainClock;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.*;
 
@@ -95,61 +98,30 @@ public class SimulateAction extends SimAction {
         super("simulate", HELP);
     }
 
-    private class Counter extends avrora.sim.util.Counter {
-        private final Program.Location location;
-
-        Counter(Program.Location loc) {
-            location = loc;
-        }
-
-        public void report() {
-            String cnt = StringUtil.rightJustify(count, 8);
-            String addr = StringUtil.addrToString(location.address);
-            String name;
-            if (location.name != null)
-                name = "    " + location.name + " @ " + addr;
-            else
-                name = "    " + addr;
-            TermUtil.reportQuantity(name, cnt, "");
-        }
-    }
-
-    private class BranchCounter extends avrora.sim.util.BranchCounter {
-        private final Program.Location location;
-
-        BranchCounter(Program.Location loc) {
-            location = loc;
-        }
-
-        public void report() {
-            String tcnt = StringUtil.rightJustify(takenCount, 8);
-            String ntcnt = StringUtil.rightJustify(nottakenCount, 8);
-            String addr = StringUtil.addrToString(location.address);
-            String name;
-            if (location.name != null)
-                name = "    " + location.name + " @ " + addr;
-            else
-                name = "    " + addr;
-            TermUtil.reportQuantity(name, tcnt + ' ' + ntcnt, "taken/not taken");
-        }
-    }
-
     private class ThrottleEvent implements Simulator.Event {
-        long lastMs;
+        boolean initialized;
+        long beginMs;
+        final long period;
+        final MainClock clock;
+
+        public ThrottleEvent() {
+            clock = microcontroller.getClockDomain().getMainClock();
+            period = clock.getHZ() / 100;
+        }
 
         public void fire() {
-            long newMs = System.currentTimeMillis();
-            long diff = newMs - lastMs;
-            try {
-                if (diff < 10) {
-                    Thread.sleep(10 - diff);
-                    newMs = System.currentTimeMillis();
-                }
-            } catch (InterruptedException e) {
-                // interrupt exceptions are dumb.
+            if ( !initialized ) {
+                initialized = true;
+                beginMs = System.currentTimeMillis();
+                clock.insertEvent(this, period);
+                return;
             }
-            lastMs = newMs;
-            simulator.insertEvent(this, microcontroller.getHZ() / 100);
+
+            long cycles = clock.getCount();
+            long msGoal = (1000*cycles) / clock.getHZ();
+            while ( (System.currentTimeMillis() - beginMs) < msGoal ) ;
+
+            clock.insertEvent(this, period);
         }
     }
 
@@ -177,7 +149,7 @@ public class SimulateAction extends SimAction {
         processTotal();
 
         if (REALTIME.get())
-            simulator.insertEvent(new ThrottleEvent(), microcontroller.getHZ() / 100);
+            simulator.insertEvent(new ThrottleEvent(), 1);
 
         String visual = VISUAL.get();
         if (!"".equals(visual)) {
@@ -217,7 +189,7 @@ public class SimulateAction extends SimAction {
     void processBreakPoints() {
         Iterator i = getLocationList(program, BREAKS.get()).iterator();
         while (i.hasNext()) {
-            Program.Location l = (Program.Location)i.next();
+            LabelMapping.Location l = (LabelMapping.Location)i.next();
             simulator.insertProbe(new BreakPointProbe(), l.address);
         }
     }

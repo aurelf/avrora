@@ -32,6 +32,10 @@
 
 package avrora.core;
 
+import avrora.util.StringUtil;
+
+import java.util.Comparator;
+
 /**
  * The <code>SourceMapping</code> class embodies the concept of mapping machine code level
  * addresses and constructions in the <code>Program</code> class back to a source code program,
@@ -48,6 +52,81 @@ public abstract class SourceMapping {
      * The <code>program</code> field stores a reference to the program for this source mapping.
      */
     protected final Program program;
+
+    /**
+     * The <code>LOCATION_COMPARATOR</code> comparator is used in order to sort locations
+     * in the program from lowest address to highest address.
+     */
+    public static Comparator LOCATION_COMPARATOR = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            Location l1 = (Location)o1;
+            Location l2 = (Location)o2;
+
+            if (l1.address == l2.address) {
+                if (l1.name == null) return 1;
+                if (l2.name == null) return -1;
+                return l1.name.compareTo(l2.name);
+            }
+            return l1.address - l2.address;
+        }
+    };
+    /**
+     * The <code>Location</code> class represents a location in the program; either named by
+     * a label, or an unnamed integer address. The location may refer to any of the code, data,
+     * or eeprom segments.
+     */
+    public class Location {
+        /**
+         * The <code>address</code> field records the address of this label as a byte address.
+         */
+        public final int address;
+        /**
+         * The <code>name</code> field records the name of this label.
+         */
+        public final String name;
+
+        /**
+         * The constructor for the <code>Location</code> class creates a new location for the
+         * specified lable and address. It is used internally to create labels.
+         * @param n the name of the label as a string
+         * @param addr the integer address of the location
+         */
+        Location(String n, int addr) {
+            if ( n == null ) name = StringUtil.addrToString(addr);
+            else name = n;
+            address = addr;
+        }
+
+        /**
+         * The <code>hashCode()</code> method computes the hash code of this location so that
+         * it can be used in any of the standard collection libraries.
+         * @return an integer value that represents the hash code
+         */
+        public int hashCode() {
+            if (name == null)
+                return address;
+            else
+                return name.hashCode();
+        }
+
+        /**
+         * The <code>equals()</code> method compares this location against another object. It will return
+         * true if and only if the specified object is an instance of <code>Location</code>, the addresses
+         * match, and the names match.
+         * @param o the other object to test this location for equality
+         * @return true if the other object is equal to this label; false otherwise
+         */
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof Location)) return false;
+            Location l = ((Location)o);
+            return l.name.equals(this.name) && l.address == this.address;
+        }
+
+        public String toString() {
+            return name;
+        }
+    }
 
     /**
      * The <code>getName()</code> method translates a code address into a name that is more useful to
@@ -84,4 +163,6 @@ public abstract class SourceMapping {
     public Program getProgram() {
         return program;
     }
+
+    public abstract Location getLocation(String name);
 }

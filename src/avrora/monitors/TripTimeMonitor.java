@@ -39,6 +39,8 @@ import avrora.util.Terminal;
 import avrora.util.profiling.Distribution;
 import avrora.core.Instr;
 import avrora.core.Program;
+import avrora.core.LabelMapping;
+import avrora.core.SourceMapping;
 import avrora.Avrora;
 
 import java.util.Iterator;
@@ -147,15 +149,16 @@ public class TripTimeMonitor extends MonitorFactory {
                 String src = str.substring(0, ind);
                 String dst = str.substring(ind + 1);
 
-                Program.Location loc = getLocation(src);
-                Program.Location tar = getLocation(dst);
+                LabelMapping.Location loc = getLocation(src);
+                LabelMapping.Location tar = getLocation(dst);
 
                 addPair(loc.address, tar.address);
             }
         }
 
-        private Program.Location getLocation(String src) {
-            Program.Location loc = program.getProgramLocation(src);
+        private LabelMapping.Location getLocation(String src) {
+            SourceMapping lm = program.getSourceMapping();
+            SourceMapping.Location loc = lm.getLocation(src);
             if ( loc == null )
                 Avrora.userError("Invalid program address: ", src);
             if ( program.readInstr(loc.address) == null )
@@ -165,9 +168,10 @@ public class TripTimeMonitor extends MonitorFactory {
 
         private void addFrom() {
             Iterator i = FROM.get().iterator();
+            SourceMapping sm = program.getSourceMapping();
             while (i.hasNext()) {
                 String str = (String)i.next();
-                Program.Location loc = program.getProgramLocation(str);
+                SourceMapping.Location loc = sm.getLocation(str);
                 for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) )
                     addPair(loc.address, cntr);
             }
@@ -175,9 +179,10 @@ public class TripTimeMonitor extends MonitorFactory {
 
         private void addTo() {
             Iterator i = TO.get().iterator();
+            SourceMapping sm = program.getSourceMapping();
             while (i.hasNext()) {
                 String str = (String)i.next();
-                Program.Location loc = program.getProgramLocation(str);
+                SourceMapping.Location loc = sm.getLocation(str);
                 for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) )
                     addPair(cntr, loc.address);
             }

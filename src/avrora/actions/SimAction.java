@@ -36,6 +36,8 @@ import avrora.Avrora;
 import avrora.Defaults;
 import avrora.core.Program;
 import avrora.core.Instr;
+import avrora.core.LabelMapping;
+import avrora.core.SourceMapping;
 import avrora.monitors.*;
 import avrora.sim.GenInterpreter;
 import avrora.sim.InterpreterFactory;
@@ -264,18 +266,20 @@ public abstract class SimAction extends Action {
     public static List getLocationList(Program program, List v) {
         HashSet locset = new HashSet(v.size()*2);
 
+        SourceMapping lm = program.getSourceMapping();
         Iterator i = v.iterator();
 
         while (i.hasNext()) {
             String val = (String)i.next();
-            Program.Location l = program.getProgramLocation(val);
+
+            SourceMapping.Location l = lm.getLocation(val);
             if ( l == null )
                 Avrora.userError("Label unknown", val);
             locset.add(l);
         }
 
         List loclist = Collections.list(Collections.enumeration(locset));
-        Collections.sort(loclist, Program.LOCATION_COMPARATOR);
+        Collections.sort(loclist, LabelMapping.LOCATION_COMPARATOR);
 
         return loclist;
     }

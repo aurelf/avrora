@@ -83,8 +83,9 @@ public abstract class ProgramReader extends HelpCategory {
             int ind = s.indexOf(":");
             if (ind <= 0)
                 throw Avrora.failure("invalid indirect edge format: " + StringUtil.quote(s));
-            Program.Location loc = p.getProgramLocation(s.substring(0, ind));
-            Program.Location tar = p.getProgramLocation(s.substring(ind + 1));
+            SourceMapping sm = p.getSourceMapping();
+            SourceMapping.Location loc = sm.getLocation(s.substring(0, ind));
+            SourceMapping.Location tar = sm.getLocation(s.substring(ind + 1));
             p.addIndirectEdge(loc.address, tar.address);
         }
     }

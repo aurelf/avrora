@@ -35,6 +35,7 @@ package avrora.core;
 import avrora.util.StringUtil;
 
 import java.util.HashMap;
+import java.util.Comparator;
 
 /**
  * The <code>LabelMapping</code> class is a simple implementation of the <code>SourceMapping</code>
@@ -47,64 +48,6 @@ public class LabelMapping extends SourceMapping {
 
     protected final HashMap labels;
     protected final HashMap reverseMap;
-
-    /**
-     * The <code>Location</code> class represents a location in the program; either named by
-     * a label, or an unnamed integer address. The location may refer to any of the code, data,
-     * or eeprom segments.
-     */
-    public class Location {
-        /**
-         * The <code>address</code> field records the address of this label as a byte address.
-         */
-        public final int address;
-        /**
-         * The <code>name</code> field records the name of this label.
-         */
-        public final String name;
-
-        /**
-         * The constructor for the <code>Location</code> class creates a new location for the
-         * specified lable and address. It is used internally to create labels.
-         * @param n the name of the label as a string
-         * @param addr the integer address of the location
-         */
-        Location(String n, int addr) {
-            if ( n == null ) name = StringUtil.addrToString(addr);
-            else name = n;
-            address = addr;
-        }
-
-        /**
-         * The <code>hashCode()</code> method computes the hash code of this location so that
-         * it can be used in any of the standard collection libraries.
-         * @return an integer value that represents the hash code
-         */
-        public int hashCode() {
-            if (name == null)
-                return address;
-            else
-                return name.hashCode();
-        }
-
-        /**
-         * The <code>equals()</code> method compares this location against another object. It will return
-         * true if and only if the specified object is an instance of <code>Location</code>, the addresses
-         * match, and the names match.
-         * @param o the other object to test this location for equality
-         * @return true if the other object is equal to this label; false otherwise
-         */
-        public boolean equals(Object o) {
-            if (o == this) return true;
-            if (!(o instanceof Location)) return false;
-            Location l = ((Location)o);
-            return l.name.equals(this.name) && l.address == this.address;
-        }
-
-        public String toString() {
-            return name;
-        }
-    }
 
     /**
      * The constructor for the <code>LabelMapping</code> class constructs a new instance of this source
