@@ -61,7 +61,7 @@ public class GlobalClock {
      * on the global clock. Some re-coding must be done if microcontrollers running
      * at difference speeds are to be accurately simulated.
      */
-    protected final long cycles;
+    public final long period;
     protected int goal;
     protected int count;
     protected final Object condition;
@@ -78,7 +78,7 @@ public class GlobalClock {
     public GlobalClock(long p) {
         condition = new Object();
         eventQueue = new DeltaQueue();
-        cycles = p;
+        period = p;
         threadMap = new HashMap();
     }
 
@@ -86,7 +86,7 @@ public class GlobalClock {
         if (threadMap.containsKey(t)) return;
 
         threadMap.put(t, timer);
-        t.getSimulator().insertEvent(timer, cycles);
+        t.getSimulator().insertEvent(timer, period);
         goal++;
     }
 
@@ -190,7 +190,7 @@ public class GlobalClock {
     }
 
     public long globalTime() {
-        return eventQueue.getCount() * cycles;
+        return eventQueue.getCount() * period;
     }
 
 
@@ -210,7 +210,7 @@ public class GlobalClock {
         }
 
         public void parallelAction(SimulatorThread s) {
-            s.getSimulator().insertEvent(this, cycles);
+            s.getSimulator().insertEvent(this, period);
         }
 
     }

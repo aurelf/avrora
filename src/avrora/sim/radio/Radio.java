@@ -49,12 +49,12 @@ public interface Radio {
      * Much of the implementation is derived from this constant, so generalizing in the
      * future may require some careful consideration.
      */
-    public final static long TRANSFER_TIME = 6144;
+    public final static long TRANSFER_TIME = 6106;
 
-    /* How 6144 was calculated:
+    /* How 6106 was calculated:
         19.2 Manchester kBaud / (2 Baud/Bit)= 9.6 kBits/sec
         (9600 bits/sec) / (8 bits/byte) = 1200 bytes/sec
-        (7327800 cycles/sec) / (1200 bytes/sec) = 6144 cycles/byte (rounded)
+        (7327800 cycles/sec) / (1200 bytes/sec) = 6106 cycles/byte (rounded)
      */
 
 
