@@ -8,9 +8,13 @@ import java.util.Iterator;
 
 /**
  * The <code>Program</code> class represents a complete program of AVR
- * instructions. It contains the program cseg, which is both code and
- * data, a data cseg which is unitialized data, and an EEPROM cseg
- * that is a read-only section.
+ * instructions. It stores the actual instructions and initialized data
+ * of the program in one large segment, as well as storing the data
+ * space and eeprom space requirements for the program. It contains
+ * a map of labels (strings) to addresses, which can be either
+ * case sensitive (GAS style) or case insensitive (Atmel style).
+ *
+ * @see Instr 
  * @author Ben L. Titzer
  */
 public class Program {

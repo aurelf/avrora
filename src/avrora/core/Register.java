@@ -8,7 +8,21 @@ import java.util.HashSet;
 
 /**
  * The <code>Register</code> class represents a register available on the AVR
- * instruction set.
+ * instruction set. All registers in the instruction set architecture are
+ * represented as objects that have a name and a number. Those objects are
+ * singletons and are public static final fields of this class.<br><br>
+ *
+ * Additionally, the <code>Register</code> class contains sets of registers
+ * that are used in verifying the operand constraints of each individual
+ * instruction as defined in the AVR instruction set reference. An example
+ * of an operand constraint is that ldi (load immediate) takes as operands
+ * one of the general purpose registers {r17...r31} and an immediate. Other
+ * instructions take certain subsets of the instructions. Those register
+ * sets are allocated once here and are exposed as static fields in this
+ * class.
+ *
+ * @see Operand
+ * @see Instr
  * @author Ben L. Titzer
  */
 public class Register {
