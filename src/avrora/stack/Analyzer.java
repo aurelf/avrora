@@ -351,8 +351,6 @@ public class Analyzer {
         else if ( info.stateSet.containsAll(rset) )
             return;
 
-        info.stateSet.addAll(rset);
-
         for (StateTransitionGraph.Edge edge = info.backwardEdges; edge != null; edge = edge.backwardLink) {
 
             if (edge.type == CALL_EDGE) {
@@ -363,6 +361,8 @@ public class Analyzer {
                 propagateSetBackwards(edge.source, rset, mark);
             }
         }
+
+        info.stateSet.addAll(rset);
     }
 
     private void insertReturnEdges(StateCache.State caller, HashSet prev, HashSet rset) {
@@ -388,21 +388,9 @@ public class Analyzer {
         }
 
         rstate.setPC(npc);
-        StateCache.State t = graph.getCachedState(rstate);
-
-        if ( TRACE ) {
-            printFullState("Adding return edge", t);
-            traceProducedState(t);
-        }
 
         int type = reti ? RETI_EDGE : RET_EDGE;
-        StateTransitionGraph.Edge edge = graph.addEdge(caller, type, 0, t);
-
-        if (!graph.isExplored(t)) {
-            graph.addFrontierState(t);
-        } else {
-            postNewEdge(edge);
-        }
+        policy.addEdge(caller, type, rstate);
     }
 
     private void postNewEdge(StateTransitionGraph.Edge edge) {
