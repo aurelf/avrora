@@ -94,7 +94,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "0.9.6";
+    static final String VERSION = "0.9.7";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
