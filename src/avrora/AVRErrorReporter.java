@@ -10,6 +10,12 @@ import vpc.core.AbstractToken;
 import vpc.core.ProgramPoint;
 
 /**
+ * The <code>AVRErrorReporter</code> contains one method per compilation
+ * error. The method constructs a <code>CompilationError</code> object
+ * that represents the error and throws it. One method per type of error
+ * provides a convenient interface and allows pinpointing the generation
+ * of each type of error within the verifier.
+ * 
  * @author Ben L. Titzer
  */
 public class AVRErrorReporter extends ErrorReporter {
