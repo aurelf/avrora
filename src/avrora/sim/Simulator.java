@@ -1789,8 +1789,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * @param state   the state of the simulation
          */
         public void fireBefore(Instr i, int address, State state) {
-            if (--left <= 0)
-                throw new TimeoutException(i, address, state, timeout);
+            // do nothing
         }
 
         /**
@@ -1802,16 +1801,17 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * @param state   the state of the simulation
          */
         public void fireAfter(Instr i, int address, State state) {
-            // do nothing.
+            if (--left <= 0)
+                throw new TimeoutException(i, address, state, timeout);
         }
     }
 
     /**
      * The <code>InstructionCountTimeout</code> class is a probe that
-     * simply counts down and throws a <code>TimeoutException</code>
-     * when the count reaches zero. It is useful for ensuring termination
-     * of the simulator, for performance testing, or for profiling and
-     * stopping after a specified number of invocations.
+     * simply counts down and throws an exception when the count reaches
+     * zero. It is useful for ensuring termination of the simulator, for
+     * performance testing, or for profiling and stopping after a
+     * specified number of invocations.
      *
      * @author Ben L. Titzer
      */
@@ -1819,10 +1819,10 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         public final long timeout;
 
         /**
-         * The constructor for <code>InstructionCountTimeout</code> creates
-         * with the specified initial value.
+         * The constructor for <code>InstructionCountTimeout</code> creates a
+         * timeout trigger with the specified initial value.
          *
-         * @param t
+         * @param t the number of cycles in the future
          */
         public ClockCycleTimeout(long t) {
             timeout = t;

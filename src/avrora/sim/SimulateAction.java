@@ -187,7 +187,7 @@ public class SimulateAction extends Main.Action {
     }
 
     void processBranchCounters() {
-        List locs = Main.getLocationList(program, Main.COUNTS.get());
+        List locs = Main.getLocationList(program, Main.BRANCHCOUNTS.get());
         Iterator i = locs.iterator();
         while (i.hasNext()) {
             Main.Location l = (Main.Location) i.next();
