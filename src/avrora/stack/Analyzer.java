@@ -3,6 +3,7 @@ package avrora.stack;
 import avrora.core.Program;
 import avrora.core.InstrVisitor;
 import avrora.core.Instr;
+import avrora.core.Register;
 
 import java.util.HashSet;
 
@@ -125,18 +126,32 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.BLD i) {// load bit from T flag into register
+        char T = state.getFlag_T();
+        char val = state.readRegister(i.r1);
+        char result = AbstractState.setBit(val, i.imm1, T);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.BRBC i) {// branch if bit in status register is clear
+        char val = state.readSREG();
+        char bit = AbstractState.getBit(val, i.imm1);
+        branchOnCondition(not(bit), i.imm2);
     }
 
     public void visit(Instr.BRBS i) {// branch if bit in status register is set
+        char val = state.readSREG();
+        char bit = AbstractState.getBit(val, i.imm1);
+        branchOnCondition(bit, i.imm2);
     }
 
     public void visit(Instr.BRCC i) {// branch if carry flag is clear
+        char cond = state.getFlag_C();
+        branchOnCondition(not(cond), i.imm1);
     }
 
     public void visit(Instr.BRCS i) { // branch if carry flag is set
+        char cond = state.getFlag_C();
+        branchOnCondition(cond, i.imm1);
     }
 
     public void visit(Instr.BREAK i) {// break
@@ -220,6 +235,9 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.CBI i) { // clear bit in IO register
+        char val = state.readIORegister(i.imm1);
+        char result = AbstractState.setBit(val, i.imm2, AbstractState.OFF);
+        state.writeIORegister(i.imm1, result);
     }
 
     public void visit(Instr.CBR i) { // clear bits in register
@@ -396,6 +414,14 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.MOVW i) { // copy two registers to two registers
+        Register src = i.r2;
+        Register dst = i.r1;
+
+        char vall = state.readRegister(src);
+        char valh = state.readRegister(src.nextRegister());
+
+        state.writeRegister(dst, vall);
+        state.writeRegister(dst.nextRegister(), valh);
     }
 
     public void visit(Instr.MUL i) { // multiply register with register to r0
@@ -428,6 +454,8 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.OUT i) { // write from register to IO register
+        char val = state.readRegister(i.r1);
+        state.writeIORegister(i.imm1, val);
     }
 
     public void visit(Instr.POP i) { // pop from the stack to register

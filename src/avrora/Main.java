@@ -5,6 +5,7 @@ import vpc.VPCBase;
 import vpc.VPCError;
 import vpc.test.AutomatedTester;
 import vpc.util.Options;
+import vpc.util.ColorTerminal;
 
 import java.util.HashMap;
 import java.io.File;
@@ -140,6 +141,8 @@ public class Main extends VPCBase {
         try {
             options.parseCommandLine(args);
 
+            if ( BANNER.get() ) banner();
+
             Action a = (Action)actions.get(ACTION.get());
             if ( a == null )
                 userError("unknown action", ACTION.get());
@@ -153,4 +156,13 @@ public class Main extends VPCBase {
             e.printStackTrace();
         }
     }
+
+    static void banner() {
+        ColorTerminal.printBrightBlue("Avrora " + VERSION);
+        ColorTerminal.print(" - (c) 2003-2004 Ben L. Titzer\n\n");
+        ColorTerminal.println("This is a prototype simulator and analsyis tool intended for evaluation");
+        ColorTerminal.println("and experimentation purposes only. It is provided with absolutely no");
+        ColorTerminal.println("warranty, expressed or implied.\n");
+    }
+
 }

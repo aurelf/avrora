@@ -220,6 +220,11 @@ public class AbstractState implements IORegisterConstants {
         return (char)(val & mask);
     }
 
+    public static char setBit(char val, int bit, char on) {
+        int mask = ~(ON << bit);
+        return (char)((val & mask) | (on << bit));
+    }
+
     public static char couldBeZero(char val) {
         if ( val == ZERO ) return ON;
         if ( knownBitsOf(val) != 0 ) return OFF;
