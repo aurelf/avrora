@@ -559,7 +559,7 @@ public abstract class Instr implements InstrPrototype {
         }
 
         public String getOperands() {
-            return "" + imm1;
+            return r1 + ", " + r2 + "+" + imm1;
         }
 
         public Instr build(int pc, Operand[] ops) {
@@ -583,7 +583,7 @@ public abstract class Instr implements InstrPrototype {
         }
 
         public String getOperands() {
-            return "" + imm1;
+            return r1 + "+" + imm1 + ", " + r2;
         }
 
         public Instr build(int pc, Operand[] ops) {
