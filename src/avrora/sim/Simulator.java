@@ -337,7 +337,9 @@ public abstract class Simulator implements IORegisterConstants {
                         breakFired = false;
                 }
 
-                interpreter.executeProbed(instr, address, probe);
+                probe.fireBefore(instr, address, interpreter);
+                instr.accept(interpreter);
+                probe.fireAfter(instr, address, interpreter);
             } else {
                 instr.accept(v);
             }

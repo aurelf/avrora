@@ -11,7 +11,7 @@ import avrora.util.Arithmetic;
 /**
  * @author Ben L. Titzer
  */
-public abstract class GenInterpreter implements InstrVisitor, State {
+public class GenInterpreter implements InstrVisitor, State {
     private int pc;
     private long cycles;
 
@@ -20,7 +20,7 @@ public abstract class GenInterpreter implements InstrVisitor, State {
     private byte[] sram;
 
     private final Program.Impression impression;
-    private long postedInterrupts;
+    protected long postedInterrupts;
 
     private final int sram_start;
     private final int sram_max;
@@ -301,7 +301,7 @@ public abstract class GenInterpreter implements InstrVisitor, State {
         int tmp_0 = getRegisterWord(i.r1);
         int tmp_1 = tmp_0 + i.imm1;
         boolean tmp_2 = ((tmp_1 & 32768) != 0);
-        boolean tmp_3 = ((tmp_0 & 128) != 0);
+        boolean tmp_3 = ((tmp_0 & 32768) != 0);
         C = !tmp_2 && tmp_3;
         N = tmp_2;
         V = !tmp_3 && tmp_2;
@@ -312,15 +312,15 @@ public abstract class GenInterpreter implements InstrVisitor, State {
     }
     public void visit(Instr.AND i)  {
         nextPC = pc + 2;
-        int tmp_1 = getRegisterByte(i.r1);
-        int tmp_2 = getRegisterByte(i.r2);
-        int tmp_3 = tmp_1 & tmp_2;
-        N = ((tmp_3 & 128) != 0);
-        Z = low(tmp_3) == 0;
+        int tmp_0 = getRegisterByte(i.r1);
+        int tmp_1 = getRegisterByte(i.r2);
+        int tmp_2 = tmp_0 & tmp_1;
+        N = ((tmp_2 & 128) != 0);
+        Z = low(tmp_2) == 0;
         V = false;
         S = xor(N, V);
-        byte tmp_4 = low(tmp_3);
-        int tmp_0 = tmp_4;
+        byte tmp_3 = low(tmp_2);
+        setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
     public void visit(Instr.ANDI i)  {
@@ -649,7 +649,7 @@ public abstract class GenInterpreter implements InstrVisitor, State {
         cyclesConsumed += 4;
     }
     public void visit(Instr.CBI i)  {
-        nextPC = pc + 1;
+        nextPC = pc + 2;
         getIOReg(i.imm1).writeBit(i.imm2, false);
         cyclesConsumed += 2;
     }
@@ -762,7 +762,7 @@ public abstract class GenInterpreter implements InstrVisitor, State {
         H = !tmp_7 && tmp_8 || tmp_8 && tmp_9 || tmp_9 && !tmp_7;
         C = !tmp_4 && tmp_5 || tmp_5 && tmp_6 || tmp_6 && !tmp_4;
         N = tmp_6;
-        Z = low(tmp_3) == 0;
+        Z = low(tmp_3) == 0 && Z;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
         S = xor(N, V);
         byte tmp_10 = low(tmp_3);
@@ -908,14 +908,14 @@ public abstract class GenInterpreter implements InstrVisitor, State {
         tmp_0 = tmp_0 / 2;
         pushByte(low(tmp_0));
         pushByte(high(tmp_0));
-        int tmp_1 = getRegisterWord(R0);
+        int tmp_1 = getRegisterWord(RZ);
         int tmp_2 = tmp_1 * 2;
         nextPC = tmp_2;
         cyclesConsumed += 3;
     }
     public void visit(Instr.IJMP i)  {
         nextPC = pc + 2;
-        int tmp_0 = getRegisterWord(R0);
+        int tmp_0 = getRegisterWord(RZ);
         int tmp_1 = tmp_0 * 2;
         nextPC = tmp_1;
         cyclesConsumed += 2;

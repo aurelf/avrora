@@ -36,6 +36,8 @@ import avrora.test.TestHarness;
 import avrora.test.TestCase;
 import avrora.test.TestResult;
 import avrora.util.Terminal;
+import avrora.util.Verbose;
+import avrora.util.StringUtil;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -63,6 +65,8 @@ import java.util.Properties;
 public class AutomatedTester {
 
     private final TestHarness harness;
+
+    private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
     /**
      * The constructor for the <code>AutomatedTester</code> class accepts
@@ -107,6 +111,8 @@ public class AutomatedTester {
         List mlist = new LinkedList();
 
         for (int cntr = 0; cntr < fnames.length; cntr++) {
+            printer.println("Running test "+StringUtil.quote(fnames[cntr])+"...");
+
             String fname = fnames[cntr];
             TestPair pair = runTest(fname);
             TestResult result = pair.result;

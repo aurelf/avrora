@@ -276,7 +276,7 @@ architecture avr {
             local r1: int       = $wregs(rd);
             local result: int   = r1 + imm;
             local R15: boolean  = result[15];
-            local Rdh7: boolean = r1[7];
+            local Rdh7: boolean = r1[15];
 
             C = (!R15 and Rdh7);
             N = (R15);
@@ -292,7 +292,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rr };
         cycles = 1;
         execute = {
-            local result: int = performAnd($regs(rd), $regs(rr));
+            $regs(rd) = performAnd($regs(rd), $regs(rr));
         };
     };
 
@@ -523,7 +523,7 @@ architecture avr {
     };
 
     instruction "cbi" ior: IMM5, bit: IMM3 {
-        encoding = { 0b1001100, ior[4:0], bit[2:0] };
+        encoding = { 0b10011000, ior[4:0], bit[2:0] };
         cycles = 2;
         execute = {
             $ioregs(ior)[bit] = false;
@@ -646,7 +646,7 @@ architecture avr {
         cycles = 1;
         execute = {
             // perform subtraction for flag side effects.
-            performSubtraction($regs(rd), $regs(rr), bit(C));
+            performSubtractionPZ($regs(rd), $regs(rr), bit(C));
         };
     };
 
@@ -788,11 +788,11 @@ architecture avr {
     };
 
     instruction "icall" {
-        encoding = { 0b10010101, 0b000001001 };
+        encoding = { 0b10010101, 0b00001001 };
         cycles = 3;
         execute = {
             pushPC(nextPC);
-            nextPC = absolute($wregs(R0));
+            nextPC = absolute($wregs(RZ));
         };
     };
 
@@ -800,7 +800,7 @@ architecture avr {
         encoding = { 0b10010100, 0b00001001 };
         cycles = 2;
         execute = {
-            nextPC = absolute($wregs(R0));
+            nextPC = absolute($wregs(RZ));
         };
     };
 
@@ -928,7 +928,7 @@ architecture avr {
     };
 
     instruction "lsr" rd: GPR {
-        encoding = { 0b1001010, rd[5:0], 0b0110 };
+        encoding = { 0b1001010, rd[4:0], 0b0110 };
         cycles = 1;
         execute = {
             $regs(rd) = performRightShift($regs(rd), false);
@@ -1050,7 +1050,7 @@ architecture avr {
     };
 
     instruction "ret" {
-        encoding = { 0b100101010, 0b00010000 };
+        encoding = { 0b10010101, 0b00010000 };
         cycles = 4;
         execute = {
             nextPC = popPC();

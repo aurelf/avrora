@@ -38,6 +38,7 @@ import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.GenInterpreter;
 
 import java.util.HashMap;
 

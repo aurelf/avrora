@@ -83,6 +83,10 @@ public class Architecture {
                 dd.setParent(parent);
             }
 
+            int encodingSize = id.getEncodingSize();
+            if ( encodingSize % 8 != 0 )
+                throw Avrora.failure("encoding not byte aligned: "+id.name.image+" is "+encodingSize+" bits");
+
             // find operand decl
             Iterator oi = id.getOperandIterator();
             while ( oi.hasNext() ) {
