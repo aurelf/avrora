@@ -106,6 +106,26 @@ public class MapBitRangeAssignStmt extends AssignStmt {
     }
 
     /**
+     * The constructor for the <code>MapAssignStmt</code> class initializes the public final fields in this
+     * class that refer to the elements of the assignment.
+     *
+     * @param m the string name of the map as a token
+     * @param i the expression representing the index into the map
+     * @param l the low bit of the range as an integer
+     * @param h the high bit of the range as an integer
+     * @param e the expression representing the right hand side of the assignment
+     */
+    public MapBitRangeAssignStmt(String m, Expr i, int l, int h, Expr e) {
+        super(e);
+        mapname = new Token();
+        mapname.image = m;
+        index = i;
+
+        low_bit = l < h ? l : h;
+        high_bit = l > h ? l : h;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
      * syntax trees representing the code of a particular instruction or subroutine.
      *

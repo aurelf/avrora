@@ -30,39 +30,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.actions;
+
+import avrora.Main;
+import avrora.util.Printer;
+import avrora.util.StringUtil;
+import avrora.sim.dbbc.DBBC;
+import avrora.core.Program;
+import avrora.core.ControlFlowGraph;
+import avrora.core.isdl.gen.PrettyPrinter;
+
+import java.util.Iterator;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
- *
  * @author Ben L. Titzer
  */
-public class Version {
+public class DBBCAction extends Action {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    public static String HELP = "The \"dbbc\" action tests the operation of the Dynamic Basic Block Compiler " +
+            "(DBBC) in Avrora, which dynamically compiles AVR code to Java source code.";
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.3";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 16;
-
-    public static Version getVersion() {
-        return new Version();
+    public DBBCAction() {
+        super("dbbc", HELP);
     }
 
-    public String toString() {
-        return prefix + major + "." + commit;
+    public void run(String[] args) throws Exception {
+        Printer printer = Printer.STDOUT;
+        PrettyPrinter pp = new PrettyPrinter(printer);
+        Program p = Main.readProgram(args);
+        DBBC dbbc = new DBBC(p);
+
+        ControlFlowGraph cfg = p.getCFG();
+        Iterator i = cfg.getSortedBlockIterator();
+        while ( i.hasNext() ) {
+            ControlFlowGraph.Block b = (ControlFlowGraph.Block)i.next();
+            printer.startblock("block starting at: "+StringUtil.addrToString(b.getAddress()));
+            DBBC.CodeBlock code = dbbc.getCodeBlock(b.getAddress());
+            printer.println("// worst case execution time = "+code.wcet+" cycles");
+            pp.visitStmtList(code.stmts);
+            printer.endblock();
+        }
     }
 }

@@ -69,6 +69,21 @@ public class VarBitAssignStmt extends AssignStmt {
     }
 
     /**
+     * The constructor for the <code>VarAssignStmt</code> class simply initializes the internal references to
+     * the internal members of this assignment.
+     *
+     * @param m the string name of the variable as a token
+     * @param b an expression representing the index of the bit
+     * @param e an expression representing the right hand side of the assignment
+     */
+    public VarBitAssignStmt(String m, Expr b, Expr e) {
+        super(e);
+        variable = new Token();
+        variable.image = m;
+        bit = b;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
      * syntax trees representing the code of a particular instruction or subroutine.
      *

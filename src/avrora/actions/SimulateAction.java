@@ -140,8 +140,10 @@ public class SimulateAction extends SimAction {
             long newMs = System.currentTimeMillis();
             long diff = newMs - lastMs;
             try {
-                if (diff < 10)
+                if (diff < 10) {
                     Thread.sleep(10 - diff);
+                    newMs = System.currentTimeMillis();
+                }
             } catch (InterruptedException e) {
                 // interrupt exceptions are dumb.
             }

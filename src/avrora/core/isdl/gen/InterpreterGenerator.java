@@ -49,26 +49,12 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Architecture.Visitor {
+public class InterpreterGenerator extends PrettyPrinter implements Architecture.Visitor {
 
-    protected final Printer printer;
     protected final Architecture architecture;
 
     protected final HashMap mapMap;
     protected HashMap operandMap;
-    protected final CodeGenerator codeGen;
-
-    protected abstract class MapRep {
-        public abstract void generateWrite(Expr ind, Expr val);
-
-        public abstract void generateBitWrite(Expr ind, Expr b, Expr val);
-
-        public abstract void generateRead(Expr ind);
-
-        public abstract void generateBitRead(Expr ind, Expr b);
-
-        public abstract void generateBitRangeWrite(Expr ind, int l, int h, Expr val);
-    }
 
     protected class GetterSetterMap extends MapRep {
 
@@ -88,13 +74,13 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
             // TODO: extract out index value if it is not a simple expression
             printer.print(writeMeth + "(");
-            ind.accept(codeGen);
+            ind.accept(InterpreterGenerator.this);
             printer.print(", Arithmetic.setBit(" + readMeth + "(");
-            ind.accept(codeGen);
+            ind.accept(InterpreterGenerator.this);
             printer.print("), ");
-            b.accept(codeGen);
+            b.accept(InterpreterGenerator.this);
             printer.print(", ");
-            val.accept(codeGen);
+            val.accept(InterpreterGenerator.this);
             printer.println("));");
         }
 
@@ -104,9 +90,9 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
 
         public void generateBitRead(Expr ind, Expr b) {
             printer.print("Arithmetic.getBit(" + readMeth + "(");
-            ind.accept(codeGen);
+            ind.accept(InterpreterGenerator.this);
             printer.print("), ");
-            b.accept(codeGen);
+            b.accept(InterpreterGenerator.this);
             printer.print(")");
         }
 
@@ -136,19 +122,19 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
             printer.print("getIOReg(");
-            ind.accept(codeGen);
+            ind.accept(InterpreterGenerator.this);
             printer.print(").writeBit(");
-            b.accept(codeGen);
+            b.accept(InterpreterGenerator.this);
             printer.print(", ");
-            val.accept(codeGen);
+            val.accept(InterpreterGenerator.this);
             printer.println(");");
         }
 
         public void generateBitRead(Expr ind, Expr b) {
             printer.print("getIOReg(");
-            ind.accept(codeGen);
+            ind.accept(InterpreterGenerator.this);
             printer.print(").readBit(");
-            b.accept(codeGen);
+            b.accept(InterpreterGenerator.this);
             printer.print(")");
         }
     }
@@ -165,10 +151,9 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
      * @param p a printer to output the code implementing the interpreter
      */
     public InterpreterGenerator(Architecture a, Printer p) {
-        printer = p;
+        super(p);
         architecture = a;
         mapMap = new HashMap();
-        codeGen = new CodeGenerator();
 
         initializeMaps();
     }
@@ -243,63 +228,11 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
     }
 
 
-    public void visit(CallStmt s) {
-        printer.print(s.method.image + "(");
-        codeGen.visitExprList(s.args);
-        printer.println(");");
-    }
-
-    public void visit(DeclStmt s) {
-        printer.print(s.type.image + " " + s.name.image + " = ");
-        s.init.accept(codeGen);
-        printer.println(";");
-    }
-
-    public void visit(IfStmt s) {
-        printer.print("if ( ");
-        s.cond.accept(codeGen);
-        printer.print(" ) ");
-        printer.startblock();
-        visitStmtList(s.trueBranch);
-        printer.endblock();
-        printer.startblock("else");
-        visitStmtList(s.falseBranch);
-        printer.endblock();
-    }
-
-    public void visit(MapAssignStmt s) {
-        MapRep mr = getMapRep(s.mapname.image);
-        mr.generateWrite(s.index, s.expr);
-    }
-
-    public void visit(MapBitAssignStmt s) {
-        MapRep mr = getMapRep(s.mapname.image);
-        mr.generateBitWrite(s.index, s.bit, s.expr);
-    }
-
-    public void visit(MapBitRangeAssignStmt s) {
-        MapRep mr = getMapRep(s.mapname.image);
-        mr.generateBitRangeWrite(s.index, s.low_bit, s.high_bit, s.expr);
-    }
-
     protected MapRep getMapRep(String n) {
         MapRep mr = (MapRep)mapMap.get(n);
         if (mr == null)
             throw Avrora.failure("unknown map " + StringUtil.quote(n));
         return mr;
-    }
-
-    public void visit(ReturnStmt s) {
-        printer.print("return ");
-        s.expr.accept(codeGen);
-        printer.println(";");
-    }
-
-    public void visit(VarAssignStmt s) {
-        String var = getVariable(s.variable);
-        printer.print(var + " = ");
-        s.expr.accept(codeGen);
-        printer.println(";");
     }
 
     public void visit(VarBitAssignStmt s) {
@@ -322,6 +255,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
     }
 
     protected String getVariable(Token variable) {
+        // TODO: get rid of direct register references
         String var = (String)operandMap.get(variable.image);
         if (var == null) var = variable.image;
         return var;
@@ -329,7 +263,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
 
     protected void emitBinOp(Expr e, String op, int p, int val) {
         printer.print("(");
-        codeGen.inner(e, p);
+        this.inner(e, p);
         printer.print(" " + op + " " + val + ")");
     }
 
@@ -339,100 +273,31 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
 
     protected void emitAnd(Expr e, int val) {
         printer.print("(");
-        codeGen.inner(e, Expr.PREC_A_AND);
+        this.inner(e, Expr.PREC_A_AND);
         printer.print(andString(val) + ")");
     }
 
     protected void emitCall(String s, Expr e) {
         printer.print(s + "(");
-        e.accept(codeGen);
+        e.accept(this);
         printer.print(")");
     }
 
     protected void emitCall(String s, Expr e1, Expr e2) {
         printer.print(s + "(");
-        e1.accept(codeGen);
+        e1.accept(this);
         printer.print(", ");
-        e2.accept(codeGen);
+        e2.accept(this);
         printer.print(")");
     }
 
     protected void emitCall(String s, String e1, Expr e2, Expr e3) {
         printer.print(s + "(" + e1 + ", ");
-        e2.accept(codeGen);
+        e2.accept(this);
         printer.print(", ");
-        e3.accept(codeGen);
+        e3.accept(this);
         printer.print(")");
     }
-
-    /**
-     * The <code>CodeGenerator</code> class is used to generate code for individual expressions. It generates
-     * textual code for each expression and dumps it to the printer.
-     */
-    public class CodeGenerator implements CodeVisitor {
-
-        protected void inner(Expr e, int outerPrecedence) {
-            if (e.getPrecedence() < outerPrecedence) {
-                printer.print("(");
-                e.accept(this);
-                printer.print(")");
-            } else {
-                e.accept(this);
-            }
-        }
-
-        protected void binop(String op, Expr left, Expr right, int p) {
-            inner(left, p);
-            printer.print(" " + op + " ");
-            inner(right, p);
-        }
-
-        public void visit(Arith.AddExpr e) {
-            binop("+", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.AndExpr e) {
-            binop("&", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.CompExpr e) {
-            printer.print(e.operation);
-            inner(e.operand, e.getPrecedence());
-        }
-
-        public void visit(Arith.DivExpr e) {
-            binop("/", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.MulExpr e) {
-            binop("*", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.NegExpr e) {
-            printer.print(e.operation);
-            inner(e.operand, e.getPrecedence());
-        }
-
-        public void visit(Arith.OrExpr e) {
-            binop("|", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.ShiftLeftExpr e) {
-            binop("<<", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.ShiftRightExpr e) {
-            binop(">>", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.SubExpr e) {
-            binop("-", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Arith.XorExpr e) {
-            binop("^", e.left, e.right, e.getPrecedence());
-        }
-
 
         public void visit(BitExpr e) {
             if (e.expr.isMap()) {
@@ -463,81 +328,6 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
                 emitAnd(e.operand, mask);
             }
         }
-
-        public void visit(CallExpr e) {
-            printer.print(e.method.image + "(");
-            visitExprList(e.args);
-            printer.print(")");
-        }
-
-        protected void visitExprList(List l) {
-            Iterator i = l.iterator();
-            while (i.hasNext()) {
-                Expr a = (Expr)i.next();
-                a.accept(this);
-                if (i.hasNext()) printer.print(", ");
-            }
-        }
-
-        public void visit(Literal.BoolExpr e) {
-            printer.print(e.toString());
-        }
-
-        public void visit(Literal.IntExpr e) {
-            printer.print(e.toString());
-        }
-
-        public void visit(Logical.AndExpr e) {
-            binop("&&", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.EquExpr e) {
-            binop("==", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.GreaterEquExpr e) {
-            binop(">=", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.GreaterExpr e) {
-            binop(">", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.LessEquExpr e) {
-            binop("<=", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.LessExpr e) {
-            binop("<", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.NequExpr e) {
-            binop("!=", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.NotExpr e) {
-            printer.print("!");
-            inner(e.operand, e.getPrecedence());
-        }
-
-        public void visit(Logical.OrExpr e) {
-            binop("||", e.left, e.right, e.getPrecedence());
-        }
-
-        public void visit(Logical.XorExpr e) {
-            emitCall("xor", e.left, e.right);
-        }
-
-
-        public void visit(MapExpr e) {
-            MapRep mr = getMapRep(e.mapname.image);
-            mr.generateRead(e.index);
-        }
-
-        public void visit(VarExpr e) {
-            printer.print(getVariable(e.variable));
-        }
-    }
 
 
     protected int getSingleBitMask(int bit) {

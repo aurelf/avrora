@@ -45,6 +45,8 @@ public interface StmtVisitor {
 
     public void visit(CallStmt s);
 
+    public void visit(CommentStmt s);
+
     public void visit(DeclStmt s);
 
     public void visit(IfStmt s);
@@ -74,6 +76,9 @@ public interface StmtVisitor {
             // terminal node
         }
 
+        public void visit(CommentStmt s) {
+            // terminal node
+        }
         public void visit(DeclStmt s) {
             // terminal node
         }

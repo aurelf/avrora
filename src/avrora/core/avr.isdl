@@ -80,6 +80,7 @@ architecture avr {
     state FLASH: int.8[...];
 
     state REGS: int.8[32] <=> SRAM[0-31];
+    state UREGS: uint.8[32] <=> REGS[0-31];
 
     state IOREGS: int.8[...] <=> SRAM[32...];
     state SREG: int.8 <=> IOREGS[63];

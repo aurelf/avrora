@@ -35,12 +35,13 @@ package avrora.actions;
 import avrora.Avrora;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.gen.ClassGenerator;
-import avrora.core.isdl.gen.FIFInterpreterGenerator;
 import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.gen.CodemapGenerator;
 import avrora.core.isdl.parser.ISDLParser;
 import avrora.util.Option;
 import avrora.util.Printer;
 import avrora.util.SectionFile;
+import avrora.util.Terminal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,42 +59,55 @@ public class ISDLAction extends Action {
             "(ISDL) tool, which is used internally in Avrora to describe the AVR " +
             "instruction set.";
 
-    public final Option.Bool CLASSES = newOption("classes", true,
-            "This option controls whether the ISDL generation tool will emit the code " +
-            "for instruction classes.");
-    public final Option.Bool INTERPRETER = newOption("interpreter", true,
-            "This option controls whether the ISDL generation tool will emit the code " +
-            "for the interpreter for this architecture.");
-    public final Option.Bool DBBC = newOption("dbbc", true,
-            "This option controls the generation of the dynamic basic block compiler " +
-            "(DBBC).");
+    public final Option.Str CLASSES = newOption("instr-file", "",
+            "This option specifies the destination file into which to generate the Instr classes. " +
+            "If this option is not set, the instruction classes will not be generated.");
+    public final Option.Str INTERPRETER = newOption("interpreter", "",
+            "This option specifies the destination file into which to generate the code for interpreting " +
+            "each instruction. If this option is not set, the code for the interpreter will not be " +
+            "generated.");
+    public final Option.Str CODEMAP = newOption("codemap", "",
+            "This option specifies the file to generate the codemap into. The codemap is used in a" +
+            "dynamic basic block compiler and dependency analysis of instructions.");
 
     public ISDLAction() {
         super("isdl", HELP);
     }
 
     public void run(String[] args) throws Exception {
-        if (args.length != 4)
-            Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl> <interpreter.java> <fif_interpreter.java> <instr.java>");
+        if (args.length < 1)
+            Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl>");
 
         File archfile = new File(args[0]);
         FileInputStream fis = new FileInputStream(archfile);
         ISDLParser parser = new ISDLParser(fis);
         Architecture a = parser.Architecture();
 
-        // generate vanilla interpreter
-        SectionFile f = new SectionFile(args[1], "INTERPRETER GENERATOR");
-        new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
-        f.close();
+        String interpreter = INTERPRETER.get();
+        if ( !interpreter.equals("")) {
+            // generate vanilla interpreter
+            Terminal.println("Generating interpreter to "+interpreter+"...");
+            SectionFile f = new SectionFile(INTERPRETER.get(), "INTERPRETER GENERATOR");
+            new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
+            f.close();
+        }
 
-        // generate FIF interpreter
-        f = new SectionFile(args[2], "FIF GENERATOR");
-        new FIFInterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
-        f.close();
+        String classes = CLASSES.get();
+        if ( !classes.equals("")) {
+            // generate instruction classes
+            Terminal.println("Generating Instr inner classes to "+classes+"...");
+            SectionFile f = new SectionFile(classes, "INSTR GENERATOR");
+            new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
+            f.close();
+        }
 
-        // generate instruction classes
-        f = new SectionFile(args[3], "INSTR GENERATOR");
-        new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
-        f.close();
+        String codemap = CODEMAP.get();
+        if ( !codemap.equals("")) {
+            // generate instruction classes
+            Terminal.println("Generating codemap to "+codemap+"...");
+            SectionFile f = new SectionFile(codemap, "CODEBUILDER GENERATOR");
+            new CodemapGenerator(a, new Printer(new PrintStream(f))).generate();
+            f.close();
+        }
     }
 }

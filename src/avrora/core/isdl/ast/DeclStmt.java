@@ -88,6 +88,22 @@ public class DeclStmt extends Stmt {
     }
 
     /**
+     * The constructor of the <code>DeclStmt</code> class initializes the references to the name, type, and
+     * initial value of the declared local.
+     *
+     * @param n the name of the local as a string
+     * @param t the type of the local as a token
+     * @param i a reference to the expression evaluated to give the local an initial value
+     */
+    public DeclStmt(String n, String t, Expr i) {
+        name = new Token();
+        name.image = n;
+        type = new Token();
+        type.image = t;
+        init = i;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
      * syntax trees representing the code of a particular instruction or subroutine.
      *

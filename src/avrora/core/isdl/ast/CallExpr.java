@@ -69,6 +69,19 @@ public class CallExpr extends Expr {
     }
 
     /**
+     * The constructor of the <code>CallExpr</code> class simply initializes the references to the subroutine
+     * name and arguments.
+     *
+     * @param m the name of the subroutine as a string
+     * @param a list of expressions representing the arguments to the subroutine
+     */
+    public CallExpr(String m, List a) {
+        method = new Token();
+        method.image = m;
+        args = a;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
      * traverse the syntax tree easily and in an extensible way.
      *

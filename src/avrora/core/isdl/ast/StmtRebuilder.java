@@ -46,6 +46,8 @@ public interface StmtRebuilder extends CodeRebuilder {
 
     public Stmt visit(CallStmt s);
 
+    public Stmt visit(CommentStmt s);
+
     public Stmt visit(DeclStmt s);
 
     public Stmt visit(IfStmt s);
@@ -79,6 +81,10 @@ public interface StmtRebuilder extends CodeRebuilder {
                 return s;
         }
 
+        public Stmt visit(CommentStmt s) {
+            return s;
+        }
+        
         public Stmt visit(DeclStmt s) {
             Expr ni = s.init.accept(this);
             if (ni != s.init)

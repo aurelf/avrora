@@ -67,6 +67,19 @@ public class MapExpr extends Expr {
     }
 
     /**
+     * The constructor of the <code>MapExpr</code> class initializes the publicly accessable fields that
+     * represent the members of this expression
+     *
+     * @param s the string name of the map as a token
+     * @param i an expression representing the index into the map
+     */
+    public MapExpr(String s, Expr i) {
+        mapname = new Token();
+        mapname.image = s;
+        index = i;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
      * traverse the syntax tree easily and in an extensible way.
      *

@@ -102,6 +102,18 @@ public abstract class Literal extends Expr {
         }
 
         /**
+         * The constructor of the <code>IntExpr</code> class evaluates the token's string value to an integer
+         * and stores it in the publicly accessable <code>value</code> field, as well as storing a reference
+         * to the original token.
+         *
+         * @param v the token representing the value of this integer
+         */
+        public IntExpr(int v) {
+            super(new Token());
+            value = v;
+        }
+
+        /**
          * The <code>getBitWidth()</code> method returns the known bit size of this expression which is needed
          * in computing the size of an encoding. For integer literals, the known bit width is only defined for
          * binary constants (e.g. "0b0101011"), in which case it is the number of bits after the "0b" prefix.
@@ -160,6 +172,18 @@ public abstract class Literal extends Expr {
         public BoolExpr(Token v) {
             super(v);
             value = Expr.tokenToBool(v);
+        }
+
+        /**
+         * The constructor of the <code>BoolExpr</code> class evaluates the token's string value as a boolean
+         * and stores it in the publicly accessable <code>value</code> field, as well as storing a reference
+         * to the original token
+         *
+         * @param b the value of this boolean
+         */
+        public BoolExpr(boolean b) {
+            super(new Token());
+            value = b;
         }
 
         /**

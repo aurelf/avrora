@@ -35,42 +35,19 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.parser.Token;
 
 /**
- * The <code>VarAssignStmt</code> class represents an assignment to a local or global variable within the IR
- * for an instruction or a subroutine.
  *
  * @author Ben L. Titzer
  */
-public class VarAssignStmt extends AssignStmt {
+public class CommentStmt extends Stmt {
     /**
-     * The <code>variable</code> field stores a reference to the token that represents the name of the
-     * variable being assigned to.
+     * The <code>name</code> field stores a reference to the name of the local.
      */
-    public final Token variable;
+    public final String comment;
 
-    /**
-     * The constructor for the <code>VarAssignStmt</code> class simply initializes the internal references to
-     * the internal members of this assignment.
-     *
-     * @param n the string name of the variable as a token
-     * @param e the expression representing the right hand side of the assignment
-     */
-    public VarAssignStmt(Token n, Expr e) {
-        super(e);
-        variable = n;
+    public CommentStmt(String c) {
+        comment = c;
     }
 
-    /**
-     * The constructor for the <code>VarAssignStmt</code> class simply initializes the internal references to
-     * the internal members of this assignment.
-     *
-     * @param n the string name of the variable as a token
-     * @param e the expression representing the right hand side of the assignment
-     */
-    public VarAssignStmt(String n, Expr e) {
-        super(e);
-        variable = new Token();
-        variable.image = n;
-    }
     /**
      * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
      * syntax trees representing the code of a particular instruction or subroutine.
@@ -87,7 +64,7 @@ public class VarAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return variable.image + " = " + expr + ";";
+        return "// "+comment;
     }
 
     /**
@@ -101,5 +78,4 @@ public class VarAssignStmt extends AssignStmt {
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);
     }
-
 }

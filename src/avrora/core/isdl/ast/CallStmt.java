@@ -68,6 +68,19 @@ public class CallStmt extends Stmt {
     }
 
     /**
+     * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine
+     * name and arguments.
+     *
+     * @param m the name of the subroutine as a string
+     * @param a list of expressions representing the arguments to the subroutine
+     */
+    public CallStmt(String m, List a) {
+        method = new Token();
+        method.image = m;
+        args = a;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
      * syntax trees representing the code of a particular instruction or subroutine.
      *
