@@ -32,6 +32,8 @@
 
 package avrora.sim;
 
+import avrora.Avrora;
+
 
 /**
  * The <code>SimulatorThread</code> class is a thread intended to run a
@@ -43,6 +45,11 @@ package avrora.sim;
  * @author Ben L. Titzer
  */
 public class SimulatorThread extends Thread {
+
+    /**
+     * The <code>simulator</code> field stores a reference to the simulator that
+     * this thread encapsulates.
+     */
     protected final Simulator simulator;
 
     /**
@@ -68,6 +75,12 @@ public class SimulatorThread extends Thread {
      * method of the <code>Simulator</code> instance associated with this thread.
      */
     public void run() {
-        simulator.start();
+        try {
+            simulator.start();
+        } catch ( Simulator.TimeoutException te ) {
+            // suppress timeout exceptions.
+        } catch ( Avrora.Error e ) {
+            e.report();
+        }
     }
 }
