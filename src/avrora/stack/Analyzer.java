@@ -112,21 +112,17 @@ public class Analyzer {
 
         public void visit(Instr.ADIW i) {// add immediate to word register
             char rl = state.readRegister(i.r1);
-            char RH = state.readRegister(i.r1.nextRegister());
-            char Rdh7 = getBit(RH, 7);
+            char rh = state.readRegister(i.r1.nextRegister());
 
-            char imm = knownVal((byte) i.imm1);
-            char RL = add(rl, imm);
+            // compute partial results
+            adir(i.r1, i.imm1);
+
+            // compute upper and lower parts of result from partial results
+            char RL = state.readRegister(i.r1);
+            char RH = state.readRegister(i.r1.nextRegister());
 
             char R15 = getBit(RH, 7);
-            char R7  = getBit(RL, 7);
-            char Rs7 = getBit(rl, 7);
-            char carry = and(not(R7), Rs7);
-
-            if (carry == ON) RH = increment(RH); // carry bit forward to high byte
-            else if (carry == OFF) ;             // no carry
-            else RL = merge(RH, increment(RH));  // unknown carry bit
-
+            char Rdh7 = getBit(rh, 7);
 
             // flags computations
             state.setFlag_C(and(not(R15), Rdh7));
@@ -134,10 +130,6 @@ public class Analyzer {
             state.setFlag_V(and(not(Rdh7), R15));
             state.setFlag_Z(and(couldBeZero(RL), couldBeZero(RH)));
             state.setFlag_S(xor(state.getFlag_N(), state.getFlag_Z()));
-
-
-            state.writeRegister(i.r1, RL);
-            state.writeRegister(i.r1.nextRegister(), RH);
         }
 
         public void visit(Instr.AND i) {// and register with register
@@ -391,14 +383,18 @@ public class Analyzer {
         }
 
         public void visit(Instr.ELPM i) { // extended load program memory to r0
+            state.writeRegister(Register.R0, UNKNOWN);
             // TODO: implement me
         }
 
         public void visit(Instr.ELPMD i) { // extended load program memory to register
+            state.writeRegister(i.r1, UNKNOWN);
             // TODO: implement me
         }
 
         public void visit(Instr.ELPMPI i) { // extended load program memory to register and post-increment
+            state.writeRegister(i.r1, UNKNOWN);
+            adir(i.r2, 1);
             // TODO: implement me
         }
 
@@ -448,7 +444,16 @@ public class Analyzer {
         }
 
         public void visit(Instr.INC i) { // increment register by one
-            // TODO: implement me
+            char r1 = state.readRegister(i.r1);
+            char result = increment(r1);
+
+            char N = getBit(result, 7);
+            char Z = couldBeZero(result);
+            char V = couldBeEqual(r1, knownVal((byte)0x7f));
+            char S = xor(N, V);
+            setFlag_NZVS(N, Z, V, S);
+
+            state.writeRegister(i.r1, result);
         }
 
         public void visit(Instr.JMP i) { // absolute jump
@@ -456,10 +461,12 @@ public class Analyzer {
         }
 
         public void visit(Instr.LD i) { // load from SRAM
+            state.writeRegister(i.r1, UNKNOWN);
             // TODO: implement me
         }
 
         public void visit(Instr.LDD i) { // load from SRAM with displacement
+            state.writeRegister(i.r1, UNKNOWN);
             // TODO: implement me
         }
 
@@ -468,27 +475,35 @@ public class Analyzer {
         }
 
         public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
+            state.writeRegister(i.r1,  UNKNOWN);
+            adir(i.r2, -11);
             // TODO: implement me
         }
 
         public void visit(Instr.LDPI i) { // load from SRAM with post-increment
+            state.writeRegister(i.r1,  UNKNOWN);
+            adir(i.r2, 1);
             // TODO: implement me
         }
 
         public void visit(Instr.LDS i) { // load direct from SRAM
+            state.writeRegister(i.r1,  UNKNOWN);
             // TODO: implement me
         }
 
         public void visit(Instr.LPM i) { // load program memory into r0
+            state.writeRegister(Register.R0, UNKNOWN);
             // TODO: implement me
         }
 
         public void visit(Instr.LPMD i) { // load program memory into register
+            state.writeRegister(i.r1, UNKNOWN);
             // TODO: implement me
         }
 
         public void visit(Instr.LPMPI i) { // load program memory into register and post-increment
-            // TODO: implement me
+            state.writeRegister(i.r1, UNKNOWN);
+            adir(i.r2, 1);
         }
 
         public void visit(Instr.LSL i) { // logical shift left
@@ -510,14 +525,11 @@ public class Analyzer {
         }
 
         public void visit(Instr.MOVW i) { // copy two registers to two registers
-            Register src = i.r2;
-            Register dst = i.r1;
+            char vall = state.readRegister(i.r2);
+            char valh = state.readRegister(i.r2.nextRegister());
 
-            char vall = state.readRegister(src);
-            char valh = state.readRegister(src.nextRegister());
-
-            state.writeRegister(dst, vall);
-            state.writeRegister(dst.nextRegister(), valh);
+            state.writeRegister(i.r1, vall);
+            state.writeRegister(i.r1.nextRegister(), valh);
         }
 
         public void visit(Instr.MUL i) { // multiply register with register to r0
@@ -635,12 +647,11 @@ public class Analyzer {
             char rh = state.readRegister(i.r1.nextRegister());
 
             // compute partial results
-            int resultA = top(rl, rh) - i.imm1;
-            int resultB = bottom(rl, rh) - i.imm1;
+            adir(i.r1, -i.imm1);
 
             // compute upper and lower parts of result from partial results
-            char RL = mergeMask(maskOf(rl), merge((byte)resultA, (byte)resultB));
-            char RH = mergeMask(maskOf(rh), merge((byte)(resultA >> 8), (byte)(resultB >> 8)));
+            char RL = state.readRegister(i.r1);
+            char RH = state.readRegister(i.r1.nextRegister());
 
             char Rdh7 = getBit(rh, 7);
             char R15 = getBit(RH, 7);
@@ -652,9 +663,6 @@ public class Analyzer {
             char C = and(R15, not(Rdh7));
             char S = xor(N, V);
             setFlag_CNZVS(C, N, Z, V, S);
-
-            state.writeRegister(i.r1, RL);
-            state.writeRegister(i.r1.nextRegister(), RH);
         }
 
         public void visit(Instr.SBR i) { // set bits in register
@@ -718,23 +726,25 @@ public class Analyzer {
         }
 
         public void visit(Instr.ST i) { // store from register to SRAM
-            // TODO: implement me
+            // TODO: model side effects to memory?
         }
 
         public void visit(Instr.STD i) { // store from register to SRAM with displacement
-            // TODO: implement me
+            // TODO: model side effects to memory?
         }
 
         public void visit(Instr.STPD i) { // store from register to SRAM with pre-decrement
-            // TODO: implement me
+            adir(i.r1, -1);
+            // TODO: model side effects to memory?
         }
 
         public void visit(Instr.STPI i) { // store from register to SRAM with post-increment
-            // TODO: implement me
+            adir(i.r1, 1);
+            // TODO: model side effects to memory?
         }
 
         public void visit(Instr.STS i) { // store direct to SRAM
-            // TODO: implement me
+            // TODO: model side effects to memory?
         }
 
         public void visit(Instr.SUB i) { // subtract register from register
@@ -931,6 +941,28 @@ public class Analyzer {
             setFlag_NZVS(N, Z, V, S);
 
             return result;
+        }
+
+        private void adir(Register r, int imm) {
+            char v1 = state.readRegister(r);
+            char v2 = state.readRegister(r.nextRegister());
+
+            int resultA = ceiling(v1, v2) + imm;
+            int resultB = floor(v1, v2) + imm;
+
+            char RL = mergeMask(maskOf(v1), merge((byte)resultA, (byte)resultB));
+            char RH = mergeMask(maskOf(v2), merge((byte)(resultA >> 8), (byte)(resultB >> 8)));
+
+            state.writeRegister(r, RL);
+            state.writeRegister(r.nextRegister(), RH);
+        }
+
+        private char highByte(int result) {
+            return (char)((result >> 16) & 0xffff);
+        }
+
+        private char lowByte(int result) {
+            return (char)(result & 0xffff);
         }
 
         private int relative(int imm1) {

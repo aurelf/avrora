@@ -61,8 +61,6 @@ public class AVRAssembly extends VPCBase {
             try {
                 parser.Module();
                 avrora.core.Program p = module.build();
-                Simulator.TRACE = true;
-                Simulator.TRACEREGS = true;
                 Simulator s = new ATMega128L().loadProgram(p);
                 s.start();
             } catch (AbstractParseException e) {
