@@ -113,7 +113,11 @@ public class Analyzer {
         HashSet stack = new HashSet();
         StateSpace.State state = space.getEdenState();
 
-        maxDepth = traverse(state, stack, 0);
+        try {
+            maxDepth = traverse(state, stack, 0);
+        } catch ( UnboundedStackException e) {
+            maxDepth = Integer.MAX_VALUE;
+        }
     }
 
     private int traverse(StateSpace.State s, HashSet stack, int cumul) {
@@ -129,7 +133,7 @@ public class Analyzer {
             if ( stack.contains(t) ) { // cycle detected.
                 Integer i = (Integer)t.mark;
                 if ( i.intValue() != cumul )
-                    throw new Error("unbounded stack");
+                    throw new UnboundedStackException();
             }
             int extra = traverse(t, stack, cumul + link.weight);
             if ( extra > max ) max = extra;
@@ -140,12 +144,19 @@ public class Analyzer {
         return max;
     }
 
+    private class UnboundedStackException extends RuntimeException {
+
+    }
+
     public void report() {
         printQuantity("Total cached states", ""+space.getTotalStateCount());
         printQuantity("Total reachable states", ""+space.getStatesInSpaceCount());
         printQuantity("Time to build graph", StringUtil.milliAsString(buildTime));
         printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
-        printQuantity("Maximum stack depth", ""+maxDepth);
+        if ( maxDepth == Integer.MAX_VALUE )
+            printQuantity("Maximum stack depth", "unbounded");
+        else
+            printQuantity("Maximum stack depth", ""+maxDepth);
     }
 
     private void printQuantity(String q, String v) {
@@ -163,7 +174,7 @@ public class Analyzer {
     }
 
     private void removeFrontierInfo(FrontierInfo fs) {
-        //frontierInfoMap.remove(fs.state);
+        frontierInfoMap.remove(fs.state);
     }
 
 
@@ -199,6 +210,7 @@ public class Analyzer {
             s.setPC(target_address);
             StateSpace.State target = space.getStateFor(s);
 
+            traceProducedState(target);
             addEdge("CALL", frontierState.state, target, 2);
             pushFrontier(target, new FrontierInfo.CallSiteList(frontierState, null));
 
@@ -218,7 +230,8 @@ public class Analyzer {
             s.setPC(0x0004 + num*4);
             StateSpace.State target = space.getStateFor(s);
 
-            addEdge("CALL", frontierState.state, target, 2);
+            traceProducedState(target);
+            addEdge("INT", frontierState.state, target, 2);
             pushFrontier(target, new FrontierInfo.CallSiteList(frontierState, null));
 
             return null;
@@ -252,6 +265,7 @@ public class Analyzer {
             int npc = pc + program.readInstr(pc).getSize();
             retState.setPC(npc);
             StateSpace.State immRetState = space.getStateFor(retState);
+            traceProducedState(immRetState);
             addEdge("RET", caller.state, immRetState, 0);
             pushFrontier(immRetState, caller.callsites);
         }
@@ -267,9 +281,13 @@ public class Analyzer {
             FrontierInfo.CallSiteList list = frontierState.callsites;
             while ( list != null ) {
                 MutableState retState = s.copy();
-                s.setFlag_I(AbstractArithmetic.TRUE);
+                retState.setFlag_I(AbstractArithmetic.TRUE);
                 FrontierInfo caller = list.caller;
-                addReturnEdge(caller, retState);
+                retState.setPC(caller.state.getPC());
+                StateSpace.State immRetState = space.getStateFor(retState);
+                traceProducedState(immRetState);
+                addEdge("RETI", caller.state, immRetState, 0);
+                pushFrontier(immRetState, caller.callsites);
                 list = list.next;
             }
             addEdge("$RETI", frontierState.state, returnIState, 0);

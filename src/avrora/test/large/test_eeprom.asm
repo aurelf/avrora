@@ -1,5 +1,5 @@
 ;
-; $Id: test_eeprom.asm,v 1.1 2004/03/20 23:05:26 titzer Exp $
+; $Id: test_eeprom.asm,v 1.2 2004/03/23 07:47:32 titzer Exp $
 ;
 ;;; Test writing to and reading from the eeprom memory space.
 
@@ -21,9 +21,9 @@
 
 MAIN:
 	;; init stack pointer to 0x025f (the last byte of int sram)
-		ldi		r16, lo8(RAMEND); low byte of end of int sram
+		ldi		r16, low(RAMEND); low byte of end of int sram
 		out		SPL, r16
-		ldi		r16, hi8(RAMEND); high byte of end of int sram
+		ldi		r16, high(RAMEND); high byte of end of int sram
 		out		SPH, r16
 
 	;; write a byte to eeprom

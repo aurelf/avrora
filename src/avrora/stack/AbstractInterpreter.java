@@ -474,6 +474,8 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.JMP i) { // absolute jump
         state.setPC(absolute(i.imm1));
+        policy.pushState(state);
+        state = null;
     }
 
     public void visit(Instr.LD i) { // load from SRAM
@@ -623,6 +625,8 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.RJMP i) { // relative jump
         state.setPC(relative(i.imm1));
+        policy.pushState(state);
+        state = null;
     }
 
     public void visit(Instr.ROL i) { // rotate left through carry flag
