@@ -88,7 +88,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
             for (int cntr = 0; cntr < 8; cntr++) {
                 char msk = AbstractArithmetic.getBit(eimsk, cntr);
                 if (msk == FALSE) continue;
-                policy.interrupt(state.copy(), cntr + 1);
+                policy.interrupt(state.copy(), cntr + 2);
             }
 
             // produce interrupt edges to possibly enabled interrupts.
