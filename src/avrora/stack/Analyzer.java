@@ -389,9 +389,9 @@ public class Analyzer {
         ColorTerminal.nextln();
 
         ColorTerminal.print("                 [");
-        ColorTerminal.printBrightGreen("IMR");
+        ColorTerminal.printBrightGreen("EIMSK");
         ColorTerminal.print(":");
-        ColorTerminal.print(AbstractArithmetic.toString((char)0));
+        ColorTerminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.EIMSK)));
         ColorTerminal.print("] ");
         for ( int cntr = 16; cntr < 24; cntr++ ) {
             ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
@@ -400,7 +400,11 @@ public class Analyzer {
 
         ColorTerminal.nextln();
 
-        ColorTerminal.print("                                ");
+        ColorTerminal.print("                  [");
+        ColorTerminal.printBrightGreen("EIFR");
+        ColorTerminal.print(":");
+        ColorTerminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.EIFR)));
+        ColorTerminal.print("] ");
         for ( int cntr = 24; cntr < 32; cntr++ ) {
             ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
             ColorTerminal.print(" ");

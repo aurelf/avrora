@@ -15,6 +15,8 @@ import vpc.VPCBase;
 public abstract class AbstractState implements IORegisterConstants {
     protected int pc;
     protected char av_SREG;   // canonical status register value
+    protected char av_EIFR;   // canonical interrupt flag register value
+    protected char av_EIMSK;  // canonical interrupt mask register value
     protected char av_REGISTERS[]; // canonical register values
 
     /**
@@ -37,6 +39,8 @@ public abstract class AbstractState implements IORegisterConstants {
     protected int computeHashCode() {
         int hash = pc;
         hash += av_SREG;
+        hash += av_EIFR;
+        hash += av_EIMSK;
         for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
             hash += av_REGISTERS[cntr] * primes[cntr];
         return hash;
@@ -122,6 +126,8 @@ public abstract class AbstractState implements IORegisterConstants {
      */
     public char getIORegisterAV(int num) {
         if ( num == IORegisterConstants.SREG ) return av_SREG;
+        if ( num == IORegisterConstants.EIMSK ) return av_EIMSK;
+        if ( num == IORegisterConstants.EIFR ) return av_EIFR;
         return AbstractArithmetic.UNKNOWN;
     }
 
