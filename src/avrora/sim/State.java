@@ -3,7 +3,7 @@ package avrora.sim;
 import avrora.core.*;
 import avrora.Arithmetic;
 import vpc.VPCBase;
-import vpc.util.ColorTerminal;
+import vpc.util.Terminal;
 
 /**
  * The <code>State</code> class represents the state of the simulator, including
@@ -908,7 +908,7 @@ public class State implements IORegisterConstants {
         int sp = getSP();
         byte sreg = getSREG();
 
-        ColorTerminal.print("    ");
+        Terminal.print("    ");
         printPair("PC", pc, pc_delta);
         printPair("CC", cycles, true);
         printPair("I", getBitAsString(sreg, SREG_I), flag_delta[SREG_I]);
@@ -920,12 +920,12 @@ public class State implements IORegisterConstants {
         printPair("Z", getBitAsString(sreg, SREG_Z), flag_delta[SREG_Z]);
         printPair("C", getBitAsString(sreg, SREG_C), flag_delta[SREG_C]);
 
-        ColorTerminal.print("\n    ");
+        Terminal.print("\n    ");
 
         for (int cntr = 0; cntr < NUM_REGS; cntr++) {
             String n = "R" + cntr + ((cntr < 10) ? " " : "");
             printPair(n, regs[cntr], reg_delta[cntr]);
-            if (cntr % 8 == 7) ColorTerminal.print("\n    ");
+            if (cntr % 8 == 7) Terminal.print("\n    ");
         }
 
         printWordRegister(Register.X);
@@ -938,20 +938,20 @@ public class State implements IORegisterConstants {
         if ( max > sram.length + sram_start ) max = sram.length + sram_start;
 
         for (int cntr = sp; cntr < max; cntr++) {
-            ColorTerminal.print(VPCBase.toHex(getDataByte(cntr), 2) + " ");
+            Terminal.print(VPCBase.toHex(getDataByte(cntr), 2) + " ");
         }
 
-        ColorTerminal.nextln();
+        Terminal.nextln();
 
-        ColorTerminal.printBrightGreen("           0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
-        ColorTerminal.nextln();
+        Terminal.printBrightGreen("           0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
+        Terminal.nextln();
 
         for (int row = NUM_REGS; row < 128; row += 16) {
-            ColorTerminal.printBrightGreen("    " + VPCBase.toHex(row >> 4, 3) + "x");
-            ColorTerminal.print(": ");
+            Terminal.printBrightGreen("    " + VPCBase.toHex(row >> 4, 3) + "x");
+            Terminal.print(": ");
             for (int cntr = 0; cntr < 16; cntr++)
-                ColorTerminal.print(VPCBase.toHex(getDataByte(row + cntr), 2) + " ");
-            ColorTerminal.nextln();
+                Terminal.print(VPCBase.toHex(getDataByte(row + cntr), 2) + " ");
+            Terminal.nextln();
         }
     }
 
@@ -969,12 +969,12 @@ public class State implements IORegisterConstants {
     }
 
     protected final void printPair(String n, String str, boolean modified) {
-        ColorTerminal.printBrightGreen(n);
-        ColorTerminal.print(": ");
+        Terminal.printBrightGreen(n);
+        Terminal.print(": ");
         if (modified)
-            ColorTerminal.printRed(str + " ");
+            Terminal.printRed(str + " ");
         else
-            ColorTerminal.print(str + " ");
+            Terminal.print(str + " ");
     }
 
     protected final void printPair(String n, byte val, boolean modified) {

@@ -8,7 +8,7 @@ import avrora.Arithmetic;
 import avrora.Operand;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.PeriodicTrigger;
-import vpc.util.ColorTerminal;
+import vpc.util.Terminal;
 import vpc.util.StringUtil;
 import vpc.VPCBase;
 
@@ -23,10 +23,10 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public static final Probe TRACEPROBE = new Probe() {
         public void fireBefore(Instr i, int pc, State s) {
-            ColorTerminal.printBrightCyan(toHex(pc, 4) + ": ");
-            ColorTerminal.printBrightBlue(i.getVariant() + " ");
-            ColorTerminal.print(i.getOperands());
-            ColorTerminal.nextln();
+            Terminal.printBrightCyan(toHex(pc, 4) + ": ");
+            Terminal.printBrightBlue(i.getVariant() + " ");
+            Terminal.print(i.getOperands());
+            Terminal.nextln();
         }
         public void fireAfter(Instr i, int pc, State s) {
 

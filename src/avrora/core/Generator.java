@@ -3,7 +3,7 @@ package avrora.core;
 import vpc.VPCBase;
 import vpc.util.Printer;
 import vpc.util.SectionFile;
-import vpc.util.ColorTerminal;
+import vpc.util.Terminal;
 
 import java.io.OutputStream;
 import java.util.LinkedList;
@@ -390,16 +390,16 @@ public class Generator extends VPCBase {
         vpc.Main.parseOptions(args);
         Generator g = new Generator();
 
-        ColorTerminal.printBrightBlue("AVR Instruction Set Class Generator");
-        ColorTerminal.print(" - (c) 2004 Ben L. Titzer\n\n");
-        ColorTerminal.println("This is an instruction set generator. It generates Java");
-        ColorTerminal.println("source code that implement the classes for the AVR instruction");
-        ColorTerminal.println("set analysis tools. The files modified are: \n");
-        ColorTerminal.println("   Instr.java");
-        ColorTerminal.println("   InstructionSet.java");
-        ColorTerminal.println("   InstrVisitor.java\n");
-        ColorTerminal.printRed("You must rebuild the analysis tools after running the generator.");
-        ColorTerminal.nextln();
+        Terminal.printBrightBlue("AVR Instruction Set Class Generator");
+        Terminal.print(" - (c) 2004 Ben L. Titzer\n\n");
+        Terminal.println("This is an instruction set generator. It generates Java");
+        Terminal.println("source code that implement the classes for the AVR instruction");
+        Terminal.println("set analysis tools. The files modified are: \n");
+        Terminal.println("   Instr.java");
+        Terminal.println("   InstructionSet.java");
+        Terminal.println("   InstrVisitor.java\n");
+        Terminal.printRed("You must rebuild the analysis tools after running the generator.");
+        Terminal.nextln();
 
         g.generate();
     }

@@ -10,7 +10,7 @@ import java.util.*;
 import java.text.StringCharacterIterator;
 import java.text.CharacterIterator;
 
-import vpc.util.ColorTerminal;
+import vpc.util.Terminal;
 import vpc.util.StringUtil;
 import vpc.VPCBase;
 
@@ -121,7 +121,7 @@ public class SimulateAction extends Main.Action {
 
     void reportCounters() {
         if ( counters.isEmpty() ) return;
-        ColorTerminal.printGreen(" Counter results\n");
+        Terminal.printGreen(" Counter results\n");
         printSeparator();
         Iterator i = counters.iterator();
         while ( i.hasNext() ) {
@@ -143,7 +143,7 @@ public class SimulateAction extends Main.Action {
 
     void reportBranchCounters() {
         if ( branchcounters.isEmpty() ) return;
-        ColorTerminal.printGreen(" Branch counter results\n");
+        Terminal.printGreen(" Branch counter results\n");
         printSeparator();
         Iterator i = branchcounters.iterator();
         while ( i.hasNext() ) {
@@ -159,7 +159,7 @@ public class SimulateAction extends Main.Action {
 
     void reportProfile() {
         if ( profile != null ) {
-            ColorTerminal.printGreen(" Profiling results\n");
+            Terminal.printGreen(" Profiling results\n");
             printSeparator();
             double total = 0;
             long[] icount = profile.icount;
@@ -201,7 +201,7 @@ public class SimulateAction extends Main.Action {
     }
 
     private void printSeparator() {
-        ColorTerminal.printSeparator(60);
+        Terminal.printSeparator(60);
     }
 
     void processTotal() {
@@ -255,10 +255,10 @@ public class SimulateAction extends Main.Action {
     }
 
     void reportQuantity(String name, String val, String units) {
-        ColorTerminal.printGreen(name);
-        ColorTerminal.print(": ");
-        ColorTerminal.printBrightCyan(val);
-        ColorTerminal.println(" "+units);
+        Terminal.printGreen(name);
+        Terminal.print(": ");
+        Terminal.printBrightCyan(val);
+        Terminal.println(" "+units);
     }
 
     // warning! only works on numbers < 100!!!!

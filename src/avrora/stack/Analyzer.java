@@ -12,7 +12,7 @@ import java.util.Stack;
 
 import vpc.VPCBase;
 import vpc.util.StringUtil;
-import vpc.util.ColorTerminal;
+import vpc.util.Terminal;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines
@@ -160,8 +160,8 @@ public class Analyzer {
     }
 
     private void printQuantity(String q, String v) {
-        ColorTerminal.printBrightGreen(q);
-        ColorTerminal.println(": "+v);
+        Terminal.printBrightGreen(q);
+        Terminal.println(": "+v);
     }
 
     private FrontierInfo getFrontierInfo(StateSpace.State s) {
@@ -441,63 +441,63 @@ public class Analyzer {
 
     private void traceEdge(String type, StateSpace.State s, StateSpace.State t, int weight) {
         if ( !TRACE ) return;
-        ColorTerminal.print("[");
-        ColorTerminal.printBrightCyan(s.getUniqueName());
-        ColorTerminal.print("] --(");
-        if ( type != null ) ColorTerminal.print(type+" ");
-        if ( weight > 0 ) ColorTerminal.print("+");
-        ColorTerminal.print(weight+")--> ");
-        ColorTerminal.print("[");
-        ColorTerminal.printBrightCyan(t.getUniqueName());
-        ColorTerminal.println("]");
+        Terminal.print("[");
+        Terminal.printBrightCyan(s.getUniqueName());
+        Terminal.print("] --(");
+        if ( type != null ) Terminal.print(type+" ");
+        if ( weight > 0 ) Terminal.print("+");
+        Terminal.print(weight+")--> ");
+        Terminal.print("[");
+        Terminal.printBrightCyan(t.getUniqueName());
+        Terminal.println("]");
     }
 
     private void printState(String beg, StateSpace.State s) {
-        ColorTerminal.printBrightRed(beg);
+        Terminal.printBrightRed(beg);
 
-        ColorTerminal.print("[");
-        ColorTerminal.printBrightGreen(VPCBase.toHex(s.getPC(), 4));
-        ColorTerminal.print("|");
-        ColorTerminal.printBrightCyan(s.getUniqueName());
-        ColorTerminal.print("] ");
+        Terminal.print("[");
+        Terminal.printBrightGreen(VPCBase.toHex(s.getPC(), 4));
+        Terminal.print("|");
+        Terminal.printBrightCyan(s.getUniqueName());
+        Terminal.print("] ");
 
         for ( int cntr = 0; cntr < 8; cntr++ ) {
-            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
-            ColorTerminal.print(" ");
+            Terminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            Terminal.print(" ");
         }
-        ColorTerminal.nextln();
+        Terminal.nextln();
 
-        ColorTerminal.print("                [");
-        ColorTerminal.printBrightGreen("SREG");
-        ColorTerminal.print(":");
-        ColorTerminal.print(AbstractArithmetic.toString(s.getSREG()));
-        ColorTerminal.print("] ");
+        Terminal.print("                [");
+        Terminal.printBrightGreen("SREG");
+        Terminal.print(":");
+        Terminal.print(AbstractArithmetic.toString(s.getSREG()));
+        Terminal.print("] ");
         for ( int cntr = 8; cntr < 16; cntr++ ) {
-            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
-            ColorTerminal.print(" ");
+            Terminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            Terminal.print(" ");
         }
 
-        ColorTerminal.nextln();
+        Terminal.nextln();
 
-        ColorTerminal.print("               [");
-        ColorTerminal.printBrightGreen("EIMSK");
-        ColorTerminal.print(":");
-        ColorTerminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.EIMSK)));
-        ColorTerminal.print("] ");
+        Terminal.print("               [");
+        Terminal.printBrightGreen("EIMSK");
+        Terminal.print(":");
+        Terminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.EIMSK)));
+        Terminal.print("] ");
         for ( int cntr = 16; cntr < 24; cntr++ ) {
-            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
-            ColorTerminal.print(" ");
+            Terminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            Terminal.print(" ");
         }
 
-        ColorTerminal.nextln();
+        Terminal.nextln();
 
-        ColorTerminal.print("                                ");
+        Terminal.print("                                ");
         for ( int cntr = 24; cntr < 32; cntr++ ) {
-            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
-            ColorTerminal.print(" ");
+            Terminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            Terminal.print(" ");
         }
 
-        ColorTerminal.nextln();
+        Terminal.nextln();
     }
 
 }

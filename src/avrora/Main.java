@@ -5,7 +5,7 @@ import vpc.VPCBase;
 import vpc.VPCError;
 import vpc.test.AutomatedTester;
 import vpc.util.Options;
-import vpc.util.ColorTerminal;
+import vpc.util.Terminal;
 import vpc.util.StringUtil;
 
 import java.util.*;
@@ -176,7 +176,7 @@ public class Main extends VPCBase {
         try {
             options.parseCommandLine(args);
 
-            ColorTerminal.useColors = COLORS.get();
+            Terminal.useColors = COLORS.get();
             if ( BANNER.get() ) banner();
             VPCBase.VERBOSE = VERBOSE.get();
 
@@ -197,11 +197,11 @@ public class Main extends VPCBase {
     }
 
     static void banner() {
-        ColorTerminal.printBrightBlue("Avrora " + VERSION);
-        ColorTerminal.print(" - (c) 2003-2004 Ben L. Titzer\n\n");
-        ColorTerminal.println("This is a prototype simulator and analysis tool intended for evaluation");
-        ColorTerminal.println("and experimentation purposes only. It is provided with absolutely no");
-        ColorTerminal.println("warranty, expressed or implied.\n");
+        Terminal.printBrightBlue("Avrora " + VERSION);
+        Terminal.print(" - (c) 2003-2004 Ben L. Titzer\n\n");
+        Terminal.println("This is a prototype simulator and analysis tool intended for evaluation");
+        Terminal.println("and experimentation purposes only. It is provided with absolutely no");
+        Terminal.println("warranty, expressed or implied.\n");
     }
 
     static class LocationComparator implements java.util.Comparator {

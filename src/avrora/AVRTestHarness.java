@@ -14,7 +14,7 @@ import vpc.VPCBase;
 import vpc.VPCError;
 import vpc.VPCInternalError;
 import vpc.util.StringUtil;
-import vpc.util.ColorTerminal;
+import vpc.util.Terminal;
 
 import java.util.*;
 import java.io.FileInputStream;
@@ -442,11 +442,11 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         }
 
         public void shortReport() {
-            ColorTerminal.print(message);
+            Terminal.print(message);
         }
 
         public void longReport() {
-            ColorTerminal.println(message);
+            Terminal.println(message);
             state.dump();
         }
     }
