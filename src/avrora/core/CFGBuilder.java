@@ -2,12 +2,19 @@
 package avrora.core;
 
 import avrora.Avrora;
+import avrora.util.Verbose;
+import avrora.util.StringUtil;
 
 import java.util.HashSet;
 
 /**
  * The <code>CFGBuilder</code> class is a visitor that builds a
  * representation of the control flow graph for a given program.
+ * It uses the visitor pattern, (the <code>InstrVisitor</code>
+ * interface), to visit each instruction in the program and
+ * construct and instance of the <code>ControlFlowGraph</code>
+ * class representing the control flow graph of the given
+ * program.
  *
  * @author Ben L. Titzer
  */
@@ -17,71 +24,189 @@ public class CFGBuilder implements InstrVisitor {
 
     ControlFlowGraph cfg;
     ControlFlowGraph.Block block;
+    InstrInfo[] info;
 
     private int pc;
 
-    CFGBuilder(Program p) {
+    Verbose.Printer printer = Verbose.getVerbosePrinter("cfg.builder");
+
+    /**
+     * The <code>CFGBuilder</code> constructor constructs an instance that is
+     * capable of creating multiple new control flow graphs for the specified
+     * program.
+     * @param p the program
+     */
+    public CFGBuilder(Program p) {
         program = p;
-        cfg = new ControlFlowGraph();
     }
 
-    ControlFlowGraph buildCFG() {
-        block = cfg.getBlockStartingAt(0);
+    static class InstrInfo {
+        boolean start;
+        boolean fallthrough;
+        Instr instr;
+        int branchTo;
 
-        for ( pc = 0; pc < program.program_end; ) {
-            Instr i = program.readInstr(pc);
-            if ( i == null ) {
-                // do something about invalid instructions.
-                pc += 2;
-            } else {
-                i.accept(this);
-                pc += i.getSize();
-            }
-
+        InstrInfo() {
+            start = false;
+            fallthrough = true;
+            branchTo = -1;
         }
+    }
+
+    /**
+     * The <code>buildCFG()</code> method visits all of the machine instructions
+     * of the of the program and populates the control flow graph with basic
+     * blocks. Each call to this method creates a new control flow graph.
+     *
+     * @return an instance of the <code>ControlFlowGraph</code> class
+     */
+    public ControlFlowGraph buildCFG() {
+        // initialize the info table
+        initializeInfo();
+
+        // first pass: discover entrances to basic blocks
+        discoverEntrypoints();
+
+        // second pass: build actual basic blocks
+        buildBlocks();
 
         return cfg;
     }
 
+    private void buildBlocks() {
+        cfg = new ControlFlowGraph();
+        ControlFlowGraph.Block block = cfg.newBlock(0);
+
+        // second pass over program: create basic blocks
+        for ( int pc = 0; pc < program.program_end; ) {
+            // next block is by default this block
+            ControlFlowGraph.Block nextblock = block;
+            InstrInfo ii = info[pc];
+
+            // invalid instruction
+            if ( ii.instr == null ) {
+                // TODO: something about invalid instructions.
+                pc += 2;
+                continue;
+            }
+
+            // valid instruction
+            int size = ii.instr.getSize();
+
+            // check for any jumps into the middle of this instruction
+            for ( int cntr = 0; cntr < size; cntr++ ) {
+                if ( info[pc + cntr].start || info[pc + cntr].instr != null) {
+                    Avrora.failure("misaligned branch target at "+(pc+cntr));
+                }
+            }
+
+            // get the info of the next instruction (if there is a next instruction)
+            if ( pc + size < program.program_end ) {
+                InstrInfo in = info[pc + size];
+
+                // check if next instruction starts a new basic block
+                if ( in.start ) {
+                    nextblock = cfg.newBlock(pc + size);
+                    if ( ii.fallthrough ) block.setNext(nextblock);
+                }
+            }
+
+            // check if this instruction branches to another address
+            if ( ii.branchTo >= 0 ) {
+                ControlFlowGraph.Block tblock = cfg.getBlockStartingAt(ii.branchTo);
+                if ( tblock == null ) tblock = cfg.newBlock(ii.branchTo);
+                block.setOther(tblock);
+            }
+
+            // add instruction to the current block
+            block.addInstr(ii.instr);
+            pc += size;
+            block = nextblock;
+        }
+
+        // delete the basic block info
+        info = null;
+    }
+
+    private void discoverEntrypoints() {
+        if ( printer.enabled )
+            printer.println("CFGBuilder: discovering entrypoints...");
+
+        for ( pc = 0; pc < program.program_end; ) {
+            if ( printer.enabled)
+                printer.print(StringUtil.addrToString(pc)+": ");
+
+            Instr i = program.readInstr(pc);
+            if ( i == null ) {
+                if ( printer.enabled )
+                    printer.println("(invalid)");
+
+                // TODO: something about invalid instructions.
+                pc += 2;
+            } else {
+                if ( printer.enabled )
+                    printer.print(StringUtil.leftJustify(i.toString(), 20));
+                i.accept(this);
+                pc += i.getSize();
+            }
+        }
+    }
+
+    private void initializeInfo() {
+        info = new InstrInfo[program.program_end];
+        for ( int cntr = 0; cntr < program.program_end; cntr++ ) {
+            info[cntr] = new InstrInfo();
+        }
+        info[0].start = true;
+    }
+
+    private void enter(int byteAddress) {
+        if ( byteAddress < 0 || byteAddress >= program.program_end ) {
+            return;
+        }
+        info[byteAddress].start = true;
+    }
+
     private void add(Instr i) {
-        block.addInstr(i);
-        ControlFlowGraph.Block next = cfg.getBlockStartingAt(pc + i.getSize());
-        if ( next != null ) block = next;
+        info[pc].instr = i;
+        if ( printer.enabled )
+            printer.println("    -> add");
     }
 
     private void branch(Instr i, int byteAddress) {
-        block.addInstr(i);
-        ControlFlowGraph.Block target = cfg.getBlockContaining(byteAddress);
-        if ( byteAddress != target.address ) {
-            target = target.splitAt(byteAddress);
-        }
-        block.other = target;
-        block.next = cfg.getBlockStartingAt(pc + i.getSize());
-        block = block.next;
+        info[pc].instr = i;
+        info[pc].branchTo = byteAddress;
+        if ( printer.enabled )
+            printer.println("    -> branch to "+StringUtil.addrToString(byteAddress));
+
+        enter(pc + i.getSize());
+        enter(byteAddress);
     }
 
     private void end(Instr i) {
-        block.addInstr(i);
-        ControlFlowGraph.Block next = cfg.getBlockStartingAt(pc + i.getSize());
-        block = next;
+        info[pc].instr = i;
+        info[pc].fallthrough = false;
+        if ( printer.enabled )
+            printer.println("    -> end");
+        enter(pc + i.getSize());
     }
 
     private void jump(Instr i, int byteAddress) {
-        block.addInstr(i);
-        ControlFlowGraph.Block target = cfg.getBlockContaining(byteAddress);
-        if ( byteAddress != target.address ) {
-            target = target.splitAt(byteAddress);
-        }
-        block.other = target;
-        block = cfg.getBlockStartingAt(pc + i.getSize());
+        info[pc].instr = i;
+        info[pc].fallthrough = false;
+        info[pc].branchTo = byteAddress;
+        if ( printer.enabled )
+            printer.println("    -> jump to "+StringUtil.addrToString(byteAddress));
+        enter(pc + i.getSize());
+        enter(byteAddress);
     }
 
     private int relative(int i) {
-        return 2*i + 2 + pc;
+        return i * 2 + 2 + pc;
     }
 
     private int absolute(int i) {
-        return i*2;
+        return i * 2;
     }
 
     private void skip(Instr i) {

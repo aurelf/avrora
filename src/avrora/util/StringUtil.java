@@ -54,6 +54,10 @@ public class StringUtil {
     public static final String COMMA_SPACE = ", ".intern();
     public static String[] EMPTY_STRING_ARRAY = {};
 
+    public static String addrToString(int address) {
+        return "0x" + toHex(address, 4);
+    }
+
     public static String readIdentifier(CharacterIterator i) {
         StringBuffer buf = new StringBuffer();
 
@@ -491,10 +495,12 @@ public class StringUtil {
         return nstr.toString();
     }
 
-    public static String makeParagraphs(String s, int indent, int width) {
+    public static String makeParagraphs(String s, int leftJust, int indent, int width) {
         int len = s.length();
+        indent += leftJust;
         int consumed = indent;
         String indstr = dup(' ', indent);
+        String ljstr = dup(' ', leftJust);
         StringBuffer buf = new StringBuffer(indstr);
         int lastSp = -1;
         for (int cntr = 0; cntr < len; cntr++) {
@@ -513,7 +519,8 @@ public class StringUtil {
             if (consumed > width) {
                 if (lastSp >= 0) {
                     buf.setCharAt(lastSp, '\n');
-                    consumed = buf.length() - lastSp - 1;
+                    buf.insert(lastSp+1, ljstr);
+                    consumed = buf.length() - lastSp + leftJust - 1;
                 }
             }
         }

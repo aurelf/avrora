@@ -33,6 +33,9 @@
 package avrora;
 
 import avrora.core.Program;
+import avrora.core.CFGBuilder;
+import avrora.core.ControlFlowGraph;
+import avrora.core.Instr;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.SimulateAction;
 import avrora.sim.MultiSimulateAction;
@@ -133,7 +136,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.2";
+    static final String VERSION = "Beta 1.1.3";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -226,8 +229,8 @@ public class Main {
             "This option is used in the multi-node simulation. It specifies the " +
             "number of nodes to be instantiated.");
     public static final Option.Str TOPOLOGY = options.newOption("topology", "",
-            "This option is used in the multi-node simulation to specify the name of" +
-            "a file that contains information about the topology of the network. ");
+            "This option is used in the multi-node simulation to specify the name of " +
+            "a file that contains information about the topology of the network.");
 
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 
@@ -238,6 +241,7 @@ public class Main {
         newAction("assemble", new AssembleAction());
         newAction("test", new TestAction());
         newAction("list", new ListAction());
+        newAction("cfg", new CFGAction());
         newAction("custom", new CustomAction());
         newInput("gas", new GASProgramReader());
         newInput("atmel", new AtmelProgramReader());
@@ -252,6 +256,47 @@ public class Main {
         inputs.put(name, r);
     }
 
+
+    static class CFGAction extends Action {
+
+        public void run(String[] args) throws Exception {
+            ProgramReader r = (ProgramReader) inputs.get(INPUT.get());
+            Program p = r.read(args);
+            ControlFlowGraph cfg = new CFGBuilder(p).buildCFG();
+            Iterator biter = cfg.getSortedBlockIterator();
+
+            while ( biter.hasNext() ) {
+                ControlFlowGraph.Block block = (ControlFlowGraph.Block)biter.next();
+                Terminal.print("[");
+                Terminal.printBrightCyan(StringUtil.addrToString(block.getAddress()));
+                Terminal.println(":"+block.getSize()+"]");
+                Iterator iiter = block.getInstrIterator();
+                while ( iiter.hasNext() ) {
+                    Instr instr = (Instr)iiter.next();
+                    Terminal.printBrightBlue("    "+instr.getName());
+                    Terminal.println(" "+instr.getOperands());
+                }
+                Terminal.print("    [");
+                printPair("next", block.getNextBlock());
+                Terminal.print(", ");
+                printPair("other", block.getOtherBlock());
+                Terminal.println("]");
+            }
+
+        }
+
+        private void printPair(String t, ControlFlowGraph.Block b) {
+            String v = b == null ? "null" : StringUtil.addrToString(b.getAddress());
+            Terminal.printPair(Terminal.COLOR_BRIGHT_GREEN, Terminal.COLOR_BRIGHT_CYAN, t, ": ", v);
+        }
+
+        public String getHelp() {
+            return "The \"cfg\" action builds and displays a control flow graph of the " +
+                    "given input program. This is useful for better program understanding " +
+                    "and for optimizations.";
+        }
+
+    }
 
     static class CustomAction extends Action {
         public void run(String[] args) throws Exception {
@@ -421,12 +466,10 @@ public class Main {
         i = list.iterator();
         while (i.hasNext()) {
             String a = (String) i.next();
-            Terminal.printBrightGreen("    -action");
-            Terminal.print("=");
-            Terminal.printYellow(a);
+            printGreenEqYellow("    -action", a);
             Terminal.nextln();
             String help = ((Action) actions.get(a)).getHelp();
-            Terminal.println(StringUtil.makeJustifiedLines(help, 8, 78));
+            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, 78));
         }
 
 
@@ -445,12 +488,10 @@ public class Main {
         i = list.iterator();
         while (i.hasNext()) {
             String a = (String) i.next();
-            Terminal.printBrightGreen("    -input");
-            Terminal.print("=");
-            Terminal.printYellow(a);
+            printGreenEqYellow("    -input", a);
             Terminal.nextln();
             String help = ((ProgramReader) inputs.get(a)).getHelp();
-            Terminal.println(StringUtil.makeJustifiedLines(help, 8, 78));
+            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, 78));
         }
 
 
@@ -459,10 +500,14 @@ public class Main {
         Terminal.nextln();
     }
 
+    private static void printGreenEqYellow(String s1, String s2) {
+        Terminal.printPair(Terminal.COLOR_BRIGHT_GREEN, Terminal.COLOR_YELLOW, s1, "=", s2);
+    }
+
     static void printSection(String title, String paragraphs) {
         Terminal.printBrightBlue(title);
         Terminal.println("\n");
-        Terminal.println(StringUtil.makeParagraphs(paragraphs, 4, 78));
+        Terminal.println(StringUtil.makeParagraphs(paragraphs, 0, 4, 78));
         Terminal.nextln();
     }
 
@@ -541,7 +586,7 @@ public class Main {
                     "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE " +
                     "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n";
 
-        Terminal.print(StringUtil.makeParagraphs(notice, 0, 60));
+        Terminal.print(StringUtil.makeParagraphs(notice, 0, 0, 60));
     }
 
     static void title() {

@@ -203,6 +203,21 @@ public final class Terminal {
         Terminal.nextln();
     }
 
+    public static void printPair(int c1, int c2, String s1, String sep, String s2) {
+        print(c1, s1);
+        print(sep);
+        print(c2, s2);
+    }
+
+    public static void printTriple(int c1, int c2, int c3, String s1, String sep1,
+                                   String s2, String sep2, String s3) {
+        print(c1, s1);
+        print(sep1);
+        print(c2, s2);
+        print(sep2);
+        print(c3, s3);
+    }
+
     private static void outputColor(int color, String s) {
         if (useColors) {
             if ( htmlColors ) {

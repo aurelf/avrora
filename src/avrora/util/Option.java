@@ -71,7 +71,8 @@ public abstract class Option {
     public abstract void printHelp();
 
     public void printDescription() {
-        Terminal.print(StringUtil.makeJustifiedLines(description, 8, 78));
+        Terminal.print(StringUtil.makeParagraphs(description, 8, 0, 78));
+        Terminal.nextln();
     }
 
     public void printHeader(String type, String defvalue) {
