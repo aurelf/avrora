@@ -4,6 +4,7 @@ import avrora.core.Program;
 import avrora.core.InstrVisitor;
 import avrora.core.Instr;
 import avrora.core.Register;
+import avrora.sim.IORegisterConstants;
 
 import java.util.HashSet;
 
@@ -22,9 +23,9 @@ public class Analyzer {
     AbstractInterpreter interpreter;
     AbstractState oldState;
     AbstractState state;
-    StateCollection unexploredStates;
+    StateFrontier unexploredStates;
 
-    protected static class StateCollection {
+    protected static class StateFrontier {
 
         Link head;
         Link free;
@@ -63,11 +64,34 @@ public class Analyzer {
         }
     }
 
+    public abstract static class Policy {
+
+        public abstract void call(AbstractState s, int target_address);
+
+        public abstract void ret(AbstractState s);
+
+        public abstract void reti(AbstractState s);
+
+        public abstract void indirectCall(AbstractState s, char addr_low, char addr_hi);
+
+        public abstract void indirectJump(AbstractState s, char addr_low, char addr_hi);
+
+        public abstract void indirectCall(AbstractState s, char addr_low, char addr_hi, char ext);
+
+        public abstract void indirectJump(AbstractState s, char addr_low, char addr_hi, char ext);
+
+        public abstract void pushState(AbstractState newstate);
+
+        public abstract void push(AbstractState  s, char val);
+
+        public abstract char pop(AbstractState s);
+    }
+
     public Analyzer(Program p) {
         program = p;
         space = new StateSpace();
         interpreter = new AbstractInterpreter();
-        unexploredStates = new StateCollection();
+        unexploredStates = new StateFrontier();
     }
 
     public void run() {
@@ -85,6 +109,8 @@ public class Analyzer {
     }
 
     public class AbstractInterpreter extends AbstractArithmetic implements InstrVisitor {
+
+        Policy policy;
 
         /**
          *  V I S I T O R   M E T H O D S
@@ -375,11 +401,17 @@ public class Analyzer {
         }
 
         public void visit(Instr.EICALL i) { // extended indirect call
-            // TODO: implement me
+            char rl = state.readRegister(Register.Z);
+            char rh = state.readRegister(Register.Z.nextRegister());
+            char ext = state.readIORegister(IORegisterConstants.RAMPZ);
+            policy.indirectCall(state, rl, rh, ext);
         }
 
         public void visit(Instr.EIJMP i) { // extended indirect jump
-            // TODO: implement me
+            char rl = state.readRegister(Register.Z);
+            char rh = state.readRegister(Register.Z.nextRegister());
+            char ext = state.readIORegister(IORegisterConstants.RAMPZ);
+            policy.indirectJump(state, rl, rh, ext);
         }
 
         public void visit(Instr.ELPM i) { // extended load program memory to r0
@@ -453,11 +485,15 @@ public class Analyzer {
 
 
         public void visit(Instr.ICALL i) { // indirect call through Z register
-            // TODO: implement me
+            char rl = state.readRegister(Register.Z);
+            char rh = state.readRegister(Register.Z.nextRegister());
+            policy.indirectCall(state, rl, rh);
         }
 
         public void visit(Instr.IJMP i) { // indirect jump through Z register
-            // TODO: implement me
+            char rl = state.readRegister(Register.Z);
+            char rh = state.readRegister(Register.Z.nextRegister());
+            policy.indirectJump(state, rl, rh);
         }
 
         public void visit(Instr.IN i) { // read from IO register into register
@@ -484,12 +520,10 @@ public class Analyzer {
 
         public void visit(Instr.LD i) { // load from SRAM
             state.writeRegister(i.r1, UNKNOWN);
-            // TODO: implement me
         }
 
         public void visit(Instr.LDD i) { // load from SRAM with displacement
             state.writeRegister(i.r1, UNKNOWN);
-            // TODO: implement me
         }
 
         public void visit(Instr.LDI i) { // load immediate into register
@@ -499,18 +533,15 @@ public class Analyzer {
         public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
             state.writeRegister(i.r1,  UNKNOWN);
             addImmediateToRegister(i.r2, -1);
-            // TODO: implement me
         }
 
         public void visit(Instr.LDPI i) { // load from SRAM with post-increment
             state.writeRegister(i.r1,  UNKNOWN);
             addImmediateToRegister(i.r2, 1);
-            // TODO: implement me
         }
 
         public void visit(Instr.LDS i) { // load direct from SRAM
             state.writeRegister(i.r1,  UNKNOWN);
-            // TODO: implement me
         }
 
         public void visit(Instr.LPM i) { // load program memory into r0
@@ -612,24 +643,25 @@ public class Analyzer {
         }
 
         public void visit(Instr.POP i) { // pop from the stack to register
-            state.writeRegister(i.r1, UNKNOWN);
-            // TODO: implement me
+            char val = policy.pop(state);
+            state.writeRegister(i.r1, val);
         }
 
         public void visit(Instr.PUSH i) { // push register to the stack
-            // TODO: implement me
+            char val = state.readRegister(i.r1);
+            policy.push(state, val);
         }
 
         public void visit(Instr.RCALL i) { // relative call
-            // TODO: implement me
+            policy.call(state, relative(i.imm1));
         }
 
         public void visit(Instr.RET i) { // return to caller
-            // TODO: implement me
+            policy.ret(state);
         }
 
         public void visit(Instr.RETI i) { // return from interrupt
-            // TODO: implement me
+            policy.reti(state);
         }
 
         public void visit(Instr.RJMP i) { // relative jump
