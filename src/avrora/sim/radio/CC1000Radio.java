@@ -359,7 +359,6 @@ public class CC1000Radio implements Radio {
             reg0 = new FrequencySubRegister("FREQ0" + subId);
 
             setFrequency(0x75a0cb); // default frequency is 0b 01111 0101 1010 0000 1100 1011,
-
         }
 
         protected void updateFrequency() {
@@ -372,8 +371,6 @@ public class CC1000Radio implements Radio {
             reg2.write((byte) ((0x00ff0000 & frequency) >> 16));
             reg1.write((byte) ((0x0000ff00 & frequency) >> 8));
             reg0.write((byte) ((0x000000ff & frequency)));
-
-
         }
 
         /** One of the three sub-registers in the 24-bit frequency register. */
@@ -396,7 +393,6 @@ public class CC1000Radio implements Radio {
         protected final SubRegister reg0 = new SubRegister("FSEP0");
 
         FrequencySeparationRegister() {
-
             setFrequencySeparation(0x59); // default frequency separation is 0b 0000 0000 0101 1001
         }
 
@@ -453,7 +449,6 @@ public class CC1000Radio implements Radio {
         }
 
         protected void printStatus() {
-
             radioPrinter.println("CC1000[CURRENT]: vco current: " + vcoCurrent + ", LO drive: " + loDrive
                     + ", PA drive:" + paDrive);
         }
@@ -501,7 +496,6 @@ public class CC1000Radio implements Radio {
         protected void decode(byte val) {
             paHighPower = (value & 0xf0) >> 4;
             paLowPower = (value & 0x0f);
-
         }
 
         protected void printStatus() {
@@ -527,7 +521,6 @@ public class CC1000Radio implements Radio {
             alarmDisable = Arithmetic.getBit(val, 2);
             alarmHigh = Arithmetic.getBit(val, 1);
             alarmLow = Arithmetic.getBit(val, 0);
-
         }
     }
 
@@ -575,7 +568,6 @@ public class CC1000Radio implements Radio {
         }
 
         protected void decode(byte val) {
-
             lockSelect = (val & 0xf0) >> 4;
             int pllLockAccuracy = (val & 0x0c) >> 2;
             setsLockThreshold = SETS_LOCK_THRESHOLD[pllLockAccuracy];
@@ -584,16 +576,13 @@ public class CC1000Radio implements Radio {
             pllLockLength = Arithmetic.getBit(val, 2);
             lockInstant = Arithmetic.getBit(val, 1);
             lockContinuous = Arithmetic.getBit(val, 0);
-
         }
 
 
         protected void printStatus() {
-
             radioPrinter.println("CC1000[LOCK]: lock select: " + LOCK_SELECT[lockSelect] + ", sets lock threshold: "
                     + setsLockThreshold + ", reset lock threshold: " + resetLockThreshold +
                     ", lock instant: " + lockInstant + ", lockContinuous: " + lockContinuous);
-
         }
 
         public byte read() {
@@ -818,8 +807,6 @@ public class CC1000Radio implements Radio {
      * Test0-6 registers unimplemented.
      */
 
-
-
     /** A CC1000 Controller class for the ATMega128L microcontroller cpu. Installing
      * an ATMega128L into this class connects the microcontroller to this radio.
      * Data is communicated over the SPI interface, on which the CC1000 is the master.
@@ -848,7 +835,9 @@ public class CC1000Radio implements Radio {
             if (MAIN_reg.rxPd && MAIN_reg.txPd) ticker.deactivateTicker();
         }
 
-
+        /** <code>TransferTicker</code> is responsible for timing/facilitating transfer
+         * between the radio and the connected microcontroller. The receiveFrame(),
+         * transmitFrame() methods from the SPIDevice interface are used. */
         private class TransferTicker implements Simulator.Event {
             private boolean tickerOn;
 
@@ -885,8 +874,11 @@ public class CC1000Radio implements Radio {
 
         byte oldData;
 
+        /** <code>receiveFrame</code> receives an <code>SPIFrame</code> from a connected device.
+         * If the radio is in a transmission state, this should be the next frame sent into the
+         * air.*/
         public void receiveFrame(SPIFrame frame) {
-            if (printer.enabled /*&& (frame.data != oldData)*/) {
+            if (printer.enabled) {
                 printer.println("CC1000: sending " + (char) frame.data + ", " + Integer.toHexString(0xff & frame.data));
                 if (oldData == (byte) 0x03) {
                     printer.println("Int Data : " + hex(frame.data));
@@ -902,6 +894,8 @@ public class CC1000Radio implements Radio {
 
         }
 
+        /** <code>Transmit</code> is an event that transmits a packet of data after
+         * a one bit period delay. */
         protected class Transmit implements Simulator.Event {
             final Radio.RadioPacket packet;
 
@@ -915,7 +909,8 @@ public class CC1000Radio implements Radio {
             }
         }
 
-
+        /** Transmits an <code>SPIFrame</code> to be received by the connected device.
+         * This frame is either the last byte of data received or a zero byte. */
         public SPIFrame transmitFrame() {
             SPIFrame frame;
 
@@ -977,7 +972,10 @@ public class CC1000Radio implements Radio {
     }
 
 
-    /** TODO: determine if I will really need this for anything more than debugging. */
+    /** TODO: determine if I will really need this for anything more than debugging.
+     * This class is more or less a state machine on the status of the receiver for
+     * this radio. It is "activated" when the receiver unit is powered up and it is
+     * "receiving" when the radio is in receive mode. */
     protected class Receiver {
 
         boolean activated;
@@ -1027,7 +1025,12 @@ public class CC1000Radio implements Radio {
         }
     }
 
-    /** TODO: determine if I will really need this for anything more than debugging. */
+    /** TODO: determine if I will really need this for anything more than debugging.
+     * This class is a state machine similar to <code>Receiver</code>, but for the
+     * transmitter on the radio. So it is "activated" when the transmitter is powered up
+     * and "transmitting" when the radio is in transmit mode. It is very likely that
+     * moving this functionality into the <code>MainRegister</code> class would be a good
+     * design decision. */
     protected class Transmitter {
 
         boolean activated;
@@ -1082,9 +1085,6 @@ public class CC1000Radio implements Radio {
      * Debug output for communication over this interface is available on
      * "sim.cc1000.pinconfig" */
     protected class SerialConfigurationInterface {
-        // pale
-        // pdata
-        // pclk
 
         byte address;
         boolean write;
@@ -1109,7 +1109,8 @@ public class CC1000Radio implements Radio {
 
         }
 
-
+        /** Clocking the PCLK pin is what drives the action of the configuration interface.
+         * One bit of data on PDATA per clock. */
         protected class PCLKOutput implements Microcontroller.Pin.Output {
 
             public void write(boolean level) {
@@ -1210,6 +1211,7 @@ public class CC1000Radio implements Radio {
 
     }
 
+    /** Get the <code>Simulator</code> on which this radio is running. */
     public Simulator getSimulator() {
         return sim;
     }

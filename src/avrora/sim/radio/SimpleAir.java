@@ -90,8 +90,8 @@ public class SimpleAir implements RadioAir {
             long globalTime = (globalQueue.getCount()) * Radio.TRANSFER_TIME;
             long delay = Radio.TRANSFER_TIME - (globalTime - packet.origination.longValue());
 
-            System.err.println("Delay " + delay + ", Global Time: " + globalTime +
-                    " , or: " + packet.origination.longValue() + ", dif: " + (globalTime - packet.origination.longValue()));
+            //System.err.println("Delay " + delay + ", Global Time: " + globalTime +
+            //        " , or: " + packet.origination.longValue() + ", dif: " + (globalTime - packet.origination.longValue()));
             /*
                 delay = TXTime - (GT - LT); if GT is ahead of LT when this is fired
 

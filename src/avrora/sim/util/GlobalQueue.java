@@ -126,9 +126,7 @@ public class GlobalQueue {
         }
     }
 
-
-
-    // I argue it might not be safe to remove LocalEvents...?
+    // I argue it might not be safe to remove LocalMeets...?
     // TODO: determine how safe removing LocalEvents would be..
 
     /** A <code>LocalMeetFactory</code> is necessary to call the constructor for
@@ -184,7 +182,6 @@ public class GlobalQueue {
         }
 
     }
-
 
     static int iNum = 0;
 

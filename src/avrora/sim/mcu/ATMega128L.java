@@ -1948,7 +1948,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 EEDR_reg = new State.RWIOReg();
                 EECR_reg = new EECRReg();
                 EEARL_reg = new State.RWIOReg();
-                //EEARL_reg = new TestingRegister("EEARL_reg");
                 EEARH_reg = new EEARHReg();
 
                 installIOReg(ns, EEDR, EEDR_reg);
@@ -2079,7 +2078,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     readEnableWritten = false;
                 }
             }
-
         }
 
 
@@ -2218,7 +2216,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             final int PARITY_EVEN = 2;
             final int PARITY_ODD = 3;
 
-
+            // Frame sizes
             final int[] SIZE = {5, 6, 7, 8, 8, 8, 8, 9};
 
             int period = 0;
@@ -2344,7 +2342,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                         UCSRnA_reg.flagBit(RXCn);
 
                         receiving = false;
-
                     }
                 }
             }
@@ -2523,15 +2520,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
                 public void write(byte val) {
-
                     super.write(val);
-
                     decode(val);
                 }
 
                 public void writeBit(int bit, boolean val) {
                     super.writeBit(bit, val);
-
                     decode(value);
                 }
 
@@ -2541,7 +2535,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             && UCSRnC_reg.readBit(UCSZn0)) {
                         frameSize = 9;
                     }
-
                 }
             }
 
@@ -2769,7 +2762,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
 
         /**
-         * Serial Peripheral Interface
+         * Serial Peripheral Interface. Used on the <code>Mica2</code> platform
+         * for radio communication.
          * @author Daniel Lee, Simon Han
          */
         protected class SPI implements SPIDevice {
@@ -2824,7 +2818,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
              */
             private void postSPIInterrupt() {
                 if (SPCR_reg.readBit(7)) {
-
                     interpreter.postInterrupt(18);
                 }
             }
@@ -2868,7 +2861,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 boolean transmitting;
 
                 protected void enableTransfer() {
-
 
                     if (master && SPIenabled && !transmitting) {
                         if (spiPrinter.enabled) {
@@ -3176,14 +3168,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             private class VBG implements ADCInput {
                 public int getLevel() {
-                    //System.err.println("GOT VBG LEVEL");
                     return 0x3ff; // figure out correct value for this eventually
                 }
             }
 
             private class GND implements ADCInput {
                 public int getLevel() {
-                    //System.err.println("GOT GND LEVEL");
                     return 0;
                 }
             }
@@ -3434,7 +3424,14 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
     }
 
-    /** Interface for devices that can connect to the SPI*/
+    /**
+     * TODO: Cleanup. Move SPIDevice, ADCInput, USARTDevice out of this and into their own package.
+     * These interfaces really aren't ATMega128 specific.
+     */
+
+    /** Interface for devices that can connect to the SPI. Rather than communicating
+     * over the MISO, MOSI pins, the process is expedited and simplified through the use
+     * of the transmitFrame() and receiveFrame() methods in the intefact. */
     public interface SPIDevice {
         /** Transmit a frame from this device.
          * @return the frame for transmission */
@@ -3445,11 +3442,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         public void receiveFrame(SPIFrame frame);
 
         public void connect(SPIDevice d);
-
-        /**
-         * TODO: Cleanup. Move SPIFrame, SPIDevice, USARTFrame, USARTDevice out of this and into their own package.
-         * These interfaces really aren't ATMega128 specific.
-         */
 
         /** A single byte data frame for the SPI. */
         public class SPIFrame {

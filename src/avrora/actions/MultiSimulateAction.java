@@ -42,9 +42,11 @@ import avrora.sim.radio.Radio;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.platform.PlatformFactory;
 import avrora.util.Option;
+import avrora.util.StringUtil;
 
 import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.HashMap;
 
 /**
  * TODO: Doc this
@@ -64,6 +66,11 @@ public class MultiSimulateAction extends SimAction {
             "to use the legacy (hand-written) interpreter rather than the interpreter " +
             "generated from the architecture description language. It is used for " +
             "benchmarking and regression purposes.");
+    public final Option.Bool TIME = newOption("time", false,
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to report the time used in executing the simulation. When combined with " +
+            "the \"cycles\" and \"total\" options, it will report performance " +
+            "information about the simulation.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
@@ -91,6 +98,8 @@ public class MultiSimulateAction extends SimAction {
         PlatformFactory pf = getPlatform();
         SimulatorThread st;
 
+        HashMap programs = new HashMap();
+
         for (int i = 0; i < NODECOUNT.get(); i++) {
 
             // TODO: Use a hashtable to avoid creating duplicate programs of the same input
@@ -101,8 +110,20 @@ public class MultiSimulateAction extends SimAction {
             if (i < args.length) {
                 argS[0] = args[i];
             }
-            program = Main.readProgram(argS);
 
+            String name;
+
+            if(args.length < NODECOUNT.get() && i >= args.length) {
+                name = args[args.length - 1];
+            } else {
+                name = args[i];
+            }
+
+            program = (Program)programs.get(name);
+            if(program == null) {
+                program = Main.readProgram(argS);
+                programs.put(name, program);
+            }
 
             if (pf != null) {
                 microcontroller = pf.newPlatform(program).getMicrocontroller();
@@ -128,6 +149,7 @@ public class MultiSimulateAction extends SimAction {
             processTimeout(simulator);
         }
 
+        SimulatorThread first = null;
         startms = System.currentTimeMillis();
         try {
             //simulator.start();
@@ -136,10 +158,18 @@ public class MultiSimulateAction extends SimAction {
             while (threadIterator.hasNext()) {
                 SimulatorThread thread = (SimulatorThread) threadIterator.next();
                 thread.start();
+                if(first == null) {
+                    first = thread;
+                }
             }
+
         } finally {
+            //Thread a = Thread.currentThread();
+            first.join();
             endms = System.currentTimeMillis();
         }
+
+        System.err.println("Time for simulator: " + StringUtil.milliAsString((long)(endms - startms)));
     }
 
     void processTimeout(Simulator simulator) {
