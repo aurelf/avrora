@@ -139,6 +139,74 @@ public abstract class Option {
     }
 
     /**
+     * The <code>Option.Long</code> class is an implementation of the
+     * <code>Option</code> class that encapsulates a long integer value.
+     */
+    public static class Interval extends Option {
+        final long default_low;
+        final long default_high;
+        long low;
+        long high;
+
+        public Interval(String nm, long l, long h, String desc) {
+            super(nm, desc);
+            default_low = low = l;
+            default_high = high = h;
+        }
+
+        public boolean set(long l, long h) {
+            low = l;
+            high = h;
+            return true;
+        }
+
+        public void set(String val) {
+            CharacterIterator iter = new StringCharacterIterator(val);
+            try {
+                // check for leading [
+                if ( !StringUtil.peekAndEat(iter, '[')) fail(val);
+
+                String lstr = StringUtil.readDecimalString(iter, 12);
+                low = java.lang.Long.parseLong(lstr);
+
+                // check for ',' separator
+                if ( !StringUtil.peekAndEat(iter, ',')) fail(val);
+
+                String hstr = StringUtil.readDecimalString(iter, 12);
+                high = java.lang.Long.parseLong(hstr);
+
+                // check for trailing ]
+                if ( !StringUtil.peekAndEat(iter, ']')) fail(val);
+
+            } catch (NumberFormatException e) {
+                // in case of NumberFormatException
+                fail(val);
+            }
+        }
+
+        protected void fail(String val) {
+            Avrora.userError("Invalid value for integer interval option", "-" + name + "=" + val);
+        }
+
+        public long getLow() {
+            return low;
+        }
+
+        public long getHigh() {
+            return high;
+        }
+
+        public String stringValue() {
+            return "[" + low +", "+high+"]";
+        }
+
+        public void printHelp() {
+            printHeader("interval", "[" + default_low +","+default_high+"]");
+            printDescription();
+        }
+    }
+
+    /**
      * The <code>Option.Str</code> class is an implementation of the
      * <code>Option</code> class that encapsulates a string.
      */

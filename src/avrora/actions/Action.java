@@ -93,6 +93,10 @@ public abstract class Action {
         return options.newOption(name, val, desc);
     }
 
+    protected Option.Interval newOption(String name, long l, long h, String desc) {
+        return options.newOption(name, l, h, desc);
+    }
+
     protected Option.Str newOption(String name, String val, String desc) {
         return options.newOption(name, val, desc);
     }

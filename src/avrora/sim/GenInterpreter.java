@@ -110,6 +110,11 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
         while (shouldRun) {
 
+            if ( delayCycles > 0 ) {
+                advanceCycles(delayCycles);
+                delayCycles = 0;
+            }
+
             if (justReturnedFromInterrupt) {
                 // don't process the interrupt if we just returned from
                 // an interrupt handler, because the hardware manual says

@@ -42,11 +42,13 @@ import avrora.sim.radio.Radio;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.platform.PlatformFactory;
 import avrora.util.Option;
+import avrora.util.Terminal;
 import avrora.util.StringUtil;
 
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * TODO: Doc this
@@ -54,10 +56,17 @@ import java.util.HashMap;
  */
 public class MultiSimulateAction extends SimAction {
     public static final String HELP = "The \"multi-simulate\" action launches a set of simulators with " +
-            "the specified program loaded onto each.";
+            "the specified program loaded onto each. This is useful for simulating a network of " +
+            "sensor nodes and monitoring the behavior of the entire network. ";
     public final Option.Long NODECOUNT = newOption("nodecount", 1,
             "This option is used in the multi-node simulation. It specifies the " +
             "number of nodes to be instantiated.");
+    public final Option.Long RANDOMSEED = newOption("random-seed", 0,
+            "This option is used to seed a pseudo-random number generator used in the " +
+            "simulation. If this option is set to non-zero, then its value is used as " +
+            "the seed for reproducible simulation results. If this option is not set, " +
+            "those parts of simulation that rely on random numbers will have seeds " +
+            "chosen based on system parameters that vary from run to run.");
     public final Option.Str TOPOLOGY = newOption("topology", "",
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network.");
@@ -71,6 +80,20 @@ public class MultiSimulateAction extends SimAction {
             "to report the time used in executing the simulation. When combined with " +
             "the \"cycles\" and \"total\" options, it will report performance " +
             "information about the simulation.");
+    public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
+            "This option causes the simulator to insert a random delay before starting " +
+            "each node in order to prevent artificial cycle-level synchronization. The " +
+            "starting delay is pseudo-randomly chosen with uniform distribution over the " +
+            "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
+            "option is set to a non-zero value, then its value is used as the seed to the " +
+            "pseudo-random number generator.");
+    public final Option.Long STAGGER_START = newOption("stagger-start", 0,
+            "This option causes the simulator to insert a progressively longer delay " +
+            "before starting each node in order to avoid artificial cycle-level " +
+            "synchronization between nodes. The starting times are staggered by the number " +
+            "of clock cycles given as a value. For example, if this option is given the" +
+            "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
+            "time 2*X, etc.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
@@ -86,44 +109,15 @@ public class MultiSimulateAction extends SimAction {
 
         Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
 
-        Simulator simulator;
-
-        Microcontroller microcontroller;
         LinkedList simulatorThreadList = new LinkedList();
-
-        //program = Main.readProgram(args);
-
-        //Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
-
         PlatformFactory pf = getPlatform();
-        SimulatorThread st;
-
-        HashMap programs = new HashMap();
+        Program program = Main.readProgram(args);
 
         for (int i = 0; i < NODECOUNT.get(); i++) {
 
-            // TODO: Use a hashtable to avoid creating duplicate programs of the same input
-            // files.
-            Program program = null;
-            String[] argS = new String[1];
-
-            if (i < args.length) {
-                argS[0] = args[i];
-            }
-
-            String name;
-
-            if(args.length < NODECOUNT.get() && i >= args.length) {
-                name = args[args.length - 1];
-            } else {
-                name = args[i];
-            }
-
-            program = (Program)programs.get(name);
-            if(program == null) {
-                program = Main.readProgram(argS);
-                programs.put(name, program);
-            }
+            Simulator simulator;
+            Microcontroller microcontroller;
+            SimulatorThread st;
 
             if (pf != null) {
                 microcontroller = pf.newPlatform(program).getMicrocontroller();
@@ -139,42 +133,81 @@ public class MultiSimulateAction extends SimAction {
             }
 
             Radio radio = microcontroller.getRadio();
-            radio.setSimulatorThread(st);
 
             if (radio != null) {
+                radio.setSimulatorThread(st);
                 SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
             }
 
-            // TODO: port over other "process" routines from SimulateAction
             processTimeout(simulator);
+            processRandom(simulator);
+            processStagger(simulator);
         }
 
-        SimulatorThread first = null;
         startms = System.currentTimeMillis();
         try {
-            //simulator.start();
-            Iterator threadIterator = simulatorThreadList.iterator();
-
-            while (threadIterator.hasNext()) {
-                SimulatorThread thread = (SimulatorThread) threadIterator.next();
-                thread.start();
-                if(first == null) {
-                    first = thread;
-                }
-            }
+            startSimulationThreads(simulatorThreadList);
 
         } finally {
-            //Thread a = Thread.currentThread();
-            first.join();
-            endms = System.currentTimeMillis();
-        }
+            joinSimulationThreads(simulatorThreadList);
 
-        System.err.println("Time for simulator: " + StringUtil.milliAsString((long)(endms - startms)));
+            // compute simulation time
+            endms = System.currentTimeMillis();
+            Terminal.printBrightGreen("Time for simulation: ");
+            Terminal.println(StringUtil.milliAsString((long)(endms - startms)));
+        }
+    }
+
+    private void joinSimulationThreads(LinkedList simulatorThreadList) throws InterruptedException {
+        // wait for all threads
+        Iterator threadIterator = simulatorThreadList.iterator();
+
+        while (threadIterator.hasNext()) {
+            SimulatorThread thread = (SimulatorThread) threadIterator.next();
+            thread.join();
+        }
+    }
+
+    private void startSimulationThreads(LinkedList simulatorThreadList) {
+        // start up all threads
+        Iterator threadIterator = simulatorThreadList.iterator();
+
+        while (threadIterator.hasNext()) {
+            SimulatorThread thread = (SimulatorThread) threadIterator.next();
+            thread.start();
+        }
     }
 
     void processTimeout(Simulator simulator) {
         long timeout = TIMEOUT.get();
         if (timeout > 0)
             simulator.insertTimeout(timeout);
+    }
+
+    Random random;
+
+    void processRandom(Simulator simulator) {
+        long size = RANDOM_START.getHigh() - RANDOM_START.getLow();
+        long delay = 0;
+        if ( size > 0 ) {
+            if ( random == null ) {
+                long seed;
+                if ( (seed = RANDOMSEED.get()) != 0 ) random = new Random(seed);
+                else random = new Random();
+            }
+
+            delay = random.nextLong();
+            if ( delay < 0 ) delay = -delay;
+            delay = delay % size;
+        }
+
+        simulator.delay(RANDOM_START.getLow() + delay);
+    }
+
+    long stagger;
+
+    void processStagger(Simulator simulator) {
+        simulator.delay(stagger);
+        stagger += STAGGER_START.get();
     }
 }

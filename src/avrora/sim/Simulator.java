@@ -664,6 +664,9 @@ public abstract class Simulator implements IORegisterConstants {
         eventQueue.remove(e);
     }
 
+    public void delay(long cycles) {
+        interpreter.delay(cycles);
+    }
 
     /**
      * The <code>InstructionCountTimeout</code> class is a probe that

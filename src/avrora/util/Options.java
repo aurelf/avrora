@@ -79,6 +79,12 @@ public class Options {
         return o;
     }
 
+    public Option.Interval newOption(String name, long l, long h, String desc) {
+        Option.Interval o = new Option.Interval(name, l, h, desc);
+        knownValues.put(name, o);
+        return o;
+    }
+
     public String getOptionValue(String name) {
         Option o = (Option) knownValues.get(name);
         if (o != null) return o.stringValue();

@@ -177,6 +177,8 @@ public abstract class BaseInterpreter implements State {
      */
     protected int cyclesConsumed;
 
+    protected long delayCycles;
+
     /**
      * The <code>shouldRun</code> flag is used internally in the main execution
      * runLoop to implement the correct semantics of <code>start()</code> and
@@ -489,6 +491,11 @@ public abstract class BaseInterpreter implements State {
         totalCycles += delta;
         eventQueue.advance(delta);
         cyclesConsumed = 0;
+    }
+
+    protected void delay(long cycles) {
+        innerLoop = false;
+        delayCycles += cycles;
     }
 
     /**
