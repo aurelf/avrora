@@ -4,7 +4,7 @@ package avrora.stack;
  * The <code>AbstractArithmetic</code> arithmetic class implements operations that
  * are useful for working on abstract integers which are represented as characters.
  * <br><br>
- * 
+ *
  * The abstract values (e.g. register values) are represented as
  * characters. Thus, an 8 bit register is modelled using a 16-bit
  * character. The upper 8 bits represent the "mask", those bits
@@ -139,8 +139,8 @@ public class AbstractArithmetic {
      * The <code>isKnown()</code> method tests whether an abstract value represents
      * a single, fully known value.
      * @param av1 the abstract value to test
-     * @return true if all of the bits of the abstract value are known
-     * @return false if any bits are unknown
+     * @return true if all of the bits of the abstract value are known;
+     *         false if any bits are unknown
      */
     public static boolean isUnknown(char av1) {
         return (av1 & KNOWN_MASK) != KNOWN_MASK;
@@ -151,8 +151,8 @@ public class AbstractArithmetic {
      * represent a single, fully known value.
      * @param av1 the first abstract value to test
      * @param av2 the second abstract value to test
-     * @return true if all of the bits of the both abstract values are known
-     * @return false if any bits are unknown
+     * @return true if all of the bits of the both abstract values are known;
+     *         false if any bits are unknown
      */
     public static boolean areKnown(char av1, char av2) {
         return (av1 & av2 & KNOWN_MASK) == KNOWN_MASK;
@@ -164,8 +164,8 @@ public class AbstractArithmetic {
      * if their known bits are equal and their known masks are equal
      * @param val1 the first abstract value
      * @param val2 the second abstract value
-     * @return true if the abstract values are equal
-     * @return false if teh abstract values are not equal
+     * @return true if the abstract values are equal;
+     *         false otherwise
      */
     public static boolean areEqual(char val1, char val2) {
         if ( val1 == val2 ) return true;
@@ -248,9 +248,9 @@ public class AbstractArithmetic {
      * the specified abstract value.
      * @param av1 the abstract value
      * @param bit the bit number
-     * @return <code>AbstractArithmetic.TRUE</code> if the bit is known to be on
-     * @return <code>AbstractArithmetic.FALSE</code> if the bit is known to be off
-     * @return <code>AbstractArithmetic.UNKNOWN</code> otherwise
+     * @return <code>AbstractArithmetic.TRUE</code> if the bit is known to be on;
+     *         <code>AbstractArithmetic.FALSE</code> if the bit is known to be off;
+     *         <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char getBit(char av1, int bit) {
         int mask = TRUE << bit;
@@ -277,10 +277,10 @@ public class AbstractArithmetic {
      * the specified abstract value is definately zero, definately not zero, or unknown.
      * @param av1 the abstract value
      * @return <code>AbstractArithmetic.TRUE</code> if the specified abstract value is definately
-     * zero
-     * @return <code>AbstractArithmetic.FALSE</code> if the specified abstract value cannot
-     * possibly be zero (it contains one bit that is known to be on)
-     * @return <code>AbstractArithmetic.UNKNOWN</code> otherwise
+     * zero;
+     *         <code>AbstractArithmetic.FALSE</code> if the specified abstract value cannot
+     * possibly be zero (it contains one bit that is known to be on);
+     *         <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char couldBeZero(char av1) {
         if ( av1 == ZERO ) return TRUE;
@@ -295,10 +295,10 @@ public class AbstractArithmetic {
      * @param av1 the first abstract value
      * @param av2 the second abstract value
      * @return <code>AbstractArithmetic.TRUE</code> if both abstract values are definately
-     * zero
-     * @return <code>AbstractArithmetic.FALSE</code> if either of the specified abstract values cannot
-     * possibly be zero (it contains one bit that is known to be on)
-     * @return <code>AbstractArithmetic.UNKNOWN</code> otherwise
+     * zero;
+     *         <code>AbstractArithmetic.FALSE</code> if either of the specified abstract values cannot
+     * possibly be zero (it contains one bit that is known to be on);
+     *         <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char couldBeZero(char av1, char av2) {
         if ( av1 == ZERO && av2 == ZERO ) return TRUE;
@@ -314,10 +314,10 @@ public class AbstractArithmetic {
      * @param av1 the first abstract value
      * @param av2 the second abstract value
      * @return <code>AbstractArithmetic.TRUE</code> if the abstract values are definately
-     * equal
-     * @return <code>AbstractArithmetic.FALSE</code> if the abstract values are
-     * definately not equal
-     * @return <code>AbstractArithmetic.UNKNOWN</code> otherwise
+     * equal;
+     *         <code>AbstractArithmetic.FALSE</code> if the abstract values are
+     * definately not equal;
+     *         <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char couldBeEqual(char av1, char av2) {
         if ( areKnown(av1, av2) && av1 == av2 ) return TRUE;
@@ -372,7 +372,10 @@ public class AbstractArithmetic {
      */
     public static char add(char av1, char av2) {
         char common = commonMask(av1, av2);
-        // TODO: optimize for common case of known / unknown values.
+
+        if ( areKnown(av1, av2) ) // common case of all bits are known.
+            return knownVal((byte)(bitsOf(av1)+bitsOf(av2)));
+
         int resultA = ceiling(av1)+ceiling(av2);
         int resultB = floor(av1)+floor(av2);
 
@@ -391,7 +394,10 @@ public class AbstractArithmetic {
      */
     public static char subtract(char av1, char av2) {
         char common = commonMask(av1, av2);
-        // TODO: optimize for common case of known / unknown values.
+
+        if ( areKnown(av1, av2) ) // common case of all bits are known.
+            return knownVal((byte)(bitsOf(av1)-bitsOf(av2)));
+
         int resultA = ceiling(av1) - ceiling(av2);
         int resultB = floor(av1) - floor(av2);
 

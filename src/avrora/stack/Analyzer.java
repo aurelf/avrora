@@ -23,7 +23,7 @@ public class Analyzer {
     AbstractInterpreter interpreter;
     AbstractState oldState;
     AbstractState state;
-    StateFrontier unexploredStates;
+    StateFrontier frontier;
 
     protected static class StateFrontier {
 
@@ -181,7 +181,7 @@ public class Analyzer {
         space = new StateSpace();
         // TODO: implement correct policy for analyses.
         interpreter = new AbstractInterpreter(null);
-        unexploredStates = new StateFrontier();
+        frontier = new StateFrontier();
     }
 
     /**
@@ -191,8 +191,8 @@ public class Analyzer {
     public void run() {
         pushState(new AbstractState());
 
-        while (!unexploredStates.isEmpty()) {
-            oldState = unexploredStates.choose();
+        while (!frontier.isEmpty()) {
+            oldState = frontier.choose();
             state = oldState.copy();
 
             int pc = state.getPC();
@@ -1200,7 +1200,7 @@ public class Analyzer {
     protected void pushState(AbstractState s) {
         if (space.contains(s)) return;
         space.addState(s);
-        unexploredStates.add(s);
+        frontier.add(s);
     }
 
 
