@@ -513,14 +513,14 @@ public class Analyzer {
         printStatHeader();
         printStats();
 
-        printQuantity("Time to build graph   ", StringUtil.milliAsString(buildTime));
+        printQuantity("Time to build graph   ", StringUtil.milliToSecs(buildTime));
         if (maximalPath == null) {
             Terminal.printRed("No maximal path data.");
             Terminal.nextln();
             return;
         }
 
-        printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
+        printQuantity("Time to traverse graph", StringUtil.milliToSecs(traverseTime));
         if (unbounded)
             printQuantity("Maximum stack depth   ", "unbounded");
         else

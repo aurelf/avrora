@@ -59,9 +59,8 @@ public class TraceMonitor extends MonitorFactory {
 
         public class Probe implements Simulator.Probe {
             public void fireBefore(Instr i, int addr, State s) {
-                String idstr = StringUtil.rightJustify(simulator.getID(), 4);
-                String cycstr = StringUtil.rightJustify(s.getCycles(), 10);
-                Terminal.print(idstr + ' ' + cycstr + "   ");
+                String idstr = simulator.getIDTimeString();
+                Terminal.print(idstr);
                 Terminal.printBrightCyan(StringUtil.toHex(s.getPC(), 4) + ": ");
                 Terminal.printBrightBlue(i.getVariant() + ' ');
                 Terminal.print(i.getOperands());
@@ -89,7 +88,6 @@ public class TraceMonitor extends MonitorFactory {
             long cycles = simulator.getClock().getCount();
             float ipc = count / (float)cycles;
             reportQuantity("Instructions executed", count, "");
-            reportQuantity("Time elapsed", cycles, "cycles");
             reportQuantity("Program throughput", ipc, "instrs/cycle");
             reportQuantity("Program throughput", ipc * simulator.getClock().getHZ() / 1000000, "mips");
         }

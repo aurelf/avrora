@@ -130,7 +130,7 @@ public class BenchmarkAction extends SimAction {
 
     private float reportResult(long cyclesA, long millisA) {
         String cstrA = StringUtil.rightJustify(cyclesA, 9);
-        String timA = StringUtil.rightJustify(StringUtil.milliAsString(millisA), 8);
+        String timA = StringUtil.rightJustify(StringUtil.milliToSecs(millisA), 8);
         float mhzA = ((float)cyclesA) / (millisA * 1000);
         String mstrA = StringUtil.rightJustify(mhzA, 9);
 

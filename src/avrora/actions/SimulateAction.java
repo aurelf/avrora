@@ -243,7 +243,7 @@ public class SimulateAction extends SimAction {
     void reportTime() {
         long diff = endms - startms;
         if (TIME.get()) {
-            reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "seconds");
+            reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
             if (total != null) {
                 float thru = ((float)total.count) / (diff * 1000);
                 reportQuantity("Simulator throughput", thru, "mips");

@@ -203,8 +203,7 @@ public class MultiSimulateAction extends SimAction {
     }
 
     private void reportTime(long startms, long endms) {
-        Terminal.printGreen("Time for simulation");
-        Terminal.println(": " + StringUtil.milliToSecs((endms - startms)));
+        reportQuantity("Time for simulation", StringUtil.milliToSecs(endms - startms), "seconds");
     }
 
     private void reportUtilization() {
