@@ -60,45 +60,45 @@ public class Main {
     static final Options mainOptions = new Options();
 
     public static final Option.Str INPUT = mainOptions.newOption("input", "auto",
-                                                                 "This option selects among the available program formats as input to Avrora. " +
-                                                                 "For example, the default input format, \"atmel\" selects the assembly " +
-                                                                 "language format supported by Atmel's assembler.");
+            "This option selects among the available program formats as input to Avrora. " +
+            "For example, the default input format, \"atmel\" selects the assembly " +
+            "language format supported by Atmel's assembler.");
     public static final Option.Str ACTION = mainOptions.newOption("action", "simulate",
-                                                                  "This option selects the action to perform. For example, an action might " +
-                                                                  "be to load a program into the simulator and run it. For more information, " +
-                                                                  "see the section on actions.");
+            "This option selects the action to perform. For example, an action might " +
+            "be to load a program into the simulator and run it. For more information, " +
+            "see the section on actions.");
     public static final Option.Bool COLORS = mainOptions.newOption("colors", true,
-                                                                   "This option is used to enable or disable the terminal colors.");
+            "This option is used to enable or disable the terminal colors.");
     public static final Option.Bool BANNER = mainOptions.newOption("banner", true,
-                                                                   "This option is used to enable or disable the printing of the banner.");
+            "This option is used to enable or disable the printing of the banner.");
     public static final Option.List VERBOSE = mainOptions.newOptionList("verbose", "",
-                                                                        "This option allows users to enable verbose printing of individual " +
-                                                                        "subsystems within Avrora. A list can be given with individual items separated " +
-                                                                        "by commas. For example: -verbose=sim.pin,sim.interrupt,sim.event");
+            "This option allows users to enable verbose printing of individual " +
+            "subsystems within Avrora. A list can be given with individual items separated " +
+            "by commas. For example: -verbose=sim.pin,sim.interrupt,sim.event");
     public static final Option.Bool HELP = mainOptions.newOption("help", false,
-                                                                 "Displays this help message.");
+            "Displays this help message.");
     public static final Option.Bool LICENSE = mainOptions.newOption("license", false,
-                                                                    "Display the detailed copyright and license text.");
+            "Display the detailed copyright and license text.");
     public static final Option.Bool HTML = mainOptions.newOption("html", false,
-                                                                 "For terminal colors. Display terminal colors as HTML tags for " +
-                                                                 "easier inclusion in webpages.");
+            "For terminal colors. Display terminal colors as HTML tags for " +
+            "easier inclusion in webpages.");
     public static final Option.List INDIRECT_EDGES = mainOptions.newOptionList("indirect-edges", "",
-                                                                               "This option can be used to specify the possible targets of indirect calls and " +
-                                                                               "jumps within a program, which may be needed in performing stack analysis or " +
-                                                                               "building a control flow graph. Each element of the list is a pair of " +
-                                                                               "program addresses separated by a colon, where a program address can be a " +
-                                                                               "label or a hexadecimal number preceded by a \"$\". The first program address " +
-                                                                               "is the address of the indirect call or jump instruction and the second program " +
-                                                                               "address is a possible target.");
+            "This option can be used to specify the possible targets of indirect calls and " +
+            "jumps within a program, which may be needed in performing stack analysis or " +
+            "building a control flow graph. Each element of the list is a pair of " +
+            "program addresses separated by a colon, where a program address can be a " +
+            "label or a hexadecimal number preceded by a \"$\". The first program address " +
+            "is the address of the indirect call or jump instruction and the second program " +
+            "address is a possible target.");
     public static final Option.Bool LIGHT_BACKGROUND = mainOptions.newOption("light-background", false,
-                                                                             "This option can be used to adjust the color palette used for text output " +
-                                                                             "by Avrora. For terminals that have a light color background, setting this option to " +
-                                                                             "true will allow more readable output.");
+            "This option can be used to adjust the color palette used for text output " +
+            "by Avrora. For terminals that have a light color background, setting this option to " +
+            "true will allow more readable output.");
     public static final Option.Str FOREGROUND = mainOptions.newOption("foreground-color", "lightgray",
-                                                                      "This option can be used to specify the default foreground color of " +
-                                                                      "text outputted from Avrora. For terminals with a light-colored background, " +
-                                                                      "the default choice may be hard or impossible to read. In that case, set this " +
-                                                                      "option to a darker color such as \"black\" for readable output.");
+            "This option can be used to specify the default foreground color of " +
+            "text outputted from Avrora. For terminals with a light-colored background, " +
+            "the default choice may be hard or impossible to read. In that case, set this " +
+            "option to a darker color such as \"black\" for readable output.");
 
 
     static {
@@ -238,18 +238,18 @@ public class Main {
         Terminal.println("\n");
 
         printSection("OVERVIEW", "Avrora is a tool for working with " +
-                                 "assembly language programs for the AVR architecture microcontrollers. " +
-                                 "It contains tools to read AVR programs in multiple formats, perform " +
-                                 "actions on them, and generate output in multiple formats.\n" +
-                                 "Typical usage is to specify a list of files that contain a program " +
-                                 "in some format supported by Avrora and then specifying the action " +
-                                 "to perform on that program. For example, giving the name of a file " +
-                                 "that contains a program written in assembly language and a simulate " +
-                                 "action might look like: \n\n" +
-                                 "avrora -action=simulate -input=atmel program.asm \n\n" +
-                                 "Other actions that are available include giving a listing of the " +
-                                 "program or running one of the analysis tools on the program. See the " +
-                                 "actions section for more information.");
+                "assembly language programs for the AVR architecture microcontrollers. " +
+                "It contains tools to read AVR programs in multiple formats, perform " +
+                "actions on them, and generate output in multiple formats.\n" +
+                "Typical usage is to specify a list of files that contain a program " +
+                "in some format supported by Avrora and then specifying the action " +
+                "to perform on that program. For example, giving the name of a file " +
+                "that contains a program written in assembly language and a simulate " +
+                "action might look like: \n\n" +
+                "avrora -action=simulate -input=atmel program.asm \n\n" +
+                "Other actions that are available include giving a listing of the " +
+                "program or running one of the analysis tools on the program. See the " +
+                "actions section for more information.");
 
         if (args.length == 0)
             printMainHelp();
@@ -279,18 +279,18 @@ public class Main {
 
     private static void printMainHelp() {
         printSection("OPTIONS", "Options specify the action to be performed as well as the input " +
-                                "format, the output format (if any), and parameters to the action. The " +
-                                "available options are listed below along with their types and default " +
-                                "values.");
+                "format, the output format (if any), and parameters to the action. The " +
+                "available options are listed below along with their types and default " +
+                "values.");
 
         printOptions(mainOptions);
         Iterator i;
 
         printSection("ACTIONS", "The action to be performed is specified in an option \"action\" " +
-                                "supplied at the command line. This action might be to assemble the file, " +
-                                "print a listing, perform a simulation, or run an analysis tool. This " +
-                                "flexibility allows this single frontend to select from multiple useful " +
-                                "tools. The currently supported actions are given below.");
+                "supplied at the command line. This action might be to assemble the file, " +
+                "print a listing, perform a simulation, or run an analysis tool. This " +
+                "flexibility allows this single frontend to select from multiple useful " +
+                "tools. The currently supported actions are given below.");
 
         List list = actions.getSortedList();
         i = list.iterator();
@@ -305,11 +305,11 @@ public class Main {
         Terminal.println("");
 
         printSection("INPUT FORMATS", "The input format of the program is specified with the \"input\" " +
-                                      "option supplied at the command line. This input format is used by " +
-                                      "actions that operate on programs to determine how to interpret the " +
-                                      "input and build a program from it. For example, the input format might " +
-                                      "be Atmel syntax, GAS syntax, or the output of a disassembler. Currently " +
-                                      "no binary formats are supported.");
+                "option supplied at the command line. This input format is used by " +
+                "actions that operate on programs to determine how to interpret the " +
+                "input and build a program from it. For example, the input format might " +
+                "be Atmel syntax, GAS syntax, or the output of a disassembler. Currently " +
+                "no binary formats are supported.");
 
         list = inputs.getSortedList();
         i = list.iterator();
