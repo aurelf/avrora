@@ -35,8 +35,8 @@ package avrora.util;
 import java.util.*;
 
 /**
- * The <code>Options</code> class represents a collection of command line options and utility methods for parsing the
- * command line. Very useful for getting cheap and powerful parsing of command line options.
+ * The <code>Options</code> class represents a collection of command line options and utility methods for
+ * parsing the command line. Very useful for getting cheap and powerful parsing of command line options.
  *
  * @author Ben L. Titzer
  */

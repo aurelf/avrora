@@ -37,10 +37,10 @@ import avrora.util.StringUtil;
 import avrora.util.Verbose;
 
 /**
- * The <code>CFGBuilder</code> class is a visitor that builds a representation of the control flow graph for a given
- * program. It uses the visitor pattern, (the <code>InstrVisitor</code> interface), to visit each instruction in the
- * program and construct and instance of the <code>ControlFlowGraph</code> class representing the control flow graph of
- * the given program.
+ * The <code>CFGBuilder</code> class is a visitor that builds a representation of the control flow graph for a
+ * given program. It uses the visitor pattern, (the <code>InstrVisitor</code> interface), to visit each
+ * instruction in the program and construct and instance of the <code>ControlFlowGraph</code> class
+ * representing the control flow graph of the given program.
  *
  * @author Ben L. Titzer
  */
@@ -56,8 +56,8 @@ class CFGBuilder implements InstrVisitor {
     final Verbose.Printer printer = Verbose.getVerbosePrinter("cfg.builder");
 
     /**
-     * The <code>CFGBuilder</code> constructor constructs an instance that is capable of creating multiple new control
-     * flow graphs for the specified program.
+     * The <code>CFGBuilder</code> constructor constructs an instance that is capable of creating multiple new
+     * control flow graphs for the specified program.
      *
      * @param p the program
      */
@@ -83,8 +83,9 @@ class CFGBuilder implements InstrVisitor {
     }
 
     /**
-     * The <code>buildCFG()</code> method visits all of the machine instructions of the of the program and populates the
-     * control flow graph with basic blocks. Each call to this method creates a new control flow graph.
+     * The <code>buildCFG()</code> method visits all of the machine instructions of the of the program and
+     * populates the control flow graph with basic blocks. Each call to this method creates a new control flow
+     * graph.
      *
      * @return an instance of the <code>ControlFlowGraph</code> class
      */

@@ -42,9 +42,9 @@ import avrora.util.Verbose;
 import java.util.*;
 
 /**
- * Very simple implementation of radio air. It assumes a lossless environment where all radios are able to communicate
- * with each other. This simple air is blind to the frequencies used in transmission (i.e. it assumes that all
- * frequencies are really the same).
+ * Very simple implementation of radio air. It assumes a lossless environment where all radios are able to
+ * communicate with each other. This simple air is blind to the frequencies used in transmission (i.e. it
+ * assumes that all frequencies are really the same).
  * <p/>
  * This class should provide the proper scheduling policy with respect to threads that more complicated radio
  * implementations can use the time scheduling policy and only overload the delivery policy.
@@ -226,13 +226,13 @@ public class SimpleAir implements RadioAir {
     }
 
     /**
-     * Tricky! This method checks whether every thread has reached either a local meet or has tried to read the RSSI
-     * value. If every thread has joined in one of these two ways this method will select the RSSI waiter that made the
-     * earliest request. If that waiter is NOT the waiter passed as a parameter, it will wake that waiter. If that
-     * waiter IS the waiter passed, it will NOT wake it.
+     * Tricky! This method checks whether every thread has reached either a local meet or has tried to read
+     * the RSSI value. If every thread has joined in one of these two ways this method will select the RSSI
+     * waiter that made the earliest request. If that waiter is NOT the waiter passed as a parameter, it will
+     * wake that waiter. If that waiter IS the waiter passed, it will NOT wake it.
      *
-     * @param curWait the current waiter, null if this method is being called as a result of a thread entering a local
-     *                meet
+     * @param curWait the current waiter, null if this method is being called as a result of a thread entering
+     *                a local meet
      * @return the waiter at the head of the line if all threads have joined, null otherwise
      */
     private RSSIWait checkRSSIWaiters(RSSIWait curWait) {
@@ -268,8 +268,8 @@ public class SimpleAir implements RadioAir {
     }
 
     /**
-     * The <code>RadioTicker</code> class is the global timer for the radio. It is specialized in that it will schedule
-     * delivery meets when, at the end of the interval, there was at least one packet sent.
+     * The <code>RadioTicker</code> class is the global timer for the radio. It is specialized in that it will
+     * schedule delivery meets when, at the end of the interval, there was at least one packet sent.
      */
     protected class RadioTicker extends GlobalClock.Ticker {
         long deliveryDelta;
@@ -460,8 +460,8 @@ public class SimpleAir implements RadioAir {
     }
 
     /**
-     * An extended version of <code>GlobalClock</code> that implements a version of <code>LocalMeet</code> that is
-     * appropriate for delivering radio packets.
+     * An extended version of <code>GlobalClock</code> that implements a version of <code>LocalMeet</code>
+     * that is appropriate for delivering radio packets.
      */
     protected class RadioClock extends GlobalClock {
         protected RadioClock(long p) {

@@ -36,10 +36,10 @@ import avrora.util.Option;
 import avrora.util.Options;
 
 /**
- * The <code>Action</code> class defines a new action that the main driver is capable of executing. Each instance of
- * <code>Action</code> is inserted into a hash map in the main class, with the key being its name. For example, the
- * action to simulate a program is inserted into this hash map with the key "simulate", and an instance of
- * <code>avrora.actions.SimulateAction</code>.
+ * The <code>Action</code> class defines a new action that the main driver is capable of executing. Each
+ * instance of <code>Action</code> is inserted into a hash map in the main class, with the key being its name.
+ * For example, the action to simulate a program is inserted into this hash map with the key "simulate", and
+ * an instance of <code>avrora.actions.SimulateAction</code>.
  */
 public abstract class Action {
 
@@ -49,8 +49,8 @@ public abstract class Action {
     public final String help;
 
     /**
-     * The <code>shortName</code> field stores a reference to the string that represents the short (abbreviated) name of
-     * this action.
+     * The <code>shortName</code> field stores a reference to the string that represents the short
+     * (abbreviated) name of this action.
      */
     // TODO: this is no longer needed
     public final String shortName;
@@ -62,8 +62,8 @@ public abstract class Action {
     public final Options options;
 
     /**
-     * The constructor for the <code>Action</code> class initializes the referneces to the short name and help string
-     * for this action as well as creating the internal options.
+     * The constructor for the <code>Action</code> class initializes the referneces to the short name and help
+     * string for this action as well as creating the internal options.
      *
      * @param sn the short name of the action as a string
      * @param h  the (unformatted) help string
@@ -75,8 +75,8 @@ public abstract class Action {
     }
 
     /**
-     * The <code>run()</code> method is called by the main class and is passed the remaining command line arguments
-     * after options have been stripped out.
+     * The <code>run()</code> method is called by the main class and is passed the remaining command line
+     * arguments after options have been stripped out.
      *
      * @param args the command line arguments
      * @throws java.lang.Exception
@@ -84,7 +84,8 @@ public abstract class Action {
     public abstract void run(String[] args) throws Exception;
 
     /**
-     * The <code>getHelp()</code> method returns a string that is used in reporting the command line help to the user.
+     * The <code>getHelp()</code> method returns a string that is used in reporting the command line help to
+     * the user.
      *
      * @return an unformatted paragraph that contains the text explanation of what this action does.
      */
@@ -93,9 +94,9 @@ public abstract class Action {
     }
 
     /**
-     * The <code>getShortName()</code> method returns the name of this action as a short string. This short string is
-     * the name that it can be referred to as from the command line. For example, to execute the BenchmarkAction, the
-     * -action=benchmark option must be supplied.
+     * The <code>getShortName()</code> method returns the name of this action as a short string. This short
+     * string is the name that it can be referred to as from the command line. For example, to execute the
+     * BenchmarkAction, the -action=benchmark option must be supplied.
      *
      * @return the name of this action as a short string
      */
@@ -140,8 +141,8 @@ public abstract class Action {
     }
 
     /**
-     * The <code>newOption()</code> is used by subclasses to easily create new options for this action. This particular
-     * method creates an interval option.
+     * The <code>newOption()</code> is used by subclasses to easily create new options for this action. This
+     * particular method creates an interval option.
      *
      * @param name the name of the option
      * @param l    the default low value of the option

@@ -44,8 +44,8 @@ import avrora.util.Verbose;
 import avrora.Avrora;
 
 /**
- * The <code>Simulator</code> class implements a full processor simulator for the AVR instruction set. It is the base
- * class of specific implementations that implement processor-specific behavior.
+ * The <code>Simulator</code> class implements a full processor simulator for the AVR instruction set. It is
+ * the base class of specific implementations that implement processor-specific behavior.
  *
  * @author Ben L. Titzer
  * @see Program
@@ -82,8 +82,8 @@ public abstract class Simulator implements IORegisterConstants {
     Simulator.Printer interruptPrinter = getPrinter("sim.interrupt");
 
     /**
-     * The <code>TRACEPROBE</code> field represents a simple probe that prints an instruction to the terminal as it is
-     * encountered. This is useful for tracing program execution over simulation.
+     * The <code>TRACEPROBE</code> field represents a simple probe that prints an instruction to the terminal
+     * as it is encountered. This is useful for tracing program execution over simulation.
      */
     public final Probe TRACEPROBE = new Probe() {
         public void fireBefore(Instr i, int pc, State s) {
@@ -100,8 +100,8 @@ public abstract class Simulator implements IORegisterConstants {
     };
 
     /**
-     * The <code>program</code> field allows descendants of the <code>Simulator</code> class to access the program that
-     * is currently loaded in the simulator.
+     * The <code>program</code> field allows descendants of the <code>Simulator</code> class to access the
+     * program that is currently loaded in the simulator.
      */
     protected final Program program;
 
@@ -116,14 +116,14 @@ public abstract class Simulator implements IORegisterConstants {
     protected BaseInterpreter interpreter;
 
     /**
-     * The <code>interrupts</code> array stores a reference to an <code>Interrupt</code> instance for each of the
-     * interrupt vectors supported in the simulator.
+     * The <code>interrupts</code> array stores a reference to an <code>Interrupt</code> instance for each of
+     * the interrupt vectors supported in the simulator.
      */
     protected Interrupt[] interrupts;
 
     /**
-     * The <code>clock</code> field stores a reference to the <code>MainClock</code> instance that tracks the clock
-     * cycles that have passed for this simulator.
+     * The <code>clock</code> field stores a reference to the <code>MainClock</code> instance that tracks the
+     * clock cycles that have passed for this simulator.
      */
     protected MainClock clock;
 
@@ -138,10 +138,10 @@ public abstract class Simulator implements IORegisterConstants {
     private EnergyControl energyControl;
 
     /**
-     * The constructor creates the internal data structures and initial state of the processor. It constructs an
-     * instance of the simulator that is ready to have devices attached, IO registers probed, and probes and events
-     * inserted. Users should not create <code>Simulator</code> instances directly, but instead should get an instance
-     * of the appropriate processor and load the program into it.
+     * The constructor creates the internal data structures and initial state of the processor. It constructs
+     * an instance of the simulator that is ready to have devices attached, IO registers probed, and probes
+     * and events inserted. Users should not create <code>Simulator</code> instances directly, but instead
+     * should get an instance of the appropriate processor and load the program into it.
      *
      * @param p the program to load into the simulator
      */
@@ -163,11 +163,12 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>Simulator.Probe</code> interface represents a programmer-defined probe that can be inserted at a
-     * particular instruction in the program. or at every instruction. Probes can be usedfor profiling, analysis, or
-     * program understanding. The <code>fireBefore()</code> and <code>fireAfter()</code> methods are called before and
-     * after the target instruction executes in simulation. Probes can also be inserted in the "main loop" of the
-     * interpreter, so that the probe fires before and after every instruction executed.
+     * The <code>Simulator.Probe</code> interface represents a programmer-defined probe that can be inserted
+     * at a particular instruction in the program. or at every instruction. Probes can be usedfor profiling,
+     * analysis, or program understanding. The <code>fireBefore()</code> and <code>fireAfter()</code> methods
+     * are called before and after the target instruction executes in simulation. Probes can also be inserted
+     * in the "main loop" of the interpreter, so that the probe fires before and after every instruction
+     * executed.
      *
      * @author Ben L. Titzer
      */
@@ -193,20 +194,21 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>Simulator.Event</code> interface represents an event that is fired when a timed event occurs within the
-     * simulator. Users of the simulator can insert timed events that model environmental factors, implement timeouts,
-     * timers, or any other type of functionality that is simulation-time dependent.
+     * The <code>Simulator.Event</code> interface represents an event that is fired when a timed event occurs
+     * within the simulator. Users of the simulator can insert timed events that model environmental factors,
+     * implement timeouts, timers, or any other type of functionality that is simulation-time dependent.
      */
     public interface Event {
         /**
-         * The <code>fire()</code> method is called when the event to which it is tied happens with in the simulator.
+         * The <code>fire()</code> method is called when the event to which it is tied happens with in the
+         * simulator.
          */
         public void fire();
     }
 
     /**
-     * The <code>MemoryProbe</code> interface represents a user probe that is fired when a watchpoint detects an access
-     * to an address where this memory probe has been inserted.
+     * The <code>MemoryProbe</code> interface represents a user probe that is fired when a watchpoint detects
+     * an access to an address where this memory probe has been inserted.
      */
     public interface Watch {
 
@@ -222,7 +224,8 @@ public abstract class Simulator implements IORegisterConstants {
         public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value);
 
         /**
-         * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
+         * The <code>fireBeforeWrite()</code> method is called before the data address is written by the
+         * program.
          *
          * @param i         the instruction being probed
          * @param address   the address at which this instruction resides
@@ -244,7 +247,8 @@ public abstract class Simulator implements IORegisterConstants {
         public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value);
 
         /**
-         * The <code>fireAfterWrite()</code> method is called after the data address is written by the program.
+         * The <code>fireAfterWrite()</code> method is called after the data address is written by the
+         * program.
          *
          * @param i         the instruction being probed
          * @param address   the address at which this instruction resides
@@ -256,11 +260,11 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>BreakPointException</code> is an exception that is thrown by the simulator before it executes an
-     * instruction which has a breakpoint. When this exception is thrown within the simulator, the simulator is left in
-     * a state where it is ready to be resumed where it left off by the <code>start()</code> method. When resuming, the
-     * breakpointed instruction will not cause a second <code>BreakPointException</code> until the the instruction is
-     * executed a second time.
+     * The <code>BreakPointException</code> is an exception that is thrown by the simulator before it executes
+     * an instruction which has a breakpoint. When this exception is thrown within the simulator, the
+     * simulator is left in a state where it is ready to be resumed where it left off by the
+     * <code>start()</code> method. When resuming, the breakpointed instruction will not cause a second
+     * <code>BreakPointException</code> until the the instruction is executed a second time.
      *
      * @author Ben L. Titzer
      */
@@ -276,8 +280,8 @@ public abstract class Simulator implements IORegisterConstants {
         public final int address;
 
         /**
-         * The <code>state</code> field stores a reference to the state of the simulator when the breakpoint occurred,
-         * before executing the instruction.
+         * The <code>state</code> field stores a reference to the state of the simulator when the breakpoint
+         * occurred, before executing the instruction.
          */
         public final State state;
 
@@ -290,9 +294,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>TimeoutException</code> is thrown by the simulator when a timeout reaches zero. Timeouts can be used to
-     * ensure termination of the simulator during testing, and implementing timestepping in surrounding tools such as
-     * interactive debuggers or visualizers.
+     * The <code>TimeoutException</code> is thrown by the simulator when a timeout reaches zero. Timeouts can
+     * be used to ensure termination of the simulator during testing, and implementing timestepping in
+     * surrounding tools such as interactive debuggers or visualizers.
      * <p/>
      * When the exception is thrown, the simulator is left in a state that is safe to be resumed by a
      * <code>start()</code> call.
@@ -307,12 +311,14 @@ public abstract class Simulator implements IORegisterConstants {
         public final Instr instr;
 
         /**
-         * The <code>address</code> field stores the address of the next instruction to be executed after the timeout.
+         * The <code>address</code> field stores the address of the next instruction to be executed after the
+         * timeout.
          */
         public final int address;
 
         /**
-         * The <code>state</code> field stores the state of the simulation at the point at which the timeout occurred.
+         * The <code>state</code> field stores the state of the simulation at the point at which the timeout
+         * occurred.
          */
         public final State state;
 
@@ -332,36 +338,37 @@ public abstract class Simulator implements IORegisterConstants {
 
 
     /**
-     * The <code>Interrupt</code> interface represents the behavior of an interrupt (how it manipulates the state of the
-     * processor) when it is posted and when it is triggered (handler is executed by the processor). For example, an
-     * external interrupt, when posted, sets a bit in an IO register, and if the interrupt is not masked, will add it to
-     * the pending interrupts on the processor. When the interrupt head, it remains flagged (the bit in the IO register
-     * remains on). Some interrupts clear bits in IO registers on triggered (e.g. timer interrupts). This interface
-     * allows both of these behaviors to be implemented.
+     * The <code>Interrupt</code> interface represents the behavior of an interrupt (how it manipulates the
+     * state of the processor) when it is posted and when it is triggered (handler is executed by the
+     * processor). For example, an external interrupt, when posted, sets a bit in an IO register, and if the
+     * interrupt is not masked, will add it to the pending interrupts on the processor. When the interrupt
+     * head, it remains flagged (the bit in the IO register remains on). Some interrupts clear bits in IO
+     * registers on triggered (e.g. timer interrupts). This interface allows both of these behaviors to be
+     * implemented.
      *
      * @author Ben L. Titzer
      */
     public interface Interrupt {
         /**
-         * The <code>force()</code> method is called by the simulator when an interrupt is being forced by an outside
-         * source (i.e. not of the simulation). For example, when stress testing a program by bombarding it with
-         * interrupts, this method would be used.
+         * The <code>force()</code> method is called by the simulator when an interrupt is being forced by an
+         * outside source (i.e. not of the simulation). For example, when stress testing a program by
+         * bombarding it with interrupts, this method would be used.
          */
         public void force();
 
         /**
-         * The <code>fire()</code> method is called by the simulator when the interrupt is about to be processed (i.e.
-         * it has been posted, and is not masked). This method is called just before control is transferred to the
-         * interrupt handler.
+         * The <code>fire()</code> method is called by the simulator when the interrupt is about to be
+         * processed (i.e. it has been posted, and is not masked). This method is called just before control
+         * is transferred to the interrupt handler.
          */
         public void fire();
     }
 
 
     /**
-     * The <code>IGNORE</code> field stores a reference to a singleton anonymous class that ignores posting and firing
-     * of an interrupt. This is the default value for interrupts in a freshly initialized <code>Simulator</code>
-     * instance.
+     * The <code>IGNORE</code> field stores a reference to a singleton anonymous class that ignores posting
+     * and firing of an interrupt. This is the default value for interrupts in a freshly initialized
+     * <code>Simulator</code> instance.
      */
     public static final Interrupt IGNORE = new Interrupt() {
         public void force() {
@@ -381,7 +388,8 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>getProgram()</code> method gets a reference to the program that has been loaded onto this simulator.
+     * The <code>getProgram()</code> method gets a reference to the program that has been loaded onto this
+     * simulator.
      *
      * @return a reference to the <code>Program</code> instance representing the program loaded onto this
      *         <code>Simulator</code> object
@@ -403,8 +411,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>getState()</code> retrieves a reference to the current state of the simulation, including the values of
-     * all registers, the SRAM, the IO register, the program memory, program counter, etc. This state is mutable.
+     * The <code>getState()</code> retrieves a reference to the current state of the simulation, including the
+     * values of all registers, the SRAM, the IO register, the program memory, program counter, etc. This
+     * state is mutable.
      *
      * @return a reference to the current state of the simulation
      */
@@ -413,26 +422,27 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>start()</code> method begins the simulation. It causes the simulator to enter a runLoop that executes
-     * instructions, firing probes and events as it executes. The <code>start()</code> method returns normally when the
-     * </code>break</code> AVR instruction is executed, when a <code>BreakPointException</code> is thrown, when a <code>
-     * TimeoutException</code> is thrown, or when the <code>stop()</code> method on this simulator instance is called.
+     * The <code>start()</code> method begins the simulation. It causes the simulator to enter a runLoop that
+     * executes instructions, firing probes and events as it executes. The <code>start()</code> method returns
+     * normally when the </code>break</code> AVR instruction is executed, when a
+     * <code>BreakPointException</code> is thrown, when a <code> TimeoutException</code> is thrown, or when
+     * the <code>stop()</code> method on this simulator instance is called.
      */
     public void start() {
         interpreter.start();
     }
 
     /**
-     * The <code>stop()</code> method stops the simulation if it is running. This method can be called from within a
-     * probe or event or from another thread.
+     * The <code>stop()</code> method stops the simulation if it is running. This method can be called from
+     * within a probe or event or from another thread.
      */
     public void stop() {
         interpreter.stop();
     }
 
     /**
-     * The <code>reset()</code> method stops the simulation and resets its state to the default initial state. Probes
-     * inserted in the program are retained. All events are removed.
+     * The <code>reset()</code> method stops the simulation and resets its state to the default initial state.
+     * Probes inserted in the program are retained. All events are removed.
      */
     public void reset() {
         clock = new MainClock("MAIN", microcontroller.getHz());
@@ -443,21 +453,22 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>getInterruptVectorAddress()</code> method computes the location in memory to jump to for the given
-     * interrupt number. On the Atmega128L, the starting point is the beginning of memory and each interrupt vector slot
-     * is 4 bytes. On older architectures, this is not the case, therefore this method has to be implemented according
-     * to the specific device being simulated.
+     * The <code>getInterruptVectorAddress()</code> method computes the location in memory to jump to for the
+     * given interrupt number. On the Atmega128L, the starting point is the beginning of memory and each
+     * interrupt vector slot is 4 bytes. On older architectures, this is not the case, therefore this method
+     * has to be implemented according to the specific device being simulated.
      *
      * @param inum the interrupt number
-     * @return the byte address that represents the address in the program to jump to when this interrupt is fired
+     * @return the byte address that represents the address in the program to jump to when this interrupt is
+     *         fired
      */
     protected int getInterruptVectorAddress(int inum) {
         return (inum - 1) * 4;
     }
 
     /**
-     * The <code>insertProbe()</code> method allows a probe to be inserted that is executed before and after every
-     * instruction that is executed by the simulator
+     * The <code>insertProbe()</code> method allows a probe to be inserted that is executed before and after
+     * every instruction that is executed by the simulator
      *
      * @param p the probe to insert
      */
@@ -466,8 +477,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertProbe()</code> method allows a probe to be inserted at a particular address in the program that
-     * corresponds to an instruction. The probe is then fired before and after that particular instruction is executed.
+     * The <code>insertProbe()</code> method allows a probe to be inserted at a particular address in the
+     * program that corresponds to an instruction. The probe is then fired before and after that particular
+     * instruction is executed.
      *
      * @param p    the probe to insert
      * @param addr the address at which to insert the probe
@@ -477,8 +489,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>removeProbe()</code> method removes a probe from the global probe table (the probes executed before and
-     * after every instruction). The comparison used is reference equality, not <code>.equals()</code>.
+     * The <code>removeProbe()</code> method removes a probe from the global probe table (the probes executed
+     * before and after every instruction). The comparison used is reference equality, not
+     * <code>.equals()</code>.
      *
      * @param b the probe to remove
      */
@@ -487,8 +500,8 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>removeProbe()</code> method removes a probe from the instruction at the specified the address. The
-     * comparison used is reference equality, not <code>.equals()</code>.
+     * The <code>removeProbe()</code> method removes a probe from the instruction at the specified the
+     * address. The comparison used is reference equality, not <code>.equals()</code>.
      *
      * @param p    the probe to remove
      * @param addr the address from which to remove the probe
@@ -498,9 +511,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertBreakPoint()</code> method inserts a breakpoint at the instruction at the specified address. At
-     * most one breakpoint can be inserted at a particular instruction. Subsequent calls to this method would then have
-     * no effect for the same address.
+     * The <code>insertBreakPoint()</code> method inserts a breakpoint at the instruction at the specified
+     * address. At most one breakpoint can be inserted at a particular instruction. Subsequent calls to this
+     * method would then have no effect for the same address.
      *
      * @param addr
      */
@@ -509,8 +522,8 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>removeBreakPoint</code> method removes all breakpoints at the specified instruction at the specified
-     * address.
+     * The <code>removeBreakPoint</code> method removes all breakpoints at the specified instruction at the
+     * specified address.
      *
      * @param addr
      */
@@ -519,8 +532,8 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertWatch()</code> method allows a watch to be inserted at a memory location. The probe will be
-     * executed before every read or write to that memory location.
+     * The <code>insertWatch()</code> method allows a watch to be inserted at a memory location. The probe
+     * will be executed before every read or write to that memory location.
      *
      * @param p         the probe to insert
      * @param data_addr the data address at which to insert the probe
@@ -530,8 +543,8 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>removeWatch()</code> method removes a given watch from the memory location. Reference equality is used
-     * to check for equality when removing probes, not <code>.equals()</code>.
+     * The <code>removeWatch()</code> method removes a given watch from the memory location. Reference
+     * equality is used to check for equality when removing probes, not <code>.equals()</code>.
      *
      * @param p         the probe to remove
      * @param data_addr the data address from which to remove the probe
@@ -541,12 +554,13 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>forceInterrupt()</code> method forces the simulator to post the specified interrupt regardless of the
-     * normal source of the interrupt. If there is a flag register associated with the specified interrupt, then the
-     * flag register's value will be set as if the original source of the interrupt (e.g. a timer) had posted the
-     * interrupt. As with a normal post of the interrupt, if the interrupt is masked out via a mask register or the
-     * master interrupt enable bit, the interrupt will not be delivered. The main reason that this interface exists is
-     * for forcing programs to handle interrupts and observe their behavior.
+     * The <code>forceInterrupt()</code> method forces the simulator to post the specified interrupt
+     * regardless of the normal source of the interrupt. If there is a flag register associated with the
+     * specified interrupt, then the flag register's value will be set as if the original source of the
+     * interrupt (e.g. a timer) had posted the interrupt. As with a normal post of the interrupt, if the
+     * interrupt is masked out via a mask register or the master interrupt enable bit, the interrupt will not
+     * be delivered. The main reason that this interface exists is for forcing programs to handle interrupts
+     * and observe their behavior.
      *
      * @param num the interrupt number to force
      */
@@ -557,9 +571,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>triggerInterrupt()</code> method is used by device implementations when they detect that an interrupt
-     * should be triggered. This method will check whether this interrupt is enabled by consulting its own internal
-     * table of interrupts that is kept consistent during writes to IO registers.
+     * The <code>triggerInterrupt()</code> method is used by device implementations when they detect that an
+     * interrupt should be triggered. This method will check whether this interrupt is enabled by consulting
+     * its own internal table of interrupts that is kept consistent during writes to IO registers.
      *
      * @param num the number of the interrupt to trigger
      */
@@ -570,8 +584,8 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertEvent()</code> method inserts an event into the event queue of the simulator with the specified
-     * delay in clock cycles. The event will then be executed at the future time specified
+     * The <code>insertEvent()</code> method inserts an event into the event queue of the simulator with the
+     * specified delay in clock cycles. The event will then be executed at the future time specified
      *
      * @param e      the event to be inserted
      * @param cycles the number of cycles in the future at which to fire
@@ -583,9 +597,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertTimeout()</code> method inserts an event into the event queue of the simulator that causes it to
-     * stop execution and throw a <code>Simulator.TimeoutException</code> when the specified number of clock cycles have
-     * expired.
+     * The <code>insertTimeout()</code> method inserts an event into the event queue of the simulator that
+     * causes it to stop execution and throw a <code>Simulator.TimeoutException</code> when the specified
+     * number of clock cycles have expired.
      *
      * @param cycles the number of cycles to run before timing out
      */
@@ -594,9 +608,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertPeriodicEvent()</code> method inserts an event into the event queue of the simulator with the
-     * specified period. The <code> PeriodicEvent</code> instance created will continually reinsert the event after each
-     * firing to achieve predictable periodic behavior.
+     * The <code>insertPeriodicEvent()</code> method inserts an event into the event queue of the simulator
+     * with the specified period. The <code> PeriodicEvent</code> instance created will continually reinsert
+     * the event after each firing to achieve predictable periodic behavior.
      *
      * @param e      the event to insert
      * @param period the period in clock cycles
@@ -611,8 +625,8 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>removeEvent()</code> method removes an event from the event queue of the simulator. The comparison used
-     * is reference equality, not <code>.equals()</code>.
+     * The <code>removeEvent()</code> method removes an event from the event queue of the simulator. The
+     * comparison used is reference equality, not <code>.equals()</code>.
      *
      * @param e the event to remove
      */
@@ -623,9 +637,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>delay()</code> method introduces a delay in the execution of the instructions of the program. This is
-     * used by some devices for correct timing behavior. For example, the EEPROM, when written, causes a small delay in
-     * which no instructions are executed.
+     * The <code>delay()</code> method introduces a delay in the execution of the instructions of the program.
+     * This is used by some devices for correct timing behavior. For example, the EEPROM, when written, causes
+     * a small delay in which no instructions are executed.
      *
      * @param cycles the number of cycles to delay the simulation
      */
@@ -640,7 +654,8 @@ public abstract class Simulator implements IORegisterConstants {
     /**
      * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws a
      * <code>TimeoutException</code> when the count reaches zero. It is useful for ensuring termination of the
-     * simulator, for performance testing, or for profiling and stopping after a specified number of invocations.
+     * simulator, for performance testing, or for profiling and stopping after a specified number of
+     * invocations.
      *
      * @author Ben L. Titzer
      */
@@ -659,8 +674,8 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         /**
-         * The <code>fireBefore()</code> method is called before the probed instruction executes. In the implementation
-         * of the timeout, it does nothing.
+         * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
+         * implementation of the timeout, it does nothing.
          *
          * @param i       the instruction being probed
          * @param address the address at which this instruction resides
@@ -671,8 +686,9 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         /**
-         * The <code>fireAfter()</code> method is called after the probed instruction executes. In the implementation of
-         * the timeout, it simply decrements the timeout and and throws a TimeoutException when the count reaches zero.
+         * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
+         * implementation of the timeout, it simply decrements the timeout and and throws a TimeoutException
+         * when the count reaches zero.
          *
          * @param i       the instruction being probed
          * @param address the address at which this instruction resides
@@ -685,9 +701,9 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws an exception when
-     * the count reaches zero. It is useful for ensuring termination of the simulator, for performance testing, or for
-     * profiling and stopping after a specified number of invocations.
+     * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws an
+     * exception when the count reaches zero. It is useful for ensuring termination of the simulator, for
+     * performance testing, or for profiling and stopping after a specified number of invocations.
      *
      * @author Ben L. Titzer
      */
@@ -695,8 +711,8 @@ public abstract class Simulator implements IORegisterConstants {
         public final long timeout;
 
         /**
-         * The constructor for <code>InstructionCountTimeout</code> creates a timeout event with the specified initial
-         * value.
+         * The constructor for <code>InstructionCountTimeout</code> creates a timeout event with the specified
+         * initial value.
          *
          * @param t the number of cycles in the future
          */
@@ -705,9 +721,10 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         /**
-         * The <code>fire()</code> method is called when the timeout is up. It gathers the state from the simulator and
-         * throws an instance of <code>Simulator.TimeoutException</code> that signals that the timeout has been reached.
-         * This exception then falls through the <code>run()</code> method of the caller of the simulator.
+         * The <code>fire()</code> method is called when the timeout is up. It gathers the state from the
+         * simulator and throws an instance of <code>Simulator.TimeoutException</code> that signals that the
+         * timeout has been reached. This exception then falls through the <code>run()</code> method of the
+         * caller of the simulator.
          */
         public void fire() {
             int pc = interpreter.getPC();

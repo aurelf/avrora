@@ -39,29 +39,29 @@ import avrora.sim.State;
 import avrora.util.StringUtil;
 
 /**
- * The <code>MemoryMatrixProfiler</code> class collects information about a program's usage of memory. For each
- * instruction in the program, it tracks the memory locations read and written by that instruction. For example, a load
- * instruction that uses an address in a register might load bytes from various locations in the data memory. This class
- * maintains two internal two-dimensional matrices, one for read counts and one for write counts. The matrices are
- * indexed by code address and data address.
+ * The <code>MemoryMatrixProfiler</code> class collects information about a program's usage of memory. For
+ * each instruction in the program, it tracks the memory locations read and written by that instruction. For
+ * example, a load instruction that uses an address in a register might load bytes from various locations in
+ * the data memory. This class maintains two internal two-dimensional matrices, one for read counts and one
+ * for write counts. The matrices are indexed by code address and data address.
  *
  * @author Ben L. Titzer
  */
 public class MemoryMatrixProfiler {
 
     /**
-     * The <code>rcount</code> field stores a two dimensional array that records the read count for each memory location
-     * for each instruction. It is indexed by program address, and then by data address. This matrix is row-sparse in
-     * that rows of all zero (e.g. a non-memory instruction) are not stored. To access this matrix, use the
-     * <code>getReadCount()</code> method.
+     * The <code>rcount</code> field stores a two dimensional array that records the read count for each
+     * memory location for each instruction. It is indexed by program address, and then by data address. This
+     * matrix is row-sparse in that rows of all zero (e.g. a non-memory instruction) are not stored. To access
+     * this matrix, use the <code>getReadCount()</code> method.
      */
     public final long rcount[][];
 
     /**
-     * The <code>rcount</code> field stores a two dimensional array that records the write count for each memory
-     * location for each instruction. It is indexed by program address, and then by data address. This matrix is
-     * row-sparse in that rows of all zero (e.g. a non-memory instruction) are not stored. To access this matrix, use
-     * the <code>getWriteCount()</code> method.
+     * The <code>rcount</code> field stores a two dimensional array that records the write count for each
+     * memory location for each instruction. It is indexed by program address, and then by data address. This
+     * matrix is row-sparse in that rows of all zero (e.g. a non-memory instruction) are not stored. To access
+     * this matrix, use the <code>getWriteCount()</code> method.
      */
     public final long wcount[][];
 
@@ -71,8 +71,8 @@ public class MemoryMatrixProfiler {
     public final int ramSize;
 
     /**
-     * The constructor for the <code>MemoryMatrixProfiler</code> class creates a new memory probe that can be inserted
-     * into the simulator to record the full memory access statistics of the program.
+     * The constructor for the <code>MemoryMatrixProfiler</code> class creates a new memory probe that can be
+     * inserted into the simulator to record the full memory access statistics of the program.
      *
      * @param p    the program to record statistics for
      * @param size the size of the RAM in bytes
@@ -84,9 +84,9 @@ public class MemoryMatrixProfiler {
     }
 
     /**
-     * The <code>fireBeforeRead()</code> method is called before the data address is read by the program. In the
-     * implementation of <code>MemoryMatrixProfiler</code>, it simply increments the count of reads at the address of
-     * the instruction and memory location by one.
+     * The <code>fireBeforeRead()</code> method is called before the data address is read by the program. In
+     * the implementation of <code>MemoryMatrixProfiler</code>, it simply increments the count of reads at the
+     * address of the instruction and memory location by one.
      *
      * @param i         the instruction being probed
      * @param address   the address at which this instruction resides
@@ -102,9 +102,9 @@ public class MemoryMatrixProfiler {
     }
 
     /**
-     * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program. In the
-     * implementation of <code>MemoryMatrixProfiler</code>, it simply increments the count of writes at the address of
-     * the instruction and memory location by one.
+     * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
+     * In the implementation of <code>MemoryMatrixProfiler</code>, it simply increments the count of writes at
+     * the address of the instruction and memory location by one.
      *
      * @param i         the instruction being probed
      * @param address   the address at which this instruction resides
@@ -134,8 +134,8 @@ public class MemoryMatrixProfiler {
     }
 
     /**
-     * The <code>fireAfterWrite()</code> method is called after the data address is written by the program. In the
-     * implementation of <code>MemoryMatrixProfiler</code>, it does nothing.
+     * The <code>fireAfterWrite()</code> method is called after the data address is written by the program. In
+     * the implementation of <code>MemoryMatrixProfiler</code>, it does nothing.
      *
      * @param i         the instruction being probed
      * @param address   the address at which this instruction resides
@@ -148,8 +148,8 @@ public class MemoryMatrixProfiler {
     }
 
     /**
-     * The <code>getReadCount()</code> method returns the number of times the specified instruction read the specified
-     * memory address.
+     * The <code>getReadCount()</code> method returns the number of times the specified instruction read the
+     * specified memory address.
      *
      * @param address   the program address of the instruction
      * @param data_addr the address of the byte of memory
@@ -160,8 +160,8 @@ public class MemoryMatrixProfiler {
     }
 
     /**
-     * The <code>getWriteCount()</code> method returns the number of times the specified instruction wrote the specified
-     * memory address.
+     * The <code>getWriteCount()</code> method returns the number of times the specified instruction wrote the
+     * specified memory address.
      *
      * @param address   the program address of the instruction
      * @param data_addr the address of the byte of memory

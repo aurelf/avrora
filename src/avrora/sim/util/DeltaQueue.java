@@ -35,37 +35,38 @@ package avrora.sim.util;
 import avrora.sim.Simulator;
 
 /**
- * The <code>DeltaQueue</code> class implements an amortized constant time delta-queue for processing of scheduled
- * events. Events are put into the queue that will fire at a given number of cycles in the future. An internal delta
- * list is maintained where each link in the list represents a set of events to be fired some number of clock cycles
- * after the previous link.
+ * The <code>DeltaQueue</code> class implements an amortized constant time delta-queue for processing of
+ * scheduled events. Events are put into the queue that will fire at a given number of cycles in the future.
+ * An internal delta list is maintained where each link in the list represents a set of events to be fired
+ * some number of clock cycles after the previous link.
  * <p/>
- * Each delta between links is maintained to be non-zero. Thus, to insert an event X cycles in the future, at most X
- * nodes will be skipped over. Therefore, when the list is advanced over X time steps, this cost is amortized to be
- * constant.
+ * Each delta between links is maintained to be non-zero. Thus, to insert an event X cycles in the future, at
+ * most X nodes will be skipped over. Therefore, when the list is advanced over X time steps, this cost is
+ * amortized to be constant.
  * <p/>
- * For each clock cycle, only the first node in the list must be checked, leading to constant time work per clock
- * cycle.
+ * For each clock cycle, only the first node in the list must be checked, leading to constant time work per
+ * clock cycle.
  * <p/>
  * This class allows the clock to be advanced multiple ticks at a time.
  * <p/>
- * Also, since this class is used heavily in the simulator, its performance is important and maintains an internal cache
- * of objects. Thus, it does not create garbage over its execution and never uses more space than is required to store
- * the maximum encountered simultaneous events. It does not use standard libraries, casts, virtual dispatch, etc.
+ * Also, since this class is used heavily in the simulator, its performance is important and maintains an
+ * internal cache of objects. Thus, it does not create garbage over its execution and never uses more space
+ * than is required to store the maximum encountered simultaneous events. It does not use standard libraries,
+ * casts, virtual dispatch, etc.
  */
 public class DeltaQueue {
 
     /**
-     * The <code>EventList</code> class represents a link in the list of events for a given <code>Link</code> in the
-     * delta queue chain.
+     * The <code>EventList</code> class represents a link in the list of events for a given <code>Link</code>
+     * in the delta queue chain.
      */
     private static class EventList {
         Simulator.Event event;
         EventList next;
 
         /**
-         * The constructor for the <code>EventList</code> class simply initializes the internal references to the event
-         * and the next link in the chain based on the parameters passed.
+         * The constructor for the <code>EventList</code> class simply initializes the internal references to
+         * the event and the next link in the chain based on the parameters passed.
          *
          * @param t a reference the event
          * @param n the next link in the chain
@@ -78,8 +79,8 @@ public class DeltaQueue {
     }
 
     /**
-     * The <code>Link</code> class represents a link in the list of delta queue items that are being stored. It contains
-     * a list of events that share the same delta.
+     * The <code>Link</code> class represents a link in the list of delta queue items that are being stored.
+     * It contains a list of events that share the same delta.
      */
     private class Link {
         EventList events;
@@ -126,26 +127,26 @@ public class DeltaQueue {
     }
 
     /**
-     * The <code>head</code> field stores a reference to the head of the delta queue, which represents the event that is
-     * nearest in the future.
+     * The <code>head</code> field stores a reference to the head of the delta queue, which represents the
+     * event that is nearest in the future.
      */
     protected Link head;
 
     /**
-     * The <code>freeLinks</code> field stores a reference to any free links that have become unused during the
-     * processing of events. A free list is used to prevent garbage from accumulating.
+     * The <code>freeLinks</code> field stores a reference to any free links that have become unused during
+     * the processing of events. A free list is used to prevent garbage from accumulating.
      */
     protected Link freeLinks;
 
     /**
-     * The <code>freeEventLists</code> field stores a reference to any free event links that have become unused during
-     * the processing of events. A free list is used to prevent garbage from accumulating.
+     * The <code>freeEventLists</code> field stores a reference to any free event links that have become
+     * unused during the processing of events. A free list is used to prevent garbage from accumulating.
      */
     protected EventList freeEventLists;
 
     /**
-     * The <code>count</code> field stores the total number of cycles that this queue has been advanced, i.e. the sum of
-     * all <code>advance()</code> calls.
+     * The <code>count</code> field stores the total number of cycles that this queue has been advanced, i.e.
+     * the sum of all <code>advance()</code> calls.
      */
     protected long count;
 
@@ -227,8 +228,8 @@ public class DeltaQueue {
     }
 
     /**
-     * The <code>advance</code> method advances timesteps through the queue by the specified number of clock cycles,
-     * processing any events.
+     * The <code>advance</code> method advances timesteps through the queue by the specified number of clock
+     * cycles, processing any events.
      *
      * @param cycles the number of clock cycles to advance
      */
@@ -261,7 +262,8 @@ public class DeltaQueue {
     }
 
     /**
-     * The <code>getHeadDelta()</code> method gets the number of clock cycles until the first event will fire.
+     * The <code>getHeadDelta()</code> method gets the number of clock cycles until the first event will
+     * fire.
      *
      * @return the number of clock cycles until the first event will fire
      */
@@ -271,8 +273,8 @@ public class DeltaQueue {
     }
 
     /**
-     * The <code>getCount()</code> gets the total cumulative count of all the <code>advance()</code> calls on this delta
-     * queue.
+     * The <code>getCount()</code> gets the total cumulative count of all the <code>advance()</code> calls on
+     * this delta queue.
      *
      * @return the total number of cycles this queue has been advanced
      */

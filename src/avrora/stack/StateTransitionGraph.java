@@ -67,8 +67,9 @@ public class StateTransitionGraph {
     }
 
     /**
-     * The <code>Edge</code> inner class represents a bidirectional edge between two states. It is contained on two
-     * linked lists: the forward edge list of the source node and the backward edge list of the target node.
+     * The <code>Edge</code> inner class represents a bidirectional edge between two states. It is contained
+     * on two linked lists: the forward edge list of the source node and the backward edge list of the target
+     * node.
      */
     public static class Edge {
         public final StateCache.State source;
@@ -89,9 +90,9 @@ public class StateTransitionGraph {
     }
 
     /**
-     * The <code>StateInfo</code> class is a representation of both the forward and backward edge list corresponding to
-     * a node in the state transition graph. It also stores a cache of reachable return states (based on backwards
-     * reachability search).
+     * The <code>StateInfo</code> class is a representation of both the forward and backward edge list
+     * corresponding to a node in the state transition graph. It also stores a cache of reachable return
+     * states (based on backwards reachability search).
      */
     public static class StateInfo {
         public final StateCache.State state;
@@ -118,8 +119,8 @@ public class StateTransitionGraph {
     private StateList frontierList;
 
     /**
-     * The <code>cache</code> field stores a cache of all states; it guarantees that object equality for states implies
-     * reference equality and vice versa.
+     * The <code>cache</code> field stores a cache of all states; it guarantees that object equality for
+     * states implies reference equality and vice versa.
      */
     private StateCache cache;
 
@@ -130,8 +131,9 @@ public class StateTransitionGraph {
     private final StateCache.State edenState;
 
     /**
-     * The constructor for the <code>StateTransitionGraph</code> class constructs a new state transition graph, with a
-     * state cache. The program passed is used as an approximation of the possible size of the state space.
+     * The constructor for the <code>StateTransitionGraph</code> class constructs a new state transition
+     * graph, with a state cache. The program passed is used as an approximation of the possible size of the
+     * state space.
      *
      * @param p the program to create a state transition graph for.
      */
@@ -144,8 +146,8 @@ public class StateTransitionGraph {
 
 
     /**
-     * The <code>getCachedState()</code> method looks for the a cached, immutable state that corresponds to the given
-     * mutable state. If there is no cached state yet, it will create and return a new one.
+     * The <code>getCachedState()</code> method looks for the a cached, immutable state that corresponds to
+     * the given mutable state. If there is no cached state yet, it will create and return a new one.
      *
      * @param s the mutable state to look for
      * @return an instance of the <code>StateCache.State</code> class
@@ -157,8 +159,8 @@ public class StateTransitionGraph {
     }
 
     /**
-     * The <code>addEdge()</code> method adds an edge between two states in the state transition graph. The edge has a
-     * type and a weight.
+     * The <code>addEdge()</code> method adds an edge between two states in the state transition graph. The
+     * edge has a type and a weight.
      *
      * @param s      the source node of the edge
      * @param type   the type of the edge as an integer
@@ -175,9 +177,9 @@ public class StateTransitionGraph {
     }
 
     /**
-     * The <code>getNextFrontierState()</code> chooses a state off of the state frontier, removes it from the state
-     * frontier, and returns it. If there are no states left on the state frontier, this method returns null. Note that
-     * initially only the eden state is on the frontier.
+     * The <code>getNextFrontierState()</code> chooses a state off of the state frontier, removes it from the
+     * state frontier, and returns it. If there are no states left on the state frontier, this method returns
+     * null. Note that initially only the eden state is on the frontier.
      *
      * @return one of the states on the current state frontier; null if there are none.
      */
@@ -222,9 +224,9 @@ public class StateTransitionGraph {
     }
 
     /**
-     * The <code>setExplored()</code> method marks the given state as having been explored. A state cannot both be
-     * explored and be on the frontier; thus this method will throw a fatal error if the given state is marked as on the
-     * frontier.
+     * The <code>setExplored()</code> method marks the given state as having been explored. A state cannot
+     * both be explored and be on the frontier; thus this method will throw a fatal error if the given state
+     * is marked as on the frontier.
      *
      * @param s the state to mark as explored
      */
@@ -239,8 +241,8 @@ public class StateTransitionGraph {
     }
 
     /**
-     * The <code>isFrontier()</code> method tests whether a given state is currently in the frontier list of the state
-     * transition graph.
+     * The <code>isFrontier()</code> method tests whether a given state is currently in the frontier list of
+     * the state transition graph.
      *
      * @param s the state to test whether it is on the frontier
      * @return true if the state is currently on the frontier of the state transition graph; false otherwise

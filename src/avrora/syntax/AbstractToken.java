@@ -39,8 +39,8 @@ package avrora.syntax;
  */
 public abstract class AbstractToken {
     /**
-     * beginLine and beginColumn describe the position of the first character of this token; endLine and endColumn
-     * describe the position of the last character of this token.
+     * beginLine and beginColumn describe the position of the first character of this token; endLine and
+     * endColumn describe the position of the last character of this token.
      */
     public int beginLine, beginColumn, endLine, endColumn;
 

@@ -42,9 +42,9 @@ import avrora.util.StringUtil;
 import avrora.util.Options;
 
 /**
- * The <code>MemoryMonitor</code> class implements a monitor that collects information about how the program accesses
- * the data memory over its execution. For each RAM address it keeps an account of the number of reads and the number of
- * writes and reports that information after the program is completed.
+ * The <code>MemoryMonitor</code> class implements a monitor that collects information about how the program
+ * accesses the data memory over its execution. For each RAM address it keeps an account of the number of
+ * reads and the number of writes and reports that information after the program is completed.
  *
  * @author Ben L. Titzer
  */

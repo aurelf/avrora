@@ -33,9 +33,9 @@
 package avrora.syntax;
 
 /**
- * The <code>ProgramPoint</code> class represents a location within a program for the purposes of tracking error
- * messages and debug information. It encapsulates the module (file) contents, the line, the beginning column and ending
- * column.
+ * The <code>ProgramPoint</code> class represents a location within a program for the purposes of tracking
+ * error messages and debug information. It encapsulates the module (file) contents, the line, the beginning
+ * column and ending column.
  *
  * @author Ben L. Titzer
  */

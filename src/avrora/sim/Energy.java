@@ -38,10 +38,10 @@
 package avrora.sim;
 
 /**
- * Class for energy modeling. All consumers create an instance of this class and keep it
- * updated with all state changes concerning power consumption. This class keeps track of
- * all these state changes and cycles spend in each state. The state changes are propagated
- * to monitors based on a subscription system. This enables logging of power consumption.
+ * Class for energy modeling. All consumers create an instance of this class and keep it updated with all
+ * state changes concerning power consumption. This class keeps track of all these state changes and cycles
+ * spend in each state. The state changes are propagated to monitors based on a subscription system. This
+ * enables logging of power consumption.
  *
  * @author Olaf Landsiedel
  */

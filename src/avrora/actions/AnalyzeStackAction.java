@@ -39,8 +39,8 @@ import avrora.util.Option;
 import avrora.util.Printer;
 
 /**
- * The <code>AnalyzeStackAction</code> class is an extension of the <code>Main.Action</code> class that allows the stack
- * tool to be reached from the command line.
+ * The <code>AnalyzeStackAction</code> class is an extension of the <code>Main.Action</code> class that allows
+ * the stack tool to be reached from the command line.
  *
  * @author Ben L. Titzer
  */
@@ -76,16 +76,16 @@ public class AnalyzeStackAction extends Action {
                                                  "megabytes.");
 
     /**
-     * The default constructor of the <code>AnalyzeStackAction</code> class simply creates an empty instance with the
-     * appropriate name and help string.
+     * The default constructor of the <code>AnalyzeStackAction</code> class simply creates an empty instance
+     * with the appropriate name and help string.
      */
     public AnalyzeStackAction() {
         super("analyze-stack", HELP);
     }
 
     /**
-     * The <code>run()</code> method runs the stack analysis by loading the program from the command line options
-     * specified, creating an instance of the <code>Analyzer</code> class, and running the analysis.
+     * The <code>run()</code> method runs the stack analysis by loading the program from the command line
+     * options specified, creating an instance of the <code>Analyzer</code> class, and running the analysis.
      *
      * @param args the string arguments that are the files containing the program
      * @throws java.lang.Exception if the program cannot be loaded correctly

@@ -45,12 +45,12 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * The <code>AutomatedTester</code> is a class that is designed to be an in-program test facility. It is capable of
- * reading in test cases from files, extracting properties specified in those test cases, and then creating a test case
- * of the right form for the right system.
+ * The <code>AutomatedTester</code> is a class that is designed to be an in-program test facility. It is
+ * capable of reading in test cases from files, extracting properties specified in those test cases, and then
+ * creating a test case of the right form for the right system.
  * <p/>
- * This is done through the use of another class, the <code>TestHarness</code>, which is capable of creating instances
- * of the <code>TestCase</code> class that are collected by this framework.
+ * This is done through the use of another class, the <code>TestHarness</code>, which is capable of creating
+ * instances of the <code>TestCase</code> class that are collected by this framework.
  *
  * @author Ben L. Titzer
  * @see TestHarness
@@ -64,8 +64,8 @@ public class AutomatedTester {
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
     /**
-     * The constructor for the <code>AutomatedTester</code> class accepts an instance of <code>TestHarness</code> that
-     * is used to create the specific test cases for each file name.
+     * The constructor for the <code>AutomatedTester</code> class accepts an instance of
+     * <code>TestHarness</code> that is used to create the specific test cases for each file name.
      */
     public AutomatedTester() {
         harnessMap = new ClassMap("Test Harness", TestHarness.class);
@@ -84,10 +84,10 @@ public class AutomatedTester {
     }
 
     /**
-     * The <code>runTests()</code> method runs the testing framework on each of the specified filenames. The name of the
-     * target for the testcase is specified in the text of each file. The testing framework extracts that name and
-     * passes that to the test harness which can create an instance of <code>TestCase</code>. Each test case is then run
-     * and the results are tabulated.
+     * The <code>runTests()</code> method runs the testing framework on each of the specified filenames. The
+     * name of the target for the testcase is specified in the text of each file. The testing framework
+     * extracts that name and passes that to the test harness which can create an instance of
+     * <code>TestCase</code>. Each test case is then run and the results are tabulated.
      *
      * @param fnames an array of the filenames of tests to run
      * @throws java.io.IOException if there is a problem loading the test cases

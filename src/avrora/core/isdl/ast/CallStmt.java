@@ -50,14 +50,14 @@ public class CallStmt extends Stmt {
     public final Token method;
 
     /**
-     * The <code>args</code> fields stores a reference to a list of expressions that are evaluated and passed as
-     * arguments to the subroutine.
+     * The <code>args</code> fields stores a reference to a list of expressions that are evaluated and passed
+     * as arguments to the subroutine.
      */
     public final List args;
 
     /**
-     * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine name and
-     * arguments.
+     * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine
+     * name and arguments.
      *
      * @param m the name of the subroutine as a string
      * @param a list of expressions representing the arguments to the subroutine
@@ -68,8 +68,8 @@ public class CallStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
-     * trees representing the code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine.
      *
      * @param v the visitor to accept
      */
@@ -87,9 +87,9 @@ public class CallStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
-     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
-     * allows visitors to rearrange and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine. The
+     * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
      *
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed

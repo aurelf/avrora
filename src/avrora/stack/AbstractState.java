@@ -37,8 +37,8 @@ import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 
 /**
- * The <code>AbstractState</code> class represents an abstract state within the state space. The program counter, the
- * status register, the registers, and the interrupt mask register are modelled.
+ * The <code>AbstractState</code> class represents an abstract state within the state space. The program
+ * counter, the status register, the registers, and the interrupt mask register are modelled.
  *
  * @author Ben L. Titzer
  */
@@ -50,8 +50,8 @@ public abstract class AbstractState implements IORegisterConstants {
     protected char av_REGISTERS[]; // canonical register values
 
     /**
-     * The <code>primes</code> field stores the first 32 prime integers that follow 2. This is used in the computation
-     * of the hash code.
+     * The <code>primes</code> field stores the first 32 prime integers that follow 2. This is used in the
+     * computation of the hash code.
      */
     public static final int primes[] = {
         3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
@@ -81,8 +81,8 @@ public abstract class AbstractState implements IORegisterConstants {
     public abstract boolean equals(Object o);
 
     /**
-     * The <code>getPC()</code> method returns the concrete value of the program counter. The program counter is known
-     * in every abstract state.
+     * The <code>getPC()</code> method returns the concrete value of the program counter. The program counter
+     * is known in every abstract state.
      *
      * @return the concrete value of the program counter
      */
@@ -173,10 +173,10 @@ public abstract class AbstractState implements IORegisterConstants {
 
 
     /**
-     * The <code>getIORegisterByte()</code> method reads the abstract value of an IO register from the abstract state.
-     * For those registers being modelled, this will return an abstract value that represents the current value of the
-     * IO register. For IO registers that are not being modelled, it will return the abstract value corresponding to all
-     * bits being unknown.
+     * The <code>getIORegisterByte()</code> method reads the abstract value of an IO register from the
+     * abstract state. For those registers being modelled, this will return an abstract value that represents
+     * the current value of the IO register. For IO registers that are not being modelled, it will return the
+     * abstract value corresponding to all bits being unknown.
      *
      * @param num the IO register number to read
      * @return the (abstract) value of the specified IO register
@@ -189,7 +189,8 @@ public abstract class AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>getRegisterByte()</code> method reads the abstract value of a register in the abstract state.
+     * The <code>getRegisterByte()</code> method reads the abstract value of a register in the abstract
+     * state.
      *
      * @param r the register to read
      * @return the abstract value of the register
@@ -203,8 +204,8 @@ public abstract class AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>copy()</code> method returns a deep copy of this state. This is generally used for forking operations
-     * and for storing internal copies within the <code>StateSpace</code>.
+     * The <code>copy()</code> method returns a deep copy of this state. This is generally used for forking
+     * operations and for storing internal copies within the <code>StateSpace</code>.
      *
      * @return a new deep copy of this abstract state
      */

@@ -34,8 +34,8 @@ package avrora.syntax;
 
 
 /**
- * The <code>ExprList</code> class represents a list of expressions within the program. An expression list generally is
- * encountered in initialized data.
+ * The <code>ExprList</code> class represents a list of expressions within the program. An expression list
+ * generally is encountered in initialized data.
  *
  * @author Ben L. Titzer
  */

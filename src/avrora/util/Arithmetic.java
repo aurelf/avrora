@@ -33,8 +33,8 @@
 package avrora.util;
 
 /**
- * The <code>Arithmetic</code> class implements a set of useful methods that are used by the simulator and assembler for
- * converting java types to various data types used by the machine.
+ * The <code>Arithmetic</code> class implements a set of useful methods that are used by the simulator and
+ * assembler for converting java types to various data types used by the machine.
  *
  * @author Ben L. Titzer
  */

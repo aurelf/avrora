@@ -33,8 +33,8 @@
 package avrora.sim;
 
 /**
- * The <code>IORegisterConstants</code> interface is used to centralize the numeric values of the IO registers of the
- * AVR architecture.
+ * The <code>IORegisterConstants</code> interface is used to centralize the numeric values of the IO registers
+ * of the AVR architecture.
  *
  * @author Ben L. Titzer
  */

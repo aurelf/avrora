@@ -46,9 +46,9 @@ import avrora.sim.Energy;
 import avrora.sim.radio.freespace.*;
 
 /**
- * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with avrora. The CC1000 radio is used
- * with the Mica2 platform in the real world. Verbose printers for this class include "sim.cc1000", "sim.cc1000.data",
- * "sim.cc1000.pinconfig".
+ * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with avrora. The CC1000
+ * radio is used with the Mica2 platform in the real world. Verbose printers for this class include
+ * "sim.cc1000", "sim.cc1000.data", "sim.cc1000.pinconfig".
  *
  * @author Daniel Lee
  */
@@ -152,8 +152,8 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * Part of the <code>Radio</code> interface. It should be called by the <code>RadioAir</code> that this radio is
-     * transmitting over when data is to be received.
+     * Part of the <code>Radio</code> interface. It should be called by the <code>RadioAir</code> that this
+     * radio is transmitting over when data is to be received.
      */
     public void receive(Radio.RadioPacket packet) {
         receivedBuffer.addLast(packet);
@@ -267,7 +267,8 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * The <code>RadioRegister</code> is an abstract register grouping together registers on the CC1000 radio.
+     * The <code>RadioRegister</code> is an abstract register grouping together registers on the CC1000
+     * radio.
      */
     protected abstract class RadioRegister extends State.RWIOReg {
         public void write(byte val) {
@@ -311,8 +312,8 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * The <code>DummyRegister</code> is a filler class for registers within the 7-bit address space of the radio
-     * registers, but do not actually exist/do anything in the real radio.
+     * The <code>DummyRegister</code> is a filler class for registers within the 7-bit address space of the
+     * radio registers, but do not actually exist/do anything in the real radio.
      */
     protected class DummyRegister extends RadioRegister {
         DummyRegister(int i) {
@@ -832,8 +833,8 @@ public class CC1000Radio implements Radio {
 
 
     /**
-     * The baud rate of the system is determined by values on the MODEM0 register. TinyOS uses a baud rate of 19.2 kBaud
-     * with manchester encoding, which translates into 9.6 kbps of data.
+     * The baud rate of the system is determined by values on the MODEM0 register. TinyOS uses a baud rate of
+     * 19.2 kBaud with manchester encoding, which translates into 9.6 kbps of data.
      */
     protected class Modem0Register extends RadioRegister {
         final int[] BAUDRATE = {600, 1200, 2400, 4800, 9600, 19200, 0, 0};
@@ -933,10 +934,10 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * A CC1000 Controller class for the ATMega128L microcontroller cpu. Installing an ATMega128L into this class
-     * connects the microcontroller to this radio. Data is communicated over the SPI interface, on which the CC1000 is
-     * the master. RSSI data from the CC1000 is available to the ATMega128L though the ADC (analog to digital
-     * converter).
+     * A CC1000 Controller class for the ATMega128L microcontroller cpu. Installing an ATMega128L into this
+     * class connects the microcontroller to this radio. Data is communicated over the SPI interface, on which
+     * the CC1000 is the master. RSSI data from the CC1000 is available to the ATMega128L though the ADC
+     * (analog to digital converter).
      */
     public class ATMega128LController implements Radio.RadioController, ATMega128L.SPIDevice, ATMega128L.ADCInput {
 
@@ -961,9 +962,9 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * The <code>TransferTicker</code> class is responsible for timing/facilitating transfer between the radio and
-         * the connected microcontroller. The receiveFrame(), transmitFrame() methods from the SPIDevice interface are
-         * used.
+         * The <code>TransferTicker</code> class is responsible for timing/facilitating transfer between the
+         * radio and the connected microcontroller. The receiveFrame(), transmitFrame() methods from the
+         * SPIDevice interface are used.
          */
         private class TransferTicker implements Simulator.Event {
             private boolean tickerOn;
@@ -1008,8 +1009,8 @@ public class CC1000Radio implements Radio {
         byte oldData;
 
         /**
-         * <code>receiveFrame</code> receives an <code>SPIFrame</code> from a connected device. If the radio is in a
-         * transmission state, this should be the next frame sent into the air.
+         * <code>receiveFrame</code> receives an <code>SPIFrame</code> from a connected device. If the radio
+         * is in a transmission state, this should be the next frame sent into the air.
          */
         public void receiveFrame(SPIFrame frame) {
             if (printer.enabled) {
@@ -1045,8 +1046,8 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * Transmits an <code>SPIFrame</code> to be received by the connected device. This frame is either the last byte
-         * of data received or a zero byte.
+         * Transmits an <code>SPIFrame</code> to be received by the connected device. This frame is either the
+         * last byte of data received or a zero byte.
          */
         public SPIFrame transmitFrame() {
             SPIFrame frame;
@@ -1100,9 +1101,9 @@ public class CC1000Radio implements Radio {
 
 
     /**
-     * TODO: determine if I will really need this for anything more than debugging. This class is more or less a state
-     * machine on the status of the receiver for this radio. It is "activated" when the receiver unit is powered up and
-     * it is "receiving" when the radio is in receive mode.
+     * TODO: determine if I will really need this for anything more than debugging. This class is more or less
+     * a state machine on the status of the receiver for this radio. It is "activated" when the receiver unit
+     * is powered up and it is "receiving" when the radio is in receive mode.
      */
     protected class Receiver {
 
@@ -1154,9 +1155,10 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * This class is a state machine similar to <code>Receiver</code>, but for the transmitter on the radio. So it is
-     * "activated" when the transmitter is powered up and "transmitting" when the radio is in transmit mode. It is very
-     * likely that moving this functionality into the <code>MainRegister</code> class would be a good design decision.
+     * This class is a state machine similar to <code>Receiver</code>, but for the transmitter on the radio.
+     * So it is "activated" when the transmitter is powered up and "transmitting" when the radio is in
+     * transmit mode. It is very likely that moving this functionality into the <code>MainRegister</code>
+     * class would be a good design decision.
      */
     protected class Transmitter {
 
@@ -1208,9 +1210,9 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * Reads the three pins used in the three wire serial configuration interface. Microcontrollers can program this
-     * radio by communication over this interfance. Debug output for communication over this interface is available on
-     * "sim.cc1000.pinconfig"
+     * Reads the three pins used in the three wire serial configuration interface. Microcontrollers can
+     * program this radio by communication over this interfance. Debug output for communication over this
+     * interface is available on "sim.cc1000.pinconfig"
      */
     protected class SerialConfigurationInterface {
 
@@ -1241,8 +1243,8 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * Clocking the PCLK pin is what drives the action of the configuration interface. One bit of data on PDATA per
-         * clock.
+         * Clocking the PCLK pin is what drives the action of the configuration interface. One bit of data on
+         * PDATA per clock.
          */
         protected class PCLKOutput implements Microcontroller.Pin.Output {
 

@@ -37,8 +37,8 @@ import avrora.util.Terminal;
 import java.util.Vector;
 
 /**
- * The Databank class is a static class that collects Database objects and generates a report on all of them when the
- * report() method is called.
+ * The Databank class is a static class that collects Database objects and generates a report on all of them
+ * when the report() method is called.
  *
  * @author Ben L. Titzer
  */

@@ -36,8 +36,8 @@ import avrora.Avrora;
 import avrora.core.InstrPrototype;
 
 /**
- * The <code>Item</code> class represents either an assembler directive, an instruction, or a sequence of initialized
- * data with a source program.
+ * The <code>Item</code> class represents either an assembler directive, an instruction, or a sequence of
+ * initialized data with a source program.
  */
 public abstract class Item {
 
@@ -46,8 +46,9 @@ public abstract class Item {
     protected final int byteAddress;
 
     /**
-     * The <code>simplify()</code> method reduces any computable constants to values, resolves register aliases, and
-     * creates instruction instances within this item, depending on exactly which type of item it is.
+     * The <code>simplify()</code> method reduces any computable constants to values, resolves register
+     * aliases, and creates instruction instances within this item, depending on exactly which type of item it
+     * is.
      */
     public abstract void simplify();
 
@@ -62,8 +63,8 @@ public abstract class Item {
     }
 
     /**
-     * The <code>NamedConstant</code> item in a source program represents a directive that assigns a computable value to
-     * a name.
+     * The <code>NamedConstant</code> item in a source program represents a directive that assigns a
+     * computable value to a name.
      */
     public static class NamedConstant extends Item {
         private final AbstractToken name;
@@ -86,8 +87,8 @@ public abstract class Item {
     }
 
     /**
-     * The <code>RegisterAlias</code> item in a source program represents a directive that adds an alias for a register.
-     * This can appear in program, data, and eeprom segments.
+     * The <code>RegisterAlias</code> item in a source program represents a directive that adds an alias for a
+     * register. This can appear in program, data, and eeprom segments.
      */
     public static class RegisterAlias extends Item {
         private final AbstractToken name;
@@ -110,8 +111,8 @@ public abstract class Item {
 
 
     /**
-     * The <code>Instruction</code> item in a source program represents an instruction that must be simplified and added
-     * to the program. This is generally only applicable to the program (code) section.
+     * The <code>Instruction</code> item in a source program represents an instruction that must be simplified
+     * and added to the program. This is generally only applicable to the program (code) section.
      */
     public static class Instruction extends Item {
         protected final String variant;
@@ -149,8 +150,8 @@ public abstract class Item {
     }
 
     /**
-     * The <code>Label</code> item represents a labelled location in the program that is given a name. This can appear
-     * in program, data, or eeprom sections.
+     * The <code>Label</code> item represents a labelled location in the program that is given a name. This
+     * can appear in program, data, or eeprom sections.
      */
     public static class Label extends Item {
         private final AbstractToken name;
@@ -174,8 +175,8 @@ public abstract class Item {
     }
 
     /**
-     * The <code>InitializedData</code> item represents a section of programmer-declared initialized data within the
-     * program. This is generally only applicable to the program (code) section.
+     * The <code>InitializedData</code> item represents a section of programmer-declared initialized data
+     * within the program. This is generally only applicable to the program (code) section.
      */
     public static class InitializedData extends Item {
 
@@ -253,8 +254,8 @@ public abstract class Item {
     }
 
     /**
-     * The <code>UnitializedData</code> item represents a declared section of data that is not given a value (a
-     * reservation of space). This can appear in the program, data, or eeprom segments.
+     * The <code>UnitializedData</code> item represents a declared section of data that is not given a value
+     * (a reservation of space). This can appear in the program, data, or eeprom segments.
      */
     public static class UninitializedData extends Item {
         private final int length;

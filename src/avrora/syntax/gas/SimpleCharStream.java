@@ -2,8 +2,8 @@
 package avrora.syntax.gas;
 
 /**
- * An implementation of interface CharStream, where the stream is assumed to contain only ASCII characters (without
- * unicode processing).
+ * An implementation of interface CharStream, where the stream is assumed to contain only ASCII characters
+ * (without unicode processing).
  */
 
 public class SimpleCharStream {

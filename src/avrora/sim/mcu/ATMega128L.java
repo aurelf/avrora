@@ -56,8 +56,8 @@ import avrora.sim.Energy;
 
 
 /**
- * The <code>ATMega128L</code> class represents the <code>Microcontroller</code> instance that has all the hardware
- * parameters of the ATMega128L microcontroller as produced by Atmel Corporatation.
+ * The <code>ATMega128L</code> class represents the <code>Microcontroller</code> instance that has all the
+ * hardware parameters of the ATMega128L microcontroller as produced by Atmel Corporatation.
  *
  * @author Ben L. Titzer
  */
@@ -228,9 +228,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     }
 
     /**
-     * The <code>isSupported()</code> method allows a client to query whether a particular instruction is implemented on
-     * this hardware device. Older implementations of the AVR instruction set preceded the introduction of certain
-     * instructions, and therefore did not support the new instructions.
+     * The <code>isSupported()</code> method allows a client to query whether a particular instruction is
+     * implemented on this hardware device. Older implementations of the AVR instruction set preceded the
+     * introduction of certain instructions, and therefore did not support the new instructions.
      *
      * @param i the instruction prototype of the instruction
      * @return true if the specified instruction is supported on this device; false otherwise
@@ -240,8 +240,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     }
 
     /**
-     * The <code>getSimulator()</code> method gets a simulator instance that is capable of emulating this hardware
-     * device.
+     * The <code>getSimulator()</code> method gets a simulator instance that is capable of emulating this
+     * hardware device.
      *
      * @return a <code>Simulator</code> instance corresponding to this device
      */
@@ -250,9 +250,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     }
 
     /**
-     * The <code>getPinNumber()</code> method looks up the named pin and returns its number. Names of pins should be
-     * UPPERCASE. The intended users of this method are external device implementors which connect their devices to the
-     * microcontroller through the pins.
+     * The <code>getPinNumber()</code> method looks up the named pin and returns its number. Names of pins
+     * should be UPPERCASE. The intended users of this method are external device implementors which connect
+     * their devices to the microcontroller through the pins.
      *
      * @param name the name of the pin; for example "PA0" or "OC1A"
      * @return the number of the pin if it exists; -1 otherwise
@@ -263,25 +263,26 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     }
 
     /**
-     * The <code>newMicrocontroller()</code> method is used to instantiate a microcontroller instance for the particular
-     * program. It will construct an instance of the <code>Simulator</code> class that has all the properties of this
-     * hardware device and has been initialized with the specified program.
+     * The <code>newMicrocontroller()</code> method is used to instantiate a microcontroller instance for the
+     * particular program. It will construct an instance of the <code>Simulator</code> class that has all the
+     * properties of this hardware device and has been initialized with the specified program.
      *
      * @param p the program to load onto the microcontroller
-     * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the program
-     *         loaded onto it
+     * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
+     *         program loaded onto it
      */
     public Microcontroller newMicrocontroller(int id, Program p) {
         return new ATMega128L(id, p, compatibilityMode);
     }
 
     /**
-     * The <code>getPin()</code> method looks up the named pin and returns a reference to that pin. Names of pins should
-     * be UPPERCASE. The intended users of this method are external device implementors which connect their devices to
-     * the microcontroller through the pins.
+     * The <code>getPin()</code> method looks up the named pin and returns a reference to that pin. Names of
+     * pins should be UPPERCASE. The intended users of this method are external device implementors which
+     * connect their devices to the microcontroller through the pins.
      *
      * @param name the name of the pin; for example "PA0" or "OC1A"
-     * @return a reference to the <code>Pin</code> object corresponding to the named pin if it exists; null otherwise
+     * @return a reference to the <code>Pin</code> object corresponding to the named pin if it exists; null
+     *         otherwise
      */
     public Microcontroller.Pin getPin(String name) {
         return getPin(getPinNumber(name));
@@ -448,8 +449,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         final int[] periods2 = {0, 1, 8, 64, 256, 1024};
 
         /**
-         * <code>Timer2</code> is an additional 8-bit timer on the ATMega128L. It is not available in ATMega103
-         * compatibility mode.
+         * <code>Timer2</code> is an additional 8-bit timer on the ATMega128L. It is not available in
+         * ATMega103 compatibility mode.
          */
         protected class Timer2 extends Timer8Bit {
             protected Timer2(BaseInterpreter ns) {
@@ -554,9 +555,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
         /**
          * The <code>Timer16Bit</code> class emulates the functionality and behavior of a 16-bit timer on the
-         * Atmega128L. It has several control and data registers and can fire up to six different interrupts depending
-         * on the mode that it has been put into. It has three output compare units and one input capture unit.
-         * UNIMPLEMENTED: input capture unit.
+         * Atmega128L. It has several control and data registers and can fire up to six different interrupts
+         * depending on the mode that it has been put into. It has three output compare units and one input
+         * capture unit. UNIMPLEMENTED: input capture unit.
          *
          * @author Daniel Lee
          */
@@ -756,7 +757,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * <code>ControlRegister</code> is an abstract class describing the control registers of a 16-bit timer.
+             * <code>ControlRegister</code> is an abstract class describing the control registers of a 16-bit
+             * timer.
              */
             protected abstract class ControlRegister extends State.RWIOReg {
 
@@ -775,13 +777,14 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * The <code>PairedRegister</code> class exists to implement the shared temporary register for the high byte
-             * of the 16-bit registers corresponding to a 16-bit timer. Accesses to the high byte of a register pair
-             * should go through this temporary byte. According to the manual, writes to the high byte are stored in the
-             * temporary register. When the low byte is written to, both the low and high byte are updated. On a read,
-             * the temporary high byte is updated when a read occurs on the low byte. The PairedRegister should be
-             * installed in place of the low register. Reads/writes on this register will act accordingly on the low
-             * register, as well as initiate a read/write on the associated high register.
+             * The <code>PairedRegister</code> class exists to implement the shared temporary register for the
+             * high byte of the 16-bit registers corresponding to a 16-bit timer. Accesses to the high byte of
+             * a register pair should go through this temporary byte. According to the manual, writes to the
+             * high byte are stored in the temporary register. When the low byte is written to, both the low
+             * and high byte are updated. On a read, the temporary high byte is updated when a read occurs on
+             * the low byte. The PairedRegister should be installed in place of the low register. Reads/writes
+             * on this register will act accordingly on the low register, as well as initiate a read/write on
+             * the associated high register.
              */
             protected class PairedRegister extends State.RWIOReg {
                 State.RWIOReg high;
@@ -814,8 +817,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * The normal 16-bit read behavior described in the doc for PairedRegister does not apply for the OCRnx
-             * registers. Reads on the OCRnxH registers are direct.
+             * The normal 16-bit read behavior described in the doc for PairedRegister does not apply for the
+             * OCRnx registers. Reads on the OCRnxH registers are direct.
              */
             protected class OCRnxPairedRegister extends PairedRegister {
                 OCRnxPairedRegister(State.RWIOReg high, State.RWIOReg low) {
@@ -859,8 +862,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * Overloads the write behavior of this class of register in order to implement compare match blocking for
-             * one timer period.
+             * Overloads the write behavior of this class of register in order to implement compare match
+             * blocking for one timer period.
              */
             protected class TCNTnRegister extends State.RWIOReg {
                 /* index of the blockCompareMatch corresponding to
@@ -877,8 +880,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * <code>ControlRegisterA</code> describes the TCCRnA control register associated with a 160bit timer.
-             * Changing the values of this register generally alter the mode of operation of the timer.
+             * <code>ControlRegisterA</code> describes the TCCRnA control register associated with a 160bit
+             * timer. Changing the values of this register generally alter the mode of operation of the
+             * timer.
              */
             protected class ControlRegisterA extends ControlRegister {
                 public static final int COMnA1 = 7;
@@ -903,9 +907,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * <code>ControlRegisterA</code> describes the TCCRnB control register associated with a 160bit timer.
-             * Changing the values of this register generally alter the mode of operation of the timer. The low three
-             * bits also set the prescalar of the timer.
+             * <code>ControlRegisterA</code> describes the TCCRnB control register associated with a 160bit
+             * timer. Changing the values of this register generally alter the mode of operation of the timer.
+             * The low three bits also set the prescalar of the timer.
              */
             protected class ControlRegisterB extends ControlRegister {
                 public static final int ICNCn = 7;
@@ -968,9 +972,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * <code>ControlRegisterA</code> describes the TCCRnA control register associated with a 16-bit timer.
-             * Writing to the three high bits of this register will cause a forced output compare on at least one of the
-             * three output compare units.
+             * <code>ControlRegisterA</code> describes the TCCRnA control register associated with a 16-bit
+             * timer. Writing to the three high bits of this register will cause a forced output compare on at
+             * least one of the three output compare units.
              */
             protected class ControlRegisterC extends ControlRegister {
                 public static final int FOCnA = 7;
@@ -1057,10 +1061,11 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
 
             /**
-             * In PWN modes, writes to the OCRnx registers are buffered. Specifically, the actual write is delayed until
-             * a certain event (the counter reaching either TOP or BOTTOM) specified by the particular PWN mode.
-             * BufferedRegister implements this by writing to a buffer register on a write and reading from the buffered
-             * register in a read. When the buffered register is to be updated, the flush() method should be called.
+             * In PWN modes, writes to the OCRnx registers are buffered. Specifically, the actual write is
+             * delayed until a certain event (the counter reaching either TOP or BOTTOM) specified by the
+             * particular PWN mode. BufferedRegister implements this by writing to a buffer register on a
+             * write and reading from the buffered register in a read. When the buffered register is to be
+             * updated, the flush() method should be called.
              */
             protected class BufferedRegister extends State.RWIOReg {
                 final State.RWIOReg register;
@@ -1103,9 +1108,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * The <code>Ticker</class> implements the periodic behavior of the timer. It emulates the operation of the
-             * timer at each clock cycle and uses the global timed event queue to achieve the correct periodic
-             * behavior.
+             * The <code>Ticker</class> implements the periodic behavior of the timer. It emulates the
+             * operation of the timer at each clock cycle and uses the global timed event queue to achieve the
+             * correct periodic behavior.
              */
             protected class Ticker implements Simulator.Event {
 
@@ -1364,9 +1369,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             Simulator.Printer timerPrinter;
 
             /**
-             * Timer8Bit(ns, TCNT0, TCNT0, OCR0) should initialize Timer0 as before. Assuming this translation from the
-             * Timer0 code was generic enough, Timer8Bit(ns, TCNT2, TCNT2, OCR2) should initialize a mostly functional
-             * Timer2. OCRn is the offset on TIMSK that corresponds to
+             * Timer8Bit(ns, TCNT0, TCNT0, OCR0) should initialize Timer0 as before. Assuming this translation
+             * from the Timer0 code was generic enough, Timer8Bit(ns, TCNT2, TCNT2, OCR2) should initialize a
+             * mostly functional Timer2. OCRn is the offset on TIMSK that corresponds to
              */
             private Timer8Bit(BaseInterpreter ns, int n, int TCCRn, int TCNTn, int OCRn, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
                 timerPrinter = simulator.getPrinter("sim.timer" + n);
@@ -1410,8 +1415,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * Overloads the write behavior of this class of register in order to implement compare match blocking for
-             * one timer period.
+             * Overloads the write behavior of this class of register in order to implement compare match
+             * blocking for one timer period.
              */
             protected class TCNTnRegister extends State.RWIOReg {
 
@@ -1427,8 +1432,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * <code>BufferedRegister</code> implements a register with a write buffer. In PWN modes, writes to this
-             * register are not performed until flush() is called. In non-PWM modes, the writes are immediate.
+             * <code>BufferedRegister</code> implements a register with a write buffer. In PWN modes, writes
+             * to this register are not performed until flush() is called. In non-PWM modes, the writes are
+             * immediate.
              */
             protected class BufferedRegister extends State.RWIOReg {
                 final State.RWIOReg register;
@@ -1561,9 +1567,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * The <code>Ticker</class> implements the periodic behavior of the timer. It emulates the operation of the
-             * timer at each clock cycle and uses the global timed event queue to achieve the correct periodic
-             * behavior.
+             * The <code>Ticker</class> implements the periodic behavior of the timer. It emulates the
+             * operation of the timer at each clock cycle and uses the global timed event queue to achieve the
+             * correct periodic behavior.
              */
             protected class Ticker implements Simulator.Event {
 
@@ -1704,8 +1710,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * called, when the system wakes up commonly the system wakes up via interrupt ;-) Do not call this method,
-             * when the system is not sleeping. Such a check is not done, to provide high performace.
+             * called, when the system wakes up commonly the system wakes up via interrupt ;-) Do not call
+             * this method, when the system is not sleeping. Such a check is not done, to provide high
+             * performace.
              *
              * @return the cycles it takes to wake up
              */
@@ -1901,8 +1908,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         }
 
         /**
-         * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.  TODO: CPU halting
-         * after EEPROM read/write reads/writes.
+         * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.  TODO: CPU
+         * halting after EEPROM read/write reads/writes.
          *
          * @author Daniel Lee
          */
@@ -2134,8 +2141,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         }
 
         /**
-         * The USART class implements a Universal Synchronous Asynchronous Receiver/Transmitter, which is a serial
-         * device on the ATMega128L. The ATMega128L has two USARTs, USART0 and USART1.
+         * The USART class implements a Universal Synchronous Asynchronous Receiver/Transmitter, which is a
+         * serial device on the ATMega128L. The ATMega128L has two USARTs, USART0 and USART1.
          *
          * @author Daniel Lee
          */
@@ -2240,8 +2247,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             /* *********************************************** */
 
             /**
-             * Initialize the parameters such as interrupt numbers and I/O register numbers that make this USART
-             * unique.
+             * Initialize the parameters such as interrupt numbers and I/O register numbers that make this
+             * USART unique.
              */
             abstract protected void initValues();
 
@@ -2355,10 +2362,10 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * The <code>DataRegister</code> class represents a Transmit Data Buffer Register for a USART. It is really
-             * two registers, a transmit register and a receive register. The transmit register is the destination of
-             * data written to the register at this address. The receive register is the source of data read from this
-             * address.
+             * The <code>DataRegister</code> class represents a Transmit Data Buffer Register for a USART. It
+             * is really two registers, a transmit register and a receive register. The transmit register is
+             * the destination of data written to the register at this address. The receive register is the
+             * source of data read from this address.
              */
             protected class DataRegister extends State.RWIOReg {
                 State.RWIOReg transmitRegister;
@@ -2401,11 +2408,12 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
 
                 /**
-                 * An implementation of the FIFO used to buffer the received frames. This is not quite a two-level FIFO,
-                 * as the shift-receive register in the actual implementation can act as a third level to the buffer. In
-                 * order to account for this, the FIFO is implemented as a queue that can hold at most three elements
-                 * (limited by the implementation). Although the implementation does not mirror the how the hardware
-                 * does this, functionally it should behave the same way.
+                 * An implementation of the FIFO used to buffer the received frames. This is not quite a
+                 * two-level FIFO, as the shift-receive register in the actual implementation can act as a
+                 * third level to the buffer. In order to account for this, the FIFO is implemented as a queue
+                 * that can hold at most three elements (limited by the implementation). Although the
+                 * implementation does not mirror the how the hardware does this, functionally it should
+                 * behave the same way.
                  */
                 private class TwoLevelFIFO extends State.RWIOReg {
 
@@ -2466,8 +2474,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
 
             /**
-             * UCSRnA (<code>ControlRegisterA</code>) is one of three control/status registers for the USART. The high
-             * three bits are actually interrupt flag bits.
+             * UCSRnA (<code>ControlRegisterA</code>) is one of three control/status registers for the USART.
+             * The high three bits are actually interrupt flag bits.
              */
             protected class ControlRegisterA extends FlagRegister {
 
@@ -2519,8 +2527,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * UCSRnB (<code>ControlRegisterB</code>) is one of three control/status registers for the USART. The high
-             * three bits are actually interrupt mask bits.
+             * UCSRnB (<code>ControlRegisterB</code>) is one of three control/status registers for the USART.
+             * The high three bits are actually interrupt mask bits.
              */
             protected class ControlRegisterB extends MaskRegister {
                 int count = 0;
@@ -2601,7 +2609,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * The low byte of the Baud Rate register. The baud rate is not updated until the low bit is updated.
+             * The low byte of the Baud Rate register. The baud rate is not updated until the low bit is
+             * updated.
              */
             protected class UBRRnLReg extends State.RWIOReg {
 
@@ -2617,8 +2626,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * A simple implementation of the USARTDevice interface that connects to a USART on the processor. It simply
-             * prints out a representation of each frame it receives.
+             * A simple implementation of the USARTDevice interface that connects to a USART on the processor.
+             * It simply prints out a representation of each frame it receives.
              */
             protected class SerialPrinter implements USARTDevice {
 
@@ -2898,9 +2907,10 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
 
                 /**
-                 * Notes. The way this delay is setup right now, when the ATMega128L is in master mode and transmits,
-                 * the connected device has a delayed receive. For the radio, this is not a problem, as the radio is the
-                 * master and is responsible for ensuring correct delivery time for the SPI.
+                 * Notes. The way this delay is setup right now, when the ATMega128L is in master mode and
+                 * transmits, the connected device has a delayed receive. For the radio, this is not a
+                 * problem, as the radio is the master and is responsible for ensuring correct delivery time
+                 * for the SPI.
                  */
                 public void fire() {
                     if (SPIenabled) {
@@ -2928,8 +2938,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
 
             /**
-             * SPI data register. Writes to this register are transmitted to the connected device and reads from the
-             * register read the data received from the connected device.
+             * SPI data register. Writes to this register are transmitted to the connected device and reads
+             * from the register read the data received from the connected device.
              */
             class SPDReg implements State.IOReg {
 
@@ -3424,8 +3434,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 boolean firing;
 
                 /**
-                 * The conversion event for the ADC. It is first at a certain interval after the start conversion bit in
-                 * the control register is set.
+                 * The conversion event for the ADC. It is first at a certain interval after the start
+                 * conversion bit in the control register is set.
                  */
                 private class Conversion implements Simulator.Event {
                     public void fire() {
@@ -3470,9 +3480,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
      */
 
     /**
-     * Interface for devices that can connect to the SPI. Rather than communicating over the MISO, MOSI pins, the
-     * process is expedited and simplified through the use of the transmitFrame() and receiveFrame() methods in the
-     * intefact.
+     * Interface for devices that can connect to the SPI. Rather than communicating over the MISO, MOSI pins,
+     * the process is expedited and simplified through the use of the transmitFrame() and receiveFrame()
+     * methods in the intefact.
      */
     public interface SPIDevice {
         /**
@@ -3505,9 +3515,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
 
     /**
-     * The <code>USARTDevice</code> interface describes USARTs and other serial devices which can be connected to the
-     * USART. For simplicity, a higher-level interface communicating by frames of data is used, rather than bits or a
-     * representation of changing voltages.
+     * The <code>USARTDevice</code> interface describes USARTs and other serial devices which can be connected
+     * to the USART. For simplicity, a higher-level interface communicating by frames of data is used, rather
+     * than bits or a representation of changing voltages.
      */
     public interface USARTDevice {
         /**
@@ -3526,8 +3536,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         public void receiveFrame(USARTFrame frame);
 
         /**
-         * A <code>USARTFrame</code> is a representation of the serial frames being passed between the USART and a
-         * connected device.
+         * A <code>USARTFrame</code> is a representation of the serial frames being passed between the USART
+         * and a connected device.
          */
         public class USARTFrame {
             public final byte low;
@@ -3601,8 +3611,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     }
 
     /**
-     * Connect an instance of the <code>ADCInput</code> interface to the ADC of this microcontroller. The ADC unit on
-     * the ATMega128L can support up to 8 ADC inputs, on bits 0 - 7.
+     * Connect an instance of the <code>ADCInput</code> interface to the ADC of this microcontroller. The ADC
+     * unit on the ATMega128L can support up to 8 ADC inputs, on bits 0 - 7.
      */
     public void connectADCInput(ADCInput d, int bit) {
         adc.connectADCInput(d, bit);
@@ -3633,8 +3643,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     }
 
     /**
-     * Interface for an alternate clock. In practice, it is used to create a clock that runs at a multiplier of the
-     * simulation base clock.
+     * Interface for an alternate clock. In practice, it is used to create a clock that runs at a multiplier
+     * of the simulation base clock.
      */
     protected interface Clock {
         public void scheduleEvent(Simulator.Event e, long cycles);

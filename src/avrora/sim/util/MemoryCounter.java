@@ -37,10 +37,10 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 
 /**
- * The <code>MemoryCounter</code> is the simplest example of memory profiling functionality. When inserted as a watch at
- * a particular memory location, it will simply count the number of reads and writes to that memory location. It is
- * analagous to the <code>Counter</code> probe which is used to count the execution frequency of a particular
- * instruction.
+ * The <code>MemoryCounter</code> is the simplest example of memory profiling functionality. When inserted as
+ * a watch at a particular memory location, it will simply count the number of reads and writes to that memory
+ * location. It is analagous to the <code>Counter</code> probe which is used to count the execution frequency
+ * of a particular instruction.
  *
  * @author Ben L. Titzer
  * @see avrora.sim.Simulator.Watch
@@ -59,8 +59,8 @@ public class MemoryCounter implements Simulator.Watch {
     public long wcount;
 
     /**
-     * The <code>fireBeforeRead()</code> method is called before the data address is read by the program. In the
-     * implementation of <code>MemoryCounter</code>, it simply increments the count of reads by one.
+     * The <code>fireBeforeRead()</code> method is called before the data address is read by the program. In
+     * the implementation of <code>MemoryCounter</code>, it simply increments the count of reads by one.
      *
      * @param i         the instruction being probed
      * @param address   the address at which this instruction resides
@@ -73,8 +73,8 @@ public class MemoryCounter implements Simulator.Watch {
     }
 
     /**
-     * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program. In the
-     * implementation of <code>MemoryCounter</code>, it simply increments the count of writes by one.
+     * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
+     * In the implementation of <code>MemoryCounter</code>, it simply increments the count of writes by one.
      *
      * @param i         the instruction being probed
      * @param address   the address at which this instruction resides
@@ -101,8 +101,8 @@ public class MemoryCounter implements Simulator.Watch {
     }
 
     /**
-     * The <code>fireAfterWrite()</code> method is called after the data address is written by the program. In the
-     * implementation of <code>MemoryCounter</code>, it does nothing.
+     * The <code>fireAfterWrite()</code> method is called after the data address is written by the program. In
+     * the implementation of <code>MemoryCounter</code>, it does nothing.
      *
      * @param i         the instruction being probed
      * @param address   the address at which this instruction resides

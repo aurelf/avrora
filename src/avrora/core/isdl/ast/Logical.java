@@ -33,49 +33,50 @@
 package avrora.core.isdl.ast;
 
 /**
- * The <code>Logical</code> class is a container for classes that represent expressions that produce booleans in the IR.
- * For example, the class <code>Logical.AndExpr</code> represents an expression that is the logical AND of two boolean
- * values. The result of all operations on integers are boolean; therefore, every expression that is a subclass of
- * <code>Logical</code> has a result type of boolean.
+ * The <code>Logical</code> class is a container for classes that represent expressions that produce booleans
+ * in the IR. For example, the class <code>Logical.AndExpr</code> represents an expression that is the logical
+ * AND of two boolean values. The result of all operations on integers are boolean; therefore, every
+ * expression that is a subclass of <code>Logical</code> has a result type of boolean.
  *
  * @author Ben L. Titzer
  */
 public abstract class Logical extends Expr {
 
     /**
-     * The <code>BinOp</code> inner class represents an operation on two values with an infix binary operation that
-     * produces a boolean. For example, logical XOR and integer comparison and such operations are binary infix and
-     * therefore subclasses of this class.
+     * The <code>BinOp</code> inner class represents an operation on two values with an infix binary operation
+     * that produces a boolean. For example, logical XOR and integer comparison and such operations are binary
+     * infix and therefore subclasses of this class.
      */
     public abstract static class BinOp extends Logical {
 
         /**
-         * The <code>operation</code> field stores the string name of the operation of this binary operation. For
-         * example, 'and' represents logical AND.
+         * The <code>operation</code> field stores the string name of the operation of this binary operation.
+         * For example, 'and' represents logical AND.
          */
         public final String operation;
 
         /**
-         * The <code>left</code> field stores a reference to the expression that is the left operand of the binary
-         * operation.
+         * The <code>left</code> field stores a reference to the expression that is the left operand of the
+         * binary operation.
          */
         public final Expr left;
 
         /**
-         * The <code>left</code> field stores a reference to the expression that is the right operand of the binary
-         * operation.
+         * The <code>left</code> field stores a reference to the expression that is the right operand of the
+         * binary operation.
          */
         public final Expr right;
 
         /**
-         * The <code>precedence</code> field stores the precedence level of this binary operation. This is used to
-         * compute when to surround inner expressions with parentheses when printing code in infix notation.
+         * The <code>precedence</code> field stores the precedence level of this binary operation. This is
+         * used to compute when to surround inner expressions with parentheses when printing code in infix
+         * notation.
          */
         public final int precedence;
 
         /**
-         * The constructor of the <code>BinOp</code> class initializes the public final fields that form the structure
-         * of this expression.
+         * The constructor of the <code>BinOp</code> class initializes the public final fields that form the
+         * structure of this expression.
          *
          * @param p the binding precedence of this operator
          * @param l the left expression operand
@@ -90,8 +91,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e. it is
-         * reducable to a constant and has no references to variables, maps, etc).
+         * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression
+         * (i.e. it is reducable to a constant and has no references to variables, maps, etc).
          *
          * @return true if this expression can be evaluated to a constant; false otherwise
          */
@@ -100,8 +101,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -120,13 +121,13 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>UnOp</code> inner class represents an operation on a single boolean value. For example, the logical
-     * negation is an operation on a single boolean that produce a single boolean result.
+     * The <code>UnOp</code> inner class represents an operation on a single boolean value. For example, the
+     * logical negation is an operation on a single boolean that produce a single boolean result.
      */
     public abstract static class UnOp extends Logical {
         /**
-         * The <code>operation</code> field stores the string name of the operation being performed on the expression.
-         * For example, '!' represents logical negation.
+         * The <code>operation</code> field stores the string name of the operation being performed on the
+         * expression. For example, '!' represents logical negation.
          */
         public final String operation;
 
@@ -136,8 +137,8 @@ public abstract class Logical extends Expr {
         public final Expr operand;
 
         /**
-         * The constructor of the <code>UnOp</code> class initializes the public final fields that form the structure of
-         * this expression.
+         * The constructor of the <code>UnOp</code> class initializes the public final fields that form the
+         * structure of this expression.
          *
          * @param op the string name of the operation
          * @param o  the operand of this operation
@@ -152,8 +153,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -171,8 +172,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>AndExpr</code> inner class represents the logical AND of two boolean values that produces a new boolean
-     * value.
+     * The <code>AndExpr</code> inner class represents the logical AND of two boolean values that produces a
+     * new boolean value.
      */
     public static class AndExpr extends BinOp {
         public AndExpr(Expr left, Expr right) {
@@ -180,8 +181,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -195,8 +196,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>OrExpr</code> inner class represents the logical OR of two boolean values that produces a new boolean
-     * value.
+     * The <code>OrExpr</code> inner class represents the logical OR of two boolean values that produces a new
+     * boolean value.
      */
     public static class OrExpr extends BinOp {
         public OrExpr(Expr left, Expr right) {
@@ -204,8 +205,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -219,8 +220,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>XorExpr</code> inner class represents the logical XOR of two boolean values that produces a new boolean
-     * value.
+     * The <code>XorExpr</code> inner class represents the logical XOR of two boolean values that produces a
+     * new boolean value.
      */
     public static class XorExpr extends BinOp {
         public XorExpr(Expr left, Expr right) {
@@ -228,8 +229,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -243,8 +244,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>EquExpr</code> inner class represents a comparison for equality of two integer values that produces a
-     * single boolean value.
+     * The <code>EquExpr</code> inner class represents a comparison for equality of two integer values that
+     * produces a single boolean value.
      */
     public static class EquExpr extends BinOp {
         public EquExpr(Expr left, Expr right) {
@@ -252,8 +253,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -267,8 +268,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>NequExpr</code> inner class represents a comparison for inequality of two integer values that produces
-     * a single boolean value.
+     * The <code>NequExpr</code> inner class represents a comparison for inequality of two integer values that
+     * produces a single boolean value.
      */
     public static class NequExpr extends BinOp {
         public NequExpr(Expr left, Expr right) {
@@ -276,8 +277,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -291,8 +292,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>LessExpr</code> inner class represents a comparison of two integer values that produces a single
-     * boolean value that is true if and only if the first operand is less than the second operand.
+     * The <code>LessExpr</code> inner class represents a comparison of two integer values that produces a
+     * single boolean value that is true if and only if the first operand is less than the second operand.
      */
     public static class LessExpr extends BinOp {
         public LessExpr(Expr left, Expr right) {
@@ -300,8 +301,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -315,8 +316,9 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>LessEquExpr</code> inner class represents a comparison of two integer values that produces a single
-     * boolean value that is true if and only if the first operand is less than or equal to the second operand.
+     * The <code>LessEquExpr</code> inner class represents a comparison of two integer values that produces a
+     * single boolean value that is true if and only if the first operand is less than or equal to the second
+     * operand.
      */
     public static class LessEquExpr extends BinOp {
         public LessEquExpr(Expr left, Expr right) {
@@ -324,8 +326,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -339,8 +341,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>GreaterExpr</code> inner class represents a comparison of two integer values that produces a single
-     * boolean value that is true if and only if the first operand is greater than the second operand.
+     * The <code>GreaterExpr</code> inner class represents a comparison of two integer values that produces a
+     * single boolean value that is true if and only if the first operand is greater than the second operand.
      */
     public static class GreaterExpr extends BinOp {
         public GreaterExpr(Expr left, Expr right) {
@@ -348,8 +350,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -363,8 +365,9 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>GreaterEquExpr</code> inner class represents a comparison of two integer values that produces a single
-     * boolean value that is true if and only if the first operand is greater than or equal to the second operand.
+     * The <code>GreaterEquExpr</code> inner class represents a comparison of two integer values that produces
+     * a single boolean value that is true if and only if the first operand is greater than or equal to the
+     * second operand.
      */
     public static class GreaterEquExpr extends BinOp {
         public GreaterEquExpr(Expr left, Expr right) {
@@ -372,8 +375,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */
@@ -387,8 +390,8 @@ public abstract class Logical extends Expr {
     }
 
     /**
-     * The <code>NotExpr</code> inner class represents the logical negation of a single boolean value that produces a
-     * new integer value.
+     * The <code>NotExpr</code> inner class represents the logical negation of a single boolean value that
+     * produces a new integer value.
      */
     public static class NotExpr extends UnOp {
         public NotExpr(Expr l) {
@@ -396,8 +399,8 @@ public abstract class Logical extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-         * traverse the syntax tree easily and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
          *
          * @param v the visitor to accept
          */

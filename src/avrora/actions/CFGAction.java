@@ -49,8 +49,8 @@ import java.io.PrintStream;
 import java.io.FileOutputStream;
 
 /**
- * The <code>CFGAction</code> is an Avrora action that allows a control flow graph to be generated and output to the
- * terminal or to a file.
+ * The <code>CFGAction</code> is an Avrora action that allows a control flow graph to be generated and output
+ * to the terminal or to a file.
  *
  * @author Ben L. Titzer
  */
@@ -85,8 +85,8 @@ public class CFGAction extends Action {
                                              "representation of the graph will be printed to the terminal.");
 
     /**
-     * The default constructor of the <code>CFGAction</code> class simply creates an empty instance with the appropriate
-     * name and help string.
+     * The default constructor of the <code>CFGAction</code> class simply creates an empty instance with the
+     * appropriate name and help string.
      */
     public CFGAction() {
         super("cfg", HELP);

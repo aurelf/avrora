@@ -41,16 +41,16 @@ import avrora.Avrora;
 import avrora.sim.radio.freespace.*;
 
 /**
- * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and access an
- * instance of the <code>RadioAir</code> interface.
+ * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and
+ * access an instance of the <code>RadioAir</code> interface.
  *
  * @author Daniel Lee
  */
 public interface Radio {
 
     /**
-     * Time in ATMega128L cycles it takes for one byte to be sent over the air. Much of the implementation is derived
-     * from this constant, so generalizing in the future may require some careful consideration.
+     * Time in ATMega128L cycles it takes for one byte to be sent over the air. Much of the implementation is
+     * derived from this constant, so generalizing in the future may require some careful consideration.
      */
     public final static int TRANSFER_TIME = 3072;
 
@@ -74,8 +74,8 @@ public interface Radio {
     
         
     /**
-     * A <code>RadioPacket</code> is an object describing the data transmitted over <code>RadioAir</code> over some
-     * period of time.
+     * A <code>RadioPacket</code> is an object describing the data transmitted over <code>RadioAir</code> over
+     * some period of time.
      */
     public class RadioPacket implements Comparable {
 
@@ -105,16 +105,17 @@ public interface Radio {
     }
 
     /**
-     * A <code>RadioController</code> is an object installed into a Microcontroller. The recommended implementation is
-     * to implement specialized IO registers as inner classes and install them into the Microcontroller. Changes to
-     * these specialized registers should initiate appropriate behavior with the radio.
+     * A <code>RadioController</code> is an object installed into a Microcontroller. The recommended
+     * implementation is to implement specialized IO registers as inner classes and install them into the
+     * Microcontroller. Changes to these specialized registers should initiate appropriate behavior with the
+     * radio.
      */
     public interface RadioController {
 
         /**
-         * Installs this Controller into a microcontroller. This should setup the pins, IO registers in such a way that
-         * changes to CPU state will make corresponding changes to the RadioController state that will initiate sends
-         * and receives if necessary.
+         * Installs this Controller into a microcontroller. This should setup the pins, IO registers in such a
+         * way that changes to CPU state will make corresponding changes to the RadioController state that
+         * will initiate sends and receives if necessary.
          */
         public void install(Microcontroller mcu);
 
@@ -137,8 +138,8 @@ public interface Radio {
 
 
     /**
-     * Transmit a frame from the controller. Should be called by the <code>RadioController</code> and transmitted into
-     * the <code>RadioAir</code>.
+     * Transmit a frame from the controller. Should be called by the <code>RadioController</code> and
+     * transmitted into the <code>RadioAir</code>.
      */
     public void transmit(RadioPacket f);
 

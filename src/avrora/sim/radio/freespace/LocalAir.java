@@ -43,7 +43,8 @@ import avrora.sim.Simulator;
 import java.util.*;
 
 /**
- * local air each device has a local view on the global air. It sees different packets and transmission power.
+ * local air each device has a local view on the global air. It sees different packets and transmission
+ * power.
  *
  * @author Olaf Landsiedel
  */

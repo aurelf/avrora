@@ -37,9 +37,9 @@ import avrora.util.ClassMap;
 import java.util.HashMap;
 
 /**
- * The <code>Platforms</code> class represents the library of known platforms. It is statically initialized. Given a
- * description string such as "mica", it will return an appropriate instance of <code>PlatformFactory</code> that is
- * capable of instantiating multiple individual nodes.
+ * The <code>Platforms</code> class represents the library of known platforms. It is statically initialized.
+ * Given a description string such as "mica", it will return an appropriate instance of
+ * <code>PlatformFactory</code> that is capable of instantiating multiple individual nodes.
  *
  * @author Ben L. Titzer
  */

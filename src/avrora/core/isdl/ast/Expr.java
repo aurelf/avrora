@@ -37,8 +37,8 @@ import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
 
 /**
- * The <code>Expr</code> class represents an expression in the IR. Expressions are evaluated and produce a value that
- * can be assigned to locals, globals, maps, used in if statements, and passed as parameters.
+ * The <code>Expr</code> class represents an expression in the IR. Expressions are evaluated and produce a
+ * value that can be assigned to locals, globals, maps, used in if statements, and passed as parameters.
  *
  * @author Ben L. Titzer
  */
@@ -69,7 +69,8 @@ public abstract class Expr {
     }
 
     /**
-     * The <code>isLiteral()</code> method tests whether this expression is a known constant directly (i.e. a literal).
+     * The <code>isLiteral()</code> method tests whether this expression is a known constant directly (i.e. a
+     * literal).
      *
      * @return true if this expression is a literal; false otherwise
      */
@@ -78,8 +79,8 @@ public abstract class Expr {
     }
 
     /**
-     * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e. it is
-     * reducable to a constant and has no references to variables, maps, etc).
+     * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e.
+     * it is reducable to a constant and has no references to variables, maps, etc).
      *
      * @return true if this expression can be evaluated to a constant; false otherwise
      */
@@ -88,8 +89,8 @@ public abstract class Expr {
     }
 
     /**
-     * The <code>isMap()</code> method tests whether this expression is a reference to an element of a map. This is used
-     * in pattern matching in some parts of the tools that work on abstract syntax trees.
+     * The <code>isMap()</code> method tests whether this expression is a reference to an element of a map.
+     * This is used in pattern matching in some parts of the tools that work on abstract syntax trees.
      *
      * @return true if this expression is a reference to a map element; false otherwise
      */
@@ -98,8 +99,8 @@ public abstract class Expr {
     }
 
     /**
-     * The <code>isBitRangeExpr()</code> method tests whether the expression is an access of a range of bits. This is
-     * used in pattern matching in some parts of the code.
+     * The <code>isBitRangeExpr()</code> method tests whether the expression is an access of a range of bits.
+     * This is used in pattern matching in some parts of the code.
      *
      * @return true if this expression is a bit range expression; false otherwise
      */
@@ -108,9 +109,9 @@ public abstract class Expr {
     }
 
     /**
-     * The <code>getBitWidth()</code> method gets the number of bits needed to represent this value. This is needed in
-     * the case of encoding formats, which need to compute the size of an instruction based on the width of its internal
-     * fields.
+     * The <code>getBitWidth()</code> method gets the number of bits needed to represent this value. This is
+     * needed in the case of encoding formats, which need to compute the size of an instruction based on the
+     * width of its internal fields.
      *
      * @return the number of bits that this expression occupies
      */
@@ -119,10 +120,12 @@ public abstract class Expr {
     }
 
     /**
-     * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is used to compute
-     * when inner expressions must be nested within parentheses in order to preserve the implied order of evaluation.
+     * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is used
+     * to compute when inner expressions must be nested within parentheses in order to preserve the implied
+     * order of evaluation.
      *
-     * @return an integer representing the precedence of this expression; higher numbers are higher precedence
+     * @return an integer representing the precedence of this expression; higher numbers are higher
+     *         precedence
      */
     public abstract int getPrecedence();
 
@@ -155,17 +158,17 @@ public abstract class Expr {
     public abstract void accept(ExprVisitor v);
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can traverse
-     * the syntax tree easily and in an extensible way.
+     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+     * traverse the syntax tree easily and in an extensible way.
      *
      * @param v the visitor to accept
      */
     public abstract void accept(CodeVisitor v);
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions. This
-     * visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax tree
-     * affected.
+     * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
+     * expressions. This visitor allows code to be slightly modified while only writing visit methods for the
+     * parts of the syntax tree affected.
      *
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
@@ -173,12 +176,13 @@ public abstract class Expr {
     public abstract Expr accept(CodeRebuilder r);
 
     /**
-     * The <code>innerString()</code> method is a utility to embed an expression in parentheses only if its precedence
-     * is less than the precedence of this expression. This is useful in converting nested expressions into strings
+     * The <code>innerString()</code> method is a utility to embed an expression in parentheses only if its
+     * precedence is less than the precedence of this expression. This is useful in converting nested
+     * expressions into strings
      *
      * @param e the expression nested inside of this expression
-     * @return a string that is the result of converting the specified expression to a string and nesting it in
-     *         parentheses if necessary
+     * @return a string that is the result of converting the specified expression to a string and nesting it
+     *         in parentheses if necessary
      */
     public String innerString(Expr e) {
         if (e.getPrecedence() < this.getPrecedence())

@@ -33,17 +33,18 @@
 package avrora.monitors;
 
 /**
- * The <code>Monitor</code> class represents a monitor attached to a <code>Simulator</code> instance. Created by the
- * <code>MonitorFactory</code> class, a monitor collects statistics about a program as it runs, and then when the
- * simulation is complete, generates a report.
+ * The <code>Monitor</code> class represents a monitor attached to a <code>Simulator</code> instance. Created
+ * by the <code>MonitorFactory</code> class, a monitor collects statistics about a program as it runs, and
+ * then when the simulation is complete, generates a report.
  *
  * @author Ben L. Titzer
  */
 public interface Monitor {
 
     /**
-     * The <code>report()</code> method is called after the simulation is complete. The monitor generates a textual or
-     * other format representation of the information collected during the execution of the program.
+     * The <code>report()</code> method is called after the simulation is complete. The monitor generates a
+     * textual or other format representation of the information collected during the execution of the
+     * program.
      */
     public void report();
 }

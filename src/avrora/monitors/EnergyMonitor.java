@@ -67,9 +67,8 @@ public class EnergyMonitor extends MonitorFactory {
         private State state;
 
         /**
-         * Create a new energy monitor.
-         * Creates a file with logging information: temp.log that contains the current draw of
-         * all devices, and the state changes can be loaded into Matlab, Gnuplot, Excel... for
+         * Create a new energy monitor. Creates a file with logging information: temp.log that contains the
+         * current draw of all devices, and the state changes can be loaded into Matlab, Gnuplot, Excel... for
          * further processing and visualization.
          *
          * @param s the simulator
@@ -129,8 +128,8 @@ public class EnergyMonitor extends MonitorFactory {
         }
 
         /**
-         * implemenation of report of Monitor class. Called when the simulation ends and reports summaries for the power
-         * consumption of all devices to the stdout
+         * implemenation of report of Monitor class. Called when the simulation ends and reports summaries for
+         * the power consumption of all devices to the stdout
          *
          * @see avrora.monitors.Monitor#report()
          */

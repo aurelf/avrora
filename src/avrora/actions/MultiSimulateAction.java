@@ -50,8 +50,8 @@ import avrora.topology.Topology;
 import java.util.*;
 
 /**
- * The <code>MultiSimulateAction</code> class represents an action available to the simulator where multiple nodes are
- * run in simulation.
+ * The <code>MultiSimulateAction</code> class represents an action available to the simulator where multiple
+ * nodes are run in simulation.
  *
  * @author Simon Han
  * @author Daniel Lee

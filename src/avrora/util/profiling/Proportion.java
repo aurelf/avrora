@@ -37,8 +37,8 @@ import avrora.util.Terminal;
 import java.util.Vector;
 
 /**
- * This class represents the proportion of different items with respect to one another. For example, the proportion of
- * cars, trucks, vans, etc on the highway.
+ * This class represents the proportion of different items with respect to one another. For example, the
+ * proportion of cars, trucks, vans, etc on the highway.
  *
  * @author Ben L. Titzer
  */
@@ -48,7 +48,8 @@ public class Proportion extends DataItem {
     protected int total;
 
     /**
-     * Internal class that encapsulates both a counter and the fraction of the total that this named Share represents.
+     * Internal class that encapsulates both a counter and the fraction of the total that this named Share
+     * represents.
      */
     public class Share extends Counter {
         float fraction;

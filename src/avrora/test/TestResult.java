@@ -37,9 +37,10 @@ import avrora.CompilationError;
 import avrora.util.Terminal;
 
 /**
- * The <code>TestResult</code> class represents the result of running a test cases. The test run could succeed, it could
- * cause an internal error, an unexpected exception (e.g. <code>java.lang.NullPointerException</code>), or it could
- * generate an expected error such as a compilation error (for testing generation of error messages).
+ * The <code>TestResult</code> class represents the result of running a test cases. The test run could
+ * succeed, it could cause an internal error, an unexpected exception (e.g.
+ * <code>java.lang.NullPointerException</code>), or it could generate an expected error such as a compilation
+ * error (for testing generation of error messages).
  *
  * @author Ben L. Titzer
  */

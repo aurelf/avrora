@@ -33,9 +33,9 @@
 package avrora.core.isdl.gen;
 
 /**
- * The <code>DBBCGenerator</code> class can generate a dynamic basic block compiler given an architecture description.
- * The dynamic basic block compiler translates blocks of machine instructions into Java code that can be compiled into
- * bytecode and loaded into the VM.
+ * The <code>DBBCGenerator</code> class can generate a dynamic basic block compiler given an architecture
+ * description. The dynamic basic block compiler translates blocks of machine instructions into Java code that
+ * can be compiled into bytecode and loaded into the VM.
  *
  * @author Ben L. Titzer
  */

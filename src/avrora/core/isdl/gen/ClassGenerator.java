@@ -39,9 +39,9 @@ import avrora.util.StringUtil;
 import java.util.Iterator;
 
 /**
- * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an architecture. It
- * will generate an outer class <code>Instr</code> that contains as inner classes, the individual instructions contained
- * in the architecture description.
+ * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
+ * architecture. It will generate an outer class <code>Instr</code> that contains as inner classes, the
+ * individual instructions contained in the architecture description.
  *
  * @author Ben L. Titzer
  */

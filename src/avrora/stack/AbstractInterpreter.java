@@ -41,14 +41,14 @@ import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 
 /**
- * The <code>AbstractInterpreter</code> class implements the abstract transfer function for each instruction type. Given
- * an abstract state, it updates the abstract state according to the semantics of each instruction. The abstract
- * interpreter works on the simple instructions. For complex instructions such as calls, returns, and pushes, it
- * consults a <code>Policy</code> instance that implements the context sensitivity/insensitivity and stack modelling
- * behavior of the particular analysis.
+ * The <code>AbstractInterpreter</code> class implements the abstract transfer function for each instruction
+ * type. Given an abstract state, it updates the abstract state according to the semantics of each
+ * instruction. The abstract interpreter works on the simple instructions. For complex instructions such as
+ * calls, returns, and pushes, it consults a <code>Policy</code> instance that implements the context
+ * sensitivity/insensitivity and stack modelling behavior of the particular analysis.
  * <p/>
- * The <code>AbstractInterpreter</code> works on abstract values and uses abstract arithmetic. It operates on instances
- * of the <code>AbstractState</code> class that represent the state of the processor.
+ * The <code>AbstractInterpreter</code> works on abstract values and uses abstract arithmetic. It operates on
+ * instances of the <code>AbstractState</code> class that represent the state of the processor.
  *
  * @author Ben L. Titzer
  * @see AbstractArithmetic
@@ -67,9 +67,9 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     /**
-     * The <code>computeNextStates()</code> method computes the possible next states that follow the given immutable old
-     * state and then will push them to the <code>AnalyzerPolicy</code> instance that was passed in the constructor to
-     * this interpreter instance.
+     * The <code>computeNextStates()</code> method computes the possible next states that follow the given
+     * immutable old state and then will push them to the <code>AnalyzerPolicy</code> instance that was passed
+     * in the constructor to this interpreter instance.
      *
      * @param os the immutable old state to compute the next state from
      */

@@ -45,9 +45,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * The <code>GlobalClock</code> class implements a global timer among multiple simulators by inserting periodic timers
- * into each simulator. It is an alternate version of the <code>GlobalClock</code> class that was developed for use with
- * the synchronization policy used in the CC1000 - SimpleAir radio implementation.
+ * The <code>GlobalClock</code> class implements a global timer among multiple simulators by inserting
+ * periodic timers into each simulator. It is an alternate version of the <code>GlobalClock</code> class that
+ * was developed for use with the synchronization policy used in the CC1000 - SimpleAir radio implementation.
  * <p/>
  * A verbose printer for this class can be accessed through "sim.global".
  *
@@ -56,8 +56,9 @@ import java.util.Iterator;
 public class GlobalClock {
 
     /**
-     * <code>cycles</code> is the number of cycles on a member local clock per cycle on the global clock. Some re-coding
-     * must be done if microcontrollers running at difference speeds are to be accurately simulated.
+     * <code>cycles</code> is the number of cycles on a member local clock per cycle on the global clock. Some
+     * re-coding must be done if microcontrollers running at difference speeds are to be accurately
+     * simulated.
      */
     public final long period;
     protected final HashMap threadMap;
@@ -88,10 +89,11 @@ public class GlobalClock {
     }
 
     /**
-     * Adds an <code>Event</code> to this global event queue. It is important to note that this method adds an event
-     * executed once at the appropriate global time. It does not execute once in each thread participating in the clock.
-     * For such functionality, see <code>LocalMeet</code>. Note that the event, when fired, may run in any one of the
-     * threads participating in the global clock, and not necessarily the same thread each time.
+     * Adds an <code>Event</code> to this global event queue. It is important to note that this method adds an
+     * event executed once at the appropriate global time. It does not execute once in each thread
+     * participating in the clock. For such functionality, see <code>LocalMeet</code>. Note that the event,
+     * when fired, may run in any one of the threads participating in the global clock, and not necessarily
+     * the same thread each time.
      */
     public synchronized void insertEvent(Simulator.Event event, long ticks) {
         ticker.eventQueue.add(event, ticks);
@@ -102,7 +104,8 @@ public class GlobalClock {
     }
 
     /**
-     * Adds a <code>LocalMeet</code> event to the event queue of every simulator participating in the global clock.
+     * Adds a <code>LocalMeet</code> event to the event queue of every simulator participating in the global
+     * clock.
      */
     public void addLocalMeet(LocalMeet m, long delay) {
         Iterator threadIterator = threadMap.keySet().iterator();
@@ -127,11 +130,11 @@ public class GlobalClock {
         }
 
         /**
-         * The <code>fire()</code> method of this event is called by the individual event queues of each simulator as
-         * they reach this point in time. The implementation of this method waits for all threads to join. It will then
-         * execute the <code>serialAction()</code> method in the last thread to join the clock, and execute the
-         * <code>parallelAction</code> in each of the threads, in parallel, and then release the threads by returning
-         * back to the Simulator.
+         * The <code>fire()</code> method of this event is called by the individual event queues of each
+         * simulator as they reach this point in time. The implementation of this method waits for all threads
+         * to join. It will then execute the <code>serialAction()</code> method in the last thread to join the
+         * clock, and execute the <code>parallelAction</code> in each of the threads, in parallel, and then
+         * release the threads by returning back to the Simulator.
          */
         public void fire() {
             try {
@@ -162,23 +165,24 @@ public class GlobalClock {
         }
 
         /**
-         * The <code>preSynchAction()</code> method implements the functionality that must be performed just after the
-         * thread enters the local meet, but before it blocks waiting for the other threads. It is called with the
-         * <code>condition</code> monitor held.
+         * The <code>preSynchAction()</code> method implements the functionality that must be performed just
+         * after the thread enters the local meet, but before it blocks waiting for the other threads. It is
+         * called with the <code>condition</code> monitor held.
          */
         public abstract void preSynchAction();
 
         /**
-         * The <code>serialAction()</code> method implements the functionality that must be performed in serial when the
-         * threads have joined at this local meet. This method will execute in the last thread to enter the fire()
-         * method.
+         * The <code>serialAction()</code> method implements the functionality that must be performed in
+         * serial when the threads have joined at this local meet. This method will execute in the last thread
+         * to enter the fire() method.
          */
         public abstract void serialAction();
 
         /**
-         * The <code>parallelAction()</code> method implements the functionality that must be performed in parallel when
-         * the threads have joined at this local meet, and after the serial action has been completed. It will be called
-         * in each thread, with the parameter passed being the current SimulatorThread.
+         * The <code>parallelAction()</code> method implements the functionality that must be performed in
+         * parallel when the threads have joined at this local meet, and after the serial action has been
+         * completed. It will be called in each thread, with the parameter passed being the current
+         * SimulatorThread.
          *
          * @param st the current <code>SimulatorThread</code> instance for this thread
          */
@@ -199,8 +203,8 @@ public class GlobalClock {
     }
 
     /**
-     * The <code>Ticker</code> class is an event that fires in the local queues of participating threads. This class is
-     * necessary for ensuring the integrity of the global clock.
+     * The <code>Ticker</code> class is an event that fires in the local queues of participating threads. This
+     * class is necessary for ensuring the integrity of the global clock.
      */
     public static class Ticker extends LocalMeet {
 
@@ -229,9 +233,10 @@ public class GlobalClock {
 
 
     /**
-     * How sad. The <code>InterruptedException</code> wraps an interrupted exception with an unchecked exception so that
-     * it doesn't break the interface of the <code>Simulator.Event</code> class. It's not clear what useful purpose
-     * interrupted exceptions could serve in the implementation of the global clock.
+     * How sad. The <code>InterruptedException</code> wraps an interrupted exception with an unchecked
+     * exception so that it doesn't break the interface of the <code>Simulator.Event</code> class. It's not
+     * clear what useful purpose interrupted exceptions could serve in the implementation of the global
+     * clock.
      */
     public static class InterruptedException extends RuntimeException {
         public final java.lang.InterruptedException exception;

@@ -35,8 +35,9 @@ package avrora.util.profiling;
 import avrora.util.Terminal;
 
 /**
- * The profiling database. Collects information about profiling and is implemented as a static class. This allows other
- * tools to register subclasses of ProfilingData and the Database will collect them and report their statistics.
+ * The profiling database. Collects information about profiling and is implemented as a static class. This
+ * allows other tools to register subclasses of ProfilingData and the Database will collect them and report
+ * their statistics.
  *
  * @author Ben L. Titzer
  */

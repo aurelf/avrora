@@ -37,16 +37,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * The <code>ProcedureMap</code> class represents a mapping from basic blocks to the procedures that contain them. Built
- * by the <code>ProcedureMapBuilder</code> class and accessible through the <code>ControlFlowGraph.getProcedureMap()</code>,
- * the <code>ProcedureMap</code>, the mapping is built by first recognized static call sites and marking their target
- * basic blocks as procedure entry points. Those entrypoints are propagated through the control flow graph to all
- * reachable basic blocks (ignoring call edges). If a basic block is reachable through more than one procedure entry, it
- * is considered shared.
+ * The <code>ProcedureMap</code> class represents a mapping from basic blocks to the procedures that contain
+ * them. Built by the <code>ProcedureMapBuilder</code> class and accessible through the
+ * <code>ControlFlowGraph.getProcedureMap()</code>, the <code>ProcedureMap</code>, the mapping is built by
+ * first recognized static call sites and marking their target basic blocks as procedure entry points. Those
+ * entrypoints are propagated through the control flow graph to all reachable basic blocks (ignoring call
+ * edges). If a basic block is reachable through more than one procedure entry, it is considered shared.
  * <p/>
- * The result is a conservative approximation of which basic blocks are in which procedure. Given a basic block, this
- * class can look up the basic block which represents the entrypoint of that procedure. Also, given the entrypoint of a
- * procedure, the class can return a collection of the basic blocks that are reachable from that entrypoint.
+ * The result is a conservative approximation of which basic blocks are in which procedure. Given a basic
+ * block, this class can look up the basic block which represents the entrypoint of that procedure. Also,
+ * given the entrypoint of a procedure, the class can return a collection of the basic blocks that are
+ * reachable from that entrypoint.
  * <p/>
  * Interrupt handlers are not considered the entrypoints of procedures.
  *
@@ -67,8 +68,8 @@ public class ProcedureMap {
     }
 
     /**
-     * The <code>isInAnyProcedure()</code> method queries whether the specified basic block is reachable from any
-     * procedure entry point in the program.
+     * The <code>isInAnyProcedure()</code> method queries whether the specified basic block is reachable from
+     * any procedure entry point in the program.
      *
      * @param b the basic block to query
      * @return true if this basic block is in one or more procedure; false otherwise
@@ -78,8 +79,8 @@ public class ProcedureMap {
     }
 
     /**
-     * The <code>isSharedBetweenProcedures()</code> method queries whether the specified basic block is reachable from
-     * more than one procedure entrypoint.
+     * The <code>isSharedBetweenProcedures()</code> method queries whether the specified basic block is
+     * reachable from more than one procedure entrypoint.
      *
      * @param b the basic block to query
      * @return true if this basic block is reachable from more than one procedure; false otherwise
@@ -93,13 +94,13 @@ public class ProcedureMap {
     }
 
     /**
-     * The <code>getProcedureContaining()</code> method looks up the entrypoint of the procedure that contains this
-     * basic block. If the block is not in any procedure, or if the block is shared by multiple procedures, then this
-     * method returns null.
+     * The <code>getProcedureContaining()</code> method looks up the entrypoint of the procedure that contains
+     * this basic block. If the block is not in any procedure, or if the block is shared by multiple
+     * procedures, then this method returns null.
      *
      * @param b the basic block to find the procedure of
-     * @return a reference to the unique <code>ControlFlowGraph.Block</code> instance that is the entrypoint of the
-     *         procedure containing the specified basic block; null otherwise
+     * @return a reference to the unique <code>ControlFlowGraph.Block</code> instance that is the entrypoint
+     *         of the procedure containing the specified basic block; null otherwise
      */
     public ControlFlowGraph.Block getProcedureContaining(ControlFlowGraph.Block b) {
         Object o = entryMap.get(b);
@@ -110,9 +111,9 @@ public class ProcedureMap {
     }
 
     /**
-     * The <code>getProcedureBlocks()</code> method returns the collection of basic blocks contained in the procedure
-     * with the specified entrypoint. If the block passed is not the entrypoint of any procedure, this method will
-     * return null.
+     * The <code>getProcedureBlocks()</code> method returns the collection of basic blocks contained in the
+     * procedure with the specified entrypoint. If the block passed is not the entrypoint of any procedure,
+     * this method will return null.
      *
      * @param entry the basic block representing the entrypoint of the procedure
      * @return a collection of the basic blocks contained in the procedure with the specified entrypoint
@@ -122,8 +123,8 @@ public class ProcedureMap {
     }
 
     /**
-     * The <code>getProcedureEntrypoints()</code> method returns a collection of basic blocks that are entrypoints of
-     * procedures in the control flow graph.
+     * The <code>getProcedureEntrypoints()</code> method returns a collection of basic blocks that are
+     * entrypoints of procedures in the control flow graph.
      *
      * @return a collection of basic blocks that are entrypoints to procedures
      */

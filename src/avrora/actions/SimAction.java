@@ -99,11 +99,11 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>getMicrocontroller()</code> method is used to get the current microcontroller from the library of
-     * implemented ones, based on the command line option that was specified (-chip=xyz).
+     * The <code>getMicrocontroller()</code> method is used to get the current microcontroller from the
+     * library of implemented ones, based on the command line option that was specified (-chip=xyz).
      *
-     * @return an instance of <code>MicrocontrollerFactory</code> for the microcontroller specified on the command
-     *         line.
+     * @return an instance of <code>MicrocontrollerFactory</code> for the microcontroller specified on the
+     *         command line.
      */
     protected MicrocontrollerFactory getMicrocontroller() {
         MicrocontrollerFactory mcu = Microcontrollers.getMicrocontroller(CHIP.get());
@@ -113,8 +113,8 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>getPlatform()</code> method is used to get the current platform from the library of implemented ones,
-     * based on the command line option that was specified (-platform=xyz).
+     * The <code>getPlatform()</code> method is used to get the current platform from the library of
+     * implemented ones, based on the command line option that was specified (-platform=xyz).
      *
      * @return an instance of <code>PlatformFactory</code> for the platform specified on the command line
      */
@@ -143,9 +143,9 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>processMonitorList()</code> method builds a list of <code>MonitorFactory</code> instances from the list
-     * of strings given as an option at the command line. The list of <code>MonitorFactory</code> instances is used to
-     * create monitors for each simulator as it is created.
+     * The <code>processMonitorList()</code> method builds a list of <code>MonitorFactory</code> instances
+     * from the list of strings given as an option at the command line. The list of
+     * <code>MonitorFactory</code> instances is used to create monitors for each simulator as it is created.
      */
     protected void processMonitorList() {
         if (monitorFactoryList.size() > 0) return;
@@ -163,13 +163,13 @@ public abstract class SimAction extends Action {
     int simcount;
 
     /**
-     * The <code>newSimulator()</code> method is used by subclasses of this action to create a new instance of a
-     * simulator with the correct platform. This method also creates monitors for the simulator instance as specified
-     * from the command line.
+     * The <code>newSimulator()</code> method is used by subclasses of this action to create a new instance of
+     * a simulator with the correct platform. This method also creates monitors for the simulator instance as
+     * specified from the command line.
      *
      * @param p the program to load onto the simulator
-     * @return an instance of the <code>Simulator</code> class that has the specified programs loaded onto it and has
-     *         monitors attached to as specified on the command line
+     * @return an instance of the <code>Simulator</code> class that has the specified programs loaded onto it
+     *         and has monitors attached to as specified on the command line
      */
     protected Simulator newSimulator(Program p) {
         Simulator simulator;
@@ -205,8 +205,8 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>reportMonitors()</code> method gets a list of <code>Monitor</code> instances attached to the simulator
-     * and calls each of their <code>report()</code> methods.
+     * The <code>reportMonitors()</code> method gets a list of <code>Monitor</code> instances attached to the
+     * simulator and calls each of their <code>report()</code> methods.
      *
      * @param s the simulator for which to report all the monitors
      */
@@ -227,8 +227,8 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>getLocationList()</code> method is to used to parse a list of program locations and turn them into a
-     * list of <code>Main.Location</code> instances.
+     * The <code>getLocationList()</code> method is to used to parse a list of program locations and turn them
+     * into a list of <code>Main.Location</code> instances.
      *
      * @param program the program to look up labels in
      * @param v       the list of strings that are program locations

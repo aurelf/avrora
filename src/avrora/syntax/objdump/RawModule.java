@@ -38,9 +38,9 @@ import avrora.util.StringUtil;
 import java.util.HashMap;
 
 /**
- * The <code>RawModule</code> is a subclass of <code>Module</code> that allows random access when creating a program
- * from an input source. This is needed since the object dump format is special in that each item it prints has its own
- * address, and can have multiple sections.
+ * The <code>RawModule</code> is a subclass of <code>Module</code> that allows random access when creating a
+ * program from an input source. This is needed since the object dump format is special in that each item it
+ * prints has its own address, and can have multiple sections.
  *
  * @author Ben L. Titzer
  */

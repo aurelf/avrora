@@ -35,9 +35,9 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.parser.Token;
 
 /**
- * The <code>DeclStmt</code> represents a declaration of a local, temporary value in the IR. A named temporary is given
- * a type and an initial value at declaration time, allowing typechecking and ensuring that every variable is
- * initialized before it is used.
+ * The <code>DeclStmt</code> represents a declaration of a local, temporary value in the IR. A named temporary
+ * is given a type and an initial value at declaration time, allowing typechecking and ensuring that every
+ * variable is initialized before it is used.
  *
  * @author Ben L. Titzer
  */
@@ -53,14 +53,14 @@ public class DeclStmt extends Stmt {
     public final Token type;
 
     /**
-     * The <code>init</code> field stores a reference to the expression which is evaluated to give an initial value to
-     * the local.
+     * The <code>init</code> field stores a reference to the expression which is evaluated to give an initial
+     * value to the local.
      */
     public final Expr init;
 
     /**
-     * The constructor of the <code>DeclStmt</code> class initializes the references to the name, type, and initial
-     * value of the declared local.
+     * The constructor of the <code>DeclStmt</code> class initializes the references to the name, type, and
+     * initial value of the declared local.
      *
      * @param n the name of the local as a token
      * @param t the type of the local as a token
@@ -73,8 +73,8 @@ public class DeclStmt extends Stmt {
     }
 
     /**
-     * The constructor of the <code>DeclStmt</code> class initializes the references to the name, type, and initial
-     * value of the declared local.
+     * The constructor of the <code>DeclStmt</code> class initializes the references to the name, type, and
+     * initial value of the declared local.
      *
      * @param n the name of the local as a string
      * @param t the type of the local as a token
@@ -88,8 +88,8 @@ public class DeclStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
-     * trees representing the code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine.
      *
      * @param v the visitor to accept
      */
@@ -107,9 +107,9 @@ public class DeclStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
-     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
-     * allows visitors to rearrange and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine. The
+     * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
      *
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed

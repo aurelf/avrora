@@ -36,8 +36,8 @@ import java.util.*;
 
 /**
  * The <code>ProcedureMapBuilder</code> class is used internally in the implementation of the
- * <code>ControlFlowGraph</code> and <code>ProcedureMap</code> classes to build the mapping between basic blocks and
- * procedures.
+ * <code>ControlFlowGraph</code> and <code>ProcedureMap</code> classes to build the mapping between basic
+ * blocks and procedures.
  *
  * @author Ben L. Titzer
  * @see ProcedureMap

@@ -52,10 +52,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>SimulateAction</code> implements the bridge between the functionality in the <code>avrora.sim</code>
- * package and the entrypoint to Avrora in <code>avrora.Main</code>. This class has a <code>run()</code> method that is
- * called by the main class after the options have been processed. The <code>run()</code> reads in the program,
- * processes breakpoints, profiling counters, and other options, and begins the simulation.
+ * The <code>SimulateAction</code> implements the bridge between the functionality in the
+ * <code>avrora.sim</code> package and the entrypoint to Avrora in <code>avrora.Main</code>. This class has a
+ * <code>run()</code> method that is called by the main class after the options have been processed. The
+ * <code>run()</code> reads in the program, processes breakpoints, profiling counters, and other options, and
+ * begins the simulation.
  *
  * @author Ben L. Titzer
  */
@@ -163,7 +164,8 @@ public class SimulateAction extends SimAction {
      * The <code>run()</code> method is called by the main class.
      *
      * @param args the command line arguments after the options have been stripped out
-     * @throws java.lang.Exception if there is a problem loading the program, or an exception occurs during simulation
+     * @throws java.lang.Exception if there is a problem loading the program, or an exception occurs during
+     *                             simulation
      */
     public void run(String[] args) throws Exception {
         runSimulation(args);

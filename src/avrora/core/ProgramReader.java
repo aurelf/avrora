@@ -33,8 +33,8 @@
 package avrora.core;
 
 /**
- * The <code>ProgramReader</code> class represents an object capable of reading a program given the special command line
- * arguments. It may for example read source assembly and produce a simplified program.
+ * The <code>ProgramReader</code> class represents an object capable of reading a program given the special
+ * command line arguments. It may for example read source assembly and produce a simplified program.
  */
 public abstract class ProgramReader {
     /**

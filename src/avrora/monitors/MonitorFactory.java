@@ -37,17 +37,17 @@ import avrora.util.Terminal;
 import avrora.sim.Simulator;
 
 /**
- * The <code>MonitorFactory</code> class represents a profiling utility that is able to produce a <code>Monitor</code>
- * for a simulation. The monitor can use probes, watches, and events to monitor the execution of the program and issue a
- * report after the simulation is completed.
+ * The <code>MonitorFactory</code> class represents a profiling utility that is able to produce a
+ * <code>Monitor</code> for a simulation. The monitor can use probes, watches, and events to monitor the
+ * execution of the program and issue a report after the simulation is completed.
  *
  * @author Ben L. Titzer
  */
 public abstract class MonitorFactory {
 
     /**
-     * The <code>help</code> field stores a reference to a string that represents the contextual help from this
-     * monitor.
+     * The <code>help</code> field stores a reference to a string that represents the contextual help from
+     * this monitor.
      */
     public final String help;
 
@@ -57,14 +57,14 @@ public abstract class MonitorFactory {
     public final String shortName;
 
     /**
-     * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that stores
-     * the command line options to the monitor.
+     * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
+     * stores the command line options to the monitor.
      */
     public final Options options;
 
     /**
-     * The constructor for the <code>MonitorFactory</code> class initializes the <code>options</code> field, as well as
-     * the references to the help string and the short name of the monitor.
+     * The constructor for the <code>MonitorFactory</code> class initializes the <code>options</code> field,
+     * as well as the references to the help string and the short name of the monitor.
      *
      * @param sn the short name of the monitor as a string
      * @param h  the help item for the monitor as a string
@@ -77,19 +77,20 @@ public abstract class MonitorFactory {
 
 
     /**
-     * The <code>newMonitor()</code> method creates a new monitor for the specified instance of <code>Simulator</code>.
-     * The resulting monitor may insert probes, watches, or events into the simulation to collect information and later
-     * report that information after the simulation is complete.
+     * The <code>newMonitor()</code> method creates a new monitor for the specified instance of
+     * <code>Simulator</code>. The resulting monitor may insert probes, watches, or events into the simulation
+     * to collect information and later report that information after the simulation is complete.
      *
      * @param s the <code>Simulator</code> instance to create the monitor for
-     * @return an instance of the <code>Monitor</code> interface that represents the monitor for the simulator
+     * @return an instance of the <code>Monitor</code> interface that represents the monitor for the
+     *         simulator
      */
     public abstract Monitor newMonitor(Simulator s);
 
     /**
-     * The <code>processOptions()</code> method is called after the <code> MonitorFactory</code> instance is created.
-     * These options are the options left over from processing the command line, extracting the parameters to the main
-     * program, extracting the parameters from the action.
+     * The <code>processOptions()</code> method is called after the <code> MonitorFactory</code> instance is
+     * created. These options are the options left over from processing the command line, extracting the
+     * parameters to the main program, extracting the parameters from the action.
      *
      * @param o the options representing the known and unknown options from the command line
      */
@@ -98,8 +99,8 @@ public abstract class MonitorFactory {
     }
 
     /**
-     * The <code>getShortName()</code> method returns a shortened version of the name of this monitor for more quick
-     * access at the command line.
+     * The <code>getShortName()</code> method returns a shortened version of the name of this monitor for more
+     * quick access at the command line.
      *
      * @return a string representation of an abbreviated name for this monitor
      */
@@ -108,8 +109,8 @@ public abstract class MonitorFactory {
     }
 
     /**
-     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to report
-     * various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
+     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to
+     * report various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
      *
      * @param name  the name of the quantity being reported
      * @param val   the value to be reported as a long integer
@@ -120,8 +121,8 @@ public abstract class MonitorFactory {
     }
 
     /**
-     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to report
-     * various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
+     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to
+     * report various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
      *
      * @param name  the name of the quantity being reported
      * @param val   the value to be reported as a floating point number
@@ -132,8 +133,8 @@ public abstract class MonitorFactory {
     }
 
     /**
-     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to report
-     * various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
+     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to
+     * report various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
      *
      * @param name  the name of the quantity being reported
      * @param val   the value to be reported as a string

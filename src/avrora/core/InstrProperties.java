@@ -33,8 +33,8 @@
 package avrora.core;
 
 /**
- * The <code>InstrProperties</code> represents a grab bag of the properties of an instruction. The fields are public and
- * final, which allows fast access from the interpreter.
+ * The <code>InstrProperties</code> represents a grab bag of the properties of an instruction. The fields are
+ * public and final, which allows fast access from the interpreter.
  *
  * @author Ben L. Titzer
  * @see Instr
@@ -47,7 +47,8 @@ public class InstrProperties {
     public final String name;
 
     /**
-     * The <code>variant</code> field stores an immutable reference to the variant of the instruction as a string.
+     * The <code>variant</code> field stores an immutable reference to the variant of the instruction as a
+     * string.
      */
     public final String variant;
 
@@ -57,13 +58,14 @@ public class InstrProperties {
     public final int size;
 
     /**
-     * The <code>cycles</code> field stores the minimum number of cycles required to execute this instruction.
+     * The <code>cycles</code> field stores the minimum number of cycles required to execute this
+     * instruction.
      */
     public final int cycles;
 
     /**
-     * The constructor for the <code>InstrProperties</code> class simply initializes the final fields of this class
-     * based on the input parameters.
+     * The constructor for the <code>InstrProperties</code> class simply initializes the final fields of this
+     * class based on the input parameters.
      *
      * @param n the name of the instruction as a string
      * @param v the variant of the instruction as a string

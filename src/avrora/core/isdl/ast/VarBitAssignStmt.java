@@ -35,27 +35,28 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.parser.Token;
 
 /**
- * The <code>VarBitAssignStmt</code> class represents an assignment to a single bit within a local or global variable.
+ * The <code>VarBitAssignStmt</code> class represents an assignment to a single bit within a local or global
+ * variable.
  *
  * @author Ben L. Titzer
  */
 public class VarBitAssignStmt extends AssignStmt {
 
     /**
-     * The <code>variable</code> field stores a reference to the token that represents the name of the variable being
-     * assigned to.
+     * The <code>variable</code> field stores a reference to the token that represents the name of the
+     * variable being assigned to.
      */
     public final Token variable;
 
     /**
-     * The <code>bit</code> field stores a reference to the expression that represents the index of the bit to assign
-     * to.
+     * The <code>bit</code> field stores a reference to the expression that represents the index of the bit to
+     * assign to.
      */
     public final Expr bit;
 
     /**
-     * The constructor for the <code>VarAssignStmt</code> class simply initializes the internal references to the
-     * internal members of this assignment.
+     * The constructor for the <code>VarAssignStmt</code> class simply initializes the internal references to
+     * the internal members of this assignment.
      *
      * @param m the string name of the variable as a token
      * @param b an expression representing the index of the bit
@@ -68,8 +69,8 @@ public class VarBitAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
-     * trees representing the code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine.
      *
      * @param v the visitor to accept
      */
@@ -87,9 +88,9 @@ public class VarBitAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
-     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
-     * allows visitors to rearrange and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine. The
+     * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
      *
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed

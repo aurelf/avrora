@@ -53,10 +53,10 @@ import avrora.util.Verbose;
  *
  * @author Olaf Landsiedel
  *         <p/>
- *         Yes, the free space radio model is not very realitic, but this is not the porpose of thie implementation. It
- *         shall model the characteristics of radio propagation and so enable multihop scenarios. This implementation
- *         bases heavily on the SimpleAir class by Daniel Lee. However, the changes needed, where to heavy to allow for
- *         standard class extension
+ *         Yes, the free space radio model is not very realitic, but this is not the porpose of thie
+ *         implementation. It shall model the characteristics of radio propagation and so enable multihop
+ *         scenarios. This implementation bases heavily on the SimpleAir class by Daniel Lee. However, the
+ *         changes needed, where to heavy to allow for standard class extension
  */
 public class FreeSpaceAir implements RadioAir {
 
@@ -262,13 +262,13 @@ public class FreeSpaceAir implements RadioAir {
     }
 
     /**
-     * see simple air Tricky! This method checks whether every thread has reached either a local meet or has tried to
-     * read the RSSI value. If every thread has joined in one of these two ways this method will select the RSSI waiter
-     * that made the earliest request. If that waiter is NOT the waiter passed as a parameter, it will wake that waiter.
-     * If that waiter IS the waiter passed, it will NOT wake it.
+     * see simple air Tricky! This method checks whether every thread has reached either a local meet or has
+     * tried to read the RSSI value. If every thread has joined in one of these two ways this method will
+     * select the RSSI waiter that made the earliest request. If that waiter is NOT the waiter passed as a
+     * parameter, it will wake that waiter. If that waiter IS the waiter passed, it will NOT wake it.
      *
-     * @param curWait the current waiter, null if this method is being called as a result of a thread entering a local
-     *                meet
+     * @param curWait the current waiter, null if this method is being called as a result of a thread entering
+     *                a local meet
      * @return the waiter at the head of the line if all threads have joined, null otherwise
      */
     private RSSIWait checkRSSIWaiters(RSSIWait curWait) {
@@ -306,9 +306,10 @@ public class FreeSpaceAir implements RadioAir {
     /**
      * @author Olaf Landsiedel
      *         <p/>
-     *         The <code>RadioTicker</code> class is the global timer for the radio. It is specialized in that it will
-     *         schedule delivery meets when, at the end of the interval, there was at least one packet sent. The simple
-     *         air version (by Daniel Lee) has been heavily changed to enable free space radio modelling
+     *         The <code>RadioTicker</code> class is the global timer for the radio. It is specialized in that
+     *         it will schedule delivery meets when, at the end of the interval, there was at least one packet
+     *         sent. The simple air version (by Daniel Lee) has been heavily changed to enable free space
+     *         radio modelling
      */
     protected class RadioTicker extends GlobalClock.Ticker {
         //long deliveryDelta;
@@ -369,8 +370,8 @@ public class FreeSpaceAir implements RadioAir {
     }
 
     /**
-     * An extended version of <code>GlobalClock</code> that implements a version of <code>LocalMeet</code> that is
-     * appropriate for delivering radio packets.
+     * An extended version of <code>GlobalClock</code> that implements a version of <code>LocalMeet</code>
+     * that is appropriate for delivering radio packets.
      *
      * @author Daniel Lee
      */

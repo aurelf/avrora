@@ -40,8 +40,9 @@ import avrora.util.StringUtil;
 import avrora.util.Options;
 
 /**
- * The <code>SleepMonitor</code> class is a monitor that tracks statistics about the sleeping patterns of programs,
- * including the total number of cycles awake and the total number of cycles asleep during the simulation.
+ * The <code>SleepMonitor</code> class is a monitor that tracks statistics about the sleeping patterns of
+ * programs, including the total number of cycles awake and the total number of cycles asleep during the
+ * simulation.
  *
  * @author Ben L. Titzer
  */

@@ -40,8 +40,8 @@ import avrora.util.StringUtil;
 import avrora.util.Options;
 
 /**
- * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as counts and
- * branchcounts about the program as it executes.
+ * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as
+ * counts and branchcounts about the program as it executes.
  *
  * @author Ben L. Titzer
  */
@@ -49,8 +49,8 @@ public class ProfileMonitor extends MonitorFactory {
 
     /**
      * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
-     * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that collects
-     * execution counts for every instruction in the program.
+     * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
+     * collects execution counts for every instruction in the program.
      */
     public class Monitor implements avrora.monitors.Monitor {
         public final Simulator simulator;
@@ -66,9 +66,9 @@ public class ProfileMonitor extends MonitorFactory {
         }
 
         /**
-         * The <code>report()</code> method generates a textual report for the profiling information gathered from the
-         * execution of the program. The result is a table of performance information giving the number of executions of
-         * each instruction, compressed for basic blocks.
+         * The <code>report()</code> method generates a textual report for the profiling information gathered
+         * from the execution of the program. The result is a table of performance information giving the
+         * number of executions of each instruction, compressed for basic blocks.
          */
         public void report() {
             Terminal.printSeparator(78);
@@ -120,8 +120,8 @@ public class ProfileMonitor extends MonitorFactory {
     }
 
     /**
-     * The constructor for the <code>ProfileMonitor</code> class creates a factory that is capable of producing profile
-     * monitors for each simulator passed.
+     * The constructor for the <code>ProfileMonitor</code> class creates a factory that is capable of
+     * producing profile monitors for each simulator passed.
      */
     public ProfileMonitor() {
         super("profile", "The \"profile\" monitor profiles the execution history " +
@@ -130,11 +130,12 @@ public class ProfileMonitor extends MonitorFactory {
     }
 
     /**
-     * The <code>newMonitor()</code> method creates a new monitor for the given simulator that is capable of collecting
-     * performance information as the program executes.
+     * The <code>newMonitor()</code> method creates a new monitor for the given simulator that is capable of
+     * collecting performance information as the program executes.
      *
      * @param s the simulator to create the monitor for
-     * @return an instance of the <code>Monitor</code> interface that tracks performance information from the program
+     * @return an instance of the <code>Monitor</code> interface that tracks performance information from the
+     *         program
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Monitor(s);

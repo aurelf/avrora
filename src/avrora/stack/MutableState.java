@@ -37,8 +37,8 @@ import avrora.core.Register;
 import avrora.sim.IORegisterConstants;
 
 /**
- * The <code>MutableState</code> class represents an abstract state of the processor that is mutable. This is used in
- * computation of next states, but is not used in the state space.
+ * The <code>MutableState</code> class represents an abstract state of the processor that is mutable. This is
+ * used in computation of next states, but is not used in the state space.
  *
  * @author Ben L. Titzer
  * @see AbstractArithmetic
@@ -47,9 +47,9 @@ import avrora.sim.IORegisterConstants;
 public class MutableState extends AbstractState implements IORegisterConstants {
 
     /**
-     * The constructor of the <code>MutableState</code> class builds the default values of each of the registers and
-     * each IO register that is being modelled. The default is that all registers are known zero, all IO registers are
-     * known zero, and the program counter is zero.
+     * The constructor of the <code>MutableState</code> class builds the default values of each of the
+     * registers and each IO register that is being modelled. The default is that all registers are known
+     * zero, all IO registers are known zero, and the program counter is zero.
      */
     public MutableState() {
         av_SREG = AbstractArithmetic.ZERO;
@@ -70,9 +70,9 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>merge()</code> method merges this abstract state with another abstract state and returns a new copy.
-     * This abstract state is not updated. The operation is a simple pointwise merging operation: each value is merged
-     * with its corresponding abstract value in the other abstract state.
+     * The <code>merge()</code> method merges this abstract state with another abstract state and returns a
+     * new copy. This abstract state is not updated. The operation is a simple pointwise merging operation:
+     * each value is merged with its corresponding abstract value in the other abstract state.
      *
      * @param s the abstract state to merge with
      * @return a new abstract state that represents the merged abstract states
@@ -93,8 +93,8 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>hashCode()</code> method computes an integer hash code for this state. A good hash code is needed to
-     * make hashtables in <code>StateSpace</code> efficient.
+     * The <code>hashCode()</code> method computes an integer hash code for this state. A good hash code is
+     * needed to make hashtables in <code>StateSpace</code> efficient.
      *
      * @throws avrora.Avrora.InternalError
      */
@@ -114,8 +114,8 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>setPC()</code> method updates the concrete value of the program counter. The program counter is known
-     * in ever abstract state.
+     * The <code>setPC()</code> method updates the concrete value of the program counter. The program counter
+     * is known in ever abstract state.
      *
      * @param npc the new concrete value of the program counter
      */
@@ -214,8 +214,8 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>setIORegisterAV()</code> method writes the abstract value of an IO register. If the register is being
-     * modelled, then its value will be updated. Otherwise, the write will be ignored.
+     * The <code>setIORegisterAV()</code> method writes the abstract value of an IO register. If the register
+     * is being modelled, then its value will be updated. Otherwise, the write will be ignored.
      *
      * @param num the IO register number to be updated
      * @param val the new abstract value of the IO register

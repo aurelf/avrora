@@ -50,8 +50,8 @@ abstract public class Database {
     }
 
     /**
-     * Generate a textual report of the information in this database. Default behavior is to traverse all items in order
-     * of registering.
+     * Generate a textual report of the information in this database. Default behavior is to traverse all
+     * items in order of registering.
      */
     public void textReport() {
         int numitems = items.size();
@@ -75,7 +75,8 @@ abstract public class Database {
     }
 
     /**
-     * Accept a visitor into this database. Default behavior is to traverse all items in order of registering.
+     * Accept a visitor into this database. Default behavior is to traverse all items in order of
+     * registering.
      */
     public void accept(DatabaseVisitor v) {
         int numitems = items.size();

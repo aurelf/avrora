@@ -36,8 +36,8 @@ import avrora.util.Terminal;
 
 
 /**
- * This models the min, max, mean, accumulation, total, and number of occurrences of min and max in a stream of
- * integers.
+ * This models the min, max, mean, accumulation, total, and number of occurrences of min and max in a stream
+ * of integers.
  *
  * @author Ben L. Titzer
  */

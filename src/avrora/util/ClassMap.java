@@ -40,25 +40,27 @@ import java.util.List;
 import java.util.Collections;
 
 /**
- * The <code>ClassMap</code> is a class that maps short names (i.e. short, lower case strings) to java classes and can
- * instantiate them. This is useful for dynamic resolution of classes but with a small set of known defaults that have a
- * short name. If the short name is not in the default set, this class will treat the short name as a fully qualified
- * Java class name and load it. This class does the requisite checking--that the class exists, that it can be loaded,
- * that it is of the appropriate type, that it can be instantiated, etc.
+ * The <code>ClassMap</code> is a class that maps short names (i.e. short, lower case strings) to java classes
+ * and can instantiate them. This is useful for dynamic resolution of classes but with a small set of known
+ * defaults that have a short name. If the short name is not in the default set, this class will treat the
+ * short name as a fully qualified Java class name and load it. This class does the requisite checking--that
+ * the class exists, that it can be loaded, that it is of the appropriate type, that it can be instantiated,
+ * etc.
  *
  * @author Ben L. Titzer
  */
 public class ClassMap {
 
     /**
-     * The <code>type</code> field stores a string that represents the name of the "type" that this map contains. For
-     * example, a class map for actions might be called "Action" and for input formats might be called "Input Format".
+     * The <code>type</code> field stores a string that represents the name of the "type" that this map
+     * contains. For example, a class map for actions might be called "Action" and for input formats might be
+     * called "Input Format".
      */
     protected final String type;
 
     /**
-     * The <code>clazz</code> field stores a reference to the Java class of which the objects stored in this map are
-     * instances of.
+     * The <code>clazz</code> field stores a reference to the Java class of which the objects stored in this
+     * map are instances of.
      */
     protected final Class clazz;
 
@@ -68,14 +70,14 @@ public class ClassMap {
     protected final HashMap classMap;
 
     /**
-     * The <code>objMap</code> field is a hash map that maps a string to an instance of a particular class, i.e. an
-     * object.
+     * The <code>objMap</code> field is a hash map that maps a string to an instance of a particular class,
+     * i.e. an object.
      */
     protected final HashMap objMap;
 
     /**
-     * The constructor for the <code>ClassMap</code> class creates a new class map with the specified type, which maps
-     * strings to instances of the specified class.
+     * The constructor for the <code>ClassMap</code> class creates a new class map with the specified type,
+     * which maps strings to instances of the specified class.
      *
      * @param t   the name of the type of this class as a string
      * @param clz the class which objects should be instances of
@@ -88,8 +90,8 @@ public class ClassMap {
     }
 
     /**
-     * The <code>addClass()</code> method adds a short name (alias) for the specified class to the set of default class
-     * names.
+     * The <code>addClass()</code> method adds a short name (alias) for the specified class to the set of
+     * default class names.
      *
      * @param shortName the string representation of the alias of the class
      * @param clz       the class to which the alias maps
@@ -99,12 +101,12 @@ public class ClassMap {
     }
 
     /**
-     * The <code>addInstance()</code> method adds a mapping between a short name (alias) and an object that is the
-     * instance of the class represented by that short name.
+     * The <code>addInstance()</code> method adds a mapping between a short name (alias) and an object that is
+     * the instance of the class represented by that short name.
      *
      * @param shortName the alias for the instance
-     * @param o         the actual object that will be returned from <code>getObjectOfClass()</code> when the parameters
-     *                  is equal to the alias.
+     * @param o         the actual object that will be returned from <code>getObjectOfClass()</code> when the
+     *                  parameters is equal to the alias.
      */
     public void addInstance(String shortName, Object o) {
         objMap.put(shortName, o);
@@ -112,10 +114,11 @@ public class ClassMap {
     }
 
     /**
-     * The <code>getClass()</code> method gets the Java class representing the class returned for a given short name. If
-     * there is no short name (alias) for the passed argument, this method will assume that the parameter is the fully
-     * qualified name of a class. It will then load that class and instantiate an instance of that class. That instance
-     * will be returned in subsequent calls to <code>getObjectOfClass()</code>.
+     * The <code>getClass()</code> method gets the Java class representing the class returned for a given
+     * short name. If there is no short name (alias) for the passed argument, this method will assume that the
+     * parameter is the fully qualified name of a class. It will then load that class and instantiate an
+     * instance of that class. That instance will be returned in subsequent calls to
+     * <code>getObjectOfClass()</code>.
      *
      * @param shortName the short name of the class
      * @return a Java class representing the class for that alias or fully qualified name
@@ -127,8 +130,9 @@ public class ClassMap {
     }
 
     /**
-     * The <code>getObjectOfClass()</code> method looks up the string name of the class in the alias map first, and if
-     * not found, attempts to load the class using <code>Class.forName()</code> and instantiates one object.
+     * The <code>getObjectOfClass()</code> method looks up the string name of the class in the alias map
+     * first, and if not found, attempts to load the class using <code>Class.forName()</code> and instantiates
+     * one object.
      *
      * @param name the name of the class or alias
      * @return an instance of the specified class
@@ -167,8 +171,8 @@ public class ClassMap {
     }
 
     /**
-     * The <code>getSortedList()</code> method returns a sorted list of the short names (aliases) stored in this class
-     * map.
+     * The <code>getSortedList()</code> method returns a sorted list of the short names (aliases) stored in
+     * this class map.
      *
      * @return an alphabetically sorted list that contains all the aliases in this map
      */
@@ -179,9 +183,11 @@ public class ClassMap {
     }
 
     /**
-     * The <code>iterator()</code> method returns an interator over the short names (aliases) stored in this map.
+     * The <code>iterator()</code> method returns an interator over the short names (aliases) stored in this
+     * map.
      *
-     * @return an instance of <code>java.util.Iterator</code> which can be used to iterate over each alias in this map.
+     * @return an instance of <code>java.util.Iterator</code> which can be used to iterate over each alias in
+     *         this map.
      */
     public Iterator iterator() {
         return classMap.keySet().iterator();

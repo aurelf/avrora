@@ -35,9 +35,9 @@ package avrora.sim.radio;
 import avrora.sim.mcu.Microcontroller;
 
 /**
- * Interface for the <code>RadioAir</code>. An implementation of this interface should provide the policies through
- * which radio transmission is handled. Radios should transmit via the transmit method. The air should deliver packets
- * to the radio through the receive() method in the <code>Radio</code> interface.
+ * Interface for the <code>RadioAir</code>. An implementation of this interface should provide the policies
+ * through which radio transmission is handled. Radios should transmit via the transmit method. The air should
+ * deliver packets to the radio through the receive() method in the <code>Radio</code> interface.
  *
  * @author Daniel Lee
  */

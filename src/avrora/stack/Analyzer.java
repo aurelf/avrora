@@ -47,9 +47,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * The <code>Analyzer</code> class implements the analysis phase that determines the transition relation between the
- * states in the abstract state space. It is modelled on the simulator, but only does abstract interpretation rather
- * than executing the entire program.
+ * The <code>Analyzer</code> class implements the analysis phase that determines the transition relation
+ * between the states in the abstract state space. It is modelled on the simulator, but only does abstract
+ * interpretation rather than executing the entire program.
  *
  * @author Ben L. Titzer
  */
@@ -106,8 +106,8 @@ public class Analyzer {
     }
 
     /**
-     * The <code>run()</code> method begins the analysis. The entrypoint of the program with an initial default state
-     * serves as the first state to start exploring.
+     * The <code>run()</code> method begins the analysis. The entrypoint of the program with an initial
+     * default state serves as the first state to start exploring.
      */
     public void run() {
         running = true;
@@ -174,15 +174,15 @@ public class Analyzer {
     }
 
     /**
-     * The <code>MonitorThread</code> class represents a thread instance that constantly monitors the progress of the
-     * stack analysis and reports on the number of states explored, edges inserted, states on the frontier, as well
-     * statistics about the propagation phase.
+     * The <code>MonitorThread</code> class represents a thread instance that constantly monitors the progress
+     * of the stack analysis and reports on the number of states explored, edges inserted, states on the
+     * frontier, as well statistics about the propagation phase.
      */
     protected class MonitorThread extends Thread {
 
         /**
-         * The <code>run()</code> method simply loops while the analysis is running. Every five seconds it reports the
-         * number of states, edges, frontier states, propagations, etc.
+         * The <code>run()</code> method simply loops while the analysis is running. Every five seconds it
+         * reports the number of states, edges, frontier states, propagations, etc.
          */
         public void run() {
             int cntr = 0;
@@ -244,11 +244,12 @@ public class Analyzer {
     }
 
     /**
-     * The <code>buildReachableStateSpace()</code> method starts at the eden state of the analysis, maintaining a list
-     * of frontier states. It then builds the state space using the frontier states as a work list. When the work list
-     * becomes null, it propagates calling states to their reachable return states and inserts return edges to (possibly
-     * unexplored) states. After the propagation phase, it processes any new frontier states. The analysis continues
-     * until there are no new frontier states and there are no new propagations to be performed.
+     * The <code>buildReachableStateSpace()</code> method starts at the eden state of the analysis,
+     * maintaining a list of frontier states. It then builds the state space using the frontier states as a
+     * work list. When the work list becomes null, it propagates calling states to their reachable return
+     * states and inserts return edges to (possibly unexplored) states. After the propagation phase, it
+     * processes any new frontier states. The analysis continues until there are no new frontier states and
+     * there are no new propagations to be performed.
      */
     protected void buildReachableStateSpace() {
         StateCache.State s = graph.getNextFrontierState();
@@ -268,9 +269,9 @@ public class Analyzer {
     }
 
     /**
-     * The <code>processPropagationList()</code> method walks through a list of target/caller state pairs, propagating
-     * callers to return states. When return states are encountered, return edges between the caller and new return
-     * state are inserted and any new return states are pushed onto the frontier.
+     * The <code>processPropagationList()</code> method walks through a list of target/caller state pairs,
+     * propagating callers to return states. When return states are encountered, return edges between the
+     * caller and new return state are inserted and any new return states are pushed onto the frontier.
      */
     protected void processNewReturns() {
         while (newReturnStates != null) {
@@ -420,15 +421,16 @@ public class Analyzer {
     }
 
     /**
-     * The <code>findMaximalPath()</code> method is a recursive procedure that discovers the maximal weight path in the
-     * state graph. If there is a non-zero weight cycle, this method will throw a <code>UnboundedStackException</code>
-     * which contains as a field the path leading out of the specified state back to a state on the stack.
+     * The <code>findMaximalPath()</code> method is a recursive procedure that discovers the maximal weight
+     * path in the state graph. If there is a non-zero weight cycle, this method will throw a
+     * <code>UnboundedStackException</code> which contains as a field the path leading out of the specified
+     * state back to a state on the stack.
      *
      * @param s     the state to explore
      * @param stack the states on the traversal stack
      * @param depth the current stack depth
-     * @return a path leading out of the current state that adds the maximum height to the stack of any path leading out
-     *         of this state
+     * @return a path leading out of the current state that adds the maximum height to the stack of any path
+     *         leading out of this state
      * @throws UnboundedStackException if a non-zero weight cycle exists in the graph
      */
     protected Path findMaximalPath(StateCache.State s, HashMap stack, int depth) throws UnboundedStackException {
@@ -491,9 +493,9 @@ public class Analyzer {
 
 
     /**
-     * The <code>UnboundedStackException</code> class is an exception thrown when traversing the graph to find the
-     * maximal stack depth. It is thrown if a cycle in the graph is found to have non-zero weight; such a cycle means
-     * that the stack is unbounded.
+     * The <code>UnboundedStackException</code> class is an exception thrown when traversing the graph to find
+     * the maximal stack depth. It is thrown if a cycle in the graph is found to have non-zero weight; such a
+     * cycle means that the stack is unbounded.
      */
     private class UnboundedStackException extends Exception {
         Path path;
@@ -504,9 +506,9 @@ public class Analyzer {
     }
 
     /**
-     * The <code>report()</code> method generates a textual report after the analysis has been completed. It reports
-     * information about states, reachable states, time for analysis, and of course, the maximum stack size for the
-     * program.
+     * The <code>report()</code> method generates a textual report after the analysis has been completed. It
+     * reports information about states, reachable states, time for analysis, and of course, the maximum stack
+     * size for the program.
      */
     public void report() {
         printStatHeader();
@@ -565,10 +567,10 @@ public class Analyzer {
     }
 
     /**
-     * The <code>ContextSensitive</code> class implements the context-sensitive analysis similar to 1-CFA. It is an
-     * implementation of the <code>Analyzer.Policy</code> interface that determines what should be done in the case of a
-     * call, return, push, pop, indirect call, etc. The context-sensitive analysis does not model the contents of the
-     * stack, so pushes and pops essentially only modify the height of the stack.
+     * The <code>ContextSensitive</code> class implements the context-sensitive analysis similar to 1-CFA. It
+     * is an implementation of the <code>Analyzer.Policy</code> interface that determines what should be done
+     * in the case of a call, return, push, pop, indirect call, etc. The context-sensitive analysis does not
+     * model the contents of the stack, so pushes and pops essentially only modify the height of the stack.
      *
      * @author Ben L. Titzer
      */
@@ -578,15 +580,16 @@ public class Analyzer {
         protected int edgeType;
 
         /**
-         * The <code>call()</code> method is called by the abstract interpreter when it encounters a call instruction
-         * within the program. Different policies may handle calls differently. This context-sensitive analysis keeps
-         * track of the call site every time a new method is entered. Thus the states coming into a method call are
-         * merged according to the call site, instead of all merged together.
+         * The <code>call()</code> method is called by the abstract interpreter when it encounters a call
+         * instruction within the program. Different policies may handle calls differently. This
+         * context-sensitive analysis keeps track of the call site every time a new method is entered. Thus
+         * the states coming into a method call are merged according to the call site, instead of all merged
+         * together.
          *
          * @param s              the current abstract state
          * @param target_address the concrete target address of the call
-         * @return null because the correct state transitions are inserted by the policy, and the abstract interpreter
-         *         should not be concerned.
+         * @return null because the correct state transitions are inserted by the policy, and the abstract
+         *         interpreter should not be concerned.
          */
         public MutableState call(MutableState s, int target_address) {
             s.setPC(target_address);
@@ -598,8 +601,8 @@ public class Analyzer {
         }
 
         /**
-         * The <code>interrupt()</code> is called by the abstract interrupt when it encounters a place in the program
-         * when an interrupt might occur.
+         * The <code>interrupt()</code> is called by the abstract interrupt when it encounters a place in the
+         * program when an interrupt might occur.
          *
          * @param s   the abstract state just before interrupt
          * @param num the interrupt number that might occur
@@ -616,14 +619,14 @@ public class Analyzer {
         }
 
         /**
-         * The <code>ret()</code> method is called by the abstract interpreter when it encounters a return within the
-         * program. In the context-sensitive analysis, the return state must be connected with the call site. This is
-         * done by accessing the call site list which is stored in this frontier state and inserting edges for each call
-         * site.
+         * The <code>ret()</code> method is called by the abstract interpreter when it encounters a return
+         * within the program. In the context-sensitive analysis, the return state must be connected with the
+         * call site. This is done by accessing the call site list which is stored in this frontier state and
+         * inserting edges for each call site.
          *
          * @param s the current abstract state
-         * @return null because the correct state transitions are inserted by the policy, and the abstract interpreter
-         *         should not be concerned.
+         * @return null because the correct state transitions are inserted by the policy, and the abstract
+         *         interpreter should not be concerned.
          */
         public MutableState ret(MutableState s) {
             frontierState.setType(RET_STATE);
@@ -636,12 +639,12 @@ public class Analyzer {
         }
 
         /**
-         * The <code>reti()</code> method is called by the abstract interpreter when it encounters a return from an
-         * interrupt within the program.
+         * The <code>reti()</code> method is called by the abstract interpreter when it encounters a return
+         * from an interrupt within the program.
          *
          * @param s the current abstract state
-         * @return null because the correct state transitions are inserted by the policy, and the abstract interpreter
-         *         should not be concerned.
+         * @return null because the correct state transitions are inserted by the policy, and the abstract
+         *         interpreter should not be concerned.
          */
         public MutableState reti(MutableState s) {
             frontierState.setType(RETI_STATE);
@@ -654,15 +657,15 @@ public class Analyzer {
         }
 
         /**
-         * The <code>indirectCall()</code> method is called by the abstract interpreter when it encounters an indirect
-         * call within the program. The abstract values of the address are given as parameters, so that a policy can
-         * choose to compute possible targets or be conservative or whatever it so chooses.
+         * The <code>indirectCall()</code> method is called by the abstract interpreter when it encounters an
+         * indirect call within the program. The abstract values of the address are given as parameters, so
+         * that a policy can choose to compute possible targets or be conservative or whatever it so chooses.
          *
          * @param s        the current abstract state
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi  the (abstract) high byte of the address
-         * @return null because the correct state transitions are inserted by the policy, and the abstract interpreter
-         *         should not be concerned.
+         * @return null because the correct state transitions are inserted by the policy, and the abstract
+         *         interpreter should not be concerned.
          */
         public MutableState indirectCall(MutableState s, char addr_low, char addr_hi) {
             int callsite = s.pc;
@@ -680,15 +683,15 @@ public class Analyzer {
         }
 
         /**
-         * The <code>indirectJump()</code> method is called by the abstract interpreter when it encounters an indirect
-         * jump within the program. The abstract values of the address are given as parameters, so that a policy can
-         * choose to compute possible targets or be conservative or whatever it so chooses.
+         * The <code>indirectJump()</code> method is called by the abstract interpreter when it encounters an
+         * indirect jump within the program. The abstract values of the address are given as parameters, so
+         * that a policy can choose to compute possible targets or be conservative or whatever it so chooses.
          *
          * @param s        the current abstract state
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi  the (abstract) high byte of the address
-         * @return null because the correct state transitions are inserted by the policy, and the abstract interpreter
-         *         should not be concerned.
+         * @return null because the correct state transitions are inserted by the policy, and the abstract
+         *         interpreter should not be concerned.
          */
         public MutableState indirectJump(MutableState s, char addr_low, char addr_hi) {
             int callsite = s.pc;
@@ -707,40 +710,41 @@ public class Analyzer {
         }
 
         /**
-         * The <code>indirectCall()</code> method is called by the abstract interpreter when it encounters an indirect
-         * call within the program. The abstract values of the address are given as parameters, so that a policy can
-         * choose to compute possible targets or be conservative or whatever it so chooses.
+         * The <code>indirectCall()</code> method is called by the abstract interpreter when it encounters an
+         * indirect call within the program. The abstract values of the address are given as parameters, so
+         * that a policy can choose to compute possible targets or be conservative or whatever it so chooses.
          *
          * @param s        the current abstract state
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi  the (abstract) high byte of the address
          * @param ext      the (abstract) extended part of the address
-         * @return null because the correct state transitions are inserted by the policy, and the abstract interpreter
-         *         should not be concerned.
+         * @return null because the correct state transitions are inserted by the policy, and the abstract
+         *         interpreter should not be concerned.
          */
         public MutableState indirectCall(MutableState s, char addr_low, char addr_hi, char ext) {
             throw new Error("extended indirect calls not supported");
         }
 
         /**
-         * The <code>indirectJump()</code> method is called by the abstract interpreter when it encounters an indirect
-         * jump within the program. The abstract values of the address are given as parameters, so that a policy can
-         * choose to compute possible targets or be conservative or whatever it so chooses.
+         * The <code>indirectJump()</code> method is called by the abstract interpreter when it encounters an
+         * indirect jump within the program. The abstract values of the address are given as parameters, so
+         * that a policy can choose to compute possible targets or be conservative or whatever it so chooses.
          *
          * @param s        the current abstract state
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi  the (abstract) high byte of the address
          * @param ext      the (abstract) extended part of the address
-         * @return null because the correct state transitions are inserted by the policy, and the abstract interpreter
-         *         should not be concerned.
+         * @return null because the correct state transitions are inserted by the policy, and the abstract
+         *         interpreter should not be concerned.
          */
         public MutableState indirectJump(MutableState s, char addr_low, char addr_hi, char ext) {
             throw new Error("extended indirect jumps not supported");
         }
 
         /**
-         * The <code>push()</code> method is called by the abstract interpreter when a push to the stack is encountered
-         * in the program. The policy can then choose what outgoing and/or modelling of the stack needs to be done.
+         * The <code>push()</code> method is called by the abstract interpreter when a push to the stack is
+         * encountered in the program. The policy can then choose what outgoing and/or modelling of the stack
+         * needs to be done.
          *
          * @param s   the current abstract state
          * @param val the abstract value to push onto the stack
@@ -750,9 +754,9 @@ public class Analyzer {
         }
 
         /**
-         * The <code>pop()</code> method is called by the abstract interpreter when a pop from the stack is ecountered
-         * in the program. The policy can then choose to either return whatever information it has about the stack
-         * contents, or return an UNKNOWN value.
+         * The <code>pop()</code> method is called by the abstract interpreter when a pop from the stack is
+         * ecountered in the program. The policy can then choose to either return whatever information it has
+         * about the stack contents, or return an UNKNOWN value.
          *
          * @param s the current abstract state
          * @return the abstract value popped from the stack
@@ -764,8 +768,9 @@ public class Analyzer {
         }
 
         /**
-         * The <code>pushState</code> method is called by the abstract interpreter when a state is forked by the
-         * abstract interpreter (for example when a branch condition is not known and both branches must be taken.
+         * The <code>pushState</code> method is called by the abstract interpreter when a state is forked by
+         * the abstract interpreter (for example when a branch condition is not known and both branches must
+         * be taken.
          *
          * @param newState the new state created
          */

@@ -172,7 +172,8 @@ public class InstructionSet {
     }
 
     /**
-     * The <code>getPrototype()</code> method looks up the prototype for the given instruction name and returns it.
+     * The <code>getPrototype()</code> method looks up the prototype for the given instruction name and
+     * returns it.
      *
      * @param name the name (variant) of the instruction
      * @return an instruction prototype instance corresponding to that variant of the instruction

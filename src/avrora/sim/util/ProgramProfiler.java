@@ -38,8 +38,9 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 
 /**
- * The <code>ProgramProfiler</code> class implements a probe that can be used to profile pieces of the program or the
- * whole program. It maintains a simple array of <code>long</code> that stores the count for every instruction.
+ * The <code>ProgramProfiler</code> class implements a probe that can be used to profile pieces of the program
+ * or the whole program. It maintains a simple array of <code>long</code> that stores the count for every
+ * instruction.
  *
  * @author Ben L. Titzer
  * @see avrora.sim.util.Counter
@@ -52,15 +53,15 @@ public class ProgramProfiler implements Simulator.Probe {
     public final Program program;
 
     /**
-     * The <code>icount</code> field stores the invocation count for each instruction in the program. It is indexed by
-     * byte addresses. Thus <code>icount[addr]</code> corresponds to the invocation for the instruction at
-     * <code>program.getInstr(addr)</code>.
+     * The <code>icount</code> field stores the invocation count for each instruction in the program. It is
+     * indexed by byte addresses. Thus <code>icount[addr]</code> corresponds to the invocation for the
+     * instruction at <code>program.getInstr(addr)</code>.
      */
     public final long icount[];
 
     /**
-     * The constructor for the program profiler constructs the required internal state to store the invocation counts of
-     * each instruction.
+     * The constructor for the program profiler constructs the required internal state to store the invocation
+     * counts of each instruction.
      *
      * @param p the program to profile
      */
@@ -71,8 +72,9 @@ public class ProgramProfiler implements Simulator.Probe {
     }
 
     /**
-     * The <code>fireBefore()</code> method is called before the probed instruction executes. In the implementation of
-     * the program profiler, it simply increments the count of the instruction at the specified address.
+     * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
+     * implementation of the program profiler, it simply increments the count of the instruction at the
+     * specified address.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
@@ -83,8 +85,8 @@ public class ProgramProfiler implements Simulator.Probe {
     }
 
     /**
-     * The <code>fireAfter()</code> method is called after the probed instruction executes. In the implementation of the
-     * profiler, it does nothing.
+     * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
+     * implementation of the profiler, it does nothing.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides

@@ -39,8 +39,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * The <code>EncodingDecl</code> class represents the encoding of an instruction in machine code, describing how to
- * encode the mnemonic and operands into binary and vice versa.
+ * The <code>EncodingDecl</code> class represents the encoding of an instruction in machine code, describing
+ * how to encode the mnemonic and operands into binary and vice versa.
  *
  * @author Ben L. Titzer
  */

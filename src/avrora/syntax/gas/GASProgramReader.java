@@ -42,16 +42,16 @@ import java.io.File;
 import java.io.FileInputStream;
 
 /**
- * The <code>GASProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads a source program
- * in the GAS-style syntax and builds a program from it.
+ * The <code>GASProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads a
+ * source program in the GAS-style syntax and builds a program from it.
  *
  * @author Ben L. Titzer
  */
 public class GASProgramReader extends ProgramReader {
 
     /**
-     * The <code>read()</code> method accepts a list of filenames as strings, loads them, resolves symbols, and produces
-     * a simplified program.
+     * The <code>read()</code> method accepts a list of filenames as strings, loads them, resolves symbols,
+     * and produces a simplified program.
      *
      * @param args the string names of the files to load
      * @return a program built from the specified source files

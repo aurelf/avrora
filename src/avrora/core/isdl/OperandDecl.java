@@ -38,9 +38,10 @@ import avrora.util.StringUtil;
 import java.util.List;
 
 /**
- * The <code>OperandDecl</code> class represents the declaration of a set of values (or registers) that can serve as an
- * operand to a particular instruction. For example, an operand declaration might be the set of all general purpose
- * registers, or it might be the set of high general purpose registers, or the set of address registers, etc.
+ * The <code>OperandDecl</code> class represents the declaration of a set of values (or registers) that can
+ * serve as an operand to a particular instruction. For example, an operand declaration might be the set of
+ * all general purpose registers, or it might be the set of high general purpose registers, or the set of
+ * address registers, etc.
  *
  * @author Ben L. Titzer
  */

@@ -39,9 +39,9 @@ import avrora.core.Register;
 import avrora.util.Arithmetic;
 
 /**
- * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The framework around
- * the generated code (utilities) has been written by hand, but most of the code for each instruction is generated.
- * Therefore it is not recommended to edit this code extensively.
+ * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The
+ * framework around the generated code (utilities) has been written by hand, but most of the code for each
+ * instruction is generated. Therefore it is not recommended to edit this code extensively.
  *
  * @author Ben L. Titzer
  */
@@ -85,10 +85,10 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     public static final Register RZ = Register.Z;
 
     /**
-     * The constructor for the <code>Interpreter</code> class builds the internal data structures needed to store the
-     * complete state of the machine, including registers, IO registers, the SRAM, and the flash. All IO registers are
-     * initialized to be instances of <code>RWIOReg</code>. Reserved and special IO registers must be inserted by the
-     * <code>getIOReg()</code> and <code>setIOReg()</code> methods.
+     * The constructor for the <code>Interpreter</code> class builds the internal data structures needed to
+     * store the complete state of the machine, including registers, IO registers, the SRAM, and the flash.
+     * All IO registers are initialized to be instances of <code>RWIOReg</code>. Reserved and special IO
+     * registers must be inserted by the <code>getIOReg()</code> and <code>setIOReg()</code> methods.
      *
      * @param p          the program to construct the state for
      * @param flash_size the size of the flash (program) memory in bytes

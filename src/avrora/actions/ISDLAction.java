@@ -47,8 +47,9 @@ import java.io.FileInputStream;
 import java.io.PrintStream;
 
 /**
- * The <code>ISDLAction</code> class implements an action to load an instruction set description from a file and perform
- * various actions with it, including generating the <code>Instr</code> classes and generating an interpreter.
+ * The <code>ISDLAction</code> class implements an action to load an instruction set description from a file
+ * and perform various actions with it, including generating the <code>Instr</code> classes and generating an
+ * interpreter.
  *
  * @author Ben L. Titzer
  */

@@ -36,8 +36,8 @@ import avrora.Main;
 import avrora.core.Program;
 
 /**
- * The <code>ListAction</code> class encapsulates an action that simply prints a digest of the program. As of yet, this
- * listing is pretty barbaric.
+ * The <code>ListAction</code> class encapsulates an action that simply prints a digest of the program. As of
+ * yet, this listing is pretty barbaric.
  *
  * @author Ben L. Titzer
  */

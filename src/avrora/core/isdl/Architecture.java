@@ -46,8 +46,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and subroutines
- * that describe an instruction set architecture.
+ * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and
+ * subroutines that describe an instruction set architecture.
  *
  * @author Ben L. Titzer
  */
@@ -84,8 +84,9 @@ public class Architecture {
     }
 
     /**
-     * The <code>Visitor</code> class represents a visitor over the elements of the architecture description. It has
-     * methods to visit each subroutine, instruction, operand, and encoding declared in the specification.
+     * The <code>Visitor</code> class represents a visitor over the elements of the architecture description.
+     * It has methods to visit each subroutine, instruction, operand, and encoding declared in the
+     * specification.
      */
     public interface Visitor extends InstrVisitor, SubroutineVisitor, OperandVisitor, EncodingVisitor {
     }
@@ -232,8 +233,8 @@ public class Architecture {
     }
 
     /**
-     * The <code>accept()</code> method implements part of the visitor pattern that allows a visitor to visit each part
-     * of the architecture description.
+     * The <code>accept()</code> method implements part of the visitor pattern that allows a visitor to visit
+     * each part of the architecture description.
      *
      * @param v the visitor to accept
      */
@@ -283,13 +284,13 @@ public class Architecture {
 
 
     /**
-     * The <code>Inliner</code> class implements a visitor over the code that inlines calls to known subroutines. This
-     * produces code that is free of calls to the subroutines declared within the architecture description and therefore
-     * is ready for constant and copy propagation optimizations.
+     * The <code>Inliner</code> class implements a visitor over the code that inlines calls to known
+     * subroutines. This produces code that is free of calls to the subroutines declared within the
+     * architecture description and therefore is ready for constant and copy propagation optimizations.
      * <p/>
-     * The <code>Inliner</code> will aggressively inline all calls, therefore it cannot detect recursion. It assumes
-     * that return statements are at the end of subroutines and do not occur in branches. This is not enforced by any
-     * checking, which should be done in the future.
+     * The <code>Inliner</code> will aggressively inline all calls, therefore it cannot detect recursion. It
+     * assumes that return statements are at the end of subroutines and do not occur in branches. This is not
+     * enforced by any checking, which should be done in the future.
      *
      * @author Ben L. Titzer
      */

@@ -36,11 +36,11 @@ import avrora.Avrora;
 import avrora.core.Operand;
 
 /**
- * The <code>SyntacticOperand</code> class is an implementation of the <code>avrora.core.Operand</code> interface that
- * corresponds to source assembly programs. Therefore instances of this class contain Tokens that tie them back to their
- * original locations in the source assembly. This is useful for reporting assembly errors when the prototype fails to
- * build an instruction because the operands do not meet the constraints specified in the Atmel instruction set
- * reference.
+ * The <code>SyntacticOperand</code> class is an implementation of the <code>avrora.core.Operand</code>
+ * interface that corresponds to source assembly programs. Therefore instances of this class contain Tokens
+ * that tie them back to their original locations in the source assembly. This is useful for reporting
+ * assembly errors when the prototype fails to build an instruction because the operands do not meet the
+ * constraints specified in the Atmel instruction set reference.
  *
  * @author Ben L. Titzer
  * @see avrora.core.Operand
@@ -75,9 +75,9 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
     }
 
     /**
-     * The <code>SyntacticOperand.Register</code> class represents a register operand at the source level. This may be
-     * an actual register name (e.g. "r21") or it could be a symbolic name for a register that has been renamed by an
-     * assembler directive.
+     * The <code>SyntacticOperand.Register</code> class represents a register operand at the source level.
+     * This may be an actual register name (e.g. "r21") or it could be a symbolic name for a register that has
+     * been renamed by an assembler directive.
      */
     public static class Register extends SyntacticOperand implements Operand.Register {
         public final AbstractToken name;
@@ -111,9 +111,9 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
     }
 
     /**
-     * The <code>SyntacticOperand.Expr</code> class represents a constant expression that was specified in the source
-     * assembly as an expression. This expression might be compound and need to be evaluated before its actual value is
-     * known.
+     * The <code>SyntacticOperand.Expr</code> class represents a constant expression that was specified in the
+     * source assembly as an expression. This expression might be compound and need to be evaluated before its
+     * actual value is known.
      */
     public static class Expr extends SyntacticOperand implements Operand.Constant {
         public final avrora.syntax.Expr expr;
