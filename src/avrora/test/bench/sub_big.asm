@@ -4,8 +4,6 @@ forever:
 	mov r0, r16
 	mov r1, r17
 
-	clr r16
-	
 inner:
 	sub r0, r1
 	sub r0, r1
@@ -51,8 +49,7 @@ inner:
 
 	inc r5
 	brne inner
-	inc r16
-	cpi r16, 16
+	inc r4
 	brne inner
 
 	break

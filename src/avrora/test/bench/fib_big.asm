@@ -8,7 +8,7 @@ loop:
 	call fib
 	pop r16
 	inc r16
-	cpi r16, 1
+	cpi r16, 16
 	brne loop
 	break
 	

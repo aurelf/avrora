@@ -15,7 +15,7 @@ inner:
 	inc r4
 	brne inner
 	inc r21	
-	cpi r21, 1
+	cpi r21, 16
 	brne inner
 	
 	break
