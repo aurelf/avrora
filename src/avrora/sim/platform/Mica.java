@@ -26,7 +26,7 @@ public class Mica implements Platform, PlatformFactory {
     }
 
     public Platform newPlatform(Program p) {
-        return new Mica(new ATMega128L().newMicrocontroller(p));
+        return new Mica(new ATMega128L(true).newMicrocontroller(p));
     }
 
     protected class LED implements Microcontroller.Pin.Output {

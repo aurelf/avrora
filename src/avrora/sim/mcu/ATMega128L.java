@@ -22,6 +22,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
     public static final int SRAM_SIZE = 4096;
     public static final int IOREG_SIZE = 256 - 32;
+    public static final int IOREG_SIZE_103 = 64;
     public static final int FLASH_SIZE = 128 * 1024;
     public static final int EEPROM_SIZE = 4096;
 
@@ -30,6 +31,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     static Verbose.Printer pinPrinter = Verbose.getVerbosePrinter("sim.pin");
 
     protected static final HashMap pinNumbers;
+    private final boolean compatibilityMode;
 
     static {
         pinNumbers = new HashMap();
@@ -201,12 +203,14 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     /**
      * The constructor for the default instance.
      */
-    public ATMega128L() {
+    public ATMega128L(boolean compatibility) {
         simulator = null;
         pins = new Pin[NUM_PINS];
+        compatibilityMode = compatibility;
     }
 
-    protected ATMega128L(Program p) {
+    protected ATMega128L(Program p, boolean compatibility) {
+        compatibilityMode = compatibility;
         pins = new Pin[NUM_PINS];
         installPins();
         simulator = new SimImpl(p);
@@ -238,7 +242,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * @return the number of IO registers supported on this hardware device
      */
     public int getIORegSize() {
-        return IOREG_SIZE;
+        if ( compatibilityMode ) return IOREG_SIZE_103;
+        else return IOREG_SIZE;
     }
 
     /**
@@ -356,7 +361,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      *         specific hardware device with the program loaded onto it
      */
     public Microcontroller newMicrocontroller(Program p) {
-        return new ATMega128L(p);
+        return new ATMega128L(p, compatibilityMode);
     }
 
     /**
@@ -523,19 +528,25 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 TCNT0_reg = new State.RWIOReg();
                 OCR0_reg = new State.RWIOReg();
 
-                ns.setIOReg(TCCR0, TCCR0_reg);
-                ns.setIOReg(TCNT0, TCNT0_reg);
-                ns.setIOReg(OCR0, OCR0_reg);
+                installIOReg(ns, TCCR0, TCCR0_reg);
+                installIOReg(ns, TCNT0, TCNT0_reg);
+                installIOReg(ns, OCR0, OCR0_reg);
             }
 
             protected void compareMatch() {
-                timerPrinter.println("Timer0.compareMatch");
+                if ( timerPrinter.enabled ) {
+                    boolean enabled = TIMSK_reg.readBit(1);
+                    timerPrinter.println("Timer0.compareMatch (enabled: "+enabled+")");
+                }
                 // set the compare flag for this timer
                 TIFR_reg.flagBit(1);
             }
 
             protected void overflow() {
-                timerPrinter.println("Timer0.overflow");
+                if ( timerPrinter.enabled ) {
+                    boolean enabled = TIMSK_reg.readBit(0);
+                    timerPrinter.println("Timer0.overFlow (enabled: "+enabled+")");
+                }
                 // set the overflow flag for this timer
                 TIFR_reg.flagBit(0);
             }
@@ -584,8 +595,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     int prescaler = val & 0x7;
                     switch (prescaler) {
                         case 0:
-                            timerEnabled = false;
-                            removeTimerEvent(ticker);
+                            resetPeriod(0);
                             break;
                         case 1:
                             resetPeriod(1);
@@ -612,7 +622,16 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
                 private void resetPeriod(int n) {
-                    if (timerEnabled) removeTimerEvent(ticker);
+                    if ( n == 0 ) {
+                        if (timerEnabled) {
+                            if ( timerPrinter.enabled ) timerPrinter.println("Timer0 disabled");
+                            removeTimerEvent(ticker);
+                        }
+                    }
+                    if (timerEnabled) {
+                        removeTimerEvent(ticker);
+                    }
+                    if ( timerPrinter.enabled ) timerPrinter.println("Timer0 enabled: period = "+n+" mode = "+timerMode);
                     period = n;
                     timerEnabled = true;
                     addTimerEvent(ticker, period);
@@ -627,11 +646,15 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             protected class Ticker implements Simulator.Trigger {
 
                 public void fire() {
-                    timerPrinter.println("Timer0.tick");
                     // perform one clock tick worth of work on the timer
                     int count = TCNT0_reg.read() & 0xff;
+                    int compare = OCR0_reg.read() & 0xff;
+
+                    if ( timerPrinter.enabled )
+                        timerPrinter.println("Timer0 [TCNT0 = "+count+", OCR0 = "+compare+"]");
+
                     switch (timerMode) {
-                        case MODE_NORMAL:
+                        case MODE_NORMAL: // NORMAL MODE
                             count++;
                             if (count == MAX) {
                                 compareMatch();
@@ -639,7 +662,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                                 count = 0;
                             }
                             break;
-                        case MODE_PWM:
+                        case MODE_PWM: // PULSE WIDTH MODULATION MODE
                             if (countUp)
                                 count++;
                             else
@@ -654,24 +677,24 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                                 countUp = true;
                                 count = 0;
                             }
-                            if (count == OCR0_reg.read()) {
+                            if (count == compare) {
                                 compareMatch();
                             }
                             break;
-                        case MODE_CTC:
+                        case MODE_CTC: // CLEAR TIMER ON COMPARE MODE
                             count++;
-                            if (count == OCR0_reg.read()) {
+                            if (count == compare) {
                                 compareMatch();
                                 count = 0;
                             }
                             break;
-                        case MODE_FASTPWM:
+                        case MODE_FASTPWM: // FAST PULSE WIDTH MODULATION MODE
                             count++;
                             if (count == MAX) {
                                 count = 0;
                                 overflow();
                             }
-                            if (count == OCR0_reg.read()) {
+                            if (count == compare) {
                                 compareMatch();
                             }
                             break;
@@ -680,10 +703,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     addTimerEvent(this, period);
                 }
             }
-        }
-
-        protected State constructState() {
-            return new State(program, FLASH_SIZE, IOREG_SIZE, SRAM_SIZE);
         }
 
         private void populateState(State ns) {
@@ -716,9 +735,15 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             Pin[] pins = new Pin[8];
             for (int cntr = 0; cntr < 8; cntr++)
                 pins[cntr] = (Pin) getPin("P" + p + cntr);
-            ns.setIOReg(portreg, new PortRegister(pins));
-            ns.setIOReg(dirreg, new DirectionRegister(pins));
-            ns.setIOReg(pinreg, new PinRegister(pins));
+            installIOReg(ns, portreg, new PortRegister(pins));
+            installIOReg(ns, dirreg, new DirectionRegister(pins));
+            installIOReg(ns, pinreg, new PinRegister(pins));
+        }
+
+        private void installIOReg(State ns, int num, State.IOReg ior) {
+            // in compatbility mode, the upper IO registers do not exist.
+            if ( compatibilityMode && num > IOREG_SIZE_103 ) return;
+            ns.setIOReg(num, ior);
         }
 
         private FlagRegister buildInterruptRange(State ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
@@ -726,8 +751,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             for (int cntr = 0; cntr < numVects; cntr++) {
                 int inum = increasing ? baseVect + cntr : baseVect - cntr;
                 interrupts[inum] = new Simulator.MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false);
-                ns.setIOReg(maskRegNum, fr.maskRegister);
-                ns.setIOReg(flagRegNum, fr);
+                installIOReg(ns, maskRegNum, fr.maskRegister);
+                installIOReg(ns, flagRegNum, fr);
             }
             return fr;
         }

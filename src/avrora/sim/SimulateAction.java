@@ -93,6 +93,7 @@ public class SimulateAction extends Main.Action {
         processCounters();
         processBranchCounters();
         processTotal();
+        processIcount();
         processTimeout();
         processProfile();
 
@@ -238,10 +239,16 @@ public class SimulateAction extends Main.Action {
             reportQuantity("Total instructions executed", total.count, "");
     }
 
+    void processIcount() {
+        long icount = Main.ICOUNT.get();
+        if (icount > 0)
+            simulator.insertProbe(new Simulator.InstructionCountTimeout(icount));
+    }
+
     void processTimeout() {
         long timeout = Main.TIMEOUT.get();
         if (timeout > 0)
-            simulator.insertProbe(new Simulator.InstructionCountTimeout(timeout));
+            simulator.addTimerEvent(new Simulator.ClockCycleTimeout(timeout), timeout);
     }
 
     void reportCycles() {

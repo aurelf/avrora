@@ -137,10 +137,14 @@ public class Main {
             "to report the time used in executing the simulation. When combined with " +
             "the \"cycles\" and \"total\" options, it will report performance " +
             "information about the simulation.");
-    public static final Option.Long TIMEOUT = options.newOption("timeout", 0,
+    public static final Option.Long ICOUNT = options.newOption("icount", 0,
             "This option is used in the simulate action. It will terminate the " +
             "simulation after the specified number of instructions have been executed. " +
             "It is useful for non-terminating programs.");
+    public static final Option.Long TIMEOUT = options.newOption("timeout", 0,
+            "This option is used in the simulate action. It will terminate the " +
+            "simulation after the specified number of clock cycles have passed. " +
+            "It is useful for non-terminating programs and benchmarks.");
     public static final Option.Bool TOTAL = options.newOption("total", false,
             "This option is used in the simulate action. It will cause the simulator " +
             "to report the total instructions executed in the simulation. When combined " +

@@ -14,7 +14,7 @@ public class Microcontrollers {
     private static final HashMap mcus = new HashMap();
 
     static {
-        mcus.put("atmega128l", new ATMega128L());
+        mcus.put("atmega128l", new ATMega128L(false));
     }
 
     /**

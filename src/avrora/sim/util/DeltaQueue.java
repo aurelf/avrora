@@ -29,44 +29,40 @@ public class DeltaQueue {
         Simulator.Trigger trigger;
         TriggerLink next;
 
-        TriggerLink(Simulator.Trigger t) {
+        TriggerLink(Simulator.Trigger t, TriggerLink n) {
             trigger = t;
+            next = n;
         }
 
     }
 
     final class Link {
-        TriggerLink head;
-        TriggerLink tail;
+        TriggerLink triggers;
 
         Link next;
         long delta;
 
         Link(Simulator.Trigger t, long d) {
-            tail = head = newList(t);
+            triggers = newList(t, null);
             delta = d;
         }
 
         void add(Simulator.Trigger t) {
-            if (head == null) {
-                head = tail = newList(t);
-            } else {
-                tail.next = newList(t);
-                tail = tail.next;
-            }
+            triggers = newList(t, triggers);
         }
 
         void remove(Simulator.Trigger t) {
             TriggerLink prev = null;
-            TriggerLink pos = head;
+            TriggerLink pos = triggers;
             while (pos != null) {
                 TriggerLink next = pos.next;
 
                 if (pos.trigger == t) {
-                    // remove the whole thing.
                     if (prev == null)
-                        head = pos.next;
+                        // remove the whole thing.
+                        triggers = pos.next;
                     else
+                        // remove the "pos" link
                         prev.next = pos.next;
 
                     free(pos);
@@ -78,15 +74,17 @@ public class DeltaQueue {
         }
 
         void fire() {
-            for (TriggerLink pos = head; pos != null; pos = pos.next) {
+            for (TriggerLink pos = triggers; pos != null; pos = pos.next) {
                 pos.trigger.fire();
             }
         }
     }
 
-    Link head;
-    Link freeLinks;
-    TriggerLink freeTriggerLinks;
+    protected Link head;
+    protected Link freeLinks;
+    protected TriggerLink freeTriggerLinks;
+
+    protected long count;
 
     /**
      * The <code>add</code> method adds a trigger to be executed in the future.
@@ -112,14 +110,20 @@ public class DeltaQueue {
 
         if (pos == null) {
             // end of the head
-            prev.next = newLink(t, cycles, null);
+            addAfter(prev, t, cycles, null);
         } else if (cycles == pos.delta) {
             // exactly matched the delta of some other event
             pos.add(t);
         } else {
             // insert a new link in the chain
-            prev.next = newLink(t, cycles, pos);
+            addAfter(prev, t, cycles, pos);
         }
+    }
+
+    private void addAfter(Link prev, Simulator.Trigger t, long cycles, Link next) {
+        if ( prev != null )
+            prev.next = newLink(t, cycles, next);
+        else head = newLink(t, cycles, next);
     }
 
     /**
@@ -138,8 +142,8 @@ public class DeltaQueue {
             Link next = pos.next;
             pos.remove(e);
 
-            if (pos.head == null) {
-                // remove the whole thing.
+            if (pos.triggers == null) {
+                // the link became empty because of removing this trigger
                 if (prev == null)
                     head = pos.next;
                 else
@@ -160,6 +164,8 @@ public class DeltaQueue {
      * @param cycles the number of clock cycles to advance
      */
     public void advance(long cycles) {
+        count += cycles;
+
         while (head != null && cycles >= 0) {
 
             Link pos = head;
@@ -185,14 +191,31 @@ public class DeltaQueue {
         }
     }
 
+    /**
+     * The <code>getHeadDelta()</code> method gets the number of clock cycles until
+     * the first event will fire.
+     * @return the number of clock cycles until the first event will fire
+     */
+    public long getHeadDelta() {
+        if ( head != null ) return head.delta;
+        return -1;
+    }
+
+    /**
+     * The <code>getCount()</code> gets the total cumulative count of all the
+     * <code>advance()</code> calls on this delta queue.
+     * @return
+     */
+    public long getCount() {
+        return count;
+    }
+
     private void free(Link l) {
         l.next = freeLinks;
         freeLinks = l;
 
-        l.tail.next = freeTriggerLinks;
-        freeTriggerLinks = l.head;
-        l.head = null;
-        l.tail = null;
+        freeTriggerLinks = l.triggers;
+        l.triggers = null;
     }
 
     private void free(TriggerLink l) {
@@ -223,15 +246,17 @@ public class DeltaQueue {
         return l;
     }
 
-    private TriggerLink newList(Simulator.Trigger t) {
+    private TriggerLink newList(Simulator.Trigger t, TriggerLink next) {
         TriggerLink l;
 
         if (freeTriggerLinks == null) {
-            l = new TriggerLink(t);
+            // no free links, so allocate one
+            l = new TriggerLink(t, next);
         } else {
+            // grab the first link off the free chain
             l = freeTriggerLinks;
             freeTriggerLinks = freeTriggerLinks.next;
-            l.next = null;
+            l.next = next;
             l.trigger = t;
         }
 

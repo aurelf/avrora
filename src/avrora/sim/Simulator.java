@@ -74,6 +74,12 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     protected boolean shouldRun;
 
     /**
+     * The <code>sleeping</code> flag is used internally in the simulator when the
+     * microcontroller enters the sleep mode.
+     */
+    protected boolean sleeping;
+
+    /**
      * The <code>justReturnedFromInterrupt</code> field is used internally in
      * maintaining the invariant stated in the hardware manual that at least one
      * instruction following a return from an interrupt is executed before another
@@ -86,6 +92,8 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * execution order of the instructions.
      */
     protected int nextPC;
+
+    protected int cyclesConsumed;
 
     /**
      * The <code>interrupts</code> array stores a reference to an <code>Interrupt</code>
@@ -489,12 +497,17 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         justReturnedFromInterrupt = false;
     }
 
-    protected abstract State constructState();
+    protected State constructState() {
+        return new State(program,
+                microcontroller.getFlashSize(),
+                microcontroller.getIORegSize(), 
+                microcontroller.getRamSize());
+    }
 
     private void runLoop() {
 
         nextPC = state.getPC();
-        long oldCycles = state.getCycles();
+        cyclesConsumed = 0;
 
         while (shouldRun) {
 
@@ -504,7 +517,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
                 // that at least one instruction is executed after
                 // returning from an interrupt.
                 justReturnedFromInterrupt = false;
-            } else if (state.getFlag_I()) {
+            } else if ( state.getFlag_I() ) {
                 long interruptPostMask = state.getPostedInterrupts();
 
                 // check if there are any pending (posted) interrupts
@@ -526,27 +539,33 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
                     state.setFlag_I(false);
 
                     // process any timed events
-                    state.consumeCycles(4);
-                    eventQueue.advance(4);
-                    oldCycles += 4;
+                    advanceCycles(4);
+                    sleeping = false;
                 }
             }
 
-            // get the current instruction
-            int curPC = nextPC;
-            Instr i = state.getInstr(nextPC);
-            nextPC = nextPC + i.getSize();
+            if ( sleeping ) {
+                long delta = eventQueue.getHeadDelta();
+                if ( delta <= 0 ) delta = 1;
+                advanceCycles(delta);
+            } else {
+                // get the current instruction
+                int curPC = nextPC;
+                Instr i = state.getInstr(nextPC);
+                nextPC = nextPC + i.getSize();
 
-            // visit the actual instruction (or probe)
-            activeProbe.fireBefore(i, curPC, state);
-            execute(i);
-            activeProbe.fireAfter(i, curPC, state);
-
-            // process any timed events
-            long newCycles = state.getCycles();
-            eventQueue.advance(newCycles - oldCycles);
-            oldCycles = newCycles;
+                // visit the actual instruction (or probe)
+                activeProbe.fireBefore(i, curPC, state);
+                execute(i);
+                activeProbe.fireAfter(i, curPC, state);
+            }
         }
+    }
+
+    private void advanceCycles(long delta) {
+        state.consumeCycles(delta);
+        eventQueue.advance(delta);
+        cyclesConsumed = 0;
     }
 
     /**
@@ -561,14 +580,14 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      *         when this interrupt is fired
      */
     protected int getInterruptVectorAddress(int inum) {
-        return inum * 4;
+        return (inum - 1) * 4;
     }
 
     private void execute(Instr i) {
         i.accept(this);
         state.setPC(nextPC);
-        state.consumeCycles(i.getCycles());
-
+        // process any timed events and advance state clock
+        advanceCycles(cyclesConsumed + i.getCycles());
     }
 
     /**
@@ -1433,7 +1452,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     }
 
     public void visit(Instr.SLEEP i) {
-        unimplemented(i);
+        sleeping = true;
     }
 
     public void visit(Instr.SPM i) { // store register to program memory
@@ -1516,16 +1535,16 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
     private void relativeBranch(int offset) {
         nextPC = relative(offset);
-        state.consumeCycle();
+        cyclesConsumed++;
     }
 
     private void skip() {
         // skip over next instruction
         int dist = state.getInstr(nextPC).getSize();
         if (dist == 2)
-            state.consumeCycle();
+            cyclesConsumed++;
         else
-            state.consumeCycles(2);
+            cyclesConsumed += 2;
         nextPC = nextPC + dist;
     }
 
@@ -1753,6 +1772,39 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         public void fireAfter(Instr i, int address, State state) {
             // do nothing.
         }
+    }
+
+    /**
+     * The <code>InstructionCountTimeout</code> class is a probe that
+     * simply counts down and throws a <code>TimeoutException</code>
+     * when the count reaches zero. It is useful for ensuring termination
+     * of the simulator, for performance testing, or for profiling and
+     * stopping after a specified number of invocations.
+     *
+     * @author Ben L. Titzer
+     */
+    public static class ClockCycleTimeout implements Trigger {
+        public final long timeout;
+
+        /**
+         * The constructor for <code>InstructionCountTimeout</code> creates
+         * with the specified initial value.
+         *
+         * @param t
+         */
+        public ClockCycleTimeout(long t) {
+            timeout = t;
+        }
+
+        /**
+         * The <code>fire()</code> method is called when the  timeout is up.
+         *
+         */
+        public void fire() {
+            // TODO: throw correct error
+            throw new Error("Timeout reached after "+timeout+" clock cycles");
+        }
+
     }
 
     abstract class IMRReg extends State.RWIOReg {
