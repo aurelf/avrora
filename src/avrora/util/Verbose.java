@@ -33,6 +33,7 @@
 package avrora.util;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * The <code>Verbose</code> class is used to get instances of <code>Verbose.Printer</code>
@@ -42,6 +43,8 @@ import java.util.HashMap;
  * @author Ben L. Titzer
  */
 public class Verbose {
+
+    static boolean ALL;
 
     final static HashMap printerMap = new HashMap();
     final static Printer verbosePrinter = getVerbosePrinter("verbose");
@@ -55,6 +58,16 @@ public class Verbose {
     }
 
     public static void setVerbose(String category, boolean on) {
+        if ( category.equals("all") ) {
+            ALL = on;
+            Iterator i = printerMap.values().iterator();
+            while ( i.hasNext() ) {
+                Printer p = (Printer)i.next();
+                p.enabled = on;
+            }
+            return;
+        }
+
         Printer p = getPrinter(category);
         if ( verbosePrinter != null && verbosePrinter.enabled ) {
             verbosePrinter.println("verbose: set printer "+StringUtil.quote(category)+" to "+on);
@@ -77,6 +90,7 @@ public class Verbose {
 
         Printer() {
             super(System.out);
+            enabled = ALL;
         }
 
         public void println(String s) {

@@ -100,6 +100,11 @@ public class SimulateAction extends SimAction {
             "to use the legacy (hand-written) interpreter rather than the interpreter " +
             "generated from the architecture description language. It is used for " +
             "benchmarking and regression purposes.");
+    public final Option.Bool REALTIME = newOption("real-time", false,
+            "This option is used in the simulate action to slow the simulation if it is too fast. " +
+            "By default, the simulator will attempt to execute the program as fast as possible. " +
+            "This option will cause the simulation to pause periodically for a few milliseconds in " +
+            "order that it does not run faster than real-time.");
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -144,6 +149,23 @@ public class SimulateAction extends SimAction {
         }
     }
 
+    private class ThrottleEvent implements Simulator.Event {
+        long lastMs;
+
+        public void fire() {
+            long newMs = System.currentTimeMillis();
+            long diff = newMs - lastMs;
+            try {
+            if ( diff < 10 )
+                Thread.sleep(10-diff);
+            } catch ( InterruptedException e) {
+
+            }
+            lastMs = newMs;
+            simulator.insertEvent(this, microcontroller.getHz()/100);
+        }
+    }
+
     /**
      * The <code>run()</code> method is called by the main class.
      *
@@ -161,6 +183,7 @@ public class SimulateAction extends SimAction {
         Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
 
         simulator = newSimulator(program);
+        microcontroller = simulator.getMicrocontroller();
         counters = new LinkedList();
         branchcounters = new LinkedList();
 
@@ -172,6 +195,9 @@ public class SimulateAction extends SimAction {
         if (TRACE.get()) {
             simulator.insertProbe(Simulator.TRACEPROBE);
         }
+
+        if (REALTIME.get())
+            simulator.insertEvent(new ThrottleEvent(), microcontroller.getHz()/100);
 
         startms = System.currentTimeMillis();
         try {
