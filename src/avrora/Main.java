@@ -187,7 +187,7 @@ public class Main extends VPCBase {
 
         void reportCounters() {
             if ( counters.isEmpty() ) return;
-            ColorTerminal.printGreen("Counter results\n");
+            ColorTerminal.printGreen(" Counter results\n");
             printSeparator();
             Iterator i = counters.iterator();
             // TODO: clean up, make multicolumn, better justified.
@@ -220,7 +220,7 @@ public class Main extends VPCBase {
 
         void reportBranchCounters() {
             if ( branchcounters.isEmpty() ) return;
-            ColorTerminal.printGreen("Branch counter results\n");
+            ColorTerminal.printGreen(" Branch counter results\n");
             printSeparator();
             Iterator i = branchcounters.iterator();
             while ( i.hasNext() ) {
@@ -246,7 +246,7 @@ public class Main extends VPCBase {
 
         void reportProfile() {
             if ( profile != null ) {
-                ColorTerminal.printGreen("Profiling results\n");
+                ColorTerminal.printGreen(" Profiling results\n");
                 printSeparator();
                 double total = 0;
                 long[] icount = profile.icount;
@@ -259,29 +259,38 @@ public class Main extends VPCBase {
                 long last1 = -1;
 
                 for ( int cntr = 0; cntr < imax; cntr += 2) {
+                    int start = cntr;
+                    int runlength = 1;
                     long c = icount[cntr];
 
-                    // skip over long runs (e.g. basic blocks) in the profiling counts
-                    if ( c == last1 ) {
-                        if ( cntr < imax - 2 && icount[cntr+2] == c) {
-                            reportQuantity("     ...", StringUtil.rightJustify(c, 8), "");
-                            while ( cntr < imax - 4 && icount[cntr+2] == c ) cntr += 2;
-                            c = icount[cntr];
-                        }
+                    while ( cntr < imax - 2) {
+                        if ( icount[cntr+2] != c ) break;
+                        cntr += 2;
+                        runlength++;
                     }
 
                     String cnt = StringUtil.rightJustify(c, 8);
-                    String addr = addrToString(cntr);
                     float pcnt = (float)(100*c / total);
-                    String percent = toFixedFloat(pcnt, 4);
-                    reportQuantity("    "+addr, cnt, "  "+percent+" %");
+                    String percent = toFixedFloat(pcnt, 4)+" %";
+                    String addr;
+                    if ( runlength > 1 ) {
+                        addr = addrToString(start)+"-"+addrToString(cntr);
+                        if ( c != 0 ) {
+                            percent += "  x"+runlength;
+                            percent += "  = "+toFixedFloat(pcnt*runlength, 4)+" %";
+                        }
+                    } else {
+                        addr = "     "+addrToString(start);
+                    }
+
+                    reportQuantity("    "+addr, cnt, "  "+percent);
                     last1 = c;
                 }
             }
         }
 
         private void printSeparator() {
-            ColorTerminal.println("===============================================");
+            ColorTerminal.println("=========================================================");
         }
 
         void processTotal() {
