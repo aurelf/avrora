@@ -42,6 +42,7 @@ import avrora.sim.GenInterpreter;
 import avrora.sim.BaseInterpreter;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * The <code>ATMega128L</code> class represents the <code>Microcontroller</code>
@@ -289,7 +290,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     }
 
     /**
-     * The <code<getFlashSize()</code> method returns the size in bytes of
+     * The <code>getFlashSize()</code> method returns the size in bytes of
      * the flash memory on this hardware device. The flash memory stores the
      * initialized data and the machine code instructions of the program. On
      * the Atmega128L, this number is 131,072 (128K).
@@ -442,7 +443,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             populateState(interpreter);
         }
 
-        public static final int RESET_VECT = 1;
+        public static final int RES_VECT = 1;
         public static final int EXT_VECT = 2;
 
         protected FlagRegister EIFR_reg;
@@ -450,6 +451,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         protected FlagRegister TIFR_reg;
         protected MaskRegister TIMSK_reg;
+
+        /** The ETIFR register. Address 0x7c.*/
+        protected UnorderedFlagRegister ETIFR_reg;
+
+        /** The ETIMSK register. Address 0x7d.*/
+        protected UnorderedMaskRegister ETIMSK_reg;
 
         protected class DirectionRegister extends State.RWIOReg {
 
@@ -523,13 +530,896 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
         }
 
+        int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
+
+        /** <code>Timer0</code> is the default 8-bit timer on the
+         * ATMega128L. */
+        protected class Timer0 extends Timer8Bit {
+
+            protected Timer0(BaseInterpreter ns) {
+                super(ns, 0, TCCR0, TCNT0, OCR0, 1, 0, 1, 0, periods0);
+            }
+        }
+
+        int[] periods2 = {0, 1, 8, 64, 256, 1024};
+
+        /** <code>Timer2</code> is an additional 8-bit timer on the
+         * ATMega128L. It is not available in ATMega103 compatibility
+         * mode. */
+        protected class Timer2 extends Timer8Bit {
+            protected Timer2(BaseInterpreter ns) {
+                super(ns, 2, TCCR2, TCNT2, OCR2, 7, 6, 7, 6, periods2);
+            }
+        }
+
+
+        /** <code>Timer1</code> is a 16-bit timer available on the
+         * ATMega128L.*/
+        protected class Timer1 extends Timer16Bit {
+
+            protected void initValues() {
+                n = 1;
+
+                TCNTnL = TCNT1L;
+                TCNTnH = TCNT1H;
+                TCCRnA = TCCR1A;
+                TCCRnB = TCCR1B;
+                TCCRnC = TCCR1C;
+
+                OCRnAH = OCR1AH;
+                OCRnAL = OCR1AL;
+                OCRnBH = OCR1BH;
+                OCRnBL = OCR1BL;
+                OCRnCH = OCR1CH;
+                OCRnCL = OCR1CL;
+                ICRnH = ICR1H;
+                ICRnL = ICR1L;
+
+                // bit numbers
+
+                OCIEnA = 4;
+                OCIEnB = 3;
+                OCIEnC = 0; // on ETIMSK
+                TOIEn = 2;
+                TOVn = 2;
+                OCFnA = 4;
+                OCFnB = 3;
+                OCFnC = 0; // on ETIFR
+                ICFn = 5;
+                int[] periods1 = {0, 1, 8, 64, 256, 1024};
+                periods = periods1;
+            }
+
+            protected Timer1(BaseInterpreter ns) {
+                super(ns);
+                xTIFR_reg = TIFR_reg;
+                xTIMSK_reg = TIMSK_reg;
+            }
+
+        }
+
+        /** <code>Timer3</code> is an additional 16-bit timer available on the
+         * ATMega128L, but not in ATMega103 compatability mode. */
+        protected class Timer3 extends Timer16Bit {
+
+            protected void initValues() {
+                n = 3;
+
+                TCNTnL = TCNT3L;
+                TCNTnH = TCNT3H;
+                TCCRnA = TCCR3A;
+                TCCRnB = TCCR3B;
+                TCCRnC = TCCR3C;
+
+                OCRnAH = OCR3AH;
+                OCRnAL = OCR3AL;
+                OCRnBH = OCR3BH;
+                OCRnBL = OCR3BL;
+                OCRnCH = OCR3CH;
+                OCRnCL = OCR3CL;
+                ICRnH = ICR3H;
+                ICRnL = ICR3L;
+
+                // bit numbers
+
+                OCIEnA = 4;
+                OCIEnB = 3;
+                OCIEnC = 1; // on ETIMSK
+                TOIEn = 2;
+                TOVn = 2;
+                OCFnA = 4;
+                OCFnB = 3;
+                OCFnC = 1; // on ETIFR
+                ICFn = 5;
+                int[] periods3 = {0, 1, 8, 64, 256, 1024};
+                periods = periods3;
+            }
+
+            protected Timer3(BaseInterpreter ns) {
+                super(ns);
+                xTIFR_reg = ETIFR_reg;
+                xTIMSK_reg = ETIMSK_reg;
+            }
+
+        }
+
+
         /**
-         * The <code>Timer0</code> class emulates the functionality and behavior of the
-         * 8-bit timer on the Atmega128L. It has several control and data registers and
-         * can fire two different interrupts depending on the mode that it has been
-         * put into.
+         * The <code>Timer16Bit</code> class emulates the
+         * functionality and behavior of a 16-bit timer on the
+         * Atmega128L. It has several control and data registers and
+         * can fire up to six different interrupts depending on the
+         * mode that it has been put into. It has three output compare
+         * units and one input capture unit. UNIMPLEMENTED: input
+         * capture unit.
+         * @author Daniel Lee
          */
-        protected class Timer0 {
+        protected abstract class Timer16Bit {
+
+            // Timer/Counter Modes of Operations
+            public static final int MODE_NORMAL = 0;
+            public static final int MODE_PWM_PHASE_CORRECT_8_BIT = 1;
+            public static final int MODE_PWM_PHASE_CORRECT_9_BIT = 2;
+            public static final int MODE_PWM_PHASE_CORRECT_10_BIT = 3;
+            public static final int MODE_CTC_OCRnA = 4;
+            public static final int MODE_FASTPWM_8_BIT = 5;
+            public static final int MODE_FASTPWM_9_BIT = 6;
+            public static final int MODE_FASTPWM_10_BIT = 7;
+            public static final int MODE_PWM_PNF_ICRn = 8;
+            public static final int MODE_PWM_PNF_OCRnA = 9;
+            public static final int MODE_PWN_PHASE_CORRECT_ICRn = 10;
+            public static final int MODE_PWN_PHASE_CORRECT_OCRnA = 11;
+            public static final int MODE_CTC_ICRn = 12;
+            // 13 is reserved
+            public static final int MODE_FASTPWM_ICRn = 14;
+            public static final int MODE_FASTPWM_OCRnA = 15;
+
+
+            public static final int MAX = 0xffff;
+            public static final int BOTTOM = 0x0000;
+
+            final ControlRegisterA TCCRnA_reg;
+            final ControlRegisterB TCCRnB_reg;
+            final ControlRegisterC TCCRnC_reg;
+
+            final State.RWIOReg TCNTnH_reg; // timer counter registers
+            final TCNTnRegister TCNTnL_reg;
+            final PairedRegister TCNTn_reg;
+
+            final BufferedRegister OCRnAH_reg; // output compare registers
+            final BufferedRegister OCRnAL_reg;
+            final PairedRegister OCRnA_reg;
+
+            final BufferedRegister OCRnBH_reg;
+            final BufferedRegister OCRnBL_reg;
+            final PairedRegister OCRnB_reg;
+
+            final BufferedRegister OCRnCH_reg;
+            final BufferedRegister OCRnCL_reg;
+            final PairedRegister OCRnC_reg;
+
+            final State.RWIOReg highTempReg;
+
+            final State.RWIOReg ICRnH_reg; // input capture registers
+            final State.RWIOReg ICRnL_reg;
+            final PairedRegister ICRn_reg;
+
+            final Ticker ticker;
+
+            boolean timerEnabled;
+            boolean countUp;
+            int timerModeA;
+            int timerModeB;
+            int timerMode;
+            long period;
+
+            //boolean blockCompareMatch;
+            boolean blockCompareMatch;
+            //final int[] periods;
+
+            Verbose.Printer timerPrinter;
+
+            // information about registers and flags that specifies
+            // which specific registers this 16-bit timer interacts with
+            //final TimerValues timerValues;
+
+            /* should define these fields in an actual instance of this class */
+
+            int n; // number of timer. 1 for Timer1, 3 for Timer3
+
+            int TCNTnH;
+            int TCNTnL;
+            int TCCRnA;
+            int TCCRnB;
+            int TCCRnC;
+
+            int OCRnAH;
+            int OCRnAL;
+            int OCRnBH;
+            int OCRnBL;
+            int OCRnCH;
+            int OCRnCL;
+            int ICRnH;
+            int ICRnL;
+
+            // these are the offsets on registers corresponding to
+            // these flags
+            int OCIEnA;
+            int OCIEnB;
+            int OCIEnC;
+            int TOIEn;
+            int TOVn;
+            int OCFnA;
+            int OCFnB;
+            int OCFnC;
+            int ICFn;
+
+            protected FlagRegister xTIFR_reg;
+            protected MaskRegister xTIMSK_reg;
+
+            protected int[] periods;
+
+            /* end of fields that should be defined. */
+
+            // This method should be overloaded to initialize the above values.
+            abstract protected void initValues();
+
+            private Timer16Bit(BaseInterpreter ns) {
+                //timerValues = tv;
+                initValues();
+                //Integer i = null;
+                //if(n == 0) i.toString();
+
+                timerPrinter = Verbose.getVerbosePrinter("sim.timer" + n);
+                ticker = new Ticker();
+
+                highTempReg = new State.RWIOReg();
+
+                TCCRnA_reg = new ControlRegisterA();
+                TCCRnB_reg = new ControlRegisterB();
+                TCCRnC_reg = new ControlRegisterC();
+
+                TCNTnH_reg = new State.RWIOReg();
+                TCNTnL_reg = new TCNTnRegister();
+                TCNTn_reg = new PairedRegister(TCNTnH_reg, TCNTnL_reg);
+
+                OCRnAH_reg = new BufferedRegister();
+                OCRnAL_reg = new BufferedRegister();
+                OCRnA_reg = new OCRnxPairedRegister(OCRnAH_reg, OCRnAL_reg);
+
+                OCRnBH_reg = new BufferedRegister();
+                OCRnBL_reg = new BufferedRegister();
+                OCRnB_reg = new OCRnxPairedRegister(OCRnBH_reg, OCRnBL_reg);
+
+                OCRnCH_reg = new BufferedRegister();
+                OCRnCL_reg = new BufferedRegister();
+                OCRnC_reg = new OCRnxPairedRegister(OCRnCH_reg, OCRnCL_reg);
+
+                ICRnH_reg = new State.RWIOReg();
+                ICRnL_reg = new State.RWIOReg();
+                ICRn_reg = new PairedRegister(ICRnL_reg, ICRnH_reg);
+
+                installIOReg(ns, TCCRnA, TCCRnA_reg);
+                installIOReg(ns, TCCRnB, TCCRnB_reg);
+                installIOReg(ns, TCCRnC, TCCRnC_reg);
+
+                //installIOReg(ns, TCNTnH, TCNTnH_reg);
+                //installIOReg(ns, TCNTnL, TCNTnL_reg);
+                installIOReg(ns, TCNTnH, highTempReg);
+                installIOReg(ns, TCNTnL, TCNTn_reg);
+
+                //installIOReg(ns, OCRnAH, OCRnAH_reg);
+                //installIOReg(ns, OCRnAL, OCRnAL_reg);
+                installIOReg(ns, OCRnAH, new OCRnxTempHighRegister(OCRnAH_reg));
+                installIOReg(ns, OCRnAL, OCRnA_reg);
+
+                //installIOReg(ns, OCRnBH, OCRnBH_reg);
+                //installIOReg(ns, OCRnBL, OCRnBL_reg);
+                installIOReg(ns, OCRnBH, new OCRnxTempHighRegister(OCRnBH_reg));
+                installIOReg(ns, OCRnBL, OCRnB_reg);
+
+
+                //installIOReg(ns, OCRnCH, OCRnCH_reg);
+                //installIOReg(ns, OCRnCL, OCRnCL_reg);
+                installIOReg(ns, OCRnCH, new OCRnxTempHighRegister(OCRnCH_reg));
+                installIOReg(ns, OCRnCL, OCRnC_reg);
+
+                //installIOReg(ns, ICRnH, ICRnH_reg);
+                //installIOReg(ns, ICRnL, ICRnL_reg);
+                installIOReg(ns, ICRnH, highTempReg);
+                installIOReg(ns, ICRnL, ICRn_reg);
+            }
+
+            /* Rembmer to clarify the behavior of these methods.*/
+
+            protected void compareMatchA() {
+                if (timerPrinter.enabled) {
+                    boolean enabled = xTIMSK_reg.readBit(OCIEnA);
+                    timerPrinter.println("Timer" + n + ".compareMatchA (enabled: " + enabled + ")");
+                }
+                // set the compare flag for this timer
+                xTIFR_reg.flagBit(OCFnA);
+            }
+
+            protected void compareMatchB() {
+                if (timerPrinter.enabled) {
+                    boolean enabled = xTIMSK_reg.readBit(OCIEnB);
+                    timerPrinter.println("Timer" + n + ".compareMatchB (enabled: " + enabled + ")");
+                }
+                // set the compare flag for this timer
+                xTIFR_reg.flagBit(OCFnB);
+            }
+
+            protected void compareMatchC() {
+                if (timerPrinter.enabled) {
+                    // the OCIEnC flag is on ETIMSK for both Timer1 and Timer3
+                    boolean enabled = ETIMSK_reg.readBit(OCIEnC);
+                    timerPrinter.println("Timer" + n + ".compareMatchC (enabled: " + enabled + ")");
+                }
+                // the OCFnC flag is on ETIFR for both Timer1 and Timer3
+                // set the compare flag for this timer
+                ETIFR_reg.flagBit(OCFnC);
+            }
+
+            /** Flags the overflow interrupt for this timer. */
+            protected void overflow() {
+                if (timerPrinter.enabled) {
+                    boolean enabled = xTIMSK_reg.readBit(TOIEn);
+                    timerPrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ")" + "  ");
+                }
+// set the overflow flag for this timer
+                xTIFR_reg.flagBit(TOVn);
+            }
+
+            /** <code>ControlRegister</code> is an abstract class
+             * describing the control registers of a 16-bit timer. */
+            protected abstract class ControlRegister extends State.RWIOReg {
+                private void decode(byte val) {
+                }
+
+                public void write(byte val) {
+                    value = val;
+                    decode(val);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    value = Arithmetic.setBit(value, bit, val);
+                    decode(value);
+                }
+            }
+
+            /** The <code>PairedRegister</code> class exists to
+             * implement the shared temporary register for the high
+             * byte of the 16-bit registers corresponding to a 16-bit
+             * timer. Accesses to the high byte of a register pair
+             * should go through this temporary byte. According to the
+             * manual, writes to the high byte are stored in the
+             * temporary register. When the low byte is written to,
+             * both the low and high byte are updated. On a read, the
+             * temporary high byte is updated when a read occurs on
+             * the low byte. The PairedRegister should be installed in
+             * place of the low register. Reads/writes on this
+             * register will act accordingly on the low register, as
+             * well as initiate a read/write on the associated high
+             * register. */
+            protected class PairedRegister extends State.RWIOReg {
+                State.RWIOReg high;
+                State.RWIOReg low;
+
+                PairedRegister(State.RWIOReg high, State.RWIOReg low) {
+                    this.high = high;
+                    this.low = low;
+                }
+
+                public void write(byte val) {
+                    low.write(val);
+                    high.write(highTempReg.read());
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    low.writeBit(bit, val);
+                    high.write(highTempReg.read());
+                }
+
+                public byte read() {
+                    highTempReg.write(high.read());
+                    return low.read();
+                }
+
+                public boolean readBit(int bit) {
+                    byte val = read();
+                    return Arithmetic.getBit(val, bit);
+                }
+            }
+
+            /** The normal 16-bit read behavior described in the doc
+             * for PairedRegister does not apply for the OCRnx
+             * registers. Reads on the OCRnxH registers are direct. */
+            protected class OCRnxPairedRegister extends PairedRegister {
+                OCRnxPairedRegister(State.RWIOReg high, State.RWIOReg low) {
+                    super(high, low);
+                }
+
+                public byte read() {
+                    return low.read();
+                }
+
+                public boolean readBit(int bit) {
+                    return low.readBit(bit);
+                }
+            }
+
+            /** See doc for OCRnxPairedRegister. */
+            protected class OCRnxTempHighRegister extends State.RWIOReg {
+                State.RWIOReg register;
+
+                OCRnxTempHighRegister(State.RWIOReg register) {
+                    this.register = register;
+                }
+
+                public void write(byte val) {
+                    highTempReg.write(val);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    highTempReg.writeBit(bit, val);
+                }
+
+                public byte read() {
+                    return register.read();
+                }
+
+                public boolean readBit(int bit) {
+                    return register.readBit(bit);
+                }
+            }
+
+            /** Overloads the write behavior of this class of register
+             * in order to implement compare match blocking for one
+             * timer period. */
+            protected class TCNTnRegister extends State.RWIOReg {
+                /* index of the blockCompareMatch corresponding to
+                 * this register in the array of boolean flags.  */
+                public void write(byte val) {
+                    value = val;
+                    blockCompareMatch = true;
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    value = Arithmetic.setBit(value, bit, val);
+                    blockCompareMatch = true;
+                }
+            }
+
+            /** <code>ControlRegisterA</code> describes the TCCRnA
+             * control register associated with a 160bit
+             * timer. Changing the values of this register generally
+             * alter the mode of operation of the timer.*/
+            protected class ControlRegisterA extends ControlRegister {
+                public static final int COMnA1 = 7;
+                public static final int COMnA0 = 6;
+                public static final int COMnB1 = 5;
+                public static final int COMnB0 = 4;
+                public static final int COMnC1 = 3;
+                public static final int COMnC0 = 2;
+                public static final int WGMn1 = 1;
+                public static final int WGMn0 = 0;
+
+
+                private void decode(byte val) {
+// get the mode of operation
+                    timerModeA = Arithmetic.getBit(val, WGMn1) ? 2 : 0;
+                    timerModeA |= Arithmetic.getBit(val, WGMn0) ? 1 : 0;
+
+                    timerMode = timerModeA | timerModeB;
+
+                }
+
+            }
+
+            /** <code>ControlRegisterA</code> describes the TCCRnB
+             * control register associated with a 160bit
+             * timer. Changing the values of this register generally
+             * alter the mode of operation of the timer. The low three
+             * bits also set the prescalar of the timer. */
+            protected class ControlRegisterB extends ControlRegister {
+                public static final int ICNCn = 7;
+                public static final int ICESn = 6;
+                // bit 5 here has no meaning
+                public static final int WGMn3 = 4;
+                public static final int WGMn2 = 3;
+                public static final int CSn2 = 2;
+                public static final int CSn1 = 1;
+                public static final int CSn0 = 0;
+
+                public void write(byte val) {
+                    value = (byte) (val & 0xdf);
+                    decode(val);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    if (bit != 5)
+                        value = Arithmetic.setBit(value, bit, val);
+                    decode(value);
+                }
+
+
+                private void decode(byte val) {
+// get the mode of operation
+                    timerModeB = Arithmetic.getBit(val, WGMn3) ? 8 : 0;
+                    timerModeB |= Arithmetic.getBit(val, WGMn2) ? 4 : 0;
+
+                    timerMode = timerModeA | timerModeB;
+
+                    // The low 3 bits of this register determine the prescaler
+                    int prescaler = val & 0x7;
+
+                    if (prescaler < periods.length)
+                        resetPeriod(periods[prescaler]);
+
+                    // not positive what to do with the high two bits
+                    // TODO: determine behavior of ICNCn and ICESn
+                }
+
+                private void resetPeriod(int m) {
+                    if (m == 0) {
+                        if (timerEnabled) {
+                            if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " disabled");
+                            removeEvent(ticker);
+                        }
+                        return;
+                    }
+                    if (timerEnabled) {
+                        removeEvent(ticker);
+                    }
+                    if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " enabled: period = " + m + " mode = " + timerMode);
+                    period = m;
+                    timerEnabled = true;
+                    insertEvent(ticker, period);
+
+                }
+
+            }
+
+            /** <code>ControlRegisterA</code> describes the TCCRnA
+             * control register associated with a 16-bit
+             * timer. Writing to the three high bits of this register
+             * will cause a forced output compare on at least one of
+             * the three output compare units.*/
+            protected class ControlRegisterC extends ControlRegister {
+                public static final int FOCnA = 7;
+                public static final int FOCnB = 6;
+                public static final int FOCnC = 5;
+                //bits 4-0 are unspecified in the manual
+
+                public void write(byte val) {
+                    if ((val & 0x20) != 0) {
+                        // force output compareC
+                        forcedOutputCompareC();
+                    }
+                    if ((val & 0x40) != 0) {
+                        // force output compareB
+                        forcedOutputCompareB();
+                    }
+                    if ((val & 0x80) != 0) {
+                        // force output compareA
+                        forcedOutputCompareA();
+                    }
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    switch (bit) {
+                        case 5:
+                            forcedOutputCompareC();
+                            break;
+                        case 6:
+                            forcedOutputCompareB();
+                            break;
+                        case 7:
+                            forcedOutputCompareA();
+                            break;
+                    }
+
+                }
+
+                private void forcedCompare(String s, int val, int compare, int COMnx1, int COMnx0) {
+                    /*
+                    // the non-PWM modes are NORMAL and CTC
+                    // under NORMAL, there is no pin action for a compare match
+                    // under CTC, the action is to clear the pin.
+                    */
+
+                    int count = read16(TCNTnH_reg, TCNTnL_reg);
+                    Pin pin = ((Pin) getPin("OC" + n + s));
+                    int compareMode = Arithmetic.getBit(val, COMnx1) ? 2 : 0;
+                    compareMode |= Arithmetic.getBit(val, COMnx0) ? 1 : 0;
+                    if (count == compare) {
+
+                        switch (compareMode) {
+                            case 1:
+                                pin.write(!pin.read()); // clear
+                                break;
+                            case 2:
+                                pin.write(false);
+                                break;
+                            case 3:
+                                pin.write(true);
+                                break;
+                        }
+
+                    }
+                }
+
+                private void forcedOutputCompareA() {
+                    int compare = read16(OCRnAH_reg, OCRnAL_reg);
+                    forcedCompare("A", TCCRnA_reg.read(), compare, 7, 6);
+                }
+
+                private void forcedOutputCompareB() {
+                    int compare = read16(OCRnBH_reg, OCRnBL_reg);
+                    forcedCompare("B", TCCRnA_reg.read(), compare, 5, 4);
+                }
+
+                private void forcedOutputCompareC() {
+                    int compare = read16(OCRnCH_reg, OCRnCL_reg);
+                    forcedCompare("C", TCCRnA_reg.read(), compare, 3, 2);
+                }
+            }
+
+
+            /** In PWN modes, writes to the OCRnx registers are
+             * buffered. Specifically, the actual write is delayed
+             * until a certain event (the counter reaching either TOP
+             * or BOTTOM) specified by the particular PWN
+             * mode. BufferedRegister implements this by writing to a
+             * buffer register on a write and reading from the
+             * buffered register in a read. When the buffered register
+             * is to be updated, the flush() method should be
+             * called.  */
+            protected class BufferedRegister extends State.RWIOReg {
+                final State.RWIOReg register;
+
+                protected BufferedRegister() {
+                    this.register = new State.RWIOReg();
+                }
+
+                public void write(byte val) {
+                    super.write(val);
+                    if (timerMode == MODE_NORMAL || timerMode == MODE_CTC_OCRnA
+                            || timerMode == MODE_CTC_ICRn) {
+                        flush();
+                    }
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    super.writeBit(bit, val);
+                    if (timerMode == MODE_NORMAL || timerMode == MODE_CTC_OCRnA
+                            || timerMode == MODE_CTC_ICRn) {
+                        flush();
+                    }
+                }
+
+                public byte readBuffer() {
+                    return super.read();
+                }
+
+                public byte read() {
+                    return register.read();
+                }
+
+                public boolean readBit(int bit) {
+                    return register.readBit(bit);
+                }
+
+                protected void flush() {
+                    register.write(value);
+                }
+            }
+
+            /**
+             * The <code>Ticker</class> implements the periodic behavior of the timer.
+             * It emulates the operation of the timer at each clock cycle and uses the
+             * global timed event queue to achieve the correct periodic behavior.
+             */
+            protected class Ticker implements Simulator.Event {
+
+                private void flushOCRnx() {
+                    OCRnAL_reg.flush();
+                    OCRnAH_reg.flush();
+                    OCRnBL_reg.flush();
+                    OCRnBH_reg.flush();
+                    OCRnCL_reg.flush();
+                    OCRnCH_reg.flush();
+                }
+
+                private final int[] TOP = {0xffff, 0x00ff, 0x01ff, 0x03ff, 0, 0x0ff, 0x01ff, 0x03ff};
+
+
+                public void fire() {
+
+                    int count = read16(TCNTnH_reg, TCNTnL_reg);
+                    int compareA = read16(OCRnAH_reg, OCRnAL_reg);
+                    int compareB = read16(OCRnBH_reg, OCRnBL_reg);
+                    int compareC = read16(OCRnCH_reg, OCRnCL_reg);
+                    int compareI = read16(ICRnH_reg, ICRnL_reg);
+
+                    if (timerPrinter.enabled) {
+                        timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "],  OCR" + n + "B = " + compareB + "], OCR" + n + "C = " + compareC + "]");
+                    }
+
+                    // What exactly should I do when I phase/frequency current?
+                    // TODO: Figure out what differentiates the OCRnA, B, C
+                    // registers.
+                    // Make sure these cases are doing what they are supposed to
+                    // do.
+                    switch (timerMode) {
+                        case MODE_NORMAL:
+                            count++;
+                            if (count == MAX) {
+                                overflow();
+                                count = 0;
+                            }
+                            break;
+                        case MODE_PWM_PHASE_CORRECT_8_BIT:
+                        case MODE_PWM_PHASE_CORRECT_9_BIT:
+                        case MODE_PWM_PHASE_CORRECT_10_BIT:
+                            if (countUp)
+                                count++;
+                            else
+                                count--;
+                            if (count >= TOP[timerMode]) {
+                                //if (count >= 0x00ff) {
+                                countUp = false;
+                                //count = 0x0ff;
+                                count = TOP[timerMode];
+                                flushOCRnx();
+                            }
+                            if (count <= 0) {
+                                overflow();
+                                countUp = true;
+                                count = 0;
+                            }
+                            break;
+
+                        case MODE_CTC_OCRnA:
+                            count++;
+                            if (count == compareA) {
+                                //compareMatch();
+                                count = 0;
+                            }
+                            if (count == MAX) {
+                                overflow();
+                            }
+                            break;
+                        case MODE_FASTPWM_8_BIT:
+                        case MODE_FASTPWM_9_BIT:
+                        case MODE_FASTPWM_10_BIT:
+                            count++;
+                            if (count == TOP[timerMode]) {
+                                count = 0;
+                                overflow();
+                                flushOCRnx();
+                            }
+
+                            break;
+                        case MODE_PWM_PNF_ICRn:
+                            if (countUp)
+                                count++;
+                            else
+                                count--;
+
+                            if (count >= compareI) {
+                                countUp = false;
+                                count = compareI;
+                            }
+                            if (count <= 0) {
+                                overflow();
+                                flushOCRnx();
+                                countUp = true;
+                                count = 0;
+                            }
+                            break;
+                        case MODE_PWM_PNF_OCRnA:
+                            if (countUp)
+                                count++;
+                            else
+                                count--;
+
+                            if (count >= compareA) {
+                                countUp = false;
+                                count = compareA;
+                            }
+                            if (count <= 0) {
+                                overflow();
+                                flushOCRnx();
+                                countUp = true;
+                                count = 0;
+                            }
+                            break;
+                        case MODE_PWN_PHASE_CORRECT_ICRn:
+                            if (countUp)
+                                count++;
+                            else
+                                count--;
+
+                            if (count >= compareI) {
+                                flushOCRnx();
+                                countUp = false;
+                                count = compareI;
+                            }
+                            if (count <= 0) {
+                                overflow();
+                                countUp = true;
+                                count = 0;
+                            }
+                            break;
+                        case MODE_PWN_PHASE_CORRECT_OCRnA:
+                            if (countUp)
+                                count++;
+                            else
+                                count--;
+
+                            if (count >= compareA) {
+                                flushOCRnx();
+                                countUp = false;
+                                count = compareA;
+                            }
+                            if (count <= 0) {
+                                overflow();
+                                countUp = true;
+                                count = 0;
+                            }
+                            break;
+                        case MODE_CTC_ICRn:
+                            count++;
+                            if (count == compareI) {
+                                count = 0;
+                            }
+                            if (count == MAX) {
+                                overflow();
+                            }
+                            break;
+                        case MODE_FASTPWM_ICRn:
+                            count++;
+                            if (count == compareI) {
+                                count = 0;
+                                overflow();
+                                flushOCRnx();
+                            }
+                            break;
+                        case MODE_FASTPWM_OCRnA:
+                            count++;
+                            if (count == compareA) {
+                                count = 0;
+                                overflow();
+                                flushOCRnx();
+                            }
+                            break;
+                    }
+
+                    // the compare match should be performed in any case.
+                    if (!blockCompareMatch) {
+                        if (count == compareA) {
+                            compareMatchA();
+                        }
+                        if (count == compareB) {
+                            compareMatchA();
+                        }
+                        if (count == compareC) {
+                            compareMatchC();
+                        }
+                    }
+                    // make sure timing on this are correct
+                    blockCompareMatch = true;
+
+                    write16(count, TCNTnH_reg, TCNTnL_reg);
+                    if (period != 0) insertEvent(this, period);
+                }
+            }
+        }
+
+
+        protected class Timer8Bit {
             public static final int MODE_NORMAL = 0;
             public static final int MODE_PWM = 1;
             public static final int MODE_CTC = 2;
@@ -537,9 +1427,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             public static final int MAX = 0xff;
             public static final int BOTTOM = 0x00;
 
-            final ControlRegister TCCR0_reg;
-            final State.RWIOReg TCNT0_reg;
-            final State.RWIOReg OCR0_reg;
+            final ControlRegister TCCRn_reg;
+            final TCNTnRegister TCNTn_reg;
+            final BufferedRegister OCRn_reg;
+
+            final int n; // number of timer. 0 for Timer0, 2 for Timer2
 
             final Ticker ticker;
 
@@ -548,50 +1440,140 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             int timerMode;
             long period;
 
-            Verbose.Printer timerPrinter = Verbose.getVerbosePrinter("sim.timer0");
+            /* pg. 93 of manual. Block compareMatch for one period after
+             * TCNTn is written to. */
+            boolean blockCompareMatch;
 
-            protected Timer0(BaseInterpreter ns) {
+            final int OCIEn;
+            final int TOIEn;
+            final int OCFn;
+            final int TOVn;
+
+            final int[] periods;
+
+            Verbose.Printer timerPrinter;
+
+            /** Timer8Bit(ns, TCNT0, TCNT0, OCR0) should initialize
+             * Timer0 as before. Assuming this translation from the
+             * Timer0 code was generic enough, Timer8Bit(ns, TCNT2,
+             * TCNT2, OCR2) should initialize a mostly functional
+             * Timer2. OCRn is the offset on TIMSK that corresponds to */
+            private Timer8Bit(BaseInterpreter ns, int n, int TCCRn, int TCNTn, int OCRn, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
+                timerPrinter = Verbose.getVerbosePrinter("sim.timer" + n);
                 ticker = new Ticker();
-                TCCR0_reg = new ControlRegister();
-                TCNT0_reg = new State.RWIOReg();
-                OCR0_reg = new State.RWIOReg();
+                TCCRn_reg = new ControlRegister();
+                TCNTn_reg = new TCNTnRegister();
+                OCRn_reg = new BufferedRegister();
 
-                installIOReg(ns, TCCR0, TCCR0_reg);
-                installIOReg(ns, TCNT0, TCNT0_reg);
-                installIOReg(ns, OCR0, OCR0_reg);
+                this.OCIEn = OCIEn;
+                this.TOIEn = TOIEn;
+                this.OCFn = OCFn;
+                this.TOVn = TOVn;
+                this.n = n;
+                this.periods = periods;
+
+                installIOReg(ns, TCCRn, TCCRn_reg);
+                installIOReg(ns, TCNTn, TCNTn_reg);
+                installIOReg(ns, OCRn, OCRn_reg);
             }
 
             protected void compareMatch() {
                 if (timerPrinter.enabled) {
-                    boolean enabled = TIMSK_reg.readBit(1);
-                    timerPrinter.println("Timer0.compareMatch (enabled: " + enabled + ")");
+                    boolean enabled = TIMSK_reg.readBit(OCIEn);
+                    timerPrinter.println("Timer" + n + ".compareMatch (enabled: " + enabled + ")");
                 }
                 // set the compare flag for this timer
-                TIFR_reg.flagBit(1);
+                TIFR_reg.flagBit(OCFn);
+                // if the mode is correct, modify pin OCn. but if the flag is
+                // already connected to the pin, does this happen automatically
+                // with the last previous call?
+                //compareMatchPin();
             }
 
             protected void overflow() {
                 if (timerPrinter.enabled) {
-                    boolean enabled = TIMSK_reg.readBit(0);
-                    timerPrinter.println("Timer0.overFlow (enabled: " + enabled + ")");
+                    boolean enabled = TIMSK_reg.readBit(TOIEn);
+                    timerPrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ")");
                 }
                 // set the overflow flag for this timer
-                TIFR_reg.flagBit(0);
+                TIFR_reg.flagBit(TOVn);
+            }
+
+            /** Overloads the write behavior of this class of register
+             * in order to implement compare match blocking for one
+             * timer period. */
+            protected class TCNTnRegister extends State.RWIOReg {
+
+                public void write(byte val) {
+                    value = val;
+                    blockCompareMatch = true;
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    value = Arithmetic.setBit(value, bit, val);
+                    blockCompareMatch = true;
+                }
+            }
+
+            /** <code>BufferedRegister</code> implements a register
+             * with a write buffer. In PWN modes, writes to this
+             * register are not performed until flush() is called. In
+             * non-PWM modes, the writes are immediate. */
+            protected class BufferedRegister extends State.RWIOReg {
+                final State.RWIOReg register;
+
+                protected BufferedRegister() {
+                    this.register = new State.RWIOReg();
+                }
+
+                public void write(byte val) {
+                    super.write(val);
+                    if (timerMode == MODE_NORMAL || timerMode == MODE_CTC) {
+                        flush();
+                    }
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    super.writeBit(bit, val);
+                    if (timerMode == MODE_NORMAL || timerMode == MODE_CTC) {
+                        flush();
+                    }
+                }
+
+                public byte readBuffer() {
+                    return super.read();
+                }
+
+                public byte read() {
+                    return register.read();
+                }
+
+                public boolean readBit(int bit) {
+                    return register.readBit(bit);
+                }
+
+                protected void flush() {
+                    register.write(value);
+                }
             }
 
             protected class ControlRegister extends State.RWIOReg {
-                public static final int FOC0 = 7;
-                public static final int WGM00 = 6;
-                public static final int COM01 = 5;
-                public static final int COM00 = 4;
-                public static final int WGM01 = 3;
-                public static final int CS02 = 2;
-                public static final int CS01 = 1;
-                public static final int CS00 = 0;
+                public static final int FOCn = 7;
+                public static final int WGMn0 = 6;
+                public static final int COMn1 = 5;
+                public static final int COMn0 = 4;
+                public static final int WGMn1 = 3;
+                public static final int CSn2 = 2;
+                public static final int CSn1 = 1;
+                public static final int CSn0 = 0;
 
                 public void write(byte val) {
                     // hardware manual states that high order bit is always read as zero
                     value = (byte) (val & 0x7f);
+
+                    if ((val & 0x80) != 0) {
+                        forcedOutputCompare(value);
+                    }
 
                     // decode modes and update internal state
                     decode(val);
@@ -599,51 +1581,60 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                 public void writeBit(int bit, boolean val) {
                     if (bit == 7 && val) {
-                        // TODO: force output compare
+
+                        forcedOutputCompare(value);
                     } else {
                         value = Arithmetic.setBit(value, bit, val);
                         decode(value);
                     }
                 }
 
-                private void decode(byte val) {
-                    // get the mode of operation
-                    timerMode = Arithmetic.getBit(val, WGM01) ? 2 : 0;
-                    timerMode |= Arithmetic.getBit(val, WGM00) ? 1 : 0;
+                private void forcedOutputCompare(byte val) {
 
-                    int prescaler = val & 0x7;
-                    switch (prescaler) {
-                        case 0:
-                            resetPeriod(0);
-                            break;
-                        case 1:
-                            resetPeriod(1);
-                            break;
-                        case 2:
-                            resetPeriod(8);
-                            break;
-                        case 3:
-                            resetPeriod(32);
-                            break;
-                        case 4:
-                            resetPeriod(64);
-                            break;
-                        case 5:
-                            resetPeriod(128);
-                            break;
-                        case 6:
-                            resetPeriod(256);
-                            break;
-                        case 7:
-                            resetPeriod(1024);
-                            break;
+                    int count = TCNTn_reg.read() & 0xff;
+                    int compare = OCRn_reg.read() & 0xff;
+                    int compareMode = Arithmetic.getBit(val, COMn1) ? 2 : 0;
+                    compareMode |= Arithmetic.getBit(val, COMn0) ? 1 : 0;
+
+
+                    // the non-PWM modes are NORMAL and CTC
+                    // under NORMAL, there is no pin action for a compare match
+                    // under CTC, the action is to clear the pin.
+
+                    Pin pin = (Pin) getPin("OC" + n);
+
+                    if (count == compare) {
+                        switch (compareMode) {
+                            case 1:
+                                pin.write(!pin.read()); // clear
+                                break;
+                            case 2:
+                                pin.write(false);
+                                break;
+                            case 3:
+                                pin.write(true);
+                                break;
+                        }
+
                     }
                 }
 
-                private void resetPeriod(int n) {
-                    if (n == 0) {
+                private void decode(byte val) {
+                    // get the mode of operation
+                    timerMode = Arithmetic.getBit(val, WGMn1) ? 2 : 0;
+                    timerMode |= Arithmetic.getBit(val, WGMn0) ? 1 : 0;
+
+                    int prescaler = val & 0x7;
+
+
+                    if (prescaler < periods.length)
+                        resetPeriod(periods[prescaler]);
+                }
+
+                private void resetPeriod(int m) {
+                    if (m == 0) {
                         if (timerEnabled) {
-                            if (timerPrinter.enabled) timerPrinter.println("Timer0 disabled");
+                            if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " disabled");
                             removeEvent(ticker);
                         }
                         return;
@@ -651,8 +1642,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     if (timerEnabled) {
                         removeEvent(ticker);
                     }
-                    if (timerPrinter.enabled) timerPrinter.println("Timer0 enabled: period = " + n + " mode = " + timerMode);
-                    period = n;
+                    if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " enabled: period = " + m + " mode = " + timerMode);
+                    period = m;
                     timerEnabled = true;
                     insertEvent(ticker, period);
                 }
@@ -667,20 +1658,24 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                 public void fire() {
                     // perform one clock tick worth of work on the timer
-                    int count = TCNT0_reg.read() & 0xff;
-                    int compare = OCR0_reg.read() & 0xff;
+                    int count = TCNTn_reg.read() & 0xff;
+                    int compare = OCRn_reg.read() & 0xff;
 
                     if (timerPrinter.enabled)
-                        timerPrinter.println("Timer0 [TCNT0 = " + count + ", OCR0 = " + compare + "]");
+                        timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "(actual) = " + compare + ", OCR" + n + "(buffer) = " + (0xff & OCRn_reg.readBuffer()) + "]");
 
                     switch (timerMode) {
                         case MODE_NORMAL: // NORMAL MODE
                             count++;
                             if (count == MAX) {
-                                compareMatch();
+                                // is this compareMatch occuring at the correct
+                                // time? CHECK.
+                                // I'm moving this out.  -- Daniel
+                                //compareMatch();
                                 overflow();
                                 count = 0;
                             }
+
                             break;
                         case MODE_PWM: // PULSE WIDTH MODULATION MODE
                             if (countUp)
@@ -691,20 +1686,18 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             if (count >= MAX) {
                                 countUp = false;
                                 count = MAX;
+                                OCRn_reg.flush(); // pg. 102. update OCRn at TOP
                             }
                             if (count <= 0) {
                                 overflow();
                                 countUp = true;
                                 count = 0;
                             }
-                            if (count == compare) {
-                                compareMatch();
-                            }
                             break;
                         case MODE_CTC: // CLEAR TIMER ON COMPARE MODE
                             count++;
                             if (count == compare) {
-                                compareMatch();
+                                //compareMatch();
                                 count = 0;
                             }
                             break;
@@ -713,17 +1706,55 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             if (count == MAX) {
                                 count = 0;
                                 overflow();
-                            }
-                            if (count == compare) {
-                                compareMatch();
+                                OCRn_reg.flush(); // pg. 102. update OCRn at TOP
                             }
                             break;
                     }
-                    TCNT0_reg.write((byte) count);
+
+                    if (count == compare && !blockCompareMatch) {
+                        compareMatch();
+                    }
+                    // I probably want to verify the timing on this.
+                    blockCompareMatch = false;
+                    TCNTn_reg.write((byte) count);
                     if (period != 0) insertEvent(this, period);
                 }
             }
         }
+
+        /** Flag register for flag register that corresponds to a
+         * group of interrupts that do not necessarily have a clean,
+         * linear mapping to bits on the register.  */
+        protected class UnorderedFlagRegister extends FlagRegister {
+            final int[] mapping;
+
+            protected UnorderedFlagRegister(boolean b, int i, int[] mapping) {
+                super(b, i);
+                this.mapping = mapping;
+                maskRegister = new UnorderedMaskRegister(b, i, this, mapping);
+            }
+
+            protected int getVectorNum(int bit) {
+                return mapping[bit];
+            }
+        }
+
+        /** Mask register associated with an
+         * <code>UnorderedFlagregister</code>.*/
+        protected class UnorderedMaskRegister extends MaskRegister {
+            final int[] mapping;
+
+
+            public UnorderedMaskRegister(boolean b, int i, FlagRegister fr, int[] mapping) {
+                super(b, i, fr);
+                this.mapping = mapping;
+            }
+
+            protected int getVectorNum(int bit) {
+                return mapping[bit];
+            }
+        }
+
 
         private void populateState(BaseInterpreter ns) {
             // set up the external interrupt mask and flag registers and interrupt range
@@ -734,11 +1765,52 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             TIFR_reg = buildInterruptRange(ns, false, TIMSK, TIFR, 17, 8);
             TIMSK_reg = TIFR_reg.maskRegister;
 
+
+            /* For whatever reason, the ATMega128 engineers decided
+               against having the bitorder for the ETIFR/ETIMSK
+               registers line up with the corresponding block of the
+               interrupt vector. Therefore, we have to line this up by
+               hand.
+            */
+            //ETIFR_reg = new FlagRegister(true, 25);
+            int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
+            ETIFR_reg = new UnorderedFlagRegister(true, 25, ETIFR_mapping); // false, 0 are just placeholder falues
+            ETIMSK_reg = (UnorderedMaskRegister) ETIFR_reg.maskRegister;
+
+
+            // Timer1 COMPC
+            interrupts[25] = new Simulator.MaskableInterrupt(25, ETIMSK_reg, ETIFR_reg, 0, false);
+            // Timer3 CAPT
+            interrupts[26] = new Simulator.MaskableInterrupt(26, ETIMSK_reg, ETIFR_reg, 5, false);
+            // Timer3 COMPA
+            interrupts[27] = new Simulator.MaskableInterrupt(27, ETIMSK_reg, ETIFR_reg, 4, false);
+            // Timer3 COMPB
+            interrupts[28] = new Simulator.MaskableInterrupt(28, ETIMSK_reg, ETIFR_reg, 3, false);
+            // Timer3 COMPC
+            interrupts[29] = new Simulator.MaskableInterrupt(29, ETIMSK_reg, ETIFR_reg, 1, false);
+            // Timer3 OVF
+            interrupts[30] = new Simulator.MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false);
+
+            installIOReg(ns, ETIMSK, ETIMSK_reg);
+            installIOReg(ns, ETIFR, ETIFR_reg);
+
+            // 8-Bit Timers
             // build timer 0
             new Timer0(ns);
+            // build timer 2
+            if (!compatibilityMode) new Timer2(ns);
+
+            // 16-Bit Timers
+            // build timer 1
+            new Timer1(ns);
+            // build Timer 3
+            if (!compatibilityMode) new Timer3(ns);
 
             buildPorts(ns);
             // TODO: build other devices
+
+            new EEPROM(ns);
+
 
             // Add SPI device by Simon
             new SPI(ns);
@@ -778,6 +1850,186 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 installIOReg(ns, flagRegNum, fr);
             }
             return fr;
+        }
+
+        private int read16(State.RWIOReg high, State.RWIOReg low) {
+            int result = low.read() & 0xff;
+            result |= (high.read() & 0xff) << 8;
+            return result;
+        }
+
+        private void write16(int val, State.RWIOReg high, State.RWIOReg low) {
+
+            high.write((byte) ((val & 0xff00) >> 8));
+            low.write((byte) (val & 0x00ff));
+        }
+
+        /**
+         * This is an implementation of the non-volatile EEPROM on the
+         * ATMega128 microcontroller.  TODO: CPU halting after
+         * reads/writes.
+         * @author Daniel Lee
+         */
+        protected class EEPROM {
+            byte[] EEPROM_data = new byte[EEPROM_SIZE];
+            final State.RWIOReg EEDR_reg;
+            final EECRReg EECR_reg;
+            final State.RWIOReg EEARL_reg;
+            final EEARHReg EEARH_reg;
+
+            BaseInterpreter interpreter;
+
+            Verbose.Printer eepromPrinter;
+
+            // flag bits on EECR
+            final int EERIE = 3;
+            final int EEMWE = 2;
+            final int EEWE = 1;
+            final int EERE = 0;
+
+            boolean interruptEnable;
+            boolean masterWriteEnable;
+            boolean writeEnable;
+            boolean readEnable;
+
+            EEPROMTicker ticker;
+
+            int writeCount = -1;
+            boolean writeEnableWritten;
+            boolean readEnableWritten;
+
+            // at some point, we might want to add support for
+            // initializing the EEPROM with a file or something
+            // and possibly writing back out when the simulator exits
+            // to emulate a real EEPROM
+            EEPROM(BaseInterpreter ns) {
+                eepromPrinter = Verbose.getVerbosePrinter("eeprom");
+                interpreter = ns;
+
+                ticker = new EEPROMTicker();
+
+                EEDR_reg = new State.RWIOReg();
+                EECR_reg = new EECRReg();
+                EEARL_reg = new State.RWIOReg();
+                EEARH_reg = new EEARHReg();
+
+                installIOReg(ns, EEDR, EEDR_reg);
+                installIOReg(ns, EECR, EECR_reg);
+                installIOReg(ns, EEARL, EEARL_reg);
+                installIOReg(ns, EEARH, EEARH_reg);
+
+            }
+
+            protected class EEARHReg extends State.RWIOReg {
+                public void write(byte val) {
+                    value = (byte) (0xff & val);
+                    insertEvent(ticker, 1);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    if (bit < 4) {
+                        super.writeBit(bit, val);
+                    }
+                    insertEvent(ticker, 1);
+                }
+
+            }
+
+            protected class EECRReg extends State.RWIOReg {
+
+                public void decode(byte val) {
+                    boolean readEnableOld = readEnable;
+                    readEnable = (value & 0x1) != 0;
+                    if (!readEnableOld && readEnable) {
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: EERE flagged");
+                        readEnableWritten = true;
+                    }
+                    boolean writeEnableOld = writeEnable;
+                    writeEnable = (value & 0x2) != 0;
+                    if (!writeEnableOld && writeEnable) {
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: EEWE flagged");
+                        writeEnableWritten = true;
+                    }
+                    masterWriteEnable = (value & 0x4) != 0;
+                    interruptEnable = (value & 0x8) != 0;
+                    insertEvent(ticker, 1);
+                }
+
+                public void write(byte val) {
+
+                    boolean masterWriteEnableOld = masterWriteEnable;
+                    value = (byte) (0xff & val);
+                    if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: EECR written to, val = " + value);
+                    decode(value);
+                    if (!masterWriteEnableOld && masterWriteEnable) {
+                        // EEWE has been written to. reset write count
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: reset write count to 4");
+                        writeCount = 4;
+                    }
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    boolean masterWriteEnableOld = masterWriteEnable;
+                    if (bit < 4) {
+                        super.writeBit(bit, val);
+                    }
+                    if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: EECR written to, val = " + value);
+                    decode(value);
+                    if (!masterWriteEnableOld && masterWriteEnable) {
+                        // EEWE has been written to. reset write count
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: reset write count to 4");
+                        writeCount = 4;
+                    }
+                }
+            }
+
+            protected class EEPROMTicker implements Simulator.Event {
+                public void fire() {
+
+
+                    if (interruptEnable && !writeEnable) {
+                        // post interrupt
+                        // do I need to check SREG[I] ?
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: posting interrupt.");
+                        interpreter.postInterrupt(23);
+                    }
+                    int address = read16(EEARH_reg, EEARL_reg);
+                    if (writeCount > 0) {
+                        // if EEMWE has been written to 1 within
+                        // 4 clock cycles, write data
+
+                        // after 4 cycles, clear this bit
+                        // implement blocking CPU
+
+                        if (writeEnableWritten) {
+                            if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: " + EEDR_reg.read() + " written to " + address);
+                            EEPROM_data[address] = EEDR_reg.read();
+                        }
+
+                    }
+                    if (readEnableWritten) {
+                        // read
+                        // implement blocking CPU
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: " + EEPROM_data[address] + " read from " + address);
+                        EEDR_reg.write(EEPROM_data[address]);
+
+                    }
+                    if (writeCount > 0) {
+                        writeCount--;
+                        insertEvent(ticker, 1);
+                    }
+
+                    if (writeCount == 0) {
+                        // clear EEWE
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: write count hit 0, clearing EEWE");
+                        writeCount--;
+                        EECR_reg.writeBit(1, false);
+                    }
+                    writeEnableWritten = false;
+                    readEnableWritten = false;
+                }
+            }
+
         }
 
 
@@ -946,4 +2198,5 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
     }
+
 }
