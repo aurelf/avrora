@@ -143,6 +143,12 @@ public class Analyzer {
 
     }
 
+    /**
+     * The <code>report()</code> method generates a textual report after the
+     * analysis has been completed. It reports information about states, reachable
+     * states, time for analysis, and of course, the maximum stack size for the
+     * program.
+     */
     public void report() {
         printQuantity("Total cached states", "" + space.getTotalStateCount());
         printQuantity("Total reachable states", "" + space.getStatesInSpaceCount());

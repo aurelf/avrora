@@ -14,7 +14,7 @@ import avrora.Avrora;
  * @see InstrVisitor
  * @see Generator
  */
-public abstract class Instr extends Elem implements InstrPrototype {
+public abstract class Instr implements InstrPrototype {
 
     /**
      * The <code>isInstr()</code> method is part of the is/as convention for
@@ -27,37 +27,6 @@ public abstract class Instr extends Elem implements InstrPrototype {
      */
     public boolean isInstr() {
         return true;
-    }
-
-    /**
-     * The <code>asData()</code> method is part of the is/as convention for
-     * instructions and data as they are unified in the <code>Elem</code>
-     * interface. This convention avoids stupid casts and subtype tests
-     * by replacing them with virtual dispatch. In a small world, this is
-     * manageable.
-     *
-     * @param address the address at which this data resides
-     * @return this method does not return but throws an exception, because
-     *         instructions cannot be read as data
-     * @throws avrora.Avrora.InternalError
-     */
-    public Data asData(int address) {
-        // TODO: define correct error for this.
-        throw Avrora.failure("not data @ " + address);
-    }
-
-    /**
-     * The <code>asInstr()</code> method is part of the is/as convention for
-     * instructions and data as they are unified in the <code>Elem</code>
-     * interface. This convention avoids stupid casts and subtype tests
-     * by replacing them with virtual dispatch. In a small world, this is
-     * manageable.
-     *
-     * @param address the address at which this data resides
-     * @return this
-     */
-    public Instr asInstr(int address) {
-        return this;
     }
 
     /**
@@ -126,6 +95,12 @@ public abstract class Instr extends Elem implements InstrPrototype {
      * imposed by the AVR instruction set architecture.
      */
     public static class InvalidOperand extends RuntimeException {
+        /**
+         * The <code>number</code> field of the <code>InvalidOperand</code>
+         * instance records which operand this error refers to. For example,
+         * if the first operand was the source of the problem, then this
+         * field will be set to 1.
+         */
         public final int number;
 
         InvalidOperand(int num, String msg) {
@@ -134,8 +109,26 @@ public abstract class Instr extends Elem implements InstrPrototype {
         }
     }
 
+    /**
+     * The <code>InvalidRegister</code> class represents an error in
+     * constructing an instance of <code>Instr</code> where a register
+     * operand does not meet the instruction set specification. For
+     * example, the "ldi" instruction can only load values into the
+     * upper 16 registers; attempting to create a <code>Instr.LDI</code>
+     * instance with a destination register of <code>Register.RO</code>
+     * will generate this exception.
+     */
     public static class InvalidRegister extends InvalidOperand {
+        /**
+         * The <code>set</code> field records the expected register set
+         * for the operand.
+         */
         public final Register.Set set;
+
+        /**
+         * The <code>register</code> field records the offending register
+         * that was found not to be in the expected register set.
+         */
         public final Register register;
 
         public InvalidRegister(int num, Register reg, Register.Set s) {
@@ -145,10 +138,34 @@ public abstract class Instr extends Elem implements InstrPrototype {
         }
     }
 
+    /**
+     * The <code>InvalidImmediate</code> class represents an error in
+     * construction of an instance of <code>Instr</code> where the
+     * given immediate operand is not within the range that
+     * is specified by the instruction set manual. For example, the
+     * "sbic" instruction skips the next instruction if the specified
+     * bit in the status register is clear. Its operand is expected
+     * to be in the range [0, ..., 7]. If the specified operand is
+     * not in the range, then this exception will be thrown.
+     */
     public static class InvalidImmediate extends InvalidOperand {
 
+        /**
+         * The <code>low</code> field stores the lowest value that is
+         * allowed for this operand.
+         */
         public final int low;
+
+        /**
+         * The <code>high</code> field stores the highest value that is
+         * allowed for this operand.
+         */
         public final int high;
+
+        /**
+         * The <code>value</code> field stores the actual value that was
+         * passed during the attempeted construction of this instruction.
+         */
         public final int value;
 
         public InvalidImmediate(int num, int v, int l, int h) {
@@ -159,6 +176,11 @@ public abstract class Instr extends Elem implements InstrPrototype {
         }
     }
 
+    /**
+     * The <code>RegisterRequired</code> class represents an error
+     * in construction of an instance of <code>Instr</code> where the
+     * given operand is expected to be a register but is not.
+     */
     public static class RegisterRequired extends RuntimeException {
 
         public final Operand operand;
@@ -169,6 +191,11 @@ public abstract class Instr extends Elem implements InstrPrototype {
         }
     }
 
+    /**
+     * The <code>ImmediateRequired</code> class represents an error
+     * in construction of an instance of <code>Instr</code> where the
+     * given operand is expected to be an immediate but is not.
+     */
     public static class ImmediateRequired extends RuntimeException {
 
         public final Operand operand;

@@ -64,7 +64,7 @@ public interface Microcontroller extends MicrocontrollerProperties {
          * The <code>connect()</code> method will connect this pin to the
          * specified output. Attempts by the microcontroller to write to this
          * pin when it is configured as an output will then call this instance's
-         * <code>read()</code> method.
+         * <code>write()</code> method.
          *
          * @param o the <code>Output</code> instance to connect to
          */

@@ -7,11 +7,8 @@ import avrora.core.InstrPrototype;
 import avrora.core.Instr;
 
 /**
- * I T E M   C L A S S E S
- * --------------------------------------------------------
- * <p/>
- * These item classes represent the various parts of the assembly
- * file that are recorded in the module.
+ * The <code>Item</code> class represents either an assembler directive, an
+ * instruction, or a sequence of initialized data with a source program.
  */
 public abstract class Item {
 
@@ -19,6 +16,11 @@ public abstract class Item {
     protected final Module.Seg segment;
     protected final int byteAddress;
 
+    /**
+     * The <code>simplify()</code> method reduces any computable constants
+     * to values, resolves register aliases, and creates instruction instances
+     * within this item, depending on exactly which type of item it is.
+     */
     public abstract void simplify();
 
     Item(Module.Seg seg) {
@@ -31,6 +33,10 @@ public abstract class Item {
         return 0;
     }
 
+    /**
+     * The <code>NamedConstant</code> item in a source program represents
+     * a directive that assigns a computable value to a name.
+     */
     public static class NamedConstant extends Item {
         private final AbstractToken name;
         private final Expr value;
@@ -51,6 +57,11 @@ public abstract class Item {
         }
     }
 
+    /**
+     * The <code>RegisterAlias</code> item in a source program represents
+     * a directive that adds an alias for a register. This can appear in program,
+     * data, and eeprom segments.
+     */
     public static class RegisterAlias extends Item {
         private final AbstractToken name;
         private final AbstractToken register;
@@ -71,6 +82,11 @@ public abstract class Item {
     }
 
 
+    /**
+     * The <code>Instruction</code> item in a source program represents
+     * an instruction that must be simplified and added to the program. This
+     * is generally only applicable to the program (code) section.
+     */
     public static class Instruction extends Item {
         protected final String variant;
         protected final AbstractToken name;
@@ -90,20 +106,7 @@ public abstract class Item {
             for (int cntr = 0; cntr < operands.length; cntr++)
                 operands[cntr].simplify(byteAddress + proto.getSize(), module);
 
-//            try {
             segment.writeInstr(name, byteAddress, proto.build(byteAddress >> 1, operands));
-
-//            } catch (Instr.ImmediateRequired e) {
-//                ERROR.ConstantExpected((SyntacticOperand)e.operand);
-//            } catch (Instr.InvalidImmediate e) {
-//                ERROR.ConstantOutOfRange(operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
-//            } catch (Instr.InvalidRegister e) {
-//                ERROR.IncorrectRegister(operands[e.number - 1], e.register, e.set.toString());
-//            } catch (Instr.RegisterRequired e) {
-//                ERROR.RegisterExpected((SyntacticOperand)e.operand);
-//            } catch (Instr.WrongNumberOfOperands e) {
-//                ERROR.WrongNumberOfOperands(name, e.found, e.expected);
-//            }
         }
 
         public int itemSize() {
@@ -115,6 +118,10 @@ public abstract class Item {
         }
     }
 
+    /**
+     * The <code>Label</code> item represents a labelled location in the program
+     * that is given a name. This can appear in program, data, or eeprom sections.
+     */
     public static class Label extends Item {
         private final AbstractToken name;
 
@@ -136,6 +143,11 @@ public abstract class Item {
         }
     }
 
+    /**
+     * The <code>InitializedData</code> item represents a section of programmer-declared
+     * initialized data within the program. This is generally only applicable to the
+     * program (code) section.
+     */
     public static class InitializedData extends Item {
 
         private final ExprList list;
@@ -211,6 +223,11 @@ public abstract class Item {
         }
     }
 
+    /**
+     * The <code>UnitializedData</code> item represents a declared section of
+     * data that is not given a value (a reservation of space). This can appear
+     * in the program, data, or eeprom segments.
+     */
     public static class UninitializedData extends Item {
         private final int length;
 

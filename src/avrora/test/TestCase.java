@@ -8,6 +8,9 @@ import avrora.util.StringUtil;
 import java.util.Properties;
 
 /**
+ * The <code>TestCase</code> class encapsulates the notion of a test case
+ * in the automated testing framework.
+ *
  * @author Ben L. Titzer
  */
 public abstract class TestCase {

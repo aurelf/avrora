@@ -3,6 +3,10 @@ package avrora.util;
 import java.util.HashMap;
 
 /**
+ * The <code>Verbose</code> class is used to get instances of <code>Verbose.Printer</code>
+ * for reporting the internal operations of parts of Avrora. This class centralizes the
+ * management for verbose flags.
+ *
  * @author Ben L. Titzer
  */
 public class Verbose {

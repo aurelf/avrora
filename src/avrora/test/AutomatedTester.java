@@ -12,10 +12,32 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * The <code>AutomatedTester</code> is a class that is designed to be an
+ * in-program test facility. It is capable of reading in test cases from
+ * files, extracting properties specified in those test cases, and then
+ * creating a test case of the right form for the right system.
+ * <p/>
+ * This is done through the use of another class, the <code>TestHarness</code>,
+ * which is capable of creating instances of the <code>TestCase</code> class
+ * that are collected by this framework.
+ *
+ * @see TestHarness
+ * @see TestCase
+ * @see TestResult
+ *
+ * @author Ben L. Titzer
+ */
 public class AutomatedTester {
 
     private final TestHarness harness;
 
+    /**
+     * The constructor for the <code>AutomatedTester</code> class accepts
+     * an instance of <code>TestHarness</code> that is used to create the
+     * specific test cases for each file name.
+     * @param th the test harness
+     */
     public AutomatedTester(TestHarness th) {
         harness = th;
     }
@@ -35,6 +57,16 @@ public class AutomatedTester {
     private static final int CYAN = 2;
     private static final int GREEN = 3;
 
+    /**
+     * The <code>runTests()</code> method runs the testing framework on each
+     * of the specified filenames. The name of the target for the testcase is
+     * specified in the text of each file. The testing framework extracts that
+     * name and passes that to the test harness which can create an instance of
+     * <code>TestCase</code>. Each test case is then run and the results are
+     * tabulated.
+     * @param fnames an array of the filenames of tests to run
+     * @throws java.io.IOException if there is a problem loading the test cases
+     */
     public void runTests(String[] fnames) throws java.io.IOException {
         List slist = new LinkedList();
         List flist = new LinkedList();
@@ -97,7 +129,13 @@ public class AutomatedTester {
         }
     }
 
-    public static void report(String fname, TestResult result) {
+    /**
+     * The <code>report()</code> method generates a textual report of
+     * the results of running the test case.
+     * @param fname the name of the file
+     * @param result the result of the test
+     */
+    private static void report(String fname, TestResult result) {
         Terminal.print("  ");
         Terminal.printRed(fname);
         Terminal.print(": ");
@@ -105,7 +143,7 @@ public class AutomatedTester {
         Terminal.print("\n");
     }
 
-    public TestPair runTest(String fname) throws java.io.IOException {
+    private TestPair runTest(String fname) throws java.io.IOException {
         TestCase tc = readTestCase(fname);
         Throwable exception = null;
 

@@ -152,6 +152,17 @@ TOKEN :
   | < LOG2: "log2" >
 }
 
+/* reserved words */
+
+TOKEN :
+{
+    < WORD   : ".word"  >
+  | < START   : "start"  >
+  | < SECTION   : "section"  >
+  | < PROGRAM   : "program"  >
+  | < LABEL   : "label"  >
+}
+
 /* Instruction MNEMONICS */
 
 TOKEN :
@@ -270,7 +281,6 @@ TOKEN :
   | < SWAP   : "swap"  >
   | < TST    : "tst"   >
   | < WDR    : "wdr"   >
-  | < WORD   : ".word"  >
 }
 
 /* IDENTIFIERS */
@@ -299,100 +309,62 @@ TOKEN :
 
 void Module() : {}
 {
-  Header() Sections() Text() Data() <EOF>
-}
-
-void Text() : {}
-{
-   "Disassembly of section .text:"
-   (Statement())*
-}
-
-void Data() : { }
-{
-    "Disassembly of section .data:"
-   (Statement())*
+  Header() (Section())+ <EOF>
 }
 
 void Header() : {}
 {
-   NastyName() ":" "file format" NastyName()
+    "program" <STRING_LITERAL> ":"
+    (SectionDecl())+
 }
 
-void NastyName() : {}
+void SectionDecl() : {}
 {
-   <IDENTIFIER> (<IDENTIFIER> | "." | "-" | <INTEGER_LITERAL> | <DOT_IDENTIFIER>) *
+    "section" <DOT_IDENTIFIER> (Property())+
 }
 
-void Sections() : {Token name; Token size; Token vma; Token  lma; Token fileOff;}
+void Property() : {}
 {
-  "Sections:" (<IDENTIFIER>)*
-  (<INTEGER_LITERAL>
-  name    = <DOT_IDENTIFIER>
-  size    = HexSequence()
-  vma     = HexSequence()
-  lma     = HexSequence()
-  fileOff = HexSequence()
-  <INTEGER_LITERAL> "**" <INTEGER_LITERAL>
-  (<IDENTIFIER> | ",")*
-  )*
+    <IDENTIFIER> "=" <INTEGER_LITERAL>
+}
+
+void Section() : {}
+{
+   "start" <DOT_IDENTIFIER> ":"
+   (Statement())*
 }
 
 void Statement() : {}
 {
-    LOOKAHEAD(2) Instruction()
-|
-    HexSequence() Label()
+    Label()
+  | Item()
+}
+
+void Item() : {}
+{
+    <INTEGER_LITERAL> ":"
+    <INTEGER_LITERAL> <INTEGER_LITERAL>
+    [<INTEGER_LITERAL> <INTEGER_LITERAL>]
+    (Instruction() | Data())
 }
 
 void Instruction() : {}
 {
-  HexSequence()  ":"  InstructionChoice()
+    InstrGPRGPR()
+  | InstrGPR()
+  | InstrGPRIMM()
+  | InstrInput()
+  | InstrOutput()
+  | InstrIMM()
+  | InstrIMMIMM()
+  | InstrBARE()
+  | InstrLoad()
+  | InstrStore()
 }
 
-Token HexSequence() : { Token ret;}
+void Data() : { Token b1, b2; }
 {
-    (ret = <ADDRESS> | ret =<ADD> | ret=<DEC> | ret=<ADC> | ret=<INTEGER_LITERAL> | ret=<IDENTIFIER>)
-    {return ret;}
-}
-
-void InstructionChoice() : {}
-{
-  LOOKAHEAD(5) TwoByteInstruction()
-| LOOKAHEAD(5) DataItem()
-| TwoOrMoreByteInstruction()
-}
-
-void DataItem() : { Token b1, b2; }
-{
-    b1 = HexSequence() b2 = HexSequence() [InvalidAddress()] ".word" <INTEGER_LITERAL>
-}
-
-void InvalidAddress() : {}
-{
-    <IDENTIFIER> <INTEGER_LITERAL> "is out of bounds."
-}
-
-void TwoByteInstruction() : { Token b1, b2; }
-{
-  HexSequence() HexSequence()
-    (  InstrGPRGPR() |
-       InstrGPR() |
-       InstrGPRIMM()|
-       InstrInput() |
-       InstrOutput()
-       )
-}
-
-void   TwoOrMoreByteInstruction() : { Token b1, b2, b3 = null, b4 = null; } {
-  b1 = HexSequence() b2 = HexSequence() (b3 = HexSequence() b4 = HexSequence())?
-    (
-     InstrIMM() |
-     InstrIMMIMM() |
-     InstrBARE() |
-     InstrLoad() |
-     InstrStore()
-     )
+    ".word" <INTEGER_LITERAL>
 }
 
 void InstrGPRGPR() : { Token t; SyntacticOperand.Register r1, r2; }
@@ -618,11 +590,7 @@ SyntacticOperand.Register Register() : { Token tok; }
 
 void Label() : { Token tok; }
 {
-  (LOOKAHEAD(2)
-    "<" tok =  <IDENTIFIER> ">:"
-|
-    "<" tok =  <DOT_IDENTIFIER> ">:"
-   )
+    "label" <INTEGER_LITERAL> tok = <STRING_LITERAL> ":"
     { module.addLabel(tok); }
 }
 

@@ -130,7 +130,7 @@ public class DeltaQueue {
      * The <code>remove</code> method removes all occurrences of the specified
      * trigger within the delta queue.
      *
-     * @param e
+     * @param e the trigger to remove
      */
     public void remove(Simulator.Trigger e) {
         if (head == null) return;
@@ -204,7 +204,7 @@ public class DeltaQueue {
     /**
      * The <code>getCount()</code> gets the total cumulative count of all the
      * <code>advance()</code> calls on this delta queue.
-     * @return
+     * @return the total number of cycles this queue has been advanced
      */
     public long getCount() {
         return count;

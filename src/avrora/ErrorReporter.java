@@ -5,13 +5,13 @@ import avrora.util.StringUtil;
 import avrora.CompilationError;
 
 /**
+ * The <code>ErrorReporter</code> is the super class of all error reporters in
+ * Avrora. It contains several utility methods that subclasses can use to generate
+ * compilation errors that are thrown with much less code.
+ *
  * @author Ben L. Titzer
  */
 public class ErrorReporter {
-    /**
-     * Instance variables that contain references to the program and module
-     * so that at some future date the analysis can be multithreaded.
-     */
     protected void error(String report, String name, ProgramPoint p) {
         throw new CompilationError(p, report, name, StringUtil.EMPTY_STRING_ARRAY);
     }

@@ -20,9 +20,23 @@ import java.util.Iterator;
  */
 public class Program {
 
+    /**
+     * The <code>Label</code> class represents a label within the
+     * <code>Program</code> instance that encapsulates it. It may be a label
+     * that refers to the program (code) segment, the data segment, or the
+     * EEPROM segment.
+     */
     public abstract class Label {
 
+        /**
+         * The <code>name</code> field records the name of this label.
+         */
         public final String name;
+
+        /**
+         * The <code>address</code> field records the address of this label
+         * as a byte address.
+         */
         public final int address;
 
         Label(String n, int a) {
@@ -30,14 +44,30 @@ public class Program {
             address = a;
         }
 
+
+        /**
+         * The <code>isProgramSegment()</code> method returns whether this
+         * label refers to the program segment.
+         * @return true if this label refers to the program segment; false otherwise
+         */
         public boolean isProgramSegment() {
             return false;
         }
 
+        /**
+         * The <code>isDataSegment()</code>  method returns whether this
+         * label refers to the data segment.
+         * @return true if this label refers to the data segment; false otherwise
+         */
         public boolean isDataSegment() {
             return false;
         }
 
+        /**
+         * The <code>isEEPromSegment()</code>  method returns whether this
+         * label refers to the eeprom segment.
+         * @return true if this label refers to the eeprom segment; false otherwise
+         */
         public boolean isEEPromSegment() {
             return false;
         }
@@ -53,34 +83,64 @@ public class Program {
         }
     }
 
+    /**
+     * The <code>ProgramLabel</code> class represents a label within the program
+     * that refers to the program segment.
+     */
     public class ProgramLabel extends Label {
 
         ProgramLabel(String n, int a) {
             super(n, a);
         }
 
+        /**
+         * The <code>isProgramSegment()</code> method returns whether this
+         * label refers to the program segment. For instances of <code>ProgramLabel</code>,
+         * this method always returns true.
+         * @return true
+         */
         public boolean isProgramSegment() {
             return true;
         }
     }
 
+    /**
+     * The <code>DataLabel</code> class represents a label within the program that
+     * refers to the data segment.
+     */
     public class DataLabel extends Label {
 
         DataLabel(String n, int a) {
             super(n, a);
         }
 
+        /**
+         * The <code>isDataSegment()</code> method returns whether this
+         * label refers to the data segment. For instances of <code>DataLabel</code>,
+         * this method always returns true.
+         * @return true
+         */
         public boolean isDataSegment() {
             return true;
         }
     }
 
+    /**
+     * The <code>EEPromLabel</code> class represents a label within the program
+     * that refers to the eeprom segment.
+     */
     public class EEPromLabel extends Label {
 
         EEPromLabel(String n, int a) {
             super(n, a);
         }
 
+        /**
+         * The <code>isEEPromSegment()</code> method returns whether this
+         * label refers to the eeprom segment. For instances of <code>EEPromLabel</code>,
+         * this method always returns true.
+         * @return true
+         */
         public boolean isEEPromSegment() {
             return true;
         }
@@ -88,6 +148,21 @@ public class Program {
 
     private static final Instr NOP = new Instr.NOP(0);
 
+    /**
+     * The <code>Impression</code> class represents a copy of the program that
+     * is suitable for reading and writing during execution without changing the
+     * underlying program. This is used in the <code>Simulator</code> class to
+     * make a private copy of the program so that multiple instances of the program
+     * do not interfere with each other. It basically amounts to a deep copy of
+     * the instructions and data in the program segment.
+     *
+     * <p/>
+     *
+     * This class is meant as a point to do smart code sharing between multiple
+     * instances of the program so that better scalability can be achieved.
+     *
+     * @see avrora.sim.Simulator
+     */
     public class Impression {
 
         private Instr[] imp_instrs;
@@ -103,6 +178,13 @@ public class Program {
             realloc(data, instrs, imp_start, program_end);
         }
 
+        /**
+         * The <code>readProgramByte()</code> method reads a single byte
+         * value from the program (code) segment.
+         * @param address the byte address to read the value from
+         * @return the current value of that program location if that program location
+         * is within the valid memory space; 0 otherwise
+         */
         public byte readProgramByte(int address) {
             try {
                 return imp_data[address - imp_start];
@@ -111,6 +193,15 @@ public class Program {
             }
         }
 
+        /**
+         * The <code>writeProgramByte()</code> method writes a single byte value
+         * to the program (code) segment. This write may overwrite instructions
+         * within the program. NO EFFORT IS MADE BY THIS CLASS TO ENSURE CONSISTENCY
+         * OF THE INSTRUCTIONS. THEREFORE SELF MODIFYING CODE DOES NOT BEHAVE
+         * CORRECTLY.
+         * @param val the value to write to the location
+         * @param address the byte address in the program segment to write the value to
+         */
         public void writeProgramByte(byte val, int address) {
             try {
                 imp_data[address - imp_start] = val;
@@ -134,6 +225,17 @@ public class Program {
             }
         }
 
+        /**
+         * The <code>readInstr()</code> method reads the instruction at the given byte
+         * address. No attempt to disassemble raw data into usable instructions is made,
+         * and unaligned accesses will return null. SELF MODIFYING CODE DOES NOT BEHAVE
+         * CORRECTLY NOR DOES ATTEMPTING TO EXECUTE DATA AS CODE.
+         * @param address the byte address in the program segment to read from
+         * @return the <code>Instr</code> instance at that address if that address is valid
+         * code from creation of the <code>Program</code> instance; an instance of
+         * <code>Instr.NOP</code> if the address is beyond valid memory; null if the instruction
+         * is misaligned or only raw data is present at that location.
+         */
         public Instr readInstr(int address) {
             try {
                 return imp_instrs[address - imp_start];
@@ -142,6 +244,16 @@ public class Program {
             }
         }
 
+        /**
+         * The <code>writeInstr()</code> method is used to update an instruction at a
+         * particular address in memory. The address is given as a byte address but is
+         * expected to be aligned on a 2-byte boundary.
+         * This is generally used by the <code>Simulator</code>
+         * to insert probes on instructions, but could be used to achieve self-modifying code.
+         * @param i the instruction to write
+         * @param address the byte address to write the instruction that must be aligned
+         * on a 2-byte boundary.
+         */
         public void writeInstr(Instr i, int address) {
             try {
                 imp_instrs[address - imp_start] = i;
@@ -163,19 +275,81 @@ public class Program {
 
     private final HashMap labels;
 
+    /**
+     * The <code>program_start</code> field records the lowest address in the
+     * program segment that contains valid code or data.
+     */
     public final int program_start;
+
+    /**
+     * The <code>program_end</code> field records the address following the
+     * highest address in the program segment that contains valid code or data.
+     */
     public final int program_end;
+
+    /**
+     * The <code>program_length</code> field records the size of the program
+     * (the difference between <code>program_start</code> and <code>program_end</code>.
+     */
     public final int program_length;
+
+    /**
+     * The <code>data_start</code> field records the lowest address of declared,
+     * labelled memory in the data segment.
+     */
     public final int data_start;
+
+    /**
+     * The <code>data_end</code> field records the address following the highest
+     * address in the program with declared, labelled memory in the data segment.
+     */
     public final int data_end;
+
+    /**
+     * The <code>eeprom_start</code> field records the lowest address of declared,
+     * labelled memory in the eeprom segment.
+     */
     public final int eeprom_start;
+
+    /**
+     * The <code>eeprom_end</code> field records the address following the highest
+     * address in the program with declared, labelled memory in the eeprom segment.
+     */
     public final int eeprom_end;
 
+    /**
+     * The <code>data</code> field stores a reference to the array that contains
+     * the raw data (bytes) of the program segment. NO EFFORT IS MADE IN THIS CLASS
+     * TO KEEP THIS CONSISTENT WITH THE INSTRUCTION REPRESENTATIONS.
+     */
     protected final byte[]  data;
+
+    /**
+     * The <code>instrs</code> field stores a reference to the array that contains
+     * the instruction representations of the program segment. NO EFFORT IS MADE IN
+     * THIS CLASS TO KEEP THIS CONSISTENT WITH THE RAW DATA OF THE PROGRAM SEGMENT.
+     */
     protected final Instr[] instrs;
 
+    /**
+     * The <code>caseSensitive</code> field controls whether label searching is
+     * case sensitive or not. Some program representations use case sensitive labels,
+     * and some do not.
+     */
     public boolean caseSensitive;
 
+    /**
+     * The constructor of the <code>Program</code> class builds an internal representation
+     * of the program that is initially empty, but has the given parameters in terms of
+     * how big segments are and where they start.
+     *
+     * @param pstart the start of the program segment
+     * @param pend the end of the program segment
+     * @param dstart the start of the data segment
+     * @param dend the end of the data segment
+     * @param estart the start of the eeprom segment
+     * @param eend the end of the eeprom segment
+     */
     public Program(int pstart, int pend, int dstart, int dend, int estart, int eend) {
         program_start = pstart;
         program_end = pend;
@@ -191,6 +365,17 @@ public class Program {
         labels = new HashMap();
     }
 
+    /**
+     * The <code>writeInstr()</code> method is used to write an instruction to the
+     * internal representation of the program at the given address. No attempt to
+     * assemble the instruction machine code is made; thus the raw data (if any)
+     * at that location in the program will not be modified.
+     * @param i the instruction to write
+     * @param address the byte address to write the instruction to that must be aligned
+     * on a 2-byte boundary.
+     * @throws Avrora.InternalError if the address is not within the limits put on the
+     * program instance when it was created.
+     */
     public void writeInstr(Instr i, int address) {
         int size = i.getSize();
         checkAddress(address);
@@ -203,11 +388,31 @@ public class Program {
         }
     }
 
+    /**
+     * The <code>readInstr()</code> method reads an instruction from the specified
+     * address in the program. No attempt to disassemble raw data into usable instructions is made,
+     * and unaligned accesses will return null.
+     * @param address the byte address in the program
+     * @return the <code>Instr</code> instance at that address if that address is valid
+     * code from creation of the <code>Program</code> instance; null if the instruction
+     * is misaligned or only raw data is present at that location.
+     * @throws Avrora.InternalError if the address is not within the limits put on the
+     * program instance when it was created.
+     */
     public Instr readInstr(int address) {
         checkAddress(address);
         return instrs[address - program_start];
     }
 
+
+    /**
+     * The <code>writeProgramByte()</code> method writes a byte into the program segment
+     * at the specified byte address. If the address overlaps with an instruction, no effort
+     * is made to keep the instruction representation up to date.
+     * @param val the value to write
+     * @param byteAddress the byte address in the program segment to write the byte value
+     * to
+     */
     public void writeProgramByte(byte val, int byteAddress) {
         checkAddress(byteAddress);
         int offset = byteAddress - program_start;
@@ -218,6 +423,13 @@ public class Program {
         data[offset] = val;
     }
 
+    /**
+     * The <code>writeProgramBytes()</code> method writes an array of bytes into the program
+     * segment at the specified byte address. If the range of addresses modified overlaps with
+     * any instructions, no effort is made to keep the instruction representations up to date.
+     * @param val the byte values to write
+     * @param byteAddress the byte address to begin writing the values to
+     */
     public void writeProgramBytes(byte[] val, int byteAddress) {
         checkAddress(byteAddress);
         checkAddress(byteAddress + val.length - 1);
@@ -226,24 +438,54 @@ public class Program {
             writeByteInto(val[cntr], offset + cntr);
     }
 
-    public Label newProgramLabel(String name, int byteAddress) {
-        Label label = new ProgramLabel(name, byteAddress);
+    /**
+     * The <code>newProgramLabel()</code> method creates a label in the program segment
+     * with the specified name at the specified byte address.
+     * @param name the name of the label
+     * @param byteAddress the byte address to associate with the label
+     * @return an instance of the <code>ProgramLabel</code> class corresponding to this
+     * new label
+     */
+    public ProgramLabel newProgramLabel(String name, int byteAddress) {
+        ProgramLabel label = new ProgramLabel(name, byteAddress);
         labels.put(labelName(name), label);
         return label;
     }
 
-    public Label newDataLabel(String name, int byteAddress) {
-        Label label = new DataLabel(name, byteAddress);
+    /**
+     * The <code>newDataLabel()</code> method creates a label in the data segment
+     * with the specified name at the specified byte address.
+     * @param name the name of the label
+     * @param byteAddress the byte address to associate with the label
+     * @return an instance of the <code>DataLabel</code> class corresponding to this
+     * new label
+     */
+    public DataLabel newDataLabel(String name, int byteAddress) {
+        DataLabel label = new DataLabel(name, byteAddress);
         labels.put(labelName(name), label);
         return label;
     }
 
-    public Label newEEPromLabel(String name, int byteAddress) {
-        Label label = new EEPromLabel(name, byteAddress);
+    /**
+     * The <code>newEEPromLabel()</code> method creates a label in the eeprom segment
+     * with the specified name at the specified byte address.
+     * @param name the name of the label
+     * @param byteAddress the byte address to associate with the label
+     * @return an instance of the <code>EEPromLabel</code> class corresponding to this
+     * new label
+     */
+    public EEPromLabel newEEPromLabel(String name, int byteAddress) {
+        EEPromLabel label = new EEPromLabel(name, byteAddress);
         labels.put(labelName(name), label);
         return label;
     }
 
+    /**
+     * The <code>getLabel()</code> method searches for a label with a given name within
+     * the program, in any section.
+     * @param name the string name of the label
+     * @return an instance of <code>Label</code> if the label exists; null otherwise
+     */
     public Label getLabel(String name) {
         return (Label) labels.get(labelName(name));
     }
@@ -255,16 +497,34 @@ public class Program {
             return n.toLowerCase();
     }
 
+    /**
+     * The <code>makeNewImpression()</code> method creates an instance of the
+     * <code>Impression</code> class that is a deep copy of the program.
+     * @param program_max the maximum address of the program segment
+     * @return an instance of the <code>Impression</code> class trimmed to the maximum
+     * address specified.
+     */
     public Impression makeNewImpression(int program_max) {
         return new Impression(program_max);
     }
 
+    /**
+     * The <code>checkAddress()</code> method simply checks an address against the
+     * bounds of the program and throws an error if the address is not within the bounds.
+     * @param addr the byte address to check
+     * @throws Avrora.InternalError if the address is not within the limits of the
+     * program segment
+     */
     protected void checkAddress(int addr) {
         // TODO: throw correct error type
         if (addr < program_start || addr >= program_end)
             throw Avrora.failure("address out of range: " + addr);
     }
 
+    /**
+     * The <code>dump()</code> method prints out a textual dump of the program. It
+     * is useful for debugging the program building process.
+     */
     public void dump() {
         Printer p = Printer.STDOUT;
 

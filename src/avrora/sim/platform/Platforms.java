@@ -3,11 +3,7 @@ package avrora.sim.platform;
 import java.util.HashMap;
 
 /**
- * Created by IntelliJ IDEA.
- * User: titzer
- * Date: Apr 5, 2004
- * Time: 8:54:21 PM
- * To change this template use Options | File Templates.
+ * @author Ben L. Titzer
  */
 public class Platforms {
 

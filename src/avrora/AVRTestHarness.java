@@ -22,7 +22,7 @@ import java.util.*;
 
 /**
  * The <code>AVRTestHarness</code> implements a test harness that interfaces the
- * <code>vpc.test.AutomatedTester</code> in order to automate testing of the
+ * <code>avrora.test.AutomatedTester</code> in order to automate testing of the
  * AVR parser and simulator.
  *
  * @author Ben L. Titzer

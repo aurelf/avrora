@@ -307,6 +307,11 @@ public class Main {
         }
     }
 
+    /**
+     * The <code>OptionComparator</code> is an implementation of the
+     * <code>java.util.Comparator</code> interface that is used to sort options
+     * alphabetically for printing in the help system.
+     */
     static final Comparator OptionComparator = new Comparator() {
         public int compare(Object o1, Object o2) {
             Option opt1 = (Option) o1;
@@ -455,6 +460,14 @@ public class Main {
 
     }
 
+    /**
+     * The <code>getLocationList()</code> method is to used to parse a list of
+     * program locations and turn them into a list of <code>Main.Location</code>
+     * instances.
+     * @param program the program to look up labels in
+     * @param v the list of strings that are program locations
+     * @return a list of program locations
+     */
     public static List getLocationList(Program program, List v) {
         HashSet locset = new HashSet();
 
@@ -477,6 +490,13 @@ public class Main {
         return loclist;
     }
 
+    /**
+     * The <code>getMicrocontroller()</code> method is used to get the current
+     * microcontroller from the library of implemented ones, based on the
+     * command line option that was specified (-chip=xyz).
+     * @return an instance of <code>MicrocontrollerFactory</code> for the
+     * microcontroller specified on the command line.
+     */
     public static MicrocontrollerFactory getMicrocontroller() {
         MicrocontrollerFactory mcu = Microcontrollers.getMicrocontroller(CHIP.get());
         if (mcu == null)
@@ -484,6 +504,13 @@ public class Main {
         return mcu;
     }
 
+    /**
+     * The <code>getPlatform()</code> method is used to get the current
+     * platform from the library of implemented ones, based on the command
+     * line option that was specified (-platform=xyz).
+     * @return an instance of <code>PlatformFactory</code> for the
+     * platform specified on the command line
+     */
     public static PlatformFactory getPlatform() {
         String pf = PLATFORM.get();
         if (pf.equals("")) return null;
@@ -493,6 +520,12 @@ public class Main {
         return pff;
     }
 
+    /**
+     * The <code>parseOptions()</code> method takes an array of strings
+     * and parses it, extracting the options and storing the option values
+     * in the internal state of main.
+     * @param args the array of strings to parse into options
+     */
     public static void parseOptions(String args[]) {
         options.parseCommandLine(args);
         Terminal.useColors = COLORS.get();

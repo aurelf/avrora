@@ -5,10 +5,9 @@ import avrora.core.Program;
 import avrora.sim.Simulator;
 
 /**
- * The <code>Microcontroller</code> interface corresponds to a hardware device
- * that implements the AVR instruction set. This interface contains methods that
- * get commonly needed information about the particular hardware device and
- * and can load programs onto this virtual device.
+ * The <code>MicrocontrollerFactory</code> interface is implemented by a class
+ * that is capable of making repeated copies of a particular microcontroller
+ * for use in simulation.
  *
  * @author Ben L. Titzer
  */

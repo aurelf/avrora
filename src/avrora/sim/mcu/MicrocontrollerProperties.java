@@ -3,6 +3,9 @@ package avrora.sim.mcu;
 import avrora.core.InstrPrototype;
 
 /**
+ * The <code>MicrocontrollerProperties</code> interface represents a set of
+ * methods that get information about a particular microcontroller implementation.
+ *
  * @author Ben L. Titzer
  */
 public interface MicrocontrollerProperties {

@@ -22,126 +22,130 @@ public interface ObjDumpParserConstants {
   int PAGE = 23;
   int EXP2 = 24;
   int LOG2 = 25;
-  int ADD = 26;
-  int ADC = 27;
-  int ADIW = 28;
-  int AND = 29;
-  int ANDI = 30;
-  int ASR = 31;
-  int BCLR = 32;
-  int BLD = 33;
-  int BRBC = 34;
-  int BRBS = 35;
-  int BRCC = 36;
-  int BRCS = 37;
-  int BREAK = 38;
-  int BREQ = 39;
-  int BRGE = 40;
-  int BRHC = 41;
-  int BRHS = 42;
-  int BRID = 43;
-  int BRIE = 44;
-  int BRLO = 45;
-  int BRLT = 46;
-  int BRMI = 47;
-  int BRNE = 48;
-  int BRPL = 49;
-  int BRSH = 50;
-  int BRTC = 51;
-  int BRTS = 52;
-  int BRVC = 53;
-  int BRVS = 54;
-  int BSET = 55;
-  int BST = 56;
-  int CALL = 57;
-  int CBI = 58;
-  int CBR = 59;
-  int CLC = 60;
-  int CLH = 61;
-  int CLI = 62;
-  int CLN = 63;
-  int CLR = 64;
-  int CLS = 65;
-  int CLT = 66;
-  int CLV = 67;
-  int CLZ = 68;
-  int COM = 69;
-  int CP = 70;
-  int CPC = 71;
-  int CPI = 72;
-  int CPSE = 73;
-  int DEC = 74;
-  int EICALL = 75;
-  int EIJMP = 76;
-  int ELPM = 77;
-  int EOR = 78;
-  int FMUL = 79;
-  int FMULS = 80;
-  int FMULSU = 81;
-  int ICALL = 82;
-  int IJMP = 83;
-  int IN = 84;
-  int INC = 85;
-  int JMP = 86;
-  int LD = 87;
-  int LDD = 88;
-  int LDI = 89;
-  int LDS = 90;
-  int LPM = 91;
-  int LSL = 92;
-  int LSR = 93;
-  int MOV = 94;
-  int MOVW = 95;
-  int MUL = 96;
-  int MULS = 97;
-  int MULSU = 98;
-  int NEG = 99;
-  int NOP = 100;
-  int OR = 101;
-  int ORI = 102;
-  int OUT = 103;
-  int POP = 104;
-  int PUSH = 105;
-  int RCALL = 106;
-  int RET = 107;
-  int RETI = 108;
-  int RJMP = 109;
-  int ROL = 110;
-  int ROR = 111;
-  int SBC = 112;
-  int SBCI = 113;
-  int SBI = 114;
-  int SBIC = 115;
-  int SBIS = 116;
-  int SBIW = 117;
-  int SBR = 118;
-  int SBRC = 119;
-  int SBRS = 120;
-  int SEC = 121;
-  int SEH = 122;
-  int SEI = 123;
-  int SEN = 124;
-  int SER = 125;
-  int SES = 126;
-  int SET = 127;
-  int SEV = 128;
-  int SEZ = 129;
-  int SLEEP = 130;
-  int SPM = 131;
-  int ST = 132;
-  int STD = 133;
-  int STS = 134;
-  int SUB = 135;
-  int SUBI = 136;
-  int SWAP = 137;
-  int TST = 138;
-  int WDR = 139;
-  int WORD = 140;
-  int IDENTIFIER = 141;
-  int LETTER = 142;
-  int DIGIT = 143;
-  int DOT_IDENTIFIER = 144;
-  int ADDRESS = 145;
+  int WORD = 26;
+  int START = 27;
+  int SECTION = 28;
+  int PROGRAM = 29;
+  int LABEL = 30;
+  int ADD = 31;
+  int ADC = 32;
+  int ADIW = 33;
+  int AND = 34;
+  int ANDI = 35;
+  int ASR = 36;
+  int BCLR = 37;
+  int BLD = 38;
+  int BRBC = 39;
+  int BRBS = 40;
+  int BRCC = 41;
+  int BRCS = 42;
+  int BREAK = 43;
+  int BREQ = 44;
+  int BRGE = 45;
+  int BRHC = 46;
+  int BRHS = 47;
+  int BRID = 48;
+  int BRIE = 49;
+  int BRLO = 50;
+  int BRLT = 51;
+  int BRMI = 52;
+  int BRNE = 53;
+  int BRPL = 54;
+  int BRSH = 55;
+  int BRTC = 56;
+  int BRTS = 57;
+  int BRVC = 58;
+  int BRVS = 59;
+  int BSET = 60;
+  int BST = 61;
+  int CALL = 62;
+  int CBI = 63;
+  int CBR = 64;
+  int CLC = 65;
+  int CLH = 66;
+  int CLI = 67;
+  int CLN = 68;
+  int CLR = 69;
+  int CLS = 70;
+  int CLT = 71;
+  int CLV = 72;
+  int CLZ = 73;
+  int COM = 74;
+  int CP = 75;
+  int CPC = 76;
+  int CPI = 77;
+  int CPSE = 78;
+  int DEC = 79;
+  int EICALL = 80;
+  int EIJMP = 81;
+  int ELPM = 82;
+  int EOR = 83;
+  int FMUL = 84;
+  int FMULS = 85;
+  int FMULSU = 86;
+  int ICALL = 87;
+  int IJMP = 88;
+  int IN = 89;
+  int INC = 90;
+  int JMP = 91;
+  int LD = 92;
+  int LDD = 93;
+  int LDI = 94;
+  int LDS = 95;
+  int LPM = 96;
+  int LSL = 97;
+  int LSR = 98;
+  int MOV = 99;
+  int MOVW = 100;
+  int MUL = 101;
+  int MULS = 102;
+  int MULSU = 103;
+  int NEG = 104;
+  int NOP = 105;
+  int OR = 106;
+  int ORI = 107;
+  int OUT = 108;
+  int POP = 109;
+  int PUSH = 110;
+  int RCALL = 111;
+  int RET = 112;
+  int RETI = 113;
+  int RJMP = 114;
+  int ROL = 115;
+  int ROR = 116;
+  int SBC = 117;
+  int SBCI = 118;
+  int SBI = 119;
+  int SBIC = 120;
+  int SBIS = 121;
+  int SBIW = 122;
+  int SBR = 123;
+  int SBRC = 124;
+  int SBRS = 125;
+  int SEC = 126;
+  int SEH = 127;
+  int SEI = 128;
+  int SEN = 129;
+  int SER = 130;
+  int SES = 131;
+  int SET = 132;
+  int SEV = 133;
+  int SEZ = 134;
+  int SLEEP = 135;
+  int SPM = 136;
+  int ST = 137;
+  int STD = 138;
+  int STS = 139;
+  int SUB = 140;
+  int SUBI = 141;
+  int SWAP = 142;
+  int TST = 143;
+  int WDR = 144;
+  int IDENTIFIER = 145;
+  int LETTER = 146;
+  int DIGIT = 147;
+  int DOT_IDENTIFIER = 148;
+  int ADDRESS = 149;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -173,6 +177,11 @@ public interface ObjDumpParserConstants {
     "\"page\"",
     "\"exp2\"",
     "\"log2\"",
+    "\".word\"",
+    "\"start\"",
+    "\"section\"",
+    "\"program\"",
+    "\"label\"",
     "\"add\"",
     "\"adc\"",
     "\"adiw\"",
@@ -287,25 +296,17 @@ public interface ObjDumpParserConstants {
     "\"swap\"",
     "\"tst\"",
     "\"wdr\"",
-    "\".word\"",
     "<IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",
     "<DOT_IDENTIFIER>",
     "<ADDRESS>",
-    "\"Disassembly of section .text:\"",
-    "\"Disassembly of section .data:\"",
     "\":\"",
-    "\"file format\"",
-    "\".\"",
-    "\"-\"",
-    "\"Sections:\"",
-    "\"**\"",
+    "\"=\"",
     "\",\"",
-    "\"is out of bounds.\"",
     "\"+\"",
-    "\"<\"",
-    "\">:\"",
+    "\"-\"",
+    "\".\"",
   };
 
 }

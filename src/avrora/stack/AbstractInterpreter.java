@@ -37,7 +37,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     /**
      * The <code>computeNextStates()</code> method computes the possible next
-     * states that follows the given immutable old state and then will
+     * states that follow the given immutable old state and then will
      * push them to the <code>AnalyzerPolicy</code> instance that
      * was passed in the constructor to this interpreter instance.
      *

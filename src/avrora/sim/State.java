@@ -2,7 +2,6 @@ package avrora.sim;
 
 import avrora.util.Arithmetic;
 import avrora.Avrora;
-import avrora.core.Elem;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.core.Register;
