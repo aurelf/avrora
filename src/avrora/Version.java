@@ -50,13 +50,13 @@ public class Version {
      * The <code>major</code> field stores the string that represents the major version number (the release
      * number).
      */
-    public final String major = "1.4";
+    public final String major = "1.5";
 
     /**
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public final int commit = 0;
+    public final int commit = 1;
 
     public static Version getVersion() {
         return new Version();

@@ -38,6 +38,11 @@ import avrora.sim.*;
 import avrora.sim.radio.Radio;
 import avrora.util.Arithmetic;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Vector;
@@ -279,6 +284,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     protected SimImpl.SPI spi;
     protected SimImpl.ADC adc;
     protected SimImpl.PowerManagement pm;
+    protected SimImpl.USART0 usart0;
 
     // TODO: move all devices out of SimImpl and remove
     public class SimImpl extends Simulator {
@@ -1693,8 +1699,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 }
                 // update the energy control and attached loggers
                 energy.setMode(mode + 1);
-//Terminal.print(simulator.getState().getCycles() + ": " );
-//Terminal.println("sleep start, mode: " + getModeName() + ", " + mode);
+				//Terminal.print(simulator.getState().getCycles() + ": " );
+				//Terminal.println("sleep start, mode: " + getModeName() + ", " + mode);
+				return;
             }
 
             /**
@@ -1844,7 +1851,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             buildPorts(interpreter);
 
             new EEPROM(interpreter);
-            new USART0(interpreter);
+            usart0 = new USART0(interpreter);
             if (!compatibilityMode) new USART1(interpreter);
 
             spi = new SPI(interpreter);
@@ -2164,7 +2171,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             final Simulator.Printer usartPrinter;
 
-            USARTDevice connectedDevice;
+            public USARTDevice connectedDevice;
 
             int n;
             int UDRn;
@@ -2388,6 +2395,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 }
 
                 public byte read() {
+                    UCSRnA_reg.writeBit(RXCn,true);
                     return receiveRegister.read();
                 }
 
@@ -2482,7 +2490,11 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
                 public void writeBit(int bit, boolean val) {
 
-                    if (bit < 1 || bit > 4) {
+                    if( bit == 7){
+                        //OL: just unpost the int, do not clear RCXn
+                        //thus, we cannot use the super call
+                        interpreter.unpostInterrupt(getVectorNum(bit));
+                    } else if (bit < 1 || bit > 4) {
                         super.writeBit(bit, val);
                     }
                     decode(value);
@@ -3032,7 +3044,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 final int CPOL = 3; // does not really matter, because we are fastforwarding data
                 final int CPHA = 2; // does not really matter, because we are fastforwarding data
                 final int SPR1 = 1;
-                final int SPR0 = 0;
+                final int SPR0 = 0;  
+                //OL: remember old state of spi enable bit
+                boolean oldSpiEnable = false;
 
                 public void write(byte val) {
                     if (spiPrinter.enabled) spiPrinter.println("SPI: wrote " + hex(val) + " to SPCR");
@@ -3050,7 +3064,19 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 protected void decode(byte val) {
 
                     SPIenabled = Arithmetic.getBit(val, SPE);
-
+                    
+                    //OL: reset spi interrupt flag, when enabling SPI
+                    //this is not described in the Atmega128l handbook
+                    //however, the chip seems to work like this, as S-Mac
+                    //does not work without it
+                    if( Arithmetic.getBit(val, SPIE) && !oldSpiEnable ){
+                        oldSpiEnable = true;
+                        SPSR_reg.writeBit(SPSR_reg.SPI, false);
+                    }
+                    if( !Arithmetic.getBit(val, SPIE) && oldSpiEnable )
+                        oldSpiEnable = false;
+                    //end OL
+                    
                     boolean oldMaster = master;
                     master = Arithmetic.getBit(val, MSTR);
 
@@ -3603,6 +3629,10 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         d.connect(spi);
     }
 
+    public void connectPc() {
+        usart0.connectedDevice = new Pc(usart0);       
+    }
+
     /**
      * Connect an instance of the <code>ADCInput</code> interface to the ADC of this microcontroller. The ADC
      * unit on the ATMega128L can support up to 8 ADC inputs, on bits 0 - 7.
@@ -3694,4 +3724,86 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     public String getModeName() {
         return pm.getModeName();
     }
+    
+    /**
+     * PC connection. Connect system to TinyOS Serial Forwarder
+     *
+     * @author Olaf Landsiedel
+     */
+    protected class Pc implements USARTDevice {
+        Simulator.Printer pcPrinter = simulator.getPrinter("sim.pc");
+        private ServerSocket serverSocket;
+        private Socket socket;
+        private OutputStream out;
+        private InputStream in;
+        private SimImpl.USART usart;
+        private PcTicker ticker;
+        private byte[] data; 
+
+        public Pc(SimImpl.USART usart) {                
+            this.usart = usart;
+            ticker = new PcTicker();
+            data = new byte[1];
+            try{            
+                serverSocket = new ServerSocket(2390);
+                socket = serverSocket.accept();
+                out = socket.getOutputStream();
+                in = socket.getInputStream();
+            } catch( IOException e ){
+                System.out.println("Cannot connect to serial forwarder");
+                e.printStackTrace();
+                System.exit(1);
+            }                   
+        }
+
+        public USARTFrame transmitFrame() {
+            try{ 
+                in.read( data, 0, 1);
+                //System.out.println("got data from pc: " + data[0]);
+                return new USARTFrame(data[0], false, 8);
+            } catch( IOException e){
+                System.out.println("cannot read data from socket");
+                e.printStackTrace();    
+                System.exit(1);
+            }                
+            return new USARTFrame((byte)0, false, 8);
+        }
+
+
+        public void receiveFrame(USARTFrame frame) {
+            //byte data = frame.low;
+            //System.out.println("serial: " + frame.low);
+            try{
+                out.write(frame.low);
+                //System.out.println("write data to pc: " + frame.low);
+            } catch( IOException e){
+                System.out.println("cannot write data to socket");
+                e.printStackTrace();    
+                System.exit(1);
+            }                
+        }
+
+        private class PcTicker implements Simulator.Event {
+            private final long delta = 3072;
+            
+            public PcTicker(){
+                simulator.insertEvent(this, delta);                    
+            }
+            
+            public void fire() {
+                try{
+                    if( in.available() >= 1 ) {
+                        //System.out.println("av:  "+ in.available());
+                        usart.startReceive();                            
+                    }
+            	} catch( IOException e){
+            	    System.out.println("cannot read data from socket");
+            	    e.printStackTrace();    
+            	    System.exit(1);
+            	}                
+                simulator.insertEvent(this, delta);                                        
+            }
+        }
+    }
+
 }

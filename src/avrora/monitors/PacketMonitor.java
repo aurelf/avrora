@@ -41,9 +41,7 @@ import avrora.sim.Simulator;
 
 
 /**
- * Energy monitor implementation. This class handles logging and recording of power consumption.
- * <p/>
- * Furthermore the monitor shuts down the node when an energy limit is exceeded.
+ * Packet monitor implementation. This class logs the number of packets, e.g. bytes sent and received.
  *
  * @author Olaf Landsiedel
  */

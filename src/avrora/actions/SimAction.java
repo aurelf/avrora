@@ -109,12 +109,14 @@ public abstract class SimAction extends Action {
         addNewMonitorType(new StackMonitor());
         //add energy monitor to the list 
         addNewMonitorType(new EnergyMonitor());
+        addNewMonitorType(new EnergyMonitorLog());
         addNewMonitorType(new TraceMonitor());
         //add energy profile monitor to the list 
         addNewMonitorType(new EnergyProfiler());
         addNewMonitorType(new PacketMonitor());
         addNewMonitorType(new GDBServer());
         addNewMonitorType(new SimPerfMonitor());
+        addNewMonitorType(new Pc());
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }

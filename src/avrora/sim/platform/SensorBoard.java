@@ -37,7 +37,9 @@ package avrora.sim.platform;
 import avrora.sim.Energy;
 import avrora.sim.Simulator;
 
-/**
+/** Now, there is no sensor board implementatio yet. 
+ * However, we can already model its power consumption ;-)
+ *
  * @author Olaf Landsiedel
  */
 public class SensorBoard {
@@ -55,8 +57,8 @@ public class SensorBoard {
     protected SensorBoard(Simulator s) {
         sim = s;        
         //setup energy recording
-        energy = new Energy("sensor board", modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
+        //note: the name sensorBoard was choosen on purpose as it is used in the log files
+        //if you use sensor board, you may have trouble with importing the data as it is separated by white spaces
+        energy = new Energy("sensorBoard", modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
     }
-
-
 }
