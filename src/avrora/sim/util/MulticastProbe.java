@@ -1,6 +1,8 @@
-package avrora.sim;
+package avrora.sim.util;
 
 import avrora.core.Instr;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>MulticastProbe</code> is a wrapper around multiple probes that

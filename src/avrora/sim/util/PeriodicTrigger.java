@@ -1,4 +1,6 @@
-package avrora.sim;
+package avrora.sim.util;
+
+import avrora.sim.Simulator;
 
 /**
  * The <code>PeriodicTrigger</code> class is a utility that allows a <code>Trigger</code>

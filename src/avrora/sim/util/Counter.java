@@ -1,4 +1,4 @@
-package avrora.sim;
+package avrora.sim.util;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;

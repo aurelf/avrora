@@ -17,6 +17,8 @@ import java.text.StringCharacterIterator;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.*;
+import avrora.sim.util.Counter;
+import avrora.sim.util.BranchCounter;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.syntax.gas.GASParser;
 import avrora.stack.Analyzer;

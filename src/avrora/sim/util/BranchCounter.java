@@ -1,6 +1,8 @@
-package avrora.sim;
+package avrora.sim.util;
 
 import avrora.core.Instr;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>BranchCounter</code> class is a profiling probe that can be inserted

@@ -6,6 +6,8 @@ import avrora.core.Program;
 import avrora.core.Register;
 import avrora.Arithmetic;
 import avrora.Operand;
+import avrora.sim.util.MulticastProbe;
+import avrora.sim.util.PeriodicTrigger;
 import vpc.util.ColorTerminal;
 import vpc.util.StringUtil;
 import vpc.VPCBase;
