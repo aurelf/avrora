@@ -34,12 +34,32 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>MapExpr</code> class represents an expression that is
+ * an access of an element within a map.
+ *
  * @author Ben L. Titzer
  */
 public class MapExpr extends Expr {
+
+    /**
+     * The <code>mapname</code> field stores a reference to the name of
+     * the map whose element is being accessed.
+     */
     public final Token mapname;
+
+    /**
+     * The <code>index</code> field stores a references to the expression
+     * which is evaluated to yield the index into the map.
+     */
     public final Expr index;
 
+    /**
+     * The constructor of the <code>MapExpr</code> class initializes
+     * the publicly accessable fields that represent the members of
+     * this expression
+     * @param s the string name of the map as a token
+     * @param i an expression representing the index into the map
+     */
     public MapExpr(Token s, Expr i) {
         mapname = s;
         index = i;

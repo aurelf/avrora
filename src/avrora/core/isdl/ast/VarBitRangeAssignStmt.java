@@ -34,16 +34,43 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>VarBitRangeAssignStmt</code> method represents an assignment
+ * to a range of bits within a local or global variable.
+ *
  * @author Ben L. Titzer
  */
 public class VarBitRangeAssignStmt extends AssignStmt {
-    public final Token varname;
+
+    /**
+     * The <code>variable</code> field stores a reference to the token
+     * that represents the name of the variable being assigned to.
+     */
+    public final Token variable;
+
+    /**
+     * The <code>low_bit</code> field stores the lowest bit of the range
+     * of bits being assigned.
+     */
     public final int low_bit;
+
+    /**
+     * The <code>high_bit</code> field stores the highest bit of the range
+     * of bits being assigned.
+     */
     public final int high_bit;
 
+    /**
+     * The constructor for the <code>VarAssignStmt</code> class simply
+     * initializes the internal references to the internal members of
+     * this assignment.
+     * @param m the string name of the variable as a token
+     * @param l the low bit of the range of bits being assigned
+     * @param h the high bit of the range of bits being assigned
+     * @param e an expression that represents the right hand side of the assignment
+     */
     public VarBitRangeAssignStmt(Token m, Token l, Token h, Expr e) {
         super(e);
-        varname = m;
+        variable = m;
         low_bit = Expr.tokenToInt(l);
         high_bit = Expr.tokenToInt(h);
     }

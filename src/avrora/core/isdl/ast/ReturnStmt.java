@@ -34,12 +34,24 @@
 package avrora.core.isdl.ast;
 
 /**
+ * The <code>ReturnStmt</code> class represents a return statement
+ * within a subroutine that returns a value to its caller.
+ *
  * @author Ben L. Titzer
  */
 public class ReturnStmt extends Stmt {
 
+    /**
+     * The <code>expr</code> field stores a reference to the expression that
+     * is evaluated and returned to the caller.
+     */
     public final Expr expr;
 
+    /**
+     * The constructor of the <code>ReturnStmt</code> class simply initializes
+     * the public reference to the expression that is returned as the result.
+     * @param e the expression representing the result to return
+     */
     public ReturnStmt(Expr e) {
         expr = e;
     }

@@ -33,6 +33,9 @@
 package avrora.core.isdl.ast;
 
 /**
+ * The <code>Stmt</code> class represents a statement in the IR that
+ * expresses the computation of an instruction.
+ *
  * @author Ben L. Titzer
  */
 public class Stmt {

@@ -34,15 +34,36 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>VarExpr</code> class represents an expression in the IR
+ * that is a use of a local or global variable.
+ *
  * @author Ben L. Titzer
  */
 public class VarExpr extends Expr {
+
+    /**
+     * The <code>variable</code> field stores a reference to the token
+     * representing the name of the variable being accessed.
+     */
     public final Token variable;
 
+    /**
+     * The constructor for the <code>VarExpr</code> class simply initializes
+     * the reference to the name of the variable.
+     * @param v the string name of the variable as a token
+     */
     public VarExpr(Token v) {
         variable = v;
     }
 
+    /**
+     * The <code>isVariable()</code> method tests whether this expression
+     * is a direct variable use and is used in copy propagation. For
+     * instances of <code>VarExpr</code>, this method returns true. For
+     * all other instances, it returns false.
+     * 
+     * @return true because this expression is the direct use of a variable
+     */
     public boolean isVariable() {
         return true;
     }

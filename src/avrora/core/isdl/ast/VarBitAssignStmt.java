@@ -35,15 +35,36 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>VarBitAssignStmt</code> class represents an assignment
+ * to a single bit within a local or global variable.
+ *
  * @author Ben L. Titzer
  */
 public class VarBitAssignStmt extends AssignStmt {
-    public final Token varname;
+
+    /**
+     * The <code>variable</code> field stores a reference to the token
+     * that represents the name of the variable being assigned to.
+     */
+    public final Token variable;
+
+    /**
+     * The <code>bit</code> field stores a reference to the expression
+     * that represents the index of the bit to assign to.
+     */
     public final Expr bit;
 
+    /**
+     * The constructor for the <code>VarAssignStmt</code> class simply
+     * initializes the internal references to the internal members of
+     * this assignment.
+     * @param m the string name of the variable as a token
+     * @param b an expression representing the index of the bit
+     * @param e an expression representing the right hand side of the assignment
+     */
     public VarBitAssignStmt(Token m, Expr b, Expr e) {
         super(e);
-        varname = m;
+        variable = m;
         bit = b;
     }
 }

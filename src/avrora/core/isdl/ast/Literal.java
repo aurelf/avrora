@@ -61,28 +61,69 @@ public class Literal extends Expr {
         token = t;
     }
 
+    /**
+     * The <code>IntExpr</code> inner class represents an integer literal
+     * that has a known, constant value.
+     *
+     * @author Ben L. Titzer
+     */
     public static class IntExpr extends Literal {
 
+        /**
+         * The <code>value</code> class stores the constant integer value of
+         * this literal.
+         */
         public final int value;
 
+        /**
+         * The constructor of the <code>IntExpr</code> class evaluates the
+         * token's string value to an integer and stores it in the publicly
+         * accessable <code>value</code> field, as well as storing a reference
+         * to the original token.
+         * @param v the token representing the value of this integer
+         */
         public IntExpr(Token v) {
             super(v);
             value = Expr.tokenToInt(v);
         }
 
+        /**
+         * The <code>getBitWidth()</code> method returns the known bit size
+         * of this expression which is needed in computing the size of an
+         * encoding. For integer literals, the known bit width is
+         * only defined for binary constants (e.g. "0b0101011"), in which
+         * case it is the number of bits after the "0b" prefix.
+         * @return the width of this integer in bits if it is a binary literal; an error
+         * otherwise
+         */
         public int getBitWidth() {
             if ( token.image.charAt(1) == 'b' ) {
                 return token.image.length() - 2;
             } else {
-                throw Avrora.failure("unknown bit width of integer constant");
+                throw Avrora.failure("unknown bit width of integer constant: "+token.image);
             }
         }
     }
 
+    /**
+     * The <code>BoolExpr</code> inner class represents a boolean literal
+     * that has a known, constant value (true or false).
+     */
     public static class BoolExpr extends Literal {
 
+        /**
+         * The <code>value</code> class stores the constant boolean value of
+         * this literal.
+         */
         public final boolean value;
 
+        /**
+         * The constructor of the <code>BoolExpr</code> class evaluates the
+         * token's string value as a boolean and stores it in the publicly
+         * accessable <code>value</code> field, as well as storing a reference
+         * to the original token
+         * @param v the token representing the value of this boolean
+         */
         public BoolExpr(Token v) {
             super(v);
             value = Expr.tokenToBool(v);

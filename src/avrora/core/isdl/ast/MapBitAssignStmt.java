@@ -35,13 +35,41 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>MapBitAssignStmt</code> represents an assignment to a single
+ * bit within an element within a map.
+ *
  * @author Ben L. Titzer
  */
 public class MapBitAssignStmt extends AssignStmt {
+
+    /**
+     * The <code>mapname</code> field stores a reference to the name of
+     * the map whose element is being assigned to.
+     */
     public final Token mapname;
+
+    /**
+     * The <code>index</code> field stores a references to the expression
+     * which is evaluated to yield the index into the map.
+     */
     public final Expr index;
+
+    /**
+     * The <code>bit</code> field stores a reference to the expression
+     * which is evaluated to yield the bit index into the element of
+     * the map.
+     */
     public final Expr bit;
 
+    /**
+     * The constructor for the <code>MapAssignStmt</code> class initializes
+     * the public final fields in this class that refer to the elements
+     * of the assignment.
+     * @param m the string name of the map as a token
+     * @param i the expression representing the index into the map
+     * @param b the expression representing the bit index into the element
+     * @param e the expression representing the right hand side of the assignment
+     */
     public MapBitAssignStmt(Token m, Expr i, Expr b, Expr e) {
         super(e);
         mapname = m;

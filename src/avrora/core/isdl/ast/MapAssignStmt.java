@@ -34,13 +34,33 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>MapAssignStmt</code> class represents a statement that
+ * is an assignment to an element of a map.
+ *
  * @author Ben L. Titzer
  */
 public class MapAssignStmt extends AssignStmt {
 
+    /**
+     * The <code>mapname</code> field stores a reference to the name of
+     * the map whose element is being assigned to.
+     */
     public final Token mapname;
+
+    /**
+     * The <code>index</code> field stores a references to the expression
+     * which is evaluated to yield the index into the map.
+     */
     public final Expr index;
 
+    /**
+     * The constructor for the <code>MapAssignStmt</code> class initializes
+     * the public final fields in this class that refer to the elements
+     * of the assignment.
+     * @param m the string name of the map as a token
+     * @param i the expression representing the index into the map
+     * @param e the expression representing the right hand side of the assignment
+     */
     public MapAssignStmt(Token m, Expr i, Expr e) {
         super(e);
         mapname = m;

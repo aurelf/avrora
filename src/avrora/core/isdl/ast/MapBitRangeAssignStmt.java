@@ -34,14 +34,47 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>MapBitRangeAssignment</code> class represents an assignment
+ * to a range of bits of an element within a map.
+ *
  * @author Ben L. Titzer
  */
 public class MapBitRangeAssignStmt extends AssignStmt {
+
+    /**
+     * The <code>mapname</code> field stores a reference to the name of
+     * the map whose element is being assigned to.
+     */
     public final Token mapname;
-    public final int low_bit;
-    public final int high_bit;
+
+    /**
+     * The <code>index</code> field stores a references to the expression
+     * which is evaluated to yield the index into the map.
+     */
     public final Expr index;
 
+    /**
+     * The <code>low_bit</code> field stores the lowest bit of the range
+     * of bits being assigned.
+     */
+    public final int low_bit;
+
+    /**
+     * The <code>high_bit</code> field stores the highest bit of the range
+     * of bits being assigned.
+     */
+    public final int high_bit;
+
+    /**
+     * The constructor for the <code>MapAssignStmt</code> class initializes
+     * the public final fields in this class that refer to the elements
+     * of the assignment.
+     * @param m the string name of the map as a token
+     * @param i the expression representing the index into the map
+     * @param l the low bit of the range as a token
+     * @param h the high bit of the range as a token
+     * @param e the expression representing the right hand side of the assignment
+     */
     public MapBitRangeAssignStmt(Token m, Expr i, Token l, Token h, Expr e) {
         super(e);
         mapname = m;
