@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the skip instructions for correct conditions and target"
 ; @Result: "r16 = 41, r17 = 42, r18 = 1, r19 = 2"
 

@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the COM (one's complement register) instruction"
 ; @Result: "r16 = 0, flags.z = 1, flags.v = 0, flags.n = 0, flags.s = 0, flags.c = 1"
 

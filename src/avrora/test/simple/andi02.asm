@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the ANDI (and register with immediate) instruction"
 ; @Result: "r16 = 0, flags.z = 1, flags.v = 0, flags.n = 0, flags.s = 0"
 

@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the MUL (multiply registers) instruction"
 ; @Result: "r16 = 2, r17 = 42, r0 = 84, r1 = 0, flags.z = 0, flags.c = 0"
 

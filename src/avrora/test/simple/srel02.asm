@@ -1,4 +1,4 @@
-; @Target: avr-simplify
+; @Harness: simplifier
 ; @Purpose: "Range test for relative jumps"
 ; @Result: ConstantOutOfRange @ 6:13
 

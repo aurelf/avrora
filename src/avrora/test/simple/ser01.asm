@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the SER (set register) instruction"
 ; @Result: "r16 = -1"
 

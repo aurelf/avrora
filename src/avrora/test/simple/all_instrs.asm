@@ -1,4 +1,4 @@
-; @Target: avr-simplify
+; @Harness: simplifier
 ; @Purpose: "Test variants of all instructions"
 ; @Result: PASS
 

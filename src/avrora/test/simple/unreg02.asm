@@ -1,4 +1,4 @@
-; @Target: avr-simplify
+; @Harness: simplifier
 ; @Purpose: "Test generation of UnknownRegister error"
 ; @Result: "UnknownRegister @ 6:10"
 

@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the BLD (bit load from register T) instruction"
 ; @Result: "flags.t = 1, r17 = 4"
 

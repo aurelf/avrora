@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the variants of the ST instruction"
 ; @Result: "$(memory) = 42, z = memory"
 

@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the LDI (load immediate) instruction"
 ; @Result: "r16 = 42"
 

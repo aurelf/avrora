@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the BST (bit store to register T) instruction"
 ; @Result: "flags.t = 1, r17 = 4"
 

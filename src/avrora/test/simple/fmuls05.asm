@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the FMULS (fractional multiply signed registers) instruction"
 ; @Result: "r16 = -1, r17 = -64, r0 = -128, r1 = 0, flags.z = 0, flags.c = 0"
 

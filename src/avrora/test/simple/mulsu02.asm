@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the MULSU (multiply signed and unsigned registers) instruction"
 ; @Result: "r16 = 0, r17 = 42, r0 = 0, r1 = 0, flags.z = 1, flags.c = 0"
 

@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the branch instructions for correct conditions and target"
 ; @Result: "target = 8, r16 = 0, r17 = 0, r18 = 3"
 

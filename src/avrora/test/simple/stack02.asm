@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the behavior of the software stack"
 ; @Result: "$(sp+1) = 42, $(sp+2) = 43, sp = 253"
 

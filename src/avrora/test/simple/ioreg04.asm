@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test instructions for reading/writing to IO registers"
 ; @Result: "r17 = 42, r18 = 106, $(59) = 106, $(0) = 0"
 

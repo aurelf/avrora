@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the STS (store direct to SRAM) instruction"
 ; @Result: "$(memory) = 42"
 

@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the CBR (clear bits in register) instruction"
 ; @Result: "r16 = -16, flags.z = 0, flags.v = 0, flags.n = 1, flags.s = 1"
 

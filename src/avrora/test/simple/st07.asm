@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the STD (store with displacement) instruction"
 ; @Result: "$(memory + 2) = 42, z = memory"
 

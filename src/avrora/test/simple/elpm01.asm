@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the ELPM (extended load program memory) instruction"
 ; @Result: "r0 = 42, z = data"
 

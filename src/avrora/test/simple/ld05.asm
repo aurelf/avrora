@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the LDS (load direct from SRAM) instruction"
 ; @Result: "r16 = 0"
 

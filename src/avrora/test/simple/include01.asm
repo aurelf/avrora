@@ -1,4 +1,4 @@
-; @Target: avr-simplify
+; @Harness: simplifier
 ; @Purpose: "Test generation of .include directive"
 ; @Result: "PASS"
 

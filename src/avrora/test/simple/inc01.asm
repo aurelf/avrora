@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the INC (increment register) instruction"
 ; @Result: "r16 = 16, flags.z = 0, flags.v = 0, flags.n = 0, flags.s = 0"
 
