@@ -13,11 +13,7 @@ import avrora.sim.IORegisterConstants;
  * @see StateSpace
  * @author Ben L. Titzer
  */
-public class MutableState implements IORegisterConstants, AbstractState {
-
-    private int pc;
-    private char SREG;   // canonical status register value
-    private char regs[]; // canonical register values
+public class MutableState extends AbstractState implements IORegisterConstants {
 
     /**
      * The constructor of the <code>MutableState</code> class builds the
@@ -26,18 +22,17 @@ public class MutableState implements IORegisterConstants, AbstractState {
      * all IO registers are known zero, and the program counter is zero.
      */
     public MutableState() {
-        regs = new char[NUM_REGS];
-        SREG = AbstractArithmetic.ZERO;
+        av_SREG = AbstractArithmetic.ZERO;
         for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
-            regs[cntr] = AbstractArithmetic.ZERO;
+            av_REGISTERS[cntr] = AbstractArithmetic.ZERO;
         }
     }
 
     public MutableState(int npc, char nSREG, char[] nregs) {
-        regs = new char[NUM_REGS];
-        System.arraycopy(nregs, 0, regs, 0, NUM_REGS);
+        av_REGISTERS = new char[NUM_REGS];
+        System.arraycopy(nregs, 0, av_REGISTERS, 0, NUM_REGS);
         pc = npc;
-        SREG = nSREG;
+        av_SREG = nSREG;
     }
 
     /**
@@ -47,7 +42,7 @@ public class MutableState implements IORegisterConstants, AbstractState {
      * @return a new deep copy of this abstract state
      */
     public MutableState copy() {
-        return new MutableState(pc, SREG, regs);
+        return new MutableState(pc, av_SREG, av_REGISTERS);
     }
 
     /**
@@ -67,9 +62,9 @@ public class MutableState implements IORegisterConstants, AbstractState {
 
         MutableState n = copy();
 
-        n.SREG = AbstractArithmetic.merge(this.SREG, s.SREG);
+        n.av_SREG = AbstractArithmetic.merge(this.av_SREG, s.av_SREG);
         for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
-            n.regs[cntr] = AbstractArithmetic.merge(this.regs[cntr], s.regs[cntr]);
+            n.av_REGISTERS[cntr] = AbstractArithmetic.merge(this.av_REGISTERS[cntr], s.av_REGISTERS[cntr]);
 
         return n;
     }
@@ -95,15 +90,6 @@ public class MutableState implements IORegisterConstants, AbstractState {
     }
 
     /**
-     * The <code>getPC()</code> method returns the concrete value of the program counter.
-     * The program counter is known in every abstract state.
-     * @return the concrete value of the program counter
-     */
-    public int getPC() {
-        return pc;
-    }
-
-    /**
      * The <code>setPC()</code> method updates the concrete value of the program counter.
      * The program counter is known in ever abstract state.
      * @param npc the new concrete value of the program counter
@@ -113,19 +99,11 @@ public class MutableState implements IORegisterConstants, AbstractState {
     }
 
     /**
-     * The <code>getSREG()</code> method reads the abstract value of the status register.
-     * @return the abstract value of the status register
-     */
-    public char getSREG() {
-        return SREG;
-    }
-
-    /**
      * The <code>setSREG</code> method updates the abstract value of the status register.
      * @param val the new abstract value to write to the status register.
      */
     public void writeSREG(char val) {
-        SREG = AbstractArithmetic.canon(val);
+        av_SREG = AbstractArithmetic.canon(val);
     }
 
     /**
@@ -134,7 +112,7 @@ public class MutableState implements IORegisterConstants, AbstractState {
      * @param val the new abstract value of the bit
      */
     public void setSREG_bit(int bit, char val) {
-        SREG = AbstractArithmetic.setBit(SREG, bit, val);
+        av_SREG = AbstractArithmetic.setBit(av_SREG, bit, val);
     }
 
     /**
@@ -186,68 +164,6 @@ public class MutableState implements IORegisterConstants, AbstractState {
     public void setFlag_C(char val) { setSREG_bit(SREG_C, val); }
 
     /**
-     * The <code>getFlag_I()</code> method returns the abstract value of the I flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_I() { return AbstractArithmetic.getBit(SREG, SREG_I); }
-
-    /**
-     * The <code>getFlag_T()</code> method returns the abstract value of the T flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_T() { return AbstractArithmetic.getBit(SREG, SREG_T); }
-
-    /**
-     * The <code>getFlag_H()</code> method returns the abstract value of the H flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_H() { return AbstractArithmetic.getBit(SREG, SREG_H); }
-
-    /**
-     * The <code>getFlag_S()</code> method returns the abstract value of the S flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_S() { return AbstractArithmetic.getBit(SREG, SREG_S); }
-
-    /**
-     * The <code>getFlag_V()</code> method returns the abstract value of the V flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_V() { return AbstractArithmetic.getBit(SREG, SREG_V); }
-
-    /**
-     * The <code>getFlag_N()</code> method returns the abstract value of the N flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_N() { return AbstractArithmetic.getBit(SREG, SREG_N); }
-
-    /**
-     * The <code>getFlag_Z()</code> method returns the abstract value of the Z flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_Z() { return AbstractArithmetic.getBit(SREG, SREG_Z); }
-
-    /**
-     * The <code>getFlag_C()</code> method returns the abstract value of the C flag.
-     * @return the new abstract bit of the flag
-     */
-    public char getFlag_C() { return AbstractArithmetic.getBit(SREG, SREG_C); }
-
-    /**
-     * The <code>getIORegisterAV()</code> method reads the abstract value of an
-     * IO register from the abstract state. For those registers being modelled,
-     * this will return an abstract value that represents the current value of
-     * the IO register. For IO registers that are not being modelled, it will
-     * return the abstract value corresponding to all bits being unknown.
-     * @param num the IO register number to read
-     * @return the (abstract) value of the specified IO register
-     */
-    public char getIORegisterAV(int num) {
-        if ( num == IORegisterConstants.SREG ) return SREG;
-        return AbstractArithmetic.UNKNOWN;
-    }
-
-    /**
      * The <code>setIORegisterAV()</code> method writes the abstract value of
      * an IO register. If the register is being modelled, then its value will be
      * updated. Otherwise, the write will be ignored.
@@ -255,27 +171,7 @@ public class MutableState implements IORegisterConstants, AbstractState {
      * @param val the new abstract value of the IO register
      */
     public void setIORegisterAV(int num, char val) {
-        if ( num == IORegisterConstants.SREG ) SREG = val;
-    }
-
-    /**
-     * The <code>getRegisterAV()</code> method reads the abstract value of a
-     * register in the abstract state.
-     * @param r the register to read
-     * @return the abstract value of the register
-     */
-    public char getRegisterAV(Register r) {
-        return regs[r.getNumber()];
-    }
-
-    /**
-     * The <code>getRegisterAV()</code> method reads the abstract value of a
-     * register in the abstract state.
-     * @param num the register to read
-     * @return the abstract value of the register
-     */
-    public char getRegisterAV(int num) {
-        return regs[num];
+        if ( num == IORegisterConstants.SREG ) av_SREG = val;
     }
 
     /**
@@ -285,7 +181,7 @@ public class MutableState implements IORegisterConstants, AbstractState {
      * @param val the new abstract value of the register
      */
     public void setRegisterAV(Register r, char val) {
-        regs[r.getNumber()] = AbstractArithmetic.canon(val);
+        av_REGISTERS[r.getNumber()] = AbstractArithmetic.canon(val);
     }
 
 }

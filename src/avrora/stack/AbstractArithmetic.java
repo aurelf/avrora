@@ -181,8 +181,8 @@ public class AbstractArithmetic {
      * @return the canonicalized representation of this abstract value
      */
     public static char canon(char av1) {
-        char vk = maskOf(av1);
-        return (char)(vk | (av1 & (vk >> SHIFT)));
+        int vk = av1 & KNOWN_MASK;
+        return (char)((vk) | (av1 & (vk >> SHIFT)));
     }
 
     /**
@@ -278,7 +278,7 @@ public class AbstractArithmetic {
      * @return <code>AbstractArithmetic.TRUE</code> if the specified abstract value is definately
      * zero;
      *         <code>AbstractArithmetic.FALSE</code> if the specified abstract value cannot
-     * possibly be zero (it contains one bit that is known to be on);
+     * possibly be zero (it has one bit that is known to be on);
      *         <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char couldBeZero(char av1) {
@@ -296,7 +296,7 @@ public class AbstractArithmetic {
      * @return <code>AbstractArithmetic.TRUE</code> if both abstract values are definately
      * zero;
      *         <code>AbstractArithmetic.FALSE</code> if either of the specified abstract values cannot
-     * possibly be zero (it contains one bit that is known to be on);
+     * possibly be zero (it has one bit that is known to be on);
      *         <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char couldBeZero(char av1, char av2) {
@@ -597,5 +597,50 @@ public class AbstractArithmetic {
      */
     public static char shiftLeftOne(char av1, char lowbit) {
         return (char) (((av1 & 0x7f7f) << 1) | (lowbit & TRUE));
+    }
+
+    /**
+     * The <code>toString()</code> method converts an 8-bit abstract value
+     * to a string representation. Each bit's value is represented as either
+     * '0', '1', or '.' and listed with the most significant first.
+     * @param av1 the abstract value to convert to a string
+     * @return a string representation of the abstract value
+     */
+    public static String toString(char av1) {
+        StringBuffer buf = new StringBuffer();
+        toString(av1, buf);
+        return buf.toString();
+    }
+
+    /**
+     * The <code>toString()</code> method converts an 1-bit abstract value
+     * to a string representation. The bit's value is represented as either
+     * '0', '1', or '.'.
+     * @param av1 the abstract bit to convert to a string
+     * @return a character representation of the abstract bit
+     */
+    public static char bitToChar(char av1) {
+        switch( av1 ) {
+            case TRUE:
+                return '1';
+            case FALSE:
+                return '0';
+            default:
+                return '.';
+        }
+    }
+
+    /**
+     * The <code>toString()</code> method converts an 8-bit abstract value
+     * to a string representation and appends it to the end of the given
+     * string buffer. Each bit's value is represented as either
+     * '0', '1', or '.' and listed with the most significant first.
+     * @param av1 the abstract value to convert to a string
+     * @param buf the string buffer to append the result to
+     */
+    public static void toString(char av1, StringBuffer buf) {
+        for ( int cntr = 7; cntr >= 0; cntr-- ) {
+            buf.append(bitToChar(getBit(av1, cntr)));
+        }
     }
 }

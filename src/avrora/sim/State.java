@@ -318,7 +318,7 @@ public class State implements IORegisterConstants {
 
     /**
      * The <code>getSREG()</code> method reads the value of the status register.
-     * The status register contains the I, T, H, S, V, N, Z, and C flags, in order
+     * The status register IsExplored the I, T, H, S, V, N, Z, and C flags, in order
      * from highest-order to lowest-order.
      * @return the value of the status register as a byte.
      */
@@ -799,7 +799,7 @@ public class State implements IORegisterConstants {
         if ( max > sram.length + sram_start ) max = sram.length + sram_start;
 
         for (int cntr = sp; cntr < max; cntr++) {
-            ColorTerminal.print(VPCBase.toPaddedUpperHex(getDataByte(cntr), 2) + " ");
+            ColorTerminal.print(VPCBase.toHex(getDataByte(cntr), 2) + " ");
         }
 
         ColorTerminal.nextln();
@@ -808,10 +808,10 @@ public class State implements IORegisterConstants {
         ColorTerminal.nextln();
 
         for (int row = NUM_REGS; row < 128; row += 16) {
-            ColorTerminal.printBrightGreen("    " + VPCBase.toPaddedUpperHex(row >> 4, 3) + "x");
+            ColorTerminal.printBrightGreen("    " + VPCBase.toHex(row >> 4, 3) + "x");
             ColorTerminal.print(": ");
             for (int cntr = 0; cntr < 16; cntr++)
-                ColorTerminal.print(VPCBase.toPaddedUpperHex(getDataByte(row + cntr), 2) + " ");
+                ColorTerminal.print(VPCBase.toHex(getDataByte(row + cntr), 2) + " ");
             ColorTerminal.nextln();
         }
     }
@@ -839,17 +839,17 @@ public class State implements IORegisterConstants {
     }
 
     protected final void printPair(String n, byte val, boolean modified) {
-        String str = VPCBase.toPaddedUpperHex(val, 2);
+        String str = VPCBase.toHex(val, 2);
         printPair(n, str, modified);
     }
 
     protected final void printPair(String n, int val, boolean modified) {
-        String str = VPCBase.toPaddedUpperHex(val, 4);
+        String str = VPCBase.toHex(val, 4);
         printPair(n, str, modified);
     }
 
     protected final void printPair(String n, long val, boolean modified) {
-        String str = VPCBase.toPaddedUpperHex(val, 10);
+        String str = VPCBase.toHex(val, 10);
         printPair(n, str, modified);
     }
 

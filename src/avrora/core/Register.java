@@ -12,7 +12,7 @@ import java.util.HashSet;
  * represented as objects that have a name and a number. Those objects are
  * singletons and are public static final fields of this class.<br><br>
  *
- * Additionally, the <code>Register</code> class contains sets of registers
+ * Additionally, the <code>Register</code> class IsExplored sets of registers
  * that are used in verifying the operand constraints of each individual
  * instruction as defined in the AVR instruction set reference. An example
  * of an operand constraint is that ldi (load immediate) takes as operands

@@ -10,7 +10,7 @@ import java.util.Iterator;
  * The <code>Program</code> class represents a complete program of AVR
  * instructions. It stores the actual instructions and initialized data
  * of the program in one large segment, as well as storing the data
- * space and eeprom space requirements for the program. It contains
+ * space and eeprom space requirements for the program. It IsExplored
  * a map of labels (strings) to addresses, which can be either
  * case sensitive (GAS style) or case insensitive (Atmel style).
  *
@@ -48,7 +48,7 @@ public class Program {
             else if (isDataSegment())
                 seg = "data";
             else if (isEEPromSegment()) seg = "eeprom";
-            return seg + "_" + VPCBase.toPaddedUpperHex(address, 4);
+            return seg + "_" + VPCBase.toHex(address, 4);
         }
     }
 
@@ -217,7 +217,7 @@ public class Program {
     protected void checkAddress(int addr) {
         // TODO: throw correct error type
         if (addr < program_start || addr >= program_end)
-            throw VPCBase.failure("address out of range");
+            throw VPCBase.failure("address out of range: "+addr);
     }
 
     public void dump() {
@@ -231,8 +231,8 @@ public class Program {
     private void dumpProgram(Printer p) {
         p.println("; -----------------------------------");
         p.println(";  Dump of program segment: ");
-        p.println(";    low = 0x" + VPCBase.toPaddedUpperHex(program_start, 4) +
-                ", high = 0x" + VPCBase.toPaddedUpperHex(program_end, 4));
+        p.println(";    low = 0x" + VPCBase.toHex(program_start, 4) +
+                ", high = 0x" + VPCBase.toHex(program_end, 4));
         p.println("; -----------------------------------");
         p.println(".cseg");
 
@@ -244,7 +244,7 @@ public class Program {
     }
 
     private int outputRow(Printer p, int cursor) {
-        p.print("program_" + VPCBase.toPaddedUpperHex(cursor + program_start, 4) + ": ");
+        p.print("program_" + VPCBase.toHex(cursor + program_start, 4) + ": ");
 
         Elem e = program[cursor];
 
@@ -265,7 +265,7 @@ public class Program {
             for (int cntr = 0; cntr < count; cntr++) {
                 int address = cursor + cntr + program_start;
                 Elem d = program[cursor + cntr];
-                p.print("0x" + VPCBase.toPaddedUpperHex(d.asData(address).value, 2));
+                p.print("0x" + VPCBase.toHex(d.asData(address).value, 2));
                 if (cntr != count - 1) p.print(", ");
             }
 

@@ -27,7 +27,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     protected final AnalyzerPolicy policy;
     protected final Program program;
-    protected Analyzer.FrontierState oldState;
+    protected StateSpace.State oldState;
     protected MutableState state;
 
     AbstractInterpreter(Program pr, AnalyzerPolicy p) {
@@ -36,22 +36,28 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     /**
-     * The <code>nextState()</code> method computes the possible next
+     * The <code>computeNextStates()</code> method computes the possible next
      * states that follows the given immutable old state and then will
      * push them to the <code>AnalyzerPolicy</code> instance that
      * was passed in the constructor to this interpreter instance.
      * @param os the immutable old state to compute the next state
      * from
      */
-    public void nextState(Analyzer.FrontierState os) {
+    public void computeNextStates(StateSpace.State os) {
         oldState = os;
-        state = oldState.state.copy();
+        state = oldState.copy();
+
+        // TODO: produce interrupt edges
 
         int pc = state.getPC();
         Instr i = program.readInstr(pc);
         i.accept(this);
-        state.setPC(pc + i.getSize());
-        policy.pushState(oldState, state);
+
+        if ( state != null ) {
+            // if we didn't reach a dead end (e.g. a break instruction)
+            state.setPC(pc + i.getSize());
+            policy.pushState(state);
+        }
     }
 
     //-----------------------------------------------------------------------
@@ -154,6 +160,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.BREAK i) {// break
+        state = null;
     }
 
     public void visit(Instr.BREQ i) {// branch if equal
@@ -231,7 +238,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.CALL i) { // call absolute address
-        policy.call(state, absolute(i.imm1));
+        state = policy.call(state, absolute(i.imm1));
     }
 
     public void visit(Instr.CBI i) { // clear bit in IO register
@@ -347,14 +354,14 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         char rl = state.getRegisterAV(Register.Z);
         char rh = state.getRegisterAV(Register.Z.nextRegister());
         char ext = state.getIORegisterAV(IORegisterConstants.RAMPZ);
-        policy.indirectCall(state, rl, rh, ext);
+        state = policy.indirectCall(state, rl, rh, ext);
     }
 
     public void visit(Instr.EIJMP i) { // extended indirect jump
         char rl = state.getRegisterAV(Register.Z);
         char rh = state.getRegisterAV(Register.Z.nextRegister());
         char ext = state.getIORegisterAV(IORegisterConstants.RAMPZ);
-        policy.indirectJump(state, rl, rh, ext);
+        state = policy.indirectJump(state, rl, rh, ext);
     }
 
     public void visit(Instr.ELPM i) { // extended load program memory to r0
@@ -430,13 +437,13 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     public void visit(Instr.ICALL i) { // indirect call through Z register
         char rl = state.getRegisterAV(Register.Z);
         char rh = state.getRegisterAV(Register.Z.nextRegister());
-        policy.indirectCall(state, rl, rh);
+        state = policy.indirectCall(state, rl, rh);
     }
 
     public void visit(Instr.IJMP i) { // indirect jump through Z register
         char rl = state.getRegisterAV(Register.Z);
         char rh = state.getRegisterAV(Register.Z.nextRegister());
-        policy.indirectJump(state, rl, rh);
+        state = policy.indirectJump(state, rl, rh);
     }
 
     public void visit(Instr.IN i) { // read from IO register into register
@@ -595,15 +602,15 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.RCALL i) { // relative call
-        policy.call(state, relative(i.imm1));
+        state = policy.call(state, relative(i.imm1));
     }
 
     public void visit(Instr.RET i) { // return to caller
-        policy.ret(state);
+        state = policy.ret(state);
     }
 
     public void visit(Instr.RETI i) { // return from interrupt
-        policy.reti(state);
+        state = policy.reti(state);
     }
 
     public void visit(Instr.RJMP i) { // relative jump
@@ -809,7 +816,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         else { // branch could go either way
             MutableState taken = state.copy();
             relativeBranch(taken, offset);
-            policy.pushState(oldState, taken);
+            policy.pushState(taken);
         }
     }
 

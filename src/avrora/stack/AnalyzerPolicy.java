@@ -21,22 +21,28 @@ public interface AnalyzerPolicy {
      *
      * @param s the current abstract state
      * @param target_address the concrete target address of the call
+     * @return the state of the program after the call, null if there is no next
+     * state
      */
-    public void call(MutableState s, int target_address);
+    public MutableState call(MutableState s, int target_address);
 
     /**
      * The <code>ret()</code> method is called by the abstract interpreter when it
      * encounters a return within the program.
      * @param s the current abstract state
+     * @return the state of the program after the call, null if there is no next
+     * state
      */
-    public void ret(MutableState s);
+    public MutableState ret(MutableState s);
 
     /**
      * The <code>reti()</code> method is called by the abstract interpreter when it
      * encounters a return from an interrupt within the program.
      * @param s the current abstract state
+     * @return the state of the program after the call, null if there is no next
+     * state
      */
-    public void reti(MutableState s);
+    public MutableState reti(MutableState s);
 
     /**
      * The <code>indirectCall()</code> method is called by the abstract interpreter
@@ -46,8 +52,10 @@ public interface AnalyzerPolicy {
      * @param s the current abstract state
      * @param addr_low the (abstract) low byte of the address
      * @param addr_hi the (abstract) high byte of the address
+     * @return the state of the program after the call, null if there is no next
+     * state
      */
-    public void indirectCall(MutableState s, char addr_low, char addr_hi);
+    public MutableState indirectCall(MutableState s, char addr_low, char addr_hi);
 
     /**
      * The <code>indirectJump()</code> method is called by the abstract interpreter
@@ -57,8 +65,10 @@ public interface AnalyzerPolicy {
      * @param s the current abstract state
      * @param addr_low the (abstract) low byte of the address
      * @param addr_hi the (abstract) high byte of the address
+     * @return the state of the program after the call, null if there is no next
+     * state
      */
-    public void indirectJump(MutableState s, char addr_low, char addr_hi);
+    public MutableState indirectJump(MutableState s, char addr_low, char addr_hi);
 
     /**
      * The <code>indirectCall()</code> method is called by the abstract interpreter
@@ -69,8 +79,10 @@ public interface AnalyzerPolicy {
      * @param addr_low the (abstract) low byte of the address
      * @param addr_hi the (abstract) high byte of the address
      * @param ext the (abstract) extended part of the address
+     * @return the state of the program after the call, null if there is no next
+     * state
      */
-    public void indirectCall(MutableState s, char addr_low, char addr_hi, char ext);
+    public MutableState indirectCall(MutableState s, char addr_low, char addr_hi, char ext);
 
     /**
      * The <code>indirectJump()</code> method is called by the abstract interpreter
@@ -81,17 +93,10 @@ public interface AnalyzerPolicy {
      * @param addr_low the (abstract) low byte of the address
      * @param addr_hi the (abstract) high byte of the address
      * @param ext the (abstract) extended part of the address
+     * @return the state of the program after the call, null if there is no next
+     * state
      */
-    public void indirectJump(MutableState s, char addr_low, char addr_hi, char ext);
-
-    /**
-     * The <code>pushState</code> method is called by the abstract interpreter when
-     * a state is forked by the abstract interpreter (for example when a branch
-     * condition is not known and both branches must be taken.
-     * @param oldState the old state
-     * @param newState the new state created
-     */
-    public void pushState(Analyzer.FrontierState oldState, MutableState newState);
+    public MutableState indirectJump(MutableState s, char addr_low, char addr_hi, char ext);
 
     /**
      * The <code>push()</code> method is called by the abstract interpreter when
@@ -111,4 +116,13 @@ public interface AnalyzerPolicy {
      * @return the abstract value popped from the stack
      */
     public char pop(MutableState s);
+
+    /**
+     * The <code>pushState</code> method is called by the abstract interpreter when
+     * a state is forked by the abstract interpreter (for example when a branch
+     * condition is not known and both branches must be taken.
+     * @param newState the new state created
+     */
+    public void pushState(MutableState newState);
+
 }

@@ -322,7 +322,7 @@ public class Main extends VPCBase {
         }
 
         String addrToString(int address) {
-            return VPCBase.toPaddedUpperHex(address, 4);
+            return VPCBase.toHex(address, 4);
         }
 
         void reportQuantity(String name, long val, String units) {

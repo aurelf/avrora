@@ -23,7 +23,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public static final Probe TRACEPROBE = new Probe() {
         public void fireBefore(Instr i, int pc, State s) {
-            ColorTerminal.printBrightCyan(toPaddedUpperHex(pc, 4) + ": ");
+            ColorTerminal.printBrightCyan(toHex(pc, 4) + ": ");
             ColorTerminal.printBrightBlue(i.getVariant() + " ");
             ColorTerminal.print(i.getOperands());
             ColorTerminal.nextln();
@@ -382,7 +382,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         public final State state;
 
         BreakPointException(Instr i, int a, State s) {
-            super("breakpoint @ " + VPCBase.toPaddedUpperHex(a, 4) + " reached");
+            super("breakpoint @ " + VPCBase.toHex(a, 4) + " reached");
             instr = i;
             address = a;
             state = s;
@@ -427,7 +427,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         public final long timeout;
 
         TimeoutException(Instr i, int a, State s, long t) {
-            super("timeout @ " + VPCBase.toPaddedUpperHex(a, 4) + " reached after "+t+" instructions");
+            super("timeout @ " + VPCBase.toHex(a, 4) + " reached after "+t+" instructions");
             instr = i;
             address = a;
             state = s;

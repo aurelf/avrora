@@ -7,6 +7,10 @@ import avrora.core.Register;
 import avrora.sim.IORegisterConstants;
 
 import java.util.HashSet;
+import java.util.HashMap;
+
+import vpc.VPCBase;
+import vpc.util.StringUtil;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines
@@ -20,79 +24,51 @@ public class Analyzer {
 
     protected final Program program;
     protected final StateSpace space;
+    ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
-    Frontier frontier;
 
-    public static class CallSiteList {
-        public final ImmutableState state;
-        public final CallSiteList next;
+    protected final StateSpace.SpecialState returnState;
+    protected final StateSpace.SpecialState returnIState;
 
-        CallSiteList(ImmutableState s, CallSiteList n) {
-            state = s;
-            next = n;
-        }
-    }
+    HashMap frontierInfoMap;
 
-    public static class FrontierState {
-        public ImmutableState state;
-        public CallSiteList callsites;
-        protected FrontierState next;
-    }
 
-    /**
-     * The <code>Frontier</code> class is a collection of states that
-     * are on the edge of the explored state space. They are immutable and
-     * have had their incoming edges computed thus far, but their outgoing
-     * edges have not yet been computed. This is a worklist which the
-     * algorithm continually pulls states off of.
-     */
-    protected static class Frontier {
+    public static class FrontierInfo {
+        public static class CallSiteList {
+            public final StateSpace.State state;
+            public final CallSiteList next;
 
-        FrontierState head;
-
-        protected void add(ImmutableState s) {
-            FrontierState link = new FrontierState();
-
-            link.state = s;
-            link.callsites = null;
-            link.next = head;
-            head = link;
-        }
-
-        protected void add(FrontierState s) {
-            s.next = head;
-            head = s;
-        }
-
-        protected boolean isEmpty() {
-            return head != null;
-        }
-
-        protected FrontierState choose() {
-            if (head == null) return null;
-            FrontierState res = head;
-            head = head.next;
-            res.next = null;
-            return res;
-        }
-
-        protected FrontierState getFrontierState(MutableState s) {
-            for ( FrontierState pos = head; pos != null; pos = pos.next ) {
-                if ( pos.state.equals(s) ) return pos;
+            CallSiteList(StateSpace.State s, CallSiteList n) {
+                state = s;
+                next = n;
             }
-            return null;
         }
 
-        protected boolean contains(MutableState s) {
-            return getFrontierState(s) != null;
+        public StateSpace.State state;
+        public CallSiteList callsites;
+
+        FrontierInfo(StateSpace.State s) {
+            state = s;
+        }
+
+        FrontierInfo(StateSpace.State s, CallSiteList cl) {
+            state = s;
+            callsites = cl;
+        }
+
+        void addCallSite(StateSpace.State s) {
+            callsites = new CallSiteList(s, callsites);
         }
     }
 
     public Analyzer(Program p) {
         program = p;
         space = new StateSpace();
-        interpreter = new AbstractInterpreter(program, new ContextSensitivePolicy());
-        frontier = new Frontier();
+        policy = new ContextSensitivePolicy();
+        interpreter = new AbstractInterpreter(program, policy);
+        frontierInfoMap = new HashMap();
+        returnState = space.makeSpecialState("RET");
+        returnIState = space.makeSpecialState("RETI");
     }
 
     /**
@@ -100,14 +76,49 @@ public class Analyzer {
      * with an initial default state serves as the first state to start exploring.
      */
     public void run() {
-        MutableState s = new MutableState();
-        frontier.add(space.getImmutableStateFor(s));
+        String headerStr = AbstractState.getHeaderString();
+        int states = 0;
+        StateSpace.State s = space.getEdenState();
 
-        while (!frontier.isEmpty()) {
-            FrontierState state = frontier.choose();
-            interpreter.nextState(state);
+        while ( s != null ) {
+            if ( VPCBase.VERBOSE ) {
+                String i = program.readInstr(s.getPC()).getVariant();
+                i = StringUtil.leftJustify(i, 6);
+                if ( states++ % 32 == 0 ) {
+                    VPCBase.verboseln("INSTR "+headerStr);
+                    VPCBase.verbosesep(headerStr.length()+5);
+                }
+                VPCBase.verboseln(i+s.toShortString());
+            }
+
+            // get the frontier information (call sites)
+            FrontierInfo fs = getFrontierInfo(s);
+            policy.frontierState = fs;
+            policy.stackDelta = 0;
+
+            // remove frontier information
+            removeFrontierInfo(fs);
+            // add this to explored states
+            space.addState(fs.state);
+
+            // compute the possible next states
+            interpreter.computeNextStates(s);
+
+            // get the next frontier state
+            s = space.getFrontierState();
         }
     }
+
+    private FrontierInfo getFrontierInfo(StateSpace.State s) {
+        FrontierInfo fs = (FrontierInfo)frontierInfoMap.get(s);
+        if ( fs == null ) fs = new FrontierInfo(s);
+        return fs;
+    }
+
+    private void removeFrontierInfo(FrontierInfo fs) {
+        frontierInfoMap.remove(fs.state);
+    }
+
 
     /**
      * The <code>ContextSensitive</code> class implements the context-sensitive
@@ -120,6 +131,10 @@ public class Analyzer {
      * @author Ben L. Titzer
      */
     public class ContextSensitivePolicy implements AnalyzerPolicy {
+
+        public FrontierInfo frontierState;
+        public int stackDelta;
+
         /**
          * The <code>call()</code> method is called by the abstract interpreter when it
          * encounters a call instruction within the program. Different policies may
@@ -130,8 +145,24 @@ public class Analyzer {
          *
          * @param s the current abstract state
          * @param target_address the concrete target address of the call
+         * @return null because the correct state transitions are inserted by
+         * the policy, and the abstract interpreter should not be concerned.
          */
-        public void call(MutableState s, int target_address) {
+        public MutableState call(MutableState s, int target_address) {
+            s.setPC(target_address);
+            StateSpace.State target = space.getStateFor(s);
+
+            if ( space.isExplored(target) ) {
+                // TODO: find reachable return states
+                return null;
+            }
+
+            FrontierInfo info = getFrontierInfo(target);
+            info.addCallSite(frontierState.state);
+            space.addFrontier(target);
+            space.addEdge(frontierState.state, target, 2);
+
+            return null;
         }
 
         /**
@@ -142,16 +173,41 @@ public class Analyzer {
          * inserting edges for each call site.
          *
          * @param s the current abstract state
+         * @return null because the correct state transitions are inserted by
+         * the policy, and the abstract interpreter should not be concerned.
          */
-        public void ret(MutableState s) {
+        public MutableState ret(MutableState s) {
+            FrontierInfo.CallSiteList list = frontierState.callsites;
+            while ( list != null ) {
+                MutableState retState = s.copy();
+                int pc = list.state.getPC();
+                int npc = pc + program.readInstr(pc).getSize();
+                retState.setPC(npc);
+                space.addEdge(list.state, space.getStateFor(retState));
+            }
+            space.addEdge(frontierState.state, returnState);
+            return null;
         }
 
         /**
          * The <code>reti()</code> method is called by the abstract interpreter when it
          * encounters a return from an interrupt within the program.
          * @param s the current abstract state
+         * @return null because the correct state transitions are inserted by
+         * the policy, and the abstract interpreter should not be concerned.
          */
-        public void reti(MutableState s) {
+        public MutableState reti(MutableState s) {
+            FrontierInfo.CallSiteList list = frontierState.callsites;
+            while ( list != null ) {
+                MutableState retState = s.copy();
+                retState.setFlag_I(AbstractArithmetic.TRUE);
+                int pc = list.state.getPC();
+                int npc = pc + program.readInstr(pc).getSize();
+                retState.setPC(npc);
+                space.addEdge(list.state, space.getStateFor(retState));
+            }
+            space.addEdge(frontierState.state, returnIState);
+            return null;
         }
 
         /**
@@ -162,8 +218,11 @@ public class Analyzer {
          * @param s the current abstract state
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi the (abstract) high byte of the address
+         * @return null because the correct state transitions are inserted by
+         * the policy, and the abstract interpreter should not be concerned.
          */
-        public void indirectCall(MutableState s, char addr_low, char addr_hi) {
+        public MutableState indirectCall(MutableState s, char addr_low, char addr_hi) {
+            throw new Error("indirect calls not supported");
         }
 
         /**
@@ -174,8 +233,11 @@ public class Analyzer {
          * @param s the current abstract state
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi the (abstract) high byte of the address
+         * @return null because the correct state transitions are inserted by
+         * the policy, and the abstract interpreter should not be concerned.
          */
-        public void indirectJump(MutableState s, char addr_low, char addr_hi) {
+        public MutableState indirectJump(MutableState s, char addr_low, char addr_hi) {
+            throw new Error("indirect jumps not supported");
         }
 
         /**
@@ -187,8 +249,11 @@ public class Analyzer {
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi the (abstract) high byte of the address
          * @param ext the (abstract) extended part of the address
+         * @return null because the correct state transitions are inserted by
+         * the policy, and the abstract interpreter should not be concerned.
          */
-        public void indirectCall(MutableState s, char addr_low, char addr_hi, char ext) {
+        public MutableState indirectCall(MutableState s, char addr_low, char addr_hi, char ext) {
+            throw new Error("indirect calls not supported");
         }
 
         /**
@@ -200,18 +265,11 @@ public class Analyzer {
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi the (abstract) high byte of the address
          * @param ext the (abstract) extended part of the address
+         * @return null because the correct state transitions are inserted by
+         * the policy, and the abstract interpreter should not be concerned.
          */
-        public void indirectJump(MutableState s, char addr_low, char addr_hi, char ext) {
-        }
-
-        /**
-         * The <code>pushState</code> method is called by the abstract interpreter when
-         * a state is forked by the abstract interpreter (for example when a branch
-         * condition is not known and both branches must be taken.
-         * @param oldState the old state
-         * @param newState the new state created
-         */
-        public void pushState(FrontierState oldState, MutableState newState) {
+        public MutableState indirectJump(MutableState s, char addr_low, char addr_hi, char ext) {
+            throw new Error("indirect jumps not supported");
         }
 
         /**
@@ -222,6 +280,7 @@ public class Analyzer {
          * @param val the abstract value to push onto the stack
          */
         public void push(MutableState s, char val) {
+            stackDelta = 1;
         }
 
         /**
@@ -233,7 +292,21 @@ public class Analyzer {
          * @return the abstract value popped from the stack
          */
         public char pop(MutableState s) {
+            stackDelta = -1;
             return AbstractArithmetic.UNKNOWN;
+        }
+
+        /**
+         * The <code>pushState</code> method is called by the abstract interpreter when
+         * a state is forked by the abstract interpreter (for example when a branch
+         * condition is not known and both branches must be taken.
+         * @param newState the new state created
+         */
+        public void pushState(MutableState newState) {
+            StateSpace.State t = space.getStateFor(newState);
+            space.addEdge(frontierState.state, t, stackDelta);
+            if ( !space.isExplored(t) )
+                space.addFrontier(t);
         }
 
 

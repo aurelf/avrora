@@ -15,7 +15,7 @@ import avrora.sim.State;
 public class MulticastProbe implements Simulator.Probe {
 
     /**
-     * The <code>FrontierState</code> class is used internally to implement the
+     * The <code>FrontierInfo</code> class is used internally to implement the
      * linked list of the probes. It exists because a simple, custom
      * list structure allows for the most efficient dispatching code
      * possible. Performance is critical since the multicast probe

@@ -5,6 +5,8 @@ import vpc.VPCBase;
 import java.util.HashSet;
 import java.util.HashMap;
 
+import avrora.sim.IORegisterConstants;
+
 /**
  * The <code>StateSpace</code> class represents the reachable state space
  * as it is explored by the <code>Analyzer</code> class. It stores reachable
@@ -14,65 +16,140 @@ import java.util.HashMap;
  */
 public class StateSpace {
 
-    public static class ConnectedState {
-        public static class Link {
-            public final ImmutableState state;
-            public final Link next;
+    public class Link {
+        public final State state;
+        public final Link next;
+        public final int weight;
 
-            Link(ImmutableState t, Link n) {
-                state = t;
-                next = n;
-            }
+        Link(State t, Link n, int w) {
+            state = t;
+            next = n;
+            weight = w;
+        }
+    }
+
+
+    public class State extends AbstractState implements IORegisterConstants {
+
+        private final int hashCode;
+
+        boolean inSpace;
+        boolean onFrontier;
+
+        State() {
+            hashCode = computeHashCode();
         }
 
-        public final ImmutableState state;
+        State(MutableState s) {
+            pc = s.pc;
+            av_SREG = s.av_SREG;
+            av_REGISTERS = new char[NUM_REGS];
+            for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
+                av_REGISTERS[cntr] = s.av_REGISTERS[cntr];
+            }
+            hashCode = computeHashCode();
+        }
+
+        public int hashCode() {
+            return hashCode;
+        }
+
+        public boolean equals(Object o) {
+            if ( this == o ) return true;
+            if ( !(o instanceof State) ) return false;
+            State i = (State)o;
+            if ( this.pc != i.pc ) return false;
+            if ( this.av_SREG != i.av_SREG ) return false;
+            for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
+                if ( this.av_REGISTERS[cntr] != i.av_REGISTERS[cntr] ) return false;
+            return true;
+        }
+
         public Link outgoing;
 
-        ConnectedState(ImmutableState s) {
-            state = s;
+
+        void addEdge(State t, int weight) {
+            outgoing = new Link(t, outgoing, weight);
         }
 
-        void addEdge(ImmutableState t) {
-            outgoing = new Link(state, outgoing);
+    }
+
+    class SpecialState extends State {
+        public final String stateName;
+
+        SpecialState(String name) {
+            stateName = name;
         }
     }
 
-    private HashMap states;
+
+    private HashMap stateMap;
+    private Link frontier;
+    private final State edenState;
 
     public StateSpace() {
-        states = new HashMap();
+        stateMap = new HashMap();
+        edenState = getStateFor(new MutableState());
     }
 
-    public boolean contains(ImmutableState s) {
-        return states.get(s) != null;
+    public State getEdenState() {
+        return edenState;
     }
 
-    public boolean addState(ImmutableState s) {
-        if ( states.get(s) != null ) return false;
-        states.put(s, new ConnectedState(s));
-        return true;
+    public State getFrontierState() {
+        Link head = frontier;
+        if ( head == null ) return null;
+
+        frontier = frontier.next;
+        head.state.onFrontier = false;
+        return head.state;
     }
 
-    public ConnectedState getConnections(ImmutableState s) {
-        return (ConnectedState)states.get(s);
+    public boolean isExplored(State s) {
+        return s.inSpace;
     }
 
-    public ImmutableState getImmutableStateFor(MutableState s) {
-        ImmutableState is = new ImmutableState(s);
-        ConnectedState cs = getConnections(is);
-        if ( cs == null ) {
-            cs = new ConnectedState(is);
-            states.put(is, cs);
-            return is;
+    public boolean isFrontier(State s) {
+        return s.onFrontier;
+    }
+
+    public boolean addState(State s) {
+        boolean wasBefore = s.inSpace;
+        s.inSpace = true;
+        s.onFrontier = false;
+        return wasBefore;
+    }
+
+    public boolean addFrontier(State s) {
+        if ( s.onFrontier ) return true;
+        frontier = new Link(s, frontier, 0);
+        s.onFrontier = true;
+        return false;
+    }
+
+    public SpecialState makeSpecialState(String name) {
+        return new SpecialState(name);
+    }
+
+    public State getStateFor(MutableState s) {
+        State is = new State(s);
+        State cs = (State)stateMap.get(is);
+
+        if ( cs != null ) {
+            // if the state is already in the state map, return original
+            return cs;
         } else {
-            return cs.state;
+            // the state is new, put it in the map and return it.
+            stateMap.put(is, is);
+            return is;
         }
     }
 
-    public void addEdge(ImmutableState s, ImmutableState t) {
-        ConnectedState cs = (ConnectedState)states.get(s);
-        if ( cs == null )
-            throw VPCBase.failure("tried to add outgoing from state not in state space");
-        cs.addEdge(t);
+    public void addEdge(State s, State t, int weight) {
+        s.addEdge(t, weight);
+    }
+
+    public void addEdge(State s, State t) {
+        s.addEdge(t, 0);
     }
 }
