@@ -1,5 +1,5 @@
 ;
-; $Id: test_toie0.asm,v 1.1 2004/04/02 23:50:38 titzer Exp $
+; $Id: test_toie0.asm,v 1.2 2004/04/23 06:39:32 titzer Exp $
 ;
 ;;; Test the Timer/Counter 0 overflow interrupt functionality.
 ;;; This test will stop the counter by setting the clock select
@@ -10,7 +10,7 @@
 .def	disp =	r19				; r19 is output display
 
 ;;; Interrupt Jump Table
-	    jmp    MAIN             ; reset
+	jmp    MAIN             ; reset
 
         jmp    IGNORE           ; interrupt #1
         jmp    IGNORE           ; interrupt #2
@@ -27,7 +27,6 @@
         jmp    IGNORE           ; interrupt #13
         jmp    IGNORE           ; interrupt #14
         jmp    IGNORE           ; interrupt #15
-        jmp    IGNORE           ; interrupt #16
 
         jmp    TIMER_OVF        ; timer 0 overflow
 
