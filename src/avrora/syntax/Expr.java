@@ -251,4 +251,15 @@ public abstract class Expr extends ASTNode {
         }
     }
 
+    public static class CurrentAddress extends Term {
+    
+	public CurrentAddress(AbstractToken tok) {
+	    super(tok);
+	}
+
+	public int evaluate(Context c) {
+	    return c.getCurrentAddress();
+	}
+    }
+
 }

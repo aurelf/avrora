@@ -35,6 +35,11 @@ public class Module implements Context {
     private Item head;
     private Item tail;
 
+    static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("module");
+
+    // TODO: this is not managed correctly in all cases
+    public int currentAddress;
+
     /**
      *  I T E M   C L A S S E S
      * --------------------------------------------------------
@@ -164,6 +169,7 @@ public class Module implements Context {
                 Operand.Register or = (Operand.Register) o;
                 or.setRegister(getRegister(or.name));
             } else {
+		currentAddress = address;
                 Operand.Constant oc = (Operand.Constant) o;
                 int value = oc.expr.evaluate(Module.this);
                 oc.setValue(value);
@@ -218,6 +224,7 @@ public class Module implements Context {
                     cseg.writeBytes(str.getBytes(), cursor);
                     cursor = align(cursor, width);
                 } else {
+		    currentAddress = cursor;
                     int val = e.evaluate(Module.this);
                     for (int cntr = 0; cntr < width; cntr++) {
                         cseg.writeByte((byte) val, cursor);
@@ -697,6 +704,10 @@ public class Module implements Context {
             return li.getAddress();
         } else
             return v.intValue();
+    }
+
+    public int getCurrentAddress() {
+	return currentAddress;
     }
 
     private void addItem(Item i) {

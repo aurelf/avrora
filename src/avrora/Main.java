@@ -9,6 +9,7 @@ import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.stack.AnalyzeStackAction;
 import avrora.syntax.atmel.AtmelProgramReader;
+import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.util.*;
 import avrora.test.AutomatedTester;
@@ -186,6 +187,7 @@ public class Main {
         newAction("custom", new CustomAction());
         newInput("gas", new GASProgramReader());
         newInput("atmel", new AtmelProgramReader());
+	newInput("objdump", new ObjDumpProgramReader());
     }
 
     static void newAction(String name, Action a) {
