@@ -36,6 +36,7 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.sim.Energy;
 
 /**
  * @author Ben L. Titzer
@@ -48,10 +49,21 @@ class LED implements Microcontroller.Pin.Output {
     protected final int colornum;
     protected final String color;
 
+    //energy profile of this device
+    private Energy energy;
+    // names of the states of this device
+    private final String modeName[] = {"off: ", "on:  "};
+    // power consumption of the device states
+    private final double modeAmphere[] = {0.0, 0.0022}; 
+    // default mode of the device is off
+    private final int startMode = 0;
+
     protected LED(Simulator s, int n, String c) {
         sim = s;
         colornum = n;
         color = c;
+        //setup energy recording
+        energy = new Energy(color, modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());                    
     }
 
     public void write(boolean level) {
@@ -60,10 +72,18 @@ class LED implements Microcontroller.Pin.Output {
         if (!initialized) {
             initialized = true;
             on = !level;
-            print();
+            if( on )
+                energy.setMode( 1 );
+            else
+                energy.setMode( 0 );                
+           print();
         } else {
             if (level == on) {
                 on = !level;
+                if( on )
+                    energy.setMode( 1 );
+                else
+                    energy.setMode( 0 );                    
                 print();
             }
         }

@@ -32,10 +32,13 @@
 
 package avrora.sim.radio;
 
+import java.util.LinkedList;
+
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.Avrora;
+import avrora.sim.radio.freespace.*;
 
 /**
  * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and access an
@@ -49,15 +52,27 @@ public interface Radio {
      * Much of the implementation is derived from this constant, so generalizing in the
      * future may require some careful consideration.
      */
-    public final static int TRANSFER_TIME = 6144;
+    public final static int TRANSFER_TIME = 3072;
 
-    /* How transfer time was calculated:
-        19.2 Manchester kBaud / (2 Baud/Bit)= 9.6 kBits/sec
-        (9600 bits/sec) / (8 bits/byte) = 1200 bytes/sec
-        (7372800 cycles/sec) / (1200 bytes/sec) = 6144 cycles/byte (rounded)
+    /* changed on 10/28/2004 OL
+     * 
+     * How the transfer time was calculated:
+     * mica2 radio 38.4 kBaud, with Manchester Coding this is 19.2 Kbps
+     * The chip has 7372800 cycles per sec
+     * 
+     * resulting in:
+     * 38.4 kBaud / (2 Baud/Bit) = 19.2 kBit/sec
+     * (19.2 kBit/sec) / (8 bits/byte) = 2400 bytes/sec
+     * (7372800 cycles/sec) / (2400 bytes/sec) = 3072 cycles/byte
+     * 
+     * TODO
+     * However, this calculation bases on 38.4 Baud and Manchester coding. As other 
+     * baud rates and codings are supported by the CC1000 radio, this value should 
+     * be part of the radio specific implementaion and be derived from the register
+     * settings. 
      */
-
-
+    
+        
     /**
      * A <code>RadioPacket</code> is an object describing the data transmitted over <code>RadioAir</code> over some
      * period of time.
@@ -137,5 +152,24 @@ public interface Radio {
      * Set the <code>SimulatorThread</code> of this radio.
      */
     public void setSimulatorThread(SimulatorThread thread);
-
+    
+    /** get the transmission power 
+     * @return transmission power
+     */
+    public int getPower();
+    
+    /** get the current frequency
+     * @return frequency
+     */
+    public double getFrequency();
+    
+    /** get local air implementation
+     * @return local air
+     */
+    public LocalAir getLocalAir();
+    
+    /** activate local air, by setting params 
+     * @param pos node position
+     */
+    public void activateLocalAir(Position pos);
 }

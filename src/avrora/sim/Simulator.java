@@ -139,6 +139,8 @@ public abstract class Simulator implements IORegisterConstants {
      * interrupt vectors supported by the simulator.
      */
     public static int MAX_INTERRUPTS = 35;
+    
+    private EnergyControl energyControl;    
 
     /**
      * The constructor creates the internal data structures and initial
@@ -160,6 +162,9 @@ public abstract class Simulator implements IORegisterConstants {
         // set all interrupts to ignore
         for (int cntr = 0; cntr < MAX_INTERRUPTS; cntr++)
             interrupts[cntr] = IGNORE;
+
+        // enable the energy modelling
+        energyControl = new EnergyControlImpl();
 
         // reset the state of the simulation
         reset();
@@ -302,7 +307,7 @@ public abstract class Simulator implements IORegisterConstants {
         public final State state;
 
         BreakPointException(Instr i, int a, State s) {
-            super("breakpoint @ " + StringUtil.addrToString(a) + " reached");
+            super("breakpoint @ " + StringUtil.toHex(a, 4) + " reached");
             instr = i;
             address = a;
             state = s;
@@ -687,6 +692,10 @@ public abstract class Simulator implements IORegisterConstants {
         interpreter.delay(cycles);
     }
 
+    public EnergyControl getEnergyControl() {
+        return energyControl;
+    }
+    
     /**
      * The <code>InstructionCountTimeout</code> class is a probe that
      * simply counts down and throws a <code>TimeoutException</code>

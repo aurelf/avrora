@@ -172,4 +172,24 @@ public interface Microcontroller extends MicrocontrollerProperties {
     public void setRadio(Radio r);
 
     public Radio getRadio();
+    
+    /** send to mcu to sleep
+     * 
+     */
+    public void sleep();
+    
+    /** wake the mcu up
+     * @return cycles it takes to wake up
+     */
+    public int wakeup();
+    
+    /** get the current mode of the mcu
+     * @return current mode
+     */
+    public byte getMode();
+    
+    /** get the name of the current mode
+     * @return name of the current mode
+     */
+    public String getModeName();    
 }

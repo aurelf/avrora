@@ -88,6 +88,9 @@ public abstract class SimAction extends Action {
         addNewMonitorType(new MemoryMonitor());
         addNewMonitorType(new SleepMonitor());
         addNewMonitorType(new StackMonitor());
+        //add energy monitor to the list 
+        //-> provides logging of energy consumption
+        addNewMonitorType(new EnergyMonitor());        
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }

@@ -36,16 +36,24 @@ import avrora.core.Instr;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.sim.BaseInterpreter;
+import avrora.sim.Energy;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.radio.Radio;
 
 import avrora.util.Arithmetic;
+import avrora.util.Terminal;
 import avrora.util.Verbose;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Vector;
+
+import avrora.util.Terminal;
+import avrora.sim.mcu.Microcontroller;
+
+import avrora.sim.Energy;
+
 
 
 /**
@@ -65,7 +73,36 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     protected static final HashMap pinNumbers;
     private final boolean compatibilityMode;
 
-
+    //this class records energy consumption
+    private Energy energy;
+    //mode names of the mcu
+    private final String modeName[] = {
+    		"Active:         ", 
+			"Idle:           ", 
+			"RESERVED 1:     ", 
+    		"ADC Noise Red.: ", 
+			"RESERVED 2:     ", 
+			"Power Down:     ", 
+			"Standby:        ", 
+			"Power Save:     ", 
+			"Ext. Standby:   "		
+    };
+    
+    //power consumption of each mode
+    private final double modeAmphere[] = {
+    		0.0075667, 
+			0.0033433, 
+			0.0, 
+    		0.0009884,
+			0.0,
+			0.0001158, 
+    		0.0002356, 
+			0.0001237, 
+			0.0002433		
+    };
+    
+    private final int startMode = 0;
+    
     static {
         pinNumbers = new HashMap();
 
@@ -178,8 +215,16 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         clock = simulator.getClock();
         interpreter = simulator.getInterpreter();
         ((SimImpl)simulator).populateState();
+        //init the energy profiling system for the CPU
+        energy = new Energy("CPU", 
+        		modeAmphere, modeName, 
+				this.getHz(), startMode, 
+				this.getSimulator().getEnergyControl(), 
+				this.getSimulator().getState());    	
     }
 
+    
+    
     protected void installPins() {
         for (int cntr = 0; cntr < NUM_PINS; cntr++)
             pins[cntr] = new ATMegaFamily.Pin(cntr);
@@ -256,6 +301,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
     protected SimImpl.SPI spi;
     protected SimImpl.ADC adc;
+    protected SimImpl.PowerManagement pm;
 
     public class SimImpl extends Simulator {
 
@@ -1622,6 +1668,159 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         }
 
 
+        /**
+         * Implementation of MCU Power Managment, e.g. MCUCR register
+         * 
+         * @author Olaf Landsiedel
+         */
+        protected class PowerManagement {
+        	// the MCUCU register
+		    private final ControlRegister MCUCR_reg;
+		    // sleep enable bit
+		    private byte sleepEnableChip = 0;
+		    // sleep mode bits
+		    private byte sleepModeChip = 0;
+		    
+		    // current mode, default: active
+		    private byte mode = -1;
+		    			
+			// constants for modes
+		    public static final byte ACTIVE = -1;
+		    public static final byte IDLE = 0;
+		    public static final byte RESERVED1 = 1;
+		    public static final byte ADC_NOISE = 2;
+		    public static final byte RESERVED2 = 3;
+		    public static final byte POWER_DOWN = 4;
+		    public static final byte STANDBY = 5;
+		    public static final byte POWER_SAVE = 6;
+		    public static final byte EXTENDED_STANDBY = 7;
+		    
+		    //actually for power down and power save, the wakeup time is 1000 cycles
+		    //for mica2 fuse setup
+		    private final int[] wakeupCycles = {0, 0, 0, 0, 1000, 6, 1000, 6};
+		    //sleep mode names
+		    public final String[] sleepModeName = {"Idle", "ERROR: RESERVED", 
+		    		"ADC Noise Reduction", "ERROR: RESERVED", "Power Down", 
+					"Standby", "Power Save", "Extended Standby"};
+		    
+		    // active mode name ;-)
+		    public static final String activeModeName= "Active"; 
+		    
+		    /** create a new Power Management
+		     * @param ns base interpreter
+		     */
+		    PowerManagement(BaseInterpreter ns) {
+		        MCUCR_reg = new ControlRegister();		
+		        installIOReg(ns, MCUCR, MCUCR_reg);
+		    }
+		    
+		    /**
+		     * called when the sleep opcode gets executed
+		     */
+		    protected void sleep(){
+		    	// goto sleep when sleep enable is set
+		    	// e.g. change to the mode according to the sleep mode bits
+		    	if (sleepEnableChip==1){
+		     		mode = sleepModeChip;
+		     	} else {
+		     		//else, only idle mode is possible
+		     		mode = IDLE;
+		     	}
+		    	// update the energy control and attached loggers
+                energy.setMode( mode + 1 );
+	            //Terminal.print(simulator.getState().getCycles() + ": " );		            
+	            //Terminal.println("sleep start, mode: " + getModeName() + ", " + mode);
+		     	return;
+		    }
+		    
+		    /** called, when the system wakes up
+		     * commonly the system wakes up via interrupt ;-)
+		     * Do not call this method, when the system is not
+		     * sleeping. Such a check is not done, to provide 
+		     * high performace.
+		     * @return the cycles it takes to wake up
+		     */
+		    protected int wakeup(){
+		        byte temp = mode;
+		    	mode = ACTIVE;
+		    	// update the energy control
+		    	energy.setMode( 0 );
+		    	//Terminal.print(simulator.getState().getCycles() + ": " );		            
+		    	//Terminal.println("sleep end");
+		    	return wakeupCycles[temp];
+
+		    }
+		    
+		    /** get the mode, the system is in
+		     * @return mode
+		     */
+		    protected byte getMode(){
+		    	return mode;
+		    }
+		    
+		    /** get the name of the current mode
+		     * @return mode name
+		     */
+		    protected String getModeName(){
+		    	if (mode >= 0)
+		    		return sleepModeName[mode];
+		    	return activeModeName;
+		    }
+		    
+		    /** implementation of the MCUCR control register
+		     * @author Olaf Landsiedel
+		     *
+		     */
+		    protected class ControlRegister extends State.RWIOReg {
+		        public static final byte SRE = 7;
+		        public static final byte SRW10 = 6;
+		        public static final byte SE = 5;
+		        public static final byte SM1 = 4;
+		        public static final byte SM0 = 3;
+		        public static final byte SM2 = 2;
+		        public static final byte IVSEL = 1;
+		        public static final byte IVCE = 0;
+		
+		        /** write byte to the register
+		         * @param val value to write
+		         * @see avrora.sim.State.IOReg#write(byte)
+		         */
+		        public void write(byte val) {
+		            // decode modes and update internal state
+		            decode(val);
+		        }
+		
+		        /** write bit to the register
+		         * @param bit bit to write on
+		         * @param val value to write
+		         * @see avrora.sim.State.IOReg#writeBit(int, boolean)
+		         */
+		        public void writeBit(int bit, boolean val) {
+		        	value = Arithmetic.setBit(value, bit, val);
+		            decode(value);
+		        }
+		
+		        /** interprete the data written to the register
+		         * @param val data
+		         */
+		        private void decode(byte val) {
+		            // set the modes of operation
+		        	value = val;
+		            sleepEnableChip = (byte)(Arithmetic.getBit(val, SE) ? 1 : 0);
+		            sleepModeChip = (byte)(Arithmetic.getBit(val, SM1) ? 4 : 0);
+		            sleepModeChip |= (byte)(Arithmetic.getBit(val, SM0) ? 2 : 0);
+		            sleepModeChip |= (byte)(Arithmetic.getBit(val, SM2) ? 1 : 0);
+		            //if( sleepModeChip == 1 || sleepModeChip == 3 ){
+			        //    Terminal.print(simulator.getState().getCycles() + ": " );		            
+			        //    Terminal.println("applications put mcu in undefinded sleepmode ");
+		            //}
+		            //Terminal.print(simulator.getState().getCycles() + ": " );		            
+		            //Terminal.println("sleepEnable: " + sleepEnableChip + " sleepMode: " + sleepModeName[sleepModeChip]+ ", "+ sleepModeChip);
+		        }
+		    }
+        }
+
+
         private void populateState() {
             // set up the external interrupt mask and flag registers and interrupt range
             EIFR_reg = buildInterruptRange(true, EIMSK, EIFR, 2, 8);
@@ -1675,6 +1874,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             spi = new SPI(interpreter);
             adc = new ADC(interpreter);
+            pm = new PowerManagement(interpreter);
         }
 
 
@@ -3395,4 +3595,33 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         return radio;
     }
 
+    /** send to mcu to sleep
+     * @see avrora.sim.mcu.Microcontroller#sleep()
+     */
+    public void sleep(){
+    	pm.sleep();
+    }
+    
+    /** wake the mcu up
+     * @return cycles it takes to wake up
+     * @see avrora.sim.mcu.Microcontroller#wakeup()
+     */
+    public int wakeup(){
+    	return pm.wakeup();
+    }
+
+    /** get the current mode of the mcu
+     * @return current mode
+     * @see avrora.sim.mcu.Microcontroller#getMode()
+     */
+    public byte getMode(){
+    	return pm.getMode();
+    }
+    
+    /** get the name of the current mode
+     * @return name of the current mode
+     */
+    public String getModeName(){
+    	return pm.getModeName();
+    }
 }

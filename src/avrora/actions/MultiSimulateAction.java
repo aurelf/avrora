@@ -44,6 +44,8 @@ import avrora.sim.platform.PlatformFactory;
 import avrora.util.Option;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.sim.radio.freespace.*;
+import avrora.topology.Topology;
 
 import java.util.*;
 
@@ -68,9 +70,11 @@ public class MultiSimulateAction extends SimAction {
             "the seed for reproducible simulation results. If this option is not set, " +
             "those parts of simulation that rely on random numbers will have seeds " +
             "chosen based on system parameters that vary from run to run.");
-    public final Option.Str TOPOLOGY = newOption("topology", "",
+    public final Option.Str TOPOLOGY = newOption("topology", "(null)",
             "This option is used in the multi-node simulation to specify the name of " +
-            "a file that contains information about the topology of the network.");
+            "a file that contains information about the topology of the network. " +
+            "When this options is specified, the free space radio model will be used " +
+            "to model radio propagation. See sample.top in topology for an example.");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option causes the simulator to insert a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
@@ -99,9 +103,16 @@ public class MultiSimulateAction extends SimAction {
     public void run(String[] args) throws Exception {
 
         int cntr = 0;
+        int nodes = 0;
 
         // create the specified number of each type of node
         Iterator i = NODECOUNT.get().iterator();
+        Topology top = null;
+        boolean topologyOn = false;
+        if (!TOPOLOGY.get().equals("(null)")){
+            topologyOn = true;
+            top = new Topology(TOPOLOGY.get());
+        }
         while (i.hasNext()) {
 
             if ( args.length <= cntr ) break;
@@ -119,10 +130,22 @@ public class MultiSimulateAction extends SimAction {
                 simulatorThreadList.addLast(st);
                 Radio radio = microcontroller.getRadio();
 
+                //OL: check for radio
                 if (radio != null) {
                     radio.setSimulatorThread(st);
-                    SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
+                    //no topology defined, use simple air
+                    if ( !topologyOn ){
+                        //System.out.println("using simple air");
+                    	SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
+                    } else {
+                        //wonderful, there is a toplogy definded, use the free space air model
+                        //System.out.println("using free space air");
+                        //activate free space and local air at this radio
+                        radio.activateLocalAir( top.getPosition(nodes) );
+                       	FreeSpaceAir.freeSpaceAir.addRadio(microcontroller.getRadio());
+                     }
                 }
+                nodes++;
 
                 processRandom(simulator);
                 processStagger(simulator);
@@ -150,7 +173,7 @@ public class MultiSimulateAction extends SimAction {
     }
 
     private void reportAllMonitors() {
-        int cntr = 1;
+        int cntr = 0;
         Iterator i = simulatorThreadList.iterator();
         while ( i.hasNext() ) {
             Simulator s = ((SimulatorThread)i.next()).getSimulator();
@@ -226,5 +249,5 @@ public class MultiSimulateAction extends SimAction {
     void processStagger(Simulator simulator) {
         simulator.delay(stagger);
         stagger += STAGGER_START.get();
-    }
+    }    
 }

@@ -144,8 +144,12 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
                     I = false;
 
                     // process any timed events
+                    //System.out.println(clock.getCount() + " interrupt " + pc);
                     advanceCycles(4);
-                    sleeping = false;
+
+                    //time to wake up
+                    if(sleeping)
+                        leaveSleepMode();
 
                 }
             }
@@ -1564,9 +1568,20 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         return Arithmetic.uword(low, high);
     }
 
-    private void enterSleepMode() {
+    /** send the node to sleep
+     * 
+     */
+    private void enterSleepMode(){
         sleeping = true;
         innerLoop = false;
+        simulator.getMicrocontroller().sleep();
     }
 
+    /** time to wake up
+     * 
+     */
+    private void leaveSleepMode(){
+    	sleeping = false;
+    	advanceCycles(simulator.getMicrocontroller().wakeup());
+    }
 }
