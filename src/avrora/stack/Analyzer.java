@@ -135,7 +135,19 @@ public class Analyzer {
         printStats();
     }
 
-    private class MonitorThread extends Thread {
+    /**
+     * The <code>MonitorThread</code> class represents a thread instance that
+     * constantly monitors the progress of the stack analysis and reports on
+     * the number of states explored, edges inserted, states on the frontier,
+     * as well statistics about the propagation phase.
+     */
+    protected class MonitorThread extends Thread {
+
+        /**
+         * The <code>run()</code> method simply loops while the analysis is
+         * running. Every five seconds it reports the number of states, edges,
+         * frontier states, propagations, etc.
+         */
         public void run() {
             int cntr = 0;
             try {
@@ -158,29 +170,56 @@ public class Analyzer {
     }
 
     private void printStats() {
-        printJustified(space.getFrontierCount());
-        printJustified(space.getTotalStateCount());
-        printJustified(space.getTotalEdgeCount());
-        printJustified(aggregationPoints.size());
+        print_just_9(space.getFrontierCount());
+        print_just_9(space.getStatesInSpaceCount());
+        print_just_9(space.getTotalEdgeCount());
+        print_just_9(aggregationPoints.size());
+        print_just_12(countAggregElems());
         String s = Long.toString(retCount)+"/"+Long.toString(retiCount);
         Terminal.print(StringUtil.rightJustify(s,12));
-        printJustified(propmap.size());
-        printJustified(propprogress);
-        printJustified(maxpropdepth);
+        print_just_9(propmap.size());
+        print_just_9(propprogress);
+        print_just_9(maxpropdepth);
         Terminal.nextln();
     }
 
-    private void printStatHeader() {
-        Terminal.println(" Frontier   States    Edges   Aggreg      ret(i)  Pending     Prop Diameter");
-        Terminal.printSeparator(78);
+    private long countAggregElems() {
+        long count = 0;
+        Iterator i = aggregationPoints.values().iterator();
+        while ( i.hasNext() ) {
+            HashSet set = (HashSet)i.next();
+            count += set.size();
+        }
+        return count;
     }
 
-    private void printJustified(long val) {
+    private void printStatHeader() {
+        Terminal.printBrightGreen(" Frontier Explored    Edges   Aggreg       Elems      ret(i)  Pending     Prop Diameter");
+        Terminal.nextln();
+        Terminal.printSeparator(88);
+    }
+
+    private void print_just_9(long val) {
         String s = StringUtil.rightJustify(val, 9);
         Terminal.print(s);
     }
 
-    private void buildReachableStateSpace() {
+    private void print_just_12(long val) {
+        String s = StringUtil.rightJustify(val, 12);
+        Terminal.print(s);
+    }
+
+    /**
+     * The <code>buildReachableStateSpace()</code> method starts at the eden
+     * state of the analysis, maintaining a list of frontier states. It then
+     * builds the state space using the frontier states as a work list. When
+     * the work list becomes null, it propagates calling states to their
+     * reachable return states and inserts return edges to (possibly unexplored)
+     * states. After the propagation phase, it processes any new frontier states.
+     * The analysis continues until there are no new frontier states and there
+     * are no new propagations to be performed.
+     */
+    protected void buildReachableStateSpace() {
         StateSpace.State s = space.getEdenState();
 
         while ( s != null || propmap.size() != 0) {
@@ -191,7 +230,14 @@ public class Analyzer {
         }
     }
 
-    private void processPropagationList() {
+    /**
+     * The <code>processPropagationList()</code> method walks through a list
+     * of target/caller state pairs, propagating callers to return states.
+     * When return states are encountered, return edges between the caller
+     * and new return state are inserted and any new return states
+     * are pushed onto the frontier.
+     */
+    protected void processPropagationList() {
         altpropmap = propmap;
         propmap = new HashMap();
         propprogress = altpropmap.size();
@@ -203,9 +249,10 @@ public class Analyzer {
             HashSet callers = (HashSet)altpropmap.get(target);
 
             if ( TRACE ) {
-                Terminal.print("Propagating ");
-//                StatePrinter.printStateName(callers);
-                Terminal.print(" to ");
+                Terminal.print("Propagating {");
+                String cl = StringUtil.commalist(new LinkedList(callers));
+                Terminal.print(cl);
+                Terminal.print("} to ");
                 StatePrinter.printStateName(target);
                 Terminal.nextln();
             }
@@ -215,12 +262,27 @@ public class Analyzer {
         altpropmap = null;
     }
 
+    /**
+     * The <code>propagate()</code> method propagates a list of new callers to
+     * the return states reachable through the given target state.
+     * @param t the target state at which to begin propagating the callers
+     * @param newCalls the set of callers to propagate to the reachable return
+     * states
+     */
     private void propagate(StateSpace.State t, HashSet newCalls) {
-        Object mark = new Object();
-
-        propagate(t, newCalls, mark, 0);
+        propagate(t, newCalls, new Object(), 0);
     }
 
+    /**
+     * The <code>newAggregationPoint()</code> method creates a new cache
+     * at the specified state. The cache stores the calling states that
+     * can reach this state transitively. Call points are aggregation points:
+     * since a call point may at some time in the future have a new outgoing
+     * edge added, it must propagate its own callers to the new successor.
+     * Return points are also aggregation points, to guard against adding
+     * return edges multiple times
+     * @param t the state to make into a new aggregation point
+     */
     private void newAggregationPoint(StateSpace.State t) {
         if ( aggregationPoints.containsKey(t) ) return;
         aggregationPoints.put(t, new HashSet());
@@ -371,7 +433,20 @@ public class Analyzer {
         }
     }
 
-    private Path findMaximalPath(StateSpace.State s, HashMap stack, int depth) {
+    /**
+     * The <code>findMaximalPath()</code> method is a recursive procedure that
+     * discovers the maximal weight path in the state graph. If there is a non-zero
+     * weight cycle, this method will throw a <code>UnboundedStackException</code>
+     * which contains as a field the path leading out of the specified state
+     * back to a state on the stack.
+     * @param s the state to explore
+     * @param stack the states on the traversal stack
+     * @param depth the current stack depth
+     * @return a path leading out of the current state that adds the maximum height
+     * to the stack of any path leading out of this state
+     * @throws UnboundedStackException if a non-zero weight cycle exists in the graph
+     */
+    protected Path findMaximalPath(StateSpace.State s, HashMap stack, int depth) throws UnboundedStackException {
         // record this node and the stack depth at which we first encounter it
         stack.put(s, new Integer(depth));
 
@@ -427,7 +502,13 @@ public class Analyzer {
     }
 
 
-    private class UnboundedStackException extends RuntimeException {
+    /**
+     * The <code>UnboundedStackException</code> class is an exception thrown when
+     * traversing the graph to find the maximal stack depth. It is thrown if
+     * a cycle in the graph is found to have non-zero weight; such a cycle means
+     * that the stack is unbounded.
+     */
+    private class UnboundedStackException extends Exception {
         Path path;
 
         UnboundedStackException(Path p) {
@@ -442,8 +523,9 @@ public class Analyzer {
      * program.
      */
     public void report() {
-        printQuantity("Total cached states   ", "" + space.getTotalStateCount());
-        printQuantity("Total reachable states", "" + space.getStatesInSpaceCount());
+        printStatHeader();
+        printStats();
+
         printQuantity("Time to build graph   ", StringUtil.milliAsString(buildTime));
         printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
         if ( unbounded )
