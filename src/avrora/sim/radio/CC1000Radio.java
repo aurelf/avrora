@@ -940,13 +940,12 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * A CC1000 Controller class for the ATMega128L microcontroller cpu. Installing an ATMega128L into this
+     * A CC1000 Controller class for the ATMega microcontroller family. Installing an ATMega128 into this
      * class connects the microcontroller to this radio. Data is communicated over the SPI interface, on which
-     * the CC1000 is the master. RSSI data from the CC1000 is available to the ATMega128L though the ADC
+     * the CC1000 is the master. RSSI data from the CC1000 is available to the ATMega128 though the ADC
      * (analog to digital converter).
      */
     public class ATMegaController implements Radio.RadioController,
-            ATMega128L.ADCInput,
             ADC.ADCInput,
             SPIDevice {
 
@@ -1091,11 +1090,7 @@ public class CC1000Radio implements Radio {
         public void install(Microcontroller mcu) {
             pinReader = new SerialConfigurationInterface(mcu);
 
-            if (mcu instanceof ATMega128L) {
-                ATMega128L atm = (ATMega128L)mcu;
-                atm.connectADCInput(this, 0);
-                atm.connectSPIDevice(this);
-            } else if (mcu instanceof ATMegaFamily) {
+            if (mcu instanceof ATMegaFamily) {
                 ATMegaFamily atm = (ATMegaFamily)mcu;
 
                 // get ADC device and connect

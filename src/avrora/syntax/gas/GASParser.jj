@@ -33,7 +33,7 @@
 
 /**
  * This file implements a Parser for the Atmel AVR instruction set that
- * is present in the ATmega 128L line of processors, which is used in the motes.
+ * is present in the ATmega 128 line of processors, which is used in the motes.
  * This variant supports the directives that are specific to the code
  * produced by avr-gcc, which uses gas syntax and directives.
  *

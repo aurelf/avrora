@@ -65,9 +65,17 @@ public abstract class SimAction extends Action {
     public final Option.Long TIMEOUT = newOption("timeout", 0,
             "This option is used to terminate the " +
             "simulation after the specified number of clock cycles have passed.");
-    public final Option.Str MCU = newOption("mcu", "atmega128l",
+    public final Option.Str MCU = newOption("mcu", "atmega128",
             "This option selects the microcontroller from a library of supported " +
             "microcontroller models.");
+    public final Option.Long CLOCKSPEED = newOption("clockspeed", 8000000,
+            "This option specifies the clockspeed of the microcontroller when the platform " +
+            "is not specified. The speed is given in cycles per seconds, i.e. hertz.");
+    public final Option.Long EXTCLOCKSPEED = newOption("external-clockspeed", 0,
+            "This option specifies the clockspeed of the external clock supplied to the " +
+            "microcontroller when the platform is not specified. The speed is given in cycles " +
+            "per seconds, i.e. hertz. When this option is set to zero, the external clock is the " +
+            "same speed as the main clock.");
     public final Option.Str PLATFORM = newOption("platform", "",
             "This option selects the platform on which the microcontroller is built, " +
             "including the external devices such as LEDs and radio. If the platform " +
@@ -92,11 +100,6 @@ public abstract class SimAction extends Action {
             "topology, packet transmission, packet reception, energy " +
             "information and more. Syntax is ip address or host name and " +
             "port: 127.0.0.1:2379 \n(Status: experimental)");
-    public final Option.Bool NEW_ATMEGA = newOption("new-atmega128", false,
-            "This option only has effect for the \"mica2\" platform. It enables the use of " +
-            "the new (refactored) ATMega128 code on the mica2 platform. This code " +
-            "is currently experimental and has not been exhaustively verified against the " +
-            "old code, and therefore is (at the moment) only enabled through this option.");
 
     protected LinkedList monitorFactoryList;
     protected HashMap monitorListMap;
@@ -183,14 +186,18 @@ public abstract class SimAction extends Action {
      * @return a new <code>Simulator</code> instance
      */
     protected Simulator newSimulator(InterpreterFactory factory, Program p) {
-        Mica2.USE_NEW_ATMEGA = NEW_ATMEGA.get();
 
         Simulator simulator;
         PlatformFactory pf = getPlatform();
         if (pf != null) {
             simulator = pf.newPlatform(simcount++, factory, p).getMicrocontroller().getSimulator();
         } else {
-            simulator = Defaults.newSimulator(simcount++, MCU.get(), factory, p);
+            long hz = CLOCKSPEED.get();
+            long exthz = EXTCLOCKSPEED.get();
+            if ( exthz == 0 ) exthz = hz;
+            if ( exthz > hz )
+                Avrora.userError("External clock is greater than main clock speed", exthz+"hz");
+            simulator = Defaults.newSimulator(simcount++, MCU.get(), hz, exthz, factory, p);
         }
         processTimeout(simulator);
 

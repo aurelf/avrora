@@ -48,7 +48,6 @@
 ========================= R E F A C T O R I N G S ===========================
  Comp Module Item                                      Completion (Version)
 -----------------------------------------------------------------------------
-  3-4   devs  Extract ATMega128L devices                                90%
     2    sim  Introduce Simulation class
     1    sim  global migrate to Clock, DerivedClock
     1    sim  Move timeouts out of Simulator
@@ -67,6 +66,8 @@
     2    sim  Word-aligned PC optimization
     2    sim  Introduce SourceMapping class
 
+    2  probe  Migrate sleep probe to FiniteStateMachine.Probe       (1.5.37)
+  3-4   devs  Extract ATMega128L devices                            (1.5.37)
     2   help  global migrate to HelpSystem, HelpCategories          (1.5.30)
     1   main  Remove shortName from Action, MonitorFactory          (1.5.28)
   2-3    sim  Clean up event / verbose printing                      (1.4.0)
@@ -87,6 +88,7 @@
     1    sim  Use sram[] array directly for interp. register ops
     1    sim  Convert all clock HZ references to ints
   1-2    sim  Convert deltaqueue to use ints instead of longs
+  1-2    sim  Optimize FiniteStateMachine transitions
 
     1    sim  Allocate all SPI.Frame's statically                   (1.5.35)
     1    sim  Optimize getSP() and setSP() methods                  (1.5.31)

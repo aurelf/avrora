@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.radio.Radio;
 import avrora.util.Arithmetic;
 
 /**
@@ -42,6 +43,19 @@ import avrora.util.Arithmetic;
  * @author Ben L. Titzer
  */
 public abstract class ATMegaFamily extends AtmelMicrocontroller {
+
+    /**
+     * The Radio connected to this microcontroller.
+     */
+    protected Radio radio;
+
+    public void setRadio(Radio radio) {
+        this.radio = radio;
+    }
+
+    public Radio getRadio() {
+        return radio;
+    }
 
     /**
      * The <code>IMRReg</code> class is the base class of IO registers that corresponds to interrupt masks
@@ -260,8 +274,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
-    protected ATMegaFamily(ClockDomain cd, MicrocontrollerProperties p) {
-        super(cd, p);
+    protected ATMegaFamily(ClockDomain cd, MicrocontrollerProperties p, FiniteStateMachine fsm) {
+        super(cd, p, fsm);
     }
 
     /**
@@ -277,7 +291,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     protected static final int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
 
     /**
-     * <code>Timer0</code> is the default 8-bit timer on the ATMega128L.
+     * <code>Timer0</code> is the default 8-bit timer on the ATMega128.
      */
     protected class Timer0 extends Timer8Bit {
 
@@ -286,7 +300,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             installIOReg("ASSR", new ASSRRegister());
         }
 
-        // See pg. 104 of the ATmega128L doc
+        // See pg. 104 of the ATmega128 doc
         protected class ASSRRegister extends State.RWIOReg {
             static final int AS0 = 3;
             static final int TCN0UB = 2;
@@ -317,7 +331,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     protected static final int[] periods2 = {0, 1, 8, 64, 256, 1024};
 
     /**
-     * <code>Timer2</code> is an additional 8-bit timer on the ATMega128L. It is not available in
+     * <code>Timer2</code> is an additional 8-bit timer on the ATMega128. It is not available in
      * ATMega103 compatibility mode.
      */
     protected class Timer2 extends Timer8Bit {
@@ -329,7 +343,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     protected static final int[] periods1 = new int[]{0, 1, 8, 64, 256, 1024};
 
     /**
-     * <code>Timer1</code> is a 16-bit timer available on the ATMega128L.
+     * <code>Timer1</code> is a 16-bit timer available on the ATMega128.
      */
     protected class Timer1 extends Timer16Bit {
 
@@ -359,7 +373,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     protected static final int[] periods3 = {0, 1, 8, 64, 256, 1024};
 
     /**
-     * <code>Timer3</code> is an additional 16-bit timer available on the ATMega128L, but not in ATMega103
+     * <code>Timer3</code> is an additional 16-bit timer available on the ATMega128, but not in ATMega103
      * compatability mode.
      */
     protected class Timer3 extends Timer16Bit {
@@ -392,7 +406,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     protected static final int[] UCSR1A_mapping = {-1, -1, -1, -1, -1, 32, 33, 31};
 
     /**
-     * Emulates the behavior of USART0 on the ATMega128L microcontroller.
+     * Emulates the behavior of USART0 on the ATMega128 microcontroller.
      */
     protected class USART0 extends USART {
 
@@ -411,7 +425,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     }
 
     /**
-     * Emulates the behavior of USART1 on the ATMega128L microcontroller.
+     * Emulates the behavior of USART1 on the ATMega128 microcontroller.
      */
     protected class USART1 extends USART {
 

@@ -38,7 +38,6 @@ import avrora.util.help.HelpCategory;
 import avrora.util.help.ClassMapValueItem;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.ATMega128;
-import avrora.sim.mcu.ATMega128L;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
@@ -100,6 +99,7 @@ public class Defaults {
             monitorMap.addClass("gdb", GDBServer.class);
             monitorMap.addClass("simperf", SimPerfMonitor.class);
             monitorMap.addClass("pc", Pc.class);
+            monitorMap.addClass("trip-time", TripTimeMonitor.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
             addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
@@ -189,8 +189,6 @@ public class Defaults {
             microcontrollers = new ClassMap("Microcontroller", MicrocontrollerFactory.class);
             //-- DEFAULT MICROCONTROLLERS
             microcontrollers.addInstance("atmega128", new ATMega128.Factory());
-            microcontrollers.addInstance("atmega128l", new ATMega128L.Factory(false));
-            microcontrollers.addInstance("atmega128l-103", new ATMega128L.Factory(true));
         }
     }
 
@@ -352,14 +350,14 @@ public class Defaults {
     }
 
     public static Simulator newSimulator(int id, Program p) {
-        return newSimulator(id, "atmega128l", new GenInterpreter.Factory(), p);
+        return newSimulator(id, "atmega128", 8000000, 8000000, new GenInterpreter.Factory(), p);
     }
 
-    public static Simulator newSimulator(int id, String mcu, InterpreterFactory factory, Program p) {
+    public static Simulator newSimulator(int id, String mcu, long hz, long exthz, InterpreterFactory factory, Program p) {
         // TODO: this has to be configurable somehow
         MicrocontrollerFactory f = getMicrocontroller(mcu);
-        ClockDomain cd = new ClockDomain(8000000);
-        cd.newClock("external", 8000000);
+        ClockDomain cd = new ClockDomain(hz);
+        cd.newClock("external", exthz);
 
         return f.newMicrocontroller(id, cd, factory, p).getSimulator();
     }

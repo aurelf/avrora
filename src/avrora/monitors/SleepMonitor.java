@@ -34,7 +34,12 @@ package avrora.monitors;
 
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.FiniteStateMachine;
+import avrora.sim.Clock;
+import avrora.sim.mcu.AtmelMicrocontroller;
 import avrora.util.TermUtil;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>SleepMonitor</code> class is a monitor that tracks statistics about the sleeping patterns of
@@ -45,32 +50,59 @@ import avrora.util.TermUtil;
  */
 public class SleepMonitor extends MonitorFactory {
 
-    public static class Monitor implements avrora.monitors.Monitor, Simulator.Event {
+    public static class Monitor implements avrora.monitors.Monitor, FiniteStateMachine.Probe {
         public final Simulator simulator;
         public final Program program;
 
         protected long sleepCycles;
         protected long awakeCycles;
 
+        long[] times;
+        long lastTransition;
+        final FiniteStateMachine fsm;
+        final Clock clock;
+
         Monitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
-            s.insertEvent(this, 1);
+            fsm = ((AtmelMicrocontroller)s.getMicrocontroller()).getFSM();
+            clock = fsm.getClock();
+            times = new long[fsm.getNumberOfStates()];
+            fsm.insertProbe(this);
         }
 
         public void report() {
-            long total = (sleepCycles + awakeCycles);
-            TermUtil.reportProportion("Time slept", sleepCycles, total, "cycles");
-            TermUtil.reportProportion("Time awake", awakeCycles, total, "cycles");
+            recordCycles(fsm.getCurrentState());
+
+            TermUtil.printSeparator(Terminal.MAXLINE, "Sleep Monitor Results");
+            Terminal.printGreen("State                      Cycles  Percent");
+            Terminal.nextln();
+            TermUtil.printThinSeparator(Terminal.MAXLINE);
+            long total = clock.getCount();
+            for ( int cntr = 0; cntr < times.length; cntr++ ) {
+                String state = fsm.getStateName(cntr);
+                Terminal.printGreen(StringUtil.leftJustify(state, 23));
+                Terminal.printBrightCyan(StringUtil.rightJustify(times[cntr],10));
+                float pcnt = (100*times[cntr])/(float)total;
+                Terminal.printBrightCyan(StringUtil.rightJustify(StringUtil.toFixedFloat(pcnt, 4),9));
+                Terminal.print(" %");
+                Terminal.nextln();
+            }
         }
 
-        public void fire() {
-            if (simulator.getState().isSleeping())
-                sleepCycles++;
-            else
-                awakeCycles++;
 
-            simulator.insertEvent(this, 1);
+        public void fireBeforeTransition(int bs, int as) {
+            // do nothing.
+        }
+
+        public void fireAfterTransition(int bs, int as) {
+            recordCycles(bs);
+        }
+
+        private void recordCycles(int bs) {
+            long now = clock.getCount();
+            times[bs] += now - lastTransition;
+            lastTransition = now;
         }
 
     }

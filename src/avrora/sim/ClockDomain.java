@@ -102,6 +102,10 @@ public class ClockDomain {
      * @return a new <code>Clock</code> instance with the specified properties
      */
     public Clock newClock(String name, long hz) {
+        if ( hz == mainClock.getHZ() ) {
+            clockMap.put(name, mainClock);
+            return mainClock;
+        }
         DerivedClock c = new DerivedClock(name, mainClock, hz);
         addClock(c);
         return c;

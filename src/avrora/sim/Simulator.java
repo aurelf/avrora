@@ -523,7 +523,7 @@ public class Simulator {
 
     /**
      * The <code>getInterruptVectorAddress()</code> method computes the location in memory to jump to for the
-     * given interrupt number. On the Atmega128L, the starting point is the beginning of memory and each
+     * given interrupt number. On the Atmega128, the starting point is the beginning of memory and each
      * interrupt vector slot is 4 bytes. On older architectures, this is not the case, therefore this method
      * has to be implemented according to the specific device being simulated.
      *

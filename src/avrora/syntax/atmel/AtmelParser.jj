@@ -32,7 +32,7 @@
 
 /**
  * This file implements a Parser for the Atmel AVR instruction set that
- * is present in the ATmega 128L line of processors, which is used in the motes.
+ * is present in the ATmega 128 line of processors, which is used in the motes.
  *
  * @author Ben L. Titzer
  **/

@@ -59,6 +59,56 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
 
     protected final ClockDomain clockDomain;
     protected final HashMap devices;
+    public static final int MODE_ACTIVE = 0;
+    protected final FiniteStateMachine sleepState;
+
+    /**
+     * send to mcu to sleep
+     *
+     * @see Microcontroller#sleep()
+     */
+    public void sleep() {
+        // transition to the sleep state in the MCUCR register
+        sleepState.transition(getSleepMode());
+    }
+
+    protected abstract int getSleepMode();
+
+    /**
+     * wake the mcu up
+     *
+     * @return cycles it takes to wake up
+     * @see Microcontroller#wakeup()
+     */
+    public int wakeup() {
+        // transition to the active state (may insert transition event into event queue)
+        sleepState.transition(MODE_ACTIVE);
+        // return the number of cycles consumed by waking up
+        return sleepState.getTransitionTime(sleepState.getCurrentState(), MODE_ACTIVE);
+    }
+
+    /**
+     * get the current mode of the mcu
+     *
+     * @return current mode
+     * @see Microcontroller#getMode()
+     */
+    public byte getMode() {
+        return (byte)sleepState.getCurrentState();
+    }
+
+    /**
+     * get the name of the current mode
+     *
+     * @return name of the current mode
+     */
+    public String getModeName() {
+        return sleepState.getCurrentStateName();
+    }
+
+    public FiniteStateMachine getFSM() {
+        return sleepState;
+    }
 
     /**
      * The <code>Pin</code> class implements a model of a pin on the ATMegaFamily for the general purpose IO
@@ -147,8 +197,9 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         }
     }
 
-    protected AtmelMicrocontroller(ClockDomain cd, MicrocontrollerProperties p) {
+    protected AtmelMicrocontroller(ClockDomain cd, MicrocontrollerProperties p, FiniteStateMachine fsm) {
         HZ = cd.getMainClock().getHZ();
+        sleepState = fsm;
         clockDomain = cd;
         mainClock = cd.getMainClock();
         properties = p;

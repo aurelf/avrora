@@ -37,7 +37,7 @@ import avrora.Avrora;
 /**
  * The <code>DerivedClock</code> class represents a clock that is derived from another clock; i.e. the derived
  * clock runs slower but is synchronized with the clock that it is derived from. An example is the 32khz real
- * time clock on the ATMega128l--it runs independently of the main clock, but in the simulation, it uses the
+ * time clock on the Mica2--it runs independently of the main clock, but in the simulation, it uses the
  * main clock signal to synchronize its execution to the execution of the program.
  *
  * @author Ben L. Titzer

@@ -39,7 +39,7 @@ import avrora.util.Arithmetic;
 
 /**
  * The <code>Timer16Bit</code> class emulates the functionality and behavior of a 16-bit timer on the
- * Atmega128L. It has several control and data registers and can fire up to six different interrupts
+ * Atmega128. It has several control and data registers and can fire up to six different interrupts
  * depending on the mode that it has been put into. It has three output compare units and one input
  * capture unit. UNIMPLEMENTED: input capture unit.
  *

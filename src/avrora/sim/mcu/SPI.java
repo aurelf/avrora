@@ -177,7 +177,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
 
 
         /**
-         * Notes. The way this delay is setup right now, when the ATMega128L is in master mode and
+         * Notes. The way this delay is setup right now, when the ATMega128 is in master mode and
          * transmits, the connected device has a delayed receive. For the radio, this is not a
          * problem, as the radio is the master and is responsible for ensuring correct delivery time
          * for the SPI.
@@ -340,7 +340,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
             SPIenabled = Arithmetic.getBit(val, SPE);
 
             //OL: reset spi interrupt flag, when enabling SPI
-            //this is not described in the Atmega128l handbook
+            //this is not described in the Atmega128 handbook
             //however, the chip seems to work like this, as S-Mac
             //does not work without it
             if (Arithmetic.getBit(val, SPIE) && !SPIEnable) {

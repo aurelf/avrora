@@ -57,7 +57,6 @@ public class ATMega128 extends ATMegaFamily {
     public static final int ATMEGA128_EEPROM_SIZE = 4 * _1kb;
     public static final int ATMEGA128_NUM_PINS = 65;
 
-    public static final int MODE_ACTIVE     = 0;
     public static final int MODE_IDLE       = 1;
     public static final int MODE_RESERVED1  = 2;
     public static final int MODE_ADCNRED    = 3;
@@ -67,7 +66,7 @@ public class ATMega128 extends ATMegaFamily {
     public static final int MODE_POWERSAVE  = 7;
     public static final int MODE_EXTSTANDBY = 8;
 
-    protected static final String[] idleModeName = {
+    protected static final String[] idleModeNames = {
         "Active",
         "Idle",
         "RESERVED 1",
@@ -79,14 +78,26 @@ public class ATMega128 extends ATMegaFamily {
         "Extended Standby"
     };
 
+    //power consumption of each mode (ATMEGA128L)
+    private static final double[] modeAmpere = {
+        0.0075667,
+        0.0033433,
+        0.0,
+        0.0009884,
+        0.0,
+        0.0001158,
+        0.0002356,
+        0.0001237,
+        0.0002433
+    };
+
     protected static final int[] wakeupTimes = {
         0, 0, 0, 0, 0, 1000, 6, 1000, 6
     };
 
-    protected final FiniteStateMachine sleepState;
     protected final State.IOReg MCUCR_reg;
 
-    private static final int[][] transitionTimeMatrix  = FiniteStateMachine.buildBimodalTTM(idleModeName.length, 0, wakeupTimes, new int[wakeupTimes.length]);
+    private static final int[][] transitionTimeMatrix  = FiniteStateMachine.buildBimodalTTM(idleModeNames.length, 0, wakeupTimes, new int[wakeupTimes.length]);
 
 
     /**
@@ -314,10 +325,9 @@ public class ATMega128 extends ATMegaFamily {
     }
 
     public ATMega128(int id, ClockDomain cd, InterpreterFactory f, Program p) {
-        super(cd, props);
+        super(cd, props, new FiniteStateMachine(cd.getMainClock(), MODE_ACTIVE, idleModeNames, transitionTimeMatrix));
         simulator = new Simulator(id, f, this, p);
         interpreter = simulator.getInterpreter();
-        sleepState = new FiniteStateMachine(mainClock, 0, idleModeName, transitionTimeMatrix);
         MCUCR_reg = getIOReg("MCUCR");
         installPins();
         installDevices();
@@ -392,71 +402,17 @@ public class ATMega128 extends ATMegaFamily {
     }
 
 
-    /**
-     * send to mcu to sleep
-     *
-     * @see avrora.sim.mcu.Microcontroller#sleep()
-     */
-    public void sleep() {
-        // transition to the sleep state in the MCUCR register
-        sleepState.transition(getSleepMode());
-    }
-
     // permutation of sleep mode bits in the register (high order bits first)
     private static final int[] MCUCR_sm_perm = { 2, 4, 3 };
 
-    private int getSleepMode() {
+    protected int getSleepMode() {
         byte value = MCUCR_reg.read();
         boolean sleepEnable = Arithmetic.getBit(value, 5);
 
         if ( sleepEnable )
-            return Arithmetic.getBitField(value, MCUCR_sm_perm);
+            return Arithmetic.getBitField(value, MCUCR_sm_perm) + 1;
         else
             return MODE_IDLE;
     }
 
-    /**
-     * wake the mcu up
-     *
-     * @return cycles it takes to wake up
-     * @see avrora.sim.mcu.Microcontroller#wakeup()
-     */
-    public int wakeup() {
-        // transition to the active state (may insert transition event into event queue)
-        sleepState.transition(MODE_ACTIVE);
-        // return the number of cycles consumed by waking up
-        return sleepState.getTransitionTime(sleepState.getCurrentState(), MODE_ACTIVE);
-    }
-
-    /**
-     * get the current mode of the mcu
-     *
-     * @return current mode
-     * @see avrora.sim.mcu.Microcontroller#getMode()
-     */
-    public byte getMode() {
-        return (byte)sleepState.getCurrentState();
-    }
-
-    /**
-     * get the name of the current mode
-     *
-     * @return name of the current mode
-     */
-    public String getModeName() {
-        return sleepState.getCurrentStateName();
-    }
-
-    /**
-     * The Radio connected to this microcontroller.
-     */
-    protected Radio radio;
-
-    public void setRadio(Radio radio) {
-        this.radio = radio;
-    }
-
-    public Radio getRadio() {
-        return radio;
-    }
 }

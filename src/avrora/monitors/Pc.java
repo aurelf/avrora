@@ -36,7 +36,7 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
-import avrora.sim.mcu.ATMega128L;
+import avrora.Avrora;
 
 
 /**
@@ -58,8 +58,8 @@ public class Pc extends MonitorFactory {
          * @param s Simulator
          */
         Monitor(Simulator s) {
-            if( s.getID() == 0){
-                ((ATMega128L)(s.getMicrocontroller())).connectPc();
+            if( s.getID() == 0) {
+                throw Avrora.unimplemented();
             }
         }
                 
