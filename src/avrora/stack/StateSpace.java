@@ -4,6 +4,7 @@ import vpc.VPCBase;
 
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import avrora.sim.IORegisterConstants;
 import avrora.core.Program;
@@ -47,6 +48,7 @@ public class StateSpace {
         State(MutableState s) {
             pc = s.pc;
             av_SREG = s.av_SREG;
+            av_EIMSK = s.av_EIMSK;
             av_REGISTERS = new char[NUM_REGS];
             for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
                 av_REGISTERS[cntr] = s.av_REGISTERS[cntr];
@@ -70,6 +72,7 @@ public class StateSpace {
             return true;
         }
 
+        public Object mark;
         public Link outgoing;
 
         void addEdge(State t, int weight) {

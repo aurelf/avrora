@@ -19,12 +19,22 @@ public interface AnalyzerPolicy {
      * insensitive analsysis may just merge the current state into the entrance
      * state for that address and then reanalyze that code.
      *
-     * @param s the current abstract state
+     * @param s the current calling abstract state
      * @param target_address the concrete target address of the call
      * @return the state of the program after the call, null if there is no next
      * state
      */
     public MutableState call(MutableState s, int target_address);
+
+    /**
+     * The <code>interrupt()</code> is called by the abstract interrupt when it
+     * encounters a place in the program when an interrupt might occur.
+     * @param s the abstract state just before interrupt
+     * @param num the interrupt number that might occur
+     * @return the state of the program after the interrupt, null if there is
+     * no next state
+     */
+    public MutableState interrupt(MutableState s, int num);
 
     /**
      * The <code>ret()</code> method is called by the abstract interpreter when it

@@ -15,7 +15,6 @@ import vpc.VPCBase;
 public abstract class AbstractState implements IORegisterConstants {
     protected int pc;
     protected char av_SREG;   // canonical status register value
-    protected char av_EIFR;   // canonical interrupt flag register value
     protected char av_EIMSK;  // canonical interrupt mask register value
     protected char av_REGISTERS[]; // canonical register values
 
@@ -27,7 +26,7 @@ public abstract class AbstractState implements IORegisterConstants {
         3,     5,   7,  11,  13,  17,  19,  23,  29,  31,
         37,   41,  43,  47,  53,  59,  61,  67,  71,  73,
         79,   83,  89,  97, 101, 103, 107, 109, 113, 127,
-        131, 137 
+        131, 137
     };
 
 
@@ -39,7 +38,6 @@ public abstract class AbstractState implements IORegisterConstants {
     protected int computeHashCode() {
         int hash = pc;
         hash += av_SREG;
-        hash += av_EIFR;
         hash += av_EIMSK;
         for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
             hash += av_REGISTERS[cntr] * primes[cntr];
@@ -127,7 +125,6 @@ public abstract class AbstractState implements IORegisterConstants {
     public char getIORegisterAV(int num) {
         if ( num == IORegisterConstants.SREG ) return av_SREG;
         if ( num == IORegisterConstants.EIMSK ) return av_EIMSK;
-        if ( num == IORegisterConstants.EIFR ) return av_EIFR;
         return AbstractArithmetic.UNKNOWN;
     }
 
@@ -145,8 +142,14 @@ public abstract class AbstractState implements IORegisterConstants {
         return av_REGISTERS[num];
     }
 
+    /**
+     * The <code>copy()</code> method returns a deep copy of this state. This is
+     * generally used for forking operations and for storing internal copies within
+     * the <code>StateSpace</code>.
+     * @return a new deep copy of this abstract state
+     */
     public MutableState copy() {
-        return new MutableState(pc, av_SREG, av_REGISTERS);
+        return new MutableState(pc, av_SREG, av_EIMSK, av_REGISTERS);
     }
 
     public String toString() {

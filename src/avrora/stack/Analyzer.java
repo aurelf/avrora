@@ -8,6 +8,7 @@ import avrora.sim.IORegisterConstants;
 
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Stack;
 
 import vpc.VPCBase;
 import vpc.util.StringUtil;
@@ -28,7 +29,9 @@ public class Analyzer {
     ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
     HashMap frontierInfoMap;
-    long time;
+    long buildTime;
+    long traverseTime;
+    int maxDepth;
 
     protected final StateSpace.SpecialState returnState;
     protected final StateSpace.SpecialState returnIState;
@@ -74,9 +77,17 @@ public class Analyzer {
      * with an initial default state serves as the first state to start exploring.
      */
     public void run() {
+        long start = System.currentTimeMillis();
+        buildReachableStateSpace();
+        long check = System.currentTimeMillis();
+        buildTime = check - start;
+        findMaximalPath();
+        traverseTime = System.currentTimeMillis() - check;
+    }
+
+    private void buildReachableStateSpace() {
         StateSpace.State s = space.getEdenState();
 
-        long ms = System.currentTimeMillis();
         while ( s != null ) {
             traceState(s);
 
@@ -96,17 +107,50 @@ public class Analyzer {
             // get the next frontier state
             s = space.getFrontierState();
         }
-        time = System.currentTimeMillis() - ms;
+    }
+
+    private void findMaximalPath() {
+        HashSet stack = new HashSet();
+        StateSpace.State state = space.getEdenState();
+
+        maxDepth = traverse(state, stack, 0);
+    }
+
+    private int traverse(StateSpace.State s, HashSet stack, int cumul) {
+        StateSpace.Link link = s.outgoing;
+        if ( s.mark != null ) {
+            return ((Integer)s.mark).intValue();
+        }
+        int max = cumul;
+        stack.add(s);
+        s.mark = new Integer(cumul);
+        while ( link != null ) {
+            StateSpace.State t = link.state;
+            if ( stack.contains(t) ) { // cycle detected.
+                Integer i = (Integer)t.mark;
+                if ( i.intValue() != cumul )
+                    throw new Error("unbounded stack");
+            }
+            int extra = traverse(t, stack, cumul + link.weight);
+            if ( extra > max ) max = extra;
+            link = link.next;
+        }
+        stack.remove(s);
+        s.mark = new Integer(max);
+        return max;
     }
 
     public void report() {
-        ColorTerminal.printBrightGreen("Total cached states");
-        ColorTerminal.println(": "+space.getTotalStateCount());
-        ColorTerminal.printBrightGreen("Total reachable states");
-        ColorTerminal.println(": "+space.getStatesInSpaceCount());
-        String ts = StringUtil.milliAsString(time);
-        ColorTerminal.printBrightGreen("Time for analysis");
-        ColorTerminal.println(": "+ts);
+        printQuantity("Total cached states", ""+space.getTotalStateCount());
+        printQuantity("Total reachable states", ""+space.getStatesInSpaceCount());
+        printQuantity("Time to build graph", StringUtil.milliAsString(buildTime));
+        printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
+        printQuantity("Maximum stack depth", ""+maxDepth);
+    }
+
+    private void printQuantity(String q, String v) {
+        ColorTerminal.printBrightGreen(q);
+        ColorTerminal.println(": "+v);
     }
 
     private FrontierInfo getFrontierInfo(StateSpace.State s) {
@@ -155,10 +199,24 @@ public class Analyzer {
             s.setPC(target_address);
             StateSpace.State target = space.getStateFor(s);
 
-            if ( space.isExplored(target) ) {
-                // TODO: find reachable return states
-                return null;
-            }
+            addEdge("CALL", frontierState.state, target, 2);
+            pushFrontier(target, new FrontierInfo.CallSiteList(frontierState, null));
+
+            return null;
+        }
+
+        /**
+         * The <code>interrupt()</code> is called by the abstract interrupt when it
+         * encounters a place in the program when an interrupt might occur.
+         * @param s the abstract state just before interrupt
+         * @param num the interrupt number that might occur
+         * @return the state of the program after the interrupt, null if there is
+         * no next state
+         */
+        public MutableState interrupt(MutableState s, int num) {
+            s.setFlag_I(AbstractArithmetic.FALSE);
+            s.setPC(0x0004 + num*4);
+            StateSpace.State target = space.getStateFor(s);
 
             addEdge("CALL", frontierState.state, target, 2);
             pushFrontier(target, new FrontierInfo.CallSiteList(frontierState, null));
@@ -181,16 +239,21 @@ public class Analyzer {
             FrontierInfo.CallSiteList list = frontierState.callsites;
             while ( list != null ) {
                 MutableState retState = s.copy();
-                int pc = list.caller.state.getPC();
-                int npc = pc + program.readInstr(pc).getSize();
-                retState.setPC(npc);
-                StateSpace.State immRetState = space.getStateFor(retState);
-                addEdge("RET", list.caller.state, immRetState, 0);
-                pushFrontier(immRetState, list.caller.callsites);
+                FrontierInfo caller = list.caller;
+                addReturnEdge(caller, retState);
                 list = list.next;
             }
             addEdge("$RET", frontierState.state, returnState, 0);
             return null;
+        }
+
+        private void addReturnEdge(FrontierInfo caller, MutableState retState) {
+            int pc = caller.state.getPC();
+            int npc = pc + program.readInstr(pc).getSize();
+            retState.setPC(npc);
+            StateSpace.State immRetState = space.getStateFor(retState);
+            addEdge("RET", caller.state, immRetState, 0);
+            pushFrontier(immRetState, caller.callsites);
         }
 
         /**
@@ -201,7 +264,15 @@ public class Analyzer {
          * the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState reti(MutableState s) {
-            // TODO: implement returns from interrupts.
+            FrontierInfo.CallSiteList list = frontierState.callsites;
+            while ( list != null ) {
+                MutableState retState = s.copy();
+                s.setFlag_I(AbstractArithmetic.TRUE);
+                FrontierInfo caller = list.caller;
+                addReturnEdge(caller, retState);
+                list = list.next;
+            }
+            addEdge("$RETI", frontierState.state, returnIState, 0);
             return null;
         }
 
@@ -305,7 +376,9 @@ public class Analyzer {
         }
 
         private void pushFrontier(StateSpace.State t, FrontierInfo.CallSiteList l) {
-            if ( !space.isExplored(t) ) {
+            if ( space.isExplored(t) ) {
+                // TODO: find reachable return states
+            } else  {
                 space.addFrontier(t);
                 FrontierInfo fs = getFrontierInfo(t);
                 fs.callsites = l;
@@ -388,7 +461,7 @@ public class Analyzer {
 
         ColorTerminal.nextln();
 
-        ColorTerminal.print("                 [");
+        ColorTerminal.print("               [");
         ColorTerminal.printBrightGreen("EIMSK");
         ColorTerminal.print(":");
         ColorTerminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.EIMSK)));
@@ -400,11 +473,7 @@ public class Analyzer {
 
         ColorTerminal.nextln();
 
-        ColorTerminal.print("                  [");
-        ColorTerminal.printBrightGreen("EIFR");
-        ColorTerminal.print(":");
-        ColorTerminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.EIFR)));
-        ColorTerminal.print("] ");
+        ColorTerminal.print("                                ");
         for ( int cntr = 24; cntr < 32; cntr++ ) {
             ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
             ColorTerminal.print(" ");

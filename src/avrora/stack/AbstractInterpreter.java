@@ -47,7 +47,15 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         oldState = os;
         state = oldState.copy();
 
-        // TODO: produce interrupt edges
+        if ( state.getFlag_I() != FALSE ) {
+            // produce interrupt edges to possibly enabled interrupts.
+            char eimsk = state.getIORegisterAV(IORegisterConstants.EIMSK);
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
+                char msk = AbstractArithmetic.getBit(eimsk, cntr);
+                if ( msk == FALSE ) continue;
+                policy.interrupt(state.copy(), cntr);
+            }
+        }
 
         int pc = state.getPC();
         Instr i = program.readInstr(pc);

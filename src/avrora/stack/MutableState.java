@@ -23,28 +23,18 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      */
     public MutableState() {
         av_SREG = AbstractArithmetic.ZERO;
-        av_EIFR = AbstractArithmetic.ZERO;
         av_EIMSK = AbstractArithmetic.ZERO;
         for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
             av_REGISTERS[cntr] = AbstractArithmetic.ZERO;
         }
     }
 
-    public MutableState(int npc, char nSREG, char[] nregs) {
+    public MutableState(int npc, char nSREG, char nEIMSK, char[] nregs) {
         av_REGISTERS = new char[NUM_REGS];
         System.arraycopy(nregs, 0, av_REGISTERS, 0, NUM_REGS);
         pc = npc;
         av_SREG = nSREG;
-    }
-
-    /**
-     * The <code>copy()</code> method returns a deep copy of this state. This is
-     * generally used for forking operations and for storing internal copies within
-     * the <code>StateSpace</code>.
-     * @return a new deep copy of this abstract state
-     */
-    public MutableState copy() {
-        return new MutableState(pc, av_SREG, av_REGISTERS);
+        av_EIMSK = nEIMSK;
     }
 
     /**
@@ -74,7 +64,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     /**
      * The <code>hashCode()</code> method computes an integer hash code for this
      * state. A good hash code is needed to make hashtables in <code>StateSpace</code>
-     * efficient.  
+     * efficient.
      * @throws vpc.VPCInternalError
      */
     public int hashCode() {
