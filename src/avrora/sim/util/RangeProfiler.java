@@ -64,7 +64,7 @@ public class RangeProfiler {
 
     /**
      * The <code>itime</code> field stores the invocation count for each instruction in the range. It is
-     * indexed by byte addresses, with index 0 corresponding to the lowest address in the range
+     * indexed by byte addresses, with expr 0 corresponding to the lowest address in the range
      * (<code>low_addr</code>). at <code>program.getInstr(addr)</code>.
      */
     public final long icount[];

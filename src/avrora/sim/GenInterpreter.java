@@ -1583,6 +1583,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
      */
     public void leaveSleepMode() {
         sleeping = false;
+        innerLoop = false;
+        // TODO: is this advance cycles correct? possible accumulation problems
         advanceCycles(simulator.getMicrocontroller().wakeup());
     }
 }

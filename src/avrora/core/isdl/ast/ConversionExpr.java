@@ -40,19 +40,19 @@ import avrora.util.StringUtil;
  *
  * @author Ben L. Titzer
  */
-public class MapExpr extends Expr {
+public class ConversionExpr extends Expr {
 
     /**
      * The <code>typename</code> field stores a reference to the name of the map whose element is being
      * accessed.
      */
-    public final Token mapname;
+    public final Token typename;
 
     /**
      * The <code>expr</code> field stores a references to the expression which is evaluated to yield the
      * expr into the map.
      */
-    public final Expr index;
+    public final Expr expr;
 
     /**
      * The constructor of the <code>MapExpr</code> class initializes the publicly accessable fields that
@@ -61,9 +61,9 @@ public class MapExpr extends Expr {
      * @param s the string name of the map as a token
      * @param i an expression representing the expr into the map
      */
-    public MapExpr(Token s, Expr i) {
-        mapname = s;
-        index = i;
+    public ConversionExpr(Expr i, Token s) {
+        typename = s;
+        expr = i;
     }
 
     /**
@@ -73,10 +73,10 @@ public class MapExpr extends Expr {
      * @param s the string name of the map as a token
      * @param i an expression representing the expr into the map
      */
-    public MapExpr(String s, Expr i) {
-        mapname = new Token();
-        mapname.image = s;
-        index = i;
+    public ConversionExpr(Expr i, String s) {
+        typename = new Token();
+        typename.image = s;
+        expr = i;
     }
 
     /**
@@ -119,7 +119,7 @@ public class MapExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return StringUtil.embed("$" + mapname, index);
+        return StringUtil.embed("$" + typename, expr);
     }
 
     /**

@@ -44,14 +44,14 @@ import avrora.util.StringUtil;
 public class MapBitRangeAssignStmt extends AssignStmt {
 
     /**
-     * The <code>mapname</code> field stores a reference to the name of the map whose element is being
+     * The <code>typename</code> field stores a reference to the name of the map whose element is being
      * assigned to.
      */
     public final Token mapname;
 
     /**
-     * The <code>index</code> field stores a references to the expression which is evaluated to yield the
-     * index into the map.
+     * The <code>expr</code> field stores a references to the expression which is evaluated to yield the
+     * expr into the map.
      */
     public final Expr index;
 
@@ -70,7 +70,7 @@ public class MapBitRangeAssignStmt extends AssignStmt {
      * class that refer to the elements of the assignment.
      *
      * @param m the string name of the map as a token
-     * @param i the expression representing the index into the map
+     * @param i the expression representing the expr into the map
      * @param l the low bit of the range as a token
      * @param h the high bit of the range as a token
      * @param e the expression representing the right hand side of the assignment
@@ -91,7 +91,7 @@ public class MapBitRangeAssignStmt extends AssignStmt {
      * class that refer to the elements of the assignment.
      *
      * @param m the string name of the map as a token
-     * @param i the expression representing the index into the map
+     * @param i the expression representing the expr into the map
      * @param l the low bit of the range as an integer
      * @param h the high bit of the range as an integer
      * @param e the expression representing the right hand side of the assignment
@@ -110,7 +110,7 @@ public class MapBitRangeAssignStmt extends AssignStmt {
      * class that refer to the elements of the assignment.
      *
      * @param m the string name of the map as a token
-     * @param i the expression representing the index into the map
+     * @param i the expression representing the expr into the map
      * @param l the low bit of the range as an integer
      * @param h the high bit of the range as an integer
      * @param e the expression representing the right hand side of the assignment

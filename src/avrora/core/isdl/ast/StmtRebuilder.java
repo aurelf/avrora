@@ -113,18 +113,23 @@ public interface StmtRebuilder extends CodeRebuilder {
             newList = new LinkedList();
             changed = false;
 
-            Iterator i = l.iterator();
-            while (i.hasNext()) {
-                Stmt sa = (Stmt)i.next();
-                Stmt na = sa.accept(this, env);
-                if (na != sa) changed = true;
-                newList.add(na);
-            }
+            visitStmts(l, env);
 
             if (changed) l = newList;
             this.newList = oldList;
             changed = oldChanged;
             return l;
+        }
+
+        protected void visitStmts(List l, Object env) {
+            Iterator i = l.iterator();
+            while (i.hasNext()) {
+                Stmt sa = (Stmt)i.next();
+                Stmt na = sa.accept(this, env);
+                if (na != sa) changed = true;
+                if ( na != null)
+                    newList.add(na);
+            }
         }
 
         protected void addStmt(Stmt s) {

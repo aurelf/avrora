@@ -229,6 +229,7 @@ public class DBBC {
         }
 
         // canonicalize the statement lists
+        // TODO: all code should be in canonical form CodeMapGenerator
         // stmts = new Canonicalizer().process(stmts);
 
         if (CONSTANT_PROPAGATION.get()) {

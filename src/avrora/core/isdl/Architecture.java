@@ -36,6 +36,7 @@ import avrora.Avrora;
 import avrora.core.isdl.ast.*;
 import avrora.core.isdl.parser.ISDLParserConstants;
 import avrora.core.isdl.parser.Token;
+import avrora.core.isdl.gen.Inliner;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
@@ -52,6 +53,8 @@ import java.util.List;
  * @author Ben L. Titzer
  */
 public class Architecture {
+
+    public static boolean INLINE = true;
 
     Verbose.Printer printer = Verbose.getVerbosePrinter("isdl");
 
@@ -159,8 +162,7 @@ public class Architecture {
 
             // inline and optimize the body of the instruction
             List code = id.getCode();
-            code = new Inliner().visitStmtList(code, null);
-            code = new Optimizer(code).optimize();
+            code = new Inliner(this).process(code);
 
             id.setCode(code);
 
@@ -283,184 +285,6 @@ public class Architecture {
     }
 
 
-    /**
-     * The <code>Inliner</code> class implements a visitor over the code that inlines calls to known
-     * subroutines. This produces code that is free of calls to the subroutines declared within the
-     * architecture description and therefore is ready for constant and copy propagation optimizations.
-     * <p/>
-     * The <code>Inliner</code> will aggressively inline all calls, therefore it cannot detect recursion. It
-     * assumes that return statements are at the end of subroutines and do not occur in branches. This is not
-     * enforced by any checking, which should be done in the future.
-     *
-     * @author Ben L. Titzer
-     */
-    class Inliner extends StmtRebuilder.DepthFirst {
-        final Inliner parent;
-        List newStmts;
-        HashMap varMap;
-        int tmpCount;
-        String retVal;
-        SubroutineDecl curSubroutine;
-
-        private Inliner(Inliner p, List ns) {
-            parent = p;
-            newStmts = ns;
-            varMap = new HashMap();
-        }
-
-        private Inliner(Inliner p) {
-            parent = p;
-            newStmts = new LinkedList();
-            varMap = new HashMap();
-        }
-
-        Inliner() {
-            parent = null;
-            newStmts = new LinkedList();
-            varMap = new HashMap();
-        }
-
-        public List visitStmtList(List l, Object env) {
-
-            Iterator i = l.iterator();
-            while (i.hasNext()) {
-                Stmt a = (Stmt)i.next();
-                Stmt na = a.accept(this, env);
-                if (na != null) newStmts.add(na);
-            }
-
-            return newStmts;
-        }
-
-        public Stmt visit(CallStmt s, Object env) {
-            SubroutineDecl d = getSubroutine(s.method.image);
-            if (shouldNotInline(d)) {
-                return super.visit(s, env);
-            } else {
-                inlineCall(s.method, d, s.args);
-                return null;
-            }
-        }
-
-        public Stmt visit(VarAssignStmt s, Object env) {
-            String nv = varName(s.variable);
-            return new VarAssignStmt(newToken(nv), s.expr.accept(this, env));
-        }
-
-        public Stmt visit(VarBitAssignStmt s, Object env) {
-            String nv = varName(s.variable);
-            return (new VarBitAssignStmt(newToken(nv), s.bit.accept(this, env), s.expr.accept(this, env)));
-        }
-
-        public Stmt visit(VarBitRangeAssignStmt s, Object env) {
-            String nv = varName(s.variable);
-            return (new VarBitRangeAssignStmt(newToken(nv), s.low_bit, s.high_bit, s.expr.accept(this, env)));
-        }
-
-        public Stmt visit(DeclStmt s, Object env) {
-            String nv = newTemp(s.name.image);
-            return (new DeclStmt(newToken(nv), s.type, s.init.accept(this, env)));
-        }
-
-        public Stmt visit(ReturnStmt s, Object env) {
-            if (curSubroutine == null)
-                throw Avrora.failure("return not within subroutine!");
-
-            retVal = newTemp(null);
-            return (new DeclStmt(newToken(retVal), curSubroutine.ret, s.expr.accept(this, env)));
-        }
-
-
-        public Stmt visit(IfStmt s, Object env) {
-            Expr nc = s.cond.accept(this, env);
-            List nt = new Inliner(this).visitStmtList(s.trueBranch, env);
-            List nf = new Inliner(this).visitStmtList(s.falseBranch, env);
-            return (new IfStmt(nc, nt, nf));
-        }
-
-        protected String newTemp(String orig) {
-            String nn;
-            if (parent != null)
-                nn = parent.newTemp(null);
-            else
-                nn = "tmp_" + (tmpCount++);
-
-            if (orig != null) varMap.put(orig, nn);
-            return nn;
-        }
-
-        protected String inlineCall(Token m, SubroutineDecl d, List args) {
-            if (d.numOperands() != args.size())
-                Avrora.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ":" + m.beginColumn);
-
-            Inliner bodyBuilder = new Inliner(this, newStmts);
-
-            Iterator formal_iter = d.getOperandIterator();
-            Iterator arg_iter = args.iterator();
-
-            while (formal_iter.hasNext()) {
-                CodeRegion.Operand f = (CodeRegion.Operand)formal_iter.next();
-                Expr e = (Expr)arg_iter.next();
-
-                // get a new temporary
-                String nn = newTemp(null);
-
-                // put the arguments in the alpha-rename map for the body
-                bodyBuilder.varMap.put(f.name.image, nn);
-
-                // alpha-rename expression that is argument
-                Expr ne = e.accept(this, null);
-                newStmts.add(new DeclStmt(nn, f.type, ne));
-            }
-
-            // set the current subroutine
-            bodyBuilder.curSubroutine = d;
-            // process body
-            bodyBuilder.visitStmtList(d.getCode(), null);
-
-            return bodyBuilder.retVal;
-        }
-
-
-        public Expr visit(CallExpr v, Object env) {
-            SubroutineDecl d = getSubroutine(v.method.image);
-            if (shouldNotInline(d)) {
-                return super.visit(v, null);
-            } else {
-                String result = inlineCall(v.method, d, v.args);
-                return new VarExpr(result);
-            }
-        }
-
-        protected boolean shouldNotInline(SubroutineDecl d) {
-            if (d == null || !d.inline || !d.hasBody()) return true;
-            return false;
-        }
-
-        public Expr visit(VarExpr v) {
-            // alpha rename all variables
-            return new VarExpr(varName(v.variable));
-        }
-
-        protected String varName(String n) {
-            String nn = (String)varMap.get(n);
-            if (nn == null && parent != null) nn = parent.varName(n);
-            if (nn == null) return n;
-            return nn;
-        }
-
-        protected String varName(Token n) {
-            return varName(n.image);
-        }
-
-        protected Token newToken(String t) {
-            Token tk = new Token();
-            tk.image = t;
-            tk.kind = ISDLParserConstants.IDENTIFIER;
-            return tk;
-        }
-    }
-
     public class PrettyPrinter extends StmtVisitor.DepthFirst {
 
         final Printer p;
@@ -471,10 +295,14 @@ public class Architecture {
 
         public void visitStmtList(List s) {
             p.startblock();
-            Iterator i = s.iterator();
-            while (i.hasNext()) {
-                Stmt st = (Stmt)i.next();
-                st.accept(this);
+            if ( s == null ) {
+                p.println(" // empty body");
+            } else {
+                Iterator i = s.iterator();
+                while (i.hasNext()) {
+                    Stmt st = (Stmt)i.next();
+                    st.accept(this);
+                }
             }
             p.endblock();
         }

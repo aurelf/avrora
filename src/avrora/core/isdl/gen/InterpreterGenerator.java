@@ -72,7 +72,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            // TODO: extract out index value if it is not a simple expression
+            // TODO: extract out expr value if it is not a simple expression
             printer.print(getMethod(writeMeth) + "(");
             ind.accept(InterpreterGenerator.this);
             printer.print(", Arithmetic.setBit(" + readMeth + "(");
@@ -110,7 +110,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
                 if (l != 0) printer.print(" << " + l);
                 printer.println(");");
             } else {
-                throw Avrora.failure("non-constant index into map in bit-range assignment");
+                throw Avrora.failure("non-constant expr into map in bit-range assignment");
             }
         }
     }
@@ -134,7 +134,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            // TODO: extract out index value if it is not a simple expression
+            // TODO: extract out expr value if it is not a simple expression
             printer.print(getVariable(token) + "[");
             ind.accept(InterpreterGenerator.this);
             printer.print("] = Arithmetic.getBit(" + getVariable(token) + "[");
@@ -176,7 +176,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
                 if (l != 0) printer.print(" << " + l);
                 printer.println(");");
             } else {
-                throw Avrora.failure("non-constant index into map in bit-range assignment");
+                throw Avrora.failure("non-constant expr into map in bit-range assignment");
             }
         }
     }
@@ -269,8 +269,12 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
             CodeRegion.Operand o = (CodeRegion.Operand)i.next();
 
             String image = o.name.image;
-            if (cr instanceof InstrDecl)
-                image = "i." + image;
+            if (cr instanceof InstrDecl) {
+                if ( o.isRegister() )
+                    image = "i." + image + ".getNumber()";
+                else
+                    image = "i." + image;
+            }
 
             variableMap.put(o.name.image, image);
         }

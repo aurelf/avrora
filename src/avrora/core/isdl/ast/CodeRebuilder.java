@@ -73,6 +73,8 @@ public interface CodeRebuilder {
 
     public Expr visit(CallExpr e, Object env);
 
+    public Expr visit(ConversionExpr e, Object env);
+
     public Expr visit(Literal.BoolExpr e, Object env);
 
     public Expr visit(Literal.IntExpr e, Object env);
@@ -241,6 +243,12 @@ public interface CodeRebuilder {
                 return new CallExpr(e.method, nargs);
             else
                 return e;
+        }
+
+        public Expr visit(ConversionExpr e, Object env) {
+            Expr ne = e.expr.accept(this, env);
+            if (ne != e.expr) return new ConversionExpr(ne, e.typename);
+            return e;
         }
 
         public Expr visit(Literal.BoolExpr e, Object env) {

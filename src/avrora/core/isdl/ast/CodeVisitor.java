@@ -71,6 +71,8 @@ public interface CodeVisitor {
 
     public void visit(CallExpr e);
 
+    public void visit(ConversionExpr e);
+
     public void visit(Literal.BoolExpr e);
 
     public void visit(Literal.IntExpr e);
@@ -177,6 +179,10 @@ public interface CodeVisitor {
                 Expr a = (Expr)i.next();
                 a.accept(this);
             }
+        }
+
+        public void visit(ConversionExpr e) {
+            e.expr.accept(this);
         }
 
         public void visit(Literal.BoolExpr e) {

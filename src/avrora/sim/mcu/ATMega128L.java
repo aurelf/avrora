@@ -854,7 +854,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
              * blocking for one timer period.
              */
             protected class TCNTnRegister extends State.RWIOReg {
-                /* index of the blockCompareMatch corresponding to
+                /* expr of the blockCompareMatch corresponding to
                  * this register in the array of boolean flags.  */
                 public void write(byte val) {
                     value = val;

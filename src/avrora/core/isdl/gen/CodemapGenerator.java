@@ -393,6 +393,13 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
             printer.print(")");
         }
 
+        public void visit(ConversionExpr e) {
+            printer.print("new ConversionExpr(");
+            e.expr.accept(this);
+            printer.print(", " + StringUtil.quote(e.typename) + ", ");
+            printer.print(")");
+        }
+
         public void visit(Literal.BoolExpr e) {
             printer.print("new Literal.BoolExpr(" + e.value + ")");
         }

@@ -45,17 +45,17 @@ import avrora.core.isdl.CodeRegion;
 public abstract class StateUse {
 
     /**
-     * The <code>Index</code> class represents a possible index into a map (such as the register file or
-     * memory). An index might be a constant, an instruction operand, a linear combination of an operand and a
+     * The <code>Index</code> class represents a possible expr into a map (such as the register file or
+     * memory). An expr might be a constant, an instruction operand, a linear combination of an operand and a
      * constant, or it could be an unknown (dynamically computed) value.
      */
     public static class Index {
 
         /**
-         * The <code>isConstant()</code> method returns whether this index is a constant that is not dependent
+         * The <code>isConstant()</code> method returns whether this expr is a constant that is not dependent
          * on either operands to the instruction or runtime values
          *
-         * @return true if this index is a constant that is not dependent on either instruction operands or
+         * @return true if this expr is a constant that is not dependent on either instruction operands or
          *         runtime values; false otherwise
          */
         public boolean isConstant() {
@@ -63,11 +63,11 @@ public abstract class StateUse {
         }
 
         /**
-         * The <code>isKnown()</code> method returns whether this index is known statically given the
-         * instruction operands. Thus, for a given instruction instance, this index can be computed without
+         * The <code>isKnown()</code> method returns whether this expr is known statically given the
+         * instruction operands. Thus, for a given instruction instance, this expr can be computed without
          * runtime values.
          *
-         * @return true if this index can be computed solely from instruction operands.
+         * @return true if this expr can be computed solely from instruction operands.
          */
         public boolean isKnown() {
             return true;
@@ -114,7 +114,7 @@ public abstract class StateUse {
     /**
      * The <code>MapUse</code> class represents the usage of a map (i.e. a register file or memory). The map
      * has a string that describes its name as well as an instance of the <code>StateUse.Index</code> class
-     * that indicates the index in the map that is read or written.
+     * that indicates the expr in the map that is read or written.
      */
     public static class MapUse extends StateUse {
         public final String mapname;
@@ -145,7 +145,7 @@ public abstract class StateUse {
 
     /**
      * The <code>BitUse</code> class represents the usage of a bit of some state that is used. It contains a
-     * reference to the <code>StateUse</code> representing the whole state variable, as well as an index that
+     * reference to the <code>StateUse</code> representing the whole state variable, as well as an expr that
      * indicates the actual bit that is read or written.
      */
     public static class BitUse extends StateUse {

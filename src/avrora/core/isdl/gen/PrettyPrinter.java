@@ -57,6 +57,11 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         mr.generateRead(e.index);
     }
 
+    public void visit(ConversionExpr e) {
+        inner(e.expr, Expr.PREC_TERM);
+        printer.print(":"+e.typename.image);
+    }
+
     public void visit(VarExpr e) {
         printer.print(getVariable(e.variable));
     }

@@ -53,6 +53,8 @@ public interface ExprVisitor {
 
     public void visit(CallExpr e);
 
+    public void visit(ConversionExpr e);
+
     public void visit(Literal e);
 
     public void visit(Logical.BinOp e);
@@ -95,6 +97,10 @@ public interface ExprVisitor {
                 Expr a = (Expr)i.next();
                 a.accept(this);
             }
+        }
+
+        public void visit(ConversionExpr e) {
+            e.expr.accept(this);
         }
 
         public void visit(Literal e) {

@@ -49,7 +49,7 @@ public class VarBitAssignStmt extends AssignStmt {
     public final Token variable;
 
     /**
-     * The <code>bit</code> field stores a reference to the expression that represents the index of the bit to
+     * The <code>bit</code> field stores a reference to the expression that represents the expr of the bit to
      * assign to.
      */
     public final Expr bit;
@@ -59,7 +59,7 @@ public class VarBitAssignStmt extends AssignStmt {
      * the internal members of this assignment.
      *
      * @param m the string name of the variable as a token
-     * @param b an expression representing the index of the bit
+     * @param b an expression representing the expr of the bit
      * @param e an expression representing the right hand side of the assignment
      */
     public VarBitAssignStmt(Token m, Expr b, Expr e) {
@@ -73,7 +73,7 @@ public class VarBitAssignStmt extends AssignStmt {
      * the internal members of this assignment.
      *
      * @param m the string name of the variable as a token
-     * @param b an expression representing the index of the bit
+     * @param b an expression representing the expr of the bit
      * @param e an expression representing the right hand side of the assignment
      */
     public VarBitAssignStmt(String m, Expr b, Expr e) {
