@@ -275,7 +275,10 @@ public abstract class SimAction extends Action {
 
         while (i.hasNext()) {
             String val = (String)i.next();
-            locset.add(program.getProgramLocation(val));
+            Program.Location l = program.getProgramLocation(val);
+            if ( l == null )
+                Avrora.userError("Label unknown", val);
+            locset.add(l);
         }
 
         List loclist = Collections.list(Collections.enumeration(locset));

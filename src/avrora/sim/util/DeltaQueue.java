@@ -234,18 +234,44 @@ public class DeltaQueue {
      * @param cycles the number of clock cycles to advance
      */
     public void advance(long cycles) {
-        count += cycles;
+        if ( head == null ) {
+            // fast path 1: nothing in the queue
+            count += cycles;
+            return;
+        }
 
-        while (head != null && cycles >= 0) {
+        if ( head.delta > cycles ) {
+            // fast path 2: head does not fire
+            count += cycles;
+            head.delta -= cycles;
+            return;
+        }
+
+        advanceSlow(cycles);
+
+    }
+
+    private void advanceSlow(long cycles) {
+        // slow path: head (and maybe more) fires
+        while (head != null && cycles > 0) {
 
             Link pos = head;
             Link next = pos.next;
 
-            long left = cycles - pos.delta;
-            pos.delta = -left;
+            // cache pos.delta because it is used twice
+            long delta = pos.delta;
+            // number of cycles leftover after advancing by pos.delta
+            long leftover = cycles - delta;
 
-            // if haven't arrived yet, break
-            if (pos.delta > 0) break;
+            // if haven't arrived yet, advance and return
+            if (leftover < 0) {
+                count += cycles;
+                pos.delta = -leftover;
+                return;
+            }
+
+            // advance by the number of cycles at the head of the queue
+            count += delta;
 
             // chop off head
             head = next;
@@ -256,9 +282,12 @@ public class DeltaQueue {
             // free the head
             free(pos);
 
-            // consume the cycles
-            cycles = left;
+            // process leftover cycles next time through loop
+            cycles = leftover;
         }
+
+        // add in leftover cycles if we reached end of queue (head == null)
+        count += cycles;
     }
 
     /**

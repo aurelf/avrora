@@ -382,7 +382,7 @@ public class StringUtil {
         millis = result[MILLIS];
         if (millis < 100) buf.append('0');
         if (millis < 10) buf.append('0');
-        buf.append(millis + "s");
+        buf.append(millis);
         return buf.toString();
     }
 

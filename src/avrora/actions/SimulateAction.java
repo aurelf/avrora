@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.Main;
+import avrora.Avrora;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.mcu.Microcontroller;
@@ -72,7 +73,7 @@ public class SimulateAction extends SimAction {
             "insert a series of breakpoints in the program from the command line. " +
             "The address of the breakpoint can be given in hexadecimal or as a label " +
             "within the program. Hexadecimal constants are denoted by a leading '$'.");
-    public final Option.Bool TIME = newOption("time", false,
+    public final Option.Bool TIME = newOption("time", true,
             "This option is used in the simulate action. It will cause the simulator " +
             "to report the time used in executing the simulation. When combined with " +
             "the \"cycles\" and \"total\" options, it will report performance " +
@@ -81,7 +82,7 @@ public class SimulateAction extends SimAction {
             "This option is used in the simulate action. It will cause the simulator " +
             "to report the total instructions executed in the simulation. When combined " +
             "with the \"time\" option, it will report performance information.");
-    public final Option.Bool CYCLES = newOption("cycles", false,
+    public final Option.Bool CYCLES = newOption("cycles", true,
             "This option is used in the simulate action. It will cause the simulator " +
             "to report the total cycles executed in the simulation. When combined " +
             "with the \"time\" option, it will report performance information.");
@@ -190,9 +191,19 @@ public class SimulateAction extends SimAction {
             printSimHeader();
             simulator.start();
         } catch (Simulator.BreakPointException e) {
-            Terminal.println("Breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
+            Terminal.printYellow("Simulation terminated");
+            Terminal.println(": break at " + StringUtil.addrToString(e.address) + " reached.");
         } catch (Simulator.TimeoutException e) {
-            Terminal.println("Timeout reached: pc = " + StringUtil.addrToString(e.address) + ", time = " + simulator.getClock().getCount());
+            Terminal.printYellow("Simulation terminated");
+            Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + simulator.getClock().getCount());
+        } catch (Avrora.Error e) {
+            Terminal.printRed("Simulation terminated");
+            Terminal.print(": ");
+            e.report();
+        } catch (Throwable t) {
+            Terminal.printRed("Simulation terminated with unexpected exception");
+            Terminal.print(": ");
+            t.printStackTrace();
         } finally {
             printSeparator();
             endms = System.currentTimeMillis();
@@ -220,26 +231,26 @@ public class SimulateAction extends SimAction {
 
     void reportTotal() {
         if (total != null)
-            reportQuantity("Total instructions executed", total.count, "");
+            reportQuantity("Instructions executed", total.count, "");
     }
 
     void reportCycles() {
         if (CYCLES.get()) {
-            reportQuantity("Total clock cycles", simulator.getState().getCycles(), "cycles");
+            reportQuantity("Simulated time", simulator.getState().getCycles(), "cycles");
         }
     }
 
     void reportTime() {
         long diff = endms - startms;
         if (TIME.get()) {
-            reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "");
+            reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "seconds");
             if (total != null) {
                 float thru = ((float)total.count) / (diff * 1000);
-                reportQuantity("Average throughput", thru, "mips");
+                reportQuantity("Simulator throughput", thru, "mips");
             }
             if (CYCLES.get()) {
                 float thru = ((float)simulator.getState().getCycles()) / (diff * 1000);
-                reportQuantity("Average throughput", thru, "mhz");
+                reportQuantity("Simulator throughput", thru, "mhz");
             }
         }
     }
