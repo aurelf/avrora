@@ -40,11 +40,10 @@ package avrora.core;
  * <code>accept()</code> method that allows it to be visited with double dispatch
  * by a <code>InstrVisitor</code>. Each instruction in the AVR instruction set
  * is represented by an inner class whose source has been generated from a simple
- * specification in the <code>Generator</code> class.
+ * specification.
  *
  * @author Ben L. Titzer
  * @see InstrVisitor
- * @see Generator
  */
 public abstract class Instr implements InstrPrototype {
 
@@ -638,7 +637,6 @@ public abstract class Instr implements InstrPrototype {
      * <p/>
      * These are the actual instruction descriptions that contain the
      * constraints on operands and sizes, etc.
-     * This code is GENERATED from Generator.java.
      * <p/>
      * DO NOT MODIFY THIS CODE!!!!
      */

@@ -169,6 +169,10 @@ public class Options {
         }
     }
 
+    public int size() {
+        return knownValues.size();
+    }
+
     public void dump(String title, Printer p) {
         List opts = Collections.list(Collections.enumeration(knownValues.keySet()));
         Collections.sort(opts, String.CASE_INSENSITIVE_ORDER);

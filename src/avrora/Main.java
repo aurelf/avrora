@@ -326,8 +326,10 @@ public class Main {
         String actname = StringUtil.quote(action.getShortName());
         printSection("HELP FOR THE "+actname+" ACTION", action.getHelp());
 
-        printSection("OPTIONS", "Below is a listing of the options available to the "+actname+" action.");
-        printOptions(action.options);
+        if ( action.options.size() > 0 ) {
+            printSection("OPTIONS", "Below is a listing of the options available to the "+actname+" action.");
+            printOptions(action.options);
+        }
     }
 
     private static void printMainHelp() {
