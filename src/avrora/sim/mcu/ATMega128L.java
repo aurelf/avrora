@@ -26,6 +26,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
     public static final int NUM_PINS = 65;
 
+    static Verbose.Printer pinPrinter = Verbose.getVerbosePrinter("sim.pin");
+
     protected static final HashMap pinNumbers;
 
     static {
@@ -126,15 +128,19 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         protected boolean read() {
+            pinPrinter.println("Pin.read()");
             if ( !outputDir ) {
+                pinPrinter.println("  -> 1");
                 if ( input != null ) return input.read();
                 else return pullup;
             } else {
+                pinPrinter.println("  -> 2 ("+level+")");
                 return level;
             }
         }
 
         protected void write(boolean value) {
+            pinPrinter.println("Pin.write("+value+")");
             level = value;
             if ( outputDir && output != null ) output.write(value);
         }

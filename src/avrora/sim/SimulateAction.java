@@ -3,6 +3,7 @@ package avrora.sim;
 import avrora.Main;
 import avrora.core.Program;
 import avrora.sim.util.ProgramProfiler;
+import avrora.sim.platform.PlatformFactory;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
@@ -78,7 +79,11 @@ public class SimulateAction extends Main.Action {
     public void run(String[] args) throws Exception {
         Main.ProgramReader r = Main.getProgramReader();
         program = r.read(args);
-        simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
+        PlatformFactory pf = Main.getPlatform();
+        if ( pf != null )
+            simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();
+        else
+            simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
         counters = new LinkedList();
         branchcounters = new LinkedList();
 

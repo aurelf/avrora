@@ -3,6 +3,8 @@ package avrora;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.SimulateAction;
+import avrora.sim.platform.PlatformFactory;
+import avrora.sim.platform.Platforms;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.stack.AnalyzeStackAction;
@@ -164,7 +166,9 @@ public class Main {
             "microcontroller models.");
     public static final Option.Str  PLATFORM     = options.newOption("platform", "",
             "This option selects the platform on which the microcontroller is built, "+
-            "including the external devices such as LEDs and radio.");
+            "including the external devices such as LEDs and radio. If the platform " +
+            "option is not set, the default platform is the microcontroller specified " +
+            "in the \"chip\" option, with no external devices.");
     public static final Option.Bool HELP         = options.newOption("help", false,
             "Displays this help message.");
     public static final Option.Str  CLASS         = options.newOption("class", "",
@@ -461,6 +465,15 @@ public class Main {
         if ( mcu == null )
             Avrora.userError("unknown microcontroller", CHIP.get());
         return mcu;
+    }
+
+    public static PlatformFactory getPlatform() {
+        String pf = PLATFORM.get();
+        if ( pf.equals("") ) return null;
+        PlatformFactory pff = Platforms.getPlatform(pf);
+        if ( pff == null )
+            Avrora.userError("Unknown platform", StringUtil.quote(pf));
+        return pff;
     }
 
     public static void parseOptions(String args[]) {
