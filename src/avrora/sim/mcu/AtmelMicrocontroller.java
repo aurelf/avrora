@@ -36,8 +36,10 @@ import avrora.sim.Clock;
 import avrora.sim.Simulator;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.State;
+import avrora.util.StringUtil;
 
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 /**
  * @author Ben L. Titzer
@@ -206,7 +208,7 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     }
 
     protected State.IOReg getIOReg(String name) {
-        return (State.IOReg)ioregs.get(name);
+        return interpreter.getIOReg(properties.getIOReg(name));
     }
 
     protected void addDevice(AtmelInternalDevice d) {
@@ -214,7 +216,10 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     }
 
     public AtmelInternalDevice getDevice(String name) {
-        return (AtmelInternalDevice)devices.get(name);
+        AtmelInternalDevice device = (AtmelInternalDevice)devices.get(name);
+        if ( device == null )
+            throw new NoSuchElementException(StringUtil.quote(name)+" device not found");
+        return device;
     }
 
     protected void addClock(String name, Clock c) {
@@ -222,7 +227,10 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     }
 
     public Clock getClock(String name) {
-        return (Clock)clocks.get(name);
+        Clock clock = (Clock)clocks.get(name);
+        if ( clock == null )
+            throw new NoSuchElementException(StringUtil.quote(name)+" clock not found");
+        return clock;
     }
 
     public Simulator getSimulator() {

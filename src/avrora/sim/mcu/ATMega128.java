@@ -33,9 +33,12 @@
 package avrora.sim.mcu;
 
 import avrora.Avrora;
+import avrora.util.Arithmetic;
 import avrora.sim.radio.Radio;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
+import avrora.sim.FiniteStateMachine;
+import avrora.sim.State;
 import avrora.sim.platform.Platform;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
@@ -54,6 +57,38 @@ public class ATMega128 extends ATMegaFamily {
     public static final int ATMEGA128_FLASH_SIZE = 128 * _1kb;
     public static final int ATMEGA128_EEPROM_SIZE = 4 * _1kb;
     public static final int ATMEGA128_NUM_PINS = 65;
+
+    public static final int MODE_ACTIVE     = 0;
+    public static final int MODE_IDLE       = 1;
+    public static final int MODE_RESERVED1  = 2;
+    public static final int MODE_ADCNRED    = 3;
+    public static final int MODE_RESERVED2  = 4;
+    public static final int MODE_POWERDOWN  = 5;
+    public static final int MODE_STANDBY    = 6;
+    public static final int MODE_POWERSAVE  = 7;
+    public static final int MODE_EXTSTANDBY = 8;
+
+    protected static final String[] idleModeName = {
+        "Active",
+        "Idle",
+        "RESERVED 1",
+        "ADC Noise Reduction",
+        "RESERVED 2",
+        "Power Down",
+        "Standby",
+        "Power Save",
+        "Extended Standby"
+    };
+
+    protected static final int[] wakeupTimes = {
+        0, 0, 0, 0, 0, 1000, 6, 1000, 6
+    };
+
+    protected final FiniteStateMachine sleepState;
+    protected final State.IOReg MCUCR_reg;
+
+    private static final int[][] transitionTimeMatrix  = FiniteStateMachine.buildBimodalTTM(idleModeName.length, 0, wakeupTimes, new int[wakeupTimes.length]);
+
 
     /**
      * The <code>props</code> field stores a static reference to a properties
@@ -133,58 +168,58 @@ public class ATMega128 extends ATMegaFamily {
         addPin(pinAssignments, 64, "AVCC");
 
         // extended IO registers
-        // TODO: should these be be 0x20 less?
-        addIOReg(ioregAssignments, "UCSR1C", 0x9D);
-        addIOReg(ioregAssignments, "UDR1", 0x9C);
-        addIOReg(ioregAssignments, "UCSR1A", 0x9B);
-        addIOReg(ioregAssignments, "UCSR1B", 0x9A);
-        addIOReg(ioregAssignments, "UBRR1L", 0x99);
-        addIOReg(ioregAssignments, "UBRR1H", 0x98);
+        // TODO: verify addresses of extended IO registers
+        addIOReg(ioregAssignments, "UCSR1C", 0x7D);
+        addIOReg(ioregAssignments, "UDR1", 0x7C);
+        addIOReg(ioregAssignments, "UCSR1A", 0x7B);
+        addIOReg(ioregAssignments, "UCSR1B", 0x7A);
+        addIOReg(ioregAssignments, "UBRR1L", 0x79);
+        addIOReg(ioregAssignments, "UBRR1H", 0x78);
 
-        addIOReg(ioregAssignments, "UCSR0C", 0x95);
+        addIOReg(ioregAssignments, "UCSR0C", 0x75);
 
-        addIOReg(ioregAssignments, "UBRR0H", 0x90);
+        addIOReg(ioregAssignments, "UBRR0H", 0x70);
 
-        addIOReg(ioregAssignments, "TCCR3C", 0x8C);
-        addIOReg(ioregAssignments, "TCCR3A", 0x8B);
-        addIOReg(ioregAssignments, "TCCR3B", 0x8A);
-        addIOReg(ioregAssignments, "TCNT3H", 0x89);
-        addIOReg(ioregAssignments, "TCNT3L", 0x88);
-        addIOReg(ioregAssignments, "OCR3AH", 0x87);
-        addIOReg(ioregAssignments, "OCR3AL", 0x86);
-        addIOReg(ioregAssignments, "OCR3BH", 0x85);
-        addIOReg(ioregAssignments, "OCR3BL", 0x84);
-        addIOReg(ioregAssignments, "OCR3CH", 0x83);
-        addIOReg(ioregAssignments, "OCR3CL", 0x82);
-        addIOReg(ioregAssignments, "ICR3H", 0x81);
-        addIOReg(ioregAssignments, "ICR3L", 0x80);
+        addIOReg(ioregAssignments, "TCCR3C", 0x6C);
+        addIOReg(ioregAssignments, "TCCR3A", 0x6B);
+        addIOReg(ioregAssignments, "TCCR3B", 0x6A);
+        addIOReg(ioregAssignments, "TCNT3H", 0x69);
+        addIOReg(ioregAssignments, "TCNT3L", 0x68);
+        addIOReg(ioregAssignments, "OCR3AH", 0x67);
+        addIOReg(ioregAssignments, "OCR3AL", 0x66);
+        addIOReg(ioregAssignments, "OCR3BH", 0x65);
+        addIOReg(ioregAssignments, "OCR3BL", 0x64);
+        addIOReg(ioregAssignments, "OCR3CH", 0x63);
+        addIOReg(ioregAssignments, "OCR3CL", 0x62);
+        addIOReg(ioregAssignments, "ICR3H", 0x61);
+        addIOReg(ioregAssignments, "ICR3L", 0x60);
 
-        addIOReg(ioregAssignments, "ETIMSK", 0x7D);
-        addIOReg(ioregAssignments, "ETIFR", 0x7C);
+        addIOReg(ioregAssignments, "ETIMSK", 0x5D);
+        addIOReg(ioregAssignments, "ETIFR", 0x5C);
 
-        addIOReg(ioregAssignments, "TCCR1C", 0x7A);
-        addIOReg(ioregAssignments, "OCR1CH", 0x79);
-        addIOReg(ioregAssignments, "OCR1CL", 0x78);
+        addIOReg(ioregAssignments, "TCCR1C", 0x5A);
+        addIOReg(ioregAssignments, "OCR1CH", 0x59);
+        addIOReg(ioregAssignments, "OCR1CL", 0x58);
 
-        addIOReg(ioregAssignments, "TWCR", 0x74);
-        addIOReg(ioregAssignments, "TWDR", 0x73);
-        addIOReg(ioregAssignments, "TWAR", 0x72);
-        addIOReg(ioregAssignments, "TWSR", 0x71);
-        addIOReg(ioregAssignments, "TWBR", 0x70);
-        addIOReg(ioregAssignments, "OSCCAL", 0x6F);
+        addIOReg(ioregAssignments, "TWCR", 0x54);
+        addIOReg(ioregAssignments, "TWDR", 0x53);
+        addIOReg(ioregAssignments, "TWAR", 0x52);
+        addIOReg(ioregAssignments, "TWSR", 0x51);
+        addIOReg(ioregAssignments, "TWBR", 0x50);
+        addIOReg(ioregAssignments, "OSCCAL", 0x4F);
 
-        addIOReg(ioregAssignments, "XMCRA", 0x6D);
-        addIOReg(ioregAssignments, "XMCRB", 0x6C);
+        addIOReg(ioregAssignments, "XMCRA", 0x4D);
+        addIOReg(ioregAssignments, "XMCRB", 0x4C);
 
-        addIOReg(ioregAssignments, "EICRA", 0x6A);
+        addIOReg(ioregAssignments, "EICRA", 0x4A);
 
-        addIOReg(ioregAssignments, "SPMCSR", 0x68);
+        addIOReg(ioregAssignments, "SPMCSR", 0x48);
 
-        addIOReg(ioregAssignments, "PORTG", 0x65);
-        addIOReg(ioregAssignments, "DDRG", 0x64);
-        addIOReg(ioregAssignments, "PING", 0x63);
-        addIOReg(ioregAssignments, "PORTF", 0x62);
-        addIOReg(ioregAssignments, "DDRF", 0x61);
+        addIOReg(ioregAssignments, "PORTG", 0x45);
+        addIOReg(ioregAssignments, "DDRG", 0x44);
+        addIOReg(ioregAssignments, "PING", 0x43);
+        addIOReg(ioregAssignments, "PORTF", 0x42);
+        addIOReg(ioregAssignments, "DDRF", 0x41);
 
         // lower 64 IO registers
         addIOReg(ioregAssignments, "SREG", 0x3F);
@@ -284,8 +319,17 @@ public class ATMega128 extends ATMegaFamily {
         simulator = new Simulator(id, f, this, p);
         clock = simulator.getClock();
         interpreter = simulator.getInterpreter();
+        installClocks();
+        sleepState = new FiniteStateMachine(clock, 0, idleModeName, transitionTimeMatrix);
+        MCUCR_reg = getIOReg("MCUCR");
         installPins();
         installDevices();
+    }
+
+    private void installClocks() {
+        // by default, the external clock is the same speed as the main clock
+        addClock("main", clock);
+        addClock("external", clock);
     }
 
     public boolean isSupported(InstrPrototype i) {
@@ -363,7 +407,21 @@ public class ATMega128 extends ATMegaFamily {
      * @see avrora.sim.mcu.Microcontroller#sleep()
      */
     public void sleep() {
-        throw Avrora.unimplemented();
+        // transition to the sleep state in the MCUCR register
+        sleepState.transition(getSleepMode());
+    }
+
+    // permutation of sleep mode bits in the register (high order bits first)
+    private static final int[] MCUCR_sm_perm = { 2, 4, 3 };
+
+    private int getSleepMode() {
+        byte value = MCUCR_reg.read();
+        boolean sleepEnable = Arithmetic.getBit(value, 5);
+
+        if ( sleepEnable )
+            return Arithmetic.getBitField(value, MCUCR_sm_perm);
+        else
+            return MODE_IDLE;
     }
 
     /**
@@ -373,7 +431,10 @@ public class ATMega128 extends ATMegaFamily {
      * @see avrora.sim.mcu.Microcontroller#wakeup()
      */
     public int wakeup() {
-        throw Avrora.unimplemented();
+        // transition to the active state (may insert transition event into event queue)
+        sleepState.transition(MODE_ACTIVE);
+        // return the number of cycles consumed by waking up
+        return sleepState.getTransitionTime(sleepState.getCurrentState(), MODE_ACTIVE);
     }
 
     /**
@@ -383,7 +444,7 @@ public class ATMega128 extends ATMegaFamily {
      * @see avrora.sim.mcu.Microcontroller#getMode()
      */
     public byte getMode() {
-        throw Avrora.unimplemented();
+        return (byte)sleepState.getCurrentState();
     }
 
     /**
@@ -392,7 +453,7 @@ public class ATMega128 extends ATMegaFamily {
      * @return name of the current mode
      */
     public String getModeName() {
-        throw Avrora.unimplemented();
+        return sleepState.getCurrentStateName();
     }
 
     /**

@@ -211,6 +211,10 @@ public class FiniteStateMachine {
         return states[state].name;
     }
 
+    public String getCurrentStateName() {
+        return states[curState].name;
+    }
+
     public Clock getClock() {
         return clock;
     }

@@ -269,18 +269,15 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         return HZ;
     }
 
-    final int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
+    protected static final int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
 
     /**
      * <code>Timer0</code> is the default 8-bit timer on the ATMega128L.
      */
     protected class Timer0 extends Timer8Bit {
 
-        final Clock externalClock;
-
         protected Timer0() {
             super(ATMegaFamily.this, 0, 1, 0, 1, 0, periods0);
-            externalClock = microcontroller.getClock("external");
             installIOReg("ASSR", new ASSRRegister());
         }
 
@@ -312,7 +309,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     }
 
-    final int[] periods2 = {0, 1, 8, 64, 256, 1024};
+    protected static final int[] periods2 = {0, 1, 8, 64, 256, 1024};
 
     /**
      * <code>Timer2</code> is an additional 8-bit timer on the ATMega128L. It is not available in
@@ -323,6 +320,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             super(ATMegaFamily.this, 2, 7, 6, 7, 6, periods2);
         }
     }
+
+    protected static final int[] periods1 = new int[]{0, 1, 8, 64, 256, 1024};
 
     /**
      * <code>Timer1</code> is a 16-bit timer available on the ATMega128L.
@@ -341,7 +340,6 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             OCFnB = 3;
             OCFnC = 0; // on ETIFR
             ICFn = 5;
-            int[] periods1 = {0, 1, 8, 64, 256, 1024};
             periods = periods1;
         }
 
@@ -352,6 +350,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
 
     }
+
+    protected static final int[] periods3 = {0, 1, 8, 64, 256, 1024};
 
     /**
      * <code>Timer3</code> is an additional 16-bit timer available on the ATMega128L, but not in ATMega103
@@ -370,7 +370,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             OCFnB = 3;
             OCFnC = 1; // on ETIFR
             ICFn = 5;
-            int[] periods3 = {0, 1, 8, 64, 256, 1024};
+
             periods = periods3;
         }
 

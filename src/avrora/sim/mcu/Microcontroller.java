@@ -155,8 +155,10 @@ public interface Microcontroller {
      */
     public Pin getPin(int num);
 
+    // TODO: this method should be deprecated!
     public void setRadio(Radio r);
 
+    // TODO: this method should be deprecated!
     public Radio getRadio();
 
     /**

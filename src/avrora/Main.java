@@ -86,7 +86,7 @@ public class Main {
             "jumps within a program, which may be needed in performing stack analysis or " +
             "building a control flow graph. Each element of the list is a pair of " +
             "program addresses separated by a colon, where a program address can be a " +
-            "label or a hexadecimal number preceded by a \"$\". The first program address " +
+            "label or a hexadecimal number preceded by \"0x\". The first program address " +
             "is the address of the indirect call or jump instruction and the second program " +
             "address is a possible target.");
     public static final Option.Str FOREGROUND = mainOptions.newOption("foreground-color", "lightgray",

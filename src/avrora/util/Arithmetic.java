@@ -141,6 +141,25 @@ public class Arithmetic {
         return (value == 0) ? -1 : low;
     }
 
+    /**
+     * The <code>getBitField()</code> method reads a bit field from a value where the bits of the field
+     * are not consecutive or in order. This method accepts an array of integers that denotes the permutation
+     * of the bit field within the given value from highest order bits to lowest order bits
+     * @param value the integer value to extract the bit field from
+     * @param permutation the permutation of the bits for which to extract the bit field from highest order bit to
+     * lowest order bit
+     * @return the integer value resulting from concatentating the bits: <code>value[permutation[0]]</code>,
+     * <code>value[permutation[1]]</code>, etc into a single integer value
+     */
+    public static int getBitField(int value, int[] permutation) {
+        int result = 0;
+        for ( int cntr = 0; cntr < permutation.length; cntr++ ) {
+            result = result << 1;
+            if ( getBit(value, permutation[cntr]) ) result |= 1;
+        }
+        return result;
+    }
+
     // bit patterns for reversing the order of bits of a 4 bit quantity.
     private static final int reverseKey[] = {
         0, 4, 8, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15

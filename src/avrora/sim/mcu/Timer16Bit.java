@@ -481,15 +481,15 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         }
 
         public void write(byte val) {
-            if ((val & 0x20) != 0) {
+            if (Arithmetic.getBit(val,FOCnC)) {
                 // force output compareC
                 forcedOutputCompareC();
             }
-            if ((val & 0x40) != 0) {
+            if (Arithmetic.getBit(val,FOCnB)) {
                 // force output compareB
                 forcedOutputCompareB();
             }
-            if ((val & 0x80) != 0) {
+            if (Arithmetic.getBit(val,FOCnA)) {
                 // force output compareA
                 forcedOutputCompareA();
             }
@@ -497,13 +497,13 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         public void writeBit(int bit, boolean val) {
             switch (bit) {
-                case 5:
+                case FOCnC:
                     forcedOutputCompareC();
                     break;
-                case 6:
+                case FOCnB:
                     forcedOutputCompareB();
                     break;
-                case 7:
+                case FOCnA:
                     forcedOutputCompareA();
                     break;
             }
