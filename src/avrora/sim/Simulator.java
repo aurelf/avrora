@@ -12,6 +12,7 @@ import avrora.sim.util.PeriodicTrigger;
 import avrora.sim.mcu.ATMega128L;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Verbose;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator
@@ -21,6 +22,9 @@ import avrora.util.Terminal;
  * @author Ben L. Titzer
  */
 public abstract class Simulator implements InstrVisitor, IORegisterConstants {
+
+    Verbose.VerbosePrinter eventPrinter = Verbose.getVerbosePrinter("sim.event");
+    Verbose.VerbosePrinter interruptPrinter = Verbose.getVerbosePrinter("sim.interrupt");
 
     /**
      * The <code>TRACEPROBE</code> field represents a simple probe
@@ -245,8 +249,9 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
             }
 
             void fire() {
-                for ( TriggerLink pos = head; pos != null; pos = pos.next )
+                for ( TriggerLink pos = head; pos != null; pos = pos.next ) {
                     pos.trigger.fire();
+                }
             }
         }
 
@@ -352,6 +357,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
             l.tail.next = freeTriggerLinks;
             freeTriggerLinks = l.head;
+            l.head = null;
         }
 
         private void free(TriggerLink l) {
@@ -368,6 +374,8 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
                 // grab one from the free list
                 l = freeLinks;
                 freeLinks = freeLinks.next;
+                l.delta = cycles;
+                l.add(t);
             }
 
             // adjust delta in the next link in the chain
@@ -874,10 +882,12 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * @param num the interrupt number to force
      */
     public void forceInterrupt(int num) {
+        interruptPrinter.println("Simulator.forceInterrupt("+num+")");
         interrupts[num].force();
     }
 
     protected void triggerInterrupt(int num) {
+        interruptPrinter.println("Simulator.triggerInterrupt("+num+")");
         interrupts[num].fire();
     }
 
@@ -889,6 +899,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * @param cycles the number of cycles in the future at which to trigger
      */
     public void addTimerEvent(Trigger e, long cycles) {
+        eventPrinter.println("Simulator.addTimerEvent("+cycles+")");
         eventQueue.add(e, cycles);
     }
 
@@ -902,6 +913,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * @return the <code>PeriodicTrigger</code> instance inserted
      */
     public PeriodicTrigger addPeriodicTimerEvent(Trigger e, long period) {
+        eventPrinter.println("Simulator.addPeriodicTimerEvent("+period+")");
         PeriodicTrigger pt = new PeriodicTrigger(this, e, period);
         eventQueue.add(pt, period);
         return pt;
@@ -914,6 +926,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * @param e the trigger to remove
      */
     public void removeTimerEvent(Trigger e) {
+        eventPrinter.println("Simulator.removeTimerEvent()");
         eventQueue.remove(e);
     }
 

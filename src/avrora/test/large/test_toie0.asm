@@ -1,26 +1,55 @@
 ;
-; $Id: test_toie0.asm,v 1.1 2004/03/20 23:05:27 titzer Exp $
+; $Id: test_toie0.asm,v 1.2 2004/04/02 23:06:06 titzer Exp $
 ;
 ;;; Test the Timer/Counter 0 overflow interrupt functionality.
 ;;; This test will stop the counter by setting the clock select
 ;;; value in TCCR0 to 0 (stop).
 
-.include        "8515def.inc"
+;.include        "8515def.inc"
 
-.equ	zero,	17				; r17 preset with 0x00
-.equ	ones,	18				; r18 preset with 0xff
-.equ	disp,	19				; r19 is output display
+.def	zero =	r17				; r17 preset with 0x00
+.def	ones =	r18				; r18 preset with 0xff
+.def	disp =	r19				; r19 is output display
 
 ;;; Interrupt Jump Table
-	    rjmp    MAIN            ; reset
-        nop                     ; int0
-        nop                     ; int1
-        nop                     ; timer1 capt
-        nop                     ; timer1 compa
-        nop                     ; timer1 compb
-        nop                     ; timer1 ovf
-        rjmp	TIMER_OVF       ; timer0 ovf
+	    jmp    MAIN             ; reset
+
+        nop                     ; int 1
+        reti
+        nop                     ; int 2
+        reti
+        nop                     ; int 3
+        reti
+        nop                     ; int 4
+        reti
+        nop                     ; int 5
+        reti
+        nop                     ; int 6
+        reti
+        nop                     ; int 7
+        reti
+        nop                     ; int 8
+        reti
+        nop                     ; int 9
+        reti
+        nop                     ; int 10
+        reti
+        nop                     ; int 11
+        reti
+        nop                     ; int 12
+        reti
+        nop                     ; int 13
+        reti
+        nop                     ; int 14
+        reti
+        nop                     ; int 15
+        reti
+        nop                     ; int 16
+        reti
+
         nop                     ; spi, stc
+        rjmp	TIMER_OVF       ; timer0 ovf
+
         nop                     ; uart, rx
         nop                     ; uart, udre
         nop                     ; uart, tx
@@ -43,9 +72,9 @@ OVF_RETURN:
 	
 MAIN:
 	;; init stack pointer to 0x025f (the last byte of int sram)
-		ldi		r16, lo8(RAMEND); low byte of end of int sram
+		ldi		r16, low(RAMEND); low byte of end of int sram
 		out		SPL, r16
-		ldi		r16, hi8(RAMEND); high byte of end of int sram
+		ldi		r16, high(RAMEND); high byte of end of int sram
 		out		SPH, r16
 
 	;; preload zero and ones
@@ -62,7 +91,7 @@ MAIN:
 		out		TCCR0, r20		; write to Timer/Counter Control Register 0
 
 	;; Enable the Timer0 Overflow interrupt
-		ldi		r20, 1<<TOIE0
+		ldi		r20, 1
 		out		TIMSK, r20		; set toie0 bit of timsk I/O register
 		sei						; set global interrupt enable (in sreg)
 

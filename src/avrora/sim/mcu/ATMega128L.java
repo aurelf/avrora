@@ -1,6 +1,7 @@
 package avrora.sim.mcu;
 
 import avrora.util.Arithmetic;
+import avrora.util.Verbose;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.sim.Microcontroller;
@@ -143,7 +144,13 @@ public class ATMega128L implements Microcontroller {
         protected FlagRegister TIFR_reg;
         protected MaskRegister TIMSK_reg;
 
-        class Timer0 {
+        /**
+         * The <code>Timer0</code> class emulates the functionality and behavior of the
+         * 8-bit timer on the Atmega128L. It has several control and data registers and
+         * can fire two different interrupts depending on the mode that it has been
+         * put into.
+         */
+        protected class Timer0 {
             public static final int MODE_NORMAL = 0;
             public static final int MODE_PWM = 1;
             public static final int MODE_CTC = 2;
@@ -151,7 +158,7 @@ public class ATMega128L implements Microcontroller {
             public static final int MAX = 0xff;
             public static final int BOTTOM = 0x00;
 
-            final State.RWIOReg TCCR0_reg;
+            final ControlRegister TCCR0_reg;
             final State.RWIOReg TCNT0_reg;
             final State.RWIOReg OCR0_reg;
 
@@ -159,12 +166,14 @@ public class ATMega128L implements Microcontroller {
 
             boolean timerEnabled;
             boolean countUp;
-            int mode;
+            int timerMode;
             long period;
 
-            Timer0(State ns) {
+            Verbose.VerbosePrinter timerPrinter = Verbose.getVerbosePrinter("sim.timer0");
+
+            protected Timer0(State ns) {
                 ticker = new Ticker();
-                TCCR0_reg = new State.RWIOReg();
+                TCCR0_reg = new ControlRegister();
                 TCNT0_reg = new State.RWIOReg();
                 OCR0_reg = new State.RWIOReg();
 
@@ -173,22 +182,109 @@ public class ATMega128L implements Microcontroller {
                 ns.setIOReg(OCR0, OCR0_reg);
             }
 
-            void compareMatch() {
+            protected void compareMatch() {
+                timerPrinter.println("Timer0.compareMatch");
                 // set the compare flag for this timer
                 TIFR_reg.flagBit(1);
             }
 
-            void overflow() {
+            protected void overflow() {
+                timerPrinter.println("Timer0.overflow");
                 // set the overflow flag for this timer
                 TIFR_reg.flagBit(0);
             }
 
-            class Ticker implements Simulator.Trigger {
+            protected class ControlRegister extends State.RWIOReg {
+                public static final int FOC0 = 7;
+                public static final int WGM00 = 6;
+                public static final int COM01 = 5;
+                public static final int COM00 = 4;
+                public static final int WGM01 = 3;
+                public static final int CS02 = 2;
+                public static final int CS01 = 1;
+                public static final int CS00 = 0;
+
+                public void write(byte val) {
+                    // hardware manual states that high order bit is always read as zero
+                    value = (byte)(val & 0x7f);
+
+                    // decode modes and update internal state
+                    decode(val);
+                }
+
+                public void setBit(int bit) {
+                    if ( bit == 7 ) {
+                        // TODO: force output compare
+                    } else {
+                        value = Arithmetic.setBit(value, bit);
+                        decode(value);
+                    }
+                }
+
+                public void clearBit(int bit) {
+                    if ( bit == 7 ) {
+                        // do nothing
+                    } else {
+                        value = Arithmetic.clearBit(value, bit);
+                        decode(value);
+                    }
+                }
+
+                private void decode(byte val) {
+                    // get the mode of operation
+                    timerMode = Arithmetic.getBit(val, WGM01) ? 2 : 0;
+                    timerMode |= Arithmetic.getBit(val, WGM00) ? 1 : 0;
+
+                    int prescaler  = val & 0x7;
+                    switch ( prescaler ) {
+                        case 0:
+                            timerEnabled = false;
+                            removeTimerEvent(ticker);
+                            break;
+                        case 1:
+                            resetPeriod(1);
+                            break;
+                        case 2:
+                            resetPeriod(8);
+                            break;
+                        case 3:
+                            resetPeriod(32);
+                            break;
+                        case 4:
+                            resetPeriod(64);
+                            break;
+                        case 5:
+                            resetPeriod(128);
+                            break;
+                        case 6:
+                            resetPeriod(256);
+                            break;
+                        case 7:
+                            resetPeriod(1024);
+                            break;
+                    }
+                }
+
+                private void resetPeriod(int n) {
+                    if ( timerEnabled ) removeTimerEvent(ticker);
+                    period = n;
+                    timerEnabled = true;
+                    addTimerEvent(ticker, period);
+                }
+            }
+
+            /**
+             * The <code>Ticker</class> implements the periodic behavior of the timer.
+             * It emulates the operation of the timer at each clock cycle and uses the
+             * global timed event queue to achieve the correct periodic behavior.
+             */
+            protected class Ticker implements Simulator.Trigger {
 
                 public void fire() {
+                    timerPrinter.println("Timer0.tick");
                     // perform one clock tick worth of work on the timer
                     int count = TCNT0_reg.read() & 0xff;
-                    switch ( mode ) {
+                    switch ( timerMode ) {
                         case MODE_NORMAL:
                             count++;
                             if ( count == MAX ) {

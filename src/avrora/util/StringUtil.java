@@ -36,6 +36,21 @@ public class StringUtil {
         return buf.toString();
     }
 
+    public static String readDotIdentifier(CharacterIterator i) {
+        StringBuffer buf = new StringBuffer();
+
+        while (true) {
+            char c = i.current();
+
+            if ( !Character.isLetterOrDigit(c) && (c != '_')  && (c != '.')) break;
+
+            buf.append(c);
+            i.next();
+        }
+
+        return buf.toString();
+    }
+
     public static int readHexValue(CharacterIterator i, int max_chars) {
         int accumul = 0;
 

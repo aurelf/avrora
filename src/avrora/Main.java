@@ -7,10 +7,7 @@ import avrora.sim.mcu.Microcontrollers;
 import avrora.stack.AnalyzeStackAction;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.gas.GASProgramReader;
-import avrora.util.Options;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Option;
+import avrora.util.*;
 import avrora.test.AutomatedTester;
 
 import java.text.CharacterIterator;
@@ -117,7 +114,7 @@ public class Main {
     public static final Option.Bool TRACE    = options.newOption("trace", false);
     public static final Option.Bool COLORS   = options.newOption("colors", true);
     public static final Option.Bool BANNER   = options.newOption("banner", true);
-    public static final Option.Bool VERBOSE  = options.newOption("verbose", false);
+    public static final Option.Str  VERBOSE  = options.newOption("verbose", "");
     public static final Option.Int  REPEAT   = options.newOption("repeat", 1);
     public static final Option.Str  CHIP     = options.newOption("chip", "atmega128l");
     public static final Option.Str  PLATFORM = options.newOption("platform", "");
@@ -169,11 +166,9 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            options.parseCommandLine(args);
+            parseOptions(args);
 
-            Terminal.useColors = COLORS.get();
             if ( BANNER.get() ) banner();
-            // TODO: VPCBase.VERBOSE = VERBOSE.get();
 
             Action a = (Action)actions.get(ACTION.get());
             if ( a == null )
@@ -255,6 +250,18 @@ public class Main {
 
     public static void parseOptions(String args[]) {
         options.parseCommandLine(args);
+        Terminal.useColors = COLORS.get();
+
+        String verbose = VERBOSE.get();
+        CharacterIterator i = new StringCharacterIterator(verbose);
+        while ( i.current() != CharacterIterator.DONE ) {
+            String ident = StringUtil.readDotIdentifier(i);
+            Verbose.setVerbose(ident, true);
+            if ( StringUtil.peekAndEat(i, ',') ) continue;
+            if ( i.current() == CharacterIterator.DONE ) break;
+            if ( !Character.isLetter(i.current()) )
+                Avrora.userError("syntax error in -verbose option");
+        }
     }
 
 }
