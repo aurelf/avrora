@@ -1,5 +1,5 @@
 ;
-; $Id: test_toie0.asm,v 1.3 2004/04/02 23:50:38 titzer Exp $
+; $Id: test_toie0.asm,v 1.1 2004/04/02 23:50:38 titzer Exp $
 ;
 ;;; Test the Timer/Counter 0 overflow interrupt functionality.
 ;;; This test will stop the counter by setting the clock select
