@@ -1,6 +1,6 @@
 ; @Target: avr-sim
 ; @Purpose: "Test the branch instructions for correct conditions and target"
-; @Result: "target = 12, r17 = 0, r18 = 3, sp = 253, $(sp+1) = 10, $(sp+2) = 0"
+; @Result: "target = 12, r17 = 0, r18 = 3, sp = 253, $(sp+2) = 10, $(sp+1) = 0"
 
 setstack:
     ldi r21, 255

@@ -4,7 +4,7 @@
 
 start:
     cln
-    sev
+    ses
     brlt target     ; should be taken
 
 fall:

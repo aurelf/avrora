@@ -4,7 +4,7 @@
 
 start:
     cln
-    sev
+    ses
     brge target     ; should not be taken
 
 fall:

@@ -896,7 +896,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         state.setFlag_N(R15);
         state.setFlag_V(!Rdh7 && R15);
         state.setFlag_Z((result & 0xffff) == 0);
-        state.setFlag_S(xor(state.getFlag_N(), state.getFlag_Z()));
+        state.setFlag_S(xor(state.getFlag_N(), state.getFlag_V()));
 
         writeRegisterWord(i.r1, result);
     }
@@ -969,7 +969,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.BRGE i) { // branch if greater or equal (signed)
-        if (!xor(state.getFlag_N(), state.getFlag_V()))
+        if (!state.getFlag_S())
             relativeBranch(i.imm1);
     }
 
@@ -999,7 +999,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.BRLT i) { // branch if less than zero, signed
-        if (xor(state.getFlag_N(), state.getFlag_V()))
+        if (state.getFlag_S())
             relativeBranch(i.imm1);
     }
 
@@ -1134,7 +1134,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         int r1 = state.getRegisterByte(i.r1);
         int r2 = state.getRegisterByte(i.r2);
         // perform subtraction for flag side effects.
-        performSubtraction(r1, r2, (state.getFlag_C() ? 1 : 0));
+        performSubtractionPZ(r1, r2, (state.getFlag_C() ? 1 : 0));
     }
 
     public void visit(Instr.CPI i) { // compare register with immediate
@@ -1450,14 +1450,14 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     public void visit(Instr.SBC i) { // subtract second register from first with carry
         int r1 = state.getRegisterByte(i.r1);
         int r2 = state.getRegisterByte(i.r2);
-        int result = performSubtraction(r1, r2, (state.getFlag_C() ? 1 : 0));
+        int result = performSubtractionPZ(r1, r2, (state.getFlag_C() ? 1 : 0));
         state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.SBCI i) { // subtract immediate from register with carry
         int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
-        int result = performSubtraction(r1, r2, (state.getFlag_C() ? 1 : 0));
+        int result = performSubtractionPZ(r1, r2, (state.getFlag_C() ? 1 : 0));
         state.setRegisterByte(i.r1, (byte) result);
     }
 
@@ -1657,13 +1657,13 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     private void pushPC(int pc) {
         pc = pc / 2;
-        state.pushByte(Arithmetic.high(pc));
         state.pushByte(Arithmetic.low(pc));
+        state.pushByte(Arithmetic.high(pc));
     }
 
     private int popPC() {
-        byte low = state.popByte();
         byte high = state.popByte();
+        byte low = state.popByte();
         return Arithmetic.uword(low, high) * 2;
     }
 
@@ -1743,6 +1743,29 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         boolean C = (!Rd7 && Rr7) || (Rr7 && R7) || (R7 && !Rd7);
         boolean N = (result & 0x080) != 0;
         boolean Z = (result & 0xff) == 0;
+        boolean V = (Rd7 && !Rr7 && !R7) || (!Rd7 && Rr7 && R7);
+        boolean S = xor(N, V);
+
+        setFlag_HCNZVS(H, C, N, Z, V, S);
+        return result;
+    }
+
+    // perform subtraction, but preserve zero flag if result is zero
+    private int performSubtractionPZ(int r1, int r2, int carry) {
+        int result = r1 - r2 - carry;
+
+        boolean Rd7 = Arithmetic.getBit(r1, 7);
+        boolean Rr7 = Arithmetic.getBit(r2, 7);
+        boolean R7 = Arithmetic.getBit(result, 7);
+        boolean Rd3 = Arithmetic.getBit(r1, 3);
+        boolean Rr3 = Arithmetic.getBit(r2, 3);
+        boolean R3 = Arithmetic.getBit(result, 3);
+
+        // set the flags as per instruction set documentation.
+        boolean H = (!Rd3 && Rr3) || (Rr3 && R3) || (R3 && !Rd3);
+        boolean C = (!Rd7 && Rr7) || (Rr7 && R7) || (R7 && !Rd7);
+        boolean N = (result & 0x080) != 0;
+        boolean Z = (result & 0xff) == 0 ? state.getFlag_Z() : false;
         boolean V = (Rd7 && !Rr7 && !R7) || (!Rd7 && Rr7 && R7);
         boolean S = xor(N, V);
 

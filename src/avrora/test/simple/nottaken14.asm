@@ -3,7 +3,7 @@
 ; @Result: "target = 10, r16 = 1, r17 = 2, r18 = 3, r19 = 4"
 
 start:
-    sev
+    ses
     cln
     brge target     ; should not be taken
 

@@ -3,7 +3,7 @@
 ; @Result: "target = 10, r16 = 0, r17 = 0, r18 = 3, r19 = 4"
 
 start:
-    sen
+    ses
     clv
     brlt target     ; should be taken
 
