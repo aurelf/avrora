@@ -79,6 +79,7 @@ public class StateSpace {
     public class State extends AbstractState implements IORegisterConstants {
 
         private final int hashCode;
+        private int type;
         public final long UID;
 
         boolean inSpace;
@@ -139,32 +140,14 @@ public class StateSpace {
             return StringUtil.toHex(UID, 10);
         }
 
-    }
-
-    /**
-     * The <code>SpecialState</code> class represents a special state within the
-     * state space such as a RETURN state or a IRETURN state that can be used as
-     * markers for smart traversal algorithms. These states are NOT stored in
-     * the internal state cache.
-     */
-    class SpecialState extends State {
-        /**
-         * The <code>stateName</code> field records the name of this special state.
-         */
-        public final String stateName;
-
-        SpecialState(String name) {
-            stateName = name;
+        public void setType(int t) {
+            type = t;
         }
 
-        /**
-         * The <code>getUniqueName()</code> gets a string that uniquely identifies this
-         * state. For special states, this is the name of the special state.
-         * @return a unique identifying string for this state
-         */
-        public String getUniqueName() {
-            return stateName;
+        public int getType() {
+            return type;
         }
+
     }
 
 
@@ -174,7 +157,6 @@ public class StateSpace {
     private final Program program;
     private long statesInSpace;
     private long totalStateCount;
-    private long specialStates;
     private long edgeCount;
     private long frontierCount;
 
@@ -246,7 +228,7 @@ public class StateSpace {
      */
     public boolean addState(State s) {
         if (s.inSpace )
-            throw Avrora.failure("state already in space: "+StringUtil.toHex(s.UID, 8));
+            throw Avrora.failure("state already in space: "+s.getUniqueName());
         boolean wasBefore = s.inSpace;
         if (!wasBefore) statesInSpace++;
         s.inSpace = true;
@@ -261,25 +243,12 @@ public class StateSpace {
      */
     public boolean addFrontier(State s) {
         if (s.inSpace )
-            throw Avrora.failure("state already in space: "+StringUtil.toHex(s.UID, 8));
+            throw Avrora.failure("state already in space: "+s.getUniqueName());
         if (s.onFrontier) return true;
         frontier = new Link(s, frontier, 0, 0);
         s.onFrontier = true;
         frontierCount++;
         return false;
-    }
-
-    /**
-     * The <code>makeSpecialState()</code> method creates a special state that
-     * represents something important to an analysis tool, such as a RETURN state.
-     * These special states are not stored in the state cache.
-     * @param name the name of the special state
-     * @return an instance of the <code>SpecialState</code> class that is the
-     * newly created special states.
-     */
-    public SpecialState makeSpecialState(String name) {
-        specialStates++;
-        return new SpecialState(name);
     }
 
     /**
@@ -366,12 +335,4 @@ public class StateSpace {
         return statesInSpace;
     }
 
-    /**
-     * The <code>getSpecialStateCount()</code> method returns the number of special states
-     * that were created. This is mainly used for reporting purposes.
-     * @return the number of special states created
-     */
-    public long getSpecialStateCount() {
-        return specialStates;
-    }
 }

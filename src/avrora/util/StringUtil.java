@@ -265,27 +265,42 @@ public class StringUtil {
     public static int SECS_PER_HOUR = 3600;
     public static int SECS_PER_MIN = 60;
 
+    public static int MILLISECS_PER_DAY = 3600 * 24 * 1000;
+    public static int MILLISECS_PER_HOUR = 3600 * 1000;
+    public static int MILLISECS_PER_MIN = 60 * 1000;
+    public static int MILLISECS_PER_SEC = 1000;
+
     public static String milliAsString(long millis) {
-        double seconds = ((double) millis) / 1000;
         StringBuffer buf = new StringBuffer();
 
-        if (seconds >= SECS_PER_DAY) {
-            int days = (int) (seconds / SECS_PER_DAY);
+        if (millis >= SECS_PER_DAY) {
+            int days = (int) (millis / MILLISECS_PER_DAY);
             buf.append(days + "d ");
-            seconds = seconds - days * SECS_PER_DAY;
+            millis = millis - days * MILLISECS_PER_DAY;
         }
 
-        if (seconds >= SECS_PER_HOUR) {
-            int hours = (int) (seconds / SECS_PER_HOUR);
+        if (millis >= MILLISECS_PER_HOUR) {
+            int hours = (int) (millis / MILLISECS_PER_HOUR);
             buf.append(hours + "h ");
-            seconds = seconds - hours * SECS_PER_HOUR;
+            millis = millis - hours * MILLISECS_PER_HOUR;
         }
-        if (seconds >= SECS_PER_MIN) {
-            int min = (int) (seconds / SECS_PER_MIN);
+        if (millis >= MILLISECS_PER_MIN) {
+            int min = (int) (millis / MILLISECS_PER_MIN);
             buf.append(min + "m ");
-            seconds = seconds - min * SECS_PER_MIN;
+            millis = millis - min * MILLISECS_PER_MIN;
         }
-        buf.append(seconds + "s");
+        if (millis >= MILLISECS_PER_SEC) {
+            int secs = (int) (millis / MILLISECS_PER_SEC);
+            buf.append(secs + ".");
+            millis = millis - secs * MILLISECS_PER_SEC;
+        } else {
+            buf.append("0.");
+        }
+        if ( millis < 100 )
+            buf.append('0');
+        if ( millis < 10 )
+            buf.append('0');
+        buf.append(millis + "s");
         return buf.toString();
     }
 

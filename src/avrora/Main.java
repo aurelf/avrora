@@ -251,6 +251,12 @@ public class Main {
             "utility will attempt to discover procedures within the control flow graph " +
             "and collapse whole procedures to a single node in the output.");
 
+    public static final Option.Bool TRACE_SUMMARY = options.newOption("trace-summary", true,
+            "This option is used in the \"analyze-stack\" action. When true, the analysis " +
+            "will summarize the error trace by not reporting edges between states of adjacent " +
+            "instructions that contribute nothing " +
+            "to the stack height.");
+
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 
     static {

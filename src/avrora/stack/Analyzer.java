@@ -56,50 +56,45 @@ public class Analyzer {
     protected final StateSpace space;
     ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
-    HashMap frontierInfoMap;
+    protected PropagationList proplist;
+    protected int proplength;
+    protected int propprogress;
+
+    protected HashMap aggregationPoints;
+
     long buildTime;
     long traverseTime;
     boolean unbounded;
     Path maximalPath;
-    int maxDepth;
 
-    public final int NORMAL_EDGE = 0;
-    public final int PUSH_EDGE = 1;
-    public final int POP_EDGE = 2;
-    public final int CALL_EDGE = 3;
-    public final int INT_EDGE = 4;
-    public final int RET_EDGE = 5;
-    public final int RETI_EDGE = 6;
-    public final int SPECIAL_EDGE = 7;
+    public static final int NORMAL_EDGE = 0;
+    public static final int PUSH_EDGE = 1;
+    public static final int POP_EDGE = 2;
+    public static final int CALL_EDGE = 3;
+    public static final int INT_EDGE = 4;
+    public static final int RET_EDGE = 5;
+    public static final int RETI_EDGE = 6;
+    public static final int SPECIAL_EDGE = 7;
 
-    public final String[] EDGE_NAMES = {"", "PUSH", "POP", "CALL", "INT", "RET", "RETI", "SPECIAL"};
+    public static final int NORMAL_STATE = 0;
+    public static final int RET_STATE = 1;
+    public static final int RETI_STATE = 2;
 
-    protected final StateSpace.SpecialState returnState;
-    protected final StateSpace.SpecialState returnIState;
+    public static final String[] EDGE_NAMES = {"", "PUSH", "POP", "CALL", "INT", "RET", "RETI", "SPECIAL"};
+    public static final int[]    EDGE_DELTA = {0, 1, -1, 2, 2, 0, 0, 0};
 
     public static boolean TRACE;
+    public static boolean running;
 
-    public static class FrontierInfo {
-        public static class CallSiteList {
-            public final FrontierInfo caller;
-            public final CallSiteList next;
+    private class PropagationList {
+        final StateSpace.State start;
+        final StateSpace.State caller;
+        final PropagationList next;
 
-            CallSiteList(FrontierInfo s, CallSiteList n) {
-                caller = s;
-                next = n;
-            }
-        }
-
-        public StateSpace.State state;
-        public CallSiteList callsites;
-
-        FrontierInfo(StateSpace.State s) {
-            state = s;
-        }
-
-        FrontierInfo(StateSpace.State s, CallSiteList cl) {
-            state = s;
-            callsites = cl;
+        PropagationList(StateSpace.State st, StateSpace.State c, PropagationList p) {
+            start = st;
+            caller = c;
+            next = p;
         }
     }
 
@@ -108,9 +103,7 @@ public class Analyzer {
         space = new StateSpace(p);
         policy = new ContextSensitivePolicy();
         interpreter = new AbstractInterpreter(program, policy);
-        frontierInfoMap = new HashMap();
-        returnState = space.makeSpecialState("---RET----");
-        returnIState = space.makeSpecialState("---RETI---");
+        aggregationPoints = new HashMap();
     }
 
     /**
@@ -118,6 +111,7 @@ public class Analyzer {
      * with an initial default state serves as the first state to start exploring.
      */
     public void run() {
+        running = true;
         if ( Main.MONITOR_STATES.get() )
             new MonitorThread().start();
 
@@ -127,16 +121,19 @@ public class Analyzer {
         buildTime = check - start;
         findMaximalPath();
         traverseTime = System.currentTimeMillis() - check;
+        running = false;
     }
 
     private class MonitorThread extends Thread {
         public void run() {
             try {
-                while ( true ) {
+                while ( running ) {
                     sleep(5000);
                     Terminal.println("Count: "+space.getTotalStateCount()+" states, "+
                             space.getTotalEdgeCount()+" edges, "+
-                            space.getFrontierCount()+" states on frontier");
+                            space.getFrontierCount()+" frontier, "+
+                            proplength+" propagations, "+
+                            propprogress+", in progress");
                 }
             } catch ( InterruptedException e ) {
                 e.printStackTrace();
@@ -147,24 +144,150 @@ public class Analyzer {
     private void buildReachableStateSpace() {
         StateSpace.State s = space.getEdenState();
 
-        while (s != null) {
-            traceState(s);
-
-            // get the frontier information (call sites)
-            FrontierInfo fs = getFrontierInfo(s);
-            policy.frontierState = fs;
-            policy.stackDelta = 0;
-            policy.edgeType = NORMAL_EDGE;
-
-            // add this to explored states
-            space.addState(fs.state);
-
-            // compute the possible next states
-            interpreter.computeNextStates(s);
-
-            // get the next frontier state
+        while ( s != null || proplist != null) {
+            if ( s != null )
+                processFrontierState(s);
+            else processPropagationList();
             s = space.getFrontierState();
         }
+    }
+
+    private void processPropagationList() {
+        PropagationList list = proplist;
+        proplist = null;
+        propprogress = proplength;
+        proplength = 0;
+        // process the list of propagations to be done;
+        // propagate calling states to reachable return states
+        for ( ; list != null; list = list.next ) {
+            HashSet callers = new HashSet();
+            callers.add(list.caller);
+
+            if ( TRACE ) {
+                Terminal.print("Propagating ");
+                StatePrinter.printStateName(list.caller);
+                Terminal.print(" to ");
+                StatePrinter.printStateName(list.start);
+                Terminal.nextln();
+            }
+            propagate(list.start, callers);
+            propprogress--;
+        }
+    }
+
+    private void propagate(StateSpace.State t, HashSet newCalls) {
+        Object mark = new Object();
+
+        propagate(t, newCalls, mark);
+    }
+
+    private void newAggregationPoint(StateSpace.State t) {
+        if ( aggregationPoints.containsKey(t) ) return;
+        aggregationPoints.put(t, new HashSet());
+    }
+
+    // propagate call sites to all reachable return states
+    private void propagate(StateSpace.State t, HashSet newCalls, Object mark) {
+        // visited this node already?
+        if (t.mark == mark) return;
+        t.mark = mark;
+
+        // return state? if so, set up call edges
+        if ( t.getType() != NORMAL_STATE ) {
+            processCalls(newCalls, t);
+            return;
+        }
+
+        // if the target is an aggregation point, add all of them
+        HashSet agg = getCallers(t);
+        if ( agg != null ) agg.addAll(newCalls);
+
+        for (StateSpace.Link link = t.outgoing; link != null; link = link.next) {
+
+            // do not follow call edges
+            if (link.type == CALL_EDGE) continue;
+
+            // propagate these calls to all children
+            propagate(link.target, newCalls, mark);
+        }
+    }
+
+    private HashSet getCallers(StateSpace.State t) {
+        return (HashSet)aggregationPoints.get(t);
+    }
+
+    private void processCalls(HashSet newCalls, StateSpace.State retstate) {
+        HashSet prevcallers = getCallers(retstate);
+        if ( prevcallers == null ) {
+            throw Avrora.failure("State should be an aggregation point: "+retstate.getUniqueName());
+        }
+
+        MutableState rstate = retstate.copy();
+        boolean interrupt = retstate.getType() == RETI_STATE;
+
+        Iterator i = newCalls.iterator();
+        while ( i.hasNext() ) {
+            StateSpace.State caller = (StateSpace.State)i.next();
+            if ( !prevcallers.contains(caller) ) {
+                addReturnEdge(caller, rstate, interrupt);
+            }
+        }
+    }
+
+    private void addReturnEdge(StateSpace.State caller, MutableState rstate, boolean interrupt) {
+        int cpc = caller.getPC();
+        int npc;
+
+        if ( interrupt ) {
+            npc = cpc;
+            rstate.setFlag_I(AbstractArithmetic.TRUE);
+        } else {
+            npc = cpc + program.readInstr(cpc).getSize();
+        }
+
+        rstate.setPC(npc);
+        StateSpace.State t = space.getStateFor(rstate);
+
+        if ( TRACE ) {
+            printFullState("Adding return edge", t);
+            traceProducedState(t);
+        }
+
+        if (!space.isExplored(t)) {
+            space.addFrontier(t);
+        }
+        // set up the return edge
+        space.addEdge(caller, t);
+        // post caller's callers to the returned state
+        post(t, getCallers(caller));
+    }
+
+    private void post(StateSpace.State state, HashSet callers) {
+        Iterator i = callers.iterator();
+        while ( i.hasNext() ) {
+            StateSpace.State caller = (StateSpace.State)i.next();
+            post(state, caller);
+        }
+    }
+
+    private void post(StateSpace.State state, StateSpace.State caller) {
+        proplist = new PropagationList(state, caller, proplist);
+        proplength++;
+    }
+
+
+    private void processFrontierState(StateSpace.State s) {
+        traceState(s);
+
+        // get the frontier information (call sites)
+        policy.frontierState = s;
+        policy.edgeType = NORMAL_EDGE;
+
+        // add this to explored states
+        space.addState(s);
+
+        // compute the possible next states
+        interpreter.computeNextStates(s);
     }
 
     private void findMaximalPath() {
@@ -270,32 +393,39 @@ public class Analyzer {
         printQuantity("Total reachable states", "" + space.getStatesInSpaceCount());
         printQuantity("Time to build graph   ", StringUtil.milliAsString(buildTime));
         printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
-        if (maxDepth == Integer.MAX_VALUE)
-            printQuantity("Maximum stack depth", "unbounded");
+        if ( unbounded )
+            printQuantity("Maximum stack depth   ", "unbounded");
         else
-            printQuantity("Maximum stack depth", "" + maxDepth);
+            printQuantity("Maximum stack depth   ", "" + maximalPath.depth+" bytes" );
         printPath(maximalPath);
     }
 
     private void printPath(Path p) {
-        for ( Path path = p; path != null; path = path.tail ) {
-            printFullState("Depth: "+path.depth, path.state);
-            printEdge(path.state, path.link.type, path.link.weight, path.link.target);
+        int depth = 0;
+        int cntr = 1;
+        boolean summary = Main.TRACE_SUMMARY.get();
+        for ( Path path = p; path != null && path.link != null; path = path.tail ) {
+
+            if ( summary && path.link.weight == 0 ) {
+                int pc = path.state.getPC();
+                int npc = pc + program.readInstr(pc).getSize();
+                if ( path.link.target.getPC() == npc ) {
+                    cntr++;
+                    continue;
+                }
+            }
+
+            printFullState("["+cntr+"] Depth: "+depth, path.state);
+            Terminal.print("    ");
+            StatePrinter.printEdge(path.link.type, path.link.weight, path.link.target);
+            depth += path.link.weight;
+            cntr++;
         }
     }
 
     private void printQuantity(String q, String v) {
         Terminal.printBrightGreen(q);
         Terminal.println(": " + v);
-    }
-
-    private FrontierInfo getFrontierInfo(StateSpace.State s) {
-        FrontierInfo fs = (FrontierInfo) frontierInfoMap.get(s);
-        if (fs == null) {
-            fs = new FrontierInfo(s);
-            frontierInfoMap.put(s, fs);
-        }
-        return fs;
     }
 
     /**
@@ -310,9 +440,8 @@ public class Analyzer {
      */
     public class ContextSensitivePolicy implements AnalyzerPolicy {
 
-        public FrontierInfo frontierState;
-        public int stackDelta;
-        int edgeType;
+        public StateSpace.State frontierState;
+        protected int edgeType;
 
         /**
          * The <code>call()</code> method is called by the abstract interpreter when it
@@ -329,12 +458,12 @@ public class Analyzer {
          */
         public MutableState call(MutableState s, int target_address) {
             s.setPC(target_address);
-            StateSpace.State target = space.getStateFor(s);
+            addEdge(frontierState, CALL_EDGE, s);
+            newAggregationPoint(frontierState);
+            post(space.getStateFor(s), frontierState);
 
-            traceProducedState(target);
-            addEdge(CALL_EDGE, frontierState.state, target, 2);
-            pushFrontier(target, new FrontierInfo.CallSiteList(frontierState, null));
-
+            // do not continue abstract interpretation after this state; edges will
+            // be inserted later that represent possible return states
             return null;
         }
 
@@ -350,12 +479,12 @@ public class Analyzer {
         public MutableState interrupt(MutableState s, int num) {
             s.setFlag_I(AbstractArithmetic.FALSE);
             s.setPC((num - 1) * 4);
-            StateSpace.State target = space.getStateFor(s);
+            addEdge(frontierState, INT_EDGE, s);
+            newAggregationPoint(frontierState);
+            post(space.getStateFor(s), frontierState);
 
-            traceProducedState(target);
-            addEdge(INT_EDGE, frontierState.state, target, 2);
-            pushFrontier(target, new FrontierInfo.CallSiteList(frontierState, null));
-
+            // do not continue abstract interpretation after this state; edges will
+            // be inserted later that represent possible return states
             return null;
         }
 
@@ -371,28 +500,12 @@ public class Analyzer {
          *         the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState ret(MutableState s) {
-            addReturnEdges(s, frontierState.callsites);
-            addEdge(SPECIAL_EDGE, frontierState.state, returnState, 0);
+            frontierState.setType(RET_STATE);
+            newAggregationPoint(frontierState);
+
+            // do not continue abstract interpretation after this state; this state
+            // is a return state and therefore is a dead end
             return null;
-        }
-
-        private void addReturnEdges(MutableState s, FrontierInfo.CallSiteList list) {
-            while (list != null) {
-                MutableState retState = s.copy();
-                FrontierInfo caller = list.caller;
-                addReturnEdge(caller, retState);
-                list = list.next;
-            }
-        }
-
-        private void addReturnEdge(FrontierInfo caller, MutableState retState) {
-            int pc = caller.state.getPC();
-            int npc = pc + program.readInstr(pc).getSize();
-            retState.setPC(npc);
-            StateSpace.State immRetState = space.getStateFor(retState);
-            traceProducedState(immRetState);
-            addEdge(RET_EDGE, caller.state, immRetState, 0);
-            pushFrontier(immRetState, caller.callsites);
         }
 
         /**
@@ -404,23 +517,12 @@ public class Analyzer {
          *         the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState reti(MutableState s) {
-            addInterruptReturnEdges(s, frontierState.callsites);
-            addEdge(SPECIAL_EDGE, frontierState.state, returnIState, 0);
-            return null;
-        }
+            frontierState.setType(RETI_STATE);
+            newAggregationPoint(frontierState);
 
-        private void addInterruptReturnEdges(MutableState s, FrontierInfo.CallSiteList list) {
-            while (list != null) {
-                MutableState retState = s.copy();
-                retState.setFlag_I(AbstractArithmetic.TRUE);
-                FrontierInfo caller = list.caller;
-                retState.setPC(caller.state.getPC());
-                StateSpace.State immRetState = space.getStateFor(retState);
-                traceProducedState(immRetState);
-                addEdge(RETI_EDGE, caller.state, immRetState, 0);
-                pushFrontier(immRetState, caller.callsites);
-                list = list.next;
-            }
+            // do not continue abstract interpretation after this state; this state
+            // is a return state and therefore is a dead end
+            return null;
         }
 
         /**
@@ -439,7 +541,7 @@ public class Analyzer {
             int callsite = s.pc;
             List iedges = program.getIndirectEdges(callsite);
             if (iedges == null)
-                throw Avrora.failure("No control flow information for indirect jump at: " +
+                throw Avrora.failure("No control flow information for indirect call at: " +
                         StringUtil.addrToString(callsite));
             Iterator i = iedges.iterator();
             while (i.hasNext()) {
@@ -466,7 +568,7 @@ public class Analyzer {
             int callsite = s.pc;
             List iedges = program.getIndirectEdges(callsite);
             if (iedges == null)
-                throw Avrora.failure("No control flow information for indirect call at: " +
+                throw Avrora.failure("No control flow information for indirect jump at: " +
                         StringUtil.addrToString(callsite));
             Iterator i = iedges.iterator();
             while (i.hasNext()) {
@@ -521,7 +623,6 @@ public class Analyzer {
          * @param val the abstract value to push onto the stack
          */
         public void push(MutableState s, char val) {
-            stackDelta = 1;
             edgeType = PUSH_EDGE;
         }
 
@@ -535,8 +636,8 @@ public class Analyzer {
          * @return the abstract value popped from the stack
          */
         public char pop(MutableState s) {
-            stackDelta = -1;
             edgeType = POP_EDGE;
+            // we do not model the stack, so popping values returns unknown
             return AbstractArithmetic.UNKNOWN;
         }
 
@@ -548,84 +649,35 @@ public class Analyzer {
          * @param newState the new state created
          */
         public void pushState(MutableState newState) {
-            StateSpace.State t = space.getStateFor(newState);
-            traceProducedState(t);
-            addEdge(edgeType, frontierState.state, t, stackDelta);
-            pushFrontier(t, frontierState.callsites);
+            addEdge(frontierState, edgeType, newState);
         }
 
-        private void pushFrontier(StateSpace.State t, FrontierInfo.CallSiteList l) {
+        private void addEdge(StateSpace.State from, int type, MutableState to) {
+            StateSpace.State t = space.getStateFor(to);
+            traceProducedState(t);
+            addEdge(type, from, t, EDGE_DELTA[type]);
+            pushFrontier(t);
+        }
+
+        private void pushFrontier(StateSpace.State t) {
             // CASE 4: self loop
-            if (t == frontierState.state) return;
+            if (t == frontierState) return;
 
             if (space.isExplored(t)) {
                 // CASE 3: state is already explored
-                retraverseExploredSpace(t, l);
+                // do nothing; propagation phase will push callers to reachable returns
             } else if (space.isFrontier(t)) {
                 // CASE 2: state is already on frontier
-                mergeFrontierStateLists(t, l);
+                // do nothing; propagation phase will push callers to reachable returns
             } else {
                 // CASE 1: new state, add to frontier
                 space.addFrontier(t);
-                FrontierInfo fs = getFrontierInfo(t);
-                fs.callsites = l;
             }
         }
 
         private void addEdge(int type, StateSpace.State s, StateSpace.State t, int weight) {
             traceEdge(type, s, t, weight);
             space.addEdge(s, t, type, weight);
-        }
-
-        private void retraverseExploredSpace(StateSpace.State t, FrontierInfo.CallSiteList newCalls) {
-            Object mark = new Object();
-
-            propagate(t, newCalls, mark);
-        }
-
-        // propagate call sites to all reachable return states
-        private void propagate(StateSpace.State t, FrontierInfo.CallSiteList newCalls, Object mark) {
-            if (t.mark == mark) return;
-            t.mark = mark;
-
-
-
-            for (StateSpace.Link link = t.outgoing; link != null; link = link.next) {
-
-                // do not follow call edges
-                if (link.type == CALL_EDGE) continue;
-
-                StateSpace.State r = link.target;
-                if (r == returnState) {
-                    // add return edge
-                    addReturnEdges(t.copy(), newCalls);
-                } else if (r == returnIState) {
-                    // add return from interrupt edge
-                    addInterruptReturnEdges(t.copy(), newCalls);
-                } else if (space.isFrontier(r)) {
-                    // encountered a frontier state, merge callsites
-                    mergeFrontierStateLists(r, newCalls);
-                } else {
-                    propagate(r, newCalls, mark);
-                }
-            }
-        }
-
-        private void mergeFrontierStateLists(StateSpace.State t, FrontierInfo.CallSiteList newCalls) {
-            FrontierInfo fi = getFrontierInfo(t);
-
-            if ( fi.callsites == newCalls ) return;
-            
-            HashSet callers = new HashSet();
-            for ( FrontierInfo.CallSiteList list = fi.callsites; list != null; list = list.next ) {
-                callers.add(list.caller.state);
-            }
-
-            for ( FrontierInfo.CallSiteList list = newCalls; list != null; list = list.next ) {
-                if ( !callers.contains(list.caller.state) )
-                    fi.callsites = new FrontierInfo.CallSiteList(list.caller, fi.callsites);
-                callers.add(list.caller.state);
-            }
         }
 
     }
@@ -645,11 +697,11 @@ public class Analyzer {
 
     private void printFullState(String head, StateSpace.State s) {
         Terminal.print(head+" ");
-        printStateName(s);
+        StatePrinter.printStateName(s);
         Terminal.nextln();
         Instr instr = program.readInstr(s.getPC());
         String str = StringUtil.leftJustify(instr.toString(), 14);
-        printState(str, s);
+        StatePrinter.printState(str, s);
     }
 
     private void traceProducedState(StateSpace.State s) {
@@ -663,87 +715,14 @@ public class Analyzer {
             } else {
                 str = "        N ==> ";
             }
-            printState(str, s);
+            StatePrinter.printState(str, s);
         }
     }
 
-    private void traceEdge(int type, StateSpace.State s, StateSpace.State t, int weight) {
+    public static void traceEdge(int type, StateSpace.State s, StateSpace.State t, int weight) {
         if (!TRACE) return;
         Terminal.print("adding edge ");
-        printEdge(s, type, weight, t);
-    }
-
-    private void printEdge(StateSpace.State s, int type, int weight, StateSpace.State t) {
-        printStateName(s);
-        Terminal.print(" --(");
-        Terminal.print(EDGE_NAMES[type]);
-        if (weight > 0) Terminal.print("+");
-        Terminal.print(weight + ")--> ");
-        printStateName(t);
-        Terminal.nextln();
-    }
-
-    private void printStateName(StateSpace.State t) {
-        Terminal.print("[");
-        Terminal.printBrightGreen(StringUtil.toHex(t.getPC(), 4));
-        Terminal.print("|");
-        Terminal.printBrightCyan(t.getUniqueName());
-        Terminal.print("] ");
-    }
-
-    private void printState(String beg, StateSpace.State s) {
-        Terminal.printBrightRed(beg);
-
-        printStateName(s);
-
-        for (int cntr = 0; cntr < 8; cntr++) {
-            Terminal.print(toString(s.getRegisterAV(cntr)));
-            Terminal.print(" ");
-        }
-        Terminal.nextln();
-
-        Terminal.print("                [");
-        Terminal.printBrightGreen("SREG");
-        Terminal.print(":");
-        Terminal.print(AbstractArithmetic.toString(s.getSREG()));
-        Terminal.print("] ");
-        for (int cntr = 8; cntr < 16; cntr++) {
-            Terminal.print(toString(s.getRegisterAV(cntr)));
-            Terminal.print(" ");
-        }
-
-        Terminal.nextln();
-
-        Terminal.print("               [");
-        Terminal.printBrightGreen("EIMSK");
-        Terminal.print(":");
-        Terminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.EIMSK)));
-        Terminal.print("] ");
-        for (int cntr = 16; cntr < 24; cntr++) {
-            Terminal.print(toString(s.getRegisterAV(cntr)));
-            Terminal.print(" ");
-        }
-
-        Terminal.nextln();
-
-        Terminal.print("               [");
-        Terminal.printBrightGreen("TIMSK");
-        Terminal.print(":");
-        Terminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.TIMSK)));
-        Terminal.print("] ");
-        for (int cntr = 24; cntr < 32; cntr++) {
-            Terminal.print(toString(s.getRegisterAV(cntr)));
-            Terminal.print(" ");
-        }
-
-        Terminal.nextln();
-    }
-
-    private String toString(char av) {
-        if (av == AbstractArithmetic.ZERO)
-            return "       0";
-        else if (av == AbstractArithmetic.UNKNOWN) return "       .";
-        return AbstractArithmetic.toString(av);
+        StatePrinter.printEdge(s, type, weight, t);
     }
 
 }
