@@ -537,7 +537,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     /**
      * The <code>Interrupt</code> interface represents the behavior of an interrupt
-     * (i.e. how it manipulates the state of the processor) when it is posted and
+     * (how it manipulates the state of the processor) when it is posted and
      * when it is triggered (handler is executed by the processor). For example,
      * an external interrupt, when posted, sets a bit in an IO register, and if
      * the interrupt is not masked, will add it to the pending interrupts on
@@ -554,13 +554,13 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public class MaskableInterrupt implements Interrupt {
-        final int interruptNumber;
+        protected final int interruptNumber;
 
-        final int maskRegister;
-        final int flagRegister;
-        final int bit;
+        protected final int maskRegister;
+        protected final int flagRegister;
+        protected final int bit;
 
-        final boolean sticky;
+        protected final boolean sticky;
 
         public MaskableInterrupt(int num, int mr, int fr, int b, boolean e) {
             interruptNumber = num;
@@ -588,13 +588,27 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         }
     }
 
-    private static final Interrupt IGNORE = new Interrupt() {
+    /**
+     * The <code>IGNORE</code> field stores a reference to a singleton
+     * anonymous class that ignores posting and firing of an interrupt. This
+     * is the default value for interrupts in a freshly initialized
+     * <code>Simulator</code> instance.
+     */
+    public static final Interrupt IGNORE = new Interrupt() {
         public void post() { }
         public void fire() { }
     };
 
 
 
+    /**
+     * The <code>getState()</code> retrieves a reference to the current
+     * state of the simulation, including the values of all registers, the
+     * SRAM, the IO register, the program memory, program counter, etc.
+     * This state is mutable.
+     *
+     * @return a reference to the current state of the simulation
+     */
     public State getState() {
         return state;
     }
@@ -848,15 +862,14 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         eventQueue.remove(e);
     }
 
-    /**
-     *  V I S I T   M E T H O D S
-     * ------------------------------------------------------------------
-     *
-     * These methods implement the InstrVisitor interface and
-     * accomplish the behavior of each instruction.
-     *
-     *
-     */
+    //
+    //  V I S I T   M E T H O D S
+    // ------------------------------------------------------------------
+    //
+    // These methods implement the InstrVisitor interface and
+    // accomplish the behavior of each instruction.
+    //
+    //
 
     public void visit(Instr.ADC i) { // add two registers and carry flag
         int r1 = state.readRegisterUnsigned(i.r1);
@@ -1609,15 +1622,15 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         unimplemented(i);
     }
 
-    /**
-     *  U T I L I T I E S
-     * ------------------------------------------------------------
-     *
-     *  These are utility functions for expressing instructions
-     *  more concisely. They are private and can be inlined by
-     *  the JIT compiler or javac -O.
-     *
-     */
+    //
+    //  U T I L I T I E S
+    // ------------------------------------------------------------
+    //
+    //  These are utility functions for expressing instructions
+    //  more concisely. They are private and can be inlined by
+    //  the JIT compiler or javac -O.
+    //
+    //
 
     private void relativeBranch(int offset) {
         nextPC = relative(offset);

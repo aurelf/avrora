@@ -41,10 +41,41 @@ public class State implements IORegisterConstants {
      * @author Ben L. Titzer
      */
     public interface IOReg {
+        /**
+         * The <code>read()</code> method reads the 8-bit value of the IO register
+         * as a byte. For special IO registers, this may cause some action like
+         * device activity, or the actual value of the register may need to be
+         * fetched or computed.
+         * @return the value of the register as a byte
+         */
         public byte read();
+
+        /**
+         * The <code>write()</code> method writes an 8-bit value to the IO register
+         * as a byte. For special IO registers, this may cause some action like
+         * device activity, masking/unmasking of interrupts, etc.
+         * @param val the value to write
+         */
         public void write(byte val);
+
+        /**
+         * The <code>readBit()</code> method reads a single bit from the IO register.
+         *
+         * @param num the number of the bit to read
+         * @return the value of the bit as a boolean
+         */
         public boolean readBit(int num);
+
+        /**
+         * The <code>clearBit()</code> method clears a single bit in the IO register.
+         * @param num the number of the bit to clear
+         */
         public void clearBit(int num);
+
+        /**
+         * The <code>setBit()</code> method sets a single bit in the IO register.
+         * @param num the number of the bit to clear
+         */
         public void setBit(int num);
     }
 
@@ -59,24 +90,50 @@ public class State implements IORegisterConstants {
 
         protected byte value;
 
+        /**
+         * The <code>read()</code> method reads the 8-bit value of the IO register
+         * as a byte. For simple <code>RWIOReg</code> instances, this simply returns
+         * the internally stored value.
+         * @return the value of the register as a byte
+         */
         public byte read() {
             return value;
         }
 
+        /**
+         * The <code>write()</code> method writes an 8-bit value to the IO register
+         * as a byte. For simple <code>RWIOReg</code> instances, this simply writes
+         * the internally stored value.
+         * @param val the value to write
+         */
         public void write(byte val) {
             value = val;
         }
 
-        public boolean readBit(int bit) {
-            return Arithmetic.getBit(value, bit);
+        /**
+         * The <code>readBit()</code> method reads a single bit from the IO register.
+         *
+         * @param num the number of the bit to read
+         * @return the value of the bit as a boolean
+         */
+        public boolean readBit(int num) {
+            return Arithmetic.getBit(value, num);
         }
 
-        public void clearBit(int bit) {
-            value = Arithmetic.clearBit(value, bit);
+        /**
+         * The <code>clearBit()</code> method clears a single bit in the IO register.
+         * @param num the number of the bit to clear
+         */
+        public void clearBit(int num) {
+            value = Arithmetic.clearBit(value, num);
         }
 
-        public void setBit(int bit) {
-            value = Arithmetic.setBit(value, bit);
+        /**
+         * The <code>setBit()</code> method sets a single bit in the IO register.
+         * @param num the number of the bit to clear
+         */
+        public void setBit(int num) {
+            value = Arithmetic.setBit(value, num);
         }
     }
 
@@ -100,7 +157,19 @@ public class State implements IORegisterConstants {
 
 
 
-
+    /**
+     * The constructor for the <code>State</code> class builds the internal data
+     * structures needed to store the complete state of the machine, including registers,
+     * IO registers, the SRAM, and the flash. All IO registers are initialized to be
+     * instances of <code>RWIOReg</code>. Reserved and special IO registers must be
+     * inserted by the <code>getIORegister()</code> and <code>setIORegister()</code>
+     * methods.
+     *
+     * @param p the program to construct the state for
+     * @param flash_size the size of the flash (program) memory in bytes
+     * @param ioreg_size the number of IO registers
+     * @param sram_size the size of the SRAM in bytes
+     */
     public State(Program p, int flash_size, int ioreg_size, int sram_size) {
 
         // if program will not fit onto hardware, error

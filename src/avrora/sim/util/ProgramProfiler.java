@@ -43,7 +43,7 @@ public class ProgramProfiler implements Simulator.Probe {
 
     /**
      * The <code>fireBefore()</code> method is called before the probed instruction
-     * executes. In the implementation of the program profile, it simply increments the
+     * executes. In the implementation of the program profiler, it simply increments the
      * count of the instruction at the specified address.
      *
      * @param i the instruction being probed

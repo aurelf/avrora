@@ -3,6 +3,26 @@ package avrora.stack;
 /**
  * The <code>AbstractArithmetic</code> arithmetic class implements operations that
  * are useful for working on abstract integers which are represented as characters.
+ *
+ * The abstract values (e.g. register values) are represented as
+ * characters. Thus, an 8 bit register is modelled using a 16-bit
+ * character. The upper 8 bits represent the "mask", those bits
+ * which are known. The lower 8 bits represent the known bits
+ * of the value. Thus, if bit(regs[R], i+8) is set, then bit(R, i)
+ * is known and its value is bit(regs[R], i). If bit(regs[R], i+8)
+ * is clear, then the value of bit(regs[R], i) is unknown in
+ * this abstract value.
+ *
+ * Since there are 3 possible values (on, off, unknown) for each
+ * bit in the abstract state and there are two bits reserved for
+ * representing each of these states, there are 4 bit states
+ * to represent 3 values. We canonicalize the values when the
+ * bit value is unknown, i.e. when the known mask bit is clear,
+ * then the value bit is clear as well. This makes comparison
+ * of canonical abstract values the same as character equality.
+ * All abstract values stored within <code>AbstractState</code>
+ * are canonical for efficiency and clarity.
+ *
  * @author Ben L. Titzer
  */
 public class AbstractArithmetic {
@@ -58,6 +78,10 @@ public class AbstractArithmetic {
         return (val & KNOWN_MASK) != KNOWN_MASK;
     }
 
+    public static boolean areKnown(char val1, char val2) {
+        return (val1 & val2 & KNOWN_MASK) == KNOWN_MASK;
+    }
+
     public static boolean areEqual(char val1, char val2) {
         if ( val1 == val2 ) return true;
         if ( canon(val1) == canon(val2) ) return true;
@@ -105,8 +129,14 @@ public class AbstractArithmetic {
         return UNKNOWN;
     }
 
+    public static char couldBeZero(char val1, char val2) {
+        if ( val1 == ZERO && val2 == ZERO ) return ON;
+        if ( knownBitsOf(val1) != 0 || knownBitsOf(val2) != 0 ) return OFF;
+        return UNKNOWN;
+    }
+
     public static char couldBeEqual(char v1, char v2) {
-        if ( v1 == v2 ) return ON;
+        if ( areKnown(v1, v2) && v1 == v2 ) return ON;
         if ( knownBitsOf(v1) != knownBitsOf(v2) ) return OFF;
         return UNKNOWN;
     }
@@ -126,8 +156,8 @@ public class AbstractArithmetic {
     public static char add(char c, char d) {
         char common = commonMask(c, d);
         // TODO: optimize for common case of known / unknown values.
-        int resultA = top(c)+top(d);
-        int resultB = bottom(c)+bottom(d);
+        int resultA = ceiling(c)+ceiling(d);
+        int resultB = floor(c)+floor(d);
 
         return mergeMask(common, merge((byte)resultA, (byte)resultB));
     }
@@ -135,8 +165,8 @@ public class AbstractArithmetic {
     public static char subtract(char c, char d) {
         char common = commonMask(c, d);
         // TODO: optimize for common case of known / unknown values.
-        int resultA = top(c) - top(d);
-        int resultB = bottom(c) - bottom(d);
+        int resultA = ceiling(c) - ceiling(d);
+        int resultB = floor(c) - floor(d);
 
         return mergeMask(common, merge((byte)resultA, (byte)resultB));
     }
@@ -144,16 +174,16 @@ public class AbstractArithmetic {
     public static char increment(char c) {
         char mask = maskOf(c);
         // TODO: optimize for common case of known / unknown values.
-        int resultA = top(c) + 1;
-        int resultB = bottom(c) + 1;
+        int resultA = ceiling(c) + 1;
+        int resultB = floor(c) + 1;
         return mergeMask(mask, merge((byte)resultA, (byte)resultB));
     }
 
     public static char decrement(char c) {
         char mask = maskOf(c);
         // TODO: optimize for common case of known / unknown values.
-        int resultA = top(c) - 1;
-        int resultB = bottom(c) - 1;
+        int resultA = ceiling(c) - 1;
+        int resultB = floor(c) - 1;
         return mergeMask(mask, merge((byte)resultA, (byte)resultB));
     }
 
@@ -187,22 +217,28 @@ public class AbstractArithmetic {
         return (char)(v1 ^ 0x01);
     }
 
-    public static int top(char v1) {
+    public static int ceiling(char v1) {
         int invmask = (~AbstractArithmetic.maskOf(v1)) & 0xff;
-        return AbstractArithmetic.bitsOf(v1) | invmask;
+        return bitsOf(v1) | invmask;
     }
 
-    public static int top(char v1, char v2) {
-        return top(v1) | (top(v2) << 8);
+    public static int ceiling(char v1, char v2) {
+        return ceiling(v1) | (ceiling(v2) << 8);
     }
 
-    public static int bottom(char v1) {
+    public static int floor(char v1) {
         return bitsOf(v1);
     }
 
-    public static int bottom(char v1, char v2) {
+    public static int floor(char v1, char v2) {
         return bitsOf(v1) | (bitsOf(v2) << 8);
     }
 
+    public static char shiftLeftOne(char val) {
+        return (char) ((val & 0x7f7f) << 1);
+    }
 
+    public static char shiftLeftOne(char val, char lowbit) {
+        return (char) (((val & 0x7f7f) << 1) | (lowbit & ON));
+    }
 }

@@ -115,7 +115,7 @@ public class Analyzer {
             char rh = state.readRegister(i.r1.nextRegister());
 
             // compute partial results
-            adir(i.r1, i.imm1);
+            addImmediateToRegister(i.r1, i.imm1);
 
             // compute upper and lower parts of result from partial results
             char RL = state.readRegister(i.r1);
@@ -384,18 +384,15 @@ public class Analyzer {
 
         public void visit(Instr.ELPM i) { // extended load program memory to r0
             state.writeRegister(Register.R0, UNKNOWN);
-            // TODO: implement me
         }
 
         public void visit(Instr.ELPMD i) { // extended load program memory to register
             state.writeRegister(i.r1, UNKNOWN);
-            // TODO: implement me
         }
 
         public void visit(Instr.ELPMPI i) { // extended load program memory to register and post-increment
             state.writeRegister(i.r1, UNKNOWN);
-            adir(i.r2, 1);
-            // TODO: implement me
+            addImmediateToRegister(i.r2, 1);
         }
 
         public void visit(Instr.EOR i) { // exclusive or register with register
@@ -419,16 +416,41 @@ public class Analyzer {
         }
 
         public void visit(Instr.FMUL i) { // fractional multiply register with register to r0
-            // TODO: implement me
+            char r1 = state.readRegister(i.r1);
+            char r2 = state.readRegister(i.r2);
+            int result = mul8(r1, false, r2, false);
+            finishFMUL(result);
+
         }
 
         public void visit(Instr.FMULS i) { // signed fractional multiply register with register to r0
-            // TODO: implement me
+            char r1 = state.readRegister(i.r1);
+            char r2 = state.readRegister(i.r2);
+            int result = mul8(r1, true, r2, true);
+            finishFMUL(result);
         }
 
         public void visit(Instr.FMULSU i) { // signed/unsigned fractional multiply register with register to r0
-            // TODO: implement me
+            char r1 = state.readRegister(i.r1);
+            char r2 = state.readRegister(i.r2);
+            int result = mul8(r1, true, r2, false);
+            finishFMUL(result);
         }
+
+        private void finishFMUL(int result) {
+            char RL = lowAbstractByte(result);
+            char RH = highAbstractByte(result);
+            char R15 = getBit(RH, 7);
+            char R7 = getBit(RL, 7);
+
+            RL = shiftLeftOne(RL);
+            RH = shiftLeftOne(RH, R7);
+
+            state.setFlag_C(R15);
+            state.setFlag_Z(and(couldBeZero(RL), couldBeZero(RH)));
+            writeRegisterWord(Register.R0, RL, RH);
+        }
+
 
         public void visit(Instr.ICALL i) { // indirect call through Z register
             // TODO: implement me
@@ -476,13 +498,13 @@ public class Analyzer {
 
         public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
             state.writeRegister(i.r1,  UNKNOWN);
-            adir(i.r2, -11);
+            addImmediateToRegister(i.r2, -1);
             // TODO: implement me
         }
 
         public void visit(Instr.LDPI i) { // load from SRAM with post-increment
             state.writeRegister(i.r1,  UNKNOWN);
-            adir(i.r2, 1);
+            addImmediateToRegister(i.r2, 1);
             // TODO: implement me
         }
 
@@ -493,17 +515,15 @@ public class Analyzer {
 
         public void visit(Instr.LPM i) { // load program memory into r0
             state.writeRegister(Register.R0, UNKNOWN);
-            // TODO: implement me
         }
 
         public void visit(Instr.LPMD i) { // load program memory into register
             state.writeRegister(i.r1, UNKNOWN);
-            // TODO: implement me
         }
 
         public void visit(Instr.LPMPI i) { // load program memory into register and post-increment
             state.writeRegister(i.r1, UNKNOWN);
-            adir(i.r2, 1);
+            addImmediateToRegister(i.r2, 1);
         }
 
         public void visit(Instr.LSL i) { // logical shift left
@@ -533,16 +553,34 @@ public class Analyzer {
         }
 
         public void visit(Instr.MUL i) { // multiply register with register to r0
-            // TODO: implement me
+            char r1 = state.readRegister(i.r1);
+            char r2 = state.readRegister(i.r2);
+            int result = mul8(r1, false, r2, false);
+            finishMultiply(result);
         }
 
         public void visit(Instr.MULS i) { // signed multiply register with register to r0
-            // TODO: implement me
+            char r1 = state.readRegister(i.r1);
+            char r2 = state.readRegister(i.r2);
+            int result = mul8(r1, true, r2, true);
+            finishMultiply(result);
         }
 
         public void visit(Instr.MULSU i) { // signed/unsigned multiply register with register to r0
-            // TODO: implement me
+            char r1 = state.readRegister(i.r1);
+            char r2 = state.readRegister(i.r2);
+            int result = mul8(r1, true, r2, false);
+            finishMultiply(result);
         }
+
+        private void finishMultiply(int result) {
+            char RL = lowAbstractByte(result);
+            char RH = highAbstractByte(result);
+            state.setFlag_C(getBit(RH, 7));
+            state.setFlag_Z(and(couldBeZero(RL), couldBeZero(RH)));
+            writeRegisterWord(Register.R0, RL, RH);
+        }
+
 
         public void visit(Instr.NEG i) { // two's complement register
             char r1 = state.readRegister(i.r1);
@@ -643,11 +681,10 @@ public class Analyzer {
         }
 
         public void visit(Instr.SBIW i) { // subtract immediate from word
-            char rl = state.readRegister(i.r1);
             char rh = state.readRegister(i.r1.nextRegister());
 
             // compute partial results
-            adir(i.r1, -i.imm1);
+            addImmediateToRegister(i.r1, -i.imm1);
 
             // compute upper and lower parts of result from partial results
             char RL = state.readRegister(i.r1);
@@ -659,7 +696,7 @@ public class Analyzer {
             // compute and adjust flags as per instruction set documentation.
             char V = and(Rdh7, not(R15));
             char N = R15;
-            char Z = and(couldBeZero(RL), couldBeZero(RH));
+            char Z = couldBeZero(RL, RH);
             char C = and(R15, not(Rdh7));
             char S = xor(N, V);
             setFlag_CNZVS(C, N, Z, V, S);
@@ -726,25 +763,25 @@ public class Analyzer {
         }
 
         public void visit(Instr.ST i) { // store from register to SRAM
-            // TODO: model side effects to memory?
+            // we do not model memory now.
         }
 
         public void visit(Instr.STD i) { // store from register to SRAM with displacement
-            // TODO: model side effects to memory?
+            // we do not model memory now.
         }
 
         public void visit(Instr.STPD i) { // store from register to SRAM with pre-decrement
-            adir(i.r1, -1);
-            // TODO: model side effects to memory?
+            addImmediateToRegister(i.r1, -1);
+            // we do not model memory now.
         }
 
         public void visit(Instr.STPI i) { // store from register to SRAM with post-increment
-            adir(i.r1, 1);
-            // TODO: model side effects to memory?
+            addImmediateToRegister(i.r1, 1);
+            // we do not model memory now.
         }
 
         public void visit(Instr.STS i) { // store direct to SRAM
-            // TODO: model side effects to memory?
+            // we do not model memory now.
         }
 
         public void visit(Instr.SUB i) { // subtract register from register
@@ -778,6 +815,7 @@ public class Analyzer {
         }
 
         public void visit(Instr.WDR i) { // watchdog timer reset
+            // do nothing.
         }
 
         /**
@@ -906,7 +944,7 @@ public class Analyzer {
 
 
         private char performLeftShift(char val, char lowbit) {
-            char result = (char) (((val & 0x7f7f) << 1) | lowbit);
+            char result = shiftLeftOne(val, lowbit);
 
             char H = getBit(result, 3);
             char C = getBit(val, 7);
@@ -943,7 +981,7 @@ public class Analyzer {
             return result;
         }
 
-        private void adir(Register r, int imm) {
+        private void addImmediateToRegister(Register r, int imm) {
             char v1 = state.readRegister(r);
             char v2 = state.readRegister(r.nextRegister());
 
@@ -957,11 +995,48 @@ public class Analyzer {
             state.writeRegister(r.nextRegister(), RH);
         }
 
-        private char highByte(int result) {
+        private int mul8(char v1, boolean s1, char v2, boolean s2) {
+            int ceil1 = ceiling(v1, s1);
+            int ceil2 = ceiling(v2, s2);
+            int floor1 = floor(v1, s1);
+            int floor2 = floor(v2, s2);
+
+            int resultA = ceil1 * ceil2;
+            int resultB = ceil1 * floor2;
+            int resultC = floor1 * ceil2;
+            int resultD = floor1 * floor2;
+
+            // merge partial results into upper and lower abstract bytes
+            char RL = merge((byte)resultA, (byte)resultB, (byte)resultC, (byte)resultD);
+            char RH = merge((byte)(resultA >> 8), (byte)(resultB >> 8),
+                            (byte)(resultC >> 8), (byte)(resultD >> 8));
+
+            // pack the two results into a single integer
+            return RH << 16 | RL;
+        }
+
+        private void writeRegisterWord(Register r, char vl, char vh) {
+            state.writeRegister(r, vl);
+            state.writeRegister(r.nextRegister(), vh);
+        }
+
+        private int ceiling(char v1, boolean s1) {
+            // sign extend the value if s1 is true.
+            if ( s1 ) return (int)(byte)ceiling(v1);
+            else return ceiling(v1);
+        }
+
+        private int floor(char v1, boolean s1) {
+            // sign extend the value if s1 is true.
+            if ( s1 ) return (int)(byte)floor(v1);
+            else return floor(v1);
+        }
+
+        private char highAbstractByte(int result) {
             return (char)((result >> 16) & 0xffff);
         }
 
-        private char lowByte(int result) {
+        private char lowAbstractByte(int result) {
             return (char)(result & 0xffff);
         }
 
