@@ -47,9 +47,8 @@ import avrora.util.StringUtil;
  */
 public abstract class BaseInterpreter implements State, InstrVisitor {
     protected int pc;
-    public final byte[] regs;
     protected final State.IOReg[] ioregs;
-    protected byte[] sram;
+    public byte[] sram;
     protected MulticastWatch[] sram_watches;
     protected Instr[] flash_instr;
     protected byte[] flash_data;
@@ -362,9 +361,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         if (p.program_end > flash_size)
             throw Avrora.failure("program will not fit into " + flash_size + " bytes");
 
-        // allocate register values
-        regs = new byte[NUM_REGS];
-
         // beginning address of SRAM array
         sram_start = ioreg_size + NUM_REGS;
 
@@ -375,7 +371,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         ioregs = new State.IOReg[ioreg_size];
 
         // allocate SRAM
-        sram = new byte[sram_size];
+        sram = new byte[sram_max];
 
         // make a local copy of the program's instructions
         makeImpression(p);
@@ -465,25 +461,19 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected void insertWatch(Simulator.Watch p, int data_addr) {
         if (sram_watches == null)
             sram_watches = new MulticastWatch[sram.length];
-        if (data_addr < sram_start)
-            throw Avrora.failure("not a valid data address: " + StringUtil.addrToString(data_addr));
 
         // add the probe to the multicast probe present at the location (if there is one)
-        int offset = data_addr - sram_start;
-        MulticastWatch w = sram_watches[offset];
-        if (w == null) w = sram_watches[offset] = new MulticastWatch();
+        MulticastWatch w = sram_watches[data_addr];
+        if (w == null) w = sram_watches[data_addr] = new MulticastWatch();
         w.add(p);
     }
 
     protected void removeWatch(Simulator.Watch p, int data_addr) {
         if (sram_watches == null)
             return;
-        if (data_addr < sram_start)
-            throw Avrora.failure("not a valid data address: " + StringUtil.addrToString(data_addr));
 
         // remove the probe from the multicast probe present at the location (if there is one)
-        int offset = data_addr - sram_start;
-        MulticastWatch w = sram_watches[offset];
+        MulticastWatch w = sram_watches[data_addr];
         if (w == null) return;
         w.remove(p);
     }
@@ -505,11 +495,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     public byte getRegisterByte(int reg) {
-        return regs[reg];
+        return sram[reg];
     }
 
     public int getRegisterUnsigned(int reg) {
-        return regs[reg] & 0xff;
+        return sram[reg] & 0xff;
     }
 
     public int getRegisterWord(int reg) {
@@ -526,7 +516,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @return the current value of the register
      */
     public byte getRegisterByte(Register reg) {
-        return regs[reg.getNumber()];
+        return sram[reg.getNumber()];
     }
 
     /**
@@ -536,7 +526,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @return the current unsigned value of the register
      */
     public int getRegisterUnsigned(Register reg) {
-        return regs[reg.getNumber()] & 0xff;
+        return sram[reg.getNumber()] & 0xff;
     }
 
     /**
@@ -562,7 +552,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param val the value to write to the register
      */
     protected void setRegisterByte(Register reg, byte val) {
-        regs[reg.getNumber()] = val;
+        sram[reg.getNumber()] = val;
     }
 
     /**
@@ -583,7 +573,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     public void setRegisterByte(int reg, byte val) {
-        regs[reg] = val;
+        sram[reg] = val;
     }
 
     public void setRegisterWord(int reg, int val) {
@@ -623,27 +613,31 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *          if the specified address is not the valid memory range
      */
     public byte getDataByte(int address) {
-        if (address >= sram_max) throw new AddressOutOfBoundsException("sram", address);
-        if (address >= sram_start)
-            return readDataByte(address - sram_start);
-        if (address >= NUM_REGS) return ioregs[address - NUM_REGS].read();
-        if (address >= 0)
-            return regs[address];
-        else
-            throw new AddressOutOfBoundsException("sram", address);
+        // FAST PATH 1: no watches
+        if ( sram_watches == null )
+            return readSRAM(address);
+
+        // FAST PATH 2: no watches for this address
+        Simulator.Watch p = sram_watches[address];
+        if ( p == null)
+            return readSRAM(address);
+
+        // SLOW PATH: consult with memory watches
+        Instr i = getCurrentInstr();
+        p.fireBeforeRead(i, pc, this, address);
+        byte val = readSRAM(address);
+        p.fireAfterRead(i, pc, this, address, val);
+
+        return val;
     }
 
-    private byte readDataByte(int offset) {
-        byte val = sram[offset];
-        // read memory, checking for any memory probes
-        Simulator.Watch p;
-        if (sram_watches != null && (p = sram_watches[offset]) != null) {
-            Instr i = getCurrentInstr();
-            p.fireBeforeRead(i, pc, this, offset + sram_start, val);
-            val = sram[offset]; // the value might have been updated by the probe
-            p.fireAfterRead(i, pc, this, offset + sram_start, val);
-        }
-        return val;
+    private byte readSRAM(int address) {
+        if (address >= sram_start)
+            return sram[address];
+        if (address >= NUM_REGS)
+            return ioregs[address - NUM_REGS].read();
+        return sram[address];
+
     }
 
 
@@ -676,29 +670,32 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param val     the value to write
      */
     public void setDataByte(int address, byte val) {
-        if (address >= sram_max)
-            throw new AddressOutOfBoundsException("sram", address);
-        else if (address >= sram_start)
-            writeDataByte(address - sram_start, val);
-        else if (address >= NUM_REGS)
-            ioregs[address - NUM_REGS].write(val);
-        else if (address >= 0)
-            regs[address] = val;
-        else
-            throw new AddressOutOfBoundsException("sram", address);
+        // FAST PATH 1: no watches
+        if ( sram_watches == null ) {
+            writeSRAM(address, val);
+            return;
+        }
+
+        // FAST PATH 2: no watches for this address
+        Simulator.Watch p = sram_watches[address];
+        if ( p == null) {
+            writeSRAM(address, val);
+            return;
+        }
+
+        // SLOW PATH: consult with memory watches
+        Instr i = getCurrentInstr();
+        p.fireBeforeWrite(i, pc, this, address, val);
+        writeSRAM(address, val);
+        p.fireAfterWrite(i, pc, this, address, val);
     }
 
-    private void writeDataByte(int offset, byte val) {
-        // write to memory, checking for any memory probes
-        Simulator.Watch p;
-        if (sram_watches != null && (p = sram_watches[offset]) != null) {
-            Instr i = getCurrentInstr();
-            p.fireBeforeWrite(i, pc, this, offset + sram_start, val);
-            sram[offset] = val;
-            p.fireAfterWrite(i, pc, this, offset + sram_start, val);
-        } else {
-            sram[offset] = val;
-        }
+    private void writeSRAM(int address, byte val) {
+        if (address >= sram_start)
+            sram[address] = val;
+        else if (address >= NUM_REGS)
+            ioregs[address - NUM_REGS].write(val);
+        else sram[address] = val;
     }
 
     /**

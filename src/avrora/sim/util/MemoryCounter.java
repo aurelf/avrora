@@ -66,9 +66,8 @@ public class MemoryCounter implements Simulator.Watch {
      * @param address   the address at which this instruction resides
      * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
-     * @param value     the value of the memory location being read
      */
-    public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
+    public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
         rcount++;
     }
 

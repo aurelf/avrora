@@ -225,7 +225,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     }
 
     protected void initializeMaps() {
-        mapMap.put("regs", new ArrayMap("regs"));
+        mapMap.put("regs", new ArrayMap("sram"));
         mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "setRegisterByte"));
         mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "setRegisterWord"));
         mapMap.put("sram", new GetterSetterMap("getDataByte", "setDataByte"));

@@ -49,7 +49,7 @@ public class MemoryProfiler implements Simulator.Watch {
         wcount = new long[size];
     }
 
-    public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
+    public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
         if (data_addr < rcount.length)
             rcount[data_addr]++;
     }

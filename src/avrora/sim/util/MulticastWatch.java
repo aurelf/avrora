@@ -130,11 +130,10 @@ public class MulticastWatch implements Simulator.Watch {
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
      * @param state   the state of the simulation
-     * @param val     the value of the memory location being read
      */
-    public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte val) {
+    public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeRead(i, address, state, data_addr, val);
+            pos.probe.fireBeforeRead(i, address, state, data_addr);
     }
 
     /**
