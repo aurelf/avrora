@@ -40,6 +40,7 @@ import avrora.sim.util.MulticastIORWatch;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>BaseInterpreter</code> class represents a base class of the legacy interpreter and the generated
@@ -95,13 +96,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         protected final MulticastProbe probe;
         protected final InstrVisitor interpreter;
 
-        protected ProbedInstr(Instr i, int a, Simulator.Probe p) {
+        protected ProbedInstr(Instr i, int a) {
             super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
             instr = i;
             address = a;
             probe = new MulticastProbe();
             interpreter = BaseInterpreter.this;
-            probe.add(p);
         }
 
         void add(Simulator.Probe p) {
@@ -117,17 +117,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         public void accept(InstrVisitor v) {
-
             probe.fireBefore(instr, address, BaseInterpreter.this);
             instr.accept(interpreter);
             commit();
+            probe.fireAfter(instr, address, BaseInterpreter.this);
 
             if ( probe.isEmpty() ) {
                 // if the probed instruction has no more probes, remove it altogether
                 writeInstr(instr, address);
-            } else {
-                // fire all of the probes
-                probe.fireAfter(instr, address, BaseInterpreter.this);
             }
         }
 
@@ -277,11 +274,13 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public class AddressOutOfBoundsException extends Avrora.Error {
         public final String segment;
         public final int data_addr;
+        public final int badPc;
 
         protected AddressOutOfBoundsException(String s, int da) {
-            super("Program error", "access to " + StringUtil.quote(s) + " out of bounds at " + StringUtil.addrToString(da));
+            super("Program error", "at pc = "+StringUtil.addrToString(pc)+", illegal access of "+ StringUtil.quote(s) + " at " + StringUtil.addrToString(da));
             this.data_addr = da;
             this.segment = s;
+            this.badPc = pc;
         }
     }
 
@@ -477,7 +476,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected abstract void runLoop();
 
     protected void insertProbe(Simulator.Probe p, int addr) {
-        makeProbedInstr(addr).add(p);
+        ProbedInstr pi = getProbedInstr(addr);
+        if (pi == null) {
+            Instr instr = getInstr(addr);
+            if ( instr == null || instr.properties == null ) return; // do not insert probes on non-existant instructions
+            pi = new ProbedInstr(instr, addr);
+            writeInstr(pi, addr);
+        }
+        pi.add(p);
     }
 
     /**
@@ -638,14 +644,21 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *          if the specified address is not the valid memory range
      */
     public byte getDataByte(int address) {
-        // FAST PATH 1: no watches
-        if ( sram_watches == null )
-            return getSRAM(address);
+        Simulator.Watch p;
+        try {
+            // FAST PATH 1: no watches
+            if ( sram_watches == null )
+                return getSRAM(address);
 
-        // FAST PATH 2: no watches for this address
-        Simulator.Watch p = sram_watches[address];
-        if ( p == null)
-            return getSRAM(address);
+            // FAST PATH 2: no watches for this address
+            p = sram_watches[address];
+            if ( p == null)
+                return getSRAM(address);
+        } catch ( ArrayIndexOutOfBoundsException e ) {
+            // ERROR: program tried to read memory that is not present
+            readError("sram", address);
+            return 0;
+        }
 
         // SLOW PATH: consult with memory watches
         Instr i = getCurrentInstr();
@@ -654,6 +667,20 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         p.fireAfterRead(i, pc, this, address, val);
 
         return val;
+    }
+
+    private void readError(String segment, int address) {
+        String idstr = simulator.getIDTimeString();
+        Terminal.print(idstr);
+        Terminal.printYellow(StringUtil.toHex(pc, 4));
+        Terminal.println(": illegal read from "+segment+" at address "+StringUtil.addrToString(address));
+    }
+
+    private void writeError(String segment, int address) {
+        String idstr = simulator.getIDTimeString();
+        Terminal.print(idstr);
+        Terminal.printYellow(StringUtil.toHex(pc, 4));
+        Terminal.println(": illegal write to "+segment+" at address "+StringUtil.addrToString(address));
     }
 
     private byte getSRAM(int address) {
@@ -790,16 +817,23 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param val     the value to write
      */
     public void writeDataByte(int address, byte val) {
-        // FAST PATH 1: no watches
-        if ( sram_watches == null ) {
-            setSRAM(address, val);
-            return;
-        }
+        Simulator.Watch p;
 
-        // FAST PATH 2: no watches for this address
-        Simulator.Watch p = sram_watches[address];
-        if ( p == null) {
-            setSRAM(address, val);
+        try {
+            // FAST PATH 1: no watches
+            if ( sram_watches == null ) {
+                setSRAM(address, val);
+                return;
+            }
+
+            // FAST PATH 2: no watches for this address
+            p = sram_watches[address];
+            if ( p == null) {
+                setSRAM(address, val);
+                return;
+            }
+        } catch ( ArrayIndexOutOfBoundsException e ) {
+            writeError("sram", address);
             return;
         }
 
@@ -1097,13 +1131,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             return ((ProbedInstr)i);
         else
             return null;
-    }
-
-    protected ProbedInstr makeProbedInstr(int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if (pi == null) pi = new ProbedInstr(getInstr(addr), addr, null);
-        writeInstr(pi, addr);
-        return pi;
     }
 
     protected void commit() {

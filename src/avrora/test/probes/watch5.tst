@@ -13,7 +13,6 @@ main {
 result {
   102 A.beforeRead;
   102 A.afterRead;
-  104 B.after;
   109 B.before;
   111 B.after;
 }

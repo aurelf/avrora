@@ -161,7 +161,10 @@ public class CallMonitor extends MonitorFactory {
             public void fireBefore(Instr i, int addr, State s) {
                 int inum = (addr / 4) + 1;
                 String istr;
-                if ( inum == 1) istr = "RESET";
+                if ( inum == 1) {
+                    istr = "RESET";
+                    depth = 0;
+                }
                 else istr = "INT #"+inum;
 
                 String caddr = StringUtil.addrToString(addr);

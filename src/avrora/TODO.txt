@@ -13,12 +13,14 @@
     1   devs  IVSEL fuse support for bootloaders
     1  probe  Counters, branchcounters
     1   devs  PDATA broken (?)
-    1  probe  Probes inserted from within watches
     2  probe  getDataByte() calls from within watches
     3  radio  Partial preamble loss
     1   devs  Frame sizes in USART implementation
     2  radio  Delivery over SPI + transmission timing validation
+    1    sim  Out of bound accesses to SRAM, flash, EEPROM
 
+    1  probe  NullPointerException inserting probe on invalid instr (1.5.43)
+    1  probe  Probes inserted from within watches                   (1.5.43)
   2-3  input  Fix objdump preprocessor problems                     (1.5.xx)
     1  probe  Fixed breakpoints that were temporarily broken        (1.5.38)
 

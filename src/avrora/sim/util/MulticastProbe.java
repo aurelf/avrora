@@ -35,6 +35,7 @@ package avrora.sim.util;
 import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.Avrora;
 
 /**
  * The <code>MulticastProbe</code> is a wrapper around multiple probes that allows them to act as a single
@@ -52,16 +53,27 @@ public class MulticastProbe implements Simulator.Probe {
      * simulator.
      */
     private static class Link {
+        boolean addTransaction; // used for transactions; true if the transaction was an add, false if it was a remove
         final Simulator.Probe probe;
         Link next;
 
         Link(Simulator.Probe p) {
             probe = p;
         }
+
+        Link(Simulator.Probe p, boolean a) {
+            probe = p;
+            addTransaction = a;
+        }
     }
 
     private Link head;
     private Link tail;
+
+    private Link transHead;
+    private Link transTail;
+
+    boolean inTransaction;
 
     /**
      * The <code>add()</code> method allows another probe to be inserted into the multicast set. It will be
@@ -71,7 +83,7 @@ public class MulticastProbe implements Simulator.Probe {
      * @param b the probe to insert
      */
     public void add(Simulator.Probe b) {
-        if (b == null) return;
+        if (inTransaction) addTransaction(b, true);
 
         if (head == null) {
             head = tail = new Link(b);
@@ -89,7 +101,7 @@ public class MulticastProbe implements Simulator.Probe {
      * @param b the probe to remove
      */
     public void remove(Simulator.Probe b) {
-        if (b == null) return;
+        if (inTransaction) addTransaction(b, false);
 
         Link prev = null;
         Link pos = head;
@@ -113,6 +125,15 @@ public class MulticastProbe implements Simulator.Probe {
         }
     }
 
+    private void addTransaction(Simulator.Probe p, boolean isAdd) {
+        if (transHead == null) {
+            transHead = transTail = new Link(p, isAdd);
+        } else {
+            transTail.next = new Link(p, isAdd);
+            transTail = transTail.next;
+        }
+    }
+
     /**
      * The <code>isEmpty()</code> method tests whether the multicast set of this probe is empty.
      *
@@ -120,6 +141,22 @@ public class MulticastProbe implements Simulator.Probe {
      */
     public boolean isEmpty() {
         return head == null;
+    }
+
+    public void beginTransaction() {
+        if ( inTransaction ) throw Avrora.failure("recursive entry of transaction!");
+        inTransaction = true;
+    }
+
+    public void endTransaction() {
+        Link thead = transHead;
+        transHead = null;
+        transTail = null;
+        for (Link pos = thead; pos != null; pos = pos.next) {
+            if ( pos.addTransaction ) add(pos.probe);
+            else remove(pos.probe);
+        }
+        inTransaction = false;
     }
 
     /**
@@ -132,6 +169,7 @@ public class MulticastProbe implements Simulator.Probe {
      * @param state   the state of the simulation
      */
     public void fireBefore(Instr i, int address, State state) {
+        beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             pos.probe.fireBefore(i, address, state);
     }
@@ -148,5 +186,6 @@ public class MulticastProbe implements Simulator.Probe {
     public void fireAfter(Instr i, int address, State state) {
         for (Link pos = head; pos != null; pos = pos.next)
             pos.probe.fireAfter(i, address, state);
+        endTransaction();
     }
 }
