@@ -45,10 +45,7 @@ import avrora.util.Option;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
 
-import java.util.LinkedList;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 /**
  * TODO: Doc this
@@ -58,9 +55,9 @@ public class MultiSimulateAction extends SimAction {
     public static final String HELP = "The \"multi-simulate\" action launches a set of simulators with " +
             "the specified program loaded onto each. This is useful for simulating a network of " +
             "sensor nodes and monitoring the behavior of the entire network. ";
-    public final Option.Long NODECOUNT = newOption("nodecount", 1,
+    public final Option.List NODECOUNT = newOptionList("nodecount", "1",
             "This option is used in the multi-node simulation. It specifies the " +
-            "number of nodes to be instantiated.");
+            "number of nodes to be instantiated of each program specified as an argument.");
     public final Option.Long RANDOMSEED = newOption("random-seed", 0,
             "This option is used to seed a pseudo-random number generator used in the " +
             "simulation. If this option is set to non-zero, then its value is used as " +
@@ -111,37 +108,46 @@ public class MultiSimulateAction extends SimAction {
 
         LinkedList simulatorThreadList = new LinkedList();
         PlatformFactory pf = getPlatform();
-        Program program = Main.readProgram(args);
 
-        for (int i = 0; i < NODECOUNT.get(); i++) {
+        int cntr = 0;
+        Iterator i = NODECOUNT.get().iterator();
+        while (i.hasNext()) {
 
-            Simulator simulator;
-            Microcontroller microcontroller;
-            SimulatorThread st;
+            if ( args.length <= cntr ) break;
 
-            if (pf != null) {
-                microcontroller = pf.newPlatform(program).getMicrocontroller();
-                simulator = microcontroller.getSimulator();
-                st = new SimulatorThread(simulator);
-                simulatorThreadList.addFirst(st);
+            String singleArg[] = { args[cntr++] };
+            Program program = Main.getProgramReader().read(singleArg);
 
-            } else {
-                microcontroller = getMicrocontroller().newMicrocontroller(program);
-                simulator = microcontroller.getSimulator();
-                st = new SimulatorThread(simulator);
-                simulatorThreadList.addFirst(st);
+            int max = StringUtil.evaluateIntegerLiteral((String)i.next());
+            for ( int node = 0; node < max; node++ ) {
+                Simulator simulator;
+                Microcontroller microcontroller;
+                SimulatorThread st;
+
+                if (pf != null) {
+                    microcontroller = pf.newPlatform(program).getMicrocontroller();
+                    simulator = microcontroller.getSimulator();
+                    st = new SimulatorThread(simulator);
+                    simulatorThreadList.addFirst(st);
+
+                } else {
+                    microcontroller = getMicrocontroller().newMicrocontroller(program);
+                    simulator = microcontroller.getSimulator();
+                    st = new SimulatorThread(simulator);
+                    simulatorThreadList.addFirst(st);
+                }
+
+                Radio radio = microcontroller.getRadio();
+
+                if (radio != null) {
+                    radio.setSimulatorThread(st);
+                    SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
+                }
+
+                processTimeout(simulator);
+                processRandom(simulator);
+                processStagger(simulator);
             }
-
-            Radio radio = microcontroller.getRadio();
-
-            if (radio != null) {
-                radio.setSimulatorThread(st);
-                SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
-            }
-
-            processTimeout(simulator);
-            processRandom(simulator);
-            processStagger(simulator);
         }
 
         startms = System.currentTimeMillis();
