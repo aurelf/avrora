@@ -156,7 +156,7 @@ public class EnergyProfiler extends MonitorFactory {
         /**
          * find the label nearest to the address. This returns the name of the procedure the address is in.
          *
-         * @param address, address to lookup
+         * @param address address to lookup
          * @return the nearest Label
          */
         private EnergyProfile nearestLabel(int address) {
