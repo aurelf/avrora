@@ -233,6 +233,9 @@ public class Main {
     public static final Option.Long NODECOUNT = options.newOption("nodecount", 1,
             "This option is used in the multi-node simulation. It specifies the " +
             "number of nodes to be instantiated.");
+    public static final Option.Bool MONITOR_STACK = options.newOption("monitor-stack", false,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to report changes to the stack height.");
     public static final Option.Str TOPOLOGY = options.newOption("topology", "",
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network.");

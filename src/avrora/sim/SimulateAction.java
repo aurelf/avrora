@@ -34,10 +34,12 @@ package avrora.sim;
 
 import avrora.Main;
 import avrora.core.Program;
+import avrora.core.Instr;
 import avrora.sim.util.ProgramProfiler;
 import avrora.sim.platform.PlatformFactory;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Verbose;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -61,6 +63,8 @@ public class SimulateAction extends Main.Action {
 
     List counters;
     List branchcounters;
+
+    StackProbe sprobe;
 
     ProgramProfiler profile;
 
@@ -128,6 +132,7 @@ public class SimulateAction extends Main.Action {
         processIcount();
         processTimeout();
         processProfile();
+        processStackMonitor();
 
         if (Main.TRACE.get()) {
             simulator.insertProbe(Simulator.TRACEPROBE);
@@ -145,6 +150,7 @@ public class SimulateAction extends Main.Action {
             reportCycles();
             reportTime();
             reportProfile();
+            reportStackMonitor();
         }
     }
 
@@ -256,6 +262,11 @@ public class SimulateAction extends Main.Action {
         }
     }
 
+    void processStackMonitor() {
+        if ( Main.MONITOR_STACK.get() )
+            simulator.insertProbe(sprobe = new StackProbe());
+    }
+
     private void printSeparator() {
         Terminal.printSeparator(60);
     }
@@ -304,6 +315,17 @@ public class SimulateAction extends Main.Action {
         }
     }
 
+    void reportStackMonitor() {
+        if ( sprobe == null ) return;
+        reportQuantity("Minimum stack pointer #1", "0x"+StringUtil.toHex(sprobe.minStack1,4), "");
+        reportQuantity("Minimum stack pointer #2", "0x"+StringUtil.toHex(sprobe.minStack2,4), "");
+        reportQuantity("Minimum stack pointer #3", "0x"+StringUtil.toHex(sprobe.minStack3,4), "");
+        reportQuantity("Maximum stack pointer", "0x"+StringUtil.toHex(sprobe.maxStack,4), "");
+        reportQuantity("Maximum stack size #1", (sprobe.maxStack - sprobe.minStack1), "bytes");
+        reportQuantity("Maximum stack size #2", (sprobe.maxStack - sprobe.minStack2), "bytes");
+        reportQuantity("Maximum stack size #3", (sprobe.maxStack - sprobe.minStack3), "bytes");
+    }
+
     String addrToString(int address) {
         return StringUtil.toHex(address, 4);
     }
@@ -345,5 +367,45 @@ public class SimulateAction extends Main.Action {
         return buf.toString();
     }
 
+
+    public static class StackProbe implements Simulator.Probe {
+        int lastStack;
+
+        int minStack1 = Integer.MAX_VALUE;
+        int minStack2 = Integer.MAX_VALUE;
+        int minStack3 = Integer.MAX_VALUE;
+        int maxStack = Integer.MIN_VALUE;
+
+        static final Verbose.Printer printer = Verbose.getVerbosePrinter("sim.stack");
+
+        public void fireBefore(Instr i, int address, State s) {
+            lastStack = s.getSP();
+        }
+
+        public void fireAfter(Instr i, int address, State s) {
+            int newStack = s.getSP();
+            if ( lastStack != newStack ) {
+                printer.println("new stack: "+newStack);
+                lastStack = newStack;
+            }
+
+            if ( newStack < minStack1 ) {
+                minStack3 = minStack2;
+                minStack2 = minStack1;
+                minStack1 = newStack;
+            }
+            else if ( newStack == minStack1) return;
+            else if ( newStack < minStack2 ) {
+                minStack3 = minStack2;
+                minStack2 = newStack;
+            }
+            else if ( newStack == minStack2) return;
+            else if ( newStack < minStack3 ) {
+                minStack3 = newStack;
+            }
+
+            if ( newStack > maxStack ) maxStack = newStack;
+        }
+    }
 
 }
