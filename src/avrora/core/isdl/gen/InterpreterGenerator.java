@@ -213,16 +213,17 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         printer.endblock();
     }
 
-    private void initializeOperandMap(InstrDecl d) {
+    private void initializeOperandMap(CodeRegion cr) {
         int regcount = 0;
         int immcount = 0;
 
         operandMap = new HashMap();
-        Iterator i = d.getOperandIterator();
+        Iterator i = cr.getOperandIterator();
         while (i.hasNext()) {
             CodeRegion.Operand o = (CodeRegion.Operand) i.next();
 
-            String name = "i.";
+            String name = "i."+o.name.image;
+/*
             if (o.isRegister()) {
                 name += "r" + (++regcount);
             } else if (o.isImmediate()) {
@@ -230,12 +231,14 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
             } else {
                 name += o.name.image;
             }
+*/
 
             operandMap.put(o.name.image, name);
         }
     }
 
     public void visit(SubroutineDecl d) {
+//        if ( d.inline ) return;
         printer.print("public " + d.ret.image + " " + d.name.image + "(");
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {
@@ -245,6 +248,8 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         }
         printer.print(") ");
         printer.startblock();
+        // initialize the map of local variables to operands
+        initializeOperandMap(d);
         visitStmtList(d.getCode());
         printer.endblock();
     }

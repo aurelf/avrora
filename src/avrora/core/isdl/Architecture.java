@@ -66,16 +66,28 @@ public class Architecture {
     List operands;
     List encodings;
 
+    public interface InstrVisitor {
+        public void visit(InstrDecl d);
+    }
+
+    public interface SubroutineVisitor {
+        public void visit(SubroutineDecl d);
+    }
+
+    public interface OperandVisitor {
+        public void visit(OperandDecl d);
+    }
+
+    public interface EncodingVisitor {
+        public void visit(EncodingDecl d);
+    }
+
     /**
      * The <code>Visitor</code> class represents a visitor over the elements of
      * the architecture description. It has methods to visit each subroutine,
      * instruction, operand, and encoding declared in the specification.
      */
-    public interface Visitor {
-        public void visit(SubroutineDecl d);
-        public void visit(InstrDecl d);
-        public void visit(OperandDecl d);
-        public void visit(EncodingDecl d);
+    public interface Visitor extends InstrVisitor, SubroutineVisitor, OperandVisitor, EncodingVisitor {
     }
 
     public Architecture() {
@@ -92,6 +104,7 @@ public class Architecture {
 
     public void process() {
         processEncodings();
+        processSubroutines();
         processInstructions();
     }
 
@@ -110,6 +123,28 @@ public class Architecture {
             }
 
             printer.println("-> result: " + d.getBitWidth() + " bits");
+        }
+    }
+
+    private void processSubroutines() {
+        Iterator i = subroutines.iterator();
+        while (i.hasNext()) {
+            SubroutineDecl sd = (SubroutineDecl) i.next();
+            printer.print("processing subroutine " + sd.name + " ");
+
+            // find operand decl
+            Iterator oi = sd.getOperandIterator();
+            while (oi.hasNext()) {
+                CodeRegion.Operand od = (CodeRegion.Operand) oi.next();
+                OperandDecl opdec = getOperandDecl(od.type.image);
+                if (opdec != null)
+                    od.setOperandType(opdec);
+            }
+
+            if (printer.enabled) {
+                new PrettyPrinter(printer).visitStmtList(sd.getCode());
+            }
+
         }
     }
 
@@ -200,17 +235,33 @@ public class Architecture {
      * @param v the visitor to accept
      */
     public void accept(Visitor v) {
-        Iterator i;
 
+        accept((OperandVisitor)v);
+        accept((EncodingVisitor)v);
+        accept((SubroutineVisitor)v);
+        accept((InstrVisitor)v);
+    }
+
+    public void accept(OperandVisitor v) {
+        Iterator i;
         i = operands.iterator();
         while ( i.hasNext() ) v.visit((OperandDecl)i.next());
+    }
 
+    public void accept(EncodingVisitor v) {
+        Iterator i;
         i = encodings.iterator();
         while ( i.hasNext() ) v.visit((EncodingDecl)i.next());
+    }
 
+    public void accept(SubroutineVisitor v) {
+        Iterator i;
         i = subroutines.iterator();
         while ( i.hasNext() ) v.visit((SubroutineDecl)i.next());
+    }
 
+    public void accept(InstrVisitor v) {
+        Iterator i;
         i = instructions.iterator();
         while ( i.hasNext() ) v.visit((InstrDecl)i.next());
     }

@@ -53,7 +53,7 @@ public class CodeRegion {
         public final Token type;
         protected OperandDecl operandType;
 
-        Operand(Token n, Token t) {
+        public Operand(Token n, Token t) {
             name = n;
             type = t;
         }
@@ -68,6 +68,11 @@ public class CodeRegion {
 
         public boolean isImmediate() {
             return operandType.isImmediate();
+        }
+
+        public String getType() {
+            if ( operandType != null ) return isRegister() ? "Register" : "int";
+            else return type.image;
         }
 
     }

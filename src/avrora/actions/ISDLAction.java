@@ -36,8 +36,10 @@ import avrora.Avrora;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.parser.ISDLParser;
 import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.gen.ClassGenerator;
 import avrora.util.Printer;
 import avrora.util.SectionFile;
+import avrora.util.Option;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,13 +53,23 @@ public class ISDLAction extends Action {
             "(ISDL) tool, which is used internally in Avrora to describe the AVR " +
             "instruction set.";
 
+    public final Option.Bool CLASSES = newOption("classes", true,
+            "This option controls whether the ISDL generation tool will emit the code " +
+            "for instruction classes.");
+    public final Option.Bool INTERPRETER = newOption("interpreter", true,
+            "This option controls whether the ISDL generation tool will emit the code " +
+            "for the interpreter for this architecture.");
+    public final Option.Bool DBBC = newOption("dbbc", true,
+            "This option controls the generation of the dynamic basic block compiler " +
+            "(DBBC).");
+
     public ISDLAction() {
         super("isdl", HELP);
     }
 
     public void run(String[] args) throws Exception {
-        if (args.length != 2)
-            Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl> <interpreter.java>");
+        if (args.length != 3)
+            Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl> <interpreter.java> <instr.java>");
 
         File archfile = new File(args[0]);
         FileInputStream fis = new FileInputStream(archfile);
@@ -66,6 +78,9 @@ public class ISDLAction extends Action {
 
         SectionFile f = new SectionFile(args[1], "INTERPRETER GENERATOR");
         new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
+        f.close();
+        f = new SectionFile(args[2], "INSTR GENERATOR");
+        new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
         f.close();
     }
 }
