@@ -265,15 +265,15 @@ public class StringUtil {
     public static int SECS_PER_HOUR = 3600;
     public static int SECS_PER_MIN = 60;
 
-    public static int MILLISECS_PER_DAY = 3600 * 24 * 1000;
-    public static int MILLISECS_PER_HOUR = 3600 * 1000;
-    public static int MILLISECS_PER_MIN = 60 * 1000;
-    public static int MILLISECS_PER_SEC = 1000;
+    public static long MILLISECS_PER_DAY = 3600 * 24 * 1000;
+    public static long MILLISECS_PER_HOUR = 3600 * 1000;
+    public static long MILLISECS_PER_MIN = 60 * 1000;
+    public static long MILLISECS_PER_SEC = 1000;
 
     public static String milliAsString(long millis) {
         StringBuffer buf = new StringBuffer();
 
-        if (millis >= SECS_PER_DAY) {
+        if (millis >= MILLISECS_PER_DAY) {
             int days = (int) (millis / MILLISECS_PER_DAY);
             buf.append(days + "d ");
             millis = millis - days * MILLISECS_PER_DAY;
