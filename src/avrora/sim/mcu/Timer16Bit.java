@@ -35,6 +35,7 @@ package avrora.sim.mcu;
 import avrora.sim.State;
 import avrora.sim.Simulator;
 import avrora.sim.Clock;
+import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
 
 /**
@@ -73,7 +74,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     final ControlRegisterB TCCRnB_reg;
     final ControlRegisterC TCCRnC_reg;
 
-    final State.RWIOReg TCNTnH_reg; // timer counter registers
+    final RWRegister TCNTnH_reg; // timer counter registers
     final TCNTnRegister TCNTnL_reg;
     final PairedRegister TCNTn_reg;
 
@@ -89,10 +90,10 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     final BufferedRegister OCRnCL_reg;
     final PairedRegister OCRnC_reg;
 
-    final State.RWIOReg highTempReg;
+    final RWRegister highTempReg;
 
-    final State.RWIOReg ICRnH_reg; // input capture registers
-    final State.RWIOReg ICRnL_reg;
+    final RWRegister ICRnH_reg; // input capture registers
+    final RWRegister ICRnL_reg;
     final PairedRegister ICRn_reg;
 
     final AtmelMicrocontroller.Pin outputComparePinA;
@@ -150,13 +151,13 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         ticker = new Ticker();
 
-        highTempReg = new State.RWIOReg();
+        highTempReg = new RWRegister();
 
         TCCRnA_reg = new ControlRegisterA();
         TCCRnB_reg = new ControlRegisterB();
         TCCRnC_reg = new ControlRegisterC();
 
-        TCNTnH_reg = new State.RWIOReg();
+        TCNTnH_reg = new RWRegister();
         TCNTnL_reg = new TCNTnRegister();
         TCNTn_reg = new PairedRegister(TCNTnH_reg, TCNTnL_reg);
 
@@ -172,8 +173,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         OCRnCL_reg = new BufferedRegister();
         OCRnC_reg = new OCRnxPairedRegister(OCRnCH_reg, OCRnCL_reg);
 
-        ICRnH_reg = new State.RWIOReg();
-        ICRnL_reg = new State.RWIOReg();
+        ICRnH_reg = new RWRegister();
+        ICRnL_reg = new RWRegister();
         ICRn_reg = new PairedRegister(ICRnL_reg, ICRnH_reg);
 
         externalClock = m.getClock("external");
@@ -251,7 +252,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
      * <code>ControlRegister</code> is an abstract class describing the control registers of a 16-bit
      * timer.
      */
-    protected abstract class ControlRegister extends State.RWIOReg {
+    protected abstract class ControlRegister extends RWRegister {
 
         protected abstract void decode(byte val);
 
@@ -277,11 +278,11 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
      * on this register will act accordingly on the low register, as well as initiate a read/write on
      * the associated high register.
      */
-    protected class PairedRegister extends State.RWIOReg {
-        State.RWIOReg high;
-        State.RWIOReg low;
+    protected class PairedRegister extends RWRegister {
+        RWRegister high;
+        RWRegister low;
 
-        PairedRegister(State.RWIOReg high, State.RWIOReg low) {
+        PairedRegister(RWRegister high, RWRegister low) {
             this.high = high;
             this.low = low;
         }
@@ -312,7 +313,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
      * OCRnx registers. Reads on the OCRnxH registers are direct.
      */
     protected class OCRnxPairedRegister extends PairedRegister {
-        OCRnxPairedRegister(State.RWIOReg high, State.RWIOReg low) {
+        OCRnxPairedRegister(RWRegister high, RWRegister low) {
             super(high, low);
         }
 
@@ -328,10 +329,10 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     /**
      * See doc for OCRnxPairedRegister.
      */
-    protected class OCRnxTempHighRegister extends State.RWIOReg {
-        State.RWIOReg register;
+    protected class OCRnxTempHighRegister extends RWRegister {
+        RWRegister register;
 
-        OCRnxTempHighRegister(State.RWIOReg register) {
+        OCRnxTempHighRegister(RWRegister register) {
             this.register = register;
         }
 
@@ -356,7 +357,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
      * Overloads the write behavior of this class of register in order to implement compare match
      * blocking for one timer period.
      */
-    protected class TCNTnRegister extends State.RWIOReg {
+    protected class TCNTnRegister extends RWRegister {
         /* expr of the blockCompareMatch corresponding to
          * this register in the array of boolean flags.  */
         public void write(byte val) {
@@ -557,11 +558,11 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
      * write and reading from the buffered register in a read. When the buffered register is to be
      * updated, the flush() method should be called.
      */
-    protected class BufferedRegister extends State.RWIOReg {
-        final State.RWIOReg register;
+    protected class BufferedRegister extends RWRegister {
+        final RWRegister register;
 
         protected BufferedRegister() {
-            this.register = new State.RWIOReg();
+            this.register = new RWRegister();
         }
 
         public void write(byte val) {

@@ -34,7 +34,6 @@ package avrora.stack;
 
 import avrora.Avrora;
 import avrora.core.Program;
-import avrora.sim.IORegisterConstants;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 

@@ -62,7 +62,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
      * and flags. This class contains much of the functionality necessary to implement the interrupt registers
      * and is specialized for the mask register and flag register cases.
      */
-    abstract static class IMRReg extends State.RWIOReg {
+    abstract static class IMRReg extends RWRegister {
 
         /**
          * The <code>mapping</code> array maps a bit number (0-7) to an interrupt number (0-35). This is used
@@ -202,7 +202,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
-    public static class DirectionRegister extends State.RWIOReg {
+    public static class DirectionRegister extends RWRegister {
 
         protected ATMegaFamily.Pin[] pins;
 
@@ -222,7 +222,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
-    public static class PortRegister extends State.RWIOReg {
+    public static class PortRegister extends RWRegister {
         protected ATMegaFamily.Pin[] pins;
 
         protected PortRegister(ATMegaFamily.Pin[] p) {
@@ -241,7 +241,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
-    public static class PinRegister implements State.IOReg {
+    public static class PinRegister implements ActiveRegister {
         protected ATMegaFamily.Pin[] pins;
 
         protected PinRegister(ATMegaFamily.Pin[] p) {
@@ -301,7 +301,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
 
         // See pg. 104 of the ATmega128 doc
-        protected class ASSRRegister extends State.RWIOReg {
+        protected class ASSRRegister extends RWRegister {
             static final int AS0 = 3;
             static final int TCN0UB = 2;
             static final int OCR0UB = 1;

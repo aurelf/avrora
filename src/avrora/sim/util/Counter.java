@@ -44,7 +44,7 @@ import avrora.sim.State;
  *
  * @author Ben L. Titzer
  */
-public class Counter implements Simulator.Probe {
+public class Counter extends Simulator.Probe.Empty {
     /**
      * The <code>count</code> field stores the accumulation of all events received by this counter. This field
      * is incremented once each time the <code>fireBefore()</code> method is invoked.
@@ -63,14 +63,4 @@ public class Counter implements Simulator.Probe {
         count++;
     }
 
-    /**
-     * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
-     * implementation of the counter, it does nothing.
-     *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
-     */
-    public void fireAfter(Instr i, int address, State state) {
-    }
 }

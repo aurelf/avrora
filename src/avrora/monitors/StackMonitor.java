@@ -52,7 +52,7 @@ public class StackMonitor extends MonitorFactory {
      * The <code>Monitor</code> class implements a monitor for the stack height that inserts a probe after
      * every instruction in the program and checks the stack height after each instruction is executed.
      */
-    public class Monitor implements avrora.monitors.Monitor, Simulator.Probe {
+    public class Monitor extends Simulator.Probe.Empty implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
         public final ProgramProfiler profile;
@@ -63,10 +63,6 @@ public class StackMonitor extends MonitorFactory {
         int maxStack = Integer.MIN_VALUE;
 
         final Simulator.Printer printer;
-
-        public void fireBefore(Instr i, int address, State s) {
-            // do nothing
-        }
 
         public void fireAfter(Instr i, int address, State s) {
             int newStack = s.getSP();

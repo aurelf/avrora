@@ -80,7 +80,7 @@ public class TraceMonitor extends MonitorFactory {
             }
         }
 
-        public class StartProbe implements Simulator.Probe {
+        public class StartProbe extends Simulator.Probe.Empty {
             int start, end;
             String pair;
 
@@ -104,12 +104,9 @@ public class TraceMonitor extends MonitorFactory {
                 }
                 nesting++;
             }
-
-            public void fireAfter(Instr i, int addr, State s) {
-            }
         }
 
-        public class EndProbe implements Simulator.Probe {
+        public class EndProbe extends Simulator.Probe.Empty {
             int start, end;
             String pair;
 
@@ -117,9 +114,6 @@ public class TraceMonitor extends MonitorFactory {
                 start = s;
                 end = e;
                 pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
-            }
-
-            public void fireBefore(Instr i, int addr, State s) {
             }
 
             public void fireAfter(Instr i, int addr, State s) {

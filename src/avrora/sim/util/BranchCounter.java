@@ -46,7 +46,7 @@ import avrora.sim.State;
  * @author Ben L. Titzer
  * @see avrora.sim.util.Counter
  */
-public class BranchCounter implements Simulator.Probe {
+public class BranchCounter extends Simulator.Probe.Empty {
 
     /**
      * This field tracks the number of times the branch is taken. It is incremented in the
@@ -59,19 +59,6 @@ public class BranchCounter implements Simulator.Probe {
      * <code>fireAfter</code> method if the branch was not taken.
      */
     public int nottakenCount;
-
-    /**
-     * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
-     * implementation of the branch counter, nothing needs to be done before the branch is executed, so this
-     * method does nothing.
-     *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
-     */
-    public void fireBefore(Instr i, int address, State state) {
-        // do nothing.
-    }
 
     /**
      * The <code>fireAfter()</code> method is called after the probed instruction executes. In the

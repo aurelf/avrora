@@ -189,10 +189,10 @@ public class SimulateAction extends SimAction {
         try {
             printSimHeader();
             simulator.start();
-        } catch (Simulator.BreakPointException e) {
+        } catch (BreakPointException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
-        } catch (Simulator.TimeoutException e) {
+        } catch (TimeoutException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + simulator.getClock().getCount());
         } catch (Avrora.Error e) {
@@ -222,13 +222,9 @@ public class SimulateAction extends SimAction {
         }
     }
     
-    class BreakPointProbe implements Simulator.Probe {
+    class BreakPointProbe extends Simulator.Probe.Empty {
         public void fireBefore(Instr i, int address, State s) {
-            throw new Simulator.BreakPointException(i, address, s);
-        }
-
-        public void fireAfter(Instr i, int address, State s) {
-
+            throw new BreakPointException(i, address, s);
         }
     }
 

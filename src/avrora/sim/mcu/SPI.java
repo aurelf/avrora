@@ -34,6 +34,8 @@ package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.ActiveRegister;
+import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
 
 /**
@@ -211,13 +213,14 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
      * SPI data register. Writes to this register are transmitted to the connected device and reads
      * from the register read the data received from the connected device.
      */
-    class SPDReg implements State.IOReg {
+    class SPDReg implements ActiveRegister {
 
         protected final ReceiveRegister receiveReg;
         protected final TransmitRegister transmitReg;
 
-        protected class ReceiveRegister extends State.RWIOReg {
+        protected class ReceiveRegister extends RWRegister {
 
+            // TODO: there is no need for a special class to print out debugging information
             public byte read() {
                 byte val = super.read();
                 if (devicePrinter.enabled)
@@ -233,7 +236,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
             }
         }
 
-        protected class TransmitRegister extends State.RWIOReg {
+        protected class TransmitRegister extends RWRegister {
 
             byte oldData;
 
@@ -307,7 +310,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
     /**
      * SPI control register.
      */
-    protected class SPCRReg extends State.RWIOReg {
+    protected class SPCRReg extends RWRegister {
 
         static final int SPIE = 7;
         static final int SPE = 6;
@@ -369,7 +372,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
     /**
      * SPI status register.
      */
-    class SPSReg extends State.RWIOReg {
+    class SPSReg extends RWRegister {
         // TODO: implement write collision
         // TODO: finish implementing interrupt
 

@@ -46,99 +46,11 @@ public interface State {
 
 
     /**
-     * The <code>IOReg</code> interface models the behavior of an IO register. Since some IO registers behave
-     * specially with regards to the devices they control, their functionality can be implemented externally
-     * to the <code> State</code> class.
-     *
-     * @author Ben L. Titzer
-     */
-    public interface IOReg {
-        /**
-         * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For special IO
-         * registers, this may cause some action like device activity, or the actual value of the register may
-         * need to be fetched or computed.
-         *
-         * @return the value of the register as a byte
-         */
-        public byte read();
-
-        /**
-         * The <code>write()</code> method writes an 8-bit value to the IO register as a byte. For special IO
-         * registers, this may cause some action like device activity, masking/unmasking of interrupts, etc.
-         *
-         * @param val the value to write
-         */
-        public void write(byte val);
-
-        /**
-         * The <code>readBit()</code> method reads a single bit from the IO register.
-         *
-         * @param num the number of the bit to read
-         * @return the value of the bit as a boolean
-         */
-        public boolean readBit(int num);
-
-        /**
-         * The <code>writeBit()</code> method writes a single bit value into the IO register at the specified
-         * bit offset.
-         *
-         * @param num the number of the bit to write
-         * @param val the value of the bit to write
-         */
-        public void writeBit(int num, boolean val);
-    }
-
-    /**
-     * The <code>RWIOReg</code> class is an implementation of an IO register that has the simple, default
-     * behavior of being able to read and write just as a general purpose register or byte in SRAM.
-     *
-     * @author Ben L. Titzer
-     */
-    public static class RWIOReg implements IOReg {
-
-        protected byte value;
-
-        /**
-         * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For simple
-         * <code>RWIOReg</code> instances, this simply returns the internally stored value.
-         *
-         * @return the value of the register as a byte
-         */
-        public byte read() {
-            return value;
-        }
-
-        /**
-         * The <code>write()</code> method writes an 8-bit value to the IO register as a byte. For simple
-         * <code>RWIOReg</code> instances, this simply writes the internally stored value.
-         *
-         * @param val the value to write
-         */
-        public void write(byte val) {
-            value = val;
-        }
-
-        /**
-         * The <code>readBit()</code> method reads a single bit from the IO register.
-         *
-         * @param num the number of the bit to read
-         * @return the value of the bit as a boolean
-         */
-        public boolean readBit(int num) {
-            return Arithmetic.getBit(value, num);
-        }
-
-        public void writeBit(int num, boolean val) {
-            value = Arithmetic.setBit(value, num, val);
-        }
-    }
-
-    /**
      * The <code>RESERVED</code> field of the state class represents an instance of the <code>IOReg</code>
      * interface that will not allow any writes to this register to occur. These reserved IO registers are
      * specified in the hardware manuals.
      */
-    public static final IOReg RESERVED = new IOReg() {
+    public static final ActiveRegister RESERVED = new ActiveRegister() {
         public byte read() {
             return 0;
         }
@@ -285,14 +197,12 @@ public interface State {
      */
     public int getSP();
 
-
     /**
      * The <code>getPC()</code> retrieves the current program counter.
      *
      * @return the program counter as a byte address
      */
     public int getPC();
-
 
     /**
      * The <code>getInstr()</code> can be used to retrieve a reference to the <code>Instr</code> object
@@ -306,7 +216,6 @@ public interface State {
      *         the program
      */
     public Instr getInstr(int address);
-
 
     /**
      * The <code>getDataByte()</code> method reads a byte value from the data memory (SRAM) at the specified
@@ -331,7 +240,6 @@ public interface State {
      */
     public byte getProgramByte(int address);
 
-
     /**
      * The <code>getIORegisterByte()</code> method reads the value of an IO register. Invocation of this
      * method causes an invocatiobn of the <code>.read()</code> method on the corresponding internal
@@ -342,7 +250,6 @@ public interface State {
      */
     public byte getIORegisterByte(int ioreg);
 
-
     /**
      * The <code>getIOReg()</code> method is used to retrieve a reference to the actual <code>IOReg</code>
      * instance stored internally in the state. This is generally only used in the simulator and device
@@ -351,7 +258,7 @@ public interface State {
      * @param ioreg the IO register number to retrieve
      * @return a reference to the <code>IOReg</code> instance of the specified IO register
      */
-    public IOReg getIOReg(int ioreg);
+    public ActiveRegister getIOReg(int ioreg);
 
     /**
      * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the simulation.
@@ -365,6 +272,6 @@ public interface State {
      *
      * @return true if the simulator is in a sleep mode; false otherwise
      */
-    public boolean isSleeping();
+    public int getSleepMode();
 
 }

@@ -183,7 +183,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
     protected class IORegMap extends GetterSetterMap {
         IORegMap() {
-            super("getIORegisterByte", "setIORegisterByte");
+            super("getIORegisterByte", "writeIORegisterByte");
         }
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
@@ -226,9 +226,9 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
     protected void initializeMaps() {
         mapMap.put("regs", new ArrayMap("sram"));
-        mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "setRegisterByte"));
-        mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "setRegisterWord"));
-        mapMap.put("sram", new GetterSetterMap("getDataByte", "setDataByte"));
+        mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "writeRegisterByte"));
+        mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "writeRegisterWord"));
+        mapMap.put("sram", new GetterSetterMap("getDataByte", "writeDataByte"));
         mapMap.put("ioregs", new IORegMap());
         mapMap.put("program", new GetterSetterMap("getProgramByte", "setProgramByte"));
         mapMap.put("isize", new GetterSetterMap("getInstrSize", "---"));

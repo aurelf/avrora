@@ -34,6 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
 
 /**
@@ -122,7 +123,8 @@ public class ADC extends AtmelInternalDevice {
     /**
      * Abstract class grouping together registers related to the ADC.
      */
-    protected abstract class ADCRegister extends State.RWIOReg {
+    // TODO: is this class necessary?
+    protected abstract class ADCRegister extends RWRegister {
         public void write(byte val) {
             super.write(val);
             decode(val);
@@ -207,11 +209,12 @@ public class ADC extends AtmelInternalDevice {
     /**
      * <code>DataRegister</code> defines the behavior of the ADC's 10-bit data register.
      */
-    protected class DataRegister extends State.RWIOReg {
+    // TODO: is this class even necessary?
+    protected class DataRegister {
         public final DataRegister.High high = new DataRegister.High();
         public final DataRegister.Low low = new DataRegister.Low();
 
-        private class High extends State.RWIOReg {
+        private class High extends RWRegister {
             public void write(byte val) {
                 super.write(((byte)(val & 0x3)));
                 if (devicePrinter.enabled) {
@@ -234,7 +237,8 @@ public class ADC extends AtmelInternalDevice {
             }
         }
 
-        private class Low extends State.RWIOReg {
+        private class Low extends RWRegister {
+            // TODO: there should be no need for a special class to print out debugging information
             public byte read() {
                 if (devicePrinter.enabled) {
                     devicePrinter.println("ADC (ADCL): read " + hex(super.read()));

@@ -46,7 +46,7 @@ import avrora.sim.State;
  * @see avrora.sim.Simulator.Watch
  * @see Counter
  */
-public class MemoryCounter implements Simulator.Watch {
+public class MemoryCounter extends Simulator.Watch.Empty {
 
     /**
      * The <code>rcount</code> field stores the number of reads encountered for this memory location.
@@ -85,31 +85,4 @@ public class MemoryCounter implements Simulator.Watch {
         wcount++;
     }
 
-    /**
-     * The <code>fireAfterRead()</code> method is called after the data address is read by the program. In the
-     * implementation of <code>MemoryCounter</code>, it does nothing.
-     *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
-     * @param state     the state of the simulation
-     * @param data_addr the address of the data being referenced
-     * @param value     the value of the memory location being read
-     */
-    public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
-        // do nothing
-    }
-
-    /**
-     * The <code>fireAfterWrite()</code> method is called after the data address is written by the program. In
-     * the implementation of <code>MemoryCounter</code>, it does nothing.
-     *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
-     * @param state     the state of the simulation
-     * @param data_addr the address of the data being referenced
-     * @param value     the value being written to the memory location
-     */
-    public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
-        // do nothing
-    }
 }

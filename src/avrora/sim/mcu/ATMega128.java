@@ -95,7 +95,7 @@ public class ATMega128 extends ATMegaFamily {
         0, 0, 0, 0, 0, 1000, 6, 1000, 6
     };
 
-    protected final State.IOReg MCUCR_reg;
+    protected final ActiveRegister MCUCR_reg;
 
     private static final int[][] transitionTimeMatrix  = FiniteStateMachine.buildBimodalTTM(idleModeNames.length, 0, wakeupTimes, new int[wakeupTimes.length]);
 

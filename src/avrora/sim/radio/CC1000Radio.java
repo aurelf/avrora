@@ -32,10 +32,7 @@
 
 package avrora.sim.radio;
 
-import avrora.sim.Energy;
-import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.sim.mcu.*;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.sim.radio.freespace.LocalAir;
@@ -283,23 +280,11 @@ public class CC1000Radio implements Radio {
      * The <code>RadioRegister</code> is an abstract register grouping together registers on the CC1000
      * radio.
      */
-    protected abstract class RadioRegister extends State.RWIOReg {
-        public void write(byte val) {
-            super.write(val);
-            decode(val);
-            if (radioPrinter.enabled) {
-                printStatus();
-            }
+    protected abstract class RadioRegister {
+        protected final String id; // name of this register
+        protected final byte def; // default value
 
-        }
-
-        public void writeBit(int bit, boolean val) {
-            super.writeBit(bit, val);
-            decode(value);
-            if (radioPrinter.enabled) {
-                printStatus();
-            }
-        }
+        protected byte value; // current value of this register
 
         RadioRegister(String id, byte def) {
             this.id = id;
@@ -307,11 +292,29 @@ public class CC1000Radio implements Radio {
             this.value = def;
         }
 
-        protected final String id;
+        public void write(byte val) {
+            value = val;
+            decode(value);
+            if (radioPrinter.enabled) {
+                printStatus();
+            }
 
-        protected final byte def; // default value
+        }
+
+        public void writeBit(int bit, boolean val) {
+            value = Arithmetic.setBit(value, bit, val);
+            decode(value);
+            if (radioPrinter.enabled) {
+                printStatus();
+            }
+        }
+
+        public byte read() {
+            return value;
+        }
 
         protected abstract void decode(byte val);
+
 
         protected void printStatus() {
             radioPrinter.println("CC1000[" + id + "]: ...");
@@ -455,7 +458,7 @@ public class CC1000Radio implements Radio {
     /**
      * A frequency register on the CC1000. It is divided into three 8-bit registers.
      */
-    protected class FrequencyRegister extends State.RWIOReg {
+    protected class FrequencyRegister {
         protected final FrequencySubRegister reg2;
         protected final FrequencySubRegister reg1;
         protected final FrequencySubRegister reg0;
@@ -503,7 +506,7 @@ public class CC1000Radio implements Radio {
     /**
      * The frequency separation register on the CC1000. It is divided into two 8-bit registers.
      */
-    protected class FrequencySeparationRegister extends State.RWIOReg {
+    protected class FrequencySeparationRegister {
         protected final SubRegister reg1 = new SubRegister("FSEP1");
         protected final SubRegister reg0 = new SubRegister("FSEP0");
 

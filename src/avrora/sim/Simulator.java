@@ -33,6 +33,7 @@
 package avrora.sim;
 
 import avrora.Avrora;
+import avrora.actions.SimAction;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
@@ -259,6 +260,37 @@ public class Simulator {
          * @param state   the state of the simulation
          */
         public void fireAfter(Instr i, int address, State state);
+
+        /**
+         * The <code>Simulator.Probe.Empty</code> class is a simple base class for probes that do
+         * not implement one or more methods. Deriving from this class allows shorter probes to
+         * be written.
+         */
+        public static class Empty implements Probe {
+            /**
+             * The <code>fireBefore()</code> method is called before the probed instruction executes.
+             * In the implementation of the <code>Empty</code> probe, this method is empty.
+             *
+             * @param i       the instruction being probed
+             * @param address the address at which this instruction resides
+             * @param state   the state of the simulation
+             */
+            public void fireBefore(Instr i, int address, State state) {
+                // do nothing
+            }
+
+            /**
+             * The <code>fireAfter()</code> method is called after the probed instruction executes.
+             * In the implementation of the <code>Empty</code> probe, this method is empty.
+             *
+             * @param i       the instruction being probed
+             * @param address the address at which this instruction resides
+             * @param state   the state of the simulation
+             */
+            public void fireAfter(Instr i, int address, State state) {
+                // do nothing
+            }
+        }
     }
 
     /**
@@ -324,82 +356,70 @@ public class Simulator {
          * @param value     the value being written to the memory location
          */
         public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value);
-    }
-
-    /**
-     * The <code>BreakPointException</code> is an exception that is thrown by the simulator before it executes
-     * an instruction which has a breakpoint. When this exception is thrown within the simulator, the
-     * simulator is left in a state where it is ready to be resumed where it left off by the
-     * <code>start()</code> method. When resuming, the breakpointed instruction will not cause a second
-     * <code>BreakPointException</code> until the the instruction is executed a second time.
-     *
-     * @author Ben L. Titzer
-     */
-    public static class BreakPointException extends RuntimeException {
-        /**
-         * The <code>instr</code> field stores the instruction that caused the breakpoint.
-         */
-        public final Instr instr;
 
         /**
-         * The <code>address</code> field stores the address of the instruction that caused the breakpoint.
+         * The <code>Simulator.Watch.Empty</code> class acts as a base class with empty methods for
+         * each fireXXX() method. This makes it easier to write much shorter simple watches because
+         * empty methods are simply inherited.
          */
-        public final int address;
+        public static class Empty implements Watch {
 
-        /**
-         * The <code>state</code> field stores a reference to the state of the simulator when the breakpoint
-         * occurred, before executing the instruction.
-         */
-        public final State state;
+            /**
+             * The <code>fireBeforeRead()</code> method is called before the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             */
+            public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+                // do nothing.
+            }
 
-        public BreakPointException(Instr i, int a, State s) {
-            super("breakpoint @ " + StringUtil.addrToString(a) + " reached");
-            instr = i;
-            address = a;
-            state = s;
-        }
-    }
+            /**
+             * The <code>fireBeforeWrite()</code> method is called before the data address is written by the
+             * program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             * @param value     the value being written to the memory location
+             */
+            public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+                // do nothing.
+            }
 
-    /**
-     * The <code>TimeoutException</code> is thrown by the simulator when a timeout reaches zero. Timeouts can
-     * be used to ensure termination of the simulator during testing, and implementing timestepping in
-     * surrounding tools such as interactive debuggers or visualizers.
-     * <p/>
-     * When the exception is thrown, the simulator is left in a state that is safe to be resumed by a
-     * <code>start()</code> call.
-     *
-     * @author Ben L. Titzer
-     */
-    public static class TimeoutException extends RuntimeException {
+            /**
+             * The <code>fireAfterRead()</code> method is called after the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             * @param value     the value of the memory location being read
+             */
+            public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
+                // do nothing.
+            }
 
-        /**
-         * The <code>instr</code> field stores the next instruction to be executed after the timeout.
-         */
-        public final Instr instr;
-
-        /**
-         * The <code>address</code> field stores the address of the next instruction to be executed after the
-         * timeout.
-         */
-        public final int address;
-
-        /**
-         * The <code>state</code> field stores the state of the simulation at the point at which the timeout
-         * occurred.
-         */
-        public final State state;
-
-        /**
-         * The <code>timeout</code> field stores the value (in clock cycles) of the timeout that occurred.
-         */
-        public final long timeout;
-
-        TimeoutException(Instr i, int a, State s, long t, String l) {
-            super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + ' ' + l);
-            instr = i;
-            address = a;
-            state = s;
-            timeout = t;
+            /**
+             * The <code>fireAfterWrite()</code> method is called after the data address is written by the
+             * program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             * @param value     the value being written to the memory location
+             */
+            public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
+                // do nothing.
+            }
         }
     }
 
@@ -689,55 +709,6 @@ public class Simulator {
     }
 
     /**
-     * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws a
-     * <code>TimeoutException</code> when the count reaches zero. It is useful for ensuring termination of the
-     * simulator, for performance testing, or for profiling and stopping after a specified number of
-     * invocations.
-     *
-     * @author Ben L. Titzer
-     */
-    public static class InstructionCountTimeout implements Probe {
-        public final long timeout;
-        protected long left;
-
-        /**
-         * The constructor for <code>InstructionCountTimeout</code> creates with the specified initial value.
-         *
-         * @param t the number of clock cycles before timeout should occur
-         */
-        public InstructionCountTimeout(long t) {
-            timeout = t;
-            left = t;
-        }
-
-        /**
-         * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
-         * implementation of the timeout, it does nothing.
-         *
-         * @param i       the instruction being probed
-         * @param address the address at which this instruction resides
-         * @param state   the state of the simulation
-         */
-        public void fireBefore(Instr i, int address, State state) {
-            // do nothing
-        }
-
-        /**
-         * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
-         * implementation of the timeout, it simply decrements the timeout and and throws a TimeoutException
-         * when the count reaches zero.
-         *
-         * @param i       the instruction being probed
-         * @param address the address at which this instruction resides
-         * @param state   the state of the simulation
-         */
-        public void fireAfter(Instr i, int address, State state) {
-            if (--left <= 0)
-                throw new TimeoutException(i, address, state, timeout, "instructions");
-        }
-    }
-
-    /**
      * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws an
      * exception when the count reaches zero. It is useful for ensuring termination of the simulator, for
      * performance testing, or for profiling and stopping after a specified number of invocations.
@@ -765,7 +736,7 @@ public class Simulator {
          */
         public void fire() {
             int pc = interpreter.getPC();
-            throw new TimeoutException(interpreter.getInstr(pc), pc, interpreter, timeout, "clock cycles");
+            throw new SimAction.TimeoutException(interpreter.getInstr(pc), pc, interpreter, timeout, "clock cycles");
         }
 
     }

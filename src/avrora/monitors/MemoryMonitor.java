@@ -99,7 +99,7 @@ public class MemoryMonitor extends MonitorFactory {
         private void insertWatches(boolean empty) {
 
             Simulator.Watch w;
-            if (  empty ) w = new EmptyWatch();
+            if (  empty ) w = new Simulator.Watch.Empty();
             else w = memprofile;
 
             if ( LOCATIONS.get().size() > 0 ) {
@@ -179,16 +179,6 @@ public class MemoryMonitor extends MonitorFactory {
             Terminal.println(' ' + ("  " + wpercent));
         }
 
-    }
-
-    public static class EmptyWatch implements Simulator.Watch {
-        public void fireBeforeRead(Instr i, int address, State state, int data_addr) {}
-
-        public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {}
-
-        public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {}
-
-        public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {}
     }
 
     public MemoryMonitor() {

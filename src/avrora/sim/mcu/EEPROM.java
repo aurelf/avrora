@@ -34,6 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.sim.State;
 import avrora.sim.Simulator;
+import avrora.sim.RWRegister;
 
 /**
  * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.
@@ -51,9 +52,9 @@ public class EEPROM extends AtmelInternalDevice {
     public static final int EECR = 0x1C;
 
     final byte[] EEPROM_data;
-    final State.RWIOReg EEDR_reg;
+    final RWRegister EEDR_reg;
     final EECRReg EECR_reg;
-    final State.RWIOReg EEARL_reg;
+    final RWRegister EEARL_reg;
     final EEARHReg EEARH_reg;
 
     // flag bits on EECR
@@ -84,9 +85,9 @@ public class EEPROM extends AtmelInternalDevice {
 
         ticker = new EEPROMTicker();
 
-        EEDR_reg = new State.RWIOReg();
+        EEDR_reg = new RWRegister();
         EECR_reg = new EECRReg();
-        EEARL_reg = new State.RWIOReg();
+        EEARL_reg = new RWRegister();
         EEARH_reg = new EEARHReg();
 
         EEPROM_SIZE = size;
@@ -99,8 +100,9 @@ public class EEPROM extends AtmelInternalDevice {
 
     }
 
-    protected class EEARHReg extends State.RWIOReg {
+    protected class EEARHReg extends RWRegister {
         public void write(byte val) {
+            // TODO: this code has no effect!
             value = (byte)(0xff & val);
             mainClock.insertEvent(ticker, 1);
         }
@@ -114,7 +116,7 @@ public class EEPROM extends AtmelInternalDevice {
 
     }
 
-    protected class EECRReg extends State.RWIOReg {
+    protected class EECRReg extends RWRegister {
 
         public void decode(byte val) {
             boolean readEnableOld = readEnable;

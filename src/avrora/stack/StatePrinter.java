@@ -32,7 +32,6 @@
 
 package avrora.stack;
 
-import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 

@@ -33,6 +33,7 @@
 package avrora.sim;
 
 import avrora.Avrora;
+import avrora.actions.SimAction;
 
 
 /**
@@ -77,7 +78,7 @@ public class SimulatorThread extends Thread {
     public void run() {
         try {
             simulator.start();
-        } catch (Simulator.TimeoutException te) {
+        } catch (SimAction.TimeoutException te) {
             // suppress timeout exceptions.
         } catch (Avrora.Error e) {
             e.report();

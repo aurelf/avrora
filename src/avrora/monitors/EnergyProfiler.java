@@ -224,7 +224,7 @@ public class EnergyProfiler extends MonitorFactory {
          *         <p/>
          *         Class for a GlobalProbe which is called when a new basic block is entered
          */
-        public class ProcedureProbe implements Simulator.Probe {
+        public class ProcedureProbe extends Simulator.Probe.Empty {
 
             /**
              * fired before the basic block is entered, it logs the previos state
@@ -246,14 +246,6 @@ public class EnergyProfiler extends MonitorFactory {
                 currentMode = (EnergyProfile)labelLookup.get(new Integer(address));
             }
 
-            /**
-             * In this case, nothing is done. However, the interface requires an implementation
-             *
-             * @see avrora.sim.Simulator.Probe#fireAfter(avrora.core.Instr, int, avrora.sim.State)
-             */
-            public void fireAfter(Instr i, int address, State s) {
-                // do nothing
-            }
         }
 
         /**
@@ -261,7 +253,7 @@ public class EnergyProfiler extends MonitorFactory {
          *         <p/>
          *         Class for a probe when a sleep mode is enered
          */
-        public class SleepProbe implements Simulator.Probe {
+        public class SleepProbe extends Simulator.Probe.Empty {
 
             /**
              * fired before a sleep mode is entered, it logs the previos state
@@ -283,14 +275,6 @@ public class EnergyProfiler extends MonitorFactory {
                 currentMode = null;
             }
 
-            /**
-             * In this case, nothing is done. However, the interface requires an implementation
-             *
-             * @see avrora.sim.Simulator.Probe#fireAfter(avrora.core.Instr, int, avrora.sim.State)
-             */
-            public void fireAfter(Instr i, int address, State s) {
-                // do nothing
-            }
         }
     }
 

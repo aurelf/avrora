@@ -246,8 +246,8 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return pins[num];
     }
 
-    protected void installIOReg(String name, State.IOReg reg) {
-        interpreter.setIOReg(properties.getIOReg(name), reg);
+    protected void installIOReg(String name, ActiveRegister reg) {
+        interpreter.installIOReg(properties.getIOReg(name), reg);
     }
 
     protected void installInterrupt(String name, int num, Simulator.Interrupt interrupt) {
@@ -255,7 +255,7 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         simulator.installInterrupt(num, interrupt);
     }
 
-    protected State.IOReg getIOReg(String name) {
+    protected ActiveRegister getIOReg(String name) {
         return interpreter.getIOReg(properties.getIOReg(name));
     }
 

@@ -34,6 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
 
 import java.util.LinkedList;
@@ -321,7 +322,7 @@ public abstract class USART extends AtmelInternalDevice {
                 receiveFrame(frame);
 
                 if (devicePrinter.enabled)
-                    devicePrinter.println("USART: Received frame " + frame + ' ' + simulator.getState().getCycles() + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
+                    devicePrinter.println("USART: Received frame " + frame + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
 
                 UCSRnA_reg.flagBit(RXCn);
 
@@ -336,12 +337,12 @@ public abstract class USART extends AtmelInternalDevice {
      * the destination of data written to the register at this address. The receive register is the
      * source of data read from this address.
      */
-    protected class DataRegister extends State.RWIOReg {
-        State.RWIOReg transmitRegister;
+    protected class DataRegister extends RWRegister {
+        RWRegister transmitRegister;
         DataRegister.TwoLevelFIFO receiveRegister;
 
         DataRegister() {
-            transmitRegister = new State.RWIOReg();
+            transmitRegister = new RWRegister();
             receiveRegister = new DataRegister.TwoLevelFIFO();
         }
 
@@ -385,7 +386,7 @@ public abstract class USART extends AtmelInternalDevice {
          * implementation does not mirror the how the hardware does this, functionally it should
          * behave the same way.
          */
-        private class TwoLevelFIFO extends State.RWIOReg {
+        private class TwoLevelFIFO extends RWRegister {
 
             LinkedList readyQueue;
             LinkedList waitQueue;
@@ -538,7 +539,7 @@ public abstract class USART extends AtmelInternalDevice {
     /**
      * UCSRnC (<code>ControlRegisterC</code>) is one of three control/status registers for the USART.
      */
-    protected class ControlRegisterC extends State.RWIOReg {
+    protected class ControlRegisterC extends RWRegister {
 
         protected void decode(byte val) {
 
@@ -570,7 +571,7 @@ public abstract class USART extends AtmelInternalDevice {
     /**
      * The high byte of the Baud Rate register.
      */
-    protected class UBRRnHReg extends State.RWIOReg {
+    protected class UBRRnHReg extends RWRegister {
 
         public void write(byte val) {
             super.write((byte)(0x0f & val));
@@ -587,7 +588,7 @@ public abstract class USART extends AtmelInternalDevice {
      * The low byte of the Baud Rate register. The baud rate is not updated until the low bit is
      * updated.
      */
-    protected class UBRRnLReg extends State.RWIOReg {
+    protected class UBRRnLReg extends RWRegister {
 
         public void write(byte val) {
             super.write(val);

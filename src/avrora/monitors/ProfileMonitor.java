@@ -100,7 +100,7 @@ public class ProfileMonitor extends MonitorFactory {
 
         private void insertInstrumentation(Simulator s) {
             if ( EMPTY.get() ) {
-                s.insertProbe(new EmptyProbe());
+                s.insertProbe(new Simulator.Probe.Empty());
                 return;
             }
             long period = PERIOD.get();
@@ -135,19 +135,6 @@ public class ProfileMonitor extends MonitorFactory {
         }
 
         /**
-         * The <code>EmptyProbe</code> class is used as a probe thats only purpose is to
-         * measure the performance overhead introduced by inserting probes into the
-         * simulation.
-         */
-        public class EmptyProbe implements Simulator.Probe {
-            public void fireBefore(Instr i, int address, State state) {
-            }
-
-            public void fireAfter(Instr i, int address, State state) {
-            }
-        }
-
-        /**
          * The <code>CCProbe</code> class implements a probe that keeps track of the
          * execution count of each instruction as well as the number of cycles that
          * it has consumed.
@@ -177,7 +164,7 @@ public class ProfileMonitor extends MonitorFactory {
          * The <code>CProbe</code> class implements a simple probe that keeps a count
          * of how many times each instruction in the program has been executed.
          */
-        public class CProbe implements Simulator.Probe {
+        public class CProbe extends Simulator.Probe.Empty {
 
             public final long[] count;
 
@@ -187,10 +174,6 @@ public class ProfileMonitor extends MonitorFactory {
 
             public void fireBefore(Instr i, int address, State state) {
                 count[address]++;
-            }
-
-            public void fireAfter(Instr i, int address, State state) {
-                // do nothing
             }
         }
 

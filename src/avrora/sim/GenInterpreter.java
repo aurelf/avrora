@@ -95,7 +95,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
      * The constructor for the <code>Interpreter</code> class builds the internal data structures needed to
      * store the complete state of the machine, including registers, IO registers, the SRAM, and the flash.
      * All IO registers are initialized to be instances of <code>RWIOReg</code>. Reserved and special IO
-     * registers must be inserted by the <code>getIOReg()</code> and <code>setIOReg()</code> methods.
+     * registers must be inserted by the <code>getIOReg()</code> and <code>writeIOReg()</code> methods.
      *
      * @param s The simulator attached to this interpreter
      * @param p the program to construct the state for
@@ -225,7 +225,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = tmp_6 && tmp_7 && !tmp_8 || !tmp_6 && !tmp_7 && tmp_8;
         S = (N != V);
         byte tmp_9 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_9);
+        writeRegisterByte(i.r1, tmp_9);
         cyclesConsumed += 1;
     }
 
@@ -247,7 +247,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = tmp_6 && tmp_7 && !tmp_8 || !tmp_6 && !tmp_7 && tmp_8;
         S = (N != V);
         byte tmp_9 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_9);
+        writeRegisterByte(i.r1, tmp_9);
         cyclesConsumed += 1;
     }
 
@@ -262,7 +262,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = !tmp_3 && tmp_2;
         Z = (tmp_1 & 0x0000FFFF) == 0;
         S = (N != V);
-        setRegisterWord(i.r1, tmp_1);
+        writeRegisterWord(i.r1, tmp_1);
         cyclesConsumed += 2;
     }
 
@@ -276,7 +276,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -290,7 +290,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -307,7 +307,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = (N != C);
         S = (N != V);
         byte tmp_4 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_4);
+        writeRegisterByte(i.r1, tmp_4);
         cyclesConsumed += 1;
     }
 
@@ -319,7 +319,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public void visit(Instr.BLD i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, Arithmetic.setBit(getRegisterByte(i.r1), i.imm1, T));
+        writeRegisterByte(i.r1, Arithmetic.setBit(getRegisterByte(i.r1), i.imm1, T));
         cyclesConsumed += 1;
     }
 
@@ -629,7 +629,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -663,7 +663,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         N = false;
         Z = true;
-        setRegisterByte(i.r1, low(0));
+        writeRegisterByte(i.r1, low(0));
         cyclesConsumed += 1;
     }
 
@@ -699,7 +699,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         Z = low(tmp_0) == 0;
         V = false;
         S = (N != V);
-        setRegisterByte(i.r1, low(tmp_0));
+        writeRegisterByte(i.r1, low(tmp_0));
         cyclesConsumed += 1;
     }
 
@@ -811,7 +811,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         Z = tmp_1 == 0;
         V = tmp_0 == 128;
         S = (N != V);
-        setRegisterByte(i.r1, tmp_1);
+        writeRegisterByte(i.r1, tmp_1);
         cyclesConsumed += 1;
     }
 
@@ -829,7 +829,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(RZ);
         tmp_0 = (tmp_0 & 0xFF00FFFF) | ((getIORegisterByte(RAMPZ) & 0x000000FF) << 16);
-        setRegisterByte(R0, getProgramByte(tmp_0));
+        writeRegisterByte(R0, getProgramByte(tmp_0));
         cyclesConsumed += 3;
     }
 
@@ -837,7 +837,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(RZ);
         tmp_0 = (tmp_0 & 0xFF00FFFF) | ((getIORegisterByte(RAMPZ) & 0x000000FF) << 16);
-        setRegisterByte(i.r1, getProgramByte(tmp_0));
+        writeRegisterByte(i.r1, getProgramByte(tmp_0));
         cyclesConsumed += 3;
     }
 
@@ -845,8 +845,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(RZ);
         tmp_0 = (tmp_0 & 0xFF00FFFF) | ((getIORegisterByte(RAMPZ) & 0x000000FF) << 16);
-        setRegisterByte(i.r1, getProgramByte(tmp_0));
-        setRegisterWord(RZ, tmp_0 + 1);
+        writeRegisterByte(i.r1, getProgramByte(tmp_0));
+        writeRegisterWord(RZ, tmp_0 + 1);
         cyclesConsumed += 3;
     }
 
@@ -857,7 +857,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         Z = tmp_0 == 0;
         V = false;
         S = (N != V);
-        setRegisterByte(i.r1, tmp_0);
+        writeRegisterByte(i.r1, tmp_0);
         cyclesConsumed += 1;
     }
 
@@ -866,8 +866,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int tmp_0 = getRegisterUnsigned(i.r1) * getRegisterUnsigned(i.r2) << 1;
         Z = (tmp_0 & 0x0000FFFF) == 0;
         C = ((tmp_0 & 65536) != 0);
-        setRegisterByte(R0, low(tmp_0));
-        setRegisterByte(R1, high(tmp_0));
+        writeRegisterByte(R0, low(tmp_0));
+        writeRegisterByte(R1, high(tmp_0));
         cyclesConsumed += 2;
     }
 
@@ -876,8 +876,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int tmp_0 = getRegisterByte(i.r1) * getRegisterByte(i.r2) << 1;
         Z = (tmp_0 & 0x0000FFFF) == 0;
         C = ((tmp_0 & 65536) != 0);
-        setRegisterByte(R0, low(tmp_0));
-        setRegisterByte(R1, high(tmp_0));
+        writeRegisterByte(R0, low(tmp_0));
+        writeRegisterByte(R1, high(tmp_0));
         cyclesConsumed += 2;
     }
 
@@ -886,8 +886,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int tmp_0 = getRegisterByte(i.r1) * getRegisterUnsigned(i.r2) << 1;
         Z = (tmp_0 & 0x0000FFFF) == 0;
         C = ((tmp_0 & 65536) != 0);
-        setRegisterByte(R0, low(tmp_0));
-        setRegisterByte(R1, high(tmp_0));
+        writeRegisterByte(R0, low(tmp_0));
+        writeRegisterByte(R1, high(tmp_0));
         cyclesConsumed += 2;
     }
 
@@ -913,7 +913,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public void visit(Instr.IN i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, getIORegisterByte(i.imm1));
+        writeRegisterByte(i.r1, getIORegisterByte(i.imm1));
         cyclesConsumed += 1;
     }
 
@@ -925,7 +925,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         Z = tmp_1 == 0;
         V = tmp_0 == 127;
         S = (N != V);
-        setRegisterByte(i.r1, tmp_1);
+        writeRegisterByte(i.r1, tmp_1);
         cyclesConsumed += 1;
     }
 
@@ -939,61 +939,61 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public void visit(Instr.LD i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, getDataByte(getRegisterWord(i.r2)));
+        writeRegisterByte(i.r1, getDataByte(getRegisterWord(i.r2)));
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.LDD i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, getDataByte(getRegisterWord(i.r2) + i.imm1));
+        writeRegisterByte(i.r1, getDataByte(getRegisterWord(i.r2) + i.imm1));
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.LDI i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, low(i.imm1));
+        writeRegisterByte(i.r1, low(i.imm1));
         cyclesConsumed += 1;
     }
 
     public void visit(Instr.LDPD i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r2) - 1;
-        setRegisterByte(i.r1, getDataByte(tmp_0));
-        setRegisterWord(i.r2, tmp_0);
+        writeRegisterByte(i.r1, getDataByte(tmp_0));
+        writeRegisterWord(i.r2, tmp_0);
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.LDPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r2);
-        setRegisterByte(i.r1, getDataByte(tmp_0));
-        setRegisterWord(i.r2, tmp_0 + 1);
+        writeRegisterByte(i.r1, getDataByte(tmp_0));
+        writeRegisterWord(i.r2, tmp_0 + 1);
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.LDS i) {
         nextPC = pc + 4;
-        setRegisterByte(i.r1, getDataByte(i.imm1));
+        writeRegisterByte(i.r1, getDataByte(i.imm1));
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.LPM i) {
         nextPC = pc + 2;
-        setRegisterByte(R0, getProgramByte(getRegisterWord(RZ)));
+        writeRegisterByte(R0, getProgramByte(getRegisterWord(RZ)));
         cyclesConsumed += 3;
     }
 
     public void visit(Instr.LPMD i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, getProgramByte(getRegisterWord(RZ)));
+        writeRegisterByte(i.r1, getProgramByte(getRegisterWord(RZ)));
         cyclesConsumed += 3;
     }
 
     public void visit(Instr.LPMPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(RZ);
-        setRegisterByte(i.r1, getProgramByte(tmp_0));
-        setRegisterWord(RZ, tmp_0 + 1);
+        writeRegisterByte(i.r1, getProgramByte(tmp_0));
+        writeRegisterWord(RZ, tmp_0 + 1);
         cyclesConsumed += 3;
     }
 
@@ -1010,7 +1010,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = (N != C);
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -1026,19 +1026,19 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = (N != C);
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
     public void visit(Instr.MOV i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, getRegisterByte(i.r2));
+        writeRegisterByte(i.r1, getRegisterByte(i.r2));
         cyclesConsumed += 1;
     }
 
     public void visit(Instr.MOVW i) {
         nextPC = pc + 2;
-        setRegisterWord(i.r1, getRegisterWord(i.r2));
+        writeRegisterWord(i.r1, getRegisterWord(i.r2));
         cyclesConsumed += 1;
     }
 
@@ -1047,7 +1047,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int tmp_0 = getRegisterUnsigned(i.r1) * getRegisterUnsigned(i.r2);
         C = ((tmp_0 & 32768) != 0);
         Z = (tmp_0 & 0x0000FFFF) == 0;
-        setRegisterWord(R0, tmp_0);
+        writeRegisterWord(R0, tmp_0);
         cyclesConsumed += 2;
     }
 
@@ -1056,7 +1056,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int tmp_0 = getRegisterByte(i.r1) * getRegisterByte(i.r2);
         C = ((tmp_0 & 32768) != 0);
         Z = (tmp_0 & 0x0000FFFF) == 0;
-        setRegisterWord(R0, tmp_0);
+        writeRegisterWord(R0, tmp_0);
         cyclesConsumed += 2;
     }
 
@@ -1065,7 +1065,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int tmp_0 = getRegisterByte(i.r1) * getRegisterUnsigned(i.r2);
         C = ((tmp_0 & 32768) != 0);
         Z = (tmp_0 & 0x0000FFFF) == 0;
-        setRegisterWord(R0, tmp_0);
+        writeRegisterWord(R0, tmp_0);
         cyclesConsumed += 2;
     }
 
@@ -1088,7 +1088,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
         S = (N != V);
         byte tmp_10 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_10);
+        writeRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
     }
 
@@ -1107,7 +1107,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -1121,19 +1121,19 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
     public void visit(Instr.OUT i) {
         nextPC = pc + 2;
-        setIORegisterByte(i.imm1, getRegisterByte(i.r1));
+        writeIORegisterByte(i.imm1, getRegisterByte(i.r1));
         cyclesConsumed += 1;
     }
 
     public void visit(Instr.POP i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, popByte());
+        writeRegisterByte(i.r1, popByte());
         cyclesConsumed += 2;
     }
 
@@ -1196,7 +1196,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = (N != C);
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -1212,7 +1212,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = (N != C);
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -1235,7 +1235,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
         S = (N != V);
         byte tmp_10 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_10);
+        writeRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
     }
 
@@ -1258,7 +1258,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
         S = (N != V);
         byte tmp_10 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_10);
+        writeRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
     }
 
@@ -1309,7 +1309,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         Z = (tmp_1 & 0x0000FFFF) == 0;
         C = tmp_3 && !tmp_2;
         S = (N != V);
-        setRegisterWord(i.r1, tmp_1);
+        writeRegisterWord(i.r1, tmp_1);
         cyclesConsumed += 2;
     }
 
@@ -1323,7 +1323,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         S = (N != V);
         byte tmp_3 = low(tmp_2);
-        setRegisterByte(i.r1, tmp_3);
+        writeRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
     }
 
@@ -1383,7 +1383,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public void visit(Instr.SER i) {
         nextPC = pc + 2;
-        setRegisterByte(i.r1, low(255));
+        writeRegisterByte(i.r1, low(255));
         cyclesConsumed += 1;
     }
 
@@ -1424,35 +1424,35 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public void visit(Instr.ST i) {
         nextPC = pc + 2;
-        setDataByte(getRegisterWord(i.r1), getRegisterByte(i.r2));
+        writeDataByte(getRegisterWord(i.r1), getRegisterByte(i.r2));
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.STD i) {
         nextPC = pc + 2;
-        setDataByte(getRegisterWord(i.r1) + i.imm1, getRegisterByte(i.r2));
+        writeDataByte(getRegisterWord(i.r1) + i.imm1, getRegisterByte(i.r2));
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.STPD i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r1) - 1;
-        setDataByte(tmp_0, getRegisterByte(i.r2));
-        setRegisterWord(i.r1, tmp_0);
+        writeDataByte(tmp_0, getRegisterByte(i.r2));
+        writeRegisterWord(i.r1, tmp_0);
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.STPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r1);
-        setDataByte(tmp_0, getRegisterByte(i.r2));
-        setRegisterWord(i.r1, tmp_0 + 1);
+        writeDataByte(tmp_0, getRegisterByte(i.r2));
+        writeRegisterWord(i.r1, tmp_0 + 1);
         cyclesConsumed += 2;
     }
 
     public void visit(Instr.STS i) {
         nextPC = pc + 4;
-        setDataByte(i.imm1, getRegisterByte(i.r1));
+        writeDataByte(i.imm1, getRegisterByte(i.r1));
         cyclesConsumed += 2;
     }
 
@@ -1475,7 +1475,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
         S = (N != V);
         byte tmp_10 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_10);
+        writeRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
     }
 
@@ -1498,7 +1498,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
         S = (N != V);
         byte tmp_10 = low(tmp_3);
-        setRegisterByte(i.r1, tmp_10);
+        writeRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
     }
 
@@ -1508,7 +1508,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int tmp_1 = 0;
         tmp_1 = (tmp_1 & 0xFFFFFFF0) | ((((tmp_0 >> 4) & 0x0000000F) & 0x0000000F));
         tmp_1 = (tmp_1 & 0xFFFFFF0F) | (((tmp_0 & 0x0000000F) & 0x0000000F) << 4);
-        setRegisterByte(i.r1, low(tmp_1));
+        writeRegisterByte(i.r1, low(tmp_1));
         cyclesConsumed += 1;
     }
 

@@ -33,7 +33,6 @@
 package avrora.stack;
 
 import avrora.core.Register;
-import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 
 /**

@@ -34,7 +34,6 @@ package avrora.stack;
 
 import avrora.Avrora;
 import avrora.core.Register;
-import avrora.sim.IORegisterConstants;
 
 /**
  * The <code>MutableState</code> class represents an abstract state of the processor that is mutable. This is
@@ -124,7 +123,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>setSREG</code> method updates the abstract value of the status register.
+     * The <code>writeSREG</code> method updates the abstract value of the status register.
      *
      * @param val the new abstract value to write to the status register.
      */
@@ -133,7 +132,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     }
 
     /**
-     * The <code>setSREG</code> method updates one bit of the abstract value of the status register.
+     * The <code>writeSREG</code> method updates one bit of the abstract value of the status register.
      *
      * @param val the new abstract value of the bit
      */

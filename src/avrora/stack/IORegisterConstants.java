@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.stack;
 
 /**
  * The <code>IORegisterConstants</code> interface is used to centralize the numeric values of the IO registers

@@ -35,6 +35,7 @@ package avrora.sim.mcu;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.Clock;
+import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
 
 /**
@@ -135,7 +136,7 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
      * Overloads the write behavior of this class of register in order to implement compare match
      * blocking for one timer period.
      */
-    protected class TCNTnRegister extends State.RWIOReg {
+    protected class TCNTnRegister extends RWRegister {
 
         public void write(byte val) {
             value = val;
@@ -153,11 +154,11 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
      * to this register are not performed until flush() is called. In non-PWM modes, the writes are
      * immediate.
      */
-    protected class BufferedRegister extends State.RWIOReg {
-        final State.RWIOReg register;
+    protected class BufferedRegister extends RWRegister {
+        final RWRegister register;
 
         protected BufferedRegister() {
-            this.register = new State.RWIOReg();
+            this.register = new RWRegister();
         }
 
         public void write(byte val) {
@@ -174,6 +175,7 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
             }
         }
 
+        // TODO: this method may be completely unnecessary
         public byte readBuffer() {
             return super.read();
         }
@@ -191,7 +193,7 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
         }
     }
 
-    protected class ControlRegister extends State.RWIOReg {
+    protected class ControlRegister extends RWRegister {
         public static final int FOCn = 7;
         public static final int WGMn0 = 6;
         public static final int COMn1 = 5;

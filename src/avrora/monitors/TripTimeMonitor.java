@@ -205,7 +205,7 @@ public class TripTimeMonitor extends MonitorFactory {
 
         }
 
-        protected class PTPProbe implements Simulator.Probe {
+        protected class PTPProbe extends Simulator.Probe.Empty {
             public void fireBefore(Instr i, int address, State state) {
                 long time = state.getCycles();
 
@@ -215,10 +215,6 @@ public class TripTimeMonitor extends MonitorFactory {
                 }
 
                 lastEnter[address] = time;
-            }
-
-            public void fireAfter(Instr i, int address, State state) {
-
             }
         }
 

@@ -516,15 +516,11 @@ public class GDBServer extends MonitorFactory {
          * the <code>commandLoop()</code> method before the target instruction is executed, thus
          * implementing a breakpoint.
          */
-        protected class BreakpointProbe implements Simulator.Probe {
+        protected class BreakpointProbe extends Simulator.Probe.Empty {
             public void fireBefore(Instr i, int address, State s) {
                 if ( printer.enabled )
                     printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(address)+"--");
                 commandLoop("T05");
-            }
-
-            public void fireAfter(Instr i, int address, State s) {
-                // do nothing
             }
         }
 

@@ -39,7 +39,7 @@ import avrora.sim.State;
 /**
  * @author Ben L. Titzer
  */
-public class MemoryProfiler implements Simulator.Watch {
+public class MemoryProfiler extends Simulator.Watch.Empty {
 
     public final long[] rcount;
     public final long[] wcount;
@@ -59,11 +59,4 @@ public class MemoryProfiler implements Simulator.Watch {
             wcount[data_addr]++;
     }
 
-    public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
-        // do nothing
-    }
-
-    public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
-        // do nothing
-    }
 }

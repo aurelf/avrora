@@ -35,10 +35,12 @@ package avrora.actions;
 import avrora.Avrora;
 import avrora.Defaults;
 import avrora.core.Program;
+import avrora.core.Instr;
 import avrora.monitors.*;
 import avrora.sim.GenInterpreter;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.dbbc.DBBC;
 import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.sim.mcu.MicrocontrollerFactory;
@@ -226,7 +228,7 @@ public abstract class SimAction extends Action {
         else if (SECONDS.get() > 0.0)
             s.insertTimeout((long)(SECONDS.get() * s.getMicrocontroller().getHZ()));
         if (ICOUNT.get() > 0)
-            s.insertProbe(new Simulator.InstructionCountTimeout(ICOUNT.get()));
+            s.insertProbe(new InstructionCountTimeout(ICOUNT.get()));
     }
 
     /**
@@ -303,5 +305,119 @@ public abstract class SimAction extends Action {
         Simulator.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
         if ( Simulator.SECONDS_PRECISION >= Simulator.PRECISION_TABLE.length)
             Simulator.SECONDS_PRECISION = Simulator.PRECISION_TABLE.length - 1;
+    }
+
+    /**
+     * The <code>BreakPointException</code> is an exception that is thrown by the simulator before it executes
+     * an instruction which has a breakpoint. When this exception is thrown within the simulator, the
+     * simulator is left in a state where it is ready to be resumed where it left off by the
+     * <code>start()</code> method. When resuming, the breakpointed instruction will not cause a second
+     * <code>BreakPointException</code> until the the instruction is executed a second time.
+     *
+     * @author Ben L. Titzer
+     */
+    public static class BreakPointException extends RuntimeException {
+        /**
+         * The <code>instr</code> field stores the instruction that caused the breakpoint.
+         */
+        public final Instr instr;
+
+        /**
+         * The <code>address</code> field stores the address of the instruction that caused the breakpoint.
+         */
+        public final int address;
+
+        /**
+         * The <code>state</code> field stores a reference to the state of the simulator when the breakpoint
+         * occurred, before executing the instruction.
+         */
+        public final State state;
+
+        public BreakPointException(Instr i, int a, State s) {
+            super("breakpoint @ " + StringUtil.addrToString(a) + " reached");
+            instr = i;
+            address = a;
+            state = s;
+        }
+    }
+
+    /**
+     * The <code>TimeoutException</code> is thrown by the simulator when a timeout reaches zero. Timeouts can
+     * be used to ensure termination of the simulator during testing, and implementing timestepping in
+     * surrounding tools such as interactive debuggers or visualizers.
+     * <p/>
+     * When the exception is thrown, the simulator is left in a state that is safe to be resumed by a
+     * <code>start()</code> call.
+     *
+     * @author Ben L. Titzer
+     */
+    public static class TimeoutException extends RuntimeException {
+
+        /**
+         * The <code>instr</code> field stores the next instruction to be executed after the timeout.
+         */
+        public final Instr instr;
+
+        /**
+         * The <code>address</code> field stores the address of the next instruction to be executed after the
+         * timeout.
+         */
+        public final int address;
+
+        /**
+         * The <code>state</code> field stores the state of the simulation at the point at which the timeout
+         * occurred.
+         */
+        public final State state;
+
+        /**
+         * The <code>timeout</code> field stores the value (in clock cycles) of the timeout that occurred.
+         */
+        public final long timeout;
+
+        public TimeoutException(Instr i, int a, State s, long t, String l) {
+            super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + ' ' + l);
+            instr = i;
+            address = a;
+            state = s;
+            timeout = t;
+        }
+    }
+
+    /**
+     * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws a
+     * <code>TimeoutException</code> when the count reaches zero. It is useful for ensuring termination of the
+     * simulator, for performance testing, or for profiling and stopping after a specified number of
+     * invocations.
+     *
+     * @author Ben L. Titzer
+     */
+    public static class InstructionCountTimeout extends Simulator.Probe.Empty {
+        public final long timeout;
+        protected long left;
+
+        /**
+         * The constructor for <code>InstructionCountTimeout</code> creates with the specified initial value.
+         *
+         * @param t the number of clock cycles before timeout should occur
+         */
+        public InstructionCountTimeout(long t) {
+            timeout = t;
+            left = t;
+        }
+
+        /**
+         * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
+         * implementation of the timeout, it simply decrements the timeout and and throws a TimeoutException
+         * when the count reaches zero.
+         *
+         * @param i       the instruction being probed
+         * @param address the address at which this instruction resides
+         * @param state   the state of the simulation
+         */
+        public void fireAfter(Instr i, int address, State state) {
+            if (--left <= 0)
+                throw new TimeoutException(i, address, state, timeout, "instructions");
+        }
     }
 }

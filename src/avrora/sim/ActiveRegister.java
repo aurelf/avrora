@@ -30,58 +30,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim.util;
-
-import avrora.core.Instr;
-import avrora.core.Program;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+package avrora.sim;
 
 /**
- * The <code>ProgramProfiler</code> class implements a probe that can be used to profile pieces of the program
- * or the whole program. It maintains a simple array of <code>long</code> that stores the count for every
- * instruction.
+ * The <code>IOReg</code> interface models the behavior of an IO register. Since some IO registers behave
+ * specially with regards to the devices they control, their functionality can be implemented externally
+ * to the <code> State</code> class.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.util.Counter
  */
-public class ProgramProfiler extends Simulator.Probe.Empty {
-
+public interface ActiveRegister {
     /**
-     * The <code>program</code> field stores a reference to the program being profiled.
-     */
-    public final Program program;
-
-    /**
-     * The <code>itime</code> field stores the invocation count for each instruction in the program. It is
-     * indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the invocation for the
-     * instruction at <code>program.getInstr(addr)</code>.
-     */
-    public final long[] icount;
-
-    /**
-     * The constructor for the program profiler constructs the required internal state to store the invocation
-     * counts of each instruction.
+     * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For special IO
+     * registers, this may cause some action like device activity, or the actual value of the register may
+     * need to be fetched or computed.
      *
-     * @param p the program to profile
+     * @return the value of the register as a byte
      */
-    public ProgramProfiler(Program p) {
-        int size = p.program_end;
-        icount = new long[size];
-        program = p;
-    }
+    public byte read();
 
     /**
-     * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
-     * implementation of the program profiler, it simply increments the count of the instruction at the
-     * specified address.
+     * The <code>write()</code> method writes an 8-bit value to the IO register as a byte. For special IO
+     * registers, this may cause some action like device activity, masking/unmasking of interrupts, etc.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
+     * @param val the value to write
      */
-    public void fireBefore(Instr i, int address, State state) {
-        icount[address]++;
-    }
+    public void write(byte val);
 
+    /**
+     * The <code>readBit()</code> method reads a single bit from the IO register.
+     *
+     * @param num the number of the bit to read
+     * @return the value of the bit as a boolean
+     */
+    public boolean readBit(int num);
+
+    /**
+     * The <code>writeBit()</code> method writes a single bit value into the IO register at the specified
+     * bit offset.
+     *
+     * @param num the number of the bit to write
+     * @param val the value of the bit to write
+     */
+    public void writeBit(int num, boolean val);
 }

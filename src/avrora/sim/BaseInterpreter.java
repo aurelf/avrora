@@ -48,7 +48,7 @@ import avrora.util.StringUtil;
  */
 public abstract class BaseInterpreter implements State, InstrVisitor {
     protected int pc;
-    protected final State.IOReg[] ioregs;
+    protected final ActiveRegister[] ioregs;
     public byte[] sram;
     protected MulticastWatch[] sram_watches;
     protected Instr[] flash_instr;
@@ -64,9 +64,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public boolean N;
     public boolean Z;
     public boolean C;
-    protected State.IOReg SREG_reg;
-    protected State.RWIOReg SPL_reg;
-    protected State.RWIOReg SPH_reg;
+    protected ActiveRegister SREG_reg;
+    protected RWRegister SPL_reg;
+    protected RWRegister SPH_reg;
 
     /**
      * The <code>activeProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
@@ -123,7 +123,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
             if ( probe.isEmpty() ) {
                 // if the probed instruction has no more probes, remove it altogether
-                setInstr(instr, address);
+                writeInstr(instr, address);
             } else {
                 // fire all of the probes
                 probe.fireAfter(instr, address, BaseInterpreter.this);
@@ -366,7 +366,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         sram_max = NUM_REGS + pr.ioreg_size + pr.sram_size;
 
         // make array of IO registers
-        ioregs = new State.IOReg[pr.ioreg_size];
+        ioregs = new ActiveRegister[pr.ioreg_size];
 
         // allocate SRAM
         sram = new byte[sram_max];
@@ -378,8 +378,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         // initialize IO registers to default values
         initializeIORegs();
 
-        SPL_reg = (State.RWIOReg)ioregs[props.getIOReg("SPL")];
-        SPH_reg = (State.RWIOReg)ioregs[props.getIOReg("SPH")];
+        SPL_reg = (RWRegister)ioregs[props.getIOReg("SPL")];
+        SPH_reg = (RWRegister)ioregs[props.getIOReg("SPH")];
     }
 
     protected final void makeImpression(Program p) {
@@ -473,7 +473,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected final void initializeIORegs() {
         for (int cntr = 0; cntr < ioregs.length; cntr++)
-            ioregs[cntr] = new State.RWIOReg();
+            ioregs[cntr] = new RWRegister();
         SREG_reg = ioregs[SREG] = new SREG_reg();
     }
 
@@ -487,21 +487,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         delayCycles += cycles;
     }
 
-    public byte getRegisterByte(int reg) {
-        return sram[reg];
-    }
-
-    public int getRegisterUnsigned(int reg) {
-        return sram[reg] & 0xff;
-    }
-
-    public int getRegisterWord(int reg) {
-        byte low = getRegisterByte(reg);
-        byte high = getRegisterByte(reg + 1);
-        return Arithmetic.uword(low, high);
-    }
-
-
     /**
      * Read a general purpose register's current value as a byte.
      *
@@ -512,6 +497,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         return sram[reg.getNumber()];
     }
 
+    public byte getRegisterByte(int reg) {
+        return sram[reg];
+    }
+
     /**
      * Read a general purpose register's current value as an integer, without any sign extension.
      *
@@ -520,6 +509,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      */
     public int getRegisterUnsigned(Register reg) {
         return sram[reg.getNumber()] & 0xff;
+    }
+
+    public int getRegisterUnsigned(int reg) {
+        return sram[reg] & 0xff;
     }
 
     /**
@@ -537,43 +530,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         return Arithmetic.uword(low, high);
     }
 
-    /**
-     * The <code>setRegisterByte()</code> method writes a value to a general purpose register. This is a
-     * destructive update and should only be called from the appropriate places in the simulator.
-     *
-     * @param reg the register to write the value to
-     * @param val the value to write to the register
-     */
-    protected void setRegisterByte(Register reg, byte val) {
-        sram[reg.getNumber()] = val;
-    }
-
-    /**
-     * The <code>setRegisterWord</code> method writes a word value to a general purpose register pair. This is
-     * a destructive update and should only be called from the appropriate places in the simulator. The
-     * specified register and the next register in numerical order are updated with the low-order and
-     * high-order byte of the value passed, respectively. The specified register should be less than r31,
-     * since r32 (the next register) does not exist.
-     *
-     * @param reg the low register of the pair to write
-     * @param val the word value to write to the register pair
-     */
-    protected void setRegisterWord(Register reg, int val) {
-        byte low = Arithmetic.low(val);
-        byte high = Arithmetic.high(val);
-        setRegisterByte(reg, low);
-        setRegisterByte(reg.nextRegister(), high);
-    }
-
-    public void setRegisterByte(int reg, byte val) {
-        sram[reg] = val;
-    }
-
-    public void setRegisterWord(int reg, int val) {
-        byte low = Arithmetic.low(val);
-        byte high = Arithmetic.high(val);
-        setRegisterByte(reg, low);
-        setRegisterByte(reg + 1, high);
+    public int getRegisterWord(int reg) {
+        byte low = getRegisterByte(reg);
+        byte high = getRegisterByte(reg + 1);
+        return Arithmetic.uword(low, high);
     }
 
     /**
@@ -583,17 +543,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @return the value of the status register as a byte.
      */
     public byte getSREG() {
-        return ioregs[SREG].read();
-    }
-
-    /**
-     * The <code>setSREG()</code> method writes the value of the status register. This method should only be
-     * called from the appropriate places in the simulator.
-     *
-     * @param val
-     */
-    protected void setSREG(byte val) {
-        ioregs[SREG].write(val);
+        return SREG_reg.read();
     }
 
     /**
@@ -608,87 +558,29 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public byte getDataByte(int address) {
         // FAST PATH 1: no watches
         if ( sram_watches == null )
-            return readSRAM(address);
+            return getSRAM(address);
 
         // FAST PATH 2: no watches for this address
         Simulator.Watch p = sram_watches[address];
         if ( p == null)
-            return readSRAM(address);
+            return getSRAM(address);
 
         // SLOW PATH: consult with memory watches
         Instr i = getCurrentInstr();
         p.fireBeforeRead(i, pc, this, address);
-        byte val = readSRAM(address);
+        byte val = getSRAM(address);
         p.fireAfterRead(i, pc, this, address, val);
 
         return val;
     }
 
-    private byte readSRAM(int address) {
+    private byte getSRAM(int address) {
         if (address >= sram_start)
             return sram[address];
         if (address >= NUM_REGS)
             return ioregs[address - NUM_REGS].read();
         return sram[address];
 
-    }
-
-
-    /**
-     * The <code>getProgramByte()</code> method reads a byte value from the program (Flash) memory. The flash
-     * memory generally stores read-only values and the instructions of the program. Care should be taken that
-     * the program memory at the specified address does not contain an instruction. This is because, in
-     * general, programs should not read instructions as data, and secondly, because no assembler is present
-     * in Avrora and therefore the actual byte value of an instruction may not be known.
-     *
-     * @param address the byte address at which to read
-     * @return the byte value of the program memory at the specified address
-     * @throws java.lang.ArrayIndexOutOfBoundsException
-     *          if the specified address is not the valid program memory range
-     */
-    public byte getProgramByte(int address) {
-        try {
-            return flash_data[address];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new AddressOutOfBoundsException("program", address);
-        }
-    }
-
-    /**
-     * The <code>setDataByte()</code> method writes a value to the data memory (SRAM) of the state. This is
-     * generally meant for the simulator, related classes, and device implementations to use, but could also
-     * be used by debuggers and other tools.
-     *
-     * @param address the byte address at which to write the value
-     * @param val     the value to write
-     */
-    public void setDataByte(int address, byte val) {
-        // FAST PATH 1: no watches
-        if ( sram_watches == null ) {
-            writeSRAM(address, val);
-            return;
-        }
-
-        // FAST PATH 2: no watches for this address
-        Simulator.Watch p = sram_watches[address];
-        if ( p == null) {
-            writeSRAM(address, val);
-            return;
-        }
-
-        // SLOW PATH: consult with memory watches
-        Instr i = getCurrentInstr();
-        p.fireBeforeWrite(i, pc, this, address, val);
-        writeSRAM(address, val);
-        p.fireAfterWrite(i, pc, this, address, val);
-    }
-
-    private void writeSRAM(int address, byte val) {
-        if (address >= sram_start)
-            sram[address] = val;
-        else if (address >= NUM_REGS)
-            ioregs[address - NUM_REGS].write(val);
-        else sram[address] = val;
     }
 
     /**
@@ -727,15 +619,23 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>setIOReg</code> method installs the specified <code>IOReg</code> object to the specified IO
-     * register number. This method is generally only used in the simulator and in device implementations to
-     * set up the state correctly during initialization.
+     * The <code>getProgramByte()</code> method reads a byte value from the program (Flash) memory. The flash
+     * memory generally stores read-only values and the instructions of the program. Care should be taken that
+     * the program memory at the specified address does not contain an instruction. This is because, in
+     * general, programs should not read instructions as data, and secondly, because no assembler is present
+     * in Avrora and therefore the actual byte value of an instruction may not be known.
      *
-     * @param ioreg the IO register number
-     * @param reg   the <code>IOReg<code> object to install
+     * @param address the byte address at which to read
+     * @return the byte value of the program memory at the specified address
+     * @throws AddressOutOfBoundsException
+     *          if the specified address is not the valid program memory range
      */
-    public void setIOReg(int ioreg, State.IOReg reg) {
-        ioregs[ioreg] = reg;
+    public byte getProgramByte(int address) {
+        try {
+            return flash_data[address];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new AddressOutOfBoundsException("program", address);
+        }
     }
 
     /**
@@ -746,19 +646,117 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param ioreg the IO register number to retrieve
      * @return a reference to the <code>IOReg</code> instance of the specified IO register
      */
-    public State.IOReg getIOReg(int ioreg) {
+    public ActiveRegister getIOReg(int ioreg) {
         return ioregs[ioreg];
     }
 
     /**
-     * The <code>setIORegisterByte()</code> method writes a value to the specified IO register. This is
+     * The <code>writeRegisterByte()</code> method writes a value to a general purpose register. This is a
+     * destructive update and should only be called from the appropriate places in the simulator.
+     *
+     * @param reg the register to write the value to
+     * @param val the value to write to the register
+     */
+    protected void writeRegisterByte(Register reg, byte val) {
+        sram[reg.getNumber()] = val;
+    }
+
+    /**
+     * The <code>writeRegisterWord</code> method writes a word value to a general purpose register pair. This is
+     * a destructive update and should only be called from the appropriate places in the simulator. The
+     * specified register and the next register in numerical order are updated with the low-order and
+     * high-order byte of the value passed, respectively. The specified register should be less than r31,
+     * since r32 (the next register) does not exist.
+     *
+     * @param reg the low register of the pair to write
+     * @param val the word value to write to the register pair
+     */
+    protected void writeRegisterWord(Register reg, int val) {
+        byte low = Arithmetic.low(val);
+        byte high = Arithmetic.high(val);
+        writeRegisterByte(reg, low);
+        writeRegisterByte(reg.nextRegister(), high);
+    }
+
+    public void writeRegisterByte(int reg, byte val) {
+        sram[reg] = val;
+    }
+
+    public void writeRegisterWord(int reg, int val) {
+        byte low = Arithmetic.low(val);
+        byte high = Arithmetic.high(val);
+        writeRegisterByte(reg, low);
+        writeRegisterByte(reg + 1, high);
+    }
+
+    /**
+     * The <code>writeSREG()</code> method writes the value of the status register. This method should only be
+     * called from the appropriate places in the simulator.
+     *
+     * @param val
+     */
+    protected void writeSREG(byte val) {
+        SREG_reg.write(val);
+    }
+
+    /**
+     * The <code>writeDataByte()</code> method writes a value to the data memory (SRAM) of the state. This is
+     * generally meant for the simulator, related classes, and device implementations to use, but could also
+     * be used by debuggers and other tools.
+     *
+     * @param address the byte address at which to write the value
+     * @param val     the value to write
+     */
+    public void writeDataByte(int address, byte val) {
+        // FAST PATH 1: no watches
+        if ( sram_watches == null ) {
+            setSRAM(address, val);
+            return;
+        }
+
+        // FAST PATH 2: no watches for this address
+        Simulator.Watch p = sram_watches[address];
+        if ( p == null) {
+            setSRAM(address, val);
+            return;
+        }
+
+        // SLOW PATH: consult with memory watches
+        Instr i = getCurrentInstr();
+        p.fireBeforeWrite(i, pc, this, address, val);
+        setSRAM(address, val);
+        p.fireAfterWrite(i, pc, this, address, val);
+    }
+
+    private void setSRAM(int address, byte val) {
+        if (address >= sram_start)
+            sram[address] = val;
+        else if (address >= NUM_REGS)
+            ioregs[address - NUM_REGS].write(val);
+        else sram[address] = val;
+    }
+
+    /**
+     * The <code>installIOReg()</code> method installs the specified <code>IOReg</code> object to the specified IO
+     * register number. This method is generally only used in the simulator and in device implementations to
+     * set up the state correctly during initialization.
+     *
+     * @param ioreg the IO register number
+     * @param reg   the <code>IOReg<code> object to install
+     */
+    public void installIOReg(int ioreg, ActiveRegister reg) {
+        ioregs[ioreg] = reg;
+    }
+
+    /**
+     * The <code>writeIORegisterByte()</code> method writes a value to the specified IO register. This is
      * generally only used internally to the simulator and device implementations, and client interfaces
      * should probably not call this method.
      *
      * @param ioreg the IO register number to which to write the value
      * @param val   the value to write to the IO register
      */
-    public void setIORegisterByte(int ioreg, byte val) {
+    public void writeIORegisterByte(int ioreg, byte val) {
         ioregs[ioreg].write(val);
     }
 
@@ -786,7 +784,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public void pushByte(byte val) {
         int address = getSP();
         setSP(address - 1);
-        setDataByte(address, val);
+        writeDataByte(address, val);
     }
 
     /**
@@ -928,7 +926,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
     }
 
-    protected void setInstr(Instr i, int address) {
+    protected void writeInstr(Instr i, int address) {
         flash_instr[address] = i;
     }
 
@@ -958,12 +956,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>isSleeping()</code> method returns whether the simulator is currently in a sleep mode.
+     * The <code>getSleepMode()</code> method returns whether the simulator is currently in a sleep mode.
      *
      * @return true if the simulator is in a sleep mode; false otherwise
      */
-    public boolean isSleeping() {
-        return sleeping;
+    public int getSleepMode() {
+        throw Avrora.unimplemented();
     }
 
     /**
@@ -1022,7 +1020,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected ProbedInstr makeProbedInstr(int addr) {
         ProbedInstr pi = getProbedInstr(addr);
         if (pi == null) pi = new ProbedInstr(getInstr(addr), addr, null);
-        setInstr(pi, addr);
+        writeInstr(pi, addr);
         return pi;
     }
 
@@ -1031,7 +1029,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         advanceCycles(cyclesConsumed);
     }
 
-    private class SREG_reg implements State.IOReg {
+    private class SREG_reg implements ActiveRegister {
 
         /**
          * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For simple

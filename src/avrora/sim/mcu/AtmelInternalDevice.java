@@ -32,10 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.State;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.Simulator;
-import avrora.sim.Clock;
+import avrora.sim.*;
 import avrora.Avrora;
 
 import java.util.Iterator;
@@ -68,7 +65,7 @@ public abstract class AtmelInternalDevice {
         throw Avrora.unimplemented();
     }
 
-    protected void installIOReg(String name, State.IOReg reg) {
+    protected void installIOReg(String name, ActiveRegister reg) {
         microcontroller.installIOReg(name, reg);
     }
 
@@ -79,7 +76,7 @@ public abstract class AtmelInternalDevice {
     /**
      * Helper function to get a 16 bit value from a pair of registers.
      */
-    protected static int read16(State.RWIOReg high, State.RWIOReg low) {
+    protected static int read16(RWRegister high, RWRegister low) {
         int result = low.read() & 0xff;
         result |= (high.read() & 0xff) << 8;
         return result;
@@ -88,7 +85,7 @@ public abstract class AtmelInternalDevice {
     /**
      * Helper function to write a 16-bit value to a pair of registers.
      */
-    protected static void write16(int val, State.RWIOReg high, State.RWIOReg low) {
+    protected static void write16(int val, RWRegister high, RWRegister low) {
         high.write((byte)((val & 0xff00) >> 8));
         low.write((byte)(val & 0x00ff));
     }
