@@ -132,7 +132,7 @@ public abstract class Option {
      * @param defvalue the default value for the item as a string
      */
     public void printHeader(String type, String defvalue) {
-        Terminal.printBrightGreen("    -" + name);
+        Terminal.printGreen("    -" + name);
         Terminal.print(": ");
         Terminal.printBrightCyan(type);
         Terminal.print(" = ");

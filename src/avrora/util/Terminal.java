@@ -67,6 +67,7 @@ public final class Terminal {
     public static final int COLOR_MAGENTA = 13;
     public static final int COLOR_BRIGHT_CYAN = 14;
     public static final int COLOR_WHITE = 15;
+    public static final int COLOR_DEFAULT = 16;
 
     public static final int MAXCOLORS = 16;
 
@@ -88,8 +89,7 @@ public final class Terminal {
     private static final String CTRL_BRIGHT_CYAN = "\u001b[1;36m";
     private static final String CTRL_WHITE = "\u001b[1;37m";
 
-    public static final int DEFAULT_COLOR = -1;
-    public static int FOREGROUND_COLOR = COLOR_LIGHTGRAY;
+    private static final String CTRL_DEFAULT = "\u001b[1;00m";
 
     private static final String[] COLORS = {
         CTRL_BLACK,
@@ -107,7 +107,8 @@ public final class Terminal {
         CTRL_BRIGHT_BLUE,
         CTRL_MAGENTA,
         CTRL_BRIGHT_CYAN,
-        CTRL_WHITE
+        CTRL_WHITE,
+        CTRL_DEFAULT
     };
 
     // TODO: tune colors correctly for HTML
@@ -132,17 +133,6 @@ public final class Terminal {
 
 
     public static final int ERROR_COLOR = COLOR_RED;
-
-    public static void setForegroundColor(int color) {
-        FOREGROUND_COLOR = color;
-    }
-
-    public static void setForegroundColor(String color) {
-        for (int cntr = 0; cntr < HTML_COLORS.length; cntr++) {
-            if (HTML_COLORS[cntr].equals(color))
-                FOREGROUND_COLOR = cntr;
-        }
-    }
 
     public static void print(int colors[], String s[]) {
         for (int cntr = 0; cntr < s.length; cntr++) {
@@ -236,7 +226,7 @@ public final class Terminal {
     }
 
     private static void outputColor(int color, String s) {
-        if (color == DEFAULT_COLOR) color = FOREGROUND_COLOR;
+        if (color < 0) color = COLOR_DEFAULT;
 
         if (useColors) {
             if (htmlColors) {
@@ -246,11 +236,10 @@ public final class Terminal {
                 out.print(s);
                 out.print("</font>");
                 return;
-            } else if (color != FOREGROUND_COLOR) {
+            } else if (color != COLOR_DEFAULT) {
                 out.print(COLORS[color]);
                 out.print(s);
-                // TODO: get correct begin color from terminal somehow
-                out.print(COLORS[FOREGROUND_COLOR]);
+                out.print(COLORS[COLOR_DEFAULT]);
                 return;
             }
         }

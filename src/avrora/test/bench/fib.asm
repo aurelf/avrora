@@ -1,6 +1,5 @@
-jmp start
+rjmp start
 	nop
-	.byte 140
 	
 start:			
 	ldi r17, 0xff
@@ -9,7 +8,7 @@ start:
 
 loop:		
 	push r16
-	call fib
+	rcall fib
 	pop r16
 	inc r16
 	cpi r16, 1

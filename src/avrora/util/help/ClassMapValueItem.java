@@ -64,7 +64,7 @@ public class ClassMapValueItem implements HelpItem {
     public void printHelp() {
         String h = getHelp();
         Terminal.print(StringUtil.dup(' ', indent));
-        Terminal.printPair(Terminal.COLOR_BRIGHT_GREEN, Terminal.COLOR_YELLOW, optname, "=", optvalue);
+        Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, optname, "=", optvalue);
         Terminal.nextln();
         Terminal.println(StringUtil.makeParagraphs(h, indent+4, 0, Terminal.MAXLINE));
     }

@@ -82,11 +82,6 @@ public class Main {
     public static final Option.Bool HTML = mainOptions.newOption("html", false,
             "For terminal colors. Display terminal colors as HTML tags for " +
             "easier inclusion in webpages.");
-    public static final Option.Str FOREGROUND = mainOptions.newOption("foreground-color", "lightgray",
-            "This option can be used to specify the default foreground color of " +
-            "text outputted from Avrora. For terminals with a light-colored background, " +
-            "the default choice may be hard or impossible to read. In that case, set this " +
-            "option to a darker color such as \"black\" for readable output.");
     public static final Option.Str CONFIGFILE = mainOptions.newOption("config-file", "",
             "This option can be used to specify a file that contains additional command " +
             "line options to Avrora. Any command-line option can be specified in this " +
@@ -112,7 +107,6 @@ public class Main {
             loadUserDefaults();
 
             parseOptions(args);
-            Terminal.setForegroundColor(FOREGROUND.get());
 
             if ( !"".equals(CONFIGFILE.get()) ) {
                 loadFile(CONFIGFILE.get());
@@ -252,7 +246,7 @@ public class Main {
 
     private static void printFooter() {
         Terminal.println("For more information, see the online documentation: ");
-        Terminal.printBrightCyan("http://compilers.cs.ucla.edu/avrora");
+        Terminal.printCyan("http://compilers.cs.ucla.edu/avrora");
         Terminal.nextln();
     }
 

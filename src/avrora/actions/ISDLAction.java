@@ -73,7 +73,7 @@ public class ISDLAction extends Action {
     public final Option.Bool INLINE = newOption("inline", true,
             "This option controls whether the ISDL processor will inline all subroutines marked as " +
             "\"inline\" in their declaration.");
-    public final Option.Bool DISASSEM = newOption("disassembler", false, "");
+    public final Option.Str DISASSEM = newOption("disassembler", "", "");
 
     public ISDLAction() {
         super(HELP);
@@ -117,10 +117,12 @@ public class ISDLAction extends Action {
             f.close();
         }
 
-        if ( DISASSEM.get() ) {
-            DisassemblerGenerator dag = new DisassemblerGenerator(a);
-            a.accept(dag);
-            dag.compute();
+        String disassem = DISASSEM.get();
+        if ( !"".equals(disassem) ) {
+            Terminal.println("Generating disassembler to " + disassem + "...");
+            SectionFile f = new SectionFile(disassem, "DISASSEM GENERATOR");
+            new DisassemblerGenerator(a, new Printer(new PrintStream(f))).generate();
+            f.close();
         }
     }
 }

@@ -19,6 +19,7 @@
     2  radio  Delivery over SPI + transmission timing validation
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
 
+    1   main  Fixed default foreground color                        (1.5.45)
     1  probe  NullPointerException inserting probe on invalid instr (1.5.43)
     1  probe  Probes inserted from within watches                   (1.5.43)
   2-3  input  Fix objdump preprocessor problems                     (1.5.xx)

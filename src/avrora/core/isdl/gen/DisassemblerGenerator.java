@@ -1,15 +1,40 @@
+/**
+ * Copyright (c) 2004-2005, Regents of the University of California
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University of California, Los Angeles nor the
+ * names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package avrora.core.isdl.gen;
 
-import avrora.core.isdl.Architecture;
-import avrora.core.isdl.InstrDecl;
-import avrora.core.isdl.EncodingDecl;
-import avrora.core.isdl.OperandDecl;
-import avrora.core.isdl.ast.Expr;
-import avrora.core.isdl.ast.Literal;
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
-import avrora.util.Arithmetic;
-import avrora.util.Printer;
+import avrora.core.isdl.*;
+import avrora.core.isdl.ast.*;
+import avrora.util.*;
 import avrora.Avrora;
 
 import java.util.*;
@@ -27,17 +52,67 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     protected static final int LARGEST_INSTR = 15;
 
-    Printer printer = new Printer(System.out);
+    final Printer printer;
+    Verbose.Printer verbose = Verbose.getVerbosePrinter("isdl.disassem");
+
+    class EncodingExpr {
+        final int bitsize;
+        final Expr expr;
+
+        EncodingExpr(int s, Expr e) {
+            expr = e;
+            bitsize = s;
+        }
+
+        void generateDecoder(int offset) {
+
+            printer.println("// word["+offset+":"+(offset+bitsize-1)+"]");
+
+            if ( expr.isLiteral() ) return;
+            if ( expr.isVariable() ) {
+                VarExpr ve = (VarExpr)expr;
+                printer.println(ve.variable+" = ");
+                generateRead(offset, offset+bitsize-1);
+                printer.println(";");
+            } else if ( expr.isBitRangeExpr() ) {
+                BitRangeExpr bre = (BitRangeExpr)expr;
+                if ( bre.operand.isVariable() ) {
+                    VarExpr ve = (VarExpr)bre.operand;
+                    printer.print(ve.variable+" |= ");
+                    generateRead(offset, offset+bitsize-1);
+                    if ( bre.low_bit > 0)
+                        printer.println(" << "+bre.low_bit+";");
+                    else printer.println(";");
+                } else {
+                    throw Avrora.failure("bit range use not invertible");
+                }
+            } else if ( expr instanceof BitExpr ) {
+                BitExpr bre = (BitExpr)expr;
+                if ( !bre.expr.isVariable() ) {
+                    throw Avrora.failure("bit range use not invertible: value is not a variable or constant");
+                } else if ( !bre.bit.isLiteral() ) {
+                    throw Avrora.failure("bit range use not invertible: bit is not a constant");
+                }
+                VarExpr ve = (VarExpr)bre.expr;
+                int bit = ((Literal.IntExpr)bre.bit).value;
+                printer.println(ve.variable+" = Arithmetic.setBit("+ve.variable+", "+bit+", Arithmetic.getBit(word1, "+nativeBitOrder(offset)+"));");
+
+            } else {
+                throw Avrora.failure("expression not invertible");
+            }
+        }
+
+    }
 
     class EncodingInfo {
         final InstrDecl instr;
         final byte[] bitStates;
-        final List exprs;
+        final List simplifiedExprs;
 
         EncodingInfo(InstrDecl id) {
             instr = id;
             bitStates = new byte[id.getEncodingSize()];
-            exprs = new LinkedList();
+            simplifiedExprs = new LinkedList();
 
             initializeBitStates(id);
         }
@@ -74,10 +149,12 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 Expr e = (Expr)i1.next();
                 // evaluate the parent encoding expression, given values for operands
                 Expr e1 = e.accept(cp,ce);
-                // store the expression for future use
-                exprs.add(e1);
                 // get the bit width of the parent encoding field
                 int size = e.getBitWidth();
+
+                // store the expression for future use
+                EncodingExpr ee = new EncodingExpr(size, e1);
+                simplifiedExprs.add(ee);
 
                 // if this field corresponds to an integer literal, initialize each bit to
                 // either ENC_ZERO or ENC_ONE
@@ -102,27 +179,28 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
 
         void print() {
-            printer.print(StringUtil.leftJustify(instr.name.toString(), 8)+": ");
+            if ( !verbose.enabled ) return;
+            verbose.print(StringUtil.leftJustify(instr.name.toString(), 8)+": ");
             for ( int cntr = 0; cntr < bitStates.length; cntr++ ) {
                 switch ( bitStates[cntr] ) {
                     case ENC_ZERO:
-                        printer.print("0");
+                        verbose.print("0");
                         break;
                     case ENC_ONE:
-                        printer.print("1");
+                        verbose.print("1");
                         break;
                     case ENC_USED_ONE:
-                        printer.print("U");
+                        verbose.print("U");
                         break;
                     case ENC_USED_ZERO:
-                        printer.print("u");
+                        verbose.print("u");
                         break;
                     case ENC_VAR:
-                        printer.print(".");
+                        verbose.print(".");
                         break;
                 }
             }
-            printer.nextln();
+            verbose.nextln();
         }
     }
 
@@ -139,21 +217,21 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         void computeRange() {
             if ( encodings.size() == 0) {
                 // this should not happen. how is it possible to create a new encoding set with no members?
-                printer.println("scanning...[empty]");
+                verbose.println("scanning...[empty]");
                 return;
             } else if ( encodings.size() == 1 ) {
                 // this encoding set has only one member, meaning that it is a leaf and needs no further
                 // children.
                 Iterator i = encodings.iterator();
                 EncodingInfo ei = (EncodingInfo)i.next();
-                printer.println("singleton: ");
+                verbose.println("singleton: ");
                 ei.print();
                 return;
             }
 
             // scan for the leftmost concrete bit range common to all encodings in this set.
             Iterator i = encodings.iterator();
-            printer.println("scanning...");
+            verbose.println("scanning...");
             while ( i.hasNext() ) {
                 EncodingInfo ei = (EncodingInfo)i.next();
                 ei.print();
@@ -216,11 +294,11 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                     byte bitState = ei.bitStates[cntr];
                     switch (bitState) {
                         case ENC_ZERO:
-                            value = value << 1 | 1;
+                            value = value << 1;
                             ei.bitStates[cntr] = ENC_USED_ZERO;
                             break;
                         case ENC_ONE:
-                            value = value << 1;
+                            value = value << 1 | 1;
                             ei.bitStates[cntr] = ENC_USED_ONE;
                             break;
                         default:
@@ -259,6 +337,22 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
 
         void generateCode() {
+            // recursively generate code for each of the children
+            Iterator i = children.values().iterator();
+            while ( i.hasNext() ) {
+                EncodingSet es = (EncodingSet)i.next();
+                es.generateCode();
+            }
+
+            if ( methodname == null ) {
+                if ( children.size() > 0)
+                    methodname = "decode_"+(methods++);
+                else {
+                    EncodingInfo ei = (EncodingInfo)encodings.iterator().next();
+                    methodname = "decode_"+ei.instr.innerClassName;
+                }
+            }
+
             printer.startblock("private Instr "+methodname+"(int word1)");
 
             if ( children.size() > 0 ) {
@@ -271,18 +365,11 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 generateLeaf();
             }
             printer.endblock();
-
-            // recursively generate code for each of the children
-            Iterator i = children.values().iterator();
-            while ( i.hasNext() ) {
-                EncodingSet es = (EncodingSet)i.next();
-                es.generateCode();
-            }
         }
 
         private void generateSwitch() {
-            int high_bit = 16-left_bit;
-            int low_bit = 16-right_bit;
+            int high_bit = nativeBitOrder(left_bit);
+            int low_bit = nativeBitOrder(right_bit);
             int mask = Arithmetic.getBitRangeMask(low_bit, high_bit);
             printer.println("// get value of bits word["+left_bit+":"+right_bit+"]");
             printer.println("int value = (word1 >> "+low_bit+") & 0x"+StringUtil.toHex(mask, 5)+";");
@@ -293,20 +380,14 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             while ( i.hasNext() ) {
                 Integer value = (Integer)i.next();
                 int val = value.intValue();
-                printer.print("case "+StringUtil.toHex(val, 5)+": ");
+                printer.print("case 0x"+StringUtil.toHex(val, 5)+": ");
                 EncodingSet child = (EncodingSet)children.get(value);
-                String mname = "decode_"+(methods++);
-                child.methodname = mname;
-                printer.println("return "+mname+"(word1);");
+                printer.println("return "+child.methodname+"(word1);");
             }
 
             printer.println("default:");
             invalidInstr();
             printer.endblock();
-        }
-
-        private void invalidInstr() {
-            printer.println("throw Avrora.failure(\"INVALID INSTRUCTION\");");
         }
 
         private void generateLeaf() {
@@ -316,8 +397,6 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             // TODO: double check bit ordering for this test.
             // first check for any left over concrete bits that must match
             EncodingInfo ei = (EncodingInfo)encodings.iterator().next();
-
-            printer.println("// this method matches and decodes the "+ei.instr.name+" instruction");
 
             // go through each of the bits in the bit states. if any of the bits have
             // not been matched yet, then they need to be checked to make sure that
@@ -344,6 +423,49 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 invalidInstr();
                 printer.endblock();
             }
+
+            // declare each operand
+            declareOperands(ei);
+
+            // generate the code that reads the operands from the instruction encoding
+            generateDecodeStatements(ei);
+
+            // generate the call to the Instr class constructor
+            generateConstructorCall(ei);
+        }
+
+        private void generateDecodeStatements(EncodingInfo ei) {
+            int offset = 0;
+            Iterator i = ei.simplifiedExprs.iterator();
+            while ( i.hasNext() ) {
+                EncodingExpr e = (EncodingExpr)i.next();
+                e.generateDecoder(offset);
+                offset += e.bitsize;
+            }
+        }
+
+        private void generateConstructorCall(EncodingInfo ei) {
+            printer.print("return new "+ei.instr.getClassName()+"(pc");
+            Iterator i1 = ei.instr.getOperandIterator();
+            while ( i1.hasNext() ) {
+                CodeRegion.Operand o = (CodeRegion.Operand)i1.next();
+                printer.print(", ");
+                if ( o.isRegister() ) {
+                    // if this is a register, we have to look it up in the table
+                    printer.print("getReg("+o.type+"_table, "+o.name+")");
+                } else {
+                    printer.print(o.name.toString());
+                }
+            }
+            printer.println(");");
+        }
+
+        private void declareOperands(EncodingInfo ei) {
+            Iterator i = ei.instr.getOperandIterator();
+            while ( i.hasNext() ) {
+                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+                printer.println("int "+o.name+" = 0;");
+            }
         }
     }
 
@@ -354,13 +476,23 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     Architecture architecture;
 
-    public DisassemblerGenerator(Architecture a) {
+    public DisassemblerGenerator(Architecture a, Printer p) {
         rootSet = new EncodingSet();
         pseudo = new HashSet();
         rootSet.methodname = "decode_root";
         architecture = a;
+        printer = p;
     }
 
+    public void generate() {
+        architecture.accept(this);
+        rootSet.compute();
+        printer.indent();
+        generateGetRegMethod();
+        generateDecodeTables();
+        rootSet.generateCode();
+        printer.unindent();
+    }
 
     public void visit(InstrDecl d) {
         // for now, we ignore pseudo instructions.
@@ -372,10 +504,21 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
     }
 
-    public void compute() {
-        rootSet.compute();
-        generateDecodeTables();
-        rootSet.generateCode();
+    private void invalidInstr() {
+        printer.println("throw Avrora.failure(\"INVALID INSTRUCTION\");");
+    }
+
+    private void generateGetRegMethod() {
+        printer.startblock("private Register getReg(Register[] table, int index)");
+        printer.startblock("if ( index < 0 || index >= table.length ) ");
+        invalidInstr();
+        printer.endblock();
+        printer.println("Register reg = table[index];");
+        printer.startblock("if ( reg == null ) ");
+        invalidInstr();
+        printer.endblock();
+        printer.println("return reg;");
+        printer.endblock();
     }
 
     private void generateDecodeTables() {
@@ -419,4 +562,14 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
     }
 
+    private void generateRead(int left_bit, int right_bit) {
+        int high_bit = nativeBitOrder(left_bit);
+        int low_bit = nativeBitOrder(right_bit);
+        int mask = Arithmetic.getBitRangeMask(low_bit, high_bit);
+        printer.print("((word1 >> "+low_bit+") & 0x"+StringUtil.toHex(mask, 5)+")");
+    }
+
+    private int nativeBitOrder(int bit) {
+        return 15-bit;
+    }
 }

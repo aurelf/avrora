@@ -12,7 +12,7 @@ architecture avr {
     format SET = { 0b10010100, 0b0, bit[2:0], 0b1000 };
     format CLR = { 0b10010100, 0b1, bit[2:0], 0b1000 };
     format ABS4 = { opcode[9:3], target[21:17], opcode[2:0], target[16:0] };
-    format MGPRMGPR = { opcode[7:0], s1[0], (r1 - 16)[2:0], s2[0], (r2 - 16)[2:0] };
+    format MGPRMGPR = { opcode[7:0], s1[0], r1[2:0], s2[0], r2[2:0] };
 
 
 //---------------------------------------------------------------------------
@@ -916,7 +916,7 @@ architecture avr {
     };
 
     instruction "ldi" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b1110 };
+        encoding = HGPRIMM8 where { opcode = 0b1110, r1 = rd, imm1 = imm };
         cycles = 1;
         execute = {
             $regs(rd) = low(imm);
@@ -1036,7 +1036,7 @@ architecture avr {
     };
 
     instruction "mulsu" rd: MGPR, rr: MGPR {
-        encoding = { 0b00000011, 0b0, (rd - 16)[2:0], 0b0, (rr - 16)[2:0] };
+        encoding = { 0b00000011, 0b0, rd[2:0], 0b0, rr[2:0] };
         cycles = 2;
         execute = {
             local result: int = $regs(rd) * $uregs(rr);
@@ -1071,7 +1071,7 @@ architecture avr {
     };
 
     instruction "ori" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0110 };
+        encoding = HGPRIMM8 where { opcode = 0b0110, r1 = rd, imm1 = imm };
         cycles = 1;
         execute = {
             $regs(rd) = performOr($regs(rd), imm);
@@ -1095,7 +1095,7 @@ architecture avr {
     };
 
     instruction "push" rr: GPR {
-        encoding = { 0b1001001, rd[4:0], 0b1111 };
+        encoding = { 0b1001001, rr[4:0], 0b1111 };
         cycles = 2;
         execute = {
             pushByte($regs(rr));
@@ -1164,7 +1164,7 @@ architecture avr {
     };
 
     instruction "sbci" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0100, r1 = rd };
+        encoding = HGPRIMM8 where { opcode = 0b0100, r1 = rd, imm1 = imm };
         cycles = 1;
         execute = {
             $regs(rd) = performSubtractionPZ($regs(rd), imm, bit(C));
@@ -1384,7 +1384,7 @@ architecture avr {
     };
 
     instruction "subi" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0101 };
+        encoding = HGPRIMM8 where { opcode = 0b0101, r1 = rd, imm1 = imm };
         cycles = 1;
         execute = {
             $regs(rd) = performSubtraction($regs(rd), imm, 0);
