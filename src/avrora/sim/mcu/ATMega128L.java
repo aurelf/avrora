@@ -153,12 +153,11 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         pinNumbers.put(n3, integer);
     }
 
-    protected final SimImpl simulator;
-
     /**
      * The constructor for the default instance.
      */
     public ATMega128L(boolean compatibility) {
+        // TODO: this class should not serve two roles: an inner class should serve as the factory
         super(7372800,
                 compatibility ? ATMEGA128L_SRAM_SIZE_103: ATMEGA128L_SRAM_SIZE,
                 compatibility ? ATMEGA128L_IOREG_SIZE_103: ATMEGA128L_IOREG_SIZE,
@@ -168,16 +167,17 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         interpreter = null;
     }
 
-    protected ATMega128L(Program p, boolean compatibility) {
+    protected ATMega128L(int id, Program p, boolean compatibility) {
         super(7372800,
                 compatibility ? ATMEGA128L_SRAM_SIZE_103: ATMEGA128L_SRAM_SIZE,
                 compatibility ? ATMEGA128L_IOREG_SIZE_103: ATMEGA128L_IOREG_SIZE,
                 128*1024, 4096, 65);
         compatibilityMode = compatibility;
         installPins();
-        simulator = new SimImpl(p);
+        simulator = new SimImpl(id, p);
         clock = simulator.getClock();
         interpreter = simulator.getInterpreter();
+        ((SimImpl)simulator).populateState();
     }
 
     protected void installPins() {
@@ -236,8 +236,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
      * @return a <code>Microcontroller</code> instance that represents the
      *         specific hardware device with the program loaded onto it
      */
-    public Microcontroller newMicrocontroller(Program p) {
-        return new ATMega128L(p, compatibilityMode);
+    public Microcontroller newMicrocontroller(int id, Program p) {
+        return new ATMega128L(id, p, compatibilityMode);
     }
 
     /**
@@ -254,11 +254,13 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         return getPin(getPinNumber(name));
     }
 
+    protected SimImpl.SPI spi;
+    protected SimImpl.ADC adc;
+
     public class SimImpl extends Simulator {
 
-        public SimImpl(Program p) {
-            super(ATMega128L.this, p);
-            populateState(interpreter);
+        public SimImpl(int id, Program p) {
+            super(id, ATMega128L.this, p);
         }
 
         public static final int RES_VECT = 1;
@@ -272,9 +274,6 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
         protected FlagRegister ETIFR_reg;
         protected MaskRegister ETIMSK_reg;
-
-        protected SPI spi;
-        protected ADC adc;
 
         protected class DirectionRegister extends State.RWIOReg {
 
@@ -595,7 +594,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             boolean blockCompareMatch;
             //final int[] periods;
 
-            Verbose.Printer timerPrinter;
+            Simulator.Printer timerPrinter;
 
             // information about registers and flags that specifies
             // which specific registers this 16-bit timer interacts with
@@ -643,7 +642,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             private Timer16Bit(BaseInterpreter ns) {
                 initValues();
 
-                timerPrinter = Verbose.getVerbosePrinter("sim.timer" + n);
+                timerPrinter = simulator.getPrinter("sim.timer" + n);
                 ticker = new Ticker();
 
                 highTempReg = new State.RWIOReg();
@@ -1349,7 +1348,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             final int[] periods;
 
-            Verbose.Printer timerPrinter;
+            Simulator.Printer timerPrinter;
 
             /**
              * Timer8Bit(ns, TCNT0, TCNT0, OCR0) should initialize
@@ -1359,7 +1358,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
              * Timer2. OCRn is the offset on TIMSK that corresponds to
              */
             private Timer8Bit(BaseInterpreter ns, int n, int TCCRn, int TCNTn, int OCRn, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
-                timerPrinter = Verbose.getVerbosePrinter("sim.timer" + n);
+                timerPrinter = simulator.getPrinter("sim.timer" + n);
                 ticker = new Ticker();
                 TCCRn_reg = new ControlRegister();
                 TCNTn_reg = new TCNTnRegister();
@@ -1629,13 +1628,13 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         }
 
 
-        private void populateState(BaseInterpreter ns) {
+        private void populateState() {
             // set up the external interrupt mask and flag registers and interrupt range
-            EIFR_reg = buildInterruptRange(ns, true, EIMSK, EIFR, 2, 8);
+            EIFR_reg = buildInterruptRange(true, EIMSK, EIFR, 2, 8);
             EIMSK_reg = EIFR_reg.maskRegister;
 
             // set up the timer mask and flag registers and interrupt range
-            TIFR_reg = buildInterruptRange(ns, false, TIMSK, TIFR, 17, 8);
+            TIFR_reg = buildInterruptRange(false, TIMSK, TIFR, 17, 8);
             TIMSK_reg = TIFR_reg.maskRegister;
 
 
@@ -1650,8 +1649,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
                 ETIFR_reg = new FlagRegister(ETIFR_mapping); // false, 0 are just placeholder falues
                 ETIMSK_reg = ETIFR_reg.maskRegister;
-                installIOReg(ns, ETIMSK, ETIMSK_reg);
-                installIOReg(ns, ETIFR, ETIFR_reg);
+                installIOReg(interpreter, ETIMSK, ETIMSK_reg);
+                installIOReg(interpreter, ETIFR, ETIFR_reg);
             }
 
 
@@ -1668,20 +1667,20 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             // Timer3 OVF
             interrupts[30] = new MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false);
 
-            new Timer0(ns);
-            if (!compatibilityMode) new Timer2(ns);
+            new Timer0(interpreter);
+            if (!compatibilityMode) new Timer2(interpreter);
 
-            new Timer1(ns);
-            if (!compatibilityMode) new Timer3(ns);
+            new Timer1(interpreter);
+            if (!compatibilityMode) new Timer3(interpreter);
 
-            buildPorts(ns);
+            buildPorts(interpreter);
 
-            new EEPROM(ns);
-            new USART0(ns);
-            if (!compatibilityMode) new USART1(ns);
+            new EEPROM(interpreter);
+            new USART0(interpreter);
+            if (!compatibilityMode) new USART1(interpreter);
 
-            spi = new SPI(ns);
-            adc = new ADC(ns);
+            spi = new SPI(interpreter);
+            adc = new ADC(interpreter);
         }
 
 
@@ -1709,7 +1708,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             ns.setIOReg(num, ior);
         }
 
-        private FlagRegister buildInterruptRange(BaseInterpreter ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
+        private FlagRegister buildInterruptRange(boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
             int[] mapping = new int[8];
             if ( increasing ) {
                 for ( int cntr = 0; cntr < 8; cntr++ ) mapping[cntr] = baseVect + cntr;
@@ -1721,8 +1720,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             for (int cntr = 0; cntr < numVects; cntr++) {
                 int inum = increasing ? baseVect + cntr : baseVect - cntr;
                 interrupts[inum] = new MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false);
-                installIOReg(ns, maskRegNum, fr.maskRegister);
-                installIOReg(ns, flagRegNum, fr);
+                installIOReg(interpreter, maskRegNum, fr.maskRegister);
+                installIOReg(interpreter, flagRegNum, fr);
             }
             return fr;
         }
@@ -1742,7 +1741,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             final BaseInterpreter interpreter;
 
-            final Verbose.Printer eepromPrinter;
+            final Simulator.Printer eepromPrinter;
 
             // flag bits on EECR
             final int EERIE = 3;
@@ -1768,7 +1767,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             // and possibly writing back out when the simulator exits
             // to emulate a real EEPROM
             EEPROM(BaseInterpreter ns) {
-                eepromPrinter = Verbose.getVerbosePrinter("sim.eeprom");
+                eepromPrinter = simulator.getPrinter("sim.eeprom");
                 interpreter = ns;
 
                 ticker = new EEPROMTicker();
@@ -1991,7 +1990,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             final Transmitter transmitter;
             final Receiver receiver;
 
-            final Verbose.Printer usartPrinter;
+            final Simulator.Printer usartPrinter;
 
             USARTDevice connectedDevice;
 
@@ -2085,7 +2084,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 connectedDevice = new SerialPrinter();
                 //connectedDevice = new LCDScreen();
 
-                usartPrinter = Verbose.getVerbosePrinter("sim.usart" + n);
+                usartPrinter = simulator.getPrinter("sim.usart" + n);
 
                 installIOReg(ns, UDRn, UDRn_reg);
                 installIOReg(ns, UCSRnA, UCSRnA_reg);
@@ -2431,7 +2430,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
              * It simply prints out a representation of each frame it receives. */
             protected class SerialPrinter implements USARTDevice {
 
-                Verbose.Printer serialPrinter = Verbose.getVerbosePrinter("sim.serialprinter");
+                Simulator.Printer serialPrinter = simulator.getPrinter("sim.serialprinter");
 
                 char[] stream =  {'h', 'e', 'l', 'l', 'o',  'w', 'o', 'r', 'l', 'd'};
 
@@ -2460,7 +2459,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         /** Debug class. Connect this for TestUart test case. "Formats" LCD display.
          * @author Daniel Lee */
         protected class LCDScreen implements USARTDevice {
-            Verbose.Printer lcdPrinter = Verbose.getVerbosePrinter("sim.lcd");
+            Simulator.Printer lcdPrinter = simulator.getPrinter("sim.lcd");
 
             boolean mode;
 
@@ -2565,7 +2564,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                     cursor = (cursor + 1) % 80;
 
                 }
-                lcdPrinter.print(this.toString());
+                lcdPrinter.println(this.toString());
             }
 
             private void setCursor(byte b) {
@@ -2599,7 +2598,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             final SPSReg SPSR_reg;
             final SPIInterrupt SPI_int;
 
-            final Verbose.Printer spiPrinter = Verbose.getVerbosePrinter("sim.spi");
+            final Simulator.Printer spiPrinter = simulator.getPrinter("sim.spi");
 
             SPIDevice connectedDevice;
 
@@ -2921,7 +2920,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             public SPIDevice connectedDevice;
             private PrinterTicker ticker;
 
-            private Verbose.Printer printer = Verbose.getVerbosePrinter("sim.spiPrinter");
+            private Simulator.Printer printer = simulator.getPrinter("sim.spiPrinter");
 
             public void connect(SPIDevice d) {
                 connectedDevice = d;
@@ -2970,7 +2969,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
          */
         protected class ADC {
 
-            final Verbose.Printer adcPrinter = Verbose.getVerbosePrinter("sim.adc");
+            final Simulator.Printer adcPrinter = simulator.getPrinter("sim.adc");
 
             final MUXRegister ADMUX_reg = new MUXRegister();
             final DataRegister ADC_reg = new DataRegister();
@@ -3358,15 +3357,15 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     /** Connect an instance of the <code>SPIDevice</code> interface to the SPI of this
      * microcontroller. */
     public void connectSPIDevice(SPIDevice d) {
-        simulator.spi.connectedDevice = d;
-        d.connect(simulator.spi);
+        spi.connectedDevice = d;
+        d.connect(spi);
     }
 
     /** Connect an instance of the <code>ADCInput</code> interface to the ADC of this
      * microcontroller. The ADC unit on the ATMega128L can support up to 8 ADC inputs,
      * on bits 0 - 7. */
     public void connectADCInput(ADCInput d, int bit) {
-        simulator.adc.connectADCInput(d, bit);
+        adc.connectADCInput(d, bit);
     }
 
     /** Helper function to get a 16 bit value from a pair of registers. */

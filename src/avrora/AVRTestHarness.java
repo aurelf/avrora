@@ -324,7 +324,7 @@ public class AVRTestHarness implements TestHarness {
             String args[] = {filename};
             program = r.read(args);
             // TODO: this should not be hardcoded!!
-            simulator = new ATMega128L(false).newMicrocontroller(program).getSimulator();
+            simulator = new ATMega128L(false).newMicrocontroller(0, program).getSimulator();
             simulator.start();
         }
 

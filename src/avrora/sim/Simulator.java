@@ -55,8 +55,30 @@ import avrora.util.Verbose;
  */
 public abstract class Simulator implements IORegisterConstants {
 
-    Verbose.Printer eventPrinter = Verbose.getVerbosePrinter("sim.event");
-    Verbose.Printer interruptPrinter = Verbose.getVerbosePrinter("sim.interrupt");
+    public class Printer {
+
+        public final boolean enabled;
+
+        Printer(String category) {
+            Verbose.Printer p = Verbose.getVerbosePrinter(category);
+            enabled = p.enabled;
+        }
+
+        public void println(String s) {
+            if ( enabled ) {
+                String idstr = StringUtil.rightJustify(id, 4);
+                String cycstr = StringUtil.rightJustify(clock.getCount(), 10);
+                Terminal.println(idstr+" "+cycstr+"   "+s);
+            }
+        }
+    }
+
+    public Simulator.Printer getPrinter(String c) {
+        return new Printer(c);
+    }
+
+    Simulator.Printer eventPrinter = getPrinter("sim.event");
+    Simulator.Printer interruptPrinter = getPrinter("sim.interrupt");
 
     /**
      * The <code>TRACEPROBE</code> field represents a simple probe
@@ -107,6 +129,8 @@ public abstract class Simulator implements IORegisterConstants {
      */
     protected MainClock clock;
 
+    protected final int id;
+
     /**
      * The <code>MAX_INTERRUPTS</code> fields stores the maximum number of
      * interrupt vectors supported by the simulator.
@@ -124,7 +148,8 @@ public abstract class Simulator implements IORegisterConstants {
      *
      * @param p the program to load into the simulator
      */
-    public Simulator(Microcontroller mcu, Program p) {
+    public Simulator(int i, Microcontroller mcu, Program p) {
+        id = i;
         microcontroller = mcu;
         program = p;
         interrupts = new Interrupt[MAX_INTERRUPTS];
@@ -396,6 +421,10 @@ public abstract class Simulator implements IORegisterConstants {
         return clock;
     }
 
+    public int getID() {
+        return id;
+    }
+
     public BaseInterpreter getInterpreter() {
         return interpreter;
     }
@@ -570,7 +599,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void forceInterrupt(int num) {
         if (interruptPrinter.enabled)
-            interruptPrinter.println("Simulator.forceInterrupt(" + num + ")");
+            interruptPrinter.println("FORCE INTERRUPT: " + num);
         interrupts[num].force();
     }
 
@@ -583,7 +612,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     protected void triggerInterrupt(int num) {
         if (interruptPrinter.enabled)
-            interruptPrinter.println("Simulator.triggerInterrupt(" + num + ")");
+            interruptPrinter.println("FIRE INTERRUPT: " + num);
         interrupts[num].fire();
     }
 
@@ -597,7 +626,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void insertEvent(Event e, long cycles) {
         if (eventPrinter.enabled)
-            eventPrinter.println("EVENT: " + e.getClass() + " @ " + interpreter.getCycles()+" + " +cycles);
+            eventPrinter.println("INSERT EVENT: " + e + " + " +cycles);
         clock.insertEvent(e, cycles);
     }
 
@@ -625,8 +654,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public PeriodicEvent insertPeriodicEvent(Event e, long period) {
         if (eventPrinter.enabled)
-            eventPrinter.println("PERIODIC EVENT: " + e.getClass()
-                    + " @ " + interpreter.getCycles()+" + " +period);
+            eventPrinter.println("INSERT PERIODIC EVENT: " + e + " + " +period);
          PeriodicEvent pt = new PeriodicEvent(this, e, period);
         clock.insertEvent(pt, period);
         return pt;
@@ -641,7 +669,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void removeEvent(Event e) {
         if (eventPrinter.enabled)
-            eventPrinter.println("REMOVE: " + e.getClass() + " @ " + interpreter.getCycles());
+            eventPrinter.println("REMOVE EVENT: " + e );
         clock.removeEvent(e);
     }
 

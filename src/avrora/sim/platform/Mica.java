@@ -69,8 +69,8 @@ public class Mica implements Platform, PlatformFactory {
         return mcu;
     }
 
-    public Platform newPlatform(Program p) {
-        return new Mica(new ATMega128L(true).newMicrocontroller(p));
+    public Platform newPlatform(int id, Program p) {
+        return new Mica(new ATMega128L(true).newMicrocontroller(id, p));
     }
 
     // TODO: Merge Mica and Mica2 LED implementation.

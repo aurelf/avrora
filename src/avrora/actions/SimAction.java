@@ -164,6 +164,8 @@ public abstract class SimAction extends Action {
         }
     }
 
+    int simcount;
+
     /**
      * The <code>newSimulator()</code> method is used by subclasses of
      * this action to create a new instance of a simulator with the
@@ -178,9 +180,9 @@ public abstract class SimAction extends Action {
         Simulator simulator;
         PlatformFactory pf = getPlatform();
         if (pf != null) {
-            simulator = pf.newPlatform(p).getMicrocontroller().getSimulator();
+            simulator = pf.newPlatform(simcount++, p).getMicrocontroller().getSimulator();
         } else {
-            simulator = getMicrocontroller().newMicrocontroller(p).getSimulator();
+            simulator = getMicrocontroller().newMicrocontroller(simcount++, p).getSimulator();
         }
 
         processTimeout(simulator);

@@ -54,6 +54,6 @@ public interface MicrocontrollerFactory extends MicrocontrollerProperties {
      * @return a <code>Microcontroller</code> instance that represents the
      *         specific hardware device with the program loaded onto it
      */
-    public Microcontroller newMicrocontroller(Program p);
+    public Microcontroller newMicrocontroller(int id, Program p);
 
 }

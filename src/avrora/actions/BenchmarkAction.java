@@ -134,9 +134,9 @@ public class BenchmarkAction extends SimAction {
         try {
             PlatformFactory pf = getPlatform();
             if (pf != null)
-                simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();
+                simulator = pf.newPlatform(0, program).getMicrocontroller().getSimulator();
             else
-                simulator = getMicrocontroller().newMicrocontroller(program).getSimulator();
+                simulator = getMicrocontroller().newMicrocontroller(0, program).getSimulator();
 
             simulator.start();
         } catch (Throwable t) {

@@ -43,6 +43,6 @@ import avrora.core.Program;
  */
 public interface PlatformFactory {
 
-    public Platform newPlatform(Program p);
+    public Platform newPlatform(int id, Program p);
 
 }

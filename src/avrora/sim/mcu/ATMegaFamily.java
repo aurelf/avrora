@@ -51,7 +51,7 @@ public abstract class ATMegaFamily implements Microcontroller {
     public final int EEPROM_SIZE;
     public final int NUM_PINS;
 
-    protected static Verbose.Printer pinPrinter = Verbose.getVerbosePrinter("sim.pin");
+    protected Simulator.Printer pinPrinter;
     protected final Pin[] pins;
 
     protected Clock clock;
@@ -95,7 +95,6 @@ public abstract class ATMegaFamily implements Microcontroller {
 
         protected boolean read() {
             boolean result;
-            if (pinPrinter.enabled) printRead();
             if (!outputDir) {
                 if (input != null)
                     result = input.read();
@@ -105,38 +104,44 @@ public abstract class ATMegaFamily implements Microcontroller {
             } else {
                 result = level;
             }
-            if (pinPrinter.enabled) pinPrinter.println(" -> " + result);
+            // print the result of the read
+            printRead(result);
             return result;
         }
 
-        private void printRead() {
-            pinPrinter.print("Pin[" + number + "].read() ");
-            printDirection();
+        private void printRead(boolean result) {
+            if ( pinPrinter == null ) pinPrinter = simulator.getPrinter("sim.pin");
+            if ( pinPrinter.enabled ) {
+                String dir = getDirection();
+                pinPrinter.println("READ PIN: " + number + " "+dir+"<- "+result);
+            }
         }
 
-        private void printDirection() {
+        private String getDirection() {
             if (!outputDir) {
                 if (input != null)
-                    pinPrinter.print("[input] ");
+                    return "[input] ";
                 else
-                    pinPrinter.print("[pullup:" + pullup + "] ");
+                    return "[pullup:" + pullup + "] ";
 
             } else {
-                pinPrinter.print("[output] ");
+                return "[output] ";
             }
         }
 
         protected void write(boolean value) {
             level = value;
-            if (pinPrinter.enabled) printWrite(value);
+            // print the write
+            printWrite(value);
             if (outputDir && output != null) output.write(value);
         }
 
         private void printWrite(boolean value) {
-            long cycles = clock.getCount();
-            pinPrinter.print(cycles+": Pin[" + number + "].write(" + value + ") ");
-            printDirection();
-            pinPrinter.nextln();
+            if ( pinPrinter == null ) pinPrinter = simulator.getPrinter("sim.pin");
+            if ( pinPrinter.enabled ) {
+                String dir = getDirection();
+                pinPrinter.println("WRITE PIN: " + number + " " + dir + "-> " + value);
+            }
         }
     }
 
