@@ -194,15 +194,55 @@ public abstract class Simulator implements IORegisterConstants {
      * fired when a watchpoint detects an access to an address where this
      * memory probe has been inserted.
      */
-    public interface MemoryProbe {
+    public interface Watch {
 
-        public void fireBeforeRead(Instr i, int address, State state, byte value);
+        /**
+         * The <code>fireBeforeRead()</code> method is called before the data address
+         * is read by the program.
+         *
+         * @param i       the instruction being probed
+         * @param address the address at which this instruction resides
+         * @param state   the state of the simulation
+         * @param data_addr the address of the data being referenced
+         * @param value   the value of the memory location being read
+         */
+        public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value);
 
-        public void fireBeforeWrite(Instr i, int address, State state, byte value);
+        /**
+         * The <code>fireBeforeWrite()</code> method is called before the data address
+         * is written by the program.
+         *
+         * @param i       the instruction being probed
+         * @param address the address at which this instruction resides
+         * @param state   the state of the simulation
+         * @param data_addr the address of the data being referenced
+         * @param value     the value being written to the memory location
+         */
+        public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value);
 
-        public void fireAfterRead(Instr i, int address, State state, byte value);
+        /**
+         * The <code>fireAfterRead()</code> method is called after the data address
+         * is read by the program.
+         *
+         * @param i       the instruction being probed
+         * @param address the address at which this instruction resides
+         * @param state   the state of the simulation
+         * @param data_addr the address of the data being referenced
+         * @param value   the value of the memory location being read
+         */
+        public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value);
 
-        public void fireAfterWrite(Instr i, int address, State state, byte value);
+        /**
+         * The <code>fireAfterWrite()</code> method is called after the data address
+         * is written by the program.
+         *
+         * @param i       the instruction being probed
+         * @param address the address at which this instruction resides
+         * @param state   the state of the simulation
+         * @param data_addr the address of the data being referenced
+         * @param value   the value being written to the memory location
+         */
+        public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value);
     }
 
     /**
@@ -387,8 +427,7 @@ public abstract class Simulator implements IORegisterConstants {
      * method on this simulator instance is called.
      */
     public void start() {
-        interpreter.shouldRun = true;
-        interpreter.runLoop();
+        interpreter.start();
     }
 
     /**
@@ -397,7 +436,7 @@ public abstract class Simulator implements IORegisterConstants {
      * thread.
      */
     public void stop() {
-        interpreter.shouldRun = false;
+        interpreter.stop();
     }
 
     /**
@@ -505,27 +544,27 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertWatchPoint()</code> method allows a probe to be inserted
+     * The <code>insertWatch()</code> method allows a watch to be inserted
      * at a memory location. The probe will be executed before every read
      * or write to that memory location.
      *
      * @param p         the probe to insert
      * @param data_addr the data address at which to insert the probe
      */
-    public void insertWatchPoint(MemoryProbe p, int data_addr) {
-        interpreter.insertWatchPoint(p, data_addr);
+    public void insertWatch(Watch p, int data_addr) {
+        interpreter.insertWatch(p, data_addr);
     }
 
     /**
-     * The <code>removeWatchPoint()</code> method removes a given memory
-     * probe from the memory location. Reference equality is used to check
+     * The <code>removeWatch()</code> method removes a given watch
+     * from the memory location. Reference equality is used to check
      * for equality when removing probes, not <code>.equals()</code>.
      *
      * @param p         the probe to remove
      * @param data_addr the data address from which to remove the probe
      */
-    public void removeWatchPoint(MemoryProbe p, int data_addr) {
-        interpreter.removeWatchPoint(p, data_addr);
+    public void removeWatch(Watch p, int data_addr) {
+        interpreter.removeWatch(p, data_addr);
     }
 
     /**

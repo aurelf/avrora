@@ -36,9 +36,12 @@ import avrora.Main;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.util.ProgramProfiler;
+import avrora.sim.util.MemoryProfiler;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.BaseInterpreter;
+import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -60,6 +63,7 @@ import java.util.List;
 public class SimulateAction extends Action {
     Program program;
     Simulator simulator;
+    Microcontroller microcontroller;
     avrora.sim.util.Counter total;
     long startms, endms;
 
@@ -69,10 +73,14 @@ public class SimulateAction extends Action {
     StackProbe sprobe;
 
     ProgramProfiler profile;
+
+    MemoryProfiler memprofile;
+
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
                     "for the specified microcontroller and begins executing the program. There " +
                     "are several options provided to the simulator for profiling and analysis, " +
                     "so for more information, see the Options section.";
+    public int memStart;
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -139,10 +147,13 @@ public class SimulateAction extends Action {
         Simulator.LEGACY_INTERPRETER = Main.LEGACY_INTERPRETER.get();
 
         PlatformFactory pf = Main.getPlatform();
-        if (pf != null)
-            simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();
-        else
-            simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
+        if (pf != null) {
+            microcontroller = pf.newPlatform(program).getMicrocontroller();
+            simulator = microcontroller.getSimulator();
+        } else {
+            microcontroller = Main.getMicrocontroller().newMicrocontroller(program);
+            simulator = microcontroller.getSimulator();
+        }
         counters = new LinkedList();
         branchcounters = new LinkedList();
 
@@ -153,6 +164,7 @@ public class SimulateAction extends Action {
         processIcount();
         processTimeout();
         processProfile();
+        processMemoryProfile();
         processStackMonitor();
 
         if (Main.TRACE.get()) {
@@ -171,6 +183,7 @@ public class SimulateAction extends Action {
             reportCycles();
             reportTime();
             reportProfile();
+            reportMemoryProfile();
             reportStackMonitor();
         }
     }
@@ -271,6 +284,71 @@ public class SimulateAction extends Action {
                 }
 
                 reportQuantity("    " + addr, cnt, "  " + percent);
+            }
+        }
+    }
+
+    void processMemoryProfile() {
+        if (Main.MEMORY_PROFILE.get()) {
+            int ramSize = microcontroller.getRamSize();
+            memStart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
+            memprofile = new MemoryProfiler(ramSize);
+            for ( int cntr = memStart; cntr < ramSize; cntr++ ) {
+                simulator.insertWatch(memprofile, cntr);
+            }
+        }
+    }
+
+    void reportMemoryProfile() {
+        if (memprofile != null) {
+            Terminal.printGreen(" Memory Profiling results\n");
+            printSeparator();
+            Terminal.println("             Reads               Writes");
+            printSeparator();
+            double rtotal = 0;
+            long[] rcount = memprofile.rcount;
+            double wtotal = 0;
+            long[] wcount = memprofile.wcount;
+            int imax = rcount.length;
+
+            // compute the total for percentage calculations
+            for (int cntr = 0; cntr < imax; cntr++) {
+                rtotal += rcount[cntr];
+                wtotal += wcount[cntr];
+            }
+
+            int zeroes = 0;
+
+            for (int cntr = memStart; cntr < imax; cntr++) {
+                int start = cntr;
+                long r = rcount[cntr];
+                long w = wcount[cntr];
+
+                if ( r == 0 && w == 0 ) zeroes++;
+                else zeroes = 0;
+
+                if ( zeroes == 2 ) {
+                    Terminal.println("                 .                    .");
+                    continue;
+                }
+                else if ( zeroes > 2 ) continue;
+
+                String rcnt = StringUtil.rightJustify(r, 8);
+                float rpcnt = (float) (100 * r / rtotal);
+                String rpercent = toFixedFloat(rpcnt, 4) + " %";
+
+                String wcnt = StringUtil.rightJustify(w, 8);
+                float wpcnt = (float) (100 * w / wtotal);
+                String wpercent = toFixedFloat(wpcnt, 4) + " %";
+
+                String addr = addrToString(start);
+
+                Terminal.printGreen("    " + addr);
+                Terminal.print(": ");
+                Terminal.printBrightCyan(rcnt);
+                Terminal.print(" " + ("  " + rpercent));
+                Terminal.printBrightCyan(wcnt);
+                Terminal.println(" " + ("  " + wpercent));
             }
         }
     }

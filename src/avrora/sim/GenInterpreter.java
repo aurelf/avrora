@@ -1505,11 +1505,6 @@ public class GenInterpreter extends BaseInterpreter {
         return Arithmetic.uword(low, high);
     }
 
-    private void stop() {
-        shouldRun = false;
-        innerLoop = false;
-    }
-
     private void enterSleepMode() {
         sleeping = true;
         innerLoop = false;

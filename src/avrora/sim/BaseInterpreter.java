@@ -35,7 +35,9 @@ package avrora.sim;
 import avrora.Avrora;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.DeltaQueue;
+import avrora.sim.util.MulticastWatch;
 import avrora.util.Arithmetic;
+import avrora.util.StringUtil;
 import avrora.core.*;
 
 /**
@@ -51,6 +53,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected final byte[] regs;
     protected final State.IOReg[] ioregs;
     protected byte[] sram;
+    protected MulticastWatch[] sram_probes;
     protected final Program.Impression impression;
     protected long postedInterrupts;
     protected final int sram_start;
@@ -72,6 +75,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * every instruction.
      */
     protected final MulticastProbe activeProbe;
+
+    /**
+     * The <code>innerLoop</code> field is a boolean that is used internally
+     * in the implementation of the interpreter. When something in the
+     * simulation changes (e.g. an interrupt is posted), this field is
+     * set to false, and the execution loop (e.g. an interpretation or
+     * sleep loop) is broken out of.
+     */
     protected boolean innerLoop;
 
 
@@ -155,18 +166,27 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * execution order of the instructions.
      */
     protected int nextPC;
+
+    /**
+     * The <code>cyclesConsumed</code> field stores the number of cycles consumed
+     * in doing a part of the simulation (e.g. executing an instruction or
+     * processing an interrupt).
+     */
     protected int cyclesConsumed;
+
     /**
      * The <code>shouldRun</code> flag is used internally in the main execution
      * runLoop to implement the correct semantics of <code>start()</code> and
      * <code>stop()</code> to the clients.
      */
     protected boolean shouldRun;
+
     /**
      * The <code>sleeping</code> flag is used internally in the simulator when the
      * microcontroller enters the sleep mode.
      */
     protected boolean sleeping;
+
     /**
      * The <code>justReturnedFromInterrupt</code> field is used internally in
      * maintaining the invariant stated in the hardware manual that at least one
@@ -175,8 +195,18 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      */
     protected boolean justReturnedFromInterrupt;
 
+    /**
+     * The <code>simulator</code> field stores a reference to the simulator that
+     * this interpreter instance corresponds to. There should be a one-to-one
+     * mapping between instances of the <code>Simulator</code> class and instances
+     * of the <code>BaseInterpreter</code> class.
+     */
     protected final Simulator simulator;
 
+    /**
+     * The <code>eventQueue</code> field stores a reference to the event queue
+     * that stores the events posted to the interpreter in chronological order.
+     */
     protected final DeltaQueue eventQueue;
 
     private static final int SREG_I_MASK = 1 << SREG_I;
@@ -222,6 +252,16 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         initializeIORegs();
     }
 
+    protected void start() {
+        shouldRun = true;
+        runLoop();
+    }
+
+    protected void stop() {
+        shouldRun = false;
+        innerLoop = false;
+    }
+
     protected abstract void runLoop();
 
     protected abstract void insertProbe(Simulator.Probe p, int addr);
@@ -254,12 +294,30 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected abstract void removeBreakPoint(int addr);
 
-    protected void insertWatchPoint(Simulator.MemoryProbe p, int data_addr) {
-        throw Avrora.unimplemented();
+    protected void insertWatch(Simulator.Watch p, int data_addr) {
+        if ( sram_probes == null )
+            sram_probes = new MulticastWatch[sram.length];
+        if ( data_addr < sram_start )
+            throw Avrora.failure("not a valid data address: "+StringUtil.addrToString(data_addr));
+
+        // add the probe to the multicast probe present at the location (if there is one)
+        int offset = data_addr - sram_start;
+        MulticastWatch w = sram_probes[offset];
+        if ( w == null ) w = sram_probes[offset] = new MulticastWatch();
+        w.add(p);
     }
 
-    protected void removeWatchPoint(Simulator.MemoryProbe p, int data_addr) {
-        throw Avrora.unimplemented();
+    protected void removeWatch(Simulator.Watch p, int data_addr) {
+        if ( sram_probes == null )
+            return;
+        if ( data_addr < sram_start )
+            throw Avrora.failure("not a valid data address: "+StringUtil.addrToString(data_addr));
+
+        // remove the probe from the multicast probe present at the location (if there is one)
+        int offset = data_addr - sram_start;
+        MulticastWatch w = sram_probes[offset];
+        if ( w == null ) return;
+        w.remove(p);
     }
 
     protected void initializeIORegs() {
@@ -378,8 +436,23 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public byte getDataByte(int address) {
         if (address < NUM_REGS) return regs[address];
         if (address < sram_start) return ioregs[address - NUM_REGS].read();
-        return sram[address - sram_start];
+        return readDataByte(address - sram_start);
     }
+
+    private byte readDataByte(int offset) {
+        byte val = sram[offset];
+        // write to memory, checking for any memory probes
+        Simulator.Watch p;
+        if ( sram_probes != null && (p = sram_probes[offset]) != null ) {
+            Instr i = getCurrentInstr();
+            p.fireBeforeRead(i, pc, this, offset + sram_start, val);
+            val = sram[offset]; // the value might have been updated by the probe
+            p.fireAfterRead(i, pc, this, offset + sram_start, val);
+        }
+        return val;
+    }
+
+
 
     /**
      * The <code>getProgramByte()</code> method reads a byte value from
@@ -413,8 +486,26 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             regs[address] = val;
         else if (address < sram_start)
             ioregs[address - NUM_REGS].write(val);
-        else
-            sram[address - sram_start] = val;
+        else {
+            writeDataByte(address - sram_start, val);
+        }
+    }
+
+    private void writeDataByte(int offset, byte val) {
+        // write to memory, checking for any memory probes
+        Simulator.Watch p;
+        if ( sram_probes != null && (p = sram_probes[offset]) != null ) {
+            Instr i = getCurrentInstr();
+            p.fireBeforeWrite(i, pc, this, offset + sram_start, val);
+            sram[offset] = val;
+            p.fireAfterWrite(i, pc, this, offset + sram_start, val);
+        } else {
+            sram[offset] = val;
+        }
+    }
+
+    public Instr getCurrentInstr() {
+        return getInstr(pc);
     }
 
     /**

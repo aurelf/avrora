@@ -119,7 +119,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.11";
+    static final String VERSION = "Beta 1.1.12";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -212,6 +212,11 @@ public class Main {
     public static final Option.Bool MONITOR_STACK = options.newOption("monitor-stack", false,
             "This option is used in the \"simulate\" action. It causes the simulator " +
             "to report changes to the stack height.");
+    public static final Option.Bool MEMORY_PROFILE = options.newOption("memory-profile", false,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to analyze the memory traffic of the program and print out the results in " +
+            "a tabular format. This can be useful to see what portions of memory are the " +
+            "most used.");
     public static final Option.Bool LEGACY_INTERPRETER = options.newOption("legacy-interpreter", true,
             "This option is used in the \"simulate\" action. It causes the simulator " +
             "to use the legacy (hand-written) interpreter rather than the interpreter " +
