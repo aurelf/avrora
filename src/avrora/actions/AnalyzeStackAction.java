@@ -36,6 +36,7 @@ import avrora.Main;
 import avrora.core.Program;
 import avrora.stack.Analyzer;
 import avrora.util.Option;
+import avrora.util.Printer;
 
 /**
  * The <code>AnalyzeStackAction</code> class is an extension of the <code>Main.Action</code>
@@ -63,6 +64,16 @@ public class AnalyzeStackAction extends Action {
             "This option causes the stack analyzer to print a trace of each abstract state " +
             "produced, every edge between states that is inserted, and all propagations " +
             "performed during the analysis. ");
+    public final Option.Bool DUMP_STATE_SPACE = newOption("dump-state-space", false,
+            "This option causes the stack analyzer to print a dump of all " +
+            "the reachable abstract states in the state space, as well as all " +
+            "edges between states. This can be used for a post-mortem analysis.");
+    public final Option.Long RESERVE = newOption("reserve", 0,
+            "This option is used for reserving a small portion of memory before the " +
+            "analysis begins, in case the Java heap space is exhausted. This can happen " +
+            "with very large analyses. By reserving some space up front, there is space " +
+            "left so that post mortem graph analysis can be run. The units given are " +
+            "megabytes.");
 
     /**
      * The default constructor of the <code>AnalyzeStackAction</code> class simply
@@ -86,9 +97,13 @@ public class AnalyzeStackAction extends Action {
         Analyzer.TRACE_SUMMARY = TRACE_SUMMARY.get();
         Analyzer.MONITOR_STATES = MONITOR_STATES.get();
         Analyzer.TRACE = TRACE.get();
+        Analyzer.reserve = new byte[(int)(RESERVE.get() * 1024 * 1024)];
 
         a.run();
         a.report();
+
+        if ( DUMP_STATE_SPACE.get() )
+            a.dump();
     }
 
 }

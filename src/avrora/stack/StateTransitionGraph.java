@@ -1,9 +1,13 @@
 package avrora.stack;
 
 import avrora.Avrora;
+import avrora.sim.IORegisterConstants;
+import avrora.util.Printer;
+import avrora.util.StringUtil;
 import avrora.core.Program;
 
 import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * @author Ben L. Titzer
@@ -61,7 +65,7 @@ public class StateTransitionGraph {
      */
     public static class StateInfo {
         public final StateCache.State state;
-        public HashSet stateSet;
+        public StateCache.Set stateSet;
         public Edge forwardEdges;
         public Edge backwardEdges;
 
@@ -240,5 +244,70 @@ public class StateTransitionGraph {
 
     public long getExploredCount() {
         return exploredCount;
+    }
+
+    public StateCache.Set newSet() {
+        return cache.newSet();
+    }
+
+    public void deleteStateSets() {
+        Iterator i = cache.getStateIterator();
+        while ( i.hasNext() ) {
+            StateCache.State state = (StateCache.State)i.next();
+            state.info.stateSet = null;
+        }
+    }
+
+    public void dump(Printer p) {
+        Iterator i = cache.getStateIterator();
+        while ( i.hasNext() ) {
+            StateCache.State state = (StateCache.State)i.next();
+            StringBuffer buf = dumpToBuffer(state);
+            p.println(buf.toString());
+        }
+
+        i = cache.getStateIterator();
+        while ( i.hasNext() ) {
+            StateCache.State state = (StateCache.State)i.next();
+            for ( Edge e = state.info.forwardEdges; e != null; e = e.forwardLink ) {
+                StringBuffer buf = dumpToBuffer(e);
+                p.println(buf.toString());
+            }
+        }
+    }
+
+    private StringBuffer dumpToBuffer(Edge e) {
+        StringBuffer buf = new StringBuffer(32);
+        buf.append("[");
+        buf.append(e.source.getUniqueName());
+        buf.append("] --(");
+        buf.append(Analyzer.EDGE_NAMES[e.type]);
+        buf.append(",");
+        buf.append(e.weight);
+        buf.append(")--> [");
+        buf.append(e.target.getUniqueName());
+        buf.append("]");
+        return buf;
+    }
+
+    private StringBuffer dumpToBuffer(StateCache.State state) {
+        StringBuffer buf = new StringBuffer(300);
+        buf.append("[");
+        buf.append(state.getUniqueName());
+        buf.append(":");
+        buf.append(state.getType());
+        buf.append("] PC=");
+        buf.append(StringUtil.addrToString(state.getPC()));
+        buf.append(" SREG=");
+        buf.append(AbstractArithmetic.toString(state.getSREG()));
+        buf.append(" EIMSK=");
+        buf.append(AbstractArithmetic.toString(state.getIORegisterAV(IORegisterConstants.EIMSK)));
+        buf.append(" TIMSK=");
+        buf.append(AbstractArithmetic.toString(state.getIORegisterAV(IORegisterConstants.TIMSK)));
+        for ( int cntr = 0; cntr < IORegisterConstants.NUM_REGS; cntr++ ) {
+            buf.append(" ");
+            buf.append(AbstractInterpreter.toShortString(state.getRegisterAV(cntr)));
+        }
+        return buf;
     }
 }

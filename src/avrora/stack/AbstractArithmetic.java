@@ -685,6 +685,21 @@ public class AbstractArithmetic {
     }
 
     /**
+     * The <code>toShortString()</code> method converts an 8-bit abstract value
+     * to a string representation. Each bit's value is represented as either
+     * '0', '1', or '.' and listed with the most significant first.
+     *
+     * @param av1 the abstract value to convert to a string
+     * @return a string representation of the abstract value
+     */
+    public static String toShortString(char av1) {
+        if ( av1 == ZERO ) return "0";
+        StringBuffer buf = new StringBuffer();
+        toString(av1, buf);
+        return buf.toString();
+    }
+
+    /**
      * The <code>toString()</code> method converts an 1-bit abstract value
      * to a string representation. The bit's value is represented as either
      * '0', '1', or '.'.

@@ -38,6 +38,7 @@ import avrora.core.Program;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
+import avrora.util.Printer;
 import avrora.util.profiling.Distribution;
 
 import java.util.HashMap;
@@ -96,6 +97,8 @@ public class Analyzer {
     public static boolean TRACE;
     public static boolean running;
 
+    public static byte[] reserve;
+
     public Analyzer(Program p) {
         program = p;
         graph = new StateTransitionGraph(p);
@@ -121,9 +124,12 @@ public class Analyzer {
             traverseTime = System.currentTimeMillis() - check;
             running = false;
         } catch ( OutOfMemoryError ome ) {
+            // free the reserved memory
+            reserve = null;
             long check = System.currentTimeMillis();
             buildTime = check - start;
             outOfMemory();
+            graph.deleteStateSets();
         }
 
     }
@@ -143,24 +149,17 @@ public class Analyzer {
     }
 
     private void analyzeAggregationPoints() {
-/*
-        Distribution sizeDist = new Distribution("Distribution of set size", "Number of sets", "Total elements", "Distribution");
-        Iterator i = aggregationPoints.values().iterator();
+        Iterator i = graph.getStateCache().getStateIterator();
+        Distribution sizeDist = new Distribution("Set Size Statistics", "Number of sets",
+                "Aggregate size", "Distribution of Set Size");
         while ( i.hasNext() ) {
-            HashSet set = (HashSet)i.next();
-            sizeDist.record(set.size());
+            StateCache.State state = (StateCache.State)i.next();
+            StateCache.Set stateSet = state.info.stateSet;
+            int size = stateSet == null ? 0 : stateSet.size();
+            sizeDist.record(size);
         }
         sizeDist.processData();
         sizeDist.textReport();
-
-        Distribution countDist = new Distribution("Distribution of set size count", "Number of different sizes", null, "Distribution");
-        for ( int cntr = 0; cntr < sizeDist.distrib.length; cntr++ ) {
-            countDist.record(sizeDist.distrib[cntr] + sizeDist.distribMin);
-        }
-
-        countDist.processData();
-        countDist.textReport();
-*/
     }
 
     private void analyzeStates() {
@@ -229,15 +228,6 @@ public class Analyzer {
     private void countAggregElems() {
         numElems = 0;
         numSets = 0;
-        /*
-        Iterator i = graph.getStateCache().getStateIterator();
-        while ( i.hasNext() ) {
-            StateCache.State s = (StateCache.State)i.next();
-            if ( s.info.stateSet != null ) {
-                numElems += s.info.stateSet.size();
-                numSets++;
-            }
-        }*/
     }
 
     private void printStatHeader() {
@@ -303,8 +293,8 @@ public class Analyzer {
         while ( newEdges != null ) {
             StateTransitionGraph.Edge edge = newEdges.edge;
             newEdges = newEdges.next;
-            HashSet set = edge.target.info.stateSet;
-            if ( set != null && set.size() > 0 )
+            StateCache.Set set = edge.target.info.stateSet;
+            if ( set != null && !set.isEmpty() )
                 propagateSetBackwards(edge.source, edge.target.info.stateSet, new Object());
             newEdgeCount--;
         }
@@ -318,7 +308,7 @@ public class Analyzer {
 
         StateTransitionGraph.StateInfo info = t.info;
         if ( info.stateSet == null )
-            info.stateSet = new HashSet();
+            info.stateSet = graph.newSet();
         else if ( info.stateSet.contains(rt) )
             return;
 
@@ -337,14 +327,14 @@ public class Analyzer {
     }
 
     // propagate return state back through the graph to callers
-    private void propagateSetBackwards(StateCache.State t, HashSet rset, Object mark) {
+    private void propagateSetBackwards(StateCache.State t, StateCache.Set rset, Object mark) {
         // visited this node already?
         if (t.mark == mark) return;
         t.mark = mark;
 
         StateTransitionGraph.StateInfo info = t.info;
         if ( info.stateSet == null )
-            info.stateSet = new HashSet();
+            info.stateSet = graph.newSet();
         else if ( info.stateSet.containsAll(rset) )
             return;
 
@@ -362,7 +352,7 @@ public class Analyzer {
         info.stateSet.addAll(rset);
     }
 
-    private void insertReturnEdges(StateCache.State caller, HashSet prev, HashSet rset) {
+    private void insertReturnEdges(StateCache.State caller, StateCache.Set prev, StateCache.Set rset) {
         Iterator i = rset.iterator();
         while ( i.hasNext() ) {
             Object o = i.next();
@@ -425,6 +415,7 @@ public class Analyzer {
 
     private class Path {
         final int depth;
+        final int length;
         final StateTransitionGraph.Edge edge;
         final Path tail;
 
@@ -432,6 +423,7 @@ public class Analyzer {
             depth = d;
             edge = e;
             tail = p;
+            length = p == null ? 1 : 1 + p.length;
         }
     }
 
@@ -453,6 +445,7 @@ public class Analyzer {
         stack.put(s, new Integer(depth));
 
         int maxdepth = 0;
+        int minlength = Integer.MAX_VALUE;
         Path maxtail = null;
         StateTransitionGraph.Edge maxedge = null;
         for (StateTransitionGraph.Edge edge = s.info.forwardEdges; edge != null; edge = edge.forwardLink) {
@@ -488,11 +481,13 @@ public class Analyzer {
                 // compute maximum added stack depth by following this edge
                 int extra = edge.weight + tail.depth;
 
-                // remember the most added stack depth from following any of the links
-                if (extra > maxdepth) {
+                // remember the shortest path (in number of links) to the
+                // maximum depth stack from following any of the links
+                if ( extra > maxdepth || (tail.length < minlength && extra == maxdepth)) {
                     maxdepth = extra;
                     maxtail = tail;
                     maxedge = edge;
+                    minlength = tail.length;
                 }
             }
         }
@@ -529,12 +524,22 @@ public class Analyzer {
         printStats();
 
         printQuantity("Time to build graph   ", StringUtil.milliAsString(buildTime));
+        if ( maximalPath == null ) {
+            Terminal.printRed("No maximal path data.");
+            Terminal.nextln();
+            return;
+        }
+
         printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
         if ( unbounded )
             printQuantity("Maximum stack depth   ", "unbounded");
         else
             printQuantity("Maximum stack depth   ", "" + maximalPath.depth+" bytes" );
         printPath(maximalPath);
+    }
+
+    public void dump() {
+        graph.dump(Printer.STDOUT);
     }
 
     private void printPath(Path p) {
@@ -601,8 +606,6 @@ public class Analyzer {
         public MutableState call(MutableState s, int target_address) {
             s.setPC(target_address);
             addEdge(frontierState, CALL_EDGE, s);
-//            newAggregationPoint(frontierState);
-//            post(graph.getCachedState(s), frontierState);
 
             // do not continue abstract interpretation after this state; edges will
             // be inserted later that represent possible return states
@@ -622,8 +625,6 @@ public class Analyzer {
             s.setFlag_I(AbstractArithmetic.FALSE);
             s.setPC((num - 1) * 4);
             addEdge(frontierState, INT_EDGE, s);
-//            newAggregationPoint(frontierState);
-//            post(graph.getCachedState(s), frontierState);
 
             // do not continue abstract interpretation after this state; edges will
             // be inserted later that represent possible return states
@@ -644,7 +645,6 @@ public class Analyzer {
         public MutableState ret(MutableState s) {
             frontierState.setType(RET_STATE);
             postReturnState(frontierState);
-//            newAggregationPoint(frontierState);
             retCount++;
 
             // do not continue abstract interpretation after this state; this state
@@ -662,7 +662,6 @@ public class Analyzer {
          */
         public MutableState reti(MutableState s) {
             frontierState.setType(RETI_STATE);
-//            newAggregationPoint(frontierState);
             postReturnState(frontierState);
             retiCount++;
 

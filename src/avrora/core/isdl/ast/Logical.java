@@ -42,7 +42,7 @@ package avrora.core.isdl.ast;
  *
  * @author Ben L. Titzer
  */
-public abstract class Logical {
+public abstract class Logical extends Expr {
 
     /**
      * The <code>BinOp</code> inner class represents an operation on
@@ -50,7 +50,7 @@ public abstract class Logical {
      * For example, logical XOR and integer comparison and such operations
      * are binary infix and therefore subclasses of this class.
      */
-    public abstract static class BinOp extends Arith {
+    public abstract static class BinOp extends Logical {
 
         /**
          * The <code>operation</code> field stores the string name of the
@@ -129,7 +129,7 @@ public abstract class Logical {
      * single boolean value. For example, the logical negation is an operation
      * on a single boolean that produce a single boolean result.
      */
-    public abstract static class UnOp extends Arith {
+    public abstract static class UnOp extends Logical {
         /**
          * The <code>operation</code> field stores the string name of the
          * operation being performed on the expression. For example, '!'

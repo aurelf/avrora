@@ -35,9 +35,12 @@ package avrora.stack;
 import avrora.core.Program;
 import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
+import avrora.Avrora;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * The <code>StateSpace</code> class represents the reachable state space
@@ -117,6 +120,120 @@ public class StateCache {
 
     }
 
+    public class Set {
+
+        private State oneState;
+        private HashSet delegate;
+
+        private boolean delegating = false;
+        private boolean empty = true;
+
+        private class OptionalIterator implements java.util.Iterator {
+            boolean done;
+
+            public boolean hasNext() {
+                return !done && oneState != null;
+            }
+
+            public Object next() {
+                done = true;
+                return oneState;
+            }
+
+            public void remove() {
+                throw Avrora.unimplemented();
+            }
+
+        }
+
+        public int size() {
+            if ( delegating )
+                return delegate.size();
+            else {
+                return oneState == null ? 0 : 1;
+            }
+        }
+
+        public boolean isEmpty() {
+            if ( delegating ) {
+                return false;
+            } else {
+                return (oneState != null);
+            }
+        }
+
+        public boolean contains(Object o) {
+            if ( delegating ) {
+                return delegate.contains(o);
+            } else {
+                return oneState == o;
+            }
+        }
+
+        public java.util.Iterator iterator() {
+            if ( delegating )
+                return delegate.iterator();
+            else
+                return new OptionalIterator();
+        }
+
+        public boolean add(StateCache.State ns) {
+            empty = false;
+
+            if ( delegating )
+                return delegate.add(ns);
+            else {
+                if ( oneState == null ) {
+                    oneState = ns;
+                    return false;
+                }
+                if ( ns == oneState ) return true;
+                beginDelegation();
+                return delegate.add(ns);
+            }
+        }
+
+        private void beginDelegation() {
+            delegate = new HashSet();
+            if ( oneState != null ) delegate.add(oneState);
+            else oneState = null;
+            delegating = true;
+        }
+
+        public boolean containsAll(Set oset) {
+            if ( oset.empty ) return true;
+            if ( empty ) return false;
+
+            if ( delegating ) {
+                if ( oset.delegating )
+                    return delegate.containsAll(oset.delegate);
+                else return delegate.contains(oset.oneState);
+            } else {
+                if ( oset.delegating ) return false;
+                else {
+                    return oneState == oset.oneState || oset.oneState == null;
+                }
+            }
+        }
+
+        public boolean addAll(Set oset) {
+            if ( oset.empty ) return true;
+            empty = false;
+
+            if ( delegating ) {
+                if ( oset.delegating )
+                    return delegate.addAll(oset.delegate);
+                else return delegate.add(oset.oneState);
+            } else {
+                beginDelegation();
+                if ( oset.delegating )
+                    return delegate.addAll(oset.delegate);
+                else return delegate.add(oset.oneState);
+            }
+        }
+
+    }
+
 
     private HashMap stateMap;
     private final State edenState;
@@ -178,5 +295,9 @@ public class StateCache {
 
     public Iterator getStateIterator() {
         return stateMap.values().iterator();
+    }
+
+    public Set newSet() {
+        return new Set();
     }
 }
