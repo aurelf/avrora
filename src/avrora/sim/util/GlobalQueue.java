@@ -34,9 +34,11 @@ package avrora.sim.util;
 
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.radio.Radio;
 import avrora.sim.util.DeltaQueue;
 
 import avrora.util.Verbose;
+import avrora.Avrora;
 
 import java.util.HashSet;
 import java.util.HashMap;
@@ -189,25 +191,20 @@ public class GlobalQueue {
      * of participating threads. This class is necessary for ensuring the integrity of the
      * global clock.*/
     public class LocalTimer extends LocalMeet {
-        private boolean removed;
 
         LocalTimer(Simulator s) {
-            super(s, 6106, 6106);  // TODO: cleanup use of this constant
+            super(s, Radio.TRANSFER_TIME, Radio.TRANSFER_TIME);
             id += iNum++;
         }
 
         public void fire() {
             super.fire();
 
-            // TODO: safely implement removing threads
-            //if (!removed) {
             simulator.insertEvent(this, delay);
-            //}
         }
 
         protected void remove() {
-            simulator.removeEvent(this);
-            removed = true;
+            throw Avrora.unimplemented();
         }
 
         public void action() {
@@ -220,7 +217,7 @@ public class GlobalQueue {
     /**
      * How sad. The <code>InterruptedException</code> wraps an interrupted
      * exception with an unchecked exception so that it doesn't break
-     * the interface of the <code>Simulator.Trigger</code> class.
+     * the interface of the <code>Simulator.Event</code> class.
      * It's not clear what useful purpose interrupted exceptions could
      * serve in the implementation of the global clock.
      */
