@@ -35,6 +35,10 @@ package avrora.sim.platform;
 import avrora.core.Program;
 
 /**
+ * The <code>PlatformFactory</code> interface represents a factory-style
+ * interface where an implementor can create multiple platforms of the
+ * same type for a given program.
+ *
  * @author Ben L. Titzer
  */
 public interface PlatformFactory {

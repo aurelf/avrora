@@ -38,6 +38,11 @@ import avrora.core.Program;
 import avrora.util.Terminal;
 
 /**
+ * The <code>Mica</code> class is an implementation of the <code>Platform</code>
+ * interface that represents both a specific microcontroller and the
+ * devices connected to it. This implementation therefore uses the ATMega128L
+ * microcontroller in compatibility mode and uses LED and Radio devices, etc.
+ *
  * @author Ben L. Titzer
  */
 public class Mica implements Platform, PlatformFactory {

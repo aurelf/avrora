@@ -38,6 +38,12 @@ import avrora.sim.util.MulticastProbe;
 import avrora.util.Arithmetic;
 
 /**
+ * The <code>GenInterpreter</code> class is largely generated from the
+ * instruction specification. The framework around the generated code
+ * (utilities) has been written by hand, but most of the code for
+ * each instruction is generated. Therefore it is not recommended
+ * to edit this code extensively.
+ *
  * @author Ben L. Titzer
  */
 public class GenInterpreter extends BaseInterpreter {
@@ -140,22 +146,48 @@ public class GenInterpreter extends BaseInterpreter {
                 }
             }
 
-            if ( sleeping ) {
-                long delta = simulator.eventQueue.getHeadDelta();
-                if ( delta <= 0 ) delta = 1;
-                advanceCycles(delta);
-            } else {
-                // get the current instruction
-                int curPC = nextPC; // at this point pc == nextPC
-                Instr i = impression.readInstr(nextPC);
-
-                // visit the actual instruction (or probe)
-                simulator.activeProbe.fireBefore(i, curPC, this);
-                i.accept(this);
-                pc = nextPC;
-                advanceCycles(cyclesConsumed);
-                simulator.activeProbe.fireAfter(i, curPC, this);
+            if ( sleeping ) sleepLoop();
+            else {
+                if ( activeProbe.isEmpty() ) fastLoop();
+                else instrumentedLoop();
             }
+        }
+    }
+
+    private void sleepLoop() {
+        innerLoop = true;
+        while ( innerLoop ) {
+            long delta = eventQueue.getHeadDelta();
+            if ( delta <= 0 ) delta = 1;
+            advanceCycles(delta);
+        }
+    }
+
+    private void fastLoop() {
+        innerLoop = true;
+        while ( innerLoop ) {
+            Instr i = impression.readInstr(nextPC);
+
+            // visit the actual instruction (or probe)
+            i.accept(this);
+            pc = nextPC;
+            advanceCycles(cyclesConsumed);
+        }
+    }
+
+    private void instrumentedLoop() {
+        innerLoop = true;
+        while ( innerLoop ) {
+            // get the current instruction
+            int curPC = nextPC; // at this point pc == nextPC
+            Instr i = impression.readInstr(nextPC);
+
+            // visit the actual instruction (or probe)
+            activeProbe.fireBefore(i, curPC, this);
+            i.accept(this);
+            pc = nextPC;
+            advanceCycles(cyclesConsumed);
+            activeProbe.fireAfter(i, curPC, this);
         }
     }
 
@@ -628,7 +660,7 @@ public class GenInterpreter extends BaseInterpreter {
     }
     public void visit(Instr.CLI i)  {
         nextPC = pc + 2;
-        I = false;
+        disableInterrupts();
         cyclesConsumed += 1;
     }
     public void visit(Instr.CLN i)  {
@@ -1101,7 +1133,7 @@ public class GenInterpreter extends BaseInterpreter {
         byte tmp_1 = popByte();
         int tmp_2 = uword(tmp_1, tmp_0) * 2;
         nextPC = tmp_2;
-        I = true;
+        enableInterrupts();
         justReturnedFromInterrupt = true;
         cyclesConsumed += 4;
     }
@@ -1295,7 +1327,7 @@ public class GenInterpreter extends BaseInterpreter {
     }
     public void visit(Instr.SEI i)  {
         nextPC = pc + 2;
-        I = true;
+        enableInterrupts();
         cyclesConsumed += 1;
     }
     public void visit(Instr.SEN i)  {
@@ -1330,7 +1362,7 @@ public class GenInterpreter extends BaseInterpreter {
     }
     public void visit(Instr.SLEEP i)  {
         nextPC = pc + 2;
-        sleeping = true;
+        enterSleepMode();
         cyclesConsumed += 1;
     }
     public void visit(Instr.SPM i)  {
@@ -1479,10 +1511,12 @@ public class GenInterpreter extends BaseInterpreter {
 
     private void stop() {
         shouldRun = false;
+        innerLoop = false;
     }
 
     private void enterSleepMode() {
         sleeping = true;
+        innerLoop = false;
     }
 
 }

@@ -57,10 +57,22 @@ import avrora.sim.Simulator;
  * casts, virtual dispatch, etc.
  */
 public class DeltaQueue {
+
+    /**
+     * The <code>TriggerLink</code> class represents a link in the list of triggers
+     * for a given <code>Link</code> in the delta queue chain.
+     */
     static final class TriggerLink {
         Simulator.Trigger trigger;
         TriggerLink next;
 
+        /**
+         * The constructor for the <code>TriggerLink</code> class simply initializes
+         * the internal references to the trigger and the next link in the chain
+         * based on the parameters passed.
+         * @param t a reference the trigger
+         * @param n the next link in the chain
+         */
         TriggerLink(Simulator.Trigger t, TriggerLink n) {
             trigger = t;
             next = n;
@@ -68,6 +80,11 @@ public class DeltaQueue {
 
     }
 
+    /**
+     * The <code>Link</code> class represents a link in the list of delta queue
+     * items that are being stored. It contains a list of triggers that share
+     * the same delta.
+     */
     final class Link {
         TriggerLink triggers;
 
@@ -112,10 +129,30 @@ public class DeltaQueue {
         }
     }
 
+    /**
+     * The <code>head</code> field stores a reference to the head of the delta queue,
+     * which represents the event that is nearest in the future.
+     */
     protected Link head;
+
+    /**
+     * The <code>freeLinks</code> field stores a reference to any free links that
+     * have become unused during the processing of events. A free list is used to
+     * prevent garbage from accumulating.
+     */
     protected Link freeLinks;
+
+    /**
+     * The <code>freeTriggerLinks</code> field stores a reference to any free trigger
+     * links that have become unused during the processing of events. A free list
+     * is used to prevent garbage from accumulating.
+     */
     protected TriggerLink freeTriggerLinks;
 
+    /**
+     * The <code>count</code> field stores the total number of cycles that this
+     * queue has been advanced, i.e. the sum of all <code>advance()</code> calls.
+     */
     protected long count;
 
     /**

@@ -34,10 +34,15 @@ package avrora.sim;
 
 import avrora.Avrora;
 import avrora.sim.util.MulticastProbe;
+import avrora.sim.util.DeltaQueue;
 import avrora.util.Arithmetic;
 import avrora.core.*;
 
 /**
+ * The <code>BaseInterpreter</code> class represents a base class of
+ * the legacy interpreter and the generated interpreter(s) that stores
+ * the state of the executing program, e.g. registers and flags, etc.
+ *
  * @author Ben L. Titzer
  */
 public abstract class BaseInterpreter implements State, InstrVisitor {
@@ -50,7 +55,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected long postedInterrupts;
     protected final int sram_start;
     protected final int sram_max;
-    protected static final int SRAM_MINSIZE = 128;
     protected boolean I;
     protected boolean T;
     protected boolean H;
@@ -60,6 +64,16 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected boolean Z;
     protected boolean C;
     protected State.IOReg SREG_reg;
+
+    /**
+     * The <code>activeProbe</code> field stores a reference to a
+     * <code>MulticastProbe</code> that contains all of the probes to be fired
+     * before and after the main execution runLoop--i.e. before and after
+     * every instruction.
+     */
+    protected final MulticastProbe activeProbe;
+    protected boolean innerLoop;
+
 
     /**
      * The ProbedInstr class represents a wrapper around an instruction in
@@ -160,7 +174,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * interrupt can be processed.
      */
     protected boolean justReturnedFromInterrupt;
+
     protected final Simulator simulator;
+
+    protected final DeltaQueue eventQueue;
+
     private static final int SREG_I_MASK = 1 << SREG_I;
     private static final int SREG_T_MASK = 1 << SREG_T;
     private static final int SREG_H_MASK = 1 << SREG_H;
@@ -171,16 +189,19 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private static final int SREG_C_MASK = 1 << SREG_C;
 
     public BaseInterpreter(Simulator simulator, Program p, int flash_size, int ioreg_size, int sram_size) {
-        regs = new byte[NUM_REGS];
+
+        activeProbe = new MulticastProbe();
 
         // set up the reference to the simulator
         this.simulator = simulator;
+        this.eventQueue = simulator.eventQueue;
 
         // if program will not fit onto hardware, error
         if (p.program_end > flash_size)
             throw Avrora.failure("program will not fit into " + flash_size + " bytes");
 
         // allocate register values
+        regs = new byte[NUM_REGS];
 
         // beginning address of SRAM array
         sram_start = ioreg_size + NUM_REGS;
@@ -191,8 +212,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         // make array of IO registers
         ioregs = new State.IOReg[ioreg_size];
 
-        // sram is lazily allocated, only allocate first SRAM_MINSIZE bytes
-        sram = new byte[sram_size > SRAM_MINSIZE ? SRAM_MINSIZE : sram_size];
+        // allocate SRAM
+        sram = new byte[sram_size];
 
         // make a local copy of the program's instructions
         impression = p.makeNewImpression(flash_size);
@@ -205,7 +226,29 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected abstract void insertProbe(Simulator.Probe p, int addr);
 
+    /**
+     * The <code>insertProbe()</code> method allows a probe to be inserted
+     * that is executed before and after every instruction that is executed
+     * by the simulator
+     *
+     * @param p the probe to insert
+     */
+    public void insertProbe(Simulator.Probe p) {
+        activeProbe.add(p);
+    }
+
     protected abstract void removeProbe(Simulator.Probe p, int addr);
+
+    /**
+     * The <code>removeProbe()</code> method removes a probe from the global
+     * probe table (the probes executed before and after every instruction).
+     * The comparison used is reference equality, not <code>.equals()</code>.
+     *
+     * @param b the probe to remove
+     */
+    public void removeProbe(Simulator.Probe b) {
+        activeProbe.remove(b);
+    }
 
     protected abstract void insertBreakPoint(int addr);
 
@@ -223,7 +266,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected void advanceCycles(long delta) {
         totalCycles += delta;
-        simulator.eventQueue.advance(delta);
+        eventQueue.advance(delta);
         cyclesConsumed = 0;
     }
 
@@ -327,33 +370,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public byte getDataByte(int address) {
         if (address < NUM_REGS) return regs[address];
         if (address < sram_start) return ioregs[address - NUM_REGS].read();
-        try {
-            return sram[address - sram_start];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            resize(address);
-            return sram[address - sram_start];
-        }
-    }
-
-    private void resize(int address) {
-        // no hope if the address is simply invalid.
-        if (address >= sram_max) return;
-
-        // double size until address is contained in new array
-        int size = sram.length;
-        while (size <= address) size <<= 1;
-
-        // make sure we don't allocate more than the hardware limit
-        if (size > sram_max - sram_start) size = sram_max - sram_start;
-
-        // create new memory
-        byte[] new_sram = new byte[size];
-
-        // copy old memory
-        System.arraycopy(sram, 0, new_sram, 0, sram.length);
-
-        // update SRAM array reference to point to new memory
-        sram = new_sram;
+        return sram[address - sram_start];
     }
 
     /**
@@ -389,12 +406,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         else if (address < sram_start)
             ioregs[address - NUM_REGS].write(val);
         else
-            try {
-                sram[address - sram_start] = val;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                resize(address);
-                sram[address - sram_start] = val;
-            }
+            sram[address - sram_start] = val;
     }
 
     /**
@@ -653,6 +665,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      */
     protected void unpostInterrupt(int num) {
         postedInterrupts &= ~(1 << num);
+        innerLoop = false;
     }
 
     /**
@@ -666,6 +679,17 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      */
     public void postInterrupt(int num) {
         postedInterrupts |= 1 << num;
+        innerLoop = false;
+    }
+
+    protected void enableInterrupts() {
+        I = true;
+        innerLoop = false;
+    }
+
+    protected void disableInterrupts() {
+        I = false;
+        innerLoop = false;
     }
 
     private class SREG_reg implements State.IOReg {
@@ -716,22 +740,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
          */
         public boolean readBit(int num) {
             switch (num) {
-                case SREG_I:
-                    return I;
-                case SREG_T:
-                    return T;
-                case SREG_H:
-                    return H;
-                case SREG_S:
-                    return S;
-                case SREG_V:
-                    return V;
-                case SREG_N:
-                    return N;
-                case SREG_Z:
-                    return Z;
-                case SREG_C:
-                    return C;
+                case SREG_I: return I;
+                case SREG_T: return T;
+                case SREG_H: return H;
+                case SREG_S: return S;
+                case SREG_V: return V;
+                case SREG_N: return N;
+                case SREG_Z: return Z;
+                case SREG_C: return C;
             }
             throw Avrora.failure("bit out of range: " + num);
         }
@@ -743,30 +759,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
          */
         public void clearBit(int num) {
             switch (num) {
-                case SREG_I:
-                    I = false;
-                    break;
-                case SREG_T:
-                    T = false;
-                    break;
-                case SREG_H:
-                    H = false;
-                    break;
-                case SREG_S:
-                    S = false;
-                    break;
-                case SREG_V:
-                    V = false;
-                    break;
-                case SREG_N:
-                    N = false;
-                    break;
-                case SREG_Z:
-                    Z = false;
-                    break;
-                case SREG_C:
-                    C = false;
-                    break;
+                case SREG_I: disableInterrupts(); break;
+                case SREG_T: T = false; break;
+                case SREG_H: H = false; break;
+                case SREG_S: S = false; break;
+                case SREG_V: V = false; break;
+                case SREG_N: N = false; break;
+                case SREG_Z: Z = false; break;
+                case SREG_C: C = false; break;
                 default:
                     throw Avrora.failure("bit out of range: " + num);
             }
@@ -779,30 +779,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
          */
         public void setBit(int num) {
             switch (num) {
-                case SREG_I:
-                    I = true;
-                    break;
-                case SREG_T:
-                    T = true;
-                    break;
-                case SREG_H:
-                    H = true;
-                    break;
-                case SREG_S:
-                    S = true;
-                    break;
-                case SREG_V:
-                    V = true;
-                    break;
-                case SREG_N:
-                    N = true;
-                    break;
-                case SREG_Z:
-                    Z = true;
-                    break;
-                case SREG_C:
-                    C = true;
-                    break;
+                case SREG_I: enableInterrupts(); break;
+                case SREG_T: T = true; break;
+                case SREG_H: H = true; break;
+                case SREG_S: S = true; break;
+                case SREG_V: V = true; break;
+                case SREG_N: N = true; break;
+                case SREG_Z: Z = true; break;
+                case SREG_C: C = true; break;
                 default:
                     throw Avrora.failure("bit out of range: " + num);
             }

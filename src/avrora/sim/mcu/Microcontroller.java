@@ -61,10 +61,26 @@ public interface Microcontroller extends MicrocontrollerProperties {
          * will be called.
          */
         public interface Input {
+            /**
+             * The <code>enableInput()</code> method is called by the simulator
+             * when the program changes the direction of the pin. The device
+             * connected to this pin can then take action accordingly.
+             */
             public void enableInput();
 
+            /**
+             * The <code>disableInput()</code> method is called by the simulator
+             * when the program changes the direction of the pin. The device
+             * connected to this pin can then take action accordingly.
+             */
             public void disableInput();
 
+            /**
+             * The <code>read()</code> method is called by the simulator when
+             * the program attempts to read the level of the pin. The device
+             * can then compute and return the current level of the pin.
+             * @return true if the level of the pin is high; false otherwise
+             */
             public boolean read();
         }
 
@@ -75,10 +91,26 @@ public interface Microcontroller extends MicrocontrollerProperties {
          * will be called.
          */
         public interface Output {
+            /**
+             * The <code>enableOutput()</code> method is called by the simulator
+             * when the program changes the direction of the pin. The device
+             * connected to this pin can then take action accordingly.
+             */
             public void enableOutput();
 
+            /**
+             * The <code>disableOutput()</code> method is called by the simulator
+             * when the program changes the direction of the pin. The device
+             * connected to this pin can then take action accordingly.
+             */
             public void disableOutput();
 
+            /**
+             * The <code>write()</code> method is called by the simulator when
+             * the program writes a logical level to the pin. The device can then
+             * take the appropriate action.
+             * @param level a boolean representing the logical level of the write
+             */
             public void write(boolean level);
         }
 

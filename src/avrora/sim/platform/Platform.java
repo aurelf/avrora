@@ -35,6 +35,10 @@ package avrora.sim.platform;
 import avrora.sim.mcu.Microcontroller;
 
 /**
+ * The <code>Platform</code> interface represents both a microcontroller instance
+ * and the devices connected to it. These two things together describe a node
+ * and its capabilities.
+ *
  * @author Ben L. Titzer
  */
 public interface Platform {

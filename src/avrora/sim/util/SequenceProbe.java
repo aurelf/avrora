@@ -55,10 +55,31 @@ import avrora.sim.State;
  */
 public class SequenceProbe implements Simulator.Probe {
 
+    /**
+     * The immutable <code>entry_addr</code> field stores the address
+     * that enables the per-instruction calling of the probe passed
+     * in the constructor.
+     */
     public final int entry_addr;
+
+    /**
+     * The immutable <code>exit_addr</code> field stores the address
+     * that disables the per-instruction calling of the probe passed
+     * when the nesting level reaches zero.
+     */
     public final int exit_addr;
+
+    /**
+     * The immutable <code>probe</code> field stores a reference to
+     * the probe passed in the constructor.
+     */
     public final Simulator.Probe probe;
 
+    /**
+     * The <code>nesting</code> field stores the current nesting level
+     * (i.e. the number of times <code>entry_addr</code> has been
+     * reached without <code>exit_addr</code> intervening).
+     */
     public int nesting;
 
     /**

@@ -44,6 +44,10 @@ import java.util.LinkedList;
 import java.util.Iterator;
 
 /**
+ * The <code>Architecture</code> class represents a collection of
+ * instructions, encodings, operands, and subroutines that describe
+ * an instruction set architecture. 
+ *
  * @author Ben L. Titzer
  */
 public class Architecture {

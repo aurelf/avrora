@@ -36,6 +36,12 @@ import java.util.List;
 import java.util.Iterator;
 
 /**
+ * The <code>CodeRegion</code> class represents a piece of code that has
+ * external inputs. For example, a subroutine is a piece of code that
+ * has a list of statements and a list of formal parameters. An instruction
+ * declaration is a code region where the external inputs are the operands
+ * to the instruction.
+ *
  * @author Ben L. Titzer
  */
 public class CodeRegion {

@@ -177,34 +177,91 @@ public class Register {
         width = w;
     }
 
+    /**
+     * The <code>hashCode()</code> computes the hash code of this register so that
+     * registers can be inserted in hashmaps and hashsets. This implementation
+     * of register simply uses the hash code of the name of the register as its
+     * hash code.
+     * @return an integer that represents the hash code of this register
+     */
     public int hashCode() {
         return name.hashCode();
     }
 
+    /**
+     * The <code>toString()</code> method coverts this register to a string.
+     * This implementation simply returns the name of the register.
+     * @return a string representation of this register
+     */
     public String toString() {
         return name;
     }
 
+    /**
+     * The <code>getName()</code> method returns the name of the instruction
+     * as a string.
+     * @return the name of the instruction
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * The <code>getNumber()</code> method returns the "number" of this register,
+     * meaning the offset into the register file.
+     * @return the number of this register
+     */
     public int getNumber() {
         return number;
     }
 
+    /**
+     * The <code>getWidth()</code> method returns the width of the register in
+     * bits.
+     * @return the number of bits in this register
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * The <code>nextRegister()</code> method returns a reference to the register
+     * that immediately follows this register in the register file. This is needed
+     * when treating multiple registers as a single value, etc.
+     * @return the register immediately following this register in the register file
+     */
     public Register nextRegister() {
         return REGS_0_31[number + 1];
     }
 
+    /**
+     * The <code>Set</code> class represents a set of registers. This is used to
+     * represent classes of registers that are used as operands to various instructions.
+     * For example, an instruction might expect one of its operands to be a general
+     * purpose register that has a number greater than 15; a set of those registers
+     * can be constructed and then a membership test performed.
+     *
+     * In practice, the needed register sets are all allocated statically.
+     */
     public static class Set {
+
+        /**
+         * The <code>contents</code> field stores a string that represents a summary
+         * of the registers that are in this set. An example string for the even
+         * registers would be <code>"{r0, r2, ..., r30}"</code>.
+         */
         public final String contents;
+
         private final HashSet registers;
 
+        /**
+         * The constructor for the <code>Set</code> class takes a string that
+         * represents the contents of the registers and an array of registers
+         * that are members of the set. It then constructs an internal hash set
+         * for fast membership tests.
+         * @param n the string representing the contents of this set
+         * @param regs an array of registers that are members of this set
+         */
         Set(String n, Register[] regs) {
             contents = n;
             registers = new HashSet(2 * regs.length);
@@ -212,10 +269,23 @@ public class Register {
                 registers.add(regs[cntr]);
         }
 
+        /**
+         * The <code>contains()</code> method tests for membership. Given a register,
+         * it will return true if that register is a member of this set, and false
+         * otherwise.
+         * @param reg the register to test membership of
+         * @return true if the specified register is a member of this set; false otherwise
+         */
         public boolean contains(Register reg) {
             return registers.contains(reg);
         }
 
+        /**
+         * The <code>toString()</code> method converts this set to a string representation.
+         * In this implementation, it simply returns the string representation of the
+         * contents.
+         * @return a string representation of this register set
+         */
         public String toString() {
             return contents;
         }

@@ -118,9 +118,9 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
                 // visit the actual instruction (or probe)
                 // OPTIMIZATION OPPORTUNITY: common case of no active global probes
                 // could be approximately 18% of loop overhead
-                simulator.activeProbe.fireBefore(i, curPC, this);
+                activeProbe.fireBefore(i, curPC, this);
                 execute(i);
-                simulator.activeProbe.fireAfter(i, curPC, this);
+                activeProbe.fireAfter(i, curPC, this);
             }
         }
     }
@@ -131,20 +131,6 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
         pc = nextPC;
         // process any timed events and advance state clock
         advanceCycles(cyclesConsumed + i.properties.cycles);
-    }
-
-    private void executeProbed(Instr instr, int address, Simulator.Probe probe) {
-        // fire the probe(s) before
-        probe.fireBefore(instr, address, this);
-
-        // execute actual instruction
-        instr.accept(this);
-        pc = nextPC;
-        advanceCycles(cyclesConsumed + instr.properties.cycles);
-
-        // fire the probe(s) after
-        probe.fireAfter(instr, address, this);
-
     }
 
     public void visit(Instr.ADC i) { // add two registers and carry flag

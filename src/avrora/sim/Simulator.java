@@ -81,18 +81,22 @@ public abstract class Simulator implements IORegisterConstants {
      */
     protected final Program program;
 
+    /**
+     * The <code>microcontroller</code> field stores a reference to the microcontroller
+     * being simulated.
+     */
     protected final Microcontroller microcontroller;
 
     /**
-     * The <code>activeProbe</code> field stores a reference to a
-     * <code>MulticastProbe</code> that contains all of the probes to be fired
-     * before and after the main execution runLoop--i.e. before and after
-     * every instruction.
+     * The <code>LEGACY_INTERPRETER</code> field is used to turn on and off
+     * the legacy interpreter. By default, the legacy interpreter is used.
      */
-    protected final MulticastProbe activeProbe;
-
     public static boolean LEGACY_INTERPRETER = true;
 
+    /**
+     * The <code>interpreter</code> field stores a reference to the instruction
+     * set interpreter.
+     */
     protected BaseInterpreter interpreter;
 
     /**
@@ -128,7 +132,6 @@ public abstract class Simulator implements IORegisterConstants {
         microcontroller = mcu;
         program = p;
         interrupts = new Interrupt[MAX_INTERRUPTS];
-        activeProbe = new MulticastProbe();
 
         // set all interrupts to ignore
         for (int cntr = 0; cntr < MAX_INTERRUPTS; cntr++)
@@ -186,6 +189,11 @@ public abstract class Simulator implements IORegisterConstants {
         public void fire();
     }
 
+    /**
+     * The <code>MemoryProbe</code> interface represents a user probe that is
+     * fired when a watchpoint detects an access to an address where this
+     * memory probe has been inserted.
+     */
     public interface MemoryProbe {
 
         public void fireBeforeRead(Instr i, int address, State state, byte value);
@@ -347,6 +355,11 @@ public abstract class Simulator implements IORegisterConstants {
         }
     };
 
+    /**
+     * The <code>getMicrocontroller()</code> method gets a reference to the
+     * microcontroller being simulated.
+     * @return a reference to the microcontroller being simulated
+     */
     public Microcontroller getMicrocontroller() {
         return microcontroller;
     }
@@ -430,7 +443,7 @@ public abstract class Simulator implements IORegisterConstants {
      * @param p the probe to insert
      */
     public void insertProbe(Probe p) {
-        activeProbe.add(p);
+        interpreter.insertProbe(p);
     }
 
     /**
@@ -454,7 +467,7 @@ public abstract class Simulator implements IORegisterConstants {
      * @param b the probe to remove
      */
     public void removeProbe(Probe b) {
-        activeProbe.remove(b);
+        interpreter.removeProbe(b);
     }
 
     /**
@@ -522,9 +535,16 @@ public abstract class Simulator implements IORegisterConstants {
         interrupts[num].force();
     }
 
+    /**
+     * The <code>triggerInterrupt()</code> method is used by device implementations
+     * when they detect that an interrupt should be triggered. This method will
+     * check whether this interrupt is enabled by consulting its own internal
+     * table of interrupts that is kept consistent during writes to IO registers.
+     * @param num the number of the interrupt to trigger
+     */
     protected void triggerInterrupt(int num) {
         if ( interruptPrinter.enabled )
-        interruptPrinter.println("Simulator.triggerInterrupt(" + num + ")");
+            interruptPrinter.println("Simulator.triggerInterrupt(" + num + ")");
         interrupts[num].fire();
     }
 

@@ -71,7 +71,14 @@ public class Program {
          */
         public final int address;
 
-        Label(String n, int a) {
+        /**
+         * The constructor for the base abstract class <code>Label</code> simply
+         * initializes the internal references to the name and the address of
+         * this label.
+         * @param n the name of the label as a string
+         * @param a the byte address associated with this label
+         */
+        protected Label(String n, int a) {
             name = n;
             address = a;
         }

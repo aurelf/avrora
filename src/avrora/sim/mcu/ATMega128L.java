@@ -52,6 +52,10 @@ import java.util.HashMap;
  */
 public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
+    /**
+     * The <code>HZ</code> field stores a public static final integer that
+     * represents the clockspeed of the AtMega128L microcontroller (7.327mhz).
+     */
     public static final int HZ = 7327800;
 
     public static final int SRAM_SIZE = 4096;

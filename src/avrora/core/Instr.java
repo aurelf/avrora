@@ -64,11 +64,14 @@ public abstract class Instr implements InstrPrototype {
     public abstract String getOperands();
 
     /**
-     * The <code>getVariant()</code> method gets the variant of the instruction.
-     * Since instructions like load and store can have multiple forms, each
-     * unique form is a named variant and its own class.
+     * The <code>getVariant()</code> method returns the variant name of the
+     * instruction as a string. Since instructions like load and store have
+     * multiple variants, they each have specific variant names to distinguish
+     * them internally in the core of Avrora. For example, for "ld x+, (addr)",
+     * the variant is "ldpi" (load with post increment), but the actual instruction
+     * is "ld", so this method will return "ldpi".
      *
-     * @return the name of this variant
+     * @return the variant of the instruction that this prototype represents
      */
     public String getVariant() {
         return properties.variant;
@@ -84,6 +87,15 @@ public abstract class Instr implements InstrPrototype {
         return properties.size;
     }
 
+    /**
+     * The <code>getName()</code> method returns the name of the instruction as
+     * a string. For instructions that are variants of instructions, this method
+     * returns the actual name of the instruction. For example, for "ld x+, (addr)",
+     * the variant is "ldpi" (load with post increment), but the actual instruction
+     * is "ld", so this method will return "ld".
+     *
+     * @return the name of the instruction
+     */
     public String getName() {
         return properties.name;
     }

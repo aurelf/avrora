@@ -559,7 +559,7 @@ architecture avr {
         encoding = CLR where { bit = 0b111 };
         cycles = 1;
         execute = {
-            I = false;
+            disableInterrupts();
         };
     };
 
@@ -1063,7 +1063,7 @@ architecture avr {
         cycles = 4;
         execute = {
             nextPC = popPC();
-            I = true;
+            enableInterrupts();
             // lastRETI = totalCycles;
             justReturnedFromInterrupt = true;
         };
@@ -1197,7 +1197,7 @@ architecture avr {
         encoding = SET where { bit = 0b111 };
         cycles = 1;
         execute = {
-            I = true;
+            enableInterrupts();
         };
     };
 
@@ -1253,7 +1253,7 @@ architecture avr {
         encoding = { 0b10010101, 0b10001000 };
         cycles = 1;
         execute = {
-            sleeping = true;
+            enterSleepMode();
         };
     };
 

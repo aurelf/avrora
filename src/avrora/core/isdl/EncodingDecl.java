@@ -38,6 +38,10 @@ import java.util.List;
 import java.util.Iterator;
 
 /**
+ * The <code>EncodingDecl</code> class represents the encoding of an
+ * instruction in machine code, describing how to encode the mnemonic
+ * and operands into binary and vice versa.
+ *
  * @author Ben L. Titzer
  */
 public class EncodingDecl {

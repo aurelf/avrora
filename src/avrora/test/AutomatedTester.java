@@ -142,6 +142,7 @@ public class AutomatedTester {
     private static void report(List l, String c, int color, int total) {
         if (l.isEmpty()) return;
 
+        // TODO: use new terminal interface methods to make this cleaner
         switch (color) {
             case YELLOW:
                 Terminal.printYellow(c);
