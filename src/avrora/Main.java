@@ -34,6 +34,7 @@ package avrora;
 
 import avrora.actions.*;
 import avrora.core.Program;
+import avrora.core.ProgramReader;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
@@ -52,24 +53,6 @@ import java.util.*;
  * @author Ben L. Titzer
  */
 public class Main {
-    /**
-     * The <code>ProgramReader</code> class represents an object capable of reading
-     * a program given the special command line arguments. It may for example read
-     * source assembly and produce a simplified program.
-     */
-    public static abstract class ProgramReader {
-        /**
-         * The <code>read()</code> method will read a program in and produce a
-         * simplified format.
-         *
-         * @param args the command line arguments
-         * @return a program instance representing the program
-         * @throws Exception
-         */
-        public abstract Program read(String[] args) throws Exception;
-
-        public abstract String getHelp();
-    }
 
     static final String VERSION = Version.getVersion().toString();
 
