@@ -146,7 +146,7 @@ public class Main {
             "address is a possible target.");
     public static final Option.Bool LIGHT_BACKGROUND = mainOptions.newOption("light-background", false,
             "This option can be used to adjust the color palette used for text output " +
-            "by Avrora. For terminals that have a light background, setting this option to " +
+            "by Avrora. For terminals that have a light color background, setting this option to " +
             "true will allow more readable output.");
     public static final Option.Str FOREGROUND = mainOptions.newOption("foreground-color", "lightgray",
             "This option can be used to specify the default foreground color of " +
