@@ -30,6 +30,8 @@ public class State implements IORegisterConstants {
 
     private static final int SRAM_MINSIZE = 128;
 
+    private boolean I, T, H, S, V, N, Z, C;
+
 
     /**
      * The <code>IOReg</code> interface models the behavior of an IO register.
@@ -150,7 +152,143 @@ public class State implements IORegisterConstants {
         public void clearBit(int bit) { throw new Error("cannot clear bit in reserved register"); }
     };
 
+    private static final int SREG_I_MASK = 1 << SREG_I;
+    private static final int SREG_T_MASK = 1 << SREG_T;
+    private static final int SREG_H_MASK = 1 << SREG_H;
+    private static final int SREG_S_MASK = 1 << SREG_S;
+    private static final int SREG_V_MASK = 1 << SREG_V;
+    private static final int SREG_N_MASK = 1 << SREG_N;
+    private static final int SREG_Z_MASK = 1 << SREG_Z;
+    private static final int SREG_C_MASK = 1 << SREG_C;
 
+    private class SREG_reg implements IOReg {
+
+        /**
+         * The <code>read()</code> method reads the 8-bit value of the IO register
+         * as a byte. For simple <code>RWIOReg</code> instances, this simply returns
+         * the internally stored value.
+         * @return the value of the register as a byte
+         */
+        public byte read() {
+            int value = 0;
+            if ( I ) value |= SREG_I_MASK;
+            if ( T ) value |= SREG_T_MASK;
+            if ( H ) value |= SREG_H_MASK;
+            if ( S ) value |= SREG_S_MASK;
+            if ( V ) value |= SREG_V_MASK;
+            if ( N ) value |= SREG_N_MASK;
+            if ( Z ) value |= SREG_Z_MASK;
+            if ( C ) value |= SREG_C_MASK;
+            return (byte)value;
+        }
+
+        /**
+         * The <code>write()</code> method writes an 8-bit value to the IO register
+         * as a byte. For simple <code>RWIOReg</code> instances, this simply writes
+         * the internally stored value.
+         * @param val the value to write
+         */
+        public void write(byte val) {
+            I = (val & SREG_I_MASK) != 0;
+            T = (val & SREG_T_MASK) != 0;
+            H = (val & SREG_H_MASK) != 0;
+            S = (val & SREG_S_MASK) != 0;
+            V = (val & SREG_V_MASK) != 0;
+            N = (val & SREG_N_MASK) != 0;
+            Z = (val & SREG_Z_MASK) != 0;
+            C = (val & SREG_C_MASK) != 0;
+        }
+
+        /**
+         * The <code>readBit()</code> method reads a single bit from the IO register.
+         *
+         * @param num the number of the bit to read
+         * @return the value of the bit as a boolean
+         */
+        public boolean readBit(int num) {
+            switch ( num ) {
+                case SREG_I: return I;
+                case SREG_T: return T;
+                case SREG_H: return H;
+                case SREG_S: return S;
+                case SREG_V: return V;
+                case SREG_N: return N;
+                case SREG_Z: return Z;
+                case SREG_C: return C;
+            }
+            throw VPCBase.failure("bit out of range: "+num);
+        }
+
+        /**
+         * The <code>clearBit()</code> method clears a single bit in the IO register.
+         * @param num the number of the bit to clear
+         */
+        public void clearBit(int num) {
+            switch ( num ) {
+                case SREG_I:
+                    I = false;
+                    break;
+                case SREG_T:
+                    T = false;
+                    break;
+                case SREG_H:
+                    H = false;
+                    break;
+                case SREG_S:
+                    S = false;
+                    break;
+                case SREG_V:
+                    V = false;
+                    break;
+                case SREG_N:
+                    N = false;
+                    break;
+                case SREG_Z:
+                    Z = false;
+                    break;
+                case SREG_C:
+                    C = false;
+                    break;
+                default:
+                    throw VPCBase.failure("bit out of range: "+num);
+            }
+        }
+
+        /**
+         * The <code>setBit()</code> method sets a single bit in the IO register.
+         * @param num the number of the bit to clear
+         */
+        public void setBit(int num) {
+            switch ( num ) {
+                case SREG_I:
+                    I = true;
+                    break;
+                case SREG_T:
+                    T = true;
+                    break;
+                case SREG_H:
+                    H = true;
+                    break;
+                case SREG_S:
+                    S = true;
+                    break;
+                case SREG_V:
+                    V = true;
+                    break;
+                case SREG_N:
+                    N = true;
+                    break;
+                case SREG_Z:
+                    Z = true;
+                    break;
+                case SREG_C:
+                    C = true;
+                    break;
+                default:
+                    throw VPCBase.failure("bit out of range: "+num);
+            }
+        }
+    }
 
 
 
@@ -203,6 +341,7 @@ public class State implements IORegisterConstants {
     protected void initializeIORegs() {
         for ( int cntr = 0; cntr < ioregs.length; cntr++ )
             ioregs[cntr] = new RWIOReg();
+        ioregs[SREG] = new SREG_reg();
     }
 
     /**
@@ -351,112 +490,112 @@ public class State implements IORegisterConstants {
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_I(boolean val) { setSREG_bit(SREG_I, val); }
+    public void setFlag_I(boolean val) { I = val; }
 
     /**
      * The <code>setFlag_T()</code> method updates the value of the T bit in the status
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_T(boolean val) { setSREG_bit(SREG_T, val); }
+    public void setFlag_T(boolean val) { T = val; }
 
     /**
      * The <code>setFlag_H()</code> method updates the value of the H bit in the status
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_H(boolean val) { setSREG_bit(SREG_H, val); }
+    public void setFlag_H(boolean val) { H = val; }
 
     /**
      * The <code>setFlag_S()</code> method updates the value of the S bit in the status
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_S(boolean val) { setSREG_bit(SREG_S, val); }
+    public void setFlag_S(boolean val) { S = val; }
 
     /**
      * The <code>setFlag_V()</code> method updates the value of the V bit in the status
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_V(boolean val) { setSREG_bit(SREG_V, val); }
+    public void setFlag_V(boolean val) { V = val; }
 
     /**
      * The <code>setFlag_N()</code> method updates the value of the N bit in the status
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_N(boolean val) { setSREG_bit(SREG_N, val); }
+    public void setFlag_N(boolean val) { N = val; }
 
     /**
      * The <code>setFlag_Z()</code> method updates the value of the Z bit in the status
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_Z(boolean val) { setSREG_bit(SREG_Z, val); }
+    public void setFlag_Z(boolean val) { Z = val; }
 
     /**
      * The <code>setFlag_C()</code> method updates the value of the C bit in the status
      * register. It should only be called from within the simulator.
      * @param val the new value of the flag
      */
-    public void setFlag_C(boolean val) { setSREG_bit(SREG_C, val); }
+    public void setFlag_C(boolean val) { C = val; }
 
     /**
      * The <code>getFlag_I()</code> method returns the current value of the I bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_I() { return ioregs[SREG].readBit(SREG_I); }
+    public boolean getFlag_I() { return I; }
 
     /**
      * The <code>getFlag_T()</code> method returns the current value of the T bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_T() { return ioregs[SREG].readBit(SREG_T); }
+    public boolean getFlag_T() { return T; }
 
     /**
      * The <code>getFlag_H()</code> method returns the current value of the H bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_H() { return ioregs[SREG].readBit(SREG_H); }
+    public boolean getFlag_H() { return H; }
 
     /**
      * The <code>getFlag_S()</code> method returns the current value of the S bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_S() { return ioregs[SREG].readBit(SREG_S); }
+    public boolean getFlag_S() { return S; }
 
     /**
      * The <code>getFlag_V()</code> method returns the current value of the V bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_V() { return ioregs[SREG].readBit(SREG_V); }
+    public boolean getFlag_V() { return V; }
 
     /**
      * The <code>getFlag_N()</code> method returns the current value of the N bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_N() { return ioregs[SREG].readBit(SREG_N); }
+    public boolean getFlag_N() { return N; }
 
     /**
      * The <code>getFlag_Z()</code> method returns the current value of the Z bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_Z() { return ioregs[SREG].readBit(SREG_Z); }
+    public boolean getFlag_Z() { return Z; }
 
     /**
      * The <code>getFlag_C()</code> method returns the current value of the C bit
      * in the status register as a boolean.
      * @return the value of the flag
      */
-    public boolean getFlag_C() { return ioregs[SREG].readBit(SREG_C); }
+    public boolean getFlag_C() { return C; }
 
     /**
      * The <code>getStackByte()</code> method reads a byte from the address

@@ -31,7 +31,7 @@ import avrora.stack.Analyzer;
  */
 public class Main extends VPCBase {
 
-    static final String VERSION = "0.9.3";
+    static final String VERSION = "0.9.4";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
