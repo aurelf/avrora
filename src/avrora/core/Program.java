@@ -93,6 +93,8 @@ public class Program {
 
     protected final Elem[] program;
 
+    public boolean caseSensitive;
+
     public Program(int pstart, int pend, int dstart, int dend, int estart, int eend) {
         program_start = pstart;
         program_end = pend;
@@ -156,24 +158,30 @@ public class Program {
 
     public Label newProgramLabel(String name, int address) {
         Label label = new ProgramLabel(name, address * 2);
-        labels.put(name, label);
+        labels.put(labelName(name), label);
         return label;
     }
 
     public Label newDataLabel(String name, int address) {
         Label label = new DataLabel(name, address);
-        labels.put(name, label);
+        labels.put(labelName(name), label);
         return label;
     }
 
     public Label newEEPromLabel(String name, int address) {
         Label label = new EEPromLabel(name, address);
-        labels.put(name, label);
+        labels.put(labelName(name), label);
         return label;
     }
 
     public Label getLabel(String name) {
-        return (Label) labels.get(name.toLowerCase());
+        return (Label) labels.get(labelName(name));
+    }
+
+    private String labelName(String n) {
+        if ( caseSensitive )
+            return n;
+        else return n.toLowerCase();
     }
 
     public Elem[] makeImpression(int size) {

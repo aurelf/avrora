@@ -44,7 +44,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     protected int nextPC;
     protected Interrupt[] interrupts;
 
-    protected DeltaQueue deltaQueue;
+    protected DeltaQueue eventQueue;
 
     public static int MAX_INTERRUPTS = 35;
 
@@ -69,21 +69,6 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public interface Trigger {
         public void fire();
-    }
-
-    class PeriodicTrigger implements Trigger {
-        Trigger trigger;
-        long period;
-
-        PeriodicTrigger(Trigger t, long p) {
-            trigger = t;
-            period = p;
-        }
-
-        public void fire() {
-            deltaQueue.add(this, period);
-            trigger.fire();
-        }
     }
 
     /**
@@ -236,12 +221,28 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
          * @param cycles the number of clock cycles to advance
          */
         void advance(long cycles) {
-            while ( head != null && cycles >= head.delta ) {
-                Link next = head.next;
-                cycles -= head.delta;
-                head.fire();
-                free(head);
+            while ( head != null && cycles >= 0 ) {
+
+                Link pos = head;
+                Link next = pos.next;
+
+                long left = cycles - pos.delta;
+                pos.delta = -left;
+
+                // if haven't arrived yet, break
+                if ( pos.delta > 0 ) break;
+
+                // chop off head
                 head = next;
+
+                // fire all events at head
+                pos.fire();
+
+                // free the head
+                free(pos);
+
+                // consume the cycles
+                cycles = left;
             }
         }
 
@@ -290,69 +291,6 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
             }
 
             return l;
-        }
-    }
-
-    /**
-     * The <code>MulticastProbe</code> is a wrapper around multiple probes that
-     * allows them to act as a single probe. It is useful for composing multiple
-     * probes into one and is used internally in the simulator.
-     */
-    public static class MulticastProbe implements Probe {
-        static class Link {
-            Probe probe;
-            Link next;
-
-            Link(Probe p) {
-                probe = p;
-            }
-        }
-
-        Link head;
-        Link tail;
-
-        public void add(Probe b) {
-            if ( b == null ) return;
-
-            if ( head == null ) {
-                head = tail = new Link(b);
-            } else {
-                tail.next = new Link(b);
-                tail = tail.next;
-            }
-        }
-
-        public void remove(Probe b) {
-            if ( b == null ) return;
-
-            Link prev = null;
-            Link pos = head;
-            while ( pos != null ) {
-                Link next = pos.next;
-
-                if ( pos.probe == b ) {
-                    // remove the whole thing.
-                    if ( prev == null ) head = pos.next;
-                    else prev.next = pos.next;
-                } else {
-                    prev = pos;
-                }
-                pos = next;
-            }
-        }
-
-        public boolean isEmpty() {
-            return head == null;
-        }
-
-        public void fireBefore(Instr i, int address, State state) {
-            for ( Link pos = head; pos != null; pos = pos.next )
-                pos.probe.fireBefore(i, address, state);
-        }
-
-        public void fireAfter(Instr i, int address, State state) {
-            for ( Link pos = head; pos != null; pos = pos.next )
-                pos.probe.fireAfter(i, address, state);
         }
     }
 
@@ -412,6 +350,16 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
         boolean isEmpty() {
             return probe.isEmpty();
+        }
+
+        public int getCycles() {
+            // This is an extremely subtle hack to keep timings correct.
+            // A ProbedInstr causes the execute(Instr i) method to be called
+            // twice, once for the ProbedInstr instance, and once for the
+            // actual instruction. Since execute() advances the cycle count,
+            // don't allow it to advance the cycle count twice for this
+            // instruction.
+            return 0;
         }
 
         public void accept(InstrVisitor v) {
@@ -535,7 +483,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public void reset() {
         state = constructState();
-        deltaQueue = new DeltaQueue();
+        eventQueue = new DeltaQueue();
         justReturnedFromInterrupt = false;
     }
 
@@ -545,7 +493,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     private void loop() {
 
         nextPC = state.getPC();
-        long cycles = state.getCycles();
+        long oldCycles = state.getCycles();
 
         while (shouldRun) {
 
@@ -573,28 +521,30 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
                     nextPC = lowestbit * 4;
                     state.writePC(nextPC);
 
-                    // hardware manual says handling of interrupt requires 4 cycles
-                    state.consumeCycles(4);
-
                     // disable interrupts
                     state.setFlag_I(false);
+
+                    // process any timed events
+                    state.consumeCycles(4);
+                    eventQueue.advance(4);
+                    oldCycles += 4;
                 }
             }
 
             // get the current instruction
-            Instr i = state.getCurrentInstr();
+            int curPC = nextPC;
+            Instr i = state.readInstr(nextPC);
             nextPC = nextPC + i.getSize();
 
             // visit the actual instruction (or probe)
-            int pc = state.getPC();
-            activeProbe.fireBefore(i, pc, state);
+            activeProbe.fireBefore(i, curPC, state);
             execute(i);
-            activeProbe.fireAfter(i, pc, state);
+            activeProbe.fireAfter(i, curPC, state);
 
             // process any timed events
-            long newcycles = state.getCycles();
-            deltaQueue.advance(newcycles - cycles);
-            cycles = newcycles;
+            long newCycles = state.getCycles();
+            eventQueue.advance(newCycles - oldCycles);
+            oldCycles = newCycles;
         }
     }
 
@@ -602,10 +552,6 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         i.accept(this);
         state.writePC(nextPC);
         state.consumeCycles(i.getCycles());
-
-    }
-
-    private void commit() {
 
     }
 
@@ -670,15 +616,17 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void addTimerEvent(Trigger e, long cycles) {
-        deltaQueue.add(e, cycles);
+        eventQueue.add(e, cycles);
     }
 
-    public void addPeriodicTimerEvent(Trigger e, long period) {
-        deltaQueue.add(new PeriodicTrigger(e, period), period);
+    public PeriodicTrigger addPeriodicTimerEvent(Trigger e, long period) {
+        PeriodicTrigger pt = new PeriodicTrigger(this, e, period);
+        eventQueue.add(pt, period);
+        return pt;
     }
 
     public void removeTimerEvent(Trigger e, long cycles) {
-        deltaQueue.remove(e);
+        eventQueue.remove(e);
     }
 
 

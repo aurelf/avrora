@@ -12,7 +12,7 @@ import avrora.core.Instr;
  * @author Ben L. Titzer
  */
 public class Counter implements Simulator.Probe {
-    public int count;
+    public long count;
 
     public void fireBefore(Instr i, int address, State state) {
         count++;
