@@ -635,8 +635,8 @@ public class Analyzer {
             char rh = state.readRegister(i.r1.nextRegister());
 
             // compute partial results
-            int resultA = ceiling(rl, rh) - i.imm1;
-            int resultB = floor(rl, rh) - i.imm1;
+            int resultA = top(rl, rh) - i.imm1;
+            int resultB = bottom(rl, rh) - i.imm1;
 
             // compute upper and lower parts of result from partial results
             char RL = mergeMask(maskOf(rl), merge((byte)resultA, (byte)resultB));
