@@ -36,9 +36,8 @@ import avrora.syntax.ProgramPoint;
 import avrora.util.Terminal;
 
 /**
- * The <code>CompilationError</code> class represents an error in a
- * user program, including the module contents and line and column
- * numbers.
+ * The <code>CompilationError</code> class represents an error in a user program, including the module contents and line
+ * and column numbers.
  *
  * @author Ben L. Titzer
  */
