@@ -97,7 +97,9 @@ public class CFGAction extends Action {
         Printer p = Printer.STDOUT;
         p.startblock("digraph G");
 
-        if ( Main.COLOR_PROCEDURES.get() || Main.GROUP_PROCEDURES.get() )
+        if ( Main.COLOR_PROCEDURES.get() ||
+                Main.GROUP_PROCEDURES.get() ||
+                Main.COLLAPSE_PROCEDURES.get() )
             discoverProcedures(cfg);
 
         dumpDotNodes(cfg, p);
@@ -199,6 +201,19 @@ public class CFGAction extends Action {
                 ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
                 printBlock(block, p);
             }
+        } else if (Main.COLLAPSE_PROCEDURES.get() ) {
+
+            // add each block to its respective color set
+            Iterator blocks = cfg.getSortedBlockIterator();
+            while ( blocks.hasNext() ) {
+                ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
+                Object color = COLORMAP.get(block);
+
+                // only print out nodes with no color, or the same as their own color
+                if ( color == BLACK || color == null || color == block ) {
+                    printBlock(block, p);
+                }
+            }
         } else {
             HashMap colorSets = new HashMap();
 
@@ -241,7 +256,10 @@ public class CFGAction extends Action {
     private void printBlock(ControlFlowGraph.Block block, Printer p) {
         String bName = blockName(block);
         String shape = getShape(block);
-        p.println(bName+" [shape="+shape+"];");
+        String color = getColor(block);
+        p.print(bName+" [shape="+shape);
+        if ( !color.equals("") ) p.print(",style=filled,fillcolor="+color);
+        p.println("];");
     }
 
     private void dumpDotEdges(ControlFlowGraph cfg, Printer p) {
@@ -253,6 +271,8 @@ public class CFGAction extends Action {
     }
 
     private String getShape(ControlFlowGraph.Block block) {
+        if ( getEntryOf(block) == block ) return "doubleoctagon";
+
         int addr = block.getAddress();
         Iterator edges = block.getEdgeIterator();
         if ( addr % 4 == 0 && addr < 35 * 4 ) // interrupt handler
@@ -264,6 +284,26 @@ public class CFGAction extends Action {
             if ( isReturnEdge(type) ) return "hexagon";
         }
         return "ellipse";
+    }
+
+    int colorCounter;
+    HashMap COLORS = new HashMap();
+    String palette[] = { "aquamarine", "blue2", "brown1", "cadetblue1",
+    "chartreuse1", "cyan4", "darkgoldenrod1", "darkorchid3", "darkslateblue",
+    "deeppink2", "yellow", "seagreen3", "orangered1" };
+
+    private String getColor(ControlFlowGraph.Block block) {
+        if ( !Main.COLOR_PROCEDURES.get() ) return "";
+        ControlFlowGraph.Block entry = getEntryOf(block);
+        if ( entry == null ) return "";
+        String c = (String)COLORS.get(entry);
+        if ( c == null ) {
+            int newColor = colorCounter;
+            colorCounter = (colorCounter + 1) % palette.length;
+            COLORS.put(entry, palette[newColor]);
+            c = palette[newColor];
+        }
+        return c;
     }
 
     private boolean isReturnEdge(String type) {
@@ -293,25 +333,38 @@ public class CFGAction extends Action {
     private void dumpDotEdges(Iterator edges, Printer p) {
         while (edges.hasNext()) {
             ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
-            String sName = blockName(e.getSource());
+            ControlFlowGraph.Block source = e.getSource();
             ControlFlowGraph.Block target = e.getTarget();
+            ControlFlowGraph.Block es, et;
             String t = e.getType();
 
+            // don't print out the return edges which point to null
             if ( isReturnEdge(t) ) continue;
 
-            if ( target != null ) {
-                String tName = blockName(target);
-                p.print(sName+" -> "+tName);
-            } else {
-                if ( !unknownExists ) {
-                    p.println("UNKNOWN [shape=doublecircle];");
-                    unknownExists = true;
-                }
-                p.print(sName +" -> UNKNOWN");
+            // remember only inter-procedural edges
+            if ( Main.COLLAPSE_PROCEDURES.get() ) {
+                source = ((es = getEntryOf(source)) == null) ? source : es;
+                target = ((et = getEntryOf(target)) == null) ? target : et;
+                // don't print out intra-block edges if we are collapsing procedures
+                if ( es == et && et != null ) continue;
             }
 
+            // get the names of the blocks
+            String sName = blockName(source);
+            String tName = target == null ? "UNKNOWN" : blockName(target);
+
+
+            // emit the description for the unknown node if we haven't already
+            if ( !unknownExists ) {
+                p.println("UNKNOWN [shape=Msquare];");
+                unknownExists = true;
+            }
+
+            // print the edge
+            p.print(sName +" -> "+tName);
             p.print(" [headport=s,tailport=n");
 
+            // change the style of the edge based on its type
             if ( t.equals("CALL") ) {
                 p.print(",style=bold,color=red");
             } else  if ( t.equals("INDIRECT") ) {
@@ -321,6 +374,15 @@ public class CFGAction extends Action {
             p.println("];");
 
         }
+    }
+
+    private ControlFlowGraph.Block getEntryOf(ControlFlowGraph.Block b) {
+        if ( COLORMAP == null ) return null;
+        if ( b == null ) return null;
+        Object c = COLORMAP.get(b);
+        if ( c == null ) return null;
+        if ( c == BLACK ) return null;
+        return (ControlFlowGraph.Block)c;
     }
 
     private String blockName(ControlFlowGraph.Block block) {

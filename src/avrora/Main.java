@@ -119,7 +119,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.14";
+    static final String VERSION = "Beta 1.1.15";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -234,6 +234,12 @@ public class Main {
             "\"dot\" output format. When this option is true, the control flow graph " +
             "utility will attempt to discover procedures and group them as subgraphs " +
             "in the output.");
+
+    public static final Option.Bool COLLAPSE_PROCEDURES = options.newOption("collapse-procedures", false,
+            "This option is used in the \"cfg\" utility when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures within the control flow graph " +
+            "and collapse whole procedures to a single node in the output.");
 
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 
