@@ -125,34 +125,92 @@ public class Defaults {
         monitorMap.addClass("pc", Pc.class);
     }
 
+    /**
+     * The <code>getMicrocontroller()</code> method gets the microcontroller factory corresponding
+     * to the given name represented as a string. This string can represent a short name for the
+     * class (an alias), or a fully qualified Java class name.
+     * @param s the name of the microcontroller as string; a class name or an alias such as "atmega128"
+     * @return an instance of the <code>MicrocontrollerFactory</code> interface that is capable
+     * of creating repeated instances of the microcontroller.
+     */
     public static MicrocontrollerFactory getMicrocontroller(String s) {
         return (MicrocontrollerFactory)microcontrollers.getObjectOfClass(s);
     }
 
+    /**
+     * The <code>getPlatform()</code> method gets the platform factory corresponding to the
+     * given name represented as a string. This string can represent a short name for the
+     * class (an alias), or a fully qualified Java class name.
+     * @param s the name of the platform as string; a class name or an alias such as "mica2"
+     * @return an instance of the <code>PlatformFactory</code> interface that is capable of
+     * creating repeated instances of the microcontroller.
+     */
     public static PlatformFactory getPlatform(String s) {
         return (PlatformFactory)platforms.getObjectOfClass(s);
     }
 
+    /**
+     * The <code>getProgramReader()</code> method gets the program reader corresponding to
+     * the given name represented as a string. This string can represent a short name for the
+     * class (an alias), or a fully qualified Java class name.
+     * @param s the name of the program reader format as a string
+     * @return an instance of the <code>ProgramReader</code> class that is capable of reading
+     * a program into the internal program representation format.
+     */
     public static ProgramReader getProgramReader(String s) {
         return (ProgramReader)inputs.getObjectOfClass(s);
     }
 
+    /**
+     * The <code>getAction()</code> method gets the action corresponding to the given name
+     * represented as a string. This string can represent a short name for the
+     * class (an alias), or a fully qualified Java class name.
+     * @param s the name of the action as a string
+     * @return an instance of the <code>Action</code> class which can run given the command
+     * line arguments and options provided.
+     */
     public static Action getAction(String s) {
         return (Action)actions.getObjectOfClass(s);
     }
 
+    /**
+     * The <code>getMonitor()</code> method gets the monitor corresponding to the given name
+     * represented as a string. This string can represent a short name for the class (an alias),
+     * or a fully qualified Java class name.
+     * @param s the name of the monitor as a string
+     * @return an instance of the <code>MonitorFactory</code> class that is capable of attaching
+     * monitors to nodes as they are created
+     */
     public static MonitorFactory getMonitor(String s) {
         return (MonitorFactory)monitorMap.getObjectOfClass(s);
     }
 
+    /**
+     * The <code>getTestHarness()</code> method gets the test harness class corresponding to
+     * the given name represented as a string. This string can represent a short name for the class (an alias),
+     * or a fully qualified Java class name.
+     * @param s the name of the test harness as a string
+     * @return an instance of the <code>TestHarness</code> class that is capable of creating a
+     * test case for a file and running it
+     */
     public static TestHarness getTestHarness(String s) {
         return (TestHarness)harnessMap.getObjectOfClass(s);
     }
 
+    /**
+     * The <code>getActionList()</code> method returns a list of aliases for actions sorted
+     * alphabetically.
+     * @return a sorted list of known actions
+     */
     public static List getActionList() {
         return actions.getSortedList();
     }
 
+    /**
+     * The <code>getProgramReaderList()</code> method returns a list of aliases for program
+     * readers sorted alphabetically.
+     * @return a sorted list of known program readers
+     */
     public static List getProgramReaderList() {
         return inputs.getSortedList();
     }

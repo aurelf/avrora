@@ -33,7 +33,7 @@
 package avrora.test;
 
 import avrora.Avrora;
-import avrora.CompilationError;
+import avrora.syntax.SimplifierError;
 import avrora.util.StringUtil;
 
 import java.util.Properties;
@@ -98,16 +98,16 @@ public abstract class TestCase {
             if (shouldPass) {
                 if (t == null) // no exceptions encountered, passed.
                     return new TestResult.TestSuccess();
-                if (t instanceof CompilationError) { // encountered compilation error.
-                    CompilationError ce = (CompilationError)t;
+                if (t instanceof SimplifierError) { // encountered compilation error.
+                    SimplifierError ce = (SimplifierError)t;
                     return new TestResult.ExpectedPass(ce);
                 }
             } else {
                 if (t == null) // expected a compilation error, but passed.
                     return new TestResult.ExpectedError(error);
 
-                if (t instanceof CompilationError) {
-                    CompilationError ce = (CompilationError)t;
+                if (t instanceof SimplifierError) {
+                    SimplifierError ce = (SimplifierError)t;
                     if (ce.getErrorClass().equals(error)) // correct error encountered.
                         return new TestResult.TestSuccess();
                     else // incorrect compilation error.

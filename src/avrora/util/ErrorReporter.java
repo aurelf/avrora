@@ -30,9 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.util;
 
 import avrora.syntax.ProgramPoint;
+import avrora.syntax.SimplifierError;
 import avrora.util.StringUtil;
 
 /**
@@ -44,21 +45,21 @@ import avrora.util.StringUtil;
  */
 public class ErrorReporter {
     protected void error(String report, String name, ProgramPoint p) {
-        throw new CompilationError(p, report, name, StringUtil.EMPTY_STRING_ARRAY);
+        throw new SimplifierError(p, report, name, StringUtil.EMPTY_STRING_ARRAY);
     }
 
     protected void error(String report, String name, String p1, ProgramPoint p) {
         String[] ps = {p1};
-        throw new CompilationError(p, report, name, ps);
+        throw new SimplifierError(p, report, name, ps);
     }
 
     protected void error(String report, String name, String p1, String p2, ProgramPoint p) {
         String[] ps = {p1, p2};
-        throw new CompilationError(p, report, name, ps);
+        throw new SimplifierError(p, report, name, ps);
     }
 
     protected void error(String report, String name, String p1, String p2, String p3, ProgramPoint p) {
         String[] ps = {p1, p2, p3};
-        throw new CompilationError(p, report, name, ps);
+        throw new SimplifierError(p, report, name, ps);
     }
 }

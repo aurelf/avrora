@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.syntax;
 
 import avrora.core.Register;
 import avrora.syntax.ASTNode;
@@ -38,10 +38,11 @@ import avrora.syntax.AbstractToken;
 import avrora.syntax.ProgramPoint;
 import avrora.syntax.SyntacticOperand;
 import avrora.util.StringUtil;
+import avrora.util.ErrorReporter;
 
 /**
  * The <code>AVRErrorReporter</code> contains one method per compilation error. The method constructs a
- * <code>CompilationError</code> object that represents the error and throws it. One method per type of error
+ * <code>SimplifierError</code> object that represents the error and throws it. One method per type of error
  * provides a convenient interface and allows pinpointing the generation of each type of error within the
  * verifier.
  *

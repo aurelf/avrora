@@ -32,7 +32,6 @@
 
 package avrora.syntax;
 
-import avrora.AVRErrorReporter;
 import avrora.core.*;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;

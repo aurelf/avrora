@@ -33,7 +33,7 @@
 package avrora.test;
 
 import avrora.Avrora;
-import avrora.CompilationError;
+import avrora.syntax.SimplifierError;
 import avrora.util.Terminal;
 
 /**
@@ -101,9 +101,9 @@ public abstract class TestResult {
 
     public static class IncorrectError extends TestFailure {
         String expected;
-        CompilationError encountered;
+        SimplifierError encountered;
 
-        public IncorrectError(String ex, CompilationError ce) {
+        public IncorrectError(String ex, SimplifierError ce) {
             expected = ex;
             encountered = ce;
         }
@@ -119,9 +119,9 @@ public abstract class TestResult {
     }
 
     public static class ExpectedPass extends TestFailure {
-        CompilationError encountered;
+        SimplifierError encountered;
 
-        public ExpectedPass(CompilationError e) {
+        public ExpectedPass(SimplifierError e) {
             encountered = e;
         }
 

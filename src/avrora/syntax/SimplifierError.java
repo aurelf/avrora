@@ -30,25 +30,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.syntax;
 
 import avrora.syntax.ProgramPoint;
 import avrora.util.Terminal;
+import avrora.Avrora;
 
 /**
- * The <code>CompilationError</code> class represents an error in a user program, including the module
+ * The <code>SimplifierError</code> class represents an error in a user program, including the module
  * contents and line and column numbers.
  *
  * @author Ben L. Titzer
  */
-public class CompilationError extends Avrora.Error {
+public class SimplifierError extends Avrora.Error {
     public final ProgramPoint point;
     public final String errclass;
     public final String[] errparams;
 
     public static boolean CLASSES;
 
-    public CompilationError(ProgramPoint p, String msg, String ec, String ps[]) {
+    public SimplifierError(ProgramPoint p, String msg, String ec, String ps[]) {
         super(msg, null);
         point = p;
         errclass = ec;
