@@ -89,12 +89,6 @@ public abstract class Simulator implements IORegisterConstants {
     protected final Microcontroller microcontroller;
 
     /**
-     * The <code>LEGACY_INTERPRETER</code> field is used to turn on and off
-     * the legacy interpreter. By default, the legacy interpreter is used.
-     */
-    public static boolean LEGACY_INTERPRETER = false;
-
-    /**
      * The <code>interpreter</code> field stores a reference to the instruction
      * set interpreter.
      */
@@ -452,17 +446,10 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void reset() {
         eventQueue = new DeltaQueue();
-        if (LEGACY_INTERPRETER) {
-            interpreter = new LegacyInterpreter(this, program,
-                    microcontroller.getFlashSize(),
-                    microcontroller.getIORegSize(),
-                    microcontroller.getRamSize());
-        } else {
-            interpreter = new GenInterpreter(this, program,
-                    microcontroller.getFlashSize(),
-                    microcontroller.getIORegSize(),
-                    microcontroller.getRamSize());
-        }
+        interpreter = new GenInterpreter(this, program,
+                microcontroller.getFlashSize(),
+                microcontroller.getIORegSize(),
+                microcontroller.getRamSize());
     }
 
     /**

@@ -55,8 +55,8 @@ public class BenchmarkAction extends SimAction {
     Simulator simulator;
     long endms;
 
-    long totalCyclesA, totalCyclesB;
-    long totalMillisA, totalMillisB;
+    long totalCyclesA;
+    long totalMillisA;
 
     public static final String HELP = "The \"benchmark\" action benchmarks the simulator's " +
             "performace on an input program and gives tables of performance information. ";
@@ -86,49 +86,30 @@ public class BenchmarkAction extends SimAction {
 
         long repeat = REPEAT.get();
 
-        Terminal.printGreen("Legacy Interpreter                           Generated Interpreter");
+        Terminal.printGreen("Generated Interpreter");
         Terminal.nextln();
-        Terminal.printSeparator(88);
+        Terminal.printSeparator(78);
 
         for (long cntr = 0; cntr < repeat; cntr++) {
 
-            long millisA = runOne(true);
+            long millisA = runOne();
             totalMillisA += millisA;
             long cyclesA = simulator.getState().getCycles();
             totalCyclesA += cyclesA;
 
-            long millisB = runOne(false);
-            totalMillisB += millisB;
-            long cyclesB = simulator.getState().getCycles();
-            totalCyclesB += cyclesB;
-
-            report(cyclesA, millisA, cyclesB, millisB);
+            report(cyclesA, millisA);
         }
 
-        Terminal.printSeparator(88);
+        Terminal.printSeparator(78);
 
         long avgCyclesA = totalCyclesA / repeat;
         long avgMillisA = totalMillisA / repeat;
         float mhzA = reportResult(avgCyclesA, avgMillisA);
-        long avgCyclesB = totalCyclesB / repeat;
-        long avgMillisB = totalMillisB / repeat;
-        float mhzB = reportResult(avgCyclesB, avgMillisB);
         Terminal.nextln();
-        Terminal.nextln();
-        if (mhzA > mhzB) {
-            Terminal.printGreen("Average slowdown: ");
-        } else {
-            Terminal.printGreen("Average speedup: ");
-        }
-        float speedup = 100 * ((mhzB / mhzA) - 1);
-        Terminal.printBrightCyan(speedup + " ");
-        Terminal.println("%");
-        Terminal.println("");
     }
 
-    private void report(long cyclesA, long millisA, long cyclesB, long millisB) {
+    private void report(long cyclesA, long millisA) {
         reportResult(cyclesA, millisA);
-        reportResult(cyclesB, millisB);
 
         Terminal.nextln();
     }
@@ -148,10 +129,9 @@ public class BenchmarkAction extends SimAction {
         return mhzA;
     }
 
-    private long runOne(boolean legacy) {
+    private long runOne() {
         long startms = System.currentTimeMillis();
         try {
-            Simulator.LEGACY_INTERPRETER = legacy;
             PlatformFactory pf = getPlatform();
             if (pf != null)
                 simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();

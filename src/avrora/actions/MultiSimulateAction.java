@@ -107,8 +107,6 @@ public class MultiSimulateAction extends SimAction {
 
     public void run(String[] args) throws Exception {
 
-        Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
-
         int cntr = 0;
 
         // create the specified number of each type of node

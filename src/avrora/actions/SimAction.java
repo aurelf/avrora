@@ -64,7 +64,7 @@ public abstract class SimAction extends Action {
             "It is useful for non-terminating programs.");
     public final Option.Double SECONDS = newOption("seconds", 0.0,
             "This option is used to terminate the " +
-            "simulation after the specified number of seconds have passed. " +
+            "simulation after the specified number of simulated seconds have passed. " +
             "It is useful for non-terminating programs and benchmarks.");
     public final Option.Long TIMEOUT = newOption("timeout", 0,
             "This option is used to terminate the " +

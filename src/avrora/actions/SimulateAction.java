@@ -180,8 +180,6 @@ public class SimulateAction extends SimAction {
     private void runSimulation(String[] args) throws Exception {
         program = Main.readProgram(args);
 
-        Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
-
         simulator = newSimulator(program);
         microcontroller = simulator.getMicrocontroller();
         counters = new LinkedList();
