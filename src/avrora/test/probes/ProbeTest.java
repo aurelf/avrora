@@ -1,23 +1,76 @@
+/**
+ * Copyright (c) 2004-2005, Regents of the University of California
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University of California, Los Angeles nor the
+ * names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package avrora.test.probes;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.DeltaQueue;
 import avrora.core.Instr;
+import avrora.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * @author Ben L. Titzer
  */
 public class ProbeTest {
 
-    HashMap entities;
+    final HashMap entities;
 
     Simulator simulator;
+    Simulator.Printer printer;
     DeltaQueue eventqueue;
+
+    List mainCode;
+    final List expectedEvents;
+    List recordedEvents;
+
+    ProbeTest() {
+        entities = new HashMap();
+        expectedEvents = new LinkedList();
+    }
+
+    class Event {
+        final long time;
+        final String name;
+
+        Event(long t, String n) {
+            time = t;
+            name = n;
+        }
+    }
 
     abstract class TestEntity {
         final String name;
@@ -42,10 +95,12 @@ public class ProbeTest {
         }
 
         public void fireBefore(Instr i, int addr, State s) {
+            recordEvent(name+".before");
             execute(beforeStmts);
         }
 
         public void fireAfter(Instr i, int addr, State s) {
+            recordEvent(name+".after");
             execute(afterStmts);
         }
 
@@ -73,18 +128,22 @@ public class ProbeTest {
         }
 
         public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
+            recordEvent(name+".beforeRead");
             execute(beforeReadStmts);
         }
 
         public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+            recordEvent(name+".beforeWrite");
             execute(beforeWriteStmts);
         }
 
         public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
+            recordEvent(name+".afterRead");
             execute(afterReadStmts);
         }
 
         public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
+            recordEvent(name+".afterWrite");
             execute(afterWriteStmts);
         }
 
@@ -107,6 +166,7 @@ public class ProbeTest {
 
 
         public void fire() {
+            recordEvent(name);
             execute(fireStmts);
         }
 
@@ -126,9 +186,13 @@ public class ProbeTest {
     }
 
     class InsertStmt extends Stmt {
-        String name;
-        int value;
+        final String name;
+        final int value;
 
+        InsertStmt(String n, int v) {
+            name = n;
+            value = v;
+        }
         void execute() {
             TestEntity en = (TestEntity)entities.get(name);
             en.insert(value);
@@ -136,8 +200,13 @@ public class ProbeTest {
     }
 
     class RemoveStmt extends Stmt {
-        String name;
-        int value;
+        final String name;
+        final int value;
+
+        RemoveStmt(String n, int v) {
+            name = n;
+            value = v;
+        }
 
         void execute() {
             TestEntity en = (TestEntity)entities.get(name);
@@ -146,7 +215,11 @@ public class ProbeTest {
     }
 
     class AdvanceStmt extends Stmt {
-        int value;
+        final int value;
+
+        AdvanceStmt(int v) {
+            value = v;
+        }
 
         void execute() {
             eventqueue.advance(value);
@@ -167,18 +240,113 @@ public class ProbeTest {
         }
     }
 
-    public void newProbe(String name, List b, List a) {
-        TestEntity e = new TestProbe(name, b, a);
-        entities.put(name, e);
+    protected void recordEvent(String e) {
+        if ( printer.enabled )
+            printer.println(e);
+        long time = simulator == null ? eventqueue.getCount() : simulator.getState().getCycles();
+        recordedEvents.add(new Event(time, e));
     }
 
-    public void newWatch(String name, List b1, List a1, List b2, List a2) {
-        TestEntity e = new TestWatch(name, b1, a1, b2, a2);
-        entities.put(name, e);
+    //-- interface for building the test case
+
+    public void newProbe(Token name, List b, List a) {
+        TestEntity e = new TestProbe(name.image, b, a);
+        entities.put(name.image, e);
     }
 
-    public void newEvent(String name, List b) {
-        TestEntity e = new TestEvent(name, b);
-        entities.put(name, e);
+    public void newWatch(Token name, List b1, List a1, List b2, List a2) {
+        TestEntity e = new TestWatch(name.image, b1, a1, b2, a2);
+        entities.put(name.image, e);
     }
+
+    public void newEvent(Token name, List b) {
+        TestEntity e = new TestEvent(name.image, b);
+        entities.put(name.image, e);
+    }
+
+    public void addInsert(List l, Token n, Token v) {
+        l.add(new InsertStmt(n.image, StringUtil.evaluateIntegerLiteral(v.image)));
+    }
+
+    public void addRemove(List l, Token n, Token v) {
+        l.add(new RemoveStmt(n.image, StringUtil.evaluateIntegerLiteral(v.image)));
+    }
+
+    public void addAdvance(List l, Token v) {
+        l.add(new AdvanceStmt(StringUtil.evaluateIntegerLiteral(v.image)));
+    }
+
+    public void addRun(List l) {
+        l.add(new RunStmt());
+    }
+
+    public void addMainCode(List l) {
+        mainCode = l;
+    }
+
+    public void addResultEvent(Token time, Token name) {
+        expectedEvents.add(new Event(StringUtil.evaluateIntegerLiteral(time.image), name.image));
+    }
+
+    public void run(Simulator s) throws Exception {
+        simulator = s;
+        printer = s.getPrinter("test.probes");
+        eventqueue = null;
+        recordedEvents = new LinkedList();
+        execute(mainCode);
+        s.start();
+        match();
+    }
+
+    public void run(DeltaQueue q) throws Exception {
+        eventqueue = q;
+        simulator = null;
+        recordedEvents = new LinkedList();
+        execute(mainCode);
+        match();
+    }
+
+    public void match() throws Exception {
+        Iterator e = expectedEvents.iterator();
+        Iterator r = recordedEvents.iterator();
+        int cntr = 1;
+
+        while ( e.hasNext() ) {
+            if ( !r.hasNext() ) {
+                throw new Failure("too few events recorded");
+            }
+
+            Event expect = (Event)e.next();
+            Event recorded = (Event)r.next();
+
+            if ( printer.enabled ) {
+                printer.println(" --> checking "+recorded.time+" "+recorded.name+" = "
+                        +expect.time+" "+expect.name);
+            }
+
+            if ( !expect.name.equals(recorded.name) ) {
+                throw new Failure("incorrect event #"+cntr+": "+recorded.name+" should be "+expect.name);
+            }
+
+            if ( expect.time != recorded.time ) {
+                throw new Failure("timing incorrect for event #"+cntr+": "+recorded.time+" should be "+expect.time);
+            }
+
+            cntr++;
+        }
+
+        if ( r.hasNext() ) {
+            throw new Failure("too many events recorded");
+        }
+
+    }
+
+    public class Failure extends Exception {
+        public final String reason;
+
+        Failure(String s) {
+            reason = s;
+        }
+    }
+
 }

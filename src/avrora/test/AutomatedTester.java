@@ -59,6 +59,8 @@ import java.util.Properties;
  */
 public class AutomatedTester {
 
+    public static boolean LONG_REPORT;
+
     private final ClassMap harnessMap;
 
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
@@ -156,7 +158,9 @@ public class AutomatedTester {
         Terminal.print("  ");
         Terminal.printRed(fname);
         Terminal.print(": ");
-        result.shortReport();
+        if ( LONG_REPORT )
+            result.longReport();
+        else result.shortReport();
         Terminal.print("\n");
     }
 
@@ -207,7 +211,6 @@ public class AutomatedTester {
             TestHarness harness = (TestHarness)harnessMap.getObjectOfClass(hname);
             return harness.newTestCase(fname, vars);
         } catch (Throwable t) {
-            t.printStackTrace();
             // TODO: better error messages for failure to find test harness
             return new TestCase.Malformed(fname, "exception in test case initialization");
         }

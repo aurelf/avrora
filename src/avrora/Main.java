@@ -157,7 +157,6 @@ public class Main {
         }
     }
 
-
     public static ProgramReader getProgramReader() {
         return (ProgramReader)inputs.getObjectOfClass(INPUT.get());
     }

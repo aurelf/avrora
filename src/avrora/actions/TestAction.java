@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.test.AutomatedTester;
+import avrora.util.Option;
 
 /**
  * The <code>TestAction</code> class represents an action to invoke the built-in automated testing framework
@@ -45,6 +46,9 @@ public class TestAction extends Action {
             "that runs testcases supplied at the command line. The testcases are " +
             "used in regressions for diagnosing bugs.";
 
+    public final Option.Bool DETAIL = options.newOption("detail", false, "This option selects whether " +
+            "the automated testing framework will report detailed information for failed test cases.");
+
     public TestAction() {
         super("test", HELP);
     }
@@ -55,6 +59,7 @@ public class TestAction extends Action {
      * @throws Exception
      */
     public void run(String[] args) throws Exception {
+        AutomatedTester.LONG_REPORT = DETAIL.get(); 
         new AutomatedTester().runTests(args);
     }
 }

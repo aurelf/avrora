@@ -8,85 +8,84 @@ import java.util.LinkedList;
 public class ProbeParser implements ProbeParserConstants {
 
 /* Begin GRAMMAR */
-  final public void ProbeTest() throws ParseException {
+  final public ProbeTest ProbeTest() throws ParseException {
+                          ProbeTest pt = new ProbeTest();
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case INSTRUCTION:
-      case ARCHITECTURE:
-      case FORMAT:
+      case PROBE:
+      case EVENT:
+      case WATCH:
         ;
         break;
       default:
         jj_la1[0] = jj_gen;
         break label_1;
       }
-      Declaration();
+      Declaration(pt);
     }
-    Main();
+    Main(pt);
+    Result(pt);
+      {if (true) return pt;}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void Main() throws ParseException {
-    jj_consume_token(OPERAND);
+  final public void Main(ProbeTest pt) throws ParseException {
+                           List l;
+    jj_consume_token(MAIN);
     jj_consume_token(LBRACKET);
-    Body();
+    l = Body(pt);
     jj_consume_token(RBRACKET);
+      pt.addMainCode(l);
   }
 
-  final public void Declaration() throws ParseException {
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case INSTRUCTION:
-      ProbeDeclaration();
-      break;
-    case FORMAT:
-      WatchDeclaration();
-      break;
-    case ARCHITECTURE:
-      EventDeclaration();
-      break;
-    default:
-      jj_la1[1] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-  }
-
-  final public void Body() throws ParseException {
+  final public void Result(ProbeTest pt) throws ParseException {
+    jj_consume_token(RESULT);
+    jj_consume_token(LBRACKET);
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case WHERE:
-      case REGISTER:
-      case IMMEDIATE:
-      case ADDRESS:
+      case INTEGER_LITERAL:
+        ;
+        break;
+      default:
+        jj_la1[1] = jj_gen;
+        break label_2;
+      }
+      Event(pt);
+      jj_consume_token(SEMI);
+    }
+    jj_consume_token(RBRACKET);
+  }
+
+  final public void Event(ProbeTest pt) throws ParseException {
+                            Token t, n;
+    t = jj_consume_token(INTEGER_LITERAL);
+    label_3:
+    while (true) {
+      n = jj_consume_token(IDENTIFIER);
+                                              pt.addResultEvent(t, n);
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case IDENTIFIER:
         ;
         break;
       default:
         jj_la1[2] = jj_gen;
-        break label_2;
+        break label_3;
       }
-      Statement();
-      jj_consume_token(SEMI);
     }
   }
 
-  final public void Statement() throws ParseException {
+  final public void Declaration(ProbeTest pt) throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case WHERE:
-      jj_consume_token(WHERE);
-      jj_consume_token(IDENTIFIER);
-      jj_consume_token(INTEGER_LITERAL);
+    case PROBE:
+      ProbeDeclaration(pt);
       break;
-    case REGISTER:
-      jj_consume_token(REGISTER);
-      jj_consume_token(IDENTIFIER);
+    case WATCH:
+      WatchDeclaration(pt);
       break;
-    case IMMEDIATE:
-      jj_consume_token(IMMEDIATE);
-      jj_consume_token(INTEGER_LITERAL);
-      break;
-    case ADDRESS:
-      jj_consume_token(ADDRESS);
+    case EVENT:
+      EventDeclaration(pt);
       break;
     default:
       jj_la1[3] = jj_gen;
@@ -95,36 +94,90 @@ public class ProbeParser implements ProbeParserConstants {
     }
   }
 
-  final public void ProbeDeclaration() throws ParseException {
-    jj_consume_token(INSTRUCTION);
-    jj_consume_token(IDENTIFIER);
-    jj_consume_token(LBRACKET);
-    Body();
-    jj_consume_token(PIPE);
-    Body();
-    jj_consume_token(RBRACKET);
+  final public List Body(ProbeTest pt) throws ParseException {
+                            List l = new LinkedList();
+    label_4:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case INSERT:
+      case REMOVE:
+      case ADVANCE:
+        ;
+        break;
+      default:
+        jj_la1[4] = jj_gen;
+        break label_4;
+      }
+      Statement(pt, l);
+      jj_consume_token(SEMI);
+    }
+      {if (true) return l;}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void WatchDeclaration() throws ParseException {
-    jj_consume_token(FORMAT);
-    jj_consume_token(IDENTIFIER);
-    jj_consume_token(LBRACKET);
-    Body();
-    jj_consume_token(PIPE);
-    Body();
-    jj_consume_token(PIPE);
-    Body();
-    jj_consume_token(PIPE);
-    Body();
-    jj_consume_token(RBRACKET);
+  final public void Statement(ProbeTest pt, List l) throws ParseException {
+                                         Token n, v;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case INSERT:
+      jj_consume_token(INSERT);
+      n = jj_consume_token(IDENTIFIER);
+      v = jj_consume_token(INTEGER_LITERAL);
+                                                      pt.addInsert(l, n, v);
+      break;
+    case REMOVE:
+      jj_consume_token(REMOVE);
+      n = jj_consume_token(IDENTIFIER);
+      v = jj_consume_token(INTEGER_LITERAL);
+                                                      pt.addRemove(l, n, v);
+      break;
+    case ADVANCE:
+      jj_consume_token(ADVANCE);
+      v = jj_consume_token(INTEGER_LITERAL);
+                                      pt.addAdvance(l, v);
+      break;
+    default:
+      jj_la1[5] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
   }
 
-  final public void EventDeclaration() throws ParseException {
-    jj_consume_token(ARCHITECTURE);
-    jj_consume_token(IDENTIFIER);
+  final public void ProbeDeclaration(ProbeTest pt) throws ParseException {
+                                       Token n; List b, a;
+    jj_consume_token(PROBE);
+    n = jj_consume_token(IDENTIFIER);
     jj_consume_token(LBRACKET);
-    Body();
+    b = Body(pt);
+    jj_consume_token(PIPE);
+    a = Body(pt);
     jj_consume_token(RBRACKET);
+      pt.newProbe(n, b, a);
+  }
+
+  final public void WatchDeclaration(ProbeTest pt) throws ParseException {
+                                       Token n; List b1, a1, b2, a2;
+    jj_consume_token(WATCH);
+    n = jj_consume_token(IDENTIFIER);
+    jj_consume_token(LBRACKET);
+    b1 = Body(pt);
+    jj_consume_token(PIPE);
+    a1 = Body(pt);
+    jj_consume_token(PIPE);
+    b2 = Body(pt);
+    jj_consume_token(PIPE);
+    a2 = Body(pt);
+    jj_consume_token(RBRACKET);
+      pt.newWatch(n, b1, a1, b2, a2);
+  }
+
+  final public void EventDeclaration(ProbeTest pt) throws ParseException {
+                                       Token n; List b;
+    jj_consume_token(EVENT);
+    n = jj_consume_token(IDENTIFIER);
+    jj_consume_token(LBRACKET);
+    b = Body(pt);
+    jj_consume_token(RBRACKET);
+      pt.newEvent(n, b);
   }
 
   public ProbeParserTokenManager token_source;
@@ -132,13 +185,13 @@ public class ProbeParser implements ProbeParserConstants {
   public Token token, jj_nt;
   private int jj_ntk;
   private int jj_gen;
-  final private int[] jj_la1 = new int[4];
+  final private int[] jj_la1 = new int[6];
   static private int[] jj_la1_0;
   static {
       jj_la1_0();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x1c000,0x1c000,0x3c0000,0x3c0000,};
+      jj_la1_0 = new int[] {0x1c000,0x200,0x4000000,0x1c000,0x1c0000,0x1c0000,};
    }
 
   public ProbeParser(java.io.InputStream stream) {
@@ -147,7 +200,7 @@ public class ProbeParser implements ProbeParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   public void ReInit(java.io.InputStream stream) {
@@ -156,7 +209,7 @@ public class ProbeParser implements ProbeParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   public ProbeParser(java.io.Reader stream) {
@@ -165,7 +218,7 @@ public class ProbeParser implements ProbeParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   public void ReInit(java.io.Reader stream) {
@@ -174,7 +227,7 @@ public class ProbeParser implements ProbeParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   public ProbeParser(ProbeParserTokenManager tm) {
@@ -182,7 +235,7 @@ public class ProbeParser implements ProbeParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   public void ReInit(ProbeParserTokenManager tm) {
@@ -190,7 +243,7 @@ public class ProbeParser implements ProbeParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 4; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 6; i++) jj_la1[i] = -1;
   }
 
   final private Token jj_consume_token(int kind) throws ParseException {
@@ -245,7 +298,7 @@ public class ProbeParser implements ProbeParserConstants {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {

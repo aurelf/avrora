@@ -10,14 +10,14 @@ public interface ProbeParserConstants {
   int HEX_LITERAL = 11;
   int BIN_LITERAL = 12;
   int OCTAL_LITERAL = 13;
-  int INSTRUCTION = 14;
-  int ARCHITECTURE = 15;
-  int FORMAT = 16;
-  int OPERAND = 17;
-  int WHERE = 18;
-  int REGISTER = 19;
-  int IMMEDIATE = 20;
-  int ADDRESS = 21;
+  int PROBE = 14;
+  int EVENT = 15;
+  int WATCH = 16;
+  int MAIN = 17;
+  int INSERT = 18;
+  int REMOVE = 19;
+  int ADVANCE = 20;
+  int RESULT = 21;
   int LBRACKET = 22;
   int RBRACKET = 23;
   int SEMI = 24;
@@ -51,7 +51,7 @@ public interface ProbeParserConstants {
     "\"insert\"",
     "\"remove\"",
     "\"advance\"",
-    "\"run\"",
+    "\"result\"",
     "\"{\"",
     "\"}\"",
     "\";\"",

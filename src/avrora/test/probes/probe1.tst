@@ -9,7 +9,13 @@ watch C { | | | }
 event E { }
 
 main {
-  insert A 0x010;
-  insert B 0x012;
-  run;
+  insert A 0x000;
+  insert B 0x002;
+}
+
+result {
+  0 A.before;
+  1 A.after;
+  1 B.before;
+  2 B.after;
 }

@@ -34,7 +34,13 @@ package avrora.test;
 
 import avrora.Main;
 import avrora.Avrora;
+import avrora.sim.Simulator;
+import avrora.sim.GenInterpreter;
+import avrora.sim.mcu.MicrocontrollerFactory;
+import avrora.sim.mcu.ATMega128L;
+import avrora.sim.mcu.Microcontroller;
 import avrora.test.probes.ProbeParser;
+import avrora.test.probes.ProbeTest;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
@@ -50,25 +56,42 @@ import java.io.FileInputStream;
  */
 public class ProbeTestHarness implements TestHarness {
 
-    class ProbeTest extends TestCase {
+    class ProbeTestCase extends TestCase {
 
         Module module;
         Program program;
+        ProbeTest probeTest;
+        String progName;
 
-        ProbeTest(String fname, Properties props) throws Exception {
+        ProbeTestCase(String fname, Properties props) throws Exception {
             super(fname, props);
 
             ProbeParser p = new ProbeParser(new FileInputStream(fname));
-            p.ProbeTest();
+            probeTest = p.ProbeTest();
+            progName = props.getProperty("Program");
         }
 
         public void run() throws Exception {
-            throw Avrora.unimplemented();
+            // TODO: better error checking: file not found, not specified, etc
+            ProgramReader pr = Main.getProgramReader();
+            Program p = pr.read(new String[] { progName });
+            Microcontroller m = new ATMega128L(false).newMicrocontroller(0, new GenInterpreter.Factory(), p);
+            Simulator s = m.getSimulator();
+            probeTest.run(s);
         }
+
+        public TestResult match(Throwable t) {
+            if (t instanceof ProbeTest.Failure ) {
+                return new TestResult.TestFailure(((ProbeTest.Failure)t).reason);
+            }
+
+            return super.match(t);
+        }
+
     }
 
     public TestCase newTestCase(String fname, Properties props) throws Exception {
-        return new ProbeTest(fname, props);
+        return new ProbeTestCase(fname, props);
     }
 
 }
