@@ -46,9 +46,29 @@ import avrora.Avrora;
  */
 public class DerivedClock extends Clock {
 
+    /**
+     * The <code>driveClock</code> field stores a reference to the clock that
+     * is underlying this derived clock.
+     */
     protected final Clock driveClock;
+
+    /**
+     * The <code>divider</code> stores a the ration between the clockspeed of
+     * the drive clock and the clockspeed of this clock.
+     */
     protected final double divider;
 
+    /**
+     * The constructor of the <code>DerivedClock</code> creates a new clock
+     * with the specified name, driven by the specified clock, with the specified
+     * clockrate. The derived clock can have any speed that is slower than the
+     * clock that it is derived from. Roundoff errors will happen when the
+     * rates are not an integer multiple of each other, but are guaranteed never
+     * to exceed 1 cycle of the underlying clock.
+     * @param n the name of the clock
+     * @param driver the clock source from which this clock is derived
+     * @param hz the number of cycles per second of this clock
+     */
     public DerivedClock(String n, Clock driver, long hz) {
         super(n, hz);
         this.driveClock = driver;

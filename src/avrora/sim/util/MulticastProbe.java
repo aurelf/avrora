@@ -62,8 +62,8 @@ public class MulticastProbe implements Simulator.Probe {
         }
     }
 
-    Link head;
-    Link tail;
+    private Link head;
+    private Link tail;
 
     /**
      * The <code>add()</code> method allows another probe to be inserted into

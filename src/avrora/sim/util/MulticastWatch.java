@@ -62,8 +62,8 @@ public class MulticastWatch implements Simulator.Watch {
         }
     }
 
-    Link head;
-    Link tail;
+    private Link head;
+    private Link tail;
 
     /**
      * The <code>add()</code> method allows another watch to be inserted into

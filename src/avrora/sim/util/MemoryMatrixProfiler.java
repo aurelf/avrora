@@ -52,18 +52,55 @@ import avrora.util.StringUtil;
  */
 public class MemoryMatrixProfiler {
 
+    /**
+     * The <code>rcount</code> field stores a two dimensional array that records
+     * the read count for each memory location for each instruction. It is indexed by
+     * program address, and then by data address. This matrix is row-sparse in
+     * that rows of all zero (e.g. a non-memory instruction) are not stored.
+     * To access this matrix, use the <code>getReadCount()</code> method.
+     */
     public final long rcount[][];
+
+    /**
+     * The <code>rcount</code> field stores a two dimensional array that records
+     * the write count for each memory location for each instruction. It is indexed by
+     * program address, and then by data address. This matrix is row-sparse in
+     * that rows of all zero (e.g. a non-memory instruction) are not stored.
+     * To access this matrix, use the <code>getWriteCount()</code> method.
+     */
     public final long wcount[][];
 
+    /**
+     * The <code>ramSize</code> field stores the maximum RAM address that should
+     * be recorded.
+     */
     public final int ramSize;
 
+    /**
+     * The constructor for the <code>MemoryMatrixProfiler</code> class creates
+     * a new memory probe that can be inserted into the simulator to record the
+     * full memory access statistics of the program.
+     * @param p the program to record statistics for
+     * @param size the size of the RAM in bytes
+     */
     public MemoryMatrixProfiler(Program p, int size) {
         ramSize = size;
-        ;
         rcount = new long[p.program_end][];
         wcount = new long[p.program_end][];
     }
 
+    /**
+     * The <code>fireBeforeRead()</code> method is called before the data address
+     * is read by the program. In the implementation of <code>MemoryMatrixProfiler</code>,
+     * it simply increments the count of reads at the address of the instruction and
+     * memory location by one.
+     *
+     * @param i       the instruction being probed
+     * @param address the address at which this instruction resides
+     * @param state   the state of the simulation
+     * @param data_addr the address of the data being referenced
+     * @param value   the value of the memory location being read
+     */
     public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
         if (data_addr < ramSize) {
             if (rcount[address] == null) rcount[address] = new long[ramSize];
@@ -71,6 +108,18 @@ public class MemoryMatrixProfiler {
         }
     }
 
+    /**
+     * The <code>fireBeforeWrite()</code> method is called before the data address
+     * is written by the program. In the implementation of <code>MemoryMatrixProfiler</code>,
+     * it simply increments the count of writes at the address of the instruction and
+     * memory location by one.
+     *
+     * @param i       the instruction being probed
+     * @param address the address at which this instruction resides
+     * @param state   the state of the simulation
+     * @param data_addr the address of the data being referenced
+     * @param value     the value being written to the memory location
+     */
     public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
         if (data_addr < ramSize) {
             if (wcount[address] == null) wcount[address] = new long[ramSize];
@@ -78,18 +127,56 @@ public class MemoryMatrixProfiler {
         }
     }
 
+    /**
+     * The <code>fireAfterRead()</code> method is called after the data address
+     * is read by the program. In the implementation of <code>MemoryMatrixProfiler</code>,
+     * it does nothing.
+     *
+     * @param i       the instruction being probed
+     * @param address the address at which this instruction resides
+     * @param state   the state of the simulation
+     * @param data_addr the address of the data being referenced
+     * @param value   the value of the memory location being read
+     */
     public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
         // do nothing
     }
 
+    /**
+     * The <code>fireAfterWrite()</code> method is called after the data address
+     * is written by the program. In the implementation of <code>MemoryMatrixProfiler</code>,
+     * it does nothing.
+     *
+     * @param i       the instruction being probed
+     * @param address the address at which this instruction resides
+     * @param state   the state of the simulation
+     * @param data_addr the address of the data being referenced
+     * @param value   the value being written to the memory location
+     */
     public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
         // do nothing
     }
 
+    /**
+     * The <code>getReadCount()</code> method returns the number of times the specified
+     * instruction read the specified memory address.
+     * @param address the program address of the instruction
+     * @param data_addr the address of the byte of memory
+     * @return the number of times the specified instruction read the specified memory
+     * address.
+     */
     public long getReadCount(int address, int data_addr) {
         return getCount(rcount, data_addr, address);
     }
 
+    /**
+     * The <code>getWriteCount()</code> method returns the number of times the specified
+     * instruction wrote the specified memory address.
+     * @param address the program address of the instruction
+     * @param data_addr the address of the byte of memory
+     * @return the number of times the specified instruction wrote the specified memory
+     * address.
+     */
     public long getWriteCount(int address, int data_addr) {
         return getCount(wcount, data_addr, address);
     }

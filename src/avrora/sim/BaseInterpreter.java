@@ -177,6 +177,13 @@ public abstract class BaseInterpreter implements State {
      */
     protected int cyclesConsumed;
 
+    /**
+     * The <code>delayCycles</code> field tracks the number of cycles that the
+     * microcontroller is delayed. Delay is needed because some devices pause
+     * execution of the program for some number of cycles, and also to implement
+     * random delay at the beginning of startup in multiple node scenarios to
+     * prevent artificial cycle-level synchronization. 
+     */
     protected long delayCycles;
 
     /**

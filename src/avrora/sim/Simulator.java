@@ -664,6 +664,13 @@ public abstract class Simulator implements IORegisterConstants {
         eventQueue.remove(e);
     }
 
+    /**
+     * The <code>delay()</code> method introduces a delay in the execution
+     * of the instructions of the program. This is used by some devices for
+     * correct timing behavior. For example, the EEPROM, when written,
+     * causes a small delay in which no instructions are executed.
+     * @param cycles the number of cycles to delay the simulation
+     */
     public void delay(long cycles) {
         interpreter.delay(cycles);
     }

@@ -42,7 +42,14 @@ package avrora.sim;
  */
 public abstract class Clock {
 
+    /**
+     * The <code>hz</code> field stores the rate of this clock in cycles per second.
+     */
     protected final long hz;
+
+    /**
+     * The <code>name</code> field stores the name of this clock as a string.
+     */
     protected final String name;
 
     protected Clock(String n, long hz) {

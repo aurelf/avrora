@@ -159,10 +159,26 @@ public class Register {
         return map;
     }
 
+    /**
+     * The <code>getRegisterByName()</code> method retrieves a reference to the
+     * <code>Register</code> instance with the given string name. This method
+     * is not case sensitive.
+     * @param name the name of the register as a string
+     * @return a reference to the <code>Register</code> object representing the
+     * register if a register of that name exists; null otherwise
+     */
     public static Register getRegisterByName(String name) {
         return (Register) registers.get(name);
     }
 
+    /**
+     * The <code>getRegisterByNumber()</code> method retrieves a reference to
+     * the <code>Register</code> instance with the given offset in the register
+     * file.
+     * @param num the integer number of the register to retrieve
+     * @return a reference to the <code>Register</code> object representing
+     * the chosen register
+     */
     public static Register getRegisterByNumber(int num) {
         return getRegisterByName("r" + num);
     }

@@ -49,7 +49,17 @@ import avrora.sim.State;
  * @author Ben L. Titzer
  */
 public class MemoryCounter implements Simulator.Watch {
+
+    /**
+     * The <code>rcount</code> field stores the number of reads encountered for
+     * this memory location.
+     */
     public long rcount;
+
+    /**
+     * The <code>wcount</code> field stores the number of writes encountered for
+     * this memory location.
+     */
     public long wcount;
 
     /**

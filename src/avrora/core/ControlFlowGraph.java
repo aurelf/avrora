@@ -44,6 +44,13 @@ import java.util.*;
  */
 public class ControlFlowGraph {
 
+    /**
+     * The <code>Edge</code> represents an edge leaving a basic block and
+     * (optionally) arriving at another, known basic block. When the target
+     * is not know, for example in the case of an indirect call or branch,
+     * then the accessor methods to this field return <code>null</code>. Each
+     * edge has a type that is represented as a string.
+     */
     public class Edge {
         private final String type;
         private final Block source;
@@ -55,14 +62,34 @@ public class ControlFlowGraph {
             target = b;
         }
 
+        /**
+         * The <code>getType()</code> method returns the string name of the
+         * type of this edge. This type denotes whether it is a call, return,
+         * or regular edge.
+         * @return the string name of the type of the edge
+         */
         public String getType() {
             return type;
         }
 
+        /**
+         * The <code>getSource()</code> method returns the basic block that
+         * is the source of this edge. The edge is always from the last
+         * instruction in the basic block.
+         * @return the basic block that is the source of this edge
+         */
         public Block getSource() {
             return source;
         }
 
+        /**
+         * The <code>getTarget()</code> method returns the known target of
+         * this control flow graph edge, if it is known. In the case of indirect
+         * calls, branches, or a return, the target block is not known--in that
+         * case, this method returns <code>null</code>.
+         * @return the basic block that is the target of this edge if it is known;
+         * null otherwise
+         */
         public Block getTarget() {
             return target;
         }
@@ -216,13 +243,31 @@ public class ControlFlowGraph {
      */
     protected final HashMap blocks;
 
+    /**
+     * The <code>edges</code> field contains a reference to the list of edges
+     * (instances of class <code>Edge</code>) within this control flow graph.
+     */
     protected final List edges;
 
+    /**
+     * The <code>program</code> field stores a reference to the program to which this
+     * control flow graph corresponds.
+     */
     protected final Program program;
 
+    /**
+     * The <code>COMPARATOR</code> field stores a comparator that is used in sorting
+     * basic blocks by program order.
+     */
     public static final Comparator COMPARATOR = new BlockComparator();
 
 
+    /**
+     * The constructor for the <code>ControlFlowGraph</code> initializes this control
+     * flow graph with the given program. It does not build the actual control flow graph--
+     * a <code>CFGBuilder</code> instance does that.
+     * @param p the program to create the control flow graph for
+     */
     ControlFlowGraph(Program p) {
         program = p;
         blocks = new HashMap();
@@ -243,12 +288,25 @@ public class ControlFlowGraph {
         return b;
     }
 
+    /**
+     * The <code>addEdge()</code> method adds an edge between two blocks with a given type.
+     * If the destination block is null, then the edge has an unknown target.
+     * @param s the source block of the edge
+     * @param t the target block of the edge
+     * @param type the string name of the type of the edge, e.g. CALL or RETURN
+     */
     public void addEdge(Block s, Block t, String type) {
         Edge edge = new Edge(type, s, t);
         s.edges.add(edge);
         edges.add(edge);
     }
 
+    /**
+     * The <code>addEdge()</code> method adds an edge between two blocks.
+     * If the destination block is null, then the edge has an unknown target.
+     * @param s the source block of the edge
+     * @param t the target block of the edge
+     */
     public void addEdge(Block s, Block t) {
         Edge edge = new Edge("", s, t);
         s.edges.add(edge);
@@ -301,12 +359,25 @@ public class ControlFlowGraph {
         return l.iterator();
     }
 
+    /**
+     * The <code>getEdgeIterator()</code> method returns an interator over all edges
+     * between all blocks within this control flow graph.
+     * @return an instance of <code>Iterator</code> that iterates over the edges of this
+     * control flow graph.
+     */
     public Iterator getEdgeIterator() {
         return edges.iterator();
     }
 
     private ProcedureMap pmap;
 
+    /**
+     * The <code>getProcedureMap()</code> method returns a reference to a
+     * <code>ProcedureMap</code> instance that maps basic blocks to the procedures in
+     * which they are contained
+     * @return a reference to a <code>ProcedureMap</code> instance for this control flow
+     * graph
+     */
     public synchronized ProcedureMap getProcedureMap() {
         if (pmap == null) {
             pmap = new ProcedureMapBuilder(program).buildMap();

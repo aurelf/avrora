@@ -448,6 +448,13 @@ public class Program {
         return instrs[address - program_start];
     }
 
+    /**
+     * The <code>readProgramByte()</code> method reads a byte into the program segment at
+     * the specified byte address. If the address overlaps with an instruction, no effort
+     * is made to get the correct encoded byte of the instruction.
+     * @param address the program address from which to read the byte
+     * @return the byte value of the program segment at that location
+     */
     public byte readProgramByte(int address) {
         checkAddress(address);
         return data[address - program_start];
@@ -569,6 +576,16 @@ public class Program {
             throw Avrora.failure("address out of range: " + addr);
     }
 
+    /**
+     * The <code>getNextPC()</code> method computes the program counter value
+     * of the next instruction following the instruction referenced by the given
+     * program counter value. Thus, it simply adds the size of the instruction
+     * at the specified pc to the pc. It is useful as a commonly-used utility
+     * method.
+     * @param pc the program counter location of the current instruction
+     * @return the program counter value of the instruction following the specified
+     * instruction in program order
+     */
     public int getNextPC(int pc) {
         // TODO: better error checking
         if (pc > program_end)
@@ -576,10 +593,27 @@ public class Program {
         return pc + readInstr(pc).getSize();
     }
 
+    /**
+     * The <code>getIndirectEdges</code> returns a list of integers representing the
+     * possible target program locations for a given callsite. This is auxilliary
+     * information that is supplied at the command line which is used for a variety
+     * of analysis questions.
+     * @param callsite the program counter location of an indirect branch or call
+     * @return a list of <code>java.lang.Integer</code> objects that represent the
+     * possible targets of the call or branch instruction
+     */
     public List getIndirectEdges(int callsite) {
         return (List) indirectEdges.get(new Integer(callsite));
     }
 
+    /**
+     * The <code>addIndirectEdge</code> adds an indirect edge between a callsite and
+     * possible target. This is auxilliary
+     * information that is supplied at the command line which is used for a variety
+     * of analysis questions.
+     * @param callsite the program counter location of the call or branch instruction
+     * @param target the possible target of the call or branch instruction
+     */
     public void addIndirectEdge(int callsite, int target) {
         Integer c = new Integer(callsite);
         Integer t = new Integer(target);
@@ -664,6 +698,16 @@ public class Program {
 
     private ControlFlowGraph cfg;
 
+    /**
+     * The <code>getCFG()</code> method returns a reference to the control flow graph of
+     * the program. This is an instance of <code>ControlFlowGraph</code> that is constructed
+     * lazily--i.e. the first time this method is called. No effort is made to keep the
+     * control flow graph up to date with a changing program representation; adding instructions
+     * or writing bytes into the program segment of the program will not alter the CFG once
+     * it has been constructed.
+     * @return a reference to the <code>ControlFlowGraph</code> instance that represents
+     * the control flow graph for this program
+     */
     public synchronized ControlFlowGraph getCFG() {
         if (cfg == null) {
             cfg = new CFGBuilder(this).buildCFG();

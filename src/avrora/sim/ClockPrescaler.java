@@ -40,27 +40,95 @@ package avrora.sim;
  */
 public class ClockPrescaler extends Clock {
 
+    /**
+     * The <code>driveClock</code> field stores a reference to the clock
+     * that the prescaler is derived from.
+     */
     protected final Clock driveClock;
+
+    /**
+     * The <code>divider</code> stores the number of cycles of the underlying
+     * clock are equivalent to one cycle of this clock. For example, with a
+     * divider or 8, the underlying clock ticks 8 times for each tick of this
+     * clock.
+     */
     protected final int divider;
+
+    /**
+     * The <code>base</code> field stores the cycle count of the underlying
+     * clock at the last time that this clock was reset.
+     */
     protected long base;
+
+    /**
+     * The <code>ticksBeforeBase</code> field stores the number of ticks that
+     * were recorded before the prescaler was reset. This is used in the calculation
+     * of the total number of ticks that have elapsed.
+     */
     protected long ticksBeforeBase;
 
-    public ClockPrescaler(String n, Clock drive, int multiplier) {
-        super(n, drive.getHZ() / multiplier);
+    /**
+     * The constructor of the <code>ClockPrescaler</code> creates a new clock that
+     * is an integer multiple slower than the clock that it is derived from.
+     * Additionally, the phase at which this clock fires can be adjusted by resetting.
+     * @param n the name of the new clock
+     * @param drive the clock that drives this derived clock
+     * @param divider the muliple by which the derived clock is slower than the source
+     */
+    public ClockPrescaler(String n, Clock drive, int divider) {
+        super(n, drive.getHZ() / divider);
         driveClock = drive;
-        this.divider = multiplier;
+        this.divider = divider;
     }
 
+    /**
+     * The <code>getCount()</code> method returns the number of clock cycles (ticks)
+     * that have elapsed for this clock. In the implementation of the
+     * <code>ClockPrescaler</code>, this method calculates the number of scaled
+     * cycles since the last reset.
+     *
+     * @return the number of elapsed time ticks in clock cycles
+     */
     public long getCount() {
-        return driveClock.getCount() / divider;
+        return (driveClock.getCount() - base) / divider;
     }
 
+    /**
+     * The <code>getTotalCount()</code> method returns the total number of clock cycles (ticks)
+     * that have elapsed for this clock. In the implementation of the
+     * <code>ClockPrescaler</code>, this method calculates the number of scaled
+     * cycles since the last reset, plus the number of ticks elapsed before the reset.
+     *
+     * @return the number of elapsed time ticks in clock cycles
+     */
+    public long getTotalCount() {
+        return getCount() + ticksBeforeBase;
+    }
+
+    /**
+     * The <code>insertEvent()</code> method inserts an event into the
+     * event queue of the clock with the specified delay in clock cycles.
+     * The event will then be executed at the future time specified. In
+     * the implementation of <code>ClockPrescaler</code>, the event will
+     * be scheduled in the underlying clock, with the delay calculated
+     * correctly from the last time that the prescaler was reset.
+     *
+     * @param e      the event to be inserted
+     * @param delta  the number of (scaled) cycles in the future at which to fire
+     */
     public void insertEvent(Simulator.Event e, long delta) {
         long driverCount = driveClock.getCount() - base;
         long nextTick = ((driverCount / divider)+1)*divider;
         driveClock.insertEvent(e, nextTick - driverCount);
     }
 
+    /**
+     * The <code>removeEvent()</code> method removes an event from
+     * the event queue of the clock. The comparison used is reference
+     * equality, not <code>.equals()</code>.
+     *
+     * @param e the event to remove
+     */
     public void removeEvent(Simulator.Event e) {
         driveClock.removeEvent(e);
     }
