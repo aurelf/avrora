@@ -108,6 +108,14 @@ public class SimulateAction extends Main.Action {
         }
     }
 
+    public String getHelp() {
+        return "The \"simulate\" action launches a simulator with the specified program " +
+                "for the specified microcontroller and begins executing the program. There " +
+                "are several options provided to the simulator for profiling and analysis, " +
+                "so for more information, see the Options section.";
+
+    }
+
     void processBreakPoints() {
         Iterator i = Main.getLocationList(program, Main.BREAKS.get()).iterator();
         while ( i.hasNext() ) {

@@ -17,4 +17,9 @@ public class AnalyzeStackAction extends Main.Action {
         a.run();
         a.report();
     }
+
+    public String getHelp() {
+        return "The \"analyze-stack\" option invokes the built-in stack analysis tool " +
+                "on the specified program.";
+    }
 }

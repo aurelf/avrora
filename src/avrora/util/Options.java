@@ -23,37 +23,26 @@ public class Options {
         unknownValues = new HashMap();
     }
 
-    public Option.Str newOption(String name) {
-        Option.Str o = new Option.Str(name);
+    public Option.Bool newOption(String name, boolean val, String desc) {
+        Option.Bool o = new Option.Bool(name, val, desc);
         knownValues.put(name, o);
         return o;
     }
 
-    public Option newOption(String name, Option trigger) {
-        knownValues.put(name, trigger);
-        return trigger;
-    }
-
-    public Option.Bool newOption(String name, boolean val) {
-        Option.Bool o = new Option.Bool(name, val);
+    public Option.Str newOption(String name, String val, String desc) {
+        Option.Str o = new Option.Str(name, val, desc);
         knownValues.put(name, o);
         return o;
     }
 
-    public Option.Str newOption(String name, String val) {
-        Option.Str o = new Option.Str(name, val);
+    public Option.List newOptionList(String name, String val, String desc) {
+        Option.List o = new Option.List(name, val, desc);
         knownValues.put(name, o);
         return o;
     }
 
-    public Option.Int newOption(String name, int val) {
-        Option.Int o = new Option.Int(name, val);
-        knownValues.put(name, o);
-        return o;
-    }
-
-    public Option.Long newOption(String name, long val) {
-        Option.Long o = new Option.Long(name, val);
+    public Option.Long newOption(String name, long val, String desc) {
+        Option.Long o = new Option.Long(name, val, desc);
         knownValues.put(name, o);
         return o;
     }
@@ -117,6 +106,10 @@ public class Options {
             if ( firstUnknownOption == null ) firstUnknownOption = optname;
         } else
             option.set(value);
+    }
+
+    public Collection getAllOptions() {
+        return knownValues.values();
     }
 
     public void dump(String title, Printer p) {

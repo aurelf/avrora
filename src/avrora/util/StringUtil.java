@@ -422,4 +422,62 @@ public class StringUtil {
             return "";
     }
 
+    public static String makeJustifiedLines(String s, int indent, int width) {
+        int len = s.length();
+        String indstr = dup(' ', indent);
+        StringBuffer orig = new StringBuffer(s);
+        StringBuffer nstr = new StringBuffer();
+        for ( int cntr = 0; cntr < len; ) {
+            int end = cntr + (width-indent);
+            if ( end <= len ) {
+                while ( orig.charAt(end) != ' ' ) end--;
+            } else {
+                end = len;
+            }
+            nstr.append(indstr);
+            nstr.append(orig.substring(cntr, end));
+            nstr.append('\n');
+            cntr = end + 1;
+        }
+        return nstr.toString();
+    }
+
+    public static String makeParagraphs(String s, int indent, int width) {
+        int len = s.length();
+        int consumed = indent;
+        String indstr = dup(' ', indent);
+        StringBuffer buf = new StringBuffer(indstr);
+        int lastSp = -1;
+        for ( int cntr = 0; cntr < len; cntr++ ) {
+            char c = s.charAt(cntr);
+            if ( c == '\n' ) {
+                buf.append('\n');
+                consumed = indent;
+                buf.append(indstr);
+                continue;
+            } else if ( Character.isWhitespace(c)) {
+                lastSp = buf.length();
+            }
+            buf.append(c);
+            consumed++;
+
+            if ( consumed > width ) {
+                if ( lastSp >= 0 ) {
+                    buf.setCharAt(lastSp, '\n');
+                    consumed = buf.length() - lastSp;
+                }
+            }
+        }
+        return buf.toString();
+    }
+
+
+    public static String dup(char c, int len) {
+        StringBuffer buf = new StringBuffer();
+        for ( int cntr = 0; cntr < len; cntr++ ) {
+            buf.append(c);
+        }
+        return buf.toString();
+    }
+
 }
