@@ -366,9 +366,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.BCLR i) { // clear bit in SREG
-        byte psr = state.readSREG();
-        psr = Arithmetic.clearBit(psr, i.imm1);
-        state.writeSREG(psr);
+        state.setSREG_bit(i.imm1, false);
     }
 
     public void visit(Instr.BLD i) { // load bit from T flag into register
@@ -490,9 +488,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.BSET i) { // set flag in SREG
-        byte val = state.readSREG();
-        val = Arithmetic.setBit(val, i.imm1);
-        state.writeSREG(val);
+        state.setSREG_bit(i.imm1, true);
     }
 
     public void visit(Instr.BST i) { // store bit in register to T flag

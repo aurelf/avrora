@@ -190,7 +190,7 @@ public class State implements IORegisterConstants {
         ioregs[SREG].write(val);
     }
 
-    private void setSREG_bit(int bit, boolean val) {
+    public void setSREG_bit(int bit, boolean val) {
         if ( val ) ioregs[SREG].setBit(bit);
         else ioregs[SREG].clearBit(bit);
     }

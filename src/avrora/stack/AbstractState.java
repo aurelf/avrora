@@ -120,7 +120,7 @@ public class AbstractState implements IORegisterConstants {
     }
 
     public void setSREG_bit(int bit, char val) {
-        SREG = canon((char)(SREG ^ getBit(val, bit)));
+        SREG = (char)((SREG & ~(ON << bit)) | (val << bit));
     }
 
     public void setFlag_I(char val) { setSREG_bit(SREG_I, val); }
@@ -174,7 +174,7 @@ public class AbstractState implements IORegisterConstants {
         char v1k = maskOf(val1); // known mask of val1
         char v2k = maskOf(val2); // known mask of val2
 
-        int mm = ~(bitsOf(val1) ^ bitsOf(val2)); // matched bits
+        int mm = ~(knownBitsOf(val1) ^ knownBitsOf(val2)); // matched bits
         int rk = v1k & v2k & mm & 0xff; // known bits of result
 
         return canon((char)rk, val1);

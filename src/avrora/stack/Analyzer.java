@@ -121,6 +121,7 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.BCLR i) {// clear bit in status register
+        state.setSREG_bit(i.imm1, AbstractState.OFF);
     }
 
     public void visit(Instr.BLD i) {// load bit from T flag into register

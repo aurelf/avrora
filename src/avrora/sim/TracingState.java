@@ -8,7 +8,7 @@ import avrora.core.Register;
  * class that records which portions of the state have been modified over a series
  * of updates. This is useful for display to users who are interested in how a sequence
  * instructions changes the state of the machine.
- * 
+ *
  * @author Ben L. Titzer
  */
 public class TracingState extends State {
@@ -45,6 +45,11 @@ public class TracingState extends State {
 
     public void writeSREG(byte val) {
         super.writeSREG(val);
+    }
+
+    public void setSREG_bit(int bit, boolean val) {
+        super.setSREG_bit(bit, val);
+        flag_delta[bit] = true;
     }
 
     public void setFlag_I(boolean val) {
