@@ -61,6 +61,9 @@ options {
 PARSER_BEGIN(ISDLParser)
 
 package avrora.core.isdl;
+import avrora.core.isdl.ast.*;
+import java.util.List;
+import java.util.LinkedList;
 
 public class ISDLParser {
 
@@ -174,6 +177,9 @@ TOKEN :
   | < LOCAL : "local" >
   | < IF : "if" >
   | < ELSE : "else" >
+  | < AND: "and" >
+  | < OR: "or" >
+  | < XOR: "xor" >
 }
 
 TOKEN :
@@ -185,6 +191,23 @@ TOKEN :
   | < LPAREN: "(" >
   | < RPAREN: ")" >
   | < SEMI: ";" >
+  | < SHIFTLEFT: "<<" >
+  | < SHIFTRIGHT: ">>" >
+  | < ADD: "+" >
+  | < SUB: "-" >
+  | < MUL: "*" >
+  | < DIV: "/" >
+  | < B_AND: "&" >
+  | < B_OR: "|" >
+  | < B_XOR: "^" >
+  | < NOT: "!" >
+  | < B_COMP: "~" >
+  | < EQUAL: "==" >
+  | < NOTEQUAL: "!=" >
+  | < LESS: "<" >
+  | < LESSEQ: "<=" >
+  | < GREATER: ">" >
+  | < GREATEREQ: ">=" >
 }
 
 /* Instruction MNEMONICS */
@@ -241,9 +264,9 @@ void Encoding() : {}
     "encoding" "=" Format() ";"
 }
 
-void Execute() : {}
+void Execute() : { List l = new LinkedList(); }
 {
-    "execute" "=" Block() ";"
+    "execute" "=" Block(l) ";"
 }
 
 void FormatDecl() : {}
@@ -307,77 +330,209 @@ void Operand() : {}
     <IDENTIFIER> ":" <IDENTIFIER>
 }
 
-void Expr() : {}
+Expr Expr() : {}
 {
-    Term() (ExprSuffix())*
+    Cond_Or_Expr()
 }
 
-void ExprList() : {}
+List ExprList() : { List l = new LinkedList(); Expr e; }
 {
-    Expr() ("," Expr())*
+    (e = Expr() { l.add(e); } ("," Expr() { l.add(e); } )*)
+    { return l; }
 }
 
-void Term() : {}
+Expr Term() : { Token t; Expr e; }
 {
-    <IDENTIFIER> | <INTEGER_LITERAL>
+     (t = <IDENTIFIER> { e = new VarExpr(t); }
+    | t = <INTEGER_LITERAL> { e = new LiteralExpr(t); } )
+    (e = TermSuffix(e) )*
+    { return e; }
 }
 
-void ExprSuffix() : {}
+Expr TermSuffix(Expr e) : { List l; }
 {
-  (LOOKAHEAD("[" Term() ":") BitPattern()
-  | MapAccess()
-  | Parameters() )
+  (LOOKAHEAD("[" <INTEGER_LITERAL> ":") e = BitRange(e)
+  | e = MapAccess(e)
+  | l = Parameters() { e = new CallExpr(l); } )
+  { return e; }
 }
 
-void Parameters() : {}
+List Parameters() : { Expr e; List l = new LinkedList(); }
 {
-    "(" Expr() ("," Expr())* ")"
+    "(" [ e = Expr() { l.add(e); } ("," e = Expr() { l.add(e); })* ] ")"
 }
 
-void LvalSuffix() : {}
+Stmt Statement() : { Stmt s; }
 {
-  (LOOKAHEAD("[" Term() ":") BitPattern()
-  | MapAccess() )
+  (
+    s = LocalDecl()
+  | s = IfStatement()
+  | s = Assignment()
+  ) { return s; }
 }
 
-void Statement() : {}
+DeclStmt LocalDecl() : { Expr e; }
 {
-    LocalDecl()
-  | IfStatement()
-  | Assignment()
+    "local" <IDENTIFIER> ":" <IDENTIFIER> "=" e = Expr() ";"
+    // TODO: FIXME
+    { return new DeclStmt(null, null, e); }
 }
 
-void LocalDecl() : {}
+IfStmt IfStatement() : { Expr c; List t = new LinkedList(), f = new LinkedList(); }
 {
-    "local" <IDENTIFIER> ":" <IDENTIFIER> "=" Expr() ";"
+    "if" "(" c = Expr() ")" SingleStatement(t)
+        [ LOOKAHEAD(1) "else" SingleStatement(f) ]
+    { return new IfStmt(c, t, f); }
 }
 
-void IfStatement() : {}
+void SingleStatement(List l) : { Stmt s; }
 {
-    "if" "(" Expr() ")" Block() "else" Block()
+    s = Statement() { l.add(s); } | (Block(l))
 }
 
-void Assignment() : {}
+AssignStmt Assignment() : { Expr e; }
 {
-    Lvalue() "=" Expr() ";"
+    Lvalue() "=" e = Expr() ";"
+    // TODO: fixme
+    { return new AssignStmt(e); }
 }
 
 void Lvalue() : {}
 {
-    Term() (LvalSuffix())*
+    <IDENTIFIER> [ LOOKAHEAD("[" Expr() "]") MapAccess() ] [ BitRange() ]
 }
 
-void Block() : {}
+void Block(List l) : { Stmt s; }
 {
-    "{" (Statement())* "}"
+    "{" (s = Statement() { l.add(s); })* "}"
 }
 
-void MapAccess() : {}
+Expr MapAccess(Expr e) : { Expr et; }
 {
-    "[" Expr() "]"
+    "[" et = Expr() "]"
+    { return new MapExpr(e, et); }
 }
 
-void BitPattern() : {}
+Expr BitRange(Expr e) : { Token t1, t2; }
 {
-    "[" Term() ":" Term() "]"
+    "[" t1 = <INTEGER_LITERAL> ":" t2 = <INTEGER_LITERAL> "]"
+    { return new BitRangeExpr(e, t1, t2); }
 }
+
+
+// expression stuff
+
+
+Expr Cond_Or_Expr() : { Expr e, et; Token tok; }
+{
+  e = Cond_Xor_Expr()
+  ( tok = "or" et = Cond_Xor_Expr()
+    { e = new Logical.OrExpr(e, et); } )*
+  { return e; }
+}
+
+Expr Cond_Xor_Expr() : { Expr e, et; Token tok; }
+{
+  e = Cond_And_Expr()
+  ( tok = "xor" et = Cond_And_Expr()
+    { e = new Logical.XorExpr(e, et); } )*
+  { return e; }
+}
+
+Expr Cond_And_Expr() : { Expr e, et; Token tok; }
+{
+  e = Or_Expr()
+  ( tok = "and" et = Or_Expr()
+    { e = new Logical.AndExpr(e, et); } )*
+  { return e; }
+}
+
+Expr Or_Expr() : { Expr e, et; Token tok; }
+{
+  e = Xor_Expr()
+  ( tok = "|" et = Xor_Expr()
+    { e = new Arith.OrExpr(e, et); } )*
+  { return e; }
+}
+
+Expr Xor_Expr() : { Expr e, et; Token tok; }
+{
+  e = And_Expr()
+  ( tok = "^" et = And_Expr()
+    { e = new Arith.XorExpr(e, et); } )*
+  { return e; }
+}
+
+Expr And_Expr() : { Expr e, et; Token tok; }
+{
+  e = Equ_Expr()
+  ( tok = "&" et = Equ_Expr()
+    { e = new Arith.AndExpr(e, et); } )*
+  { return e; }
+}
+
+Expr Equ_Expr() : { Expr e, et; }
+{
+  e = Rel_Expr() (
+    ("==" et = Rel_Expr() { e = new Logical.EquExpr(e, et); })
+   |("!=" et = Rel_Expr() { e = new Logical.NequExpr(e, et); })
+  )*
+  { return e; }
+}
+
+Expr Rel_Expr() : { Expr e, et; Token tok; }
+{
+  e = Shift_Expr() (
+    ("<"  et = Shift_Expr() { e = new Logical.LessExpr(e, et); } )
+   |(">"  et = Shift_Expr() { e = new Logical.GreaterExpr(e, et); } )
+   |("<=" et = Shift_Expr() { e = new Logical.LessEqualExpr(e, et); } )
+   |(">=" et = Shift_Expr() { e = new Logical.GreaterEqualExpr(e, et); } )
+  )*
+  { return e; }
+}
+
+Expr Shift_Expr() : { Expr e, et; Token tok; }
+{
+  e = Add_Expr() (
+    ("<<" et = Add_Expr() { e = new Arith.ShiftLeftExpr(e, et); } )
+   |(">>" et = Add_Expr() { e = new Arith.ShiftRightExpr(e, et); } )
+  )*
+  { return e; }
+}
+
+Expr Add_Expr() : { Expr e, et; Token tok; }
+{
+  e = Mul_Expr() (
+    ("+" et = Mul_Expr() { e = new Arith.AddExpr(tok, e, et); } )
+   |("-" et = Mul_Expr() { e = new Arith.SubExpr(tok, e, et); } )
+  )*
+  { return e; }
+}
+
+Expr Mul_Expr() : { Expr e, et; Token tok; }
+{
+  e = Un_Expr() (
+    ("*" et = Un_Expr() { e = new Arith.MulExpr(e, et); } )
+   |("/" et = Un_Expr() { e = new Arith.DivExpr(e, et); } )
+  )*
+  { return e; }
+}
+
+Expr Un_Expr() : { Expr e; }
+{
+  (e = Unop_Expr() | e = Term())
+  { return e; }
+}
+
+Expr Unop_Expr() : { Expr e, et; }
+{
+   (
+    ("~" et = Un_Expr() { e = new Arith.CompExpr(et); })
+   |("!" et = Un_Expr() { e = new Logical.NotExpr(et); })
+   |("-" et = Un_Expr() { e = new Arith.NegExpr(et); })
+   )
+   { return e; }
+}
+
+
+

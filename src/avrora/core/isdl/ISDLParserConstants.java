@@ -27,16 +27,36 @@ public interface ISDLParserConstants {
   int LOCAL = 30;
   int IF = 31;
   int ELSE = 32;
-  int LBRACKET = 33;
-  int RBRACKET = 34;
-  int EQUALS = 35;
-  int COMMA = 36;
-  int LPAREN = 37;
-  int RPAREN = 38;
-  int SEMI = 39;
-  int IDENTIFIER = 40;
-  int LETTER = 41;
-  int DIGIT = 42;
+  int AND = 33;
+  int OR = 34;
+  int XOR = 35;
+  int LBRACKET = 36;
+  int RBRACKET = 37;
+  int EQUALS = 38;
+  int COMMA = 39;
+  int LPAREN = 40;
+  int RPAREN = 41;
+  int SEMI = 42;
+  int SHIFTLEFT = 43;
+  int SHIFTRIGHT = 44;
+  int ADD = 45;
+  int SUB = 46;
+  int MUL = 47;
+  int DIV = 48;
+  int B_AND = 49;
+  int B_OR = 50;
+  int B_XOR = 51;
+  int NOT = 52;
+  int B_COMP = 53;
+  int EQUAL = 54;
+  int NOTEQUAL = 55;
+  int LESS = 56;
+  int LESSEQ = 57;
+  int GREATER = 58;
+  int GREATEREQ = 59;
+  int IDENTIFIER = 60;
+  int LETTER = 61;
+  int DIGIT = 62;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -77,6 +97,9 @@ public interface ISDLParserConstants {
     "\"local\"",
     "\"if\"",
     "\"else\"",
+    "\"and\"",
+    "\"or\"",
+    "\"xor\"",
     "\"{\"",
     "\"}\"",
     "\"=\"",
@@ -84,6 +107,23 @@ public interface ISDLParserConstants {
     "\"(\"",
     "\")\"",
     "\";\"",
+    "\"<<\"",
+    "\">>\"",
+    "\"+\"",
+    "\"-\"",
+    "\"*\"",
+    "\"/\"",
+    "\"&\"",
+    "\"|\"",
+    "\"^\"",
+    "\"!\"",
+    "\"~\"",
+    "\"==\"",
+    "\"!=\"",
+    "\"<\"",
+    "\"<=\"",
+    "\">\"",
+    "\">=\"",
     "<IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",
