@@ -110,11 +110,13 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
         while (shouldRun) {
 
+            // TODO: would a "mode" and switch be faster than several branches?
             if ( delayCycles > 0 ) {
                 advanceCycles(delayCycles);
                 delayCycles = 0;
             }
 
+            // TODO: do this with an event fired after the RETI instruction?
             if (justReturnedFromInterrupt) {
                 // don't process the interrupt if we just returned from
                 // an interrupt handler, because the hardware manual says
@@ -151,7 +153,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             if (sleeping)
                 sleepLoop();
             else {
-                if (activeProbe.isEmpty())
+                if (globalProbe.isEmpty())
                     fastLoop();
                 else
                     instrumentedLoop();
@@ -188,11 +190,11 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             Instr i = getInstr(nextPC);
 
             // visit the actual instruction (or probe)
-            activeProbe.fireBefore(i, curPC, this);
+            globalProbe.fireBefore(i, curPC, this);
             i.accept(this);
             pc = nextPC;
             advanceCycles(cyclesConsumed);
-            activeProbe.fireAfter(i, curPC, this);
+            globalProbe.fireAfter(i, curPC, this);
         }
     }
 

@@ -122,9 +122,9 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
                 // visit the actual instruction (or probe)
                 // OPTIMIZATION OPPORTUNITY: common case of no active global probes
                 // could be approximately 18% of loop overhead
-                activeProbe.fireBefore(i, curPC, this);
+                globalProbe.fireBefore(i, curPC, this);
                 execute(i);
-                activeProbe.fireAfter(i, curPC, this);
+                globalProbe.fireAfter(i, curPC, this);
             }
         }
     }

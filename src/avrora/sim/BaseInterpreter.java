@@ -75,7 +75,7 @@ public abstract class BaseInterpreter implements State {
      * before and after the main execution runLoop--i.e. before and after
      * every instruction.
      */
-    protected final MulticastProbe activeProbe;
+    protected final MulticastProbe globalProbe;
 
     /**
      * The <code>innerLoop</code> field is a boolean that is used internally
@@ -361,7 +361,7 @@ public abstract class BaseInterpreter implements State {
 
     public BaseInterpreter(Simulator simulator, Program p, int flash_size, int ioreg_size, int sram_size) {
 
-        activeProbe = new MulticastProbe();
+        globalProbe = new MulticastProbe();
 
         // set up the reference to the simulator
         this.simulator = simulator;
@@ -438,7 +438,7 @@ public abstract class BaseInterpreter implements State {
      * @param p the probe to insert
      */
     public void insertProbe(Simulator.Probe p) {
-        activeProbe.add(p);
+        globalProbe.add(p);
     }
 
     protected abstract void removeProbe(Simulator.Probe p, int addr);
@@ -451,7 +451,7 @@ public abstract class BaseInterpreter implements State {
      * @param b the probe to remove
      */
     public void removeProbe(Simulator.Probe b) {
-        activeProbe.remove(b);
+        globalProbe.remove(b);
     }
 
     protected abstract void insertBreakPoint(int addr);

@@ -147,7 +147,7 @@ public class FIFInterpreter extends BaseInterpreter {
             if (sleeping)
                 sleepLoop();
             else {
-                if (activeProbe.isEmpty())
+                if (globalProbe.isEmpty())
                     fastLoop();
                 else
                     instrumentedLoop();
@@ -180,9 +180,9 @@ public class FIFInterpreter extends BaseInterpreter {
             Instr i = nextInstr.instr;
 
             // visit the actual instruction (or probe)
-            activeProbe.fireBefore(i, curPC, this);
+            globalProbe.fireBefore(i, curPC, this);
             step();
-            activeProbe.fireAfter(i, curPC, this);
+            globalProbe.fireAfter(i, curPC, this);
         }
     }
 
