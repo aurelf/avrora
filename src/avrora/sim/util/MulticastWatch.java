@@ -37,9 +37,9 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 
 /**
- * The <code>MulticastProbe</code> is a wrapper around multiple probes that
- * allows them to act as a single probe. It is useful for composing multiple
- * probes into one and is used internally in the simulator.
+ * The <code>MulticastProbe</code> is a wrapper around multiple watches that
+ * allows them to act as a single watch. It is useful for composing multiple
+ * watches into one and is used internally in the simulator.
  *
  * @author Ben L. Titzer
  * @see Simulator
@@ -48,10 +48,10 @@ public class MulticastWatch implements Simulator.Watch {
 
     /**
      * The <code>Link</code> class is used internally to implement the
-     * linked list of the probes. It exists because a simple, custom
+     * linked list of the watches. It exists because a simple, custom
      * list structure allows for the most efficient dispatching code
-     * possible. Performance is critical since the multicast probe
-     * may be for every instruction executed in the simulator.
+     * possible. Performance is critical since the multicast watch
+     * may be called for every instruction executed in the simulator.
      */
     private static class Link {
         Simulator.Watch probe;
@@ -66,12 +66,12 @@ public class MulticastWatch implements Simulator.Watch {
     Link tail;
 
     /**
-     * The <code>add()</code> method allows another probe to be inserted into
+     * The <code>add()</code> method allows another watch to be inserted into
      * the multicast set. It will be inserted at the end of the list of current
-     * probes and will therefore fire after any probes already in the multicast
+     * watch and will therefore fire after any probes already in the multicast
      * set.
      *
-     * @param b the probe to insert
+     * @param b the watch to insert
      */
     public void add(Simulator.Watch b) {
         if (b == null) return;
@@ -85,11 +85,11 @@ public class MulticastWatch implements Simulator.Watch {
     }
 
     /**
-     * The <code>remove</code> method removes a probe from the multicast set.
+     * The <code>remove</code> method removes a watch from the multicast set.
      * The order of the remaining probes is not changed. The comparison used
      * is reference equality, not the <code>.equals()</code> method.
      *
-     * @param b the probe to remove
+     * @param b the watch to remove
      */
     public void remove(Simulator.Watch b) {
         if (b == null) return;
@@ -114,7 +114,7 @@ public class MulticastWatch implements Simulator.Watch {
 
     /**
      * The <code>isEmpty()</code> method tests whether the multicast set
-     * of this probe is empty.
+     * of this watch is empty.
      *
      * @return false otherwise
      */

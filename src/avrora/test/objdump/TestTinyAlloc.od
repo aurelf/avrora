@@ -1,5 +1,5 @@
 
-main.exe:     file format elf32-avr
+TestTinyAlloc.exe:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
@@ -1957,4 +1957,4 @@ Disassembly of section .data:
   800068:	20 68       	ori	r18, 0x80	; 128
   80006a:	65 72       	andi	r22, 0x25	; 37
   80006c:	65 2e       	mov	r6, r21
-	...
+

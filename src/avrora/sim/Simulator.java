@@ -321,8 +321,8 @@ public abstract class Simulator implements IORegisterConstants {
          */
         public final long timeout;
 
-        TimeoutException(Instr i, int a, State s, long t) {
-            super("timeout @ " + StringUtil.toHex(a, 4) + " reached after " + t + " instructions");
+        TimeoutException(Instr i, int a, State s, long t, String l) {
+            super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + " "+l);
             instr = i;
             address = a;
             state = s;
@@ -704,7 +704,7 @@ public abstract class Simulator implements IORegisterConstants {
          */
         public void fireAfter(Instr i, int address, State state) {
             if (--left <= 0)
-                throw new TimeoutException(i, address, state, timeout);
+                throw new TimeoutException(i, address, state, timeout, "instructions");
         }
     }
 
@@ -739,7 +739,7 @@ public abstract class Simulator implements IORegisterConstants {
          */
         public void fire() {
             int pc = interpreter.getPC();
-            throw new TimeoutException(interpreter.getInstr(pc), pc, interpreter, timeout);
+            throw new TimeoutException(interpreter.getInstr(pc), pc, interpreter, timeout, "clock cycles");
         }
 
     }
