@@ -35,12 +35,24 @@ package avrora.sim;
 import avrora.sim.util.DeltaQueue;
 
 /**
+ * The <code>MainClock</code> class represents a clock that has an associated delta queue. This clock is
+ * meant as the main, or driving clock. Clocks that are derived from this class are kept in synch
+ * through the event queue. The <code>MainClock</code> is advanced by the interpreter for a node.
+ *
  * @author Ben L. Titzer
  */
 public class MainClock extends Clock {
 
+    /**
+     * The <code>eventQueue</code> field stores a reference to the event queue for this node.
+     */
     protected final DeltaQueue eventQueue;
 
+    /**
+     * The <code>MainClock()</code> method creates a main clock with the specified name and frequency.
+     * @param n the name of this clock
+     * @param hz the number of cycles per second for this clock
+     */
     public MainClock(String n, long hz) {
         super(n, hz);
         eventQueue = new DeltaQueue();

@@ -70,6 +70,11 @@ public class FiniteStateMachine {
         public void fireAfterTransition(int beforeState, int afterState);
     }
 
+    /**
+     * The <code>State</code> class represents a state of the finite state machine, including its
+     * name as a String, the transition time to each of the other states, and a list of any
+     * probes attached to this state.
+     */
     protected class State {
         final String name;
         final int[] transition_time;
@@ -82,6 +87,12 @@ public class FiniteStateMachine {
         }
     }
 
+    /**
+     * The <code>TransitionEvent</code> class is used internally by the finite state machine for transitions
+     * that take 1 more more clock cycles. The machine is put in the <code>IN_TRANSITION</code> state and this
+     * event is inserted into the event queue of the underlying clock. When this event fires, it will complete
+     * the state transition and fire any probes as necessary.
+     */
     protected class TransitionEvent implements Simulator.Event {
 
         protected int oldState;
@@ -119,6 +130,15 @@ public class FiniteStateMachine {
 
     protected int curState;
 
+    /**
+     * This constructor for the <code>FiniteStateMachine</code> class creates a new finite state machine with
+     * the number of states corresponding to the length of the array containing the names of the states. The transition
+     * time matrix is uniform, with all entries being initialized to the same specified value.
+     * @param c the clock driving this finite state machine
+     * @param ss the starting state of this machine
+     * @param nm an array of strings that name each of the states in this machine
+     * @param tt the transition time for any state to any other state
+     */
     public FiniteStateMachine(Clock c, int ss, String[] nm, int tt) {
         clock = c;
         startState = ss;
@@ -129,6 +149,17 @@ public class FiniteStateMachine {
         buildStates(nm, ttm);
     }
 
+    /**
+     * This constructor for the <code>FiniteStateMachine</code> class creates a new finite state machine with
+     * the number of states corresponding to the length of the array containing the names of the states. The
+     * transition time matrix is specified explicitly. Note that this constructor DOES NOT copy the
+     * transition time matrix, so care should be taken not to modify the transition time matrix after the
+     * creation of this finite state machine.
+     * @param c the clock that drives this finite state machine
+     * @param ss the starting state of this machine
+     * @param nm an array of strings that name each of the states in this machine
+     * @param ttm the transition time matrix for this machine; this matrix is NOT COPIED for internal use.
+     */
     public FiniteStateMachine(Clock c, int ss, String[] nm, int[][] ttm) {
         clock = c;
         startState = ss;
@@ -144,34 +175,83 @@ public class FiniteStateMachine {
         }
     }
 
+    /**
+     * The <code>insertProbe()</code> method allows the insertion of a probe for each state transition of this
+     * finite state machine.
+     * @param p the probe to insert that will be called before and after each transition, including
+     * self-transitions (transitions from one state to the same state)
+     */
     public void insertProbe(Probe p) {
         globalProbe.add(p);
     }
 
+    /**
+     * The <code>removeProbe()</code> method removes a probe that has been inserted for all state transitions.
+     * @param p the probe to remove
+     */
     public void removeProbe(Probe p) {
         globalProbe.remove(p);
     }
 
+    /**
+     * The <code>insertProbe()</code> method allows the insertion of a probe for transitions that involve a
+     * particular state, either transitioning from this state or from this state.
+     * @param p the probe to insert that will be called before and after each transition to or from the
+     * specified state, including self-transitions (transitions from this state to the same state)
+     * @param state the state for which to insert the probe
+     */
     public void insertProbe(Probe p, int state) {
         states[state].probes.add(p);
     }
 
+    /**
+     * The <code>removeProbe()</code> method removes a probe that has been inserted for particular state transitions.
+     * @param p the probe to remove
+     * @param state the state for which to remove this probe
+     */
     public void removeProbe(Probe p, int state) {
         states[state].probes.remove(p);
     }
 
+    /**
+     * The <code>getNumberOfStates()</code> method returns the total number of states that this machine
+     * has.
+     * @return the number of states in this machine
+     */
     public int getNumberOfStates() {
         return numStates;
     }
 
+    /**
+     * The <code>getStartState()</code> method returns the state in which the machine starts operation.
+     * @return an integer that represents the start state for this machine
+     */
     public int getStartState() {
         return startState;
     }
 
+    /**
+     * The <code>getCurrentState()</code> method returns an integer that represents the state that the machine
+     * is currently in. If the machine is current in transition between two states, this method will return
+     * the value <code>IN_TRANSITION</code>
+     * @return the current the state of the machine
+     */
     public int getCurrentState() {
         return curState;
     }
 
+    /**
+     * The <code>transition()</code> method transitions the machine from the current state to a new state.
+     * This transition is only legal if the corresponding entry in the transition time matrix is non-negative.
+     * This method should only be called by the "controller" of the machine, and not by clients interested
+     * in probing the state of the device. If the transition time matrix for this transition is greater than
+     * zero, then this method will change the state to <code>IN_TRANSITION</code> and insert a transition
+     * event into the queue of the underlying clock for this device. That event will complete the transition.
+     * This method will not allow any transitions when the machine is already in transition.
+     * @param newState the new state to transition to
+     * @throws Avrora.InternalError if it is illegal to transition between the current state and the new state
+     * according to the transition time matrix; or if the machine is already in a transitional state
+     */
     public void transition(int newState) {
         // are we currently in a transition already?
         if ( curState == IN_TRANSITION ) {
@@ -207,18 +287,39 @@ public class FiniteStateMachine {
         }
     }
 
+    /**
+     * The <code>getTransitionTime()</code> method retrieves the transition time between the two states
+     * specified from the transition time matrix.
+     * @param beforeState the state transitioning from
+     * @param afterState the state transitioning to
+     * @return the number of clock cycles required to transition between these two states (0 or more) if the
+     * transition is legal; a negative number if the transition is not legal
+     */
     public int getTransitionTime(int beforeState, int afterState) {
         return states[beforeState].transition_time[afterState];
     }
 
+    /**
+     * The <code>getStateName()</code> method retrieves the name for the specified state.
+     * @param state the state to get the string name for
+     * @return a string representation of the specified state
+     */
     public String getStateName(int state) {
         return states[state].name;
     }
 
+    /**
+     * The <code>getCurrentStateName()</code> method retrieves the name for the current state.
+     * @return a string representation of the name of the current state
+     */
     public String getCurrentStateName() {
         return states[curState].name;
     }
 
+    /**
+     * The <code>getClock()</code> method gets the underlying clock driving the device.
+     * @return the clock driving this device
+     */
     public Clock getClock() {
         return clock;
     }

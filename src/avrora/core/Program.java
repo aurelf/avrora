@@ -51,6 +51,10 @@ import java.util.*;
  */
 public class Program {
 
+    /**
+     * The <code>LOCATION_COMPARATOR</code> comparator is used in order to sort locations
+     * in the program from lowest address to highest address.
+     */
     public static Comparator LOCATION_COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
             Location l1 = (Location)o1;
@@ -65,6 +69,11 @@ public class Program {
         }
     };
 
+    /**
+     * The <code>Location</code> class represents a location in the program; either named by
+     * a label, or an unnamed integer address. The location may refer to any of the code, data,
+     * or eeprom segments.
+     */
     public class Location {
         /**
          * The <code>address</code> field records the address of this label as a byte address.
@@ -75,11 +84,22 @@ public class Program {
          */
         public final String name;
 
+        /**
+         * The constructor for the <code>Location</code> class creates a new location for the
+         * specified lable and address. It is used internally to create labels.
+         * @param n the name of the label as a string
+         * @param addr the integer address of the location
+         */
         Location(String n, int addr) {
             name = n;
             address = addr;
         }
 
+        /**
+         * The <code>hashCode()</code> method computes the hash code of this location so that
+         * it can be used in any of the standard collection libraries.
+         * @return an integer value that represents the hash code
+         */
         public int hashCode() {
             if (name == null)
                 return address;
@@ -87,6 +107,13 @@ public class Program {
                 return name.hashCode();
         }
 
+        /**
+         * The <code>equals()</code> method compares this location against another object. It will return
+         * true if and only if the specified object is an instance of <code>Location</code>, the addresses
+         * match, and the names match.
+         * @param o the other object to test this location for equality
+         * @return true if the other object is equal to this label; false otherwise
+         */
         public boolean equals(Object o) {
             if (o == this) return true;
             if (!(o instanceof Location)) return false;
@@ -430,6 +457,17 @@ public class Program {
         return (Location)labels.get(labelName(name));
     }
 
+    /**
+     * The <code>getProgramLocation()</code> method will convert the specified string into a program location,
+     * i.e. a location in the program segment.
+     * If the string begins with "0x", then it is considered a hexadecimal address and a location will be
+     * returned that corresponds to that address in the program segment.
+     * Otherwise, the string is considered to be a string and the method will attempt to look for a label with
+     * that name.
+     * @param s the string name to look up in the program segment
+     * @return an instance of the <code>Location</code> representing that location in the program segment if the
+     * string was either a hexadecimal constant or a valid label in the program segment; null otherwise
+     */
     public Location getProgramLocation(String s) {
         if (s.startsWith("0x") | s.startsWith("0X"))
             return new ProgramLabel(null, StringUtil.evaluateIntegerLiteral(s));

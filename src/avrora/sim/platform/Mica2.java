@@ -83,7 +83,10 @@ public class Mica2 implements Platform, PlatformFactory {
         return new Mica2(new ATMega128L(id, cd, f, p, false));
     }
 
-
+    /**
+     * The <code>addDevices()</code> method is used to add the external (off-chip) devices to the
+     * platform. For the mica2, these include the LEDs, the radio, and the sensor board.
+     */
     protected void addDevices() {
         LED yellow = new LED(sim, Terminal.COLOR_YELLOW, "Yellow");
         LED green = new LED(sim, Terminal.COLOR_GREEN, "Green");

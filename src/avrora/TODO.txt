@@ -40,6 +40,7 @@
   2-3   isdl  Regeneration Instr.* classes
     1  probe  Interrupt monitor
 
+    1   sim   new: ClockDomain, refactored MCU construction         (1.5.32)
     1  probe  FiniteStateMachine, probing                         2005-02-20
     4  probe  Implement GDB server backend                           (1.4.0)
   2-3   isdl  Constant/copy propagation optimizations                (1.4.0)

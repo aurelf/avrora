@@ -40,9 +40,6 @@ import avrora.util.Arithmetic;
 import java.util.LinkedList;
 
 /**
- * @author Ben L. Titzer
- */
-/**
  * The USART class implements a Universal Synchronous Asynchronous Receiver/Transmitter, which is a
  * serial device on the ATMega128L. The ATMega128L has two USARTs, USART0 and USART1.
  *

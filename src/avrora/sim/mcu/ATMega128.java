@@ -43,6 +43,10 @@ import avrora.core.Program;
 import java.util.HashMap;
 
 /**
+ * The <code>ATMega128</code> class represents the ATMega128 microcontroller from Atmel. This
+ * microcontroller has 128Kb code, 4KB SRAM, 4KB EEPROM, and a host of internal devices such as
+ * ADC, SPI, and timers.
+ *
  * @author Ben L. Titzer
  */
 public class ATMega128 extends ATMegaFamily {

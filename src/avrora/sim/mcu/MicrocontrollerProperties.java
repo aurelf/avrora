@@ -47,10 +47,30 @@ import java.util.NoSuchElementException;
  */
 public class MicrocontrollerProperties {
 
+    /**
+     * The <code>ioreg_size</code> field stores the number of IO registers on this microcontroller.
+     */
     public final int ioreg_size;
+
+    /**
+     * The <code>sram_size</code> field stores the size of the SRAM (excluding the general purpose
+     * registers and IO registers) on this microcontroller.
+     */
     public final int sram_size;
+
+    /**
+     * The <code>flash_size</code> field stores the size of the code segment (flash) on this microcontroller.
+     */
     public final int flash_size;
+
+    /**
+     * The <code>eeprom_size</code> field stores the size of the EEPROM on this microcontroller.
+     */
     public final int eeprom_size;
+
+    /**
+     * The <code>num_pins</code> field stores the number of physical pins on this microcontroller.
+     */
     public final int num_pins;
 
     protected final HashMap pinAssignments;

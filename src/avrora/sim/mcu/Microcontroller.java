@@ -156,21 +156,33 @@ public interface Microcontroller {
      */
     public Pin getPin(int num);
 
-    // TODO: this method should be deprecated!
+    /**
+     * The <code>setRadio()</code> method associates this microcontroller with the specified radio.
+     * @param r the radio to store with this microcontroller
+     * @deprecated
+     */
     public void setRadio(Radio r);
 
-    // TODO: this method should be deprecated!
+    /**
+     * The <code>getRadio()</code> method gets the radio associated with this microcontroller.
+     * @return the radio associated with this microcontroller if there is one; null otherwise
+     * @deprecated
+     */
     public Radio getRadio();
 
     /**
-     * send to mcu to sleep
+     * The <code>sleep()</code> method puts the microcontroller into the sleep mode defined by its
+     * internal sleep configuration register. It may shutdown devices and disable some clocks. This
+     * method should only be called from within the interpreter.
      */
     public void sleep();
 
     /**
-     * wake the mcu up
+     * The <code>wakeup()</code> method wakes the microcontroller from a sleep mode. It may resume
+     * devices, turn clocks back on, etc. This method is expected to return the number of cycles that
+     * is required for the microcontroller to wake completely from the sleep state it was in.
      *
-     * @return cycles it takes to wake up
+     * @return cycles required to wake from the current sleep mode
      */
     public int wakeup();
 
@@ -178,6 +190,8 @@ public interface Microcontroller {
      * get the current mode of the mcu
      *
      * @return current mode
+     * @deprecated this method should no longer be used; eventually this state information should be exposed
+     * through a FiniteStateMachine object
      */
     public byte getMode();
 
@@ -185,6 +199,8 @@ public interface Microcontroller {
      * get the name of the current mode
      *
      * @return name of the current mode
+     * @deprecated this method should no longer be used; eventually this state information should be exposed
+     * through a FiniteStateMachine object
      */
     public String getModeName();
 
@@ -196,6 +212,12 @@ public interface Microcontroller {
      */
     public long getHZ();
 
+    /**
+     * The <code>getClockDomain()</code> method returns the clock domain for this microcontroller. The clock
+     * domain contains all of the clocks attached to the microcontroller and platform, including the main clock.
+     * @return an instance of the <code>ClockDomain</code> class representing the clock domain for this
+     * microcontroller
+     */
     public ClockDomain getClockDomain();
 
     /**

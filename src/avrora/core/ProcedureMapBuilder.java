@@ -47,11 +47,23 @@ class ProcedureMapBuilder {
     private final Program program;
     private final ControlFlowGraph cfg;
 
+    /**
+     * The constructor for the <code>ProcedureMapBuilder</code> class creates a new instance for the
+     * specified program. It will first call the <code>getCFG()</code> of the program to build the
+     * control flow graph if it has not already been built.
+     * @param p the program to create the procedure map for
+     */
     public ProcedureMapBuilder(Program p) {
         program = p;
         cfg = p.getCFG();
     }
 
+    /**
+     * The <code>buildMap()</code> method builds the procedure map for the program that was specified
+     * in the constructor and returns it.
+     * @return a new instance of the <code>ProcedureMap</code> class that represents the mapping of basic
+     * blocks to procedures in the program
+     */
     public ProcedureMap buildMap() {
         discoverProcedures();
         HashMap procMap = buildProcedureBlockLists();

@@ -50,6 +50,12 @@ public abstract class Instr implements InstrPrototype {
      */
     public final InstrProperties properties;
 
+    /**
+     * The constructor for the <code>Instr</code> class creates a new instruction with the specified
+     * instruction properties. Since this class is abstract, <code>Instr</code> cannot be instantiated
+     * directly, but is called through its subclasses.
+     * @param ip the instruction properties for this instruction
+     */
     public Instr(InstrProperties ip) {
         properties = ip;
     }
@@ -251,8 +257,9 @@ public abstract class Instr implements InstrPrototype {
 
 
     /**
-     * U T I L I T Y   F U N C T I O N S ------------------------------------------------------------
-     * <p/>
+     * ------------------------------------------------------------
+     * U T I L I T Y   F U N C T I O N S
+     * ------------------------------------------------------------
      * These utility functions help in the checking of operands in individual instructions.
      */
     private static void need(int num, Operand[] ops) {
@@ -354,7 +361,9 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * A B S T R A C T   C L A S S E S --------------------------------------------------------
+     * --------------------------------------------------------
+     * A B S T R A C T   C L A S S E S
+     * --------------------------------------------------------
      * <p/>
      * These abstract implementations of the instruction simplify the specification of each individual
      * instruction considerably.

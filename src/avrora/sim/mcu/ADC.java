@@ -38,10 +38,8 @@ import avrora.sim.State;
 import avrora.util.Arithmetic;
 
 /**
- * @author Ben L. Titzer
- */
-/**
- * Analog to digital converter.
+ * The <code>ADC</code> class represents an on-chip device on the ATMega series of microcontroller
+ * that is capable of converting an analog voltage value into a 10-bit digital value.
  *
  * @author Daniel Lee
  */
@@ -66,6 +64,7 @@ public class ADC extends AtmelInternalDevice {
 
         /**
          * Report the current voltage level of the input.
+         * @return an integer value representing the voltage level of the input
          */
         public int getLevel();
     }
@@ -109,8 +108,15 @@ public class ADC extends AtmelInternalDevice {
         }
     }
 
-    public void connectADCInput(ADCInput input, int bit) {
-        connectedDevices[bit] = input;
+    /**
+     * The <code>connectADCInput()</code> method connects an <code>ADCInput</code> object to the specified
+     * input port on the ADC chip.
+     *
+     * @param input the <code>ADCInput</code> object to attach to the input
+     * @param num the input port number to attach the device to
+     */
+    public void connectADCInput(ADCInput input, int num) {
+        connectedDevices[num] = input;
     }
 
     /**

@@ -36,10 +36,18 @@ import avrora.sim.*;
 import avrora.util.Arithmetic;
 
 /**
+ * The <code>ATMegaFamily</code> class encapsulates much of the common functionality among the
+ * ATMega family microcontrollers from Atmel.
+ *
  * @author Ben L. Titzer
  */
 public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
+    /**
+     * The <code>IMRReg</code> class is the base class of IO registers that corresponds to interrupt masks
+     * and flags. This class contains much of the functionality necessary to implement the interrupt registers
+     * and is specialized for the mask register and flag register cases.
+     */
     abstract static class IMRReg extends State.RWIOReg {
 
         /**
@@ -420,6 +428,14 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
+    /**
+     * The <code>buildPort()</code> method builds the IO registers corresponding to a general purpose IO port.
+     * These ports are named A-G, and each consist of a PORT register (for writing), a PIN register (for reading),
+     * and a direction register for setting whether each pin in the port is input or output. This method
+     * is a utility to build these registers for each port given the last character of the name (e.g. 'A' in
+     * PORTA).
+     * @param p the last character of the port name
+     */
     protected void buildPort(char p) {
         ATMegaFamily.Pin[] pins = new ATMegaFamily.Pin[8];
         for (int cntr = 0; cntr < 8; cntr++)
@@ -429,6 +445,16 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         installIOReg("PIN"+p, new PinRegister(pins));
     }
 
+    /**
+     * The <code>buildInterruptRange()</code> method creates the IO registers and <code>MaskableInterrupt</code>
+     * instances corresponding to a complete range of interrupts.
+     * @param increasing a flag indicating that the vector numbers increase with bit number of the IO register
+     * @param maskRegNum the IO register number of the mask register
+     * @param flagRegNum the IO register number of the flag register
+     * @param baseVect the beginning vector of this range of interrupts
+     * @param numVects the number of vectors in this range
+     * @return a flag register that corresponds to the interrupt range
+     */
     protected FlagRegister buildInterruptRange(boolean increasing, String maskRegNum, String flagRegNum, int baseVect, int numVects) {
         int[] mapping = new int[8];
         if (increasing) {

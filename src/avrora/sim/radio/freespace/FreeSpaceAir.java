@@ -53,7 +53,7 @@ import java.util.TreeSet;
  *
  * @author Olaf Landsiedel
  *         <p/>
- *         Yes, the free space radio model is not very realitic, but this is not the porpose of thie
+ *         Yes, the free space radio model is not very realistic, but this is not the purpose of thie
  *         implementation. It shall model the characteristics of radio propagation and so enable multihop
  *         scenarios. This implementation bases heavily on the SimpleAir class by Daniel Lee. However, the
  *         changes needed, where to heavy to allow for standard class extension

@@ -46,5 +46,10 @@ public abstract class ProgramReader {
      */
     public abstract Program read(String[] args) throws Exception;
 
+    /**
+     * The <code>getHelp()</code> method returns a long string that represents a simple description
+     * of the program reader and how to use it.
+     * @return a string representation of the help for this program reader
+     */ 
     public abstract String getHelp();
 }

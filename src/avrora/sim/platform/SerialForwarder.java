@@ -59,7 +59,7 @@ public class SerialForwarder implements USART.USARTDevice {
     private OutputStream out;
     private InputStream in;
     private USART usart;
-    private PcTicker ticker;
+    private SFTicker ticker;
     private byte[] data;
     private Clock clock;
 
@@ -68,7 +68,7 @@ public class SerialForwarder implements USART.USARTDevice {
 
         this.usart = usart;
         clock = usart.getClock();
-        ticker = new PcTicker();
+        ticker = new SFTicker();
         data = new byte[1];
         try{
             serverSocket = new ServerSocket(2390);
@@ -98,10 +98,10 @@ public class SerialForwarder implements USART.USARTDevice {
         }
     }
 
-    private class PcTicker implements Simulator.Event {
+    private class SFTicker implements Simulator.Event {
         private final long delta;
 
-        public PcTicker(){
+        public SFTicker(){
             delta = clock.getHZ() / BPS;
             clock.insertEvent(this, delta);
         }

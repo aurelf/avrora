@@ -37,9 +37,6 @@ import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 
 /**
- * @author Ben L. Titzer
- */
-/**
  * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.
  *
  * @author Daniel Lee

@@ -57,6 +57,13 @@ public class ControlFlowGraph {
         private final Block source;
         private final Block target;
 
+        /**
+         * The constructor for the <code>Edge</code> class creates a new edge with the specified type
+         * with the specified source block and specified destination block.
+         * @param t the type of the edge
+         * @param s the source block of the edge
+         * @param b the destination block of the edge
+         */
         Edge(String t, Block s, Block b) {
             type = t;
             source = s;

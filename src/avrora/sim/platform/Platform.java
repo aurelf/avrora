@@ -42,5 +42,10 @@ import avrora.sim.mcu.Microcontroller;
  */
 public interface Platform {
 
+    /**
+     * The <code>getMicrocontroller()</code> method returns a reference to the microcontroller that is driving
+     * this platform.
+     * @return a reference to the microcontroller in this platform
+     */
     public Microcontroller getMicrocontroller();
 }

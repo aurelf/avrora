@@ -38,6 +38,11 @@ import avrora.sim.Simulator;
 import avrora.Avrora;
 
 /**
+ * The <code>SystemClock</code> class represents a wrapper around the system clock that
+ * measures actual wall clock time passed in simulation. This implementation encapsulates
+ * the <code>System.currentTimeMillis()</code> method, and thus provides a precision
+ * of approximately 1000 cycles per second.
+ *
  * @author Ben L. Titzer
  */
 public class SystemClock extends Clock {
@@ -48,6 +53,10 @@ public class SystemClock extends Clock {
         super("system", 1000);
     }
 
+    /**
+     * The <code>get()</code> method retrieves the singleton instance of the system clock.
+     * @return an instance of the <code>SystemClock</code> class
+     */
     public static SystemClock get() {
         return instance;
     }

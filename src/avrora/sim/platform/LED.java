@@ -65,6 +65,11 @@ public class LED implements Microcontroller.Pin.Output {
     // default mode of the device is off
     private static final int startMode = 0;
 
+    /**
+     * The <code>LEDProbe</code> class implements a probe from the (tiny) finite state machine
+     * that represents an LED's state. An LED can be "off" or "on". This probe will simply
+     * display changes to the state.
+     */
     class LEDProbe implements FiniteStateMachine.Probe {
         public void fireBeforeTransition(int beforeState, int afterState) {
             // do nothing
@@ -116,6 +121,12 @@ public class LED implements Microcontroller.Pin.Output {
         state.removeProbe(probe);
     }
 
+    /**
+     * The <code>getFSM()</code> method returns the <code>FiniteStateMachine</code> instance corresponding
+     * to this LED. This finite state machine representation allows probes to be inserted that are notified
+     * when the state of the LED is changed.
+     * @return an instance of the <code>FiniteStateMachine</code> class for this LED instance
+     */
     public FiniteStateMachine getFSM() {
         return state;
     }

@@ -68,6 +68,11 @@ public interface Operand {
      */
     public interface Register extends Operand {
 
+        /**
+         * The <code>getRegister()</code> method returns a reference to the register represented
+         * by this operand.
+         * @return a reference to the register that this operand refers to
+         */
         public avrora.core.Register getRegister();
     }
 
@@ -77,8 +82,18 @@ public interface Operand {
      */
     public interface Constant extends Operand {
 
+        /**
+         * The <code>getvalue()</code> method returns the integer value of this constant operand.
+         * @return an integer representation of the value
+         */
         public int getValue();
 
+        /**
+         * The <code>getValueAsWord()</code> method returns the value of this constant operand as
+         * word-aligned; meaning, for addresses, it will divide by 2, but for immediate constants
+         * it will not.
+         * @return an integer representation of the value, word-aligned if it is an address
+         */
         public int getValueAsWord();
     }
 }

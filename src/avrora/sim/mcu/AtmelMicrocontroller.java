@@ -39,6 +39,11 @@ import java.util.HashMap;
 import java.util.NoSuchElementException;
 
 /**
+ * The <code>AtmelMicrocontroller</code> class represents the common functionality among microcontrollers
+ * for the Atmel series. These all contain a clock domain (collection of internal, external clocks), a
+ * simulator, an interpreter, microcontroller properties, and a mapping between string names and IO reg
+ * addresses, etc.
+ *
  * @author Ben L. Titzer
  */
 public abstract class AtmelMicrocontroller implements Microcontroller {

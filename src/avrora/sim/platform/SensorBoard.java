@@ -37,8 +37,9 @@ package avrora.sim.platform;
 import avrora.sim.Energy;
 import avrora.sim.Simulator;
 
-/** Now, there is no sensor board implementatio yet. 
- * However, we can already model its power consumption ;-)
+/**
+ * This class is a placeholder for tracking the energ consumption of the sensor board. Currently
+ * there are no sensors implemented for simulation.
  *
  * @author Olaf Landsiedel
  */

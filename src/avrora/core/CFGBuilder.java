@@ -65,6 +65,11 @@ class CFGBuilder implements InstrVisitor {
         program = p;
     }
 
+    /**
+     * The <code>InstrInfo</code> class contains several flags that are tracked for each instruction
+     * that are needed to build the control flow graph. On the first pass, these flags are initialized
+     * for each instruction and on the second pass the basic blocks are created.
+     */
     static class InstrInfo {
         boolean start;
         boolean fallthrough;

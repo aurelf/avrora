@@ -36,9 +36,21 @@ import avrora.core.Program;
 import avrora.sim.mcu.MicrocontrollerProperties;
 
 /**
+ * The <code>InterpreterFactory</code> class represents a factory for creating interpreters. This
+ * is used to create new interpreters for simulators so that the simulator is isolated from the
+ * details of constructing new interpreters, which could have a considerable number of options.
+ *
  * @author Ben L. Titzer
  */
 public abstract class InterpreterFactory {
 
+    /**
+     * The <code>newInterpreter()</code> method creates a new interpreter given the simulator, the
+     * program, and the properties of the microcontroller.
+     * @param s the simulator for which the interpreter is being created
+     * @param p the program to load into the interpreter
+     * @param pr the properties of the microcontroller
+     * @return a new instance of the <code>BaseInterpreter</code> class for the program
+     */
     public abstract BaseInterpreter newInterpreter(Simulator s, Program p, MicrocontrollerProperties pr);
 }

@@ -90,18 +90,42 @@ public class Avrora {
         }
     }
 
+    /**
+     * The <code>unimplemented()</code> method is a utility that constructs a
+     * <code>InternalError</code> instance. This is called from methods or classes with unimplemented
+     * functionality for documentation and fail-fast purposes.
+     * @return an instance of the <code>Avrora.InternalError</code> class that specifies that this
+     * functionality is not yet implemented
+     */
     public static InternalError unimplemented() {
         return new InternalError("unimplemented");
     }
 
+    /**
+     * The <code>failure()</code> method is a utility that constructs a
+     * <code>InternalError</code> instance with the specified message. It is useful for internal
+     * error conditions and defensive programming.
+     * @return an instance of the <code>Avrora.InternalError</code> class with the specified error message
+     */
     public static InternalError failure(String s) {
         return new InternalError(s);
     }
 
+    /**
+     * The <code>userError()</code> method constructs and throws an error in situations that are likely
+     * due to user error. This is useful for files that are not found, an incorrect option value, etc.
+     * @param s the message for the user
+     */
     public static void userError(String s) {
         throw new Error(s);
     }
 
+    /**
+     * The <code>userError()</code> method constructs and throws an error in situations that are likely
+     * due to user error. This is useful for files that are not found, an incorrect option value, etc.
+     * @param s the message for the user
+     * @param p the parameter to the message, automatically put in quotes
+     */
     public static void userError(String s, String p) {
         throw new Error(s, p);
     }

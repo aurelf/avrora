@@ -42,32 +42,41 @@ import avrora.sim.mcu.USART;
  */
 public class LCDScreen implements USART.USARTDevice {
 
-    boolean mode;
+    static final boolean MODE_DATA = false;
+    static final boolean MODE_INSTRUCTION = true;
 
-    final boolean MODE_DATA = false;
-    final boolean MODE_INSTRUCTION = true;
-
-    final int CLEAR_SCREEN = 1;
-    final int SCROLL_LEFT = 24;
-    final int SCROLL_RIGHT = 28;
-    final int HOME = 2;
-    final int CURSOR_UNDERLINE = 14;
-    final int CURSOR_BLOCK = 13;
-    final int CURSOR_INVIS = 12;
-    final int BLANK_DISPLAY = 8;
-    final int RESTORE_DISPLAY = 12;
+    static final int CLEAR_SCREEN = 1;
+    static final int SCROLL_LEFT = 24;
+    static final int SCROLL_RIGHT = 28;
+    static final int HOME = 2;
+    static final int CURSOR_UNDERLINE = 14;
+    static final int CURSOR_BLOCK = 13;
+    static final int CURSOR_INVIS = 12;
+    static final int BLANK_DISPLAY = 8;
+    static final int RESTORE_DISPLAY = 12;
 
     int cursor;
+
+    boolean mode;
 
     final char[] line1;
     final char[] line2;
 
+    /**
+     * The constructor for the <code>LCDScreen</code> class initializes a 40x2 character array that
+     * represents the character area of the LCD screen.
+     */
     public LCDScreen() {
         line1 = new char[40];
         line2 = new char[40];
         clearScreen();
     }
 
+    /**
+     * The <code>memory()</code> method returns the character in memory at the given location.
+     * @param cursor the index into the memory for which to retrieve the character
+     * @return the character that is in the specified memory location
+     */
     public char memory(byte cursor) {
         if (cursor < 40) {
             return line1[cursor];
@@ -113,6 +122,12 @@ public class LCDScreen implements USART.USARTDevice {
         }
     }
 
+    /**
+     * The <code>receiveFrame()</code> method receives a frame from the USART that this device is
+     * connected to. It then decodes the command, performs the specified action, and updates the
+     * character memory accordingly.
+     * @param frame the USART frame to receive
+     */
     public void receiveFrame(USART.Frame frame) {
         byte data = frame.low;
 
@@ -158,6 +173,10 @@ public class LCDScreen implements USART.USARTDevice {
         }
     }
 
+    /**
+     * The <code>toString()</code> method converts this LCD screen into a String representation.
+     * @return a string representation of this LCD screen.
+     */
     public String toString() {
         StringBuffer buf = new StringBuffer(90);
         buf.append("\n|");
