@@ -31,7 +31,7 @@ import avrora.stack.Analyzer;
  */
 public class Main extends VPCBase {
 
-    static final String VERSION = "0.9.2";
+    static final String VERSION = "0.9.3";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -441,13 +441,14 @@ public class Main extends VPCBase {
 
             ColorTerminal.useColors = COLORS.get();
             if ( BANNER.get() ) banner();
+            VPCBase.VERBOSE = VERBOSE.get();
 
             Action a = (Action)actions.get(ACTION.get());
             if ( a == null )
                 userError("unknown action", ACTION.get());
 
             args = options.getArguments();
-            a.run(options.getArguments());
+            a.run(args);
 
         } catch ( VPCError e ) {
             e.report();
