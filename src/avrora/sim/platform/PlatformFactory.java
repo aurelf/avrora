@@ -1,4 +1,3 @@
-
 package avrora.sim.platform;
 
 import avrora.core.Program;

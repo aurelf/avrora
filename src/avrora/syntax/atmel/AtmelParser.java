@@ -152,19 +152,19 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
       case TST:
       case WDR:
       case IDENTIFIER:
-      case 147:
       case 149:
-      case 150:
       case 151:
       case 152:
       case 153:
       case 154:
       case 155:
+      case 156:
       case 157:
-      case 158:
       case 159:
       case 160:
       case 161:
+      case 162:
+      case 163:
         ;
         break;
       default:
@@ -177,7 +177,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     case 0:
       jj_consume_token(0);
       break;
-    case 156:
+    case 158:
       ExitDirective();
       break;
     default:
@@ -189,19 +189,19 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
 
   final public void Statement() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 147:
     case 149:
-    case 150:
     case 151:
     case 152:
     case 153:
     case 154:
     case 155:
+    case 156:
     case 157:
-    case 158:
     case 159:
     case 160:
     case 161:
+    case 162:
+    case 163:
       Directive();
       break;
     case ADD:
@@ -332,35 +332,35 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
 
   final public void Directive() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 147:
+    case 149:
       EquDirective();
       break;
-    case 149:
+    case 151:
       OrgDirective();
       break;
-    case 150:
+    case 152:
       ReserveDirective();
       break;
-    case 151:
-    case 152:
     case 153:
+    case 154:
+    case 155:
       DataDirective();
       break;
-    case 154:
+    case 156:
       DefDirective();
       break;
-    case 155:
+    case 157:
       IncludeDirective();
       break;
-    case 157:
+    case 159:
       NoListDirective();
       break;
-    case 158:
+    case 160:
       ListDirective();
       break;
-    case 159:
-    case 160:
     case 161:
+    case 162:
+    case 163:
       SegDirective();
       break;
     default:
@@ -514,10 +514,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrGPRGPR() throws ParseException {
-                       Token t; Operand.Register r1, r2;
+                       Token t; SyntacticOperand.Register r1, r2;
     t = OpcodeGPRGPR();
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
       module.addInstruction(t.image, t, r1, r2);
   }
@@ -589,7 +589,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrGPR() throws ParseException {
-                    Token t; Operand.Register r1;
+                    Token t; SyntacticOperand.Register r1;
     t = OpcodeGPR();
     r1 = Register();
       module.addInstruction(t.image, t, r1);
@@ -653,10 +653,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrGPRIMM() throws ParseException {
-                       Token t; Operand.Register r1; Operand.Constant c1;
+                       Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = OpcodeGPRIMM();
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
@@ -713,7 +713,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrIMM() throws ParseException {
-                    Token t; Operand.Constant c1;
+                    Token t; SyntacticOperand.Expr c1;
     t = OpcodeIMM();
     c1 = Const();
       module.addInstruction(t.image, t, c1);
@@ -804,10 +804,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrIMMIMM() throws ParseException {
-                       Token t; Operand.Constant c1, c2;
+                       Token t; SyntacticOperand.Expr c1, c2;
     t = OpcodeIMMIMM();
     c1 = Const();
-    jj_consume_token(143);
+    jj_consume_token(145);
     c2 = Const();
       module.addInstruction(t.image, t, c1, c2);
   }
@@ -868,10 +868,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrLDI() throws ParseException {
-                    Token t; Operand.Register r1; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(LDI);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
@@ -895,50 +895,50 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrLD() throws ParseException {
-                   Token t; Operand.Register r1, r2;
+                   Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
       module.addInstruction("ld", t, r1, r2);
   }
 
   final public void InstrLDPI() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
-    jj_consume_token(144);
+    jj_consume_token(146);
       module.addInstruction("ldpi", t, r1, r2);
   }
 
   final public void InstrLDPD() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
-    jj_consume_token(143);
     jj_consume_token(145);
+    jj_consume_token(147);
     r2 = Register();
       module.addInstruction("ldpd", t, r1, r2);
   }
 
   final public void InstrLDD() throws ParseException {
-                    Token t; Operand.Register r1, r2; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1, r2; SyntacticOperand.Expr c1;
     t = jj_consume_token(LDD);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
-    jj_consume_token(144);
+    jj_consume_token(146);
     c1 = Const();
       module.addInstruction(t.image, t, r1, r2, c1);
   }
 
   final public void InstrLDS() throws ParseException {
-                    Token t; Operand.Register r1; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(LDS);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
@@ -963,21 +963,21 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrLPMGPRGPR() throws ParseException {
-                          Token t; Operand.Register r1, r2;
+                          Token t; SyntacticOperand.Register r1, r2;
     t = OpcodeLPM();
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
       module.addInstruction(t.image+"d", t, r1, r2);
   }
 
   final public void InstrLPMGPRGPRP() throws ParseException {
-                           Token t; Operand.Register r1, r2;
+                           Token t; SyntacticOperand.Register r1, r2;
     t = OpcodeLPM();
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
-    jj_consume_token(144);
+    jj_consume_token(146);
       module.addInstruction(t.image+"pi", t, r1, r2);
   }
 
@@ -1042,50 +1042,50 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrST() throws ParseException {
-                   Token t; Operand.Register r1, r2;
+                   Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(ST);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
       module.addInstruction("st", t, r1, r2);
   }
 
   final public void InstrSTPI() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(ST);
     r1 = Register();
-    jj_consume_token(144);
-    jj_consume_token(143);
+    jj_consume_token(146);
+    jj_consume_token(145);
     r2 = Register();
       module.addInstruction("stpi", t, r1, r2);
   }
 
   final public void InstrSTPD() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(ST);
-    jj_consume_token(145);
+    jj_consume_token(147);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
       module.addInstruction("stpd", t, r1, r2);
   }
 
   final public void InstrSTD() throws ParseException {
-                    Token t; Operand.Register r1, r2; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1, r2; SyntacticOperand.Expr c1;
     t = jj_consume_token(STD);
     r1 = Register();
-    jj_consume_token(144);
+    jj_consume_token(146);
     c1 = Const();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r2 = Register();
       module.addInstruction(t.image, t, r1, c1, r2);
   }
 
   final public void InstrSTS() throws ParseException {
-                    Token t; Operand.Register r1; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(STS);
     c1 = Const();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r1 = Register();
       module.addInstruction(t.image, t, c1, r1);
   }
@@ -1183,69 +1183,69 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   }
 
   final public void InstrInput() throws ParseException {
-                      Token t; Operand.Register r1; Operand.Constant c1;
+                      Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(IN);
     r1 = Register();
-    jj_consume_token(143);
+    jj_consume_token(145);
     c1 = Const();
       module.addInstruction(t.image, t, r1, c1);
   }
 
   final public void InstrOutput() throws ParseException {
-                       Token t; Operand.Register r1; Operand.Constant c1;
+                       Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(OUT);
     c1 = Const();
-    jj_consume_token(143);
+    jj_consume_token(145);
     r1 = Register();
       module.addInstruction(t.image, t, c1, r1);
   }
 
-  final public Operand.Register Register() throws ParseException {
-                                Token tok;
+  final public SyntacticOperand.Register Register() throws ParseException {
+                                         Token tok;
     tok = jj_consume_token(IDENTIFIER);
-      {if (true) return new Operand.Register(tok);}
+      {if (true) return new SyntacticOperand.Register(tok);}
     throw new Error("Missing return statement in function");
   }
 
   final public void Label() throws ParseException {
                  Token tok;
     tok = jj_consume_token(IDENTIFIER);
-    jj_consume_token(146);
+    jj_consume_token(148);
       module.addLabel(tok);
   }
 
   final public void EquDirective() throws ParseException {
                         Token tok; Expr e;
-    jj_consume_token(147);
+    jj_consume_token(149);
     tok = jj_consume_token(IDENTIFIER);
-    jj_consume_token(148);
+    jj_consume_token(150);
     e = Expr();
       module.addConstant(tok, e);
   }
 
   final public void OrgDirective() throws ParseException {
                         Token tok;
-    jj_consume_token(149);
+    jj_consume_token(151);
     tok = jj_consume_token(INTEGER_LITERAL);
       module.setOrigin(new Expr.Constant(tok));
   }
 
   final public void ReserveDirective() throws ParseException {
                             Token tok; Expr e;
-    jj_consume_token(150);
+    jj_consume_token(152);
     e = Expr();
                          module.reserveBytes(e, null);
   }
 
   final public void DataDirective() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 151:
+    case 153:
       ByteDirective();
       break;
-    case 152:
+    case 154:
       WordDirective();
       break;
-    case 153:
+    case 155:
       DoubleWordDirective();
       break;
     default:
@@ -1257,65 +1257,65 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
 
   final public void ByteDirective() throws ParseException {
                          ExprList l;
-    jj_consume_token(151);
+    jj_consume_token(153);
     l = DataList();
                            module.addDataBytes(l);
   }
 
   final public void WordDirective() throws ParseException {
                          ExprList l;
-    jj_consume_token(152);
+    jj_consume_token(154);
     l = DataList();
                            module.addDataWords(l);
   }
 
   final public void DoubleWordDirective() throws ParseException {
                                ExprList l;
-    jj_consume_token(153);
+    jj_consume_token(155);
     l = DataList();
                            module.addDataDoubleWords(l);
   }
 
   final public void DefDirective() throws ParseException {
-                        Token name; Operand.Register reg;
-    jj_consume_token(154);
+                        Token name; SyntacticOperand.Register reg;
+    jj_consume_token(156);
     name = jj_consume_token(IDENTIFIER);
-    jj_consume_token(148);
+    jj_consume_token(150);
     reg = Register();
       module.addDefinition(name, reg.name);
   }
 
   final public void IncludeDirective() throws ParseException {
                             Token file;
-    jj_consume_token(155);
+    jj_consume_token(157);
     file = jj_consume_token(STRING_LITERAL);
       module.includeFile(file);
   }
 
   final public void ExitDirective() throws ParseException {
-    jj_consume_token(156);
+    jj_consume_token(158);
   }
 
   final public void NoListDirective() throws ParseException {
-    jj_consume_token(157);
+    jj_consume_token(159);
   }
 
   final public void ListDirective() throws ParseException {
-    jj_consume_token(158);
+    jj_consume_token(160);
   }
 
   final public void SegDirective() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 159:
-      jj_consume_token(159);
-              module.enterDataSegment();
-      break;
-    case 160:
-      jj_consume_token(160);
-              module.enterProgramSegment();
-      break;
     case 161:
       jj_consume_token(161);
+              module.enterDataSegment();
+      break;
+    case 162:
+      jj_consume_token(162);
+              module.enterProgramSegment();
+      break;
+    case 163:
+      jj_consume_token(163);
               module.enterEEPROMSegment();
       break;
     default:
@@ -1325,10 +1325,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     }
   }
 
-  final public Operand.Constant Const() throws ParseException {
-                             Expr e;
+  final public SyntacticOperand.Expr Const() throws ParseException {
+                                  Expr e;
     e = Expr();
-      {if (true) return new Operand.Constant(e);}
+      {if (true) return new SyntacticOperand.Expr(e);}
     throw new Error("Missing return statement in function");
   }
 
@@ -1339,14 +1339,14 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 143:
+      case 145:
         ;
         break;
       default:
         jj_la1[19] = jj_gen;
         break label_2;
       }
-      jj_consume_token(143);
+      jj_consume_token(145);
       e = Data();
                        list.add(e);
     }
@@ -1360,6 +1360,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     case INTEGER_LITERAL:
     case LOW:
     case HIGH:
+    case LO8:
+    case HI8:
     case BYTE2:
     case BYTE3:
     case BYTE4:
@@ -1369,10 +1371,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     case EXP2:
     case LOG2:
     case IDENTIFIER:
-    case 145:
-    case 177:
-    case 178:
+    case 147:
     case 179:
+    case 180:
+    case 181:
       e = Expr();
       break;
     case STRING_LITERAL:
@@ -1401,14 +1403,14 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 162:
+      case 164:
         ;
         break;
       default:
         jj_la1[21] = jj_gen;
         break label_3;
       }
-      tok = jj_consume_token(162);
+      tok = jj_consume_token(164);
       er = LandExpr();
                                                   e = new Expr.BinOp(tok, e, er);
     }
@@ -1422,14 +1424,14 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 163:
+      case 165:
         ;
         break;
       default:
         jj_la1[22] = jj_gen;
         break label_4;
       }
-      tok = jj_consume_token(163);
+      tok = jj_consume_token(165);
       er = OrExpr();
                                               e = new Expr.BinOp(tok, e, er);
     }
@@ -1443,14 +1445,14 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 164:
+      case 166:
         ;
         break;
       default:
         jj_la1[23] = jj_gen;
         break label_5;
       }
-      tok = jj_consume_token(164);
+      tok = jj_consume_token(166);
       er = XorExpr();
                                                e = new Expr.BinOp(tok, e, er);
     }
@@ -1464,14 +1466,14 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 165:
+      case 167:
         ;
         break;
       default:
         jj_la1[24] = jj_gen;
         break label_6;
       }
-      tok = jj_consume_token(165);
+      tok = jj_consume_token(167);
       er = AndExpr();
                                                e = new Expr.BinOp(tok, e, er);
     }
@@ -1485,14 +1487,14 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 166:
+      case 168:
         ;
         break;
       default:
         jj_la1[25] = jj_gen;
         break label_7;
       }
-      tok = jj_consume_token(166);
+      tok = jj_consume_token(168);
       er = EqExpr();
                                              e = new Expr.BinOp(tok, e, er);
     }
@@ -1506,8 +1508,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 167:
-      case 168:
+      case 169:
+      case 170:
         ;
         break;
       default:
@@ -1515,11 +1517,11 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         break label_8;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 167:
-        tok = jj_consume_token(167);
+      case 169:
+        tok = jj_consume_token(169);
         break;
-      case 168:
-        tok = jj_consume_token(168);
+      case 170:
+        tok = jj_consume_token(170);
         break;
       default:
         jj_la1[27] = jj_gen;
@@ -1539,10 +1541,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 169:
-      case 170:
       case 171:
       case 172:
+      case 173:
+      case 174:
         ;
         break;
       default:
@@ -1550,17 +1552,17 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         break label_9;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 169:
-        tok = jj_consume_token(169);
-        break;
-      case 170:
-        tok = jj_consume_token(170);
-        break;
       case 171:
         tok = jj_consume_token(171);
         break;
       case 172:
         tok = jj_consume_token(172);
+        break;
+      case 173:
+        tok = jj_consume_token(173);
+        break;
+      case 174:
+        tok = jj_consume_token(174);
         break;
       default:
         jj_la1[29] = jj_gen;
@@ -1580,8 +1582,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_10:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 173:
-      case 174:
+      case 175:
+      case 176:
         ;
         break;
       default:
@@ -1589,11 +1591,11 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         break label_10;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 173:
-        tok = jj_consume_token(173);
+      case 175:
+        tok = jj_consume_token(175);
         break;
-      case 174:
-        tok = jj_consume_token(174);
+      case 176:
+        tok = jj_consume_token(176);
         break;
       default:
         jj_la1[31] = jj_gen;
@@ -1613,8 +1615,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 144:
-      case 145:
+      case 146:
+      case 147:
         ;
         break;
       default:
@@ -1622,11 +1624,11 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         break label_11;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 144:
-        tok = jj_consume_token(144);
+      case 146:
+        tok = jj_consume_token(146);
         break;
-      case 145:
-        tok = jj_consume_token(145);
+      case 147:
+        tok = jj_consume_token(147);
         break;
       default:
         jj_la1[33] = jj_gen;
@@ -1646,8 +1648,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     label_12:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 175:
-      case 176:
+      case 177:
+      case 178:
         ;
         break;
       default:
@@ -1655,11 +1657,11 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         break label_12;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 175:
-        tok = jj_consume_token(175);
+      case 177:
+        tok = jj_consume_token(177);
         break;
-      case 176:
-        tok = jj_consume_token(176);
+      case 178:
+        tok = jj_consume_token(178);
         break;
       default:
         jj_la1[35] = jj_gen;
@@ -1676,18 +1678,18 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   final public Expr UnaryExpr() throws ParseException {
                      Token tok; Expr e;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 145:
-    case 177:
-    case 178:
+    case 147:
+    case 179:
+    case 180:
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 177:
-        tok = jj_consume_token(177);
+      case 179:
+        tok = jj_consume_token(179);
         break;
-      case 178:
-        tok = jj_consume_token(178);
+      case 180:
+        tok = jj_consume_token(180);
         break;
-      case 145:
-        tok = jj_consume_token(145);
+      case 147:
+        tok = jj_consume_token(147);
         break;
       default:
         jj_la1[36] = jj_gen;
@@ -1700,6 +1702,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     case INTEGER_LITERAL:
     case LOW:
     case HIGH:
+    case LO8:
+    case HI8:
     case BYTE2:
     case BYTE3:
     case BYTE4:
@@ -1709,7 +1713,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     case EXP2:
     case LOG2:
     case IDENTIFIER:
-    case 179:
+    case 181:
       e = Term();
       break;
     default:
@@ -1730,6 +1734,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
       break;
     case LOW:
     case HIGH:
+    case LO8:
+    case HI8:
     case BYTE2:
     case BYTE3:
     case BYTE4:
@@ -1744,10 +1750,10 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
       tok = jj_consume_token(INTEGER_LITERAL);
                               e = new Expr.Constant(tok);
       break;
-    case 179:
-      jj_consume_token(179);
+    case 181:
+      jj_consume_token(181);
       e = Expr();
-      jj_consume_token(180);
+      jj_consume_token(182);
       break;
     default:
       jj_la1[38] = jj_gen;
@@ -1761,9 +1767,9 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
   final public Expr Func() throws ParseException {
                 Token tok; Token l; Expr e;
     tok = FuncName();
-    jj_consume_token(179);
+    jj_consume_token(181);
     e = Expr();
-    l = jj_consume_token(180);
+    l = jj_consume_token(182);
       {if (true) return new Expr.Func(tok, e, l);}
     throw new Error("Missing return statement in function");
   }
@@ -1776,6 +1782,12 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
       break;
     case HIGH:
       tok = jj_consume_token(HIGH);
+      break;
+    case LO8:
+      tok = jj_consume_token(LO8);
+      break;
+    case HI8:
+      tok = jj_consume_token(HI8);
       break;
     case BYTE2:
       tok = jj_consume_token(BYTE2);
@@ -1852,16 +1864,6 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     return retval;
   }
 
-  final private boolean jj_3R_17() {
-    if (jj_scan_token(ST)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_19()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(143)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
   final private boolean jj_3R_22() {
     if (jj_scan_token(ELPM)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
@@ -1879,11 +1881,11 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(143)) return true;
+    if (jj_scan_token(145)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(144)) return true;
+    if (jj_scan_token(146)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1905,7 +1907,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(143)) return true;
+    if (jj_scan_token(145)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1921,9 +1923,9 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(143)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_scan_token(145)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(147)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1933,7 +1935,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(144)) return true;
+    if (jj_scan_token(146)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1978,11 +1980,21 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(143)) return true;
+    if (jj_scan_token(145)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(144)) return true;
+    if (jj_scan_token(146)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_17() {
+    if (jj_scan_token(ST)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_3R_19()) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(145)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -2012,22 +2024,22 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
       jj_la1_5();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0xfc000000,0x1,0xfc000000,0x0,0xfc000000,0x2c000000,0x80000000,0x50000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3ff8200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3ff0200,0x3ff0200,0x3ff0000,};
+      jj_la1_0 = new int[] {0xf0000000,0x1,0xf0000000,0x0,0xf0000000,0xb0000000,0x0,0x40000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xfff8200,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xfff0200,0xfff0200,0xfff0000,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0x0,0x0,0x9000002,0x2ffffb1,0x400000c,0x0,0x0,0x0,0x0,0x0,0x0,0xf0000040,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0x0,0x2,0x24000009,0xbfffec4,0x10000030,0x0,0x0,0x0,0x0,0x0,0x0,0xc0000100,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_2() {
-      jj_la1_2 = new int[] {0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0xc003c2c0,0x30200421,0x100,0x400000,0x0,0xf802000,0x800000,0x8002000,0x8002000,0x0,0x0,0xc181e,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_2 = new int[] {0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0xf0b00,0xc0801084,0x400,0x1000000,0x0,0x3e008000,0x2000000,0x20008000,0x20008000,0x0,0x0,0x30607b,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_3() {
-      jj_la1_3 = new int[] {0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0x10027,0x2000c308,0x1e20040,0x2400,0x1c0000,0x0,0x0,0x0,0x0,0x0,0x0,0xde001810,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_3 = new int[] {0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0x4009f,0x80030c20,0x7880100,0x9000,0x700000,0x0,0x0,0x0,0x0,0x0,0x0,0x78006040,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_4() {
-      jj_la1_4 = new int[] {0xefe81fff,0x10000000,0xefe81fff,0xefe80000,0xfff,0x80,0x600,0x100,0x0,0x0,0x0,0x0,0x0,0x0,0x70,0x10,0x80f,0x3800000,0x80000000,0x8000,0x21000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x30000,0x30000,0x0,0x0,0x20000,0x21000,0x1000,0x0,};
+      jj_la1_4 = new int[] {0xbfa07fff,0x40000000,0xbfa07fff,0xbfa00000,0x3fff,0x200,0x1800,0x400,0x0,0x0,0x0,0x0,0x0,0x0,0x1c0,0x40,0x203f,0xe000000,0x0,0x20000,0x84000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xc0000,0xc0000,0x0,0x0,0x80000,0x84000,0x4000,0x0,};
    }
    private static void jj_la1_5() {
-      jj_la1_5 = new int[] {0x3,0x0,0x3,0x3,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x0,0xe0000,0x4,0x8,0x10,0x20,0x40,0x180,0x180,0x1e00,0x1e00,0x6000,0x6000,0x0,0x0,0x18000,0x18000,0x60000,0xe0000,0x80000,0x0,};
+      jj_la1_5 = new int[] {0xf,0x0,0xf,0xf,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xe,0x0,0x380000,0x10,0x20,0x40,0x80,0x100,0x600,0x600,0x7800,0x7800,0x18000,0x18000,0x0,0x0,0x60000,0x60000,0x180000,0x380000,0x200000,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[6];
   private boolean jj_rescan = false;
@@ -2194,8 +2206,8 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[181];
-    for (int i = 0; i < 181; i++) {
+    boolean[] la1tokens = new boolean[183];
+    for (int i = 0; i < 183; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -2226,7 +2238,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         }
       }
     }
-    for (int i = 0; i < 181; i++) {
+    for (int i = 0; i < 183; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

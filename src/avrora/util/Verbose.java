@@ -20,8 +20,8 @@ public class Verbose {
     }
 
     private static Printer getPrinter(String category) {
-        Printer p = (Printer)printerMap.get(category);
-        if ( p == null ) {
+        Printer p = (Printer) printerMap.get(category);
+        if (p == null) {
             p = new Printer();
             printerMap.put(category, p);
         }
@@ -37,39 +37,39 @@ public class Verbose {
         }
 
         public void println(String s) {
-            if ( enabled ) super.println(s);
+            if (enabled) super.println(s);
         }
 
         public void print(String s) {
-            if ( enabled ) super.print(s);
+            if (enabled) super.print(s);
         }
 
         public void nextln() {
-            if ( enabled ) super.nextln();
+            if (enabled) super.nextln();
         }
 
         public void indent() {
-            if ( enabled ) super.indent();
+            if (enabled) super.indent();
         }
 
         public void spaces() {
-            if ( enabled ) super.spaces();
+            if (enabled) super.spaces();
         }
 
         public void unindent() {
-            if ( enabled ) super.unindent();
+            if (enabled) super.unindent();
         }
 
         public void startblock() {
-            if ( enabled ) super.startblock();
+            if (enabled) super.startblock();
         }
 
         public void startblock(String name) {
-            if ( enabled ) super.startblock(name);
+            if (enabled) super.startblock(name);
         }
 
         public void endblock() {
-            if ( enabled ) super.endblock();
+            if (enabled) super.endblock();
         }
     }
 

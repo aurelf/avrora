@@ -9,6 +9,7 @@ import java.util.HashMap;
 /**
  * The <code>GlobalClock</code> class implements a global timer among multiple
  * simulators by inserting periodic timers into each simulator.
+ *
  * @author Ben L. Titzer
  */
 public class GlobalClock {
@@ -29,15 +30,15 @@ public class GlobalClock {
 
     public void add(SimulatorThread t) {
         // TODO: synchronization
-        if ( threadMap.containsKey(t) ) return;
+        if (threadMap.containsKey(t)) return;
         threadMap.put(t, new LocalTimer(t.getSimulator(), period));
         goal++;
     }
 
     public void remove(SimulatorThread t) {
         // TODO: synchronization
-        if ( !threadMap.containsKey(t) ) return;
-        LocalTimer lt = (LocalTimer)threadMap.get(t);
+        if (!threadMap.containsKey(t)) return;
+        LocalTimer lt = (LocalTimer) threadMap.get(t);
         lt.remove();
         threadMap.remove(t);
         goal--;
@@ -71,24 +72,23 @@ public class GlobalClock {
 
         public void fire() {
             try {
-                synchronized ( condition ) {
+                synchronized (condition) {
                     count++;
 
-                    if ( count < goal ) {
+                    if (count < goal) {
                         // if all threads have not arrived yet, wait for the last one
                         condition.wait();
-                    }
-                    else {
+                    } else {
                         // last thread to arrive sets the count to zero and notifies all other threads
                         tick();
                         condition.notifyAll();
                     }
                 }
-            } catch ( java.lang.InterruptedException e) {
+            } catch (java.lang.InterruptedException e) {
                 throw new InterruptedException(e);
             }
 
-            if ( !removed )
+            if (!removed)
                 simulator.addTimerEvent(this, cycles);
         }
 

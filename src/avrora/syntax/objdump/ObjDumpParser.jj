@@ -367,7 +367,7 @@ void   TwoOrMoreByteInstruction() :{} {
      )
 }
 
-void InstrGPRGPR() : { Token t; Operand.Register r1, r2; }
+void InstrGPRGPR() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = OpcodeGPRGPR() r1 = Register() "," r2 = Register())
     { module.addInstruction(t.image, t, r1, r2); }
@@ -381,7 +381,7 @@ Token OpcodeGPRGPR() : { Token t; }
     { return t; }
 }
 
-void InstrGPR() : { Token t; Operand.Register r1; }
+void InstrGPR() : { Token t; SyntacticOperand.Register r1; }
 {
     (t = OpcodeGPR() r1 = Register())
     { module.addInstruction(t.image, t, r1); }
@@ -394,7 +394,7 @@ Token OpcodeGPR() : { Token t; }
     { return t; }
 }
 
-void InstrGPRIMM() : { Token t; Operand.Register r1; Operand.Constant c1; }
+void InstrGPRIMM() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1; }
 {
     (t = OpcodeGPRIMM() r1 = Register() "," c1 = Const())
     { module.addInstruction(t.image, t, r1, c1); }
@@ -407,7 +407,7 @@ Token OpcodeGPRIMM() : { Token t; }
     { return t; }
 }
 
-void InstrIMM() : { Token t; Operand.Constant c1; }
+void InstrIMM() : { Token t; SyntacticOperand.Expr c1; }
 {
     (t = OpcodeIMM() c1 = Const())
     { module.addInstruction(t.image, t, c1); }
@@ -422,7 +422,7 @@ Token OpcodeIMM() : { Token t; }
     { return t; }
 }
 
-void InstrIMMIMM() : { Token t; Operand.Constant c1, c2; }
+void InstrIMMIMM() : { Token t; SyntacticOperand.Expr c1, c2; }
 {
     (t = OpcodeIMMIMM() c1 = Const() "," c2 = Const())
     { module.addInstruction(t.image, t, c1, c2); }
@@ -443,7 +443,7 @@ void InstrLoad() : {}
     InstrLPM_variant()
 }
 
-void InstrLDI() : { Token t; Operand.Register r1; Operand.Constant c1; }
+void InstrLDI() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1; }
 {
     (t = "ldi" r1 = Register() "," c1 = Const())
     { module.addInstruction(t.image, t, r1, c1); }
@@ -457,31 +457,31 @@ void InstrLD_variant() : { }
 
 }
 
-void InstrLD() : { Token t; Operand.Register r1, r2; }
+void InstrLD() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = "ld" r1 = Register() "," r2 = Register())
     { module.addInstruction("ld", t, r1, r2); }
 }
 
-void InstrLDPI() : { Token t; Operand.Register r1, r2; }
+void InstrLDPI() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = "ld" r1 = Register() "," r2 = Register() "+")
     { module.addInstruction("ldpi", t, r1, r2); }
 }
 
-void InstrLDPD() : { Token t; Operand.Register r1, r2; }
+void InstrLDPD() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = "ld" r1 = Register() "," "-" r2 = Register())
     { module.addInstruction("ldpd", t, r1, r2); }
 }
 
-void InstrLDD() : { Token t; Operand.Register r1, r2; Operand.Constant c1; }
+void InstrLDD() : { Token t; SyntacticOperand.Register r1, r2; SyntacticOperand.Expr c1; }
 {
     (t = "ldd" r1 = Register() "," r2 = Register() "+" c1 = Const())
     { module.addInstruction(t.image, t, r1, r2, c1); }
 }
 
-void InstrLDS() : { Token t; Operand.Register r1; Operand.Constant c1; }
+void InstrLDS() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1; }
 {
     (t = "lds" r1 = Register() "," c1 = Const())
     { module.addInstruction(t.image, t, r1, c1); }
@@ -495,13 +495,13 @@ void InstrLPM_variant() : {}
   | InstrLPMBARE()
 }
 
-void InstrLPMGPRGPR() : { Token t; Operand.Register r1, r2; }
+void InstrLPMGPRGPR() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = OpcodeLPM() r1 = Register() "," r2 = Register())
     { module.addInstruction(t.image+"d", t, r1, r2); }
 }
 
-void InstrLPMGPRGPRP() : { Token t; Operand.Register r1, r2; }
+void InstrLPMGPRGPRP() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = OpcodeLPM() r1 = Register() "," r2 = Register() "+")
     { module.addInstruction(t.image+"pi", t, r1, r2); }
@@ -531,31 +531,31 @@ void InstrST_variant() : { }
   | InstrSTPD()
 }
 
-void InstrST() : { Token t; Operand.Register r1, r2; }
+void InstrST() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = "st" r1 = Register() "," r2 = Register())
     { module.addInstruction("st", t, r1, r2); }
 }
 
-void InstrSTPI() : { Token t; Operand.Register r1, r2; }
+void InstrSTPI() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = "st" r1 = Register() "+" "," r2 = Register())
     { module.addInstruction("stpi", t, r1, r2); }
 }
 
-void InstrSTPD() : { Token t; Operand.Register r1, r2; }
+void InstrSTPD() : { Token t; SyntacticOperand.Register r1, r2; }
 {
     (t = "st" "-" r1 = Register() "," r2 = Register())
     { module.addInstruction("stpd", t, r1, r2); }
 }
 
-void InstrSTD() : { Token t; Operand.Register r1, r2; Operand.Constant c1; }
+void InstrSTD() : { Token t; SyntacticOperand.Register r1, r2; SyntacticOperand.Expr c1; }
 {
     (t = "std" r1 = Register() "+" c1 = Const() "," r2 = Register())
     { module.addInstruction(t.image, t, r1, c1, r2); }
 }
 
-void InstrSTS() : { Token t; Operand.Register r1; Operand.Constant c1; }
+void InstrSTS() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1; }
 {
     (t = "sts" c1 = Const() "," r1 = Register())
     { module.addInstruction(t.image, t, c1, r1); }
@@ -570,22 +570,22 @@ void InstrBARE() : { Token t; }
     { module.addInstruction(t.image, t); }
 }
 
-void InstrInput() : { Token t; Operand.Register r1; Operand.Constant c1; }
+void InstrInput() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1; }
 {
     (t = "in" r1 = Register() "," c1 = Const())
     { module.addInstruction(t.image, t, r1, c1); }
 }
 
-void InstrOutput() : { Token t; Operand.Register r1; Operand.Constant c1; }
+void InstrOutput() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1; }
 {
     t = "out" c1 = Const() "," r1 = Register()
     { module.addInstruction(t.image, t, c1, r1); }
 }
 
-Operand.Register Register() : { Token tok; }
+SyntacticOperand.Register Register() : { Token tok; }
 {
     tok = <IDENTIFIER>
-    { return new Operand.Register(tok); }
+    { return new SyntacticOperand.Register(tok); }
 }
 
 void Label() : { Token tok; }
@@ -598,10 +598,10 @@ void Label() : { Token tok; }
     { module.addLabel(tok); }
 }
 
-Operand.Constant Const() : { Expr e; }
+SyntacticOperand.Expr Const() : { Expr e; }
 {
   (LOOKAHEAD(Term() BinOp()) e = BinOpExpr() | e = Term() )
-  { return new Operand.Constant(e); }
+  { return new SyntacticOperand.Expr(e); }
 }
 
 Expr Term() : { Token tok; Expr e; }
@@ -615,10 +615,11 @@ Expr Term() : { Token tok; Expr e; }
   { return e; }
 }
 
-Expr BinOpExpr() : { Token tok; Expr l; Expr r; }
+Expr BinOpExpr() : { Token ltok; Token op; Token rtok; }
 {
- (l = Term() tok = BinOp() r = Term())
- { return new Expr.BinOp(tok, l, r); }
+ (ltok = "." op = BinOp() rtok = <INTEGER_LITERAL>)
+ // note: objdump format gives this offset as a byte address, so divide by 2!!
+ { return new Expr.BinOp(op, new Expr.CurrentAddress(ltok), new Expr.HalfConstant(rtok)); }
 }
 
 Token BinOp() : { Token tok; }

@@ -1,4 +1,3 @@
-
 package avrora.stack;
 
 import avrora.core.Register;
@@ -9,6 +8,7 @@ import avrora.util.StringUtil;
  * The <code>AbstractState</code> class represents an abstract state within
  * the state space. The program counter, the status register, the registers,
  * and the interrupt mask register are modelled.
+ *
  * @author Ben L. Titzer
  */
 public abstract class AbstractState implements IORegisterConstants {
@@ -22,9 +22,9 @@ public abstract class AbstractState implements IORegisterConstants {
      * that follow 2. This is used in the computation of the hash code.
      */
     public static final int primes[] = {
-        3,     5,   7,  11,  13,  17,  19,  23,  29,  31,
-        37,   41,  43,  47,  53,  59,  61,  67,  71,  73,
-        79,   83,  89,  97, 101, 103, 107, 109, 113, 127,
+        3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+        37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
+        79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
         131, 137
     };
 
@@ -38,17 +38,19 @@ public abstract class AbstractState implements IORegisterConstants {
         int hash = pc;
         hash += av_SREG;
         hash += av_EIMSK;
-        for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
+        for (int cntr = 0; cntr < NUM_REGS; cntr++)
             hash += av_REGISTERS[cntr] * primes[cntr];
         return hash;
     }
 
     public abstract int hashCode();
+
     public abstract boolean equals(Object o);
 
     /**
      * The <code>getPC()</code> method returns the concrete value of the program counter.
      * The program counter is known in every abstract state.
+     *
      * @return the concrete value of the program counter
      */
     public int getPC() {
@@ -57,6 +59,7 @@ public abstract class AbstractState implements IORegisterConstants {
 
     /**
      * The <code>getSREG()</code> method reads the abstract value of the status register.
+     *
      * @return the abstract value of the status register
      */
     public char getSREG() {
@@ -65,51 +68,75 @@ public abstract class AbstractState implements IORegisterConstants {
 
     /**
      * The <code>getFlag_I()</code> method returns the abstract value of the I flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_I() { return AbstractArithmetic.getBit(av_SREG, SREG_I); }
+    public char getFlag_I() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_I);
+    }
 
     /**
      * The <code>getFlag_T()</code> method returns the abstract value of the T flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_T() { return AbstractArithmetic.getBit(av_SREG, SREG_T); }
+    public char getFlag_T() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_T);
+    }
 
     /**
      * The <code>getFlag_H()</code> method returns the abstract value of the H flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_H() { return AbstractArithmetic.getBit(av_SREG, SREG_H); }
+    public char getFlag_H() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_H);
+    }
 
     /**
      * The <code>getFlag_S()</code> method returns the abstract value of the S flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_S() { return AbstractArithmetic.getBit(av_SREG, SREG_S); }
+    public char getFlag_S() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_S);
+    }
 
     /**
      * The <code>getFlag_V()</code> method returns the abstract value of the V flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_V() { return AbstractArithmetic.getBit(av_SREG, SREG_V); }
+    public char getFlag_V() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_V);
+    }
 
     /**
      * The <code>getFlag_N()</code> method returns the abstract value of the N flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_N() { return AbstractArithmetic.getBit(av_SREG, SREG_N); }
+    public char getFlag_N() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_N);
+    }
 
     /**
      * The <code>getFlag_Z()</code> method returns the abstract value of the Z flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_Z() { return AbstractArithmetic.getBit(av_SREG, SREG_Z); }
+    public char getFlag_Z() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_Z);
+    }
 
     /**
      * The <code>getFlag_C()</code> method returns the abstract value of the C flag.
+     *
      * @return the new abstract bit of the flag
      */
-    public char getFlag_C() { return AbstractArithmetic.getBit(av_SREG, SREG_C); }
+    public char getFlag_C() {
+        return AbstractArithmetic.getBit(av_SREG, SREG_C);
+    }
 
 
     /**
@@ -118,18 +145,20 @@ public abstract class AbstractState implements IORegisterConstants {
      * this will return an abstract value that represents the current value of
      * the IO register. For IO registers that are not being modelled, it will
      * return the abstract value corresponding to all bits being unknown.
+     *
      * @param num the IO register number to read
      * @return the (abstract) value of the specified IO register
      */
     public char getIORegisterAV(int num) {
-        if ( num == IORegisterConstants.SREG ) return av_SREG;
-        if ( num == IORegisterConstants.EIMSK ) return av_EIMSK;
+        if (num == IORegisterConstants.SREG) return av_SREG;
+        if (num == IORegisterConstants.EIMSK) return av_EIMSK;
         return AbstractArithmetic.UNKNOWN;
     }
 
     /**
      * The <code>getRegisterByte()</code> method reads the abstract value of a
      * register in the abstract state.
+     *
      * @param r the register to read
      * @return the abstract value of the register
      */
@@ -145,6 +174,7 @@ public abstract class AbstractState implements IORegisterConstants {
      * The <code>copy()</code> method returns a deep copy of this state. This is
      * generally used for forking operations and for storing internal copies within
      * the <code>StateSpace</code>.
+     *
      * @return a new deep copy of this abstract state
      */
     public MutableState copy() {
@@ -166,7 +196,7 @@ public abstract class AbstractState implements IORegisterConstants {
         appendBit('Z', getFlag_Z(), buf);
         appendBit('C', getFlag_C(), buf);
 
-        for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
+        for (int cntr = 0; cntr < NUM_REGS; cntr++) {
             buf.append(" R");
             buf.append(cntr);
             buf.append(": ");
@@ -184,7 +214,7 @@ public abstract class AbstractState implements IORegisterConstants {
         //ITHSVNZC
         buf.append(AbstractArithmetic.toString(av_SREG));
 
-        for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
+        for (int cntr = 0; cntr < NUM_REGS; cntr++) {
             buf.append(' ');
             AbstractArithmetic.toString(av_REGISTERS[cntr], buf);
         }
@@ -195,14 +225,14 @@ public abstract class AbstractState implements IORegisterConstants {
     static String headerString;
 
     public static String getHeaderString() {
-        if ( headerString != null ) return headerString;
+        if (headerString != null) return headerString;
 
         StringBuffer buf = new StringBuffer();
         buf.append("PC   ");
         buf.append("ITHSVNZC");
-        for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
+        for (int cntr = 0; cntr < NUM_REGS; cntr++) {
             buf.append(' ');
-            buf.append(StringUtil.leftJustify("R"+cntr, 8));
+            buf.append(StringUtil.leftJustify("R" + cntr, 8));
         }
 
         return buf.toString();

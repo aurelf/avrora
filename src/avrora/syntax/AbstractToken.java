@@ -2,6 +2,7 @@ package avrora.syntax;
 
 /**
  * This class is used to unify the Token classes from all JavaCC-generated parsers.
+ *
  * @author Ben L. Titzer
  */
 public abstract class AbstractToken {

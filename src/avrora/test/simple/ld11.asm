@@ -6,7 +6,8 @@
 start:
     ldi r17, 42
     sts memory, r17
-    ldi r30, memory
+    ldi r30, low(memory)
+    ldi r31, high(memory)
     ld r16, z
 
 end:
@@ -16,5 +17,6 @@ data:
 
 .dseg
 
+    .byte 224 ; skip any IO registers
 memory:
     .byte 2

@@ -8,16 +8,16 @@ import avrora.sim.Simulator;
  * that will fire at a given number of cycles in the future. An internal delta
  * list is maintained where each link in the list represents a set of triggers
  * to be fired some number of clock cycles after the previous link.
- *
+ * <p/>
  * Each delta between links is maintained to be non-zero. Thus, to insert a
  * trigger X cycles in the future, at most X nodes will be skipped over. Therefore
  * over X time steps, this cost is amortized to be constant.
- *
+ * <p/>
  * For each clock cycle, only the first node in the list must be checked, leading
  * to constant time work per clock cycle.
- *
+ * <p/>
  * This class allows the clock to be advanced multiple ticks at a time.
- *
+ * <p/>
  * Also, since this class is used heavily in the simulator, its performance is
  * important and maintains an internal cache of objects. Thus, it does not create
  * garbage over its execution and never uses more space than is required to store
@@ -48,7 +48,7 @@ public class DeltaQueue {
         }
 
         void add(Simulator.Trigger t) {
-            if ( head == null ) {
+            if (head == null) {
                 head = tail = newList(t);
             } else {
                 tail.next = newList(t);
@@ -59,13 +59,15 @@ public class DeltaQueue {
         void remove(Simulator.Trigger t) {
             TriggerLink prev = null;
             TriggerLink pos = head;
-            while ( pos != null ) {
+            while (pos != null) {
                 TriggerLink next = pos.next;
 
-                if ( pos.trigger == t ) {
+                if (pos.trigger == t) {
                     // remove the whole thing.
-                    if ( prev == null ) head = pos.next;
-                    else prev.next = pos.next;
+                    if (prev == null)
+                        head = pos.next;
+                    else
+                        prev.next = pos.next;
 
                     free(pos);
                 } else {
@@ -76,7 +78,7 @@ public class DeltaQueue {
         }
 
         void fire() {
-            for ( TriggerLink pos = head; pos != null; pos = pos.next ) {
+            for (TriggerLink pos = head; pos != null; pos = pos.next) {
                 pos.trigger.fire();
             }
         }
@@ -88,12 +90,13 @@ public class DeltaQueue {
 
     /**
      * The <code>add</code> method adds a trigger to be executed in the future.
-     * @param t the trigger to fire
+     *
+     * @param t      the trigger to fire
      * @param cycles the number of clock cycles in the future
      */
     public void add(Simulator.Trigger t, long cycles) {
         // degenerate case, nothing in the queue.
-        if ( head == null ) {
+        if (head == null) {
             head = newLink(t, cycles, null);
             return;
         }
@@ -101,16 +104,16 @@ public class DeltaQueue {
         // search for first link that is "after" this cycle delta
         Link prev = null;
         Link pos = head;
-        while ( pos != null && cycles > pos.delta ) {
+        while (pos != null && cycles > pos.delta) {
             cycles -= pos.delta;
             prev = pos;
             pos = pos.next;
         }
 
-        if ( pos == null ) {
+        if (pos == null) {
             // end of the head
             prev.next = newLink(t, cycles, null);
-        } else if ( cycles == pos.delta ) {
+        } else if (cycles == pos.delta) {
             // exactly matched the delta of some other event
             pos.add(t);
         } else {
@@ -122,22 +125,25 @@ public class DeltaQueue {
     /**
      * The <code>remove</code> method removes all occurrences of the specified
      * trigger within the delta queue.
+     *
      * @param e
      */
     public void remove(Simulator.Trigger e) {
-        if ( head == null ) return;
+        if (head == null) return;
 
         // search for first link that is "after" this cycle delta
         Link prev = null;
         Link pos = head;
-        while ( pos != null ) {
+        while (pos != null) {
             Link next = pos.next;
             pos.remove(e);
 
-            if ( pos.head == null ) {
+            if (pos.head == null) {
                 // remove the whole thing.
-                if ( prev == null ) head = pos.next;
-                else prev.next = pos.next;
+                if (prev == null)
+                    head = pos.next;
+                else
+                    prev.next = pos.next;
 
                 free(pos);
             } else {
@@ -150,10 +156,11 @@ public class DeltaQueue {
     /**
      * The <code>advance</code> method advances timesteps through the queue by the
      * specified number of clock cycles, processing any triggers.
+     *
      * @param cycles the number of clock cycles to advance
      */
     public void advance(long cycles) {
-        while ( head != null && cycles >= 0 ) {
+        while (head != null && cycles >= 0) {
 
             Link pos = head;
             Link next = pos.next;
@@ -162,7 +169,7 @@ public class DeltaQueue {
             pos.delta = -left;
 
             // if haven't arrived yet, break
-            if ( pos.delta > 0 ) break;
+            if (pos.delta > 0) break;
 
             // chop off head
             head = next;
@@ -194,8 +201,8 @@ public class DeltaQueue {
 
     private Link newLink(Simulator.Trigger t, long cycles, Link next) {
         Link l;
-        if ( freeLinks == null )
-            // if none in the free list, allocate one
+        if (freeLinks == null)
+        // if none in the free list, allocate one
             l = new Link(t, cycles);
         else {
             // grab one from the free list
@@ -206,7 +213,7 @@ public class DeltaQueue {
         }
 
         // adjust delta in the next link in the chain
-        if ( next != null ) {
+        if (next != null) {
             next.delta -= cycles;
         }
 
@@ -217,7 +224,7 @@ public class DeltaQueue {
     private TriggerLink newList(Simulator.Trigger t) {
         TriggerLink l;
 
-        if ( freeTriggerLinks == null ) {
+        if (freeTriggerLinks == null) {
             l = new TriggerLink(t);
         } else {
             l = freeTriggerLinks;

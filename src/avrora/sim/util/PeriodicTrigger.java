@@ -7,8 +7,9 @@ import avrora.sim.Simulator;
  * to be inserted into the simulator that will fire with a specified period of clock
  * cycles. It works by automatically adding itself back into the timer queue at each
  * firing.
- * @see avrora.sim.Simulator.Trigger
+ *
  * @author Ben L. Titzer
+ * @see avrora.sim.Simulator.Trigger
  */
 public class PeriodicTrigger implements Simulator.Trigger {
     /**
@@ -35,7 +36,7 @@ public class PeriodicTrigger implements Simulator.Trigger {
      * fires, it will be added again back into the simulator's timer event
      * queue with the same delta. The result is the specified trigger fires
      * with the precise period specified.
-     *
+     * <p/>
      * Creating the <code>PeriodicTrigger</code> does not insert it into
      * the simulator. It is important that these instances of
      * <code>Simulator</code> match--this probe will always reinsert itself

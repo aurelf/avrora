@@ -4,6 +4,7 @@ package avrora.util;
  * The <code>Arithmetic</code> class implements a set of useful methods that
  * are used by the simulator and assembler for converting java types to
  * various data types used by the machine.
+ *
  * @author Ben L. Titzer
  */
 public class Arithmetic {
@@ -76,13 +77,31 @@ public class Arithmetic {
 
     public static int lowestBit(long value) {
         int low = 0;
-        
-        if ( (value & 0xFFFFFFFF) == 0 ) { low += 32; value = value >> 32; }
-        if ( (value & 0xFFFF) == 0 ) { low += 16; value = value >> 16; }
-        if ( (value & 0xFF) == 0 ) { low += 8; value = value >> 8; }
-        if ( (value & 0xF) == 0 ) { low += 4; value = value >> 4; }
-        if ( (value & 0x3) == 0 ) { low += 2; value = value >> 2; }
-        if ( (value & 0x1) == 0 ) { low += 1; value = value >> 1; }
+
+        if ((value & 0xFFFFFFFF) == 0) {
+            low += 32;
+            value = value >> 32;
+        }
+        if ((value & 0xFFFF) == 0) {
+            low += 16;
+            value = value >> 16;
+        }
+        if ((value & 0xFF) == 0) {
+            low += 8;
+            value = value >> 8;
+        }
+        if ((value & 0xF) == 0) {
+            low += 4;
+            value = value >> 4;
+        }
+        if ((value & 0x3) == 0) {
+            low += 2;
+            value = value >> 2;
+        }
+        if ((value & 0x1) == 0) {
+            low += 1;
+            value = value >> 1;
+        }
 
         return (value == 0) ? -1 : low;
     }
@@ -92,6 +111,6 @@ public class Arithmetic {
     };
 
     public static byte reverseBits(byte value) {
-        return (byte)(reverseKey[value&0x0f] << 4 | reverseKey[(value >> 4) & 0x0f]);
+        return (byte) (reverseKey[value & 0x0f] << 4 | reverseKey[(value >> 4) & 0x0f]);
     }
 }

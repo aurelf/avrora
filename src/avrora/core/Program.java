@@ -15,8 +15,8 @@ import java.util.Iterator;
  * a map of labels (strings) to addresses, which can be either
  * case sensitive (GAS style) or case insensitive (Atmel style).
  *
- * @see Instr 
  * @author Ben L. Titzer
+ * @see Instr
  */
 public class Program {
 
@@ -184,9 +184,10 @@ public class Program {
     }
 
     private String labelName(String n) {
-        if ( caseSensitive )
+        if (caseSensitive)
             return n;
-        else return n.toLowerCase();
+        else
+            return n.toLowerCase();
     }
 
     public Elem[] makeImpression(int size) {
@@ -218,7 +219,7 @@ public class Program {
     protected void checkAddress(int addr) {
         // TODO: throw correct error type
         if (addr < program_start || addr >= program_end)
-            throw Avrora.failure("address out of range: "+addr);
+            throw Avrora.failure("address out of range: " + addr);
     }
 
     public void dump() {

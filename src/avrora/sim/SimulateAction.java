@@ -18,6 +18,7 @@ import java.util.List;
  * called by the main class after the options have been processed. The <code>run()</code>
  * reads in the program, processes breakpoints, profiling counters, and other
  * options, and begins the simulation.
+ *
  * @author Ben L. Titzer
  */
 public class SimulateAction extends Main.Action {
@@ -42,10 +43,10 @@ public class SimulateAction extends Main.Action {
             String cnt = StringUtil.rightJustify(count, 8);
             String addr = addrToString(location.address);
             String name;
-            if ( location.name != null )
-                name = "    "+location.name+" @ "+addr;
+            if (location.name != null)
+                name = "    " + location.name + " @ " + addr;
             else
-                name = "    "+addr;
+                name = "    " + addr;
             reportQuantity(name, cnt, "");
         }
     }
@@ -62,25 +63,26 @@ public class SimulateAction extends Main.Action {
             String ntcnt = StringUtil.rightJustify(nottakenCount, 8);
             String addr = addrToString(location.address);
             String name;
-            if ( location.name != null )
-                name = "    "+location.name+" @ "+addr;
+            if (location.name != null)
+                name = "    " + location.name + " @ " + addr;
             else
-                name = "    "+addr;
-            reportQuantity(name, tcnt+" "+ntcnt, "taken/not taken");
+                name = "    " + addr;
+            reportQuantity(name, tcnt + " " + ntcnt, "taken/not taken");
         }
     }
 
     /**
      * The <code>run()</code> method is called by the main class.
+     *
      * @param args the command line arguments after the options have been stripped out
      * @throws Exception if there is a problem loading the program, or an exception
-     * occurs during simulation
+     *                   occurs during simulation
      */
     public void run(String[] args) throws Exception {
         Main.ProgramReader r = Main.getProgramReader();
         program = r.read(args);
         PlatformFactory pf = Main.getPlatform();
-        if ( pf != null )
+        if (pf != null)
             simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();
         else
             simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
@@ -94,7 +96,7 @@ public class SimulateAction extends Main.Action {
         processTimeout();
         processProfile();
 
-        if ( Main.TRACE.get() ) {
+        if (Main.TRACE.get()) {
             simulator.insertProbe(Simulator.TRACEPROBE);
         }
 
@@ -123,8 +125,8 @@ public class SimulateAction extends Main.Action {
 
     void processBreakPoints() {
         Iterator i = Main.getLocationList(program, Main.BREAKS.get()).iterator();
-        while ( i.hasNext() ) {
-            Main.Location l = (Main.Location)i.next();
+        while (i.hasNext()) {
+            Main.Location l = (Main.Location) i.next();
             simulator.insertBreakPoint(l.address);
         }
     }
@@ -132,8 +134,8 @@ public class SimulateAction extends Main.Action {
     void processCounters() {
         List locs = Main.getLocationList(program, Main.COUNTS.get());
         Iterator i = locs.iterator();
-        while ( i.hasNext() ) {
-            Main.Location l = (Main.Location)i.next();
+        while (i.hasNext()) {
+            Main.Location l = (Main.Location) i.next();
             Counter c = new Counter(l);
             counters.add(c);
             simulator.insertProbe(c, l.address);
@@ -141,12 +143,12 @@ public class SimulateAction extends Main.Action {
     }
 
     void reportCounters() {
-        if ( counters.isEmpty() ) return;
+        if (counters.isEmpty()) return;
         Terminal.printGreen(" Counter results\n");
         printSeparator();
         Iterator i = counters.iterator();
-        while ( i.hasNext() ) {
-            Counter c = (Counter)i.next();
+        while (i.hasNext()) {
+            Counter c = (Counter) i.next();
             c.report();
         }
     }
@@ -154,8 +156,8 @@ public class SimulateAction extends Main.Action {
     void processBranchCounters() {
         List locs = Main.getLocationList(program, Main.COUNTS.get());
         Iterator i = locs.iterator();
-        while ( i.hasNext() ) {
-            Main.Location l = (Main.Location)i.next();
+        while (i.hasNext()) {
+            Main.Location l = (Main.Location) i.next();
             BranchCounter c = new BranchCounter(l);
             branchcounters.add(c);
             simulator.insertProbe(c, l.address);
@@ -163,23 +165,23 @@ public class SimulateAction extends Main.Action {
     }
 
     void reportBranchCounters() {
-        if ( branchcounters.isEmpty() ) return;
+        if (branchcounters.isEmpty()) return;
         Terminal.printGreen(" Branch counter results\n");
         printSeparator();
         Iterator i = branchcounters.iterator();
-        while ( i.hasNext() ) {
-            BranchCounter c = (BranchCounter)i.next();
+        while (i.hasNext()) {
+            BranchCounter c = (BranchCounter) i.next();
             c.report();
         }
     }
 
     void processProfile() {
-        if ( Main.PROFILE.get() )
+        if (Main.PROFILE.get())
             simulator.insertProbe(profile = new ProgramProfiler(program));
     }
 
     void reportProfile() {
-        if ( profile != null ) {
+        if (profile != null) {
             Terminal.printGreen(" Profiling results\n");
             printSeparator();
             double total = 0;
@@ -187,36 +189,36 @@ public class SimulateAction extends Main.Action {
             int imax = icount.length;
 
             // compute the total for percentage calculations
-            for ( int cntr = 0; cntr < imax; cntr++ ) {
+            for (int cntr = 0; cntr < imax; cntr++) {
                 total += icount[cntr];
             }
 
-            for ( int cntr = 0; cntr < imax; cntr += 2) {
+            for (int cntr = 0; cntr < imax; cntr += 2) {
                 int start = cntr;
                 int runlength = 1;
                 long c = icount[cntr];
 
-                while ( cntr < imax - 2) {
-                    if ( icount[cntr+2] != c ) break;
+                while (cntr < imax - 2) {
+                    if (icount[cntr + 2] != c) break;
                     cntr += 2;
                     runlength++;
                 }
 
                 String cnt = StringUtil.rightJustify(c, 8);
-                float pcnt = (float)(100*c / total);
-                String percent = toFixedFloat(pcnt, 4)+" %";
+                float pcnt = (float) (100 * c / total);
+                String percent = toFixedFloat(pcnt, 4) + " %";
                 String addr;
-                if ( runlength > 1 ) {
-                    addr = addrToString(start)+"-"+addrToString(cntr);
-                    if ( c != 0 ) {
-                        percent += "  x"+runlength;
-                        percent += "  = "+toFixedFloat(pcnt*runlength, 4)+" %";
+                if (runlength > 1) {
+                    addr = addrToString(start) + "-" + addrToString(cntr);
+                    if (c != 0) {
+                        percent += "  x" + runlength;
+                        percent += "  = " + toFixedFloat(pcnt * runlength, 4) + " %";
                     }
                 } else {
-                    addr = "     "+addrToString(start);
+                    addr = "     " + addrToString(start);
                 }
 
-                reportQuantity("    "+addr, cnt, "  "+percent);
+                reportQuantity("    " + addr, cnt, "  " + percent);
             }
         }
     }
@@ -226,38 +228,38 @@ public class SimulateAction extends Main.Action {
     }
 
     void processTotal() {
-        if ( Main.TOTAL.get() ) {
+        if (Main.TOTAL.get()) {
             simulator.insertProbe(total = new avrora.sim.util.Counter());
         }
     }
 
     void reportTotal() {
-        if ( total != null )
+        if (total != null)
             reportQuantity("Total instructions executed", total.count, "");
     }
 
     void processTimeout() {
         long timeout = Main.TIMEOUT.get();
-        if ( timeout > 0 )
+        if (timeout > 0)
             simulator.insertProbe(new Simulator.InstructionCountTimeout(timeout));
     }
 
     void reportCycles() {
-        if ( Main.CYCLES.get() ) {
+        if (Main.CYCLES.get()) {
             reportQuantity("Total clock cycles", simulator.getState().getCycles(), "cycles");
         }
     }
 
     void reportTime() {
         long diff = endms - startms;
-        if ( Main.TIME.get() ) {
+        if (Main.TIME.get()) {
             reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "");
-            if ( total != null ) {
-                float thru = ((float)total.count) / (diff*1000);
+            if (total != null) {
+                float thru = ((float) total.count) / (diff * 1000);
                 reportQuantity("Average throughput", thru, "mips");
             }
-            if ( Main.CYCLES.get() ) {
-                float thru = ((float)simulator.getState().getCycles()) / (diff*1000);
+            if (Main.CYCLES.get()) {
+                float thru = ((float) simulator.getState().getCycles()) / (diff * 1000);
                 reportQuantity("Average throughput", thru, "mhz");
             }
         }
@@ -279,7 +281,7 @@ public class SimulateAction extends Main.Action {
         Terminal.printGreen(name);
         Terminal.print(": ");
         Terminal.printBrightCyan(val);
-        Terminal.println(" "+units);
+        Terminal.println(" " + units);
     }
 
     // warning! only works on numbers < 100!!!!
@@ -288,16 +290,16 @@ public class SimulateAction extends Main.Action {
         StringBuffer buf = new StringBuffer();
         float radix = 100;
         boolean nonzero = false;
-        for ( int cntr = 0; cntr < places+3; cntr++ ) {
-            int digit = ((int)(f/radix))%10;
-            char dchar = (char)(digit+'0');
+        for (int cntr = 0; cntr < places + 3; cntr++) {
+            int digit = ((int) (f / radix)) % 10;
+            char dchar = (char) (digit + '0');
 
-            if ( digit != 0 ) nonzero = true;
+            if (digit != 0) nonzero = true;
 
-            if ( digit == 0 && !nonzero && cntr < 2) dchar = ' ';
+            if (digit == 0 && !nonzero && cntr < 2) dchar = ' ';
 
             buf.append(dchar);
-            if ( cntr == 2 ) buf.append('.');
+            if (cntr == 2) buf.append('.');
             radix = radix / 10;
         }
 

@@ -167,8 +167,8 @@ public class SimpleCharStream {
     }
 
     /**
-     * @deprecated
      * @see #getEndColumn
+     * @deprecated
      */
 
     public int getColumn() {
@@ -176,8 +176,8 @@ public class SimpleCharStream {
     }
 
     /**
-     * @deprecated
      * @see #getEndLine
+     * @deprecated
      */
 
     public int getLine() {

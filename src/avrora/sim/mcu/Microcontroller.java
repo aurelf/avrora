@@ -9,6 +9,7 @@ import avrora.sim.Simulator;
  * that implements the AVR instruction set. This interface contains methods that
  * get commonly needed information about the particular hardware device and
  * and can load programs onto this virtual device.
+ *
  * @author Ben L. Titzer
  */
 public interface Microcontroller extends MicrocontrollerProperties {
@@ -17,6 +18,7 @@ public interface Microcontroller extends MicrocontrollerProperties {
      * The <code>Pin</code> interface encapsulates the notion of a physical
      * pin on the microcontroller chip. It is generally used in wiring up
      * external devices to the microcontroller.
+     *
      * @author Ben L. Titzer
      */
     public interface Pin {
@@ -28,7 +30,9 @@ public interface Microcontroller extends MicrocontrollerProperties {
          */
         public interface Input {
             public void enableInput();
+
             public void disableInput();
+
             public boolean read();
         }
 
@@ -40,7 +44,9 @@ public interface Microcontroller extends MicrocontrollerProperties {
          */
         public interface Output {
             public void enableOutput();
+
             public void disableOutput();
+
             public void write(boolean level);
         }
 
@@ -49,14 +55,17 @@ public interface Microcontroller extends MicrocontrollerProperties {
          * specified input. Attempts by the microcontroller to read from this
          * pin when it is configured as an input will then call this instance's
          * <code>read()</code> method.
+         *
          * @param i the <code>Input</code> instance to connect to
          */
         public void connect(Input i);
+
         /**
          * The <code>connect()</code> method will connect this pin to the
          * specified output. Attempts by the microcontroller to write to this
          * pin when it is configured as an output will then call this instance's
          * <code>read()</code> method.
+         *
          * @param o the <code>Output</code> instance to connect to
          */
         public void connect(Output o);
@@ -65,8 +74,9 @@ public interface Microcontroller extends MicrocontrollerProperties {
     /**
      * The <code>getSimulator()</code> method gets a simulator instance that is
      * capable of emulating this hardware device.
+     *
      * @return a <code>Simulator</code> instance corresponding to this
-     * device
+     *         device
      */
     public Simulator getSimulator();
 
@@ -75,9 +85,10 @@ public interface Microcontroller extends MicrocontrollerProperties {
      * reference to that pin. Names of pins should be UPPERCASE. The intended
      * users of this method are external device implementors which connect
      * their devices to the microcontroller through the pins.
+     *
      * @param name the name of the pin; for example "PA0" or "OC1A"
      * @return a reference to the <code>Pin</code> object corresponding to
-     * the named pin if it exists; null otherwise
+     *         the named pin if it exists; null otherwise
      */
     public Pin getPin(String name);
 
@@ -86,9 +97,10 @@ public interface Microcontroller extends MicrocontrollerProperties {
      * and returns a reference to that pin. The intended
      * users of this method are external device implementors which connect
      * their devices to the microcontroller through the pins.
+     *
      * @param num the pin number to look up
      * @return a reference to the <code>Pin</code> object corresponding to
-     * the named pin if it exists; null otherwise
+     *         the named pin if it exists; null otherwise
      */
     public Pin getPin(int num);
 }

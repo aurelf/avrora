@@ -11,8 +11,8 @@ import avrora.sim.State;
  * a simple array of <code>long</code> that stores the count for every
  * instruction.
  *
- * @see avrora.sim.util.Counter
  * @author Ben L. Titzer
+ * @see avrora.sim.util.Counter
  */
 public class ProgramProfiler implements Simulator.Probe {
 
@@ -33,6 +33,7 @@ public class ProgramProfiler implements Simulator.Probe {
     /**
      * The constructor for the program profiler constructs the required internal
      * state to store the invocation counts of each instruction.
+     *
      * @param p the program to profile
      */
     public ProgramProfiler(Program p) {
@@ -46,9 +47,9 @@ public class ProgramProfiler implements Simulator.Probe {
      * executes. In the implementation of the program profiler, it simply increments the
      * count of the instruction at the specified address.
      *
-     * @param i the instruction being probed
+     * @param i       the instruction being probed
      * @param address the address at which this instruction resides
-     * @param state the state of the simulation
+     * @param state   the state of the simulation
      */
     public void fireBefore(Instr i, int address, State state) {
         icount[address]++;
@@ -58,9 +59,9 @@ public class ProgramProfiler implements Simulator.Probe {
      * The <code>fireAfter()</code> method is called after the probed instruction
      * executes. In the implementation of the profiler, it does nothing.
      *
-     * @param i the instruction being probed
+     * @param i       the instruction being probed
      * @param address the address at which this instruction resides
-     * @param state the state of the simulation
+     * @param state   the state of the simulation
      */
     public void fireAfter(Instr i, int address, State state) {
         // do nothing.

@@ -13,6 +13,7 @@ import java.util.HashMap;
  * The <code>ATMega128L</code> class represents the <code>Microcontroller</code>
  * instance that has all the hardware parameters of the ATMega128L microcontroller
  * as produced by Atmel Corporatation.
+ *
  * @author Ben L. Titzer
  */
 public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
@@ -33,15 +34,15 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     static {
         pinNumbers = new HashMap();
 
-        newPin(1,  "PEN");
-        newPin(2,  "PEO", "RXD0", "PDI");
-        newPin(3,  "PE1", "TXD0", "PDO");
-        newPin(4,  "PE2", "XCK0", "AIN0");
-        newPin(5,  "PE3", "OC3A", "AIN1");
-        newPin(6,  "PE4", "OC3B", "INT4");
-        newPin(7,  "PE5", "OC3C", "INT5");
-        newPin(8,  "PE6", "T3",   "INT6");
-        newPin(9,  "PE7", "IC3",  "INT7");
+        newPin(1, "PEN");
+        newPin(2, "PE0", "RXD0", "PDI");
+        newPin(3, "PE1", "TXD0", "PDO");
+        newPin(4, "PE2", "XCK0", "AIN0");
+        newPin(5, "PE3", "OC3A", "AIN1");
+        newPin(6, "PE4", "OC3B", "INT4");
+        newPin(7, "PE5", "OC3C", "INT5");
+        newPin(8, "PE6", "T3", "INT6");
+        newPin(9, "PE7", "IC3", "INT7");
         newPin(10, "PB0", "SS");
         newPin(11, "PB1", "SCK");
         newPin(12, "PB2", "MOSI");
@@ -49,7 +50,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         newPin(14, "PB4", "OC0");
         newPin(15, "PB5", "OC1A");
         newPin(16, "PB6", "OC1B");
-        newPin(17, "PB7", "OC2",  "OC1C");
+        newPin(17, "PB7", "OC2", "OC1C");
         newPin(18, "PG3", "TOSC2");
         newPin(19, "PG4", "TOSC1");
         newPin(20, "RESET");
@@ -134,21 +135,46 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         protected boolean read() {
-            pinPrinter.println("Pin["+number+"].read()");
-            if ( !outputDir ) {
-                pinPrinter.println("  -> 1");
-                if ( input != null ) return input.read();
-                else return pullup;
+            boolean result;
+            if ( pinPrinter.enabled ) printRead();
+            if (!outputDir) {
+                if (input != null) result = input.read();
+                else  result = pullup;
+
             } else {
-                pinPrinter.println("  -> 2 ("+level+")");
-                return level;
+                result = level;
+            }
+            if ( pinPrinter.enabled ) pinPrinter.println(" -> "+result);
+            return result;
+        }
+
+        private void printRead() {
+            pinPrinter.print("Pin[" + number + "].read() ");
+            printDirection();
+        }
+
+        private void printDirection() {
+            if (!outputDir) {
+                if (input != null)
+                    pinPrinter.print("[input] ");
+                else
+                    pinPrinter.print("[pullup:"+pullup+"] ");
+
+            } else {
+                pinPrinter.print("[output] ");
             }
         }
 
         protected void write(boolean value) {
-            pinPrinter.println("Pin["+number+"].write("+value+")");
             level = value;
-            if ( outputDir && output != null ) output.write(value);
+            if ( pinPrinter.enabled ) printWrite(value);
+            if (outputDir && output != null) output.write(value);
+        }
+
+        private void printWrite(boolean value) {
+            pinPrinter.print("Pin[" + number + "].write(" + value + ") ");
+            printDirection();
+            pinPrinter.nextln();
         }
     }
 
@@ -187,7 +213,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     }
 
     protected void installPins() {
-        for ( int cntr = 0; cntr < NUM_PINS; cntr++ )
+        for (int cntr = 0; cntr < NUM_PINS; cntr++)
             pins[cntr] = new Pin(cntr);
 
         // TODO: install reserved pins like VCC
@@ -197,6 +223,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * The <code>getRamSize()</code> method returns the number of bytes of
      * SRAM present on this hardware device. On the Atmega128L
      * this number is 4096 (4KB).
+     *
      * @return the number of bytes of SRAM on this hardware device
      */
     public int getRamSize() {
@@ -207,6 +234,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * The <code>getIORegSize()</code> method returns the number of IO registers
      * that are present on this hardware device. On the Atmega128L
      * this number is 224 (256 - 32).
+     *
      * @return the number of IO registers supported on this hardware device
      */
     public int getIORegSize() {
@@ -218,6 +246,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * the flash memory on this hardware device. The flash memory stores the
      * initialized data and the machine code instructions of the program. On
      * the Atmega128L, this number is 131,072 (128K).
+     *
      * @return the size of the flash memory in bytes
      */
     public int getFlashSize() {
@@ -228,6 +257,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * The <code>getEEPromSize()</code> method returns the size in bytes of
      * the EEPROM on this hardware device. On the ATmega128L, this number is
      * 4096.
+     *
      * @return the size of the EEPROM in bytes
      */
     public int getEEPromSize() {
@@ -240,9 +270,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * implementations of the AVR instruction set preceded the introduction
      * of certain instructions, and therefore did not support the new
      * instructions.
+     *
      * @param i the instruction prototype of the instruction
      * @return true if the specified instruction is supported on this device;
-     * false otherwise
+     *         false otherwise
      */
     public boolean isSupported(InstrPrototype i) {
         return true;
@@ -251,8 +282,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     /**
      * The <code>getSimulator()</code> method gets a simulator instance that is
      * capable of emulating this hardware device.
+     *
      * @return a <code>Simulator</code> instance corresponding to this
-     * device
+     *         device
      */
     public Simulator getSimulator() {
         return simulator;
@@ -262,6 +294,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * The <code>getHZ()</code> method returns the number of cycles per second
      * at which this hardware device is designed to run. The
      * Atmega128L runs at 7.3278MHz, so this method will return 7,327,800.
+     *
      * @return the number of cycles per second on this device
      */
     public int getHz() {
@@ -274,12 +307,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * number of cycles per second of this device. This method serves as a
      * utility so that clients need not do repeated work in converting
      * milliseconds to cycles and back.
+     *
      * @param ms a time quantity in milliseconds as a double
      * @return the same time quantity in clock cycles, rounded up to the nearest
-     * integer
+     *         integer
      */
     public long millisToCycles(double ms) {
-        return (long)(ms * HZ / 1000);
+        return (long) (ms * HZ / 1000);
     }
 
     /**
@@ -288,11 +322,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * is the number of cycles per second of this device. This method serves
      * as a utility so that clients need not do repeated work in converting
      * milliseconds to cycles and back.
+     *
      * @param cycles the number of cycles
      * @return the same time quantity in milliseconds
      */
     public double cyclesToMillis(long cycles) {
-        return 1000*((double)cycles) / HZ;
+        return 1000 * ((double) cycles) / HZ;
     }
 
     /**
@@ -300,11 +335,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * its number. Names of pins should be UPPERCASE. The intended
      * users of this method are external device implementors which connect
      * their devices to the microcontroller through the pins.
+     *
      * @param name the name of the pin; for example "PA0" or "OC1A"
      * @return the number of the pin if it exists; -1 otherwise
      */
     public int getPinNumber(String name) {
-        Integer i = (Integer)pinNumbers.get(name);
+        Integer i = (Integer) pinNumbers.get(name);
         return i == null ? -1 : i.intValue();
     }
 
@@ -314,9 +350,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * an instance of the <code>Simulator</code> class that has all the
      * properties of this hardware device and has been initialized with the
      * specified program.
+     *
      * @param p the program to load onto the microcontroller
      * @return a <code>Microcontroller</code> instance that represents the
-     * specific hardware device with the program loaded onto it
+     *         specific hardware device with the program loaded onto it
      */
     public Microcontroller newMicrocontroller(Program p) {
         return new ATMega128L(p);
@@ -327,12 +364,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * and returns a reference to that pin. The intended
      * users of this method are external device implementors which connect
      * their devices to the microcontroller through the pins.
+     *
      * @param num the pin number to look up
      * @return a reference to the <code>Pin</code> object corresponding to
-     * the named pin if it exists; null otherwise
+     *         the named pin if it exists; null otherwise
      */
     public Microcontroller.Pin getPin(int num) {
-        if ( num < 0 || num > pins.length ) return null;
+        if (num < 0 || num > pins.length) return null;
         return pins[num];
     }
 
@@ -341,9 +379,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * reference to that pin. Names of pins should be UPPERCASE. The intended
      * users of this method are external device implementors which connect
      * their devices to the microcontroller through the pins.
+     *
      * @param name the name of the pin; for example "PA0" or "OC1A"
      * @return a reference to the <code>Pin</code> object corresponding to
-     * the named pin if it exists; null otherwise
+     *         the named pin if it exists; null otherwise
      */
     public Microcontroller.Pin getPin(String name) {
         return getPin(getPinNumber(name));
@@ -374,7 +413,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
 
             public void write(byte val) {
-                for ( int cntr = 0; cntr < 8; cntr++ )
+                for (int cntr = 0; cntr < 8; cntr++)
                     pins[cntr].setOutputDir(Arithmetic.getBit(val, cntr));
                 value = val;
             }
@@ -398,7 +437,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
 
             public void write(byte val) {
-                for ( int cntr = 0; cntr < 8; cntr++ )
+                for (int cntr = 0; cntr < 8; cntr++)
                     pins[cntr].write(Arithmetic.getBit(val, cntr));
                 value = val;
             }
@@ -431,7 +470,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 value |= pins[5].read() ? 1 << 5 : 0;
                 value |= pins[6].read() ? 1 << 6 : 0;
                 value |= pins[7].read() ? 1 << 7 : 0;
-                return (byte)value;
+                return (byte) value;
             }
 
             public boolean readBit(int bit) {
@@ -513,14 +552,14 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                 public void write(byte val) {
                     // hardware manual states that high order bit is always read as zero
-                    value = (byte)(val & 0x7f);
+                    value = (byte) (val & 0x7f);
 
                     // decode modes and update internal state
                     decode(val);
                 }
 
                 public void setBit(int bit) {
-                    if ( bit == 7 ) {
+                    if (bit == 7) {
                         // TODO: force output compare
                     } else {
                         value = Arithmetic.setBit(value, bit);
@@ -529,7 +568,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
                 public void clearBit(int bit) {
-                    if ( bit == 7 ) {
+                    if (bit == 7) {
                         // do nothing
                     } else {
                         value = Arithmetic.clearBit(value, bit);
@@ -542,8 +581,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     timerMode = Arithmetic.getBit(val, WGM01) ? 2 : 0;
                     timerMode |= Arithmetic.getBit(val, WGM00) ? 1 : 0;
 
-                    int prescaler  = val & 0x7;
-                    switch ( prescaler ) {
+                    int prescaler = val & 0x7;
+                    switch (prescaler) {
                         case 0:
                             timerEnabled = false;
                             removeTimerEvent(ticker);
@@ -573,7 +612,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
                 private void resetPeriod(int n) {
-                    if ( timerEnabled ) removeTimerEvent(ticker);
+                    if (timerEnabled) removeTimerEvent(ticker);
                     period = n;
                     timerEnabled = true;
                     addTimerEvent(ticker, period);
@@ -591,51 +630,53 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     timerPrinter.println("Timer0.tick");
                     // perform one clock tick worth of work on the timer
                     int count = TCNT0_reg.read() & 0xff;
-                    switch ( timerMode ) {
+                    switch (timerMode) {
                         case MODE_NORMAL:
                             count++;
-                            if ( count == MAX ) {
+                            if (count == MAX) {
                                 compareMatch();
                                 overflow();
                                 count = 0;
                             }
                             break;
                         case MODE_PWM:
-                            if ( countUp ) count++;
-                            else count--;
+                            if (countUp)
+                                count++;
+                            else
+                                count--;
 
-                            if ( count >= MAX ) {
+                            if (count >= MAX) {
                                 countUp = false;
                                 count = MAX;
                             }
-                            if ( count <= 0 ) {
+                            if (count <= 0) {
                                 overflow();
                                 countUp = true;
                                 count = 0;
                             }
-                            if ( count == OCR0_reg.read() ) {
+                            if (count == OCR0_reg.read()) {
                                 compareMatch();
                             }
                             break;
                         case MODE_CTC:
                             count++;
-                            if ( count == OCR0_reg.read() ) {
+                            if (count == OCR0_reg.read()) {
                                 compareMatch();
                                 count = 0;
                             }
                             break;
                         case MODE_FASTPWM:
                             count++;
-                            if ( count == MAX ) {
+                            if (count == MAX) {
                                 count = 0;
                                 overflow();
                             }
-                            if ( count == OCR0_reg.read() ) {
+                            if (count == OCR0_reg.read()) {
                                 compareMatch();
                             }
                             break;
                     }
-                    TCNT0_reg.write((byte)count);
+                    TCNT0_reg.write((byte) count);
                     addTimerEvent(this, period);
                 }
             }
@@ -673,8 +714,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         private void buildPort(State ns, char p, int portreg, int dirreg, int pinreg) {
             Pin[] pins = new Pin[8];
-            for ( int cntr = 0; cntr < 8; cntr++ )
-                pins[cntr] = (Pin)getPin("P"+p+cntr);
+            for (int cntr = 0; cntr < 8; cntr++)
+                pins[cntr] = (Pin) getPin("P" + p + cntr);
             ns.setIOReg(portreg, new PortRegister(pins));
             ns.setIOReg(dirreg, new DirectionRegister(pins));
             ns.setIOReg(pinreg, new PinRegister(pins));
@@ -682,7 +723,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         private FlagRegister buildInterruptRange(State ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
             FlagRegister fr = new FlagRegister(increasing, baseVect);
-            for ( int cntr = 0; cntr < numVects; cntr++ ) {
+            for (int cntr = 0; cntr < numVects; cntr++) {
                 int inum = increasing ? baseVect + cntr : baseVect - cntr;
                 interrupts[inum] = new Simulator.MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false);
                 ns.setIOReg(maskRegNum, fr.maskRegister);

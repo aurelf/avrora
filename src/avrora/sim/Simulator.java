@@ -2,11 +2,8 @@ package avrora.sim;
 
 import avrora.util.Arithmetic;
 import avrora.Avrora;
-import avrora.Operand;
-import avrora.core.Instr;
-import avrora.core.InstrVisitor;
-import avrora.core.Program;
-import avrora.core.Register;
+import avrora.core.Operand;
+import avrora.core.*;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.PeriodicTrigger;
 import avrora.sim.util.DeltaQueue;
@@ -40,6 +37,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
             Terminal.print(i.getOperands());
             Terminal.nextln();
         }
+
         public void fireAfter(Instr i, int pc, State s) {
             // do nothing.
         }
@@ -125,7 +123,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         activeProbe = new MulticastProbe();
 
         // set all interrupts to ignore
-        for ( int cntr = 0; cntr < MAX_INTERRUPTS; cntr++ )
+        for (int cntr = 0; cntr < MAX_INTERRUPTS; cntr++)
             interrupts[cntr] = IGNORE;
 
         // reset the state of the simulation
@@ -149,9 +147,9 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * The <code>fireBefore()</code> method is called before the probed instruction
          * executes.
          *
-         * @param i the instruction being probed
+         * @param i       the instruction being probed
          * @param address the address at which this instruction resides
-         * @param state the state of the simulation
+         * @param state   the state of the simulation
          */
         public void fireBefore(Instr i, int address, State state);
 
@@ -159,9 +157,9 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * The <code>fireAfter()</code> method is called after the probed instruction
          * executes.
          *
-         * @param i the instruction being probed
+         * @param i       the instruction being probed
          * @param address the address at which this instruction resides
-         * @param state the state of the simulation
+         * @param state   the state of the simulation
          */
         public void fireAfter(Instr i, int address, State state);
     }
@@ -183,8 +181,11 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     public interface MemoryProbe {
 
         public void fireBeforeRead(Instr i, int address, State state, byte value);
+
         public void fireBeforeWrite(Instr i, int address, State state, byte value);
+
         public void fireAfterRead(Instr i, int address, State state, byte value);
+
         public void fireAfterWrite(Instr i, int address, State state, byte value);
     }
 
@@ -232,7 +233,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * reaches zero. Timeouts can be used to ensure termination of the simulator
      * during testing, and implementing timestepping in surrounding tools such
      * as interactive debuggers or visualizers.
-     *
+     * <p/>
      * When the exception is thrown, the simulator is left in a state that is
      * safe to be resumed by a <code>start()</code> call.
      *
@@ -265,7 +266,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         public final long timeout;
 
         TimeoutException(Instr i, int a, State s, long t) {
-            super("timeout @ " + StringUtil.toHex(a, 4) + " reached after "+t+" instructions");
+            super("timeout @ " + StringUtil.toHex(a, 4) + " reached after " + t + " instructions");
             instr = i;
             address = a;
             state = s;
@@ -303,7 +304,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         }
 
         void setBreakPoint() {
-            if ( !breakPoint ) breakFired = false;
+            if (!breakPoint) breakFired = false;
             breakPoint = true;
         }
 
@@ -329,14 +330,14 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         public void accept(InstrVisitor v) {
 
             // if the simulator is visiting us, execute the instruction instead of accept(v).
-            if ( v == Simulator.this ) {
+            if (v == Simulator.this) {
                 // breakpoint processing.
-                if ( breakPoint ) {
-                    if ( !breakFired ) {
+                if (breakPoint) {
+                    if (!breakFired) {
                         breakFired = true;
                         throw new BreakPointException(instr, address, state);
-                    }
-                    else breakFired = false;
+                    } else
+                        breakFired = false;
                 }
 
                 // fire the probe(s) before
@@ -388,6 +389,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      */
     public interface Interrupt {
         public void force();
+
         public void fire();
     }
 
@@ -415,7 +417,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         }
 
         public void fire() {
-            if ( !sticky ) {
+            if (!sticky) {
                 // setting the flag register bit will actually clear and unpost the interrupt
                 flagRegister.setBit(bit);
             }
@@ -429,8 +431,11 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * <code>Simulator</code> instance.
      */
     public static final Interrupt IGNORE = new Interrupt() {
-        public void force() { }
-        public void fire() { }
+        public void force() {
+        }
+
+        public void fire() {
+        }
     };
 
     public Microcontroller getMicrocontroller() {
@@ -493,17 +498,17 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
         while (shouldRun) {
 
-            if ( justReturnedFromInterrupt ) {
+            if (justReturnedFromInterrupt) {
                 // don't process the interrupt if we just returned from
                 // an interrupt handler, because the hardware manual says
                 // that at least one instruction is executed after
                 // returning from an interrupt.
                 justReturnedFromInterrupt = false;
-            } else if ( state.getFlag_I() ) {
+            } else if (state.getFlag_I()) {
                 long interruptPostMask = state.getPostedInterrupts();
 
                 // check if there are any pending (posted) interrupts
-                if ( interruptPostMask != 0 ) {
+                if (interruptPostMask != 0) {
                     // the lowest set bit is the highest priority posted interrupt
                     int lowestbit = Arithmetic.lowestBit(interruptPostMask);
 
@@ -550,9 +555,10 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * the beginning of memory and each interrupt vector slot is 4 bytes. On older
      * architectures, this is not the case, therefore this method has to be implemented
      * according to the specific device being simulated.
+     *
      * @param inum the interrupt number
      * @return the byte address that represents the address in the program to jump to
-     * when this interrupt is fired
+     *         when this interrupt is fired
      */
     protected int getInterruptVectorAddress(int inum) {
         return inum * 4;
@@ -569,6 +575,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * The <code>insertProbe()</code> method allows a probe to be inserted
      * that is executed before and after every instruction that is executed
      * by the simulator
+     *
      * @param p the probe to insert
      */
     public void insertProbe(Probe p) {
@@ -580,12 +587,14 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * at a particular address in the program that corresponds to an
      * instruction. The probe is then fired before and after that particular
      * instruction is executed.
-     * @param p the probe to insert
+     *
+     * @param p    the probe to insert
      * @param addr the address at which to insert the probe
      */
     public void insertProbe(Probe p, int addr) {
         ProbedInstr pi = getProbedInstr(addr);
-        if ( pi != null ) pi.add(p);
+        if (pi != null)
+            pi.add(p);
         else {
             pi = new ProbedInstr(state.getInstr(addr), addr, p);
             state.setInstr(pi, addr);
@@ -596,6 +605,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * The <code>removeProbe()</code> method removes a probe from the global
      * probe table (the probes executed before and after every instruction).
      * The comparison used is reference equality, not <code>.equals()</code>.
+     *
      * @param b the probe to remove
      */
     public void removeProbe(Probe b) {
@@ -606,23 +616,25 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * The <code>removeProbe()</code> method removes a probe from the
      * instruction at the specified the address. The comparison used is
      * reference equality, not <code>.equals()</code>.
-     * @param p the probe to remove
+     *
+     * @param p    the probe to remove
      * @param addr the address from which to remove the probe
      */
     public void removeProbe(Probe p, int addr) {
         ProbedInstr pi = getProbedInstr(addr);
-        if ( pi != null ) {
+        if (pi != null) {
             pi.remove(p);
-            if ( pi.isEmpty() )
+            if (pi.isEmpty())
                 state.setInstr(pi.instr, pi.address);
         }
     }
 
     private ProbedInstr getProbedInstr(int addr) {
         Instr i = state.getInstr(addr);
-        if ( i instanceof ProbedInstr )
-            return ((ProbedInstr)i);
-        else return null;
+        if (i instanceof ProbedInstr)
+            return ((ProbedInstr) i);
+        else
+            return null;
     }
 
     /**
@@ -630,11 +642,13 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * at the instruction at the specified address. At most one breakpoint
      * can be inserted at a particular instruction. Subsequent calls to
      * this method would then have no effect for the same address.
+     *
      * @param addr
      */
     public void insertBreakPoint(int addr) {
         ProbedInstr pi = getProbedInstr(addr);
-        if ( pi != null ) pi.setBreakPoint();
+        if (pi != null)
+            pi.setBreakPoint();
         else {
             pi = new ProbedInstr(state.getInstr(addr), addr, null);
             state.setInstr(pi, addr);
@@ -645,18 +659,20 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     /**
      * The <code>removeBreakPoint</code> method removes all breakpoints at
      * the specified instruction at the specified address.
+     *
      * @param addr
      */
     public void removeBreakPoint(int addr) {
         ProbedInstr pi = getProbedInstr(addr);
-        if ( pi != null ) pi.unsetBreakPoint();
+        if (pi != null) pi.unsetBreakPoint();
     }
 
     /**
      * The <code>setWatchPoint()</code> method allows a probe to be inserted
      * at a memory location. The probe will be executed before every read
      * or write to that memory location.
-     * @param p the probe to insert
+     *
+     * @param p         the probe to insert
      * @param data_addr the data address at which to insert the probe
      */
     public void setWatchPoint(MemoryProbe p, int data_addr) {
@@ -677,12 +693,12 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * @param num the interrupt number to force
      */
     public void forceInterrupt(int num) {
-        interruptPrinter.println("Simulator.forceInterrupt("+num+")");
+        interruptPrinter.println("Simulator.forceInterrupt(" + num + ")");
         interrupts[num].force();
     }
 
     protected void triggerInterrupt(int num) {
-        interruptPrinter.println("Simulator.triggerInterrupt("+num+")");
+        interruptPrinter.println("Simulator.triggerInterrupt(" + num + ")");
         interrupts[num].fire();
     }
 
@@ -690,11 +706,12 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * The <code>addTimerEvent()</code> method inserts a trigger into the
      * event queue of the simulator with the specified delay in clock cycles.
      * The trigger will then be executed at the future time specified
-     * @param e the trigger to be inserted
+     *
+     * @param e      the trigger to be inserted
      * @param cycles the number of cycles in the future at which to trigger
      */
     public void addTimerEvent(Trigger e, long cycles) {
-        eventPrinter.println("Simulator.addTimerEvent("+cycles+")");
+        eventPrinter.println("Simulator.addTimerEvent(" + cycles + ")");
         eventQueue.add(e, cycles);
     }
 
@@ -703,12 +720,13 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * the event queue of the simulator with the specified period. The <code>
      * PeriodicTrigger</code> instance created will continually reinsert the
      * trigger after each firing to achieve predictable periodic behavior.
-     * @param e the trigger to insert
+     *
+     * @param e      the trigger to insert
      * @param period the period in clock cycles
      * @return the <code>PeriodicTrigger</code> instance inserted
      */
     public PeriodicTrigger addPeriodicTimerEvent(Trigger e, long period) {
-        eventPrinter.println("Simulator.addPeriodicTimerEvent("+period+")");
+        eventPrinter.println("Simulator.addPeriodicTimerEvent(" + period + ")");
         PeriodicTrigger pt = new PeriodicTrigger(this, e, period);
         eventQueue.add(pt, period);
         return pt;
@@ -718,6 +736,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * The <code>removeTimerEvent()</code> method removes a trigger from
      * the event queue of the simulator. The comparison used is reference
      * equality, not <code>.equals()</code>.
+     *
      * @param e the trigger to remove
      */
     public void removeTimerEvent(Trigger e) {
@@ -1394,7 +1413,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     }
 
     public void visit(Instr.SER i) { // set register to 0xFF
-        state.setRegisterByte(i.r1, (byte)0xff);
+        state.setRegisterByte(i.r1, (byte) 0xff);
     }
 
     public void visit(Instr.SES i) { // set S (signed) flag
@@ -1539,7 +1558,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     }
 
     private void unimplemented(Instr i) {
-        throw Avrora.failure("unimplemented instruction: "+i.getVariant());
+        throw Avrora.failure("unimplemented instruction: " + i.getVariant());
     }
 
     private boolean xor(boolean a, boolean b) {
@@ -1691,6 +1710,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      * when the count reaches zero. It is useful for ensuring termination
      * of the simulator, for performance testing, or for profiling and
      * stopping after a specified number of invocations.
+     *
      * @author Ben L. Titzer
      */
     public static class InstructionCountTimeout implements Probe {
@@ -1700,6 +1720,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         /**
          * The constructor for <code>InstructionCountTimeout</code> creates
          * with the specified initial value.
+         *
          * @param t
          */
         public InstructionCountTimeout(long t) {
@@ -1712,12 +1733,12 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * executes. In the implementation of the timeout, it simply decrements the
          * timeout and and throws a TimeoutException when the count reaches zero.
          *
-         * @param i the instruction being probed
+         * @param i       the instruction being probed
          * @param address the address at which this instruction resides
-         * @param state the state of the simulation
+         * @param state   the state of the simulation
          */
         public void fireBefore(Instr i, int address, State state) {
-            if ( --left <= 0 )
+            if (--left <= 0)
                 throw new TimeoutException(i, address, state, timeout);
         }
 
@@ -1725,9 +1746,9 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
          * The <code>fireAfter()</code> method is called after the probed instruction
          * executes. In the implementation of the timeout, it does nothing.
          *
-         * @param i the instruction being probed
+         * @param i       the instruction being probed
          * @param address the address at which this instruction resides
-         * @param state the state of the simulation
+         * @param state   the state of the simulation
          */
         public void fireAfter(Instr i, int address, State state) {
             // do nothing.
@@ -1747,9 +1768,9 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         public void update(IMRReg other) {
             int posted = this.value & other.value & 0xff;
             int shift = baseVect;
-            if ( !increasingVectors ) {
+            if (!increasingVectors) {
                 shift -= 8;
-                posted = Arithmetic.reverseBits((byte)posted);
+                posted = Arithmetic.reverseBits((byte) posted);
             }
             long previousPosted = state.getPostedInterrupts() & ~(0xff << shift);
             long newPosted = previousPosted | (posted << shift);
@@ -1758,13 +1779,17 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
         public void update(int bit, IMRReg other) {
             int posted = this.value & other.value & (1 << bit);
-            if ( posted != 0 ) state.postInterrupt(getVectorNum(bit));
-            else state.unpostInterrupt(getVectorNum(bit));
+            if (posted != 0)
+                state.postInterrupt(getVectorNum(bit));
+            else
+                state.unpostInterrupt(getVectorNum(bit));
         }
 
         protected int getVectorNum(int bit) {
-            if ( increasingVectors ) return baseVect + bit;
-            else return baseVect - bit;
+            if (increasingVectors)
+                return baseVect + bit;
+            else
+                return baseVect - bit;
         }
     }
 
@@ -1778,7 +1803,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         }
 
         public void write(byte val) {
-            value = (byte)(value & ~val);
+            value = (byte) (value & ~val);
             update(maskRegister);
         }
 

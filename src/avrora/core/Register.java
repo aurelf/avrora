@@ -1,7 +1,5 @@
 package avrora.core;
 
-import avrora.Operand;
-
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -10,7 +8,7 @@ import java.util.HashSet;
  * instruction set. All registers in the instruction set architecture are
  * represented as objects that have a name and a number. Those objects are
  * singletons and are public static final fields of this class.<br><br>
- *
+ * <p/>
  * Additionally, the <code>Register</code> class contains sets of registers
  * that are used in verifying the operand constraints of each individual
  * instruction as defined in the AVR instruction set reference. An example
@@ -20,9 +18,9 @@ import java.util.HashSet;
  * sets are allocated once here and are exposed as static fields in this
  * class.
  *
+ * @author Ben L. Titzer
  * @see Operand
  * @see Instr
- * @author Ben L. Titzer
  */
 public class Register {
 

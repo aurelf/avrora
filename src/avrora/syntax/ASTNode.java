@@ -9,5 +9,6 @@ import avrora.syntax.AbstractToken;
 public abstract class ASTNode {
 
     public abstract AbstractToken getLeftMostToken();
+
     public abstract AbstractToken getRightMostToken();
 }

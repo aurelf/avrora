@@ -221,6 +221,30 @@ public abstract class Expr extends ASTNode {
         }
     }
 
+    public static class HalfConstant extends Term {
+        public final int value;
+
+        public HalfConstant(AbstractToken tok) {
+            super(tok);
+            value = evaluateLiteral(tok.image) >> 1;
+        }
+
+        public int evaluate(Context c) {
+            return value;
+        }
+
+        public boolean isConstant() {
+            return true;
+        }
+
+        private static int evaluateLiteral(String val) {
+            if (val.startsWith("$"))                          // hexadecimal
+                return Integer.parseInt(val.substring(1), 16);
+            else
+                return StringUtil.evaluateIntegerLiteral(val);
+        }
+    }
+
     public static class CharLiteral extends Term {
         public final int value;
 
@@ -252,14 +276,14 @@ public abstract class Expr extends ASTNode {
     }
 
     public static class CurrentAddress extends Term {
-    
-	public CurrentAddress(AbstractToken tok) {
-	    super(tok);
-	}
 
-	public int evaluate(Context c) {
-	    return c.getCurrentAddress();
-	}
+        public CurrentAddress(AbstractToken tok) {
+            super(tok);
+        }
+
+        public int evaluate(Context c) {
+            return c.getCurrentAddress();
+        }
     }
 
 }

@@ -8,7 +8,7 @@ import avrora.syntax.AbstractParseException;
  * You can explicitly create objects of this exception type by
  * calling the method generateParseException in the generated
  * parser.
- *
+ * <p/>
  * You can modify this class to customize your error reporting
  * mechanisms so long as you retain the public fields.
  */
@@ -24,12 +24,11 @@ public class ParseException extends AbstractParseException {
      * This constructor calls its super class with the empty string
      * to force the "toString" method of parent class "Throwable" to
      * print the error message in the form:
-     *     ParseException: <result of getMessage>
+     * ParseException: <result of getMessage>
      */
     public ParseException(Token currentTokenVal,
                           int[][] expectedTokenSequencesVal,
-                          String[] tokenImageVal
-                          ) {
+                          String[] tokenImageVal) {
         super(currentTokenVal, expectedTokenSequencesVal, tokenImageVal);
     }
 
@@ -80,7 +79,7 @@ public class ParseException extends AbstractParseException {
             expected += eol + "    ";
         }
         String retval = "Encountered \"";
-        Token tok = ((Token)currentToken).next;
+        Token tok = ((Token) currentToken).next;
         Token next = tok;
         for (int i = 0; i < maxSize; i++) {
             if (i != 0) retval += " ";

@@ -1,4 +1,3 @@
-
 package avrora.sim.platform;
 
 import java.util.HashMap;
@@ -19,6 +18,6 @@ public class Platforms {
     }
 
     public static PlatformFactory getPlatform(String name) {
-        return (PlatformFactory)platforms.get(name);
+        return (PlatformFactory) platforms.get(name);
     }
 }

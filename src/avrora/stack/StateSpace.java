@@ -47,7 +47,7 @@ public class StateSpace {
             av_SREG = s.av_SREG;
             av_EIMSK = s.av_EIMSK;
             av_REGISTERS = new char[NUM_REGS];
-            for ( int cntr = 0; cntr < NUM_REGS; cntr++ ) {
+            for (int cntr = 0; cntr < NUM_REGS; cntr++) {
                 av_REGISTERS[cntr] = s.av_REGISTERS[cntr];
             }
             hashCode = computeHashCode();
@@ -59,13 +59,13 @@ public class StateSpace {
         }
 
         public boolean equals(Object o) {
-            if ( this == o ) return true;
-            if ( !(o instanceof State) ) return false;
-            State i = (State)o;
-            if ( this.pc != i.pc ) return false;
-            if ( this.av_SREG != i.av_SREG ) return false;
-            for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
-                if ( this.av_REGISTERS[cntr] != i.av_REGISTERS[cntr] ) return false;
+            if (this == o) return true;
+            if (!(o instanceof State)) return false;
+            State i = (State) o;
+            if (this.pc != i.pc) return false;
+            if (this.av_SREG != i.av_SREG) return false;
+            for (int cntr = 0; cntr < NUM_REGS; cntr++)
+                if (this.av_REGISTERS[cntr] != i.av_REGISTERS[cntr]) return false;
             return true;
         }
 
@@ -115,7 +115,7 @@ public class StateSpace {
 
     public State getFrontierState() {
         Link head = frontier;
-        if ( head == null ) return null;
+        if (head == null) return null;
 
         frontier = frontier.next;
         head.state.onFrontier = false;
@@ -132,14 +132,14 @@ public class StateSpace {
 
     public boolean addState(State s) {
         boolean wasBefore = s.inSpace;
-        if ( !wasBefore ) statesInSpace++;
+        if (!wasBefore) statesInSpace++;
         s.inSpace = true;
         s.onFrontier = false;
         return wasBefore;
     }
 
     public boolean addFrontier(State s) {
-        if ( s.onFrontier ) return true;
+        if (s.onFrontier) return true;
         frontier = new Link(s, frontier, 0);
         s.onFrontier = true;
         return false;
@@ -152,9 +152,9 @@ public class StateSpace {
 
     public State getStateFor(MutableState s) {
         State is = new State(s);
-        State cs = (State)stateMap.get(is);
+        State cs = (State) stateMap.get(is);
 
-        if ( cs != null ) {
+        if (cs != null) {
             // if the state is already in the state map, return original
             return cs;
         } else {

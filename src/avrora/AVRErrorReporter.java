@@ -1,12 +1,10 @@
 package avrora;
 
 import avrora.core.Register;
-import avrora.syntax.ASTNode;
-import avrora.syntax.ExprList;
+import avrora.core.Operand;
 import avrora.util.StringUtil;
 import avrora.ErrorReporter;
-import avrora.syntax.AbstractToken;
-import avrora.syntax.ProgramPoint;
+import avrora.syntax.*;
 
 /**
  * The <code>AVRErrorReporter</code> contains one method per compilation
@@ -44,22 +42,22 @@ public class AVRErrorReporter extends ErrorReporter {
         error(report, "UnknownInstruction", point(instr));
     }
 
-    public void RegisterExpected(Operand o) {
+    public void RegisterExpected(SyntacticOperand o) {
         String report = "register expected";
         error(report, "RegisterExpected", point(o));
     }
 
-    public void IncorrectRegister(Operand o, Register reg, String expect) {
+    public void IncorrectRegister(SyntacticOperand o, Register reg, String expect) {
         String report = "incorrected register " + StringUtil.quote(reg) + ", expected one of " + expect;
         error(report, "IncorrectRegister", point(o));
     }
 
-    public void ConstantExpected(Operand o) {
+    public void ConstantExpected(SyntacticOperand o) {
         String report = "constant expected";
         error(report, "ConstantExpected", point(o));
     }
 
-    public void ConstantOutOfRange(Operand o, int value, String range) {
+    public void ConstantOutOfRange(SyntacticOperand o, int value, String range) {
         String report = "constant " + StringUtil.quote("" + value) + " out of expected range " + range;
         error(report, "ConstantOutOfRange", "" + value, point(o));
     }
@@ -81,7 +79,7 @@ public class AVRErrorReporter extends ErrorReporter {
     }
 
     public void IncludeFileNotFound(AbstractToken tok) {
-        String report = "include file not found "+tok;
+        String report = "include file not found " + tok;
         error(report, "IncludeFileNotFound", point(tok));
     }
 }

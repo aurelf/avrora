@@ -13,8 +13,8 @@ import avrora.sim.State;
  * is not equal to the instruction following the branch, then the branch was
  * taken.
  *
- * @see avrora.sim.util.Counter
  * @author Ben L. Titzer
+ * @see avrora.sim.util.Counter
  */
 public class BranchCounter implements Simulator.Probe {
 
@@ -37,9 +37,9 @@ public class BranchCounter implements Simulator.Probe {
      * executes. In the implementation of the branch counter, nothing needs to be
      * done before the branch is executed, so this method does nothing.
      *
-     * @param i the instruction being probed
+     * @param i       the instruction being probed
      * @param address the address at which this instruction resides
-     * @param state the state of the simulation
+     * @param state   the state of the simulation
      */
     public void fireBefore(Instr i, int address, State state) {
         // do nothing.
@@ -52,13 +52,15 @@ public class BranchCounter implements Simulator.Probe {
      * of the new state. If the program counter is not equal to the instruction
      * following the branch, then the branch was taken.
      *
-     * @param i the instruction being probed
+     * @param i       the instruction being probed
      * @param address the address at which this instruction resides
-     * @param state the state of the simulation
+     * @param state   the state of the simulation
      */
     public void fireAfter(Instr i, int address, State state) {
         int nextaddr = address + i.getSize();
-        if ( state.getPC() == nextaddr ) nottakenCount++;
-        else takenCount++;
+        if (state.getPC() == nextaddr)
+            nottakenCount++;
+        else
+            takenCount++;
     }
 }

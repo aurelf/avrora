@@ -11,7 +11,7 @@ public class ErrorReporter {
     /**
      * Instance variables that contain references to the program and module
      * so that at some future date the analysis can be multithreaded.
-     **/
+     */
     protected void error(String report, String name, ProgramPoint p) {
         throw new CompilationError(p, report, name, StringUtil.EMPTY_STRING_ARRAY);
     }

@@ -11,9 +11,8 @@ import java.util.LinkedList;
  * command line. The inner classes represent specific types of options such
  * as integers, booleans, and strings.
  *
- * @see Options
- *
  * @author Ben L. Titzer
+ * @see Options
  */
 public abstract class Option {
     protected final String name;
@@ -44,7 +43,7 @@ public abstract class Option {
     }
 
     public void printHeader(String type, String defvalue) {
-        Terminal.printBrightGreen("    -"+name);
+        Terminal.printBrightGreen("    -" + name);
         Terminal.print(": ");
         Terminal.printBrightCyan(type);
         Terminal.print(" = ");
@@ -88,7 +87,7 @@ public abstract class Option {
         }
 
         public void printHelp() {
-            printHeader("long",""+defvalue);
+            printHeader("long", "" + defvalue);
             printDescription();
         }
     }
@@ -120,7 +119,7 @@ public abstract class Option {
         }
 
         public void printHelp() {
-            printHeader("string",""+defvalue);
+            printHeader("string", "" + defvalue);
             printDescription();
         }
     }
@@ -154,12 +153,12 @@ public abstract class Option {
             orig = val;
             value = new LinkedList();
 
-            if ( val.equals("") ) return;
+            if (val.equals("")) return;
 
             CharacterIterator i = new StringCharacterIterator(val);
             StringBuffer buf = new StringBuffer();
-            while ( i.current() != CharacterIterator.DONE ) {
-                if ( i.current() == ',') {
+            while (i.current() != CharacterIterator.DONE) {
+                if (i.current() == ',') {
                     value.add(buf.toString().trim());
                     buf = new StringBuffer();
                 } else {
@@ -172,7 +171,7 @@ public abstract class Option {
 
         public void printHelp() {
             String defvalue = orig.equals("") ? "(null)" : orig;
-            printHeader("list",""+defvalue);
+            printHeader("list", "" + defvalue);
             printDescription();
         }
     }
@@ -196,7 +195,7 @@ public abstract class Option {
         }
 
         public void set(String val) {
-            if (val.equals("true") || val.equals("") ) {
+            if (val.equals("true") || val.equals("")) {
                 value = true;
             } else if (val.equals("false")) {
                 value = false;
@@ -213,7 +212,7 @@ public abstract class Option {
         }
 
         public void printHelp() {
-            printHeader("boolean",""+defvalue);
+            printHeader("boolean", "" + defvalue);
             printDescription();
         }
     }

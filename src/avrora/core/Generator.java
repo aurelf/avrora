@@ -14,7 +14,7 @@ import java.util.List;
  * redundant code (and painfully boring) source code, a generator was designed
  * to spit out this boringly straightforward source code from this internal
  * description.
- *
+ * <p/>
  * This makes adding new instructions easy, but necessitates changes to any
  * visitor implementations to account for the new instruction.
  *
@@ -137,7 +137,7 @@ public class Generator {
         }
 
         void writeVisitMethod(SectionFile f) throws java.io.IOException {
-            f.writeLine("    public void visit(" + className + " i); // "+comment);
+            f.writeLine("    public void visit(" + className + " i); // " + comment);
         }
 
         void writeSetInsert(SectionFile f) throws java.io.IOException {
@@ -145,7 +145,7 @@ public class Generator {
         }
 
         void writeClassDecl(SectionFile f) throws java.io.IOException {
-            f.writeLine("    public static class " + VARIANT + " extends " + params.baseClass + " { // "+comment);
+            f.writeLine("    public static class " + VARIANT + " extends " + params.baseClass + " { // " + comment);
             f.writeLine("        public String getName() { return " + StringUtil.quote(name) + "; }");
 
             if (variant != name)

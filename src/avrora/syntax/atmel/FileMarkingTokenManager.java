@@ -33,8 +33,7 @@ public class FileMarkingTokenManager extends AtmelParserTokenManager {
         filename = fname;
     }
 
-    protected Token jjFillToken()
-    {
+    protected Token jjFillToken() {
         Token t = super.jjFillToken();
         t.file = filename;
         return t;

@@ -5,6 +5,7 @@ import avrora.util.Terminal;
 /**
  * The <code>Avrora</code> class contains several utilities relating to
  * exceptions and errors within Avrora.
+ *
  * @author Ben L. Titzer
  */
 public class Avrora {

@@ -310,7 +310,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrGPRGPR() throws ParseException {
-                       Token t; Operand.Register r1, r2;
+                       Token t; SyntacticOperand.Register r1, r2;
     t = OpcodeGPRGPR();
     r1 = Register();
     jj_consume_token(150);
@@ -385,7 +385,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrGPR() throws ParseException {
-                    Token t; Operand.Register r1;
+                    Token t; SyntacticOperand.Register r1;
     t = OpcodeGPR();
     r1 = Register();
       module.addInstruction(t.image, t, r1);
@@ -449,7 +449,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrGPRIMM() throws ParseException {
-                       Token t; Operand.Register r1; Operand.Constant c1;
+                       Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = OpcodeGPRIMM();
     r1 = Register();
     jj_consume_token(150);
@@ -509,7 +509,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrIMM() throws ParseException {
-                    Token t; Operand.Constant c1;
+                    Token t; SyntacticOperand.Expr c1;
     t = OpcodeIMM();
     c1 = Const();
       module.addInstruction(t.image, t, c1);
@@ -600,7 +600,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrIMMIMM() throws ParseException {
-                       Token t; Operand.Constant c1, c2;
+                       Token t; SyntacticOperand.Expr c1, c2;
     t = OpcodeIMMIMM();
     c1 = Const();
     jj_consume_token(150);
@@ -664,7 +664,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLDI() throws ParseException {
-                    Token t; Operand.Register r1; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(LDI);
     r1 = Register();
     jj_consume_token(150);
@@ -691,7 +691,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLD() throws ParseException {
-                   Token t; Operand.Register r1, r2;
+                   Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
     jj_consume_token(150);
@@ -700,7 +700,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLDPI() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
     jj_consume_token(150);
@@ -710,7 +710,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLDPD() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(LD);
     r1 = Register();
     jj_consume_token(150);
@@ -720,7 +720,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLDD() throws ParseException {
-                    Token t; Operand.Register r1, r2; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1, r2; SyntacticOperand.Expr c1;
     t = jj_consume_token(LDD);
     r1 = Register();
     jj_consume_token(150);
@@ -731,7 +731,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLDS() throws ParseException {
-                    Token t; Operand.Register r1; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(LDS);
     r1 = Register();
     jj_consume_token(150);
@@ -759,7 +759,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLPMGPRGPR() throws ParseException {
-                          Token t; Operand.Register r1, r2;
+                          Token t; SyntacticOperand.Register r1, r2;
     t = OpcodeLPM();
     r1 = Register();
     jj_consume_token(150);
@@ -768,7 +768,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrLPMGPRGPRP() throws ParseException {
-                           Token t; Operand.Register r1, r2;
+                           Token t; SyntacticOperand.Register r1, r2;
     t = OpcodeLPM();
     r1 = Register();
     jj_consume_token(150);
@@ -838,7 +838,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrST() throws ParseException {
-                   Token t; Operand.Register r1, r2;
+                   Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(ST);
     r1 = Register();
     jj_consume_token(150);
@@ -847,7 +847,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrSTPI() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(ST);
     r1 = Register();
     jj_consume_token(151);
@@ -857,7 +857,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrSTPD() throws ParseException {
-                     Token t; Operand.Register r1, r2;
+                     Token t; SyntacticOperand.Register r1, r2;
     t = jj_consume_token(ST);
     jj_consume_token(152);
     r1 = Register();
@@ -867,7 +867,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrSTD() throws ParseException {
-                    Token t; Operand.Register r1, r2; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1, r2; SyntacticOperand.Expr c1;
     t = jj_consume_token(STD);
     r1 = Register();
     jj_consume_token(151);
@@ -878,7 +878,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrSTS() throws ParseException {
-                    Token t; Operand.Register r1; Operand.Constant c1;
+                    Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(STS);
     c1 = Const();
     jj_consume_token(150);
@@ -979,7 +979,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrInput() throws ParseException {
-                      Token t; Operand.Register r1; Operand.Constant c1;
+                      Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(IN);
     r1 = Register();
     jj_consume_token(150);
@@ -988,7 +988,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public void InstrOutput() throws ParseException {
-                       Token t; Operand.Register r1; Operand.Constant c1;
+                       Token t; SyntacticOperand.Register r1; SyntacticOperand.Expr c1;
     t = jj_consume_token(OUT);
     c1 = Const();
     jj_consume_token(150);
@@ -996,10 +996,10 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       module.addInstruction(t.image, t, c1, r1);
   }
 
-  final public Operand.Register Register() throws ParseException {
-                                Token tok;
+  final public SyntacticOperand.Register Register() throws ParseException {
+                                         Token tok;
     tok = jj_consume_token(IDENTIFIER);
-      {if (true) return new Operand.Register(tok);}
+      {if (true) return new SyntacticOperand.Register(tok);}
     throw new Error("Missing return statement in function");
   }
 
@@ -1025,8 +1025,8 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
       module.addLabel(tok);
   }
 
-  final public Operand.Constant Const() throws ParseException {
-                             Expr e;
+  final public SyntacticOperand.Expr Const() throws ParseException {
+                                  Expr e;
     if (jj_2_10(2147483647)) {
       e = BinOpExpr();
     } else {
@@ -1042,7 +1042,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         throw new ParseException();
       }
     }
-    {if (true) return new Operand.Constant(e);}
+    {if (true) return new SyntacticOperand.Expr(e);}
     throw new Error("Missing return statement in function");
   }
 
@@ -1071,11 +1071,11 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final public Expr BinOpExpr() throws ParseException {
-                     Token tok; Expr l; Expr r;
-    l = Term();
-    tok = BinOp();
-    r = Term();
-   {if (true) return new Expr.BinOp(tok, l, r);}
+                     Token ltok; Token op; Token rtok;
+    ltok = jj_consume_token(155);
+    op = BinOp();
+    rtok = jj_consume_token(INTEGER_LITERAL);
+   {if (true) return new Expr.BinOp(op, new Expr.CurrentAddress(ltok), new Expr.HalfConstant(rtok));}
     throw new Error("Missing return statement in function");
   }
 
@@ -1511,6 +1511,12 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     return false;
   }
 
+  final private boolean jj_3R_24() {
+    if (jj_scan_token(152)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
   final private boolean jj_3R_85() {
     if (jj_scan_token(SBRS)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
@@ -1519,12 +1525,6 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
 
   final private boolean jj_3R_54() {
     if (jj_scan_token(FMULSU)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_24() {
-    if (jj_scan_token(152)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1559,12 +1559,6 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     return false;
   }
 
-  final private boolean jj_3R_84() {
-    if (jj_scan_token(SBRC)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
   final private boolean jj_3R_11() {
     Token xsp;
     xsp = jj_scanpos;
@@ -1573,6 +1567,12 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
     if (jj_3R_24()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_84() {
+    if (jj_scan_token(SBRC)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
 
@@ -1607,7 +1607,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   }
 
   final private boolean jj_3R_90() {
-    if (jj_3R_10()) return true;
+    if (jj_scan_token(155)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_3R_11()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;

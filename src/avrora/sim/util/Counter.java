@@ -27,9 +27,9 @@ public class Counter implements Simulator.Probe {
      * executes. In the implementation of the counter, it simply updates the
      * internal counter.
      *
-     * @param i the instruction being probed
+     * @param i       the instruction being probed
      * @param address the address at which this instruction resides
-     * @param state the state of the simulation
+     * @param state   the state of the simulation
      */
     public void fireBefore(Instr i, int address, State state) {
         count++;
@@ -39,9 +39,9 @@ public class Counter implements Simulator.Probe {
      * The <code>fireAfter()</code> method is called after the probed instruction
      * executes. In the implementation of the counter, it does nothing.
      *
-     * @param i the instruction being probed
+     * @param i       the instruction being probed
      * @param address the address at which this instruction resides
-     * @param state the state of the simulation
+     * @param state   the state of the simulation
      */
     public void fireAfter(Instr i, int address, State state) {
     }

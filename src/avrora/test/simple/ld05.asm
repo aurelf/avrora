@@ -13,5 +13,6 @@ data:
 
 .dseg
 
+    .byte 224 ; skip any IO registers
 memory:
     .byte 2

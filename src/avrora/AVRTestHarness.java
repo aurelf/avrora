@@ -6,6 +6,7 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
+import avrora.syntax.Module;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Arithmetic;
@@ -326,7 +327,7 @@ public class AVRTestHarness implements TestHarness {
                 // verboseln("parsed: "+s.left+" = "+s.right);
                 StringUtil.skipWhiteSpace(i);
                 predicates.add(s);
-                if (i.current() == i.DONE)
+                if (i.current() == CharacterIterator.DONE)
                     break;
                 else
                     expectChar(i, ',');

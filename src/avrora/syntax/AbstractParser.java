@@ -1,7 +1,5 @@
-
 package avrora.syntax;
 
-import avrora.Module;
 import avrora.syntax.AbstractParseException;
 
 /**

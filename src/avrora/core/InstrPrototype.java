@@ -1,6 +1,5 @@
 package avrora.core;
 
-import avrora.Operand;
 
 /**
  * The <code>InstrPrototype</code> interface represents an object that is
@@ -16,10 +15,11 @@ public interface InstrPrototype {
      * The <code>build()</code> method constructs a new <code>Instr</code>
      * instance with the given operands, checking the operands against
      * the constraints that are specific to each instruction.
-     * @param pc the address at which the instruction will be located
+     *
+     * @param pc  the address at which the instruction will be located
      * @param ops the operands to the instruction
      * @return a new <code>Instr</code> instance representing the
-     * instruction with the given operands
+     *         instruction with the given operands
      */
     public Instr build(int pc, Operand[] ops);
 
@@ -28,6 +28,7 @@ public interface InstrPrototype {
      * in bytes. Since each prototype corresponds to exactly one instruction
      * variant, all instructions built by this prototype will have the
      * same size.
+     *
      * @return the size of the instruction in bytes
      */
     public int getSize();
@@ -38,7 +39,8 @@ public interface InstrPrototype {
      * multiple variants, they each have specific variant names to distinguish
      * them internally in the core of Avrora. For example, for "ld x+, (addr)",
      * the variant is "ldpi" (load with post increment), but the actual instruction
-     * is "ld", so this method will return "ldpi". 
+     * is "ld", so this method will return "ldpi".
+     *
      * @return the variant of the instruction that this prototype represents
      */
     public String getVariant();
@@ -49,6 +51,7 @@ public interface InstrPrototype {
      * returns the actual name of the instruction. For example, for "ld x+, (addr)",
      * the variant is "ldpi" (load with post increment), but the actual instruction
      * is "ld", so this method will return "ld".
+     *
      * @return the name of the instruction
      */
     public String getName();

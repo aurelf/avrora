@@ -1,4 +1,3 @@
-
 package avrora.sim.platform;
 
 import avrora.sim.mcu.Microcontroller;
@@ -43,12 +42,12 @@ public class Mica implements Platform, PlatformFactory {
         }
 
         public void write(boolean level) {
-            if ( !initialized ) {
+            if (!initialized) {
                 initialized = true;
                 on = level;
                 print();
             } else {
-                if ( level != on ) {
+                if (level != on) {
                     on = level;
                     print();
                 }
@@ -57,7 +56,7 @@ public class Mica implements Platform, PlatformFactory {
 
         public void print() {
             Terminal.print(colornum, color);
-            Terminal.println(": "+(on ? "on" : "off"));
+            Terminal.println(": " + (on ? "on" : "off"));
         }
 
         public void enableOutput() {

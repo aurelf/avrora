@@ -48,13 +48,13 @@ public class Options {
     }
 
     public String getOptionValue(String name) {
-        Option o = (Option)knownValues.get(name);
-        if ( o != null ) return o.stringValue();
-        return (String)unknownValues.get(name);
+        Option o = (Option) knownValues.get(name);
+        if (o != null) return o.stringValue();
+        return (String) unknownValues.get(name);
     }
 
     public Option getOption(String name) {
-        return (Option)knownValues.get(name);
+        return (Option) knownValues.get(name);
     }
 
     public boolean hasOption(String name) {
@@ -99,11 +99,11 @@ public class Options {
             optname = opt.substring(1, index);
         }
 
-        Option option = (Option)knownValues.get(optname);
+        Option option = (Option) knownValues.get(optname);
 
         if (option == null) {
             unknownValues.put(optname, value);
-            if ( firstUnknownOption == null ) firstUnknownOption = optname;
+            if (firstUnknownOption == null) firstUnknownOption = optname;
         } else
             option.set(value);
     }
@@ -120,16 +120,16 @@ public class Options {
         int max = 0;
 
         Iterator i = opts.iterator();
-        while ( i.hasNext() ) {
-            String key = (String)i.next();
-            if ( key.length() > max ) max = key.length();
+        while (i.hasNext()) {
+            String key = (String) i.next();
+            if (key.length() > max) max = key.length();
         }
 
 
         i = opts.iterator();
-        while ( i.hasNext() ) {
-            String key = (String)i.next();
-            p.println(StringUtil.leftJustify(key, max)+" : "+getOptionValue(key));
+        while (i.hasNext()) {
+            String key = (String) i.next();
+            p.println(StringUtil.leftJustify(key, max) + " : " + getOptionValue(key));
         }
 
         p.endblock();

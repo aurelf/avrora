@@ -12,7 +12,7 @@ public class AnalyzeStackAction extends Main.Action {
         Program p = r.read(args);
         Analyzer a = new Analyzer(p);
 
-        if ( Main.TRACE.get() ) Analyzer.TRACE = true;
+        if (Main.TRACE.get()) Analyzer.TRACE = true;
 
         a.run();
         a.report();

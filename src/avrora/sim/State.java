@@ -12,6 +12,7 @@ import avrora.util.Terminal;
 /**
  * The <code>State</code> class represents the state of the simulator, including
  * the contents of registers and memory.
+ *
  * @author Ben L. Titzer
  */
 public class State implements IORegisterConstants {
@@ -51,6 +52,7 @@ public class State implements IORegisterConstants {
          * as a byte. For special IO registers, this may cause some action like
          * device activity, or the actual value of the register may need to be
          * fetched or computed.
+         *
          * @return the value of the register as a byte
          */
         public byte read();
@@ -59,6 +61,7 @@ public class State implements IORegisterConstants {
          * The <code>write()</code> method writes an 8-bit value to the IO register
          * as a byte. For special IO registers, this may cause some action like
          * device activity, masking/unmasking of interrupts, etc.
+         *
          * @param val the value to write
          */
         public void write(byte val);
@@ -73,12 +76,14 @@ public class State implements IORegisterConstants {
 
         /**
          * The <code>clearBit()</code> method clears a single bit in the IO register.
+         *
          * @param num the number of the bit to clear
          */
         public void clearBit(int num);
 
         /**
          * The <code>setBit()</code> method sets a single bit in the IO register.
+         *
          * @param num the number of the bit to clear
          */
         public void setBit(int num);
@@ -99,6 +104,7 @@ public class State implements IORegisterConstants {
          * The <code>read()</code> method reads the 8-bit value of the IO register
          * as a byte. For simple <code>RWIOReg</code> instances, this simply returns
          * the internally stored value.
+         *
          * @return the value of the register as a byte
          */
         public byte read() {
@@ -109,6 +115,7 @@ public class State implements IORegisterConstants {
          * The <code>write()</code> method writes an 8-bit value to the IO register
          * as a byte. For simple <code>RWIOReg</code> instances, this simply writes
          * the internally stored value.
+         *
          * @param val the value to write
          */
         public void write(byte val) {
@@ -127,6 +134,7 @@ public class State implements IORegisterConstants {
 
         /**
          * The <code>clearBit()</code> method clears a single bit in the IO register.
+         *
          * @param num the number of the bit to clear
          */
         public void clearBit(int num) {
@@ -135,6 +143,7 @@ public class State implements IORegisterConstants {
 
         /**
          * The <code>setBit()</code> method sets a single bit in the IO register.
+         *
          * @param num the number of the bit to clear
          */
         public void setBit(int num) {
@@ -149,11 +158,25 @@ public class State implements IORegisterConstants {
      * hardware manuals.
      */
     public static final IOReg RESERVED = new IOReg() {
-        public byte read() { return 0; }
-        public void write(byte val) { throw new Error("cannot write to reserved register"); }
-        public boolean readBit(int num) { return false; }
-        public void setBit(int bit) { throw new Error("cannot set bit in reserved register"); }
-        public void clearBit(int bit) { throw new Error("cannot clear bit in reserved register"); }
+        public byte read() {
+            return 0;
+        }
+
+        public void write(byte val) {
+            throw new Error("cannot write to reserved register");
+        }
+
+        public boolean readBit(int num) {
+            return false;
+        }
+
+        public void setBit(int bit) {
+            throw new Error("cannot set bit in reserved register");
+        }
+
+        public void clearBit(int bit) {
+            throw new Error("cannot clear bit in reserved register");
+        }
     };
 
     private static final int SREG_I_MASK = 1 << SREG_I;
@@ -171,25 +194,27 @@ public class State implements IORegisterConstants {
          * The <code>read()</code> method reads the 8-bit value of the IO register
          * as a byte. For simple <code>RWIOReg</code> instances, this simply returns
          * the internally stored value.
+         *
          * @return the value of the register as a byte
          */
         public byte read() {
             int value = 0;
-            if ( I ) value |= SREG_I_MASK;
-            if ( T ) value |= SREG_T_MASK;
-            if ( H ) value |= SREG_H_MASK;
-            if ( S ) value |= SREG_S_MASK;
-            if ( V ) value |= SREG_V_MASK;
-            if ( N ) value |= SREG_N_MASK;
-            if ( Z ) value |= SREG_Z_MASK;
-            if ( C ) value |= SREG_C_MASK;
-            return (byte)value;
+            if (I) value |= SREG_I_MASK;
+            if (T) value |= SREG_T_MASK;
+            if (H) value |= SREG_H_MASK;
+            if (S) value |= SREG_S_MASK;
+            if (V) value |= SREG_V_MASK;
+            if (N) value |= SREG_N_MASK;
+            if (Z) value |= SREG_Z_MASK;
+            if (C) value |= SREG_C_MASK;
+            return (byte) value;
         }
 
         /**
          * The <code>write()</code> method writes an 8-bit value to the IO register
          * as a byte. For simple <code>RWIOReg</code> instances, this simply writes
          * the internally stored value.
+         *
          * @param val the value to write
          */
         public void write(byte val) {
@@ -210,25 +235,34 @@ public class State implements IORegisterConstants {
          * @return the value of the bit as a boolean
          */
         public boolean readBit(int num) {
-            switch ( num ) {
-                case SREG_I: return I;
-                case SREG_T: return T;
-                case SREG_H: return H;
-                case SREG_S: return S;
-                case SREG_V: return V;
-                case SREG_N: return N;
-                case SREG_Z: return Z;
-                case SREG_C: return C;
+            switch (num) {
+                case SREG_I:
+                    return I;
+                case SREG_T:
+                    return T;
+                case SREG_H:
+                    return H;
+                case SREG_S:
+                    return S;
+                case SREG_V:
+                    return V;
+                case SREG_N:
+                    return N;
+                case SREG_Z:
+                    return Z;
+                case SREG_C:
+                    return C;
             }
-            throw Avrora.failure("bit out of range: "+num);
+            throw Avrora.failure("bit out of range: " + num);
         }
 
         /**
          * The <code>clearBit()</code> method clears a single bit in the IO register.
+         *
          * @param num the number of the bit to clear
          */
         public void clearBit(int num) {
-            switch ( num ) {
+            switch (num) {
                 case SREG_I:
                     I = false;
                     break;
@@ -254,16 +288,17 @@ public class State implements IORegisterConstants {
                     C = false;
                     break;
                 default:
-                    throw Avrora.failure("bit out of range: "+num);
+                    throw Avrora.failure("bit out of range: " + num);
             }
         }
 
         /**
          * The <code>setBit()</code> method sets a single bit in the IO register.
+         *
          * @param num the number of the bit to clear
          */
         public void setBit(int num) {
-            switch ( num ) {
+            switch (num) {
                 case SREG_I:
                     I = true;
                     break;
@@ -289,13 +324,10 @@ public class State implements IORegisterConstants {
                     C = true;
                     break;
                 default:
-                    throw Avrora.failure("bit out of range: "+num);
+                    throw Avrora.failure("bit out of range: " + num);
             }
         }
     }
-
-
-
 
 
     /**
@@ -306,15 +338,15 @@ public class State implements IORegisterConstants {
      * inserted by the <code>getIOReg()</code> and <code>setIOReg()</code>
      * methods.
      *
-     * @param p the program to construct the state for
+     * @param p          the program to construct the state for
      * @param flash_size the size of the flash (program) memory in bytes
      * @param ioreg_size the number of IO registers
-     * @param sram_size the size of the SRAM in bytes
+     * @param sram_size  the size of the SRAM in bytes
      */
     public State(Program p, int flash_size, int ioreg_size, int sram_size) {
 
         // if program will not fit onto hardware, error
-        if ( p.program_end > flash_size)
+        if (p.program_end > flash_size)
             throw Avrora.failure("program will not fit into " + flash_size + " bytes");
 
         // allocate register values
@@ -343,7 +375,7 @@ public class State implements IORegisterConstants {
     }
 
     protected void initializeIORegs() {
-        for ( int cntr = 0; cntr < ioregs.length; cntr++ )
+        for (int cntr = 0; cntr < ioregs.length; cntr++)
             ioregs[cntr] = new RWIOReg();
         ioregs[SREG] = new SREG_reg();
     }
@@ -352,6 +384,7 @@ public class State implements IORegisterConstants {
      * The <code>getPostedInterrupts()</code> method returns a mask that represents
      * all interrupts that are currently pending (meaning they are ready to be
      * fired in priority order as long as the I flag is on).
+     *
      * @return a mask representing the interrupts which are posted for processing
      */
     public long getPostedInterrupts() {
@@ -387,6 +420,7 @@ public class State implements IORegisterConstants {
     /**
      * The <code>setPostedInterrupts()</code> method allows a full update to the
      * pending list of interrupts. This should only be used within the simulator.
+     *
      * @param mask the new pending interrupt mask
      */
     public void setPostedInterrupts(long mask) {
@@ -434,6 +468,7 @@ public class State implements IORegisterConstants {
      * The <code>setRegisterByte()</code> method writes a value to a general purpose
      * register. This is a destructive update and should only be called from the
      * appropriate places in the simulator.
+     *
      * @param reg the register to write the value to
      * @param val the value to write to the register
      */
@@ -448,6 +483,7 @@ public class State implements IORegisterConstants {
      * and the next register in numerical order are updated with the low-order and
      * high-order byte of the value passed, respectively. The specified register should
      * be less than r31, since r32 (the next register) does not exist.
+     *
      * @param reg the low register of the pair to write
      * @param val the word value to write to the register pair
      */
@@ -462,6 +498,7 @@ public class State implements IORegisterConstants {
      * The <code>getSREG()</code> method reads the value of the status register.
      * The status register contains the I, T, H, S, V, N, Z, and C flags, in order
      * from highest-order to lowest-order.
+     *
      * @return the value of the status register as a byte.
      */
     public byte getSREG() {
@@ -471,6 +508,7 @@ public class State implements IORegisterConstants {
     /**
      * The <code>setSREG()</code> method writes the value of the status register.
      * This method should only be called from the appropriate places in the simulator.
+     *
      * @param val
      */
     public void setSREG(byte val) {
@@ -481,125 +519,176 @@ public class State implements IORegisterConstants {
      * The <code>setSREG_bit()</code> updates the value of the specified bit in the
      * status register. It should only be called from the appropriate places in the
      * simulator.
+     *
      * @param bit the number of the bit to update
      * @param val the new value of the bit as a boolean
      */
     public void setSREG_bit(int bit, boolean val) {
-        if ( val ) ioregs[SREG].setBit(bit);
-        else ioregs[SREG].clearBit(bit);
+        if (val)
+            ioregs[SREG].setBit(bit);
+        else
+            ioregs[SREG].clearBit(bit);
     }
 
     /**
      * The <code>setFlag_I()</code> method updates the value of the I bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_I(boolean val) { I = val; }
+    public void setFlag_I(boolean val) {
+        I = val;
+    }
 
     /**
      * The <code>setFlag_T()</code> method updates the value of the T bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_T(boolean val) { T = val; }
+    public void setFlag_T(boolean val) {
+        T = val;
+    }
 
     /**
      * The <code>setFlag_H()</code> method updates the value of the H bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_H(boolean val) { H = val; }
+    public void setFlag_H(boolean val) {
+        H = val;
+    }
 
     /**
      * The <code>setFlag_S()</code> method updates the value of the S bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_S(boolean val) { S = val; }
+    public void setFlag_S(boolean val) {
+        S = val;
+    }
 
     /**
      * The <code>setFlag_V()</code> method updates the value of the V bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_V(boolean val) { V = val; }
+    public void setFlag_V(boolean val) {
+        V = val;
+    }
 
     /**
      * The <code>setFlag_N()</code> method updates the value of the N bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_N(boolean val) { N = val; }
+    public void setFlag_N(boolean val) {
+        N = val;
+    }
 
     /**
      * The <code>setFlag_Z()</code> method updates the value of the Z bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_Z(boolean val) { Z = val; }
+    public void setFlag_Z(boolean val) {
+        Z = val;
+    }
 
     /**
      * The <code>setFlag_C()</code> method updates the value of the C bit in the status
      * register. It should only be called from within the simulator.
+     *
      * @param val the new value of the flag
      */
-    public void setFlag_C(boolean val) { C = val; }
+    public void setFlag_C(boolean val) {
+        C = val;
+    }
 
     /**
      * The <code>getFlag_I()</code> method returns the current value of the I bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_I() { return I; }
+    public boolean getFlag_I() {
+        return I;
+    }
 
     /**
      * The <code>getFlag_T()</code> method returns the current value of the T bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_T() { return T; }
+    public boolean getFlag_T() {
+        return T;
+    }
 
     /**
      * The <code>getFlag_H()</code> method returns the current value of the H bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_H() { return H; }
+    public boolean getFlag_H() {
+        return H;
+    }
 
     /**
      * The <code>getFlag_S()</code> method returns the current value of the S bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_S() { return S; }
+    public boolean getFlag_S() {
+        return S;
+    }
 
     /**
      * The <code>getFlag_V()</code> method returns the current value of the V bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_V() { return V; }
+    public boolean getFlag_V() {
+        return V;
+    }
 
     /**
      * The <code>getFlag_N()</code> method returns the current value of the N bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_N() { return N; }
+    public boolean getFlag_N() {
+        return N;
+    }
 
     /**
      * The <code>getFlag_Z()</code> method returns the current value of the Z bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_Z() { return Z; }
+    public boolean getFlag_Z() {
+        return Z;
+    }
 
     /**
      * The <code>getFlag_C()</code> method returns the current value of the C bit
      * in the status register as a boolean.
+     *
      * @return the value of the flag
      */
-    public boolean getFlag_C() { return C; }
+    public boolean getFlag_C() {
+        return C;
+    }
 
     /**
      * The <code>getStackByte()</code> method reads a byte from the address
@@ -649,6 +738,7 @@ public class State implements IORegisterConstants {
      * Since the stack pointer is stored in two IO registers, this method will cause the
      * invocation of the <code>.read()</code> method on each of the <code>IOReg</code>
      * objects that store these values.
+     *
      * @return the value of the stack pointer as a byte address
      */
     public int getSP() {
@@ -660,8 +750,8 @@ public class State implements IORegisterConstants {
      * the stack pointer is stored in two IO registers <code>SPL</code> and <code>SPH</code>.
      * This method should generally only be used within the simulator.
      *
-     * @see IORegisterConstants
      * @param val
+     * @see IORegisterConstants
      */
     public void setSP(int val) {
         ioregs[SPL].write(Arithmetic.low(val));
@@ -670,6 +760,7 @@ public class State implements IORegisterConstants {
 
     /**
      * The <code>getPC()</code> retrieves the current program counter.
+     *
      * @return the program counter as a byte address
      */
     public int getPC() {
@@ -681,6 +772,7 @@ public class State implements IORegisterConstants {
      * generally used only by the simulator. In general it is a good idea to keep the
      * program counter aligned on a 2-byte boundary. Clients of the <code>State</code> interface
      * should generally not use this method.
+     *
      * @param pc the new program counter as a byte address
      */
     public void setPC(int pc) {
@@ -691,8 +783,9 @@ public class State implements IORegisterConstants {
      * The <code>getCurrentInstr()</code> method returns a reference to the
      * <code>Instr</code> object representing the instruction at the address of
      * the current value of the program counter.
+     *
      * @return a reference to the <code>Instr</code> object representing the instruction
-     * at the current program counter
+     *         at the current program counter
      */
     public Instr getCurrentInstr() {
         return program[pc].asInstr(pc);
@@ -705,9 +798,10 @@ public class State implements IORegisterConstants {
      * not contain data. This is because Avrora does have a functioning disassembler
      * and assumes that the <code>Instr</code> objects for each instruction in the
      * program are known a priori.
+     *
      * @param address the byte address from which to read the instruction
      * @return a reference to the <code>Instr</code> object representing the instruction
-     * at that address in the program
+     *         at that address in the program
      */
     public Instr getInstr(int address) {
         return program[address].asInstr(address);
@@ -720,7 +814,7 @@ public class State implements IORegisterConstants {
      * probes when it is visited. It is generally not recommended for clients of the
      * <code>State</code> interface to update instructions in the program memory.
      *
-     * @param i the instruction to write
+     * @param i       the instruction to write
      * @param address the byte address in the program to write the instruction to
      */
     public void setInstr(Instr i, int address) {
@@ -732,17 +826,18 @@ public class State implements IORegisterConstants {
     /**
      * The <code>getDataByte()</code> method reads a byte value from the data memory
      * (SRAM) at the specified address.
+     *
      * @param address the byte address to read
-     * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid
-     * memory range
      * @return the value of the data memory at the specified address
+     * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid
+     *                                        memory range
      */
     public byte getDataByte(int address) {
-        if ( address < NUM_REGS ) return regs[address];
-        if ( address < sram_start) return ioregs[address - NUM_REGS].read();
+        if (address < NUM_REGS) return regs[address];
+        if (address < sram_start) return ioregs[address - NUM_REGS].read();
         try {
             return sram[address - sram_start];
-        } catch ( ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             resize(address);
             return sram[address - sram_start];
         }
@@ -750,14 +845,14 @@ public class State implements IORegisterConstants {
 
     private void resize(int address) {
         // no hope if the address is simply invalid.
-        if ( address >= sram_max ) return;
+        if (address >= sram_max) return;
 
         // double size until address is contained in new array
         int size = sram.length;
-        while ( size <= address ) size <<= 1;
+        while (size <= address) size <<= 1;
 
         // make sure we don't allocate more than the hardware limit
-        if ( size > sram_max - sram_start ) size = sram_max - sram_start;
+        if (size > sram_max - sram_start) size = sram_max - sram_start;
 
         // create new memory
         byte[] new_sram = new byte[size];
@@ -779,9 +874,9 @@ public class State implements IORegisterConstants {
      * the actual byte value of an instruction may not be known.
      *
      * @param address the byte address at which to read
-     * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid
-     * program memory range
      * @return the byte value of the program memory at the specified address
+     * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid
+     *                                        program memory range
      */
     public byte getProgramByte(int address) {
         return program[address].asData(address).value;
@@ -792,18 +887,22 @@ public class State implements IORegisterConstants {
      * memory (SRAM) of the state. This is generally meant for the simulator, related
      * classes, and device implementations to use, but could also be used by
      * debuggers and other tools.
-     * @param val the value to write
+     *
+     * @param val     the value to write
      * @param address the byte address at which to write the value
      */
     public void setDataByte(byte val, int address) {
-        if ( address < NUM_REGS ) regs[address] = val;
-        else if ( address < sram_start) ioregs[address - NUM_REGS].write(val);
-        else try {
-            sram[address - sram_start] = val;
-        } catch ( ArrayIndexOutOfBoundsException e) {
-            resize(address);
-            sram[address - sram_start] = val;
-        }
+        if (address < NUM_REGS)
+            regs[address] = val;
+        else if (address < sram_start)
+            ioregs[address - NUM_REGS].write(val);
+        else
+            try {
+                sram[address - sram_start] = val;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                resize(address);
+                sram[address - sram_start] = val;
+            }
     }
 
     /**
@@ -811,6 +910,7 @@ public class State implements IORegisterConstants {
      * Invocation of this method causes an invocatiobn of the <code>.read()</code>
      * method on the corresponding internal <code>IOReg</code> object, and its value
      * returned.
+     *
      * @param ioreg the IO register number
      * @return the value of the IO register
      */
@@ -823,8 +923,9 @@ public class State implements IORegisterConstants {
      * object to the specified IO register number. This method is generally only used
      * in the simulator and in device implementations to set up the state correctly
      * during initialization.
+     *
      * @param ioreg the IO register number
-     * @param reg the <code>IOReg<code> object to install
+     * @param reg   the <code>IOReg<code> object to install
      */
     public void setIOReg(int ioreg, IOReg reg) {
         ioregs[ioreg] = reg;
@@ -849,7 +950,7 @@ public class State implements IORegisterConstants {
      * device implementations, and client interfaces should probably not call
      * this method.
      *
-     * @param val the value to write to the IO register
+     * @param val   the value to write to the IO register
      * @param ioreg the IO register number to which to write the value
      */
     public void setIORegisterByte(byte val, int ioreg) {
@@ -859,6 +960,7 @@ public class State implements IORegisterConstants {
     /**
      * The <code>getCycles()</code> method returns the clock cycle count recorded
      * so far in the simulation.
+     *
      * @return the number of clock cycles elapsed in the simulation
      */
     public long getCycles() {
@@ -871,7 +973,6 @@ public class State implements IORegisterConstants {
      * and tightly coupled classes, so clients of the state interface should not
      * call this method unless they are implementing careful timings (e.g. an
      * external RAM).
-     *
      */
     public void consumeCycle() {
         cycles++;
@@ -939,7 +1040,7 @@ public class State implements IORegisterConstants {
         printPair("SP ", sp, sp_delta);
 
         int max = sp + 10;
-        if ( max > sram.length + sram_start ) max = sram.length + sram_start;
+        if (max > sram.length + sram_start) max = sram.length + sram_start;
 
         for (int cntr = sp; cntr < max; cntr++) {
             Terminal.print(StringUtil.toHex(getDataByte(cntr), 2) + " ");

@@ -1,4 +1,4 @@
-package avrora;
+package avrora.syntax;
 
 import avrora.core.*;
 import avrora.syntax.Context;
@@ -6,8 +6,12 @@ import avrora.syntax.Expr;
 import avrora.syntax.ExprList;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
+import avrora.util.Verbose;
 import avrora.syntax.AbstractParseException;
 import avrora.syntax.AbstractToken;
+import avrora.AVRErrorReporter;
+import avrora.Avrora;
+import avrora.core.Operand;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,6 +20,7 @@ import java.util.HashMap;
 /**
  * The <code>Module</code> class collects together the instructions and data
  * into an AVR assembly program.
+ *
  * @author Ben L. Titzer
  */
 public class Module implements Context {
@@ -39,15 +44,14 @@ public class Module implements Context {
 
     // TODO: this is not managed correctly in all cases
     public int currentAddress;
+    private static final SyntacticOperand[] NO_OPERANDS = {};
 
     /**
-     *  I T E M   C L A S S E S
+     * I T E M   C L A S S E S
      * --------------------------------------------------------
-     *
-     *  These item classes represent the various parts of the assembly
-     *  file that are recorded in the module.
-     *
-     *
+     * <p/>
+     * These item classes represent the various parts of the assembly
+     * file that are recorded in the module.
      */
     private abstract class Item {
 
@@ -129,10 +133,10 @@ public class Module implements Context {
     private class InstrItem extends AddressableItem {
         private final String variant;
         private final AbstractToken name;
-        private final Operand[] operands;
+        private final SyntacticOperand[] operands;
         private final InstrPrototype proto;
 
-        InstrItem(Segment s, int a, String v, AbstractToken n, InstrPrototype p, Operand[] ops) {
+        InstrItem(Segment s, int a, String v, AbstractToken n, InstrPrototype p, SyntacticOperand[] ops) {
             super(s, a);
             variant = v;
             name = n;
@@ -144,7 +148,7 @@ public class Module implements Context {
             int address = getAddress();
 
             for (int cntr = 0; cntr < operands.length; cntr++)
-                simplifyOperand(operands[cntr]);
+                operands[cntr].simplify(Module.this);
 
             try {
                 Instr instr = proto.build(address, operands);
@@ -152,27 +156,15 @@ public class Module implements Context {
                 newprogram.writeInstr(instr, getByteAddress());
 
             } catch (Instr.ImmediateRequired e) {
-                ERROR.ConstantExpected(e.operand);
+                ERROR.ConstantExpected((SyntacticOperand)e.operand);
             } catch (Instr.InvalidImmediate e) {
                 ERROR.ConstantOutOfRange(operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
             } catch (Instr.InvalidRegister e) {
                 ERROR.IncorrectRegister(operands[e.number - 1], e.register, e.set.toString());
             } catch (Instr.RegisterRequired e) {
-                ERROR.RegisterExpected(e.operand);
+                ERROR.RegisterExpected((SyntacticOperand)e.operand);
             } catch (Instr.WrongNumberOfOperands e) {
                 ERROR.WrongNumberOfOperands(name, e.found, e.expected);
-            }
-        }
-
-        void simplifyOperand(Operand o) {
-            if (o.isRegister()) {
-                Operand.Register or = (Operand.Register) o;
-                or.setRegister(getRegister(or.name));
-            } else {
-		currentAddress = address;
-                Operand.Constant oc = (Operand.Constant) o;
-                int value = oc.expr.evaluate(Module.this);
-                oc.setValue(value);
             }
         }
 
@@ -224,7 +216,7 @@ public class Module implements Context {
                     cseg.writeBytes(str.getBytes(), cursor);
                     cursor = align(cursor, width);
                 } else {
-		    currentAddress = cursor;
+                    currentAddress = cursor;
                     int val = e.evaluate(Module.this);
                     for (int cntr = 0; cntr < width; cntr++) {
                         cseg.writeByte((byte) val, cursor);
@@ -275,7 +267,7 @@ public class Module implements Context {
             if (org > highest_address) highest_address = org;
         }
 
-        Item addInstruction(String variant, AbstractToken name, Operand[] ops) {
+        Item addInstruction(String variant, AbstractToken name, SyntacticOperand[] ops) {
             InstrPrototype p = InstructionSet.getPrototype(variant);
             if (p == null) ERROR.UnknownInstruction(name);
             InstrItem i = new InstrItem(this, cursor, variant, name, p, ops);
@@ -367,7 +359,7 @@ public class Module implements Context {
             super(32);
         }
 
-        Item addInstruction(String variant, AbstractToken name, Operand[] ops) {
+        Item addInstruction(String variant, AbstractToken name, SyntacticOperand[] ops) {
             ERROR.InstructionCannotBeInSegment("data", name);
             throw Avrora.failure("instruction cannot be in data cseg");
         }
@@ -407,7 +399,7 @@ public class Module implements Context {
             super(0);
         }
 
-        Item addInstruction(String variant, AbstractToken name, Operand[] ops) {
+        Item addInstruction(String variant, AbstractToken name, SyntacticOperand[] ops) {
             ERROR.InstructionCannotBeInSegment("eeprom", name);
             throw Avrora.failure("instruction cannot be in eeprom cseg");
         }
@@ -634,7 +626,7 @@ public class Module implements Context {
             AtmelParser parser = new AtmelParser(new FileInputStream(fn), this, fn);
             // TODO: handle infinite include recursion possibility
             parser.Module();
-        } catch ( FileNotFoundException e ) {
+        } catch (FileNotFoundException e) {
             ERROR.IncludeFileNotFound(fname);
         }
     }
@@ -642,25 +634,25 @@ public class Module implements Context {
 
     // <instruction>
     public void addInstruction(String variant, AbstractToken name) {
-        Operand[] o = {};
+        SyntacticOperand[] o = NO_OPERANDS;
         addItem(segment.addInstruction(variant, name, o));
     }
 
     // <instruction> <operand>
-    public void addInstruction(String variant, AbstractToken name, Operand o1) {
-        Operand[] o = {o1};
+    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1) {
+        SyntacticOperand[] o = {o1};
         addItem(segment.addInstruction(variant, name, o));
     }
 
     // <instruction> <operand> <operand>
-    public void addInstruction(String variant, AbstractToken name, Operand o1, Operand o2) {
-        Operand[] o = {o1, o2};
+    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2) {
+        SyntacticOperand[] o = {o1, o2};
         addItem(segment.addInstruction(variant, name, o));
     }
 
     // <instruction> <operand> <operand> <operand>
-    public void addInstruction(String variant, AbstractToken name, Operand o1, Operand o2, Operand o3) {
-        Operand[] o = {o1, o2, o3};
+    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2, SyntacticOperand o3) {
+        SyntacticOperand[] o = {o1, o2, o3};
         addItem(segment.addInstruction(variant, name, o));
     }
 
@@ -707,7 +699,7 @@ public class Module implements Context {
     }
 
     public int getCurrentAddress() {
-	return currentAddress;
+        return currentAddress;
     }
 
     private void addItem(Item i) {

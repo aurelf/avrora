@@ -8,13 +8,13 @@ import java.io.*;
  * of text that needs to be generated, and the rest of the file is not
  * altered. This is accomplished with tags in the file that specify the
  * beginning and end of the section to be filled in.
- *
+ * <p/>
  * The <code>SectionFile</code> then behaves just like a FileOutputStream,
  * except on the first write it will skip to the beginning of the section
  * where the output should be inserted. Then on close, the output stream
  * will write the section following the end, remove the old file, and
  * rename the new file to the old file.
- * 
+ *
  * @author Ben L. Titzer
  */
 public class SectionFile extends FileOutputStream {
