@@ -53,16 +53,19 @@ public class StateSpace {
      * The source is known by context.
      */
     public class Link {
-        public final State state;
+        public final State target;
         public final Link next;
+        public final int type;
         public final int weight;
 
-        Link(State t, Link n, int w) {
-            state = t;
+        Link(State s, Link n, int t, int w) {
+            target = s;
             next = n;
+            type = t;
             weight = w;
         }
     }
+
 
     private long uidCount;
 
@@ -125,8 +128,8 @@ public class StateSpace {
          */
         public Link outgoing;
 
-        void addEdge(State t, int weight) {
-            outgoing = new Link(t, outgoing, weight);
+        void addEdge(State t, int type, int weight) {
+            outgoing = new Link(t, outgoing, type, weight);
         }
 
         /**
@@ -209,8 +212,8 @@ public class StateSpace {
         if (head == null) return null;
 
         frontier = frontier.next;
-        head.state.onFrontier = false;
-        return head.state;
+        head.target.onFrontier = false;
+        return head.target;
     }
 
     /**
@@ -256,7 +259,7 @@ public class StateSpace {
      */
     public boolean addFrontier(State s) {
         if (s.onFrontier) return true;
-        frontier = new Link(s, frontier, 0);
+        frontier = new Link(s, frontier, 0, 0);
         s.onFrontier = true;
         return false;
     }
@@ -304,8 +307,8 @@ public class StateSpace {
      * @param t the destination state
      * @param weight the weight to assign to the edge
      */
-    public void addEdge(State s, State t, int weight) {
-        s.addEdge(t, weight);
+    public void addEdge(State s, State t, int type, int weight) {
+        s.addEdge(t, type, weight);
     }
 
     /**
@@ -315,7 +318,7 @@ public class StateSpace {
      * @param t the destination state
      */
     public void addEdge(State s, State t) {
-        s.addEdge(t, 0);
+        s.addEdge(t, 0, 0);
     }
 
     /**

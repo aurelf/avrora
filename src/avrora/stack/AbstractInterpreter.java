@@ -854,16 +854,16 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     //-----------------------------------------------------------------------
 
     private void branchOnCondition(char cond, int offset) {
-        if (cond == TRUE) // branch is taken
-            relativeBranch(state, offset);
-        else if (cond == FALSE)
-            ; // branch is not taken
-        else { // branch could go either way
-            MutableState taken = state.copy();
-            relativeBranch(taken, offset);
-            policy.pushState(taken);
-        }
-    }
+        if (cond == FALSE) return; // branch is not taken
+
+        // compute taken branch
+        MutableState taken = state.copy();
+        relativeBranch(taken, offset);
+        policy.pushState(taken);
+
+        // if condition is definately true, then the not taken branch is dead
+        if (cond == TRUE) state = null;
+     }
 
     private void skipOnCondition(char cond) {
         branchOnCondition(cond, program.readInstr(state.getPC()).getSize());
