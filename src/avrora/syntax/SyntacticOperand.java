@@ -32,8 +32,8 @@
 
 package avrora.syntax;
 
-import avrora.core.Operand;
 import avrora.Avrora;
+import avrora.core.Operand;
 
 /**
  * The <code>SyntacticOperand</code> class is an implementation of the

@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.syntax.AbstractToken;
+
 
 /**
  * The <code>ExprList</code> class represents a list of expressions within

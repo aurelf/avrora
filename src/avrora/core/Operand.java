@@ -32,9 +32,7 @@
 
 package avrora.core;
 
-import avrora.syntax.ASTNode;
-import avrora.syntax.Expr;
-import avrora.syntax.AbstractToken;
+
 
 /**
  * The <code>Operand</code> class encapsulates the notion of an operand to

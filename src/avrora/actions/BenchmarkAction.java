@@ -34,18 +34,11 @@ package avrora.actions;
 
 import avrora.Main;
 import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.sim.util.ProgramProfiler;
-import avrora.sim.platform.PlatformFactory;
 import avrora.sim.Simulator;
+import avrora.sim.platform.PlatformFactory;
+import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import avrora.util.Verbose;
-import avrora.util.Option;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * The <code>SimulateAction</code> implements the bridge between the functionality
@@ -60,10 +53,8 @@ import java.util.List;
 public class BenchmarkAction extends SimAction {
     Program program;
     Simulator simulator;
-    avrora.sim.util.Counter total;
-    long startms, endms;
+    long endms;
 
-    long programCycles;
     long totalCyclesA, totalCyclesB;
     long totalMillisA, totalMillisB;
 

@@ -32,9 +32,9 @@
 
 package avrora.core.isdl.ast;
 
+import avrora.Avrora;
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
-import avrora.Avrora;
 
 /**
  * The <code>Expr</code> class represents an expression in the IR. Expressions

@@ -36,8 +36,8 @@ import avrora.Avrora;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.LinkedList;
 import java.util.Comparator;
+import java.util.LinkedList;
 
 /**
  * The <code>Option</code> class represents an option that has been given on the

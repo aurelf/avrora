@@ -32,9 +32,9 @@
 
 package avrora.sim.platform;
 
-import avrora.sim.mcu.Microcontroller;
-import avrora.sim.mcu.ATMega128L;
 import avrora.core.Program;
+import avrora.sim.mcu.ATMega128L;
+import avrora.sim.mcu.Microcontroller;
 import avrora.util.Terminal;
 
 /**

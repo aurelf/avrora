@@ -33,8 +33,8 @@
 package avrora.core.isdl.ast;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>StmtVisitor</code> interface implements the visitor pattern

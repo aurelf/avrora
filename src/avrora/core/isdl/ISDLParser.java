@@ -3,8 +3,8 @@ package avrora.core.isdl;
 
 import avrora.core.isdl.ast.*;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 public class ISDLParser implements ISDLParserConstants {
 

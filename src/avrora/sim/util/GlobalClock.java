@@ -35,7 +35,6 @@ package avrora.sim.util;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 
-import java.util.HashSet;
 import java.util.HashMap;
 
 /**
@@ -46,7 +45,7 @@ import java.util.HashMap;
  */
 public class GlobalClock {
 
-    protected double period;
+    protected final double period;
     protected int goal;
     protected int count;
     protected final Object condition;

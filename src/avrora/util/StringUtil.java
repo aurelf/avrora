@@ -36,8 +36,8 @@ import avrora.Avrora;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing
@@ -46,7 +46,7 @@ import java.util.Iterator;
  * @author Ben L. Titzer
  */
 public class StringUtil {
-    public static char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7',
+    public static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7',
                                       '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     public static final String QUOTE = "\"".intern();
     public static final String SQUOTE = "'".intern();
@@ -54,7 +54,7 @@ public class StringUtil {
     public static final String RPAREN = ")".intern();
     public static final String COMMA = ",".intern();
     public static final String COMMA_SPACE = ", ".intern();
-    public static String[] EMPTY_STRING_ARRAY = {};
+    public static final String[] EMPTY_STRING_ARRAY = {};
 
     /**
      * The <code>addToString()</code> method converts a numerical address
@@ -334,14 +334,14 @@ public class StringUtil {
         return buf.toString();
     }
 
-    public static int SECS_PER_DAY = 3600 * 24;
-    public static int SECS_PER_HOUR = 3600;
-    public static int SECS_PER_MIN = 60;
+    public static final int SECS_PER_DAY = 3600 * 24;
+    public static final int SECS_PER_HOUR = 3600;
+    public static final int SECS_PER_MIN = 60;
 
-    public static long MILLISECS_PER_DAY = 3600 * 24 * 1000;
-    public static long MILLISECS_PER_HOUR = 3600 * 1000;
-    public static long MILLISECS_PER_MIN = 60 * 1000;
-    public static long MILLISECS_PER_SEC = 1000;
+    public static final long MILLISECS_PER_DAY = 3600 * 24 * 1000;
+    public static final long MILLISECS_PER_HOUR = 3600 * 1000;
+    public static final long MILLISECS_PER_MIN = 60 * 1000;
+    public static final long MILLISECS_PER_SEC = 1000;
 
     /**
      * The <code>millisAsString()</code> method converts a number of milliseconds
@@ -369,11 +369,11 @@ public class StringUtil {
         return buf.toString();
     }
 
-    public static int DAYS = 0;
-    public static int HOURS = 1;
-    public static int MINS = 2;
-    public static int SECS = 3;
-    public static int MILLIS = 4;
+    public static final int DAYS = 0;
+    public static final int HOURS = 1;
+    public static final int MINS = 2;
+    public static final int SECS = 3;
+    public static final int MILLIS = 4;
 
     /**
      * The <code>millisToDays()</code> method converts the given milliseconds into

@@ -8,8 +8,8 @@
  **/
 package avrora.util.profiling;
 
-import avrora.util.Terminal;
 import avrora.Avrora;
+import avrora.util.Terminal;
 
 public class Distribution extends MinMaxMean {
 

@@ -34,7 +34,6 @@ package avrora.syntax;
 
 import avrora.Avrora;
 import avrora.util.StringUtil;
-import avrora.syntax.AbstractToken;
 
 /**
  * The <code>Expr</code> class represents an expression within the program that

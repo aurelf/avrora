@@ -32,7 +32,7 @@
 
 package avrora.core;
 
-import avrora.Avrora;
+
 
 /**
  * The <code>Instr</code> class and its descendants represent instructions within the

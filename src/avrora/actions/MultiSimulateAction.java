@@ -32,7 +32,6 @@
 
 package avrora.actions;
 
-import avrora.Main;
 import avrora.Avrora;
 import avrora.util.Option;
 

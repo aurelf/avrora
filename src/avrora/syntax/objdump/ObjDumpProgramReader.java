@@ -34,11 +34,11 @@ package avrora.syntax.objdump;
 
 import avrora.Avrora;
 import avrora.Main;
-import avrora.syntax.Module;
-import avrora.syntax.Module;
 import avrora.core.Program;
 
-import java.io.*;
+import java.io.File;
+import java.io.Reader;
+import java.io.StringReader;
 
 /**
  * The <code>AtmelProgramReader</code> is an implementation of the <code>ProgramReader</code>

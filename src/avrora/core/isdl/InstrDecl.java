@@ -32,12 +32,10 @@
 
 package avrora.core.isdl;
 
-import avrora.core.isdl.Token;
 import avrora.core.isdl.ast.Expr;
 import avrora.util.StringUtil;
 
 import java.util.List;
-import java.util.LinkedList;
 
 /**
  * The <code>InstrDecl</code> class represents the declaration

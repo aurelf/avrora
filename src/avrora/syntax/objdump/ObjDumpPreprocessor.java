@@ -33,10 +33,12 @@
 
 package avrora.syntax.objdump;
 
-import java.io.*;
-import java.util.StringTokenizer;
-
 import avrora.util.StringUtil;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.StringTokenizer;
 
 /**
  * The <code>ObjDumpPreprocessor</code> class is a utility class that takes the output

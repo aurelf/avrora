@@ -32,8 +32,6 @@
 
 package avrora.test;
 
-import avrora.test.TestCase;
-
 import java.util.Properties;
 
 /**

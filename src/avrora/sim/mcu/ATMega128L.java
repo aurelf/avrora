@@ -32,17 +32,14 @@
 
 package avrora.sim.mcu;
 
-import avrora.util.Arithmetic;
-import avrora.util.Verbose;
-import avrora.core.InstrPrototype;
-/***/
 import avrora.core.Instr;
-/***/
+import avrora.core.InstrPrototype;
 import avrora.core.Program;
+import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.GenInterpreter;
-import avrora.sim.BaseInterpreter;
+import avrora.util.Arithmetic;
+import avrora.util.Verbose;
 
 import java.util.HashMap;
 import java.util.LinkedList;

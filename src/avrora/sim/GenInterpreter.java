@@ -32,9 +32,9 @@
 
 package avrora.sim;
 
-import avrora.core.*;
-import avrora.Avrora;
-import avrora.sim.util.MulticastProbe;
+import avrora.core.Instr;
+import avrora.core.Program;
+import avrora.core.Register;
 import avrora.util.Arithmetic;
 
 /**

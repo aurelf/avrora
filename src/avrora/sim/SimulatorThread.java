@@ -32,7 +32,7 @@
 
 package avrora.sim;
 
-import avrora.sim.Simulator;
+
 
 /**
  * The <code>SimulatorThread</code> class is a thread intended to run a

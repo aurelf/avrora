@@ -32,12 +32,9 @@
 
 package avrora.core;
 
-import avrora.Avrora;
-
-import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The <code>ProcedureMap</code> class represents a mapping from basic blocks

@@ -34,7 +34,6 @@ package avrora.syntax.objdump;
 
 import avrora.syntax.*;
 import avrora.util.StringUtil;
-import avrora.core.Instr;
 
 import java.util.HashMap;
 

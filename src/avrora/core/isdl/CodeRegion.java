@@ -32,8 +32,8 @@
 
 package avrora.core.isdl;
 
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>CodeRegion</code> class represents a piece of code that has

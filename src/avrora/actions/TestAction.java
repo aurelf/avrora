@@ -32,9 +32,8 @@
 
 package avrora.actions;
 
-import avrora.test.AutomatedTester;
-import avrora.Main;
 import avrora.AVRTestHarness;
+import avrora.test.AutomatedTester;
 
 /**
  * @author Ben L. Titzer

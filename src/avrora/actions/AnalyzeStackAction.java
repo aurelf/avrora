@@ -33,9 +33,9 @@
 package avrora.actions;
 
 import avrora.Main;
-import avrora.util.Option;
-import avrora.stack.Analyzer;
 import avrora.core.Program;
+import avrora.stack.Analyzer;
+import avrora.util.Option;
 
 /**
  * The <code>AnalyzeStackAction</code> class is an extension of the <code>Main.Action</code>

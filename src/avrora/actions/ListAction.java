@@ -32,8 +32,8 @@
 
 package avrora.actions;
 
-import avrora.core.Program;
 import avrora.Main;
+import avrora.core.Program;
 
 /**
  * @author Ben L. Titzer

@@ -32,8 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.syntax.AbstractToken;
-import avrora.syntax.ProgramPoint;
+
 
 /**
  * The <code>AbstractParseException</code> represents a parse exception that

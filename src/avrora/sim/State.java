@@ -32,13 +32,9 @@
 
 package avrora.sim;
 
-import avrora.util.Arithmetic;
-import avrora.Avrora;
 import avrora.core.Instr;
-import avrora.core.Program;
 import avrora.core.Register;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
+import avrora.util.Arithmetic;
 
 /**
  * The <code>State</code> class represents the state of the simulator, including

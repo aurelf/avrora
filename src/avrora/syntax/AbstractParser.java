@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.syntax.AbstractParseException;
+
 
 /**
  * The <code>AbstractParser</code> is a superclass of all parsers introduced

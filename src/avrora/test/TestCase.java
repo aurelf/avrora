@@ -34,7 +34,6 @@ package avrora.test;
 
 import avrora.Avrora;
 import avrora.CompilationError;
-import avrora.test.TestResult;
 import avrora.util.StringUtil;
 
 import java.util.Properties;

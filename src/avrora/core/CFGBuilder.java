@@ -33,10 +33,8 @@
 package avrora.core;
 
 import avrora.Avrora;
-import avrora.util.Verbose;
 import avrora.util.StringUtil;
-
-import java.util.HashSet;
+import avrora.util.Verbose;
 
 /**
  * The <code>CFGBuilder</code> class is a visitor that builds a
@@ -54,12 +52,11 @@ class CFGBuilder implements InstrVisitor {
     final Program program;
 
     ControlFlowGraph cfg;
-    ControlFlowGraph.Block block;
     InstrInfo[] info;
 
     private int pc;
 
-    Verbose.Printer printer = Verbose.getVerbosePrinter("cfg.builder");
+    final Verbose.Printer printer = Verbose.getVerbosePrinter("cfg.builder");
 
     /**
      * The <code>CFGBuilder</code> constructor constructs an instance that is
@@ -285,7 +282,7 @@ class CFGBuilder implements InstrVisitor {
     }
 
 
-    public void visit(Instr.ADC i) { // add register to register with carry
+    public final void visit(Instr.ADC i) { // add register to register with carry
         add(i);
     }
 

@@ -103,8 +103,8 @@ public class ControlFlowGraph {
         private int size;
         private int length;
 
-        private List instructions;
-        private List edges;
+        private final List instructions;
+        private final List edges;
 
         Block(int addr) {
             address = addr;

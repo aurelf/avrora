@@ -32,16 +32,16 @@
 
 package avrora.core.isdl;
 
-import avrora.util.Verbose;
-import avrora.util.StringUtil;
-import avrora.util.Printer;
-import avrora.core.isdl.ast.*;
 import avrora.Avrora;
+import avrora.core.isdl.ast.*;
+import avrora.util.Printer;
+import avrora.util.StringUtil;
+import avrora.util.Verbose;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>Architecture</code> class represents a collection of
@@ -154,10 +154,6 @@ public class Architecture {
 
     public Iterator getSubroutineIterator() {
         return subroutines.iterator();
-    }
-
-    public void dump() {
-
     }
 
     public void addSubroutine(SubroutineDecl d) {

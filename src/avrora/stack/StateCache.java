@@ -35,7 +35,6 @@ package avrora.stack;
 import avrora.core.Program;
 import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
-import avrora.Avrora;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -65,11 +64,6 @@ public class StateCache {
 
         boolean isExplored;
         boolean onFrontier;
-
-        State() {
-            hashCode = computeHashCode();
-            UID = uidCount++;
-        }
 
         State(MutableState s) {
             pc = s.pc;

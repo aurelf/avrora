@@ -33,10 +33,11 @@
 package avrora;
 
 import avrora.core.Register;
-import avrora.core.Operand;
+import avrora.syntax.ASTNode;
+import avrora.syntax.AbstractToken;
+import avrora.syntax.ProgramPoint;
+import avrora.syntax.SyntacticOperand;
 import avrora.util.StringUtil;
-import avrora.ErrorReporter;
-import avrora.syntax.*;
 
 /**
  * The <code>AVRErrorReporter</code> contains one method per compilation

@@ -33,8 +33,8 @@
 package avrora.core.isdl.ast;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>CodeVisitor</code> interface represents a visitor that is

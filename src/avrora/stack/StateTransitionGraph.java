@@ -4,7 +4,6 @@ import avrora.Avrora;
 import avrora.core.Program;
 
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * @author Ben L. Titzer
@@ -95,7 +94,7 @@ public class StateTransitionGraph {
     private long frontierCount;
     private long exploredCount;
 
-    private StateCache.State edenState;
+    private final StateCache.State edenState;
 
     /**
      * The constructor for the <code>StateTransitionGraph</code> class constructs

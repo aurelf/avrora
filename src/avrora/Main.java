@@ -32,30 +32,17 @@
 
 package avrora;
 
-import avrora.core.Program;
-import avrora.core.ControlFlowGraph;
-import avrora.core.Instr;
-import avrora.core.isdl.*;
-import avrora.sim.mcu.Microcontroller;
-import avrora.sim.platform.PlatformFactory;
-import avrora.sim.platform.Platforms;
-import avrora.sim.mcu.Microcontrollers;
-import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.actions.*;
+import avrora.core.Program;
 import avrora.syntax.atmel.AtmelProgramReader;
-import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.gas.GASProgramReader;
-import avrora.syntax.Module;
+import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.util.*;
-import avrora.test.AutomatedTester;
 
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
-import java.util.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.PrintStream;
 import java.io.IOException;
+import java.util.*;
 
 /**
  * This is the main entrypoint to Avrora.
@@ -513,11 +500,6 @@ public class Main {
             }
             return l1.address - l2.address;
         }
-    }
-
-    static void formatError(String f, int i) {
-        Avrora.userError("format error for program location(s) " + StringUtil.quote(f) + " @ character " + i);
-
     }
 
     /**

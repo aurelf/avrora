@@ -32,14 +32,14 @@
 
 package avrora.core.isdl;
 
+import avrora.Avrora;
 import avrora.core.isdl.ast.*;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
-import avrora.Avrora;
 
-import java.util.List;
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>InterpreterGenerator</code> class is a visitor over the code of an
@@ -355,27 +355,11 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         printer.print(")");
     }
 
-    private void emitCall(String s, Expr e1, Expr e2, Expr e3) {
-        printer.print(s + "(");
-        e1.accept(codeGen);
-        printer.print(", ");
-        e2.accept(codeGen);
-        printer.print(", ");
-        e3.accept(codeGen);
-        printer.print(")");
-    }
-
     private void emitCall(String s, String e1, Expr e2, Expr e3) {
         printer.print(s + "(" + e1 + ", ");
         e2.accept(codeGen);
         printer.print(", ");
         e3.accept(codeGen);
-        printer.print(")");
-    }
-
-    private void emitCall(String s, String e1, Expr e2) {
-        printer.print(s + "(" + e1 + ", ");
-        e2.accept(codeGen);
         printer.print(")");
     }
 

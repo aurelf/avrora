@@ -34,7 +34,6 @@ package avrora;
 
 import avrora.syntax.ProgramPoint;
 import avrora.util.StringUtil;
-import avrora.CompilationError;
 
 /**
  * The <code>ErrorReporter</code> is the super class of all error reporters in

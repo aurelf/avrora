@@ -34,8 +34,8 @@ package avrora.syntax.atmel;
 
 import avrora.Avrora;
 import avrora.Main;
-import avrora.syntax.Module;
 import avrora.core.Program;
+import avrora.syntax.Module;
 
 import java.io.File;
 import java.io.FileInputStream;

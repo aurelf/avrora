@@ -32,11 +32,10 @@
 
 package avrora.sim;
 
+import avrora.core.Instr;
 import avrora.core.InstrVisitor;
 import avrora.core.Program;
-import avrora.core.Instr;
 import avrora.core.Register;
-import avrora.Avrora;
 import avrora.util.Arithmetic;
 
 /**

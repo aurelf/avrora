@@ -34,8 +34,8 @@ package avrora.core.isdl;
 
 import avrora.core.isdl.ast.Expr;
 
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>EncodingDecl</code> class represents the encoding of an

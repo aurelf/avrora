@@ -32,9 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.core.InstrPrototype;
 import avrora.core.Program;
-import avrora.sim.Simulator;
 
 /**
  * The <code>MicrocontrollerFactory</code> interface is implemented by a class

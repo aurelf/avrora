@@ -32,25 +32,18 @@
 
 package avrora.syntax;
 
+import avrora.AVRErrorReporter;
 import avrora.core.*;
-import avrora.syntax.Context;
-import avrora.syntax.Expr;
-import avrora.syntax.ExprList;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
-import avrora.syntax.AbstractParseException;
-import avrora.syntax.AbstractToken;
-import avrora.AVRErrorReporter;
-import avrora.Avrora;
-import avrora.core.Operand;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>Module</code> class collects together the instructions and data

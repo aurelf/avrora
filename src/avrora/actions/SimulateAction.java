@@ -33,23 +33,19 @@
 package avrora.actions;
 
 import avrora.Main;
-import avrora.Avrora;
-import avrora.core.Program;
 import avrora.core.Instr;
-import avrora.sim.util.ProgramProfiler;
-import avrora.sim.util.MemoryProfiler;
-import avrora.sim.platform.PlatformFactory;
-import avrora.sim.platform.Platforms;
+import avrora.core.Program;
+import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.mcu.Microcontrollers;
+import avrora.sim.platform.PlatformFactory;
+import avrora.sim.util.MemoryProfiler;
+import avrora.sim.util.ProgramProfiler;
+import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
-import avrora.util.Option;
 
 import java.util.Iterator;
 import java.util.LinkedList;

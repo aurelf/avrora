@@ -32,10 +32,9 @@
 
 package avrora.actions;
 
-import avrora.util.StringUtil;
-import avrora.util.Option;
-import avrora.Main;
 import avrora.Avrora;
+import avrora.util.Option;
+import avrora.util.StringUtil;
 
 /**
  * @author Ben L. Titzer

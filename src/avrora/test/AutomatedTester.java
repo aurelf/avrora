@@ -32,12 +32,9 @@
 
 package avrora.test;
 
-import avrora.test.TestHarness;
-import avrora.test.TestCase;
-import avrora.test.TestResult;
+import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
-import avrora.util.StringUtil;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -87,11 +84,6 @@ public class AutomatedTester {
             result = tr;
         }
     }
-
-    private static final int YELLOW = 0;
-    private static final int RED = 1;
-    private static final int CYAN = 2;
-    private static final int GREEN = 3;
 
     /**
      * The <code>runTests()</code> method runs the testing framework on each

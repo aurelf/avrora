@@ -54,7 +54,7 @@ public class MulticastWatch implements Simulator.Watch {
      * may be called for every instruction executed in the simulator.
      */
     private static class Link {
-        Simulator.Watch probe;
+        final Simulator.Watch probe;
         Link next;
 
         Link(Simulator.Watch p) {

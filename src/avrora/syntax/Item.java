@@ -33,10 +33,7 @@
 package avrora.syntax;
 
 import avrora.Avrora;
-import avrora.util.StringUtil;
-import avrora.core.Register;
 import avrora.core.InstrPrototype;
-import avrora.core.Instr;
 
 /**
  * The <code>Item</code> class represents either an assembler directive, an

@@ -32,15 +32,19 @@
 
 package avrora.actions;
 
-import avrora.core.*;
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
-import avrora.util.Printer;
-import avrora.util.Option;
 import avrora.Main;
-import avrora.Avrora;
+import avrora.core.ControlFlowGraph;
+import avrora.core.Instr;
+import avrora.core.ProcedureMap;
+import avrora.core.Program;
+import avrora.util.Option;
+import avrora.util.Printer;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer
@@ -349,10 +353,5 @@ public class CFGAction extends Action {
         String start = StringUtil.addrToString(block.getAddress());
         String end = StringUtil.addrToString(block.getAddress() + block.getSize());
         return StringUtil.quote(start + " - \\n" + end);
-    }
-
-    private void printPair(String t, ControlFlowGraph.Block b) {
-        String v = b == null ? "null" : StringUtil.addrToString(b.getAddress());
-        Terminal.printPair(Terminal.COLOR_BRIGHT_GREEN, Terminal.COLOR_BRIGHT_CYAN, t, ": ", v);
     }
 }

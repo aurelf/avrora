@@ -32,18 +32,18 @@
 
 package avrora.stack;
 
+import avrora.Avrora;
 import avrora.core.Instr;
 import avrora.core.Program;
-import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
 import avrora.util.profiling.Distribution;
-import avrora.Avrora;
-import avrora.Main;
-import avrora.actions.AnalyzeStackAction;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines
@@ -62,15 +62,14 @@ public class Analyzer {
 
     protected final Program program;
     protected final StateTransitionGraph graph;
-    ContextSensitivePolicy policy;
-    AbstractInterpreter interpreter;
+    final ContextSensitivePolicy policy;
+    final AbstractInterpreter interpreter;
     protected int retCount;
     protected int retiCount;
     protected int newRetCount;
     protected int newEdgeCount;
 
     protected StateTransitionGraph.StateList newReturnStates;
-    protected StateTransitionGraph.StateList allReturnStates;
     protected StateTransitionGraph.EdgeList newEdges;
 
     long buildTime;
@@ -96,14 +95,12 @@ public class Analyzer {
 
     public static boolean TRACE;
     public static boolean running;
-    public List[] equivClasses;
 
     public Analyzer(Program p) {
         program = p;
         graph = new StateTransitionGraph(p);
         policy = new ContextSensitivePolicy();
         interpreter = new AbstractInterpreter(program, policy);
-        equivClasses = new LinkedList[256];
     }
 
     /**

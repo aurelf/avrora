@@ -32,15 +32,12 @@
 
 package avrora.sim;
 
-import avrora.util.Arithmetic;
-import avrora.Avrora;
-import avrora.core.Operand;
-import avrora.core.*;
-import avrora.sim.util.MulticastProbe;
-import avrora.sim.util.PeriodicTrigger;
-import avrora.sim.util.DeltaQueue;
-import avrora.sim.mcu.ATMega128L;
+import avrora.core.Instr;
+import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.util.DeltaQueue;
+import avrora.sim.util.PeriodicTrigger;
+import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;

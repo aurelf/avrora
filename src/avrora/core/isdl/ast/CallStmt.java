@@ -32,10 +32,10 @@
 
 package avrora.core.isdl.ast;
 
-import java.util.List;
-
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
+
+import java.util.List;
 
 /**
  * The <code>CallStmt</code> class represents a call to a subroutine that

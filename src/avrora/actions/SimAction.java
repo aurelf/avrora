@@ -1,12 +1,12 @@
 package avrora.actions;
 
+import avrora.Avrora;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
-import avrora.Avrora;
-import avrora.util.StringUtil;
 import avrora.util.Option;
+import avrora.util.StringUtil;
 
 /**
  * @author Ben L. Titzer

@@ -32,13 +32,12 @@
 
 package avrora.actions;
 
-import avrora.core.isdl.ISDLParser;
-import avrora.core.isdl.Architecture;
-import avrora.core.isdl.InterpreterGenerator;
-import avrora.util.SectionFile;
-import avrora.util.Printer;
-import avrora.Main;
 import avrora.Avrora;
+import avrora.core.isdl.Architecture;
+import avrora.core.isdl.ISDLParser;
+import avrora.core.isdl.InterpreterGenerator;
+import avrora.util.Printer;
+import avrora.util.SectionFile;
 
 import java.io.File;
 import java.io.FileInputStream;

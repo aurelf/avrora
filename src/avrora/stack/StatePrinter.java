@@ -32,9 +32,9 @@
 
 package avrora.stack;
 
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
 import avrora.sim.IORegisterConstants;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * @author Ben L. Titzer

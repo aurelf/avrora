@@ -32,10 +32,10 @@
 
 package avrora.sim.util;
 
+import avrora.Avrora;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.State;
-import avrora.Avrora;
 import avrora.util.StringUtil;
 
 /**

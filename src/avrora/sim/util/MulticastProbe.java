@@ -54,7 +54,7 @@ public class MulticastProbe implements Simulator.Probe {
      * may be for every instruction executed in the simulator.
      */
     private static class Link {
-        Simulator.Probe probe;
+        final Simulator.Probe probe;
         Link next;
 
         Link(Simulator.Probe p) {
