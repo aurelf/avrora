@@ -154,7 +154,7 @@ public class MultiSimulateAction extends SimAction {
             // compute simulation time
             endms = System.currentTimeMillis();
             Terminal.printBrightGreen("Time for simulation: ");
-            Terminal.println(StringUtil.milliAsString((long)(endms - startms)));
+            Terminal.println(StringUtil.milliToSecs((long)(endms - startms)));
         }
     }
 

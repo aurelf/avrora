@@ -35,7 +35,6 @@ package avrora.sim.radio;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.util.GlobalClock;
 import avrora.sim.util.GlobalQueue;
 
 import java.util.*;
@@ -120,7 +119,7 @@ public class SimpleAir implements RadioAir {
             // Schedule local events.
             //double delay = 1.0; // TODO: calculate delay properly
             long globalTime = (globalQueue.getCount()) * Radio.TRANSFER_TIME;
-            long delay = Radio.TRANSFER_TIME - (globalTime - packet.origination.longValue());
+            long delay = Radio.TRANSFER_TIME - (globalTime - packet.originTime);
 
             //System.err.println("Delay " + delay + ", Global Time: " + globalTime +
             //        " , or: " + packet.origination.longValue() + ", dif: " + (globalTime - packet.origination.longValue()));
@@ -191,8 +190,8 @@ public class SimpleAir implements RadioAir {
         Iterator packetIterator = messages.listIterator();
         Radio.RadioPacket packet = (Radio.RadioPacket) packetIterator.next();
 
-        long del = packet.delivery.longValue();
-        long diff = packet.delivery.longValue() - time;
+        long del = packet.deliveryTime;
+        long diff = packet.deliveryTime - time;
         int tolerance = 3;
 
         packetIterator.remove();  // TODO: figure out right palce for this
@@ -210,13 +209,13 @@ public class SimpleAir implements RadioAir {
 
                 TreeSet mappedSet = new TreeSet();
 
-                long base = packet.origination.longValue() / bitPeriod;
+                long base = packet.originTime / bitPeriod;
 
                 while (packetIterator.hasNext()) {
                     Radio.RadioPacket current = (Radio.RadioPacket) packetIterator.next();
                     mappedSet.add(new Radio.RadioPacket(current.data,
-                            current.origination.longValue() / bitPeriod - base,
-                            current.delivery.longValue() / bitPeriod - base));
+                            current.originTime / bitPeriod - base,
+                            current.deliveryTime / bitPeriod - base));
 
                     packetIterator.remove();
                 }
@@ -229,11 +228,11 @@ public class SimpleAir implements RadioAir {
                     Radio.RadioPacket current = (Radio.RadioPacket) packetIterator.next();
 
                     // TODO: fix shift direction based on whether it is MSB or LSB first
-                    acc |= (byte) (current.data >> current.delivery.intValue());
+                    acc |= (byte) (current.data >> current.deliveryTime);
                 }
 
-                packet = new Radio.RadioPacket(acc, packet.origination.longValue(),
-                        packet.delivery.longValue());
+                packet = new Radio.RadioPacket(acc, packet.originTime,
+                        packet.deliveryTime);
                 packet.strength = 0;
             }
 

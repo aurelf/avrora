@@ -36,7 +36,7 @@ import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.util.DeltaQueue;
-import avrora.sim.util.PeriodicTrigger;
+import avrora.sim.util.PeriodicEvent;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
@@ -88,7 +88,7 @@ public abstract class Simulator implements IORegisterConstants {
      * The <code>LEGACY_INTERPRETER</code> field is used to turn on and off
      * the legacy interpreter. By default, the legacy interpreter is used.
      */
-    public static boolean LEGACY_INTERPRETER = true;
+    public static boolean LEGACY_INTERPRETER = false;
 
     /**
      * The <code>LEGACY_INTERPRETER</code> field is used to turn on and off
@@ -636,17 +636,17 @@ public abstract class Simulator implements IORegisterConstants {
     /**
      * The <code>insertPeriodicEvent()</code> method inserts an event into
      * the event queue of the simulator with the specified period. The <code>
-     * PeriodicTrigger</code> instance created will continually reinsert the
+     * PeriodicEvent</code> instance created will continually reinsert the
      * event after each firing to achieve predictable periodic behavior.
      *
      * @param e      the event to insert
      * @param period the period in clock cycles
-     * @return the <code>PeriodicTrigger</code> instance inserted
+     * @return the <code>PeriodicEvent</code> instance inserted
      */
-    public PeriodicTrigger insertPeriodicEvent(Event e, long period) {
+    public PeriodicEvent insertPeriodicEvent(Event e, long period) {
         if (eventPrinter.enabled)
             eventPrinter.println("Simulator.insertPeriodicEvent(" + period + ")");
-        PeriodicTrigger pt = new PeriodicTrigger(this, e, period);
+        PeriodicEvent pt = new PeriodicEvent(this, e, period);
         eventQueue.add(pt, period);
         return pt;
     }

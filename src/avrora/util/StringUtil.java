@@ -388,6 +388,19 @@ public class StringUtil {
         return buf.toString();
     }
 
+    public static String milliToSecs(long millis) {
+        long secs = millis / 1000;
+        millis = millis % 1000;
+        StringBuffer buf = new StringBuffer();
+        buf.append(secs);
+        buf.append(".");
+
+        if (millis < 100) buf.append('0');
+        if (millis < 10) buf.append('0');
+        buf.append(millis);
+        return buf.toString();
+    }
+
     public static final int DAYS = 0;
     public static final int HOURS = 1;
     public static final int MINS = 2;

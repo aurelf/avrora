@@ -2605,7 +2605,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                 Verbose.Printer serialPrinter = Verbose.getVerbosePrinter("sim.serialprinter");
 
-                char[] stream=  {'h', 'e', 'l', 'l', 'o',  'w', 'o', 'r', 'l', 'd'};
+                char[] stream =  {'h', 'e', 'l', 'l', 'o',  'w', 'o', 'r', 'l', 'd'};
 
                 int count = 0;
 
@@ -2615,7 +2615,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                 public void receiveFrame(USARTFrame frame) {
                     if (serialPrinter.enabled) serialPrinter.println("Serial Printer " + frame.toString());
-                    //System.err.println("Serial Printer " + frame.toString());
                 }
 
                 SerialPrinter() {
@@ -2969,7 +2968,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                  * @param val the value to transmit buffer
                  */
                 public void write(byte val) {
-                    //radio_out = val;
                     transmitReg.write(val);
                 }
 
@@ -3311,7 +3309,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             adcPrinter.println("ADC (ADCL): read " + hex(super.read()));
                         }
                         return super.read();
-                        //return (byte)0;
                     }
 
                     public void write(byte val) {
