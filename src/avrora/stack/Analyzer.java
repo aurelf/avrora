@@ -101,12 +101,23 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.AND i) {// and register with register
+        char r1 = state.readRegister(i.r1);
+        char r2 = state.readRegister(i.r2);
+        char result = performAnd(r1, r2);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.ANDI i) {// and register with immediate
+        char r1 = state.readRegister(i.r1);
+        char r2 = AbstractState.knownVal((byte)i.imm1);
+        char result = performAnd(r1, r2);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.ASR i) {// arithmetic shift right
+        char val = state.readRegister(i.r1);
+        char result = performRightShift(val, AbstractState.getBit(val, 7));
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.BCLR i) {// clear bit in status register
@@ -131,54 +142,71 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.BREQ i) {// branch if equal
+        branchOnCondition(state.getFlag_Z(), i.imm1);
     }
 
     public void visit(Instr.BRGE i) {// branch if greater or equal (signed)
+        branchOnCondition(not(xor(state.getFlag_N(), state.getFlag_V())), i.imm1);
     }
 
     public void visit(Instr.BRHC i) {// branch if H flag is clear
+        branchOnCondition(not(state.getFlag_H()), i.imm1);
     }
 
     public void visit(Instr.BRHS i) {// branch if H flag is set
+        branchOnCondition(state.getFlag_H(), i.imm1);
     }
 
     public void visit(Instr.BRID i) {// branch if interrupts are disabled
+        branchOnCondition(not(state.getFlag_I()), i.imm1);
     }
 
     public void visit(Instr.BRIE i) {// branch if interrupts are enabled
+        branchOnCondition(state.getFlag_I(), i.imm1);
     }
 
     public void visit(Instr.BRLO i) { // branch if lower
+        branchOnCondition(state.getFlag_C(), i.imm1);
     }
 
     public void visit(Instr.BRLT i) { // branch if less than zero (signed)
+        branchOnCondition(xor(state.getFlag_N(), state.getFlag_V()), i.imm1);
     }
 
     public void visit(Instr.BRMI i) { // branch if minus
+        branchOnCondition(state.getFlag_N(), i.imm1);
     }
 
     public void visit(Instr.BRNE i) { // branch if not equal
+        branchOnCondition(state.getFlag_Z(), i.imm1);
     }
 
     public void visit(Instr.BRPL i) { // branch if positive
+        branchOnCondition(not(state.getFlag_N()), i.imm1);
     }
 
     public void visit(Instr.BRSH i) { // branch if same or higher
+        branchOnCondition(not(state.getFlag_C()), i.imm1);
     }
 
     public void visit(Instr.BRTC i) { // branch if T flag is clear
+        branchOnCondition(not(state.getFlag_T()), i.imm1);
     }
 
     public void visit(Instr.BRTS i) { // branch if T flag is set
+        branchOnCondition(state.getFlag_T(), i.imm1);
     }
 
     public void visit(Instr.BRVC i) { // branch if V flag is clear
+        branchOnCondition(not(state.getFlag_V()), i.imm1);
     }
 
     public void visit(Instr.BRVS i) { // branch if V flag is set
+        branchOnCondition(state.getFlag_V(), i.imm1);
     }
 
     public void visit(Instr.BSET i) { // set flag in status register
+        state.setSREG_bit(i.imm1, AbstractState.ON);
     }
 
     public void visit(Instr.BST i) { // store bit in register into T flag
@@ -194,6 +222,10 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.CBR i) { // clear bits in register
+        char r1 = state.readRegister(i.r1);
+        char r2 = AbstractState.knownVal((byte)~i.imm1);
+        char result = performAnd(r1, r2);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.CLC i) { // clear C flag
@@ -277,15 +309,14 @@ public class Analyzer implements InstrVisitor {
         } else {
             char r1 = state.readRegister(i.r1);
             char r2 = state.readRegister(i.r2);
-            result = AbstractState.canon(AbstractState.commonMask(r1, r2), (char) (r1 ^ r2));
+            result = xor(r1, r2);
         }
 
-        // TODO: fix flags computation.
-        //boolean N = (result & 0x080) != 0;
-        //boolean Z = result == AbstractState.ZERO;
-        //boolean V = false;
-        //boolean S = xor(N, V);
-        //setFlag_NZVS(N, Z, V, S);
+        char N = AbstractState.getBit(result, 7);
+        char Z = AbstractState.couldBeZero(result);
+        char V = AbstractState.OFF;
+        char S = xor(N, V);
+        setFlag_NZVS(N, Z, V, S);
 
         state.writeRegister(i.r1, result);
     }
@@ -346,9 +377,15 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.LSL i) { // logical shift left
+        char val = state.readRegister(i.r1);
+        char result = performLeftShift(val, AbstractState.OFF);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.LSR i) { // logical shift right
+        char val = state.readRegister(i.r1);
+        char result = performRightShift(val, AbstractState.OFF);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.MOV i) { // copy register to register
@@ -376,9 +413,17 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.OR i) { // or register with register
+        char r1 = state.readRegister(i.r1);
+        char r2 = state.readRegister(i.r2);
+        char result = performOr(r1, r2);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.ORI i) { // or register with immediate
+        char r1 = state.readRegister(i.r1);
+        char r2 = AbstractState.knownVal((byte)i.imm1);
+        char result = performOr(r1, r2);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.OUT i) { // write from register to IO register
@@ -404,9 +449,15 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.ROL i) { // rotate left through carry flag
+        char val = state.readRegister(i.r1);
+        char result = performLeftShift(val, state.getFlag_C());
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.ROR i) { // rotate right through carry flag
+        char val = state.readRegister(i.r1);
+        char result = performRightShift(val, state.getFlag_C());
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.SBC i) { // subtract register from register with carry
@@ -419,21 +470,35 @@ public class Analyzer implements InstrVisitor {
     }
 
     public void visit(Instr.SBIC i) { // skip if bit in IO register is clear
+        char reg = state.readIORegister(i.imm1);
+        char bit = AbstractState.getBit(reg, i.imm2);
+        skipOnCondition(not(bit));
     }
 
     public void visit(Instr.SBIS i) { // skip if bit in IO register is set
+        char reg = state.readIORegister(i.imm1);
+        char bit = AbstractState.getBit(reg, i.imm2);
+        skipOnCondition(bit);
     }
 
     public void visit(Instr.SBIW i) { // subtract immediate from word
     }
 
     public void visit(Instr.SBR i) { // set bits in register
+        char r1 = state.readRegister(i.r1);
+        char r2 = AbstractState.knownVal((byte)i.imm1);
+        char result = performOr(r1, r2);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.SBRC i) { // skip if bit in register cleared
+        char bit = AbstractState.getBit(state.readRegister(i.r1), i.imm1);
+        skipOnCondition(not(bit));
     }
 
     public void visit(Instr.SBRS i) { // skip if bit in register set
+        char bit = AbstractState.getBit(state.readRegister(i.r1), i.imm1);
+        skipOnCondition(bit);
     }
 
     public void visit(Instr.SEC i) { // set C (carry) flag
@@ -529,6 +594,112 @@ public class Analyzer implements InstrVisitor {
         if (space.contains(s)) return;
         space.addState(s);
         unexploredStates.add(s);
+    }
+
+    private void branchOnCondition(char cond, int offset) {
+        if ( cond == AbstractState.ON ) // branch is taken
+            relativeBranch(offset);
+        else if ( cond == AbstractState.OFF ) ; // branch is not taken
+        else { // branch could go either way
+            AbstractState nottaken = state.copy();
+            pushState(nottaken);
+            relativeBranch(offset);
+        }
+    }
+
+    private void skipOnCondition(char cond) {
+        branchOnCondition(cond, program.readInstr(state.getPC()).getSize());
+    }
+
+    private void relativeBranch(int offset) {
+        state.setPC(relative(offset));
+    }
+
+    private void setFlag_HCNZVS(char H, char C, char N, char Z, char V, char S) {
+        state.setFlag_H(H);
+        state.setFlag_C(C);
+        state.setFlag_N(N);
+        state.setFlag_Z(Z);
+        state.setFlag_V(V);
+        state.setFlag_S(S);
+    }
+
+    private void setFlag_CNZVS(char C, char N, char Z, char V, char S) {
+        state.setFlag_C(C);
+        state.setFlag_N(N);
+        state.setFlag_Z(Z);
+        state.setFlag_V(V);
+        state.setFlag_S(S);
+    }
+
+    private void setFlag_NZVS(char N, char Z, char V, char S) {
+        state.setFlag_N(N);
+        state.setFlag_Z(Z);
+        state.setFlag_V(V);
+        state.setFlag_S(S);
+    }
+
+    private char performRightShift(char val, char highbit) {
+        char result = (char)(((val & 0xfefe) >> 1) | (highbit));
+
+        char C = AbstractState.getBit(val, 1);
+        char N = highbit;
+        char Z = AbstractState.couldBeZero(result);
+        char V = xor(N, C);
+        char S = xor(N, V);
+        setFlag_CNZVS(C, N, Z, V, S);
+        return result;
+    }
+
+
+
+    private char performLeftShift(char val, char lowbit) {
+        char result = (char)(((val & 0x7f7f) << 1) | lowbit);
+
+        char H = AbstractState.getBit(result, 3);
+        char C = AbstractState.getBit(val, 7);
+        char N = AbstractState.getBit(result, 7);
+        char Z = AbstractState.couldBeZero(result);
+        char V = xor(N, C);
+        char S = xor(N, V);
+        setFlag_HCNZVS(H, C, N, Z, V, S);
+        return result;
+
+    }
+
+    private char performOr(char r1, char r2) {
+        char mask = AbstractState.commonMask(r1, r2);
+        char result = AbstractState.canon(mask, (char)(r1 | r2));
+
+        char N = AbstractState.getBit(result, 7);
+        char Z = AbstractState.couldBeZero(result);
+        char V = AbstractState.OFF;
+        char S = xor(N, V);
+        setFlag_NZVS(N, Z, V, S);
+
+        return result;
+    }
+
+    private char performAnd(char r1, char r2) {
+        char mask = AbstractState.commonMask(r1, r2);
+        char result = AbstractState.canon(mask, (char)(r1 & r2));
+
+        char N = AbstractState.getBit(result, 7);
+        char Z = AbstractState.couldBeZero(result);
+        char V = AbstractState.OFF;
+        char S = xor(N, V);
+        setFlag_NZVS(N, Z, V, S);
+
+        return result;
+    }
+
+    private char xor(char v1, char v2) {
+        char mask = AbstractState.commonMask(v1, v2);
+        return AbstractState.canon(mask, (char)(v1 ^ v2));
+    }
+
+    private char not(char v1) {
+        return (char)(v1 ^ 0x01);
     }
 
     private int relative(int imm1) {

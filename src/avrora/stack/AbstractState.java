@@ -229,6 +229,18 @@ public class AbstractState {
         return (char)(val & mask);
     }
 
+    public static char couldBeZero(char val) {
+        if ( val == ZERO ) return ON;
+        if ( knownBitsOf(val) != 0 ) return OFF;
+        return UNKNOWN;
+    }
+
+    public static char couldBeEqual(char v1, char v2) {
+        if ( v1 == v2 ) return ON;
+        if ( knownBitsOf(v1) != knownBitsOf(v2) ) return OFF;
+        return UNKNOWN;
+    }
+
     public static char commonMask(char c, char d) {
         return (char)(maskOf(c) & maskOf(d));
     }
