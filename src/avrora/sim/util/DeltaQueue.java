@@ -192,9 +192,11 @@ public class DeltaQueue {
         l.tail.next = freeTriggerLinks;
         freeTriggerLinks = l.head;
         l.head = null;
+        l.tail = null;
     }
 
     private void free(TriggerLink l) {
+        l.trigger = null;
         l.next = freeTriggerLinks;
         freeTriggerLinks = l;
     }
@@ -230,6 +232,7 @@ public class DeltaQueue {
             l = freeTriggerLinks;
             freeTriggerLinks = freeTriggerLinks.next;
             l.next = null;
+            l.trigger = t;
         }
 
         return l;
