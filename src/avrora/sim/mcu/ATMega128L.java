@@ -165,6 +165,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 128*1024, 4096, 65);
         compatibilityMode = compatibility;
         simulator = null;
+        interpreter = null;
     }
 
     protected ATMega128L(Program p, boolean compatibility) {
@@ -176,6 +177,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         installPins();
         simulator = new SimImpl(p);
         clock = simulator.getClock();
+        interpreter = simulator.getInterpreter();
     }
 
     protected void installPins() {
@@ -268,8 +270,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         protected FlagRegister TIFR_reg;
         protected MaskRegister TIMSK_reg;
 
-        protected UnorderedFlagRegister ETIFR_reg;
-        protected UnorderedMaskRegister ETIMSK_reg;
+        protected FlagRegister ETIFR_reg;
+        protected MaskRegister ETIMSK_reg;
 
         protected SPI spi;
         protected ADC adc;
@@ -1645,25 +1647,25 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             if (!compatibilityMode) {
                 int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
-                ETIFR_reg = new UnorderedFlagRegister(true, 25, ETIFR_mapping, (byte) 0xfc); // false, 0 are just placeholder falues
-                ETIMSK_reg = (UnorderedMaskRegister) ETIFR_reg.maskRegister;
+                ETIFR_reg = new FlagRegister(ETIFR_mapping); // false, 0 are just placeholder falues
+                ETIMSK_reg = ETIFR_reg.maskRegister;
                 installIOReg(ns, ETIMSK, ETIMSK_reg);
                 installIOReg(ns, ETIFR, ETIFR_reg);
             }
 
 
             // Timer1 COMPC
-            interrupts[25] = new Simulator.MaskableInterrupt(25, ETIMSK_reg, ETIFR_reg, 0, false);
+            interrupts[25] = new MaskableInterrupt(25, ETIMSK_reg, ETIFR_reg, 0, false);
             // Timer3 CAPT
-            interrupts[26] = new Simulator.MaskableInterrupt(26, ETIMSK_reg, ETIFR_reg, 5, false);
+            interrupts[26] = new MaskableInterrupt(26, ETIMSK_reg, ETIFR_reg, 5, false);
             // Timer3 COMPA
-            interrupts[27] = new Simulator.MaskableInterrupt(27, ETIMSK_reg, ETIFR_reg, 4, false);
+            interrupts[27] = new MaskableInterrupt(27, ETIMSK_reg, ETIFR_reg, 4, false);
             // Timer3 COMPB
-            interrupts[28] = new Simulator.MaskableInterrupt(28, ETIMSK_reg, ETIFR_reg, 3, false);
+            interrupts[28] = new MaskableInterrupt(28, ETIMSK_reg, ETIFR_reg, 3, false);
             // Timer3 COMPC
-            interrupts[29] = new Simulator.MaskableInterrupt(29, ETIMSK_reg, ETIFR_reg, 1, false);
+            interrupts[29] = new MaskableInterrupt(29, ETIMSK_reg, ETIFR_reg, 1, false);
             // Timer3 OVF
-            interrupts[30] = new Simulator.MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false);
+            interrupts[30] = new MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false);
 
             new Timer0(ns);
             if (!compatibilityMode) new Timer2(ns);
@@ -1707,10 +1709,17 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         }
 
         private FlagRegister buildInterruptRange(BaseInterpreter ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
-            FlagRegister fr = new FlagRegister(increasing, baseVect);
+            int[] mapping = new int[8];
+            if ( increasing ) {
+                for ( int cntr = 0; cntr < 8; cntr++ ) mapping[cntr] = baseVect + cntr;
+            } else {
+                for ( int cntr = 0; cntr < 8; cntr++ ) mapping[cntr] = baseVect - cntr;
+            }
+
+            FlagRegister fr = new FlagRegister(mapping);
             for (int cntr = 0; cntr < numVects; cntr++) {
                 int inum = increasing ? baseVect + cntr : baseVect - cntr;
-                interrupts[inum] = new Simulator.MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false);
+                interrupts[inum] = new MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false);
                 installIOReg(ns, maskRegNum, fr.maskRegister);
                 installIOReg(ns, flagRegNum, fr);
             }
@@ -1852,10 +1861,6 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             protected class EEPROMTicker implements Simulator.Event {
                 public void fire() {
 
-                    /*if(eepromPrinter.enabled) {
-                    eepromPrinter.println("EEPROM: " + EECR_reg.read() + " " + EEARH_reg.read() + " " + EEARL_reg.read());
-                    }
-                    */
                     if (eepromPrinter.enabled) {
                         eepromPrinter.println("Tick : " + writeCount);
                     }
@@ -1920,8 +1925,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 USARTnUDRE = 20;
                 USARTnTX = 21;
 
-                int[] UCSR1A_mapping = {-1, -1, -1, -1, -1, 20, 21, 19};
-                INTERRUPT_MAPPING = UCSR1A_mapping;
+                int[] UCSR0A_mapping = {-1, -1, -1, -1, -1, 20, 21, 19};
+                INTERRUPT_MAPPING = UCSR0A_mapping;
 
             }
         }
@@ -1946,6 +1951,10 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 USARTnRX = 31;
                 USARTnUDRE = 32;
                 USARTnTX = 33;
+
+                // TODO: test these interrupt mappings--not sure if they are correct!
+                int[] UCSR1A_mapping = {-1, -1, -1, -1, -1, 32, 33, 31};
+                INTERRUPT_MAPPING = UCSR1A_mapping;
             }
         }
 
@@ -2085,11 +2094,11 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 installIOReg(ns, UBRRnH, UBRRnH_reg);
 
                 // USART Receive Complete
-                interrupts[USARTnRX] = new Simulator.MaskableInterrupt(USARTnRX, UCSRnB_reg, UCSRnA_reg, RXCn, false);
+                interrupts[USARTnRX] = new MaskableInterrupt(USARTnRX, UCSRnB_reg, UCSRnA_reg, RXCn, false);
                 // USART Data Register Empty
-                interrupts[USARTnUDRE] = new Simulator.MaskableInterrupt(USARTnUDRE, UCSRnB_reg, UCSRnA_reg, UDREn, false);
+                interrupts[USARTnUDRE] = new MaskableInterrupt(USARTnUDRE, UCSRnB_reg, UCSRnA_reg, UDREn, false);
                 // USART Transmit Complete
-                interrupts[USARTnTX] = new Simulator.MaskableInterrupt(USARTnTX, UCSRnB_reg, UCSRnA_reg, TXCn, false);
+                interrupts[USARTnTX] = new MaskableInterrupt(USARTnTX, UCSRnB_reg, UCSRnA_reg, TXCn, false);
 
             }
 
@@ -2278,10 +2287,10 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             /** UCSRnA (<code>ControlRegisterA</code>) is one of three control/status registers for the USART. The
              * high three bits are actually interrupt flag bits. */
-            protected class ControlRegisterA extends UnorderedFlagRegister {
+            protected class ControlRegisterA extends FlagRegister {
 
                 public ControlRegisterA() {
-                    super(true, USARTnRX, INTERRUPT_MAPPING, flagByteMask);
+                    super(INTERRUPT_MAPPING);
                     value = 0x20; // init UDREn to true
 
                 }
@@ -2329,11 +2338,11 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             /** UCSRnB (<code>ControlRegisterB</code>) is one of three control/status registers for the USART. The
              * high three bits are actually interrupt mask bits. */
-            protected class ControlRegisterB extends UnorderedMaskRegister {
+            protected class ControlRegisterB extends MaskRegister {
                 int count = 0;
 
                 ControlRegisterB() {
-                    super(true, USARTnRX, UCSRnA_reg, INTERRUPT_MAPPING, flagByteMask);
+                    super(INTERRUPT_MAPPING, UCSRnA_reg);
                     UCSRnA_reg.maskRegister = this;
                 }
 

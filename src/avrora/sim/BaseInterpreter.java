@@ -971,6 +971,10 @@ public abstract class BaseInterpreter implements State {
         }
     }
 
+    public void setPostedInterrupts(long posted) {
+        innerLoop = false;
+        postedInterrupts = posted;
+    }
 
     /**
      * The <code>postInterrupt()</code> method is generally only used within the

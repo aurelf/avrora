@@ -100,6 +100,10 @@ public abstract class Simulator implements IORegisterConstants {
      */
     protected Interrupt[] interrupts;
 
+    /**
+     * The <code>clock</code> field stores a reference to the <code>MainClock</code>
+     * instance that tracks the clock cycles that have passed for this simulator.
+     */
     protected MainClock clock;
 
     /**
@@ -354,36 +358,6 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
 
-    public class MaskableInterrupt implements Interrupt {
-        protected final int interruptNumber;
-
-        protected final MaskRegister maskRegister;
-        protected final FlagRegister flagRegister;
-        protected final int bit;
-
-        protected final boolean sticky;
-
-        public MaskableInterrupt(int num, MaskRegister mr, FlagRegister fr, int b, boolean e) {
-            interruptNumber = num;
-            maskRegister = mr;
-            flagRegister = fr;
-            bit = b;
-            sticky = e;
-        }
-
-        public void force() {
-            // flagging the bit will cause the interrupt to be posted if it is not masked
-            flagRegister.flagBit(bit);
-        }
-
-        public void fire() {
-            if (!sticky) {
-                // setting the flag register bit will actually clear and unpost the interrupt
-                flagRegister.writeBit(bit, true);
-            }
-        }
-    }
-
     /**
      * The <code>IGNORE</code> field stores a reference to a singleton
      * anonymous class that ignores posting and firing of an interrupt. This
@@ -421,6 +395,9 @@ public abstract class Simulator implements IORegisterConstants {
         return clock;
     }
 
+    public BaseInterpreter getInterpreter() {
+        return interpreter;
+    }
 
     /**
      * The <code>getState()</code> retrieves a reference to the current
@@ -764,184 +741,5 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
     }
-
-    abstract class IMRReg extends State.RWIOReg {
-
-        protected final int baseVect;
-        protected final boolean increasingVectors;
-
-        IMRReg(int bv) {
-
-            baseVect = bv;
-            increasingVectors = false;
-        }
-
-        IMRReg(boolean inc, int bv) {
-            baseVect = bv;
-            increasingVectors = inc;
-        }
-
-        public void update(IMRReg other) {
-            int posted = this.value & other.value & 0xff;
-            int shift = baseVect;
-            if (!increasingVectors) {
-                shift -= 8;
-                posted = (0xff) & Arithmetic.reverseBits((byte) posted);
-            }
-
-            long previousPosted = interpreter.postedInterrupts & ~(0xff << shift);
-            long newPosted = previousPosted | (posted << shift);
-            interpreter.postedInterrupts = (newPosted);
-        }
-
-        public void update(int bit, IMRReg other) {
-            int posted = this.value & other.value & (1 << bit);
-            if (posted != 0)
-                interpreter.postInterrupt(getVectorNum(bit));
-            else
-                interpreter.unpostInterrupt(getVectorNum(bit));
-        }
-
-        protected int getVectorNum(int bit) {
-            if (increasingVectors)
-                return baseVect + bit;
-            else
-                return baseVect - bit;
-        }
-    }
-
-    public class FlagRegister extends IMRReg {
-
-        public MaskRegister maskRegister;
-
-        public FlagRegister(boolean inc, int baseVect) {
-            super(inc, baseVect);
-            maskRegister = new MaskRegister(inc, baseVect, this);
-        }
-
-        public void write(byte val) {
-            value = (byte) (value & ~val);
-            update(maskRegister);
-        }
-
-        public void flagBit(int bit) {
-            value = Arithmetic.setBit(value, bit);
-            update(bit, maskRegister);
-        }
-
-        public void writeBit(int bit, boolean val) {
-            if (val) {
-                value = Arithmetic.clearBit(value, bit);
-                interpreter.unpostInterrupt(getVectorNum(bit));
-            }
-        }
-
-    }
-
-    public class MaskRegister extends IMRReg {
-
-        public final FlagRegister flagRegister;
-
-        public MaskRegister(boolean inc, int baseVect, FlagRegister fr) {
-            super(inc, baseVect);
-            flagRegister = fr;
-        }
-
-        public void write(byte val) {
-            value = val;
-            update(flagRegister);
-        }
-
-        public void writeBit(int bit, boolean val) {
-            if (val) {
-                value = Arithmetic.setBit(value, bit);
-                update(bit, flagRegister);
-            } else {
-                value = Arithmetic.clearBit(value, bit);
-                interpreter.unpostInterrupt(getVectorNum(bit));
-            }
-        }
-    }
-
-
-    /** Flag register for flag register that corresponds to a
-     * group of interrupts that do not necessarily have a clean,
-     * linear mapping to bits on the register.  */
-    public class UnorderedFlagRegister extends FlagRegister {
-        final int[] mapping;
-        byte byteMask;
-
-        public UnorderedFlagRegister(boolean b, int i, int[] mapping, byte byteMask) {
-            super(true, i);
-            this.mapping = mapping;
-            maskRegister = new UnorderedMaskRegister(b, i, this, mapping, byteMask);
-            this.byteMask = byteMask;
-        }
-
-        protected int getVectorNum(int bit) {
-            return mapping[bit];
-        }
-
-        public void update(IMRReg other) {
-            int posts = this.value & other.value & byteMask;
-            long posted = 0;
-            int count = 0;
-            while (posts != 0) {
-                if ((posts & 0x1) != 0) {
-                    posted |= (0x1 << mapping[count]);
-
-                }
-
-                posts = posts >> 1;
-                count++;
-            }
-
-            long previousPosted = interpreter.postedInterrupts & ~(byteMask << baseVect);
-            long newPosted = previousPosted | posted;
-            interpreter.postedInterrupts = (newPosted);
-        }
-
-    }
-
-    /** Mask register associated with an
-     * <code>UnorderedFlagregister</code>.*/
-    public class UnorderedMaskRegister extends MaskRegister {
-        final int[] mapping;
-
-        byte byteMask;
-
-
-        public UnorderedMaskRegister(boolean b, int i, FlagRegister fr, int[] mapping, byte byteMask) {
-            super(true, i, fr);
-            this.mapping = mapping;
-            this.byteMask = byteMask;
-        }
-
-        protected int getVectorNum(int bit) {
-            return mapping[bit];
-        }
-
-
-        public void update(IMRReg other) {
-            int posts = this.value & other.value & byteMask;
-            long posted = 0;
-            int count = 0;
-            while (posts != 0) {
-                if ((posts & 0x1) != 0) {
-                    posted |= (0x1 << mapping[count]);
-
-                }
-
-                posts = posts >> 1;
-                count++;
-            }
-
-            long previousPosted = interpreter.postedInterrupts & ~(byteMask << baseVect);
-            long newPosted = previousPosted | posted;
-            interpreter.postedInterrupts = (newPosted);
-        }
-
-    }
-
 
 }

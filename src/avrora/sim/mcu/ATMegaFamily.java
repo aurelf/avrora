@@ -33,13 +33,13 @@
 package avrora.sim.mcu;
 
 import avrora.util.Verbose;
-import avrora.sim.MainClock;
-import avrora.sim.Clock;
+import avrora.util.Arithmetic;
+import avrora.sim.*;
 
 /**
  * @author Ben L. Titzer
  */
-public abstract class ATMegaFamily {
+public abstract class ATMegaFamily implements Microcontroller {
     /**
      * The <code>HZ</code> field stores a public static final integer that
      * represents the clockspeed of the AtMega128L microcontroller (7.327mhz).
@@ -51,8 +51,15 @@ public abstract class ATMegaFamily {
     public final int EEPROM_SIZE;
     public final int NUM_PINS;
 
+    protected static Verbose.Printer pinPrinter = Verbose.getVerbosePrinter("sim.pin");
+    protected final Pin[] pins;
+
+    protected Clock clock;
+    protected Simulator simulator;
+    protected BaseInterpreter interpreter;
+
     /**
-     * The <code>Pin</code> class implements a model of a pin on the ATmega128L for
+     * The <code>Pin</code> class implements a model of a pin on the ATMegaFamily for
      * the general purpose IO ports.
      */
     protected class Pin implements Microcontroller.Pin {
@@ -131,9 +138,139 @@ public abstract class ATMegaFamily {
         }
     }
 
-    protected static Verbose.Printer pinPrinter = Verbose.getVerbosePrinter("sim.pin");
-    protected final Pin[] pins;
-    protected Clock clock;
+    abstract class IMRReg extends State.RWIOReg {
+
+        /**
+         * The <code>mapping</code> array maps a bit number (0-7) to an interrupt
+         * number (0-35). This is used for calculating the posted interrupts.
+         */
+        protected final int mapping[];
+        protected final long interruptMask;
+
+        IMRReg(int[] map) {
+            long mask = 0;
+            mapping = new int[8];
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
+                mapping[cntr] = map[cntr];
+                if ( mapping[cntr] >= 0 )
+                    mask |= 1 << mapping[cntr];
+            }
+            interruptMask = mask;
+        }
+
+        public void update(IMRReg other) {
+            int posts = this.value & other.value & 0xff;
+            long posted = 0;
+
+            // calculate all posted interrupts at correct bit positions
+            for ( int count = 0; posts != 0; count++ ) {
+                if (Arithmetic.getBit(posts, count) ) {
+                    int vnum = getVectorNum(count);
+                    if ( vnum >= 0 ) posted |= (0x1 << vnum);
+                }
+            }
+
+            long previousPosted = interpreter.getPostedInterrupts() & ~(interruptMask);
+            long newPosted = previousPosted | posted;
+            interpreter.setPostedInterrupts(newPosted);
+        }
+
+        public void update(int bit, IMRReg other) {
+            if ( Arithmetic.getBit((byte)(this.value & other.value), bit) )
+                interpreter.postInterrupt(getVectorNum(bit));
+            else
+                interpreter.unpostInterrupt(getVectorNum(bit));
+        }
+
+        protected int getVectorNum(int bit) {
+            return mapping[bit];
+        }
+    }
+
+    public class FlagRegister extends IMRReg {
+
+        public MaskRegister maskRegister;
+
+        public FlagRegister(int[] map) {
+            super(map);
+            maskRegister = new MaskRegister(map, this);
+        }
+
+        public void write(byte val) {
+            value = (byte) (value & ~val);
+            update(maskRegister);
+        }
+
+        public void flagBit(int bit) {
+            value = Arithmetic.setBit(value, bit);
+            update(bit, maskRegister);
+        }
+
+        public void writeBit(int bit, boolean val) {
+            if (val) {
+                value = Arithmetic.clearBit(value, bit);
+                interpreter.unpostInterrupt(getVectorNum(bit));
+            }
+        }
+
+    }
+
+    public class MaskRegister extends IMRReg {
+
+        public final FlagRegister flagRegister;
+
+        public MaskRegister(int[] map, FlagRegister fr) {
+            super(map);
+            flagRegister = fr;
+        }
+
+        public void write(byte val) {
+            value = val;
+            update(flagRegister);
+        }
+
+        public void writeBit(int bit, boolean val) {
+            if (val) {
+                value = Arithmetic.setBit(value, bit);
+                update(bit, flagRegister);
+            } else {
+                value = Arithmetic.clearBit(value, bit);
+                interpreter.unpostInterrupt(getVectorNum(bit));
+            }
+        }
+    }
+
+    public class MaskableInterrupt implements Simulator.Interrupt {
+        protected final int interruptNumber;
+
+        protected final MaskRegister maskRegister;
+        protected final FlagRegister flagRegister;
+        protected final int bit;
+
+        protected final boolean sticky;
+
+        public MaskableInterrupt(int num, MaskRegister mr, FlagRegister fr, int b, boolean e) {
+            interruptNumber = num;
+            maskRegister = mr;
+            flagRegister = fr;
+            bit = b;
+            sticky = e;
+        }
+
+        public void force() {
+            // flagging the bit will cause the interrupt to be posted if it is not masked
+            flagRegister.flagBit(bit);
+        }
+
+        public void fire() {
+            if (!sticky) {
+                // setting the flag register bit will actually clear and unpost the interrupt
+                flagRegister.writeBit(bit, true);
+            }
+        }
+    }
+
+
 
     protected ATMegaFamily(int hz, int sram_size, int ioreg_size, int flash_size, int eeprom_size, int num_pins) {
         HZ = hz;
