@@ -38,6 +38,7 @@ import avrora.core.ProgramReader;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
+import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.util.*;
 
 import java.io.File;
@@ -122,6 +123,8 @@ public class Main {
                 return new GASProgramReader().read(args);
             if (".od".equals(extension))
                 return new ObjDumpProgramReader().read(args);
+            if (".od2".equals(extension))
+                return new ObjDump2ProgramReader().read(args);
 
             Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
             return null;

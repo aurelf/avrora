@@ -45,6 +45,8 @@ import avrora.core.ProgramReader;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
+import avrora.syntax.objdump.ObjDumpPreprocessor;
+import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.test.TestHarness;
 import avrora.test.SimulatorTestHarness;
 import avrora.test.SimplifierTestHarness;
@@ -98,12 +100,14 @@ public class Defaults {
         //--BEGIN EXPERIMENTAL: dbbc
         actions.addClass("dbbc", DBBCAction.class);
         //--END EXPERIMENTAL: dbbc
+        actions.addClass("odpp", ObjDumpPreprocessor.class);
 
         //-- DEFAULT INPUT FORMATS
         inputs.addClass("auto", Main.AutoProgramReader.class);
         inputs.addClass("gas", GASProgramReader.class);
         inputs.addClass("atmel", AtmelProgramReader.class);
         inputs.addClass("objdump", ObjDumpProgramReader.class);
+        inputs.addClass("objdump2", ObjDump2ProgramReader.class);
 
         //-- DEFAULT TEST HARNESSES
         harnessMap.addClass("simulator", SimulatorTestHarness.class);

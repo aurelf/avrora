@@ -39,6 +39,7 @@ import avrora.core.ProgramReader;
 import java.io.File;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.FileReader;
 
 /**
  * The <code>ObjdumpProgramReader</code> is an implementation of the <code>ProgramReader</code> that reads
@@ -46,7 +47,7 @@ import java.io.StringReader;
  *
  * @author Ben L. Titzer
  */
-public class ObjDumpProgramReader extends ProgramReader {
+public class ObjDump2ProgramReader extends ProgramReader {
 
     /**
      * The <code>read()</code> method takes the command line arguments passed to main and interprets it as a
@@ -55,7 +56,7 @@ public class ObjDumpProgramReader extends ProgramReader {
      *
      * @param args the string arguments representing the names of the files to read
      * @return a program obtained by parsing and building the file
-     * @throws avrora.syntax.objdump.ParseException
+     * @throws ParseException
      *                             if the file does not parse correctly
      * @throws java.io.IOException if there is a problem reading from the files
      */
@@ -63,24 +64,21 @@ public class ObjDumpProgramReader extends ProgramReader {
         if (args.length == 0)
             Avrora.userError("no input files");
         if (args.length != 1)
-            Avrora.userError("input type \"objdump\" accepts only one file at a time.");
+            Avrora.userError("input type \"objdump2\" accepts only one file at a time.");
 
         File f = new File(args[0]);
         RawModule module = new RawModule(true, true);
-        StringBuffer buf = new ObjDumpPreprocessor().cleanCode(args[0]);
-        Reader r = new StringReader(buf.toString());
+//        StringBuffer buf = new ObjDumpPreprocessor().cleanCode(args[0]);
+ //       Reader r = new StringReader(buf.toString());
 
-        ObjDumpParser parser = new ObjDumpParser(r, module, f.getName());
+        ObjDumpParser parser = new ObjDumpParser(new FileReader(f), module, f.getName());
         parser.Module();
         return module.build();
     }
 
     public String getHelp() {
-        return "The \"objdump\" input format reads programs that are the " +
-                "output of the \"avr-objdump\" utility provided with avr-binutils. " +
-                "For example, an ELF file must first be disassembled with " +
-                "\"avr-objdump -zhD\" to create a text file readable by this input " +
-                "format. The \"-zhD\" options are very important: the output will " +
-                "not be parseable otherwise.";
+        return "The \"objdump2\" input format reads programs that are the " +
+                "output of the \"avr-objdump\" utility provided with avr-binutils " +
+                "and that have been preprocessed with Avrora's preprocessor utility. ";
     }
 }

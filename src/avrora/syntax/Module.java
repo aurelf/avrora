@@ -291,6 +291,13 @@ public class Module implements Context {
         labels.put(name.image.toLowerCase(), li);
     }
 
+    public void addQuotedLabel(AbstractToken name) {
+        name.image = StringUtil.trimquotes(name.image);
+        Item.Label li = new Item.Label(segment, name);
+        addItem(li);
+        labels.put(name.image.toLowerCase(), li);
+    }
+
     private void makeInstr(String variant, AbstractToken name, SyntacticOperand[] o) {
         InstrPrototype proto = InstructionSet.getPrototype(variant);
         addItem(new Item.Instruction(segment, variant, name, proto, o));

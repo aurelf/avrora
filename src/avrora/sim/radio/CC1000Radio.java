@@ -601,7 +601,6 @@ public class CC1000Radio implements Radio {
 
         int paHighPower;
         int paLowPower;
-        //int pa_power;
 
         PA_POWRegister() {
             super("PA_POW", (byte)0x0f);
@@ -613,14 +612,13 @@ public class CC1000Radio implements Radio {
             paLowPower = (value & 0x0f);
             
             //start energy tracking
-            //pa_power = val;
             //check for transmission mode enabled
             if (!MAIN_reg.corePd && !MAIN_reg.biasPd && !MAIN_reg.fsPd && MAIN_reg.rxtx && !MAIN_reg.txPd)
                 energy.setMode(getPower() + 6);
         }
 
         protected int getPower() {
-            int ret = 0;
+            int ret;
             if (value >= 0)
                 ret = value;
             else

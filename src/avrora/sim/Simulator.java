@@ -351,7 +351,7 @@ public class Simulator {
         public final State state;
 
         BreakPointException(Instr i, int a, State s) {
-            super("breakpoint @ " + StringUtil.toHex(a, 4) + " reached");
+            super("breakpoint @ " + StringUtil.addrToString(a) + " reached");
             instr = i;
             address = a;
             state = s;

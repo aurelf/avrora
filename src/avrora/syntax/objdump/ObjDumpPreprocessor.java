@@ -34,10 +34,12 @@
 package avrora.syntax.objdump;
 
 import avrora.util.StringUtil;
+import avrora.util.Verbose;
+import avrora.util.Option;
+import avrora.Avrora;
+import avrora.actions.Action;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.StringTokenizer;
 
 /**
@@ -48,42 +50,62 @@ import java.util.StringTokenizer;
  * @author Ben L. Titzer
  * @author Vids Samanta
  */
-public class ObjDumpPreprocessor {
+public class ObjDumpPreprocessor extends Action {
 
+    protected final Option.Str FILE = options.newOption("file", "", 
+            "The \"file\" option, when set, indicates the file to which to output the " +
+            "preprocessed objdump output.");
+    
+    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("reader.objdump");
 
-    BufferedReader in;
-    StringBuffer out;
+    public ObjDumpPreprocessor() {
+        super("odpp",
+                "The \"odpp\" action tests the functionality of the objdump preprocessor that " +
+                "cleans up the format output by objdump into something more suitable for automated " +
+                "parsing.");
+    }
 
-    /**
-     * @param inFile of file with avr-objdump format code
-     */
-    public ObjDumpPreprocessor(String inFile) {
+    public StringBuffer cleanCode(String inFile) {
         try {
-            in = new BufferedReader(new FileReader(inFile));
-            out = new StringBuffer();
-            cleanFile();
-            in.close();
-
+            StringBuffer out = new StringBuffer(10000);
+            BufferedReader in = new BufferedReader(new FileReader(inFile));
+            cleanFile(in, out);
+            return out;
         } catch (Exception e) {
-            System.err.println("Error reading file \"" + inFile + "\":\n" + e);
-            e.printStackTrace(System.err);// TODO: remove this line
-            System.exit(-1);
+            e.printStackTrace();
+            throw Avrora.failure("Failure reading objdump format: "+e);
         }
     }
 
-    /**
-     * @return output StringBuffer of well formated cleaned up objdump file contents
-     */
-    public StringBuffer getCleanObjDumpCode() {
-        return out;
-    }
+    private void cleanFile(BufferedReader in, StringBuffer out) throws IOException {
 
-
-    private void cleanFile() throws IOException {
-
-        String line = in.readLine();
+        line_count = 0;
+        String line = nextLine(in);
 
         //clean up first section
+        line = readHeader(in, out, line);
+
+        while (line != null) {
+            String section = getSectionName(line);
+            if (section != null) {
+                // read the whole section
+                line = readSection(in, out, section);
+            } else {
+                // ignore this line if it is between sections
+                line = nextLine(in);
+            }
+        }
+    }
+
+    private String getSectionName(String line) {
+        int offset = line.indexOf("Disassembly of section");
+        if (offset != -1) {
+            return line.substring(line.indexOf('.'), line.indexOf(':'));
+        }
+        return null;
+    }
+
+    private String readHeader(BufferedReader in, StringBuffer out, String line) throws IOException {
         while (line != null) {
             if (line.indexOf("Disassembly of section") != -1) {
                 break;
@@ -113,55 +135,93 @@ public class ObjDumpPreprocessor {
                 out.append(" ;" + st.nextToken());
                 out.append(" \n");
             }
-            line = in.readLine();
+            line = nextLine(in);
         }
+        return line;
+    }
+
+    private String readSection(BufferedReader in, StringBuffer out, String section) throws IOException {
+
+        if ( section.equals(".data") || section.equals(".text") )
+            return convertSection(in, out, section);
+        else
+            return ignoreSection(in, out, section);
+    }
+
+    private String ignoreSection(BufferedReader in, StringBuffer out, String section) throws IOException {
+        out.append("; section "+section+" removed");
+        String line = nextLine(in);
+        while ( line != null) {
+            out.append("; "+line+"\n");
+            if ( getSectionName(line) != null )
+                return line;
+            line = nextLine(in);
+        }
+        return line;
+    }
+
+    private String convertSection(BufferedReader in, StringBuffer out, String section) throws IOException {
+        // add the start of the section name
+        out.append("\nstart " + section + ":\n");
+
+        // read the next line
+        String line = nextLine(in);
 
         while (line != null) {
+
+            // beginning of new section
+            if (getSectionName(line) != null)
+                return line;
+
             // ignore ... in output
             if (line.indexOf("...") != -1) {
-                line = in.readLine();
-                continue;
+                line = nextLine(in);
+                out.append("; ...");
             }
 
             if (line.indexOf("Address ") != -1) {
                 line = line.substring(0, line.indexOf("Address "));
-                line += in.readLine();
+                line += nextLine(in);
             }
 
-            int offset = line.indexOf("Disassembly of section");
-            if (offset != -1) {
-                String section = line.substring(line.indexOf('.'), line.indexOf(':'));
-                out.append("\nstart " + section + ":\n\n");
-
+            if (isLabel(line)) {
+                out.append("\nlabel 0x");
+                StringTokenizer st = new StringTokenizer(line);
+                out.append(st.nextToken());
+                String name = st.nextToken();
+                out.append("  " + name.replaceAll("[<,>]", "\"") + '\n');
             } else {
 
-                if (isLabel(line)) {
-                    out.append("\nlabel 0x");
-                    StringTokenizer st = new StringTokenizer(line);
-                    out.append(st.nextToken());
-                    out.append("  " + (st.nextToken()).replaceAll("[<,>]", "\"") + '\n');
-                } else {
-
-                    String tok;
-                    StringTokenizer st = new StringTokenizer(line);
-                    if (st.hasMoreTokens()) {
+                String tok;
+                StringTokenizer st = new StringTokenizer(line);
+                if (st.hasMoreTokens()) {
+                    tok = st.nextToken();
+                    out.append(StringUtil.rightJustify("0x" + tok, 10));
+                    while (st.hasMoreTokens()) {
                         tok = st.nextToken();
-                        out.append(StringUtil.rightJustify("0x" + tok, 10));
-                        while (st.hasMoreTokens()) {
-                            tok = st.nextToken();
 
-                            if (tok.matches("\\p{XDigit}\\p{XDigit}"))
-                                out.append(" 0x" + tok);
-                            else
-                                out.append("  " + tok);
+                        if (tok.matches("\\p{XDigit}\\p{XDigit}"))
+                            out.append(" 0x" + tok);
+                        else
+                            out.append("  " + tok);
 
-                        }
-                        out.append('\n');
                     }
+                    out.append('\n');
                 }
             }
-            line = in.readLine();
+            line = nextLine(in);
         }
+        return line;
+    }
+
+    int line_count;
+
+    private String nextLine(BufferedReader in) throws IOException {
+        line_count++;
+        String line = in.readLine();
+        if ( printer.enabled )
+            printer.println(StringUtil.leftJustify(line_count,5)+": "+line);
+        return line;
     }
 
     /**
@@ -176,9 +236,15 @@ public class ObjDumpPreprocessor {
         return true;
     }
 
-    //test main
-    public static void main(String a[]) {
-        ObjDumpPreprocessor p = new ObjDumpPreprocessor(a[0]);
-        System.out.println(p.getCleanObjDumpCode());
+    public void run(String[] args) throws Exception {
+        String fname = FILE.get();
+        if ( !"".equals(fname) ) {
+            FileOutputStream outf = new FileOutputStream(fname);
+            PrintWriter p = new PrintWriter(outf);
+            p.write(cleanCode(args[0]).toString());
+            p.close();
+        } else {
+            System.out.println(cleanCode(args[0]));
+        }
     }
 }

@@ -656,7 +656,7 @@ SyntacticOperand.Register Register() : { Token tok; }
 void Label() : { Token tok; }
 {
     "label" <INTEGER_LITERAL> tok = <STRING_LITERAL> ":"
-    { module.addLabel(tok); }
+    { module.addQuotedLabel(tok); }
 }
 
 SyntacticOperand.Expr Const() : { Expr e; }
