@@ -55,23 +55,12 @@ import java.util.Vector;
  *
  * @author Ben L. Titzer
  */
-public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
+public class ATMega128L extends ATMegaFamily implements Microcontroller, MicrocontrollerFactory {
 
-    /**
-     * The <code>HZ</code> field stores a public static final integer that
-     * represents the clockspeed of the AtMega128L microcontroller (7.327mhz).
-     */
-    public static final int HZ = 7327800;
-
-    public static final int SRAM_SIZE = 4096;
-    public static final int IOREG_SIZE = 256 - 32;
-    public static final int IOREG_SIZE_103 = 64;
-    public static final int FLASH_SIZE = 128 * 1024;
-    public static final int EEPROM_SIZE = 4096;
-
-    public static final int NUM_PINS = 65;
-
-    static Verbose.Printer pinPrinter = Verbose.getVerbosePrinter("sim.pin");
+    public static final int ATMEGA128L_IOREG_SIZE = 256 - 32;
+    public static final int ATMEGA128L_IOREG_SIZE_103 = 64;
+    public static final int ATMEGA128L_SRAM_SIZE = 4096;
+    public static final int ATMEGA128L_SRAM_SIZE_103 = 4000;
 
     protected static final HashMap pinNumbers;
     private final boolean compatibilityMode;
@@ -146,85 +135,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         newPin(64, "AVCC");
     }
 
-    /**
-     * The <code>Pin</code> class implements a model of a pin on the ATmega128L for
-     * the general purpose IO ports.
-     */
-    protected class Pin implements Microcontroller.Pin {
-        protected final int number;
-
-        boolean level;
-        boolean outputDir;
-        boolean pullup;
-
-        Microcontroller.Pin.Input input;
-        Microcontroller.Pin.Output output;
-
-        protected Pin(int num) {
-            number = num;
-        }
-
-        public void connect(Output o) {
-            output = o;
-        }
-
-        public void connect(Input i) {
-            input = i;
-        }
-
-        protected void setOutputDir(boolean out) {
-            outputDir = out;
-        }
-
-        protected void setPullup(boolean pull) {
-            pullup = pull;
-        }
-
-        protected boolean read() {
-            boolean result;
-            if (pinPrinter.enabled) printRead();
-            if (!outputDir) {
-                if (input != null)
-                    result = input.read();
-                else
-                    result = pullup;
-
-            } else {
-                result = level;
-            }
-            if (pinPrinter.enabled) pinPrinter.println(" -> " + result);
-            return result;
-        }
-
-        private void printRead() {
-            pinPrinter.print("Pin[" + number + "].read() ");
-            printDirection();
-        }
-
-        private void printDirection() {
-            if (!outputDir) {
-                if (input != null)
-                    pinPrinter.print("[input] ");
-                else
-                    pinPrinter.print("[pullup:" + pullup + "] ");
-
-            } else {
-                pinPrinter.print("[output] ");
-            }
-        }
-
-        protected void write(boolean value) {
-            level = value;
-            if (pinPrinter.enabled) printWrite(value);
-            if (outputDir && output != null) output.write(value);
-        }
-
-        private void printWrite(boolean value) {
-            pinPrinter.print("Pin[" + number + "].write(" + value + ") ");
-            printDirection();
-            pinPrinter.nextln();
-        }
-    }
 
     static void newPin(int ind, String name) {
         pinNumbers.put(name, new Integer(ind));
@@ -244,77 +154,33 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     }
 
     protected final SimImpl simulator;
-    protected final Pin[] pins;
 
     /**
      * The constructor for the default instance.
      */
     public ATMega128L(boolean compatibility) {
-        simulator = null;
-        pins = new Pin[NUM_PINS];
+        super(7327800,
+                compatibility ? ATMEGA128L_SRAM_SIZE_103: ATMEGA128L_SRAM_SIZE,
+                compatibility ? ATMEGA128L_IOREG_SIZE_103: ATMEGA128L_IOREG_SIZE,
+                128*1024, 4096, 65);
         compatibilityMode = compatibility;
-        //compatibilityMode = true;
+        simulator = null;
     }
 
     protected ATMega128L(Program p, boolean compatibility) {
+        super(7327800,
+                compatibility ? ATMEGA128L_SRAM_SIZE_103: ATMEGA128L_SRAM_SIZE,
+                compatibility ? ATMEGA128L_IOREG_SIZE_103: ATMEGA128L_IOREG_SIZE,
+                128*1024, 4096, 65);
         compatibilityMode = compatibility;
-        //compatibilityMode = true;
-        pins = new Pin[NUM_PINS];
         installPins();
         simulator = new SimImpl(p);
+        clock = simulator.getClock();
     }
 
     protected void installPins() {
         for (int cntr = 0; cntr < NUM_PINS; cntr++)
-            pins[cntr] = new Pin(cntr);
-    }
-
-    /**
-     * The <code>getRamSize()</code> method returns the number of bytes of
-     * SRAM present on this hardware device. On the Atmega128L
-     * this number is 4096 (4KB).
-     *
-     * @return the number of bytes of SRAM on this hardware device
-     */
-    public int getRamSize() {
-        return SRAM_SIZE;
-    }
-
-    /**
-     * The <code>getIORegSize()</code> method returns the number of IO registers
-     * that are present on this hardware device. On the Atmega128L
-     * this number is 224 (256 - 32).
-     *
-     * @return the number of IO registers supported on this hardware device
-     */
-    public int getIORegSize() {
-        if (compatibilityMode)
-            return IOREG_SIZE_103;
-        else
-            return IOREG_SIZE;
-    }
-
-    /**
-     * The <code>getFlashSize()</code> method returns the size in bytes of
-     * the flash memory on this hardware device. The flash memory stores the
-     * initialized data and the machine code instructions of the program. On
-     * the Atmega128L, this number is 131,072 (128K).
-     *
-     * @return the size of the flash memory in bytes
-     */
-    public int getFlashSize() {
-        return FLASH_SIZE;
-    }
-
-    /**
-     * The <code>getEEPromSize()</code> method returns the size in bytes of
-     * the EEPROM on this hardware device. On the ATmega128L, this number is
-     * 4096.
-     *
-     * @return the size of the EEPROM in bytes
-     */
-    public int getEEPromSize() {
-        return EEPROM_SIZE;
+            pins[cntr] = new ATMegaFamily.Pin(cntr);
     }
 
     /**
@@ -344,46 +210,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     }
 
     /**
-     * The <code>getHZ()</code> method returns the number of cycles per second
-     * at which this hardware device is designed to run. The
-     * Atmega128L runs at 7.3278MHz, so this method will return 7,327,800.
-     *
-     * @return the number of cycles per second on this device
-     */
-    public int getHz() {
-        return HZ;
-    }
-
-    /**
-     * The <code>millisToCycles()</code> method converts the specified number
-     * of milliseconds to a cycle count. The conversion factor used is the
-     * number of cycles per second of this device. This method serves as a
-     * utility so that clients need not do repeated work in converting
-     * milliseconds to cycles and back.
-     *
-     * @param ms a time quantity in milliseconds as a double
-     * @return the same time quantity in clock cycles, rounded up to the nearest
-     *         integer
-     */
-    public long millisToCycles(double ms) {
-        return (long) (ms * HZ / 1000);
-    }
-
-    /**
-     * The <code>cyclesToMillis()</code> method converts the specified number
-     * of cycles to a time quantity in milliseconds. The conversion factor used
-     * is the number of cycles per second of this device. This method serves
-     * as a utility so that clients need not do repeated work in converting
-     * milliseconds to cycles and back.
-     *
-     * @param cycles the number of cycles
-     * @return the same time quantity in milliseconds
-     */
-    public double cyclesToMillis(long cycles) {
-        return 1000 * ((double) cycles) / HZ;
-    }
-
-    /**
      * The <code>getPinNumber()</code> method looks up the named pin and returns
      * its number. Names of pins should be UPPERCASE. The intended
      * users of this method are external device implementors which connect
@@ -410,21 +236,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      */
     public Microcontroller newMicrocontroller(Program p) {
         return new ATMega128L(p, compatibilityMode);
-    }
-
-    /**
-     * The <code>getPin()</code> method looks up the specified pin by its number
-     * and returns a reference to that pin. The intended
-     * users of this method are external device implementors which connect
-     * their devices to the microcontroller through the pins.
-     *
-     * @param num the pin number to look up
-     * @return a reference to the <code>Pin</code> object corresponding to
-     *         the named pin if it exists; null otherwise
-     */
-    public Microcontroller.Pin getPin(int num) {
-        if (num < 0 || num > pins.length) return null;
-        return pins[num];
     }
 
     /**
@@ -465,9 +276,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         protected class DirectionRegister extends State.RWIOReg {
 
-            protected Pin[] pins;
+            protected ATMegaFamily.Pin[] pins;
 
-            protected DirectionRegister(Pin[] p) {
+            protected DirectionRegister(ATMegaFamily.Pin[] p) {
                 pins = p;
             }
 
@@ -484,9 +295,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         protected class PortRegister extends State.RWIOReg {
-            protected Pin[] pins;
+            protected ATMegaFamily.Pin[] pins;
 
-            protected PortRegister(Pin[] p) {
+            protected PortRegister(ATMegaFamily.Pin[] p) {
                 pins = p;
             }
 
@@ -503,9 +314,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         protected class PinRegister implements State.IOReg {
-            protected Pin[] pins;
+            protected ATMegaFamily.Pin[] pins;
 
-            protected PinRegister(Pin[] p) {
+            protected PinRegister(ATMegaFamily.Pin[] p) {
                 pins = p;
             }
 
@@ -1190,7 +1001,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     */
 
                     int count = read16(TCNTnH_reg, TCNTnL_reg);
-                    Pin pin = ((Pin) getPin("OC" + n + s));
+                    ATMegaFamily.Pin pin = ((ATMegaFamily.Pin) getPin("OC" + n + s));
                     int compareMode = Arithmetic.getBit(val, COMnx1) ? 2 : 0;
                     compareMode |= Arithmetic.getBit(val, COMnx0) ? 1 : 0;
                     if (count == compare) {
@@ -1538,11 +1349,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             Verbose.Printer timerPrinter;
 
-            /** Timer8Bit(ns, TCNT0, TCNT0, OCR0) should initialize
+            /**
+             * Timer8Bit(ns, TCNT0, TCNT0, OCR0) should initialize
              * Timer0 as before. Assuming this translation from the
              * Timer0 code was generic enough, Timer8Bit(ns, TCNT2,
              * TCNT2, OCR2) should initialize a mostly functional
-             * Timer2. OCRn is the offset on TIMSK that corresponds to */
+             * Timer2. OCRn is the offset on TIMSK that corresponds to
+             */
             private Timer8Bit(BaseInterpreter ns, int n, int TCCRn, int TCNTn, int OCRn, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
                 timerPrinter = Verbose.getVerbosePrinter("sim.timer" + n);
                 ticker = new Ticker();
@@ -1584,9 +1397,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 TIFR_reg.flagBit(TOVn);
             }
 
-            /** Overloads the write behavior of this class of register
+            /**
+             * Overloads the write behavior of this class of register
              * in order to implement compare match blocking for one
-             * timer period. */
+             * timer period.
+             */
             protected class TCNTnRegister extends State.RWIOReg {
 
                 public void write(byte val) {
@@ -1600,10 +1415,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
             }
 
-            /** <code>BufferedRegister</code> implements a register
+            /**
+             * <code>BufferedRegister</code> implements a register
              * with a write buffer. In PWN modes, writes to this
              * register are not performed until flush() is called. In
-             * non-PWM modes, the writes are immediate. */
+             * non-PWM modes, the writes are immediate.
+             */
             protected class BufferedRegister extends State.RWIOReg {
                 final State.RWIOReg register;
 
@@ -1686,7 +1503,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     // under NORMAL, there is no pin action for a compare match
                     // under CTC, the action is to clear the pin.
 
-                    Pin pin = (Pin) getPin("OC" + n);
+                    ATMegaFamily.Pin pin = (ATMegaFamily.Pin) getPin("OC" + n);
 
                     if (count == compare) {
                         switch (compareMode) {
@@ -1875,9 +1692,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         private void buildPort(BaseInterpreter ns, char p, int portreg, int dirreg, int pinreg) {
-            Pin[] pins = new Pin[8];
+            ATMegaFamily.Pin[] pins = new ATMegaFamily.Pin[8];
             for (int cntr = 0; cntr < 8; cntr++)
-                pins[cntr] = (Pin) getPin("P" + p + cntr);
+                pins[cntr] = (ATMegaFamily.Pin) getPin("P" + p + cntr);
             installIOReg(ns, portreg, new PortRegister(pins));
             installIOReg(ns, dirreg, new DirectionRegister(pins));
             installIOReg(ns, pinreg, new PinRegister(pins));
@@ -1885,7 +1702,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         private void installIOReg(BaseInterpreter ns, int num, State.IOReg ior) {
             // in compatbility mode, the upper IO registers do not exist.
-            if (compatibilityMode && num > IOREG_SIZE_103) return;
+            if (compatibilityMode && num > ATMEGA128L_IOREG_SIZE_103) return;
             ns.setIOReg(num, ior);
         }
 

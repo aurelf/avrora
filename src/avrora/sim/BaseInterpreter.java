@@ -219,7 +219,7 @@ public abstract class BaseInterpreter implements State {
     public class NoSuchInstructionException extends Avrora.Error {
         public final int pc;
         protected NoSuchInstructionException(int pc) {
-            super("Program error", "attempt to execute non-existant instruction at 0x"+StringUtil.toHex(pc, 4));
+            super("Program error", "attempt to execute non-existant instruction at "+StringUtil.addrToString(pc));
             this.pc = pc;
         }
     }
@@ -227,7 +227,7 @@ public abstract class BaseInterpreter implements State {
     public class PCOutOfBoundsException extends Avrora.Error {
         public final int pc;
         protected PCOutOfBoundsException(int pc) {
-            super("Program error", "PC out of bounds at 0x"+StringUtil.toHex(pc, 4));
+            super("Program error", "PC out of bounds at "+StringUtil.addrToString(pc));
             this.pc = pc;
         }
     }
@@ -235,7 +235,7 @@ public abstract class BaseInterpreter implements State {
     public class PCAlignmentException extends Avrora.Error {
         public final int pc;
         protected PCAlignmentException(int pc) {
-            super("Program error", "PC misaligned at 0x"+StringUtil.toHex(pc, 4));
+            super("Program error", "PC misaligned at "+StringUtil.addrToString(pc));
             this.pc = pc;
         }
     }
@@ -244,7 +244,7 @@ public abstract class BaseInterpreter implements State {
         public final String segment;
         public final int data_addr;
         protected AddressOutOfBoundsException(String s, int da) {
-            super("Program error", "access to "+StringUtil.quote(s)+" out of bounds at 0x"+StringUtil.toHex(da, 4));
+            super("Program error", "access to "+StringUtil.quote(s)+" out of bounds at "+StringUtil.addrToString(da));
             this.data_addr = da;
             this.segment = s;
         }

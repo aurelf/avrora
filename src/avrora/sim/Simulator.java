@@ -337,8 +337,19 @@ public abstract class Simulator implements IORegisterConstants {
      * @author Ben L. Titzer
      */
     public interface Interrupt {
+        /**
+         * The <code>force()</code> method is called by the simulator when an interrupt
+         * is being forced by an outside source (i.e. not of the simulation). For example,
+         * when stress testing a program by bombarding it with interrupts, this method
+         * would be used.
+         */
         public void force();
 
+        /**
+         * The <code>fire()</code> method is called by the simulator when the interrupt
+         * is about to be processed (i.e. it has been posted, and is not masked). This
+         * method is called just before control is transferred to the interrupt handler.
+         */
         public void fire();
     }
 
@@ -396,8 +407,18 @@ public abstract class Simulator implements IORegisterConstants {
         return microcontroller;
     }
 
+    /**
+     * The <code>getProgram()</code> method gets a reference to the program
+     * that has been loaded onto this simulator.
+     * @return a reference to the <code>Program</code> instance representing
+     * the program loaded onto this <code>Simulator</code> object
+     */
     public Program getProgram() {
         return program;
+    }
+
+    public Clock getClock() {
+        return clock;
     }
 
 
