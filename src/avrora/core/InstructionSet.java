@@ -1,8 +1,8 @@
-package vpc.mach.avr.sir;
+package avrora.sir;
 
-import vpc.mach.avr.sir.Register;
-import vpc.mach.avr.Operand;
-import vpc.mach.avr.AVRErrorReporter;
+import avrora.sir.Register;
+import avrora.Operand;
+import avrora.AVRErrorReporter;
 
 import java.util.HashSet;
 import java.util.HashMap;

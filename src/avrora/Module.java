@@ -1,13 +1,13 @@
-package vpc.mach.avr;
+package avrora;
 
 import vpc.VPCBase;
 import vpc.CompilationError;
-import vpc.mach.avr.sir.*;
-import vpc.mach.avr.syntax.Expr;
-import vpc.mach.avr.syntax.ExprList;
-import vpc.mach.avr.syntax.Context;
-import vpc.mach.avr.syntax.atmel.AtmelParser;
-import vpc.mach.avr.syntax.atmel.ParseException;
+import avrora.sir.*;
+import avrora.syntax.Expr;
+import avrora.syntax.ExprList;
+import avrora.syntax.Context;
+import avrora.syntax.atmel.AtmelParser;
+import avrora.syntax.atmel.ParseException;
 import vpc.core.ProgramPoint;
 import vpc.core.AbstractToken;
 import vpc.core.AbstractParseException;

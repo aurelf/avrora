@@ -1,7 +1,7 @@
-package vpc.mach.avr.sir;
+package avrora.sir;
 
 import vpc.VPCBase;
-import vpc.mach.avr.Operand;
+import avrora.Operand;
 
 import java.util.NoSuchElementException;
 

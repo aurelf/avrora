@@ -1,7 +1,7 @@
-package vpc.mach.avr.sim;
+package avrora.sim;
 
-import vpc.mach.avr.sir.Program;
-import vpc.mach.avr.sir.Register;
+import avrora.sir.Program;
+import avrora.sir.Register;
 
 /**
  * The <code>TracingState</code> class is an extended version of the <code>State</code>

@@ -1,8 +1,8 @@
-package vpc.mach.avr.syntax;
+package avrora.syntax;
 
 import vpc.VPCBase;
 import vpc.core.AbstractToken;
-import vpc.mach.avr.syntax.ASTNode;
+import avrora.syntax.ASTNode;
 
 /**
  * @author Ben L. Titzer

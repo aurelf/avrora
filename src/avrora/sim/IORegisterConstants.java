@@ -1,4 +1,4 @@
-package vpc.mach.avr.sim;
+package avrora.sim;
 
 /**
  * @author Ben L. Titzer

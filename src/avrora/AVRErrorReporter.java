@@ -1,11 +1,11 @@
-package vpc.mach.avr;
+package avrora;
 
 import vpc.CompilationError;
 import vpc.VPCBase;
 import vpc.ErrorReporter;
-import vpc.mach.avr.sir.Register;
-import vpc.mach.avr.syntax.ASTNode;
-import vpc.mach.avr.syntax.ExprList;
+import avrora.sir.Register;
+import avrora.syntax.ASTNode;
+import avrora.syntax.ExprList;
 import vpc.core.AbstractToken;
 import vpc.core.ProgramPoint;
 

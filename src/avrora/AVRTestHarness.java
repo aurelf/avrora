@@ -1,15 +1,15 @@
-package vpc.mach.avr;
+package avrora;
 
 import vpc.test.AutomatedTester;
 import vpc.test.TestCase;
 import vpc.test.TestResult;
 import vpc.test.TestHarness;
-import vpc.mach.avr.sir.Program;
-import vpc.mach.avr.sir.Register;
-import vpc.mach.avr.sim.Simulator;
-import vpc.mach.avr.sim.State;
-import vpc.mach.avr.sim.ATMega128L;
-import vpc.mach.avr.syntax.atmel.AtmelParser;
+import avrora.sir.Program;
+import avrora.sir.Register;
+import avrora.sim.Simulator;
+import avrora.sim.State;
+import avrora.sim.ATMega128L;
+import avrora.syntax.atmel.AtmelParser;
 import vpc.VPCBase;
 import vpc.VPCError;
 import vpc.VPCInternalError;

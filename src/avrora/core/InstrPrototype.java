@@ -1,6 +1,6 @@
-package vpc.mach.avr.sir;
+package avrora.sir;
 
-import vpc.mach.avr.Operand;
+import avrora.Operand;
 
 /**
  * @author Ben L. Titzer

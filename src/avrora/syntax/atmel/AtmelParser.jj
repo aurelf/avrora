@@ -27,10 +27,10 @@ options {
 
 PARSER_BEGIN(AtmelParser)
 
-package vpc.mach.avr.syntax.atmel;
+package avrora.syntax.atmel;
 
-import vpc.mach.avr.*;
-import vpc.mach.avr.syntax.*;
+import avrora.*;
+import avrora.syntax.*;
 import vpc.VPCBase;
 
 public class AtmelParser extends VPCBase {

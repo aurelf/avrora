@@ -1,4 +1,4 @@
-package vpc.mach.avr.syntax;
+package avrora.syntax;
 
 import vpc.core.AbstractToken;
 

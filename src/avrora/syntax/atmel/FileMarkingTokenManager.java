@@ -1,4 +1,4 @@
-package vpc.mach.avr.syntax.atmel;
+package avrora.syntax.atmel;
 
 /**
  * The <code>FileMarkingTokenManager</code> is a subclass of the TokenManager

@@ -1,13 +1,13 @@
-package vpc.mach.avr;
+package avrora;
 
 import vpc.Compilation;
 import vpc.CompilationError;
 import vpc.VPCBase;
-import vpc.mach.avr.sim.Simulator;
-import vpc.mach.avr.sim.ATMega128L;
-import vpc.mach.avr.syntax.atmel.ParseException;
-import vpc.mach.avr.syntax.atmel.Token;
-import vpc.mach.avr.syntax.atmel.AtmelParser;
+import avrora.sim.Simulator;
+import avrora.sim.ATMega128L;
+import avrora.syntax.atmel.ParseException;
+import avrora.syntax.atmel.Token;
+import avrora.syntax.atmel.AtmelParser;
 import vpc.core.Program;
 import vpc.core.ProgramPoint;
 import vpc.core.AbstractToken;
@@ -60,7 +60,7 @@ public class AVRAssembly extends VPCBase {
 
             try {
                 parser.Module();
-                vpc.mach.avr.sir.Program p = module.build();
+                avrora.sir.Program p = module.build();
                 Simulator.TRACE = true;
                 Simulator.TRACEREGS = true;
                 Simulator s = new ATMega128L().loadProgram(p);

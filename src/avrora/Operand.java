@@ -1,7 +1,7 @@
-package vpc.mach.avr;
+package avrora;
 
-import vpc.mach.avr.syntax.ASTNode;
-import vpc.mach.avr.syntax.Expr;
+import avrora.syntax.ASTNode;
+import avrora.syntax.Expr;
 import vpc.core.AbstractToken;
 
 /**
@@ -19,7 +19,7 @@ public abstract class Operand extends ASTNode {
 
     public static class Register extends Operand {
         public final AbstractToken name;
-        private vpc.mach.avr.sir.Register register;
+        private avrora.sir.Register register;
 
         public Register(AbstractToken n) {
             name = n;
@@ -37,11 +37,11 @@ public abstract class Operand extends ASTNode {
             return true;
         }
 
-        public vpc.mach.avr.sir.Register getRegister() {
+        public avrora.sir.Register getRegister() {
             return register;
         }
 
-        public void setRegister(vpc.mach.avr.sir.Register r) {
+        public void setRegister(avrora.sir.Register r) {
             register = r;
         }
     }

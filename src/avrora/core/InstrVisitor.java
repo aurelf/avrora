@@ -1,4 +1,4 @@
-package vpc.mach.avr.sir;
+package avrora.sir;
 
 /**
  * @author Ben L. Titzer

@@ -1,11 +1,11 @@
-package vpc.mach.avr.sim;
+package avrora.sim;
 
-import vpc.mach.avr.sir.InstrVisitor;
-import vpc.mach.avr.sir.Instr;
-import vpc.mach.avr.sir.Program;
-import vpc.mach.avr.sir.Register;
-import vpc.mach.avr.Arithmetic;
-import vpc.mach.avr.Operand;
+import avrora.sir.InstrVisitor;
+import avrora.sir.Instr;
+import avrora.sir.Program;
+import avrora.sir.Register;
+import avrora.Arithmetic;
+import avrora.Operand;
 import vpc.util.ColorTerminal;
 import vpc.VPCBase;
 

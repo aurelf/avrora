@@ -1,7 +1,7 @@
-package vpc.mach.avr.sim;
+package avrora.sim;
 
-import vpc.mach.avr.sir.*;
-import vpc.mach.avr.Arithmetic;
+import avrora.sir.*;
+import avrora.Arithmetic;
 import vpc.VPCBase;
 import vpc.util.ColorTerminal;
 

@@ -1,4 +1,4 @@
-package vpc.mach.avr;
+package avrora;
 
 /**
  * The <code>Arithmetic</code> class implements a set of useful methods that

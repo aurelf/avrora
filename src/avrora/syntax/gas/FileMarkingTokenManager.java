@@ -1,4 +1,4 @@
-package vpc.mach.avr.syntax.gas;
+package avrora.syntax.gas;
 
 /**
  * The <code>FileMarkingTokenManager</code> is a subclass of the TokenManager

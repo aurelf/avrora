@@ -1,7 +1,7 @@
-package vpc.mach.avr.syntax;
+package avrora.syntax;
 
-import vpc.mach.avr.sir.Register;
-import vpc.mach.avr.syntax.atmel.Token;
+import avrora.sir.Register;
+import avrora.syntax.atmel.Token;
 import vpc.core.AbstractToken;
 
 /**

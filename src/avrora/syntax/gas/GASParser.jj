@@ -29,10 +29,10 @@ options {
 
 PARSER_BEGIN(GASParser)
 
-package vpc.mach.avr.syntax.gas;
+package avrora.syntax.gas;
 
-import vpc.mach.avr.*;
-import vpc.mach.avr.syntax.*;
+import avrora.*;
+import avrora.syntax.*;
 import vpc.VPCBase;
 
 public class GASParser extends VPCBase {

@@ -1,8 +1,8 @@
-package vpc.mach.avr.sim;
+package avrora.sim;
 
-import vpc.mach.avr.sir.Program;
-import vpc.mach.avr.sir.Instr;
-import vpc.mach.avr.sir.InstrPrototype;
+import avrora.sir.Program;
+import avrora.sir.Instr;
+import avrora.sir.InstrPrototype;
 
 /**
  * @author Ben L. Titzer
