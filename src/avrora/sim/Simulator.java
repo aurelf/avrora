@@ -181,7 +181,7 @@ public abstract class Simulator implements IORegisterConstants {
      * can insert timed events that model environmental factors, implement timeouts,
      * timers, or any other type of functionality that is simulation-time dependent.
      */
-    public interface Trigger {
+    public interface Event {
         /**
          * The <code>fire()</code> method is called when the event to which it is
          * tied happens with in the simulator.
@@ -336,7 +336,7 @@ public abstract class Simulator implements IORegisterConstants {
         public void fire() {
             if (!sticky) {
                 // setting the flag register bit will actually clear and unpost the interrupt
-                flagRegister.setBit(bit);
+                flagRegister.writeBit(bit, true);
             }
         }
     }
@@ -549,21 +549,32 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>addTimerEvent()</code> method inserts a trigger into the
+     * The <code>insertEvent()</code> method inserts a trigger into the
      * event queue of the simulator with the specified delay in clock cycles.
      * The trigger will then be executed at the future time specified
      *
      * @param e      the trigger to be inserted
      * @param cycles the number of cycles in the future at which to trigger
      */
-    public void addTimerEvent(Trigger e, long cycles) {
+    public void insertEvent(Event e, long cycles) {
         if ( eventPrinter.enabled )
-            eventPrinter.println("Simulator.addTimerEvent(" + cycles + ")");
+            eventPrinter.println("Simulator.insertEvent(" + cycles + ")");
         eventQueue.add(e, cycles);
     }
 
     /**
-     * The <code>addPeriodicTimerEvent()</code> method inserts a trigger into
+     * The <code>insertTimeout()</code> method inserts an event into the
+     * event queue of the simulator that causes it to stop execution
+     * and throw a <code>Simulator.TimeoutException</code> when the
+     * specified number of clock cycles have expired.
+     * @param cycles the number of cycles to run before timing out
+     */
+    public void insertTimeout(long cycles) {
+        insertEvent(new ClockCycleTimeout(cycles), cycles);
+    }
+
+    /**
+     * The <code>insertPeriodicEvent()</code> method inserts a trigger into
      * the event queue of the simulator with the specified period. The <code>
      * PeriodicTrigger</code> instance created will continually reinsert the
      * trigger after each firing to achieve predictable periodic behavior.
@@ -572,24 +583,24 @@ public abstract class Simulator implements IORegisterConstants {
      * @param period the period in clock cycles
      * @return the <code>PeriodicTrigger</code> instance inserted
      */
-    public PeriodicTrigger addPeriodicTimerEvent(Trigger e, long period) {
+    public PeriodicTrigger insertPeriodicEvent(Event e, long period) {
         if ( eventPrinter.enabled )
-            eventPrinter.println("Simulator.addPeriodicTimerEvent(" + period + ")");
+            eventPrinter.println("Simulator.insertPeriodicEvent(" + period + ")");
         PeriodicTrigger pt = new PeriodicTrigger(this, e, period);
         eventQueue.add(pt, period);
         return pt;
     }
 
     /**
-     * The <code>removeTimerEvent()</code> method removes a trigger from
+     * The <code>removeEvent()</code> method removes an event from
      * the event queue of the simulator. The comparison used is reference
      * equality, not <code>.equals()</code>.
      *
      * @param e the trigger to remove
      */
-    public void removeTimerEvent(Trigger e) {
+    public void removeEvent(Event e) {
         if ( eventPrinter.enabled )
-            eventPrinter.println("Simulator.removeTimerEvent()");
+            eventPrinter.println("Simulator.removeEvent()");
         eventQueue.remove(e);
     }
 
@@ -654,7 +665,7 @@ public abstract class Simulator implements IORegisterConstants {
      *
      * @author Ben L. Titzer
      */
-    public static class ClockCycleTimeout implements Trigger {
+    public class ClockCycleTimeout implements Event {
         public final long timeout;
 
         /**
@@ -672,8 +683,8 @@ public abstract class Simulator implements IORegisterConstants {
          *
          */
         public void fire() {
-            // TODO: throw correct error
-            throw new Error("Timeout reached after "+timeout+" clock cycles");
+            int pc = interpreter.getPC();
+            throw new TimeoutException(interpreter.getInstr(pc), pc, interpreter, timeout);
         }
 
     }
@@ -735,13 +746,11 @@ public abstract class Simulator implements IORegisterConstants {
             update(bit, maskRegister);
         }
 
-        public void setBit(int bit) {
-            value = Arithmetic.clearBit(value, bit);
-            interpreter.unpostInterrupt(getVectorNum(bit));
-        }
-
-        public void clearBit(int bit) {
-            // clearing a bit does nothing.
+        public void writeBit(int bit, boolean val) {
+            if ( val ) {
+                value = Arithmetic.clearBit(value, bit);
+                interpreter.unpostInterrupt(getVectorNum(bit));
+            }
         }
     }
 
@@ -759,14 +768,14 @@ public abstract class Simulator implements IORegisterConstants {
             update(flagRegister);
         }
 
-        public void setBit(int bit) {
-            value = Arithmetic.setBit(value, bit);
-            update(bit, flagRegister);
-        }
-
-        public void clearBit(int bit) {
-            value = Arithmetic.clearBit(value, bit);
-            interpreter.unpostInterrupt(getVectorNum(bit));
+        public void writeBit(int bit, boolean val) {
+            if ( val ) {
+                value = Arithmetic.setBit(value, bit);
+                update(bit, flagRegister);
+            } else {
+                value = Arithmetic.clearBit(value, bit);
+                interpreter.unpostInterrupt(getVectorNum(bit));
+            }
         }
     }
 
