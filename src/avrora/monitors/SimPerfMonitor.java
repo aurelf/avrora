@@ -48,7 +48,7 @@ import avrora.util.TermUtil;
  */
 public class SimPerfMonitor extends MonitorFactory {
 
-    public final Option.Long SAMPLES = options.newOption("samples", 100,
+    public final Option.Long SAMPLES = options.newOption("samples", 1000,
             "This option is used in the simulator profiling monitor to determine how many " +
             "samples to collect over the execution of the program.");
     public final Option.Double FREQUENCY = options.newOption("frequency", 100.0,
