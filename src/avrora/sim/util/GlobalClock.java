@@ -99,6 +99,13 @@ public class GlobalClock {
 
     }
 
+    /**
+     * How sad. The <code>InterruptedException</code> wraps an interrupted
+     * exception with an unchecked exception so that it doesn't break
+     * the interface of the <code>Simulator.Trigger</code> class.
+     * It's not clear what useful purpose interrupted exceptions could
+     * serve in the implementation of the global clock.
+     */
     public class InterruptedException extends RuntimeException {
         public final java.lang.InterruptedException exception;
 

@@ -329,9 +329,6 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
             // if the simulator is visiting us, execute the instruction instead of accept(v).
             if ( v == Simulator.this ) {
-                // fire the probe(s) before
-                probe.fireBefore(instr, address, state);
-
                 // breakpoint processing.
                 if ( breakPoint ) {
                     if ( !breakFired ) {
@@ -340,6 +337,9 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
                     }
                     else breakFired = false;
                 }
+
+                // fire the probe(s) before
+                probe.fireBefore(instr, address, state);
 
                 // execute actual instruction
                 execute(instr);
