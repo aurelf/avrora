@@ -36,6 +36,7 @@ import avrora.Avrora;
 import avrora.core.*;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.MulticastWatch;
+import avrora.sim.util.MulticastIORWatch;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
@@ -138,6 +139,64 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             return instr.getOperands();
         }
 
+    }
+
+    class ProbedActiveRegister implements ActiveRegister {
+        protected final int ioreg_num;
+        protected final ActiveRegister ioreg;
+        protected final MulticastIORWatch watches;
+
+        protected ProbedActiveRegister(ActiveRegister ar, int inum) {
+            ioreg_num = inum;
+            ioreg = ar;
+            watches = new MulticastIORWatch();
+        }
+
+        void add(Simulator.IORWatch w) {
+            watches.add(w);
+        }
+
+        void remove(Simulator.IORWatch p) {
+            watches.remove(p);
+        }
+
+        boolean isEmpty() {
+            return watches.isEmpty();
+        }
+
+        public void write(byte value) {
+            int pc_ = pc;
+            Instr i = getCurrentInstr();
+            watches.fireBeforeWrite(i, pc_, BaseInterpreter.this, ioreg_num, value);
+            ioreg.write(value);
+            watches.fireAfterWrite(i, pc_, BaseInterpreter.this, ioreg_num, value);
+        }
+
+        public void writeBit(int bit, boolean val) {
+            int pc_ = pc;
+            Instr i = getCurrentInstr();
+            watches.fireBeforeBitWrite(i, pc_, BaseInterpreter.this, ioreg_num, bit, val);
+            ioreg.writeBit(bit, val);
+            watches.fireAfterBitWrite(i, pc_, BaseInterpreter.this, ioreg_num, bit, val);
+        }
+
+        public byte read() {
+            int pc_ = pc;
+            Instr i = getCurrentInstr();
+            watches.fireBeforeRead(i, pc_, BaseInterpreter.this, ioreg_num);
+            byte value = ioreg.read();
+            watches.fireAfterRead(i, pc_, BaseInterpreter.this, ioreg_num, value);
+            return value;
+        }
+
+        public boolean readBit(int bit) {
+            int pc_ = pc;
+            Instr i = getCurrentInstr();
+            watches.fireBeforeBitRead(i, pc_, BaseInterpreter.this, ioreg_num, bit);
+            boolean value = ioreg.readBit(bit);
+            watches.fireAfterBitRead(i, pc_, BaseInterpreter.this, ioreg_num, bit, value);
+            return value;
+        }
     }
 
     /**
@@ -469,6 +528,29 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         MulticastWatch w = sram_watches[data_addr];
         if (w == null) return;
         w.remove(p);
+    }
+
+    protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        ActiveRegister ar = ioregs[ioreg_num];
+        ProbedActiveRegister par;
+        if ( ar instanceof ProbedActiveRegister ) {
+            par = (ProbedActiveRegister)ar;
+        } else {
+            par = new ProbedActiveRegister(ar, ioreg_num);
+            ioregs[ioreg_num] = par;
+        }
+        par.add(p);
+    }
+
+    protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        ActiveRegister ar = ioregs[ioreg_num];
+        ProbedActiveRegister par;
+        if ( ar instanceof ProbedActiveRegister ) {
+            par = (ProbedActiveRegister)ar;
+            par.remove(p);
+            if ( par.isEmpty() )
+                ioregs[ioreg_num] = par.ioreg;
+        } 
     }
 
     protected final void initializeIORegs() {

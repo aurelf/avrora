@@ -450,6 +450,15 @@ public class StringUtil {
         return new String(result);
     }
 
+    public static String toBin(long value, int width) {
+        char result[] = new char[width];
+
+        for (int cntr = 0; cntr < width; cntr++)
+            result[width - cntr - 1] = (value & (0x1 << cntr)) == 0 ? '0' : '1';
+
+        return new String(result);
+    }
+
     public static void toHex(StringBuffer buf, long value, int width) {
         if (value > (long)1 << width * 4) {
             buf.append(Long.toHexString(value).toUpperCase());

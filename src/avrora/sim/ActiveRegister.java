@@ -33,9 +33,11 @@
 package avrora.sim;
 
 /**
- * The <code>IOReg</code> interface models the behavior of an IO register. Since some IO registers behave
+ * The <code>ActiveRegister</code> interface models the behavior of a register that may perform
+ * some simulation work as a result of being read or written. For example, the register might
+ * configure a device, begin a transmission, or unpost an interrupt. Since some IO registers behave
  * specially with regards to the devices they control, their functionality can be implemented externally
- * to the <code> State</code> class.
+ * to the interpreter, in the device implementation.
  *
  * @author Ben L. Titzer
  */

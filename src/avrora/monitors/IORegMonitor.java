@@ -1,0 +1,157 @@
+/**
+ * Copyright (c) 2004-2005, Regents of the University of California
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University of California, Los Angeles nor the
+ * names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package avrora.monitors;
+
+import avrora.sim.Simulator;
+import avrora.sim.State;
+import avrora.sim.mcu.Microcontroller;
+import avrora.util.Option;
+import avrora.util.StringUtil;
+import avrora.core.Instr;
+
+import java.util.Iterator;
+
+/**
+ * The <code>IORegMonitor</code> is a simple tracing mechanism that allows reads and writes of IO registers
+ * to be displayed to the user as the program performs them.
+ *
+ * @author Ben L. Titzer
+ */
+public class IORegMonitor extends MonitorFactory {
+
+    final Option.List IOREGS = options.newOptionList("ioregs", "",
+            "This option accepts a list of IO register names which will be monitored during the simulation.");
+
+    class Monitor implements avrora.monitors.Monitor {
+        Simulator.Printer printer;
+
+        Monitor(Simulator s) {
+            Microcontroller m = s.getMicrocontroller();
+            Iterator i = IOREGS.get().iterator();
+            printer = s.getPrinter("monitors.ioregs");
+            while ( i.hasNext() ) {
+                String str = (String)i.next();
+                int ior;
+                if ( str.startsWith("0x"))
+                    ior = StringUtil.evaluateIntegerLiteral(str);
+                else
+                    ior = m.getProperties().getIOReg(str);
+                s.insertIORWatch(new Watch(str), ior);
+            }
+            printer.enabled = true;
+        }
+
+        public void report() {
+            // we don't need to generate a report.
+        }
+
+        class Watch extends Simulator.IORWatch.Empty {
+            String name;
+
+            Watch(String name) {
+                this.name = StringUtil.leftJustify(name, 6);
+            }
+
+            /**
+             * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             */
+            public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+                printer.println(name+"["+bit+"]   -> "+value);
+            }
+
+            /**
+             * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
+             * program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             * @param value     the value being written to the memory location
+             */
+            public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+                printer.println(name+"["+bit+"] <=   "+value);
+            }
+
+            /**
+             * The <code>fireBeforeWrite()</code> method is called before the data address is written by the
+             * program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             * @param value     the value being written to the memory location
+             */
+            public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+                printer.println(name+"    <=   "+render(value));
+            }
+
+            private String render(byte value) {
+                return StringUtil.toHex(value, 2)+" "+StringUtil.toBin(value, 8);
+            }
+
+            /**
+             * The <code>fireAfterRead()</code> method is called after the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param data_addr the address of the data being referenced
+             * @param value     the value of the memory location being read
+             */
+            public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
+                printer.println(name+"      -> "+render(value));
+            }
+
+        }
+    }
+
+    public IORegMonitor() {
+        super("This monitor is capable of monitoring the updates to IO registers on the microncontroller, " +
+                "including IO registers corresponding to devices such as the timer, UART, SPI, etc.");
+    }
+
+    public avrora.monitors.Monitor newMonitor(Simulator s) {
+        return new Monitor(s);
+    }
+}

@@ -101,6 +101,7 @@ public class Defaults {
             monitorMap.addClass("simperf", SimPerfMonitor.class);
             monitorMap.addClass("pc", Pc.class);
             monitorMap.addClass("trip-time", TripTimeMonitor.class);
+            monitorMap.addClass("ioregs", IORegMonitor.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
             addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +

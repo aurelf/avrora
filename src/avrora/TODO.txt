@@ -28,7 +28,6 @@
     4   isdl  Generate assembler and disassembler
     4   isdl  Generate Atmel parser
     2   isdl  Generate CFG builder
-    2  probe  Implement probing for IO registers
     2  probe  Introduce device instrumentation points
     3    sim  Support dynamic code update with SPM
     2  trace  Trace monitor (state, compress output, r/w vals)
@@ -41,6 +40,8 @@
     1   util  Implement Columnifier class
     1  probe  Interrupt monitor
 
+    1  probe  implemented simple command line probing of IORegs     (1.5.40)
+    2  probe  Implement probing for IO registers                    (1.5.40)
     1   sim   new: ClockDomain, refactored MCU construction         (1.5.32)
     1  probe  FiniteStateMachine, probing                         2005-02-20
     4  probe  Implement GDB server backend                           (1.4.0)

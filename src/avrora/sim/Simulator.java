@@ -113,7 +113,7 @@ public class Simulator {
          * The <code>enabled</code> field is true when this printer is enabled. When this printer
          * is not enabled, the <code>println()</code> method SHOULD NOT BE CALLED.
          */
-        public final boolean enabled;
+        public boolean enabled;
 
         Printer(String category) {
             Verbose.Printer p = Verbose.getVerbosePrinter(category);
@@ -307,8 +307,8 @@ public class Simulator {
     }
 
     /**
-     * The <code>MemoryProbe</code> interface represents a user probe that is fired when a watchpoint detects
-     * an access to an address where this memory probe has been inserted.
+     * The <code>Watch</code> interface represents a user watch that is fired when a watchpoint detects
+     * an access to an address where this watch has been inserted.
      */
     public interface Watch {
 
@@ -423,6 +423,127 @@ public class Simulator {
         }
     }
 
+    /**
+     * The <code>IORWatch</code> interface represents a user probe that is fired when a watchpoint detects
+     * an access to an IO register where the watch has been inserted. Direct as well as indirect accesses
+     * (through pointers) are monitored. Implicit accesses for special registers such as SPL, SPH, and SREG
+     * in push, pop, call, sei, etc instructions are NOT MONITORED. These instructions are syntactically
+     * apparent in the program and can be probed with <code>Simulator.Probe</code> instructions.
+     *
+     * This interface extends the <code>Simulator.Watch</code> interface with methods to trap reads and writes to
+     * individual bits within a register.
+     */
+    public interface IORWatch extends Watch {
+
+        /**
+         * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
+         *
+         * @param i         the instruction being probed
+         * @param address   the address at which this instruction resides
+         * @param state     the state of the simulation
+         * @param ioreg_num the number of the IO register being read
+         */
+        public void fireBeforeBitRead(Instr i, int address, State state, int ioreg_num, int bit);
+
+        /**
+         * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
+         * program.
+         *
+         * @param i         the instruction being probed
+         * @param address   the address at which this instruction resides
+         * @param state     the state of the simulation
+         * @param ioreg_num the number of the IO register being read
+         * @param value     the value being written to the memory location
+         */
+        public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value);
+
+        /**
+         * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
+         *
+         * @param i         the instruction being probed
+         * @param address   the address at which this instruction resides
+         * @param state     the state of the simulation
+         * @param ioreg_num the number of the IO register being read
+         * @param value     the value of the memory location being read
+         */
+        public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value);
+
+        /**
+         * The <code>fireAfterBitWrite()</code> method is called after the data address is written by the
+         * program.
+         *
+         * @param i         the instruction being probed
+         * @param address   the address at which this instruction resides
+         * @param state     the state of the simulation
+         * @param ioreg_num the number of the IO register being read
+         * @param value     the value being written to the memory location
+         */
+        public void fireAfterBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value);
+
+        /**
+         * The <code>Simulator.IORWatch.Empty</code> class acts as a base class with empty methods for
+         * each fireXXX() method. This makes it easier to write much shorter simple watches because
+         * empty methods are simply inherited.
+         */
+        public class Empty extends Watch.Empty implements IORWatch {
+            /**
+             * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             */
+            public void fireBeforeBitRead(Instr i, int address, State state, int ioreg_num, int bit) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
+             * program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             * @param value     the value being written to the memory location
+             */
+            public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             * @param value     the value of the memory location being read
+             */
+            public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireAfterBitWrite()</code> method is called after the data address is written by the
+             * program.
+             * In the implementation of the Empty watch, this method does nothing.
+             *
+             * @param i         the instruction being probed
+             * @param address   the address at which this instruction resides
+             * @param state     the state of the simulation
+             * @param ioreg_num the number of the IO register being read
+             * @param value     the value being written to the memory location
+             */
+            public void fireAfterBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+                // do nothing.
+            }
+        }
+    }
 
     /**
      * The <code>Interrupt</code> interface represents the behavior of an interrupt (how it manipulates the
@@ -610,6 +731,7 @@ public class Simulator {
         interpreter.insertWatch(p, data_addr);
     }
 
+
     /**
      * The <code>removeWatch()</code> method removes a given watch from the memory location. Reference
      * equality is used to check for equality when removing probes, not <code>.equals()</code>.
@@ -619,6 +741,28 @@ public class Simulator {
      */
     public void removeWatch(Watch p, int data_addr) {
         interpreter.removeWatch(p, data_addr);
+    }
+
+    /**
+     * The <code>insertIORWatch()</code> method allows an IO register watch to be inserted on an IO register.
+     * The watch will be executed before every read or write to that IO register by the program.
+     *
+     * @param p         the probe to insert
+     * @param ioreg_num the number of the IO register to insert the watch for
+     */
+    public void insertIORWatch(IORWatch p, int ioreg_num) {
+        interpreter.insertIORWatch(p, ioreg_num);
+    }
+
+    /**
+     * The <code>removeIORWatch()</code> removes an IO register watch from the given register.
+     * Reference equality is used to check for equality when removing probes, not <code>.equals()</code>.
+     *
+     * @param p         the probe to insert
+     * @param ioreg_num the number of the IO register to insert the watch for
+     */
+    public void removeIORWatch(IORWatch p, int ioreg_num) {
+        interpreter.removeIORWatch(p, ioreg_num);
     }
 
     /**

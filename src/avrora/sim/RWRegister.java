@@ -35,7 +35,7 @@ package avrora.sim;
 import avrora.util.Arithmetic;
 
 /**
- * The <code>RWIOReg</code> class is an implementation of an IO register that has the simple, default
+ * The <code>RWRegister</code> class is an implementation of an IO register that has the simple, default
  * behavior of being able to read and write just as a general purpose register or byte in SRAM.
  *
  * @author Ben L. Titzer
@@ -46,7 +46,7 @@ public class RWRegister implements ActiveRegister {
 
     /**
      * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For simple
-     * <code>RWIOReg</code> instances, this simply returns the internally stored value.
+     * <code>RWRegister</code> instances, this simply returns the internally stored value.
      *
      * @return the value of the register as a byte
      */
@@ -56,7 +56,7 @@ public class RWRegister implements ActiveRegister {
 
     /**
      * The <code>write()</code> method writes an 8-bit value to the IO register as a byte. For simple
-     * <code>RWIOReg</code> instances, this simply writes the internally stored value.
+     * <code>RWRegister</code> instances, this simply writes the internally stored value.
      *
      * @param val the value to write
      */

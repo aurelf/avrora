@@ -256,7 +256,7 @@ public interface State {
      * implementations, and clients should probably not call this memory directly.
      *
      * @param ioreg the IO register number to retrieve
-     * @return a reference to the <code>IOReg</code> instance of the specified IO register
+     * @return a reference to the <code>ActiveRegister</code> instance of the specified IO register
      */
     public ActiveRegister getIOReg(int ioreg);
 
