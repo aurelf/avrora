@@ -236,6 +236,11 @@ public class Main {
     public static final Option.Bool MONITOR_STACK = options.newOption("monitor-stack", false,
             "This option is used in the \"simulate\" action. It causes the simulator " +
             "to report changes to the stack height.");
+    public static final Option.Bool LEGACY_INTERPRETER = options.newOption("legacy-interpreter", true,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to use the legacy (hand-written) interpreter rather than the interpreter " +
+            "generated from the architecture description language. It is used for " +
+            "benchmarking and regression purposes.");
     public static final Option.Str TOPOLOGY = options.newOption("topology", "",
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network.");

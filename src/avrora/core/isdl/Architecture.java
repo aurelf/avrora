@@ -84,8 +84,8 @@ public class Architecture {
             }
 
             int encodingSize = id.getEncodingSize();
-            if ( encodingSize % 8 != 0 )
-                throw Avrora.failure("encoding not byte aligned: "+id.name.image+" is "+encodingSize+" bits");
+            if ( encodingSize % 16 != 0 )
+                throw Avrora.failure("encoding not word aligned: "+id.name.image+" is "+encodingSize+" bits");
 
             // find operand decl
             Iterator oi = id.getOperandIterator();
@@ -96,6 +96,10 @@ public class Architecture {
                     throw Avrora.failure("operand type undefined "+StringUtil.quote(od.type.image));
                 od.setOperandType(opdec);
             }
+
+            // check that cycles make sense
+            if ( id.cycles < 0 )
+                throw Avrora.failure("instruction "+id.name.image+" has negative cycle count");
 
             if ( printer.enabled ) {
                 new PrettyPrinter(printer).visitStmtList(code);

@@ -117,6 +117,9 @@ public class SimulateAction extends Main.Action {
     public void run(String[] args) throws Exception {
         Main.ProgramReader r = Main.getProgramReader();
         program = r.read(args);
+
+        Simulator.LEGACY_INTERPRETER = Main.LEGACY_INTERPRETER.get();
+
         PlatformFactory pf = Main.getPlatform();
         if (pf != null)
             simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();

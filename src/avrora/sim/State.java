@@ -164,7 +164,8 @@ public interface State extends IORegisterConstants {
         }
 
         public void writeBit(int num, boolean val) {
-            value = Arithmetic.setBit(value, num, val);
+            if ( val ) setBit(num);
+            else clearBit(num);
         }
     }
 
