@@ -10,11 +10,11 @@ import avrora.core.Instr;
  * and a specified exit point. For example, if the entrypoint is a call
  * instruction and the exit point is the instruction following the call
  * instruction, then the probe will fire for every instruction executed
- * between the call and return, including both the call and the return
- * instructions.<br><br>
+ * between the call and return, including both the call and the instruction
+ * following the call. <br><br>
  *
  * This probe supports nested entries (e.g. recursive calls). It is best
- * pieces of the program that are single-entry/single-exit such as
+ * used on pieces of the program that are single-entry/single-exit such as
  * calls, interrupts, basic blocks, and SSE regions of control flow
  * graphs. It does not work well for loops because of the nesting
  * behavior.
