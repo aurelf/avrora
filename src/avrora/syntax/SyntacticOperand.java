@@ -19,7 +19,7 @@ import avrora.Avrora;
  */
 public abstract class SyntacticOperand extends ASTNode implements Operand {
 
-    public abstract void simplify(int currentByteAddress, Context c);
+    public abstract void simplify(int nextByteAddress, Context c);
 
     protected final AbstractToken left;
     protected final AbstractToken right;
@@ -119,8 +119,8 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
             }
         }
 
-        public void simplify(int currentByteAddress, Context c) {
-            value = expr.evaluate(currentByteAddress, c);
+        public void simplify(int nextByteAddress, Context c) {
+            value = expr.evaluate(nextByteAddress, c);
             simplified = true;
         }
 
