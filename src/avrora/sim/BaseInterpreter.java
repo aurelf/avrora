@@ -49,7 +49,6 @@ import avrora.util.StringUtil;
  */
 public abstract class BaseInterpreter implements State {
     protected int pc;
-    protected long totalCycles;
     protected final byte[] regs;
     protected final State.IOReg[] ioregs;
     protected byte[] sram;
@@ -215,11 +214,7 @@ public abstract class BaseInterpreter implements State {
      */
     protected final Simulator simulator;
 
-    /**
-     * The <code>eventQueue</code> field stores a reference to the event queue
-     * that stores the events posted to the interpreter in chronological order.
-     */
-    protected final DeltaQueue eventQueue;
+    protected final MainClock clock;
 
     public class NoSuchInstructionException extends Avrora.Error {
         public final int pc;
@@ -365,7 +360,8 @@ public abstract class BaseInterpreter implements State {
 
         // set up the reference to the simulator
         this.simulator = simulator;
-        this.eventQueue = simulator.eventQueue;
+
+        this.clock = simulator.clock;
 
         // if program will not fit onto hardware, error
         if (p.program_end > flash_size)
@@ -495,8 +491,7 @@ public abstract class BaseInterpreter implements State {
     }
 
     protected void advanceCycles(long delta) {
-        totalCycles += delta;
-        eventQueue.advance(delta);
+        clock.advance(delta);
         cyclesConsumed = 0;
     }
 
@@ -797,7 +792,7 @@ public abstract class BaseInterpreter implements State {
      * @return the number of clock cycles elapsed in the simulation
      */
     public long getCycles() {
-        return totalCycles;
+        return clock.getCount();
     }
 
     /**

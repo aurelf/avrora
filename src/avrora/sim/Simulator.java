@@ -100,11 +100,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     protected Interrupt[] interrupts;
 
-    /**
-     * The <code>eventQueue</code> field stores a reference to the event queue,
-     * a delta list of all events to be processed in order.
-     */
-    protected DeltaQueue eventQueue;
+    protected MainClock clock;
 
     /**
      * The <code>MAX_INTERRUPTS</code> fields stores the maximum number of
@@ -445,7 +441,7 @@ public abstract class Simulator implements IORegisterConstants {
      * are retained. All events are removed.
      */
     public void reset() {
-        eventQueue = new DeltaQueue();
+        clock = new MainClock("MAIN", microcontroller.getHz());
         interpreter = new GenInterpreter(this, program,
                 microcontroller.getFlashSize(),
                 microcontroller.getIORegSize(),
@@ -603,7 +599,7 @@ public abstract class Simulator implements IORegisterConstants {
     public void insertEvent(Event e, long cycles) {
         if (eventPrinter.enabled)
             eventPrinter.println("EVENT: " + e.getClass() + " @ " + interpreter.getCycles()+" + " +cycles);
-        eventQueue.add(e, cycles);
+        clock.insertEvent(e, cycles);
     }
 
     /**
@@ -633,7 +629,7 @@ public abstract class Simulator implements IORegisterConstants {
             eventPrinter.println("PERIODIC EVENT: " + e.getClass()
                     + " @ " + interpreter.getCycles()+" + " +period);
          PeriodicEvent pt = new PeriodicEvent(this, e, period);
-        eventQueue.add(pt, period);
+        clock.insertEvent(pt, period);
         return pt;
     }
 
@@ -647,7 +643,7 @@ public abstract class Simulator implements IORegisterConstants {
     public void removeEvent(Event e) {
         if (eventPrinter.enabled)
             eventPrinter.println("REMOVE: " + e.getClass() + " @ " + interpreter.getCycles());
-        eventQueue.remove(e);
+        clock.removeEvent(e);
     }
 
     /**

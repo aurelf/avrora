@@ -164,7 +164,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     private void sleepLoop() {
         innerLoop = true;
         while (innerLoop) {
-            long delta = eventQueue.getHeadDelta();
+            long delta = clock.getFirstEventDelta();
             if (delta <= 0) delta = 1;
             advanceCycles(delta);
         }
