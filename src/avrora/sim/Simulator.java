@@ -63,8 +63,9 @@ public abstract class Simulator implements IORegisterConstants {
      * that prints an instruction to the terminal as it is encountered.
      * This is useful for tracing program execution over simulation.
      */
-    public static final Probe TRACEPROBE = new Probe() {
+    public final Probe TRACEPROBE = new Probe() {
         public void fireBefore(Instr i, int pc, State s) {
+            Terminal.print(clock.getCount()+" ");
             Terminal.printBrightCyan(StringUtil.toHex(pc, 4) + ": ");
             Terminal.printBrightBlue(i.getVariant() + " ");
             Terminal.print(i.getOperands());

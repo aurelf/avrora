@@ -159,7 +159,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
      * The constructor for the default instance.
      */
     public ATMega128L(boolean compatibility) {
-        super(7327800,
+        super(7372800,
                 compatibility ? ATMEGA128L_SRAM_SIZE_103: ATMEGA128L_SRAM_SIZE,
                 compatibility ? ATMEGA128L_IOREG_SIZE_103: ATMEGA128L_IOREG_SIZE,
                 128*1024, 4096, 65);
@@ -169,7 +169,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     }
 
     protected ATMega128L(Program p, boolean compatibility) {
-        super(7327800,
+        super(7372800,
                 compatibility ? ATMEGA128L_SRAM_SIZE_103: ATMEGA128L_SRAM_SIZE,
                 compatibility ? ATMEGA128L_IOREG_SIZE_103: ATMEGA128L_IOREG_SIZE,
                 128*1024, 4096, 65);
@@ -1568,6 +1568,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                     if (timerPrinter.enabled)
                         timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "(actual) = " + compare + ", OCR" + n + "(buffer) = " + (0xff & OCRn_reg.readBuffer()) + "]");
 
+                    // TODO: this code has one off counting bugs!!!
                     switch (timerMode) {
                         case MODE_NORMAL: // NORMAL MODE
                             count++;
@@ -1597,9 +1598,9 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                             }
                             break;
                         case MODE_CTC: // CLEAR TIMER ON COMPARE MODE
-                            count++;
                             countSave = count;
-                            if (count == compare) {
+                            count++;
+                            if (countSave == compare) {
                                 //compareMatch();
                                 count = 0;
                             }

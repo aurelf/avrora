@@ -86,6 +86,7 @@ public abstract class ATMegaFamily implements Microcontroller {
 
         protected void setOutputDir(boolean out) {
             outputDir = out;
+            if ( out ) write(level);
         }
 
         protected void setPullup(boolean pull) {
@@ -132,7 +133,8 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
 
         private void printWrite(boolean value) {
-            pinPrinter.print("Pin[" + number + "].write(" + value + ") ");
+            long cycles = clock.getCount();
+            pinPrinter.print(cycles+": Pin[" + number + "].write(" + value + ") ");
             printDirection();
             pinPrinter.nextln();
         }

@@ -94,13 +94,15 @@ public class Mica2 implements Platform, PlatformFactory {
         }
 
         public void write(boolean level) {
+            // NOTE: there is an inverter between the port and the LED!
+            // reverse the level!
             if (!initialized) {
                 initialized = true;
-                on = level;
+                on = !level;
                 print();
             } else {
-                if (level != on) {
-                    on = level;
+                if (level == on) {
+                    on = !level;
                     print();
                 }
             }

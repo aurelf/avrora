@@ -189,7 +189,7 @@ public class SimulateAction extends SimAction {
         processTotal();
 
         if (TRACE.get()) {
-            simulator.insertProbe(Simulator.TRACEPROBE);
+            simulator.insertProbe(simulator.TRACEPROBE);
         }
 
         if (REALTIME.get())
