@@ -50,5 +50,4 @@ public interface HelpItem {
      */
     public void printHelp();
 
-    public HelpCategory getHelpCategory();
 }

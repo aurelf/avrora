@@ -339,6 +339,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     public BaseInterpreter(Simulator simulator, Program p, MicrocontrollerProperties pr) {
 
+        // this class and its methods are performance critical
+        // observed speedup with this call on Hotspot
+        Compiler.compileClass(this.getClass());
+
         globalProbe = new MulticastProbe();
 
         // set up the reference to the simulator

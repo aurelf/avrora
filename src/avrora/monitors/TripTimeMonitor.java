@@ -59,7 +59,10 @@ public class TripTimeMonitor extends MonitorFactory {
     final Option.List TO = options.newOptionList("to", "",
             "The \"from\" option specifies the list of program points for which " +
             "to measure from every other instruction in the program. ");
-    final Option.Bool DISTRIBUTION = options.newOption("distribution", false, "");
+    final Option.Bool DISTRIBUTION = options.newOption("distribution", false,
+            "This option, when specified, causes the trip time monitor to print a complete distribution of the " +
+            "trip times for each pair of program points. WARNING: this option can consume large amounts of memory " +
+            "and generate a large amount of output.");
 
     public TripTimeMonitor() {
         super("The \"trip-time\" monitor records profiling " +

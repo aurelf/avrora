@@ -65,7 +65,7 @@ public class ProfileMonitor extends MonitorFactory {
             "This option is used by the profiling and controls whether it records " +
             "the cycles consumed by each instruction or basic block. ");
     public final Option.Bool EMPTY = options.newOption("empty-probe", false,
-            "This option is used to test the overhead of adding an empty probe to every" +
+            "This option is used to test the overhead of adding an empty probe to every " +
             "instruction. ");
     public final Option.Long PERIOD = options.newOption("period", 0,
             "This option specifies whether the profiling will be exact or periodic. When " +

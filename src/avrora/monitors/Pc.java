@@ -90,7 +90,7 @@ public class Pc extends MonitorFactory {
      * method.
      */
     public Pc() {
-        super("The \"pc\" monitor connects the USART0 of node 0 to the PC, it uses port 2390");
+        super("The \"pc\" monitor connects the USART0 of node 0 to the PC using port 2390 as the default.");
     }
 
     /**

@@ -97,13 +97,15 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
      * All IO registers are initialized to be instances of <code>RWIOReg</code>. Reserved and special IO
      * registers must be inserted by the <code>getIOReg()</code> and <code>setIOReg()</code> methods.
      *
-     * @param p          the program to construct the state for
-     * @param flash_size the size of the flash (program) memory in bytes
-     * @param ioreg_size the number of IO registers
-     * @param sram_size  the size of the SRAM in bytes
+     * @param s The simulator attached to this interpreter
+     * @param p the program to construct the state for
+     * @param pr the properties of the microcontroller being simulated
      */
     protected GenInterpreter(Simulator s, Program p, MicrocontrollerProperties pr) {
         super(s, p, pr);
+        // this class and its methods are performance critical
+        // observed speedup with this call on Hotspot
+        Compiler.compileClass(this.getClass());
     }
 
     protected void runLoop() {

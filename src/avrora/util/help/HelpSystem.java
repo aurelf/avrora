@@ -50,10 +50,13 @@ public class HelpSystem {
     static final ClassMap categoryMap = new ClassMap("HelpCategory", HelpCategory.class);
 
     public static HelpCategory getCategory(String name) {
-        return (HelpCategory)categoryMap.getObjectOfClass(name);
+        HelpCategory helpCategory = (HelpCategory)categoryMap.getObjectOfClass(name);
+        if ( helpCategory != null ) helpCategory.setName(name);
+        return helpCategory;
     }
 
     public static void addCategory(String name, HelpCategory cat) {
+        cat.setName(name);
         categoryMap.addInstance(name, cat);
     }
 

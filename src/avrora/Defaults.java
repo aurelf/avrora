@@ -57,9 +57,7 @@ import avrora.test.SimplifierTestHarness;
 import avrora.test.ProbeTestHarness;
 import avrora.monitors.*;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * The <code>Defaults</code> class contains the default mappings for microcontrollers, actions,
@@ -68,6 +66,8 @@ import java.util.LinkedList;
  * @author Ben L. Titzer
  */
 public class Defaults {
+    private static final HashMap mainCategories = new HashMap();
+
     private static ClassMap microcontrollers;
     private static ClassMap platforms;
     private static ClassMap actions;
@@ -100,6 +100,15 @@ public class Defaults {
             monitorMap.addClass("gdb", GDBServer.class);
             monitorMap.addClass("simperf", SimPerfMonitor.class);
             monitorMap.addClass("pc", Pc.class);
+
+            HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
+            addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
+                    "monitors that instrument the program in order to study and analyze its behavior. The " +
+                    "\"simulate\" and \"multi-simulate\" actions support this option that allows a monitor class " +
+                    "to be loaded which will instrument the program before it is run and then generate a report " +
+                    "after the program has completed execution.", "-monitors", monitorMap);
+            addMainCategory(hc);
+            addSubCategories(monitorMap);
         }
     }
 
@@ -122,6 +131,16 @@ public class Defaults {
             inputs.addClass("atmel", AtmelProgramReader.class);
             inputs.addClass("objdump", ObjDumpProgramReader.class);
             inputs.addClass("odpp", ObjDump2ProgramReader.class);
+
+            HelpCategory hc = new HelpCategory("inputs", "Help for the supported program input formats.");
+            addOptionSection(hc, "INPUT FORMATS", "The input format of the program is specified with the \"-input\" " +
+                "option supplied at the command line. This input format is used by " +
+                "actions that operate on programs to determine how to interpret the " +
+                "input and build a program from the files specified. For example, the input format might " +
+                "be Atmel syntax, GAS syntax, or the output of a disassembler such as avr-objdump. Currently " +
+                "no binary formats are supported.", "-input", inputs);
+            addMainCategory(hc);
+            addSubCategories(inputs);
         }
     }
 
@@ -143,6 +162,17 @@ public class Defaults {
             actions.addClass("dbbc", DBBCAction.class);
             //--END EXPERIMENTAL: dbbc
             actions.addClass("odpp", ObjDumpPreprocessor.class);
+
+            // plug in a new help category for actions accesible with "-help actions"
+            HelpCategory hc = new HelpCategory("actions", "Help for Avrora actions.");
+            addOptionSection(hc, "ACTIONS", "Avrora accepts the \"-action\" command line option " +
+                    "that you can use to select from the available functionality that Avrora " +
+                    "provides. This action might be to assemble the file, " +
+                    "print a listing, perform a simulation, or run an analysis tool. This " +
+                    "flexibility allows this single frontend to select from multiple useful " +
+                    "tools. The currently supported actions are given below.", "-action", actions);
+            addMainCategory(hc);
+            addSubCategories(actions);
         }
     }
 
@@ -281,23 +311,43 @@ public class Defaults {
         }
     }
 
-    private void addMainCategory(String name, HelpCategory cat) {
-        HelpSystem.addCategory(name, cat);
+    public static void addMainCategory(HelpCategory cat) {
+        HelpSystem.addCategory(cat.name, cat);
+        mainCategories.put(cat.name, cat);
     }
 
-    private void addOptionSection(HelpCategory hc, String title, String para, String optname, ClassMap optvals) {
+    private static void addOptionSection(HelpCategory hc, String title, String para, String optname, ClassMap optvals) {
         LinkedList list = new LinkedList();
-        Iterator i = optvals.iterator();
+        Iterator i = optvals.getSortedList().iterator();
         while (i.hasNext()) {
             String s = (String) i.next();
-            list.addLast(new ClassMapValueItem(8, optname, s, optvals));
+            list.addLast(new ClassMapValueItem(4, optname, s, optvals));
         }
 
         hc.addListSection(title, para, list);
     }
 
-    public HelpCategory getHelpCategory(String name) {
+    public static HelpCategory getHelpCategory(String name) {
         addAll();
-        return null;
+        return HelpSystem.getCategory(name);
+    }
+
+    public static List getMainCategories() {
+        addAll();
+        List list = Collections.list(Collections.enumeration(mainCategories.values()));
+        Collections.sort(list, HelpCategory.COMPARATOR);
+        return list;
+    }
+
+    public static List getAllCategories() {
+        addAll();
+        List l = HelpSystem.getSortedList();
+        LinkedList nl = new LinkedList();
+        Iterator i = l.iterator();
+        while ( i.hasNext() ) {
+            String s = (String)i.next();
+            nl.addLast(HelpSystem.getCategory(s));
+        }
+        return nl;
     }
 }

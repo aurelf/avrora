@@ -51,7 +51,7 @@ public class PacketMonitor extends MonitorFactory {
      * create a new monitor
      */
     public PacketMonitor() {
-        super("The \"packet\" is a monitor to log packets send and received");
+        super("The \"packet\" is a monitor to log packets sent and received by nodes in the network.");
     }
 
 

@@ -46,10 +46,18 @@ import java.util.*;
  */
 public class HelpCategory implements HelpItem {
 
-    public final String name;
+    public String name;
     public final String help;
 
-    private LinkedList sections;
+    private final LinkedList sections;
+
+    public static final Comparator COMPARATOR = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            HelpCategory c1 = (HelpCategory)o1;
+            HelpCategory c2 = (HelpCategory)o2;
+            return String.CASE_INSENSITIVE_ORDER.compare(c1.name, c2.name);
+        }
+    };
 
     private abstract class Section {
         abstract void printHelp();
@@ -71,6 +79,7 @@ public class HelpCategory implements HelpItem {
             }
 
             Terminal.println(StringUtil.makeParagraphs(para, 0, 4, Terminal.MAXLINE));
+            Terminal.println("");
         }
     }
 
@@ -88,6 +97,7 @@ public class HelpCategory implements HelpItem {
             Terminal.println("\n");
 
             Terminal.println(StringUtil.makeParagraphs(para, 0, 4, Terminal.MAXLINE));
+            Terminal.println("");
 
             Collection c = options.getAllOptions();
             List l = Collections.list(Collections.enumeration(c));
@@ -121,6 +131,7 @@ public class HelpCategory implements HelpItem {
             }
 
             Terminal.println(StringUtil.makeParagraphs(para, 0, 4, Terminal.MAXLINE));
+            Terminal.println("");
 
             Iterator i = list.iterator();
             while (i.hasNext()) {
@@ -135,10 +146,19 @@ public class HelpCategory implements HelpItem {
     public HelpCategory(String name, String help) {
         this.name = name;
         this.help = help;
+        this.sections = new LinkedList();
     }
 
     public String getHelp() {
         return help;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String nm) {
+        name = nm;
     }
 
     public void addSection(String title, String paragraph) {
@@ -153,6 +173,16 @@ public class HelpCategory implements HelpItem {
         sections.addLast(new ListSection(title, para, l));
     }
 
+    public void addSubcategorySection(String title, String para, List l) {
+        Iterator i = l.iterator();
+        LinkedList sl = new LinkedList();
+        while ( i.hasNext() ) {
+            HelpCategory hc = (HelpCategory)i.next();
+            sl.addLast(new SubcategoryItem(4, hc));
+        }
+        addListSection(title, para, sl);
+    }
+
     public void addCommandExample(String prefix, String command) {
         throw Avrora.unimplemented();
     }
@@ -165,7 +195,4 @@ public class HelpCategory implements HelpItem {
         }
     }
 
-    public HelpCategory getHelpCategory() {
-        return this;
-    }
 }

@@ -69,7 +69,7 @@
     2    sim  Word-aligned PC optimization
     2    sim  Introduce SourceMapping class
 
-   1    main  Remove shortName from Action, MonitorFactory          (1.5.26)
+   1    main  Remove shortName from Action, MonitorFactory          (1.5.28)
   2-3    sim  Clean up event / verbose printing                      (1.4.0)
   1-2    sim  Consolidate regs and sram in interpreter               (1.5.x)
     1   main  Move class maps and defaults to Defaults               (1.5.x)

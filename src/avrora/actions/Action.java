@@ -34,6 +34,11 @@ package avrora.actions;
 
 import avrora.util.Option;
 import avrora.util.Options;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
+import avrora.util.help.HelpItem;
+import avrora.util.help.HelpCategory;
+import avrora.Avrora;
 
 /**
  * The <code>Action</code> class defines a new action that the main driver is capable of executing. Each
@@ -41,12 +46,7 @@ import avrora.util.Options;
  * For example, the action to simulate a program is inserted into this hash map with the key "simulate", and
  * an instance of <code>avrora.actions.SimulateAction</code>.
  */
-public abstract class Action {
-
-    /**
-     * The <code>help</code> field stores a reference to the (unformatted) help string for this action.
-     */
-    public final String help;
+public abstract class Action extends HelpCategory {
 
     /**
      * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
@@ -58,12 +58,14 @@ public abstract class Action {
      * The constructor for the <code>Action</code> class initializes the referneces to the short name and help
      * string for this action as well as creating the internal options.
      *
-     * @param sn the short name of the action as a string
      * @param h  the (unformatted) help string
      */
     protected Action(String h) {
-        help = h;
+        super("action", h);
         options = new Options();
+
+        addSection("OVERVIEW", help);
+        addOptionSection("Help for specific options is below.", options);
     }
 
     /**
@@ -74,16 +76,6 @@ public abstract class Action {
      * @throws java.lang.Exception
      */
     public abstract void run(String[] args) throws Exception;
-
-    /**
-     * The <code>getHelp()</code> method returns a string that is used in reporting the command line help to
-     * the user.
-     *
-     * @return an unformatted paragraph that contains the text explanation of what this action does.
-     */
-    public String getHelp() {
-        return help;
-    }
 
     /**
      * The <code>newOption()</code> is used by subclasses to easily create new options for this action.

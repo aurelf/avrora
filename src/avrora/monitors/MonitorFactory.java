@@ -35,6 +35,7 @@ package avrora.monitors;
 import avrora.sim.Simulator;
 import avrora.util.Options;
 import avrora.util.Terminal;
+import avrora.util.help.HelpCategory;
 
 /**
  * The <code>MonitorFactory</code> class represents a profiling utility that is able to produce a
@@ -43,13 +44,7 @@ import avrora.util.Terminal;
  *
  * @author Ben L. Titzer
  */
-public abstract class MonitorFactory {
-
-    /**
-     * The <code>help</code> field stores a reference to a string that represents the contextual help from
-     * this monitor.
-     */
-    public final String help;
+public abstract class MonitorFactory extends HelpCategory {
 
     /**
      * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
@@ -64,8 +59,11 @@ public abstract class MonitorFactory {
      * @param h  the help item for the monitor as a string
      */
     protected MonitorFactory(String h) {
-        help = h;
+        super("monitor", h);
         options = new Options();
+
+        addSection("OVERVIEW", help);
+        addOptionSection("Help for specific options is below.", options);
     }
 
 
@@ -90,5 +88,4 @@ public abstract class MonitorFactory {
     public void processOptions(Options o) {
         options.process(o);
     }
-
 }

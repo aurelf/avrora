@@ -41,6 +41,7 @@ import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.util.*;
 import avrora.util.help.HelpCategory;
+import avrora.util.help.HelpSystem;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -230,17 +231,40 @@ public class Main {
                 "values. Each action also has its own set of options. To access help for the options " +
                 "related to an action, specify the name of the action along with the \"help\" option.", mainOptions);
 
-        hc.addSection("ADDITIONAL HELP CATEGORIES", "Additional help is available on a category by category " +
+        hc.addSubcategorySection("ADDITIONAL HELP CATEGORIES", "Additional help is available on a category by category " +
                 "basis. Below is a list of the additional categories available to provide help with actions, " +
                 "input formats, monitors, and more. To access help for a specific category, specify the " +
-                "\"-help\" option followed by the name of category.");
+                "\"-help\" option followed by the name of category.", Defaults.getMainCategories());
 
-        hc.addSection(null, "For more information, see the online documentation:\n" +
-                "http://compilers.cs.ucla.edu/avrora");
         return hc;
     }
 
     static void printHelp(String[] args) {
+        printUsage();
+
+        buildAllCategory();
+
+        if (args.length == 0) {
+            buildHelpCategory().printHelp();
+        } else if (args.length == 1) {
+            printHelp(args[0]);
+        } else {
+            Avrora.userError("help available for only one category at a time.");
+        }
+
+        printFooter();
+    }
+
+    private static void buildAllCategory() {
+        HelpCategory hc = new HelpCategory("all", "Print a list of all categories for which help is available.");
+        hc.addSection("OVERVIEW", "Avrora provides help in many categories that are all accessible from the command " +
+                "line.");
+        hc.addSubcategorySection("ALL HELP CATEGORIES", "Below is a listing of all the help categories available.",
+                Defaults.getAllCategories());
+        Defaults.addMainCategory(hc);
+    }
+
+    private static void printUsage() {
         int colors[] = {Terminal.COLOR_RED,
                         -1,
                         Terminal.COLOR_GREEN,
@@ -265,120 +289,20 @@ public class Main {
                          Terminal.COLOR_YELLOW,
                          -1};
 
-        String strs2[] = {"Usage", ": ", "avrora -help", " [", "action", "]"};
+        String strs2[] = {"Usage", ": ", "avrora -help", " [", "category", "]"};
         Terminal.print(colors2, strs2);
         Terminal.println("\n");
+    }
 
-        printSection("OVERVIEW", "Avrora is a tool for working with " +
-                "assembly language programs for the AVR architecture microcontrollers. " +
-                "It contains tools to read AVR programs in multiple formats, perform " +
-                "actions on them, and generate output in multiple formats.\n" +
-                "Typical usage is to specify a list of files that contain a program " +
-                "in some format supported by Avrora and then specifying the action " +
-                "to perform on that program. For example, giving the name of a file " +
-                "that contains a program written in assembly language and a simulate " +
-                "action might look like: \n\n" +
-                "avrora -action=simulate -input=atmel program.asm \n\n" +
-                "Other actions that are available include giving a listing of the " +
-                "program or running one of the analysis tools on the program. See the " +
-                "actions section for more information.");
-
-        if (args.length == 0)
-            printMainHelp();
-        else if (args.length > 1)
-            Avrora.userError("help available for only one action or input at a time.");
-        else
-            printHelp(args[0]);
-
+    private static void printFooter() {
         Terminal.println("For more information, see the online documentation: ");
         Terminal.printBrightCyan("http://compilers.cs.ucla.edu/avrora");
         Terminal.nextln();
     }
 
     private static void printHelp(String a) {
-        Action action = Defaults.getAction(a);
-        if (action == null)
-            Avrora.userError("no help available for unknown action " + StringUtil.quote(a));
-
-        String actname = StringUtil.quote(a);
-        printSection("HELP FOR THE " + actname + " ACTION", action.getHelp());
-
-        if (action.options.size() > 0) {
-            printSection("OPTIONS", "Below is a listing of the options available to the " + actname + " action.");
-            printOptions(action.options);
-        }
-    }
-
-    private static void printMainHelp() {
-        printSection("OPTIONS", "Options specify the action to be performed as well as the input " +
-                "format, the output format (if any), and any general configuration parameters for " +
-                "Avrora. The available main options are listed below along with their types and default " +
-                "values. Each action also has its own set of options. To access help for the options " +
-                "related to an action, specify the name of the action along with the \"help\" option.");
-
-        printOptions(mainOptions);
-        Iterator i;
-
-        printSection("ACTIONS", "The action to be performed is specified in an option \"action\" " +
-                "supplied at the command line. This action might be to assemble the file, " +
-                "print a listing, perform a simulation, or run an analysis tool. This " +
-                "flexibility allows this single frontend to select from multiple useful " +
-                "tools. The currently supported actions are given below.");
-
-        List list = Defaults.getActionList();
-        i = list.iterator();
-        while (i.hasNext()) {
-            String a = (String)i.next();
-            printGreenEqYellow("    -action", a);
-            Terminal.nextln();
-            String help = (Defaults.getAction(a)).getHelp();
-            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, Terminal.MAXLINE));
-        }
-
-        Terminal.println("");
-
-        printSection("INPUT FORMATS", "The input format of the program is specified with the \"input\" " +
-                "option supplied at the command line. This input format is used by " +
-                "actions that operate on programs to determine how to interpret the " +
-                "input and build a program from the files specified. For example, the input format might " +
-                "be Atmel syntax, GAS syntax, or the output of a disassembler such as avr-objdump. Currently " +
-                "no binary formats are supported.");
-
-        list = Defaults.getProgramReaderList();
-        i = list.iterator();
-        while (i.hasNext()) {
-            String a = (String)i.next();
-            printGreenEqYellow("    -input", a);
-            Terminal.nextln();
-            String help = (Defaults.getProgramReader(a)).getHelp();
-            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, Terminal.MAXLINE));
-        }
-        Terminal.println("");
-    }
-
-    private static void printOptions(Options options) {
-        Collection c = options.getAllOptions();
-        List l = Collections.list(Collections.enumeration(c));
-        Collections.sort(l, Option.COMPARATOR);
-
-        Iterator i = l.iterator();
-        while (i.hasNext()) {
-            Option opt = (Option)i.next();
-            opt.printHelp();
-        }
-
-        Terminal.println("");
-    }
-
-    private static void printGreenEqYellow(String s1, String s2) {
-        Terminal.printPair(Terminal.COLOR_BRIGHT_GREEN, Terminal.COLOR_YELLOW, s1, "=", s2);
-    }
-
-    static void printSection(String title, String paragraphs) {
-        Terminal.printBrightBlue(title);
-        Terminal.println("\n");
-        Terminal.println(StringUtil.makeParagraphs(paragraphs, 0, 4, Terminal.MAXLINE));
-        Terminal.nextln();
+        HelpCategory hc = Defaults.getHelpCategory(a);
+        hc.printHelp();
     }
 
     static void banner() {
@@ -394,7 +318,6 @@ public class Main {
                     "option.\n\n";
         else
             notice =
-
                     "Copyright (c) 2003-2005, Regents of the University of California \n" +
                     "All rights reserved.\n\n" +
 
@@ -451,7 +374,6 @@ public class Main {
         Iterator i = verbose.iterator();
         while (i.hasNext())
             Verbose.setVerbose((String)i.next(), true);
-
     }
 
     /**
