@@ -37,6 +37,7 @@ import avrora.Avrora;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.LinkedList;
+import java.util.Comparator;
 
 /**
  * The <code>Option</code> class represents an option that has been given on the
@@ -49,6 +50,18 @@ import java.util.LinkedList;
 public abstract class Option {
     protected final String name;
     protected final String description;
+    /**
+     * The <code>OptionComparator</code> is an implementation of the
+     * <code>java.util.Comparator</code> interface that is used to sort options
+     * alphabetically for printing in the help system.
+     */
+    public static final Comparator COMPARATOR = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            Option opt1 = (Option) o1;
+            Option opt2 = (Option) o2;
+            return String.CASE_INSENSITIVE_ORDER.compare(opt1.getName(), opt2.getName());
+        }
+    };
 
     public Option(String n) {
         name = n;

@@ -289,7 +289,6 @@ public class StringUtil {
         return buf.toString();
     }
 
-    // TODO: verify correctness of this function in presence of signs
     public static String toHex(long value, int width) {
         char result[] = new char[width];
 
@@ -501,26 +500,6 @@ public class StringUtil {
             return "";
     }
 
-    public static String makeJustifiedLines(String s, int indent, int width) {
-        int len = s.length();
-        String indstr = dup(' ', indent);
-        StringBuffer orig = new StringBuffer(s);
-        StringBuffer nstr = new StringBuffer();
-        for (int cntr = 0; cntr < len;) {
-            int end = cntr + (width - indent);
-            if (end <= len) {
-                while (orig.charAt(end) != ' ') end--;
-            } else {
-                end = len;
-            }
-            nstr.append(indstr);
-            nstr.append(orig.substring(cntr, end));
-            nstr.append('\n');
-            cntr = end + 1;
-        }
-        return nstr.toString();
-    }
-
     public static String makeParagraphs(String s, int leftJust, int indent, int width) {
         int len = s.length();
         indent += leftJust;
@@ -552,7 +531,6 @@ public class StringUtil {
         }
         return buf.toString();
     }
-
 
     public static String dup(char c, int len) {
         StringBuffer buf = new StringBuffer(len);

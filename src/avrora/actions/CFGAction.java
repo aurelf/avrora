@@ -30,44 +30,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.stack;
+package avrora.actions;
 
-import avrora.Main;
 import avrora.core.Program;
+import avrora.core.ControlFlowGraph;
+import avrora.core.CFGBuilder;
+import avrora.core.Instr;
+import avrora.util.Terminal;
+import avrora.util.StringUtil;
+import avrora.Main;
+
+import java.util.Iterator;
 
 /**
- * The <code>AnalyzeStackAction</code> class is an extension of the <code>Main.Action</code>
- * class that allows the stack tool to be reached from the command line.
- *
  * @author Ben L. Titzer
  */
-public class AnalyzeStackAction extends Main.Action {
-    /**
-     * The <code>run()</code> method runs the stack analysis by loading the program from
-     * the command line options specified, creating an instance of the <code>Analyzer</code>
-     * class, and running the analysis.
-     * @param args the string arguments that are the files containing the program
-     * @throws Exception if the program cannot be loaded correctly
-     */
+public class CFGAction extends Action {
+
+    public static final String HELP = "The \"cfg\" action builds and displays a control flow graph of the " +
+                    "given input program. This is useful for better program understanding " +
+                    "and for optimizations.";
+
+    public CFGAction() {
+        super("cfg", HELP);
+    }
+
     public void run(String[] args) throws Exception {
         Main.ProgramReader r = Main.getProgramReader();
         Program p = r.read(args);
-        Analyzer a = new Analyzer(p);
+        ControlFlowGraph cfg = new CFGBuilder(p).buildCFG();
+        Iterator biter = cfg.getSortedBlockIterator();
 
-        if (Main.TRACE.get()) Analyzer.TRACE = true;
+        while ( biter.hasNext() ) {
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block)biter.next();
+            Terminal.print("[");
+            Terminal.printBrightCyan(StringUtil.addrToString(block.getAddress()));
+            Terminal.println(":"+block.getSize()+"]");
+            Iterator iiter = block.getInstrIterator();
+            while ( iiter.hasNext() ) {
+                Instr instr = (Instr)iiter.next();
+                Terminal.printBrightBlue("    "+instr.getName());
+                Terminal.println(" "+instr.getOperands());
+            }
+            Terminal.print("    [");
+            printPair("next", block.getNextBlock());
+            Terminal.print(", ");
+            printPair("other", block.getOtherBlock());
+            Terminal.println("]");
+        }
 
-        a.run();
-        a.report();
     }
 
-    /**
-     * The <code>getHelp()</code> method returns a string that is used in reporting
-     * the command line help to the user.
-     * @return an unformatted paragraph that contains the text explanation of what the
-     * stack analysis tool is and does.
-     */
-    public String getHelp() {
-        return "The \"analyze-stack\" option invokes the built-in stack analysis tool " +
-                "on the specified program.";
+    private void printPair(String t, ControlFlowGraph.Block b) {
+        String v = b == null ? "null" : StringUtil.addrToString(b.getAddress());
+        Terminal.printPair(Terminal.COLOR_BRIGHT_GREEN, Terminal.COLOR_BRIGHT_CYAN, t, ": ", v);
     }
 }

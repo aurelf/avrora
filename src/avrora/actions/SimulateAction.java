@@ -30,13 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.actions;
 
 import avrora.Main;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.util.ProgramProfiler;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -55,7 +57,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class SimulateAction extends Main.Action {
+public class SimulateAction extends Action {
     Program program;
     Simulator simulator;
     avrora.sim.util.Counter total;
@@ -67,6 +69,14 @@ public class SimulateAction extends Main.Action {
     StackProbe sprobe;
 
     ProgramProfiler profile;
+    public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
+                    "for the specified microcontroller and begins executing the program. There " +
+                    "are several options provided to the simulator for profiling and analysis, " +
+                    "so for more information, see the Options section.";
+
+    public SimulateAction() {
+        super("simulate", HELP);
+    }
 
     private class Counter extends avrora.sim.util.Counter {
         private final Main.Location location;
@@ -111,7 +121,7 @@ public class SimulateAction extends Main.Action {
      * The <code>run()</code> method is called by the main class.
      *
      * @param args the command line arguments after the options have been stripped out
-     * @throws Exception if there is a problem loading the program, or an exception
+     * @throws java.lang.Exception if there is a problem loading the program, or an exception
      *                   occurs during simulation
      */
     public void run(String[] args) throws Exception {
@@ -163,14 +173,6 @@ public class SimulateAction extends Main.Action {
             reportProfile();
             reportStackMonitor();
         }
-    }
-
-    public String getHelp() {
-        return "The \"simulate\" action launches a simulator with the specified program " +
-                "for the specified microcontroller and begins executing the program. There " +
-                "are several options provided to the simulator for profiling and analysis, " +
-                "so for more information, see the Options section.";
-
     }
 
     void processBreakPoints() {

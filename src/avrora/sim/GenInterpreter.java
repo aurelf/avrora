@@ -85,10 +85,6 @@ public class GenInterpreter extends BaseInterpreter {
     public static final Register RY = Register.Y;
     public static final Register RZ = Register.Z;
 
-    protected long lastRETI = -8;
-    // TODO: this is just a hack for now
-    protected final int cyclesRETI = 4;
-
     /**
      * The constructor for the <code>Interpreter</code> class builds the internal data
      * structures needed to store the complete state of the machine, including registers,

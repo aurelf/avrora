@@ -38,14 +38,11 @@ import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
 import avrora.core.isdl.*;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.SimulateAction;
-import avrora.sim.MultiSimulateAction;
-import avrora.sim.BenchmarkAction;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.stack.AnalyzeStackAction;
+import avrora.actions.*;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.gas.GASProgramReader;
@@ -66,26 +63,6 @@ import java.io.PrintStream;
  * @author Ben L. Titzer
  */
 public class Main {
-
-    /**
-     * The <code>Action</code> class defines a new action that the main driver is
-     * capable of executing. Each instance of <code>Action</code> is inserted into
-     * a hash map in the main class, with the key being its name. For example,
-     * the action to simulate a program is inserted into this hash map with the key
-     * "simulate", and an instance of <code>avrora.sim.SimulateAction</code>.
-     */
-    public static abstract class Action {
-        /**
-         * The <code>run()</code> method is called by the main class and is passed
-         * the remaining command line arguments after options have been stripped out.
-         *
-         * @param args the command line arguments
-         * @throws Exception
-         */
-        public abstract void run(String[] args) throws Exception;
-
-        public abstract String getHelp();
-    }
 
     /**
      * The <code>ProgramReader</code> class represents an object capable of reading
@@ -142,7 +119,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.10";
+    static final String VERSION = "Beta 1.1.11";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -247,23 +224,23 @@ public class Main {
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 
     static {
-        newAction("multi-simulate", new MultiSimulateAction());
-        newAction("simulate", new SimulateAction());
-        newAction("analyze-stack", new AnalyzeStackAction());
-        newAction("test", new TestAction());
-        newAction("list", new ListAction());
-        newAction("cfg", new CFGAction());
-        newAction("isdl", new ISDLAction());
-        newAction("custom", new CustomAction());
-        newAction("benchmark", new BenchmarkAction());
+        newAction(new MultiSimulateAction());
+        newAction(new SimulateAction());
+        newAction(new AnalyzeStackAction());
+        newAction(new TestAction());
+        newAction(new ListAction());
+        newAction(new CFGAction());
+        newAction(new ISDLAction());
+        newAction(new CustomAction());
+        newAction(new BenchmarkAction());
         newInput("auto", new AutoProgramReader());
         newInput("gas", new GASProgramReader());
         newInput("atmel", new AtmelProgramReader());
         newInput("objdump", new ObjDumpProgramReader());
     }
 
-    static void newAction(String name, Action a) {
-        actions.put(name, a);
+    static void newAction(Action a) {
+        actions.put(a.getShortName(), a);
     }
 
     static void newInput(String name, ProgramReader r) {
@@ -291,7 +268,7 @@ public class Main {
             if ( extension.equals(".od") )
                 return new ObjDumpProgramReader().read(args);
 
-            Avrora.userError("cannot determine best format for extension "+StringUtil.quote(extension));
+            Avrora.userError("file extension "+StringUtil.quote(extension)+" unknown");
             return null;
         }
 
@@ -303,119 +280,6 @@ public class Main {
         }
     }
 
-    static class ISDLAction extends Action {
-
-        public void run(String[] args) throws Exception {
-            if (args.length != 2)
-                Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl> <interpreter.java>");
-
-            File archfile = new File(args[0]);
-            FileInputStream fis = new FileInputStream(archfile);
-            ISDLParser parser = new ISDLParser(fis);
-            Architecture a = parser.Architecture();
-
-            SectionFile f = new SectionFile(args[1],"INTERPRETER GENERATOR");
-            new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
-            f.close();
-        }
-
-        public String getHelp() {
-            return "The \"isdl\" action invokes the instruction set description language " +
-                    "(ISDL) tool, which is used internally in Avrora to describe the AVR " +
-                    "instruction set.";
-        }
-    }
-
-
-    static class CFGAction extends Action {
-
-        public void run(String[] args) throws Exception {
-            ProgramReader r = (ProgramReader) inputs.get(INPUT.get());
-            Program p = r.read(args);
-            ControlFlowGraph cfg = new CFGBuilder(p).buildCFG();
-            Iterator biter = cfg.getSortedBlockIterator();
-
-            while ( biter.hasNext() ) {
-                ControlFlowGraph.Block block = (ControlFlowGraph.Block)biter.next();
-                Terminal.print("[");
-                Terminal.printBrightCyan(StringUtil.addrToString(block.getAddress()));
-                Terminal.println(":"+block.getSize()+"]");
-                Iterator iiter = block.getInstrIterator();
-                while ( iiter.hasNext() ) {
-                    Instr instr = (Instr)iiter.next();
-                    Terminal.printBrightBlue("    "+instr.getName());
-                    Terminal.println(" "+instr.getOperands());
-                }
-                Terminal.print("    [");
-                printPair("next", block.getNextBlock());
-                Terminal.print(", ");
-                printPair("other", block.getOtherBlock());
-                Terminal.println("]");
-            }
-
-        }
-
-        private void printPair(String t, ControlFlowGraph.Block b) {
-            String v = b == null ? "null" : StringUtil.addrToString(b.getAddress());
-            Terminal.printPair(Terminal.COLOR_BRIGHT_GREEN, Terminal.COLOR_BRIGHT_CYAN, t, ": ", v);
-        }
-
-        public String getHelp() {
-            return "The \"cfg\" action builds and displays a control flow graph of the " +
-                    "given input program. This is useful for better program understanding " +
-                    "and for optimizations.";
-        }
-
-    }
-
-    static class CustomAction extends Action {
-        public void run(String[] args) throws Exception {
-            String clname = CLASS.get();
-            if (clname.equals(""))
-                Avrora.userError("Custom action class must be specified in -class option");
-            try {
-                Class cl = Class.forName(clname);
-                Action a = (Action) cl.newInstance();
-                a.run(args);
-            } catch (java.lang.ClassNotFoundException e) {
-                Avrora.userError("Could not find custom action class", StringUtil.quote(clname));
-            } catch (java.lang.ClassCastException e) {
-                Avrora.userError("Specified class does not extend avrora.Main.Action", StringUtil.quote(clname));
-            }
-        }
-
-        public String getHelp() {
-            return "The \"custom\" action allows a user to specify a Java class that " +
-                    "contains an action to run. This is useful for external actions that " +
-                    "are not part of the standard Avrora distribution. The \"class\" option " +
-                    "specifies which Java class to load, instantiate and run. This class " +
-                    "must extend the avrora.Main.Action class within Avrora.";
-        }
-    }
-
-    static class TestAction extends Action {
-        public void run(String[] args) throws Exception {
-            new AutomatedTester(new AVRTestHarness()).runTests(args);
-        }
-
-        public String getHelp() {
-            return "The \"test\" action invokes the internal automated testing framework " +
-                    "that runs testcases supplied at the command line. The testcases are " +
-                    "used in regressions for diagnosing bugs.";
-        }
-    }
-
-    static class ListAction extends Action {
-        public void run(String[] args) throws Exception {
-            ProgramReader r = (ProgramReader) inputs.get(INPUT.get());
-            Program p = r.read(args);
-            p.dump();
-        }
-
-        public String getHelp() {
-            return "The \"list\" action prints a digest of the program.";
-        }
-    }
 
     public static ProgramReader getProgramReader() {
         return (ProgramReader) inputs.get(INPUT.get());
@@ -458,23 +322,10 @@ public class Main {
         }
     }
 
-    /**
-     * The <code>OptionComparator</code> is an implementation of the
-     * <code>java.util.Comparator</code> interface that is used to sort options
-     * alphabetically for printing in the help system.
-     */
-    static final Comparator OptionComparator = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            Option opt1 = (Option) o1;
-            Option opt2 = (Option) o2;
-            return String.CASE_INSENSITIVE_ORDER.compare(opt1.getName(), opt2.getName());
-        }
-    };
-
     static void printHelp() {
         Collection c = options.getAllOptions();
         List l = Collections.list(Collections.enumeration(c));
-        Collections.sort(l, OptionComparator);
+        Collections.sort(l, Option.COMPARATOR);
 
         String usage = "avrora [-action=<action>] [options] <files>";
 
@@ -715,7 +566,7 @@ public class Main {
     public static MicrocontrollerFactory getMicrocontroller() {
         MicrocontrollerFactory mcu = Microcontrollers.getMicrocontroller(CHIP.get());
         if (mcu == null)
-            Avrora.userError("unknown microcontroller", CHIP.get());
+            Avrora.userError("Unknown microcontroller", StringUtil.quote(CHIP.get()));
         return mcu;
     }
 

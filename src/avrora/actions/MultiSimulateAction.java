@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.actions;
 
 import avrora.Main;
 import avrora.Avrora;
@@ -38,15 +38,15 @@ import avrora.Avrora;
 /**
  * @author Simon Han
  */
-public class MultiSimulateAction extends Main.Action {
+public class MultiSimulateAction extends Action {
+    public static final String HELP = "The \"multi-simulate\" action launches a set of simulators with " +
+                    " the specified program.";
+
+    public MultiSimulateAction() {
+        super("multi-simulate", HELP);
+    }
 
     public void run(String[] args) {
         throw Avrora.unimplemented();
-    }
-
-    public String getHelp() {
-        return "The \"multi-simulate\" action launches a set of simulators with " +
-                " the specified program.";
-
     }
 }

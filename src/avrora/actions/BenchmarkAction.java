@@ -30,13 +30,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.actions;
 
 import avrora.Main;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.util.ProgramProfiler;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.Simulator;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -55,7 +56,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class BenchmarkAction extends Main.Action {
+public class BenchmarkAction extends Action {
     Program program;
     Simulator simulator;
     avrora.sim.util.Counter total;
@@ -65,11 +66,19 @@ public class BenchmarkAction extends Main.Action {
     long totalCyclesA, totalCyclesB;
     long totalMillisA, totalMillisB;
 
+    public static final String HELP = "The \"benchmark\" action benchmarks the simulator's " +
+            "performace on an input program and gives tables of performance information. ";
+
+    public BenchmarkAction() {
+        super("benchmark", HELP);
+    }
+
+
     /**
      * The <code>run()</code> method is called by the main class.
      *
      * @param args the command line arguments after the options have been stripped out
-     * @throws Exception if there is a problem loading the program, or an exception
+     * @throws java.lang.Exception if there is a problem loading the program, or an exception
      *                   occurs during simulation
      */
     public void run(String[] args) throws Exception {
@@ -160,22 +169,12 @@ public class BenchmarkAction extends Main.Action {
         return endms - startms;
     }
 
-    public String getHelp() {
-        return "The \"benchmark\" action benchmarks the simulator's performace on " +
-                "an input program and gives tables of performance information. ";
-
-    }
-
     void processBreakPoints() {
         Iterator i = Main.getLocationList(program, Main.BREAKS.get()).iterator();
         while (i.hasNext()) {
             Main.Location l = (Main.Location) i.next();
             simulator.insertBreakPoint(l.address);
         }
-    }
-
-    private void printSeparator() {
-        Terminal.printSeparator(60);
     }
 
     void processIcount() {

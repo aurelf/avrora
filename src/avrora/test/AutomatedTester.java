@@ -132,34 +132,17 @@ public class AutomatedTester {
         Terminal.printBrightGreen("Test successes");
         Terminal.println(": " + slist.size() + " of " + fnames.length);
 
-        report(ilist, "Internal errors", YELLOW, fnames.length);
-        report(ulist, "Unexpected exceptions", YELLOW, fnames.length);
-        report(flist, "Failures", RED, fnames.length);
-        report(mlist, "Malformed test cases", CYAN, fnames.length);
+        report(ilist, "Internal errors", Terminal.COLOR_YELLOW, fnames.length);
+        report(ulist, "Unexpected exceptions", Terminal.COLOR_YELLOW, fnames.length);
+        report(flist, "Failures", Terminal.COLOR_RED, fnames.length);
+        report(mlist, "Malformed test cases", Terminal.COLOR_CYAN, fnames.length);
 
     }
 
     private static void report(List l, String c, int color, int total) {
         if (l.isEmpty()) return;
 
-        // TODO: use new terminal interface methods to make this cleaner
-        switch (color) {
-            case YELLOW:
-                Terminal.printYellow(c);
-                break;
-            case RED:
-                Terminal.printRed(c);
-                break;
-            case GREEN:
-                Terminal.printBrightGreen(c);
-                break;
-            case CYAN:
-                Terminal.printBrightCyan(c);
-                break;
-            default:
-                Terminal.print(c);
-        }
-
+        Terminal.print(color, c);
         Terminal.println(": " + l.size() + " of " + total);
         Iterator i = l.iterator();
         while (i.hasNext()) {
@@ -229,7 +212,6 @@ public class AutomatedTester {
             } catch (Exception e) {
                 e.printStackTrace();
                 return new TestCase.Malformed(fname, "exception in test case initialization");
-                // TODO: MalformedTestCase exception?
             }
         }
     }
