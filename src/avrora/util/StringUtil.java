@@ -393,7 +393,7 @@ public class StringUtil {
 
     public static long[] modulus(long val, int[] denom) {
         long[] result = new long[denom.length + 1];
-        for (int cntr = denom.length - 1; cntr > 0; cntr--) {
+        for (int cntr = denom.length - 1; cntr >= 0; cntr--) {
             int radix = denom[cntr];
             result[cntr + 1] = (val % radix);
             val = val / radix;
