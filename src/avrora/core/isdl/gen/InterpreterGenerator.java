@@ -406,7 +406,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     }
 
     public void visit(Logical.XorExpr e) {
-        emitCall(getMethod("xor"), e.left, e.right);
+        binop("!=", e.left, e.right, Logical.PREC_L_EQU);
     }
 
     public void visit(Arith.XorExpr e) {

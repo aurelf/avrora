@@ -1549,7 +1549,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     public boolean xor(boolean a, boolean b) {
-        return (a && !b) || (b && !a);
+        return (a != b);
     }
 
     public byte low(int val) {
