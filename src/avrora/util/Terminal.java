@@ -69,23 +69,23 @@ public final class Terminal {
 
     public static final int MAXCOLORS = 16;
 
-    private static final String CTRL_BLACK = "[0;30m";
-    private static final String CTRL_RED = "[0;31m";
-    private static final String CTRL_GREEN = "[0;32m";
-    private static final String CTRL_BROWN = "[0;33m";
-    private static final String CTRL_BLUE = "[0;34m";
-    private static final String CTRL_PURPLE = "[0;35m";
-    private static final String CTRL_CYAN = "[0;36m";
-    private static final String CTRL_LIGHTGRAY = "[0;37m";
+    private static final String CTRL_BLACK = "\u001b[0;30m";
+    private static final String CTRL_RED = "\u001b[0;31m";
+    private static final String CTRL_GREEN = "\u001b[0;32m";
+    private static final String CTRL_BROWN = "\u001b[0;33m";
+    private static final String CTRL_BLUE = "\u001b[0;34m";
+    private static final String CTRL_PURPLE = "\u001b[0;35m";
+    private static final String CTRL_CYAN = "\u001b[0;36m";
+    private static final String CTRL_LIGHTGRAY = "\u001b[0;37m";
 
-    private static final String CTRL_DARKGRAY = "[1;30m";
-    private static final String CTRL_BRIGHT_RED = "[1;31m";
-    private static final String CTRL_BRIGHT_GREEN = "[1;32m";
-    private static final String CTRL_YELLOW = "[1;33m";
-    private static final String CTRL_BRIGHT_BLUE = "[1;34m";
-    private static final String CTRL_MAGENTA = "[1;35m";
-    private static final String CTRL_BRIGHT_CYAN = "[1;36m";
-    private static final String CTRL_WHITE = "[1;37m";
+    private static final String CTRL_DARKGRAY = "\u001b[1;30m";
+    private static final String CTRL_BRIGHT_RED = "\u001b[1;31m";
+    private static final String CTRL_BRIGHT_GREEN = "\u001b[1;32m";
+    private static final String CTRL_YELLOW = "\u001b[1;33m";
+    private static final String CTRL_BRIGHT_BLUE = "\u001b[1;34m";
+    private static final String CTRL_MAGENTA = "\u001b[1;35m";
+    private static final String CTRL_BRIGHT_CYAN = "\u001b[1;36m";
+    private static final String CTRL_WHITE = "\u001b[1;37m";
 
     private static final int DEFAULT_COLOR = COLOR_LIGHTGRAY;
 
