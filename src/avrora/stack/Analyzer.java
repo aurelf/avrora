@@ -64,36 +64,130 @@ public class Analyzer {
         }
     }
 
+    /**
+     * The <code>Policy</code> allows for more modular, composable analysis. An instance
+     * of this class is passed to the <code>AbstractInterpreter</code> and that instance
+     * determines how to handle calls, returns, indirect jumps, and stack operations
+     * in the abstract interpretation. Thus, multiple anlayses can share the same
+     * core abstract interpreter in a clean way.
+     * @see AbstractInterpreter
+     * @author Ben L. Titzer
+     */
     public abstract static class Policy {
 
+        /**
+         * The <code>call()</code> method is called by the abstract interpreter when it
+         * encounters a call instruction within the program. Different policies may
+         * handle calls differently. For example, a context-sensitive analysis might
+         * fork and start analysis the called method in this context, which a context
+         * insensitive analsysis may just merge the current state into the entrance
+         * state for that address and then reanalyze that code.
+         *
+         * @param s the current abstract state
+         * @param target_address the concrete target address of the call
+         */
         public abstract void call(AbstractState s, int target_address);
 
+        /**
+         * The <code>ret()</code> method is called by the abstract interpreter when it
+         * encounters a return within the program.
+         * @param s the current abstract state
+         */
         public abstract void ret(AbstractState s);
 
+        /**
+         * The <code>ret()</code> method is called by the abstract interpreter when it
+         * encounters a return from an interrupt within the program.
+         * @param s the current abstract state
+         */
         public abstract void reti(AbstractState s);
 
+        /**
+         * The <code>indirectCall()</code> method is called by the abstract interpreter
+         * when it encounters an indirect call within the program. The abstract values
+         * of the address are given as parameters, so that a policy can choose to compute
+         * possible targets or be conservative or whatever it so chooses.
+         * @param s the current abstract state
+         * @param addr_low the (abstract) low byte of the address
+         * @param addr_hi the (abstract) high byte of the address
+         */
         public abstract void indirectCall(AbstractState s, char addr_low, char addr_hi);
 
+        /**
+         * The <code>indirectJump()</code> method is called by the abstract interpreter
+         * when it encounters an indirect jump within the program. The abstract values
+         * of the address are given as parameters, so that a policy can choose to compute
+         * possible targets or be conservative or whatever it so chooses.
+         * @param s the current abstract state
+         * @param addr_low the (abstract) low byte of the address
+         * @param addr_hi the (abstract) high byte of the address
+         */
         public abstract void indirectJump(AbstractState s, char addr_low, char addr_hi);
 
+        /**
+         * The <code>indirectCall()</code> method is called by the abstract interpreter
+         * when it encounters an indirect call within the program. The abstract values
+         * of the address are given as parameters, so that a policy can choose to compute
+         * possible targets or be conservative or whatever it so chooses.
+         * @param s the current abstract state
+         * @param addr_low the (abstract) low byte of the address
+         * @param addr_hi the (abstract) high byte of the address
+         * @param ext the (abstract) extended part of the address
+         */
         public abstract void indirectCall(AbstractState s, char addr_low, char addr_hi, char ext);
 
+        /**
+         * The <code>indirectJump()</code> method is called by the abstract interpreter
+         * when it encounters an indirect jump within the program. The abstract values
+         * of the address are given as parameters, so that a policy can choose to compute
+         * possible targets or be conservative or whatever it so chooses.
+         * @param s the current abstract state
+         * @param addr_low the (abstract) low byte of the address
+         * @param addr_hi the (abstract) high byte of the address
+         * @param ext the (abstract) extended part of the address
+         */
         public abstract void indirectJump(AbstractState s, char addr_low, char addr_hi, char ext);
 
+        /**
+         * The <code>pushState</code> method is called by the abstract interpreter when
+         * a state is forked by the abstract interpreter (for example when a branch
+         * condition is not known and both branches must be taken.
+         * @param newstate the new state created
+         */
         public abstract void pushState(AbstractState newstate);
 
-        public abstract void push(AbstractState  s, char val);
+        /**
+         * The <code>push()</code> method is called by the abstract interpreter when
+         * a push to the stack is encountered in the program. The policy can then choose
+         * what edges and/or modelling of the stack needs to be done.
+         * @param s the current abstract state
+         * @param val the abstract value to push onto the stack
+         */
+        public abstract void push(AbstractState s, char val);
 
+        /**
+         * The <code>pop()</code> method is called by the abstract interpreter when
+         * a pop from the stack is ecountered in the program. The policy can then
+         * choose to either return whatever information it has about the stack
+         * contents, or return an UNKNOWN value.
+         * @param s the current abstract state
+         * @return the abstract value popped from the stack
+         */
         public abstract char pop(AbstractState s);
     }
 
     public Analyzer(Program p) {
         program = p;
         space = new StateSpace();
-        interpreter = new AbstractInterpreter();
+        // TODO: implement correct policy for analyses.
+        interpreter = new AbstractInterpreter(null);
         unexploredStates = new StateFrontier();
     }
 
+    /**
+     * The <code>run()</code> method begins the analysis. The entrypoint of the program
+     * with an initial default state serves as the first state to start exploring.
+     */
     public void run() {
         pushState(new AbstractState());
 
@@ -108,9 +202,30 @@ public class Analyzer {
         }
     }
 
+    /**
+     * The <code>AbstractInterpreter</code> class implements the abstract transfer
+     * function for each instruction type. Given an abstract state, it updates
+     * the abstract state according to the semantics of each instruction. The abstract
+     * interpreter works on the simple instructions. For complex instructions such as
+     * calls, returns, and pushes, it consults a <code>Policy</code> instance that
+     * implements the context sensitivity/insensitivity and stack modelling behavior
+     * of the particular analysis.
+     *
+     * The <code>AbstractInterpreter</code> works on abstract values and uses abstract
+     * arithmetic. It operates on instances of the <code>AbstractState</code> class
+     * that represent the state of the processor.
+     *
+     * @see AbstractArithmetic
+     * @see AbstractState
+     * @author Ben L. Titzer
+     */
     public class AbstractInterpreter extends AbstractArithmetic implements InstrVisitor {
 
-        Policy policy;
+        protected final Policy policy;
+
+        AbstractInterpreter(Policy p) {
+            policy = p;
+        }
 
         /**
          *  V I S I T O R   M E T H O D S
@@ -137,7 +252,6 @@ public class Analyzer {
         }
 
         public void visit(Instr.ADIW i) {// add immediate to word register
-            char rl = state.readRegister(i.r1);
             char rh = state.readRegister(i.r1.nextRegister());
 
             // compute partial results
@@ -289,6 +403,7 @@ public class Analyzer {
         }
 
         public void visit(Instr.CALL i) { // call absolute address
+            policy.call(state, absolute(i.imm1));
         }
 
         public void visit(Instr.CBI i) { // clear bit in IO register
