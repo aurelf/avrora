@@ -415,19 +415,29 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         }
 
         public void accept(InstrVisitor v) {
-            probe.fireBefore(instr, address, state);
 
-            // breakpoint processing.
-            if ( breakPoint ) {
-                if ( !breakFired ) {
-                    breakFired = true;
-                    throw new BreakPointException(instr, address, state);
+            // if the simulator is visiting us, execute the instruction instead of accept(v).
+            if ( v == Simulator.this ) {
+                // fire the probe(s) before
+                probe.fireBefore(instr, address, state);
+
+                // breakpoint processing.
+                if ( breakPoint ) {
+                    if ( !breakFired ) {
+                        breakFired = true;
+                        throw new BreakPointException(instr, address, state);
+                    }
+                    else breakFired = false;
                 }
-                else breakFired = false;
-            }
 
-            instr.accept(v);
-            probe.fireAfter(instr, address, state);
+                // execute actual instruction
+                execute(instr);
+
+                // fire the probe(s) after
+                probe.fireAfter(instr, address, state);
+            } else {
+                instr.accept(v);
+            }
         }
 
         public int getSize() {
@@ -592,6 +602,10 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         i.accept(this);
         state.writePC(nextPC);
         state.consumeCycles(i.getCycles());
+
+    }
+
+    private void commit() {
 
     }
 

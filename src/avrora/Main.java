@@ -16,10 +16,7 @@ import java.text.StringCharacterIterator;
 
 import avrora.core.Program;
 import avrora.core.Instr;
-import avrora.sim.Simulator;
-import avrora.sim.ATMega128L;
-import avrora.sim.State;
-import avrora.sim.Counter;
+import avrora.sim.*;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.syntax.gas.GASParser;
 import avrora.stack.Analyzer;
@@ -42,6 +39,7 @@ public class Main extends VPCBase {
     static final Option.Str OUTPUT    = options.newOption("output", "");
     static final Option.Str BREAKS    = options.newOption("breakpoint", "");
     static final Option.Str COUNTS    = options.newOption("count", "");
+    static final Option.Str BRANCHCOUNTS = options.newOption("branchcount", "");
     static final Option.Bool TIME     = options.newOption("time", false);
     static final Option.Bool TOTAL    = options.newOption("total", false);
     static final Option.Bool TRACE    = options.newOption("trace", false);
@@ -101,6 +99,15 @@ public class Main extends VPCBase {
                 s.insertProbe(c = new Counter(), cbrk);
             }
 
+            String bcounts = BRANCHCOUNTS.get();
+            BranchCounter bc = null;
+            int bcbrk = 0;
+            if ( !bcounts.equals("") ) {
+                CharacterIterator i = new StringCharacterIterator(bcounts);
+                bcbrk = StringUtil.readDecimalValue(i, 10);
+                s.insertProbe(bc = new BranchCounter(), bcbrk);
+            }
+
 
             if ( TRACE.get() ) {
                 s.insertProbe(Simulator.TRACEPROBE);
@@ -119,6 +126,9 @@ public class Main extends VPCBase {
 
                 if ( c != null )
                     ColorTerminal.println("Count for "+VPCBase.toPaddedUpperHex(cbrk, 4) + " = "+c.count);
+                if ( bc != null )
+                    ColorTerminal.println("Branch count for "+VPCBase.toPaddedUpperHex(bcbrk, 4)
+                            + " = "+bc.takenCount+" taken, "+bc.nottakenCount+" not taken");
                 if ( total != null )
                     ColorTerminal.println("Total instruction count = "+total.count);
                 if ( TIME.get() ) {
