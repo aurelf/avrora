@@ -49,7 +49,7 @@ import java.util.HashSet;
  *
  * @author Ben L. Titzer
  */
-public class CFGBuilder implements InstrVisitor {
+class CFGBuilder implements InstrVisitor {
 
     final Program program;
 

@@ -33,7 +33,6 @@
 package avrora;
 
 import avrora.core.Program;
-import avrora.core.CFGBuilder;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
 import avrora.core.isdl.*;

@@ -200,7 +200,7 @@ public class ControlFlowGraph {
         }
     }
 
-    private class BlockComparator implements Comparator {
+    private static class BlockComparator implements Comparator {
         public int compare(Object o1, Object o2) {
             Block b1 = (Block) o1;
             Block b2 = (Block) o2;
@@ -219,6 +219,8 @@ public class ControlFlowGraph {
     protected final List edges;
 
     protected final Program program;
+
+    public static final Comparator COMPARATOR = new BlockComparator();
 
 
     ControlFlowGraph(Program p) {
@@ -295,7 +297,7 @@ public class ControlFlowGraph {
      */
     public Iterator getSortedBlockIterator() {
         List l = Collections.list(Collections.enumeration(blocks.values()));
-        Collections.sort(l, new BlockComparator());
+        Collections.sort(l, COMPARATOR);
         return l.iterator();
     }
 

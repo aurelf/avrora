@@ -1,11 +1,48 @@
+/**
+ * Copyright (c) 2004, Regents of the University of California
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ * Neither the name of the University of California, Los Angeles nor the
+ * names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package avrora.core;
 
 import java.util.*;
 
 /**
+ * The <code>ProcedureMapBuilder</code> class is used internally in the
+ * implementation of the <code>ControlFlowGraph</code> and
+ * <code>ProcedureMap</code> classes to build the mapping between basic
+ * blocks and procedures.
+ *
  * @author Ben L. Titzer
  */
-public class ProcedureMapBuilder {
+class ProcedureMapBuilder {
 
     private final Program program;
     private final ControlFlowGraph cfg;
@@ -17,11 +54,12 @@ public class ProcedureMapBuilder {
 
     public ProcedureMap buildMap() {
         discoverProcedures();
-        return null;
+        HashMap procMap = buildProcedureBlockLists();
+        return new ProcedureMap(ENTRYPOINTS, ENTRYMAP, procMap);
     }
 
     private HashSet ENTRYPOINTS;
-    private HashMap PROCMAP;
+    private HashMap ENTRYMAP;
 
     // this object marks a block as shared between two procedures
     private final Object SHARED = new Object();
@@ -29,12 +67,12 @@ public class ProcedureMapBuilder {
     private void discoverProcedures() {
 
         discoverEntrypoints();
-        PROCMAP = new HashMap();
+        ENTRYMAP = new HashMap();
 
         Iterator iter = ENTRYPOINTS.iterator();
         while (iter.hasNext()) {
             Object block = iter.next();
-            PROCMAP.put(block, block);
+            ENTRYMAP.put(block, block);
         }
 
         iter = ENTRYPOINTS.iterator();
@@ -75,7 +113,7 @@ public class ProcedureMapBuilder {
     }
 
     private void propagate(ControlFlowGraph.Block entry, ControlFlowGraph.Block block, HashSet seen) {
-        if (PROCMAP.get(block) == SHARED) return;
+        if (ENTRYMAP.get(block) == SHARED) return;
 
         Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
@@ -95,18 +133,18 @@ public class ProcedureMapBuilder {
     }
 
     private void mark(ControlFlowGraph.Block entry, ControlFlowGraph.Block block) {
-        Object c = PROCMAP.get(block);
+        Object c = ENTRYMAP.get(block);
         if (c == SHARED) return;
         if (c == null) c = entry;
         if (c != entry)
             markShared(block);
         else
-            PROCMAP.put(block, entry);
+            ENTRYMAP.put(block, entry);
     }
 
     private void markShared(ControlFlowGraph.Block block) {
-        if (PROCMAP.get(block) == SHARED) return;
-        PROCMAP.put(block, SHARED);
+        if (ENTRYMAP.get(block) == SHARED) return;
+        ENTRYMAP.put(block, SHARED);
 
         Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
@@ -116,6 +154,33 @@ public class ProcedureMapBuilder {
             if (target == null) continue;
             markShared(target);
         }
+    }
+
+    private HashMap buildProcedureBlockLists() {
+        // maps procedure entry to list blocks in the procedure
+        HashMap procMap = new HashMap();
+
+        // create the initial map of entry points to empty lists
+        Iterator entry_iter = ENTRYPOINTS.iterator();
+        while ( entry_iter.hasNext() ) {
+            ControlFlowGraph.Block entry = (ControlFlowGraph.Block) entry_iter.next();
+            procMap.put(entry, new LinkedList());
+        }
+
+        // add each block to the list of its respective procedure
+        Iterator block_iter = cfg.getBlockIterator();
+        while ( block_iter.hasNext() ) {
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block) block_iter.next();
+            Object mark = ENTRYMAP.get(block);
+            if ( mark == null || !(mark instanceof ControlFlowGraph.Block) ) continue;
+            ControlFlowGraph.Block entry = (ControlFlowGraph.Block)mark;
+
+            if ( entry != null ) {
+                LinkedList list = (LinkedList)procMap.get(entry);
+                list.add(block);
+            }
+        }
+        return procMap;
     }
 
 

@@ -32,19 +32,14 @@
 
 package avrora.actions;
 
-import avrora.core.Program;
-import avrora.core.ControlFlowGraph;
-import avrora.core.CFGBuilder;
-import avrora.core.Instr;
+import avrora.core.*;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
 import avrora.util.Printer;
 import avrora.Main;
+import avrora.Avrora;
 
-import java.util.Iterator;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Ben L. Titzer
@@ -64,12 +59,13 @@ public class CFGAction extends Action {
         super("cfg", HELP);
     }
 
+    protected ProcedureMap pmap;
     protected ControlFlowGraph cfg;
     protected Program program;
 
     public void run(String[] args) throws Exception {
         program = Main.readProgram(args);
-        cfg = new CFGBuilder(program).buildCFG();
+        cfg = program.getCFG();
 
         if (Main.OUTPUT.get().equals("dot"))
             dumpDotCFG(cfg);
@@ -105,166 +101,48 @@ public class CFGAction extends Action {
         if (Main.COLOR_PROCEDURES.get() ||
                 Main.GROUP_PROCEDURES.get() ||
                 Main.COLLAPSE_PROCEDURES.get())
-            discoverProcedures(cfg);
+            pmap = cfg.getProcedureMap();
 
-        dumpDotNodes(cfg, p);
-        dumpDotEdges(cfg, p);
+        dumpDotNodes(p);
+        dumpDotEdges(p);
         p.endblock();
     }
 
-    private static final Object BLACK = new Object();
+    private void dumpDotNodes(Printer p) {
+        if ( Main.COLOR_PROCEDURES.get() )
+            assignProcedureColors();
 
-    private HashSet ENTRYPOINTS;
-    private HashMap COLORMAP;
 
-    private void discoverProcedures(ControlFlowGraph cfg) {
+        if ( Main.COLLAPSE_PROCEDURES.get() ) {
 
-        HashSet colors = discoverEntrypoints(cfg);
-
-        COLORMAP = new HashMap();
-
-        Iterator iter = colors.iterator();
-        while (iter.hasNext()) {
-            Object block = iter.next();
-            COLORMAP.put(block, block);
-        }
-
-        iter = colors.iterator();
-        while (iter.hasNext()) {
-            ControlFlowGraph.Block block = (ControlFlowGraph.Block) iter.next();
-            propagate(block, block, COLORMAP, new HashSet());
-        }
-
-    }
-
-    private HashSet discoverEntrypoints(ControlFlowGraph cfg) {
-        ENTRYPOINTS = new HashSet();
-
-        // discover nodes that have incoming call edges
-        Iterator nodes = cfg.getBlockIterator();
-        while (nodes.hasNext()) {
-            ControlFlowGraph.Block block = (ControlFlowGraph.Block) nodes.next();
-            Iterator edges = block.getEdgeIterator();
-            while (edges.hasNext()) {
-                ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge) edges.next();
-                if (edge.getType().equals("CALL")) {
-                    if (edge.getTarget() == null) {
-                        addIndirectEntrypoints(edge, cfg);
-                    } else ENTRYPOINTS.add(edge.getTarget());
-                }
-            }
-        }
-
-        return ENTRYPOINTS;
-    }
-
-    private void addIndirectEntrypoints(ControlFlowGraph.Edge edge, ControlFlowGraph cfg) {
-        List l = program.getIndirectEdges(edge.getSource().getLastAddress());
-        if ( l == null ) return;
-        Iterator i = l.iterator();
-        while ( i.hasNext() ) {
-            int target_addr = ((Integer)i.next()).intValue();
-            ControlFlowGraph.Block target = cfg.getBlockStartingAt(target_addr);
-            if ( target != null ) {
-                ENTRYPOINTS.add(target);
-            }
-        }
-    }
-
-    private void propagate(ControlFlowGraph.Block color, ControlFlowGraph.Block block, HashMap colorMap, HashSet seen) {
-        if (colorMap.get(block) == BLACK) return;
-
-        Iterator edges = block.getEdgeIterator();
-        while (edges.hasNext()) {
-            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge) edges.next();
-            if (edge.getType().equals("CALL")) continue;
-            ControlFlowGraph.Block target = edge.getTarget();
-            if (target == null) continue;
-            color(color, target, colorMap);
-
-            if (!seen.contains(target)) {
-                seen.add(target);
-                propagate(color, target, colorMap, seen);
-            } else {
-                seen.add(target);
-            }
-        }
-    }
-
-    private void color(ControlFlowGraph.Block color, ControlFlowGraph.Block block, HashMap colorMap) {
-        Object c = colorMap.get(block);
-        if (c == BLACK) return;
-        if (c == null) c = color;
-        if (c != color)
-            blacken(block, colorMap);
-        else
-            colorMap.put(block, color);
-    }
-
-    private void blacken(ControlFlowGraph.Block block, HashMap colorMap) {
-        if (colorMap.get(block) == BLACK) return;
-        colorMap.put(block, BLACK);
-
-        Iterator edges = block.getEdgeIterator();
-        while (edges.hasNext()) {
-            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge) edges.next();
-            if (edge.getType().equals("CALL")) continue;
-            ControlFlowGraph.Block target = edge.getTarget();
-            if (target == null) continue;
-            blacken(target, colorMap);
-        }
-    }
-
-    private void dumpDotNodes(ControlFlowGraph cfg, Printer p) {
-
-        if (!Main.GROUP_PROCEDURES.get()) {
             Iterator blocks = cfg.getSortedBlockIterator();
             while (blocks.hasNext()) {
                 ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
-                printBlock(block, p);
-            }
-        } else if (Main.COLLAPSE_PROCEDURES.get()) {
+                ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
-            // add each block to its respective color set
-            Iterator blocks = cfg.getSortedBlockIterator();
-            while (blocks.hasNext()) {
-                ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
-                Object color = COLORMAP.get(block);
-
-                // only print out nodes with no color, or the same as their own color
-                if (color == BLACK || color == null || color == block) {
+                // only print out nodes that have no color, are shared, or are entrypoints
+                if ( entry == null || entry == block )
                     printBlock(block, p);
-                }
             }
-        } else {
-            HashMap colorSets = new HashMap();
+        } else if ( Main.GROUP_PROCEDURES.get() ) {
+            // print out blocks that have no color
+            Iterator block_iter = cfg.getSortedBlockIterator();
+            while (block_iter.hasNext()) {
+                ControlFlowGraph.Block block = (ControlFlowGraph.Block) block_iter.next();
+                ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
-            Iterator citer = ENTRYPOINTS.iterator();
-            while (citer.hasNext()) {
-                Object color = citer.next();
-                colorSets.put(color, new HashSet());
-            }
-
-            // add each block to its respective color set
-            Iterator blocks = cfg.getSortedBlockIterator();
-            while (blocks.hasNext()) {
-                ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
-                Object color = COLORMAP.get(block);
-
-                if (color == BLACK || color == null) {
+                // only print out nodes that have no color first
+                if ( entry == null )
                     printBlock(block, p);
-                } else {
-                    HashSet set = (HashSet) colorSets.get(color);
-                    set.add(block);
-                }
             }
 
-            citer = ENTRYPOINTS.iterator();
+            // print out each subgraph as a cluster
             int num = 0;
-            while (citer.hasNext()) {
-                ControlFlowGraph.Block entry = (ControlFlowGraph.Block) citer.next();
+            Iterator entry_iter = pmap.getProcedureEntrypoints().iterator();
+            while (entry_iter.hasNext()) {
+                ControlFlowGraph.Block entry = (ControlFlowGraph.Block) entry_iter.next();
                 p.startblock("subgraph cluster" + (num++));
-                blocks = ((HashSet) colorSets.get(entry)).iterator();
+                Iterator blocks = pmap.getProcedureBlocks(entry).iterator();
                 while (blocks.hasNext()) {
                     ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
                     printBlock(block, p);
@@ -272,6 +150,27 @@ public class CFGAction extends Action {
                 p.endblock();
             }
 
+        } else {
+            // no grouping or collapsing of nodes
+            Iterator blocks = cfg.getSortedBlockIterator();
+            while (blocks.hasNext()) {
+                ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
+                printBlock(block, p);
+            }
+        }
+    }
+
+    private void assignProcedureColors() {
+        // add each block to its respective color set
+        Iterator blocks = cfg.getBlockIterator();
+        while (blocks.hasNext()) {
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
+            ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
+
+            if ( entry != null) {
+                String c = colorize(entry);
+                BLOCK_COLORS.put(block, c);
+            }
         }
     }
 
@@ -284,8 +183,8 @@ public class CFGAction extends Action {
         p.println("];");
     }
 
-    private void dumpDotEdges(ControlFlowGraph cfg, Printer p) {
-        Iterator blocks = cfg.getSortedBlockIterator();
+    private void dumpDotEdges(Printer p) {
+        Iterator blocks = cfg.getBlockIterator();
         while (blocks.hasNext()) {
             ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
             dumpDotEdges(block.getEdgeIterator(), p);
@@ -293,13 +192,14 @@ public class CFGAction extends Action {
     }
 
     private String getShape(ControlFlowGraph.Block block) {
-        if (getEntryOf(block) == block) return "doubleoctagon";
+        ControlFlowGraph.Block entry = getEntryOf(block);
+        if (entry == block) return "doubleoctagon";
 
         int addr = block.getAddress();
-        Iterator edges = block.getEdgeIterator();
         if (addr % 4 == 0 && addr < 35 * 4) // interrupt handler
             return "box";
 
+        Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
             ControlFlowGraph.Edge e = (ControlFlowGraph.Edge) edges.next();
             String type = e.getType();
@@ -308,24 +208,25 @@ public class CFGAction extends Action {
         return "ellipse";
     }
 
-    int colorCounter;
-    HashMap COLORS = new HashMap();
-    String palette[] = {"aquamarine", "blue2", "brown1", "cadetblue1",
+    private int colorCounter;
+    private final HashMap BLOCK_COLORS = new HashMap();
+    private static final String palette[] = {"aquamarine", "blue2", "brown1", "cadetblue1",
                         "chartreuse1", "cyan4", "darkgoldenrod1", "darkorchid3", "darkslateblue",
                         "deeppink2", "yellow", "seagreen3", "orangered1"};
 
+    private String colorize(ControlFlowGraph.Block b) {
+        String color = (String)BLOCK_COLORS.get(b);
+        if ( color != null ) return color;
+        color = palette[colorCounter];
+        colorCounter = (colorCounter + 1) % palette.length;
+        BLOCK_COLORS.put(b, color);
+        return color;
+    }
+
     private String getColor(ControlFlowGraph.Block block) {
-        if (!Main.COLOR_PROCEDURES.get()) return "";
-        ControlFlowGraph.Block entry = getEntryOf(block);
-        if (entry == null) return "";
-        String c = (String) COLORS.get(entry);
-        if (c == null) {
-            int newColor = colorCounter;
-            colorCounter = (colorCounter + 1) % palette.length;
-            COLORS.put(entry, palette[newColor]);
-            c = palette[newColor];
-        }
-        return c;
+        String color = (String)BLOCK_COLORS.get(block);
+        if ( color == null ) return "";
+        return color;
     }
 
     private boolean isReturnEdge(String type) {
@@ -368,7 +269,7 @@ public class CFGAction extends Action {
             if (Main.COLLAPSE_PROCEDURES.get()) {
                 source = ((es = getEntryOf(source)) == null) ? source : es;
                 target = ((et = getEntryOf(target)) == null) ? target : et;
-                // don'type print out intra-block edges if we are collapsing procedures
+                // don't print out intra-block edges if we are collapsing procedures
                 if (es == et && et != null) continue;
             }
 
@@ -424,12 +325,8 @@ public class CFGAction extends Action {
     }
 
     private ControlFlowGraph.Block getEntryOf(ControlFlowGraph.Block b) {
-        if (COLORMAP == null) return null;
-        if (b == null) return null;
-        Object c = COLORMAP.get(b);
-        if (c == null) return null;
-        if (c == BLACK) return null;
-        return (ControlFlowGraph.Block) c;
+        if ( pmap == null ) return null;
+        return pmap.getProcedureContaining(b);
     }
 
     private String blockName(ControlFlowGraph.Block block) {
