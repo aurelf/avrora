@@ -542,6 +542,7 @@ public class CFGBuilder implements InstrVisitor {
         add(i);
     }
     public void visit(Instr.RCALL i) { // relative call
+        info[pc].call = true;
         branch(i, relative(i.imm1));
     }
     public void visit(Instr.RET i) { // return to caller
