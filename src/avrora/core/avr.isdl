@@ -211,7 +211,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr };
         cycles = 1;
         execute = {
-            $regs(rd) = low(performAddition($regs(rd), $regs(rr), C));
+            $regs(rd) = low(performAddition($uregs(rd), $uregs(rr), C));
         };
     };
 
@@ -219,7 +219,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rr };
         cycles = 1;
         execute = {
-            $regs(rd) = low(performAddition($regs(rd), $regs(rr), 0));
+            $regs(rd) = low(performAddition($uregs(rd), $uregs(rr), 0));
         };
     };
 
@@ -1033,7 +1033,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rd };
         cycles = 1;
         execute = {
-            $regs(rd) = performLeftShift($regs(rd), C);
+            $regs(rd) = performLeftShift($uregs(rd), C);
         };
     };
 
@@ -1285,8 +1285,8 @@ architecture avr {
         encoding = { 0b1001010, rd[4:0], 0b0010 };
         cycles = 1;
         execute = {
-            local val: byte = $regs(rd);
-            local result: byte = 0;
+            local val: int = $uregs(rd);
+            local result: int = 0;
             result[3:0] = val[7:4];
             result[7:4] = val[3:0];
             $regs(rd) = result;

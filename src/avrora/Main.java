@@ -57,6 +57,7 @@ import java.text.StringCharacterIterator;
 import java.util.*;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.PrintStream;
 
 /**
  * This is the main entrypoint to Avrora.
@@ -264,16 +265,17 @@ public class Main {
     static class ISDLAction extends Action {
 
         public void run(String[] args) throws Exception {
-            if (args.length == 0)
-                Avrora.userError("no input files");
-            if (args.length != 1)
-                Avrora.userError("isdl tool accepts only one file at a time.");
+            if (args.length != 2)
+                Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl> <interpreter.java>");
 
-            File f = new File(args[0]);
-            FileInputStream fis = new FileInputStream(f);
+            File archfile = new File(args[0]);
+            FileInputStream fis = new FileInputStream(archfile);
             ISDLParser parser = new ISDLParser(fis);
             Architecture a = parser.Architecture();
-            new InterpreterGenerator(a, Printer.STDOUT).generateCode();
+
+            SectionFile f = new SectionFile(args[1],"INTERPRETER GENERATOR");
+            new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
+            f.close();
         }
 
         public String getHelp() {

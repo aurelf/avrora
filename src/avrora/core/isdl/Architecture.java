@@ -98,6 +98,10 @@ public class Architecture {
         return encodings.iterator();
     }
 
+    public Iterator getSubroutineIterator() {
+        return subroutines.iterator();
+    }
+
     public void dump() {
 
     }

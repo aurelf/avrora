@@ -287,9 +287,9 @@ public abstract class Simulator implements IORegisterConstants {
      * class, it simply forwards the call to the original instruction.
      */
     class ProbedInstr extends Instr {
-        private final int address;
-        private final Instr instr;
-        private final MulticastProbe probe;
+        protected final int address;
+        protected final Instr instr;
+        protected final MulticastProbe probe;
 
         private boolean breakPoint;
         private boolean breakFired;
