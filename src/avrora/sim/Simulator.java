@@ -977,8 +977,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.SER i) { // set register to 0xFF
-        int result = 0xff;
-        state.writeRegister(i.r1, (byte) result);
+        state.writeRegister(i.r1, (byte)0xff);
     }
 
     public void visit(Instr.SES i) { // set S (signed) flag

@@ -15,6 +15,7 @@ import avrora.sim.Simulator;
 import avrora.sim.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.syntax.gas.GASParser;
+import avrora.stack.Analyzer;
 
 /**
  * This is the main entrypoint to Avrora.
@@ -38,9 +39,10 @@ public class Main extends VPCBase {
 
     static {
         newAction("simulate", new SimulateAction());
-        newAction("analyze-stack", new StackAction());
+        newAction("analyze-stack", new AnalyzeStackAction());
         newAction("assemble", new AssembleAction());
         newAction("test", new TestAction());
+        newAction("list", new ListAction());
         newInput("gas", new GASInput());
         newInput("atmel", new AtmelInput());
     }
@@ -73,13 +75,23 @@ public class Main extends VPCBase {
 
     }
 
-    static class StackAction extends Action {
-        public void run(String[] args) {
-            throw VPCBase.unimplemented();
+    static class AnalyzeStackAction extends Action {
+        public void run(String[] args) throws Exception {
+            ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
+            Program p = r.read(args);
+            Analyzer a = new Analyzer(p);
+            a.run();
         }
     }
 
     static class AssembleAction extends Action {
+        public void run(String[] args) {
+            throw VPCBase.unimplemented();
+        }
+
+    }
+
+    static class ListAction extends Action {
         public void run(String[] args) {
             throw VPCBase.unimplemented();
         }
@@ -94,8 +106,9 @@ public class Main extends VPCBase {
         public Program read(String[] args) throws Exception {
             if ( args.length == 0 )
                 userError("no input files");
+            // TODO: handle multiple GAS files
             if ( args.length != 1 )
-                userError("input type \"atmel\" accepts only one file at a time.");
+                userError("input type \"gas\" accepts only one file at a time.");
 
             File f = new File(args[0]);
             Module module = new Module();

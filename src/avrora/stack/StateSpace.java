@@ -25,7 +25,7 @@ public class StateSpace {
 
     public boolean addState(AbstractState s) {
         if ( states.contains(s) ) return false;
-        states.add(s);
+        states.add(s.copy());
         return true;
     }
 

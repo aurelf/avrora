@@ -121,6 +121,11 @@ public class Program {
         }
     }
 
+    public Instr readInstr(int address) {
+        checkAddress(address);
+        return program[address - program_start].asInstr(address);
+    }
+
     public void writeProgramByte(byte val, int address) {
         checkAddress(address);
         int offset = address - program_start;

@@ -112,31 +112,34 @@ public class Generator extends VPCBase {
         String variant;
         String VARIANT;
         String name;
+        String comment;
         boolean large;
         ParamTypes params;
         int cycles;
 
         String className;
 
-        Description(String n, ParamTypes p, int c) {
+        Description(String n, ParamTypes p, int c, String com) {
             variant = name = n;
             VARIANT = variant.toUpperCase();
             params = p;
             className = "Instr." + VARIANT;
             cycles = c;
+            comment = com;
         }
 
-        Description(String v, String n, ParamTypes p, int c) {
+        Description(String v, String n, ParamTypes p, int c, String com) {
             variant = v;
             name = n;
             VARIANT = variant.toUpperCase();
             params = p;
             className = "Instr." + VARIANT;
             cycles = c;
+            comment = com;
         }
 
         void writeVisitMethod(SectionFile f) throws java.io.IOException {
-            f.writeLine("    public void visit(" + className + " i);");
+            f.writeLine("    public void visit(" + className + " i); // "+comment);
         }
 
         void writeSetInsert(SectionFile f) throws java.io.IOException {
@@ -144,7 +147,7 @@ public class Generator extends VPCBase {
         }
 
         void writeClassDecl(SectionFile f) throws java.io.IOException {
-            f.writeLine("    public static class " + VARIANT + " extends " + params.baseClass + " {");
+            f.writeLine("    public static class " + VARIANT + " extends " + params.baseClass + " { // "+comment);
             f.writeLine("        public String getName() { return " + quote(name) + "; }");
 
             if (variant != name)
@@ -210,147 +213,147 @@ public class Generator extends VPCBase {
     static {
 
         list = new LinkedList();
-        int _1cyc = 1;
+        int _1cyc = 1; // just for clarity in each declaration
         int _2cyc = 2;
         int _3cyc = 3;
         int _4cyc = 4;
 
-        instr("adc", GPR_GPR, _1cyc);
-        instr("add", GPR_GPR, _1cyc);
-        instr("adiw", RDL_IMM6, _2cyc);
-        instr("and", GPR_GPR, _1cyc);
-        instr("andi", HGPR_IMM8, _1cyc);
-        instr("asr", GPR_, _1cyc);
-        instr("bclr", IMM3_, _1cyc);
-        instr("bld", GPR_IMM3, _1cyc);
-        instr("brbc", IMM3_SREL, _1cyc);
-        instr("brbs", IMM3_SREL, _1cyc);
-        instr("brcc", SREL_, _1cyc);
-        instr("brcs", SREL_, _1cyc);
-        instr("break", NONE, _1cyc);
-        instr("breq", SREL_, _1cyc);
-        instr("brge", SREL_, _1cyc);
-        instr("brhc", SREL_, _1cyc);
-        instr("brhs", SREL_, _1cyc);
-        instr("brid", SREL_, _1cyc);
-        instr("brie", SREL_, _1cyc);
-        instr("brlo", SREL_, _1cyc);
-        instr("brlt", SREL_, _1cyc);
-        instr("brmi", SREL_, _1cyc);
-        instr("brne", SREL_, _1cyc);
-        instr("brpl", SREL_, _1cyc);
-        instr("brsh", SREL_, _1cyc);
-        instr("brtc", SREL_, _1cyc);
-        instr("brts", SREL_, _1cyc);
-        instr("brvc", SREL_, _1cyc);
-        instr("brvs", SREL_, _1cyc);
-        instr("bset", IMM3_, _1cyc);
-        instr("bst", GPR_IMM3, _1cyc);
-        large("call", MEM_, _4cyc);
-        instr("cbi", IMM5_IMM3, _2cyc);
-        instr("cbr", HGPR_IMM8, _1cyc);
-        instr("clc", NONE, _1cyc);
-        instr("clh", NONE, _1cyc);
-        instr("cli", NONE, _1cyc);
-        instr("cln", NONE, _1cyc);
-        instr("clr", GPR_, _1cyc);
-        instr("cls", NONE, _1cyc);
-        instr("clt", NONE, _1cyc);
-        instr("clv", NONE, _1cyc);
-        instr("clz", NONE, _1cyc);
-        instr("com", GPR_, _1cyc);
-        instr("cp", GPR_GPR, _1cyc);
-        instr("cpc", GPR_GPR, _1cyc);
-        instr("cpi", HGPR_IMM8, _1cyc);
-        instr("cpse", GPR_GPR, _1cyc);
-        instr("dec", GPR_, _1cyc);
-        instr("eicall", NONE, _4cyc);
-        instr("eijmp", NONE, _2cyc);
-        instr("elpm", NONE, _3cyc);
-        instr("elpmd", "elpm", GPR_Z, _3cyc); // variant
-        instr("elpmpi", "elpm", GPR_Z, _3cyc); // variant
-        instr("eor", GPR_GPR, _1cyc);
-        instr("fmul", MGPR_MGPR, _2cyc);
-        instr("fmuls", MGPR_MGPR, _2cyc);
-        instr("fmulsu", MGPR_MGPR, _2cyc);
-        instr("icall", NONE, _3cyc);
-        instr("ijmp", NONE, _2cyc);
-        instr("in", GPR_IMM6, _1cyc);
-        instr("inc", GPR_, _1cyc);
-        large("jmp", MEM_, _3cyc);
-        instr("ld", "ld", GPR_ADR, _2cyc);
-        instr("ldd", GPR_YZ_IMM6, _2cyc);
-        instr("ldi", HGPR_IMM8, _1cyc);
-        instr("ldpd", "ld", GPR_ADR, _2cyc); // variant
-        instr("ldpi", "ld", GPR_ADR, _2cyc); // variant
-        large("lds", GPR_MEM, _2cyc);
-        instr("lpm", NONE, _3cyc);
-        instr("lpmd", "lpm", GPR_Z, _3cyc); // variant
-        instr("lpmpi", "lpm", GPR_Z, _3cyc); // variant
-        instr("lsl", GPR_, _1cyc);
-        instr("lsr", GPR_, _1cyc);
-        instr("mov", GPR_GPR, _1cyc);
-        instr("movw", EGPR_EGPR, _1cyc);
-        instr("mul", GPR_GPR, _2cyc);
-        instr("muls", HGPR_HGPR, _2cyc);
-        instr("mulsu", MGPR_MGPR, _2cyc);
-        instr("neg", GPR_, _1cyc);
-        instr("nop", NONE, _1cyc);
-        instr("or", GPR_GPR, _1cyc);
-        instr("ori", HGPR_IMM8, _1cyc);
-        instr("out", IMM6_GPR, _1cyc);
-        instr("pop", GPR_, _2cyc);
-        instr("push", GPR_, _2cyc);
-        instr("rcall", LREL_, _3cyc);
-        instr("ret", NONE, _4cyc);
-        instr("reti", NONE, _4cyc);
-        instr("rjmp", LREL_, _2cyc);
-        instr("rol", GPR_, _1cyc);
-        instr("ror", GPR_, _1cyc);
-        instr("sbc", GPR_GPR, _1cyc);
-        instr("sbci", HGPR_IMM8, _1cyc);
-        instr("sbi", IMM5_IMM3, _2cyc);
-        instr("sbic", IMM5_IMM3, _1cyc);
-        instr("sbis", IMM5_IMM3, _1cyc);
-        instr("sbiw", RDL_IMM6, _2cyc);
-        instr("sbr", HGPR_IMM8, _1cyc);
-        instr("sbrc", GPR_IMM3, _1cyc);
-        instr("sbrs", GPR_IMM3, _1cyc);
-        instr("sec", NONE, _1cyc);
-        instr("seh", NONE, _1cyc);
-        instr("sei", NONE, _1cyc);
-        instr("sen", NONE, _1cyc);
-        instr("ser", GPR_, _1cyc);
-        instr("ses", NONE, _1cyc);
-        instr("set", NONE, _1cyc);
-        instr("sev", NONE, _1cyc);
-        instr("sez", NONE, _1cyc);
-        instr("sleep", NONE, _1cyc);
-        instr("spm", NONE, _1cyc);
-        instr("st", "st", ADR_GPR, _2cyc);
-        instr("std", YZ_IMM6_GPR, _2cyc);
-        instr("stpd", "st", ADR_GPR, _2cyc); // variant
-        instr("stpi", "st", ADR_GPR, _2cyc); // variant
-        large("sts", MEM_GPR, _2cyc);
-        instr("sub", GPR_GPR, _1cyc);
-        instr("subi", HGPR_IMM8, _1cyc);
-        instr("swap", GPR_, _1cyc);
-        instr("tst", GPR_, _1cyc);
-        instr("wdr", NONE, _1cyc);
+        instr("adc", GPR_GPR, _1cyc, "add register to register with carry");
+        instr("add", GPR_GPR, _1cyc, "add register to register");
+        instr("adiw", RDL_IMM6, _2cyc, "add immediate to word register");
+        instr("and", GPR_GPR, _1cyc, "and register with register");
+        instr("andi", HGPR_IMM8, _1cyc, "and register with immediate");
+        instr("asr", GPR_, _1cyc, "arithmetic shift right");
+        instr("bclr", IMM3_, _1cyc, "clear bit in status register");
+        instr("bld", GPR_IMM3, _1cyc, "load bit from T flag into register");
+        instr("brbc", IMM3_SREL, _1cyc, "branch if bit in status register is clear");
+        instr("brbs", IMM3_SREL, _1cyc, "branch if bit in status register is set");
+        instr("brcc", SREL_, _1cyc, "branch if carry flag is clear");
+        instr("brcs", SREL_, _1cyc, "branch if carry flag is set");
+        instr("break", NONE, _1cyc, "break");
+        instr("breq", SREL_, _1cyc, "branch if equal");
+        instr("brge", SREL_, _1cyc, "branch if greater or equal (signed)");
+        instr("brhc", SREL_, _1cyc, "branch if H flag is clear");
+        instr("brhs", SREL_, _1cyc, "branch if H flag is set");
+        instr("brid", SREL_, _1cyc, "branch if interrupts are disabled");
+        instr("brie", SREL_, _1cyc, "branch if interrupts are enabled");
+        instr("brlo", SREL_, _1cyc, "branch if lower");
+        instr("brlt", SREL_, _1cyc, "branch if less than zero (signed)");
+        instr("brmi", SREL_, _1cyc, "branch if minus");
+        instr("brne", SREL_, _1cyc, "branch if not equal");
+        instr("brpl", SREL_, _1cyc, "branch if positive");
+        instr("brsh", SREL_, _1cyc, "branch if same or higher");
+        instr("brtc", SREL_, _1cyc, "branch if T flag is clear");
+        instr("brts", SREL_, _1cyc, "branch if T flag is set");
+        instr("brvc", SREL_, _1cyc, "branch if V flag is clear");
+        instr("brvs", SREL_, _1cyc, "branch if V flag is set");
+        instr("bset", IMM3_, _1cyc, "set flag in status register");
+        instr("bst", GPR_IMM3, _1cyc, "store bit in register into T flag");
+        large("call", MEM_, _4cyc, "call absolute address");
+        instr("cbi", IMM5_IMM3, _2cyc, "clear bit in IO register");
+        instr("cbr", HGPR_IMM8, _1cyc, "clear bits in register");
+        instr("clc", NONE, _1cyc, "clear C flag");
+        instr("clh", NONE, _1cyc, "clear H flag");
+        instr("cli", NONE, _1cyc, "clear I flag");
+        instr("cln", NONE, _1cyc, "clear N flag");
+        instr("clr", GPR_, _1cyc, "clear register (set to zero)");
+        instr("cls", NONE, _1cyc, "clear S flag");
+        instr("clt", NONE, _1cyc, "clear T flag");
+        instr("clv", NONE, _1cyc, "clear V flag");
+        instr("clz", NONE, _1cyc, "clear Z flag");
+        instr("com", GPR_, _1cyc, "one's compliment register");
+        instr("cp", GPR_GPR, _1cyc, "compare registers");
+        instr("cpc", GPR_GPR, _1cyc, "compare registers with carry");
+        instr("cpi", HGPR_IMM8, _1cyc, "compare register with immediate");
+        instr("cpse", GPR_GPR, _1cyc, "compare registers and skip if equal");
+        instr("dec", GPR_, _1cyc, "decrement register by one");
+        instr("eicall", NONE, _4cyc, "extended indirect call");
+        instr("eijmp", NONE, _2cyc, "extended indirect jump");
+        instr("elpm", NONE, _3cyc, "extended load program memory to r0");
+        instr("elpmd", "elpm", GPR_Z, _3cyc, "extended load program memory to register"); // variant
+        instr("elpmpi", "elpm", GPR_Z, _3cyc, "extended load program memory to register and post-increment"); // variant
+        instr("eor", GPR_GPR, _1cyc, "exclusive or register with register");
+        instr("fmul", MGPR_MGPR, _2cyc, "fractional multiply register with register to r0");
+        instr("fmuls", MGPR_MGPR, _2cyc, "signed fractional multiply register with register to r0");
+        instr("fmulsu", MGPR_MGPR, _2cyc, "signed/unsigned fractional multiply register with register to r0");
+        instr("icall", NONE, _3cyc, "indirect call through Z register");
+        instr("ijmp", NONE, _2cyc, "indirect jump through Z register");
+        instr("in", GPR_IMM6, _1cyc, "read from IO register into register");
+        instr("inc", GPR_, _1cyc, "increment register by one");
+        large("jmp", MEM_, _3cyc, "absolute jump");
+        instr("ld", "ld", GPR_ADR, _2cyc, "load from SRAM");
+        instr("ldd", GPR_YZ_IMM6, _2cyc, "load from SRAM with displacement");
+        instr("ldi", HGPR_IMM8, _1cyc, "load immediate into register");
+        instr("ldpd", "ld", GPR_ADR, _2cyc, "load from SRAM with pre-decrement"); // variant
+        instr("ldpi", "ld", GPR_ADR, _2cyc, "load from SRAM with post-increment"); // variant
+        large("lds", GPR_MEM, _2cyc, "load direct from SRAM");
+        instr("lpm", NONE, _3cyc, "load program memory into r0");
+        instr("lpmd", "lpm", GPR_Z, _3cyc, "load program memory into register"); // variant
+        instr("lpmpi", "lpm", GPR_Z, _3cyc, "load program memory into register and post-increment"); // variant
+        instr("lsl", GPR_, _1cyc, "logical shift left");
+        instr("lsr", GPR_, _1cyc, "logical shift right");
+        instr("mov", GPR_GPR, _1cyc, "copy register to register");
+        instr("movw", EGPR_EGPR, _1cyc, "copy two registers to two registers");
+        instr("mul", GPR_GPR, _2cyc, "multiply register with register to r0");
+        instr("muls", HGPR_HGPR, _2cyc, "signed multiply register with register to r0");
+        instr("mulsu", MGPR_MGPR, _2cyc, "signed/unsigned multiply register with register to r0");
+        instr("neg", GPR_, _1cyc, "two's complement register");
+        instr("nop", NONE, _1cyc, "do nothing operation");
+        instr("or", GPR_GPR, _1cyc, "or register with register");
+        instr("ori", HGPR_IMM8, _1cyc, "or register with immediate");
+        instr("out", IMM6_GPR, _1cyc, "write from register to IO register");
+        instr("pop", GPR_, _2cyc, "pop from the stack to register");
+        instr("push", GPR_, _2cyc, "push register to the stack");
+        instr("rcall", LREL_, _3cyc, "relative call");
+        instr("ret", NONE, _4cyc, "return to caller");
+        instr("reti", NONE, _4cyc, "return from interrupt");
+        instr("rjmp", LREL_, _2cyc, "relative jump");
+        instr("rol", GPR_, _1cyc, "rotate left through carry flag");
+        instr("ror", GPR_, _1cyc, "rotate right through carry flag");
+        instr("sbc", GPR_GPR, _1cyc, "subtract register from register with carry");
+        instr("sbci", HGPR_IMM8, _1cyc, "subtract immediate from register with carry");
+        instr("sbi", IMM5_IMM3, _2cyc, "set bit in IO register");
+        instr("sbic", IMM5_IMM3, _1cyc, "skip if bit in IO register is clear");
+        instr("sbis", IMM5_IMM3, _1cyc, "skip if bit in IO register is set");
+        instr("sbiw", RDL_IMM6, _2cyc, "subtract immediate from word ");
+        instr("sbr", HGPR_IMM8, _1cyc, "set bits in register");
+        instr("sbrc", GPR_IMM3, _1cyc, "skip if bit in register cleared");
+        instr("sbrs", GPR_IMM3, _1cyc, "skip if bit in register set");
+        instr("sec", NONE, _1cyc, "set C (carry) flag");
+        instr("seh", NONE, _1cyc, "set H (half carry) flag");
+        instr("sei", NONE, _1cyc, "set I (interrupt enable) flag");
+        instr("sen", NONE, _1cyc, "set N (negative) flag");
+        instr("ser", GPR_, _1cyc, "set bits in register");
+        instr("ses", NONE, _1cyc, "set S (signed) flag");
+        instr("set", NONE, _1cyc, "set T flag");
+        instr("sev", NONE, _1cyc, "set V (overflow) flag");
+        instr("sez", NONE, _1cyc, "set Z (zero) flag");
+        instr("sleep", NONE, _1cyc, "enter sleep mode");
+        instr("spm", NONE, _1cyc, "store to program memory from r0");
+        instr("st", "st", ADR_GPR, _2cyc, "store from register to SRAM");
+        instr("std", YZ_IMM6_GPR, _2cyc, "store from register to SRAM with displacement");
+        instr("stpd", "st", ADR_GPR, _2cyc, "store from register to SRAM with pre-decrement"); // variant
+        instr("stpi", "st", ADR_GPR, _2cyc, "store from register to SRAM with post-increment"); // variant
+        large("sts", MEM_GPR, _2cyc, "store direct to SRAM");
+        instr("sub", GPR_GPR, _1cyc, "subtract register from register");
+        instr("subi", HGPR_IMM8, _1cyc, "subtract immediate from register");
+        instr("swap", GPR_, _1cyc, "swap nibbles in register");
+        instr("tst", GPR_, _1cyc, "compare registers");
+        instr("wdr", NONE, _1cyc, "watchdog timer reset");
 
     }
 
 
-    static void instr(String name, ParamTypes types, int cycles) {
-        add(new Description(name, types, cycles));
+    static void instr(String name, ParamTypes types, int cycles, String comment) {
+        add(new Description(name, types, cycles, comment));
     }
 
-    static void instr(String variant, String name, ParamTypes types, int cycles) {
-        add(new Description(variant, name, types, cycles));
+    static void instr(String variant, String name, ParamTypes types, int cycles, String comment) {
+        add(new Description(variant, name, types, cycles, comment));
     }
 
-    static void large(String name, ParamTypes types, int cycles) {
-        Description d = new Description(name, types, cycles);
+    static void large(String name, ParamTypes types, int cycles, String comment) {
+        Description d = new Description(name, types, cycles, comment);
         d.large = true;
         add(d);
     }

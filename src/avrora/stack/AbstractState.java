@@ -38,13 +38,14 @@ public class AbstractState {
 
     public static final int NUM_REGS = 32;
     public static final char ZERO = KNOWN_MASK;
+    public static final char ON = 0x101;
+    public static final char OFF = 0x100;
     public static final char UNKNOWN = 0;
 
     private int pc;
     private char SREG;   // canonical status register value
     private char regs[]; // canonical register values
 
-    private boolean hashed;
     private int hashCode;
 
     public static final int primes[] = {
@@ -54,6 +55,16 @@ public class AbstractState {
         131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
         181, 191
     };
+
+    public static final int FLAG_I = 7;
+    public static final int FLAG_T = 6;
+    public static final int FLAG_H = 5;
+    public static final int FLAG_S = 4;
+    public static final int FLAG_V = 3;
+    public static final int FLAG_N = 2;
+    public static final int FLAG_Z = 1;
+    public static final int FLAG_C = 0;
+
 
     public AbstractState() {
         regs = new char[NUM_REGS];
@@ -70,13 +81,12 @@ public class AbstractState {
         SREG = nSREG;
     }
 
-    public AbstractState fork() {
+    public AbstractState copy() {
         return new AbstractState(pc, SREG, regs);
     }
 
     public int hashCode() {
-        if ( !hashed ) computeHashCode();
-
+        if ( hashCode == 0 ) computeHashCode();
         return hashCode;
     }
 
@@ -85,7 +95,6 @@ public class AbstractState {
         hashCode += SREG;
         for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
             hashCode += regs[cntr] * primes[cntr];
-        hashed = true;
     }
 
     public boolean equals(Object o) {
@@ -108,7 +117,6 @@ public class AbstractState {
     }
 
     public void setPC(int npc) {
-        hashedCheck();
         pc = npc;
     }
 
@@ -117,8 +125,38 @@ public class AbstractState {
     }
 
     public void writeSREG(char val) {
-        hashedCheck();
         SREG = canon(val);
+    }
+
+    public void setSREG_bit(int bit, char val) {
+        SREG = canon((char)(SREG ^ getBit(val, bit)));
+    }
+
+    public void setFlag_I(char val) { setSREG_bit(FLAG_I, val); }
+    public void setFlag_T(char val) { setSREG_bit(FLAG_T, val); }
+    public void setFlag_H(char val) { setSREG_bit(FLAG_H, val); }
+    public void setFlag_S(char val) { setSREG_bit(FLAG_S, val); }
+    public void setFlag_V(char val) { setSREG_bit(FLAG_V, val); }
+    public void setFlag_N(char val) { setSREG_bit(FLAG_N, val); }
+    public void setFlag_Z(char val) { setSREG_bit(FLAG_Z, val); }
+    public void setFlag_C(char val) { setSREG_bit(FLAG_C, val); }
+
+    public char getFlag_I() { return getBit(SREG, FLAG_I); }
+    public char getFlag_T() { return getBit(SREG, FLAG_T); }
+    public char getFlag_H() { return getBit(SREG, FLAG_H); }
+    public char getFlag_S() { return getBit(SREG, FLAG_S); }
+    public char getFlag_V() { return getBit(SREG, FLAG_V); }
+    public char getFlag_N() { return getBit(SREG, FLAG_N); }
+    public char getFlag_Z() { return getBit(SREG, FLAG_Z); }
+    public char getFlag_C() { return getBit(SREG, FLAG_C); }
+
+    public char readIORegister(int num) {
+        // TODO: read correct IO registers
+        return UNKNOWN;
+    }
+
+    public void writeIORegister(int num, char val) {
+        // TODO: write known IO registers
     }
 
     public char readRegister(Register r) {
@@ -126,12 +164,7 @@ public class AbstractState {
     }
 
     public void writeRegister(Register r, char val) {
-        hashedCheck();
         regs[r.getNumber()] = canon(val);
-    }
-
-    private void hashedCheck() {
-        if ( hashed ) throw new Error("attempt to change AbstractState after .hashCode() has been called.");
     }
 
     /**
@@ -189,5 +222,14 @@ public class AbstractState {
 
     public static char maskOf(char c) {
         return (char)((c & KNOWN_MASK) >> SHIFT);
+    }
+
+    public static char getBit(char val, int bit) {
+        int mask = 0x101 << bit;
+        return (char)(val & mask);
+    }
+
+    public static char commonMask(char c, char d) {
+        return (char)(maskOf(c) & maskOf(d));
     }
 }

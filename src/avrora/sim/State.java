@@ -28,6 +28,7 @@ public class State implements IORegisterConstants {
     private final int sram_start;
     private final int sram_max;
 
+    // TODO: collapse some of this information with AbstractState.
     /**
      * Constants needed internally.
      */
