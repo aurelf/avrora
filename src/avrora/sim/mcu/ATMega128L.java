@@ -34,10 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.Energy;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.sim.radio.Radio;
 import avrora.util.Arithmetic;
 
@@ -193,14 +190,14 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         interpreter = null;
     }
 
-    protected ATMega128L(int id, Program p, boolean compatibility) {
+    protected ATMega128L(int id, InterpreterFactory f, Program p, boolean compatibility) {
         super(7372800,
                 compatibility ? ATMEGA128L_SRAM_SIZE_103 : ATMEGA128L_SRAM_SIZE,
                 compatibility ? ATMEGA128L_IOREG_SIZE_103 : ATMEGA128L_IOREG_SIZE,
                 128 * 1024, 4096, 65);
         compatibilityMode = compatibility;
         installPins();
-        simulator = new SimImpl(id, p);
+        simulator = new SimImpl(id, f, p);
         clock = simulator.getClock();
         interpreter = simulator.getInterpreter();
         ((SimImpl)simulator).populateState();
@@ -262,8 +259,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
      * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
      *         program loaded onto it
      */
-    public Microcontroller newMicrocontroller(int id, Program p) {
-        return new ATMega128L(id, p, compatibilityMode);
+    public Microcontroller newMicrocontroller(int id, InterpreterFactory f, Program p) {
+        return new ATMega128L(id, f, p, compatibilityMode);
     }
 
     /**
@@ -285,8 +282,8 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
     public class SimImpl extends Simulator {
 
-        public SimImpl(int id, Program p) {
-            super(id, ATMega128L.this, p);
+        public SimImpl(int id, InterpreterFactory f, Program p) {
+            super(id, f, ATMega128L.this, p);
         }
 
         public static final int RES_VECT = 1;

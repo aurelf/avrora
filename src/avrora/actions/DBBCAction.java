@@ -48,7 +48,7 @@ import java.util.Iterator;
 public class DBBCAction extends Action {
 
     public static String HELP = "The \"dbbc\" action tests the operation of the Dynamic Basic Block Compiler " +
-            "(DBBC) in Avrora, which dynamically compiles AVR code to Java source code.";
+            "(DBBC_OPT) in Avrora, which dynamically compiles AVR code to Java source code.";
 
     public DBBCAction() {
         super("dbbc", HELP);
@@ -58,7 +58,7 @@ public class DBBCAction extends Action {
         Printer printer = Printer.STDOUT;
         PrettyPrinter pp = new PrettyPrinter(printer);
         Program p = Main.readProgram(args);
-        DBBC dbbc = new DBBC(p);
+        DBBC dbbc = new DBBC(p, options);
 
         ControlFlowGraph cfg = p.getCFG();
         Iterator i = cfg.getSortedBlockIterator();

@@ -47,6 +47,12 @@ import avrora.util.Arithmetic;
  */
 public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
+    public static final class Factory extends InterpreterFactory {
+        public BaseInterpreter newInterpreter(Simulator s, Program p, int flash_size, int ioreg_size, int sram_size) {
+            return new GenInterpreter(s, p, flash_size, ioreg_size, sram_size);
+        }
+    }
+
     public static final Register R0 = Register.R0;
     public static final Register R1 = Register.R1;
     public static final Register R2 = Register.R2;
@@ -1530,43 +1536,43 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     //
     //
 
-    void pushPC(int npc) {
+    public void pushPC(int npc) {
         npc = npc / 2;
         pushByte(Arithmetic.low(npc));
         pushByte(Arithmetic.high(npc));
     }
 
-    int popPC() {
+    public int popPC() {
         byte high = popByte();
         byte low = popByte();
         return Arithmetic.uword(low, high) * 2;
     }
 
-    boolean xor(boolean a, boolean b) {
+    public boolean xor(boolean a, boolean b) {
         return (a && !b) || (b && !a);
     }
 
-    byte low(int val) {
+    public byte low(int val) {
         return (byte)val;
     }
 
-    byte high(int val) {
+    public byte high(int val) {
         return (byte)(val >> 8);
     }
 
-    byte bit(boolean val) {
+    public byte bit(boolean val) {
         if (val) return 1;
         return 0;
     }
 
-    int uword(byte low, byte high) {
+    public int uword(byte low, byte high) {
         return Arithmetic.uword(low, high);
     }
 
     /**
      * send the node to sleep
      */
-    private void enterSleepMode() {
+    public void enterSleepMode() {
         sleeping = true;
         innerLoop = false;
         simulator.getMicrocontroller().sleep();
@@ -1575,7 +1581,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     /**
      * time to wake up
      */
-    private void leaveSleepMode() {
+    public void leaveSleepMode() {
         sleeping = false;
         advanceCycles(simulator.getMicrocontroller().wakeup());
     }

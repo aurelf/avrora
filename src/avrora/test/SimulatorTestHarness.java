@@ -38,6 +38,7 @@ import avrora.core.ProgramReader;
 import avrora.core.Register;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.GenInterpreter;
 import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.Module;
 import avrora.util.Arithmetic;
@@ -304,7 +305,7 @@ public class SimulatorTestHarness implements TestHarness {
             String args[] = {filename};
             program = r.read(args);
             // TODO: this should not be hardcoded!!
-            simulator = new ATMega128L(false).newMicrocontroller(0, program).getSimulator();
+            simulator = new ATMega128L(false).newMicrocontroller(0, new GenInterpreter.Factory(), program).getSimulator();
             simulator.start();
         }
 

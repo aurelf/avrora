@@ -36,6 +36,10 @@ import avrora.Avrora;
 import avrora.core.Program;
 import avrora.monitors.*;
 import avrora.sim.Simulator;
+import avrora.sim.InterpreterFactory;
+import avrora.sim.GenInterpreter;
+import avrora.sim.dbbc.DBBCInterpreter;
+import avrora.sim.dbbc.DBBC;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
@@ -78,6 +82,8 @@ public abstract class SimAction extends Action {
             "This option specifies a list of monitors to be attached to the program. " +
             "Monitors collect information about the execution of the program while it " +
             "is running such as profiling data or timing information.");
+    public final Option.Bool DBBC_OPT = newOption("dbbc", false,
+            "This option enables the DBBC_OPT compiler. Experimental! DO NOT USE!");
 
     protected ClassMap monitorMap;
     protected LinkedList monitorFactoryList;
@@ -176,12 +182,23 @@ public abstract class SimAction extends Action {
      *         and has monitors attached to as specified on the command line
      */
     protected Simulator newSimulator(Program p) {
+        InterpreterFactory factory;
+        if ( DBBC_OPT.get() ) {
+            factory = new DBBCInterpreter.Factory(new DBBC(p, options));
+        } else {
+            factory = new GenInterpreter.Factory();
+        }
+
+        return newSimulator(factory, p);
+    }
+
+    protected Simulator newSimulator(InterpreterFactory factory, Program p) {
         Simulator simulator;
         PlatformFactory pf = getPlatform();
         if (pf != null) {
-            simulator = pf.newPlatform(simcount++, p).getMicrocontroller().getSimulator();
+            simulator = pf.newPlatform(simcount++, factory, p).getMicrocontroller().getSimulator();
         } else {
-            simulator = getMicrocontroller().newMicrocontroller(simcount++, p).getSimulator();
+            simulator = getMicrocontroller().newMicrocontroller(simcount++, factory, p).getSimulator();
         }
 
         processTimeout(simulator);

@@ -56,14 +56,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected long postedInterrupts;
     protected final int sram_start;
     protected final int sram_max;
-    protected boolean I;
-    protected boolean T;
-    protected boolean H;
-    protected boolean S;
-    protected boolean V;
-    protected boolean N;
-    protected boolean Z;
-    protected boolean C;
+    public boolean I;
+    public boolean T;
+    public boolean H;
+    public boolean S;
+    public boolean V;
+    public boolean N;
+    public boolean Z;
+    public boolean C;
     protected State.IOReg SREG_reg;
 
     /**
@@ -161,13 +161,13 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the
      * instructions.
      */
-    protected int nextPC;
+    public int nextPC;
 
     /**
      * The <code>cyclesConsumed</code> field stores the number of cycles consumed in doing a part of the
      * simulation (e.g. executing an instruction or processing an interrupt).
      */
-    protected int cyclesConsumed;
+    public int cyclesConsumed;
 
     /**
      * The <code>delayCycles</code> field tracks the number of cycles that the microcontroller is delayed.
@@ -194,7 +194,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * in the hardware manual that at least one instruction following a return from an interrupt is executed
      * before another interrupt can be processed.
      */
-    protected boolean justReturnedFromInterrupt;
+    public boolean justReturnedFromInterrupt;
 
     /**
      * The <code>simulator</code> field stores a reference to the simulator that this interpreter instance
@@ -404,7 +404,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         runLoop();
     }
 
-    protected void stop() {
+    public void stop() {
         shouldRun = false;
         innerLoop = false;
     }
@@ -496,11 +496,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         delayCycles += cycles;
     }
 
-    byte getRegisterByte(int reg) {
+    public byte getRegisterByte(int reg) {
         return regs[reg];
     }
 
-    int getRegisterUnsigned(int reg) {
+    public int getRegisterUnsigned(int reg) {
         return regs[reg] & 0xff;
     }
 
@@ -574,11 +574,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         setRegisterByte(reg.nextRegister(), high);
     }
 
-    protected void setRegisterByte(int reg, byte val) {
+    public void setRegisterByte(int reg, byte val) {
         regs[reg] = val;
     }
 
-    protected void setRegisterWord(int reg, int val) {
+    public void setRegisterWord(int reg, int val) {
         byte low = Arithmetic.low(val);
         byte high = Arithmetic.high(val);
         setRegisterByte(reg, low);
@@ -1004,12 +1004,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
     }
 
-    protected void enableInterrupts() {
+    public void enableInterrupts() {
         I = true;
         innerLoop = false;
     }
 
-    protected void disableInterrupts() {
+    public void disableInterrupts() {
         I = false;
         innerLoop = false;
     }

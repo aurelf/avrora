@@ -37,6 +37,7 @@ import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.util.PeriodicEvent;
+import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -109,6 +110,8 @@ public abstract class Simulator implements IORegisterConstants {
 
     protected final int id;
 
+    protected final InterpreterFactory factory;
+
     /**
      * The <code>MAX_INTERRUPTS</code> fields stores the maximum number of interrupt vectors supported by the
      * simulator.
@@ -125,7 +128,7 @@ public abstract class Simulator implements IORegisterConstants {
      *
      * @param p the program to load into the simulator
      */
-    public Simulator(int i, Microcontroller mcu, Program p) {
+    public Simulator(int i, InterpreterFactory f, Microcontroller mcu, Program p) {
         id = i;
         microcontroller = mcu;
         program = p;
@@ -134,6 +137,8 @@ public abstract class Simulator implements IORegisterConstants {
         // set all interrupts to ignore
         for (int cntr = 0; cntr < MAX_INTERRUPTS; cntr++)
             interrupts[cntr] = IGNORE;
+
+        factory = f;
 
         // enable the energy modelling
         energyControl = new EnergyControlImpl();
@@ -426,7 +431,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void reset() {
         clock = new MainClock("MAIN", microcontroller.getHz());
-        interpreter = new GenInterpreter(this, program,
+        interpreter = factory.newInterpreter(this, program,
                 microcontroller.getFlashSize(),
                 microcontroller.getIORegSize(),
                 microcontroller.getRamSize());

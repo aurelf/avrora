@@ -35,6 +35,7 @@ package avrora.sim.platform;
 
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.InterpreterFactory;
 import avrora.sim.mcu.ATMega128L;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.Terminal;
@@ -66,8 +67,8 @@ public class Mica implements Platform, PlatformFactory {
         return mcu;
     }
 
-    public Platform newPlatform(int id, Program p) {
-        return new Mica(new ATMega128L(true).newMicrocontroller(id, p));
+    public Platform newPlatform(int id, InterpreterFactory f, Program p) {
+        return new Mica(new ATMega128L(true).newMicrocontroller(id, f, p));
     }
 
     protected void addDevices() {

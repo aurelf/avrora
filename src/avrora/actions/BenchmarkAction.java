@@ -35,6 +35,10 @@ package avrora.actions;
 import avrora.Main;
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.InterpreterFactory;
+import avrora.sim.GenInterpreter;
+import avrora.sim.dbbc.DBBCInterpreter;
+import avrora.sim.dbbc.DBBC;
 import avrora.sim.platform.PlatformFactory;
 import avrora.util.Option;
 import avrora.util.StringUtil;
@@ -63,6 +67,7 @@ public class BenchmarkAction extends SimAction {
     public final Option.Long REPEAT = newOption("repeat", 1,
             "This option is used to specify the number of times that the benchmark should be run." +
             "The benchmarks will be repeated and the average over all runs computed. ");
+    private InterpreterFactory factory;
 
     /**
      * The default constructor of the <code>BenchmarkAction</code> class simply creates an empty instance with
@@ -84,6 +89,12 @@ public class BenchmarkAction extends SimAction {
         program = Main.readProgram(args);
 
         long repeat = REPEAT.get();
+
+        if ( DBBC_OPT.get() ) {
+            factory = new DBBCInterpreter.Factory(new DBBC(program, options));
+        } else {
+            factory = new GenInterpreter.Factory();
+        }
 
         Terminal.printGreen("Generated Interpreter");
         Terminal.nextln();
@@ -130,13 +141,10 @@ public class BenchmarkAction extends SimAction {
 
     private long runOne() {
         long startms = System.currentTimeMillis();
-        try {
-            PlatformFactory pf = getPlatform();
-            if (pf != null)
-                simulator = pf.newPlatform(0, program).getMicrocontroller().getSimulator();
-            else
-                simulator = getMicrocontroller().newMicrocontroller(0, program).getSimulator();
 
+        try {
+            simulator = newSimulator(factory, program);
+            startms = System.currentTimeMillis();
             simulator.start();
         } catch (Throwable t) {
             // ignore all exceptions

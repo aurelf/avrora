@@ -34,6 +34,7 @@ package avrora.sim.platform;
 
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.InterpreterFactory;
 import avrora.sim.mcu.ATMega128L;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.radio.CC1000Radio;
@@ -71,8 +72,8 @@ public class Mica2 implements Platform, PlatformFactory {
         return mcu;
     }
 
-    public Platform newPlatform(int id, Program p) {
-        return new Mica2(new ATMega128L(false).newMicrocontroller(id, p));
+    public Platform newPlatform(int id, InterpreterFactory f, Program p) {
+        return new Mica2(new ATMega128L(false).newMicrocontroller(id, f, p));
     }
 
 

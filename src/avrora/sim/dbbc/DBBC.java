@@ -37,13 +37,9 @@ import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
 import avrora.core.isdl.CodeRegion;
 import avrora.core.isdl.gen.InterpreterGenerator;
-import avrora.core.isdl.ast.VarAssignStmt;
-import avrora.core.isdl.ast.Literal;
-import avrora.core.isdl.ast.Arith;
-import avrora.core.isdl.ast.VarExpr;
+import avrora.core.isdl.ast.*;
 import avrora.Avrora;
-import avrora.util.StringUtil;
-import avrora.util.Printer;
+import avrora.util.*;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.GenInterpreter;
 
@@ -52,15 +48,62 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.HashMap;
 import java.io.*;
+import java.lang.reflect.Method;
 
 /**
  * @author Ben L. Titzer
  */
 public class DBBC {
 
+    public final Options options = new Options();
+
+    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("sim.dbbc");
+
+    public final Option.Long MINIMUM_BLOCK_SIZE = options.newOption("minimum-block-size", 3,
+            "This option specifies the minimum size of basic blocks that will be compiled " +
+            "to Java source code. It is a compiler heuristic to tune performance; small " +
+            "basic blocks may give no (or negative) performance benefit, while large blocks " +
+            "might give high benefit.");
+    public final Option.Bool USE_REGISTER_ARRAY = options.newOption("use-register-array", true,
+            "This option specifies the to dynamic compiler to always emit code that directly " +
+            "uses the register array, rather than generating method calls to the interpreter's " +
+            "accessor functions.");
+    public final Option.Bool CACHE_REGISTERS = options.newOption("cache-registers", false,
+            "This option specifies the to dynamic compiler to perform constant and copy propagation " +
+            "through the register file by \"caching\" results written into the register file in the " +
+            "middle of a basic block.");
+    public final Option.Bool ALLOW_REGISTER_UPDATES = options.newOption("allow-register-updates", false,
+            "This option specifies the to dynamic compiler to emit defensive code that will ensure " +
+            "correct program execution when the register file is updated by a probe or watch.");
+    public final Option.Bool DEAD_CODE_ELIMINATION = options.newOption("dead-code-elimination", false,
+            "This option specifies the to dynamic compiler to remove useless updates to status flags " +
+            "and registers when it can show that they are overwritten by subsequent updates without any " +
+            "intervening use.");
+    public final Option.Bool CONSTANT_PROPAGATION = options.newOption("constant-propagation", false,
+            "This option specifies the to dynamic compiler to propagate constants through the code and " +
+            "reduce complicated expressions.");
+    public final Option.Bool TEMP_COALLESCING = options.newOption("temp-coallescing", false,
+            "This option specifies the to dynamic compiler to attempt to coallesce temporaries to reuse " +
+            "stack space for better performance.");
+    public final Option.Bool INTRA_BLOCK_PROBING = options.newOption("intra-block-probing", false,
+            "This option specifies the to dynamic compiler to allow probes to be inserted inside " +
+            "basic blocks and to generate the necessary defensive code to allow probes to run inside " +
+            "of basic blocks.");
+    public final Option.Bool REUSE_CACHE = options.newOption("reuse-cache", false,
+            "This option specifies that the contents of the compiler cache directory should not be " +
+            "overwritten, and any dynamically generated code already present in that directory should " +
+            "be reused as is.");
+    public final Option.Str CACHE_DIRECTORY = options.newOption("cache-directory", "",
+            "This option specifies the directory to which to output the Java source code generated " +
+            "by the dynamic compiler.");
+
     protected final Program program;
     protected final ControlFlowGraph cfg;
     protected final DBBCClassLoader loader;
+    protected final String tmpDir;
+
+    protected final HashMap codeBlockMap;
+    protected final HashMap compiledCodeMap;
 
     public static class CodeBlock {
         public final int beginAddr;
@@ -76,12 +119,10 @@ public class DBBC {
 
     public static class CompiledBlock {
         public final int beginAddr;
-        public final LinkedList stmts;
         public final int wcet; // worse case execution time
 
-        protected CompiledBlock(int a, LinkedList l, int wc) {
+        protected CompiledBlock(int a, int wc) {
             beginAddr = a;
-            stmts = l;
             wcet = wc;
         }
 
@@ -90,10 +131,17 @@ public class DBBC {
         }
     }
 
-    public DBBC(Program p) {
+    public DBBC(Program p, Options o) {
         program = p;
         cfg = p.getCFG();
         loader = new DBBCClassLoader();
+        options.process(o);
+        String cd;
+        if ( (cd = CACHE_DIRECTORY.get()).equals("") ) cd = "/tmp";
+        tmpDir = cd;
+        codeBlockMap = new HashMap();
+        compiledCodeMap = new HashMap();
+        printer.println("Created new compiler for "+program+" to "+tmpDir);
     }
 
     public Program getProgram() {
@@ -101,7 +149,10 @@ public class DBBC {
     }
 
     protected class DBBCClassLoader extends ClassLoader {
-        public Class defineClass(byte[] buf) {
+        public Class defineClass(File c) throws Exception {
+            FileInputStream fis = new FileInputStream(c);
+            byte buf[] = new byte[fis.available()];
+            fis.read(buf);
             return super.defineClass(null, buf, 0, buf.length);
         }
     }
@@ -118,19 +169,34 @@ public class DBBC {
     }
 
     /**
-     * The <code>getCompiledBlock()</code> method instructs the DBBC to compile the basic
+     * The <code>getCompiledBlock()</code> method instructs the DBBC_OPT to compile the basic
      * block that begins at the specified byte address.
      * @param addr the byte address of the beginning of the basic block to compile
      * @return a reference to the compiled block of code when complete
      */
     public CompiledBlock getCompiledBlock(int addr) throws Exception {
+        printer.println("Getting CompiledBlock for "+StringUtil.addrToString(addr));
         CodeBlock block = getCodeBlock(addr);
+        if ( block == null ) return null;
         return getCompiledBlock(block);
     }
 
     public CodeBlock getCodeBlock(int addr) {
+        printer.println("Getting CodeBlock for "+StringUtil.addrToString(addr));
         int wcet = 0;
         ControlFlowGraph.Block b = cfg.getBlockStartingAt(addr);
+
+        CodeBlock nblock = (CodeBlock)codeBlockMap.get(b);
+        if ( nblock != null ) {
+            printer.println("Cache hit.");
+            return nblock;
+        }
+
+        if ( b.getSize() < MINIMUM_BLOCK_SIZE.get() ) {
+            printer.println("Block "+StringUtil.addrToString(addr)+" is too small: "+b.getSize());
+            return null;
+        }
+
         LinkedList stmts = new LinkedList();
         Iterator i = b.getInstrIterator();
         int curPC = addr;
@@ -152,10 +218,12 @@ public class DBBC {
             }
 
         }
-        return new CodeBlock(addr, stmts, wcet);
+        nblock = new CodeBlock(addr, stmts, wcet);
+        codeBlockMap.put(b, nblock);
+        return nblock;
     }
 
-    protected File generateCode(int addr, List stmts, int wcet) throws Exception {
+    protected File generateClassForCode(int addr, List stmts, int wcet) throws Exception {
         String classname = "Block_"+StringUtil.addrToString(addr);
         String fname = javaName(classname);
         File f = new File(fname);
@@ -163,12 +231,13 @@ public class DBBC {
         Printer p = new Printer(new PrintStream(fos));
         // neat trick: use the same package as BaseInterpreter to access state fields
         p.println("package avrora.sim;");
+        p.println("import avrora.util.Arithmetic;");
 
         // generate the class
         p.startblock("public class "+classname+" extends avrora.sim.dbbc.DBBC.CompiledBlock");
 
         // generate constructor
-        p.println("public "+classname+"() { super("+addr+", null, "+wcet+"); }");
+        p.println("public "+classname+"() { super("+addr+", "+wcet+"); }");
 
         // generate the execute method
         p.startblock("public void execute(avrora.sim.GenInterpreter interpreter)");
@@ -186,51 +255,75 @@ public class DBBC {
     }
 
     public CompiledBlock getCompiledBlock(CodeBlock b) throws Exception {
-        File f = generateCode(b.beginAddr, b.stmts, b.wcet);
+        CompiledBlock cb = (CompiledBlock)compiledCodeMap.get(b);
+        if ( cb != null ) return cb;
+        File f = generateClassForCode(b.beginAddr, b.stmts, b.wcet);
         File c = compileGeneratedCode(f);
-        Class cf = getClass(c);
-        return (CompiledBlock)cf.newInstance();
+        Class cf = loader.defineClass(c);
+        cb = (CompiledBlock)cf.newInstance();
+        compiledCodeMap.put(b, cb);
+        return cb;
     }
 
-    protected Class getClass(File c) throws Exception {
-        FileInputStream fis = new FileInputStream(c);
-        byte buf[] = new byte[fis.available()];
-        fis.read(buf);
-        return loader.defineClass(buf);
-    }
-
-    protected File compileGeneratedCode(File f) {
+    protected File compileGeneratedCode(File f) throws Exception {
         String name = f.toString();
         String[] args = { name };
-        // TODO: remove static dependency on javac by using reflection
-        int result = com.sun.tools.javac.Main.compile(args);
+
+        // TODO: generate a nicer error message for failure to find Javac
+        Class javac = Class.forName("com.sun.tools.javac.Main");
+        Class sac = new String[0].getClass();
+        Method m = javac.getMethod("compile", new Class[] { sac });
+        Object r = m.invoke(null, new Object[] {args});
+        int result = ((Integer)r).intValue();
+
         if ( result != 0 )
-            throw Avrora.failure("DBBC failed to compile: "+f.toString());
+            throw Avrora.failure("DBBC_OPT failed to compile: "+f.toString());
         String cname = name.replaceAll(".java", ".class");
         File c = new File(cname);
         return c;
     }
 
+    protected static HashMap varMap = new HashMap();
+    static {
+        add("I");
+        add("T");
+        add("H");
+        add("S");
+        add("V");
+        add("N");
+        add("Z");
+        add("C");
+        add("RAMPZ");
+        add("cyclesConsumed");
+        add("nextPC");
+        add("innerLoop");
+        add("justReturnedFromInterrupt");
+    }
+
+    protected static void add(String s) {
+        varMap.put(s, "interpreter."+s);
+    }
+
+
     protected class CodeGenerator extends InterpreterGenerator {
+        int tmps;
+
         CodeGenerator(Printer p) {
             super(null, p);
             initializeVariableMap();
         }
 
         protected void initializeVariableMap() {
-            variableMap = new HashMap();
-            // TODO: this is sort of a hack, it depends on I, T, etc
-            add("I");
-            add("T");
-            add("H");
-            add("S");
-            add("V");
-            add("N");
-            add("Z");
-            add("C");
-            add("cyclesConsumed");
-            add("nextPC");
-            add("innerLoop");
+            variableMap = varMap;
+        }
+
+        public void visit(DeclStmt s) {
+            variableMap.put(s.name.toString(), newTemp());
+            super.visit(s);
+        }
+
+        protected String newTemp() {
+            return "temp_"+(tmps++);
         }
 
         protected void add(String s) {
@@ -243,10 +336,10 @@ public class DBBC {
     }
 
     protected String javaName(String cname) {
-        return "/tmp/"+cname+".java";
+        return tmpDir+"/"+cname+".java";
     }
 
     protected String className(String cname) {
-        return "/tmp/"+cname+".class";
+        return tmpDir+"/"+cname+".class";
     }
 }
