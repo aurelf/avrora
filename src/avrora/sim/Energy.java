@@ -68,33 +68,33 @@ public class Energy {
     private int freq;
     // time one mcu cycle takes
     private double cycleTime;
+
+    private Clock clock;
     // there is one energyControl in the simulation
     // it handles the notification of monitrs
     private EnergyControl energyControl;
-    // state of the simulation
-    private State state;
 
     /**
      * create new energy class, to enable energy modelling
      *
      * @param deviceName  name of the device to model
+     * @param c           the clock of the device
      * @param modeAmpere  array of current draw for each device state (in Ampere)
      * @param modeName    array of the names of each device state
-     * @param cpuFreq     cpu frequency
      * @param startMode   mode or state of the device at startup and reset
      * @param ec          the simulator energy control
-     * @param st          the simulator state
      */
-    public Energy(String deviceName, double modeAmpere[], String modeName[], int cpuFreq, int startMode, EnergyControl ec, State st) {
+    public Energy(String deviceName, Clock c, double modeAmpere[], String modeName[], int startMode, EnergyControl ec) {
         // remember all params
         this.deviceName = deviceName;
+        this.clock = c;
         this.ampere = modeAmpere;
         this.name = modeName;
         this.currentMode = startMode;
-        this.freq = cpuFreq;
-        this.cycleTime = 1.0d / cpuFreq;
+        this.freq = (int)clock.getHZ();
+        this.cycleTime = 1.0d / freq;
         this.energyControl = ec;
-        this.state = st;
+
         // subscribe this consumer to the energy control
         energyControl.addConsumer(this);
         // setup cycle array to store the cycles of each state
@@ -110,10 +110,10 @@ public class Energy {
      */
     public void setMode(int mode) {
         if (mode != currentMode) {
-            cycles[currentMode] += state.getCycles() - lastChange;
+            cycles[currentMode] += clock.getCount() - lastChange;
             oldMode = currentMode;
             currentMode = mode;
-            lastChange = state.getCycles();
+            lastChange = clock.getCount();
             energyControl.stateChange(this);
         }
     }
@@ -187,7 +187,7 @@ public class Energy {
     public long getCycles(int mode) {
         long ret = cycles[mode];
         if (mode == currentMode)
-            ret += state.getCycles() - lastChange;
+            ret += clock.getCount() - lastChange;
         return ret;
     }
 

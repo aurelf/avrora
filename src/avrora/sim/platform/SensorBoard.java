@@ -59,6 +59,6 @@ public class SensorBoard {
         //setup energy recording
         //note: the name sensorBoard was choosen on purpose as it is used in the log files
         //if you use sensor board, you may have trouble with importing the data as it is separated by white spaces
-        energy = new Energy("sensorBoard", modeAmpere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
+        energy = new Energy("sensorBoard", s.getClock(), modeAmpere, modeName, startMode, sim.getEnergyControl());
     }
 }

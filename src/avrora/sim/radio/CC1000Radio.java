@@ -248,13 +248,13 @@ public class CC1000Radio implements Radio {
         controller.install(mcu);
 
         //setup energy recording
+        Simulator simulator = mcu.getSimulator();
         energy = new Energy("Radio",
+                simulator.getClock(),
                 RadioEnergy.modeAmpere,
                 allModeNames,
-                mcu.getHz(),
                 RadioEnergy.startMode,
-                mcu.getSimulator().getEnergyControl(),
-                mcu.getSimulator().getState());
+                simulator.getEnergyControl());
 
         packetsTx = 0;
         packetsRx = 0;

@@ -100,7 +100,7 @@ public class FiniteStateMachine {
 
     private void fireBefore(MulticastFSMProbe p, int oldState, int newState) {
         if ( !p.isEmpty() )
-            p.fireAfterTransition(oldState, newState);
+            p.fireBeforeTransition(oldState, newState);
     }
 
     private void fireAfter(MulticastFSMProbe p, int oldState, int newState) {
@@ -193,7 +193,11 @@ public class FiniteStateMachine {
 
         if ( ttime == 0 ) {
             // transition is instantaneous
+            int oldState = curState;
             curState = newState;
+            fireAfter(states[oldState].probes, oldState, newState);
+            fireAfter(states[newState].probes, oldState, newState);
+            fireAfter(globalProbe, oldState, newState);
         }
         else {
             // transition will complete in the future

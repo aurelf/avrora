@@ -79,9 +79,17 @@ public class Mica2 implements Platform, PlatformFactory {
 
 
     protected void addDevices() {
-        mcu.getPin("PA0").connect(new LED(sim, Terminal.COLOR_YELLOW, "Yellow"));
-        mcu.getPin("PA1").connect(new LED(sim, Terminal.COLOR_GREEN, "Green"));
-        mcu.getPin("PA2").connect(new LED(sim, Terminal.COLOR_RED, "Red"));
+        LED yellow = new LED(sim, Terminal.COLOR_YELLOW, "Yellow");
+        LED green = new LED(sim, Terminal.COLOR_GREEN, "Green");
+        LED red = new LED(sim, Terminal.COLOR_RED, "Red");
+
+        yellow.enablePrinting();
+        green.enablePrinting();
+        red.enablePrinting();
+
+        mcu.getPin("PA0").connect(yellow);
+        mcu.getPin("PA1").connect(green);
+        mcu.getPin("PA2").connect(red);
 
         // radio
         radio = new CC1000Radio(mcu);

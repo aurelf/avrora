@@ -351,11 +351,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
         interpreter = simulator.getInterpreter();
         ((SimImpl)simulator).populateState();
         //init the energy profiling system for the CPU
-        energy = new Energy("CPU",
-                modeAmpere, modeName,
-                this.getHz(), startMode,
-                this.getSimulator().getEnergyControl(),
-                this.getSimulator().getState());
+        energy = new Energy("CPU", clock, modeAmpere, modeName, startMode, this.getSimulator().getEnergyControl());
     }
 
 

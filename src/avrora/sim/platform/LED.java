@@ -34,6 +34,8 @@ package avrora.sim.platform;
 
 import avrora.sim.Energy;
 import avrora.sim.Simulator;
+import avrora.sim.FiniteStateMachine;
+import avrora.sim.Clock;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
@@ -45,61 +47,57 @@ import avrora.util.Terminal;
  *
  * @author Ben L. Titzer
  */
-class LED implements Microcontroller.Pin.Output {
-    protected boolean initialized;
-    protected boolean on;
+public class LED implements Microcontroller.Pin.Output {
     protected Simulator sim;
 
     protected final int colornum;
     protected final String color;
 
+    protected final FiniteStateMachine state;
+    protected final LEDProbe probe;
+
     //energy profile of this device
     private Energy energy;
     // names of the states of this device
-    private static final String modeName[] = {"off: ", "on:  "};
+    private static final String modeName[] = {"off", "on"};
     // power consumption of the device states
     private static final double modeAmpere[] = {0.0, 0.0022};
     // default mode of the device is off
     private static final int startMode = 0;
+
+    class LEDProbe implements FiniteStateMachine.Probe {
+        public void fireBeforeTransition(int beforeState, int afterState) {
+            // do nothing
+        }
+
+        public void fireAfterTransition(int beforeState, int afterState) {
+            if ( beforeState == afterState ) return;
+            // print the status of the LED
+            synchronized ( Terminal.class ) {
+                // synchronize on the terminal to prevent interleaved output
+                Terminal.print(sim.getIDTimeString());
+                Terminal.print(colornum, color);
+                Terminal.println(": " + modeName[afterState]);
+            }
+        }
+    }
 
     protected LED(Simulator s, int n, String c) {
         sim = s;
         colornum = n;
         color = c;
         //setup energy recording
-        energy = new Energy(color, modeAmpere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
+        Clock clk = sim.getClock();
+        energy = new Energy(color, clk, modeAmpere, modeName, startMode, sim.getEnergyControl());
+        state = new FiniteStateMachine(clk, startMode, modeName, 0);
+        probe = new LEDProbe();
     }
 
     public void write(boolean level) {
-        // NOTE: there is an inverter between the port and the LED!
-        // reverse the level!
-        if (!initialized) {
-            initialized = true;
-            on = !level;
-            if (on)
-                energy.setMode(1);
-            else
-                energy.setMode(0);
-            print();
-        } else {
-            if (level == on) {
-                on = !level;
-                if (on)
-                    energy.setMode(1);
-                else
-                    energy.setMode(0);
-                print();
-            }
-        }
-    }
-
-    public void print() {
-        synchronized ( Terminal.class ) {
-            // synchronize on the terminal to prevent interleaved output
-            Terminal.print(sim.getIDTimeString());
-            Terminal.print(colornum, color);
-            Terminal.println(": " + (on ? "on" : "off"));
-        }
+        // NOTE: there is an inverter between the port and the LED, we reverse the level
+        int snum = level ? 0 : 1;
+        energy.setMode(snum);
+        state.transition(snum);
     }
 
     public void enableOutput() {
@@ -108,5 +106,17 @@ class LED implements Microcontroller.Pin.Output {
 
     public void disableOutput() {
         // do nothing
+    }
+
+    public void enablePrinting() {
+        state.insertProbe(probe);
+    }
+
+    public void disablePrinting() {
+        state.removeProbe(probe);
+    }
+
+    public FiniteStateMachine getFSM() {
+        return state;
     }
 }
