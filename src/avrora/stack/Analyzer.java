@@ -57,9 +57,11 @@ public class Analyzer {
     ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
     protected HashMap propmap;
-    protected PropagationList proplist;
-    protected int proplength;
+    protected HashMap altpropmap;
     protected int propprogress;
+    protected int maxpropdepth;
+    protected int retCount;
+    protected int retiCount;
 
     protected HashMap aggregationPoints;
 
@@ -87,18 +89,6 @@ public class Analyzer {
     public static boolean TRACE;
     public static boolean running;
 
-    private class PropagationList {
-        final StateSpace.State start;
-        final StateSpace.State caller;
-        final PropagationList next;
-
-        PropagationList(StateSpace.State st, StateSpace.State c, PropagationList p) {
-            start = st;
-            caller = c;
-            next = p;
-        }
-    }
-
     public Analyzer(Program p) {
         program = p;
         space = new StateSpace(p);
@@ -118,35 +108,82 @@ public class Analyzer {
             new MonitorThread().start();
 
         long start = System.currentTimeMillis();
-        buildReachableStateSpace();
-        long check = System.currentTimeMillis();
-        buildTime = check - start;
-        findMaximalPath();
-        traverseTime = System.currentTimeMillis() - check;
+        try {
+            buildReachableStateSpace();
+            long check = System.currentTimeMillis();
+            buildTime = check - start;
+            findMaximalPath();
+            traverseTime = System.currentTimeMillis() - check;
+            running = false;
+        } catch ( OutOfMemoryError ome ) {
+            long check = System.currentTimeMillis();
+            buildTime = check - start;
+            outOfMemory();
+        }
+
+    }
+
+    private void outOfMemory() {
         running = false;
+        altpropmap = null;
+
+        Terminal.nextln();
+        Terminal.printRed("Stack Analyzer Error");
+        Terminal.println(": out of memory");
+
+        printStatHeader();
+        printStats();
     }
 
     private class MonitorThread extends Thread {
         public void run() {
+            int cntr = 0;
             try {
                 while ( running ) {
                     sleep(5000);
-                    Terminal.println("Count: "+space.getTotalStateCount()+" states, "+
-                            space.getTotalEdgeCount()+" edges, "+
-                            space.getFrontierCount()+" frontier, "+
-                            proplength+" propagations, "+
-                            propprogress+", in progress");
+                    if ( !running ) break;
+                    if ( cntr % 10 == 0 ) {
+                        printStatHeader();
+                    }
+
+                    printStats();
+
+                    cntr++;
                 }
             } catch ( InterruptedException e ) {
                 e.printStackTrace();
             }
         }
+
+    }
+
+    private void printStats() {
+        printJustified(space.getFrontierCount());
+        printJustified(space.getTotalStateCount());
+        printJustified(space.getTotalEdgeCount());
+        printJustified(aggregationPoints.size());
+        String s = Long.toString(retCount)+"/"+Long.toString(retiCount);
+        Terminal.print(StringUtil.rightJustify(s,12));
+        printJustified(propmap.size());
+        printJustified(propprogress);
+        printJustified(maxpropdepth);
+        Terminal.nextln();
+    }
+
+    private void printStatHeader() {
+        Terminal.println(" Frontier   States    Edges   Aggreg      ret(i)  Pending     Prop Diameter");
+        Terminal.printSeparator(78);
+    }
+
+    private void printJustified(long val) {
+        String s = StringUtil.rightJustify(val, 9);
+        Terminal.print(s);
     }
 
     private void buildReachableStateSpace() {
         StateSpace.State s = space.getEdenState();
 
-        while ( s != null || proplist != null) {
+        while ( s != null || propmap.size() != 0) {
             if ( s != null )
                 processFrontierState(s);
             else processPropagationList();
@@ -155,32 +192,33 @@ public class Analyzer {
     }
 
     private void processPropagationList() {
-        PropagationList list = proplist;
-        proplist = null;
-        propprogress = proplength;
-        proplength = 0;
+        altpropmap = propmap;
+        propmap = new HashMap();
+        propprogress = altpropmap.size();
         // process the list of propagations to be done;
         // propagate calling states to reachable return states
-        for ( ; list != null; list = list.next ) {
-            HashSet callers = new HashSet();
-            callers.add(list.caller);
+        Iterator i = altpropmap.keySet().iterator();
+        while ( i.hasNext() ) {
+            StateSpace.State target = (StateSpace.State)i.next();
+            HashSet callers = (HashSet)altpropmap.get(target);
 
             if ( TRACE ) {
                 Terminal.print("Propagating ");
-                StatePrinter.printStateName(list.caller);
+//                StatePrinter.printStateName(callers);
                 Terminal.print(" to ");
-                StatePrinter.printStateName(list.start);
+                StatePrinter.printStateName(target);
                 Terminal.nextln();
             }
-            propagate(list.start, callers);
+            propagate(target, callers);
             propprogress--;
         }
+        altpropmap = null;
     }
 
     private void propagate(StateSpace.State t, HashSet newCalls) {
         Object mark = new Object();
 
-        propagate(t, newCalls, mark);
+        propagate(t, newCalls, mark, 0);
     }
 
     private void newAggregationPoint(StateSpace.State t) {
@@ -189,7 +227,9 @@ public class Analyzer {
     }
 
     // propagate call sites to all reachable return states
-    private void propagate(StateSpace.State t, HashSet newCalls, Object mark) {
+    private void propagate(StateSpace.State t, HashSet newCalls, Object mark, int depth) {
+        if ( depth > maxpropdepth ) maxpropdepth = depth;
+
         // visited this node already?
         if (t.mark == mark) return;
         t.mark = mark;
@@ -205,8 +245,6 @@ public class Analyzer {
         if ( agg != null ) {
             // if we have seen all of these calls, return
             if ( agg.containsAll(newCalls) ) return;
-//            newCalls = (HashSet)newCalls.clone();
-//           newCalls.removeAll(agg);
             agg.addAll(newCalls);
         }
 
@@ -216,7 +254,7 @@ public class Analyzer {
             if (link.type == CALL_EDGE) continue;
 
             // propagate these calls to all children
-            propagate(link.target, newCalls, mark);
+            propagate(link.target, newCalls, mark, depth + 1);
         }
     }
 
@@ -271,16 +309,23 @@ public class Analyzer {
     }
 
     private void post(StateSpace.State state, HashSet callers) {
-        Iterator i = callers.iterator();
-        while ( i.hasNext() ) {
-            StateSpace.State caller = (StateSpace.State)i.next();
-            post(state, caller);
+        HashSet set = (HashSet)propmap.get(state);
+        if ( set == null ) {
+            set = (HashSet)callers.clone();
+            propmap.put(state, set);
+        } else {
+            set.addAll(callers);
         }
     }
 
     private void post(StateSpace.State state, StateSpace.State caller) {
-        proplist = new PropagationList(state, caller, proplist);
-        proplength++;
+        HashSet set = (HashSet)propmap.get(state);
+        if ( set == null ) {
+            set = new HashSet();
+            propmap.put(state, set);
+        }
+
+        set.add(caller);
     }
 
 
@@ -414,7 +459,7 @@ public class Analyzer {
         boolean summary = Main.TRACE_SUMMARY.get();
         for ( Path path = p; path != null && path.link != null; path = path.tail ) {
 
-            if ( summary && path.link.weight == 0 ) {
+            if ( cntr > 1 && summary && path.link.weight == 0 ) {
                 int pc = path.state.getPC();
                 int npc = pc + program.readInstr(pc).getSize();
                 if ( path.link.target.getPC() == npc ) {
@@ -510,6 +555,7 @@ public class Analyzer {
         public MutableState ret(MutableState s) {
             frontierState.setType(RET_STATE);
             newAggregationPoint(frontierState);
+            retCount++;
 
             // do not continue abstract interpretation after this state; this state
             // is a return state and therefore is a dead end
@@ -527,6 +573,7 @@ public class Analyzer {
         public MutableState reti(MutableState s) {
             frontierState.setType(RETI_STATE);
             newAggregationPoint(frontierState);
+            retiCount++;
 
             // do not continue abstract interpretation after this state; this state
             // is a return state and therefore is a dead end

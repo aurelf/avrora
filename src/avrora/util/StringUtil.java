@@ -272,36 +272,41 @@ public class StringUtil {
 
     public static String milliAsString(long millis) {
         StringBuffer buf = new StringBuffer();
+        long[] result = millisToDays(millis);
 
-        if (millis >= MILLISECS_PER_DAY) {
-            int days = (int) (millis / MILLISECS_PER_DAY);
-            buf.append(days + "d ");
-            millis = millis - days * MILLISECS_PER_DAY;
-        }
+        if (result[DAYS] > 0) buf.append(result[DAYS] + "d ");
+        if (result[HOURS] > 0) buf.append(result[HOURS] + "h ");
+        if (result[MINS] > 0) buf.append(result[MINS] + "m ");
+        if (result[SECS] > 0) buf.append(result[SECS] + ".");
+        else buf.append("0.");
 
-        if (millis >= MILLISECS_PER_HOUR) {
-            int hours = (int) (millis / MILLISECS_PER_HOUR);
-            buf.append(hours + "h ");
-            millis = millis - hours * MILLISECS_PER_HOUR;
-        }
-        if (millis >= MILLISECS_PER_MIN) {
-            int min = (int) (millis / MILLISECS_PER_MIN);
-            buf.append(min + "m ");
-            millis = millis - min * MILLISECS_PER_MIN;
-        }
-        if (millis >= MILLISECS_PER_SEC) {
-            int secs = (int) (millis / MILLISECS_PER_SEC);
-            buf.append(secs + ".");
-            millis = millis - secs * MILLISECS_PER_SEC;
-        } else {
-            buf.append("0.");
-        }
-        if ( millis < 100 )
-            buf.append('0');
-        if ( millis < 10 )
-            buf.append('0');
+        millis = result[MILLIS];
+        if ( millis < 100 ) buf.append('0');
+        if ( millis < 10 ) buf.append('0');
         buf.append(millis + "s");
         return buf.toString();
+    }
+
+    public static int DAYS = 0;
+    public static int HOURS = 1;
+    public static int MINS = 2;
+    public static int SECS = 3;
+    public static int MILLIS = 4;
+
+    public static long[] millisToDays(long millis) {
+        int denom[] = { 24, 60, 60, 1000 };
+        return modulus(millis, denom);
+    }
+
+    public static long[] modulus(long val, int[] denom) {
+        long[] result = new long[denom.length + 1];
+        for ( int cntr = denom.length - 1; cntr > 0; cntr-- ) {
+            int radix = denom[cntr];
+            result[cntr+1] = (val % radix);
+            val = val / radix;
+        }
+        result[0] = val;
+        return result;
     }
 
     public static String toHex(long value, int width) {
@@ -313,6 +318,20 @@ public class StringUtil {
             result[width - cntr - 1] = HEX_CHARS[(int) (value >> (cntr * 4)) & 0xf];
 
         return new String(result);
+    }
+
+    public static String splice(String a[], String b[]) {
+        StringBuffer buf = new StringBuffer();
+        int cntr = 0;
+        for ( ; cntr < a.length; cntr++ ) {
+            buf.append(a[cntr]);
+            if ( cntr < b.length ) buf.append(b[cntr]);
+        }
+
+        for ( ; cntr < b.length; cntr++ ) {
+            buf.append(b[cntr]);
+        }
+        return buf.toString();
     }
 
     public static String quote(Object s) {

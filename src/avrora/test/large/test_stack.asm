@@ -1,5 +1,5 @@
 ;
-; $Id: test_stack.asm,v 1.2 2004/03/25 03:23:47 titzer Exp $
+; $Id: test_stack.asm,v 1.3 2004/07/08 01:12:38 titzer Exp $
 ;
 ; Test pushing 4 bytes onto the stack. When done, expect to see:
 	;; last 4 bytes of sram with 00, 01, 02, 03
@@ -40,3 +40,4 @@ PUSH_EM:
 		rjmp	PUSH_EM			; repeat
 PUSHED_ALL:	
 		nop
+break
