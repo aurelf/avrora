@@ -1177,21 +1177,21 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public void visit(Instr.ELPM i) { // extended load program memory
         int address = readRegisterWord(Register.Z);
-        int extra = state.readRAMPZ();
+        int extra = state.readIORegister(RAMPZ);
         byte val = state.readProgramByte(address + (extra << 16));
         state.writeRegister(Register.R0, val);
     }
 
     public void visit(Instr.ELPMD i) { // extended load program memory with destination
         int address = readRegisterWord(Register.Z);
-        int extra = state.readRAMPZ();
+        int extra = state.readIORegister(RAMPZ);
         byte val = state.readProgramByte(address + (extra << 16));
         state.writeRegister(i.r1, val);
     }
 
     public void visit(Instr.ELPMPI i) { // extends load program memory with post decrement
         int address = readRegisterWord(Register.Z);
-        int extra = state.readRAMPZ();
+        int extra = state.readIORegister(RAMPZ);
         byte val = state.readProgramByte(address + (extra << 16));
         state.writeRegister(i.r1, val);
         writeRegisterWord(Register.Z, address + 1);
