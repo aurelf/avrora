@@ -248,11 +248,8 @@ public abstract class BaseInterpreter implements State {
 
     private class NoInstr extends Instr {
 
-        private final int pc;
-
-        NoInstr(int pc) {
+        NoInstr() {
             super(null);
-            this.pc = pc;
         }
         /**
          * The <code>getOperands()</code> method returns a string representation
@@ -274,7 +271,7 @@ public abstract class BaseInterpreter implements State {
          * @param v the visitor to accept
          */
         public void accept(InstrVisitor v) {
-            throw new NoSuchInstructionException(pc);
+            throw new NoSuchInstructionException(getPC());
         }
 
         /**
@@ -295,11 +292,8 @@ public abstract class BaseInterpreter implements State {
 
     private class MisalignedInstr extends Instr {
 
-        private final int pc;
-
-        MisalignedInstr(int pc) {
+        MisalignedInstr() {
             super(null);
-            this.pc = pc;
         }
 
         /**
@@ -322,7 +316,7 @@ public abstract class BaseInterpreter implements State {
          * @param v the visitor to accept
          */
         public void accept(InstrVisitor v) {
-            throw new PCAlignmentException(pc);
+            throw new PCAlignmentException(getPC());
         }
 
         /**
@@ -341,6 +335,9 @@ public abstract class BaseInterpreter implements State {
 
     }
 
+    private final NoInstr NO_INSTR = new NoInstr();
+    private final MisalignedInstr MISALIGNED_INSTR = new MisalignedInstr();
+
 
     private static final int SREG_I_MASK = 1 << SREG_I;
     private static final int SREG_T_MASK = 1 << SREG_T;
@@ -350,6 +347,8 @@ public abstract class BaseInterpreter implements State {
     private static final int SREG_N_MASK = 1 << SREG_N;
     private static final int SREG_Z_MASK = 1 << SREG_Z;
     private static final int SREG_C_MASK = 1 << SREG_C;
+
+
 
     public BaseInterpreter(Simulator simulator, Program p, int flash_size, int ioreg_size, int sram_size) {
 
@@ -394,11 +393,11 @@ public abstract class BaseInterpreter implements State {
             if ( i != null ) {
                 flash_instr[cntr] = i;
                 for ( int s = 1; s < i.getSize(); s++ )
-                    flash_instr[cntr+s] = new MisalignedInstr(cntr+1);
+                    flash_instr[cntr+s] = NO_INSTR;
                 cntr += i.getSize();
             } else {
-                flash_instr[cntr] = new NoInstr(cntr);
-                flash_instr[cntr+1] = new MisalignedInstr(cntr+1);
+                flash_instr[cntr] = NO_INSTR;
+                flash_instr[cntr+1] = MISALIGNED_INSTR;
                 cntr += 2;
             }
         }
