@@ -20,53 +20,51 @@ public interface ISDLParserConstants {
   int OPERAND = 23;
   int WHERE = 24;
   int REGISTER = 25;
-  int IMMEDIATE = 26;
-  int ADDRESS = 27;
-  int ENCODING = 28;
-  int EXECUTE = 29;
-  int LOCAL = 30;
-  int IF = 31;
-  int ELSE = 32;
-  int AND = 33;
-  int OR = 34;
-  int XOR = 35;
-  int SUBROUTINE = 36;
-  int INLINE = 37;
-  int EXTERNAL = 38;
-  int RETURN = 39;
-  int BOOLEAN_LITERAL = 40;
-  int CYCLES = 41;
-  int PSEUDO = 42;
-  int WHEN = 43;
-  int SYNTAX = 44;
-  int LBRACKET = 45;
-  int RBRACKET = 46;
-  int EQUALS = 47;
-  int COMMA = 48;
-  int LPAREN = 49;
-  int RPAREN = 50;
-  int SEMI = 51;
-  int SHIFTLEFT = 52;
-  int SHIFTRIGHT = 53;
-  int ADD = 54;
-  int SUB = 55;
-  int MUL = 56;
-  int DIV = 57;
-  int B_AND = 58;
-  int B_OR = 59;
-  int B_XOR = 60;
-  int NOT = 61;
-  int B_COMP = 62;
-  int EQUAL = 63;
-  int NOTEQUAL = 64;
-  int LESS = 65;
-  int LESSEQ = 66;
-  int GREATER = 67;
-  int GREATEREQ = 68;
-  int DOLLAR = 69;
-  int IDENTIFIER = 70;
-  int LETTER = 71;
-  int DIGIT = 72;
+  int ENCODING = 26;
+  int EXECUTE = 27;
+  int LOCAL = 28;
+  int IF = 29;
+  int ELSE = 30;
+  int AND = 31;
+  int OR = 32;
+  int XOR = 33;
+  int SUBROUTINE = 34;
+  int INLINE = 35;
+  int EXTERNAL = 36;
+  int RETURN = 37;
+  int BOOLEAN_LITERAL = 38;
+  int CYCLES = 39;
+  int PSEUDO = 40;
+  int WHEN = 41;
+  int SYNTAX = 42;
+  int LBRACKET = 43;
+  int RBRACKET = 44;
+  int EQUALS = 45;
+  int COMMA = 46;
+  int LPAREN = 47;
+  int RPAREN = 48;
+  int SEMI = 49;
+  int SHIFTLEFT = 50;
+  int SHIFTRIGHT = 51;
+  int ADD = 52;
+  int SUB = 53;
+  int MUL = 54;
+  int DIV = 55;
+  int B_AND = 56;
+  int B_OR = 57;
+  int B_XOR = 58;
+  int NOT = 59;
+  int B_COMP = 60;
+  int EQUAL = 61;
+  int NOTEQUAL = 62;
+  int LESS = 63;
+  int LESSEQ = 64;
+  int GREATER = 65;
+  int GREATEREQ = 66;
+  int DOLLAR = 67;
+  int IDENTIFIER = 68;
+  int LETTER = 69;
+  int DIGIT = 70;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -100,8 +98,6 @@ public interface ISDLParserConstants {
     "\"operand\"",
     "\"where\"",
     "\"register\"",
-    "\"immediate\"",
-    "\"address\"",
     "\"encoding\"",
     "\"execute\"",
     "\"local\"",

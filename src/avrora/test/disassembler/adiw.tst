@@ -1,7 +1,7 @@
-adiw r24, 31
-adiw r26, 31
-adiw r28, 31
-adiw r30, 31
+adiw r24, 0x1F
+adiw r26, 0x1F
+adiw r28, 0x1F
+adiw r30, 0x1F
 adiw r24, 0x3F
 adiw r24, 0x00
 adiw r24, 0x1F

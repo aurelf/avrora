@@ -1,7 +1,7 @@
-sbiw r24, 31
-sbiw r26, 31
-sbiw r28, 31
-sbiw r30, 31
+sbiw r24, 0x1F
+sbiw r26, 0x1F
+sbiw r28, 0x1F
+sbiw r30, 0x1F
 sbiw r24, 0x3F
 sbiw r24, 0x00
 sbiw r24, 0x1F

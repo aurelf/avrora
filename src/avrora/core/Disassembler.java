@@ -69,6 +69,10 @@ public class Disassembler {
         return code[word*2] & 0xff;
     }
 
+    private int relative(int address) {
+        return address*2 + pc + 2;
+    }
+
 //--BEGIN DISASSEM GENERATOR--
     static final Register[] GPR_table = {
         Register.R0, 
@@ -1148,7 +1152,7 @@ public class Disassembler {
         // logical[0:3] -> 
         // logical[4:15] -> target[11:0]
         target |= (word1 & 0x00FFF);
-        return new Instr.RCALL(pc, target);
+        return new Instr.RCALL(pc, relative(target));
     }
     private Instr decode_BST_0(int word1) {
         if ( (word1 & 0x00008) != 0x00000 ) {
@@ -1194,7 +1198,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRPL(pc, target);
+        return new Instr.BRPL(pc, relative(target));
     }
     private Instr decode_BRGE_0(int word1) {
         int target = 0;
@@ -1202,7 +1206,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRGE(pc, target);
+        return new Instr.BRGE(pc, relative(target));
     }
     private Instr decode_BRTC_0(int word1) {
         int target = 0;
@@ -1210,7 +1214,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRTC(pc, target);
+        return new Instr.BRTC(pc, relative(target));
     }
     private Instr decode_BRNE_0(int word1) {
         int target = 0;
@@ -1218,7 +1222,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRNE(pc, target);
+        return new Instr.BRNE(pc, relative(target));
     }
     private Instr decode_BRVC_0(int word1) {
         int target = 0;
@@ -1226,7 +1230,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRVC(pc, target);
+        return new Instr.BRVC(pc, relative(target));
     }
     private Instr decode_BRID_0(int word1) {
         int target = 0;
@@ -1234,7 +1238,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRID(pc, target);
+        return new Instr.BRID(pc, relative(target));
     }
     private Instr decode_BRHC_0(int word1) {
         int target = 0;
@@ -1242,7 +1246,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRHC(pc, target);
+        return new Instr.BRHC(pc, relative(target));
     }
     private Instr decode_BRCC_0(int word1) {
         int target = 0;
@@ -1250,7 +1254,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRCC(pc, target);
+        return new Instr.BRCC(pc, relative(target));
     }
     private Instr decode_22(int word1) {
         // get value of bits logical[13:15]
@@ -1312,7 +1316,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRMI(pc, target);
+        return new Instr.BRMI(pc, relative(target));
     }
     private Instr decode_BRLT_0(int word1) {
         int target = 0;
@@ -1320,7 +1324,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRLT(pc, target);
+        return new Instr.BRLT(pc, relative(target));
     }
     private Instr decode_BRTS_0(int word1) {
         int target = 0;
@@ -1328,7 +1332,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRTS(pc, target);
+        return new Instr.BRTS(pc, relative(target));
     }
     private Instr decode_BREQ_0(int word1) {
         int target = 0;
@@ -1336,7 +1340,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BREQ(pc, target);
+        return new Instr.BREQ(pc, relative(target));
     }
     private Instr decode_BRVS_0(int word1) {
         int target = 0;
@@ -1344,7 +1348,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRVS(pc, target);
+        return new Instr.BRVS(pc, relative(target));
     }
     private Instr decode_BRIE_0(int word1) {
         int target = 0;
@@ -1352,7 +1356,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRIE(pc, target);
+        return new Instr.BRIE(pc, relative(target));
     }
     private Instr decode_BRHS_0(int word1) {
         int target = 0;
@@ -1360,7 +1364,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRHS(pc, target);
+        return new Instr.BRHS(pc, relative(target));
     }
     private Instr decode_BRLO_0(int word1) {
         int target = 0;
@@ -1368,7 +1372,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRLO(pc, target);
+        return new Instr.BRLO(pc, relative(target));
     }
     private Instr decode_24(int word1) {
         // get value of bits logical[13:15]
@@ -1403,7 +1407,7 @@ public class Disassembler {
         // logical[0:3] -> 
         // logical[4:15] -> target[11:0]
         target |= (word1 & 0x00FFF);
-        return new Instr.RJMP(pc, target);
+        return new Instr.RJMP(pc, relative(target));
     }
     private Instr decode_26(int word1) {
         // get value of bits logical[2:3]

@@ -140,15 +140,15 @@ public class Register {
             map.put("R" + cntr, reg);
         }
 
-        Register reg = new Register("x", 26, 16);
+        Register reg = new Register("X", 26, 16);
         map.put("x", reg);
         map.put("X", reg);
 
-        reg = new Register("y", 28, 16);
+        reg = new Register("Y", 28, 16);
         map.put("y", reg);
         map.put("Y", reg);
 
-        reg = new Register("z", 30, 16);
+        reg = new Register("Z", 30, 16);
         map.put("z", reg);
         map.put("Z", reg);
 

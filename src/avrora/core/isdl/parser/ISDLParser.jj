@@ -171,8 +171,6 @@ TOKEN :
   | < OPERAND : "operand" >
   | < WHERE : "where" >
   | < REGISTER : "register" >
-  | < IMMEDIATE : "immediate" >
-  | < ADDRESS : "address" >
   | < ENCODING : "encoding" >
   | < EXECUTE : "execute" >
   | < LOCAL : "local" >
@@ -341,7 +339,7 @@ OperandDecl OperandRangeDecl(Token n, Token k, Token b) : { Token l, h; }
 
 Token Kind() : { Token t; }
 {
-    ( t = "register" | t = "immediate" | t = "address" )
+    ( t = <IDENTIFIER> )
     { return t; }
 }
 

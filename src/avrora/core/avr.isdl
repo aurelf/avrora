@@ -19,7 +19,7 @@ architecture avr {
 //  OPERANDS ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    operand GPR[5]: register = {
+    operand GPR[5]: symbol = {
         r0  = 0,  r1  = 1,  r2  = 2,  r3  = 3,
         r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,
         r8  = 8,  r9  = 9,  r10 = 10, r11 = 11,
@@ -30,39 +30,39 @@ architecture avr {
         r28 = 28, r29 = 29, r30 = 30, r31 = 31
     };
 
-    operand HGPR[4]: register = {
+    operand HGPR[4]: symbol = {
         r16 = 0,  r17 = 1,  r18 = 2,  r19 = 3,
         r20 = 4,  r21 = 5,  r22 = 6,  r23 = 7,
         r24 = 8,  r25 = 9,  r26 = 10, r27 = 11,
         r28 = 12, r29 = 13, r30 = 14, r31 = 15
     };
 
-    operand MGPR[3]: register = {
+    operand MGPR[3]: symbol = {
         r16 = 0, r17 = 1, r18 = 2, r19 = 3,
         r20 = 4, r21 = 5, r22 = 6, r23 = 7
     };
 
-    operand YZ[1]: register = {
-        y = 1, z = 0
+    operand YZ[1]: symbol = {
+        Y = 1, Z = 0
     };
 
-    operand Z[0]: register = {
-        z = 0
+    operand Z[0]: symbol = {
+        Z = 0
     };
 
-    operand EGPR[4]: register = {
+    operand EGPR[4]: symbol = {
         r0  = 0,  r2  = 1,  r4  = 2,  r6  = 3,
         r8  = 4,  r10 = 5,  r12 = 6,  r14 = 7,
         r16 = 8,  r18 = 9,  r20 = 10, r22 = 11,
         r24 = 12, r26 = 13, r28 = 14, r30 = 15
     };
 
-    operand RDL[2]: register = {
+    operand RDL[2]: symbol = {
         r24 = 0, r26 = 1, r28 = 2, r30 = 3
     };
 
-    operand XYZ[2]: register = {
-        x = 0, y = 1, z = 2
+    operand XYZ[2]: symbol = {
+        X = 0, Y = 1, Z = 2
     };
 
     operand IMM3[3]: immediate = [0, 7];
@@ -70,10 +70,10 @@ architecture avr {
     operand IMM6[6]: immediate = [0, 63];
     operand IMM7[7]: immediate = [0, 127];
     operand IMM8[8]: immediate = [0, 255];
-    operand SREL[7]: immediate = [-64, 63];
-    operand LREL[11]: immediate = [-1024, 1023];
-    operand PADDR[16]: immediate = [0, 65536];
-    operand DADDR[12]: immediate = [0, 4096];
+    operand SREL[7]: relative = [-64, 63];
+    operand LREL[11]: relative = [-1024, 1023];
+    operand PADDR[16]: address = [0, 65536]; // this is encoded as a word address
+    operand DADDR[12]: address = [0, 4096];
 
 //---------------------------------------------------------------------------
 //  SUBROUTINES
@@ -863,7 +863,7 @@ architecture avr {
 
     instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
         encoding = { 0b10, imm[5], 0b0, imm[4:3], 0b0, rd[4:0], ar[0], imm[2:0] };
-        syntax = "ldd %rd, %ar + %imm";
+        syntax = "ldd %rd, %ar+%imm";
         cycles = 2;
         execute = {
             $regs(rd) = $sram($wregs(ar) + imm);
@@ -1302,7 +1302,7 @@ architecture avr {
 
     instruction "std" ar: YZ, imm: IMM6, rr: GPR {
         encoding = { 0b10, imm[5], 0b0, imm[4:3], 0b1, rr[4:0], ar[0], imm[2:0] };
-        syntax = "st %ar + %imm, %rr";
+        syntax = "std %ar+%imm, %rr";
         cycles = 2;
         execute = {
             $sram($wregs(ar) + imm) = $regs(rr);

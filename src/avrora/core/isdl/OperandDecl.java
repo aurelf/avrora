@@ -73,7 +73,7 @@ public abstract class OperandDecl {
         }
 
         public String getSomeMember() {
-            return (low+((high-low)/2))+"";
+            return "0x"+StringUtil.toHex((low+((high-low)/2)), 2);
         }
     }
 

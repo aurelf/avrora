@@ -562,7 +562,14 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             // if this is a register, we have to look it up in the table
             if ( o.isRegister() )
                 return "getReg("+o.type+"_table, "+o.name+")";
-            else return o.name.image;
+            else {
+                // this operand is not a register
+                OperandDecl od = o.getOperandDecl();
+                if ( od.kind.image.equals("relative") )
+                    return "relative("+o.name.image+")"; // this operand is relative to the PC address (and word aligned)
+                else
+                    return o.name.image;
+            }
         }
     }
 

@@ -205,6 +205,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         installIOReg("ICR"+n+"H", highTempReg);
         installIOReg("ICR"+n+"L", ICRn_reg);
+
+        timerPrinter = m.getSimulator().getPrinter("atmega.timer" + n);
     }
 
     protected void compareMatchA() {
