@@ -101,12 +101,12 @@ class ProcedureMapBuilder {
 
     private void addIndirectEntrypoints(ControlFlowGraph.Edge edge, ControlFlowGraph cfg) {
         List l = program.getIndirectEdges(edge.getSource().getLastAddress());
-        if ( l == null ) return;
+        if (l == null) return;
         Iterator i = l.iterator();
-        while ( i.hasNext() ) {
-            int target_addr = ((Integer)i.next()).intValue();
+        while (i.hasNext()) {
+            int target_addr = ((Integer) i.next()).intValue();
             ControlFlowGraph.Block target = cfg.getBlockStartingAt(target_addr);
-            if ( target != null ) {
+            if (target != null) {
                 ENTRYPOINTS.add(target);
             }
         }
@@ -162,21 +162,21 @@ class ProcedureMapBuilder {
 
         // create the initial map of entry points to empty lists
         Iterator entry_iter = ENTRYPOINTS.iterator();
-        while ( entry_iter.hasNext() ) {
+        while (entry_iter.hasNext()) {
             ControlFlowGraph.Block entry = (ControlFlowGraph.Block) entry_iter.next();
             procMap.put(entry, new LinkedList());
         }
 
         // add each block to the list of its respective procedure
         Iterator block_iter = cfg.getBlockIterator();
-        while ( block_iter.hasNext() ) {
+        while (block_iter.hasNext()) {
             ControlFlowGraph.Block block = (ControlFlowGraph.Block) block_iter.next();
             Object mark = ENTRYMAP.get(block);
-            if ( mark == null || !(mark instanceof ControlFlowGraph.Block) ) continue;
-            ControlFlowGraph.Block entry = (ControlFlowGraph.Block)mark;
+            if (mark == null || !(mark instanceof ControlFlowGraph.Block)) continue;
+            ControlFlowGraph.Block entry = (ControlFlowGraph.Block) mark;
 
-            if ( entry != null ) {
-                LinkedList list = (LinkedList)procMap.get(entry);
+            if (entry != null) {
+                LinkedList list = (LinkedList) procMap.get(entry);
                 list.add(block);
             }
         }

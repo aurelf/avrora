@@ -71,8 +71,10 @@ public class CodeRegion {
         }
 
         public String getType() {
-            if ( operandType != null ) return isRegister() ? "Register" : "int";
-            else return type.image;
+            if (operandType != null)
+                return isRegister() ? "Register" : "int";
+            else
+                return type.image;
         }
 
     }

@@ -33,7 +33,6 @@
 package avrora.syntax;
 
 
-
 /**
  * The <code>AbstractParser</code> is a superclass of all parsers introduced
  * to give multiple JavaCC-generated parsers a parent class.

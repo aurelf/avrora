@@ -308,7 +308,7 @@ public class ControlFlowGraph {
     private ProcedureMap pmap;
 
     public synchronized ProcedureMap getProcedureMap() {
-        if ( pmap == null ) {
+        if (pmap == null) {
             pmap = new ProcedureMapBuilder(program).buildMap();
         }
         return pmap;

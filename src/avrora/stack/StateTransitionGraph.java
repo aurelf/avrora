@@ -123,7 +123,7 @@ public class StateTransitionGraph {
      */
     public StateCache.State getCachedState(MutableState s) {
         StateCache.State ns = cache.getStateFor(s);
-        if ( ns.info == null ) ns.info = new StateInfo(ns);
+        if (ns.info == null) ns.info = new StateInfo(ns);
         return ns;
     }
 
@@ -136,10 +136,10 @@ public class StateTransitionGraph {
      * @param t the target node of the edge
      */
     public Edge addEdge(StateCache.State s, int type, int weight, StateCache.State t) {
-        if ( s.info == null )
-            throw Avrora.failure("No edge info for: "+s.getUniqueName());
-        if ( t.info == null )
-            throw Avrora.failure("No edge info for: "+t.getUniqueName());
+        if (s.info == null)
+            throw Avrora.failure("No edge info for: " + s.getUniqueName());
+        if (t.info == null)
+            throw Avrora.failure("No edge info for: " + t.getUniqueName());
         edgeCount++;
         return s.info.addEdge(type, weight, t);
     }
@@ -153,13 +153,13 @@ public class StateTransitionGraph {
      * @return one of the states on the current state frontier; null if there are none.
      */
     public StateCache.State getNextFrontierState() {
-        if ( frontierList == null ) return null;
+        if (frontierList == null) return null;
         StateList l = frontierList;
         frontierList = frontierList.next;
 
         StateCache.State state = l.state;
-        if ( state.info == null )
-            throw Avrora.failure("State on frontier has no edge info: "+state.getUniqueName());
+        if (state.info == null)
+            throw Avrora.failure("State on frontier has no edge info: " + state.getUniqueName());
 
         state.onFrontier = false;
         frontierCount--;
@@ -171,10 +171,10 @@ public class StateTransitionGraph {
      * @param s the state to add
      */
     public void addFrontierState(StateCache.State s) {
-        if ( isExplored(s) )
-            throw Avrora.failure("Attempt to re-add state to frontier: "+s.getUniqueName());
+        if (isExplored(s))
+            throw Avrora.failure("Attempt to re-add state to frontier: " + s.getUniqueName());
 
-        if ( !isFrontier(s) ) {
+        if (!isFrontier(s)) {
             frontierList = new StateList(s, frontierList);
             s.onFrontier = true;
             frontierCount++;
@@ -200,10 +200,10 @@ public class StateTransitionGraph {
      * @param s the state to mark as explored
      */
     public void setExplored(StateCache.State s) {
-        if ( isFrontier(s) )
-            throw Avrora.failure("state cannot be on frontier and explored: "+s.getUniqueName());
+        if (isFrontier(s))
+            throw Avrora.failure("state cannot be on frontier and explored: " + s.getUniqueName());
 
-        if ( !isExplored(s) ) {
+        if (!isExplored(s)) {
             s.isExplored = true;
             exploredCount++;
         }
@@ -252,24 +252,24 @@ public class StateTransitionGraph {
 
     public void deleteStateSets() {
         Iterator i = cache.getStateIterator();
-        while ( i.hasNext() ) {
-            StateCache.State state = (StateCache.State)i.next();
+        while (i.hasNext()) {
+            StateCache.State state = (StateCache.State) i.next();
             state.info.stateSet = null;
         }
     }
 
     public void dump(Printer p) {
         Iterator i = cache.getStateIterator();
-        while ( i.hasNext() ) {
-            StateCache.State state = (StateCache.State)i.next();
+        while (i.hasNext()) {
+            StateCache.State state = (StateCache.State) i.next();
             StringBuffer buf = dumpToBuffer(state);
             p.println(buf.toString());
         }
 
         i = cache.getStateIterator();
-        while ( i.hasNext() ) {
-            StateCache.State state = (StateCache.State)i.next();
-            for ( Edge e = state.info.forwardEdges; e != null; e = e.forwardLink ) {
+        while (i.hasNext()) {
+            StateCache.State state = (StateCache.State) i.next();
+            for (Edge e = state.info.forwardEdges; e != null; e = e.forwardLink) {
                 StringBuffer buf = dumpToBuffer(e);
                 p.println(buf.toString());
             }
@@ -304,7 +304,7 @@ public class StateTransitionGraph {
         buf.append(AbstractArithmetic.toString(state.getIORegisterAV(IORegisterConstants.EIMSK)));
         buf.append(" TIMSK=");
         buf.append(AbstractArithmetic.toString(state.getIORegisterAV(IORegisterConstants.TIMSK)));
-        for ( int cntr = 0; cntr < IORegisterConstants.NUM_REGS; cntr++ ) {
+        for (int cntr = 0; cntr < IORegisterConstants.NUM_REGS; cntr++) {
             buf.append(" ");
             buf.append(AbstractInterpreter.toShortString(state.getRegisterAV(cntr)));
         }

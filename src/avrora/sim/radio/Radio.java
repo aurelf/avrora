@@ -27,10 +27,10 @@ public interface Radio {
 
         public int strength = 0x3ff;
 
-         /* public final long delivery;
-         *
-         * // delivery = origination + time to deliver
-         */
+        /* public final long delivery;
+        *
+        * // delivery = origination + time to deliver
+        */
 
         public RadioPacket(byte data, long frequency, long origination) {
             this.data = data;
@@ -41,9 +41,9 @@ public interface Radio {
 
         public int compareTo(Object o) {
             if (o instanceof RadioPacket) {
-                RadioPacket p = (RadioPacket)o;
+                RadioPacket p = (RadioPacket) o;
                 return origination.compareTo(p.origination);
-            }  else {
+            } else {
                 return -1;
             }
         }
@@ -65,10 +65,10 @@ public interface Radio {
         public void disable();
 
         /**
-        public void receive();
+         public void receive();
 
-        public void transmit();
-        */
+         public void transmit();
+         */
         // use Microcontroller.Pin.Input, Microcontroller.Pin.Output. ...
     }
 

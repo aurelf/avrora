@@ -54,7 +54,8 @@ public abstract class BaseInterpreter implements State {
     protected final State.IOReg[] ioregs;
     protected byte[] sram;
     protected MulticastWatch[] sram_probes;
-    protected final Program.Impression impression;
+    protected Instr[] flash_instr;
+    protected byte[] flash_data;
     protected long postedInterrupts;
     protected final int sram_start;
     protected final int sram_max;
@@ -211,6 +212,136 @@ public abstract class BaseInterpreter implements State {
      */
     protected final DeltaQueue eventQueue;
 
+    public class NoSuchInstructionException extends Avrora.Error {
+        public final int pc;
+        protected NoSuchInstructionException(int pc) {
+            super("Program error", "attempt to execute non-existant instruction at 0x"+StringUtil.toHex(pc, 4));
+            this.pc = pc;
+        }
+    }
+
+    public class PCOutOfBoundsException extends Avrora.Error {
+        public final int pc;
+        protected PCOutOfBoundsException(int pc) {
+            super("Program error", "PC out of bounds at 0x"+StringUtil.toHex(pc, 4));
+            this.pc = pc;
+        }
+    }
+
+    public class PCAlignmentException extends Avrora.Error {
+        public final int pc;
+        protected PCAlignmentException(int pc) {
+            super("Program error", "PC misaligned at 0x"+StringUtil.toHex(pc, 4));
+            this.pc = pc;
+        }
+    }
+
+    public class AddressOutOfBoundsException extends Avrora.Error {
+        public final String segment;
+        public final int data_addr;
+        protected AddressOutOfBoundsException(String s, int da) {
+            super("Program error", "access to "+StringUtil.quote(s)+" out of bounds at 0x"+StringUtil.toHex(da, 4));
+            this.data_addr = da;
+            this.segment = s;
+        }
+    }
+
+    private class NoInstr extends Instr {
+
+        private final int pc;
+
+        NoInstr(int pc) {
+            super(null);
+            this.pc = pc;
+        }
+        /**
+         * The <code>getOperands()</code> method returns a string representation
+         * of the operands of the instruction. This is useful for printing and
+         * tracing of instructions as well as generating listings.
+         *
+         * @return a string representing the operands of the instruction
+         */
+        public String getOperands() {
+            throw Avrora.failure("no instruction here");
+        }
+
+        /**
+         * The <code>accept()</code> method is part of the visitor pattern for
+         * instructions. The visitor pattern uses two virtual dispatches combined
+         * with memory overloading to achieve dispatching on multiple types. The
+         * result is clean and modular code.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(InstrVisitor v) {
+            throw new NoSuchInstructionException(pc);
+        }
+
+        /**
+         * The <code>build()</code> method constructs a new <code>Instr</code>
+         * instance with the given operands, checking the operands against
+         * the constraints that are specific to each instruction.
+         *
+         * @param pc  the address at which the instruction will be located
+         * @param ops the operands to the instruction
+         * @return a new <code>Instr</code> instance representing the
+         *         instruction with the given operands
+         */
+        public Instr build(int pc, Operand[] ops) {
+            throw Avrora.failure("no instruction here");
+        }
+
+    }
+
+    private class MisalignedInstr extends Instr {
+
+        private final int pc;
+
+        MisalignedInstr(int pc) {
+            super(null);
+            this.pc = pc;
+        }
+
+        /**
+         * The <code>getOperands()</code> method returns a string representation
+         * of the operands of the instruction. This is useful for printing and
+         * tracing of instructions as well as generating listings.
+         *
+         * @return a string representing the operands of the instruction
+         */
+        public String getOperands() {
+            throw Avrora.failure("no instruction here");
+        }
+
+        /**
+         * The <code>accept()</code> method is part of the visitor pattern for
+         * instructions. The visitor pattern uses two virtual dispatches combined
+         * with memory overloading to achieve dispatching on multiple types. The
+         * result is clean and modular code.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(InstrVisitor v) {
+            throw new PCAlignmentException(pc);
+        }
+
+        /**
+         * The <code>build()</code> method constructs a new <code>Instr</code>
+         * instance with the given operands, checking the operands against
+         * the constraints that are specific to each instruction.
+         *
+         * @param pc  the address at which the instruction will be located
+         * @param ops the operands to the instruction
+         * @return a new <code>Instr</code> instance representing the
+         *         instruction with the given operands
+         */
+        public Instr build(int pc, Operand[] ops) {
+            throw Avrora.failure("no instruction here");
+        }
+
+    }
+
+
     private static final int SREG_I_MASK = 1 << SREG_I;
     private static final int SREG_T_MASK = 1 << SREG_T;
     private static final int SREG_H_MASK = 1 << SREG_H;
@@ -248,10 +379,33 @@ public abstract class BaseInterpreter implements State {
         sram = new byte[sram_size];
 
         // make a local copy of the program's instructions
-        impression = p.makeNewImpression(flash_size);
+        makeImpression(p);
 
         // initialize IO registers to default values
         initializeIORegs();
+    }
+
+    protected void makeImpression(Program p) {
+        flash_instr = new Instr[p.program_end];
+        flash_data = new byte[p.program_end];
+
+        for ( int cntr = 0; cntr < p.program_end; ) {
+            Instr i = p.readInstr(cntr);
+            if ( i != null ) {
+                flash_instr[cntr] = i;
+                for ( int s = 1; s < i.getSize(); s++ )
+                    flash_instr[cntr+s] = new MisalignedInstr(cntr+1);
+                cntr += i.getSize();
+            } else {
+                flash_instr[cntr] = new NoInstr(cntr);
+                flash_instr[cntr+1] = new MisalignedInstr(cntr+1);
+                cntr += 2;
+            }
+        }
+
+        // now initialize the flash data
+        for ( int cntr = 0; cntr < p.program_end; cntr++ )
+            flash_data[cntr] = p.readProgramByte(cntr);
     }
 
     protected void start() {
@@ -436,14 +590,17 @@ public abstract class BaseInterpreter implements State {
      *                                        memory range
      */
     public byte getDataByte(int address) {
-        if (address < NUM_REGS) return regs[address];
-        if (address < sram_start) return ioregs[address - NUM_REGS].read();
-        return readDataByte(address - sram_start);
+        if (address >= sram_max) throw new AddressOutOfBoundsException("sram", address);
+        if (address >= sram_start)
+            return readDataByte(address - sram_start);
+        if (address >= NUM_REGS) return ioregs[address - NUM_REGS].read();
+        if (address >= 0) return regs[address];
+        else throw new AddressOutOfBoundsException("sram", address);
     }
 
     private byte readDataByte(int offset) {
         byte val = sram[offset];
-        // write to memory, checking for any memory probes
+        // read memory, checking for any memory probes
         Simulator.Watch p;
         if (sram_probes != null && (p = sram_probes[offset]) != null) {
             Instr i = getCurrentInstr();
@@ -470,7 +627,11 @@ public abstract class BaseInterpreter implements State {
      *                                        program memory range
      */
     public byte getProgramByte(int address) {
-        return impression.readProgramByte(address);
+        try {
+            return flash_data[address];
+        } catch ( ArrayIndexOutOfBoundsException e ) {
+            throw new AddressOutOfBoundsException("program", address);
+        }
     }
 
     /**
@@ -483,13 +644,12 @@ public abstract class BaseInterpreter implements State {
      * @param val     the value to write
      */
     public void setDataByte(int address, byte val) {
-        if (address < NUM_REGS)
-            regs[address] = val;
-        else if (address < sram_start)
-            ioregs[address - NUM_REGS].write(val);
-        else {
+        if (address >= sram_max) throw new AddressOutOfBoundsException("sram", address);
+        else if (address >= sram_start)
             writeDataByte(address - sram_start, val);
-        }
+        else if (address >= NUM_REGS) ioregs[address - NUM_REGS].write(val);
+        else if (address >= 0) regs[address] = val;
+        else throw new AddressOutOfBoundsException("sram", address);
     }
 
     private void writeDataByte(int offset, byte val) {
@@ -501,13 +661,7 @@ public abstract class BaseInterpreter implements State {
             sram[offset] = val;
             p.fireAfterWrite(i, pc, this, offset + sram_start, val);
         } else {
-            try{
-                sram[offset] = val;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                Instr i = getCurrentInstr();
-                System.err.println(i + ", " + regs[22] +", " + getSP());
-                throw e;
-            }
+            sram[offset] = val;
         }
     }
 
@@ -746,7 +900,15 @@ public abstract class BaseInterpreter implements State {
      *         at that address in the program
      */
     public Instr getInstr(int address) {
-        return impression.readInstr(address);
+        try {
+            return flash_instr[address];
+        } catch ( ArrayIndexOutOfBoundsException e) {
+            throw new PCOutOfBoundsException(address);
+        }
+    }
+
+    protected void setInstr(Instr i, int address) {
+        flash_instr[address] = i;
     }
 
     /**
@@ -786,7 +948,7 @@ public abstract class BaseInterpreter implements State {
      * @param num the interrupt number to post
      */
     public void unpostInterrupt(int num) {
-        if(num > 0) {
+        if (num > 0) {
             postedInterrupts &= ~(1 << num);
             innerLoop = false;
         }
@@ -803,7 +965,7 @@ public abstract class BaseInterpreter implements State {
      * @param num the interrupt number to post
      */
     public void postInterrupt(int num) {
-        if(num > 0) {
+        if (num > 0) {
             postedInterrupts |= 1 << num;
             innerLoop = false;
         }
@@ -817,6 +979,14 @@ public abstract class BaseInterpreter implements State {
     protected void disableInterrupts() {
         I = false;
         innerLoop = false;
+    }
+
+    protected ProbedInstr getProbedInstr(int addr) {
+        Instr i = getInstr(addr);
+        if (i instanceof ProbedInstr)
+            return ((ProbedInstr) i);
+        else
+            return null;
     }
 
     private class SREG_reg implements State.IOReg {

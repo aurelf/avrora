@@ -88,9 +88,10 @@ public class ProcedureMap {
      */
     public boolean isSharedBetweenProcedures(ControlFlowGraph.Block b) {
         Object o = entryMap.get(b);
-        if ( o != null && !(o instanceof ControlFlowGraph.Block) )
+        if (o != null && !(o instanceof ControlFlowGraph.Block))
             return true;
-        else return false;
+        else
+            return false;
     }
 
     /**
@@ -106,8 +107,10 @@ public class ProcedureMap {
      */
     public ControlFlowGraph.Block getProcedureContaining(ControlFlowGraph.Block b) {
         Object o = entryMap.get(b);
-        if ( o instanceof ControlFlowGraph.Block ) return (ControlFlowGraph.Block)o;
-        else return null;
+        if (o instanceof ControlFlowGraph.Block)
+            return (ControlFlowGraph.Block) o;
+        else
+            return null;
     }
 
     /**
@@ -121,7 +124,7 @@ public class ProcedureMap {
      * the specified entrypoint
      */
     public Collection getProcedureBlocks(ControlFlowGraph.Block entry) {
-        return (Collection)procMap.get(entry);
+        return (Collection) procMap.get(entry);
     }
 
     /**

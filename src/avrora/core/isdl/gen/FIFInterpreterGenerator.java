@@ -23,18 +23,18 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
     public void generateCode() {
         printer.indent();
         new FIFBuilderEmitter().generate(architecture);
-        architecture.accept((Architecture.SubroutineVisitor)this);
+        architecture.accept((Architecture.SubroutineVisitor) this);
         generateExecuteMethod();
         printer.unindent();
     }
 
     private void generateExecuteMethod() {
-        architecture.accept((Architecture.InstrVisitor)this);
+        architecture.accept((Architecture.InstrVisitor) this);
     }
 
     public void visit(InstrDecl d) {
-        printer.startblock("protected class FIFInstr_"+d.getInnerClassName()+" extends FIFInstr");
-        printer.println("FIFInstr_"+d.getInnerClassName()+"(Instr i, int pc) { super(i, pc); }");
+        printer.startblock("protected class FIFInstr_" + d.getInnerClassName() + " extends FIFInstr");
+        printer.println("FIFInstr_" + d.getInnerClassName() + "(Instr i, int pc) { super(i, pc); }");
         printer.startblock("public void execute(FIFInterpreter interp) ");
 
         // initialize the map of local variables to operands
@@ -49,7 +49,7 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
 
     public void visit(VarAssignStmt s) {
         String var = getVariable(s.variable);
-        if ( var.equals("nextInstr.pc") ) {
+        if (var.equals("nextInstr.pc")) {
             printer.print("nextInstr = fifMap[");
             s.expr.accept(codeGen);
             printer.println("];");
@@ -80,21 +80,20 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
             int regcount = 0;
             int immcount = 0;
 
-            printer.startblock("public void visit("+d.getClassName()+" i)");
+            printer.startblock("public void visit(" + d.getClassName() + " i)");
 
-            printer.println("instr = new FIFInstr_"+d.getInnerClassName()+"(i, pc);");
+            printer.println("instr = new FIFInstr_" + d.getInnerClassName() + "(i, pc);");
             Iterator i = d.getOperandIterator();
-            while ( i.hasNext() ) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+            while (i.hasNext()) {
+                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
                 String n, s = "";
-                if ( o.isRegister() ) {
-                    n = "r"+(++regcount);
+                if (o.isRegister()) {
+                    n = "r" + (++regcount);
                     s = ".getNumber()";
-                }
-                else
-                    n = "imm"+(++immcount);
+                } else
+                    n = "imm" + (++immcount);
 
-                printer.println("instr."+n+" = i."+n+s+";");
+                printer.println("instr." + n + " = i." + n + s + ";");
             }
             printer.endblock();
         }
@@ -110,9 +109,11 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
             CodeRegion.Operand o = (CodeRegion.Operand) i.next();
 
             String image = o.name.image;
-            if ( cr instanceof InstrDecl ) {
-                if ( o.isRegister() ) image = "r"+(++regcount);
-                else image = "imm"+(++immcount);
+            if (cr instanceof InstrDecl) {
+                if (o.isRegister())
+                    image = "r" + (++regcount);
+                else
+                    image = "imm" + (++immcount);
             }
 
             operandMap.put(o.name.image, image);
@@ -122,11 +123,12 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
     }
 
     protected String getVariable(Token var) {
-        if ( var.image.startsWith("tmp_") ) return var.image;
-        else if ( operandMap.get(var.image) != null ) {
-            return (String)operandMap.get(var.image);
+        if (var.image.startsWith("tmp_"))
+            return var.image;
+        else if (operandMap.get(var.image) != null) {
+            return (String) operandMap.get(var.image);
         } else {
-            return "interp."+var.image;
+            return "interp." + var.image;
         }
     }
 }

@@ -391,12 +391,12 @@ public abstract class Simulator implements IORegisterConstants {
      * <code>Simulator</code> instance.
      */
     public static final Interrupt IGNORE = new Interrupt() {
-	    public void force() {
-	    }
+        public void force() {
+        }
 
-	    public void fire() {
-	    }
-	};
+        public void fire() {
+        }
+    };
 
     /**
      * The <code>getMicrocontroller()</code> method gets a reference to the
@@ -456,14 +456,14 @@ public abstract class Simulator implements IORegisterConstants {
                     microcontroller.getRamSize());
         } else if (LEGACY_INTERPRETER) {
             interpreter = new LegacyInterpreter(this, program,
-						microcontroller.getFlashSize(),
-						microcontroller.getIORegSize(),
-						microcontroller.getRamSize());
+                    microcontroller.getFlashSize(),
+                    microcontroller.getIORegSize(),
+                    microcontroller.getRamSize());
         } else {
             interpreter = new GenInterpreter(this, program,
-					     microcontroller.getFlashSize(),
-					     microcontroller.getIORegSize(),
-					     microcontroller.getRamSize());
+                    microcontroller.getFlashSize(),
+                    microcontroller.getIORegSize(),
+                    microcontroller.getRamSize());
         }
     }
 
@@ -873,8 +873,8 @@ public abstract class Simulator implements IORegisterConstants {
             int posts = this.value & other.value & byteMask;
             long posted = 0;
             int count = 0;
-            while(posts != 0) {
-                if((posts & 0x1) != 0) {
+            while (posts != 0) {
+                if ((posts & 0x1) != 0) {
                     posted |= (0x1 << mapping[count]);
 
                 }
@@ -909,12 +909,12 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
 
-                public void update(IMRReg other) {
+        public void update(IMRReg other) {
             int posts = this.value & other.value & byteMask;
             long posted = 0;
             int count = 0;
-            while(posts != 0) {
-                if((posts & 0x1) != 0) {
+            while (posts != 0) {
+                if ((posts & 0x1) != 0) {
                     posted |= (0x1 << mapping[count]);
 
                 }

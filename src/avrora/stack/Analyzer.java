@@ -92,7 +92,7 @@ public class Analyzer {
     public static final int RETI_STATE = 2;
 
     public static final String[] EDGE_NAMES = {"", "PUSH", "POP", "CALL", "INT", "RET", "RETI", "SPECIAL"};
-    public static final int[]    EDGE_DELTA = {0, 1, -1, 2, 2, 0, 0, 0};
+    public static final int[] EDGE_DELTA = {0, 1, -1, 2, 2, 0, 0, 0};
 
     public static boolean TRACE;
     public static boolean running;
@@ -112,7 +112,7 @@ public class Analyzer {
      */
     public void run() {
         running = true;
-        if ( MONITOR_STATES )
+        if (MONITOR_STATES)
             new MonitorThread().start();
 
         long start = System.currentTimeMillis();
@@ -123,7 +123,7 @@ public class Analyzer {
             findMaximalPath();
             traverseTime = System.currentTimeMillis() - check;
             running = false;
-        } catch ( OutOfMemoryError ome ) {
+        } catch (OutOfMemoryError ome) {
             // free the reserved memory
             reserve = null;
             long check = System.currentTimeMillis();
@@ -152,8 +152,8 @@ public class Analyzer {
         Iterator i = graph.getStateCache().getStateIterator();
         Distribution sizeDist = new Distribution("Set Size Statistics", "Number of sets",
                 "Aggregate size", "Distribution of Set Size");
-        while ( i.hasNext() ) {
-            StateCache.State state = (StateCache.State)i.next();
+        while (i.hasNext()) {
+            StateCache.State state = (StateCache.State) i.next();
             StateCache.Set stateSet = state.info.stateSet;
             int size = stateSet == null ? 0 : stateSet.size();
             sizeDist.record(size);
@@ -165,8 +165,8 @@ public class Analyzer {
     private void analyzeStates() {
         Iterator i = graph.getStateCache().getStateIterator();
         Distribution pcDist = new Distribution("Distribution of program states over PC", "Number of unique instructions", null, "Distribution");
-        while ( i.hasNext() ) {
-            StateCache.State s = (StateCache.State)i.next();
+        while (i.hasNext()) {
+            StateCache.State s = (StateCache.State) i.next();
             pcDist.record(s.getPC());
 
         }
@@ -190,10 +190,10 @@ public class Analyzer {
         public void run() {
             int cntr = 0;
             try {
-                while ( running ) {
+                while (running) {
                     sleep(5000);
-                    if ( !running ) break;
-                    if ( cntr % 10 == 0 ) {
+                    if (!running) break;
+                    if (cntr % 10 == 0) {
                         printStatHeader();
                     }
 
@@ -201,7 +201,7 @@ public class Analyzer {
 
                     cntr++;
                 }
-            } catch ( InterruptedException e ) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -218,8 +218,8 @@ public class Analyzer {
         countAggregElems();
         print_just_9(numSets);
         print_just_12(numElems);
-        String s = Long.toString(retCount)+"/"+Long.toString(retiCount);
-        Terminal.print(StringUtil.rightJustify(s,12));
+        String s = Long.toString(retCount) + "/" + Long.toString(retiCount);
+        Terminal.print(StringUtil.rightJustify(s, 12));
         print_just_9(newRetCount);
         print_just_9(newEdgeCount);
         Terminal.nextln();
@@ -259,12 +259,12 @@ public class Analyzer {
     protected void buildReachableStateSpace() {
         StateCache.State s = graph.getNextFrontierState();
 
-        while ( true ) {
-            if ( s != null ) {
+        while (true) {
+            if (s != null) {
                 processFrontierState(s);
-            } else if ( newReturnStates != null ) {
+            } else if (newReturnStates != null) {
                 processNewReturns();
-            } else if ( newEdges != null ) {
+            } else if (newEdges != null) {
                 processNewEdges();
             } else {
                 break;
@@ -281,7 +281,7 @@ public class Analyzer {
      * are pushed onto the frontier.
      */
     protected void processNewReturns() {
-        while ( newReturnStates != null ) {
+        while (newReturnStates != null) {
             StateCache.State state = newReturnStates.state;
             propagateOneBackwards(state, state, state.copy(), new Object());
             newReturnStates = newReturnStates.next;
@@ -290,11 +290,11 @@ public class Analyzer {
     }
 
     protected void processNewEdges() {
-        while ( newEdges != null ) {
+        while (newEdges != null) {
             StateTransitionGraph.Edge edge = newEdges.edge;
             newEdges = newEdges.next;
             StateCache.Set set = edge.target.info.stateSet;
-            if ( set != null && !set.isEmpty() )
+            if (set != null && !set.isEmpty())
                 propagateSetBackwards(edge.source, edge.target.info.stateSet, new Object());
             newEdgeCount--;
         }
@@ -307,9 +307,9 @@ public class Analyzer {
         t.mark = mark;
 
         StateTransitionGraph.StateInfo info = t.info;
-        if ( info.stateSet == null )
+        if (info.stateSet == null)
             info.stateSet = graph.newSet();
-        else if ( info.stateSet.contains(rt) )
+        else if (info.stateSet.contains(rt))
             return;
 
         info.stateSet.add(rt);
@@ -333,9 +333,9 @@ public class Analyzer {
         t.mark = mark;
 
         StateTransitionGraph.StateInfo info = t.info;
-        if ( info.stateSet == null )
+        if (info.stateSet == null)
             info.stateSet = graph.newSet();
-        else if ( info.stateSet.containsAll(rset) )
+        else if (info.stateSet.containsAll(rset))
             return;
 
         for (StateTransitionGraph.Edge edge = info.backwardEdges; edge != null; edge = edge.backwardLink) {
@@ -354,10 +354,10 @@ public class Analyzer {
 
     private void insertReturnEdges(StateCache.State caller, StateCache.Set prev, StateCache.Set rset) {
         Iterator i = rset.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             Object o = i.next();
-            if ( !prev.contains(o) ) {
-                StateCache.State rs = (StateCache.State)o;
+            if (!prev.contains(o)) {
+                StateCache.State rs = (StateCache.State) o;
                 insertReturnEdge(caller, rs.copy(), rs.getType() == RETI_STATE);
             }
         }
@@ -367,7 +367,7 @@ public class Analyzer {
         int cpc = caller.getPC();
         int npc;
 
-        if ( reti ) {
+        if (reti) {
             npc = cpc;
             rstate.setFlag_I(AbstractArithmetic.TRUE);
         } else {
@@ -469,7 +469,7 @@ public class Analyzer {
                     // node has not been seen before, traverse it
                     try {
                         tail = findMaximalPath(edge.target, stack, depth + edge.weight);
-                    } catch ( UnboundedStackException e) {
+                    } catch (UnboundedStackException e) {
                         // this node is part of an unbounded cycle, add it to the path
                         // and rethrow the exception
                         e.path = new Path(depth + edge.weight, edge, e.path);
@@ -483,7 +483,7 @@ public class Analyzer {
 
                 // remember the shortest path (in number of links) to the
                 // maximum depth stack from following any of the links
-                if ( extra > maxdepth || (tail.length < minlength && extra == maxdepth)) {
+                if (extra > maxdepth || (tail.length < minlength && extra == maxdepth)) {
                     maxdepth = extra;
                     maxtail = tail;
                     maxedge = edge;
@@ -524,17 +524,17 @@ public class Analyzer {
         printStats();
 
         printQuantity("Time to build graph   ", StringUtil.milliAsString(buildTime));
-        if ( maximalPath == null ) {
+        if (maximalPath == null) {
             Terminal.printRed("No maximal path data.");
             Terminal.nextln();
             return;
         }
 
         printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
-        if ( unbounded )
+        if (unbounded)
             printQuantity("Maximum stack depth   ", "unbounded");
         else
-            printQuantity("Maximum stack depth   ", "" + maximalPath.depth+" bytes" );
+            printQuantity("Maximum stack depth   ", "" + maximalPath.depth + " bytes");
         printPath(maximalPath);
     }
 
@@ -545,19 +545,19 @@ public class Analyzer {
     private void printPath(Path p) {
         int depth = 0;
         int cntr = 1;
-        for ( Path path = p; path != null && path.edge != null; path = path.tail ) {
+        for (Path path = p; path != null && path.edge != null; path = path.tail) {
 
             StateTransitionGraph.Edge edge = path.edge;
 
-            if ( cntr > 1 && TRACE_SUMMARY && edge.weight == 0 ) {
+            if (cntr > 1 && TRACE_SUMMARY && edge.weight == 0) {
                 int pc = edge.source.getPC();
-                if ( edge.target.getPC() == program.getNextPC(pc) ) {
+                if (edge.target.getPC() == program.getNextPC(pc)) {
                     cntr++;
                     continue;
                 }
             }
 
-            printFullState("["+cntr+"] Depth: "+depth, edge.source);
+            printFullState("[" + cntr + "] Depth: " + depth, edge.source);
             Terminal.print("    ");
             StatePrinter.printEdge(edge.type, edge.weight, edge.target);
             depth += edge.weight;
@@ -823,7 +823,7 @@ public class Analyzer {
         private void addEdge(int type, StateCache.State s, StateCache.State t, int weight) {
             traceEdge(type, s, t, weight);
             StateTransitionGraph.Edge edge = graph.addEdge(s, type, weight, t);
-            if ( graph.isExplored(t) )
+            if (graph.isExplored(t))
                 postNewEdge(edge);
         }
 
@@ -843,7 +843,7 @@ public class Analyzer {
     }
 
     private void printFullState(String head, StateCache.State s) {
-        Terminal.print(head+" ");
+        Terminal.print(head + " ");
         StatePrinter.printStateName(s);
         Terminal.nextln();
         Instr instr = program.readInstr(s.getPC());

@@ -75,7 +75,6 @@ public class MultiSimulateAction extends SimAction {
     double endms;
 
 
-
     public void run(String[] args) throws Exception {
 
         Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
@@ -92,14 +91,14 @@ public class MultiSimulateAction extends SimAction {
         PlatformFactory pf = getPlatform();
         SimulatorThread st;
 
-        for(int i = 0; i < NODECOUNT.get(); i++) {
+        for (int i = 0; i < NODECOUNT.get(); i++) {
 
             // TODO: Use a hashtable to avoid creating duplicate programs of the same input
             // files.
             Program program = null;
             String[] argS = new String[1];
 
-            if(i < args.length) {
+            if (i < args.length) {
                 argS[0] = args[i];
             }
             program = Main.readProgram(argS);
@@ -121,7 +120,7 @@ public class MultiSimulateAction extends SimAction {
             Radio radio = microcontroller.getRadio();
             radio.setSimulatorThread(st);
 
-            if(radio != null) {
+            if (radio != null) {
                 SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
             }
 
@@ -134,8 +133,8 @@ public class MultiSimulateAction extends SimAction {
             //simulator.start();
             Iterator threadIterator = simulatorThreadList.iterator();
 
-            while(threadIterator.hasNext()) {
-                SimulatorThread thread = (SimulatorThread)threadIterator.next();
+            while (threadIterator.hasNext()) {
+                SimulatorThread thread = (SimulatorThread) threadIterator.next();
                 thread.start();
             }
         } finally {

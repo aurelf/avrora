@@ -240,34 +240,34 @@ public class Architecture {
      */
     public void accept(Visitor v) {
 
-        accept((OperandVisitor)v);
-        accept((EncodingVisitor)v);
-        accept((SubroutineVisitor)v);
-        accept((InstrVisitor)v);
+        accept((OperandVisitor) v);
+        accept((EncodingVisitor) v);
+        accept((SubroutineVisitor) v);
+        accept((InstrVisitor) v);
     }
 
     public void accept(OperandVisitor v) {
         Iterator i;
         i = operands.iterator();
-        while ( i.hasNext() ) v.visit((OperandDecl)i.next());
+        while (i.hasNext()) v.visit((OperandDecl) i.next());
     }
 
     public void accept(EncodingVisitor v) {
         Iterator i;
         i = encodings.iterator();
-        while ( i.hasNext() ) v.visit((EncodingDecl)i.next());
+        while (i.hasNext()) v.visit((EncodingDecl) i.next());
     }
 
     public void accept(SubroutineVisitor v) {
         Iterator i;
         i = subroutines.iterator();
-        while ( i.hasNext() ) v.visit((SubroutineDecl)i.next());
+        while (i.hasNext()) v.visit((SubroutineDecl) i.next());
     }
 
     public void accept(InstrVisitor v) {
         Iterator i;
         i = instructions.iterator();
-        while ( i.hasNext() ) v.visit((InstrDecl)i.next());
+        while (i.hasNext()) v.visit((InstrDecl) i.next());
     }
 
     public InstrDecl getInstruction(String name) {

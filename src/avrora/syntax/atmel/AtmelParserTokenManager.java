@@ -2,7 +2,6 @@
 package avrora.syntax.atmel;
 
 
-
 public class AtmelParserTokenManager implements AtmelParserConstants {
     public java.io.PrintStream debugStream = System.out;
 

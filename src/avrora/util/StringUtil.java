@@ -47,7 +47,7 @@ import java.util.List;
  */
 public class StringUtil {
     public static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                      '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+                                            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     public static final String QUOTE = "\"".intern();
     public static final String SQUOTE = "'".intern();
     public static final String LPAREN = "(".intern();
@@ -359,12 +359,14 @@ public class StringUtil {
         if (result[DAYS] > 0) buf.append(result[DAYS] + "d ");
         if (result[HOURS] > 0) buf.append(result[HOURS] + "h ");
         if (result[MINS] > 0) buf.append(result[MINS] + "m ");
-        if (result[SECS] > 0) buf.append(result[SECS] + ".");
-        else buf.append("0.");
+        if (result[SECS] > 0)
+            buf.append(result[SECS] + ".");
+        else
+            buf.append("0.");
 
         millis = result[MILLIS];
-        if ( millis < 100 ) buf.append('0');
-        if ( millis < 10 ) buf.append('0');
+        if (millis < 100) buf.append('0');
+        if (millis < 10) buf.append('0');
         buf.append(millis + "s");
         return buf.toString();
     }
@@ -385,15 +387,15 @@ public class StringUtil {
      * and milliseconds in an array, with most significant units first
      */
     public static long[] millisToDays(long millis) {
-        int denom[] = { 24, 60, 60, 1000 };
+        int denom[] = {24, 60, 60, 1000};
         return modulus(millis, denom);
     }
 
     public static long[] modulus(long val, int[] denom) {
         long[] result = new long[denom.length + 1];
-        for ( int cntr = denom.length - 1; cntr > 0; cntr-- ) {
+        for (int cntr = denom.length - 1; cntr > 0; cntr--) {
             int radix = denom[cntr];
-            result[cntr+1] = (val % radix);
+            result[cntr + 1] = (val % radix);
             val = val / radix;
         }
         result[0] = val;
@@ -423,12 +425,12 @@ public class StringUtil {
     public static String splice(String a[], String b[]) {
         StringBuffer buf = new StringBuffer();
         int cntr = 0;
-        for ( ; cntr < a.length; cntr++ ) {
+        for (; cntr < a.length; cntr++) {
             buf.append(a[cntr]);
-            if ( cntr < b.length ) buf.append(b[cntr]);
+            if (cntr < b.length) buf.append(b[cntr]);
         }
 
-        for ( ; cntr < b.length; cntr++ ) {
+        for (; cntr < b.length; cntr++) {
             buf.append(b[cntr]);
         }
         return buf.toString();

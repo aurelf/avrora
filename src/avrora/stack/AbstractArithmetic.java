@@ -693,7 +693,7 @@ public class AbstractArithmetic {
      * @return a string representation of the abstract value
      */
     public static String toShortString(char av1) {
-        if ( av1 == ZERO ) return "0";
+        if (av1 == ZERO) return "0";
         StringBuffer buf = new StringBuffer();
         toString(av1, buf);
         return buf.toString();

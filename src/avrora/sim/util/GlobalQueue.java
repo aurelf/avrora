@@ -100,8 +100,8 @@ public class GlobalQueue {
     public void addLocalMeet(LocalMeetFactory f, long scale, long delay) {
         Iterator threadIterator = threadMap.keySet().iterator();
 
-        while(threadIterator.hasNext()) {
-            SimulatorThread thread = (SimulatorThread)threadIterator.next();
+        while (threadIterator.hasNext()) {
+            SimulatorThread thread = (SimulatorThread) threadIterator.next();
             Simulator sim = thread.getSimulator();
 
             f.produce(sim, scale, delay);
@@ -145,9 +145,9 @@ public class GlobalQueue {
         public void fire() {
             try {
                 synchronized (condition) {
-                    if(gqPrinter.enabled) {
+                    if (gqPrinter.enabled) {
                         gqPrinter.println("LocalTime at " + id + " Sync " + simulator.getState().getCycles()
-                            + " Global " + globalTime() + ", diff " + (simulator.getState().getCycles() - globalTime()));
+                                + " Global " + globalTime() + ", diff " + (simulator.getState().getCycles() - globalTime()));
 
                     }
                     count++;
@@ -193,8 +193,8 @@ public class GlobalQueue {
             //System.err.println("T " + (simulator.getState().getCycles() + scale));
 
             //if (!removed) {
-                //System.err.println("Bahz " + delay);
-                simulator.insertEvent(this, delay);
+            //System.err.println("Bahz " + delay);
+            simulator.insertEvent(this, delay);
             //}
         }
 

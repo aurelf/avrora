@@ -33,8 +33,6 @@
 package avrora.syntax;
 
 
-
-
 /**
  * The <code>ASTNode</code> class is a unification of all syntax-related items
  * that are dealt with in loading source programs. This allows the error generator

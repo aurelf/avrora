@@ -133,9 +133,11 @@ public final class Terminal {
     public static final int ERROR_COLOR = COLOR_RED;
 
     public static void print(int colors[], String s[]) {
-        for ( int cntr = 0; cntr < s.length; cntr++) {
-            if ( cntr < colors.length ) print(colors[cntr], s[cntr]);
-            else print(s[cntr]);
+        for (int cntr = 0; cntr < s.length; cntr++) {
+            if (cntr < colors.length)
+                print(colors[cntr], s[cntr]);
+            else
+                print(s[cntr]);
         }
     }
 
@@ -226,7 +228,7 @@ public final class Terminal {
     }
 
     private static void outputColor(int color, String s) {
-        if ( color == DEFAULT_COLOR ) color = BEGIN_COLOR;
+        if (color == DEFAULT_COLOR) color = BEGIN_COLOR;
 
         if (useColors) {
             if (htmlColors) {
@@ -236,7 +238,7 @@ public final class Terminal {
                 out.print(s);
                 out.print("</font>");
                 return;
-            } else if ( color != BEGIN_COLOR ) {
+            } else if (color != BEGIN_COLOR) {
                 out.print(COLORS[color]);
                 out.print(s);
                 // TODO: get correct begin color from terminal somehow

@@ -97,12 +97,12 @@ public class AnalyzeStackAction extends Action {
         Analyzer.TRACE_SUMMARY = TRACE_SUMMARY.get();
         Analyzer.MONITOR_STATES = MONITOR_STATES.get();
         Analyzer.TRACE = TRACE.get();
-        Analyzer.reserve = new byte[(int)(RESERVE.get() * 1024 * 1024)];
+        Analyzer.reserve = new byte[(int) (RESERVE.get() * 1024 * 1024)];
 
         a.run();
         a.report();
 
-        if ( DUMP_STATE_SPACE.get() )
+        if (DUMP_STATE_SPACE.get())
             a.dump();
     }
 

@@ -58,7 +58,7 @@ public class SimpleAir implements RadioAir {
     /** The amount of cycles it takes for one byte to be sent.*/
     public final long bytePeriod = Radio.TRANSFER_TIME;
     public final long bitPeriod = 763;
-    public final double transferTime =.8332651000300227;
+    public final double transferTime = .8332651000300227;
 
     private /* final */ Radio.RadioPacket radioStatic;
 
@@ -82,7 +82,7 @@ public class SimpleAir implements RadioAir {
         messages.addLast(f);
         System.err.println("Air.transmit() " + messages.size());
 
-        if(!scheduledGlobalMeet) {
+        if (!scheduledGlobalMeet) {
             scheduledGlobalMeet = true;
             //System.err.println("Scheduling... ");
             globalQueue.addTimerEvent(new ScheduleDelivery(f), 1);
@@ -95,7 +95,7 @@ public class SimpleAir implements RadioAir {
 
         Radio.RadioPacket packet;
 
-        ScheduleDelivery(Radio.RadioPacket f){
+        ScheduleDelivery(Radio.RadioPacket f) {
             this.packet = f;
         }
 
@@ -124,8 +124,6 @@ public class SimpleAir implements RadioAir {
         }
 
         protected class DeliveryMeet extends LocalMeet {
-
-
 
 
             DeliveryMeet(Simulator sim, long scale, long delay) {
@@ -171,13 +169,13 @@ public class SimpleAir implements RadioAir {
 
         System.err.println("Delivering... " + messages.size());
 
-        if(messages.isEmpty()) {
+        if (messages.isEmpty()) {
             System.err.println("Empty queue. Blah");
             return;
         }
 
         Iterator packetIterator = messages.listIterator();
-        Radio.RadioPacket packet = (Radio.RadioPacket)packetIterator.next();
+        Radio.RadioPacket packet = (Radio.RadioPacket) packetIterator.next();
 
         long del = packet.delivery.longValue();
         long diff = packet.delivery.longValue() - time;
@@ -185,15 +183,15 @@ public class SimpleAir implements RadioAir {
 
         packetIterator.remove();  // TODO: figure out right palce for this
 
-        if(diff <= tolerance && -tolerance <= diff ) {
-            System.err.println("Safe time "+ del + " " + time + " " +(del - time));
+        if (diff <= tolerance && -tolerance <= diff) {
+            System.err.println("Safe time " + del + " " + time + " " + (del - time));
             // This packet is meant to be delivered now. We must determine whether any
             // other packets conflict.
 
             // this set is nonempty if there are any overlapping packets.
 
             //if(!possibleConflicts.isEmpty()) {
-            if(!messages.isEmpty()) {
+            if (!messages.isEmpty()) {
                 //HashSet possibleConflicts = messages;//messages.headSet(new Radio.RadioPacket((byte)0x00, time, time));
                 System.err.println("Overlap...");
 
@@ -205,8 +203,8 @@ public class SimpleAir implements RadioAir {
                 long base = packet.origination.longValue() / bitPeriod;
                 //Iterator packetIterator = possibleConflicts.iterator();
 
-                while(packetIterator.hasNext()) {
-                    Radio.RadioPacket current = (Radio.RadioPacket)packetIterator.next();
+                while (packetIterator.hasNext()) {
+                    Radio.RadioPacket current = (Radio.RadioPacket) packetIterator.next();
                     mappedSet.add(new Radio.RadioPacket(current.data,
                             current.origination.longValue() / bitPeriod - base,
                             current.delivery.longValue() / bitPeriod - base));
@@ -219,18 +217,18 @@ public class SimpleAir implements RadioAir {
 
                 packetIterator = mappedSet.iterator();
 
-                while(packetIterator.hasNext()) {
-                    Radio.RadioPacket current = (Radio.RadioPacket)packetIterator.next();
+                while (packetIterator.hasNext()) {
+                    Radio.RadioPacket current = (Radio.RadioPacket) packetIterator.next();
 
                     // TODO: fix shift direction based on whether it is MSB or LSB first
-                    acc |= (byte)(current.data >> current.delivery.intValue());
+                    acc |= (byte) (current.data >> current.delivery.intValue());
                 }
 
 
                 //messages.remove(packet);
 
                 packet = new Radio.RadioPacket(acc, packet.origination.longValue(),
-                            packet.delivery.longValue());
+                        packet.delivery.longValue());
                 packet.strength = 0;
             }
 
@@ -239,22 +237,22 @@ public class SimpleAir implements RadioAir {
 
             Iterator radioIterator = radios.iterator();
 
-            while(radioIterator.hasNext()) {
-                Radio radio = (Radio)radioIterator.next();
+            while (radioIterator.hasNext()) {
+                Radio radio = (Radio) radioIterator.next();
                 radio.receive(packet);
             }
 
 
         } else if (time < del) {
 
-            System.err.println("Unsafe time (early) del: " + del + ", cur: " + time + " " +(del - time));
+            System.err.println("Unsafe time (early) del: " + del + ", cur: " + time + " " + (del - time));
 
             //
             // TODO: Do  I need to resched something?
             return;
         } else {
             // del < time. early.
-            System.err.println("Unsafe time (late) del: " + del + ", cur: " + time + " " +(del - time));
+            System.err.println("Unsafe time (late) del: " + del + ", cur: " + time + " " + (del - time));
 
             //globalQueue.addDeliveryMeet(diff);
             // TODO: schedule next delivery. insert mangled packet into stream.
@@ -262,8 +260,6 @@ public class SimpleAir implements RadioAir {
 
 
     }
-
-
 
 
 }

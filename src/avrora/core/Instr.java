@@ -33,7 +33,6 @@
 package avrora.core;
 
 
-
 /**
  * The <code>Instr</code> class and its descendants represent instructions within the
  * assembly code. The visitor pattern is applied here. Each instruction has an

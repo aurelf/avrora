@@ -79,7 +79,7 @@ public class ClassGenerator {
         public void visit(InstrDecl d) {
             String cName = (d.variant == null) ? d.name.image : d.variant.image;
             cName = StringUtil.trimquotes(cName.toUpperCase());
-            printer.startblock("public static class "+cName+" extends Instr");
+            printer.startblock("public static class " + cName + " extends Instr");
 
             emitStaticProperties(d);
             emitPrototype(cName, d);
@@ -96,14 +96,14 @@ public class ClassGenerator {
 
         private void emitStaticProperties(InstrDecl d) {
             printer.print("private static final InstrProperties props = new InstrProperties(");
-            printer.print(StringUtil.commalist(d.name, d.variant, ""+d.getEncodingSize()/8, ""+d.cycles));
+            printer.print(StringUtil.commalist(d.name, d.variant, "" + d.getEncodingSize() / 8, "" + d.cycles));
             printer.println(");");
         }
 
         private void emitPrototype(String cName, InstrDecl d) {
             printer.startblock("public static final InstrPrototype prototype = new InstrPrototype(props)");
             printer.startblock("public Instr build(Operand[] ops)");
-            printer.println("return Instr.new"+cName+"(ops);");
+            printer.println("return Instr.new" + cName + "(ops);");
             printer.endblock();
             printer.endblock();
         }
@@ -111,26 +111,26 @@ public class ClassGenerator {
         private void emitFields(InstrDecl d) {
             // emit the declaration of the fields
             Iterator i = d.getOperandIterator();
-            while ( i.hasNext() ) {
+            while (i.hasNext()) {
                 printer.print("public final ");
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                printer.print(o.getType()+" ");
-                printer.println(o.name.toString()+";");
+                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+                printer.print(o.getType() + " ");
+                printer.println(o.name.toString() + ";");
             }
         }
 
         private void emitConstructor(String cName, InstrDecl d) {
             // emit the declaration of the constructor
-            printer.print("private "+cName+"(");
+            printer.print("private " + cName + "(");
             emitParams(d);
             printer.startblock(")");
 
             // emit the initialization code for each field
             Iterator i = d.getOperandIterator();
-            while ( i.hasNext() ) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+            while (i.hasNext()) {
+                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
                 String n = o.name.toString();
-                printer.println("this."+n+" = "+n+";");
+                printer.println("this." + n + " = " + n + ";");
             }
 
             printer.endblock();
@@ -156,18 +156,18 @@ public class ClassGenerator {
         }
 
         private void emitArrayMethod(String cName, InstrDecl d) {
-            printer.startblock("public static Instr."+cName+" new"+cName+"(Operand[] ops)");
-            printer.println("count(ops, "+d.operands.size()+");");
+            printer.startblock("public static Instr." + cName + " new" + cName + "(Operand[] ops)");
+            printer.println("count(ops, " + d.operands.size() + ");");
 
-            printer.print("return new "+cName+"(");
+            printer.print("return new " + cName + "(");
             // emit the checking code for each operand
             Iterator i = d.getOperandIterator();
             int cntr = 0;
-            while ( i.hasNext() ) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+            while (i.hasNext()) {
+                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
                 String asMeth = o.isRegister() ? "asReg" : "asImm";
-                printer.print("check_"+o.type.image+"("+cntr+", "+asMeth+"("+cntr+", ops))");
-                if ( i.hasNext() ) printer.print(", ");
+                printer.print("check_" + o.type.image + "(" + cntr + ", " + asMeth + "(" + cntr + ", ops))");
+                if (i.hasNext()) printer.print(", ");
                 cntr++;
             }
             printer.println(");");
@@ -175,19 +175,19 @@ public class ClassGenerator {
         }
 
         private void emitSpecificMethod(String cName, InstrDecl d) {
-            printer.print("public static Instr."+cName+" new"+cName+"(");
+            printer.print("public static Instr." + cName + " new" + cName + "(");
             emitParams(d);
             printer.startblock(")");
 
-            printer.print("return new "+cName+"(");
+            printer.print("return new " + cName + "(");
             // emit the checking code for each operand
             Iterator i = d.getOperandIterator();
             int cntr = 0;
-            while ( i.hasNext() ) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+            while (i.hasNext()) {
+                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
                 String n = o.name.toString();
-                printer.print("check_"+o.type.image+"("+cntr+", "+n+")");
-                if ( i.hasNext() ) printer.print(", ");
+                printer.print("check_" + o.type.image + "(" + cntr + ", " + n + ")");
+                if (i.hasNext()) printer.print(", ");
                 cntr++;
             }
             printer.println(");");
@@ -197,11 +197,11 @@ public class ClassGenerator {
 
     private void emitParams(InstrDecl d) {
         Iterator i = d.getOperandIterator();
-        while ( i.hasNext() ) {
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-            printer.print(o.getType()+" ");
+        while (i.hasNext()) {
+            CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+            printer.print(o.getType() + " ");
             printer.print(o.name.toString());
-            if ( i.hasNext()) printer.print(", ");
+            if (i.hasNext()) printer.print(", ");
         }
     }
 
@@ -216,28 +216,28 @@ public class ClassGenerator {
         }
 
         public void visit(OperandDecl d) {
-            if ( !d.isRegister() ) return;
+            if (!d.isRegister()) return;
 
-            OperandDecl.RegisterSet rset = (OperandDecl.RegisterSet)d;
+            OperandDecl.RegisterSet rset = (OperandDecl.RegisterSet) d;
 
             String type = d.name.image;
-            printer.println("private static final Register[] "+type+"_array = {");
+            printer.println("private static final Register[] " + type + "_array = {");
             printer.indent();
 
             Iterator i = rset.members.iterator();
             int cntr = 0;
-            while ( i.hasNext() ) {
-                OperandDecl.RegisterEncoding renc = (OperandDecl.RegisterEncoding)i.next();
-                printer.print("Register."+renc.name.image.toUpperCase());
-                if ( i.hasNext() ) printer.print(", ");
+            while (i.hasNext()) {
+                OperandDecl.RegisterEncoding renc = (OperandDecl.RegisterEncoding) i.next();
+                printer.print("Register." + renc.name.image.toUpperCase());
+                if (i.hasNext()) printer.print(", ");
                 cntr++;
-                if ( cntr != 0 && (cntr % 4) == 0) printer.nextln();
+                if (cntr != 0 && (cntr % 4) == 0) printer.nextln();
             }
 
             printer.unindent();
             printer.nextln();
             printer.println("};");
-            printer.println("private static final Register.Set "+type+"_set = new Register.Set("+type+"_array);");
+            printer.println("private static final Register.Set " + type + "_set = new Register.Set(" + type + "_array);");
         }
     }
 
@@ -256,7 +256,7 @@ public class ClassGenerator {
         }
 
         public void visit(InstrDecl d) {
-            printer.println("instructions.put("+d.name+", "+getClassName(d)+".prototype);");
+            printer.println("instructions.put(" + d.name + ", " + getClassName(d) + ".prototype);");
         }
     }
 
@@ -273,13 +273,13 @@ public class ClassGenerator {
         public void visit(OperandDecl d) {
             String type = d.name.toString();
             String ptype = d.isRegister() ? "Register" : "int";
-            printer.startblock("private static "+ptype+" check_"+type+"(int n, "+ptype+" v)");
+            printer.startblock("private static " + ptype + " check_" + type + "(int n, " + ptype + " v)");
 
-            if ( d.isRegister() ) {
-                printer.println("return checkRegSet(n, v, "+type+"_set);");
+            if (d.isRegister()) {
+                printer.println("return checkRegSet(n, v, " + type + "_set);");
             } else {
-                OperandDecl.Immediate imm = (OperandDecl.Immediate)d;
-                printer.println("return checkRange(n, v, "+imm.low+", "+imm.high+");");
+                OperandDecl.Immediate imm = (OperandDecl.Immediate) d;
+                printer.println("return checkRange(n, v, " + imm.low + ", " + imm.high + ");");
             }
 
             printer.endblock();

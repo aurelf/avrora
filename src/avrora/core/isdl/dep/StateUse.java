@@ -80,9 +80,11 @@ public abstract class StateUse {
 
         public static class Constant extends Index {
             public final int index;
+
             Constant(int i) {
                 index = i;
             }
+
             public boolean isConstant() {
                 return true;
             }
@@ -90,6 +92,7 @@ public abstract class StateUse {
 
         public static class Operand extends Index {
             public final CodeRegion.Operand operand;
+
             Operand(CodeRegion.Operand op) {
                 operand = op;
             }
@@ -98,6 +101,7 @@ public abstract class StateUse {
         public static class OperandPlusConstant extends Index {
             public final CodeRegion.Operand operand;
             public final int index;
+
             OperandPlusConstant(CodeRegion.Operand op, int i) {
                 operand = op;
                 index = i;
@@ -162,6 +166,6 @@ public abstract class StateUse {
             value = val;
             bit = b;
             definite = d;
-           }
+        }
     }
 }

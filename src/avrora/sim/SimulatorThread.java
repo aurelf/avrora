@@ -33,7 +33,6 @@
 package avrora.sim;
 
 
-
 /**
  * The <code>SimulatorThread</code> class is a thread intended to run a
  * <code>Simulator</code> in a multiple-node simulation. The mapping is

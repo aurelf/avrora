@@ -220,15 +220,15 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
             CodeRegion.Operand o = (CodeRegion.Operand) i.next();
 
             String image = o.name.image;
-            if ( cr instanceof InstrDecl )
-                image = "i."+image;
+            if (cr instanceof InstrDecl)
+                image = "i." + image;
 
             operandMap.put(o.name.image, image);
         }
     }
 
     public void visit(SubroutineDecl d) {
-        if ( d.inline || !d.hasBody() ) return;
+        if (d.inline || !d.hasBody()) return;
         printer.print("public " + d.ret.image + " " + d.name.image + "(");
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {

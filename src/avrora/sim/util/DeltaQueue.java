@@ -221,7 +221,7 @@ public class DeltaQueue {
 
 
                 // fixes up the delta of the next item in the queue
-                if(pos.next != null) {
+                if (pos.next != null) {
                     pos.next.delta += pos.delta;
                 }
 

@@ -149,11 +149,11 @@ class CFGBuilder implements InstrVisitor {
             // check if this instruction branches to another address
             if (ii.branchTo >= 0) {
                 ControlFlowGraph.Block tblock;
-                if ( ii.indirect ) {
+                if (ii.indirect) {
                     tblock = null;
                 } else {
                     tblock = cfg.getBlockStartingAt(ii.branchTo);
-                    if ( tblock == null) tblock = cfg.newBlock(ii.branchTo);
+                    if (tblock == null) tblock = cfg.newBlock(ii.branchTo);
                 }
 
                 if (ii.call)

@@ -2,7 +2,6 @@
 package avrora.syntax.objdump;
 
 
-
 public class ObjDumpParserTokenManager implements ObjDumpParserConstants {
     public java.io.PrintStream debugStream = System.out;
 

@@ -152,9 +152,9 @@ public class Options {
     public void process(Options o) {
         Iterator i = o.unknownValues.keySet().iterator();
 
-        while ( i.hasNext() ) {
-            String name = (String)i.next();
-            String val = (String)o.unknownValues.get(name);
+        while (i.hasNext()) {
+            String name = (String) i.next();
+            String val = (String) o.unknownValues.get(name);
             setOption(name, val);
         }
     }
@@ -162,8 +162,8 @@ public class Options {
     public void process(Properties p) {
         Iterator i = p.keySet().iterator();
 
-        while ( i.hasNext() ) {
-            String name = (String)i.next();
+        while (i.hasNext()) {
+            String name = (String) i.next();
             String val = p.getProperty(name);
             setOption(name, val);
         }

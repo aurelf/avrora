@@ -166,12 +166,12 @@ public class Distribution extends MinMaxMean {
 
     public void expandInterval(int min, int max) {
         // TODO: this will not work unless there is data already present
-        if ( distribMin < min ) min = distribMin;
-        if ( max < distribMin + distrib.length ) max = distribMin + distrib.length;
+        if (distribMin < min) min = distribMin;
+        if (max < distribMin + distrib.length) max = distribMin + distrib.length;
 
         int newsize = max - min + 1;
 
-        if ( newsize == distrib.length ) return;
+        if (newsize == distrib.length) return;
 
         int newdistrib[] = new int[newsize];
 

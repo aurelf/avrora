@@ -33,7 +33,6 @@
 package avrora.core;
 
 
-
 /**
  * The <code>Operand</code> class encapsulates the notion of an operand to
  * an instruction. An operand can be either a register or a constant integer.

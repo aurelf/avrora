@@ -129,11 +129,11 @@ public class CFGAction extends Action {
     }
 
     private void dumpDotNodes(Printer p) {
-        if ( COLOR_PROCEDURES.get() )
+        if (COLOR_PROCEDURES.get())
             assignProcedureColors();
 
 
-        if ( COLLAPSE_PROCEDURES.get() ) {
+        if (COLLAPSE_PROCEDURES.get()) {
 
             Iterator blocks = cfg.getSortedBlockIterator();
             while (blocks.hasNext()) {
@@ -141,10 +141,10 @@ public class CFGAction extends Action {
                 ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
                 // only print out nodes that have no color, are shared, or are entrypoints
-                if ( entry == null || entry == block )
+                if (entry == null || entry == block)
                     printBlock(block, p);
             }
-        } else if ( GROUP_PROCEDURES.get() ) {
+        } else if (GROUP_PROCEDURES.get()) {
             // print out blocks that have no color
             Iterator block_iter = cfg.getSortedBlockIterator();
             while (block_iter.hasNext()) {
@@ -152,7 +152,7 @@ public class CFGAction extends Action {
                 ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
                 // only print out nodes that have no color first
-                if ( entry == null )
+                if (entry == null)
                     printBlock(block, p);
             }
 
@@ -187,7 +187,7 @@ public class CFGAction extends Action {
             ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
             ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
-            if ( entry != null) {
+            if (entry != null) {
                 String c = colorize(entry);
                 BLOCK_COLORS.put(block, c);
             }
@@ -231,12 +231,12 @@ public class CFGAction extends Action {
     private int colorCounter;
     private final HashMap BLOCK_COLORS = new HashMap();
     private static final String palette[] = {"aquamarine", "blue2", "brown1", "cadetblue1",
-                        "chartreuse1", "cyan4", "darkgoldenrod1", "darkorchid3", "darkslateblue",
-                        "deeppink2", "yellow", "seagreen3", "orangered1"};
+                                             "chartreuse1", "cyan4", "darkgoldenrod1", "darkorchid3", "darkslateblue",
+                                             "deeppink2", "yellow", "seagreen3", "orangered1"};
 
     private String colorize(ControlFlowGraph.Block b) {
-        String color = (String)BLOCK_COLORS.get(b);
-        if ( color != null ) return color;
+        String color = (String) BLOCK_COLORS.get(b);
+        if (color != null) return color;
         color = palette[colorCounter];
         colorCounter = (colorCounter + 1) % palette.length;
         BLOCK_COLORS.put(b, color);
@@ -244,8 +244,8 @@ public class CFGAction extends Action {
     }
 
     private String getColor(ControlFlowGraph.Block block) {
-        String color = (String)BLOCK_COLORS.get(block);
-        if ( color == null ) return "";
+        String color = (String) BLOCK_COLORS.get(block);
+        if (color == null) return "";
         return color;
     }
 
@@ -296,7 +296,7 @@ public class CFGAction extends Action {
             // get the names of the blocks
             String sName = blockName(source);
 
-            if ( target == null ) { // emit indirect edges
+            if (target == null) { // emit indirect edges
                 emitIndirectEdge(source, sName, p, type);
             } else {
                 emitEdge(target, p, sName, type, true);
@@ -308,19 +308,19 @@ public class CFGAction extends Action {
     private void emitIndirectEdge(ControlFlowGraph.Block source, String sName, Printer p, String type) {
         List l = program.getIndirectEdges(source.getLastAddress());
 
-        if ( l == null ) {
+        if (l == null) {
             // emit the description for the unknown node if we haven't already
             if (!unknownExists) {
                 p.println("UNKNOWN [shape=Msquare];");
                 unknownExists = true;
             }
 
-            p.println(sName +" -> UNKNOWN [style=dotted];");
+            p.println(sName + " -> UNKNOWN [style=dotted];");
         } else {
             // emit indirect edges
             Iterator i = l.iterator();
-            while ( i.hasNext() ) {
-                int taddr = ((Integer)i.next()).intValue();
+            while (i.hasNext()) {
+                int taddr = ((Integer) i.next()).intValue();
                 ControlFlowGraph.Block target = cfg.getBlockStartingAt(taddr);
                 emitEdge(target, p, sName, type, false);
             }
@@ -334,7 +334,7 @@ public class CFGAction extends Action {
         p.print(sName + " -> " + tName);
         p.print(" [headport=s,tailport=n");
 
-        if ( !direct )
+        if (!direct)
             p.print(",style=dotted");
 
         // change the style of the edge based on its type
@@ -345,7 +345,7 @@ public class CFGAction extends Action {
     }
 
     private ControlFlowGraph.Block getEntryOf(ControlFlowGraph.Block b) {
-        if ( pmap == null ) return null;
+        if (pmap == null) return null;
         return pmap.getProcedureContaining(b);
     }
 

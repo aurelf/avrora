@@ -109,7 +109,7 @@ public class Mica2 implements Platform, PlatformFactory {
 
         public void print() {
             Terminal.print(colornum, color);
-            Terminal.println("("+nodeId+"): " + (on ? "on" : "off"));
+            Terminal.println("(" + nodeId + "): " + (on ? "on" : "off"));
         }
 
         public void enableOutput() {

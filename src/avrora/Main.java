@@ -105,7 +105,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.17";
+    static final String VERSION = "Beta 1.1.18";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -253,10 +253,10 @@ public class Main {
 
     private static void loadUserDefaults() throws IOException {
         String hdir = System.getProperty("user.home");
-        if ( hdir == null || hdir.equals("") ) return;
+        if (hdir == null || hdir.equals("")) return;
 
-        File f = new File(hdir+"/.avrora");
-        if ( f.exists() ) {
+        File f = new File(hdir + "/.avrora");
+        if (f.exists()) {
             Properties defs = new Properties();
             defs.load(new FileInputStream(f));
             mainOptions.process(defs);
@@ -306,9 +306,9 @@ public class Main {
                 "program or running one of the analysis tools on the program. See the " +
                 "actions section for more information.");
 
-        if ( args.length == 0 )
+        if (args.length == 0)
             printMainHelp();
-        else if ( args.length > 1 )
+        else if (args.length > 1)
             Avrora.userError("help available for only one action or input at a time.");
         else
             printHelp(args[0]);
@@ -319,15 +319,15 @@ public class Main {
     }
 
     private static void printHelp(String a) {
-        Action action = (Action)actions.get(a);
-        if ( action == null )
-            Avrora.userError("no help available for unknown action "+StringUtil.quote(a));
+        Action action = (Action) actions.get(a);
+        if (action == null)
+            Avrora.userError("no help available for unknown action " + StringUtil.quote(a));
 
         String actname = StringUtil.quote(action.getShortName());
-        printSection("HELP FOR THE "+actname+" ACTION", action.getHelp());
+        printSection("HELP FOR THE " + actname + " ACTION", action.getHelp());
 
-        if ( action.options.size() > 0 ) {
-            printSection("OPTIONS", "Below is a listing of the options available to the "+actname+" action.");
+        if (action.options.size() > 0) {
+            printSection("OPTIONS", "Below is a listing of the options available to the " + actname + " action.");
             printOptions(action.options);
         }
     }

@@ -125,7 +125,7 @@ public class Register {
     private static final Register[] REGS_RDL = {
         R24, R26, R28, R30
     };
-    
+
     public static final Set GPR_set = new Set(REGS_0_31);
     public static final Set HGPR_set = new Set(REGS_16_31);
     public static final Set MGPR_set = new Set(REGS_16_23);
@@ -272,11 +272,11 @@ public class Register {
             for (int cntr = 0; cntr < regs.length; cntr++) {
                 registers.add(regs[cntr]);
                 // abreviate large sets
-                if ( cntr == 2 && regs.length > 4 ) buf.append("..., ");
+                if (cntr == 2 && regs.length > 4) buf.append("..., ");
                 // print first two, and last, or all if the set is fewer than five
-                if ( cntr < 2 || cntr == regs.length-1 || regs.length < 5) {
+                if (cntr < 2 || cntr == regs.length - 1 || regs.length < 5) {
                     buf.append(regs[cntr]);
-                    if ( cntr < regs.length-1 ) buf.append(", ");
+                    if (cntr < regs.length - 1) buf.append(", ");
                 }
             }
             buf.append("}");

@@ -448,6 +448,10 @@ public class Program {
         return instrs[address - program_start];
     }
 
+    public byte readProgramByte(int address) {
+        checkAddress(address);
+        return data[address - program_start];
+    }
 
     /**
      * The <code>writeProgramByte()</code> method writes a byte into the program segment
@@ -567,8 +571,8 @@ public class Program {
 
     public int getNextPC(int pc) {
         // TODO: better error checking
-        if ( pc > program_end )
-            throw Avrora.failure("no next PC after: "+StringUtil.addrToString(pc));
+        if (pc > program_end)
+            throw Avrora.failure("no next PC after: " + StringUtil.addrToString(pc));
         return pc + readInstr(pc).getSize();
     }
 
@@ -661,7 +665,7 @@ public class Program {
     private ControlFlowGraph cfg;
 
     public synchronized ControlFlowGraph getCFG() {
-        if ( cfg == null ) {
+        if (cfg == null) {
             cfg = new CFGBuilder(this).buildCFG();
         }
         return cfg;

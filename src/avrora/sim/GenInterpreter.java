@@ -166,7 +166,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     private void fastLoop() {
         innerLoop = true;
         while (innerLoop) {
-            Instr i = impression.readInstr(nextPC);
+            Instr i = getInstr(nextPC);
 
             // visit the actual instruction (or probe)
             i.accept(this);
@@ -180,7 +180,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         while (innerLoop) {
             // get the current instruction
             int curPC = nextPC; // at this point pc == nextPC
-            Instr i = impression.readInstr(nextPC);
+            Instr i = getInstr(nextPC);
 
             // visit the actual instruction (or probe)
             activeProbe.fireBefore(i, curPC, this);
@@ -192,46 +192,32 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     protected void insertProbe(Simulator.Probe p, int addr) {
+        makeProbedInstr(addr).add(p);
+    }
+
+    protected ProbedInstr makeProbedInstr(int addr) {
         ProbedInstr pi = getProbedInstr(addr);
-        if (pi != null)
-            pi.add(p);
-        else {
-            pi = new ProbedInstr(impression.readInstr(addr), addr, p, this);
-            impression.writeInstr(pi, addr);
-        }
+        if ( pi == null ) pi = new ProbedInstr(getInstr(addr), addr, null, this);
+        setInstr(pi, addr);
+        return pi;
     }
 
     protected void removeProbe(Simulator.Probe p, int addr) {
         ProbedInstr pi = getProbedInstr(addr);
         if (pi != null) {
             pi.remove(p);
-            if (pi.isEmpty())
-                impression.writeInstr(pi.instr, pi.address);
+            // if the probed instruction has no more probes, remove it altogether
+            if (pi.isEmpty()) setInstr(pi.instr, pi.address);
         }
     }
 
     protected void insertBreakPoint(int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if (pi != null)
-            pi.setBreakPoint();
-        else {
-            pi = new ProbedInstr(impression.readInstr(addr), addr, null, this);
-            impression.writeInstr(pi, addr);
-            pi.setBreakPoint();
-        }
+        makeProbedInstr(addr).setBreakPoint();
     }
 
     protected void removeBreakPoint(int addr) {
         ProbedInstr pi = getProbedInstr(addr);
         if (pi != null) pi.unsetBreakPoint();
-    }
-
-    private ProbedInstr getProbedInstr(int addr) {
-        Instr i = impression.readInstr(addr);
-        if (i instanceof ProbedInstr)
-            return ((ProbedInstr) i);
-        else
-            return null;
     }
 
 

@@ -94,7 +94,7 @@ public class StatePrinter {
     }
 
     public static void printIOReg(String name, char val) {
-        String l = StringUtil.rightJustify("[", 21-name.length());
+        String l = StringUtil.rightJustify("[", 21 - name.length());
         Terminal.print(l);
         Terminal.printBrightGreen(name);
         Terminal.print(":");

@@ -2,7 +2,6 @@
 package avrora.syntax.gas;
 
 
-
 public class GASParserTokenManager implements GASParserConstants {
     public java.io.PrintStream debugStream = System.out;
 

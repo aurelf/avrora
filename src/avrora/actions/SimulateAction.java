@@ -188,7 +188,7 @@ public class SimulateAction extends SimAction {
 //        long repeat = BenchmarkAction.REPEAT.get();
 
 //        for (long cntr = 0; cntr < repeat; cntr++)
-            runSimulation(args);
+        runSimulation(args);
 
     }
 
@@ -315,10 +315,10 @@ public class SimulateAction extends SimAction {
                 int runlength = 1;
                 long c = icount[cntr];
 
-                if ( program.readInstr(cntr) == null ) continue;
+                if (program.readInstr(cntr) == null) continue;
 
-                for (; cntr < imax - 2; cntr+= 2) {
-                    if ( program.readInstr(cntr + 2) == null ) continue;
+                for (; cntr < imax - 2; cntr += 2) {
+                    if (program.readInstr(cntr + 2) == null) continue;
                     if (icount[cntr + 2] != c) break;
                     runlength++;
                 }
