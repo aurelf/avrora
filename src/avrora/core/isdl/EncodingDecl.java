@@ -57,6 +57,16 @@ public class EncodingDecl {
         fields = f;
     }
 
+    public static class Substitution {
+        public final Token name;
+        public final Expr expr;
+
+        public Substitution(Token n, Expr e) {
+            name = n;
+            expr = e;
+        }
+    }
+
     public static class Derived extends EncodingDecl {
         public final Token pname;
         public final List subst;

@@ -52,7 +52,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
 
     protected static HashSet trackedMaps;
 
-    protected class ConstantEnvironment {
+    public class ConstantEnvironment {
         ConstantEnvironment parent;
         HashMap constantMap;
         HashMap mapMap; // HashMap<String, HashMap>
@@ -63,7 +63,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             mapMap = new HashMap();
         }
 
-        Expr lookup(String name) {
+        public Expr lookup(String name) {
             Expr e = (Expr)constantMap.get(name);
             if (e != null) return e;
             if (parent != null)
@@ -72,7 +72,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
                 return null;
         }
 
-        void put(String name, Expr e) {
+        public void put(String name, Expr e) {
             if (e instanceof Literal.IntExpr) {
                 int ival = intValueOf(e);
                 if (ival == 0)
@@ -85,7 +85,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             constantMap.put(name, e);
         }
 
-        void remove(String name) {
+        public void remove(String name) {
             constantMap.remove(name);
             if (parent != null) parent.remove(name);
         }
@@ -165,6 +165,10 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
     public ConstantPropagator() {
         trackedMaps = new HashSet();
         trackedMaps.add("$regs"); // this is all for now
+    }
+
+    public ConstantEnvironment createEnvironment() {
+        return new ConstantEnvironment(null);
     }
 
     public LinkedList process(LinkedList stmts) {

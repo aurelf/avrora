@@ -268,9 +268,10 @@ public interface State {
     public long getCycles();
 
     /**
-     * The <code>isSleeping()</code> method returns whether the simulator is currently in a sleep mode.
+     * The <code>getSleepMode()</code> method returns an integer code describing which sleep mode the
+     * microcontroller is currently in.
      *
-     * @return true if the simulator is in a sleep mode; false otherwise
+     * @return an integer code representing the current sleep mode
      */
     public int getSleepMode();
 

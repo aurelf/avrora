@@ -97,4 +97,9 @@ public class Printer {
         unindent();
         println("}");
     }
+
+    public void endblock(String s) {
+        unindent();
+        println("}"+s);
+    }
 }

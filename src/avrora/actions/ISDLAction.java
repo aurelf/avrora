@@ -37,6 +37,7 @@ import avrora.core.isdl.Architecture;
 import avrora.core.isdl.gen.ClassGenerator;
 import avrora.core.isdl.gen.CodemapGenerator;
 import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.gen.DisassemblerGenerator;
 import avrora.core.isdl.parser.ISDLParser;
 import avrora.util.Option;
 import avrora.util.Printer;
@@ -72,6 +73,7 @@ public class ISDLAction extends Action {
     public final Option.Bool INLINE = newOption("inline", true,
             "This option controls whether the ISDL processor will inline all subroutines marked as " +
             "\"inline\" in their declaration.");
+    public final Option.Bool DISASSEM = newOption("disassembler", false, "");
 
     public ISDLAction() {
         super(HELP);
@@ -113,6 +115,12 @@ public class ISDLAction extends Action {
             SectionFile f = new SectionFile(codemap, "CODEBUILDER GENERATOR");
             new CodemapGenerator(a, new Printer(new PrintStream(f))).generate();
             f.close();
+        }
+
+        if ( DISASSEM.get() ) {
+            DisassemblerGenerator dag = new DisassemblerGenerator(a);
+            a.accept(dag);
+            dag.compute();
         }
     }
 }

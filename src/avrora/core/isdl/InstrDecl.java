@@ -65,14 +65,17 @@ public class InstrDecl extends CodeRegion {
 
     public final int cycles;
 
+    public final boolean pseudo;
+
     /**
      * The constructor of the <code>InstrDecl</code> class initializes the fields based on the parameters.
      *
      * @param n the name of the instruction as a string
      * @param v the variant of the instruction as a string
      */
-    public InstrDecl(Token n, Token v, List o, Token c, List s, EncodingDecl e) {
+    public InstrDecl(boolean ps, Token n, Token v, List o, Token c, List s, EncodingDecl e) {
         super(o, s);
+        pseudo = ps;
         name = n;
         variant = v;
         cycles = Expr.tokenToInt(c);

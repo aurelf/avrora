@@ -41,92 +41,15 @@ import avrora.sim.FiniteStateMachine;
  * @author Ben L. Titzer
  * @see avrora.sim.FiniteStateMachine
  */
-public class MulticastFSMProbe implements FiniteStateMachine.Probe {
-
-    /**
-     * The <code>Link</code> class is used internally to implement the linked list of the probes. It exists
-     * because a simple, custom list structure allows for the most efficient dispatching code possible.
-     * Performance is critical since the multicast probe may be for every instruction executed in the
-     * simulator.
-     */
-    private static class Link {
-        final FiniteStateMachine.Probe probe;
-        Link next;
-
-        Link(FiniteStateMachine.Probe p) {
-            probe = p;
-        }
-    }
-
-    private Link head;
-    private Link tail;
-
-    /**
-     * The <code>add()</code> method allows another probe to be inserted into the multicast set. It will be
-     * inserted at the end of the list of current probes and will therefore fire after any probes already in
-     * the multicast set.
-     *
-     * @param b the probe to insert
-     */
-    public void add(FiniteStateMachine.Probe b) {
-        if (b == null) return;
-
-        if (head == null) {
-            head = tail = new Link(b);
-        } else {
-            tail.next = new Link(b);
-            tail = tail.next;
-        }
-    }
-
-    /**
-     * The <code>remove</code> method removes a probe from the multicast set. The order of the remaining
-     * probes is not changed. The comparison used is reference equality, not the <code>.equals()</code>
-     * method.
-     *
-     * @param b the probe to remove
-     */
-    public void remove(FiniteStateMachine.Probe b) {
-        if (b == null) return;
-
-        Link prev = null;
-        Link pos = head;
-        while (pos != null) {
-            Link next = pos.next;
-
-            // matched?
-            if (pos.probe == b) {
-                // remove the head ?
-                if (prev == null) head = pos.next;
-                // somewhere in the middle (or at end)
-                else prev.next = pos.next;
-                // remove the tail item ?
-                if (pos == tail) tail = prev;
-
-            } else {
-                // no match; continue
-                prev = pos;
-            }
-            pos = next;
-        }
-    }
-
-    /**
-     * The <code>isEmpty()</code> method tests whether the multicast set of this probe is empty.
-     *
-     * @return false otherwise
-     */
-    public boolean isEmpty() {
-        return head == null;
-    }
+public class MulticastFSMProbe extends TransactionalList implements FiniteStateMachine.Probe {
 
     public void fireBeforeTransition(int beforeState, int afterState) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeTransition(beforeState, afterState);
+            ((FiniteStateMachine.Probe)pos.object).fireBeforeTransition(beforeState, afterState);
     }
 
     public void fireAfterTransition(int beforeState, int afterState) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireAfterTransition(beforeState, afterState);
+            ((FiniteStateMachine.Probe)pos.object).fireAfterTransition(beforeState, afterState);
     }
 }

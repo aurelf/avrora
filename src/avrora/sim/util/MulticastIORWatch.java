@@ -43,84 +43,7 @@ import avrora.sim.State;
  * @author Ben L. Titzer
  * @see avrora.sim.Simulator
  */
-public class MulticastIORWatch implements Simulator.IORWatch {
-
-    /**
-     * The <code>Link</code> class is used internally to implement the linked list of the watches. It exists
-     * because a simple, custom list structure allows for the most efficient dispatching code possible.
-     * Performance is critical since the multicast watch may be called for every instruction executed in the
-     * simulator.
-     */
-    private static class Link {
-        final Simulator.IORWatch probe;
-        Link next;
-
-        Link(Simulator.IORWatch p) {
-            probe = p;
-        }
-    }
-
-    private Link head;
-    private Link tail;
-
-    /**
-     * The <code>add()</code> method allows another watch to be inserted into the multicast set. It will be
-     * inserted at the end of the list of current watch and will therefore fire after any probes already in
-     * the multicast set.
-     *
-     * @param b the watch to insert
-     */
-    public void add(Simulator.IORWatch b) {
-        if (b == null) return;
-
-        if (head == null) {
-            head = tail = new Link(b);
-        } else {
-            tail.next = new Link(b);
-            tail = tail.next;
-        }
-    }
-
-    /**
-     * The <code>remove</code> method removes a watch from the multicast set. The order of the remaining
-     * probes is not changed. The comparison used is reference equality, not the <code>.equals()</code>
-     * method.
-     *
-     * @param b the watch to remove
-     */
-    public void remove(Simulator.IORWatch b) {
-        if (b == null) return;
-
-        Link prev = null;
-        Link pos = head;
-        while (pos != null) {
-            Link next = pos.next;
-
-            // matched?
-            if (pos.probe == b) {
-                // remove the head ?
-                if (prev == null) head = pos.next;
-                // somewhere in the middle (or at end)
-                else prev.next = pos.next;
-                // remove the tail item ?
-                if (pos == tail) tail = prev;
-
-            } else {
-                // no match; continue
-                prev = pos;
-            }
-            pos = next;
-        }
-    }
-
-    /**
-     * The <code>isEmpty()</code> method tests whether the multicast set of this watch is empty.
-     *
-     * @return false otherwise
-     */
-    public boolean isEmpty() {
-        return head == null;
-    }
+public class MulticastIORWatch extends TransactionalList implements Simulator.IORWatch {
 
     /**
      * The <code>fireBeforeRead()</code> method is called before the probed address is read by the program. In
@@ -132,8 +55,9 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      * @param state   the state of the simulation
      */
     public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+        beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeRead(i, address, state, data_addr);
+            ((Simulator.IORWatch)pos.object).fireBeforeRead(i, address, state, data_addr);
     }
 
     /**
@@ -148,7 +72,8 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      */
     public void fireAfterRead(Instr i, int address, State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireAfterRead(i, address, state, data_addr, val);
+            ((Simulator.IORWatch)pos.object).fireAfterRead(i, address, state, data_addr, val);
+        endTransaction();
     }
 
     /**
@@ -163,8 +88,9 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      * @param val     the value being written to the memory location
      */
     public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte val) {
+        beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeWrite(i, address, state, data_addr, val);
+            ((Simulator.IORWatch)pos.object).fireBeforeWrite(i, address, state, data_addr, val);
     }
 
     /**
@@ -179,7 +105,8 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      */
     public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireAfterWrite(i, address, state, data_addr, val);
+            ((Simulator.IORWatch)pos.object).fireAfterWrite(i, address, state, data_addr, val);
+        endTransaction();
     }
 
     /**
@@ -192,8 +119,9 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      * @param ioreg_num the number of the IO register being read
      */
     public void fireBeforeBitRead(Instr i, int address, State state, int ioreg_num, int bit) {
+        beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeBitRead(i, address, state, ioreg_num, bit);
+            ((Simulator.IORWatch)pos.object).fireBeforeBitRead(i, address, state, ioreg_num, bit);
     }
 
     /**
@@ -208,8 +136,9 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      * @param value     the value being written to the memory location
      */
     public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+        beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeBitWrite(i, address, state, ioreg_num, bit, value);
+            ((Simulator.IORWatch)pos.object).fireBeforeBitWrite(i, address, state, ioreg_num, bit, value);
     }
 
     /**
@@ -224,7 +153,8 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      */
     public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireAfterBitRead(i, address, state, ioreg_num, bit, value);
+            ((Simulator.IORWatch)pos.object).fireAfterBitRead(i, address, state, ioreg_num, bit, value);
+        endTransaction();
     }
 
     /**
@@ -240,7 +170,8 @@ public class MulticastIORWatch implements Simulator.IORWatch {
      */
     public void fireAfterBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireAfterBitWrite(i, address, state, ioreg_num, bit, value);
+            ((Simulator.IORWatch)pos.object).fireAfterBitWrite(i, address, state, ioreg_num, bit, value);
+        endTransaction();
     }
 
 }

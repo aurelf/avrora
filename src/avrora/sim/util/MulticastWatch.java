@@ -44,119 +44,7 @@ import avrora.Avrora;
  * @author Ben L. Titzer
  * @see Simulator
  */
-public class MulticastWatch implements Simulator.Watch {
-
-    /**
-     * The <code>Link</code> class is used internally to implement the linked list of the watches. It exists
-     * because a simple, custom list structure allows for the most efficient dispatching code possible.
-     * Performance is critical since the multicast watch may be called for every instruction executed in the
-     * simulator.
-     */
-    private static class Link {
-        boolean addTransaction; // used for transactions; true if the transaction was an add, false if it was a remove
-        final Simulator.Watch probe;
-        Link next;
-
-        Link(Simulator.Watch p) {
-            probe = p;
-        }
-
-        Link(Simulator.Watch w, boolean a) {
-            probe = w;
-            addTransaction = a;
-        }
-    }
-
-    private Link head;
-    private Link tail;
-
-    private Link transHead;
-    private Link transTail;
-
-    boolean inTransaction;
-    /**
-     * The <code>add()</code> method allows another watch to be inserted into the multicast set. It will be
-     * inserted at the end of the list of current watch and will therefore fire after any probes already in
-     * the multicast set.
-     *
-     * @param b the watch to insert
-     */
-    public void add(Simulator.Watch b) {
-        if (inTransaction) addTransaction(b, true);
-
-        if (head == null) {
-            head = tail = new Link(b);
-        } else {
-            tail.next = new Link(b);
-            tail = tail.next;
-        }
-    }
-
-    /**
-     * The <code>remove</code> method removes a watch from the multicast set. The order of the remaining
-     * probes is not changed. The comparison used is reference equality, not the <code>.equals()</code>
-     * method.
-     *
-     * @param b the watch to remove
-     */
-    public void remove(Simulator.Watch b) {
-        if (inTransaction) addTransaction(b, false);
-
-        Link prev = null;
-        Link pos = head;
-        while (pos != null) {
-            Link next = pos.next;
-
-            // matched?
-            if (pos.probe == b) {
-                // remove the head ?
-                if (prev == null) head = pos.next;
-                // somewhere in the middle (or at end)
-                else prev.next = pos.next;
-                // remove the tail item ?
-                if (pos == tail) tail = prev;
-
-            } else {
-                // no match; continue
-                prev = pos;
-            }
-            pos = next;
-        }
-    }
-
-    private void addTransaction(Simulator.Watch p, boolean isAdd) {
-        if (transHead == null) {
-            transHead = transTail = new Link(p, isAdd);
-        } else {
-            transTail.next = new Link(p, isAdd);
-            transTail = transTail.next;
-        }
-    }
-
-    /**
-     * The <code>isEmpty()</code> method tests whether the multicast set of this watch is empty.
-     *
-     * @return false otherwise
-     */
-    public boolean isEmpty() {
-        return head == null;
-    }
-
-    public void beginTransaction() {
-        if ( inTransaction ) throw Avrora.failure("recursive entry of transaction!");
-        inTransaction = true;
-    }
-
-    public void endTransaction() {
-        Link thead = transHead;
-        transHead = null;
-        transTail = null;
-        for (Link pos = thead; pos != null; pos = pos.next) {
-            if ( pos.addTransaction ) add(pos.probe);
-            else remove(pos.probe);
-        }
-        inTransaction = false;
-    }
+public class MulticastWatch extends TransactionalList implements Simulator.Watch {
 
     /**
      * The <code>fireBeforeRead()</code> method is called before the probed address is read by the program. In
@@ -170,7 +58,7 @@ public class MulticastWatch implements Simulator.Watch {
     public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeRead(i, address, state, data_addr);
+            ((Simulator.Watch)pos.object).fireBeforeRead(i, address, state, data_addr);
     }
 
     /**
@@ -185,7 +73,7 @@ public class MulticastWatch implements Simulator.Watch {
      */
     public void fireAfterRead(Instr i, int address, State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireAfterRead(i, address, state, data_addr, val);
+            ((Simulator.Watch)pos.object).fireAfterRead(i, address, state, data_addr, val);
         endTransaction();
     }
 
@@ -203,7 +91,7 @@ public class MulticastWatch implements Simulator.Watch {
     public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte val) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireBeforeWrite(i, address, state, data_addr, val);
+            ((Simulator.Watch)pos.object).fireBeforeWrite(i, address, state, data_addr, val);
     }
 
     /**
@@ -218,7 +106,7 @@ public class MulticastWatch implements Simulator.Watch {
      */
     public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            pos.probe.fireAfterWrite(i, address, state, data_addr, val);
+            ((Simulator.Watch)pos.object).fireAfterWrite(i, address, state, data_addr, val);
         endTransaction();
     }
 

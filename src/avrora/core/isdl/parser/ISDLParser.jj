@@ -187,6 +187,7 @@ TOKEN :
   | < RETURN: "return" >
   | < BOOLEAN_LITERAL: "true" | "false" >
   | < CYCLES: "cycles" >
+  | < PSEUDO: "pseudo" >
 }
 
 TOKEN :
@@ -263,14 +264,15 @@ void Instruction(Architecture a) :
          s = new LinkedList();
     EncodingDecl e = null;
     Token c = null;
+    boolean pseudo = false;
 }
 {
-    "instruction" n = <STRING_LITERAL> o = Formals() "{"
+    ["pseudo" { pseudo = true; }] "instruction" n = <STRING_LITERAL> o = Formals() "{"
         [ e = Encoding(n) ]
         [ c = Cycles() ]
         [ s = Execute(s) ]
 
-    "}" ";" { a.addInstruction(new InstrDecl(n, null, o, c, s, e)); }
+    "}" ";" { a.addInstruction(new InstrDecl(pseudo, n, null, o, c, s, e)); }
 }
 
 Token Cycles() : { Token c; }
@@ -355,14 +357,14 @@ EncodingDecl NewFormat(Token n) : { List l; }
     "{" l = ExprList() "}" { return new EncodingDecl(n, l); }
 }
 
-List SubstitutionList() : { List l = new LinkedList(); }
+List SubstitutionList() : { List l = new LinkedList(); EncodingDecl.Substitution s; }
 {
-    "{" Substitution() ("," Substitution())* "}" { return l; }
+    "{" s = Substitution() { l.add(s); } ("," s = Substitution() { l.add(s); })* "}" { return l; }
 }
 
-void Substitution() : {}
+EncodingDecl.Substitution Substitution() : { Token n; Expr e; }
 {
-    <IDENTIFIER> "=" Expr()
+    n = <IDENTIFIER> "=" e = Expr() { return new EncodingDecl.Substitution(n, e); }
 }
 
 List Formals() : { CodeRegion.Operand o; List l = new LinkedList(); }
