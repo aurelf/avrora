@@ -75,63 +75,6 @@ architecture avr {
     operand PADDR[16]: immediate = [0, 65536];
     operand DADDR[12]: immediate = [0, 4096];
 
-/*
-    state SRAM: int.8[...];
-    state FLASH: int.8[...];
-
-    state REGS: int.8[32] <=> SRAM[0-31];
-    state UREGS: uint.8[32] <=> REGS[0-31];
-
-    state IOREGS: int.8[...] <=> SRAM[32...];
-    state SREG: int.8 <=> IOREGS[63];
-
-    state I: boolean <=> SREG[7];
-    state T: boolean <=> SREG[6];
-    state H: boolean <=> SREG[5];
-    state S: boolean <=> SREG[4];
-    state V: boolean <=> SREG[3];
-    state N: boolean <=> SREG[2];
-    state Z: boolean <=> SREG[1];
-    state C: boolean <=> SREG[0];
-
-    register R0:  int.8 <=> REGS[0];
-    register R1:  int.8 <=> REGS[1];
-    register R2:  int.8 <=> REGS[2];
-    register R3:  int.8 <=> REGS[3];
-    register R4:  int.8 <=> REGS[4];
-    register R5:  int.8 <=> REGS[5];
-    register R6:  int.8 <=> REGS[6];
-    register R7:  int.8 <=> REGS[7];
-    register R8:  int.8 <=> REGS[8];
-    register R9:  int.8 <=> REGS[9];
-    register R10: int.8 <=> REGS[10];
-    register R11: int.8 <=> REGS[11];
-    register R12: int.8 <=> REGS[12];
-    register R13: int.8 <=> REGS[13];
-    register R14: int.8 <=> REGS[14];
-    register R15: int.8 <=> REGS[15];
-    register R16: int.8 <=> REGS[16];
-    register R17: int.8 <=> REGS[17];
-    register R18: int.8 <=> REGS[18];
-    register R19: int.8 <=> REGS[19];
-    register R20: int.8 <=> REGS[20];
-    register R21: int.8 <=> REGS[21];
-    register R22: int.8 <=> REGS[22];
-    register R23: int.8 <=> REGS[23];
-    register R24: int.8 <=> REGS[24];
-    register R25: int.8 <=> REGS[25];
-    register R26: int.8 <=> REGS[26];
-    register R27: int.8 <=> REGS[27];
-    register R28: int.8 <=> REGS[28];
-    register R29: int.8 <=> REGS[29];
-    register R30: int.8 <=> REGS[30];
-    register R31: int.8 <=> REGS[31];
-
-    register X: uint.16 <=> { REGS[27], REGS[26] };
-    register Y: uint.16 <=> { REGS[29], REGS[28] };
-    register Z: uint.16 <=> { REGS[31], REGS[30] };
-*/
-
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
@@ -786,8 +729,8 @@ architecture avr {
     };
 
     instruction "elpmd" rd: GPR, rr: Z {
-        // TODO: this is a variant of the ELPM instruction
         encoding = { 0b1001000, rd[4:0], 0b0110 };
+        syntax = "elpm %rd, Z";
         cycles = 3;
         execute = {
             local addr: int = $wregs(RZ);
@@ -797,8 +740,8 @@ architecture avr {
     };
 
     instruction "elpmpi" rd: GPR, rr: Z {
-        // TODO: this is a variant of the ELPM instruction
         encoding = { 0b1001000, rd[4:0], 0b0111 };
+        syntax = "elpm %rd, Z+";
         cycles = 3;
         execute = {
             local addr: int = $wregs(RZ);
@@ -912,7 +855,6 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b1100 } when ar == X;
         encoding = { 0b1000000, rd[4:0], 0b1000 } when ar == Y;
         encoding = { 0b1000000, rd[4:0], 0b0000 } when ar == Z;
-//        syntax = "ld %rd, %ar";
         cycles = 2;
         execute = {
             $regs(rd) = $sram($wregs(ar));
@@ -921,7 +863,7 @@ architecture avr {
 
     instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
         encoding = { 0b10, imm[5], 0b0, imm[4:3], 0b0, rd[4:0], ar[0], imm[2:0] };
-//        syntax = "ldd %rd, %ar + %imm";
+        syntax = "ldd %rd, %ar + %imm";
         cycles = 2;
         execute = {
             $regs(rd) = $sram($wregs(ar) + imm);
@@ -940,6 +882,7 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b1110 } when ar == X;
         encoding = { 0b1001000, rd[4:0], 0b1010 } when ar == Y;
         encoding = { 0b1001000, rd[4:0], 0b0010 } when ar == Z;
+        syntax = "ld %rd, -%ar";
         cycles = 2;
         execute = {
             local addr: int = $wregs(RX) - 1;
@@ -952,6 +895,7 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b1101 } when ar == X;
         encoding = { 0b1001000, rd[4:0], 0b1001 } when ar == Y;
         encoding = { 0b1001000, rd[4:0], 0b0001 } when ar == Z;
+        syntax = "ld %rd, %ar+";
         cycles = 2;
         execute = {
             local addr: int = $wregs(RX);
@@ -977,8 +921,8 @@ architecture avr {
     };
 
     instruction "lpmd" rd: GPR, z: Z {
-        // TODO: this is a variant of LPM
         encoding = { 0b1001000, rd[4:0], 0b0100 };
+        syntax = "lpm %rd, Z";
         cycles = 3;
         execute = {
             $regs(rd) = $program($wregs(RZ));
@@ -986,8 +930,8 @@ architecture avr {
     };
 
     instruction "lpmpi" rd: GPR, z: Z {
-        // TODO: this is a variant of LPM
         encoding = { 0b1001000, rd[4:0], 0b0101 };
+        syntax = "lpm %rd, Z+";
         cycles = 3;
         execute = {
             local addr: int = $wregs(RZ);
@@ -1347,9 +1291,9 @@ architecture avr {
     };
 
     pseudo instruction "st" ar: XYZ, rr: GPR {
-        encoding = { 0b1001001, rd[4:0], 0b1100 } when ar == X;
-        encoding = { 0b1001001, rd[4:0], 0b1000 } when ar == Y;
-        encoding = { 0b1000001, rd[4:0], 0b0000 } when ar == Z;
+        encoding = { 0b1001001, rr[4:0], 0b1100 } when ar == X;
+        encoding = { 0b1001001, rr[4:0], 0b1000 } when ar == Y;
+        encoding = { 0b1000001, rr[4:0], 0b0000 } when ar == Z;
         cycles = 2;
         execute = {
             $sram($wregs(ar)) = $regs(rr);
@@ -1358,16 +1302,18 @@ architecture avr {
 
     instruction "std" ar: YZ, imm: IMM6, rr: GPR {
         encoding = { 0b10, imm[5], 0b0, imm[4:3], 0b1, rr[4:0], ar[0], imm[2:0] };
+        syntax = "st %ar + %imm, %rr";
         cycles = 2;
         execute = {
             $sram($wregs(ar) + imm) = $regs(rr);
         };
     };
 
-    pseudo instruction "stpd" ar: XYZ, rr: GPR {
-        encoding = { 0b1001001, rd[4:0], 0b1101 } when ar == X;
-        encoding = { 0b1001001, rd[4:0], 0b1001 } when ar == Y;
-        encoding = { 0b1001001, rd[4:0], 0b0001 } when ar == Z;
+    instruction "stpd" ar: XYZ, rr: GPR {
+        encoding = { 0b1001001, rr[4:0], 0b1101 } when ar == X;
+        encoding = { 0b1001001, rr[4:0], 0b1001 } when ar == Y;
+        encoding = { 0b1001001, rr[4:0], 0b0001 } when ar == Z;
+        syntax = "st -%ar, %rr";
         cycles = 2;
         execute = {
             local addr: int = $wregs(ar) - 1;
@@ -1376,10 +1322,11 @@ architecture avr {
         };
     };
 
-    pseudo instruction "stpi" ar: XYZ, rr: GPR {
-        encoding = { 0b1001001, rd[4:0], 0b1110 } when ar == X;
-        encoding = { 0b1001001, rd[4:0], 0b1010 } when ar == Y;
-        encoding = { 0b1001001, rd[4:0], 0b0010 } when ar == Z;
+    instruction "stpi" ar: XYZ, rr: GPR {
+        encoding = { 0b1001001, rr[4:0], 0b1110 } when ar == X;
+        encoding = { 0b1001001, rr[4:0], 0b1010 } when ar == Y;
+        encoding = { 0b1001001, rr[4:0], 0b0010 } when ar == Z;
+        syntax = "st %ar+, %rr";
         cycles = 2;
         execute = {
             local addr: int = $wregs(ar);

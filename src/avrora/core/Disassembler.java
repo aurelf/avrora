@@ -761,6 +761,15 @@ public class Disassembler {
         rd |= (word1 & 0x0000F);
         return new Instr.MUL(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
+    private Instr decode_STPI_2(int word1) {
+        // this method decodes STPI when ar == Z
+        int rr = 0;
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
+        rr |= ((word1 >> 4) & 0x0001F);
+        // logical[12:15] -> 
+        return new Instr.STPI(pc, Register.Z, getReg(GPR_table, rr));
+    }
     private Instr decode_PUSH_0(int word1) {
         int rr = 0;
         // logical[0:6] -> 
@@ -768,6 +777,51 @@ public class Disassembler {
         rr |= ((word1 >> 4) & 0x0001F);
         // logical[12:15] -> 
         return new Instr.PUSH(pc, getReg(GPR_table, rr));
+    }
+    private Instr decode_STPD_0(int word1) {
+        // this method decodes STPD when ar == X
+        int rr = 0;
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
+        rr |= ((word1 >> 4) & 0x0001F);
+        // logical[12:15] -> 
+        return new Instr.STPD(pc, Register.X, getReg(GPR_table, rr));
+    }
+    private Instr decode_STPD_1(int word1) {
+        // this method decodes STPD when ar == Y
+        int rr = 0;
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
+        rr |= ((word1 >> 4) & 0x0001F);
+        // logical[12:15] -> 
+        return new Instr.STPD(pc, Register.Y, getReg(GPR_table, rr));
+    }
+    private Instr decode_STPD_2(int word1) {
+        // this method decodes STPD when ar == Z
+        int rr = 0;
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
+        rr |= ((word1 >> 4) & 0x0001F);
+        // logical[12:15] -> 
+        return new Instr.STPD(pc, Register.Z, getReg(GPR_table, rr));
+    }
+    private Instr decode_STPI_0(int word1) {
+        // this method decodes STPI when ar == X
+        int rr = 0;
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
+        rr |= ((word1 >> 4) & 0x0001F);
+        // logical[12:15] -> 
+        return new Instr.STPI(pc, Register.X, getReg(GPR_table, rr));
+    }
+    private Instr decode_STPI_1(int word1) {
+        // this method decodes STPI when ar == Y
+        int rr = 0;
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
+        rr |= ((word1 >> 4) & 0x0001F);
+        // logical[12:15] -> 
+        return new Instr.STPI(pc, Register.Y, getReg(GPR_table, rr));
     }
     private Instr decode_STS_0(int word1) {
         int word2 = getWord(1);
@@ -785,7 +839,13 @@ public class Disassembler {
         // get value of bits logical[12:15]
         int value = (word1 >> 0) & 0x0000F;
         switch ( value ) {
+            case 0x00002: return decode_STPI_2(word1);
             case 0x0000F: return decode_PUSH_0(word1);
+            case 0x0000D: return decode_STPD_0(word1);
+            case 0x00009: return decode_STPD_1(word1);
+            case 0x00001: return decode_STPD_2(word1);
+            case 0x0000E: return decode_STPI_0(word1);
+            case 0x0000A: return decode_STPI_1(word1);
             case 0x00000: return decode_STS_0(word1);
             default:
             throw Avrora.failure("INVALID INSTRUCTION");

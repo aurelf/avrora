@@ -79,7 +79,7 @@ public class ClassGenerator {
         }
 
         public void visit(InstrDecl d) {
-            String cName = (d.variant == null) ? d.name.image : d.variant.image;
+            String cName = d.name.image;
             cName = StringUtil.trimquotes(cName.toUpperCase());
             printer.startblock("public static class " + cName + " extends Instr");
 
@@ -98,7 +98,7 @@ public class ClassGenerator {
 
         private void emitStaticProperties(InstrDecl d) {
             printer.print("private static final InstrProperties props = new InstrProperties(");
-            printer.print(StringUtil.commalist(d.name, d.variant, "" + d.getEncodingSize() / 8, "" + d.cycles));
+            printer.print(StringUtil.commalist(d.name, "null", "" + d.getEncodingSize() / 8, "" + d.cycles));
             printer.println(");");
         }
 
@@ -289,7 +289,7 @@ public class ClassGenerator {
     }
 
     private static String getClassName(InstrDecl d) {
-        String cName = (d.variant == null) ? d.name.image : d.variant.image;
+        String cName = d.name.image;
         cName = StringUtil.trimquotes(cName.toUpperCase());
         return cName;
     }

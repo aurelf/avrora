@@ -189,6 +189,7 @@ TOKEN :
   | < CYCLES: "cycles" >
   | < PSEUDO: "pseudo" >
   | < WHEN : "when" >
+  | < SYNTAX: "syntax" >
 }
 
 TOKEN :
@@ -265,19 +266,24 @@ void Instruction(Architecture a) :
          s = new LinkedList();
     EncodingDecl e = null;
     List el = new LinkedList();
+    Token sy = null;
     Token c = null;
     boolean pseudo = false;
 }
 {
     ["pseudo" { pseudo = true; }] "instruction" n = <STRING_LITERAL> o = Formals() "{"
         ( e = Encoding(n) { el.add(e); })*
+        [ sy = Syntax() ]
         [ c = Cycles() ]
         [ s = Execute(s) ]
 
-    "}" ";" { a.addInstruction(new InstrDecl(pseudo, n, null, o, c, s, el)); }
+    "}" ";" { a.addInstruction(new InstrDecl(pseudo, n, o, sy, c, s, el)); }
 }
 
-
+Token Syntax() : { Token sy; }
+{
+    "syntax" "=" sy = <STRING_LITERAL> ";" { return sy; }
+}
 
 Token Cycles() : { Token c; }
 {

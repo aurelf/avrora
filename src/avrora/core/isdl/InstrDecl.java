@@ -54,9 +54,11 @@ public class InstrDecl extends CodeRegion {
     public final Token name;
 
     /**
-     * The <code>variant</code> field stores a string representing the variant name of this instruction.
+     * The <code>syntax</code> field stores a token corresponding to the syntax of the instruction. If null, the syntax
+     * is the default (instruction_name operand1, operand2, etc). If non-null, this field stores a format string
+     * that is used to render the instruction as a source level instruction.
      */
-    public final Token variant;
+    public final Token syntax;
 
     public List encodingList;
 
@@ -74,13 +76,12 @@ public class InstrDecl extends CodeRegion {
      * The constructor of the <code>InstrDecl</code> class initializes the fields based on the parameters.
      *
      * @param n the name of the instruction as a string
-     * @param v the variant of the instruction as a string
      */
-    public InstrDecl(boolean ps, Token n, Token v, List o, Token c, List s, List el) {
+    public InstrDecl(boolean ps, Token n, List o, Token sy, Token c, List s, List el) {
         super(o, s);
         pseudo = ps;
         name = n;
-        variant = v;
+        syntax = sy;
         cycles = Expr.tokenToInt(c);
         encodingList = el;
         innerClassName = StringUtil.trimquotes(name.image).toUpperCase();
