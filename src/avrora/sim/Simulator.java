@@ -65,7 +65,10 @@ public abstract class Simulator implements IORegisterConstants {
             if (enabled) {
                 String idstr = StringUtil.rightJustify(id, 4);
                 String cycstr = StringUtil.rightJustify(clock.getCount(), 10);
-                Terminal.println(idstr + " " + cycstr + "   " + s);
+                synchronized ( Terminal.class ) {
+                    // synchronize on the terminal to prevent interleaved output
+                    Terminal.println(idstr + " " + cycstr + "   " + s);
+                }
             } else {
                 throw Avrora.failure("Disabled printer: performance bug!");
             }

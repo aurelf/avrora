@@ -92,9 +92,12 @@ class LED implements Microcontroller.Pin.Output {
     public void print() {
         String idstr = StringUtil.rightJustify(sim.getID(), 4);
         String cycstr = StringUtil.rightJustify(sim.getClock().getCount(), 10);
-        Terminal.print(idstr + " " + cycstr + "   ");
-        Terminal.print(colornum, color);
-        Terminal.println(": " + (on ? "on" : "off"));
+        synchronized ( Terminal.class ) {
+            // synchronize on the terminal to prevent interleaved output
+            Terminal.print(idstr + " " + cycstr + "   ");
+            Terminal.print(colornum, color);
+            Terminal.println(": " + (on ? "on" : "off"));
+        }
     }
 
     public void enableOutput() {
