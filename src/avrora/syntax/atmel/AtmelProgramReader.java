@@ -74,4 +74,10 @@ public class AtmelProgramReader extends Main.ProgramReader {
         parser.Module();
         return module.build();
     }
+
+    public String getHelp() {
+        return "The \"atmel\" input format reads programs that are written in " +
+                "assembly language in the format supported by the Atmel assembler. " +
+                "Nearly all of the directives are supported, except macros.";
+    }
 }

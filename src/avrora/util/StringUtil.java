@@ -513,7 +513,7 @@ public class StringUtil {
             if (consumed > width) {
                 if (lastSp >= 0) {
                     buf.setCharAt(lastSp, '\n');
-                    consumed = buf.length() - lastSp;
+                    consumed = buf.length() - lastSp - 1;
                 }
             }
         }
@@ -522,7 +522,7 @@ public class StringUtil {
 
 
     public static String dup(char c, int len) {
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(len);
         for (int cntr = 0; cntr < len; cntr++) {
             buf.append(c);
         }

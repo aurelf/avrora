@@ -45,6 +45,8 @@ import java.io.PrintStream;
 public final class Terminal {
 
     public static boolean useColors = true;
+    public static boolean htmlColors = false;
+
     private static PrintStream out = System.out;
 
     public static final int COLOR_BLACK = 0;
@@ -85,6 +87,8 @@ public final class Terminal {
     private static final String CTRL_BRIGHT_CYAN = "[1;36m";
     private static final String CTRL_WHITE = "[1;37m";
 
+    private static final int DEFAULT_COLOR = COLOR_LIGHTGRAY;
+
     private static final String[] COLORS = {
         CTRL_BLACK,
         CTRL_RED,
@@ -104,17 +108,38 @@ public final class Terminal {
         CTRL_WHITE
     };
 
+    // TODO: tune colors correctly for HTML
+    private static final String[] HTML_COLORS = {
+        "black", /* black */
+        "red",
+        "green",
+        "brown",
+        "blue",
+        "purple",
+        "cyan", /* cyan */
+        "gray",
+        "gray",
+        "pink",
+        "green",
+        "yellow", /* yellow */
+        "blue",
+        "magenta",
+        "cyan",
+        "white"
+    };
 
-    public static final String ERROR_COLOR = CTRL_RED;
+
+
+    public static final int ERROR_COLOR = COLOR_RED;
 
     public static void print(int color, String s) {
         if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
-        outputColor(COLORS[color], s);
+        outputColor(color, s);
     }
 
     public static void println(int color, String s) {
         if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
-        outputColor(COLORS[color], s);
+        outputColor(color, s);
         out.print('\n');
     }
 
@@ -135,43 +160,39 @@ public final class Terminal {
     }
 
     public static void printRed(String s) {
-        outputColor(CTRL_RED, s);
+        outputColor(COLOR_RED, s);
     }
 
     public static void printBlue(String s) {
-        outputColor(CTRL_BLUE, s);
+        outputColor(COLOR_BLUE, s);
     }
 
     public static void printGreen(String s) {
-        outputColor(CTRL_GREEN, s);
+        outputColor(COLOR_GREEN, s);
     }
 
     public static void printYellow(String s) {
-        outputColor(CTRL_YELLOW, s);
+        outputColor(COLOR_YELLOW, s);
     }
 
     public static void printCyan(String s) {
-        outputColor(CTRL_CYAN, s);
+        outputColor(COLOR_CYAN, s);
     }
 
     public static void printBrightRed(String s) {
-        outputColor(CTRL_BRIGHT_RED, s);
+        outputColor(COLOR_BRIGHT_RED, s);
     }
 
     public static void printBrightBlue(String s) {
-        outputColor(CTRL_BRIGHT_BLUE, s);
+        outputColor(COLOR_BRIGHT_BLUE, s);
     }
 
     public static void printBrightGreen(String s) {
-        outputColor(CTRL_BRIGHT_GREEN, s);
+        outputColor(COLOR_BRIGHT_GREEN, s);
     }
 
     public static void printBrightCyan(String s) {
-        outputColor(CTRL_BRIGHT_CYAN, s);
-    }
-
-    public static void printColor(String s, String c) {
-        outputColor(c, s);
+        outputColor(COLOR_BRIGHT_CYAN, s);
     }
 
     public static void printSeparator(int width) {
@@ -182,12 +203,20 @@ public final class Terminal {
         Terminal.nextln();
     }
 
-    private static void outputColor(String termchars, String s) {
+    private static void outputColor(int color, String s) {
         if (useColors) {
-            out.print(termchars);
-            out.print(s);
-            // TODO: get correct begin color from terminal somehow
-            out.print(CTRL_LIGHTGRAY);
+            if ( htmlColors ) {
+                out.print("<font color=");
+                out.print(HTML_COLORS[color]);
+                out.print(">");
+                out.print(s);
+                out.print("</font>");
+            } else {
+                out.print(COLORS[color]);
+                out.print(s);
+                // TODO: get correct begin color from terminal somehow
+                out.print(COLORS[DEFAULT_COLOR]);
+            }
         } else
             out.print(s);
     }

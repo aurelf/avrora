@@ -74,4 +74,11 @@ public class GASProgramReader extends Main.ProgramReader {
         parser.Module();
         return module.build();
     }
+
+    public String getHelp() {
+        return "The \"gas\" input format reads programs that are written in " +
+                "GAS format assembly language. A subset of the directives and " +
+                "syntax is supported. No linking functionality is currently " +
+                "implemented; all symbol references must be defined in one file. ";
+    }
 }

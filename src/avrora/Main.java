@@ -92,6 +92,8 @@ public class Main {
          * @throws Exception
          */
         public abstract Program read(String[] args) throws Exception;
+
+        public abstract String getHelp();
     }
 
     /**
@@ -214,6 +216,11 @@ public class Main {
     public static final Option.Str CLASS = options.newOption("class", "",
             "This option is only used in the \"custom\" action to specify which Java " +
             "class contains an action to load and execute.");
+    public static final Option.Bool LICENSE = options.newOption("license", false,
+            "Display the copyright and license text.");
+    public static final Option.Bool HTML = options.newOption("html", false,
+            "For terminal colors. Display terminal colors as HTML tags for " +
+            "easier inclusion in webpages.");
 
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 
@@ -414,6 +421,31 @@ public class Main {
             Terminal.println(StringUtil.makeJustifiedLines(help, 8, 78));
         }
 
+
+        String inpstr = "The input format of the program is specified with the \"input\" " +
+                "option supplied at the command line. This input format is used by " +
+                "actions that operate on programs to determine how to interpret the " +
+                "input and build a program from it. For example, the input format might " +
+                "be Atmel syntax, GAS syntax, or the output of a disassembler. Currently " +
+                "no binary formats are supported.";
+
+        printSection("INPUT FORMATS", inpstr);
+
+
+        list = Collections.list(Collections.enumeration(inputs.keySet()));
+        Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+        i = list.iterator();
+        while (i.hasNext()) {
+            String a = (String) i.next();
+            Terminal.printBrightGreen("    -input");
+            Terminal.print("=");
+            Terminal.printYellow(a);
+            Terminal.nextln();
+            String help = ((ProgramReader) inputs.get(a)).getHelp();
+            Terminal.println(StringUtil.makeJustifiedLines(help, 8, 78));
+        }
+
+
         Terminal.println("For more information, see the online documentation: ");
         Terminal.printBrightCyan("http://compilers.cs.ucla.edu/avrora");
         Terminal.nextln();
@@ -460,12 +492,48 @@ public class Main {
 
     static void banner() {
         title();
-        String notice =
-                "This is a prototype simulator and analysis tool intended for evaluation " +
-                "and experimentation purposes only. It is provided with absolutely no " +
-                "warranty, expressed or implied.\n";
+        String notice;
+        if ( !LICENSE.get() )
+            notice =
+                    "This is a prototype simulator and analysis tool intended for evaluation " +
+                    "and experimentation purposes only. It is provided with absolutely no " +
+                    "warranty, expressed or implied. For more information about the license "+
+                    "that this software is provided to you under, specify the \"license\" " +
+                    "option.\n\n";
+        else
+            notice =
 
-        Terminal.print(StringUtil.makeJustifiedLines(notice, 0, 60));
+                    "Copyright (c) 2004, Regents of the University of California \n" +
+                    "All rights reserved.\n\n" +
+
+                    "Redistribution and use in source and binary forms, with or without " +
+                    "modification, are permitted provided that the following conditions " +
+                    "are met:\n\n" +
+
+                    "Redistributions of source code must retain the above copyright notice, " +
+                    "this list of conditions and the following disclaimer.\n\n" +
+
+                    "Redistributions in binary form must reproduce the above copyright " +
+                    "notice, this list of conditions and the following disclaimer in the " +
+                    "documentation and/or other materials provided with the distribution.\n\n" +
+
+                    "Neither the name of the University of California, Los Angeles nor the " +
+                    "names of its contributors may be used to endorse or promote products " +
+                    "derived from this software without specific prior written permission.\n\n" +
+
+                    "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS " +
+                    "\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT " +
+                    "LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR " +
+                    "A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT " +
+                    "OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, " +
+                    "SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT " +
+                    "LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, " +
+                    "DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY " +
+                    "THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT " +
+                    "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE " +
+                    "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n";
+
+        Terminal.print(StringUtil.makeParagraphs(notice, 0, 60));
     }
 
     static void title() {
@@ -564,6 +632,7 @@ public class Main {
     public static void parseOptions(String args[]) {
         options.parseCommandLine(args);
         Terminal.useColors = COLORS.get();
+        Terminal.htmlColors = HTML.get();
 
         List verbose = VERBOSE.get();
         Iterator i = verbose.iterator();
