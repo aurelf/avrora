@@ -90,15 +90,18 @@ public class Main {
             "label or a hexadecimal number preceded by a \"$\". The first program address " +
             "is the address of the indirect call or jump instruction and the second program " +
             "address is a possible target.");
-    public static final Option.Bool LIGHT_BACKGROUND = mainOptions.newOption("light-background", false,
-            "This option can be used to adjust the color palette used for text output " +
-            "by Avrora. For terminals that have a light color background, setting this option to " +
-            "true will allow more readable output.");
     public static final Option.Str FOREGROUND = mainOptions.newOption("foreground-color", "lightgray",
             "This option can be used to specify the default foreground color of " +
             "text outputted from Avrora. For terminals with a light-colored background, " +
             "the default choice may be hard or impossible to read. In that case, set this " +
             "option to a darker color such as \"black\" for readable output.");
+    public static final Option.Str CONFIGFILE = mainOptions.newOption("config-file", "",
+            "This option can be used to specify a file that contains additional command " +
+            "line options to Avrora. Any command-line option can be specified in this " +
+            "file. For repeated runs with similar options, the common options can be stored" +
+            "in this file for use over multiple runs. Options are processed in the following " +
+            "order: \n   1) The .avrora file in your home directory \n   2) A configuration " +
+            "file specified on the command line \n   3) Command line options to Avrora");
 
 
     static {
@@ -109,6 +112,12 @@ public class Main {
         actions.addClass("list", ListAction.class);
         actions.addClass("cfg", CFGAction.class);
         actions.addClass("benchmark", BenchmarkAction.class);
+        //--BEGIN EXPERIMENTAL: isdl
+        actions.addClass("isdl", ISDLAction.class);
+        //--END EXPERIMENTAL: isdl
+        //--BEGIN EXPERIMENTAL: dbbc
+        actions.addClass("dbbc", DBBCAction.class);
+        //--END EXPERIMENTAL: dbbc
         inputs.addClass("auto", AutoProgramReader.class);
         inputs.addClass("gas", GASProgramReader.class);
         inputs.addClass("atmel", AtmelProgramReader.class);
@@ -169,8 +178,12 @@ public class Main {
             loadUserDefaults();
 
             parseOptions(args);
-
             Terminal.setForegroundColor(FOREGROUND.get());
+
+            if ( !CONFIGFILE.get().equals("") ) {
+                loadFile(CONFIGFILE.get());
+                parseOptions(args);
+            }
 
             if (args.length == 0 || HELP.get()) {
                 args = mainOptions.getArguments();
@@ -205,6 +218,17 @@ public class Main {
             Properties defs = new Properties();
             defs.load(new FileInputStream(f));
             mainOptions.process(defs);
+        }
+    }
+
+    private static void loadFile(String fname) throws IOException {
+        File f = new File(fname);
+        if (f.exists()) {
+            Properties defs = new Properties();
+            defs.load(new FileInputStream(f));
+            mainOptions.process(defs);
+        } else {
+            Avrora.userError("Configuration file does not exist", fname);
         }
     }
 
@@ -279,9 +303,10 @@ public class Main {
 
     private static void printMainHelp() {
         printSection("OPTIONS", "Options specify the action to be performed as well as the input " +
-                "format, the output format (if any), and parameters to the action. The " +
-                "available options are listed below along with their types and default " +
-                "values.");
+                "format, the output format (if any), and any general configuration parameters for " +
+                "Avrora. The available main options are listed below along with their types and default " +
+                "values. Each action also has its own set of options. To access help for the options " +
+                "related to an action, specify the name of the action along with the \"help\" option.");
 
         printOptions(mainOptions);
         Iterator i;
@@ -307,8 +332,8 @@ public class Main {
         printSection("INPUT FORMATS", "The input format of the program is specified with the \"input\" " +
                 "option supplied at the command line. This input format is used by " +
                 "actions that operate on programs to determine how to interpret the " +
-                "input and build a program from it. For example, the input format might " +
-                "be Atmel syntax, GAS syntax, or the output of a disassembler. Currently " +
+                "input and build a program from the files specified. For example, the input format might " +
+                "be Atmel syntax, GAS syntax, or the output of a disassembler such as avr-objdump. Currently " +
                 "no binary formats are supported.");
 
         list = inputs.getSortedList();
@@ -320,6 +345,7 @@ public class Main {
             String help = ((ProgramReader)inputs.getObjectOfClass(a)).getHelp();
             Terminal.println(StringUtil.makeParagraphs(help, 8, 0, 78));
         }
+        Terminal.println("");
     }
 
     private static void printOptions(Options options) {

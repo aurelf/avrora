@@ -654,24 +654,6 @@ public class StringUtil {
         return new IllegalArgumentException("Invalid character literal: " + lit);
     }
 
-    public static String trimallquotes(String s) {
-        int start, end;
-
-        // TODO: could use some cleanup with StringUtil
-        // TODO: this is buggy!
-
-        for (start = 0; start < s.length(); start++)
-            if (s.charAt(start) != '\"') break;
-
-        for (end = s.length() - 1; end >= 0; end--)
-            if (s.charAt(end) != '\"') break;
-
-        if (start < end)
-            return s.substring(start, end);
-        else
-            return "";
-    }
-
     public static String trimquotes(String s) {
         if (s.length() == 0) return s;
 

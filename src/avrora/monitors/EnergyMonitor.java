@@ -272,7 +272,6 @@ public class EnergyMonitor extends MonitorFactory {
                 }
                 if (totalEnergy <= energy) {
                     //lets go on
-                    //System.out.println(simulator.getID()+ " consumed: " + totalEnergy + " ... go on");
                     simulator.insertEvent(this, interval);
                 } else {
                     //shutdown this node
@@ -282,8 +281,7 @@ public class EnergyMonitor extends MonitorFactory {
                     Terminal.print("energy limit exceed, shutdown node: ");
                     Terminal.println("consumed " + totalEnergy + " Joule");
                     
-                    //System.out.println(simulator.getID() + " consumed: " + totalEnergy + " ... stop !!!!!!");
-                    //remove radio                    
+                    //remove radio
                     Radio radio = simulator.getMicrocontroller().getRadio();
                     radio.getAir().removeRadio(radio);
                     //stop loop

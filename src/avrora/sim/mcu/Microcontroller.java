@@ -154,8 +154,6 @@ public interface Microcontroller extends MicrocontrollerProperties {
      */
     public Pin getPin(int num);
 
-    //TODO: Doc this
-
     public void setRadio(Radio r);
 
     public Radio getRadio();

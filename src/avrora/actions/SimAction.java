@@ -58,18 +58,15 @@ import java.util.*;
  * @author Ben L. Titzer
  */
 public abstract class SimAction extends Action {
-    public final Option.Long ICOUNT = newOption("itime", 0,
+    public final Option.Long ICOUNT = newOption("icount", 0,
             "This option is used to terminate the " +
-            "simulation after the specified number of instructions have been executed. " +
-            "It is useful for non-terminating programs.");
+            "simulation after the specified number of instructions have been executed.");
     public final Option.Double SECONDS = newOption("seconds", 0.0,
             "This option is used to terminate the " +
-            "simulation after the specified number of simulated seconds have passed. " +
-            "It is useful for non-terminating programs and benchmarks.");
+            "simulation after the specified number of simulated seconds have passed.");
     public final Option.Long TIMEOUT = newOption("timeout", 0,
             "This option is used to terminate the " +
-            "simulation after the specified number of clock cycles have passed. " +
-            "It is useful for non-terminating programs and benchmarks.");
+            "simulation after the specified number of clock cycles have passed.");
     public final Option.Str CHIP = newOption("chip", "atmega128l",
             "This option selects the microcontroller from a library of supported " +
             "microcontroller models.");
@@ -82,10 +79,12 @@ public abstract class SimAction extends Action {
             "This option specifies a list of monitors to be attached to the program. " +
             "Monitors collect information about the execution of the program while it " +
             "is running such as profiling data or timing information.");
+    //--BEGIN EXPERIMENTAL: dbbc
     public final Option.Bool DBBC = newOption("dbbc", false,
             "This option enables the DBBC compiler. \n(Status: experimental)");
+    //--END EXPERIMENTAL: dbbc
     public final Option.Str VISUAL = newOption("visual", "",
-            "Enable visual representation of the network. For example " +
+            "This optiobn enables visual representation of the network. For example " +
             "topology, packet transmission, packet recption, energy " +
             "information and more. Syntax is ip address or host name and " +
             "port: 134.2.11.183:2379 \n(Status: experimental)");
@@ -190,11 +189,13 @@ public abstract class SimAction extends Action {
      */
     protected Simulator newSimulator(Program p) {
         InterpreterFactory factory;
+        //--BEGIN EXPERIMENTAL: dbbc
         if (DBBC.get()) {
             factory = new DBBCInterpreter.Factory(new DBBC(p, options));
-        } else {
+        } else
+        //--END EXPERIMENTAL: dbbc
             factory = new GenInterpreter.Factory();
-        }
+
 
         return newSimulator(factory, p);
     }

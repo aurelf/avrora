@@ -63,8 +63,11 @@ public class MultiSimulateAction extends SimAction {
             "the specified program loaded onto each. This is useful for simulating a network of " +
             "sensor nodes and monitoring the behavior of the entire network. ";
     public final Option.List NODECOUNT = newOptionList("nodecount", "1",
-            "This option is used in the multi-node simulation. It specifies the " +
-            "number of nodes to be instantiated of each program specified as an argument.");
+            "This option is used to specify the number of nodes to be instantiated. " +
+            "The format is a list of integers, where each integer specifies the number of " +
+            "nodes to instantiate with each program supplied on the command line. For example, " +
+            "when set to \"1,2\" one node will be created with the first program loaded onto it, " +
+            "and two nodes created with the second program loaded onto them.");
     public final Option.Long RANDOMSEED = newOption("random-seed", 0,
             "This option is used to seed a pseudo-random number generator used in the " +
             "simulation. If this option is set to non-zero, then its value is used as " +
@@ -72,9 +75,9 @@ public class MultiSimulateAction extends SimAction {
             "those parts of simulation that rely on random numbers will have seeds " +
             "chosen based on system parameters that vary from run to run.");
     public final Option.Str TOPOLOGY = newOption("topology", "(null)",
-            "This option is used in the multi-node simulation to specify the name of " +
+            "This option can be used to specify the name of " +
             "a file that contains information about the topology of the network. " +
-            "When this options is specified, the free space radio model will be used " +
+            "When this option is specified the free space radio model will be used " +
             "to model radio propagation. See sample.top in topology for an example. \n(Status: alpha)");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option causes the simulator to insert a random delay before starting " +
@@ -86,8 +89,8 @@ public class MultiSimulateAction extends SimAction {
     public final Option.Long STAGGER_START = newOption("stagger-start", 0,
             "This option causes the simulator to insert a progressively longer delay " +
             "before starting each node in order to avoid artificial cycle-level " +
-            "synchronization between nodes. The starting times are staggered by the number " +
-            "of clock cycles given as a value. For example, if this option is given the " +
+            "synchronization between nodes. The starting times are staggered by the specified number " +
+            "of clock cycles. For example, if this option is given the " +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
     public final Option.Bool CHANNEL_UTIL = newOption("channel-utilization", false,

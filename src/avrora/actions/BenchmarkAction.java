@@ -87,15 +87,20 @@ public class BenchmarkAction extends SimAction {
     public void run(String[] args) throws Exception {
         program = Main.readProgram(args);
 
+        String config = "Generated Interpreter";
+
         long repeat = REPEAT.get();
 
+        //--BEGIN EXPERIMENTAL: dbbc
         if (DBBC.get()) {
             factory = new DBBCInterpreter.Factory(new DBBC(program, options));
-        } else {
+            config = "Dynamic Basic Block Compiler";
+        } else
+        //--END EXPERIMENTAL: dbbc
             factory = new GenInterpreter.Factory();
-        }
 
-        Terminal.printGreen("Generated Interpreter");
+
+        Terminal.printGreen(config);
         Terminal.nextln();
         printSeparator();
 

@@ -78,7 +78,6 @@ public class GlobalClock {
         threadMap.put(t, ticker);
         t.getSimulator().insertEvent(ticker, period);
         ticker.goal++;
-        //System.out.println("add goal: " + ticker.goal);
     }
 
     public void remove(SimulatorThread t) {
@@ -166,9 +165,7 @@ public class GlobalClock {
 
         public void decGoal() {
             goal--;
-            //System.out.println("dec goal: " + this.goal + "   count: " + this.count);            
             if (goal == count) {
-                //System.out.println("goal meet: " + this.goal);            
                 synchronized (condition) {
                     ready();
                 }

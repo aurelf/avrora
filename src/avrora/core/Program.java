@@ -308,7 +308,6 @@ public class Program {
         checkAddress(address + size - 1);
 
         instrs[address - program_start] = i;
-        // TODO: fixme, misaligned instructions!
         for (int cntr = 1; cntr < size; cntr++) {
             instrs[address - program_start + cntr] = null;
         }

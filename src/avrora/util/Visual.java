@@ -58,8 +58,8 @@ public class Visual {
             out = socket.getOutputStream();
             connected = true;
         } catch (IOException e) {
-            System.out.println("Cannot connect to visual host " + addr + ", port " + port);
-            System.out.println("will continue anyway...");
+            Terminal.println("Cannot connect to visual host " + addr + ", port " + port);
+            Terminal.println("will continue anyway...");
             e.printStackTrace();
         }
     }
@@ -70,8 +70,8 @@ public class Visual {
                 out.close();
                 socket.close();
             } catch (IOException e) {
-                System.out.println("Cannot close connection for visualization");
-                System.out.println("will continue anyway...");
+                Terminal.println("Cannot close connection for visualization");
+                Terminal.println("will continue anyway...");
                 e.printStackTrace();
             }
         }
@@ -116,7 +116,7 @@ public class Visual {
         try {
             out.write(data.getBytes());
         } catch (IOException e) {
-            System.out.println("cannot write data");
+            Terminal.println("cannot write data");
             e.printStackTrace();
             System.exit(1);
         }

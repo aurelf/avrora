@@ -134,7 +134,6 @@ public class EnergyProfiler extends MonitorFactory {
                 size = block.getSize();
                 address = block.getAddress();
                 if (size > 0 && program.readInstr(address) != null) {
-                    //System.out.print("lookup new address: " + address + " " + size + "    ");
                     labelLookup.put(new Integer(address), nearestLabel(address));
                     s.insertProbe(procedureProbe, address);
                 }
@@ -168,7 +167,6 @@ public class EnergyProfiler extends MonitorFactory {
                     match = temp;
                 }
             }
-            //System.out.println("basic block start:" + address + " , fitting label " + match.location.name + " @ " + match.location.address);
             return match;
         }
 
@@ -177,14 +175,11 @@ public class EnergyProfiler extends MonitorFactory {
          */
         private void findSleep() {
             int i = 0;
-            //boolean done = false;
             while (i < program.program_length) {
                 Instr instr = program.readInstr(i);
-                //System.out.println(i);
                 if (instr != null) {
                     if (instr.properties.name.equals("sleep")) {
                         simulator.insertProbe(sleepProbe, i);
-                        //System.out.println("found sleep" + i );
                     }
                     i = i + instr.getSize();
                 } else
@@ -238,7 +233,6 @@ public class EnergyProfiler extends MonitorFactory {
              * @see avrora.sim.Simulator.Probe#fireBefore(avrora.core.Instr, int, avrora.sim.State)
              */
             public void fireBefore(Instr i, int address, State s) {
-                //System.out.println("reached new basic block at " + address + "   label: " + ((EnergyProfile)labelLookup.get(new Integer(address))).location.name);            
                 long cycles = simulator.getState().getCycles() - lastChange;
                 if (cycles > 0) {
                     if (currentMode != null) {
@@ -276,7 +270,6 @@ public class EnergyProfiler extends MonitorFactory {
              * @see avrora.sim.Simulator.Probe#fireBefore(avrora.core.Instr, int, avrora.sim.State)
              */
             public void fireBefore(Instr i, int address, State s) {
-                //System.out.println("enter sleep");
                 long cycles = simulator.getState().getCycles() - lastChange;
                 if (cycles > 0) {
                     if (currentMode != null) {
