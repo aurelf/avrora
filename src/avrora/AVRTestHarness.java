@@ -471,7 +471,8 @@ public class AVRTestHarness implements TestHarness {
 
         public void longReport() {
             Terminal.println(message);
-            state.dump();
+            // TODO: fixme
+//            state.dump();
         }
     }
 

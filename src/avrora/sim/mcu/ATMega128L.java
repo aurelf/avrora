@@ -433,7 +433,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         public SimImpl(Program p) {
             super(ATMega128L.this, p);
-            populateState(getState());
+            populateState(interpreter);
         }
 
         public static final int RESET_VECT = 1;
@@ -558,7 +558,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             Verbose.Printer timerPrinter = Verbose.getVerbosePrinter("sim.timer0");
 
-            protected Timer0(State ns) {
+            protected Timer0(Interpreter ns) {
                 ticker = new Ticker();
                 TCCR0_reg = new ControlRegister();
                 TCNT0_reg = new State.RWIOReg();
@@ -742,7 +742,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
         }
 
-        private void populateState(State ns) {
+        private void populateState(Interpreter ns) {
             // set up the external interrupt mask and flag registers and interrupt range
             EIFR_reg = buildInterruptRange(ns, true, EIMSK, EIFR, 2, 8);
             EIMSK_reg = EIFR_reg.maskRegister;
@@ -762,7 +762,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
 
-        private void buildPorts(State ns) {
+        private void buildPorts(Interpreter ns) {
             buildPort(ns, 'A', PORTA, DDRA, PINA);
             buildPort(ns, 'B', PORTB, DDRB, PINB);
             buildPort(ns, 'C', PORTC, DDRC, PINC);
@@ -771,7 +771,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             buildPort(ns, 'F', PORTF, DDRF, PINF);
         }
 
-        private void buildPort(State ns, char p, int portreg, int dirreg, int pinreg) {
+        private void buildPort(Interpreter ns, char p, int portreg, int dirreg, int pinreg) {
             Pin[] pins = new Pin[8];
             for (int cntr = 0; cntr < 8; cntr++)
                 pins[cntr] = (Pin) getPin("P" + p + cntr);
@@ -780,13 +780,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             installIOReg(ns, pinreg, new PinRegister(pins));
         }
 
-        private void installIOReg(State ns, int num, State.IOReg ior) {
+        private void installIOReg(Interpreter ns, int num, State.IOReg ior) {
             // in compatbility mode, the upper IO registers do not exist.
             if (compatibilityMode && num > IOREG_SIZE_103) return;
             ns.setIOReg(num, ior);
         }
 
-        private FlagRegister buildInterruptRange(State ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
+        private FlagRegister buildInterruptRange(Interpreter ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {
             FlagRegister fr = new FlagRegister(increasing, baseVect);
             for (int cntr = 0; cntr < numVects; cntr++) {
                 int inum = increasing ? baseVect + cntr : baseVect - cntr;
@@ -813,7 +813,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             // need to complete alternative SPIF bit clear rule!!!
 
-            SPI(State ns) {
+            SPI(Interpreter ns) {
                 ticker = new SPITicker();
                 SPDR_reg = new SPDReg();
                 SPCR_reg = new State.RWIOReg();
@@ -835,7 +835,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             private void postSPIInterrupt() {
                 if (SPCR_reg.readBit(7)) {
                     SPSR_reg.setSPIF();
-                    state.postInterrupt(18);
+                    // TODO: fix access rights for this method
+                    interpreter.postInterrupt(18);
                 }
             }
 
