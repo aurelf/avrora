@@ -226,6 +226,8 @@ public final class Terminal {
     }
 
     private static void outputColor(int color, String s) {
+        if ( color == DEFAULT_COLOR ) color = BEGIN_COLOR;
+
         if (useColors) {
             if (htmlColors) {
                 out.print("<font color=");
@@ -234,7 +236,7 @@ public final class Terminal {
                 out.print(s);
                 out.print("</font>");
                 return;
-            } else if ( color != DEFAULT_COLOR && color != BEGIN_COLOR ) {
+            } else if ( color != BEGIN_COLOR ) {
                 out.print(COLORS[color]);
                 out.print(s);
                 // TODO: get correct begin color from terminal somehow
