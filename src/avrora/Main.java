@@ -225,6 +225,9 @@ public class Main {
     public static final Option.Long NODECOUNT = options.newOption("nodecount", 1,
             "This option is used in the multi-node simulation. It specifies the " +
             "number of nodes to be instantiated.");
+    public static final Option.Str TOPOLOGY = options.newOption("topology", "",
+            "This option is used in the multi-node simulation to specify the name of" +
+            "a file that contains information about the topology of the network. ");
 
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 

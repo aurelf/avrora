@@ -170,15 +170,17 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         protected boolean read() {
             boolean result;
-            if ( pinPrinter.enabled ) printRead();
+            if (pinPrinter.enabled) printRead();
             if (!outputDir) {
-                if (input != null) result = input.read();
-                else  result = pullup;
+                if (input != null)
+                    result = input.read();
+                else
+                    result = pullup;
 
             } else {
                 result = level;
             }
-            if ( pinPrinter.enabled ) pinPrinter.println(" -> "+result);
+            if (pinPrinter.enabled) pinPrinter.println(" -> " + result);
             return result;
         }
 
@@ -192,7 +194,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 if (input != null)
                     pinPrinter.print("[input] ");
                 else
-                    pinPrinter.print("[pullup:"+pullup+"] ");
+                    pinPrinter.print("[pullup:" + pullup + "] ");
 
             } else {
                 pinPrinter.print("[output] ");
@@ -201,7 +203,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         protected void write(boolean value) {
             level = value;
-            if ( pinPrinter.enabled ) printWrite(value);
+            if (pinPrinter.enabled) printWrite(value);
             if (outputDir && output != null) output.write(value);
         }
 
@@ -274,8 +276,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * @return the number of IO registers supported on this hardware device
      */
     public int getIORegSize() {
-        if ( compatibilityMode ) return IOREG_SIZE_103;
-        else return IOREG_SIZE;
+        if (compatibilityMode)
+            return IOREG_SIZE_103;
+        else
+            return IOREG_SIZE;
     }
 
     /**
@@ -566,18 +570,18 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
 
             protected void compareMatch() {
-                if ( timerPrinter.enabled ) {
+                if (timerPrinter.enabled) {
                     boolean enabled = TIMSK_reg.readBit(1);
-                    timerPrinter.println("Timer0.compareMatch (enabled: "+enabled+")");
+                    timerPrinter.println("Timer0.compareMatch (enabled: " + enabled + ")");
                 }
                 // set the compare flag for this timer
                 TIFR_reg.flagBit(1);
             }
 
             protected void overflow() {
-                if ( timerPrinter.enabled ) {
+                if (timerPrinter.enabled) {
                     boolean enabled = TIMSK_reg.readBit(0);
-                    timerPrinter.println("Timer0.overFlow (enabled: "+enabled+")");
+                    timerPrinter.println("Timer0.overFlow (enabled: " + enabled + ")");
                 }
                 // set the overflow flag for this timer
                 TIFR_reg.flagBit(0);
@@ -654,9 +658,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
                 private void resetPeriod(int n) {
-                    if ( n == 0 ) {
+                    if (n == 0) {
                         if (timerEnabled) {
-                            if ( timerPrinter.enabled ) timerPrinter.println("Timer0 disabled");
+                            if (timerPrinter.enabled) timerPrinter.println("Timer0 disabled");
                             removeTimerEvent(ticker);
                         }
                         return;
@@ -664,7 +668,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     if (timerEnabled) {
                         removeTimerEvent(ticker);
                     }
-                    if ( timerPrinter.enabled ) timerPrinter.println("Timer0 enabled: period = "+n+" mode = "+timerMode);
+                    if (timerPrinter.enabled) timerPrinter.println("Timer0 enabled: period = " + n + " mode = " + timerMode);
                     period = n;
                     timerEnabled = true;
                     addTimerEvent(ticker, period);
@@ -683,8 +687,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     int count = TCNT0_reg.read() & 0xff;
                     int compare = OCR0_reg.read() & 0xff;
 
-                    if ( timerPrinter.enabled )
-                        timerPrinter.println("Timer0 [TCNT0 = "+count+", OCR0 = "+compare+"]");
+                    if (timerPrinter.enabled)
+                        timerPrinter.println("Timer0 [TCNT0 = " + count + ", OCR0 = " + compare + "]");
 
                     switch (timerMode) {
                         case MODE_NORMAL: // NORMAL MODE
@@ -733,7 +737,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                     }
                     TCNT0_reg.write((byte) count);
-                    if ( period != 0 ) addTimerEvent(this, period);
+                    if (period != 0) addTimerEvent(this, period);
                 }
             }
         }
@@ -752,6 +756,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             buildPorts(ns);
             // TODO: build other devices
+
+            // Add SPI device by Simon
+            new SPI(ns);
         }
 
 
@@ -775,7 +782,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         private void installIOReg(State ns, int num, State.IOReg ior) {
             // in compatbility mode, the upper IO registers do not exist.
-            if ( compatibilityMode && num > IOREG_SIZE_103 ) return;
+            if (compatibilityMode && num > IOREG_SIZE_103) return;
             ns.setIOReg(num, ior);
         }
 
@@ -788,6 +795,201 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 installIOReg(ns, flagRegNum, fr);
             }
             return fr;
+        }
+
+
+        /**
+         * SPI Class by Simon
+         */
+        protected class SPI {
+            final SPDReg SPDR_reg;
+            final State.RWIOReg SPCR_reg;
+            final SPSReg SPSR_reg;
+            final SPIInterrupt SPI_int;
+            final SPITicker ticker;
+
+            byte radio_in;
+            byte radio_out;
+
+            // need to complete alternative SPIF bit clear rule!!!
+
+            SPI(State ns) {
+                ticker = new SPITicker();
+                SPDR_reg = new SPDReg();
+                SPCR_reg = new State.RWIOReg();
+                SPSR_reg = new SPSReg();
+                SPI_int = new SPIInterrupt();
+
+                // add SPI interrupt to simulator
+                interrupts[18] = SPI_int;
+
+                installIOReg(ns, SPDR, SPDR_reg);
+                installIOReg(ns, SPSR, SPSR_reg);
+                installIOReg(ns, SPCR, SPCR_reg);
+                addPeriodicTimerEvent(ticker, millisToCycles(0.418));
+            }
+
+            /**
+             * Post SPI interrupt
+             */
+            private void postSPIInterrupt() {
+                if (SPCR_reg.readBit(7)) {
+                    SPSR_reg.setSPIF();
+                    state.postInterrupt(18);
+                }
+            }
+
+            private void unpostSPIInterrupt() {
+
+            }
+
+            class SPITicker implements Simulator.Trigger {
+                public void fire() {
+                    // put raiod_out in the environment
+                    // env = raiod_out;
+
+                    // read environment and store in raido_in
+                    // radio_in = env;
+
+                    // post interrupt
+                    postSPIInterrupt();
+
+                }
+            }
+
+            class SPIInterrupt implements Interrupt {
+                public void force() {
+                    postSPIInterrupt();
+                }
+
+                public void fire() {
+                    SPSR_reg.clearSPIF();
+                }
+            }
+
+
+            /**
+             * The <code>SPDReg</code> class implement fake radio channel
+             * Currently, only read and write the whole byte are implemented
+             */
+            class SPDReg implements State.IOReg {
+                /**
+                 * The <code>read()</code> method
+                 * @return the value from radio environment
+                 */
+                public byte read() {
+                    return radio_in;
+                }
+
+                /**
+                 * The <code>write()</code> method
+                 * @param val the value to radio environment
+                 */
+                public void write(byte val) {
+                    radio_out = val;
+                }
+
+                /**
+                 * The <code>readBit()</code> method
+                 *
+                 * @param num
+                 * @return false
+                 */
+                public boolean readBit(int num) {
+                    // XXX not yet implemented
+                    return false;
+                }
+
+                /**
+                 * The <code>clearBit()</code>
+                 * @param num
+                 */
+                public void clearBit(int num) {
+                    // XXX not yet implemented
+                    return;
+                }
+
+                /**
+                 * The <code>setBit()</code> method
+                 * @param num
+                 */
+                public void setBit(int num) {
+                    // XXX not yet implemented
+                }
+            }
+
+            class SPSReg implements State.IOReg {
+                byte value;
+
+                /**
+                 * The <code>read()</code> method
+                 * @return the value from radio environment
+                 */
+                public byte read() {
+                    return value;
+                }
+
+                /**
+                 * The <code>write()</code> method
+                 * @param val the value to radio environment
+                 */
+                public void write(byte val) {
+                    boolean bit0 = Arithmetic.getBit(val, 0);
+
+                    if (bit0) {
+                        setBit(0);
+                    } else {
+                        clearBit(0);
+                    }
+                }
+
+                /**
+                 * The <code>readBit()</code> method
+                 *
+                 * @param num
+                 * @return false
+                 */
+                public boolean readBit(int num) {
+                    return Arithmetic.getBit(value, num);
+                }
+
+                /**
+                 * The <code>clearBit()</code>
+                 * @param num
+                 *
+                 * only bit zero is allowed to be writable
+                 */
+                public void clearBit(int num) {
+                    if (num == 0) {
+                        value = Arithmetic.clearBit(value, 0);
+                    }
+                }
+
+                /**
+                 * The <code>setBit()</code> method
+                 * @param num
+                 *
+                 * only bit zero is allowed to be writable
+                 */
+                public void setBit(int num) {
+                    if (num == 0) {
+                        value = Arithmetic.setBit(value, 0);
+                    }
+                }
+
+                public void setSPIF() {
+                    value = Arithmetic.setBit(value, 7);
+                }
+
+                public void clearSPIF() {
+                    value = Arithmetic.clearBit(value, 7);
+                }
+
+                public boolean getSPIF() {
+                    return Arithmetic.getBit(value, 7);
+                }
+
+            }
         }
 
     }
