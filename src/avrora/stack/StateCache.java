@@ -38,6 +38,7 @@ import avrora.util.StringUtil;
 import avrora.Avrora;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * The <code>StateSpace</code> class represents the reachable state space
@@ -46,7 +47,7 @@ import java.util.HashMap;
  *
  * @author Ben L. Titzer
  */
-public class StateSpace {
+public class StateCache {
 
     /**
      * The <code>Link</code> inner class represents an edge between two states
@@ -82,7 +83,7 @@ public class StateSpace {
         private int type;
         public final long UID;
 
-        boolean inSpace;
+        boolean isExplored;
         boolean onFrontier;
 
         State() {
@@ -119,6 +120,8 @@ public class StateSpace {
          * supported.
          */
         public Object mark;
+
+        public StateTransitionGraph.StateInfo info;
 
         /**
          * The <code>outgoing</code> field is a reference to the head of the
@@ -165,8 +168,8 @@ public class StateSpace {
      * This is currently unused, but is reserved for use later.
      * @param p the program to create the state space for
      */
-    public StateSpace(Program p) {
-        stateMap = new HashMap();
+    public StateCache(Program p) {
+        stateMap = new HashMap(p.program_end * 5);
         edenState = getStateFor(new MutableState());
         program = p;
     }
@@ -206,7 +209,7 @@ public class StateSpace {
      * @return true if the specified state has been explored; false otherwise
      */
     public boolean isExplored(State s) {
-        return s.inSpace;
+        return s.isExplored;
     }
 
     /**
@@ -227,11 +230,11 @@ public class StateSpace {
      * @return true if this state is already in the state space; false otherwise
      */
     public boolean addState(State s) {
-        if (s.inSpace )
+        if (s.isExplored )
             throw Avrora.failure("state already in space: "+s.getUniqueName());
-        boolean wasBefore = s.inSpace;
+        boolean wasBefore = s.isExplored;
         if (!wasBefore) statesInSpace++;
-        s.inSpace = true;
+        s.isExplored = true;
         s.onFrontier = false;
         return wasBefore;
     }
@@ -242,7 +245,7 @@ public class StateSpace {
      * @return true if the state was already on the frontier; false otherwise
      */
     public boolean addFrontier(State s) {
-        if (s.inSpace )
+        if (s.isExplored )
             throw Avrora.failure("state already in space: "+s.getUniqueName());
         if (s.onFrontier) return true;
         frontier = new Link(s, frontier, 0, 0);
@@ -252,7 +255,7 @@ public class StateSpace {
     }
 
     /**
-     * The <code>getStateFor()</code> method searches the state cache for an
+     * The <code>getCachedState()</code> method searches the state cache for an
      * immutable state that corresponds to the given mutable state. If no
      * immutable state exists in the cache, one will be created and inserted.
      * @param s the state to search for
@@ -335,4 +338,7 @@ public class StateSpace {
         return statesInSpace;
     }
 
+    public Iterator getStateIterator() {
+        return stateMap.values().iterator();
+    }
 }

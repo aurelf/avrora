@@ -61,7 +61,7 @@ public class Analyzer {
     protected final Verbose.Printer printer = Verbose.getVerbosePrinter("stack.phases");
 
     protected final Program program;
-    protected final StateSpace space;
+    protected final StateCache space;
     ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
     protected HashMap propmap;
@@ -100,7 +100,7 @@ public class Analyzer {
 
     public Analyzer(Program p) {
         program = p;
-        space = new StateSpace(p);
+        space = new StateCache(p);
         policy = new ContextSensitivePolicy();
         interpreter = new AbstractInterpreter(program, policy);
         aggregationPoints = new HashMap();
@@ -146,21 +146,17 @@ public class Analyzer {
 
         propmap = null;
         analyzeAggregationPoints();
+        analyzeStates();
     }
 
     private void analyzeAggregationPoints() {
-        Distribution hashDist = new Distribution("Distribution of set hashcodes", "Number of sets", null);
         Distribution sizeDist = new Distribution("Distribution of set size", "Number of sets", "Total elements", "Distribution");
         Iterator i = aggregationPoints.values().iterator();
         while ( i.hasNext() ) {
             HashSet set = (HashSet)i.next();
-//            int hash = set.hashCode() & 0xfff;
-//            hashDist.record(hash);
             sizeDist.record(set.size());
         }
-//        hashDist.processData();
         sizeDist.processData();
-//        hashDist.textReport();
         sizeDist.textReport();
 
         Distribution countDist = new Distribution("Distribution of set size count", "Number of different sizes", null, "Distribution");
@@ -170,6 +166,18 @@ public class Analyzer {
 
         countDist.processData();
         countDist.textReport();
+    }
+
+    private void analyzeStates() {
+        Iterator i = space.getStateIterator();
+        Distribution pcDist = new Distribution("Distribution of program states over PC", "Number of unique instructions", null, "Distribution");
+        while ( i.hasNext() ) {
+            StateCache.State s = (StateCache.State)i.next();
+            pcDist.record(s.getPC());
+
+        }
+        pcDist.processData();
+        pcDist.textReport();
     }
 
     /**
@@ -259,7 +267,7 @@ public class Analyzer {
      * are no new propagations to be performed.
      */
     protected void buildReachableStateSpace() {
-        StateSpace.State s = space.getEdenState();
+        StateCache.State s = space.getEdenState();
 
         while ( s != null || propmap.size() != 0) {
             if ( s != null )
@@ -291,7 +299,7 @@ public class Analyzer {
         // propagate calling states to reachable return states
         Iterator i = altpropmap.keySet().iterator();
         while ( i.hasNext() ) {
-            StateSpace.State target = (StateSpace.State)i.next();
+            StateCache.State target = (StateCache.State)i.next();
             HashSet callers = (HashSet)altpropmap.get(target);
             i.remove();
 
@@ -316,7 +324,7 @@ public class Analyzer {
      * @param newCalls the set of callers to propagate to the reachable return
      * states
      */
-    private void propagate(StateSpace.State t, HashSet newCalls) {
+    private void propagate(StateCache.State t, HashSet newCalls) {
         propagate(t, newCalls, new Object(), 0);
     }
 
@@ -330,7 +338,7 @@ public class Analyzer {
      * return edges multiple times
      * @param t the state to make into a new aggregation point
      */
-    private void newAggregationPoint(StateSpace.State t) {
+    private void newAggregationPoint(StateCache.State t) {
         if ( aggregationPoints.containsKey(t) ) return;
         synchronized ( aggregationPoints ) {
             aggregationPoints.put(t, new HashSet());
@@ -338,7 +346,7 @@ public class Analyzer {
     }
 
     // propagate call sites to all reachable return states
-    private void propagate(StateSpace.State t, HashSet newCalls, Object mark, int depth) {
+    private void propagate(StateCache.State t, HashSet newCalls, Object mark, int depth) {
         if ( depth > maxpropdepth ) maxpropdepth = depth;
 
         // visited this node already?
@@ -359,7 +367,7 @@ public class Analyzer {
             agg.addAll(newCalls);
         }
 
-        for (StateSpace.Link link = t.outgoing; link != null; link = link.next) {
+        for (StateCache.Link link = t.outgoing; link != null; link = link.next) {
 
             // do not follow call edges
             if (link.type == CALL_EDGE) continue;
@@ -375,11 +383,11 @@ public class Analyzer {
         }
     }
 
-    private HashSet getCallers(StateSpace.State t) {
+    private HashSet getCallers(StateCache.State t) {
         return (HashSet)aggregationPoints.get(t);
     }
 
-    private void processCalls(HashSet newCalls, StateSpace.State retstate) {
+    private void processCalls(HashSet newCalls, StateCache.State retstate) {
         HashSet prevcallers = getCallers(retstate);
         if ( prevcallers == null ) {
             throw Avrora.failure("State should be an aggregation point: "+retstate.getUniqueName());
@@ -390,14 +398,14 @@ public class Analyzer {
 
         Iterator i = newCalls.iterator();
         while ( i.hasNext() ) {
-            StateSpace.State caller = (StateSpace.State)i.next();
+            StateCache.State caller = (StateCache.State)i.next();
             if ( !prevcallers.contains(caller) ) {
                 addReturnEdge(caller, rstate, interrupt);
             }
         }
     }
 
-    private void addReturnEdge(StateSpace.State caller, MutableState rstate, boolean interrupt) {
+    private void addReturnEdge(StateCache.State caller, MutableState rstate, boolean interrupt) {
         int cpc = caller.getPC();
         int npc;
 
@@ -405,11 +413,11 @@ public class Analyzer {
             npc = cpc;
             rstate.setFlag_I(AbstractArithmetic.TRUE);
         } else {
-            npc = cpc + program.readInstr(cpc).getSize();
+            npc = program.getNextPC(cpc);
         }
 
         rstate.setPC(npc);
-        StateSpace.State t = space.getStateFor(rstate);
+        StateCache.State t = space.getStateFor(rstate);
 
         if ( TRACE ) {
             printFullState("Adding return edge", t);
@@ -425,7 +433,7 @@ public class Analyzer {
         post(t, getCallers(caller));
     }
 
-    private void post(StateSpace.State state, HashSet callers) {
+    private void post(StateCache.State state, HashSet callers) {
         if ( altpropmap != null ) {
             HashSet set = (HashSet)altpropmap.get(state);
             if ( set != null ) {
@@ -443,7 +451,7 @@ public class Analyzer {
         }
     }
 
-    private void post(StateSpace.State state, StateSpace.State caller) {
+    private void post(StateCache.State state, StateCache.State caller) {
         HashSet set = (HashSet)propmap.get(state);
         if ( set == null ) {
             set = new HashSet();
@@ -454,7 +462,7 @@ public class Analyzer {
     }
 
 
-    private void processFrontierState(StateSpace.State s) {
+    private void processFrontierState(StateCache.State s) {
         traceState(s);
 
         // get the frontier information (call sites)
@@ -472,7 +480,7 @@ public class Analyzer {
         // the stack hashmap contains a mapping between states on the stack
         // and the current stack depth at which they are being explored
         HashMap stack = new HashMap();
-        StateSpace.State state = space.getEdenState();
+        StateCache.State state = space.getEdenState();
 
         try {
             maximalPath = findMaximalPath(state, stack, 0);
@@ -484,11 +492,11 @@ public class Analyzer {
 
     private class Path {
         final int depth;
-        final StateSpace.State state;
-        final StateSpace.Link link;
+        final StateCache.State state;
+        final StateCache.Link link;
         final Path tail;
 
-        Path(int d, StateSpace.State s, StateSpace.Link l, Path p) {
+        Path(int d, StateCache.State s, StateCache.Link l, Path p) {
             state = s;
             depth = d;
             link = l;
@@ -509,16 +517,16 @@ public class Analyzer {
      * to the stack of any path leading out of this state
      * @throws UnboundedStackException if a non-zero weight cycle exists in the graph
      */
-    protected Path findMaximalPath(StateSpace.State s, HashMap stack, int depth) throws UnboundedStackException {
+    protected Path findMaximalPath(StateCache.State s, HashMap stack, int depth) throws UnboundedStackException {
         // record this node and the stack depth at which we first encounter it
         stack.put(s, new Integer(depth));
 
         int maxdepth = 0;
         Path maxtail = null;
-        StateSpace.Link maxlink = null;
-        for (StateSpace.Link link = s.outgoing; link != null; link = link.next) {
+        StateCache.Link maxlink = null;
+        for (StateCache.Link link = s.outgoing; link != null; link = link.next) {
 
-            StateSpace.State t = link.target;
+            StateCache.State t = link.target;
             if (stack.containsKey(t)) {
                 // cycle detected. check that the depth when reentering is the same
                 int prevdepth = ((Integer) stack.get(t)).intValue();
@@ -605,8 +613,7 @@ public class Analyzer {
 
             if ( cntr > 1 && TRACE_SUMMARY && path.link.weight == 0 ) {
                 int pc = path.state.getPC();
-                int npc = pc + program.readInstr(pc).getSize();
-                if ( path.link.target.getPC() == npc ) {
+                if ( path.link.target.getPC() == program.getNextPC(pc) ) {
                     cntr++;
                     continue;
                 }
@@ -637,7 +644,7 @@ public class Analyzer {
      */
     public class ContextSensitivePolicy implements AnalyzerPolicy {
 
-        public StateSpace.State frontierState;
+        public StateCache.State frontierState;
         protected int edgeType;
 
         /**
@@ -851,14 +858,14 @@ public class Analyzer {
             addEdge(frontierState, edgeType, newState);
         }
 
-        private void addEdge(StateSpace.State from, int type, MutableState to) {
-            StateSpace.State t = space.getStateFor(to);
+        private void addEdge(StateCache.State from, int type, MutableState to) {
+            StateCache.State t = space.getStateFor(to);
             traceProducedState(t);
             addEdge(type, from, t, EDGE_DELTA[type]);
             pushFrontier(t);
         }
 
-        private void pushFrontier(StateSpace.State t) {
+        private void pushFrontier(StateCache.State t) {
             // CASE 4: self loop
             if (t == frontierState) return;
 
@@ -874,7 +881,7 @@ public class Analyzer {
             }
         }
 
-        private void addEdge(int type, StateSpace.State s, StateSpace.State t, int weight) {
+        private void addEdge(int type, StateCache.State s, StateCache.State t, int weight) {
             traceEdge(type, s, t, weight);
             space.addEdge(s, t, type, weight);
         }
@@ -888,13 +895,13 @@ public class Analyzer {
     //-----------------------------------------------------------------------
 
 
-    private void traceState(StateSpace.State s) {
+    private void traceState(StateCache.State s) {
         if (TRACE) {
             printFullState("Exploring", s);
         }
     }
 
-    private void printFullState(String head, StateSpace.State s) {
+    private void printFullState(String head, StateCache.State s) {
         Terminal.print(head+" ");
         StatePrinter.printStateName(s);
         Terminal.nextln();
@@ -903,7 +910,7 @@ public class Analyzer {
         StatePrinter.printState(str, s);
     }
 
-    private void traceProducedState(StateSpace.State s) {
+    private void traceProducedState(StateCache.State s) {
         if (TRACE) {
             String str;
             if (space.isExplored(s)) {
@@ -918,7 +925,7 @@ public class Analyzer {
         }
     }
 
-    public static void traceEdge(int type, StateSpace.State s, StateSpace.State t, int weight) {
+    public static void traceEdge(int type, StateCache.State s, StateCache.State t, int weight) {
         if (!TRACE) return;
         Terminal.print("adding edge ");
         StatePrinter.printEdge(s, type, weight, t);

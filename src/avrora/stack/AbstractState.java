@@ -248,7 +248,7 @@ public abstract class AbstractState implements IORegisterConstants {
         buf.append(AbstractArithmetic.bitToChar(av1));
     }
 
-    protected boolean deepCompare(StateSpace.State i) {
+    protected boolean deepCompare(StateCache.State i) {
         if (this.pc != i.pc) return false;
         if (this.av_SREG != i.av_SREG) return false;
         if (this.av_EIMSK != i.av_EIMSK) return false;

@@ -43,7 +43,7 @@ import avrora.sim.IORegisterConstants;
  *
  * @author Ben L. Titzer
  * @see AbstractArithmetic
- * @see StateSpace
+ * @see StateCache
  */
 public class MutableState extends AbstractState implements IORegisterConstants {
 

@@ -61,7 +61,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     protected final AnalyzerPolicy policy;
     protected final Program program;
-    protected StateSpace.State oldState;
+    protected StateCache.State oldState;
     protected MutableState state;
 
     AbstractInterpreter(Program pr, AnalyzerPolicy p) {
@@ -78,7 +78,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
      * @param os the immutable old state to compute the next state
      *           from
      */
-    public void computeNextStates(StateSpace.State os) {
+    public void computeNextStates(StateCache.State os) {
         oldState = os;
         state = oldState.copy();
 

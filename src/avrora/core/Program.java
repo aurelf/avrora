@@ -565,6 +565,13 @@ public class Program {
             throw Avrora.failure("address out of range: " + addr);
     }
 
+    public int getNextPC(int pc) {
+        // TODO: better error checking
+        if ( pc > program_end )
+            throw Avrora.failure("no next PC after: "+StringUtil.addrToString(pc));
+        return pc + readInstr(pc).getSize();
+    }
+
     public List getIndirectEdges(int callsite) {
         return (List) indirectEdges.get(new Integer(callsite));
     }

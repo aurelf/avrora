@@ -40,7 +40,7 @@ import avrora.sim.IORegisterConstants;
  * @author Ben L. Titzer
  */
 public class StatePrinter {
-    public static void printEdge(StateSpace.State s, int type, int weight, StateSpace.State t) {
+    public static void printEdge(StateCache.State s, int type, int weight, StateCache.State t) {
         printStateName(s);
         Terminal.print(" --(");
         Terminal.print(Analyzer.EDGE_NAMES[type]);
@@ -50,7 +50,7 @@ public class StatePrinter {
         Terminal.nextln();
     }
 
-    public static void printEdge(int type, int weight, StateSpace.State t) {
+    public static void printEdge(int type, int weight, StateCache.State t) {
         Terminal.print("--(");
         Terminal.print(Analyzer.EDGE_NAMES[type]);
         if (weight > 0) Terminal.print("+");
@@ -59,7 +59,7 @@ public class StatePrinter {
         Terminal.nextln();
     }
 
-    public static void printStateName(StateSpace.State t) {
+    public static void printStateName(StateCache.State t) {
         Terminal.print("[");
         Terminal.printBrightGreen(StringUtil.toHex(t.getPC(), 4));
         Terminal.print("|");
@@ -67,7 +67,7 @@ public class StatePrinter {
         Terminal.print("] ");
     }
 
-    public static void printState(String beg, StateSpace.State s) {
+    public static void printState(String beg, StateCache.State s) {
         Terminal.printBrightRed(beg);
 
         printStateName(s);
@@ -83,7 +83,7 @@ public class StatePrinter {
         printStateLine(s, "TIMSK", IORegisterConstants.TIMSK, 24);
     }
 
-    public static void printStateLine(StateSpace.State s, String ior_name, int ior_num, int cntr) {
+    public static void printStateLine(StateCache.State s, String ior_name, int ior_num, int cntr) {
         int max = cntr + 8;
         printIOReg(ior_name, s.getIORegisterAV(ior_num));
         for (; cntr < max; cntr++) {
