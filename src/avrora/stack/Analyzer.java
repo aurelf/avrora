@@ -156,8 +156,6 @@ public class Analyzer {
             policy.stackDelta = 0;
             policy.edgeType = NORMAL_EDGE;
 
-            // remove frontier information
-            removeFrontierInfo(fs);
             // add this to explored states
             space.addState(fs.state);
 
@@ -177,49 +175,10 @@ public class Analyzer {
 
         try {
             maximalPath = findMaximalPath(state, stack, 0);
-//            maxDepth = traverse(state, stack, 0);
         } catch (UnboundedStackException e) {
             unbounded = true;
             maximalPath = e.path;
-//            maxDepth = Integer.MAX_VALUE;
         }
-    }
-
-    private int traverse(StateSpace.State s, HashMap stack, int depth) {
-        // record this node and the stack depth at which we first encounter it
-        stack.put(s, new Integer(depth));
-
-        int maxdepth = 0;
-        for (StateSpace.Link link = s.outgoing; link != null; link = link.next) {
-
-            StateSpace.State t = link.target;
-            if (stack.containsKey(t)) {
-                // cycle detected. check that the depth when reentering is the same
-                int prevdepth = ((Integer) stack.get(t)).intValue();
-                if (depth + link.weight != prevdepth)
-                    throw new UnboundedStackException(null);
-            } else {
-                int extra = link.weight; // maximum added stack depth by following this link
-
-                if (link.target.mark instanceof Integer) {
-                    // node has already been visited and marked with the
-                    // maximum amount of stack depth that it can add.
-                    extra += ((Integer) link.target.mark).intValue();
-                } else {
-                    // node has not been seen before, traverse it
-                    extra += traverse(link.target, stack, depth + link.weight);
-                }
-
-                // remember the most added stack depth from following any of the links
-                if (extra > maxdepth) {
-                    maxdepth = extra;
-                }
-            }
-        }
-        // we are finished with this node, remember how much deeper it can take us
-        stack.remove(s);
-        s.mark = new Integer(maxdepth);
-        return maxdepth;
     }
 
     private class Path {
@@ -250,7 +209,6 @@ public class Analyzer {
                 // cycle detected. check that the depth when reentering is the same
                 int prevdepth = ((Integer) stack.get(t)).intValue();
                 if (depth + link.weight != prevdepth) {
-                    // we are finished with this node, remember how much deeper it can take us
                     stack.remove(s);
                     throw new UnboundedStackException(new Path(depth + link.weight, s, link, null));
                 }
@@ -266,13 +224,16 @@ public class Analyzer {
                     try {
                         tail = findMaximalPath(link.target, stack, depth + link.weight);
                     } catch ( UnboundedStackException e) {
+                        // this node is part of an unbounded cycle, add it to the path
+                        // and rethrow the exception
                         e.path = new Path(depth + link.weight, s, link, e.path);
                         stack.remove(s);
                         throw e;
                     }
                 }
 
-                int extra = link.weight + tail.depth; // maximum added stack depth by following this link
+                // compute maximum added stack depth by following this link
+                int extra = link.weight + tail.depth;
 
                 // remember the most added stack depth from following any of the links
                 if (extra > maxdepth) {
@@ -336,11 +297,6 @@ public class Analyzer {
         }
         return fs;
     }
-
-    private void removeFrontierInfo(FrontierInfo fs) {
-        frontierInfoMap.remove(fs.state);
-    }
-
 
     /**
      * The <code>ContextSensitive</code> class implements the context-sensitive
@@ -536,7 +492,7 @@ public class Analyzer {
          *         the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState indirectCall(MutableState s, char addr_low, char addr_hi, char ext) {
-            throw new Error("indirect calls not supported");
+            throw new Error("extended indirect calls not supported");
         }
 
         /**
@@ -553,7 +509,7 @@ public class Analyzer {
          *         the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState indirectJump(MutableState s, char addr_low, char addr_hi, char ext) {
-            throw new Error("indirect jumps not supported");
+            throw new Error("extended indirect jumps not supported");
         }
 
         /**
@@ -632,6 +588,8 @@ public class Analyzer {
             if (t.mark == mark) return;
             t.mark = mark;
 
+
+
             for (StateSpace.Link link = t.outgoing; link != null; link = link.next) {
 
                 // do not follow call edges
@@ -660,17 +618,18 @@ public class Analyzer {
             
             HashSet callers = new HashSet();
             for ( FrontierInfo.CallSiteList list = fi.callsites; list != null; list = list.next ) {
-                callers.add(list.caller);
+                callers.add(list.caller.state);
             }
 
             for ( FrontierInfo.CallSiteList list = newCalls; list != null; list = list.next ) {
-                if ( !callers.contains(list.caller) )
+                if ( !callers.contains(list.caller.state) )
                     fi.callsites = new FrontierInfo.CallSiteList(list.caller, fi.callsites);
-                callers.add(list.caller);
+                callers.add(list.caller.state);
             }
         }
 
     }
+
 
     //-----------------------------------------------------------------------
     //             D E B U G G I N G   A N D   T R A C I N G
