@@ -211,6 +211,9 @@ public class Main {
     public static final Option.Bool MONITOR_STACK = options.newOption("monitor-stack", false,
             "This option is used in the \"simulate\" action. It causes the simulator " +
             "to report changes to the stack height.");
+    public static final Option.Bool MONITOR_STATES = options.newOption("monitor-states", false,
+            "This option is used in the \"analyze-stack\" action. It causes the analyzer " +
+            "to report the count of states produced every 5 seconds. ");
     public static final Option.Bool MEMORY_PROFILE = options.newOption("memory-profile", false,
             "This option is used in the \"simulate\" action. It causes the simulator " +
             "to analyze the memory traffic of the program and print out the results in " +

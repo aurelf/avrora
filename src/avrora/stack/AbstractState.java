@@ -241,43 +241,20 @@ public abstract class AbstractState implements IORegisterConstants {
         return buf.toString();
     }
 
-    public String toShortString() {
-        StringBuffer buf = new StringBuffer();
-        buf.append(StringUtil.toHex(pc, 4));
-        buf.append(' ');
-
-        //ITHSVNZC
-        buf.append(AbstractArithmetic.toString(av_SREG));
-
-        for (int cntr = 0; cntr < NUM_REGS; cntr++) {
-            buf.append(' ');
-            AbstractArithmetic.toString(av_REGISTERS[cntr], buf);
-        }
-
-        return buf.toString();
-    }
-
-    static String headerString;
-
-    public static String getHeaderString() {
-        if (headerString != null) return headerString;
-
-        StringBuffer buf = new StringBuffer();
-        buf.append("PC   ");
-        buf.append("ITHSVNZC");
-        for (int cntr = 0; cntr < NUM_REGS; cntr++) {
-            buf.append(' ');
-            buf.append(StringUtil.leftJustify("R" + cntr, 8));
-        }
-
-        return buf.toString();
-    }
-
-
     private void appendBit(char bit, char av1, StringBuffer buf) {
         buf.append(' ');
         buf.append(bit);
         buf.append(": ");
         buf.append(AbstractArithmetic.bitToChar(av1));
+    }
+
+    protected boolean deepCompare(StateSpace.State i) {
+        if (this.pc != i.pc) return false;
+        if (this.av_SREG != i.av_SREG) return false;
+        if (this.av_EIMSK != i.av_EIMSK) return false;
+        if (this.av_TIMSK != i.av_TIMSK) return false;
+        for (int cntr = 0; cntr < NUM_REGS; cntr++)
+            if (this.av_REGISTERS[cntr] != i.av_REGISTERS[cntr]) return false;
+        return true;
     }
 }

@@ -38,6 +38,7 @@ import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.Avrora;
+import avrora.Main;
 
 import java.util.*;
 
@@ -117,12 +118,30 @@ public class Analyzer {
      * with an initial default state serves as the first state to start exploring.
      */
     public void run() {
+        if ( Main.MONITOR_STATES.get() )
+            new MonitorThread().start();
+
         long start = System.currentTimeMillis();
         buildReachableStateSpace();
         long check = System.currentTimeMillis();
         buildTime = check - start;
         findMaximalPath();
         traverseTime = System.currentTimeMillis() - check;
+    }
+
+    private class MonitorThread extends Thread {
+        public void run() {
+            try {
+                while ( true ) {
+                    sleep(5000);
+                    Terminal.println("Count: "+space.getTotalStateCount()+" states, "+
+                            space.getTotalEdgeCount()+" edges, "+
+                            space.getFrontierCount()+" states on frontier");
+                }
+            } catch ( InterruptedException e ) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void buildReachableStateSpace() {

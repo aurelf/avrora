@@ -35,6 +35,7 @@ package avrora.stack;
 import avrora.core.Program;
 import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
+import avrora.Avrora;
 
 import java.util.HashMap;
 
@@ -108,12 +109,7 @@ public class StateSpace {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof State)) return false;
-            State i = (State) o;
-            if (this.pc != i.pc) return false;
-            if (this.av_SREG != i.av_SREG) return false;
-            for (int cntr = 0; cntr < NUM_REGS; cntr++)
-                if (this.av_REGISTERS[cntr] != i.av_REGISTERS[cntr]) return false;
-            return true;
+            return deepCompare((State) o);
         }
 
         /**
@@ -179,6 +175,8 @@ public class StateSpace {
     private long statesInSpace;
     private long totalStateCount;
     private long specialStates;
+    private long edgeCount;
+    private long frontierCount;
 
     /**
      * The constructor for the <code>StateSpace</code> accepts a program as a parameter.
@@ -214,6 +212,7 @@ public class StateSpace {
 
         frontier = frontier.next;
         head.target.onFrontier = false;
+        frontierCount--;
         return head.target;
     }
 
@@ -246,6 +245,8 @@ public class StateSpace {
      * @return true if this state is already in the state space; false otherwise
      */
     public boolean addState(State s) {
+        if (s.inSpace )
+            throw Avrora.failure("state already in space: "+StringUtil.toHex(s.UID, 8));
         boolean wasBefore = s.inSpace;
         if (!wasBefore) statesInSpace++;
         s.inSpace = true;
@@ -259,9 +260,12 @@ public class StateSpace {
      * @return true if the state was already on the frontier; false otherwise
      */
     public boolean addFrontier(State s) {
+        if (s.inSpace )
+            throw Avrora.failure("state already in space: "+StringUtil.toHex(s.UID, 8));
         if (s.onFrontier) return true;
         frontier = new Link(s, frontier, 0, 0);
         s.onFrontier = true;
+        frontierCount++;
         return false;
     }
 
@@ -310,6 +314,7 @@ public class StateSpace {
      */
     public void addEdge(State s, State t, int type, int weight) {
         s.addEdge(t, type, weight);
+        edgeCount++;
     }
 
     /**
@@ -320,6 +325,7 @@ public class StateSpace {
      */
     public void addEdge(State s, State t) {
         s.addEdge(t, 0, 0);
+        edgeCount++;
     }
 
     /**
@@ -332,6 +338,25 @@ public class StateSpace {
         return totalStateCount;
     }
 
+    /**
+     * The <code>getFrontierCount()</code> method returns the internally recorded
+     * number of states on the frontier of the state space. This is mainly used
+     * for reporting purposes.
+     * @return the number of states on the frontier
+     */
+    public long getFrontierCount() {
+        return frontierCount;
+    }
+
+    /**
+     * The <code>getTotalEdgesCount()</code> method returns the internally recorded
+     * number of edges added in this state space. This is mainly used for reporting
+     * purposes.
+     * @return the total number of edges in the state graph
+     */
+    public long getTotalEdgeCount() {
+        return edgeCount;
+    }
     /**
      * The <code>getStatesInSpaceCount()</code> method returns the number of unique states
      * that have been added to this state space. This is mainly used for reporting purposes.
