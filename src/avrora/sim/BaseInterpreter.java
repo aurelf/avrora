@@ -65,6 +65,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public boolean Z;
     public boolean C;
     protected State.IOReg SREG_reg;
+    protected State.RWIOReg SPL_reg;
+    protected State.RWIOReg SPH_reg;
 
     /**
      * The <code>activeProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
@@ -312,8 +314,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private final MisalignedInstr MISALIGNED_INSTR = new MisalignedInstr();
 
     public final int SREG;
-    public final int SPL;
-    public final int SPH;
     public final int RAMPZ;
 
     public static final int NUM_REGS = 32;
@@ -353,8 +353,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
 
         SREG = props.getIOReg("SREG");
-        SPL = props.getIOReg("SPL");
-        SPH = props.getIOReg("SPH");
         RAMPZ = props.getIOReg("RAMPZ");
 
         // if program will not fit onto hardware, error
@@ -380,6 +378,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         // initialize IO registers to default values
         initializeIORegs();
 
+        SPL_reg = (State.RWIOReg)ioregs[props.getIOReg("SPL")];
+        SPH_reg = (State.RWIOReg)ioregs[props.getIOReg("SPH")];
     }
 
     protected void makeImpression(Program p) {
@@ -797,8 +797,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param val
      */
     protected void setSP(int val) {
-        ioregs[SPL].write(Arithmetic.low(val));
-        ioregs[SPH].write(Arithmetic.high(val));
+        SPL_reg.value = (Arithmetic.low(val));
+        SPH_reg.value = (Arithmetic.high(val));
     }
 
     /**
@@ -952,8 +952,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @return the value of the stack pointer as a byte address
      */
     public int getSP() {
-        byte low = ioregs[SPL].read();
-        byte high = ioregs[SPH].read();
+        byte low = SPL_reg.value;
+        byte high = SPH_reg.value;
         return Arithmetic.uword(low, high);
     }
 
