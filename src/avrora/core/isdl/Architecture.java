@@ -188,41 +188,60 @@ public class Architecture {
             InstrDecl id = (InstrDecl)i.next();
             printer.print("processing instruction " + id.name + ' ');
 
-            // inline and optimize the body of the instruction
-            List code = id.getCode();
-            code = new Inliner(this).process(code);
+            optimizeCode(id);
+            verifyEncodings(id);
+            verifyOperandTypes(id);
+            verifyTiming(id);
 
-            id.setCode(code);
+            if (printer.enabled) {
+                new PrettyPrinter(printer).visitStmtList(id.getCode());
+            }
 
-            // find parent encoding
-            if (id.encoding instanceof EncodingDecl.Derived) {
-                EncodingDecl.Derived dd = (EncodingDecl.Derived)id.encoding;
+        }
+    }
+
+    private void verifyTiming(InstrDecl id) {
+        // check that cycles make sense
+        if (id.cycles < 0)
+            throw Avrora.failure("instruction " + id.name.image + " has negative cycle count");
+    }
+
+    private void optimizeCode(InstrDecl id) {
+        // inline and optimize the body of the instruction
+        List code = id.getCode();
+        code = new Inliner(this).process(code);
+
+        id.setCode(code);
+    }
+
+    private void verifyOperandTypes(InstrDecl id) {
+        // find operand decl
+        Iterator oi = id.getOperandIterator();
+        while (oi.hasNext()) {
+            CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
+            OperandDecl opdec = getOperandDecl(od.type.image);
+            if (opdec == null)
+                throw Avrora.failure("operand type undefined " + StringUtil.quote(od.type.image));
+            od.setOperandType(opdec);
+        }
+    }
+
+    private void verifyEncodings(InstrDecl id) {
+        // for each of the declared encodings, find the parent and verify the size
+        Iterator ei = id.encodingList.iterator();
+        while ( ei.hasNext() ) {
+            EncodingDecl encoding = (EncodingDecl)ei.next();
+            if (encoding instanceof EncodingDecl.Derived) {
+                // find parent encoding
+                EncodingDecl.Derived dd = (EncodingDecl.Derived)encoding;
                 EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
                 dd.setParent(parent);
             }
 
-            int encodingSize = id.getEncodingSize();
-            if (encodingSize % 16 != 0)
+            int encodingSize = encoding.getBitWidth();
+            if (encodingSize <= 0 || encodingSize % 16 != 0)
                 throw Avrora.failure("encoding not word aligned: " + id.name.image + " is " + encodingSize + " bits");
-
-            // find operand decl
-            Iterator oi = id.getOperandIterator();
-            while (oi.hasNext()) {
-                CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
-                OperandDecl opdec = getOperandDecl(od.type.image);
-                if (opdec == null)
-                    throw Avrora.failure("operand type undefined " + StringUtil.quote(od.type.image));
-                od.setOperandType(opdec);
-            }
-
-            // check that cycles make sense
-            if (id.cycles < 0)
-                throw Avrora.failure("instruction " + id.name.image + " has negative cycle count");
-
-            if (printer.enabled) {
-                new PrettyPrinter(printer).visitStmtList(code);
-            }
-
+            id.setEncodingSize(encodingSize);
         }
     }
 

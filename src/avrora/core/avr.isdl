@@ -43,7 +43,7 @@ architecture avr {
     };
 
     operand YZ[1]: register = {
-        y = 0, z = 1
+        y = 1, z = 0
     };
 
     operand Z[0]: register = {
@@ -61,7 +61,7 @@ architecture avr {
         r24 = 0, r26 = 1, r28 = 2, r30 = 3
     };
 
-    operand ADR[2]: register = {
+    operand XYZ[2]: register = {
         x = 0, y = 1, z = 2
     };
 
@@ -908,18 +908,20 @@ architecture avr {
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "ld" rd: GPR, ar: ADR {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    pseudo instruction "ld" rd: GPR, ar: XYZ {
+        encoding = { 0b1001000, rd[4:0], 0b1100 } when ar == X;
+        encoding = { 0b1000000, rd[4:0], 0b1000 } when ar == Y;
+        encoding = { 0b1000000, rd[4:0], 0b0000 } when ar == Z;
+//        syntax = "ld %rd, %ar";
         cycles = 2;
         execute = {
             $regs(rd) = $sram($wregs(ar));
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
+        encoding = { 0b10, imm[5], 0b0, imm[4:3], 0b0, rd[4:0], ar[0], imm[2:0] };
+//        syntax = "ldd %rd, %ar + %imm";
         cycles = 2;
         execute = {
             $regs(rd) = $sram($wregs(ar) + imm);
@@ -934,25 +936,27 @@ architecture avr {
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "ldpd" rd: GPR, ar: ADR {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    instruction "ldpd" rd: GPR, ar:XYZ {
+        encoding = { 0b1001000, rd[4:0], 0b1110 } when ar == X;
+        encoding = { 0b1001000, rd[4:0], 0b1010 } when ar == Y;
+        encoding = { 0b1001000, rd[4:0], 0b0010 } when ar == Z;
         cycles = 2;
         execute = {
-            local addr: int = $wregs(ar) - 1;
+            local addr: int = $wregs(RX) - 1;
             $regs(rd) = $sram(addr);
-            $wregs(ar) = addr;
+            $wregs(RX) = addr;
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "ldpi" rd: GPR, ar: ADR {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    instruction "ldpi" rd: GPR, ar:XYZ {
+        encoding = { 0b1001000, rd[4:0], 0b1101 } when ar == X;
+        encoding = { 0b1001000, rd[4:0], 0b1001 } when ar == Y;
+        encoding = { 0b1001000, rd[4:0], 0b0001 } when ar == Z;
         cycles = 2;
         execute = {
-            local addr: int = $wregs(ar);
+            local addr: int = $wregs(RX);
             $regs(rd) = $sram(addr);
-            $wregs(ar) = addr + 1;
+            $wregs(RX) = addr + 1;
         };
     };
 
@@ -1342,27 +1346,28 @@ architecture avr {
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "st" ar: ADR, rr: GPR {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    pseudo instruction "st" ar: XYZ, rr: GPR {
+        encoding = { 0b1001001, rd[4:0], 0b1100 } when ar == X;
+        encoding = { 0b1001001, rd[4:0], 0b1000 } when ar == Y;
+        encoding = { 0b1000001, rd[4:0], 0b0000 } when ar == Z;
         cycles = 2;
         execute = {
             $sram($wregs(ar)) = $regs(rr);
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "std" ar: YZ, imm: IMM6, rr: GPR {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    instruction "std" ar: YZ, imm: IMM6, rr: GPR {
+        encoding = { 0b10, imm[5], 0b0, imm[4:3], 0b1, rr[4:0], ar[0], imm[2:0] };
         cycles = 2;
         execute = {
             $sram($wregs(ar) + imm) = $regs(rr);
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "stpd" ar: ADR, rr: GPR {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    pseudo instruction "stpd" ar: XYZ, rr: GPR {
+        encoding = { 0b1001001, rd[4:0], 0b1101 } when ar == X;
+        encoding = { 0b1001001, rd[4:0], 0b1001 } when ar == Y;
+        encoding = { 0b1001001, rd[4:0], 0b0001 } when ar == Z;
         cycles = 2;
         execute = {
             local addr: int = $wregs(ar) - 1;
@@ -1371,9 +1376,10 @@ architecture avr {
         };
     };
 
-    // TODO: THIS ENCODING IS NOT CORRECT
-    pseudo instruction "stpi" ar: ADR, rr: GPR {
-        encoding = { 0b1001000, rd[4:0], 0b1100 };
+    pseudo instruction "stpi" ar: XYZ, rr: GPR {
+        encoding = { 0b1001001, rd[4:0], 0b1110 } when ar == X;
+        encoding = { 0b1001001, rd[4:0], 0b1010 } when ar == Y;
+        encoding = { 0b1001001, rd[4:0], 0b0010 } when ar == Z;
         cycles = 2;
         execute = {
             local addr: int = $wregs(ar);

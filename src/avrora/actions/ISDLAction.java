@@ -36,10 +36,7 @@ import avrora.Avrora;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.gen.*;
 import avrora.core.isdl.parser.ISDLParser;
-import avrora.util.Option;
-import avrora.util.Printer;
-import avrora.util.SectionFile;
-import avrora.util.Terminal;
+import avrora.util.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,48 +84,63 @@ public class ISDLAction extends Action {
         File archfile = new File(args[0]);
         FileInputStream fis = new FileInputStream(archfile);
         ISDLParser parser = new ISDLParser(fis);
-        Architecture a = parser.Architecture();
+        Status.begin("Parsing "+args[0]);
+        try {
+            Architecture a = parser.Architecture();
+            Status.success();
 
-        String interpreter = INTERPRETER.get();
-        if (!"".equals(interpreter)) {
-            // generate vanilla interpreter
-            Terminal.println("Generating interpreter to " + interpreter + "...");
-            SectionFile f = new SectionFile(INTERPRETER.get(), "INTERPRETER GENERATOR");
-            new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
-            f.close();
-        }
+            String interpreter = INTERPRETER.get();
+            if (!"".equals(interpreter)) {
+                // generate vanilla interpreter
+                Status.begin("Generating interpreter to " + interpreter);
+                SectionFile f = new SectionFile(INTERPRETER.get(), "INTERPRETER GENERATOR");
+                new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
+                f.close();
+                Status.success();
+            }
 
-        String classes = CLASSES.get();
-        if (!"".equals(classes)) {
-            // generate instruction classes
-            Terminal.println("Generating Instr inner classes to " + classes + "...");
-            SectionFile f = new SectionFile(classes, "INSTR GENERATOR");
-            new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
-            f.close();
-        }
+            String classes = CLASSES.get();
+            if (!"".equals(classes)) {
+                // generate instruction classes
+                Status.begin("Generating Instr inner classes to " + classes);
+                SectionFile f = new SectionFile(classes, "INSTR GENERATOR");
+                new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
+                f.close();
+                Status.success();
+            }
 
-        String codemap = CODEMAP.get();
-        if (!"".equals(codemap)) {
-            // generate instruction classes
-            Terminal.println("Generating codemap to " + codemap + "...");
-            SectionFile f = new SectionFile(codemap, "CODEBUILDER GENERATOR");
-            new CodemapGenerator(a, new Printer(new PrintStream(f))).generate();
-            f.close();
-        }
+            String codemap = CODEMAP.get();
+            if (!"".equals(codemap)) {
+                // generate instruction classes
+                Status.begin("Generating codemap to " + codemap);
+                SectionFile f = new SectionFile(codemap, "CODEBUILDER GENERATOR");
+                new CodemapGenerator(a, new Printer(new PrintStream(f))).generate();
+                f.close();
+                Status.success();
+            }
 
-        String disassem = DISASSEM.get();
-        if ( !"".equals(disassem) ) {
-            Terminal.println("Generating disassembler to " + disassem + "...");
-            SectionFile f = new SectionFile(disassem, "DISASSEM GENERATOR");
-            new DisassemblerGenerator(a, new Printer(new PrintStream(f))).generate();
-            f.close();
-        }
+            String disassem = DISASSEM.get();
+            if ( !"".equals(disassem) ) {
+                Status.begin("Generating disassembler to " + disassem);
+                SectionFile f = new SectionFile(disassem, "DISASSEM GENERATOR");
+                new DisassemblerGenerator(a, new Printer(new PrintStream(f))).generate();
+                f.close();
+                Status.success();
+            }
 
-        String distest = DISTEST.get();
-        if ( !"".equals(distest) ) {
-            Terminal.println("Generating disassembler tests to " + distest + "...");
-            Printer p = new Printer(new PrintStream(new FileOutputStream(distest)));
-            new DisassemblerTestGenerator(a, p).generate();
+            String distest = DISTEST.get();
+            if ( !"".equals(distest) ) {
+                Status.begin("Generating disassembler tests to " + distest);
+                File f = new File(distest);
+                new DisassemblerTestGenerator(a, f).generate();
+                Status.success();
+            }
+        } catch ( Avrora.Error e) {
+            Status.error(e);
+            return;
+        } catch ( Throwable t) {
+            Status.error(t);
+            return;
         }
     }
 }

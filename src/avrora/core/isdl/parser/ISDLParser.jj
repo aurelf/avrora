@@ -188,6 +188,7 @@ TOKEN :
   | < BOOLEAN_LITERAL: "true" | "false" >
   | < CYCLES: "cycles" >
   | < PSEUDO: "pseudo" >
+  | < WHEN : "when" >
 }
 
 TOKEN :
@@ -263,26 +264,34 @@ void Instruction(Architecture a) :
     List o = new LinkedList(),
          s = new LinkedList();
     EncodingDecl e = null;
+    List el = new LinkedList();
     Token c = null;
     boolean pseudo = false;
 }
 {
     ["pseudo" { pseudo = true; }] "instruction" n = <STRING_LITERAL> o = Formals() "{"
-        [ e = Encoding(n) ]
+        ( e = Encoding(n) { el.add(e); })*
         [ c = Cycles() ]
         [ s = Execute(s) ]
 
-    "}" ";" { a.addInstruction(new InstrDecl(pseudo, n, null, o, c, s, e)); }
+    "}" ";" { a.addInstruction(new InstrDecl(pseudo, n, null, o, c, s, el)); }
 }
+
+
 
 Token Cycles() : { Token c; }
 {
     "cycles" "=" c = <INTEGER_LITERAL> ";" { return c; }
 }
 
-EncodingDecl Encoding(Token n) : { EncodingDecl d; }
+EncodingDecl Encoding(Token n) : { EncodingDecl d; EncodingDecl.Cond ec = null; }
 {
-    "encoding" "=" d = Format(n) ";" { return d; }
+    "encoding" "=" d = Format(n) [ec = EncodingCond() { d.setCond(ec); }] ";" { return d; }
+}
+
+EncodingDecl.Cond EncodingCond() : { Token n; Expr e; }
+{
+    "when" n = <IDENTIFIER> "==" e = Expr() { return new EncodingDecl.Cond(n, e); }
 }
 
 List Execute(List s) : { }

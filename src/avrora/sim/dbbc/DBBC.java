@@ -356,10 +356,10 @@ public class DBBC {
     }
 
     protected String javaName(String cname) {
-        return tmpDir + '/' + cname + ".java";
+        return tmpDir + File.pathSeparatorChar + cname + ".java";
     }
 
     protected String className(String cname) {
-        return tmpDir + '/' + cname + ".class";
+        return tmpDir + File.pathSeparatorChar + cname + ".class";
     }
 }

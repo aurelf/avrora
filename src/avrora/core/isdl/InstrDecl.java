@@ -35,6 +35,7 @@ package avrora.core.isdl;
 import avrora.core.isdl.ast.Expr;
 import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
+import avrora.Avrora;
 
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class InstrDecl extends CodeRegion {
      */
     public final Token variant;
 
-    public EncodingDecl encoding;
+    public List encodingList;
 
     public final String className;
 
@@ -67,25 +68,29 @@ public class InstrDecl extends CodeRegion {
 
     public final boolean pseudo;
 
+    private int size = -1;
+
     /**
      * The constructor of the <code>InstrDecl</code> class initializes the fields based on the parameters.
      *
      * @param n the name of the instruction as a string
      * @param v the variant of the instruction as a string
      */
-    public InstrDecl(boolean ps, Token n, Token v, List o, Token c, List s, EncodingDecl e) {
+    public InstrDecl(boolean ps, Token n, Token v, List o, Token c, List s, List el) {
         super(o, s);
         pseudo = ps;
         name = n;
         variant = v;
         cycles = Expr.tokenToInt(c);
-        encoding = e;
+        encodingList = el;
         innerClassName = StringUtil.trimquotes(name.image).toUpperCase();
         className = "Instr." + innerClassName;
     }
 
     public int getEncodingSize() {
-        return encoding.getBitWidth();
+        if ( size <= 0 )
+            throw Avrora.failure("size for instruction "+name+" has not been computed");
+        return size;
     }
 
     public String getClassName() {
@@ -94,6 +99,10 @@ public class InstrDecl extends CodeRegion {
 
     public String getInnerClassName() {
         return innerClassName;
+    }
+
+    public void setEncodingSize(int bits) {
+        size = bits;
     }
 
 }

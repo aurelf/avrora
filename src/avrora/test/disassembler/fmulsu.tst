@@ -1,0 +1,16 @@
+fmulsu r16, r16
+fmulsu r17, r16
+fmulsu r18, r16
+fmulsu r19, r16
+fmulsu r20, r16
+fmulsu r21, r16
+fmulsu r22, r16
+fmulsu r23, r16
+fmulsu r16, r16
+fmulsu r16, r17
+fmulsu r16, r18
+fmulsu r16, r19
+fmulsu r16, r20
+fmulsu r16, r21
+fmulsu r16, r22
+fmulsu r16, r23

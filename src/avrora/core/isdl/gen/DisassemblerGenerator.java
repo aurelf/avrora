@@ -125,19 +125,27 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     class EncodingInfo {
         final InstrDecl instr;
+        final EncodingDecl encoding;
+        final int encodingNumber;
         final byte[] bitStates;
         final List simplifiedExprs;
 
-        EncodingInfo(InstrDecl id) {
+        EncodingInfo(InstrDecl id, int encNum, EncodingDecl ed) {
             instr = id;
             bitStates = new byte[id.getEncodingSize()];
             simplifiedExprs = new LinkedList();
+            encodingNumber = encNum;
+            encoding = ed;
 
             initializeBitStates(id);
         }
 
+        String getName() {
+            return instr.innerClassName+"_"+encodingNumber;
+        }
+
         private void initializeBitStates(InstrDecl id) {
-            EncodingDecl ed = id.encoding;
+            EncodingDecl ed = encoding;
             Iterator i1; // iterator over expressions in the encoding
 
             // create a constant propagator needed to evaluate integer literals and operands
@@ -408,7 +416,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                     methodname = "decode_"+(methods++);
                 else {
                     EncodingInfo ei = (EncodingInfo)encodings.iterator().next();
-                    methodname = "decode_"+ei.instr.innerClassName;
+                    methodname = "decode_"+ei.getName();
                 }
             }
 
@@ -455,6 +463,11 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             int value = 0;
             // first check for any left over concrete bits that must match
             EncodingInfo ei = (EncodingInfo)encodings.iterator().next();
+
+            if ( ei.encoding.isConditional() ) {
+                EncodingDecl.Cond c = ei.encoding.getCond();
+                printer.println("// this method decodes "+ei.instr.innerClassName+" when "+c.name+" == "+c.expr);
+            }
 
             // go through each of the bits in the bit states. if any of the bits have
             // not been matched yet, then they need to be checked to make sure that
@@ -506,12 +519,8 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             while ( i1.hasNext() ) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i1.next();
                 printer.print(", ");
-                if ( o.isRegister() ) {
-                    // if this is a register, we have to look it up in the table
-                    printer.print("getReg("+o.type+"_table, "+o.name+")");
-                } else {
-                    printer.print(o.name.toString());
-                }
+                String getexpr = getValue(ei, o);
+                printer.print(getexpr);
             }
             printer.println(");");
         }
@@ -528,8 +537,32 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             Iterator i = ei.instr.getOperandIterator();
             while ( i.hasNext() ) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                printer.println("int "+o.name+" = 0;");
+                if ( !isFixed(ei, o) )
+                    printer.println("int "+o.name+" = 0;");
             }
+        }
+
+        private boolean isFixed(EncodingInfo ei, CodeRegion.Operand o) {
+            if ( ei.encoding.isConditional() ) {
+                EncodingDecl.Cond c = ei.encoding.getCond();
+                if ( o.name.image.equals(c.name.image) )
+                    return true;
+            }
+            // if this is a register, we have to look it up in the table
+            return false;
+        }
+
+        private String getValue(EncodingInfo ei, CodeRegion.Operand o) {
+            if ( ei.encoding.isConditional() ) {
+                String prefix = o.isRegister() ? "Register." : "";
+                EncodingDecl.Cond c = ei.encoding.getCond();
+                if ( o.name.image.equals(c.name.image) )
+                    return prefix+c.expr.toString();
+            }
+            // if this is a register, we have to look it up in the table
+            if ( o.isRegister() )
+                return "getReg("+o.type+"_table, "+o.name+")";
+            else return o.name.image;
         }
     }
 
@@ -559,11 +592,15 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     public void visit(InstrDecl d) {
         // for now, we ignore pseudo instructions.
-        EncodingInfo ei = new EncodingInfo(d);
-        if ( d.pseudo ) {
-            pseudo.add(ei);
-        } else {
-            rootSet.encodings.add(ei);
+        Iterator i = d.encodingList.iterator();
+        for ( int cntr = 0; i.hasNext(); cntr++) {
+            EncodingDecl ed = (EncodingDecl)i.next();
+            EncodingInfo ei = new EncodingInfo(d, cntr, ed);
+            if ( d.pseudo ) {
+                pseudo.add(ei);
+            } else {
+                rootSet.encodings.add(ei);
+            }
         }
     }
 

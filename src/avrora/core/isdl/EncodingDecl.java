@@ -50,11 +50,23 @@ public class EncodingDecl {
 
     public final List fields;
 
-    public int bitWidth = -1;
+    protected int bitWidth = -1;
+
+    protected Cond condition;
 
     public EncodingDecl(Token n, List f) {
         name = n;
         fields = f;
+    }
+
+    public static class Cond {
+        public final Token name;
+        public final Expr expr;
+
+        public Cond(Token n, Expr e) {
+            name = n;
+            expr = e;
+        }
     }
 
     public static class Substitution {
@@ -106,5 +118,15 @@ public class EncodingDecl {
         return accum;
     }
 
+    public void setCond(Cond c) {
+        condition = c;
+    }
 
+    public Cond getCond() {
+        return condition;
+    }
+
+    public boolean isConditional() {
+        return condition != null;
+    }
 }
