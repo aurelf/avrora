@@ -6,7 +6,6 @@ import avrora.Arithmetic;
 import avrora.sim.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.TracingState;
 
 /**
  * The <code>ATMega128L</code> class represents the <code>Microcontroller</code>
@@ -214,7 +213,7 @@ public class ATMega128L implements Microcontroller {
         }
 
         protected State constructTracingState() {
-            State ns = new TracingState(program, FLASH_SIZE, IOREG_SIZE, SRAM_SIZE);
+            State ns = new State(program, FLASH_SIZE, IOREG_SIZE, SRAM_SIZE);
             setupState(ns);
             return ns;
 

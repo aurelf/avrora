@@ -4,6 +4,7 @@ import vpc.VPCBase;
 import vpc.util.Printer;
 import vpc.util.SectionFile;
 import vpc.util.Terminal;
+import vpc.util.StringUtil;
 
 import java.io.OutputStream;
 import java.util.LinkedList;
@@ -40,7 +41,7 @@ public class Generator extends VPCBase {
         }
 
         public String getConstraint(int num) {
-            return constraint + "(" + num + ", " + alpha(num) + ")";
+            return constraint + "(" + num + ", " + StringUtil.alpha(num) + ")";
         }
     }
 
@@ -50,7 +51,7 @@ public class Generator extends VPCBase {
         }
 
         public String getConstraint(int num) {
-            return constraint + "(pc, " + num + ", " + alpha(num) + ")";
+            return constraint + "(pc, " + num + ", " + StringUtil.alpha(num) + ")";
         }
     }
 
@@ -73,26 +74,26 @@ public class Generator extends VPCBase {
 
         ParamTypes(String bc, Operand o1) {
             baseClass = bc;
-            defaults = commalist("0", d(o1));
-            formals = commalist("int pc", o1.getType() + " a");
+            defaults = StringUtil.commalist("0", d(o1));
+            formals = StringUtil.commalist("int pc", o1.getType() + " a");
             params = "pc, a";
             constraints = c(1, o1);
         }
 
         ParamTypes(String bc, Operand o1, Operand o2) {
             baseClass = bc;
-            defaults = commalist("0", d(o1), d(o2));
-            formals = commalist("int pc", p(1, o1), p(2, o2));
+            defaults = StringUtil.commalist("0", d(o1), d(o2));
+            formals = StringUtil.commalist("int pc", p(1, o1), p(2, o2));
             params = "pc, a, b";
-            constraints = commalist(c(1, o1), c(2, o2));
+            constraints = StringUtil.commalist(c(1, o1), c(2, o2));
         }
 
         ParamTypes(String bc, Operand o1, Operand o2, Operand o3) {
             baseClass = bc;
-            defaults = commalist("0", d(o1), d(o2), d(o3));
-            formals = commalist("int pc", p(1, o1), p(2, o2), p(3, o3));
+            defaults = StringUtil.commalist("0", d(o1), d(o2), d(o3));
+            formals = StringUtil.commalist("int pc", p(1, o1), p(2, o2), p(3, o3));
             params = "pc, a, b, c";
-            constraints = commalist(c(1, o1), c(2, o2), c(3, o3));
+            constraints = StringUtil.commalist(c(1, o1), c(2, o2), c(3, o3));
         }
 
         private String d(Operand o) {
@@ -100,7 +101,7 @@ public class Generator extends VPCBase {
         }
 
         String p(int num, Operand o) {
-            return o.getType() + " " + alpha(num);
+            return o.getType() + " " + StringUtil.alpha(num);
         }
 
         String c(int num, Operand o) {
@@ -143,15 +144,15 @@ public class Generator extends VPCBase {
         }
 
         void writeSetInsert(SectionFile f) throws java.io.IOException {
-            f.writeLine("        instructions.put(" + quote(variant) + ", " + className + ".prototype);");
+            f.writeLine("        instructions.put(" + StringUtil.quote(variant) + ", " + className + ".prototype);");
         }
 
         void writeClassDecl(SectionFile f) throws java.io.IOException {
             f.writeLine("    public static class " + VARIANT + " extends " + params.baseClass + " { // "+comment);
-            f.writeLine("        public String getName() { return " + quote(name) + "; }");
+            f.writeLine("        public String getName() { return " + StringUtil.quote(name) + "; }");
 
             if (variant != name)
-                f.writeLine("        public String getVariant() { return " + quote(variant) + "; }");
+                f.writeLine("        public String getVariant() { return " + StringUtil.quote(variant) + "; }");
             f.writeLine("        static InstrPrototype prototype = new " + VARIANT + "(" + params.defaults + ");");
             f.writeLine("        Instr allocate(" + params.formals + ") { return new " + VARIANT + "(" + params.params + "); }");
             f.writeLine("        public " + VARIANT + "(" + params.formals + ") { super(" + params.constraints + "); }");
@@ -218,141 +219,141 @@ public class Generator extends VPCBase {
         int _3cyc = 3;
         int _4cyc = 4;
 
-        instr("adc", GPR_GPR, _1cyc, "add register to register with carry");
-        instr("add", GPR_GPR, _1cyc, "add register to register");
-        instr("adiw", RDL_IMM6, _2cyc, "add immediate to word register");
-        instr("and", GPR_GPR, _1cyc, "and register with register");
-        instr("andi", HGPR_IMM8, _1cyc, "and register with immediate");
-        instr("asr", GPR_, _1cyc, "arithmetic shift right");
-        instr("bclr", IMM3_, _1cyc, "clear bit in status register");
-        instr("bld", GPR_IMM3, _1cyc, "load bit from T flag into register");
-        instr("brbc", IMM3_SREL, _1cyc, "branch if bit in status register is clear");
-        instr("brbs", IMM3_SREL, _1cyc, "branch if bit in status register is set");
-        instr("brcc", SREL_, _1cyc, "branch if carry flag is clear");
-        instr("brcs", SREL_, _1cyc, "branch if carry flag is set");
-        instr("break", NONE, _1cyc, "break");
-        instr("breq", SREL_, _1cyc, "branch if equal");
-        instr("brge", SREL_, _1cyc, "branch if greater or equal (signed)");
-        instr("brhc", SREL_, _1cyc, "branch if H flag is clear");
-        instr("brhs", SREL_, _1cyc, "branch if H flag is set");
-        instr("brid", SREL_, _1cyc, "branch if interrupts are disabled");
-        instr("brie", SREL_, _1cyc, "branch if interrupts are enabled");
-        instr("brlo", SREL_, _1cyc, "branch if lower");
-        instr("brlt", SREL_, _1cyc, "branch if less than zero (signed)");
-        instr("brmi", SREL_, _1cyc, "branch if minus");
-        instr("brne", SREL_, _1cyc, "branch if not equal");
-        instr("brpl", SREL_, _1cyc, "branch if positive");
-        instr("brsh", SREL_, _1cyc, "branch if same or higher");
-        instr("brtc", SREL_, _1cyc, "branch if T flag is clear");
-        instr("brts", SREL_, _1cyc, "branch if T flag is set");
-        instr("brvc", SREL_, _1cyc, "branch if V flag is clear");
-        instr("brvs", SREL_, _1cyc, "branch if V flag is set");
-        instr("bset", IMM3_, _1cyc, "set flag in status register");
-        instr("bst", GPR_IMM3, _1cyc, "store bit in register into T flag");
-        large("call", MEM_, _4cyc, "call absolute address");
-        instr("cbi", IMM5_IMM3, _2cyc, "clear bit in IO register");
-        instr("cbr", HGPR_IMM8, _1cyc, "clear bits in register");
-        instr("clc", NONE, _1cyc, "clear C flag");
-        instr("clh", NONE, _1cyc, "clear H flag");
-        instr("cli", NONE, _1cyc, "clear I flag");
-        instr("cln", NONE, _1cyc, "clear N flag");
-        instr("clr", GPR_, _1cyc, "clear register (set to zero)");
-        instr("cls", NONE, _1cyc, "clear S flag");
-        instr("clt", NONE, _1cyc, "clear T flag");
-        instr("clv", NONE, _1cyc, "clear V flag");
-        instr("clz", NONE, _1cyc, "clear Z flag");
-        instr("com", GPR_, _1cyc, "one's compliment register");
-        instr("cp", GPR_GPR, _1cyc, "compare registers");
-        instr("cpc", GPR_GPR, _1cyc, "compare registers with carry");
-        instr("cpi", HGPR_IMM8, _1cyc, "compare register with immediate");
-        instr("cpse", GPR_GPR, _1cyc, "compare registers and skip if equal");
-        instr("dec", GPR_, _1cyc, "decrement register by one");
-        instr("eicall", NONE, _4cyc, "extended indirect call");
-        instr("eijmp", NONE, _2cyc, "extended indirect jump");
-        instr("elpm", NONE, _3cyc, "extended load program memory to r0");
-        instr("elpmd", "elpm", GPR_Z, _3cyc, "extended load program memory to register"); // variant
-        instr("elpmpi", "elpm", GPR_Z, _3cyc, "extended load program memory to register and post-increment"); // variant
-        instr("eor", GPR_GPR, _1cyc, "exclusive or register with register");
-        instr("fmul", MGPR_MGPR, _2cyc, "fractional multiply register with register to r0");
-        instr("fmuls", MGPR_MGPR, _2cyc, "signed fractional multiply register with register to r0");
-        instr("fmulsu", MGPR_MGPR, _2cyc, "signed/unsigned fractional multiply register with register to r0");
-        instr("icall", NONE, _3cyc, "indirect call through Z register");
-        instr("ijmp", NONE, _2cyc, "indirect jump through Z register");
-        instr("in", GPR_IMM6, _1cyc, "read from IO register into register");
-        instr("inc", GPR_, _1cyc, "increment register by one");
-        large("jmp", MEM_, _3cyc, "absolute jump");
-        instr("ld", "ld", GPR_ADR, _2cyc, "load from SRAM");
-        instr("ldd", GPR_YZ_IMM6, _2cyc, "load from SRAM with displacement");
-        instr("ldi", HGPR_IMM8, _1cyc, "load immediate into register");
-        instr("ldpd", "ld", GPR_ADR, _2cyc, "load from SRAM with pre-decrement"); // variant
-        instr("ldpi", "ld", GPR_ADR, _2cyc, "load from SRAM with post-increment"); // variant
-        large("lds", GPR_MEM, _2cyc, "load direct from SRAM");
-        instr("lpm", NONE, _3cyc, "load program memory into r0");
-        instr("lpmd", "lpm", GPR_Z, _3cyc, "load program memory into register"); // variant
-        instr("lpmpi", "lpm", GPR_Z, _3cyc, "load program memory into register and post-increment"); // variant
-        instr("lsl", GPR_, _1cyc, "logical shift left");
-        instr("lsr", GPR_, _1cyc, "logical shift right");
-        instr("mov", GPR_GPR, _1cyc, "copy register to register");
-        instr("movw", EGPR_EGPR, _1cyc, "copy two registers to two registers");
-        instr("mul", GPR_GPR, _2cyc, "multiply register with register to r0");
-        instr("muls", HGPR_HGPR, _2cyc, "signed multiply register with register to r0");
-        instr("mulsu", MGPR_MGPR, _2cyc, "signed/unsigned multiply register with register to r0");
-        instr("neg", GPR_, _1cyc, "two's complement register");
-        instr("nop", NONE, _1cyc, "do nothing operation");
-        instr("or", GPR_GPR, _1cyc, "or register with register");
-        instr("ori", HGPR_IMM8, _1cyc, "or register with immediate");
-        instr("out", IMM6_GPR, _1cyc, "write from register to IO register");
-        instr("pop", GPR_, _2cyc, "pop from the stack to register");
-        instr("push", GPR_, _2cyc, "push register to the stack");
-        instr("rcall", LREL_, _3cyc, "relative call");
-        instr("ret", NONE, _4cyc, "return to caller");
-        instr("reti", NONE, _4cyc, "return from interrupt");
-        instr("rjmp", LREL_, _2cyc, "relative jump");
-        instr("rol", GPR_, _1cyc, "rotate left through carry flag");
-        instr("ror", GPR_, _1cyc, "rotate right through carry flag");
-        instr("sbc", GPR_GPR, _1cyc, "subtract register from register with carry");
-        instr("sbci", HGPR_IMM8, _1cyc, "subtract immediate from register with carry");
-        instr("sbi", IMM5_IMM3, _2cyc, "set bit in IO register");
-        instr("sbic", IMM5_IMM3, _1cyc, "skip if bit in IO register is clear");
-        instr("sbis", IMM5_IMM3, _1cyc, "skip if bit in IO register is set");
-        instr("sbiw", RDL_IMM6, _2cyc, "subtract immediate from word ");
-        instr("sbr", HGPR_IMM8, _1cyc, "set bits in register");
-        instr("sbrc", GPR_IMM3, _1cyc, "skip if bit in register cleared");
-        instr("sbrs", GPR_IMM3, _1cyc, "skip if bit in register set");
-        instr("sec", NONE, _1cyc, "set C (carry) flag");
-        instr("seh", NONE, _1cyc, "set H (half carry) flag");
-        instr("sei", NONE, _1cyc, "set I (interrupt enable) flag");
-        instr("sen", NONE, _1cyc, "set N (negative) flag");
-        instr("ser", GPR_, _1cyc, "set bits in register");
-        instr("ses", NONE, _1cyc, "set S (signed) flag");
-        instr("set", NONE, _1cyc, "set T flag");
-        instr("sev", NONE, _1cyc, "set V (overflow) flag");
-        instr("sez", NONE, _1cyc, "set Z (zero) flag");
-        instr("sleep", NONE, _1cyc, "enter sleep mode");
-        instr("spm", NONE, _1cyc, "store to program memory from r0");
-        instr("st", "st", ADR_GPR, _2cyc, "store from register to SRAM");
-        instr("std", YZ_IMM6_GPR, _2cyc, "store from register to SRAM with displacement");
-        instr("stpd", "st", ADR_GPR, _2cyc, "store from register to SRAM with pre-decrement"); // variant
-        instr("stpi", "st", ADR_GPR, _2cyc, "store from register to SRAM with post-increment"); // variant
-        large("sts", MEM_GPR, _2cyc, "store direct to SRAM");
-        instr("sub", GPR_GPR, _1cyc, "subtract register from register");
-        instr("subi", HGPR_IMM8, _1cyc, "subtract immediate from register");
-        instr("swap", GPR_, _1cyc, "swap nibbles in register");
-        instr("tst", GPR_, _1cyc, "test for zero or minus");
-        instr("wdr", NONE, _1cyc, "watchdog timer reset");
+        instr2("adc", GPR_GPR, _1cyc, "add register to register with carry");
+        instr2("add", GPR_GPR, _1cyc, "add register to register");
+        instr2("adiw", RDL_IMM6, _2cyc, "add immediate to word register");
+        instr2("and", GPR_GPR, _1cyc, "and register with register");
+        instr2("andi", HGPR_IMM8, _1cyc, "and register with immediate");
+        instr2("asr", GPR_, _1cyc, "arithmetic shift right");
+        instr2("bclr", IMM3_, _1cyc, "clear bit in status register");
+        instr2("bld", GPR_IMM3, _1cyc, "load bit from T flag into register");
+        instr2("brbc", IMM3_SREL, _1cyc, "branch if bit in status register is clear");
+        instr2("brbs", IMM3_SREL, _1cyc, "branch if bit in status register is set");
+        instr2("brcc", SREL_, _1cyc, "branch if carry flag is clear");
+        instr2("brcs", SREL_, _1cyc, "branch if carry flag is set");
+        instr2("break", NONE, _1cyc, "break");
+        instr2("breq", SREL_, _1cyc, "branch if equal");
+        instr2("brge", SREL_, _1cyc, "branch if greater or equal (signed)");
+        instr2("brhc", SREL_, _1cyc, "branch if H flag is clear");
+        instr2("brhs", SREL_, _1cyc, "branch if H flag is set");
+        instr2("brid", SREL_, _1cyc, "branch if interrupts are disabled");
+        instr2("brie", SREL_, _1cyc, "branch if interrupts are enabled");
+        instr2("brlo", SREL_, _1cyc, "branch if lower");
+        instr2("brlt", SREL_, _1cyc, "branch if less than zero (signed)");
+        instr2("brmi", SREL_, _1cyc, "branch if minus");
+        instr2("brne", SREL_, _1cyc, "branch if not equal");
+        instr2("brpl", SREL_, _1cyc, "branch if positive");
+        instr2("brsh", SREL_, _1cyc, "branch if same or higher");
+        instr2("brtc", SREL_, _1cyc, "branch if T flag is clear");
+        instr2("brts", SREL_, _1cyc, "branch if T flag is set");
+        instr2("brvc", SREL_, _1cyc, "branch if V flag is clear");
+        instr2("brvs", SREL_, _1cyc, "branch if V flag is set");
+        instr2("bset", IMM3_, _1cyc, "set flag in status register");
+        instr2("bst", GPR_IMM3, _1cyc, "store bit in register into T flag");
+        instr4("call", MEM_, _4cyc, "call absolute address");
+        instr2("cbi", IMM5_IMM3, _2cyc, "clear bit in IO register");
+        instr2("cbr", HGPR_IMM8, _1cyc, "clear bits in register");
+        instr2("clc", NONE, _1cyc, "clear C flag");
+        instr2("clh", NONE, _1cyc, "clear H flag");
+        instr2("cli", NONE, _1cyc, "clear I flag");
+        instr2("cln", NONE, _1cyc, "clear N flag");
+        instr2("clr", GPR_, _1cyc, "clear register (set to zero)");
+        instr2("cls", NONE, _1cyc, "clear S flag");
+        instr2("clt", NONE, _1cyc, "clear T flag");
+        instr2("clv", NONE, _1cyc, "clear V flag");
+        instr2("clz", NONE, _1cyc, "clear Z flag");
+        instr2("com", GPR_, _1cyc, "one's compliment register");
+        instr2("cp", GPR_GPR, _1cyc, "compare registers");
+        instr2("cpc", GPR_GPR, _1cyc, "compare registers with carry");
+        instr2("cpi", HGPR_IMM8, _1cyc, "compare register with immediate");
+        instr2("cpse", GPR_GPR, _1cyc, "compare registers and skip if equal");
+        instr2("dec", GPR_, _1cyc, "decrement register by one");
+        instr2("eicall", NONE, _4cyc, "extended indirect call");
+        instr2("eijmp", NONE, _2cyc, "extended indirect jump");
+        instr2("elpm", NONE, _3cyc, "extended load program memory to r0");
+        instr2("elpmd", "elpm", GPR_Z, _3cyc, "extended load program memory to register"); // variant
+        instr2("elpmpi", "elpm", GPR_Z, _3cyc, "extended load program memory to register and post-increment"); // variant
+        instr2("eor", GPR_GPR, _1cyc, "exclusive or register with register");
+        instr2("fmul", MGPR_MGPR, _2cyc, "fractional multiply register with register to r0");
+        instr2("fmuls", MGPR_MGPR, _2cyc, "signed fractional multiply register with register to r0");
+        instr2("fmulsu", MGPR_MGPR, _2cyc, "signed/unsigned fractional multiply register with register to r0");
+        instr2("icall", NONE, _3cyc, "indirect call through Z register");
+        instr2("ijmp", NONE, _2cyc, "indirect jump through Z register");
+        instr2("in", GPR_IMM6, _1cyc, "read from IO register into register");
+        instr2("inc", GPR_, _1cyc, "increment register by one");
+        instr4("jmp", MEM_, _3cyc, "absolute jump");
+        instr2("ld", "ld", GPR_ADR, _2cyc, "load from SRAM");
+        instr2("ldd", GPR_YZ_IMM6, _2cyc, "load from SRAM with displacement");
+        instr2("ldi", HGPR_IMM8, _1cyc, "load immediate into register");
+        instr2("ldpd", "ld", GPR_ADR, _2cyc, "load from SRAM with pre-decrement"); // variant
+        instr2("ldpi", "ld", GPR_ADR, _2cyc, "load from SRAM with post-increment"); // variant
+        instr4("lds", GPR_MEM, _2cyc, "load direct from SRAM");
+        instr2("lpm", NONE, _3cyc, "load program memory into r0");
+        instr2("lpmd", "lpm", GPR_Z, _3cyc, "load program memory into register"); // variant
+        instr2("lpmpi", "lpm", GPR_Z, _3cyc, "load program memory into register and post-increment"); // variant
+        instr2("lsl", GPR_, _1cyc, "logical shift left");
+        instr2("lsr", GPR_, _1cyc, "logical shift right");
+        instr2("mov", GPR_GPR, _1cyc, "copy register to register");
+        instr2("movw", EGPR_EGPR, _1cyc, "copy two registers to two registers");
+        instr2("mul", GPR_GPR, _2cyc, "multiply register with register to r0");
+        instr2("muls", HGPR_HGPR, _2cyc, "signed multiply register with register to r0");
+        instr2("mulsu", MGPR_MGPR, _2cyc, "signed/unsigned multiply register with register to r0");
+        instr2("neg", GPR_, _1cyc, "two's complement register");
+        instr2("nop", NONE, _1cyc, "do nothing operation");
+        instr2("or", GPR_GPR, _1cyc, "or register with register");
+        instr2("ori", HGPR_IMM8, _1cyc, "or register with immediate");
+        instr2("out", IMM6_GPR, _1cyc, "write from register to IO register");
+        instr2("pop", GPR_, _2cyc, "pop from the stack to register");
+        instr2("push", GPR_, _2cyc, "push register to the stack");
+        instr2("rcall", LREL_, _3cyc, "relative call");
+        instr2("ret", NONE, _4cyc, "return to caller");
+        instr2("reti", NONE, _4cyc, "return from interrupt");
+        instr2("rjmp", LREL_, _2cyc, "relative jump");
+        instr2("rol", GPR_, _1cyc, "rotate left through carry flag");
+        instr2("ror", GPR_, _1cyc, "rotate right through carry flag");
+        instr2("sbc", GPR_GPR, _1cyc, "subtract register from register with carry");
+        instr2("sbci", HGPR_IMM8, _1cyc, "subtract immediate from register with carry");
+        instr2("sbi", IMM5_IMM3, _2cyc, "set bit in IO register");
+        instr2("sbic", IMM5_IMM3, _1cyc, "skip if bit in IO register is clear");
+        instr2("sbis", IMM5_IMM3, _1cyc, "skip if bit in IO register is set");
+        instr2("sbiw", RDL_IMM6, _2cyc, "subtract immediate from word ");
+        instr2("sbr", HGPR_IMM8, _1cyc, "set bits in register");
+        instr2("sbrc", GPR_IMM3, _1cyc, "skip if bit in register cleared");
+        instr2("sbrs", GPR_IMM3, _1cyc, "skip if bit in register set");
+        instr2("sec", NONE, _1cyc, "set C (carry) flag");
+        instr2("seh", NONE, _1cyc, "set H (half carry) flag");
+        instr2("sei", NONE, _1cyc, "set I (interrupt enable) flag");
+        instr2("sen", NONE, _1cyc, "set N (negative) flag");
+        instr2("ser", GPR_, _1cyc, "set bits in register");
+        instr2("ses", NONE, _1cyc, "set S (signed) flag");
+        instr2("set", NONE, _1cyc, "set T flag");
+        instr2("sev", NONE, _1cyc, "set V (overflow) flag");
+        instr2("sez", NONE, _1cyc, "set Z (zero) flag");
+        instr2("sleep", NONE, _1cyc, "enter sleep mode");
+        instr2("spm", NONE, _1cyc, "store to program memory from r0");
+        instr2("st", "st", ADR_GPR, _2cyc, "store from register to SRAM");
+        instr2("std", YZ_IMM6_GPR, _2cyc, "store from register to SRAM with displacement");
+        instr2("stpd", "st", ADR_GPR, _2cyc, "store from register to SRAM with pre-decrement"); // variant
+        instr2("stpi", "st", ADR_GPR, _2cyc, "store from register to SRAM with post-increment"); // variant
+        instr4("sts", MEM_GPR, _2cyc, "store direct to SRAM");
+        instr2("sub", GPR_GPR, _1cyc, "subtract register from register");
+        instr2("subi", HGPR_IMM8, _1cyc, "subtract immediate from register");
+        instr2("swap", GPR_, _1cyc, "swap nibbles in register");
+        instr2("tst", GPR_, _1cyc, "test for zero or minus");
+        instr2("wdr", NONE, _1cyc, "watchdog timer reset");
 
     }
 
 
-    static void instr(String name, ParamTypes types, int cycles, String comment) {
+    static void instr2(String name, ParamTypes types, int cycles, String comment) {
         add(new Description(name, types, cycles, comment));
     }
 
-    static void instr(String variant, String name, ParamTypes types, int cycles, String comment) {
+    static void instr2(String variant, String name, ParamTypes types, int cycles, String comment) {
         add(new Description(variant, name, types, cycles, comment));
     }
 
-    static void large(String name, ParamTypes types, int cycles, String comment) {
+    static void instr4(String name, ParamTypes types, int cycles, String comment) {
         Description d = new Description(name, types, cycles, comment);
         d.large = true;
         add(d);

@@ -456,7 +456,7 @@ public class Analyzer {
         Terminal.printBrightRed(beg);
 
         Terminal.print("[");
-        Terminal.printBrightGreen(VPCBase.toHex(s.getPC(), 4));
+        Terminal.printBrightGreen(StringUtil.toHex(s.getPC(), 4));
         Terminal.print("|");
         Terminal.printBrightCyan(s.getUniqueName());
         Terminal.print("] ");

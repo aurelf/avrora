@@ -4,6 +4,7 @@ import avrora.core.*;
 import avrora.Arithmetic;
 import vpc.VPCBase;
 import vpc.util.Terminal;
+import vpc.util.StringUtil;
 
 /**
  * The <code>State</code> class represents the state of the simulator, including
@@ -938,7 +939,7 @@ public class State implements IORegisterConstants {
         if ( max > sram.length + sram_start ) max = sram.length + sram_start;
 
         for (int cntr = sp; cntr < max; cntr++) {
-            Terminal.print(VPCBase.toHex(getDataByte(cntr), 2) + " ");
+            Terminal.print(StringUtil.toHex(getDataByte(cntr), 2) + " ");
         }
 
         Terminal.nextln();
@@ -947,10 +948,10 @@ public class State implements IORegisterConstants {
         Terminal.nextln();
 
         for (int row = NUM_REGS; row < 128; row += 16) {
-            Terminal.printBrightGreen("    " + VPCBase.toHex(row >> 4, 3) + "x");
+            Terminal.printBrightGreen("    " + StringUtil.toHex(row >> 4, 3) + "x");
             Terminal.print(": ");
             for (int cntr = 0; cntr < 16; cntr++)
-                Terminal.print(VPCBase.toHex(getDataByte(row + cntr), 2) + " ");
+                Terminal.print(StringUtil.toHex(getDataByte(row + cntr), 2) + " ");
             Terminal.nextln();
         }
     }
@@ -978,17 +979,17 @@ public class State implements IORegisterConstants {
     }
 
     protected final void printPair(String n, byte val, boolean modified) {
-        String str = VPCBase.toHex(val, 2);
+        String str = StringUtil.toHex(val, 2);
         printPair(n, str, modified);
     }
 
     protected final void printPair(String n, int val, boolean modified) {
-        String str = VPCBase.toHex(val, 4);
+        String str = StringUtil.toHex(val, 4);
         printPair(n, str, modified);
     }
 
     protected final void printPair(String n, long val, boolean modified) {
-        String str = VPCBase.toHex(val, 10);
+        String str = StringUtil.toHex(val, 10);
         printPair(n, str, modified);
     }
 

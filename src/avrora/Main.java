@@ -17,6 +17,7 @@ import java.text.StringCharacterIterator;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.*;
+import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.util.Counter;
 import avrora.sim.util.BranchCounter;
 import avrora.sim.util.ProgramProfiler;
@@ -126,6 +127,8 @@ public class Main extends VPCBase {
     public static final Option.Bool BANNER   = options.newOption("banner", true);
     public static final Option.Bool VERBOSE  = options.newOption("verbose", false);
     public static final Option.Int  REPEAT   = options.newOption("repeat", 1);
+    public static final Option.Str  CHIP     = options.newOption("chip", "atmega128l");
+    public static final Option.Str  PLATFORM = options.newOption("platform", "");
 
     static {
         newAction("simulate", new SimulateAction());
@@ -219,7 +222,7 @@ public class Main extends VPCBase {
     }
 
     static void formatError(String f, int i) {
-        userError("format error for program location(s) "+quote(f)+" @ character "+i);
+        userError("format error for program location(s) "+StringUtil.quote(f)+" @ character "+i);
 
     }
 
@@ -234,7 +237,7 @@ public class Main extends VPCBase {
             else if ( Character.isJavaIdentifierStart(StringUtil.peek(i))) {
                 String ident = StringUtil.readIdentifier(i);
                 Program.Label l = program.getLabel(ident);
-                if ( l == null ) userError("cannot find label "+quote(ident)+" in specified program");
+                if ( l == null ) userError("cannot find label "+StringUtil.quote(ident)+" in specified program");
                 locset.add(new Location(l.name, l.address));
             } else {
                 formatError(v, i.getIndex());
@@ -251,5 +254,11 @@ public class Main extends VPCBase {
         return loclist;
     }
 
+    public static Microcontroller getMicrocontroller() {
+        Microcontroller mcu = Microcontrollers.getMicrocontroller(CHIP.get());
+        if ( mcu == null )
+            userError("unknown microcontroller unit "+StringUtil.quote(CHIP.get()));
+        return mcu;
+    }
 
 }

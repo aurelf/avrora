@@ -2,6 +2,7 @@ package avrora;
 
 import vpc.VPCBase;
 import vpc.CompilationError;
+import vpc.util.StringUtil;
 import avrora.core.*;
 import avrora.syntax.Expr;
 import avrora.syntax.ExprList;
@@ -158,7 +159,7 @@ public class Module extends VPCBase implements Context {
             } catch (Instr.ImmediateRequired e) {
                 ERROR.ConstantExpected(e.operand);
             } catch (Instr.InvalidImmediate e) {
-                ERROR.ConstantOutOfRange(operands[e.number - 1], e.value, interval(e.low, e.high));
+                ERROR.ConstantOutOfRange(operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
             } catch (Instr.InvalidRegister e) {
                 ERROR.IncorrectRegister(operands[e.number - 1], e.register, e.set.toString());
             } catch (Instr.RegisterRequired e) {
@@ -227,7 +228,7 @@ public class Module extends VPCBase implements Context {
                 Expr e = item.expr;
                 if (e instanceof Expr.StringLiteral) {
                     String str = ((Expr.StringLiteral) e).value;
-                    verbose(", str: " + quote(str));
+                    verbose(", str: " + StringUtil.quote(str));
                     cseg.writeBytes(str.getBytes(), cursor);
                     cursor = align(cursor, width);
                 } else {
@@ -639,7 +640,7 @@ public class Module extends VPCBase implements Context {
     // .include directive
     public void includeFile(AbstractToken fname) throws AbstractParseException {
         try {
-            String fn = trimquotes(fname.image);
+            String fn = StringUtil.trimquotes(fname.image);
             verboseln("(PASS 1) attempting to include file: "+fn);
             AtmelParser parser = new AtmelParser(new FileInputStream(fn), this, fn);
             // TODO: handle infinite include recursion possibility

@@ -1,6 +1,7 @@
 package avrora.stack;
 
 import vpc.VPCBase;
+import vpc.util.StringUtil;
 
 import java.util.HashSet;
 import java.util.HashMap;
@@ -80,7 +81,7 @@ public class StateSpace {
         }
 
         public String getUniqueName() {
-            return VPCBase.toHex(UID, 10);
+            return StringUtil.toHex(UID, 10);
         }
 
     }

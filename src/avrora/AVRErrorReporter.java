@@ -1,8 +1,8 @@
 package avrora;
 
 import vpc.CompilationError;
-import vpc.VPCBase;
 import vpc.ErrorReporter;
+import vpc.util.StringUtil;
 import avrora.core.Register;
 import avrora.syntax.ASTNode;
 import avrora.syntax.ExprList;
@@ -31,7 +31,7 @@ public class AVRErrorReporter extends ErrorReporter {
     }
 
     public void UnknownRegister(AbstractToken reg) {
-        String report = "unknown register " + quote(reg);
+        String report = "unknown register " + StringUtil.quote(reg);
         error(report, "UnknownRegister", point(reg));
     }
 
@@ -41,7 +41,7 @@ public class AVRErrorReporter extends ErrorReporter {
     }
 
     public void UnknownInstruction(AbstractToken instr) {
-        String report = "unknown instruction " + quote(instr);
+        String report = "unknown instruction " + StringUtil.quote(instr);
         error(report, "UnknownInstruction", point(instr));
     }
 
@@ -51,7 +51,7 @@ public class AVRErrorReporter extends ErrorReporter {
     }
 
     public void IncorrectRegister(Operand o, Register reg, String expect) {
-        String report = "incorrected register " + quote(reg) + ", expected one of " + expect;
+        String report = "incorrected register " + StringUtil.quote(reg) + ", expected one of " + expect;
         error(report, "IncorrectRegister", point(o));
     }
 
@@ -61,18 +61,18 @@ public class AVRErrorReporter extends ErrorReporter {
     }
 
     public void ConstantOutOfRange(Operand o, int value, String range) {
-        String report = "constant " + quote("" + value) + " out of expected range " + range;
+        String report = "constant " + StringUtil.quote("" + value) + " out of expected range " + range;
         error(report, "ConstantOutOfRange", "" + value, point(o));
     }
 
     public void WrongNumberOfOperands(AbstractToken instr, int seen, int expected) {
-        String report = "wrong number of operands to instruction " + quote(instr) + ", expected "
+        String report = "wrong number of operands to instruction " + StringUtil.quote(instr) + ", expected "
                 + expected + " and found " + seen;
         error(report, "WrongNumberOfOperands", point(instr));
     }
 
     public void UnknownVariable(AbstractToken name) {
-        String report = "unknown variable or label " + quote(name.image);
+        String report = "unknown variable or label " + StringUtil.quote(name.image);
         error(report, "UnknownVariable", name.image, point(name));
     }
 

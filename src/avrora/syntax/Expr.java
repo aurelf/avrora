@@ -1,6 +1,7 @@
 package avrora.syntax;
 
 import vpc.VPCBase;
+import vpc.util.StringUtil;
 import vpc.core.AbstractToken;
 import avrora.syntax.ASTNode;
 
@@ -216,7 +217,7 @@ public abstract class Expr extends ASTNode {
             if (val.startsWith("$"))                          // hexadecimal
                 return Integer.parseInt(val.substring(1), 16);
             else
-                return VPCBase.evaluateIntegerLiteral(val);
+                return StringUtil.evaluateIntegerLiteral(val);
         }
     }
 
@@ -225,7 +226,7 @@ public abstract class Expr extends ASTNode {
 
         public CharLiteral(AbstractToken tok) {
             super(tok);
-            value = VPCBase.evaluateCharLiteral(tok.image);
+            value = StringUtil.evaluateCharLiteral(tok.image);
         }
 
         public int evaluate(Context c) {
@@ -242,7 +243,7 @@ public abstract class Expr extends ASTNode {
 
         public StringLiteral(AbstractToken tok) {
             super(tok);
-            value = VPCBase.evaluateStringLiteral(tok.image);
+            value = StringUtil.evaluateStringLiteral(tok.image);
         }
 
         public int evaluate(Context c) {

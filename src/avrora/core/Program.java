@@ -1,6 +1,7 @@
 package avrora.core;
 
 import vpc.util.Printer;
+import vpc.util.StringUtil;
 import vpc.VPCBase;
 
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.Iterator;
 /**
  * The <code>Program</code> class represents a complete program of AVR
  * instructions. It stores the actual instructions and initialized data
- * of the program in one large segment, as well as storing the data
+ * of the program in one instr4 segment, as well as storing the data
  * space and eeprom space requirements for the program. It contains
  * a map of labels (strings) to addresses, which can be either
  * case sensitive (GAS style) or case insensitive (Atmel style).
@@ -48,7 +49,7 @@ public class Program {
             else if (isDataSegment())
                 seg = "data";
             else if (isEEPromSegment()) seg = "eeprom";
-            return seg + "_" + VPCBase.toHex(address, 4);
+            return seg + "_" + StringUtil.toHex(address, 4);
         }
     }
 
@@ -231,8 +232,8 @@ public class Program {
     private void dumpProgram(Printer p) {
         p.println("; -----------------------------------");
         p.println(";  Dump of program segment: ");
-        p.println(";    low = 0x" + VPCBase.toHex(program_start, 4) +
-                ", high = 0x" + VPCBase.toHex(program_end, 4));
+        p.println(";    low = 0x" + StringUtil.toHex(program_start, 4) +
+                ", high = 0x" + StringUtil.toHex(program_end, 4));
         p.println("; -----------------------------------");
         p.println(".cseg");
 
@@ -244,7 +245,7 @@ public class Program {
     }
 
     private int outputRow(Printer p, int cursor) {
-        p.print("program_" + VPCBase.toHex(cursor + program_start, 4) + ": ");
+        p.print("program_" + StringUtil.toHex(cursor + program_start, 4) + ": ");
 
         Elem e = program[cursor];
 
@@ -265,7 +266,7 @@ public class Program {
             for (int cntr = 0; cntr < count; cntr++) {
                 int address = cursor + cntr + program_start;
                 Elem d = program[cursor + cntr];
-                p.print("0x" + VPCBase.toHex(d.asData(address).value, 2));
+                p.print("0x" + StringUtil.toHex(d.asData(address).value, 2));
                 if (cntr != count - 1) p.print(", ");
             }
 

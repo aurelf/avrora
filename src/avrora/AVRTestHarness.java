@@ -289,7 +289,7 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
 
         SimulatorTest(String fname, Properties props) throws Exception {
             super(fname);
-            String result = trimquotes(props.getProperty("Result").trim());
+            String result = StringUtil.trimquotes(props.getProperty("Result").trim());
             predicates = new LinkedList();
             parseResult(result);
         }
@@ -425,7 +425,7 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         private void expectChar(CharacterIterator i, char c) throws Exception {
             char r = i.current();
             i.next();
-            if (r != c) throw new Exception("expected " + squote(c) + " @ " + (i.getIndex() - 1) + ", found " + squote(r));
+            if (r != c) throw new Exception("expected " + StringUtil.squote(c) + " @ " + (i.getIndex() - 1) + ", found " + StringUtil.squote(r));
         }
 
     }
@@ -464,7 +464,7 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         else if (target.equals("avr-sim"))
             return new SimulatorTest(fname, props);
 
-        return new TestCase.Malformed(fname, "invalid target specification " + VPCBase.quote(target));
+        return new TestCase.Malformed(fname, "invalid target specification " + StringUtil.quote(target));
     }
 
     static class StatePredicate {

@@ -155,7 +155,7 @@ public abstract class AbstractState implements IORegisterConstants {
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append("PC: ");
-        buf.append(VPCBase.toHex(pc, 4));
+        buf.append(StringUtil.toHex(pc, 4));
 
         //ITHSVNZC
         appendBit('I', getFlag_I(), buf);
@@ -179,7 +179,7 @@ public abstract class AbstractState implements IORegisterConstants {
 
     public String toShortString() {
         StringBuffer buf = new StringBuffer();
-        buf.append(VPCBase.toHex(pc, 4));
+        buf.append(StringUtil.toHex(pc, 4));
         buf.append(' ');
 
         //ITHSVNZC

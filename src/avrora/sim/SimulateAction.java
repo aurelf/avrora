@@ -70,7 +70,7 @@ public class SimulateAction extends Main.Action {
     public void run(String[] args) throws Exception {
         Main.ProgramReader r = Main.getProgramReader();
         program = r.read(args);
-        simulator = new ATMega128L().loadProgram(program);
+        simulator = Main.getMicrocontroller().loadProgram(program);
         counters = new LinkedList();
         branchcounters = new LinkedList();
         
@@ -243,7 +243,7 @@ public class SimulateAction extends Main.Action {
     }
 
     String addrToString(int address) {
-        return VPCBase.toHex(address, 4);
+        return StringUtil.toHex(address, 4);
     }
 
     void reportQuantity(String name, long val, String units) {
