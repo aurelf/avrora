@@ -430,6 +430,7 @@ public class Main extends VPCBase {
         try {
             options.parseCommandLine(args);
 
+            ColorTerminal.useColors = COLORS.get();
             if ( BANNER.get() ) banner();
 
             Action a = (Action)actions.get(ACTION.get());

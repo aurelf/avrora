@@ -14,7 +14,7 @@ public class PeriodicTrigger implements Simulator.Trigger {
     protected final Simulator.Trigger trigger;
     protected final long period;
 
-    PeriodicTrigger(Simulator s, Simulator.Trigger t, long p) {
+    public PeriodicTrigger(Simulator s, Simulator.Trigger t, long p) {
         trigger = t;
         period = p;
         simulator = s;

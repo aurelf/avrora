@@ -3,6 +3,7 @@ package avrora.sim.util;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.State;
+import avrora.sim.Simulator;
 
 /**
  * The <code>ProgramProfiler</code> class implements a probe that can be
@@ -10,11 +11,11 @@ import avrora.sim.State;
  *
  * @author Ben L. Titzer
  */
-public class ProgramProfiler {
+public class ProgramProfiler implements Simulator.Probe {
 
     public final long icount[];
 
-    ProgramProfiler(Program p) {
+    public ProgramProfiler(Program p) {
         int size = p.program_end;
         icount = new long[size];
     }
