@@ -233,7 +233,7 @@ public class ControlFlowGraph {
     }
 
     public void addEdge(Block s, Block t) {
-        s.edges.add(new Edge(null, s, t));
+        s.edges.add(new Edge("", s, t));
     }
 
     /**

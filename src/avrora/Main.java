@@ -225,6 +225,15 @@ public class Main {
     public static final Option.Str TOPOLOGY = options.newOption("topology", "",
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network.");
+    public static final Option.Bool COLOR_PROCEDURES = options.newOption("color-procedures", false,
+            "This option is used in the \"cfg\" utility when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures and color them in the output.");
+    public static final Option.Bool GROUP_PROCEDURES = options.newOption("group-procedures", false,
+            "This option is used in the \"cfg\" utility when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures and group them as subgraphs " +
+            "in the output.");
 
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
 

@@ -119,20 +119,20 @@ public class CFGBuilder implements InstrVisitor {
             ControlFlowGraph.Block nextblock = block;
             InstrInfo ii = info[pc];
 
-            // invalid instruction
+            int size;
+
             if ( ii.instr == null ) {
-                // TODO: something about invalid instructions.
-                pc += 2;
-                continue;
+                // invalid instruction
+                size = 2;
+            } else {
+                // valid instruction
+                size = ii.instr.getSize();
             }
 
-            // valid instruction
-            int size = ii.instr.getSize();
-
             // check for any jumps into the middle of this instruction
-            for ( int cntr = 0; cntr < size; cntr++ ) {
+            for ( int cntr = 1; cntr < size; cntr++ ) {
                 if ( info[pc + cntr].start || info[pc + cntr].instr != null) {
-                    Avrora.failure("misaligned branch target at "+(pc+cntr));
+                    throw Avrora.failure("misaligned branch target at "+(pc+cntr));
                 }
             }
 
@@ -142,7 +142,9 @@ public class CFGBuilder implements InstrVisitor {
 
                 // check if next instruction starts a new basic block
                 if ( in.start ) {
-                    nextblock = cfg.newBlock(pc + size);
+                    nextblock = cfg.getBlockStartingAt(pc + size);
+                    if ( nextblock == null )
+                        nextblock = cfg.newBlock(pc + size);
                     if ( ii.fallthrough )
                         cfg.addEdge(block, nextblock);
                 }
@@ -175,7 +177,8 @@ public class CFGBuilder implements InstrVisitor {
             }
 
             // add instruction to the current block
-            block.addInstr(ii.instr);
+            if ( ii.instr != null )
+                block.addInstr(ii.instr);
             pc += size;
             block = nextblock;
         }
@@ -310,7 +313,7 @@ public class CFGBuilder implements InstrVisitor {
         branch(i, relative(i.imm1));
     }
     public void visit(Instr.BREAK i) { // break
-        add(i);
+        end(i);
     }
     public void visit(Instr.BREQ i) { // branch if equal
         branch(i, relative(i.imm1));

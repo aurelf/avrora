@@ -1,8 +1,4 @@
-jmp start
-	nop
-	.byte 140
-	
-start:			
+
 	ldi r17, 0xff
 	out 0x3d, r17
 	ldi r16, 0
@@ -12,7 +8,7 @@ loop:
 	call fib
 	pop r16
 	inc r16
-	cpi r16, 1
+	cpi r16, 100
 	brne loop
 	break
 	
