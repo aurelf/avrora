@@ -28,7 +28,6 @@ public class State implements IORegisterConstants {
     private final int sram_start;
     private final int sram_max;
 
-    public static final int NUM_REGS = 32;
     private static final int SRAM_MINSIZE = 128;
 
 
@@ -336,7 +335,7 @@ public class State implements IORegisterConstants {
     }
 
     /**
-     * The <code>writeSREG_bit()</code> updates the value of the specified bit in the
+     * The <code>setSREG_bit()</code> updates the value of the specified bit in the
      * status register. It should only be called from the appropriate places in the
      * simulator.
      * @param bit the number of the bit to update
