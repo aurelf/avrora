@@ -104,12 +104,18 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * the general purpose IO ports.
      */
     protected class Pin implements Microcontroller.Pin {
+        protected final int number;
+
         boolean level;
         boolean outputDir;
         boolean pullup;
 
         Microcontroller.Pin.Input input;
         Microcontroller.Pin.Output output;
+
+        protected Pin(int num) {
+            number = num;
+        }
 
         public void connect(Output o) {
             output = o;
@@ -128,7 +134,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         protected boolean read() {
-            pinPrinter.println("Pin.read()");
+            pinPrinter.println("Pin["+number+"].read()");
             if ( !outputDir ) {
                 pinPrinter.println("  -> 1");
                 if ( input != null ) return input.read();
@@ -140,7 +146,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         protected void write(boolean value) {
-            pinPrinter.println("Pin.write("+value+")");
+            pinPrinter.println("Pin["+number+"].write("+value+")");
             level = value;
             if ( outputDir && output != null ) output.write(value);
         }
@@ -182,7 +188,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
     protected void installPins() {
         for ( int cntr = 0; cntr < NUM_PINS; cntr++ )
-            pins[cntr] = new Pin();
+            pins[cntr] = new Pin(cntr);
 
         // TODO: install reserved pins like VCC
     }

@@ -36,14 +36,19 @@ public interface InstrPrototype {
      * The <code>getVariant()</code> method returns the variant name of the
      * instruction as a string. Since instructions like load and store have
      * multiple variants, they each have specific variant names to distinguish
-     * them internally in the core of Avrora.
-     * @return
+     * them internally in the core of Avrora. For example, for "ld x+, (addr)",
+     * the variant is "ldpi" (load with post increment), but the actual instruction
+     * is "ld", so this method will return "ldpi". 
+     * @return the variant of the instruction that this prototype represents
      */
     public String getVariant();
 
     /**
      * The <code>getName()</code> method returns the name of the instruction as
-     * a string.
+     * a string. For instructions that are variants of instructions, this method
+     * returns the actual name of the instruction. For example, for "ld x+, (addr)",
+     * the variant is "ldpi" (load with post increment), but the actual instruction
+     * is "ld", so this method will return "ld".
      * @return the name of the instruction
      */
     public String getName();
