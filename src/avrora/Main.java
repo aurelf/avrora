@@ -94,10 +94,11 @@ public class Main extends VPCBase {
             String counts = COUNTS.get();
 
             Counter c = null;
+            int cbrk = 0;
             if ( !counts.equals("") ) {
                 CharacterIterator i = new StringCharacterIterator(counts);
-                int brk = StringUtil.readDecimalValue(i, 10);
-                s.insertProbe(c = new Counter(brk), brk);
+                cbrk = StringUtil.readDecimalValue(i, 10);
+                s.insertProbe(c = new Counter(), cbrk);
             }
 
 
@@ -107,7 +108,7 @@ public class Main extends VPCBase {
 
             Counter total = null;
             if ( TOTAL.get() ) {
-                s.insertProbe(total = new Counter(0));
+                s.insertProbe(total = new Counter());
             }
 
             long ms = System.currentTimeMillis();
@@ -117,7 +118,7 @@ public class Main extends VPCBase {
                 long diff = System.currentTimeMillis() - ms;
 
                 if ( c != null )
-                    ColorTerminal.println("Count for "+VPCBase.toPaddedUpperHex(c.address, 4) + " = "+c.count);
+                    ColorTerminal.println("Count for "+VPCBase.toPaddedUpperHex(cbrk, 4) + " = "+c.count);
                 if ( total != null )
                     ColorTerminal.println("Total instruction count = "+total.count);
                 if ( TIME.get() ) {
