@@ -96,6 +96,15 @@ public class CFGAction extends Action {
     protected ControlFlowGraph cfg;
     protected Program program;
 
+    /**
+     * The <code>run()</code> method starts the control flow graph utility. The arguments passed
+     * are the name of the file(s) that contain the program. The program is loaded, its control
+     * flow graph is built, and it is output to the console in one of two textual formats; the
+     * output supported by the dot tool, and a simple colored textual format.
+     *
+     * @param args the command line arguments to the control flow graph utility
+     * @throws Exception
+     */
     public void run(String[] args) throws Exception {
         program = Main.readProgram(args);
         cfg = program.getCFG();

@@ -41,9 +41,9 @@ import avrora.sim.Simulator;
 
 
 /**
- * energy monitor implementation this class handles logging and recording of power consumption.
+ * Energy monitor implementation. This class handles logging and recording of power consumption.
  * <p/>
- * Furthermore the monitor shutsdown the node, when an energy limit is exceeded.
+ * Furthermore the monitor shuts down the node when an energy limit is exceeded.
  *
  * @author Olaf Landsiedel
  */

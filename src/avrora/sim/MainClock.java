@@ -88,6 +88,13 @@ public class MainClock extends Clock {
         eventQueue.advance(cycles);
     }
 
+    /**
+     * The <code>getFirstEventDelta()</code> method returns the number of clock cycles until
+     * the first event in the event queue will fire. This method will return -1 if there are no
+     * events in the queue.
+     * @return the delta in clock cycles of the first event in the queue; -1 if there are no
+     * events in the queue
+     */
     public long getFirstEventDelta() {
         return eventQueue.getHeadDelta();
     }

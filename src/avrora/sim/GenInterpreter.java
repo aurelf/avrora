@@ -220,7 +220,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_3 & 128) != 0);
         Z = low(tmp_3) == 0;
         V = tmp_6 && tmp_7 && !tmp_8 || !tmp_6 && !tmp_7 && tmp_8;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_9 = low(tmp_3);
         setRegisterByte(i.r1, tmp_9);
         cyclesConsumed += 1;
@@ -242,7 +242,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_3 & 128) != 0);
         Z = low(tmp_3) == 0;
         V = tmp_6 && tmp_7 && !tmp_8 || !tmp_6 && !tmp_7 && tmp_8;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_9 = low(tmp_3);
         setRegisterByte(i.r1, tmp_9);
         cyclesConsumed += 1;
@@ -258,7 +258,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_2;
         V = !tmp_3 && tmp_2;
         Z = (tmp_1 & 0x0000FFFF) == 0;
-        S = xor(N, V);
+        S = (N != V);
         setRegisterWord(i.r1, tmp_1);
         cyclesConsumed += 2;
     }
@@ -271,7 +271,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -285,7 +285,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -301,8 +301,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         C = ((tmp_1 & 1) != 0);
         N = tmp_2;
         Z = low(tmp_3) == 0;
-        V = xor(N, C);
-        S = xor(N, V);
+        V = (N != C);
+        S = (N != V);
         byte tmp_4 = low(tmp_3);
         setRegisterByte(i.r1, tmp_4);
         cyclesConsumed += 1;
@@ -624,7 +624,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -695,7 +695,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_0 & 128) != 0);
         Z = low(tmp_0) == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         setRegisterByte(i.r1, low(tmp_0));
         cyclesConsumed += 1;
     }
@@ -717,7 +717,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         cyclesConsumed += 1;
     }
@@ -739,7 +739,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0 && Z;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         cyclesConsumed += 1;
     }
@@ -761,7 +761,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         cyclesConsumed += 1;
     }
@@ -785,7 +785,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_8;
         Z = low(tmp_5) == 0;
         V = tmp_6 && !tmp_7 && !tmp_8 || !tmp_6 && tmp_7 && tmp_8;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_12 = low(tmp_5);
         if (tmp_0 == tmp_1) {
             int tmp_13 = getInstrSize(nextPC);
@@ -807,7 +807,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_1 & 128) != 0);
         Z = tmp_1 == 0;
         V = tmp_0 == 128;
-        S = xor(N, V);
+        S = (N != V);
         setRegisterByte(i.r1, tmp_1);
         cyclesConsumed += 1;
     }
@@ -853,7 +853,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_0 & 128) != 0);
         Z = tmp_0 == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         setRegisterByte(i.r1, tmp_0);
         cyclesConsumed += 1;
     }
@@ -921,7 +921,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_1 & 128) != 0);
         Z = tmp_1 == 0;
         V = tmp_0 == 127;
-        S = xor(N, V);
+        S = (N != V);
         setRegisterByte(i.r1, tmp_1);
         cyclesConsumed += 1;
     }
@@ -1004,8 +1004,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         C = ((tmp_2 & 256) != 0);
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
-        V = xor(N, C);
-        S = xor(N, V);
+        V = (N != C);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -1020,8 +1020,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         C = ((tmp_0 & 1) != 0);
         N = tmp_1;
         Z = low(tmp_2) == 0;
-        V = xor(N, C);
-        S = xor(N, V);
+        V = (N != C);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -1083,7 +1083,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         setRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
@@ -1102,7 +1102,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -1116,7 +1116,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -1190,8 +1190,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         C = ((tmp_2 & 256) != 0);
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
-        V = xor(N, C);
-        S = xor(N, V);
+        V = (N != C);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -1206,8 +1206,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         C = ((tmp_0 & 1) != 0);
         N = tmp_1;
         Z = low(tmp_2) == 0;
-        V = xor(N, C);
-        S = xor(N, V);
+        V = (N != C);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -1230,7 +1230,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0 && Z;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         setRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
@@ -1253,7 +1253,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0 && Z;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         setRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
@@ -1305,7 +1305,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_3;
         Z = (tmp_1 & 0x0000FFFF) == 0;
         C = tmp_3 && !tmp_2;
-        S = xor(N, V);
+        S = (N != V);
         setRegisterWord(i.r1, tmp_1);
         cyclesConsumed += 2;
     }
@@ -1318,7 +1318,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = ((tmp_2 & 128) != 0);
         Z = low(tmp_2) == 0;
         V = false;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_3 = low(tmp_2);
         setRegisterByte(i.r1, tmp_3);
         cyclesConsumed += 1;
@@ -1470,7 +1470,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         setRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
@@ -1493,7 +1493,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         N = tmp_6;
         Z = low(tmp_3) == 0;
         V = tmp_4 && !tmp_5 && !tmp_6 || !tmp_4 && tmp_5 && tmp_6;
-        S = xor(N, V);
+        S = (N != V);
         byte tmp_10 = low(tmp_3);
         setRegisterByte(i.r1, tmp_10);
         cyclesConsumed += 1;
@@ -1515,7 +1515,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         V = false;
         Z = low(tmp_0) == 0;
         N = ((tmp_0 & 128) != 0);
-        S = xor(N, V);
+        S = (N != V);
         cyclesConsumed += 1;
     }
 
@@ -1545,10 +1545,6 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         byte high = popByte();
         byte low = popByte();
         return Arithmetic.uword(low, high) * 2;
-    }
-
-    public boolean xor(boolean a, boolean b) {
-        return (a != b);
     }
 
     public byte low(int val) {
@@ -1583,7 +1579,6 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     public void leaveSleepMode() {
         sleeping = false;
         innerLoop = false;
-        // TODO: is this advance cycles correct? possible accumulation problems
         advanceCycles(simulator.getMicrocontroller().wakeup());
     }
 }

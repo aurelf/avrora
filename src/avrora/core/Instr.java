@@ -44,6 +44,10 @@ package avrora.core;
  */
 public abstract class Instr implements InstrPrototype {
 
+    /**
+     * The <code>properties</code> field stores a reference to the properties of the instruction,
+     * including its size, number of cycles, etc.
+     */
     public final InstrProperties properties;
 
     public Instr(InstrProperties ip) {
@@ -92,6 +96,11 @@ public abstract class Instr implements InstrPrototype {
         return properties.name;
     }
 
+    /**
+     * The <code>toString()</code> method simply converts this instruction to a string by appending
+     * the operands to the variant of the instruction as a string.
+     * @return a string representation of this instruction
+     */
     public String toString() {
         return getVariant() + ' ' + getOperands();
     }
@@ -312,7 +321,6 @@ public abstract class Instr implements InstrPrototype {
     }
 
     private static int PADDR(int num, int val) {
-        // TODO: fix checking of program addresses
         return checkImm(num, val, 0, 65536);
     }
 
@@ -607,7 +615,9 @@ public abstract class Instr implements InstrPrototype {
 
 
     /**
-     * I N S T R U C T I O N   D E S C R I P T I O N S ----------------------------------------------------------------
+     * ----------------------------------------------------------------
+     *  I N S T R U C T I O N   D E S C R I P T I O N S
+     * ----------------------------------------------------------------
      * <p/>
      * These are the actual instruction descriptions that contain the constraints on operands and sizes, etc.
      * <p/>

@@ -280,6 +280,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
     protected SimImpl.ADC adc;
     protected SimImpl.PowerManagement pm;
 
+    // TODO: move all devices out of SimImpl and remove
     public class SimImpl extends Simulator {
 
         public SimImpl(int id, InterpreterFactory f, Program p) {
@@ -1895,12 +1896,13 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
         }
 
         /**
-         * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.  TODO: CPU
-         * halting after EEPROM read/write reads/writes.
+         * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.
          *
          * @author Daniel Lee
          */
         protected class EEPROM {
+
+            // TODO: CPU halting after EEPROM read/write reads/writes.
             final byte[] EEPROM_data = new byte[EEPROM_SIZE];
             final State.RWIOReg EEDR_reg;
             final EECRReg EECR_reg;
@@ -3364,7 +3366,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             }
 
             /**
-             * <code>ControlRegister</code> defines the behavior of the ADC control register, TODO: write ...
+             * <code>ControlRegister</code> defines the behavior of the ADC control register,
              */
             protected class ControlRegister extends ADCRegister {
 

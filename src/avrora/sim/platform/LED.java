@@ -39,6 +39,10 @@ import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
 /**
+ * The <code>LED</code> class implements an LED (light emitting diode) that can be hooked up
+ * to a pin on the microcontroller. The LED prints its state when it is initialized and each
+ * time it is turned on or off.
+ *
  * @author Ben L. Titzer
  */
 class LED implements Microcontroller.Pin.Output {

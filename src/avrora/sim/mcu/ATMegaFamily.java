@@ -249,6 +249,12 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
     }
 
+    /**
+     * The <code>MaskableInterrupt</code> class represents an interrupt that is controlled by
+     * two bits in two registers: a mask bit in a mask register and a flag bit in a flag register,
+     * at the same offset. When this interrupt fires, it automatically clears the flag bit in
+     * the flag register.
+     */
     public class MaskableInterrupt implements Simulator.Interrupt {
         protected final int interruptNumber;
 

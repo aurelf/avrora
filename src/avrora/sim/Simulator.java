@@ -52,10 +52,26 @@ import avrora.util.Verbose;
  */
 public abstract class Simulator implements IORegisterConstants {
 
+    /**
+     * The <code>REPORT_SECONDS</code> field controls whether times in the <code>Simulator.Printer</code>
+     * output will be reported in clock cycles or in seconds.
+     */
     public static boolean REPORT_SECONDS;
-    public static int SECONDS_PRECISION = 6;
-    public static int[] PRECISION_TABLE = { 0, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
 
+    /**
+     * The <code>SECONDS_PRECISION</code> field controls the number of decimal places of precision
+     * reported for times in seconds when outputting events from the simulator.
+     */
+    public static int SECONDS_PRECISION = 6;
+    public final static int[] PRECISION_TABLE = { 0, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+
+    /**
+     * The <code>getIDTimeString()</code> is a public helper method that gets the node ID and the
+     * time (in clock cycles) and converts them into a string appropriately justified for printing
+     * as the first part of an event reported in simulation. This method helps to align all the
+     * events in a columnar fashion.
+     * @return a string representation of the node ID and time appropriately formatted
+     */
     public String getIDTimeString() {
         String idstr = StringUtil.rightJustify(id, 4);
 
@@ -84,8 +100,18 @@ public abstract class Simulator implements IORegisterConstants {
         return idstr + ' ' + cycstr+"   ";
     }
 
+    /**
+     * The <code>Simulator.Printer</code> class is a printer that is tied to a specific <code>Simulator</code>
+     * instance. Being tied to this instance, it will always report the node ID and time before printing
+     * anything. This simple mechanism allows the output to be much cleaner to track the output
+     * of multiple nodes at once.
+     */
     public class Printer {
 
+        /**
+         * The <code>enabled</code> field is true when this printer is enabled. When this printer
+         * is not enabled, the <code>println()</code> method SHOULD NOT BE CALLED.
+         */
         public final boolean enabled;
 
         Printer(String category) {
@@ -93,6 +119,13 @@ public abstract class Simulator implements IORegisterConstants {
             enabled = p.enabled;
         }
 
+        /**
+         * The <code>println()</code> method prints the node ID, the time, and a message to the
+         * console, synchronizing with other threads so that output is not interleaved. This method
+         * SHOULD ONLY BE CALLED WHEN <code>enabled</code> IS TRUE! This is done to prevent
+         * performance bugs created by string construction inside printing (and debugging code).
+         * @param s the string to print
+         */
         public void println(String s) {
             if (enabled) {
                 synchronized ( Terminal.class ) {
@@ -105,6 +138,13 @@ public abstract class Simulator implements IORegisterConstants {
         }
     }
 
+    /**
+     * The <code>getPrinter()</code> method returns a <code>Simulator.Printer</code> instance
+     * for the named verbose channel. The verbose channel is either enabled or disabled.
+     * @param c the name of the verbose channel
+     * @return a <code>Simulator.Printer</code> instance for this channel tied to this
+     * <code>Simulator</code> instance
+     */
     public Simulator.Printer getPrinter(String c) {
         return new Printer(c);
     }
@@ -140,8 +180,17 @@ public abstract class Simulator implements IORegisterConstants {
      */
     protected MainClock clock;
 
+    /**
+     * The <code>id</code> field stores a unique identifier used to differentiate this simulator
+     * from others that might be running in the same simulation.
+     */
     protected final int id;
 
+    /**
+     * The <code>factory</code> field stores a reference to the <code>InterpreterFactory</code> which
+     * should be used to build an interpreter for this simulator. This interpreter factory will create
+     * an interpreter with the correct options that were specified on the command line.
+     */
     protected final InterpreterFactory factory;
 
     /**
@@ -415,14 +464,28 @@ public abstract class Simulator implements IORegisterConstants {
         return program;
     }
 
+    /**
+     * The <code>getClock()</code> method gets a reference to the <code>Clock</code> that this
+     * simulator is driving.
+     * @return a reference to the clock for this simulator
+     */
     public Clock getClock() {
         return clock;
     }
 
+    /**
+     * The <code>getID()</code> method simply returns this node's unique ID.
+     * @return the unique ID of this node
+     */
     public int getID() {
         return id;
     }
 
+    /**
+     * The <code>getInterpreter()</code> method returns the interpreter that is currently attached
+     * to this simulator.
+     * @return the current interpreter
+     */
     public BaseInterpreter getInterpreter() {
         return interpreter;
     }

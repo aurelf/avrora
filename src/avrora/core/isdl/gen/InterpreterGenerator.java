@@ -378,8 +378,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
             if (e.bit.isLiteral()) {
                 int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr)e.bit).value);
                 printer.print("((");
-                // TODO: is this precedence rule correct? I think it should be Expr.AND
-                inner(e.expr, Expr.PREC_A_ADD);
+                inner(e.expr, Expr.PREC_A_AND);
                 printer.print(" & " + mask + ") != 0");
                 printer.print(")");
             } else {

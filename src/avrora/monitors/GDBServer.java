@@ -48,12 +48,17 @@ import java.text.StringCharacterIterator;
 import java.text.CharacterIterator;
 
 /**
+ * The <code>GDBServer</code> class implements a monitor that can communicate to gdb via
+ * the remote serial protocol (RSP). This allows Avrora to host a program that is executing
+ * but is being remotely debugged by gdb. This can all be done without modifications to the
+ * <code>Simulator</code> class, by simply using probes, watches, and events.
+ *
  * @author Ben L. Titzer
  */
 public class GDBServer extends MonitorFactory {
 
     public static String HELP = "The \"gdb\" monitor implements the GNU Debugger (gdb) remote serial " +
-            "protocol. The server will open a socket for listening which GDB can connect to in order to " +
+            "protocol. The server will create a server socket which GDB can connect to in order to " +
             "send commands to Avrora. This allows gdb to be used as a front end for debugging a program " +
             "running inside of Avrora.";
 
@@ -61,6 +66,16 @@ public class GDBServer extends MonitorFactory {
             "This option specifies the port on which the GDB server will listen for a connection from " +
             "the GDB frontend.");
 
+    /**
+     * The <code>GDBMonitor</code> class implements a monitor that can interactively debug
+     * a program that is running in Avrora. It uses the remote serial protocol of GDB to run
+     * the commands that are sent by GDB. It uses probes into the program in order to pause,
+     * resume, step, break, etc.
+     *
+     * For information on the remote serial protocol of GDB, see:
+     *
+     * https://www.redhat.com/docs/manuals/enterprise/RHEL-3-Manual/gdb/remote-protocol.html
+     */
     protected class GDBMonitor implements Monitor {
 
         final Simulator simulator;
@@ -81,7 +96,7 @@ public class GDBServer extends MonitorFactory {
             try {
                 serverSocket = new ServerSocket(port);
             } catch ( IOException e ) {
-                Avrora.userError("GDBMonitor could not create socket on port "+port, e.getMessage());
+                Avrora.userError("GDBServer could not create socket on port "+port, e.getMessage());
             }
             // insert the startup probe at the beginning of the program
             simulator.insertProbe(new StartupProbe(), 0);
@@ -96,8 +111,16 @@ public class GDBServer extends MonitorFactory {
             }
         }
 
-        // keep executing commands until a continue is sent
-        synchronized void monitorLoop(String reply) {
+        /**
+         * The <code>commandLoop()</code> method reads commands from the GDB socket and executes
+         * them until a command causes the simulation to resume (e.g. a continue, step, etc). This
+         * method is called from within probes inserted into the simulation. Optionally, a reply
+         * can be sent before the command loop is entered. For example, a trap would need to send
+         * a "T05" reply to the remote gdb to signal that the simulation has stopped before waiting
+         * for commands.
+         * @param reply a reply to send before executing commands, if any
+         */
+        void commandLoop(String reply) {
             try {
                 if ( reply != null ) {
                     sendPacket(reply);
@@ -106,12 +129,13 @@ public class GDBServer extends MonitorFactory {
                 while ( true ) {
                     String command = readCommand();
                     if ( command == null ) {
-                        printer.println("Null command: stopping simulator");
-                        // TODO: report the hang up
+                        Terminal.println("GDBServer: null command, stopping simulator");
                         simulator.stop();
                         break;
                     }
-                    printer.println(" --> "+command);
+                    if ( printer.enabled )
+                        printer.println(" --> "+command);
+                    // execute the command: continue the program if the return value is true
                     if ( executeCommand(command) )
                         break;
                 }
@@ -120,6 +144,14 @@ public class GDBServer extends MonitorFactory {
             }
         }
 
+        /**
+         * The <code>executeCommand()</code> method executes a single command that has been read
+         * from the socket and packaged as a string. If the command should resume the simulation,
+         * this method will return <code>true</code>, and <code>false</code> otherwise.
+         * @param command the command packaged as a string
+         * @return true if the simulation should resume; false otherwise
+         * @throws IOException if there is a problem communicating over the socket
+         */
         boolean executeCommand(String command) throws IOException {
             CharacterIterator i = new StringCharacterIterator(command);
             if ( i.current() == '+' ) i.next();
@@ -134,11 +166,12 @@ public class GDBServer extends MonitorFactory {
             switch ( c ) {
                 case 'c':
                     // CONTINUE WITH EXECUTION
+                    // TODO: implement continue at address
                     sendPlus();
                     return true;
                 case 'D':
                     // DISCONNECT
-                    // TODO: do more work at disconnection time?
+                    Terminal.println("GDBServer: disconnected");
                     sendPlus();
                     simulator.stop();
                     return true;
@@ -148,9 +181,10 @@ public class GDBServer extends MonitorFactory {
                     return false;
                 case 'G':
                     // WRITE REGISTERS
+                    // TODO: implement update of registers
                     break;
                 case 'H':
-                    // TODO: more work at connection time?
+                    // SET THREAD CONTEXT -- THERE IS ONLY ONE
                     sendPacketOK("OK");
                     return false;
                 case 'i':
@@ -158,7 +192,7 @@ public class GDBServer extends MonitorFactory {
                     break;
                 case 'k':
                     // KILL
-                    // TODO: do more work at disconnection time?
+                    Terminal.println("GDBServer: killed remotely");
                     sendPlus();
                     simulator.stop();
                     return true;
@@ -167,20 +201,25 @@ public class GDBServer extends MonitorFactory {
                     return false;
                 case 'M':
                     // WRITE MEMORY
+                    // TODO: implement writes to memory
                     break;
                 case 'p':
                     // READ SELECTED REGISTERS
+                    readOneRegister(i);
                     break;
                 case 'P':
                     // WRITE SELECTED REGISTERS
+                    // TODO: implement writes to selected registers
                     break;
                 case 'q':
                     // QUERY A VARIABLE
+                    // TODO: implement queries to variables
                     break;
                 case 's':
                     // STEP INSTRUCTION
                     int pc = simulator.getState().getPC();
-                    printer.println("--INSERTING STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
+                    if ( printer.enabled )
+                        printer.println("--INSERTING STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
                     simulator.insertProbe(STEPPROBE, pc);
                     sendPlus();
                     return true;
@@ -193,7 +232,7 @@ public class GDBServer extends MonitorFactory {
                     setBreakPoint(i, true);
                     return false;
                 case '?':
-                    // TODO: is it ok to always reply with S05?
+                    // GET LAST SIGNAL
                     sendPacketOK("S05");
                     return false;
             }
@@ -203,16 +242,37 @@ public class GDBServer extends MonitorFactory {
             return false;
         }
 
+        /**
+         * The <code>sendPlus()</code> method is just a utility to send a plus '+' character
+         * back over the socket to signal to the remote party that the command was received
+         * successfully.
+         * @throws IOException if there is a problem communicating over the socket
+         */
         private void sendPlus() throws IOException {
             output.write((byte)'+');
         }
 
 
+        /**
+         * The <code>sendPlus()</code> method is just a utility to send a minus '-' character
+         * back over the socket to signal to the remote party that the command was NOT received
+         * successfully.
+         * @throws IOException if there is a problem communicating over the socket
+         */
         void commandError() throws IOException {
             output.write((byte)'-');
         }
 
+        /**
+         * The <code>setBreakPoint()</code> method inserts a breakpoint into the program. It does
+         * so by inserting a special probe that will call back into the <code>commandLoop()</code>
+         * before the instruction executes.
+         * @param i the iterator over the characters of the command
+         * @param on true if the breakpoint should be inserted; false if it should be removed
+         * @throws IOException if there is a problem communicating over the socket
+         */
         void setBreakPoint(CharacterIterator i, boolean on) throws IOException {
+            // TODO: deal with length as well!
             char num = i.current();
             i.next();
             switch ( num ) {
@@ -236,6 +296,12 @@ public class GDBServer extends MonitorFactory {
             sendPacketOK("");
         }
 
+        /**
+         * The <code>setBreakPoint()</code> method simply inserts or removes the breakpoint probe
+         * at the given location
+         * @param addr the address of the breakpoint
+         * @param on true if the breakpoint should be enabled, false if it should be disabled
+         */
         void setBreakPoint(int addr, boolean on) {
             if ( on )
                 simulator.insertProbe(BREAKPROBE, addr);
@@ -243,29 +309,90 @@ public class GDBServer extends MonitorFactory {
                 simulator.removeProbe(BREAKPROBE, addr);
         }
 
+        /**
+         * The <code>readAllRegisters()</code> method simply reads the values of all the general
+         * purpose registers as well as the SREG, SP, and PC registers and sends them back over the
+         * socket.
+         * @throws IOException if there is a problem communicating over the socket
+         */
         void readAllRegisters() throws IOException {
             StringBuffer buf = new StringBuffer(84);
             State s = simulator.getState();
             for ( int cntr = 0; cntr < 32; cntr++ ) {
-                byte value = s.getRegisterByte(Register.getRegisterByNumber(cntr));
-                buf.append(StringUtil.toHex(value & 0xff, 2));
+                appendGPR(s, cntr, buf);
             }
-            buf.append(StringUtil.toHex(s.getSREG() & 0xff, 2));
-            buf.append(StringUtil.toHex(s.getSP() & 0xff, 2));
-            buf.append(StringUtil.toHex((s.getSP() >> 8) & 0xff, 2));
+            appendSREG(s, buf);
+            appendSP(s, buf);
+            appendPC(s, buf);
+            sendPacketOK(buf.toString());
+        }
+
+        private void appendPC(State s, StringBuffer buf) {
             int pc = s.getPC();
             buf.append(StringUtil.toHex(pc, 2));
             buf.append(StringUtil.toHex(pc >> 8, 2));
             buf.append(StringUtil.toHex(pc >> 16, 2));
             buf.append(StringUtil.toHex(pc >> 24, 2));
+        }
+
+        private void appendSP(State s, StringBuffer buf) {
+            buf.append(StringUtil.toHex(s.getSP() & 0xff, 2));
+            buf.append(StringUtil.toHex((s.getSP() >> 8) & 0xff, 2));
+        }
+
+        private void appendSREG(State s, StringBuffer buf) {
+            buf.append(StringUtil.toHex(s.getSREG() & 0xff, 2));
+        }
+
+        private void appendGPR(State s, int cntr, StringBuffer buf) {
+            byte value = s.getRegisterByte(Register.getRegisterByNumber(cntr));
+            buf.append(StringUtil.toHex(value & 0xff, 2));
+        }
+
+        /**
+         * The <code>readOneRegister()</code> method simply reads the value of one register
+         * given its number.
+         * @throws IOException if there is a problem communicating over the socket
+         */
+        void readOneRegister(CharacterIterator i) throws IOException {
+            StringBuffer buf = new StringBuffer(8);
+            State s = simulator.getState();
+
+            int num = StringUtil.readHexValue(i, 2);
+
+            if ( num < 32 ) {
+                // general purpose register
+                appendGPR(s, num, buf);
+            } else if ( num == 32 ) {
+                // SREG
+                appendSREG(s, buf);
+            } else if ( num == 33 ) {
+                // SP
+                appendSP(s, buf);
+            } else if ( num == 34 ) {
+                // PC
+                appendPC(s, buf);
+            } else {
+                // unknown register
+                buf.append("ERR");
+            }
+
             sendPacketOK(buf.toString());
         }
 
-        private static final int MEMMASK = 0xff0000;
+        private static final int MEMMASK = 0xf00000;
         private static final int MEMBEGIN = 0x800000;
 
+        /**
+         * The <code>readMemory()</code> method implements the memory read command that can read
+         * the values of SRAM, the registers, and the flash, depending on the linear address.
+         * @param i the iterator over the characters of the command
+         * @throws IOException if there is a problem communicating over the socket
+         */
         void readMemory(CharacterIterator i) throws IOException {
+            // read the address in memory
             int addr = StringUtil.readHexValue(i, 8);
+            // read the length if it exists
             int length = 1;
             if ( StringUtil.peekAndEat(i, ',') )
                 length = StringUtil.readHexValue(i, 8);
@@ -287,15 +414,26 @@ public class GDBServer extends MonitorFactory {
                 }
             }
 
-
             sendPacketOK(buf.toString());
         }
 
+        /**
+         * The <code>sendPacketOK()</code> method sends a string packet with a preceding
+         * plus '+' character.
+         * @param s the string packet to send
+         * @throws IOException if there is a problem communicating over the socket
+         */
         void sendPacketOK(String s) throws IOException {
             sendPlus();
             sendPacket(s);
         }
 
+        /**
+         * The <code>sendPacket()</code> method sends a string packet over the socket, prepending
+         * the '$' and computing the checksum of the packet
+         * @param packet the string packet to send
+         * @throws IOException if there is a problem communicating over the socket
+         */
         void sendPacket(String packet) throws IOException {
             byte[] bytes = packet.getBytes();
 
@@ -303,11 +441,20 @@ public class GDBServer extends MonitorFactory {
             for ( int cntr = 0; cntr < bytes.length; cksum += bytes[cntr++] ) ;
 
             String np = "$"+packet+"#"+StringUtil.toHex(cksum & 0xff, 2);
-            printer.println("   <-- "+np+"");
+            if ( printer.enabled )
+                printer.println("   <-- "+np+"");
 
             output.write(np.getBytes());
         }
 
+        /**
+         * The <code>readCommand()</code> method reads a command from the socket. The command
+         * consists of an optional plus '+' signalling correct reception of the previous packet,
+         * followed by a '$', the packet, then '#' and the one byte checksum as a two-character
+         * hex value.
+         * @return a string representation of the command
+         * @throws IOException if there is a problem communicating over the socket
+         */
         String readCommand() throws IOException {
                 int i = input.read();
                 if ( i < 0 ) return null;
@@ -331,24 +478,28 @@ public class GDBServer extends MonitorFactory {
                 }
         }
 
-        //---------------------------------------------------------------------------
-        //-- Probe inserted at beginning of program to wait for GDB connection
-        //---------------------------------------------------------------------------
+        /**
+         * The <code>StartupProbe</code> is a probe inserted at the beginning of the program that
+         * will stop the simulation in order to wait for GDB to connect to Avrora.
+         */
         protected class StartupProbe implements Simulator.Probe {
             public void fireBefore(Instr i, int address, State s) {
-                printer.println("--IN STARTUP PROBE @ "+StringUtil.addrToString(address)+"--");
-                printer.println("GDBMonitor listening on port "+port+"...");
+                if ( printer.enabled ) {
+                    printer.println("--IN STARTUP PROBE @ "+StringUtil.addrToString(address)+"--");
+                    Terminal.println("GDBServer listening on port "+port+"...");
+                }
                 try {
                     socket = serverSocket.accept();
                     input = socket.getInputStream();
                     output = socket.getOutputStream();
-                    printer.println("Connected established with: "+socket.getInetAddress().getCanonicalHostName());
+                    if ( printer.enabled )
+                        printer.println("Connection established with: "+socket.getInetAddress().getCanonicalHostName());
                     serverSocket.close();
                 } catch ( IOException e ) {
                     throw Avrora.failure("Unexpected IOException: "+e);
                 }
 
-                monitorLoop(null);
+                commandLoop(null);
             }
 
             public void fireAfter(Instr i, int address, State s) {
@@ -357,10 +508,16 @@ public class GDBServer extends MonitorFactory {
             }
         }
 
+        /**
+         * The <code>BreakpointProbe</code> is a probe inserted at a breakpoint that calls
+         * the <code>commandLoop()</code> method before the target instruction is executed, thus
+         * implementing a breakpoint.
+         */
         protected class BreakpointProbe implements Simulator.Probe {
             public void fireBefore(Instr i, int address, State s) {
-                printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(address)+"--");
-                monitorLoop("T05");
+                if ( printer.enabled )
+                    printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(address)+"--");
+                commandLoop("T05");
             }
 
             public void fireAfter(Instr i, int address, State s) {
@@ -368,25 +525,42 @@ public class GDBServer extends MonitorFactory {
             }
         }
 
+        /**
+         * The <code>StepProbe</code> class implements a probe that is used to step by a single
+         * instruction. It calls the <code>commandLoop()</code> method after the target instruction
+         * executes, thus stepping by only a single instruction.
+         */
         protected class StepProbe implements Simulator.Probe {
             public void fireBefore(Instr i, int address, State s) {
-                printer.println("--IN STEP PROBE @ "+StringUtil.addrToString(address)+"--");
+                if ( printer.enabled )
+                    printer.println("--IN STEP PROBE @ "+StringUtil.addrToString(address)+"--");
             }
 
             public void fireAfter(Instr i, int address, State s) {
-                printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(address)+"--");
-                monitorLoop("T05");
+                if ( printer.enabled )
+                    printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(address)+"--");
+                commandLoop("T05");
                 simulator.removeProbe(this, address);
             }
         }
 
     }
 
-
+    /**
+     * The constructor for the <code>GDBServer</code> class simply creates a new instance that
+     * is capable of creating monitors for simulators.
+     */
     public GDBServer() {
         super("gdb", HELP);
     }
 
+    /**
+     * The <code>newMonitor()</code> method creates a new monitor for the given simulator. The
+     * monitor waits for a connection from GDB and then implements the remote serial protocol,
+     * allowing GDB to control the Avrora simulation.
+     * @param s the simulator to create a monitor for
+     * @return a new <code>Monitor</code> instance for the specified simulator
+     */
     public Monitor newMonitor(Simulator s) {
         return new GDBMonitor(s, (int)PORT.get());
     }

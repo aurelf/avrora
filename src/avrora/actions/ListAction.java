@@ -48,6 +48,12 @@ public class ListAction extends Action {
         super("list", HELP);
     }
 
+    /**
+     * The <code>run()</code> method simply runs the listing action which dumps out the program
+     * onto the console.
+     * @param args the arguments to the list action, including the program to list
+     * @throws Exception
+     */
     public void run(String[] args) throws Exception {
         Program p = Main.readProgram(args);
         p.dump();

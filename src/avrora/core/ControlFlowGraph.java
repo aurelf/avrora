@@ -184,6 +184,10 @@ public class ControlFlowGraph {
             return address;
         }
 
+        /**
+         * The <code>getLastAddress()</code> gets the last address that this block covers.
+         * @return the last address that this block covers
+         */
         public int getLastAddress() {
             return last_address;
         }

@@ -44,11 +44,9 @@ import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
 /**
- * The <code>SimulateAction</code> implements the bridge between the functionality in the
- * <code>avrora.sim</code> package and the entrypoint to Avrora in <code>avrora.Main</code>. This class has a
- * <code>run()</code> method that is called by the main class after the options have been processed. The
- * <code>run()</code> reads in the program, processes breakpoints, profiling counters, and other options, and
- * begins the simulation.
+ * The <code>BenchmarkAction</code> class implements a stub of code that loads the program, runs
+ * it through the simulator several times to collect an average execution time, and reports the
+ * results. This is mostly used in evaluating the performance of the simulator.
  *
  * @author Ben L. Titzer
  */
@@ -78,7 +76,9 @@ public class BenchmarkAction extends SimAction {
 
 
     /**
-     * The <code>run()</code> method is called by the main class.
+     * The <code>run()</code> method is called by the main class. It loads the program, sets up
+     * the simulator according to the configuration, and begins running the simulator, reporting
+     * the average execution time.
      *
      * @param args the command line arguments after the options have been stripped out
      * @throws java.lang.Exception if there is a problem loading the program, or an exception occurs during

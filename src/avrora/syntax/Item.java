@@ -101,7 +101,7 @@ public abstract class Item {
         }
 
         public void simplify() {
-            module.addRegisterName(name.image, register.image);
+            module.addRegisterName(name.image, register);
         }
 
         public String toString() {

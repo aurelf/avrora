@@ -69,18 +69,42 @@ public class Architecture {
     List operands;
     List encodings;
 
+    /**
+     * The <code>InstrVisitor</code> interface is a simple interface that can be used to iterate
+     * over the instructions declared in the instruction set specification. A class implementing
+     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
+     * pass itself as a parameter.
+     */
     public interface InstrVisitor {
         public void visit(InstrDecl d);
     }
 
+    /**
+     * The <code>SubroutineVisitor</code> interface is a simple interface that can be used to iterate
+     * over the subroutines declared in the instruction set specification. A class implementing
+     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
+     * pass itself as a parameter.
+     */
     public interface SubroutineVisitor {
         public void visit(SubroutineDecl d);
     }
 
+    /**
+     * The <code>OperandVisitor</code> interface is a simple interface that can be used to iterate
+     * over the operands declared in the instruction set specification. A class implementing
+     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
+     * pass itself as a parameter.
+     */
     public interface OperandVisitor {
         public void visit(OperandDecl d);
     }
 
+    /**
+     * The <code>EncodingVisitor</code> interface is a simple interface that can be used to iterate
+     * over the encodings declared in the instruction set specification. A class implementing
+     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
+     * pass itself as a parameter.
+     */
     public interface EncodingVisitor {
         public void visit(EncodingDecl d);
     }
@@ -93,6 +117,11 @@ public class Architecture {
     public interface Visitor extends InstrVisitor, SubroutineVisitor, OperandVisitor, EncodingVisitor {
     }
 
+    /**
+     * The constructor for the <code>Architecture</code> class creates an instance with the specified
+     * name that is empty and ready to receive new instruction declarations, encodings, etc.
+     * @param n
+     */
     public Architecture(Token n) {
         name = n;
 

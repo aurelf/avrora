@@ -58,6 +58,7 @@ import java.util.*;
  * @author Ben L. Titzer
  */
 public abstract class SimAction extends Action {
+
     public final Option.Long ICOUNT = newOption("icount", 0,
             "This option is used to terminate the " +
             "simulation after the specified number of instructions have been executed.");
@@ -112,6 +113,7 @@ public abstract class SimAction extends Action {
         //add energy profile monitor to the list 
         addNewMonitorType(new EnergyProfiler());
         addNewMonitorType(new PacketMonitor());
+        addNewMonitorType(new GDBServer());
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }
@@ -149,14 +151,38 @@ public abstract class SimAction extends Action {
         return pff;
     }
 
+    /**
+     * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
+     * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
+     * cycles) in a colorized and standardized way.
+     * @param name the name of the quantity as a string
+     * @param val the value of the quantity as a long integer
+     * @param units the name of the units as a string
+     */
     protected void reportQuantity(String name, long val, String units) {
         reportQuantity(name, Long.toString(val), units);
     }
 
+    /**
+     * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
+     * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
+     * cycles) in a colorized and standardized way.
+     * @param name the name of the quantity as a string
+     * @param val the value of the quantity as a floating point number
+     * @param units the name of the units as a string
+     */
     protected void reportQuantity(String name, float val, String units) {
         reportQuantity(name, Float.toString(val), units);
     }
 
+    /**
+     * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
+     * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
+     * cycles) in a colorized and standardized way.
+     * @param name the name of the quantity as a string
+     * @param val the value of the quantity as a string
+     * @param units the name of the units as a string
+     */
     protected void reportQuantity(String name, String val, String units) {
         Terminal.printGreen(name);
         Terminal.print(": ");
@@ -194,18 +220,22 @@ public abstract class SimAction extends Action {
      *         and has monitors attached to as specified on the command line
      */
     protected Simulator newSimulator(Program p) {
-        InterpreterFactory factory;
         //--BEGIN EXPERIMENTAL: dbbc
         if (DBBC.get()) {
-            factory = new DBBCInterpreter.Factory(new DBBC(p, options));
-        } else
+            return newSimulator(new DBBCInterpreter.Factory(new DBBC(p, options)), p);
+        }
         //--END EXPERIMENTAL: dbbc
-            factory = new GenInterpreter.Factory();
-
-
-        return newSimulator(factory, p);
+        return newSimulator(new GenInterpreter.Factory(), p);
     }
 
+    /**
+     * The <code>newSimulator()</code> method is a simple utility used by actions deriving from this
+     * class that creates a new <code>Simulator</code> with the correct configuration, with the specified
+     * program, and then applies timeouts, breakpoints, and monitors to it.
+     * @param factory the factory that creates the interpreter for the simulator
+     * @param p the program to load onto the simulator
+     * @return a new <code>Simulator</code> instance
+     */
     protected Simulator newSimulator(InterpreterFactory factory, Program p) {
         Simulator simulator;
         PlatformFactory pf = getPlatform();
@@ -229,6 +259,12 @@ public abstract class SimAction extends Action {
         return simulator;
     }
 
+    /**
+     * The <code>processTimeout()</code> method simply checks the command line arguments that
+     * correspond to timeouts (such as clock cycles, seconds, or instructions) and inserts
+     * the appropriate probes into the simulator.
+     * @param s
+     */
     protected void processTimeout(Simulator s) {
         if (TIMEOUT.get() > 0)
             s.insertTimeout(TIMEOUT.get());
@@ -287,6 +323,10 @@ public abstract class SimAction extends Action {
         return loclist;
     }
 
+    /**
+     * The <code>printSimHeader()</code> method simply prints the first line of output that names
+     * the columns for the events outputted by the rest of the simulation.
+     */
     protected void printSimHeader() {
         Terminal.printGreen("Node       Time   Event");
         Terminal.nextln();
@@ -297,6 +337,11 @@ public abstract class SimAction extends Action {
         Terminal.printSeparator(78);
     }
 
+    /**
+     * The <code>initializeSimulatorStatics()</code> method simply checks a few command line
+     * parameters and initializes the <code>Simulator</code> class's static variables that relate
+     * to reporting time, etc.
+     */
     protected void initializeSimulatorStatics() {
         Simulator.REPORT_SECONDS = REPORT_SECONDS.get();
         Simulator.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();

@@ -34,6 +34,8 @@
  */
 package avrora.util;
 
+import avrora.Avrora;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -116,9 +118,7 @@ public class Visual {
         try {
             out.write(data.getBytes());
         } catch (IOException e) {
-            Terminal.println("cannot write data");
-            e.printStackTrace();
-            System.exit(1);
+            throw Avrora.failure("cannot write data: "+e);
         }
 
     }

@@ -114,7 +114,7 @@ public class ProfileMonitor extends MonitorFactory {
 
                 // format the results appropriately (columnar)
                 String cnt = StringUtil.rightJustify(curcount, 8);
-                float pcnt = (float)(100 * cumulcycles / totalcycles);
+                float pcnt = (100 * cumulcycles / totalcycles);
                 String percent = "";
                 String addr;
                 if (runlength > 1) {

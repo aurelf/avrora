@@ -104,6 +104,14 @@ public class MultiSimulateAction extends SimAction {
     Program program;
     LinkedList simulatorThreadList = new LinkedList();
 
+    /**
+     * The <code>run()</code> method starts the multiple node simulation. It accepts command line
+     * arguments that are a list of programs. The programs are instantiating on nodes according to
+     * the -nodecount option, which specifies a list of the number of nodes to instantiate with
+     * each program. Optionally, a topology file can be specified.
+     * @param args the arguments to the action, including a list of programs
+     * @throws Exception
+     */
     public void run(String[] args) throws Exception {
 
         initializeSimulatorStatics();

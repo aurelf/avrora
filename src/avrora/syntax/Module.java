@@ -337,9 +337,12 @@ public class Module implements Context {
         constants.put(labelName(name), new Integer(value));
     }
 
-    public void addRegisterName(String name, String reg) {
-        // TODO: error check for invalid register name
-        definitions.put(labelName(name), Register.getRegisterByName(reg));
+    public void addRegisterName(String name, AbstractToken reg) {
+        Register register = Register.getRegisterByName(reg.image);
+        if ( register == null )
+            ERROR.UnknownRegister(reg);
+
+        definitions.put(labelName(name), register);
     }
 
     public Register getRegister(AbstractToken tok) {

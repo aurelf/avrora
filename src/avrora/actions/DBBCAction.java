@@ -43,6 +43,9 @@ import avrora.util.StringUtil;
 import java.util.Iterator;
 
 /**
+ * The <code>DBBCAction</code> class contains a simple test action where a program can be loaded
+ * and compiled to Java source by the DBBC and that source is output on the console. This is
+ * mostly used for testing the DBBC.
  * @author Ben L. Titzer
  */
 public class DBBCAction extends Action {
@@ -54,6 +57,12 @@ public class DBBCAction extends Action {
         super("dbbc", HELP);
     }
 
+    /**
+     * The <code>run()</code> method starts the DBBC test with the given program. The program is
+     * compiled to Java source and each compiled block is output to the console.
+     * @param args the arguments from the command line to the DBBC test program
+     * @throws Exception
+     */
     public void run(String[] args) throws Exception {
         Printer printer = Printer.STDOUT;
         PrettyPrinter pp = new PrettyPrinter(printer);

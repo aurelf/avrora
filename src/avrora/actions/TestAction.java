@@ -49,6 +49,11 @@ public class TestAction extends Action {
         super("test", HELP);
     }
 
+    /**
+     * The <code>run()</code> method starts the test harness and begins processing test cases.
+     * @param args the command line arguments; files containing tests to be run
+     * @throws Exception
+     */
     public void run(String[] args) throws Exception {
         new AutomatedTester().runTests(args);
     }
