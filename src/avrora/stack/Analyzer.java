@@ -61,17 +61,17 @@ public class Analyzer {
     protected final Verbose.Printer printer = Verbose.getVerbosePrinter("stack.phases");
 
     protected final Program program;
-    protected final StateCache space;
+    protected final StateTransitionGraph graph;
     ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
-    protected HashMap propmap;
-    protected HashMap altpropmap;
-    protected int propprogress;
-    protected int maxpropdepth;
     protected int retCount;
     protected int retiCount;
+    protected int newRetCount;
+    protected int newEdgeCount;
 
-    protected HashMap aggregationPoints;
+    protected StateTransitionGraph.StateList newReturnStates;
+    protected StateTransitionGraph.StateList allReturnStates;
+    protected StateTransitionGraph.EdgeList newEdges;
 
     long buildTime;
     long traverseTime;
@@ -100,11 +100,9 @@ public class Analyzer {
 
     public Analyzer(Program p) {
         program = p;
-        space = new StateCache(p);
+        graph = new StateTransitionGraph(p);
         policy = new ContextSensitivePolicy();
         interpreter = new AbstractInterpreter(program, policy);
-        aggregationPoints = new HashMap();
-        propmap = new HashMap();
         equivClasses = new LinkedList[256];
     }
 
@@ -135,7 +133,6 @@ public class Analyzer {
 
     private void outOfMemory() {
         running = false;
-        altpropmap = null;
 
         Terminal.nextln();
         Terminal.printRed("Stack Analyzer Error");
@@ -144,12 +141,12 @@ public class Analyzer {
         printStatHeader();
         printStats();
 
-        propmap = null;
         analyzeAggregationPoints();
         analyzeStates();
     }
 
     private void analyzeAggregationPoints() {
+/*
         Distribution sizeDist = new Distribution("Distribution of set size", "Number of sets", "Total elements", "Distribution");
         Iterator i = aggregationPoints.values().iterator();
         while ( i.hasNext() ) {
@@ -166,10 +163,11 @@ public class Analyzer {
 
         countDist.processData();
         countDist.textReport();
+*/
     }
 
     private void analyzeStates() {
-        Iterator i = space.getStateIterator();
+        Iterator i = graph.getStateCache().getStateIterator();
         Distribution pcDist = new Distribution("Distribution of program states over PC", "Number of unique instructions", null, "Distribution");
         while ( i.hasNext() ) {
             StateCache.State s = (StateCache.State)i.next();
@@ -214,34 +212,39 @@ public class Analyzer {
 
     }
 
+    private long numSets;
+    private long numElems;
+
     private void printStats() {
-        print_just_9(space.getFrontierCount());
-        print_just_9(space.getStatesInSpaceCount());
-        print_just_9(space.getTotalEdgeCount());
-        print_just_9(aggregationPoints.size());
-        print_just_12(countAggregElems());
+        print_just_9(graph.getFrontierCount());
+        print_just_9(graph.getExploredCount());
+        print_just_9(graph.getEdgeCount());
+        countAggregElems();
+        print_just_9(numSets);
+        print_just_12(numElems);
         String s = Long.toString(retCount)+"/"+Long.toString(retiCount);
         Terminal.print(StringUtil.rightJustify(s,12));
-        print_just_9(propmap.size());
-        print_just_9(propprogress);
-        print_just_9(maxpropdepth);
+        print_just_9(newRetCount);
+        print_just_9(newEdgeCount);
         Terminal.nextln();
     }
 
-    private long countAggregElems() {
-        long count = 0;
-        synchronized ( aggregationPoints) {
-            Iterator i = aggregationPoints.values().iterator();
-            while ( i.hasNext() ) {
-                HashSet set = (HashSet)i.next();
-                count += set.size();
+    private void countAggregElems() {
+        numElems = 0;
+        numSets = 0;
+        /*
+        Iterator i = graph.getStateCache().getStateIterator();
+        while ( i.hasNext() ) {
+            StateCache.State s = (StateCache.State)i.next();
+            if ( s.info.stateSet != null ) {
+                numElems += s.info.stateSet.size();
+                numSets++;
             }
-        }
-        return count;
+        }*/
     }
 
     private void printStatHeader() {
-        Terminal.printBrightGreen(" Frontier Explored    Edges   Aggreg       Elems      ret(i)  Pending     Prop Diameter");
+        Terminal.printBrightGreen(" Frontier Explored    Edges   Aggreg       Elems      ret(i)   Pend-R   Pend-E");
         Terminal.nextln();
         Terminal.printSeparator(88);
     }
@@ -267,20 +270,19 @@ public class Analyzer {
      * are no new propagations to be performed.
      */
     protected void buildReachableStateSpace() {
-        StateCache.State s = space.getEdenState();
+        StateCache.State s = graph.getNextFrontierState();
 
-        while ( s != null || propmap.size() != 0) {
-            if ( s != null )
+        while ( true ) {
+            if ( s != null ) {
                 processFrontierState(s);
-            else {
-                if ( printer.enabled ) {
-                    printer.println("Exhausted frontier list...beginning propagation");
-                    printStatHeader();
-                    printStats();
-                }
-                processPropagationList();
+            } else if ( newReturnStates != null ) {
+                processNewReturns();
+            } else if ( newEdges != null ) {
+                processNewEdges();
+            } else {
+                break;
             }
-            s = space.getFrontierState();
+            s = graph.getNextFrontierState();
         }
     }
 
@@ -291,125 +293,94 @@ public class Analyzer {
      * and new return state are inserted and any new return states
      * are pushed onto the frontier.
      */
-    protected void processPropagationList() {
-        altpropmap = propmap;
-        propmap = new HashMap();
-        propprogress = altpropmap.size();
-        // process the list of propagations to be done;
-        // propagate calling states to reachable return states
-        Iterator i = altpropmap.keySet().iterator();
-        while ( i.hasNext() ) {
-            StateCache.State target = (StateCache.State)i.next();
-            HashSet callers = (HashSet)altpropmap.get(target);
-            i.remove();
-
-            if ( TRACE ) {
-                Terminal.print("Propagating {");
-                String cl = StringUtil.commalist(new LinkedList(callers));
-                Terminal.print(cl);
-                Terminal.print("} to ");
-                StatePrinter.printStateName(target);
-                Terminal.nextln();
-            }
-            propagate(target, callers);
-            propprogress--;
-        }
-        altpropmap = null;
-    }
-
-    /**
-     * The <code>propagate()</code> method propagates a list of new callers to
-     * the return states reachable through the given target state.
-     * @param t the target state at which to begin propagating the callers
-     * @param newCalls the set of callers to propagate to the reachable return
-     * states
-     */
-    private void propagate(StateCache.State t, HashSet newCalls) {
-        propagate(t, newCalls, new Object(), 0);
-    }
-
-    /**
-     * The <code>newAggregationPoint()</code> method creates a new cache
-     * at the specified state. The cache stores the calling states that
-     * can reach this state transitively. Call points are aggregation points:
-     * since a call point may at some time in the future have a new outgoing
-     * edge added, it must propagate its own callers to the new successor.
-     * Return points are also aggregation points, to guard against adding
-     * return edges multiple times
-     * @param t the state to make into a new aggregation point
-     */
-    private void newAggregationPoint(StateCache.State t) {
-        if ( aggregationPoints.containsKey(t) ) return;
-        synchronized ( aggregationPoints ) {
-            aggregationPoints.put(t, new HashSet());
+    protected void processNewReturns() {
+        while ( newReturnStates != null ) {
+            StateCache.State state = newReturnStates.state;
+            propagateOneBackwards(state, state, state.copy(), new Object());
+            newReturnStates = newReturnStates.next;
+            newRetCount--;
         }
     }
 
-    // propagate call sites to all reachable return states
-    private void propagate(StateCache.State t, HashSet newCalls, Object mark, int depth) {
-        if ( depth > maxpropdepth ) maxpropdepth = depth;
+    protected void processNewEdges() {
+        while ( newEdges != null ) {
+            StateTransitionGraph.Edge edge = newEdges.edge;
+            newEdges = newEdges.next;
+            HashSet set = edge.target.info.stateSet;
+            if ( set != null && set.size() > 0 )
+                propagateSetBackwards(edge.source, edge.target.info.stateSet, new Object());
+            newEdgeCount--;
+        }
+    }
 
+    // propagate return state back through the graph to callers
+    private void propagateOneBackwards(StateCache.State t, StateCache.State rt, MutableState copy, Object mark) {
         // visited this node already?
         if (t.mark == mark) return;
         t.mark = mark;
 
-        // return state? if so, set up call edges
-        if ( t.getType() != NORMAL_STATE ) {
-            processCalls(newCalls, t);
+        StateTransitionGraph.StateInfo info = t.info;
+        if ( info.stateSet == null )
+            info.stateSet = new HashSet();
+        else if ( info.stateSet.contains(rt) )
             return;
-        }
 
-        // if the target is an aggregation point, add all of them
-        HashSet agg = getCallers(t);
-        if ( agg != null ) {
-            // if we have seen all of these calls, return
-            if ( agg.containsAll(newCalls) ) return;
-            agg.addAll(newCalls);
-        }
+        info.stateSet.add(rt);
 
-        for (StateCache.Link link = t.outgoing; link != null; link = link.next) {
+        for (StateTransitionGraph.Edge edge = info.backwardEdges; edge != null; edge = edge.backwardLink) {
 
-            // do not follow call edges
-            if (link.type == CALL_EDGE) continue;
-
-            // propagate these calls to all children
-            propagate(link.target, newCalls, mark, depth + 1);
-        }
-
-        // if we have reached a state on the frontier, these calls must be
-        // propagated to it and its successors in a later phase
-        if ( space.isFrontier(t) ) {
-            post(t, newCalls);
-        }
-    }
-
-    private HashSet getCallers(StateCache.State t) {
-        return (HashSet)aggregationPoints.get(t);
-    }
-
-    private void processCalls(HashSet newCalls, StateCache.State retstate) {
-        HashSet prevcallers = getCallers(retstate);
-        if ( prevcallers == null ) {
-            throw Avrora.failure("State should be an aggregation point: "+retstate.getUniqueName());
-        }
-
-        MutableState rstate = retstate.copy();
-        boolean interrupt = retstate.getType() == RETI_STATE;
-
-        Iterator i = newCalls.iterator();
-        while ( i.hasNext() ) {
-            StateCache.State caller = (StateCache.State)i.next();
-            if ( !prevcallers.contains(caller) ) {
-                addReturnEdge(caller, rstate, interrupt);
+            if (edge.type == CALL_EDGE) {
+                // found a call edge: we need to connect this caller to a new return state
+                insertReturnEdge(edge.source, copy, rt.getType() == RETI_STATE);
+            } else {
+                // propagate this return state backwards
+                propagateOneBackwards(edge.source, rt, copy, mark);
             }
         }
     }
 
-    private void addReturnEdge(StateCache.State caller, MutableState rstate, boolean interrupt) {
+    // propagate return state back through the graph to callers
+    private void propagateSetBackwards(StateCache.State t, HashSet rset, Object mark) {
+        // visited this node already?
+        if (t.mark == mark) return;
+        t.mark = mark;
+
+        StateTransitionGraph.StateInfo info = t.info;
+        if ( info.stateSet == null )
+            info.stateSet = new HashSet();
+        else if ( info.stateSet.containsAll(rset) )
+            return;
+
+        info.stateSet.addAll(rset);
+
+        for (StateTransitionGraph.Edge edge = info.backwardEdges; edge != null; edge = edge.backwardLink) {
+
+            if (edge.type == CALL_EDGE) {
+                // found a call edge: we need to connect this caller to the new return states
+                insertReturnEdges(edge.source, edge.target.info.stateSet, rset);
+            } else {
+                // propagate these calls to all children
+                propagateSetBackwards(edge.source, rset, mark);
+            }
+        }
+    }
+
+    private void insertReturnEdges(StateCache.State caller, HashSet prev, HashSet rset) {
+        Iterator i = rset.iterator();
+        while ( i.hasNext() ) {
+            Object o = i.next();
+            if ( !prev.contains(o) ) {
+                StateCache.State rs = (StateCache.State)o;
+                insertReturnEdge(caller, rs.copy(), rs.getType() == RETI_STATE);
+            }
+        }
+    }
+
+    private void insertReturnEdge(StateCache.State caller, MutableState rstate, boolean reti) {
         int cpc = caller.getPC();
         int npc;
 
-        if ( interrupt ) {
+        if ( reti ) {
             npc = cpc;
             rstate.setFlag_I(AbstractArithmetic.TRUE);
         } else {
@@ -417,50 +388,27 @@ public class Analyzer {
         }
 
         rstate.setPC(npc);
-        StateCache.State t = space.getStateFor(rstate);
+        StateCache.State t = graph.getCachedState(rstate);
 
         if ( TRACE ) {
             printFullState("Adding return edge", t);
             traceProducedState(t);
         }
 
-        if (!space.isExplored(t)) {
-            space.addFrontier(t);
-        }
-        // set up the return edge
-        space.addEdge(caller, t);
-        // post caller's callers to the returned state
-        post(t, getCallers(caller));
-    }
+        int type = reti ? RETI_EDGE : RET_EDGE;
+        StateTransitionGraph.Edge edge = graph.addEdge(caller, type, 0, t);
 
-    private void post(StateCache.State state, HashSet callers) {
-        if ( altpropmap != null ) {
-            HashSet set = (HashSet)altpropmap.get(state);
-            if ( set != null ) {
-                set.addAll(callers);
-                return;
-            }
-        }
-
-        HashSet set = (HashSet)propmap.get(state);
-        if ( set == null ) {
-            set = (HashSet)callers.clone();
-            propmap.put(state, set);
+        if (!graph.isExplored(t)) {
+            graph.addFrontierState(t);
         } else {
-            set.addAll(callers);
+            postNewEdge(edge);
         }
     }
 
-    private void post(StateCache.State state, StateCache.State caller) {
-        HashSet set = (HashSet)propmap.get(state);
-        if ( set == null ) {
-            set = new HashSet();
-            propmap.put(state, set);
-        }
-
-        set.add(caller);
+    private void postNewEdge(StateTransitionGraph.Edge edge) {
+        newEdges = new StateTransitionGraph.EdgeList(edge, newEdges);
+        newEdgeCount++;
     }
-
 
     private void processFrontierState(StateCache.State s) {
         traceState(s);
@@ -470,7 +418,7 @@ public class Analyzer {
         policy.edgeType = NORMAL_EDGE;
 
         // add this to explored states
-        space.addState(s);
+        graph.setExplored(s);
 
         // compute the possible next states
         interpreter.computeNextStates(s);
@@ -480,7 +428,7 @@ public class Analyzer {
         // the stack hashmap contains a mapping between states on the stack
         // and the current stack depth at which they are being explored
         HashMap stack = new HashMap();
-        StateCache.State state = space.getEdenState();
+        StateCache.State state = graph.getEdenState();
 
         try {
             maximalPath = findMaximalPath(state, stack, 0);
@@ -492,14 +440,12 @@ public class Analyzer {
 
     private class Path {
         final int depth;
-        final StateCache.State state;
-        final StateCache.Link link;
+        final StateTransitionGraph.Edge edge;
         final Path tail;
 
-        Path(int d, StateCache.State s, StateCache.Link l, Path p) {
-            state = s;
+        Path(int d, StateTransitionGraph.Edge e, Path p) {
             depth = d;
-            link = l;
+            edge = e;
             tail = p;
         }
     }
@@ -523,51 +469,51 @@ public class Analyzer {
 
         int maxdepth = 0;
         Path maxtail = null;
-        StateCache.Link maxlink = null;
-        for (StateCache.Link link = s.outgoing; link != null; link = link.next) {
+        StateTransitionGraph.Edge maxedge = null;
+        for (StateTransitionGraph.Edge edge = s.info.forwardEdges; edge != null; edge = edge.forwardLink) {
 
-            StateCache.State t = link.target;
+            StateCache.State t = edge.target;
             if (stack.containsKey(t)) {
                 // cycle detected. check that the depth when reentering is the same
                 int prevdepth = ((Integer) stack.get(t)).intValue();
-                if (depth + link.weight != prevdepth) {
+                if (depth + edge.weight != prevdepth) {
                     stack.remove(s);
-                    throw new UnboundedStackException(new Path(depth + link.weight, s, link, null));
+                    throw new UnboundedStackException(new Path(depth + edge.weight, edge, null));
                 }
             } else {
                 Path tail;
 
-                if (link.target.mark instanceof Path) {
+                if (edge.target.mark instanceof Path) {
                     // node has already been visited and marked with the
                     // maximum amount of stack depth that it can add.
-                    tail = ((Path) link.target.mark);
+                    tail = ((Path) edge.target.mark);
                 } else {
                     // node has not been seen before, traverse it
                     try {
-                        tail = findMaximalPath(link.target, stack, depth + link.weight);
+                        tail = findMaximalPath(edge.target, stack, depth + edge.weight);
                     } catch ( UnboundedStackException e) {
                         // this node is part of an unbounded cycle, add it to the path
                         // and rethrow the exception
-                        e.path = new Path(depth + link.weight, s, link, e.path);
+                        e.path = new Path(depth + edge.weight, edge, e.path);
                         stack.remove(s);
                         throw e;
                     }
                 }
 
-                // compute maximum added stack depth by following this link
-                int extra = link.weight + tail.depth;
+                // compute maximum added stack depth by following this edge
+                int extra = edge.weight + tail.depth;
 
                 // remember the most added stack depth from following any of the links
                 if (extra > maxdepth) {
                     maxdepth = extra;
                     maxtail = tail;
-                    maxlink = link;
+                    maxedge = edge;
                 }
             }
         }
         // we are finished with this node, remember how much deeper it can take us
         stack.remove(s);
-        Path maxpath = new Path(maxdepth, s, maxlink, maxtail);
+        Path maxpath = new Path(maxdepth, maxedge, maxtail);
         s.mark = maxpath;
         return maxpath;
     }
@@ -609,20 +555,22 @@ public class Analyzer {
     private void printPath(Path p) {
         int depth = 0;
         int cntr = 1;
-        for ( Path path = p; path != null && path.link != null; path = path.tail ) {
+        for ( Path path = p; path != null && path.edge != null; path = path.tail ) {
 
-            if ( cntr > 1 && TRACE_SUMMARY && path.link.weight == 0 ) {
-                int pc = path.state.getPC();
-                if ( path.link.target.getPC() == program.getNextPC(pc) ) {
+            StateTransitionGraph.Edge edge = path.edge;
+
+            if ( cntr > 1 && TRACE_SUMMARY && edge.weight == 0 ) {
+                int pc = edge.source.getPC();
+                if ( edge.target.getPC() == program.getNextPC(pc) ) {
                     cntr++;
                     continue;
                 }
             }
 
-            printFullState("["+cntr+"] Depth: "+depth, path.state);
+            printFullState("["+cntr+"] Depth: "+depth, edge.source);
             Terminal.print("    ");
-            StatePrinter.printEdge(path.link.type, path.link.weight, path.link.target);
-            depth += path.link.weight;
+            StatePrinter.printEdge(edge.type, edge.weight, edge.target);
+            depth += edge.weight;
             cntr++;
         }
     }
@@ -630,6 +578,11 @@ public class Analyzer {
     private void printQuantity(String q, String v) {
         Terminal.printBrightGreen(q);
         Terminal.println(": " + v);
+    }
+
+    private void postReturnState(StateCache.State rs) {
+        newReturnStates = new StateTransitionGraph.StateList(rs, newReturnStates);
+        newRetCount++;
     }
 
     /**
@@ -663,8 +616,8 @@ public class Analyzer {
         public MutableState call(MutableState s, int target_address) {
             s.setPC(target_address);
             addEdge(frontierState, CALL_EDGE, s);
-            newAggregationPoint(frontierState);
-            post(space.getStateFor(s), frontierState);
+//            newAggregationPoint(frontierState);
+//            post(graph.getCachedState(s), frontierState);
 
             // do not continue abstract interpretation after this state; edges will
             // be inserted later that represent possible return states
@@ -684,8 +637,8 @@ public class Analyzer {
             s.setFlag_I(AbstractArithmetic.FALSE);
             s.setPC((num - 1) * 4);
             addEdge(frontierState, INT_EDGE, s);
-            newAggregationPoint(frontierState);
-            post(space.getStateFor(s), frontierState);
+//            newAggregationPoint(frontierState);
+//            post(graph.getCachedState(s), frontierState);
 
             // do not continue abstract interpretation after this state; edges will
             // be inserted later that represent possible return states
@@ -705,7 +658,8 @@ public class Analyzer {
          */
         public MutableState ret(MutableState s) {
             frontierState.setType(RET_STATE);
-            newAggregationPoint(frontierState);
+            postReturnState(frontierState);
+//            newAggregationPoint(frontierState);
             retCount++;
 
             // do not continue abstract interpretation after this state; this state
@@ -723,7 +677,8 @@ public class Analyzer {
          */
         public MutableState reti(MutableState s) {
             frontierState.setType(RETI_STATE);
-            newAggregationPoint(frontierState);
+//            newAggregationPoint(frontierState);
+            postReturnState(frontierState);
             retiCount++;
 
             // do not continue abstract interpretation after this state; this state
@@ -859,7 +814,7 @@ public class Analyzer {
         }
 
         private void addEdge(StateCache.State from, int type, MutableState to) {
-            StateCache.State t = space.getStateFor(to);
+            StateCache.State t = graph.getCachedState(to);
             traceProducedState(t);
             addEdge(type, from, t, EDGE_DELTA[type]);
             pushFrontier(t);
@@ -869,21 +824,23 @@ public class Analyzer {
             // CASE 4: self loop
             if (t == frontierState) return;
 
-            if (space.isExplored(t)) {
+            if (graph.isExplored(t)) {
                 // CASE 3: state is already explored
                 // do nothing; propagation phase will push callers to reachable returns
-            } else if (space.isFrontier(t)) {
+            } else if (graph.isFrontier(t)) {
                 // CASE 2: state is already on frontier
                 // do nothing; propagation phase will push callers to reachable returns
             } else {
                 // CASE 1: new state, add to frontier
-                space.addFrontier(t);
+                graph.addFrontierState(t);
             }
         }
 
         private void addEdge(int type, StateCache.State s, StateCache.State t, int weight) {
             traceEdge(type, s, t, weight);
-            space.addEdge(s, t, type, weight);
+            StateTransitionGraph.Edge edge = graph.addEdge(s, type, weight, t);
+            if ( graph.isExplored(t) )
+                postNewEdge(edge);
         }
 
     }
@@ -913,9 +870,9 @@ public class Analyzer {
     private void traceProducedState(StateCache.State s) {
         if (TRACE) {
             String str;
-            if (space.isExplored(s)) {
+            if (graph.isExplored(s)) {
                 str = "        E ==> ";
-            } else if (space.isFrontier(s)) {
+            } else if (graph.isFrontier(s)) {
                 str = "        F ==> ";
 
             } else {

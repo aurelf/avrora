@@ -11,12 +11,22 @@ import java.util.List;
  */
 public class StateTransitionGraph {
 
-    private static class Link {
+    public static class StateList {
         public final StateCache.State state;
-        public final Link next;
+        public final StateList next;
 
-        Link(StateCache.State tar, Link n) {
+        StateList(StateCache.State tar, StateList n) {
             state = tar;
+            next = n;
+        }
+    }
+
+    public static class EdgeList {
+        public final Edge edge;
+        public final EdgeList next;
+
+        EdgeList(Edge tar, EdgeList n) {
+            edge = tar;
             next = n;
         }
     }
@@ -44,6 +54,12 @@ public class StateTransitionGraph {
         }
     }
 
+    /**
+     * The <code>StateInfo</code> class is a representation of both the forward and backward
+     * edge list corresponding to a node in the state transition graph. It also
+     * stores a cache of reachable return states (based on backwards reachability
+     * search).
+     */
     public static class StateInfo {
         public final StateCache.State state;
         public HashSet stateSet;
@@ -54,11 +70,12 @@ public class StateTransitionGraph {
             state = s;
         }
 
-        public void addEdge(int type, int weight, StateCache.State target) {
+        public Edge addEdge(int type, int weight, StateCache.State target) {
             Edge nedge = new Edge(state, target, forwardEdges, target.info.backwardEdges, type, weight);
 
             this.forwardEdges = nedge;
             target.info.backwardEdges = nedge;
+            return nedge;
         }
     }
 
@@ -66,14 +83,31 @@ public class StateTransitionGraph {
      * The <code>frontierList</code> field stores a simple linked list of the current
      * states on the frontier.
      */
-    private Link frontierList;
+    private StateList frontierList;
 
+    /**
+     * The <code>cache</code> field stores a cache of all states; it guarantees that
+     * object equality for states implies reference equality and vice versa.
+     */
     private StateCache cache;
 
+    private long edgeCount;
+    private long frontierCount;
+    private long exploredCount;
 
+    private StateCache.State edenState;
+
+    /**
+     * The constructor for the <code>StateTransitionGraph</code> class constructs
+     * a new state transition graph, with a state cache. The program passed is used
+     * as an approximation of the possible size of the state space.
+     * @param p the program to create a state transition graph for.
+     */
     public StateTransitionGraph(Program p) {
         cache = new StateCache(p);
-        addFrontierState(cache.getEdenState());
+        edenState = cache.getEdenState();
+        edenState.info = new StateInfo(edenState);
+        addFrontierState(edenState);
     }
 
 
@@ -90,13 +124,21 @@ public class StateTransitionGraph {
         return ns;
     }
 
-
-    public void addEdge(StateCache.State s, int type, int weight, StateCache.State t) {
+    /**
+     * The <code>addEdge()</code> method adds an edge between two states in the
+     * state transition graph. The edge has a type and a weight.
+     * @param s the source node of the edge
+     * @param type the type of the edge as an integer
+     * @param weight the weight of the edge as an integer
+     * @param t the target node of the edge
+     */
+    public Edge addEdge(StateCache.State s, int type, int weight, StateCache.State t) {
         if ( s.info == null )
             throw Avrora.failure("No edge info for: "+s.getUniqueName());
         if ( t.info == null )
             throw Avrora.failure("No edge info for: "+t.getUniqueName());
-        s.info.addEdge(type, weight, t);
+        edgeCount++;
+        return s.info.addEdge(type, weight, t);
     }
 
     /**
@@ -109,13 +151,15 @@ public class StateTransitionGraph {
      */
     public StateCache.State getNextFrontierState() {
         if ( frontierList == null ) return null;
-        Link l = frontierList;
+        StateList l = frontierList;
         frontierList = frontierList.next;
 
         StateCache.State state = l.state;
         if ( state.info == null )
             throw Avrora.failure("State on frontier has no edge info: "+state.getUniqueName());
 
+        state.onFrontier = false;
+        frontierCount--;
         return state;
     }
 
@@ -128,17 +172,74 @@ public class StateTransitionGraph {
             throw Avrora.failure("Attempt to re-add state to frontier: "+s.getUniqueName());
 
         if ( !isFrontier(s) ) {
-            frontierList = new Link(s, frontierList);
+            frontierList = new StateList(s, frontierList);
             s.onFrontier = true;
+            frontierCount++;
         }
     }
 
+    /**
+     * The <code>isExplored()</code> method tests whether a given state has been
+     * explored before.
+     * @param s the cached state to test whether it is explored
+     * @return true if this state has been explored and had its outgoing edges
+     * computed; false otherwise
+     */
     public boolean isExplored(StateCache.State s) {
         return s.isExplored;
     }
 
+    /**
+     * The <code>setExplored()</code> method marks the given state as having been
+     * explored. A state cannot both be explored and be on the frontier; thus this
+     * method will throw a fatal error if the given state is marked as on
+     * the frontier.
+     * @param s the state to mark as explored
+     */
+    public void setExplored(StateCache.State s) {
+        if ( isFrontier(s) )
+            throw Avrora.failure("state cannot be on frontier and explored: "+s.getUniqueName());
+
+        if ( !isExplored(s) ) {
+            s.isExplored = true;
+            exploredCount++;
+        }
+    }
+
+    /**
+     * The <code>isFrontier()</code> method tests whether a given state is currently
+     * in the frontier list of the state transition graph.
+     * @param s the state to test whether it is on the frontier
+     * @return true if the state is currently on the frontier of the state transition
+     * graph; false otherwise
+     */
     public boolean isFrontier(StateCache.State s) {
         return s.onFrontier;
     }
 
+    /**
+     * The <code>getStateCache()</code> method gets the cache of all the states in
+     * the state space.
+     * @return a reference to the cache of all the states in the state transition
+     * graph
+     */
+    public StateCache getStateCache() {
+        return cache;
+    }
+
+    public StateCache.State getEdenState() {
+        return edenState;
+    }
+
+    public long getFrontierCount() {
+        return frontierCount;
+    }
+
+    public long getEdgeCount() {
+        return edgeCount;
+    }
+
+    public long getExploredCount() {
+        return exploredCount;
+    }
 }

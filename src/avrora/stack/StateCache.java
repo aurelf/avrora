@@ -49,26 +49,6 @@ import java.util.Iterator;
  */
 public class StateCache {
 
-    /**
-     * The <code>Link</code> inner class represents an edge between two states
-     * within the state space. The edge's destination and weight is specified.
-     * The source is known by context.
-     */
-    public class Link {
-        public final State target;
-        public final Link next;
-        public final int type;
-        public final int weight;
-
-        Link(State s, Link n, int t, int w) {
-            target = s;
-            next = n;
-            type = t;
-            weight = w;
-        }
-    }
-
-
     private long uidCount;
 
     /**
@@ -124,16 +104,6 @@ public class StateCache {
         public StateTransitionGraph.StateInfo info;
 
         /**
-         * The <code>outgoing</code> field is a reference to the head of the
-         * list of outgoing edges from this state.
-         */
-        public Link outgoing;
-
-        void addEdge(State t, int type, int weight) {
-            outgoing = new Link(t, outgoing, type, weight);
-        }
-
-        /**
          * The <code>getUniqueName()</code> gets a string that uniquely identifies this
          * state. For immutable states, this is simply the UID. For special states, this
          * is the name of the special state.
@@ -155,13 +125,9 @@ public class StateCache {
 
 
     private HashMap stateMap;
-    private Link frontier;
     private final State edenState;
     private final Program program;
-    private long statesInSpace;
     private long totalStateCount;
-    private long edgeCount;
-    private long frontierCount;
 
     /**
      * The constructor for the <code>StateSpace</code> accepts a program as a parameter.
@@ -181,77 +147,6 @@ public class StateCache {
      */
     public State getEdenState() {
         return edenState;
-    }
-
-    /**
-     * The <code>getFrontierState()</code> chooses a state off of the state frontier,
-     * removes it from the state frontier, and returns it. If there are no states
-     * left on the state frontier, this method returns null. Note that initially there
-     * are no states on the frontier, not even the eden state.
-     *
-     * @return one of the states on the current state frontier; null if there are none.
-     */
-    public State getFrontierState() {
-        Link head = frontier;
-        if (head == null) return null;
-
-        frontier = frontier.next;
-        head.target.onFrontier = false;
-        frontierCount--;
-        return head.target;
-    }
-
-    /**
-     * The <code>isExplored()</code> method checks whether the specified state has been
-     * added to this state space (i.e. it has been explored). A state can be added at most
-     * once and cannot be removed from the state space.
-     * @param s the state to check
-     * @return true if the specified state has been explored; false otherwise
-     */
-    public boolean isExplored(State s) {
-        return s.isExplored;
-    }
-
-    /**
-     * The <code>isFrontier()</code> method checks whether the specified state is currently
-     * on the state frontier.
-     * @param s the state to check
-     * @return true if the specified state is currently on the frontier; false otherwise
-     */
-    public boolean isFrontier(State s) {
-        return s.onFrontier;
-    }
-
-    /**
-     * The <code>addState()</code> method adds a state to the state space (marks it as explored).
-     * A state can be added at most once and cannot be removed once it has been added. Note that
-     * being cached does not imply that the state is in the state space.
-     * @param s the state to add to the state space.
-     * @return true if this state is already in the state space; false otherwise
-     */
-    public boolean addState(State s) {
-        if (s.isExplored )
-            throw Avrora.failure("state already in space: "+s.getUniqueName());
-        boolean wasBefore = s.isExplored;
-        if (!wasBefore) statesInSpace++;
-        s.isExplored = true;
-        s.onFrontier = false;
-        return wasBefore;
-    }
-
-    /**
-     * The <code>addFrontier</code> method adds a state to the frontier.
-     * @param s the state to add
-     * @return true if the state was already on the frontier; false otherwise
-     */
-    public boolean addFrontier(State s) {
-        if (s.isExplored )
-            throw Avrora.failure("state already in space: "+s.getUniqueName());
-        if (s.onFrontier) return true;
-        frontier = new Link(s, frontier, 0, 0);
-        s.onFrontier = true;
-        frontierCount++;
-        return false;
     }
 
     /**
@@ -278,29 +173,6 @@ public class StateCache {
     }
 
     /**
-     * The <code>addEdge()</code> method creates an edge between the specified states
-     * with the given weight. No checking for duplicate edges is done.
-     * @param s the source state
-     * @param t the destination state
-     * @param weight the weight to assign to the edge
-     */
-    public void addEdge(State s, State t, int type, int weight) {
-        s.addEdge(t, type, weight);
-        edgeCount++;
-    }
-
-    /**
-     * The <code>addEdge()</code> method creates an edge between the specified states
-     * with weight 0. No checking for duplicate edges is done.
-     * @param s the source state
-     * @param t the destination state
-     */
-    public void addEdge(State s, State t) {
-        s.addEdge(t, 0, 0);
-        edgeCount++;
-    }
-
-    /**
      * The <code>getTotalStateCount()</code> method returns the internally recorded
      * number of states created in this state space. This is mainly used for reporting
      * purposes.
@@ -308,34 +180,6 @@ public class StateCache {
      */
     public long getTotalStateCount() {
         return totalStateCount;
-    }
-
-    /**
-     * The <code>getFrontierCount()</code> method returns the internally recorded
-     * number of states on the frontier of the state space. This is mainly used
-     * for reporting purposes.
-     * @return the number of states on the frontier
-     */
-    public long getFrontierCount() {
-        return frontierCount;
-    }
-
-    /**
-     * The <code>getTotalEdgesCount()</code> method returns the internally recorded
-     * number of edges added in this state space. This is mainly used for reporting
-     * purposes.
-     * @return the total number of edges in the state graph
-     */
-    public long getTotalEdgeCount() {
-        return edgeCount;
-    }
-    /**
-     * The <code>getStatesInSpaceCount()</code> method returns the number of unique states
-     * that have been added to this state space. This is mainly used for reporting purposes.
-     * @return the number of states added to the state space
-     */
-    public long getStatesInSpaceCount() {
-        return statesInSpace;
     }
 
     public Iterator getStateIterator() {
