@@ -8,7 +8,7 @@ import avrora.core.Program;
 import avrora.core.Register;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.ATMega128L;
+import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
 import vpc.VPCBase;
 import vpc.VPCError;

@@ -1,13 +1,20 @@
-package avrora.sim;
+package avrora.sim.mcu;
 
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.Arithmetic;
+import avrora.sim.Microcontroller;
+import avrora.sim.Simulator;
+import avrora.sim.State;
+import avrora.sim.TracingState;
 
 /**
+ * The <code>ATMega128L</code> class represents the <code>Microcontroller</code>
+ * instance that has all the hardware parameters of the ATMega128L microcontroller
+ * as produced by Atmel Corporatation.
  * @author Ben L. Titzer
  */
-public class ATMega128L implements AbstractProcessor {
+public class ATMega128L implements Microcontroller {
 
     public static final int HZ = 16000000;
 
@@ -215,14 +222,14 @@ public class ATMega128L implements AbstractProcessor {
 
         protected void setupState(State ns) {
             // external interrupts, maskable, sticky
-            interrupts[2] = new MaskableInterrupt(2, EIMSK, EIFR, 0, true);
-            interrupts[3] = new MaskableInterrupt(3, EIMSK, EIFR, 1, true);
-            interrupts[4] = new MaskableInterrupt(4, EIMSK, EIFR, 2, true);
-            interrupts[5] = new MaskableInterrupt(5, EIMSK, EIFR, 3, true);
-            interrupts[6] = new MaskableInterrupt(6, EIMSK, EIFR, 4, true);
-            interrupts[7] = new MaskableInterrupt(7, EIMSK, EIFR, 5, true);
-            interrupts[8] = new MaskableInterrupt(8, EIMSK, EIFR, 6, true);
-            interrupts[9] = new MaskableInterrupt(9, EIMSK, EIFR, 7, true);
+            interrupts[2] = new Simulator.MaskableInterrupt(2, EIMSK, EIFR, 0, true);
+            interrupts[3] = new Simulator.MaskableInterrupt(3, EIMSK, EIFR, 1, true);
+            interrupts[4] = new Simulator.MaskableInterrupt(4, EIMSK, EIFR, 2, true);
+            interrupts[5] = new Simulator.MaskableInterrupt(5, EIMSK, EIFR, 3, true);
+            interrupts[6] = new Simulator.MaskableInterrupt(6, EIMSK, EIFR, 4, true);
+            interrupts[7] = new Simulator.MaskableInterrupt(7, EIMSK, EIFR, 5, true);
+            interrupts[8] = new Simulator.MaskableInterrupt(8, EIMSK, EIFR, 6, true);
+            interrupts[9] = new Simulator.MaskableInterrupt(9, EIMSK, EIFR, 7, true);
 
             ns.setIOReg(EIMSK, EIMSK_reg = new EIMSK_class());
             ns.setIOReg(EIFR, EIFR_reg = new EIFR_class());

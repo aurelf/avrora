@@ -2,7 +2,7 @@ package avrora.sim;
 
 import avrora.core.Program;
 import avrora.sim.Simulator;
-import avrora.sim.ATMega128L;
+import avrora.sim.mcu.ATMega128L;
 import avrora.sim.util.ProgramProfiler;
 import avrora.Main;
 

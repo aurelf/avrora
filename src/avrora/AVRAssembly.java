@@ -4,7 +4,7 @@ import vpc.Compilation;
 import vpc.CompilationError;
 import vpc.VPCBase;
 import avrora.sim.Simulator;
-import avrora.sim.ATMega128L;
+import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.atmel.ParseException;
 import avrora.syntax.atmel.Token;
 import avrora.syntax.atmel.AtmelParser;

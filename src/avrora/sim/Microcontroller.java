@@ -5,13 +5,13 @@ import avrora.core.Instr;
 import avrora.core.InstrPrototype;
 
 /**
- * The <code>AbstractProcessor</code> interface corresponds to a hardware device
+ * The <code>Microcontroller</code> interface corresponds to a hardware device
  * that implements the AVR instruction set. This interface contains methods that
  * get commonly needed information about the particular hardware device and
  * and can load programs onto this virtual device.
  * @author Ben L. Titzer
  */
-public interface AbstractProcessor {
+public interface Microcontroller {
 
     /**
      * The <code>getRamSize()</code> method returns the number of bytes of
