@@ -20,39 +20,83 @@ architecture ppc {
         r0 = 28, r1 = 29, r2 = 30, r3 = 31
     };
 
-    registers GPR[32]: int = {
-        r0,  r1,  r2,  r3,  r4,  r5,  r6,  r7,
-        r8,  r9,  r10, r11, r12, r13, r14, r15,
-        r16, r17, r18, r19, r20, r21, r22, r23,
-        r24, r25, r26, r27, r28, r29, r30, r31
-    };
+    state GPR: int.32[32];
 
-    registers FPR[64]: double = {
-        fpr0,  fpr1,  fpr2,  fpr3,  fpr4,  fpr5,  fpr6,  fpr7,
-        fpr8,  fpr9,  fpr10, fpr11, fpr12, fpr13, fpr14, fpr15,
-        fpr16, fpr17, fpr18, fpr19, fpr20, fpr21, fpr22, fpr23,
-        fpr24, fpr25, fpr26, fpr27, fpr28, fpr29, fpr30, fpr31,
-    };
+    state R0:  int.32 <=> GPR[0] = 0;
+    state R1:  int.32 <=> GPR[1];
+    state R2:  int.32 <=> GPR[2];
+    state R3:  int.32 <=> GPR[3];
+    state R4:  int.32 <=> GPR[4];
+    state R5:  int.32 <=> GPR[5];
+    state R6:  int.32 <=> GPR[6];
+    state R7:  int.32 <=> GPR[7];
+    state R8:  int.32 <=> GPR[8];
+    state R9:  int.32 <=> GPR[9];
+    state R10: int.32 <=> GPR[10];
+    state R11: int.32 <=> GPR[11];
+    state R12: int.32 <=> GPR[12];
+    state R13: int.32 <=> GPR[13];
+    state R14: int.32 <=> GPR[14];
+    state R15: int.32 <=> GPR[15];
+    state R16: int.32 <=> GPR[16];
+    state R17: int.32 <=> GPR[17];
+    state R18: int.32 <=> GPR[18];
+    state R19: int.32 <=> GPR[19];
+    state R20: int.32 <=> GPR[20];
+    state R21: int.32 <=> GPR[21];
+    state R22: int.32 <=> GPR[22];
+    state R23: int.32 <=> GPR[23];
+    state R24: int.32 <=> GPR[24];
+    state R25: int.32 <=> GPR[25];
+    state R26: int.32 <=> GPR[26];
+    state R27: int.32 <=> GPR[27];
+    state R28: int.32 <=> GPR[28];
+    state R29: int.32 <=> GPR[29];
+    state R30: int.32 <=> GPR[30];
+    state R31: int.32 <=> GPR[31];
 
-    register CR[32]: int;
-    register FPCR[32]: int;
-    register XER[32]: int;
-    register LR[32]: int;
-    register CTR[32]: int;
+    state FPR: double.64[32];
 
-    memory RAM[32][128mb]: int;
+    state FPR0:  double.64[32] <=> FPR[0];
+    state FPR1:  double.64[32] <=> FPR[1];
+    state FPR2:  double.64[32] <=> FPR[2];
+    state FPR3:  double.64[32] <=> FPR[3];
+    state FPR4:  double.64[32] <=> FPR[4];
+    state FPR5:  double.64[32] <=> FPR[5];
+    state FPR6:  double.64[32] <=> FPR[6];
+    state FPR7:  double.64[32] <=> FPR[7];
+    state FPR8:  double.64[32] <=> FPR[8];
+    state FPR9:  double.64[32] <=> FPR[9];
+    state FPR10: double.64[32] <=> FPR[10];
+    state FPR11: double.64[32] <=> FPR[11];
+    state FPR12: double.64[32] <=> FPR[12];
+    state FPR13: double.64[32] <=> FPR[13];
+    state FPR14: double.64[32] <=> FPR[14];
+    state FPR15: double.64[32] <=> FPR[15];
+    state FPR16: double.64[32] <=> FPR[16];
+    state FPR17: double.64[32] <=> FPR[17];
+    state FPR18: double.64[32] <=> FPR[18];
+    state FPR19: double.64[32] <=> FPR[19];
+    state FPR20: double.64[32] <=> FPR[20];
+    state FPR21: double.64[32] <=> FPR[21];
+    state FPR22: double.64[32] <=> FPR[22];
+    state FPR23: double.64[32] <=> FPR[23];
+    state FPR24: double.64[32] <=> FPR[24];
+    state FPR25: double.64[32] <=> FPR[25];
+    state FPR26: double.64[32] <=> FPR[26];
+    state FPR27: double.64[32] <=> FPR[27];
+    state FPR28: double.64[32] <=> FPR[28];
+    state FPR29: double.64[32] <=> FPR[29];
+    state FPR30: double.64[32] <=> FPR[30];
+    state FPR31: double.64[32] <=> FPR[31];
 
-    mapping GPR[0-31] <=> RAM[0-31];
-    mapping IOREGS[0-63] <=> RAM[32-95];
-    mapping SREG <=> IOREGS[63];
-    mapping I <=> SREG[7];
-    mapping T <=> SREG[6];
-    mapping H <=> SREG[5];
-    mapping S <=> SREG[4];
-    mapping V <=> SREG[3];
-    mapping N <=> SREG[2];
-    mapping Z <=> SREG[1];
-    mapping C <=> SREG[0];
+    state CR:   int.32;
+    state FPCR: int.32;
+    state XER:  int.32;
+    state LR:   int.32;
+    state CTR:  int.32;
+
+    state RAM: int.32[...];
 
     instruction "add" rd: GPR, ra: GPR, rb: GPR {
         // TODO: this encoding format is not correct

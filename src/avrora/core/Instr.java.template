@@ -281,23 +281,23 @@ public abstract class Instr implements InstrPrototype {
 
     private static final HashMap instructions = new HashMap();
     static {
-	initializeInstrSet();
+	    initializeInstrSet();
     }
 
     public static InstrPrototype getPrototype(String name) {
-	return instructions.get(name);
+	    return instructions.get(name);
     }
     
     private static int asImm(int num, Operand[] ops) {
-	if ( !ops[num].isImmediate() )
-	    throw new ImmediateRequired(ops[num]);
-	return ops[num].asImmediate();
+	    if ( !ops[num].isImmediate() )
+	        throw new ImmediateRequired(ops[num]);
+	    return ops[num].asImmediate();
     }
 
     private static Register asReg(int num, Operand[] ops) {
-	if ( !ops[num].isRegister() )
-	    throw new RegisterRequired(ops[num]);
-	return ops[num].asRegister();
+	    if ( !ops[num].isRegister() )
+	        throw new RegisterRequired(ops[num]);
+	    return ops[num].asRegister();
     }
 
     /**

@@ -47,7 +47,7 @@ import avrora.util.StringUtil;
  *
  * @author Ben L. Titzer
  */
-public abstract class BaseInterpreter implements State, InstrVisitor {
+public abstract class BaseInterpreter implements State {
     protected int pc;
     protected long totalCycles;
     protected final byte[] regs;
@@ -96,15 +96,17 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         protected final int address;
         protected final Instr instr;
         protected final MulticastProbe probe;
+        protected final InstrVisitor interpreter;
 
         private boolean breakPoint;
         private boolean breakFired;
 
-        ProbedInstr(Instr i, int a, Simulator.Probe p) {
+        ProbedInstr(Instr i, int a, Simulator.Probe p, InstrVisitor interp) {
             super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
             instr = i;
             address = a;
             probe = new MulticastProbe();
+            interpreter = interp;
             probe.add(p);
         }
 
@@ -133,7 +135,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         public void accept(InstrVisitor v) {
 
             // if the simulator is visiting us, execute the instruction instead of accept(v).
-            if (v == BaseInterpreter.this) {
+            if (v == interpreter) {
                 // breakpoint processing.
                 if (breakPoint) {
                     if (!breakFired) {
@@ -144,7 +146,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
                 }
 
                 probe.fireBefore(instr, address, BaseInterpreter.this);
-                instr.accept(BaseInterpreter.this);
+                instr.accept(interpreter);
                 probe.fireAfter(instr, address, BaseInterpreter.this);
             } else {
                 instr.accept(v);

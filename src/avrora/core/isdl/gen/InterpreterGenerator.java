@@ -214,24 +214,12 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
     }
 
     private void initializeOperandMap(CodeRegion cr) {
-        int regcount = 0;
-        int immcount = 0;
-
         operandMap = new HashMap();
         Iterator i = cr.getOperandIterator();
         while (i.hasNext()) {
             CodeRegion.Operand o = (CodeRegion.Operand) i.next();
 
             String name = "i."+o.name.image;
-/*
-            if (o.isRegister()) {
-                name += "r" + (++regcount);
-            } else if (o.isImmediate()) {
-                name += "imm" + (++immcount);
-            } else {
-                name += o.name.image;
-            }
-*/
 
             operandMap.put(o.name.image, name);
         }

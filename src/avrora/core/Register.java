@@ -268,7 +268,7 @@ public class Register {
                 registers.add(regs[cntr]);
             }
 
-            StringBuffer buf = new StringBuffer();
+            StringBuffer buf = new StringBuffer("{");
             for (int cntr = 0; cntr < regs.length; cntr++) {
                 registers.add(regs[cntr]);
                 // abreviate large sets
@@ -279,6 +279,7 @@ public class Register {
                     if ( cntr < regs.length-1 ) buf.append(", ");
                 }
             }
+            buf.append("}");
             contents = buf.toString();
         }
 

@@ -1041,7 +1041,7 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
         if (pi != null)
             pi.add(p);
         else {
-            pi = new ProbedInstr(impression.readInstr(addr), addr, p);
+            pi = new ProbedInstr(impression.readInstr(addr), addr, p, this);
             impression.writeInstr(pi, addr);
         }
     }
@@ -1060,7 +1060,7 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
         if (pi != null)
             pi.setBreakPoint();
         else {
-            pi = new ProbedInstr(impression.readInstr(addr), addr, null);
+            pi = new ProbedInstr(impression.readInstr(addr), addr, null, this);
             impression.writeInstr(pi, addr);
             pi.setBreakPoint();
         }

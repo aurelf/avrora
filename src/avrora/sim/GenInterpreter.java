@@ -33,6 +33,7 @@
 package avrora.sim;
 
 import avrora.core.Instr;
+import avrora.core.InstrVisitor;
 import avrora.core.Program;
 import avrora.core.Register;
 import avrora.util.Arithmetic;
@@ -46,7 +47,7 @@ import avrora.util.Arithmetic;
  *
  * @author Ben L. Titzer
  */
-public class GenInterpreter extends BaseInterpreter {
+public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public static final Register R0 = Register.R0;
     public static final Register R1 = Register.R1;
@@ -195,7 +196,7 @@ public class GenInterpreter extends BaseInterpreter {
         if (pi != null)
             pi.add(p);
         else {
-            pi = new ProbedInstr(impression.readInstr(addr), addr, p);
+            pi = new ProbedInstr(impression.readInstr(addr), addr, p, this);
             impression.writeInstr(pi, addr);
         }
     }
@@ -214,7 +215,7 @@ public class GenInterpreter extends BaseInterpreter {
         if (pi != null)
             pi.setBreakPoint();
         else {
-            pi = new ProbedInstr(impression.readInstr(addr), addr, null);
+            pi = new ProbedInstr(impression.readInstr(addr), addr, null, this);
             impression.writeInstr(pi, addr);
             pi.setBreakPoint();
         }
