@@ -96,13 +96,17 @@ public class MulticastWatch implements Simulator.Watch {
         while (pos != null) {
             Link next = pos.next;
 
+            // matched?
             if (pos.probe == b) {
-                // remove the whole thing.
-                if (prev == null)
-                    head = pos.next;
-                else
-                    prev.next = pos.next;
+                // remove the head ?
+                if (prev == null) head = pos.next;
+                // somewhere in the middle (or at end)
+                else prev.next = pos.next;
+                // remove the tail item ?
+                if (pos == tail) tail = prev;
+
             } else {
+                // no match; continue
                 prev = pos;
             }
             pos = next;
