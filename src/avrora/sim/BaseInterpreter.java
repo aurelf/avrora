@@ -752,49 +752,22 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             throw Avrora.failure("bit out of range: " + num);
         }
 
-        /**
-         * The <code>clearBit()</code> method clears a single bit in the IO register.
-         *
-         * @param num the number of the bit to clear
-         */
-        public void clearBit(int num) {
-            switch (num) {
-                case SREG_I: disableInterrupts(); break;
-                case SREG_T: T = false; break;
-                case SREG_H: H = false; break;
-                case SREG_S: S = false; break;
-                case SREG_V: V = false; break;
-                case SREG_N: N = false; break;
-                case SREG_Z: Z = false; break;
-                case SREG_C: C = false; break;
-                default:
-                    throw Avrora.failure("bit out of range: " + num);
-            }
-        }
-
-        /**
-         * The <code>setBit()</code> method sets a single bit in the IO register.
-         *
-         * @param num the number of the bit to clear
-         */
-        public void setBit(int num) {
-            switch (num) {
-                case SREG_I: enableInterrupts(); break;
-                case SREG_T: T = true; break;
-                case SREG_H: H = true; break;
-                case SREG_S: S = true; break;
-                case SREG_V: V = true; break;
-                case SREG_N: N = true; break;
-                case SREG_Z: Z = true; break;
-                case SREG_C: C = true; break;
-                default:
-                    throw Avrora.failure("bit out of range: " + num);
-            }
-        }
-
         public void writeBit(int num, boolean value) {
-            if ( value ) setBit(num);
-            else clearBit(num);
+            switch (num) {
+                case SREG_I:
+                    if ( value ) enableInterrupts();
+                    else disableInterrupts();
+                    break;
+                case SREG_T: T = value; break;
+                case SREG_H: H = value; break;
+                case SREG_S: S = value; break;
+                case SREG_V: V = value; break;
+                case SREG_N: N = value; break;
+                case SREG_Z: Z = value; break;
+                case SREG_C: C = value; break;
+                default:
+                    throw Avrora.failure("bit out of range: " + num);
+            }
         }
     }
 }

@@ -187,7 +187,7 @@ public class BenchmarkAction extends Main.Action {
     void processTimeout() {
         long timeout = Main.TIMEOUT.get();
         if (timeout > 0)
-            simulator.addTimerEvent(new Simulator.ClockCycleTimeout(timeout), timeout);
+            simulator.insertTimeout(timeout);
     }
 
     void reportCycles() {

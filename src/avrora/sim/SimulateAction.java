@@ -115,6 +115,14 @@ public class SimulateAction extends Main.Action {
      *                   occurs during simulation
      */
     public void run(String[] args) throws Exception {
+        long repeat = Main.REPEAT.get();
+
+        for ( long cntr= 0; cntr < repeat; cntr++ )
+            runSimulation(args);
+
+    }
+
+    private void runSimulation(String[] args) throws Exception {
         Main.ProgramReader r = Main.getProgramReader();
         program = r.read(args);
 
@@ -294,7 +302,7 @@ public class SimulateAction extends Main.Action {
     void processTimeout() {
         long timeout = Main.TIMEOUT.get();
         if (timeout > 0)
-            simulator.addTimerEvent(new Simulator.ClockCycleTimeout(timeout), timeout);
+            simulator.insertTimeout(timeout);
     }
 
     void reportCycles() {

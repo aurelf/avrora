@@ -41,9 +41,9 @@ import avrora.sim.Simulator;
  * firing.
  *
  * @author Ben L. Titzer
- * @see avrora.sim.Simulator.Trigger
+ * @see avrora.sim.Simulator.Event
  */
-public class PeriodicTrigger implements Simulator.Trigger {
+public class PeriodicTrigger implements Simulator.Event {
     /**
      * This field stores the simulator in which the trigger will
      * continually be reinserted.
@@ -54,7 +54,7 @@ public class PeriodicTrigger implements Simulator.Trigger {
      * This field stores the trigger that will be fired after each
      * period.
      */
-    public final Simulator.Trigger trigger;
+    public final Simulator.Event trigger;
 
     /**
      * This field stores the period (in clock cycles) that the trigger
@@ -78,7 +78,7 @@ public class PeriodicTrigger implements Simulator.Trigger {
      * @param t the trigger to fire after each period
      * @param p the period in clock cycles
      */
-    public PeriodicTrigger(Simulator s, Simulator.Trigger t, long p) {
+    public PeriodicTrigger(Simulator s, Simulator.Event t, long p) {
         trigger = t;
         period = p;
         simulator = s;
@@ -91,7 +91,7 @@ public class PeriodicTrigger implements Simulator.Trigger {
      * method of the trigger is called.
      */
     public void fire() {
-        simulator.addTimerEvent(this, period);
+        simulator.insertEvent(this, period);
         trigger.fire();
     }
 }

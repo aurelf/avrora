@@ -76,12 +76,12 @@ public class GlobalClock {
         goal--;
     }
 
-    public void addTimerEvent(Simulator.Trigger trigger, long ticks) {
+    public void addTimerEvent(Simulator.Event trigger, long ticks) {
         // TODO: synchronization
         eventQueue.add(trigger, ticks);
     }
 
-    public void removeTimerEvent(Simulator.Trigger trigger) {
+    public void removeTimerEvent(Simulator.Event trigger) {
         // TODO: synchronization
         eventQueue.remove(trigger);
     }
@@ -91,7 +91,7 @@ public class GlobalClock {
         eventQueue.advance(1);
     }
 
-    public class LocalTimer implements Simulator.Trigger {
+    public class LocalTimer implements Simulator.Event {
         private final Simulator simulator;
         private final long cycles;
         private boolean removed;
@@ -99,7 +99,7 @@ public class GlobalClock {
         LocalTimer(Simulator s, double period) {
             simulator = s;
             cycles = simulator.getMicrocontroller().millisToCycles(period);
-            simulator.addTimerEvent(this, cycles);
+            simulator.insertEvent(this, cycles);
         }
 
         public void fire() {
@@ -121,11 +121,11 @@ public class GlobalClock {
             }
 
             if (!removed)
-                simulator.addTimerEvent(this, cycles);
+                simulator.insertEvent(this, cycles);
         }
 
         protected void remove() {
-            simulator.removeTimerEvent(this);
+            simulator.removeEvent(this);
             removed = true;
         }
 

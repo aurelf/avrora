@@ -86,19 +86,11 @@ public interface State extends IORegisterConstants {
         public boolean readBit(int num);
 
         /**
-         * The <code>clearBit()</code> method clears a single bit in the IO register.
-         *
-         * @param num the number of the bit to clear
+         * The <code>writeBit()</code> method writes a single bit value into the
+         * IO register at the specified bit offset.
+         * @param num the number of the bit to write
+         * @param val the value of the bit to write
          */
-        public void clearBit(int num);
-
-        /**
-         * The <code>setBit()</code> method sets a single bit in the IO register.
-         *
-         * @param num the number of the bit to clear
-         */
-        public void setBit(int num);
-
         public void writeBit(int num, boolean val);
     }
 
@@ -145,27 +137,8 @@ public interface State extends IORegisterConstants {
             return Arithmetic.getBit(value, num);
         }
 
-        /**
-         * The <code>clearBit()</code> method clears a single bit in the IO register.
-         *
-         * @param num the number of the bit to clear
-         */
-        public void clearBit(int num) {
-            value = Arithmetic.clearBit(value, num);
-        }
-
-        /**
-         * The <code>setBit()</code> method sets a single bit in the IO register.
-         *
-         * @param num the number of the bit to clear
-         */
-        public void setBit(int num) {
-            value = Arithmetic.setBit(value, num);
-        }
-
         public void writeBit(int num, boolean val) {
-            if ( val ) setBit(num);
-            else clearBit(num);
+            value = Arithmetic.setBit(value, num, val);
         }
     }
 
@@ -186,14 +159,6 @@ public interface State extends IORegisterConstants {
 
         public boolean readBit(int num) {
             return false;
-        }
-
-        public void setBit(int bit) {
-            throw new Error("cannot set bit in reserved register");
-        }
-
-        public void clearBit(int bit) {
-            throw new Error("cannot clear bit in reserved register");
         }
 
         public void writeBit(int bit, boolean val) {

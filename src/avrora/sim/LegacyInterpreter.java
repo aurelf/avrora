@@ -184,7 +184,7 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.BCLR i) { // clear bit in SREG
-        SREG_reg.clearBit(i.imm1);
+        SREG_reg.writeBit(i.imm1, false);
     }
 
     public void visit(Instr.BLD i) { // load bit from T flag into register
@@ -305,7 +305,7 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.BSET i) { // set flag in SREG
-        SREG_reg.setBit(i.imm1);
+        SREG_reg.writeBit(i.imm1, true);
     }
 
     public void visit(Instr.BST i) { // store bit in register to T flag
@@ -319,7 +319,7 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.CBI i) { // clear bit in IO register
-        getIOReg(i.imm1).clearBit(i.imm2);
+        getIOReg(i.imm1).writeBit(i.imm2, false);
     }
 
     public void visit(Instr.CBR i) { // clear bits in register
@@ -718,7 +718,7 @@ class LegacyInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.SBI i) { // set bit in IO register
-        getIOReg(i.imm1).setBit(i.imm2);
+        getIOReg(i.imm1).writeBit(i.imm2, true);
     }
 
     public void visit(Instr.SBIC i) { // skip if bit in IO register is clear

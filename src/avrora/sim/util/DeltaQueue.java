@@ -63,7 +63,7 @@ public class DeltaQueue {
      * for a given <code>Link</code> in the delta queue chain.
      */
     static final class TriggerLink {
-        Simulator.Trigger trigger;
+        Simulator.Event trigger;
         TriggerLink next;
 
         /**
@@ -73,7 +73,7 @@ public class DeltaQueue {
          * @param t a reference the trigger
          * @param n the next link in the chain
          */
-        TriggerLink(Simulator.Trigger t, TriggerLink n) {
+        TriggerLink(Simulator.Event t, TriggerLink n) {
             trigger = t;
             next = n;
         }
@@ -91,16 +91,16 @@ public class DeltaQueue {
         Link next;
         long delta;
 
-        Link(Simulator.Trigger t, long d) {
+        Link(Simulator.Event t, long d) {
             triggers = newList(t, null);
             delta = d;
         }
 
-        void add(Simulator.Trigger t) {
+        void add(Simulator.Event t) {
             triggers = newList(t, triggers);
         }
 
-        void remove(Simulator.Trigger t) {
+        void remove(Simulator.Event t) {
             TriggerLink prev = null;
             TriggerLink pos = triggers;
             while (pos != null) {
@@ -161,7 +161,7 @@ public class DeltaQueue {
      * @param t      the trigger to fire
      * @param cycles the number of clock cycles in the future
      */
-    public void add(Simulator.Trigger t, long cycles) {
+    public void add(Simulator.Event t, long cycles) {
         // degenerate case, nothing in the queue.
         if (head == null) {
             head = newLink(t, cycles, null);
@@ -189,7 +189,7 @@ public class DeltaQueue {
         }
     }
 
-    private void addAfter(Link prev, Simulator.Trigger t, long cycles, Link next) {
+    private void addAfter(Link prev, Simulator.Event t, long cycles, Link next) {
         if ( prev != null )
             prev.next = newLink(t, cycles, next);
         else head = newLink(t, cycles, next);
@@ -201,7 +201,7 @@ public class DeltaQueue {
      *
      * @param e the trigger to remove
      */
-    public void remove(Simulator.Trigger e) {
+    public void remove(Simulator.Event e) {
         if (head == null) return;
 
         // search for first link that is "after" this cycle delta
@@ -293,7 +293,7 @@ public class DeltaQueue {
         freeTriggerLinks = l;
     }
 
-    private Link newLink(Simulator.Trigger t, long cycles, Link next) {
+    private Link newLink(Simulator.Event t, long cycles, Link next) {
         Link l;
         if (freeLinks == null)
         // if none in the free list, allocate one
@@ -315,7 +315,7 @@ public class DeltaQueue {
         return l;
     }
 
-    private TriggerLink newList(Simulator.Trigger t, TriggerLink next) {
+    private TriggerLink newList(Simulator.Event t, TriggerLink next) {
         TriggerLink l;
 
         if (freeTriggerLinks == null) {

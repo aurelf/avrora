@@ -465,14 +465,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 value = val;
             }
 
-            public void setBit(int bit) {
-                pins[bit].setOutputDir(true);
-                value = Arithmetic.setBit(value, bit);
-            }
-
-            public void clearBit(int bit) {
-                pins[bit].setOutputDir(false);
-                value = Arithmetic.clearBit(value, bit);
+            public void writeBit(int bit, boolean val) {
+                pins[bit].setOutputDir(val);
+                value = Arithmetic.setBit(value, bit, val);
             }
         }
 
@@ -489,14 +484,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 value = val;
             }
 
-            public void setBit(int bit) {
-                pins[bit].write(true);
-                value = Arithmetic.setBit(value, bit);
-            }
-
-            public void clearBit(int bit) {
-                pins[bit].write(false);
-                value = Arithmetic.clearBit(value, bit);
+            public void writeBit(int bit, boolean val) {
+                pins[bit].write(val);
+                value = Arithmetic.setBit(value, bit, val);
             }
         }
 
@@ -525,14 +515,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
 
             public void write(byte val) {
-                // ignore writes.
-            }
-
-            public void setBit(int bit) {
-                // ignore writes.
-            }
-
-            public void clearBit(int bit) {
                 // ignore writes.
             }
 
@@ -615,20 +597,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     decode(val);
                 }
 
-                public void setBit(int bit) {
-                    if (bit == 7) {
+                public void writeBit(int bit, boolean val) {
+                    if (bit == 7 && val) {
                         // TODO: force output compare
                     } else {
-                        value = Arithmetic.setBit(value, bit);
-                        decode(value);
-                    }
-                }
-
-                public void clearBit(int bit) {
-                    if (bit == 7) {
-                        // do nothing
-                    } else {
-                        value = Arithmetic.clearBit(value, bit);
+                        value = Arithmetic.setBit(value, bit, val);
                         decode(value);
                     }
                 }
@@ -671,17 +644,17 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     if (n == 0) {
                         if (timerEnabled) {
                             if (timerPrinter.enabled) timerPrinter.println("Timer0 disabled");
-                            removeTimerEvent(ticker);
+                            removeEvent(ticker);
                         }
                         return;
                     }
                     if (timerEnabled) {
-                        removeTimerEvent(ticker);
+                        removeEvent(ticker);
                     }
                     if (timerPrinter.enabled) timerPrinter.println("Timer0 enabled: period = " + n + " mode = " + timerMode);
                     period = n;
                     timerEnabled = true;
-                    addTimerEvent(ticker, period);
+                    insertEvent(ticker, period);
                 }
             }
 
@@ -690,7 +663,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
              * It emulates the operation of the timer at each clock cycle and uses the
              * global timed event queue to achieve the correct periodic behavior.
              */
-            protected class Ticker implements Simulator.Trigger {
+            protected class Ticker implements Simulator.Event {
 
                 public void fire() {
                     // perform one clock tick worth of work on the timer
@@ -747,7 +720,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                     }
                     TCNT0_reg.write((byte) count);
-                    if (period != 0) addTimerEvent(this, period);
+                    if (period != 0) insertEvent(this, period);
                 }
             }
         }
@@ -836,7 +809,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 installIOReg(ns, SPDR, SPDR_reg);
                 installIOReg(ns, SPSR, SPSR_reg);
                 installIOReg(ns, SPCR, SPCR_reg);
-                addPeriodicTimerEvent(ticker, millisToCycles(0.418));
+                insertPeriodicEvent(ticker, millisToCycles(0.418));
             }
 
             /**
@@ -854,7 +827,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             }
 
-            class SPITicker implements Simulator.Trigger {
+            class SPITicker implements Simulator.Event {
                 public void fire() {
                     // put raiod_out in the environment
                     // env = raiod_out;
@@ -912,22 +885,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
                 /**
-                 * The <code>clearBit()</code>
+                 * The <code>writeBit()</code>
                  * @param num
                  */
-                public void clearBit(int num) {
-                    // XXX not yet implemented
-                    return;
-                }
-
-                /**
-                 * The <code>setBit()</code> method
-                 * @param num
-                 */
-                public void setBit(int num) {
-                    // XXX not yet implemented
-                }
-
                 public void writeBit(int num, boolean val) {
                     // XXX not yet implemented
                 }
@@ -951,11 +911,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 public void write(byte val) {
                     boolean bit0 = Arithmetic.getBit(val, 0);
 
-                    if (bit0) {
-                        setBit(0);
-                    } else {
-                        clearBit(0);
-                    }
+                    value = Arithmetic.setBit(value, 0, bit0);
                 }
 
                 /**
@@ -968,33 +924,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     return Arithmetic.getBit(value, num);
                 }
 
-                /**
-                 * The <code>clearBit()</code>
-                 * @param num
-                 *
-                 * only bit zero is allowed to be writable
-                 */
-                public void clearBit(int num) {
-                    if (num == 0) {
-                        value = Arithmetic.clearBit(value, 0);
-                    }
-                }
-
-                /**
-                 * The <code>setBit()</code> method
-                 * @param num
-                 *
-                 * only bit zero is allowed to be writable
-                 */
-                public void setBit(int num) {
-                    if (num == 0) {
-                        value = Arithmetic.setBit(value, 0);
-                    }
-                }
-
                 public void writeBit(int num, boolean val) {
-                    if ( val ) setBit(num);
-                    else clearBit(num);
+                    if (num == 0) {
+                        value = Arithmetic.setBit(value, 0, val);
+                    }
                 }
 
                 public void setSPIF() {

@@ -567,6 +567,7 @@ public abstract class Simulator implements IORegisterConstants {
      * event queue of the simulator that causes it to stop execution
      * and throw a <code>Simulator.TimeoutException</code> when the
      * specified number of clock cycles have expired.
+     * 
      * @param cycles the number of cycles to run before timing out
      */
     public void insertTimeout(long cycles) {
