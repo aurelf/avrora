@@ -86,7 +86,7 @@ public class ObjDumpPreprocessor {
 
         //clean up first section
         while (line != null) {
-            if (line.indexOf("Disassembly of section .text") != -1) {
+            if (line.indexOf("Disassembly of section") != -1) {
                 break;
             }
             if (line.indexOf("main.exe") != -1)

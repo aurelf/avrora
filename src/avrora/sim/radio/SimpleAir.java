@@ -196,10 +196,10 @@ public class SimpleAir implements RadioAir {
 
     /**
      * Tricky! This method checks whether every thread has reached either a local meet
-     * or has tried to read the RSSI value. If every thread has joined, it will select
-     * the RSSI waiter that made the earliest request. If that waiter is NOT the waiter
-     * passed, it will wake that waiter. If that waiter IS the waiter passed, it will
-     * NOT wake it.
+     * or has tried to read the RSSI value. If every thread has joined in one of these
+     * two ways this method will select the RSSI waiter that made the earliest request.
+     * If that waiter is NOT the waiter passed as a parameter, it will wake that waiter.
+     * If that waiter IS the waiter passed, it will NOT wake it.
      * @param curWait the current waiter, null if this method is being called as a result
      * of a thread entering a local meet
      * @return the waiter at the head of the line if all threads have joined, null otherwise

@@ -91,6 +91,10 @@ public class MultiSimulateAction extends SimAction {
             "of clock cycles given as a value. For example, if this option is given the" +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
+    public final Option.Bool WAIT = newOption("wait", false,
+            "This option causes the simulator to wait for keyboard input before beginning " +
+            "the simulation, which is useful for setting system parameters after the Java " +
+            "VM has been launched, but before the simulation begins.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
@@ -108,6 +112,11 @@ public class MultiSimulateAction extends SimAction {
 
         LinkedList simulatorThreadList = new LinkedList();
         PlatformFactory pf = getPlatform();
+
+        if ( WAIT.get() ) {
+            Terminal.print("Press enter to begin simulation...");
+            System.in.read();
+        }
 
         int cntr = 0;
         Iterator i = NODECOUNT.get().iterator();
