@@ -47,6 +47,7 @@ public abstract class AbstractState implements IORegisterConstants {
     protected int pc;
     protected char av_SREG;   // canonical status register value
     protected char av_EIMSK;  // canonical interrupt mask register value
+    protected char av_TIMSK;  // canonical interrupt mask register value
     protected char av_REGISTERS[]; // canonical register values
 
     /**
@@ -70,6 +71,7 @@ public abstract class AbstractState implements IORegisterConstants {
         int hash = pc;
         hash += av_SREG;
         hash += av_EIMSK;
+        hash += av_TIMSK;
         for (int cntr = 0; cntr < NUM_REGS; cntr++)
             hash += av_REGISTERS[cntr] * primes[cntr];
         return hash;
@@ -184,6 +186,7 @@ public abstract class AbstractState implements IORegisterConstants {
     public char getIORegisterAV(int num) {
         if (num == IORegisterConstants.SREG) return av_SREG;
         if (num == IORegisterConstants.EIMSK) return av_EIMSK;
+        if (num == IORegisterConstants.TIMSK) return av_TIMSK;
         return AbstractArithmetic.UNKNOWN;
     }
 
@@ -210,7 +213,7 @@ public abstract class AbstractState implements IORegisterConstants {
      * @return a new deep copy of this abstract state
      */
     public MutableState copy() {
-        return new MutableState(pc, av_SREG, av_EIMSK, av_REGISTERS);
+        return new MutableState(pc, av_SREG, av_EIMSK, av_TIMSK, av_REGISTERS);
     }
 
     public String toString() {

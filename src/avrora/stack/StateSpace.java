@@ -92,6 +92,7 @@ public class StateSpace {
             pc = s.pc;
             av_SREG = s.av_SREG;
             av_EIMSK = s.av_EIMSK;
+            av_TIMSK = s.av_TIMSK;
             av_REGISTERS = new char[NUM_REGS];
             for (int cntr = 0; cntr < NUM_REGS; cntr++) {
                 av_REGISTERS[cntr] = s.av_REGISTERS[cntr];

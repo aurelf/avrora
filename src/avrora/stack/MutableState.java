@@ -56,17 +56,19 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     public MutableState() {
         av_SREG = AbstractArithmetic.ZERO;
         av_EIMSK = AbstractArithmetic.ZERO;
+        av_TIMSK = AbstractArithmetic.ZERO;
         for (int cntr = 0; cntr < NUM_REGS; cntr++) {
             av_REGISTERS[cntr] = AbstractArithmetic.ZERO;
         }
     }
 
-    public MutableState(int npc, char nSREG, char nEIMSK, char[] nregs) {
+    public MutableState(int npc, char nSREG, char nEIMSK, char nTIMSK, char[] nregs) {
         av_REGISTERS = new char[NUM_REGS];
         System.arraycopy(nregs, 0, av_REGISTERS, 0, NUM_REGS);
         pc = npc;
         av_SREG = nSREG;
         av_EIMSK = nEIMSK;
+        av_TIMSK = nTIMSK;
     }
 
     /**
@@ -227,8 +229,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     public void setIORegisterAV(int num, char val) {
         if (num == IORegisterConstants.SREG) av_SREG = val;
         if (num == IORegisterConstants.EIMSK) av_EIMSK = val;
-        if (num == IORegisterConstants.EIFR)
-            av_EIMSK = AbstractArithmetic.canon((char) (av_EIMSK & val));
+        if (num == IORegisterConstants.TIMSK) av_TIMSK = val;
     }
 
     /**

@@ -39,10 +39,7 @@ import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.Avrora;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines
@@ -61,6 +58,8 @@ public class Analyzer {
     HashMap frontierInfoMap;
     long buildTime;
     long traverseTime;
+    boolean unbounded;
+    Path maximalPath;
     int maxDepth;
 
     public final int NORMAL_EDGE = 0;
@@ -158,9 +157,12 @@ public class Analyzer {
         StateSpace.State state = space.getEdenState();
 
         try {
-            maxDepth = traverse(state, stack, 0);
+            maximalPath = findMaximalPath(state, stack, 0);
+//            maxDepth = traverse(state, stack, 0);
         } catch (UnboundedStackException e) {
-            maxDepth = Integer.MAX_VALUE;
+            unbounded = true;
+            maximalPath = e.path;
+//            maxDepth = Integer.MAX_VALUE;
         }
     }
 
@@ -176,7 +178,7 @@ public class Analyzer {
                 // cycle detected. check that the depth when reentering is the same
                 int prevdepth = ((Integer) stack.get(t)).intValue();
                 if (depth + link.weight != prevdepth)
-                    throw new UnboundedStackException();
+                    throw new UnboundedStackException(null);
             } else {
                 int extra = link.weight; // maximum added stack depth by following this link
 
@@ -190,7 +192,9 @@ public class Analyzer {
                 }
 
                 // remember the most added stack depth from following any of the links
-                if (extra > maxdepth) maxdepth = extra;
+                if (extra > maxdepth) {
+                    maxdepth = extra;
+                }
             }
         }
         // we are finished with this node, remember how much deeper it can take us
@@ -199,8 +203,80 @@ public class Analyzer {
         return maxdepth;
     }
 
-    private class UnboundedStackException extends RuntimeException {
+    private class Path {
+        final int depth;
+        final StateSpace.State state;
+        final StateSpace.Link link;
+        final Path tail;
 
+        Path(int d, StateSpace.State s, StateSpace.Link l, Path p) {
+            state = s;
+            depth = d;
+            link = l;
+            tail = p;
+        }
+    }
+
+    private Path findMaximalPath(StateSpace.State s, HashMap stack, int depth) {
+        // record this node and the stack depth at which we first encounter it
+        stack.put(s, new Integer(depth));
+
+        int maxdepth = 0;
+        Path maxtail = null;
+        StateSpace.Link maxlink = null;
+        for (StateSpace.Link link = s.outgoing; link != null; link = link.next) {
+
+            StateSpace.State t = link.target;
+            if (stack.containsKey(t)) {
+                // cycle detected. check that the depth when reentering is the same
+                int prevdepth = ((Integer) stack.get(t)).intValue();
+                if (depth + link.weight != prevdepth) {
+                    // we are finished with this node, remember how much deeper it can take us
+                    stack.remove(s);
+                    throw new UnboundedStackException(new Path(depth + link.weight, s, link, null));
+                }
+            } else {
+                Path tail;
+
+                if (link.target.mark instanceof Path) {
+                    // node has already been visited and marked with the
+                    // maximum amount of stack depth that it can add.
+                    tail = ((Path) link.target.mark);
+                } else {
+                    // node has not been seen before, traverse it
+                    try {
+                        tail = findMaximalPath(link.target, stack, depth + link.weight);
+                    } catch ( UnboundedStackException e) {
+                        e.path = new Path(depth + link.weight, s, link, e.path);
+                        stack.remove(s);
+                        throw e;
+                    }
+                }
+
+                int extra = link.weight + tail.depth; // maximum added stack depth by following this link
+
+                // remember the most added stack depth from following any of the links
+                if (extra > maxdepth) {
+                    maxdepth = extra;
+                    maxtail = tail;
+                    maxlink = link;
+                }
+            }
+        }
+        // we are finished with this node, remember how much deeper it can take us
+        stack.remove(s);
+        Path maxpath = new Path(maxdepth, s, maxlink, maxtail);
+        s.mark = maxpath;
+        return maxpath;
+    }
+
+
+    private class UnboundedStackException extends RuntimeException {
+        Path path;
+
+        UnboundedStackException(Path p) {
+            path = p;
+        }
     }
 
     /**
@@ -210,14 +286,22 @@ public class Analyzer {
      * program.
      */
     public void report() {
-        printQuantity("Total cached states", "" + space.getTotalStateCount());
+        printQuantity("Total cached states   ", "" + space.getTotalStateCount());
         printQuantity("Total reachable states", "" + space.getStatesInSpaceCount());
-        printQuantity("Time to build graph", StringUtil.milliAsString(buildTime));
+        printQuantity("Time to build graph   ", StringUtil.milliAsString(buildTime));
         printQuantity("Time to traverse graph", StringUtil.milliAsString(traverseTime));
         if (maxDepth == Integer.MAX_VALUE)
             printQuantity("Maximum stack depth", "unbounded");
         else
             printQuantity("Maximum stack depth", "" + maxDepth);
+        printPath(maximalPath);
+    }
+
+    private void printPath(Path p) {
+        for ( Path path = p; path != null; path = path.tail ) {
+            printFullState("Depth: "+path.depth, path.state);
+            printEdge(path.state, path.link.type, path.link.weight, path.link.target);
+        }
     }
 
     private void printQuantity(String q, String v) {
@@ -290,7 +374,7 @@ public class Analyzer {
          */
         public MutableState interrupt(MutableState s, int num) {
             s.setFlag_I(AbstractArithmetic.FALSE);
-            s.setPC(0x0004 + num * 4);
+            s.setPC((num - 1) * 4);
             StateSpace.State target = space.getStateFor(s);
 
             traceProducedState(target);
@@ -551,7 +635,20 @@ public class Analyzer {
         }
 
         private void mergeFrontierStateLists(StateSpace.State t, FrontierInfo.CallSiteList newCalls) {
+            FrontierInfo fi = getFrontierInfo(t);
 
+            if ( fi.callsites == newCalls ) return;
+            
+            HashSet callers = new HashSet();
+            for ( FrontierInfo.CallSiteList list = fi.callsites; list != null; list = list.next ) {
+                callers.add(list.caller);
+            }
+
+            for ( FrontierInfo.CallSiteList list = newCalls; list != null; list = list.next ) {
+                if ( !callers.contains(list.caller) )
+                    fi.callsites = new FrontierInfo.CallSiteList(list.caller, fi.callsites);
+                callers.add(list.caller);
+            }
         }
 
     }
@@ -564,13 +661,17 @@ public class Analyzer {
 
     private void traceState(StateSpace.State s) {
         if (TRACE) {
-            Terminal.print("Exploring ");
-            printStateName(s);
-            Terminal.nextln();
-            Instr instr = program.readInstr(s.getPC());
-            String str = StringUtil.leftJustify(instr.toString(), 14);
-            printState(str, s);
+            printFullState("Exploring", s);
         }
+    }
+
+    private void printFullState(String head, StateSpace.State s) {
+        Terminal.print(head+" ");
+        printStateName(s);
+        Terminal.nextln();
+        Instr instr = program.readInstr(s.getPC());
+        String str = StringUtil.leftJustify(instr.toString(), 14);
+        printState(str, s);
     }
 
     private void traceProducedState(StateSpace.State s) {
@@ -591,6 +692,10 @@ public class Analyzer {
     private void traceEdge(int type, StateSpace.State s, StateSpace.State t, int weight) {
         if (!TRACE) return;
         Terminal.print("adding edge ");
+        printEdge(s, type, weight, t);
+    }
+
+    private void printEdge(StateSpace.State s, int type, int weight, StateSpace.State t) {
         printStateName(s);
         Terminal.print(" --(");
         Terminal.print(EDGE_NAMES[type]);
@@ -643,7 +748,11 @@ public class Analyzer {
 
         Terminal.nextln();
 
-        Terminal.print("                                ");
+        Terminal.print("               [");
+        Terminal.printBrightGreen("TIMSK");
+        Terminal.print(":");
+        Terminal.print(AbstractArithmetic.toString(s.getIORegisterAV(IORegisterConstants.TIMSK)));
+        Terminal.print("] ");
         for (int cntr = 24; cntr < 32; cntr++) {
             Terminal.print(toString(s.getRegisterAV(cntr)));
             Terminal.print(" ");

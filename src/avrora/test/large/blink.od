@@ -363,7 +363,7 @@ Disassembly of section .text:
  31c:	08 95       	ret
 
 0000031e <__vector_15>:
- 31e:	78 94       	sei
+ 31e:	78 94       	nop
  320:	1f 92       	push	r1
  322:	0f 92       	push	r0
  324:	0f b6       	in	r0, 0x3f	; 63

@@ -88,7 +88,15 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
             for (int cntr = 0; cntr < 8; cntr++) {
                 char msk = AbstractArithmetic.getBit(eimsk, cntr);
                 if (msk == FALSE) continue;
-                policy.interrupt(state.copy(), cntr);
+                policy.interrupt(state.copy(), cntr + 1);
+            }
+
+            // produce interrupt edges to possibly enabled interrupts.
+            char timsk = state.getIORegisterAV(IORegisterConstants.TIMSK);
+            for (int cntr = 0; cntr < 8; cntr++) {
+                char msk = AbstractArithmetic.getBit(timsk, cntr);
+                if (msk == FALSE) continue;
+                policy.interrupt(state.copy(), 17 - cntr);
             }
         }
 
@@ -97,7 +105,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         i.accept(this);
 
         if (state != null) {
-            // if we didn't reach a dead end (e.g. a break instruction)
+            // if we didn't reach a dead end (e.g. a break instruction, return, etc)
             state.setPC(pc + i.getSize());
             policy.pushState(state);
         }
