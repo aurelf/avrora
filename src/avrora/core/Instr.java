@@ -2,6 +2,7 @@ package avrora.core;
 
 import vpc.VPCBase;
 import avrora.Operand;
+import avrora.Avrora;
 
 import java.util.NoSuchElementException;
 
@@ -44,7 +45,7 @@ public abstract class Instr extends Elem implements InstrPrototype {
      */
     public Data asData(int address) {
         // TODO: define correct error for this.
-        throw VPCBase.failure("not data @ " + address);
+        throw Avrora.failure("not data @ " + address);
     }
 
     /**

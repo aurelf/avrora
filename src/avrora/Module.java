@@ -23,7 +23,7 @@ import java.io.FileNotFoundException;
  * into an AVR assembly program.
  * @author Ben L. Titzer
  */
-public class Module extends VPCBase implements Context {
+public class Module implements Context {
 
     public final HashMap definitions;
     public final HashMap constants;
@@ -57,7 +57,7 @@ public class Module extends VPCBase implements Context {
 
         Segment getSegment() {
             if (next != null) return next.getSegment();
-            throw failure("unknown cseg");
+            throw Avrora.failure("unknown cseg");
         }
 
     }
@@ -73,7 +73,6 @@ public class Module extends VPCBase implements Context {
 
         void build() {
             int result = value.evaluate(Module.this);
-            verboseln("(PASS 2) Adding constant: " + name.image + " = " + result);
             constants.put(name.image.toLowerCase(), new Integer(result));
         }
 
@@ -94,7 +93,6 @@ public class Module extends VPCBase implements Context {
         void build() {
             Register reg = Register.getRegisterByName(register.image);
             if (reg == null) ERROR.UnknownRegister(register);
-            verboseln("(PASS 2) Adding definition: " + name.image + " = " + reg);
             definitions.put(name.image.toLowerCase(), reg);
         }
 
@@ -144,12 +142,9 @@ public class Module extends VPCBase implements Context {
 
         void build() {
             int address = getAddress();
-            verbose("(PASS 2) Simplifying: " + variant + " @ " + address);
 
             for (int cntr = 0; cntr < operands.length; cntr++)
                 simplifyOperand(operands[cntr]);
-
-            verboseln("");
 
             try {
                 Instr instr = proto.build(address, operands);
@@ -173,12 +168,10 @@ public class Module extends VPCBase implements Context {
             if (o.isRegister()) {
                 Operand.Register or = (Operand.Register) o;
                 or.setRegister(getRegister(or.name));
-                verbose(", " + or.name);
             } else {
                 Operand.Constant oc = (Operand.Constant) o;
                 int value = oc.expr.evaluate(Module.this);
                 oc.setValue(value);
-                verbose(", " + value);
             }
         }
 
@@ -222,18 +215,15 @@ public class Module extends VPCBase implements Context {
 
         void build() {
             int cursor = getByteAddress();
-            verbose("simplifying data @ " + cursor + " to " + cseg.getName());
 
             for (ExprList.ExprItem item = list.head; item != null; item = item.next) {
                 Expr e = item.expr;
                 if (e instanceof Expr.StringLiteral) {
                     String str = ((Expr.StringLiteral) e).value;
-                    verbose(", str: " + StringUtil.quote(str));
                     cseg.writeBytes(str.getBytes(), cursor);
                     cursor = align(cursor, width);
                 } else {
                     int val = e.evaluate(Module.this);
-                    verbose(", val:" + val);
                     for (int cntr = 0; cntr < width; cntr++) {
                         cseg.writeByte((byte) val, cursor);
                         val = val >> 8;
@@ -241,7 +231,6 @@ public class Module extends VPCBase implements Context {
                     }
                 }
             }
-            verboseln("");
         }
 
         public String toString() {
@@ -378,32 +367,32 @@ public class Module extends VPCBase implements Context {
 
         Item addInstruction(String variant, AbstractToken name, Operand[] ops) {
             ERROR.InstructionCannotBeInSegment("data", name);
-            throw failure("instruction cannot be in data cseg");
+            throw Avrora.failure("instruction cannot be in data cseg");
         }
 
         Item addBytes(ExprList l) {
             ERROR.DataCannotBeInSegment(l);
-            throw failure("initialized data cannot be in data cseg");
+            throw Avrora.failure("initialized data cannot be in data cseg");
         }
 
         Item addWords(ExprList l) {
             ERROR.DataCannotBeInSegment(l);
-            throw failure("initialized data cannot be in data cseg");
+            throw Avrora.failure("initialized data cannot be in data cseg");
         }
 
         Item addDoubleWords(ExprList l) {
             ERROR.DataCannotBeInSegment(l);
-            throw failure("initialized data cannot be in data cseg");
+            throw Avrora.failure("initialized data cannot be in data cseg");
         }
 
         void writeByte(byte val, int address) {
             // TODO: define correct error for this.
-            throw VPCBase.failure("cannot write initialized data into data segment @ " + address);
+            throw Avrora.failure("cannot write initialized data into data segment @ " + address);
         }
 
         void writeBytes(byte[] val, int address) {
             // TODO: define correct error for this.
-            throw VPCBase.failure("cannot write initialized data into data segment @ " + address);
+            throw Avrora.failure("cannot write initialized data into data segment @ " + address);
         }
 
         String getName() {
@@ -418,17 +407,17 @@ public class Module extends VPCBase implements Context {
 
         Item addInstruction(String variant, AbstractToken name, Operand[] ops) {
             ERROR.InstructionCannotBeInSegment("eeprom", name);
-            throw failure("instruction cannot be in eeprom cseg");
+            throw Avrora.failure("instruction cannot be in eeprom cseg");
         }
 
         void writeByte(byte val, int address) {
             // TODO: define correct error for this.
-            throw VPCBase.failure("cannot write initialized data into eeprom segment @ " + address);
+            throw Avrora.failure("cannot write initialized data into eeprom segment @ " + address);
         }
 
         void writeBytes(byte[] val, int address) {
             // TODO: define correct error for this.
-            throw VPCBase.failure("cannot write initialized data into eeprom segment @ " + address);
+            throw Avrora.failure("cannot write initialized data into eeprom segment @ " + address);
         }
 
         String getName() {
@@ -633,7 +622,6 @@ public class Module extends VPCBase implements Context {
     // .byte directive
     public void reserveBytes(Expr e, Expr f) {
         // TODO: fill section with particular value
-        verboseln("(PASS 1) Reserving bytes...");
         segment.reserveBytes(e.evaluate(this));
     }
 
@@ -641,7 +629,6 @@ public class Module extends VPCBase implements Context {
     public void includeFile(AbstractToken fname) throws AbstractParseException {
         try {
             String fn = StringUtil.trimquotes(fname.image);
-            verboseln("(PASS 1) attempting to include file: "+fn);
             AtmelParser parser = new AtmelParser(new FileInputStream(fn), this, fn);
             // TODO: handle infinite include recursion possibility
             parser.Module();
@@ -723,8 +710,6 @@ public class Module extends VPCBase implements Context {
         else
             tail.next = i;
         tail = i;
-
-        verboseln("(PASS 1) Adding item: " + i);
     }
 
     public static int align(int val, int width) {

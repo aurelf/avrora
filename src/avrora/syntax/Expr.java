@@ -4,6 +4,7 @@ import vpc.VPCBase;
 import vpc.util.StringUtil;
 import vpc.core.AbstractToken;
 import avrora.syntax.ASTNode;
+import avrora.Avrora;
 
 /**
  * @author Ben L. Titzer
@@ -58,7 +59,7 @@ public abstract class Expr extends ASTNode {
             if (o.equals("&&")) return asInt(asBool(lval) && asBool(rval));
             if (o.equals("||")) return asInt(asBool(lval) || asBool(rval));
 
-            throw VPCBase.failure("unknown binary operator: " + op);
+            throw Avrora.failure("unknown binary operator: " + op);
         }
 
         public AbstractToken getLeftMostToken() {
@@ -88,7 +89,7 @@ public abstract class Expr extends ASTNode {
             if (o.equals("~")) return ~oval;
             if (o.equals("-")) return -oval;
 
-            throw VPCBase.failure("unknown unary operator: " + op);
+            throw Avrora.failure("unknown unary operator: " + op);
         }
 
         public AbstractToken getLeftMostToken() {
@@ -129,7 +130,7 @@ public abstract class Expr extends ASTNode {
             if (f.equalsIgnoreCase("exp2")) return 1 << aval;
             if (f.equalsIgnoreCase("log2")) return log(aval);
 
-            throw VPCBase.failure("unknown function: " + func);
+            throw Avrora.failure("unknown function: " + func);
         }
 
         private int log(int val) {
@@ -247,7 +248,7 @@ public abstract class Expr extends ASTNode {
         }
 
         public int evaluate(Context c) {
-            throw VPCBase.failure("cannot evaluate a string to an integer");
+            throw Avrora.failure("cannot evaluate a string to an integer");
         }
     }
 

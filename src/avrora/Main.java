@@ -33,7 +33,7 @@ import avrora.stack.AnalyzeStackAction;
  *
  * @author Ben L. Titzer
  */
-public class Main extends VPCBase {
+public class Main {
 
     /**
      * The <code>Action</code> class defines a new action that the main driver is
@@ -157,7 +157,7 @@ public class Main extends VPCBase {
 
     static class AssembleAction extends Action {
         public void run(String[] args) {
-            throw VPCBase.unimplemented();
+            throw Avrora.unimplemented();
         }
 
     }
@@ -185,7 +185,7 @@ public class Main extends VPCBase {
 
             Action a = (Action)actions.get(ACTION.get());
             if ( a == null )
-                userError("unknown action", ACTION.get());
+                Avrora.userError("unknown action", ACTION.get());
 
             args = options.getArguments();
 
@@ -222,7 +222,7 @@ public class Main extends VPCBase {
     }
 
     static void formatError(String f, int i) {
-        userError("format error for program location(s) "+StringUtil.quote(f)+" @ character "+i);
+        Avrora.userError("format error for program location(s) "+StringUtil.quote(f)+" @ character "+i);
 
     }
 
@@ -237,7 +237,7 @@ public class Main extends VPCBase {
             else if ( Character.isJavaIdentifierStart(StringUtil.peek(i))) {
                 String ident = StringUtil.readIdentifier(i);
                 Program.Label l = program.getLabel(ident);
-                if ( l == null ) userError("cannot find label "+StringUtil.quote(ident)+" in specified program");
+                if ( l == null ) Avrora.userError("cannot find label "+StringUtil.quote(ident)+" in specified program");
                 locset.add(new Location(l.name, l.address));
             } else {
                 formatError(v, i.getIndex());
@@ -257,7 +257,7 @@ public class Main extends VPCBase {
     public static Microcontroller getMicrocontroller() {
         Microcontroller mcu = Microcontrollers.getMicrocontroller(CHIP.get());
         if ( mcu == null )
-            userError("unknown microcontroller unit "+StringUtil.quote(CHIP.get()));
+            Avrora.userError("unknown microcontroller", CHIP.get());
         return mcu;
     }
 

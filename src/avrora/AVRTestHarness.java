@@ -29,9 +29,7 @@ import java.text.StringCharacterIterator;
  *
  * @author Ben L. Titzer
  */
-public class AVRTestHarness extends VPCBase implements TestHarness {
-
-    private static AtmelParser parser;
+public class AVRTestHarness implements TestHarness {
 
     class SimplifierTest extends TestCase.ExpectCompilationError {
 
@@ -478,7 +476,6 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         }
 
         public boolean check(Program p, State s) {
-            verboseln("checking: " + left + " ?= " + right);
             leftvalue = left.evaluate(p, s);
             rightvalue = right.evaluate(p, s);
             return leftvalue == rightvalue;

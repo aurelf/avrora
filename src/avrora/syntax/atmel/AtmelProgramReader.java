@@ -4,6 +4,7 @@ import avrora.core.Program;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.Main;
 import avrora.Module;
+import avrora.Avrora;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,9 +31,9 @@ public class AtmelProgramReader extends Main.ProgramReader {
      */
     public Program read(String[] args) throws Exception {
         if ( args.length == 0 )
-            VPCBase.userError("no input files");
+            Avrora.userError("no input files");
         if ( args.length != 1 )
-            VPCBase.userError("input type \"atmel\" accepts only one file at a time.");
+            Avrora.userError("input type \"atmel\" accepts only one file at a time.");
 
         File f = new File(args[0]);
         Module module = new Module();

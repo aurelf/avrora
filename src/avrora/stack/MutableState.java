@@ -3,6 +3,7 @@ package avrora.stack;
 import vpc.VPCBase;
 import avrora.core.Register;
 import avrora.sim.IORegisterConstants;
+import avrora.Avrora;
 
 /**
  * The <code>MutableState</code> class represents an abstract state of
@@ -50,7 +51,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     public MutableState merge(MutableState s) {
 
         if ( pc != s.pc )
-            throw VPCBase.failure("cannot merge abstract states with different program counters");
+            throw Avrora.failure("cannot merge abstract states with different program counters");
 
         MutableState n = copy();
 
@@ -68,7 +69,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * @throws vpc.VPCInternalError
      */
     public int hashCode() {
-        throw VPCBase.failure("cannot compute hash code of MutableState");
+        throw Avrora.failure("cannot compute hash code of MutableState");
     }
 
     /**
@@ -78,7 +79,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * @throws vpc.VPCInternalError
      */
     public boolean equals(Object o) {
-        throw VPCBase.failure("cannot perform .equals() on MutableState");
+        throw Avrora.failure("cannot perform .equals() on MutableState");
     }
 
     /**

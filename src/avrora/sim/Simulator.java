@@ -6,6 +6,7 @@ import avrora.core.Program;
 import avrora.core.Register;
 import avrora.Arithmetic;
 import avrora.Operand;
+import avrora.Avrora;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.PeriodicTrigger;
 import vpc.util.Terminal;
@@ -1676,7 +1677,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     private void unimplemented(Instr i) {
-        throw failure("unimplemented instruction: "+i.getVariant());
+        throw Avrora.failure("unimplemented instruction: "+i.getVariant());
     }
 
     private boolean xor(boolean a, boolean b) {

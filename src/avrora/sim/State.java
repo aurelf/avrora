@@ -2,6 +2,7 @@ package avrora.sim;
 
 import avrora.core.*;
 import avrora.Arithmetic;
+import avrora.Avrora;
 import vpc.VPCBase;
 import vpc.util.Terminal;
 import vpc.util.StringUtil;
@@ -217,7 +218,7 @@ public class State implements IORegisterConstants {
                 case SREG_Z: return Z;
                 case SREG_C: return C;
             }
-            throw VPCBase.failure("bit out of range: "+num);
+            throw Avrora.failure("bit out of range: "+num);
         }
 
         /**
@@ -251,7 +252,7 @@ public class State implements IORegisterConstants {
                     C = false;
                     break;
                 default:
-                    throw VPCBase.failure("bit out of range: "+num);
+                    throw Avrora.failure("bit out of range: "+num);
             }
         }
 
@@ -286,7 +287,7 @@ public class State implements IORegisterConstants {
                     C = true;
                     break;
                 default:
-                    throw VPCBase.failure("bit out of range: "+num);
+                    throw Avrora.failure("bit out of range: "+num);
             }
         }
     }
@@ -312,7 +313,7 @@ public class State implements IORegisterConstants {
 
         // if program will not fit onto hardware, error
         if ( p.program_end > flash_size)
-            throw VPCBase.failure("program will not fit into " + flash_size + " bytes");
+            throw Avrora.failure("program will not fit into " + flash_size + " bytes");
 
         // allocate register values
         regs = new byte[NUM_REGS];

@@ -7,6 +7,8 @@ import vpc.VPCBase;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import avrora.Avrora;
+
 /**
  * The <code>Program</code> class represents a complete program of AVR
  * instructions. It stores the actual instructions and initialized data
@@ -146,7 +148,7 @@ public class Program {
             program[offset] = d;
         } else if (e.isInstr()) {
             // TODO: throw correct error
-            throw VPCBase.failure("cannot overwrite instruction");
+            throw Avrora.failure("cannot overwrite instruction");
         } else {
             Data d = (Data) e;
             d.value = val;
@@ -191,7 +193,7 @@ public class Program {
 
     public Elem[] makeImpression(int size) {
         if (size < program_end)
-            throw VPCBase.failure("program will not fit into " + size + " bytes, requires " + program_end);
+            throw Avrora.failure("program will not fit into " + size + " bytes, requires " + program_end);
 
         Elem[] elems = new Elem[size];
 
@@ -218,7 +220,7 @@ public class Program {
     protected void checkAddress(int addr) {
         // TODO: throw correct error type
         if (addr < program_start || addr >= program_end)
-            throw VPCBase.failure("address out of range: "+addr);
+            throw Avrora.failure("address out of range: "+addr);
     }
 
     public void dump() {
