@@ -1,5 +1,5 @@
 ;
-; $Id: test_stack.asm,v 1.1 2004/03/20 23:05:26 titzer Exp $
+; $Id: test_stack.asm,v 1.2 2004/03/25 03:23:47 titzer Exp $
 ;
 ; Test pushing 4 bytes onto the stack. When done, expect to see:
 	;; last 4 bytes of sram with 00, 01, 02, 03
@@ -25,9 +25,9 @@
 
 MAIN:
 	;; init stack pointer to 0x025f (the last byte of int sram)
-		ldi		r16, lo8(RAMEND); low byte of end of int sram
+		ldi		r16, low(RAMEND); low byte of end of int sram
 		out		SPL, r16
-		ldi		r16, hi8(RAMEND); high byte of end of int sram
+		ldi		r16, high(RAMEND); high byte of end of int sram
 		out		SPH, r16
 
 	;; push 4 numbers onto the stack (use r16 as a counter)

@@ -21,8 +21,11 @@ import avrora.sim.util.Counter;
 import avrora.sim.util.BranchCounter;
 import avrora.sim.util.ProgramProfiler;
 import avrora.syntax.atmel.AtmelParser;
+import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.gas.GASParser;
+import avrora.syntax.gas.GASProgramReader;
 import avrora.stack.Analyzer;
+import avrora.stack.AnalyzeStackAction;
 
 /**
  * This is the main entrypoint to Avrora.
@@ -31,59 +34,49 @@ import avrora.stack.Analyzer;
  */
 public class Main extends VPCBase {
 
-    static final String VERSION = "0.9.4";
-
-    static final HashMap actions = new HashMap();
-    static final HashMap inputs = new HashMap();
-    static final Options options = new Options();
-
-    static final Option.Str INPUT     = options.newOption("input", "atmel");
-    static final Option.Str ACTION    = options.newOption("action", "simulate");
-    static final Option.Str OUTPUT    = options.newOption("output", "");
-    static final Option.Str BREAKS    = options.newOption("breakpoint", "");
-    static final Option.Str COUNTS    = options.newOption("count", "");
-    static final Option.Str BRANCHCOUNTS = options.newOption("branchcount", "");
-    static final Option.Bool PROFILE  = options.newOption("profile", false);
-    static final Option.Bool TIME     = options.newOption("time", false);
-    static final Option.Long TIMEOUT  = options.newOption("timeout", (long)0);
-    static final Option.Bool TOTAL    = options.newOption("total", false);
-    static final Option.Bool TRACE    = options.newOption("trace", false);
-    static final Option.Bool COLORS   = options.newOption("colors", true);
-    static final Option.Bool BANNER   = options.newOption("banner", true);
-    static final Option.Bool VERBOSE  = options.newOption("verbose", false);
-
-    static {
-        newAction("simulate", new SimulateAction());
-        newAction("analyze-stack", new AnalyzeStackAction());
-        newAction("assemble", new AssembleAction());
-        newAction("test", new TestAction());
-        newAction("list", new ListAction());
-        newInput("gas", new GASInput());
-        newInput("atmel", new AtmelInput());
-    }
-
-    static void newAction(String name, Action a) {
-        actions.put(name, a);
-    }
-
-    static void newInput(String name, ProgramReader r) {
-        inputs.put(name, r);
-    }
-
-    static abstract class Action {
+    /**
+     * The <code>Action</code> class defines a new action that the main driver is
+     * capable of executing. Each instance of <code>Action</code> is inserted into
+     * a hash map in the main class, with the key being its name. For example,
+     * the action to simulate a program is inserted into this hash map with the key
+     * "simulate", and an instance of <code>avrora.sim.SimulateAction</code>.
+     */
+    public static abstract class Action {
+        /**
+         * The <code>run()</code> method is called by the main class and is passed
+         * the remaining command line arguments after options have been stripped out.
+         *
+         * @param args the command line arguments
+         * @throws Exception
+         */
         public abstract void run(String[] args) throws Exception;
     }
 
-    static class TestAction extends Action {
-        public void run(String[] args) throws Exception {
-            new AutomatedTester(new AVRTestHarness()).runTests(args);
-        }
+    /**
+     * The <code>ProgramReader</code> class represents an object capable of reading
+     * a program given the special command line arguments. It may for example read
+     * source assembly and produce a simplified program.
+     */
+    public static abstract class ProgramReader {
+        /**
+         * The <code>read()</code> method will read a program in and produce a
+         * simplified format.
+         * @param args the command line arguments
+         * @return a program instance representing the program
+         * @throws Exception
+         */
+        public abstract Program read(String[] args) throws Exception;
     }
 
-    static class Location {
-        final String name;
-        final int address;
-        Object object;
+    /**
+     * The <code>Location</code> class encapsulates a location within a program
+     * that is specified on the command line. The <code>getLocationList</code> method
+     * can parse a string of locations separated by commas and then return
+     * a list of these locations.
+     */
+    public static class Location {
+        public final String name;
+        public final int address;
 
         Location(int addr) {
             name = null;
@@ -109,276 +102,53 @@ public class Main extends VPCBase {
 
     }
 
-    static class Comparator implements java.util.Comparator {
-        public int compare(Object o1, Object o2) {
-            Location l1 = (Location)o1;
-            Location l2 = (Location)o2;
 
-            if ( l1.address == l2.address ) {
-                if ( l1.name == null ) return 1;
-                if ( l2.name == null ) return -1;
-                return l1.name.compareTo(l2.name);
-            }
-            return l1.address - l2.address;
-        }
+
+    static final String VERSION = "0.9.5";
+
+    static final HashMap actions = new HashMap();
+    static final HashMap inputs = new HashMap();
+    static final Options options = new Options();
+
+    public static final Option.Str INPUT     = options.newOption("input", "atmel");
+    public static final Option.Str ACTION    = options.newOption("action", "simulate");
+    public static final Option.Str OUTPUT    = options.newOption("output", "");
+    public static final Option.Str BREAKS    = options.newOption("breakpoint", "");
+    public static final Option.Str COUNTS    = options.newOption("count", "");
+    public static final Option.Str BRANCHCOUNTS = options.newOption("branchcount", "");
+    public static final Option.Bool PROFILE  = options.newOption("profile", false);
+    public static final Option.Bool TIME     = options.newOption("time", false);
+    public static final Option.Long TIMEOUT  = options.newOption("timeout", (long)0);
+    public static final Option.Bool TOTAL    = options.newOption("total", false);
+    public static final Option.Bool CYCLES   = options.newOption("cycles", false);
+    public static final Option.Bool TRACE    = options.newOption("trace", false);
+    public static final Option.Bool COLORS   = options.newOption("colors", true);
+    public static final Option.Bool BANNER   = options.newOption("banner", true);
+    public static final Option.Bool VERBOSE  = options.newOption("verbose", false);
+    public static final Option.Int  REPEAT   = options.newOption("repeat", 1);
+
+    static {
+        newAction("simulate", new SimulateAction());
+        newAction("analyze-stack", new AnalyzeStackAction());
+        newAction("assemble", new AssembleAction());
+        newAction("test", new TestAction());
+        newAction("list", new ListAction());
+        newInput("gas", new GASProgramReader());
+        newInput("atmel", new AtmelProgramReader());
     }
 
-    static class SimulateAction extends Action {
-        Program program;
-        Simulator simulator;
-        Counter total;
-        long startms, endms;
+    static void newAction(String name, Action a) {
+        actions.put(name, a);
+    }
 
-        List counters;
-        List branchcounters;
+    static void newInput(String name, ProgramReader r) {
+        inputs.put(name, r);
+    }
 
-        ProgramProfiler profile;
 
+    static class TestAction extends Action {
         public void run(String[] args) throws Exception {
-            ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
-            program = r.read(args);
-            simulator = new ATMega128L().loadProgram(program);
-
-            processBreakPoints();
-            processCounters();
-            processBranchCounters();
-            processTotal();
-            processTimeout();
-            processProfile();
-
-            if ( TRACE.get() ) {
-                simulator.insertProbe(Simulator.TRACEPROBE);
-            }
-
-            startms = System.currentTimeMillis();
-            try {
-                simulator.start();
-            } finally {
-                endms = System.currentTimeMillis();
-
-                reportCounters();
-                reportBranchCounters();
-                reportTotal();
-                reportTime();
-                reportProfile();
-            }
-        }
-
-        void processBreakPoints() {
-            Iterator i = getLocationList(BREAKS.get()).iterator();
-            while ( i.hasNext() ) {
-                Location l = (Location)i.next();
-                simulator.insertBreakPoint(l.address);
-            }
-        }
-
-        void processCounters() {
-            HashSet cset = getLocationList(COUNTS.get());
-            Iterator i = cset.iterator();
-            while ( i.hasNext() ) {
-                Location l = (Location)i.next();
-                Counter c = new Counter();
-                l.object = c;
-                simulator.insertProbe(c, l.address);
-            }
-            counters = Collections.list(Collections.enumeration(cset));
-            Collections.sort(counters, new Comparator());
-        }
-
-        void reportCounters() {
-            if ( counters.isEmpty() ) return;
-            ColorTerminal.printGreen(" Counter results\n");
-            printSeparator();
-            Iterator i = counters.iterator();
-            // TODO: clean up, make multicolumn, better justified.
-            while ( i.hasNext() ) {
-                Location l = (Location)i.next();
-                Counter c = (Counter)l.object;
-                String cnt = StringUtil.rightJustify(c.count, 8);
-                String addr = addrToString(l.address);
-                String name;
-                if ( l.name != null )
-                    name = "    "+l.name+" @ "+addr;
-                else
-                    name = "    "+addr;
-                reportQuantity(name, cnt, "");
-            }
-        }
-
-        void processBranchCounters() {
-            HashSet bcset = getLocationList(BRANCHCOUNTS.get());
-            Iterator i = bcset.iterator();
-            while ( i.hasNext() ) {
-                Location l = (Location)i.next();
-                BranchCounter c = new BranchCounter();
-                l.object = c;
-                simulator.insertProbe(c, l.address);
-            }
-            branchcounters = Collections.list(Collections.enumeration(bcset));
-            Collections.sort(branchcounters, new Comparator());
-        }
-
-        void reportBranchCounters() {
-            if ( branchcounters.isEmpty() ) return;
-            ColorTerminal.printGreen(" Branch counter results\n");
-            printSeparator();
-            Iterator i = branchcounters.iterator();
-            while ( i.hasNext() ) {
-                Location l = (Location)i.next();
-                BranchCounter c = (BranchCounter)l.object;
-                String tcnt = StringUtil.rightJustify(c.takenCount, 8);
-                String ntcnt = StringUtil.rightJustify(c.nottakenCount, 8);
-                String addr = addrToString(l.address);
-                String name;
-                if ( l.name != null )
-                    name = "    "+l.name+" @ "+addr;
-                else
-                    name = "    "+addr;
-                reportQuantity(name, tcnt+" "+ntcnt, "taken/not taken");
-            }
-
-        }
-
-        void processProfile() {
-            if ( PROFILE.get() )
-                simulator.insertProbe(profile = new ProgramProfiler(program));
-        }
-
-        void reportProfile() {
-            if ( profile != null ) {
-                ColorTerminal.printGreen(" Profiling results\n");
-                printSeparator();
-                double total = 0;
-                long[] icount = profile.icount;
-                int imax = icount.length;
-
-                for ( int cntr = 0; cntr < imax; cntr++ ) {
-                    total += icount[cntr];
-                }
-
-                for ( int cntr = 0; cntr < imax; cntr += 2) {
-                    int start = cntr;
-                    int runlength = 1;
-                    long c = icount[cntr];
-
-                    while ( cntr < imax - 2) {
-                        if ( icount[cntr+2] != c ) break;
-                        cntr += 2;
-                        runlength++;
-                    }
-
-                    String cnt = StringUtil.rightJustify(c, 8);
-                    float pcnt = (float)(100*c / total);
-                    String percent = toFixedFloat(pcnt, 4)+" %";
-                    String addr;
-                    if ( runlength > 1 ) {
-                        addr = addrToString(start)+"-"+addrToString(cntr);
-                        if ( c != 0 ) {
-                            percent += "  x"+runlength;
-                            percent += "  = "+toFixedFloat(pcnt*runlength, 4)+" %";
-                        }
-                    } else {
-                        addr = "     "+addrToString(start);
-                    }
-
-                    reportQuantity("    "+addr, cnt, "  "+percent);
-                }
-            }
-        }
-
-        private void printSeparator() {
-            ColorTerminal.printSeparator(60);
-        }
-
-        void processTotal() {
-            if ( TOTAL.get() ) {
-                simulator.insertProbe(total = new Counter());
-            }
-        }
-
-        void reportTotal() {
-            if ( total != null )
-                reportQuantity("Total instructions executed", total.count, "");
-        }
-
-        void processTimeout() {
-            long timeout = TIMEOUT.get();
-            if ( timeout > 0 )
-                simulator.insertProbe(new Simulator.InstructionCountTimeout(timeout));
-        }
-
-        void reportTime() {
-            long diff = endms - startms;
-            if ( TIME.get() ) {
-                reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "");
-                if ( total != null ) {
-                    float thru = ((float)total.count) / (diff*1000);
-                    reportQuantity("Average throughput", thru, "mips");
-                }
-            }
-        }
-
-        String addrToString(int address) {
-            return VPCBase.toHex(address, 4);
-        }
-
-        void reportQuantity(String name, long val, String units) {
-            reportQuantity(name, Long.toString(val), units);
-        }
-
-        void reportQuantity(String name, float val, String units) {
-            reportQuantity(name, Float.toString(val), units);
-        }
-
-        void reportQuantity(String name, String val, String units) {
-            ColorTerminal.printGreen(name);
-            ColorTerminal.print(": ");
-            ColorTerminal.printBrightCyan(val);
-            ColorTerminal.println(" "+units);
-        }
-
-
-        HashSet getLocationList(String v) {
-            HashSet locations = new HashSet();
-
-            StringCharacterIterator i = new StringCharacterIterator(v);
-
-            while ( i.current() != CharacterIterator.DONE ) {
-                if ( Character.isDigit(StringUtil.peek(i)) )
-                    locations.add(new Location(StringUtil.readHexValue(i, 5)));
-                else if ( Character.isJavaIdentifierStart(StringUtil.peek(i))) {
-                    String ident = StringUtil.readIdentifier(i);
-                    Program.Label l = program.getLabel(ident);
-                    if ( l == null ) userError("cannot find label "+quote(ident)+" in specified program");
-                    locations.add(new Location(l.name, l.address));
-                } else {
-                    formatError(v, i.getIndex());
-                }
-                if ( StringUtil.peek(i) == CharacterIterator.DONE ) break;
-                if ( !StringUtil.peekAndEat(i, ',') ) {
-                    formatError(v, i.getIndex());
-                }
-            }
-
-            return locations;
-        }
-    }
-
-    static void formatError(String f, int i) {
-        userError("format error for program location(s) "+quote(f)+" @ character "+i);
-
-    }
-
-    static class AnalyzeStackAction extends Action {
-        public void run(String[] args) throws Exception {
-            ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
-            Program p = r.read(args);
-            Analyzer a = new Analyzer(p);
-
-            if ( TRACE.get() ) Analyzer.TRACE = true;
-
-            a.run();
-            a.report();
+            new AutomatedTester(new AVRTestHarness()).runTests(args);
         }
     }
 
@@ -398,43 +168,9 @@ public class Main extends VPCBase {
 
     }
 
-    static abstract class ProgramReader {
-        public abstract Program read(String[] args) throws Exception;
+    public static ProgramReader getProgramReader() {
+        return (ProgramReader)inputs.get(INPUT.get());
     }
-
-    static class GASInput extends ProgramReader {
-        public Program read(String[] args) throws Exception {
-            if ( args.length == 0 )
-                userError("no input files");
-            // TODO: handle multiple GAS files and link them
-            if ( args.length != 1 )
-                userError("input type \"gas\" accepts only one file at a time.");
-
-            File f = new File(args[0]);
-            Module module = new Module();
-            FileInputStream fis = new FileInputStream(f);
-            GASParser parser = new GASParser(fis, module, f.getName());
-            parser.Module();
-            return module.build();
-        }
-    }
-
-    static class AtmelInput extends ProgramReader {
-        public Program read(String[] args) throws Exception {
-            if ( args.length == 0 )
-                userError("no input files");
-            if ( args.length != 1 )
-                userError("input type \"atmel\" accepts only one file at a time.");
-
-            File f = new File(args[0]);
-            Module module = new Module();
-            FileInputStream fis = new FileInputStream(f);
-            AtmelParser parser = new AtmelParser(fis, module, f.getName());
-            parser.Module();
-            return module.build();
-        }
-    }
-
 
     public static void main(String[] args) {
         try {
@@ -449,7 +185,9 @@ public class Main extends VPCBase {
                 userError("unknown action", ACTION.get());
 
             args = options.getArguments();
-            a.run(args);
+
+            for ( int cntr = 0; cntr < REPEAT.get(); cntr++ )
+                a.run(args);
 
         } catch ( VPCError e ) {
             e.report();
@@ -466,26 +204,52 @@ public class Main extends VPCBase {
         ColorTerminal.println("warranty, expressed or implied.\n");
     }
 
-    // warning! only works on numbers < 100!!!!
-    public static String toFixedFloat(float f, int places) {
-        // TODO: fix this routine or find an alternative
-        StringBuffer buf = new StringBuffer();
-        float radix = 100;
-        boolean nonzero = false;
-        for ( int cntr = 0; cntr < places+3; cntr++ ) {
-            int digit = ((int)(f/radix))%10;
-            char dchar = (char)(digit+'0');
+    static class LocationComparator implements java.util.Comparator {
+        public int compare(Object o1, Object o2) {
+            Location l1 = (Location)o1;
+            Location l2 = (Location)o2;
 
-            if ( digit != 0 ) nonzero = true;
+            if ( l1.address == l2.address ) {
+                if ( l1.name == null ) return 1;
+                if ( l2.name == null ) return -1;
+                return l1.name.compareTo(l2.name);
+            }
+            return l1.address - l2.address;
+        }
+    }
 
-            if ( digit == 0 && !nonzero && cntr < 2) dchar = ' ';
+    static void formatError(String f, int i) {
+        userError("format error for program location(s) "+quote(f)+" @ character "+i);
 
-            buf.append(dchar);
-            if ( cntr == 2 ) buf.append('.');
-            radix = radix / 10;
+    }
+
+    public static List getLocationList(Program program, String v) {
+        HashSet locset = new HashSet();
+
+        StringCharacterIterator i = new StringCharacterIterator(v);
+
+        while ( i.current() != CharacterIterator.DONE ) {
+            if ( Character.isDigit(StringUtil.peek(i)) )
+                locset.add(new Location(StringUtil.readHexValue(i, 5)));
+            else if ( Character.isJavaIdentifierStart(StringUtil.peek(i))) {
+                String ident = StringUtil.readIdentifier(i);
+                Program.Label l = program.getLabel(ident);
+                if ( l == null ) userError("cannot find label "+quote(ident)+" in specified program");
+                locset.add(new Location(l.name, l.address));
+            } else {
+                formatError(v, i.getIndex());
+            }
+            if ( StringUtil.peek(i) == CharacterIterator.DONE ) break;
+            if ( !StringUtil.peekAndEat(i, ',') ) {
+                formatError(v, i.getIndex());
+            }
         }
 
-        return buf.toString();
+        List loclist = Collections.list(Collections.enumeration(locset));
+        Collections.sort(loclist, new LocationComparator());
+
+        return loclist;
     }
+
 
 }

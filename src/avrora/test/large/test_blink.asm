@@ -1,5 +1,5 @@
 ;
-; $Id: test_blink.asm,v 1.1 2004/03/20 23:05:26 titzer Exp $
+; $Id: test_blink.asm,v 1.2 2004/03/25 03:23:47 titzer Exp $
 ;
 ; Uses an at90s8515 to make the LEDS flicker
 ;
@@ -7,10 +7,10 @@
 
 .include        "8515def.inc"
 
-.equ    delay,    16
-.equ    delay_hi, 17
-.equ    cntr,     18
-.equ    input,    19
+.def    delay =    r16
+.def    delay_hi = r17
+.def    cntr =     r18
+.def    input =    r19
 
         rjmp    MAIN            ; reset
         nop                     ; int0
