@@ -43,7 +43,7 @@ import avrora.core.Instr;
  * It is analagous to the <code>Counter</code> probe which is used to count
  * the execution frequency of a particular instruction.
  *
- * @see Simulator.Watch
+ * @see avrora.sim.Simulator.Watch
  * @see Counter
  *
  * @author Ben L. Titzer

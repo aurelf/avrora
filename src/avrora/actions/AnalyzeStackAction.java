@@ -47,6 +47,10 @@ public class AnalyzeStackAction extends Action {
     public static final String HELP = "The \"analyze-stack\" option invokes the built-in " +
             "stack analysis tool on the specified program.";
 
+    /**
+     * The default constructor of the <code>AnalyzeStackAction</code> class simply
+     * creates an empty instance with the appropriate name and help string.
+     */
     public AnalyzeStackAction() {
         super("analyze-stack", HELP);
     }

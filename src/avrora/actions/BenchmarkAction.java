@@ -69,6 +69,10 @@ public class BenchmarkAction extends Action {
     public static final String HELP = "The \"benchmark\" action benchmarks the simulator's " +
             "performace on an input program and gives tables of performance information. ";
 
+    /**
+     * The default constructor of the <code>BenchmarkAction</code> class simply
+     * creates an empty instance with the appropriate name and help string.
+     */
     public BenchmarkAction() {
         super("benchmark", HELP);
     }

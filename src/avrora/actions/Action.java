@@ -68,6 +68,13 @@ public abstract class Action {
         return help;
     }
 
+    /**
+     * The <code>getShortName()</code> method returns the name of this action
+     * as a short string. This short string is the name that it can be referred
+     * to as from the command line. For example, to execute the BenchmarkAction,
+     * the -action=benchmark option must be supplied.
+     * @return the name of this action as a short string
+     */
     public String getShortName() {
         return shortName;
     }

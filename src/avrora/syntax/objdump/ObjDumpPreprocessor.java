@@ -115,6 +115,12 @@ public class ObjDumpPreprocessor {
         }
 
         while (line != null) {
+            // ignore ... in output
+            if (line.indexOf("...") != - 1) {
+                line = in.readLine();
+                continue;
+            }
+
             if ( line.indexOf("Address ") != -1 ) {
                 line = line.substring(0, line.indexOf("Address "));
                 line += in.readLine();

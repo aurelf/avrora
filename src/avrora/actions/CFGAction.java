@@ -51,6 +51,10 @@ public class CFGAction extends Action {
                     "given input program. This is useful for better program understanding " +
                     "and for optimizations.";
 
+    /**
+     * The default constructor of the <code>CFGAction</code> class simply
+     * creates an empty instance with the appropriate name and help string.
+     */
     public CFGAction() {
         super("cfg", HELP);
     }

@@ -784,7 +784,7 @@ public abstract class Simulator implements IORegisterConstants {
 
     public class FlagRegister extends IMRReg {
 
-        public final MaskRegister maskRegister;
+        public MaskRegister maskRegister;
 
         public FlagRegister(boolean inc, int baseVect) {
             super(inc, baseVect);
@@ -813,7 +813,7 @@ public abstract class Simulator implements IORegisterConstants {
 
         public final FlagRegister flagRegister;
 
-        MaskRegister(boolean inc, int baseVect, FlagRegister fr) {
+        public MaskRegister(boolean inc, int baseVect, FlagRegister fr) {
             super(inc, baseVect);
             flagRegister = fr;
         }
