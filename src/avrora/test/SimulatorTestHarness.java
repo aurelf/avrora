@@ -91,7 +91,7 @@ public class SimulatorTestHarness implements TestHarness {
         map.put("r29", new ReadRegister("r29"));
         map.put("r30", new ReadRegister("r30"));
         map.put("r31", new ReadRegister("r31"));
-        map.put("badPc", new ProcessorState("badPc") {
+        map.put("pc", new ProcessorState("pc") {
             public int evaluate(Program p, State s) {
                 return s.getPC();
             }
