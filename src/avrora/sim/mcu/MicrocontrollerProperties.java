@@ -1,24 +1,18 @@
-package avrora.sim;
+package avrora.sim.mcu;
 
 import avrora.core.InstrPrototype;
-import avrora.core.Program;
 
 /**
- * The <code>Microcontroller</code> interface corresponds to a hardware device
- * that implements the AVR instruction set. This interface contains methods that
- * get commonly needed information about the particular hardware device and
- * and can load programs onto this virtual device.
  * @author Ben L. Titzer
  */
-public interface Microcontroller {
-
+public interface MicrocontrollerProperties {
     /**
      * The <code>getRamSize()</code> method returns the number of bytes of
      * SRAM present on this hardware device. For example, on the Atmega128L,
      * this number is 4096. On the Atmega103, this number is 4000.
      * @return the number of bytes of SRAM on this hardware device
      */
-    public int getRamSize();
+    int getRamSize();
 
     /**
      * The <code>getIORegSize()</code> method returns the number of IO registers
@@ -26,7 +20,7 @@ public interface Microcontroller {
      * this number is 224. On the Atmega103, this number is 64.
      * @return the number of IO registers supported on this hardware device
      */
-    public int getIORegSize();
+    int getIORegSize();
 
     /**
      * The <code<getFlashSize()</code> method returns the size in bytes of
@@ -35,7 +29,7 @@ public interface Microcontroller {
      * the Atmega128L, this number is 128K.
      * @return the size of the flash memory in bytes
      */
-    public int getFlashSize();
+    int getFlashSize();
 
     /**
      * The <code>getEEPromSize()</code> method returns the size in bytes of
@@ -43,15 +37,14 @@ public interface Microcontroller {
      * 4096.
      * @return the size of the EEPROM in bytes
      */
-    public int getEEPromSize();
+    int getEEPromSize();
 
     /**
      * The <code>getHZ()</code> method returns the number of cycles per second
-     * at which this hardware device is designed to run. For example, the
-     * Atmega128L runs at 16MHz, so this method will return 16,000,000.
+     * at which this hardware device is designed to run.
      * @return the number of cycles per second on this device
      */
-    public int getHz();
+    int getHz();
 
     /**
      * The <code>millisToCycles()</code> method converts the specified number
@@ -63,7 +56,7 @@ public interface Microcontroller {
      * @return the same time quantity in clock cycles, rounded up to the nearest
      * integer
      */
-    public long millisToCycles(double ms);
+    long millisToCycles(double ms);
 
     /**
      * The <code>cyclesToMillis()</code> method converts the specified number
@@ -74,7 +67,7 @@ public interface Microcontroller {
      * @param cycles the number of cycles
      * @return the same time quantity in milliseconds
      */
-    public double cyclesToMillis(long cycles);
+    double cyclesToMillis(long cycles);
 
     /**
      * The <code>isSupported()</code> method allows a client to query whether
@@ -86,16 +79,15 @@ public interface Microcontroller {
      * @return true if the specified instruction is supported on this device;
      * false otherwise
      */
-    public boolean isSupported(InstrPrototype i);
+    boolean isSupported(InstrPrototype i);
 
     /**
-     * The <code>loadProgram()</code> method is used to instantiate a simulator
-     * for the particular program. It will construct an instance of the
-     * <code>Simulator</code> class that has all the properties of this hardware
-     * device and has been initialized with the specified program.
-     * @param p the program to load onto the simulator
-     * @return a <code>Simulator</code> instance that is capable of simulating
-     * the hardware device's behavior on the specified program
+     * The <code>getPinNumber()</code> method looks up the named pin and returns
+     * its number. Names of pins should be UPPERCASE. The intended
+     * users of this method are external device implementors which connect
+     * their devices to the microcontroller through the pins.
+     * @param name the name of the pin; for example "PA0" or "OC1A"
+     * @return the number of the pin if it exists; -1 otherwise
      */
-    public Simulator loadProgram(Program p);
+    int getPinNumber(String name);
 }

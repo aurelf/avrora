@@ -1,7 +1,7 @@
 package avrora;
 
 import avrora.core.Program;
-import avrora.sim.Microcontroller;
+import avrora.sim.mcu.Microcontroller;
 import avrora.sim.SimulateAction;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.stack.AnalyzeStackAction;

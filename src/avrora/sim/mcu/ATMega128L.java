@@ -4,9 +4,10 @@ import avrora.util.Arithmetic;
 import avrora.util.Verbose;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
-import avrora.sim.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+
+import java.util.HashMap;
 
 /**
  * The <code>ATMega128L</code> class represents the <code>Microcontroller</code>
@@ -14,7 +15,7 @@ import avrora.sim.State;
  * as produced by Atmel Corporatation.
  * @author Ben L. Titzer
  */
-public class ATMega128L implements Microcontroller {
+public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
     public static final int HZ = 7327800;
 
@@ -23,6 +24,155 @@ public class ATMega128L implements Microcontroller {
     public static final int FLASH_SIZE = 128 * 1024;
     public static final int EEPROM_SIZE = 4096;
 
+    public static final int NUM_PINS = 65;
+
+    protected static final HashMap pinNumbers;
+
+    static {
+        pinNumbers = new HashMap();
+
+        newPin(1,  "PEN");
+        newPin(2,  "PEO", "RXD0", "PDI");
+        newPin(3,  "PE1", "TXD0", "PDO");
+        newPin(4,  "PE2", "XCK0", "AIN0");
+        newPin(5,  "PE3", "OC3A", "AIN1");
+        newPin(6,  "PE4", "OC3B", "INT4");
+        newPin(7,  "PE5", "OC3C", "INT5");
+        newPin(8,  "PE6", "T3",   "INT6");
+        newPin(9,  "PE7", "IC3",  "INT7");
+        newPin(10, "PB0", "SS");
+        newPin(11, "PB1", "SCK");
+        newPin(12, "PB2", "MOSI");
+        newPin(13, "PB3", "MISO");
+        newPin(14, "PB4", "OC0");
+        newPin(15, "PB5", "OC1A");
+        newPin(16, "PB6", "OC1B");
+        newPin(17, "PB7", "OC2",  "OC1C");
+        newPin(18, "PG3", "TOSC2");
+        newPin(19, "PG4", "TOSC1");
+        newPin(20, "RESET");
+        newPin(21, "VCC");
+        newPin(22, "GND");
+        newPin(23, "XTAL2");
+        newPin(24, "XTAL1");
+        newPin(25, "PD0", "SCL", "INT0");
+        newPin(26, "PD1", "SDA", "INT1");
+        newPin(27, "PD2", "RXD1", "INT2");
+        newPin(28, "PD3", "TXD1", "INT3");
+        newPin(29, "PD4", "IC1");
+        newPin(30, "PD5", "XCK1");
+        newPin(31, "PD6", "T1");
+        newPin(32, "PD7", "T2");
+        newPin(33, "PG0", "WR");
+        newPin(34, "PG1", "RD");
+        newPin(35, "PC0", "A8");
+        newPin(36, "PC1", "A9");
+        newPin(37, "PC2", "A10");
+        newPin(38, "PC3", "A11");
+        newPin(39, "PC4", "A12");
+        newPin(40, "PC5", "A13");
+        newPin(41, "PC6", "A14");
+        newPin(42, "PC7", "A15");
+        newPin(43, "PG2", "ALE");
+        newPin(44, "PA7", "AD7");
+        newPin(45, "PA6", "AD5");
+        newPin(46, "PA5", "AD5");
+        newPin(47, "PA4", "AD4");
+        newPin(48, "PA3", "AD3");
+        newPin(49, "PA2", "AD2");
+        newPin(50, "PA1", "AD1");
+        newPin(51, "PA0", "AD0");
+        newPin(52, "VCC.b");
+        newPin(53, "GND.b");
+        newPin(54, "PF7", "ADC7", "TDI");
+        newPin(55, "PF6", "ADC6", "TDO");
+        newPin(56, "PF5", "ADC5", "TMS");
+        newPin(57, "PF4", "ADC4", "TCK");
+        newPin(58, "PF3", "ADC3");
+        newPin(59, "PF2", "ADC2");
+        newPin(60, "PF1", "ADC1");
+        newPin(61, "PF0", "ADC0");
+        newPin(62, "AREF");
+        newPin(63, "GND.c");
+        newPin(64, "AVCC");
+    }
+
+    class Pin implements Microcontroller.Pin {
+        boolean level;
+        boolean outputDir;
+        boolean pullup;
+
+        Microcontroller.Pin.Input input;
+        Microcontroller.Pin.Output output;
+
+        public void connect(Output o) {
+            output = o;
+        }
+
+        public void connect(Input i) {
+            input = i;
+        }
+
+        protected void setOutputDir(boolean out) {
+            outputDir = out;
+        }
+
+        protected void setPullup(boolean pull) {
+            pullup = pull;
+        }
+
+        protected boolean read() {
+            if ( !outputDir ) {
+                if ( input != null ) return input.read();
+                else return pullup;
+            } else {
+                return level;
+            }
+        }
+
+        protected void write(boolean value) {
+            level = value;
+            if ( outputDir && output != null ) output.write(value);
+        }
+    }
+
+    static void newPin(int ind, String name) {
+        pinNumbers.put(name, new Integer(ind));
+    }
+
+    static void newPin(int ind, String name, String n2) {
+        Integer integer = new Integer(ind);
+        pinNumbers.put(name, integer);
+        pinNumbers.put(n2, integer);
+    }
+
+    static void newPin(int ind, String name, String n2, String n3) {
+        Integer integer = new Integer(ind);
+        pinNumbers.put(name, integer);
+        pinNumbers.put(n2, integer);
+        pinNumbers.put(n3, integer);
+    }
+
+    protected final Simulator simulator;
+    protected final Pin[] pins;
+
+    /**
+     * The constructor for the default instance.
+     */
+    public ATMega128L() {
+        simulator = null;
+        pins = new Pin[NUM_PINS];
+    }
+
+    protected ATMega128L(Program p) {
+        pins = new Pin[NUM_PINS];
+        installPins();
+        simulator = new SimImpl(p);
+    }
+
+    protected void installPins() {
+        // TODO: install actual pins
+    }
 
     /**
      * The <code>getRamSize()</code> method returns the number of bytes of
@@ -80,16 +230,13 @@ public class ATMega128L implements Microcontroller {
     }
 
     /**
-     * The <code>loadProgram()</code> method is used to instantiate a simulator
-     * for the particular program. It will construct an instance of the
-     * <code>Simulator</code> class that has all the properties of this hardware
-     * device and has been initialized with the specified program.
-     * @param p the program to load onto the simulator
-     * @return a <code>Simulator</code> instance that is capable of simulating
-     * the hardware device's behavior on the specified program
+     * The <code>getSimulator()</code> method gets a simulator instance that is
+     * capable of emulating this hardware device.
+     * @return a <code>Simulator</code> instance corresponding to this
+     * device
      */
-    public Simulator loadProgram(Program p) {
-        return new SimImpl(p);
+    public Simulator getSimulator() {
+        return simulator;
     }
 
     /**
@@ -127,6 +274,60 @@ public class ATMega128L implements Microcontroller {
      */
     public double cyclesToMillis(long cycles) {
         return 1000*((double)cycles) / HZ;
+    }
+
+    /**
+     * The <code>getPinNumber()</code> method looks up the named pin and returns
+     * its number. Names of pins should be UPPERCASE. The intended
+     * users of this method are external device implementors which connect
+     * their devices to the microcontroller through the pins.
+     * @param name the name of the pin; for example "PA0" or "OC1A"
+     * @return the number of the pin if it exists; -1 otherwise
+     */
+    public int getPinNumber(String name) {
+        Integer i = (Integer)pinNumbers.get(name);
+        return i == null ? -1 : i.intValue();
+    }
+
+    /**
+     * The <code>newMicrocontroller()</code> method is used to instantiate a
+     * microcontroller instance for the particular program. It will construct
+     * an instance of the <code>Simulator</code> class that has all the
+     * properties of this hardware device and has been initialized with the
+     * specified program.
+     * @param p the program to load onto the microcontroller
+     * @return a <code>Microcontroller</code> instance that represents the
+     * specific hardware device with the program loaded onto it
+     */
+    public Microcontroller newMicrocontroller(Program p) {
+        return new ATMega128L(p);
+    }
+
+    /**
+     * The <code>getPin()</code> method looks up the specified pin by its number
+     * and returns a reference to that pin. The intended
+     * users of this method are external device implementors which connect
+     * their devices to the microcontroller through the pins.
+     * @param num the pin number to look up
+     * @return a reference to the <code>Pin</code> object corresponding to
+     * the named pin if it exists; null otherwise
+     */
+    public Microcontroller.Pin getPin(int num) {
+        if ( num < 0 || num > pins.length ) return null;
+        return pins[num];
+    }
+
+    /**
+     * The <code>getPin()</code> method looks up the named pin and returns a
+     * reference to that pin. Names of pins should be UPPERCASE. The intended
+     * users of this method are external device implementors which connect
+     * their devices to the microcontroller through the pins.
+     * @param name the name of the pin; for example "PA0" or "OC1A"
+     * @return a reference to the <code>Pin</code> object corresponding to
+     * the named pin if it exists; null otherwise
+     */
+    public Microcontroller.Pin getPin(String name) {
+        return getPin(getPinNumber(name));
     }
 
     public class SimImpl extends Simulator {

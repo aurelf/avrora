@@ -1,7 +1,5 @@
 package avrora.sim.mcu;
 
-import avrora.sim.Microcontroller;
-
 import java.util.HashMap;
 
 /**

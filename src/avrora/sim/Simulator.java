@@ -11,6 +11,7 @@ import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.PeriodicTrigger;
 import avrora.sim.util.DeltaQueue;
 import avrora.sim.mcu.ATMega128L;
+import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
