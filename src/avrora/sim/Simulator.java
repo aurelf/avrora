@@ -37,7 +37,6 @@ import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.sim.util.PeriodicEvent;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -51,7 +50,7 @@ import avrora.util.Verbose;
  * @see Instr
  * @see BaseInterpreter
  */
-public abstract class Simulator implements IORegisterConstants {
+public class Simulator {
 
     /**
      * The <code>REPORT_SECONDS</code> field controls whether times in the <code>Simulator.Printer</code>
@@ -230,7 +229,7 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>Simulator.GlobalProbe</code> interface represents a programmer-defined probe that can be inserted
+     * The <code>Simulator.Probe</code> interface represents a programmer-defined probe that can be inserted
      * at a particular instruction in the program. or at every instruction. Probes can be usedfor profiling,
      * analysis, or program understanding. The <code>fireBefore()</code> and <code>fireAfter()</code> methods
      * are called before and after the target instruction executes in simulation. Probes can also be inserted
@@ -662,23 +661,6 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void insertTimeout(long cycles) {
         insertEvent(new ClockCycleTimeout(cycles), cycles);
-    }
-
-    /**
-     * The <code>insertPeriodicEvent()</code> method inserts an event into the event queue of the simulator
-     * with the specified period. The <code> PeriodicEvent</code> instance created will continually reinsert
-     * the event after each firing to achieve predictable periodic behavior.
-     *
-     * @param e      the event to insert
-     * @param period the period in clock cycles
-     * @return the <code>PeriodicEvent</code> instance inserted
-     */
-    public PeriodicEvent insertPeriodicEvent(Event e, long period) {
-        if (eventPrinter.enabled)
-            eventPrinter.println("INSERT PERIODIC EVENT: " + e + " + " + period);
-        PeriodicEvent pt = new PeriodicEvent(this, e, period);
-        clock.insertEvent(pt, period);
-        return pt;
     }
 
     /**

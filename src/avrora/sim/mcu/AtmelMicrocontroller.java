@@ -209,8 +209,8 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return (State.IOReg)ioregs.get(name);
     }
 
-    protected void addDevice(String name, AtmelInternalDevice d) {
-        devices.put(name, d);
+    protected void addDevice(AtmelInternalDevice d) {
+        devices.put(d.name, d);
     }
 
     public AtmelInternalDevice getDevice(String name) {

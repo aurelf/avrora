@@ -311,6 +311,21 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private final NoInstr NO_INSTR = new NoInstr();
     private final MisalignedInstr MISALIGNED_INSTR = new MisalignedInstr();
 
+    protected final int SREG;
+    protected final int SPL;
+    protected final int SPH;
+    protected final int RAMPZ;
+
+    public static final int NUM_REGS = 32;
+
+    public static final int SREG_I = 7;
+    public static final int SREG_T = 6;
+    public static final int SREG_H = 5;
+    public static final int SREG_S = 4;
+    public static final int SREG_V = 3;
+    public static final int SREG_N = 2;
+    public static final int SREG_Z = 1;
+    public static final int SREG_C = 0;
 
     private static final int SREG_I_MASK = 1 << SREG_I;
     private static final int SREG_T_MASK = 1 << SREG_T;
@@ -331,6 +346,13 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
         this.clock = simulator.clock;
 
+        MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
+
+        SREG = props.getIOReg("SREG");
+        SPL = props.getIOReg("SPL");
+        SPH = props.getIOReg("SPH");
+        RAMPZ = props.getIOReg("RAMPZ");
+
         // if program will not fit onto hardware, error
         if (p.program_end > pr.flash_size)
             throw Avrora.failure("program will not fit into " + pr.flash_size + " bytes");
@@ -347,11 +369,13 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         // allocate SRAM
         sram = new byte[sram_max];
 
+
         // make a local copy of the program's instructions
         makeImpression(p);
 
         // initialize IO registers to default values
         initializeIORegs();
+
     }
 
     protected void makeImpression(Program p) {
@@ -767,7 +791,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * used within the simulator.
      *
      * @param val
-     * @see avrora.sim.IORegisterConstants
      */
     protected void setSP(int val) {
         ioregs[SPL].write(Arithmetic.low(val));

@@ -48,7 +48,7 @@ import java.util.LinkedList;
  *
  * @author Daniel Lee
  */
-public abstract class USART extends AtmelInternalDevice implements ATMega128L.USARTDevice {
+public abstract class USART extends AtmelInternalDevice {
 
     // UNIMPLEMENTED:
     // Synchronous Mode
@@ -73,7 +73,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
     final Transmitter transmitter;
     final Receiver receiver;
 
-    public ATMega128L.USARTDevice connectedDevice;
+    public USARTDevice connectedDevice;
 
     final int n;
 
@@ -125,14 +125,92 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
     int UBRRMultiplier = 16;
     int frameSize = 8; // does this default to 5?
 
+    /**
+     * The <code>USARTDevice</code> interface describes USARTs and other serial devices which can be connected
+     * to the USART. For simplicity, a higher-level interface communicating by frames of data is used, rather
+     * than bits or a representation of changing voltages.
+     */
+    public interface USARTDevice {
+        /**
+         * Transmit a frame from this device.
+         *
+         * @return the frame for transmission
+         */
+        public Frame transmitFrame();
+
+
+        /**
+         * Receive a frame.
+         *
+         * @param frame the frame to be received
+         */
+        public void receiveFrame(Frame frame);
+
+    }
+
+    /**
+     * A <code>USARTFrame</code> is a representation of the serial frames being passed between the USART
+     * and a connected device.
+     */
+    public class Frame {
+        public final byte low;
+        public final boolean high;
+        final int size;
+
+        /**
+         * Constructor for a USARTFrame. The <code>high</code> bit is used for 9 bit frame sizes.
+         */
+        public Frame(byte low, boolean high, int size) {
+            this.low = low;
+            this.high = high;
+            this.size = size;
+        }
+
+        /**
+         * Returns the integer value of this data frame.
+         *
+         * @return intended value of this data frame
+         */
+        public int value() {
+            int value = 0;
+            switch (size) {
+                case 9:
+                    value = high ? 0x100 : 0x0;
+                    value |= 0xff & low;
+                    break;
+                case 8:
+                    value = 0xff & low;
+                    break;
+                case 7:
+                    value = 0x7f & low;
+                    break;
+                case 6:
+                    value = 0x3f & low;
+                    break;
+                case 5:
+                    value = 0x1f & low;
+                    break;
+            }
+            return value;
+        }
+
+        public String toString() {
+            if (size == 9) {
+                return "" + value();
+            } else {
+                return "" + (char)value() + " (" + value() + ')';
+            }
+        }
+    }
+
     /* *********************************************** */
     /* Methods to implement the USARTDevice interface */
 
-    public ATMega128L.USARTDevice.USARTFrame transmitFrame() {
-        return new ATMega128L.USARTDevice.USARTFrame(UDRn_reg.transmitRegister.read(), UCSRnB_reg.readBit(TXB8n), frameSize);
+    public Frame transmitFrame() {
+        return new Frame(UDRn_reg.transmitRegister.read(), UCSRnB_reg.readBit(TXB8n), frameSize);
     }
 
-    public void receiveFrame(ATMega128L.USARTDevice.USARTFrame frame) {
+    public void receiveFrame(Frame frame) {
         UDRn_reg.receiveRegister.writeFrame(frame);
     }
 
@@ -202,7 +280,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
         }
 
         protected class Transmit implements Simulator.Event {
-            ATMega128L.USARTDevice.USARTFrame frame;
+            Frame frame;
 
             public void fire() {
                 connectedDevice.receiveFrame(frame);
@@ -241,7 +319,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
 
 
         protected class Receive implements Simulator.Event {
-            ATMega128L.USARTDevice.USARTFrame frame;
+            Frame frame;
 
             public void fire() {
                 receiveFrame(frame);
@@ -342,7 +420,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
                 return current.frame.low;
             }
 
-            public void writeFrame(ATMega128L.USARTDevice.USARTFrame frame) {
+            public void writeFrame(Frame frame) {
                 if (waitQueue.isEmpty()) {
                     // data overrun. drop frame
                     UCSRnA_reg.writeBit(DORn, true);
@@ -360,8 +438,9 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
                 }
             }
 
+            // TODO: why does this class exist??
             private class USARTFrameWrapper {
-                ATMega128L.USARTDevice.USARTFrame frame;
+                Frame frame;
             }
 
         }
@@ -529,7 +608,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
      * A simple implementation of the USARTDevice interface that connects to a USART on the processor.
      * It simply prints out a representation of each frame it receives.
      */
-    protected class SerialPrinter implements ATMega128L.USARTDevice {
+    protected class SerialPrinter implements USARTDevice {
 
         Simulator.Printer serialPrinter = simulator.getPrinter("atmega.usart.printer");
 
@@ -537,11 +616,11 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
 
         int count = 0;
 
-        public ATMega128L.USARTDevice.USARTFrame transmitFrame() {
-            return new ATMega128L.USARTDevice.USARTFrame((byte)stream[count++ % stream.length], false, 8);
+        public Frame transmitFrame() {
+            return new Frame((byte)stream[count++ % stream.length], false, 8);
         }
 
-        public void receiveFrame(ATMega128L.USARTDevice.USARTFrame frame) {
+        public void receiveFrame(Frame frame) {
             if (serialPrinter.enabled) serialPrinter.println("Serial Printer " + frame.toString());
         }
 

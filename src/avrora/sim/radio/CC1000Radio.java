@@ -264,7 +264,7 @@ public class CC1000Radio implements Radio {
         
         //setup energy recording
         energy = new Energy("Radio",
-                RadioEnergy.modeAmphere,
+                RadioEnergy.modeAmpere,
                 modeName,
                 mcu.getHz(),
                 RadioEnergy.startMode,
@@ -469,7 +469,6 @@ public class CC1000Radio implements Radio {
         }
 
         protected void updateFrequency() {
-            //OL: hmm, somehow the frequency is not computed correct without the a logic AND with 0x00...
             frequency = 0x00ff0000 & (reg2.read() << 16);
             frequency |= 0x0000ff00 & (reg1.read() << 8);
             frequency |= 0x000000ff & reg0.read();

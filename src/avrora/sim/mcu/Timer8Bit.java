@@ -106,7 +106,7 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
         this.periods = periods;
 
         installIOReg("TCCR"+n, TCCRn_reg);
-        installIOReg("TCNR"+n, TCNTn_reg);
+        installIOReg("TCNT"+n, TCNTn_reg);
         installIOReg("OCR"+n, OCRn_reg);
     }
 

@@ -35,6 +35,7 @@ package avrora.sim.mcu;
 import avrora.Avrora;
 import avrora.sim.radio.Radio;
 import avrora.sim.InterpreterFactory;
+import avrora.sim.Simulator;
 import avrora.sim.platform.Platform;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
@@ -44,7 +45,7 @@ import java.util.HashMap;
 /**
  * @author Ben L. Titzer
  */
-public abstract class ATMega128 extends ATMegaFamily {
+public class ATMega128 extends ATMegaFamily {
 
     public static final int _1kb = 1024;
 
@@ -261,27 +262,149 @@ public abstract class ATMega128 extends ATMegaFamily {
 
     }
 
-    public abstract static class Factory implements MicrocontrollerFactory {
+    public static class Factory implements MicrocontrollerFactory {
 
-        public Microcontroller newMicrocontroller(int id, InterpreterFactory i, Program p) {
-            throw Avrora.unimplemented();
+        /**
+         * The <code>newMicrocontroller()</code> method is used to instantiate a microcontroller instance for the
+         * particular program. It will construct an instance of the <code>Simulator</code> class that has all the
+         * properties of this hardware device and has been initialized with the specified program.
+         *
+         * @param p the program to load onto the microcontroller
+         * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
+         *         program loaded onto it
+         */
+        public Microcontroller newMicrocontroller(int id, InterpreterFactory f, Program p) {
+            return new ATMega128(7372800, id, f, p);
         }
 
     }
 
-    public ATMega128(int hz) {
+    protected ATMega128(int hz, int id, InterpreterFactory f, Program p) {
         super(hz, props);
+        simulator = new Simulator(id, f, this, p);
+        clock = simulator.getClock();
+        interpreter = simulator.getInterpreter();
+        installPins();
+        installDevices();
     }
 
     public boolean isSupported(InstrPrototype i) {
         return true;
     }
 
+    protected void installPins() {
+        for (int cntr = 0; cntr < properties.num_pins; cntr++)
+            pins[cntr] = new ATMegaFamily.Pin(cntr);
+    }
+
+    protected void installDevices() {
+        // set up the external interrupt mask and flag registers and interrupt range
+        EIFR_reg = buildInterruptRange(true, "EIMSK", "EIFR", 2, 8);
+        EIMSK_reg = EIFR_reg.maskRegister;
+
+        // set up the timer mask and flag registers and interrupt range
+        TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 17, 8);
+        TIMSK_reg = TIFR_reg.maskRegister;
+
+
+        /* For whatever reason, the ATMega128 engineers decided
+           against having the bitorder for the ETIFR/ETIMSK
+           registers line up with the corresponding block of the
+           interrupt vector. Therefore, we have to line this up by
+           hand.
+        */
+
+        int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
+        ETIFR_reg = new FlagRegister(interpreter, ETIFR_mapping); // false, 0 are just placeholder falues
+        ETIMSK_reg = ETIFR_reg.maskRegister;
+        installIOReg("ETIMSK", ETIMSK_reg);
+        installIOReg("ETIFR", ETIFR_reg);
+
+
+        // Timer1 COMPC
+        installInterrupt("Timer1 COMPC", 25, new MaskableInterrupt(25, ETIMSK_reg, ETIFR_reg, 0, false));
+        // Timer3 CAPT
+        installInterrupt("Timer3 CAPT", 26, new MaskableInterrupt(26, ETIMSK_reg, ETIFR_reg, 5, false));
+        // Timer3 COMPA
+        installInterrupt("Timer3 COMPA", 27, new MaskableInterrupt(27, ETIMSK_reg, ETIFR_reg, 4, false));
+        // Timer3 COMPB
+        installInterrupt("Timer3 COMPB", 28, new MaskableInterrupt(28, ETIMSK_reg, ETIFR_reg, 3, false));
+        // Timer3 COMPC
+        installInterrupt("Timer3 COMPC", 29, new MaskableInterrupt(29, ETIMSK_reg, ETIFR_reg, 1, false));
+        // Timer3 OVF
+        installInterrupt("Timer3 OVF", 30, new MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false));
+
+        addDevice(new Timer0());
+        addDevice(new Timer1());
+        addDevice(new Timer2());
+        addDevice(new Timer3());
+
+        buildPort('A');
+        buildPort('B');
+        buildPort('C');
+        buildPort('D');
+        buildPort('E');
+        buildPort('F');
+
+        addDevice(new EEPROM(properties.eeprom_size, this));
+        addDevice(new USART0());
+        addDevice(new USART1());
+
+        addDevice(new SPI(this));
+        addDevice(new ADC(this));
+        //pm = new PowerManagement(interpreter);
+
+    }
+
+
+    /**
+     * send to mcu to sleep
+     *
+     * @see avrora.sim.mcu.Microcontroller#sleep()
+     */
     public void sleep() {
         throw Avrora.unimplemented();
     }
 
-    public Radio getRadio() {
+    /**
+     * wake the mcu up
+     *
+     * @return cycles it takes to wake up
+     * @see avrora.sim.mcu.Microcontroller#wakeup()
+     */
+    public int wakeup() {
         throw Avrora.unimplemented();
+    }
+
+    /**
+     * get the current mode of the mcu
+     *
+     * @return current mode
+     * @see avrora.sim.mcu.Microcontroller#getMode()
+     */
+    public byte getMode() {
+        throw Avrora.unimplemented();
+    }
+
+    /**
+     * get the name of the current mode
+     *
+     * @return name of the current mode
+     */
+    public String getModeName() {
+        throw Avrora.unimplemented();
+    }
+
+    /**
+     * The Radio connected to this microcontroller.
+     */
+    protected Radio radio;
+
+    public void setRadio(Radio radio) {
+        this.radio = radio;
+    }
+
+    public Radio getRadio() {
+        return radio;
     }
 }

@@ -57,7 +57,19 @@ public class ADC extends AtmelInternalDevice {
     final DataRegister ADC_reg = new DataRegister();
     final ControlRegister ADCSRA_reg = new ControlRegister();
 
-    final ATMega128L.ADCInput[] connectedDevices = new ATMega128L.ADCInput[10];
+    final ADCInput[] connectedDevices = new ADCInput[10];
+
+    /**
+     * The <code>ADCInput</code> interface is used by inputs into the analog to digital converter.
+     */
+    public interface ADCInput {
+
+        /**
+         * Report the current voltage level of the input.
+         */
+        public int getLevel();
+    }
+
 
     public ADC(AtmelMicrocontroller m) {
         super("adc", m);
@@ -72,13 +84,13 @@ public class ADC extends AtmelInternalDevice {
 
     }
 
-    private class VBG implements ATMega128L.ADCInput {
+    private class VBG implements ADCInput {
         public int getLevel() {
             return 0x3ff; // figure out correct value for this eventually
         }
     }
 
-    private class GND implements ATMega128L.ADCInput {
+    private class GND implements ADCInput {
         public int getLevel() {
             return 0;
         }
@@ -97,7 +109,7 @@ public class ADC extends AtmelInternalDevice {
         }
     }
 
-    public void connectADCInput(ATMega128L.ADCInput input, int bit) {
+    public void connectADCInput(ADCInput input, int bit) {
         connectedDevices[bit] = input;
     }
 

@@ -193,9 +193,9 @@ public class EnergyMonitorLog extends EnergyMonitor {
             Iterator it = consumer.iterator();
             while(it.hasNext()){
                 Energy en = (Energy)it.next();
-                double amphere = en.getCurrentAmphere();
-                total += amphere;
-                write(amphere + " ");
+                double ampere = en.getCurrentAmpere();
+                total += ampere;
+                write(ampere + " ");
             }
             write(total + "");
             newLine();
@@ -217,14 +217,14 @@ public class EnergyMonitorLog extends EnergyMonitor {
             //for (int i = 0; i < consumer.size(); ++i) {
             while( it.hasNext() ){
                 Energy en = (Energy)it.next();
-                double amphere = 0.0f;
+                double ampere = 0.0f;
                 if (en != energy) {
-                    amphere = en.getCurrentAmphere();
+                    ampere = en.getCurrentAmpere();
                 } else {
-                    amphere = en.getOldAmphere();
+                    ampere = en.getOldAmpere();
                 }
-                total += amphere;
-                write(amphere + " ");
+                total += ampere;
+                write(ampere + " ");
             }
             write(total + "");
             newLine();

@@ -51,7 +51,7 @@ public class Energy {
     //this class instance
     private String deviceName;
     //current draw for each state
-    private double amphere[];
+    private double ampere[];
     // name of each state
     private String name[];
     //cycles spend in each state
@@ -78,17 +78,17 @@ public class Energy {
      * create new energy class, to enable energy modelling
      *
      * @param deviceName  name of the device to model
-     * @param modeAmphere array of current draw for each device state (in Amphere)
+     * @param modeAmpere  array of current draw for each device state (in Ampere)
      * @param modeName    array of the names of each device state
      * @param cpuFreq     cpu frequency
      * @param startMode   mode or state of the device at startup and reset
      * @param ec          the simulator energy control
      * @param st          the simulator state
      */
-    public Energy(String deviceName, double modeAmphere[], String modeName[], int cpuFreq, int startMode, EnergyControl ec, State st) {
+    public Energy(String deviceName, double modeAmpere[], String modeName[], int cpuFreq, int startMode, EnergyControl ec, State st) {
         // remember all params
         this.deviceName = deviceName;
-        this.amphere = modeAmphere;
+        this.ampere = modeAmpere;
         this.name = modeName;
         this.currentMode = startMode;
         this.freq = cpuFreq;
@@ -98,7 +98,7 @@ public class Energy {
         // subscribe this consumer to the energy control
         energyControl.addConsumer(this);
         // setup cycle array to store the cycles of each state
-        cycles = new long[amphere.length];
+        cycles = new long[ampere.length];
         for (int i = 0; i < cycles.length; i++)
             cycles[i] = 0;
     }
@@ -125,7 +125,7 @@ public class Energy {
      */
     public double getTotalConsumedEnergy() {
         double total = 0.0d;
-        for (int i = 0; i < amphere.length; i++)
+        for (int i = 0; i < ampere.length; i++)
             total += getConsumedEnergy(i);
         return total;
     }
@@ -137,7 +137,7 @@ public class Energy {
      * @return power consumption in Joule
      */
     public double getConsumedEnergy(int mode) {
-        return voltage * getCycles(mode) * amphere[mode] * cycleTime;
+        return voltage * getCycles(mode) * ampere[mode] * cycleTime;
     }
 
     /**
@@ -146,7 +146,7 @@ public class Energy {
      * @return mode number
      */
     public int getModeNumber() {
-        return amphere.length;
+        return ampere.length;
     }
 
     /**
@@ -172,10 +172,10 @@ public class Energy {
      * get the current draw of a mode
      *
      * @param mode mode number
-     * @return current draw in Amphere
+     * @return current draw in Ampere
      */
-    public double getModeAmphere(int mode) {
-        return amphere[mode];
+    public double getModeAmpere(int mode) {
+        return ampere[mode];
     }
 
     /**
@@ -221,10 +221,10 @@ public class Energy {
     /**
      * get the current draw
      *
-     * @return current draw in Amphere
+     * @return current draw in Ampere
      */
-    public double getCurrentAmphere() {
-        return amphere[currentMode];
+    public double getCurrentAmpere() {
+        return ampere[currentMode];
     }
 
     /**
@@ -232,8 +232,8 @@ public class Energy {
      *
      * @return current draw
      */
-    public double getOldAmphere() {
-        return amphere[oldMode];
+    public double getOldAmpere() {
+        return ampere[oldMode];
     }
 
 }

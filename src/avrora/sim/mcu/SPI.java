@@ -43,17 +43,13 @@ import avrora.util.Arithmetic;
  *
  * @author Daniel Lee, Simon Han
  */
-public class SPI extends AtmelInternalDevice implements ATMega128L.SPIDevice {
+public class SPI extends AtmelInternalDevice {
     final SPDReg SPDR_reg;
     final SPCRReg SPCR_reg;
     final SPSReg SPSR_reg;
     final SPIInterrupt SPI_int;
 
-    public final int SPDR = 0x0F;
-    public final int SPSR = 0x0E;
-    public final int SPCR = 0x0D;
-
-    ATMega128L.SPIDevice connectedDevice;
+    SPIDevice connectedDevice;
 
     final TransmitReceive transmitReceive = new TransmitReceive();
 
@@ -64,18 +60,55 @@ public class SPI extends AtmelInternalDevice implements ATMega128L.SPIDevice {
 
     protected int period;
 
-    public void connect(ATMega128L.SPIDevice d) {
+    /**
+     * Interface for devices that can connect to the SPI. Rather than communicating over the MISO, MOSI pins,
+     * the process is expedited and simplified through the use of the transmitFrame() and receiveFrame()
+     * methods in the intefact.
+     */
+    public interface SPIDevice {
+        /**
+         * Transmit a frame from this device.
+         *
+         * @return the frame for transmission
+         */
+        public Frame transmitFrame();
+
+        /**
+         * Receive a frame.
+         *
+         * @param frame the frame to be received
+         */
+        public void receiveFrame(Frame frame);
+
+        public void connect(SPIDevice d);
+
+    }
+
+    /**
+     * A single byte data frame for the SPI.
+     * TODO: isn't this a bit of overkill?
+     */
+    public class Frame {
+        public final byte data;
+
+        public Frame(byte data) {
+            this.data = data;
+        }
+    }
+
+
+    public void connect(SPIDevice d) {
         connectedDevice = d;
     }
 
-    public void receiveFrame(ATMega128L.SPIDevice.SPIFrame frame) {
+    public void receiveFrame(Frame frame) {
         SPDR_reg.receiveReg.write(frame.data);
         if (!master && !transmitReceive.transmitting) SPSR_reg.writeBit(7, true); // flag interrupt
 
     }
 
-    public ATMega128L.SPIDevice.SPIFrame transmitFrame() {
-        return new ATMega128L.SPIDevice.SPIFrame(SPDR_reg.transmitReg.read());
+    public Frame transmitFrame() {
+        return new Frame(SPDR_reg.transmitReg.read());
     }
 
     public SPI(AtmelMicrocontroller m) {
@@ -90,7 +123,7 @@ public class SPI extends AtmelInternalDevice implements ATMega128L.SPIDevice {
 
         installIOReg("SPDR", SPDR_reg);
         installIOReg("SPSR", SPSR_reg);
-        installIOReg("SBCR", SPCR_reg);
+        installIOReg("SPCR", SPCR_reg);
     }
 
     /**
@@ -138,8 +171,8 @@ public class SPI extends AtmelInternalDevice implements ATMega128L.SPIDevice {
      */
     protected class TransmitReceive implements Simulator.Event {
 
-        ATMega128L.SPIDevice.SPIFrame myFrame;
-        ATMega128L.SPIDevice.SPIFrame connectedFrame;
+        Frame myFrame;
+        Frame connectedFrame;
         boolean transmitting;
 
         protected void enableTransfer() {

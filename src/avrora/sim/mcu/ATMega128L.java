@@ -37,6 +37,7 @@ import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.radio.Radio;
 import avrora.util.Arithmetic;
+import avrora.Avrora;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +55,7 @@ import java.util.Vector;
  *
  * @author Ben L. Titzer
  */
-public class ATMega128L extends ATMegaFamily implements Microcontroller {
+public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Microcontroller {
 
     public static final int ATMEGA128L_IOREG_SIZE = 256 - 32;
     public static final int ATMEGA128L_IOREG_SIZE_103 = 64;
@@ -83,7 +84,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller {
     };
 
     //power consumption of each mode
-    private final double modeAmphere[] = {
+    private final double modeAmpere[] = {
         0.0075667,
         0.0033433,
         0.0,
@@ -348,7 +349,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller {
         ((SimImpl)simulator).populateState();
         //init the energy profiling system for the CPU
         energy = new Energy("CPU",
-                modeAmphere, modeName,
+                modeAmpere, modeName,
                 this.getHz(), startMode,
                 this.getSimulator().getEnergyControl(),
                 this.getSimulator().getState());
@@ -3769,37 +3770,26 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller {
                 out = socket.getOutputStream();
                 in = socket.getInputStream();
             } catch( IOException e ){
-                System.out.println("Cannot connect to serial forwarder");
-                e.printStackTrace();
-                System.exit(1);
-            }                   
+                throw Avrora.failure("cannot connect to serial forwarder");
+            }
         }
 
         public USARTFrame transmitFrame() {
             try{ 
                 in.read( data, 0, 1);
-                //System.out.println("got data from pc: " + data[0]);
                 return new USARTFrame(data[0], false, 8);
             } catch( IOException e){
-                System.out.println("cannot read data from socket");
-                e.printStackTrace();    
-                System.exit(1);
-            }                
-            return new USARTFrame((byte)0, false, 8);
+                throw Avrora.failure("cannot read from socket");
+            }
         }
 
 
         public void receiveFrame(USARTFrame frame) {
-            //byte data = frame.low;
-            //System.out.println("serial: " + frame.low);
             try{
                 out.write(frame.low);
-                //System.out.println("write data to pc: " + frame.low);
             } catch( IOException e){
-                System.out.println("cannot write data to socket");
-                e.printStackTrace();    
-                System.exit(1);
-            }                
+                throw Avrora.failure("cannot write to socket");
+            }
         }
 
         private class PcTicker implements Simulator.Event {
@@ -3812,14 +3802,11 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller {
             public void fire() {
                 try{
                     if( in.available() >= 1 ) {
-                        //System.out.println("av:  "+ in.available());
                         usart.startReceive();                            
                     }
             	} catch( IOException e){
-            	    System.out.println("cannot read data from socket");
-            	    e.printStackTrace();    
-            	    System.exit(1);
-            	}                
+                    throw Avrora.failure("cannot read from socket");
+            	}
                 simulator.insertEvent(this, delta);                                        
             }
         }

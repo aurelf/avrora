@@ -46,7 +46,7 @@ public abstract class RadioEnergy {
     public static final int startMode = 0;
 
     /**
-     * <code>modeName</code> names of the opetating modes
+     * <code>modeName</code> names of the operating modes
      */
     public static final String modeName[] = {
         "Power Off:            ",
@@ -60,9 +60,9 @@ public abstract class RadioEnergy {
 
 
     /**
-     * <code>modeAmphere</code> power consumpption of the operating modes
+     * <code>modeAmpere</code> power consumption of the operating modes
      */
-    public static final double modeAmphere[] = {
+    public static final double modeAmpere[] = {
         0.0, //off
         0.0000002, //power down
         0.00006, //crystal

@@ -58,7 +58,7 @@ class LED implements Microcontroller.Pin.Output {
     // names of the states of this device
     private final String modeName[] = {"off: ", "on:  "};
     // power consumption of the device states
-    private final double modeAmphere[] = {0.0, 0.0022};
+    private final double modeAmpere[] = {0.0, 0.0022};
     // default mode of the device is off
     private static final int startMode = 0;
 
@@ -67,7 +67,7 @@ class LED implements Microcontroller.Pin.Output {
         colornum = n;
         color = c;
         //setup energy recording
-        energy = new Energy(color, modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
+        energy = new Energy(color, modeAmpere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
     }
 
     public void write(boolean level) {

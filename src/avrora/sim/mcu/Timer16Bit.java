@@ -99,7 +99,9 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     final State.RWIOReg ICRnL_reg;
     final PairedRegister ICRn_reg;
 
-    final AtmelMicrocontroller.Pin outputComparePin;
+    final AtmelMicrocontroller.Pin outputComparePinA;
+    final AtmelMicrocontroller.Pin outputComparePinB;
+    final AtmelMicrocontroller.Pin outputComparePinC;
 
     final ATMegaFamily.MaskRegister ETIMSK_reg;
     final ATMegaFamily.FlagRegister ETIFR_reg;
@@ -181,7 +183,9 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         externalClock = m.getClock("external");
         timerClock = mainClock;
 
-        outputComparePin = (AtmelMicrocontroller.Pin)m.getPin("OC"+n);
+        outputComparePinA = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+"A");
+        outputComparePinB = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+"B");
+        outputComparePinC = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+"C");
 
         ETIMSK_reg = (ATMegaFamily.MaskRegister)m.getIOReg("ETIMSK");
         ETIFR_reg = (ATMegaFamily.FlagRegister)m.getIOReg("ETIFR");
@@ -506,7 +510,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         }
 
-        private void forcedCompare(String s, int val, int compare, int COMnx1, int COMnx0) {
+        private void forcedCompare(AtmelMicrocontroller.Pin ocPin, int val, int compare, int COMnx1, int COMnx0) {
             /*
             // the non-PWM modes are NORMAL and CTC
             // under NORMAL, there is no pin action for a compare match
@@ -520,13 +524,13 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
                 switch (compareMode) {
                     case 1:
-                        outputComparePin.write(!outputComparePin.read()); // clear
+                        ocPin.write(!ocPin.read()); // clear
                         break;
                     case 2:
-                        outputComparePin.write(false);
+                        ocPin.write(false);
                         break;
                     case 3:
-                        outputComparePin.write(true);
+                        ocPin.write(true);
                         break;
                 }
 
@@ -535,17 +539,17 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         private void forcedOutputCompareA() {
             int compare = read16(OCRnAH_reg, OCRnAL_reg);
-            forcedCompare("A", TCCRnA_reg.read(), compare, 7, 6);
+            forcedCompare(outputComparePinA, TCCRnA_reg.read(), compare, 7, 6);
         }
 
         private void forcedOutputCompareB() {
             int compare = read16(OCRnBH_reg, OCRnBL_reg);
-            forcedCompare("B", TCCRnB_reg.read(), compare, 5, 4);
+            forcedCompare(outputComparePinB, TCCRnB_reg.read(), compare, 5, 4);
         }
 
         private void forcedOutputCompareC() {
             int compare = read16(OCRnCH_reg, OCRnCL_reg);
-            forcedCompare("C", TCCRnC_reg.read(), compare, 3, 2);
+            forcedCompare(outputComparePinC, TCCRnC_reg.read(), compare, 3, 2);
         }
     }
 

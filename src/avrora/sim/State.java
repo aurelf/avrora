@@ -42,7 +42,7 @@ import avrora.util.Arithmetic;
  *
  * @author Ben L. Titzer
  */
-public interface State extends IORegisterConstants {
+public interface State {
 
 
     /**

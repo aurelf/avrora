@@ -268,4 +268,196 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     public int getHz() {
         return HZ;
     }
+
+    final int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
+
+    /**
+     * <code>Timer0</code> is the default 8-bit timer on the ATMega128L.
+     */
+    protected class Timer0 extends Timer8Bit {
+
+        final Clock externalClock;
+
+        protected Timer0() {
+            super(ATMegaFamily.this, 0, 1, 0, 1, 0, periods0);
+            externalClock = getClock("external");
+            installIOReg("ASSR", new ASSRRegister());
+        }
+
+        // See pg. 104 of the ATmega128L doc
+        protected class ASSRRegister extends State.RWIOReg {
+            final int AS0 = 3;
+            final int TCN0UB = 2;
+            final int OCR0UB = 1;
+            final int TCR0UB = 0;
+
+            public void write(byte val) {
+                super.write((byte)(0xf & val));
+                decode(val);
+            }
+
+            public void writeBit(int bit, boolean val) {
+                super.writeBit(bit, val);
+                decode(value);
+            }
+
+            protected void decode(byte val) {
+                // TODO: if there is a change, remove ticker and requeue?
+                clock = Arithmetic.getBit(val, AS0) ? externalClock : clock;
+            }
+
+
+        }
+
+
+    }
+
+    final int[] periods2 = {0, 1, 8, 64, 256, 1024};
+
+    /**
+     * <code>Timer2</code> is an additional 8-bit timer on the ATMega128L. It is not available in
+     * ATMega103 compatibility mode.
+     */
+    protected class Timer2 extends Timer8Bit {
+        protected Timer2() {
+            super(ATMegaFamily.this, 2, 7, 6, 7, 6, periods2);
+        }
+    }
+
+    /**
+     * <code>Timer1</code> is a 16-bit timer available on the ATMega128L.
+     */
+    protected class Timer1 extends Timer16Bit {
+
+        protected void initValues() {
+            // bit numbers
+
+            OCIEnA = 4;
+            OCIEnB = 3;
+            OCIEnC = 0; // on ETIMSK
+            TOIEn = 2;
+            TOVn = 2;
+            OCFnA = 4;
+            OCFnB = 3;
+            OCFnC = 0; // on ETIFR
+            ICFn = 5;
+            int[] periods1 = {0, 1, 8, 64, 256, 1024};
+            periods = periods1;
+        }
+
+        protected Timer1() {
+            super(1, ATMegaFamily.this);
+            xTIFR_reg = TIFR_reg;
+            xTIMSK_reg = TIMSK_reg;
+        }
+
+    }
+
+    /**
+     * <code>Timer3</code> is an additional 16-bit timer available on the ATMega128L, but not in ATMega103
+     * compatability mode.
+     */
+    protected class Timer3 extends Timer16Bit {
+
+        protected void initValues() {
+            // bit numbers
+            OCIEnA = 4;
+            OCIEnB = 3;
+            OCIEnC = 1; // on ETIMSK
+            TOIEn = 2;
+            TOVn = 2;
+            OCFnA = 4;
+            OCFnB = 3;
+            OCFnC = 1; // on ETIFR
+            ICFn = 5;
+            int[] periods3 = {0, 1, 8, 64, 256, 1024};
+            periods = periods3;
+        }
+
+        protected Timer3() {
+            super(3, ATMegaFamily.this);
+            xTIFR_reg = ETIFR_reg;
+            xTIMSK_reg = ETIMSK_reg;
+        }
+
+    }
+
+    protected static final int[] UCSR0A_mapping = {-1, -1, -1, -1, -1, 20, 21, 19};
+    // TODO: test these interrupt mappings--not sure if they are correct!
+    protected static final int[] UCSR1A_mapping = {-1, -1, -1, -1, -1, 32, 33, 31};
+
+    /**
+     * Emulates the behavior of USART0 on the ATMega128L microcontroller.
+     */
+    protected class USART0 extends USART {
+
+        USART0() {
+            super(0, ATMegaFamily.this);
+        }
+
+        protected void initValues() {
+            USARTnRX = 19;
+            USARTnUDRE = 20;
+            USARTnTX = 21;
+
+            INTERRUPT_MAPPING = UCSR0A_mapping;
+
+        }
+    }
+
+    /**
+     * Emulates the behavior of USART1 on the ATMega128L microcontroller.
+     */
+    protected class USART1 extends USART {
+
+        USART1() {
+            super(1, ATMegaFamily.this);
+        }
+
+        protected void initValues() {
+            USARTnRX = 31;
+            USARTnUDRE = 32;
+            USARTnTX = 33;
+
+            INTERRUPT_MAPPING = UCSR1A_mapping;
+        }
+    }
+
+    protected void buildPort(char p) {
+        ATMegaFamily.Pin[] pins = new ATMegaFamily.Pin[8];
+        for (int cntr = 0; cntr < 8; cntr++)
+            pins[cntr] = (ATMegaFamily.Pin)getPin("P" + p + cntr);
+        installIOReg("PORT"+p, new PortRegister(pins));
+        installIOReg("DDR"+p, new DirectionRegister(pins));
+        installIOReg("PIN"+p, new PinRegister(pins));
+    }
+
+    protected FlagRegister buildInterruptRange(boolean increasing, String maskRegNum, String flagRegNum, int baseVect, int numVects) {
+        int[] mapping = new int[8];
+        if (increasing) {
+            for (int cntr = 0; cntr < 8; cntr++) mapping[cntr] = baseVect + cntr;
+        } else {
+            for (int cntr = 0; cntr < 8; cntr++) mapping[cntr] = baseVect - cntr;
+        }
+
+        FlagRegister fr = new FlagRegister(interpreter, mapping);
+        for (int cntr = 0; cntr < numVects; cntr++) {
+            int inum = increasing ? baseVect + cntr : baseVect - cntr;
+            installInterrupt("", inum, new MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false));
+            installIOReg(maskRegNum, fr.maskRegister);
+            installIOReg(flagRegNum, fr);
+        }
+        return fr;
+    }
+
+
+    protected FlagRegister EIFR_reg;
+    protected MaskRegister EIMSK_reg;
+
+    protected FlagRegister TIFR_reg;
+    protected MaskRegister TIMSK_reg;
+
+    protected FlagRegister ETIFR_reg;
+    protected MaskRegister ETIMSK_reg;
+
 }

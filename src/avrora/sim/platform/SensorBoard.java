@@ -50,7 +50,7 @@ public class SensorBoard {
     // names of the states of this device
     private final String modeName[] = {"on:  "};
     // power consumption of the device states
-    private final double modeAmphere[] = {0.0007};
+    private final double modeAmpere[] = {0.0007};
     // default mode of the device is on
     private static final int startMode = 0;
 
@@ -59,6 +59,6 @@ public class SensorBoard {
         //setup energy recording
         //note: the name sensorBoard was choosen on purpose as it is used in the log files
         //if you use sensor board, you may have trouble with importing the data as it is separated by white spaces
-        energy = new Energy("sensorBoard", modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
+        energy = new Energy("sensorBoard", modeAmpere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
     }
 }
