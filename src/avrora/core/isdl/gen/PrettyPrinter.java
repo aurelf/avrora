@@ -46,7 +46,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     protected final Printer printer;
 
     public void visit(CallExpr e) {
-        printer.print(e.method.image + "(");
+        printer.print(getMethod(e.method.image) + "(");
         visitExprList(e.args);
         printer.print(")");
     }
@@ -73,6 +73,10 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     public void visit(MapBitRangeAssignStmt s) {
         MapRep mr = getMapRep(s.mapname.image);
         mr.generateBitRangeWrite(s.index, s.low_bit, s.high_bit, s.expr);
+    }
+
+    protected String getMethod(String s) {
+        return s;
     }
 
     protected abstract class MapRep {
@@ -138,7 +142,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(CallStmt s) {
-        printer.print(s.method.image + "(");
+        printer.print(getMethod(s.method.image) + "(");
         visitExprList(s.args);
         printer.println(");");
     }

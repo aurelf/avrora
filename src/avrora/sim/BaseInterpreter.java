@@ -496,6 +496,21 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         delayCycles += cycles;
     }
 
+    byte getRegisterByte(int reg) {
+        return regs[reg];
+    }
+
+    int getRegisterUnsigned(int reg) {
+        return regs[reg] & 0xff;
+    }
+
+    public int getRegisterWord(int reg) {
+        byte low = getRegisterByte(reg);
+        byte high = getRegisterByte(reg + 1);
+        return Arithmetic.uword(low, high);
+    }
+
+
     /**
      * Read a general purpose register's current value as a byte.
      *
@@ -557,6 +572,17 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         byte high = Arithmetic.high(val);
         setRegisterByte(reg, low);
         setRegisterByte(reg.nextRegister(), high);
+    }
+
+    protected void setRegisterByte(int reg, byte val) {
+        regs[reg] = val;
+    }
+
+    protected void setRegisterWord(int reg, int val) {
+        byte low = Arithmetic.low(val);
+        byte high = Arithmetic.high(val);
+        setRegisterByte(reg, low);
+        setRegisterByte(reg + 1, high);
     }
 
     /**

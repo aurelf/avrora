@@ -1530,36 +1530,36 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     //
     //
 
-    private void pushPC(int npc) {
+    void pushPC(int npc) {
         npc = npc / 2;
         pushByte(Arithmetic.low(npc));
         pushByte(Arithmetic.high(npc));
     }
 
-    private int popPC() {
+    int popPC() {
         byte high = popByte();
         byte low = popByte();
         return Arithmetic.uword(low, high) * 2;
     }
 
-    private boolean xor(boolean a, boolean b) {
+    boolean xor(boolean a, boolean b) {
         return (a && !b) || (b && !a);
     }
 
-    private byte low(int val) {
+    byte low(int val) {
         return (byte)val;
     }
 
-    private byte high(int val) {
+    byte high(int val) {
         return (byte)(val >> 8);
     }
 
-    private byte bit(boolean val) {
+    byte bit(boolean val) {
         if (val) return 1;
         return 0;
     }
 
-    private int uword(byte low, byte high) {
+    int uword(byte low, byte high) {
         return Arithmetic.uword(low, high);
     }
 

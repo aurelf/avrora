@@ -69,6 +69,7 @@ public class DBBCAction extends Action {
             printer.println("// worst case execution time = "+code.wcet+" cycles");
             pp.visitStmtList(code.stmts);
             printer.endblock();
+            DBBC.CompiledBlock block = dbbc.getCompiledBlock(code);
         }
     }
 }

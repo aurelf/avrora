@@ -36,14 +36,21 @@ import avrora.core.Program;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
 import avrora.core.isdl.CodeRegion;
+import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.ast.VarAssignStmt;
+import avrora.core.isdl.ast.Literal;
+import avrora.core.isdl.ast.Arith;
+import avrora.core.isdl.ast.VarExpr;
 import avrora.Avrora;
 import avrora.util.StringUtil;
 import avrora.util.Printer;
 import avrora.sim.BaseInterpreter;
+import avrora.sim.GenInterpreter;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.HashMap;
 import java.io.*;
 
 /**
@@ -78,7 +85,7 @@ public class DBBC {
             wcet = wc;
         }
 
-        public void execute(BaseInterpreter interp) {
+        public void execute(GenInterpreter interp) {
             throw Avrora.failure("cannot execute abstract basic block");
         }
     }
@@ -132,7 +139,18 @@ public class DBBC {
             wcet += instr.getCycles();
             CodeRegion r = CodeMap.getCodeForInstr(curPC, instr);
             curPC += instr.getSize();
-            stmts.addAll(r.getCode());
+            if ( !i.hasNext() ) { // is this the last instruction?
+                // inject an assignment to nextPC
+                stmts.add(new VarAssignStmt("nextPC", new Literal.IntExpr(curPC)));
+                stmts.addAll(r.getCode());
+                stmts.add(new VarAssignStmt("cyclesConsumed",
+                        new Arith.BinOp.AddExpr(
+                                new VarExpr("cyclesConsumed"),
+                                new Literal.IntExpr(wcet))));
+            } else {
+                stmts.addAll(r.getCode());
+            }
+
         }
         return new CodeBlock(addr, stmts, wcet);
     }
@@ -153,7 +171,10 @@ public class DBBC {
         p.println("public "+classname+"() { super("+addr+", null, "+wcet+"); }");
 
         // generate the execute method
-        p.startblock("public void execute(avrora.sim.BaseInterpreter interpreter)");
+        p.startblock("public void execute(avrora.sim.GenInterpreter interpreter)");
+
+        CodeGenerator gen = new CodeGenerator(p);
+        gen.visitStmtList(stmts);
 
         // end execute method
         p.endblock();
@@ -164,7 +185,7 @@ public class DBBC {
         return f;
     }
 
-    protected CompiledBlock getCompiledBlock(CodeBlock b) throws Exception {
+    public CompiledBlock getCompiledBlock(CodeBlock b) throws Exception {
         File f = generateCode(b.beginAddr, b.stmts, b.wcet);
         File c = compileGeneratedCode(f);
         Class cf = getClass(c);
@@ -181,12 +202,44 @@ public class DBBC {
     protected File compileGeneratedCode(File f) {
         String name = f.toString();
         String[] args = { name };
+        // TODO: remove static dependency on javac by using reflection
         int result = com.sun.tools.javac.Main.compile(args);
         if ( result != 0 )
             throw Avrora.failure("DBBC failed to compile: "+f.toString());
         String cname = name.replaceAll(".java", ".class");
         File c = new File(cname);
         return c;
+    }
+
+    protected class CodeGenerator extends InterpreterGenerator {
+        CodeGenerator(Printer p) {
+            super(null, p);
+            initializeVariableMap();
+        }
+
+        protected void initializeVariableMap() {
+            variableMap = new HashMap();
+            // TODO: this is sort of a hack, it depends on I, T, etc
+            add("I");
+            add("T");
+            add("H");
+            add("S");
+            add("V");
+            add("N");
+            add("Z");
+            add("C");
+            add("cyclesConsumed");
+            add("nextPC");
+            add("innerLoop");
+        }
+
+        protected void add(String s) {
+            variableMap.put(s, "interpreter."+s);
+        }
+
+        protected String getMethod(String s) {
+            return "interpreter."+s;
+        }
     }
 
     protected String javaName(String cname) {
