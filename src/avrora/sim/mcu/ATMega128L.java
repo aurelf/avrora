@@ -132,7 +132,7 @@ public class ATMega128L implements Microcontroller {
     public class SimImpl extends Simulator {
 
         public SimImpl(Program p) {
-            super(p);
+            super(ATMega128L.this, p);
         }
 
         public static final int RESET_VECT = 1;
@@ -169,7 +169,7 @@ public class ATMega128L implements Microcontroller {
             int timerMode;
             long period;
 
-            Verbose.VerbosePrinter timerPrinter = Verbose.getVerbosePrinter("sim.timer0");
+            Verbose.Printer timerPrinter = Verbose.getVerbosePrinter("sim.timer0");
 
             protected Timer0(State ns) {
                 ticker = new Ticker();

@@ -1,7 +1,6 @@
 package avrora.util;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * The <code>Options</code> class represents a collection of command
@@ -12,7 +11,6 @@ import java.util.HashSet;
  */
 public class Options {
 
-    protected final HashSet knowns;
     protected final HashMap knownValues;
     protected final HashMap unknownValues;
 
@@ -21,47 +19,40 @@ public class Options {
     protected String[] arguments;
 
     public Options() {
-        knowns = new HashSet();
         knownValues = new HashMap();
         unknownValues = new HashMap();
     }
 
     public Option.Str newOption(String name) {
-        knowns.add(name);
         Option.Str o = new Option.Str(name);
         knownValues.put(name, o);
         return o;
     }
 
     public Option newOption(String name, Option trigger) {
-        knowns.add(name);
         knownValues.put(name, trigger);
         return trigger;
     }
 
     public Option.Bool newOption(String name, boolean val) {
-        knowns.add(name);
         Option.Bool o = new Option.Bool(name, val);
         knownValues.put(name, o);
         return o;
     }
 
     public Option.Str newOption(String name, String val) {
-        knowns.add(name);
         Option.Str o = new Option.Str(name, val);
         knownValues.put(name, o);
         return o;
     }
 
     public Option.Int newOption(String name, int val) {
-        knowns.add(name);
         Option.Int o = new Option.Int(name, val);
         knownValues.put(name, o);
         return o;
     }
 
     public Option.Long newOption(String name, long val) {
-        knowns.add(name);
         Option.Long o = new Option.Long(name, val);
         knownValues.put(name, o);
         return o;
@@ -126,5 +117,28 @@ public class Options {
             if ( firstUnknownOption == null ) firstUnknownOption = optname;
         } else
             option.set(value);
+    }
+
+    public void dump(String title, Printer p) {
+        List opts = Collections.list(Collections.enumeration(knownValues.keySet()));
+        Collections.sort(opts, String.CASE_INSENSITIVE_ORDER);
+        p.startblock(title);
+
+        int max = 0;
+
+        Iterator i = opts.iterator();
+        while ( i.hasNext() ) {
+            String key = (String)i.next();
+            if ( key.length() > max ) max = key.length();
+        }
+
+
+        i = opts.iterator();
+        while ( i.hasNext() ) {
+            String key = (String)i.next();
+            p.println(StringUtil.leftJustify(key, max)+" : "+getOptionValue(key));
+        }
+
+        p.endblock();
     }
 }

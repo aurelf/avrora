@@ -23,8 +23,8 @@ import avrora.util.Verbose;
  */
 public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
-    Verbose.VerbosePrinter eventPrinter = Verbose.getVerbosePrinter("sim.event");
-    Verbose.VerbosePrinter interruptPrinter = Verbose.getVerbosePrinter("sim.interrupt");
+    Verbose.Printer eventPrinter = Verbose.getVerbosePrinter("sim.event");
+    Verbose.Printer interruptPrinter = Verbose.getVerbosePrinter("sim.interrupt");
 
     /**
      * The <code>TRACEPROBE</code> field represents a simple probe
@@ -49,6 +49,8 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      */
     protected final Program program;
 
+    protected final Microcontroller microcontroller;
+
     /**
      * The <code>state</code> field stores a reference to the <code>State</code>
      * object that represents the state of the processor in the simulation. It is
@@ -59,14 +61,14 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
     /**
      * The <code>activeProbe</code> field stores a reference to a
      * <code>MulticastProbe</code> that contains all of the probes to be fired
-     * before and after the main execution loop--i.e. before and after
+     * before and after the main execution runLoop--i.e. before and after
      * every instruction.
      */
     protected final MulticastProbe activeProbe;
 
     /**
      * The <code>shouldRun</code> flag is used internally in the main execution
-     * loop to implement the correct semantics of <code>start()</code> and
+     * runLoop to implement the correct semantics of <code>start()</code> and
      * <code>stop()</code> to the clients.
      */
     protected boolean shouldRun;
@@ -114,7 +116,8 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      *
      * @param p the program to load into the simulator
      */
-    public Simulator(Program p) {
+    public Simulator(Microcontroller mcu, Program p) {
+        microcontroller = mcu;
         program = p;
         interrupts = new Interrupt[MAX_INTERRUPTS];
         activeProbe = new MulticastProbe();
@@ -655,6 +658,9 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         public void fire() { }
     };
 
+    public Microcontroller getMicrocontroller() {
+        return microcontroller;
+    }
 
 
     /**
@@ -671,7 +677,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
     /**
      * The <code>start()</code> method begins the simulation. It causes the
-     * simulator to enter a loop that executes instructions, firing probes
+     * simulator to enter a runLoop that executes instructions, firing probes
      * and triggers as it executes. The <code>start()</code> method returns
      * normally when the </code>break</code> AVR instruction is executed,
      * when a <code>BreakPointException</code> is thrown, when a <code>
@@ -680,7 +686,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
      */
     public void start() {
         shouldRun = true;
-        loop();
+        runLoop();
     }
 
     /**
@@ -705,7 +711,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
 
     protected abstract State constructState();
 
-    private void loop() {
+    private void runLoop() {
 
         nextPC = state.getPC();
         long oldCycles = state.getCycles();

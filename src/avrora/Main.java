@@ -119,6 +119,8 @@ public class Main {
     public static final Option.Str  CHIP     = options.newOption("chip", "atmega128l");
     public static final Option.Str  PLATFORM = options.newOption("platform", "");
 
+    public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
+
     static {
         newAction("simulate", new SimulateAction());
         newAction("analyze-stack", new AnalyzeStackAction());
@@ -170,9 +172,12 @@ public class Main {
 
             if ( BANNER.get() ) banner();
 
+            if ( configPrinter.enabled )
+                options.dump("avrora.Main.options", configPrinter);
+
             Action a = (Action)actions.get(ACTION.get());
             if ( a == null )
-                Avrora.userError("unknown action", ACTION.get());
+                Avrora.userError("Unknown Action", StringUtil.quote(ACTION.get()));
 
             args = options.getArguments();
 
@@ -188,7 +193,7 @@ public class Main {
 
     static void banner() {
         Terminal.printBrightBlue("Avrora " + VERSION);
-        Terminal.print(" - (c) 2003-2004 Ben L. Titzer\n\n");
+        Terminal.print(" - (c) 2003-2004 UCLA Compilers Group\n\n");
         Terminal.println("This is a prototype simulator and analysis tool intended for evaluation");
         Terminal.println("and experimentation purposes only. It is provided with absolutely no");
         Terminal.println("warranty, expressed or implied.\n");

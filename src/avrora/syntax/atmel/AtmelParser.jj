@@ -32,7 +32,7 @@ package avrora.syntax.atmel;
 import avrora.*;
 import avrora.syntax.*;
 
-public class AtmelParser extends VPCBase {
+public class AtmelParser extends AbstractParser {
 
     protected Module module;
 

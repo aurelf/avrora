@@ -9,67 +9,67 @@ public class Verbose {
 
     final static HashMap printerMap = new HashMap();
 
-    public static VerbosePrinter getVerbosePrinter(String category) {
-        VerbosePrinter p = getPrinter(category);
+    public static Printer getVerbosePrinter(String category) {
+        Printer p = getPrinter(category);
         return p;
     }
 
     public static void setVerbose(String category, boolean on) {
-        VerbosePrinter p = getPrinter(category);
-        p.verbose = on;
+        Printer p = getPrinter(category);
+        p.enabled = on;
     }
 
-    private static VerbosePrinter getPrinter(String category) {
-        VerbosePrinter p = (VerbosePrinter)printerMap.get(category);
+    private static Printer getPrinter(String category) {
+        Printer p = (Printer)printerMap.get(category);
         if ( p == null ) {
-            p = new VerbosePrinter();
+            p = new Printer();
             printerMap.put(category, p);
         }
         return p;
     }
 
-    public static class VerbosePrinter extends Printer {
+    public static class Printer extends avrora.util.Printer {
 
-        boolean verbose;
+        public boolean enabled;
 
-        VerbosePrinter() {
+        Printer() {
             super(System.out);
         }
 
         public void println(String s) {
-            if ( verbose ) super.println(s);
+            if ( enabled ) super.println(s);
         }
 
         public void print(String s) {
-            if ( verbose ) super.print(s);
+            if ( enabled ) super.print(s);
         }
 
         public void nextln() {
-            if ( verbose ) super.nextln();
+            if ( enabled ) super.nextln();
         }
 
         public void indent() {
-            if ( verbose ) super.indent();
+            if ( enabled ) super.indent();
         }
 
         public void spaces() {
-            if ( verbose ) super.spaces();
+            if ( enabled ) super.spaces();
         }
 
         public void unindent() {
-            if ( verbose ) super.unindent();
+            if ( enabled ) super.unindent();
         }
 
         public void startblock() {
-            if ( verbose ) super.startblock();
+            if ( enabled ) super.startblock();
         }
 
         public void startblock(String name) {
-            if ( verbose ) super.startblock(name);
+            if ( enabled ) super.startblock(name);
         }
 
         public void endblock() {
-            if ( verbose ) super.endblock();
+            if ( enabled ) super.endblock();
         }
     }
 
