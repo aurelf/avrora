@@ -405,7 +405,13 @@ Expr Term() : { Expr e; }
     | "(" e = Expr() ")"
     )
     [e = BitRange(e)]
+    [e = Conversion(e)]
     { return e; }
+}
+
+Expr Conversion(Expr e) : { Token t; }
+{
+  ":" t = <IDENTIFIER> { return new ConversionExpr(e, t); }
 }
 
 Expr MapAccess() : { Expr e; Token t; }

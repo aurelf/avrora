@@ -279,6 +279,34 @@ architecture avr {
         return uword(low, high) * 2;
     };
 
+    inline subroutine get_wreg(r: Register): int {
+        return ($regs(r+1) << 8) | ($regs(r)[7:0]);
+    };
+
+    inline subroutine get_ureg(r: Register): int {
+        return $regs(r)[7:0];
+    };
+
+    inline subroutine set_wreg(r: Register, v: int): void {
+        $regs(r) = low(v);
+        $regs(r+1) = high(v);
+    };
+
+    inline subroutine low(v: int): byte {
+        return v:byte;
+    };
+
+    inline subroutine high(v: int): byte {
+        return (v >> 8):byte;
+    };
+
+    inline subroutine uword(low: byte, high: byte): int {
+        return ((high << 8) | low)[15:0];
+    };
+
+    external bit(b: boolean): int;
+    external popByte(): byte;
+    external pushByte(b: byte): void;
 
 
 //---------------------------------------------------------------------------

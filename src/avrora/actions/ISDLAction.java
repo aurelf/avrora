@@ -69,7 +69,10 @@ public class ISDLAction extends Action {
     public final Option.Str CODEMAP = newOption("codemap", "",
             "This option specifies the file to generate the codemap into. The codemap is used in a" +
             "dynamic basic block compiler and dependency analysis of instructions.");
-
+    public final Option.Bool INLINE = newOption("inline", true,
+            "This option controls whether the ISDL processor will inline all subroutines marked as " +
+            "\"inline\" in their declaration.");
+    
     public ISDLAction() {
         super("isdl", HELP);
     }
@@ -77,6 +80,8 @@ public class ISDLAction extends Action {
     public void run(String[] args) throws Exception {
         if (args.length < 1)
             Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl>");
+
+        Architecture.INLINE = INLINE.get();
 
         File archfile = new File(args[0]);
         FileInputStream fis = new FileInputStream(archfile);
