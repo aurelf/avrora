@@ -66,10 +66,13 @@ public class DBBCAction extends Action {
             ControlFlowGraph.Block b = (ControlFlowGraph.Block)i.next();
             printer.startblock("block starting at: "+StringUtil.addrToString(b.getAddress()));
             DBBC.CodeBlock code = dbbc.getCodeBlock(b.getAddress());
-            printer.println("// worst case execution time = "+code.wcet+" cycles");
-            pp.visitStmtList(code.stmts);
+            if ( code != null ) {
+                printer.println("// worst case execution time = "+code.wcet+" cycles");
+                pp.visitStmtList(code.stmts);
+            } else {
+                printer.println("// no code generated for this block");
+            }
             printer.endblock();
-            DBBC.CompiledBlock block = dbbc.getCompiledBlock(code);
         }
     }
 }

@@ -159,7 +159,7 @@ public class Architecture {
 
             // inline and optimize the body of the instruction
             List code = id.getCode();
-            code = new Inliner().visitStmtList(code);
+            code = new Inliner().visitStmtList(code, null);
             code = new Optimizer(code).optimize();
 
             id.setCode(code);
@@ -320,61 +320,61 @@ public class Architecture {
             varMap = new HashMap();
         }
 
-        public List visitStmtList(List l) {
+        public List visitStmtList(List l, Object env) {
 
             Iterator i = l.iterator();
             while (i.hasNext()) {
                 Stmt a = (Stmt)i.next();
-                Stmt na = a.accept(this);
+                Stmt na = a.accept(this, env);
                 if (na != null) newStmts.add(na);
             }
 
             return newStmts;
         }
 
-        public Stmt visit(CallStmt s) {
+        public Stmt visit(CallStmt s, Object env) {
             SubroutineDecl d = getSubroutine(s.method.image);
             if (shouldNotInline(d)) {
-                return super.visit(s);
+                return super.visit(s, env);
             } else {
                 inlineCall(s.method, d, s.args);
                 return null;
             }
         }
 
-        public Stmt visit(VarAssignStmt s) {
+        public Stmt visit(VarAssignStmt s, Object env) {
             String nv = varName(s.variable);
-            return new VarAssignStmt(newToken(nv), s.expr.accept(this));
+            return new VarAssignStmt(newToken(nv), s.expr.accept(this, env));
         }
 
-        public Stmt visit(VarBitAssignStmt s) {
+        public Stmt visit(VarBitAssignStmt s, Object env) {
             String nv = varName(s.variable);
-            return (new VarBitAssignStmt(newToken(nv), s.bit.accept(this), s.expr.accept(this)));
+            return (new VarBitAssignStmt(newToken(nv), s.bit.accept(this, env), s.expr.accept(this, env)));
         }
 
-        public Stmt visit(VarBitRangeAssignStmt s) {
+        public Stmt visit(VarBitRangeAssignStmt s, Object env) {
             String nv = varName(s.variable);
-            return (new VarBitRangeAssignStmt(newToken(nv), s.low_bit, s.high_bit, s.expr.accept(this)));
+            return (new VarBitRangeAssignStmt(newToken(nv), s.low_bit, s.high_bit, s.expr.accept(this, env)));
         }
 
-        public Stmt visit(DeclStmt s) {
+        public Stmt visit(DeclStmt s, Object env) {
             String nv = newTemp(s.name.image);
-            return (new DeclStmt(newToken(nv), s.type, s.init.accept(this)));
+            return (new DeclStmt(newToken(nv), s.type, s.init.accept(this, env)));
         }
 
-        public Stmt visit(ReturnStmt s) {
+        public Stmt visit(ReturnStmt s, Object env) {
             if (curSubroutine == null)
                 throw Avrora.failure("return not within subroutine!");
 
             retVal = newTemp(null);
-            return (new DeclStmt(newToken(retVal), curSubroutine.ret, s.expr.accept(this)));
+            return (new DeclStmt(newToken(retVal), curSubroutine.ret, s.expr.accept(this, env)));
         }
 
 
-        public Stmt visit(IfStmt s) {
-            Expr nc = s.cond.accept(this);
-            List nt = new Inliner(this).visitStmtList(s.trueBranch);
-            List nf = new Inliner(this).visitStmtList(s.falseBranch);
+        public Stmt visit(IfStmt s, Object env) {
+            Expr nc = s.cond.accept(this, env);
+            List nt = new Inliner(this).visitStmtList(s.trueBranch, env);
+            List nf = new Inliner(this).visitStmtList(s.falseBranch, env);
             return (new IfStmt(nc, nt, nf));
         }
 
@@ -409,23 +409,23 @@ public class Architecture {
                 bodyBuilder.varMap.put(f.name.image, nn);
 
                 // alpha-rename expression that is argument
-                Expr ne = e.accept(this);
+                Expr ne = e.accept(this, null);
                 newStmts.add(new DeclStmt(nn, f.type, ne));
             }
 
             // set the current subroutine
             bodyBuilder.curSubroutine = d;
             // process body
-            bodyBuilder.visitStmtList(d.getCode());
+            bodyBuilder.visitStmtList(d.getCode(), null);
 
             return bodyBuilder.retVal;
         }
 
 
-        public Expr visit(CallExpr v) {
+        public Expr visit(CallExpr v, Object env) {
             SubroutineDecl d = getSubroutine(v.method.image);
             if (shouldNotInline(d)) {
-                return super.visit(v);
+                return super.visit(v, null);
             } else {
                 String result = inlineCall(v.method, d, v.args);
                 return new VarExpr(result);

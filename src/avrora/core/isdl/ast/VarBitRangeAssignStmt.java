@@ -137,8 +137,8 @@ public class VarBitRangeAssignStmt extends AssignStmt {
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
-    public Stmt accept(StmtRebuilder r) {
-        return r.visit(this);
+    public Stmt accept(StmtRebuilder r, Object env) {
+        return r.visit(this, env);
     }
 
 }

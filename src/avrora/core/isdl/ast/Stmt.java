@@ -56,5 +56,5 @@ public abstract class Stmt {
      * @param v the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
-    public abstract Stmt accept(StmtRebuilder v);
+    public abstract Stmt accept(StmtRebuilder v, Object env);
 }

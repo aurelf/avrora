@@ -158,4 +158,20 @@ public class Arithmetic {
     public static int bitCount(byte value) {
         return bitcountKey[value & 0x0f] + bitcountKey[(value >> 4) & 0x0f];
     }
+
+    public static int getSingleBitMask(int bit) {
+        return 1 << bit;
+    }
+
+    public static int getSingleInverseBitMask(int bit) {
+        return ~(1 << bit);
+    }
+
+    public static int getBitRangeMask(int low, int high) {
+        return (0xffffffff >>> (31 - (high - low)));
+    }
+
+    public static int getInverseBitRangeMask(int low, int high) {
+        return ~getBitRangeMask(low, high);
+    }
 }

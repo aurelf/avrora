@@ -38,7 +38,7 @@ import avrora.util.StringUtil;
 
 /**
  * The <code>Expr</code> class represents an expression in the IR. Expressions are evaluated and produce a
- * value that can be assigned to locals, globals, maps, used in if statements, and passed as parameters.
+ * value that can be assigned to locals, globalMap, maps, used in if statements, and passed as parameters.
  *
  * @author Ben L. Titzer
  */
@@ -173,7 +173,7 @@ public abstract class Expr {
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public abstract Expr accept(CodeRebuilder r);
+    public abstract Expr accept(CodeRebuilder r, Object env);
 
     /**
      * The <code>innerString()</code> method is a utility to embed an expression in parentheses only if its

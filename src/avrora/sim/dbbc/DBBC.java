@@ -36,7 +36,10 @@ import avrora.core.Program;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
 import avrora.core.isdl.CodeRegion;
+import avrora.core.isdl.parser.Token;
 import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.gen.ConstantPropagator;
+import avrora.core.isdl.gen.DeadCodeEliminator;
 import avrora.core.isdl.ast.*;
 import avrora.Avrora;
 import avrora.util.*;
@@ -54,6 +57,8 @@ import java.lang.reflect.Method;
  * @author Ben L. Titzer
  */
 public class DBBC {
+
+    protected static HashMap globalMap = new HashMap();
 
     public final Options options = new Options();
 
@@ -169,7 +174,7 @@ public class DBBC {
     }
 
     /**
-     * The <code>getCompiledBlock()</code> method instructs the DBBC_OPT to compile the basic
+     * The <code>getCompiledBlock()</code> method instructs the DBBC to compile the basic
      * block that begins at the specified byte address.
      * @param addr the byte address of the beginning of the basic block to compile
      * @return a reference to the compiled block of code when complete
@@ -218,6 +223,14 @@ public class DBBC {
             }
 
         }
+
+        if ( CONSTANT_PROPAGATION.get() ) {
+            stmts = new ConstantPropagator().process(stmts);
+        }
+        if ( DEAD_CODE_ELIMINATION.get() ) {
+            stmts = new DeadCodeEliminator(globalMap.keySet()).process(stmts);
+        }
+
         nblock = new CodeBlock(addr, stmts, wcet);
         codeBlockMap.put(b, nblock);
         return nblock;
@@ -277,13 +290,12 @@ public class DBBC {
         int result = ((Integer)r).intValue();
 
         if ( result != 0 )
-            throw Avrora.failure("DBBC_OPT failed to compile: "+f.toString());
+            throw Avrora.failure("DBBC failed to compile: "+f.toString());
         String cname = name.replaceAll(".java", ".class");
         File c = new File(cname);
         return c;
     }
 
-    protected static HashMap varMap = new HashMap();
     static {
         add("I");
         add("T");
@@ -301,7 +313,7 @@ public class DBBC {
     }
 
     protected static void add(String s) {
-        varMap.put(s, "interpreter."+s);
+        globalMap.put(s, "interpreter."+s);
     }
 
 
@@ -310,11 +322,7 @@ public class DBBC {
 
         CodeGenerator(Printer p) {
             super(null, p);
-            initializeVariableMap();
-        }
-
-        protected void initializeVariableMap() {
-            variableMap = varMap;
+            variableMap = new HashMap();
         }
 
         public void visit(DeclStmt s) {
@@ -326,12 +334,14 @@ public class DBBC {
             return "temp_"+(tmps++);
         }
 
-        protected void add(String s) {
-            variableMap.put(s, "interpreter."+s);
-        }
-
         protected String getMethod(String s) {
             return "interpreter."+s;
+        }
+
+        protected String getVariable(Token t) {
+            String var = (String)variableMap.get(t.image);
+            if (var == null) var = "interpreter."+t.image;
+            return var;
         }
     }
 

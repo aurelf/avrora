@@ -38,6 +38,7 @@ import avrora.core.isdl.ast.*;
 import avrora.core.isdl.parser.Token;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
+import avrora.util.Arithmetic;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -101,10 +102,76 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
                 String var = (String)variableMap.get(ind.toString());
                 if (var == null) var = ind.toString();
                 printer.print(writeMeth + "(" + var + ", ");
-                int mask = getBitRangeMask(l, h);
+                int mask = Arithmetic.getBitRangeMask(l, h);
                 int smask = mask << l;
                 int imask = ~smask;
                 printer.print("(" + readMeth + "(" + var + ")" + andString(imask) + ")");
+                printer.print(" | (");
+                emitAnd(val, mask);
+                if (l != 0) printer.print(" << " + l);
+                printer.println(");");
+            } else {
+                throw Avrora.failure("non-constant index into map in bit-range assignment");
+            }
+        }
+    }
+
+    protected class ArrayMap extends MapRep {
+        public final String varname;
+        public final Token token;
+
+        ArrayMap(String v) {
+            varname = v;
+            token = new Token();
+            token.image = varname;
+        }
+
+        public void generateWrite(Expr ind, Expr val) {
+            printer.print(getVariable(token)+"[");
+            ind.accept(InterpreterGenerator.this);
+            printer.print("] = ");
+            val.accept(InterpreterGenerator.this);
+            printer.println(";");
+        }
+
+        public void generateBitWrite(Expr ind, Expr b, Expr val) {
+            // TODO: extract out index value if it is not a simple expression
+            printer.print(getVariable(token) + "[");
+            ind.accept(InterpreterGenerator.this);
+            printer.print("] = Arithmetic.getBit("+getVariable(token)+"[");
+            ind.accept(InterpreterGenerator.this);
+            printer.print("], ");
+            b.accept(InterpreterGenerator.this);
+            printer.print(", ");
+            val.accept(InterpreterGenerator.this);
+            printer.println("));");
+        }
+
+        public void generateRead(Expr ind) {
+            printer.print(getVariable(token)+"[");
+            ind.accept(InterpreterGenerator.this);
+            printer.print("]");
+        }
+
+        public void generateBitRead(Expr ind, Expr b) {
+            printer.print("Arithmetic.getBit(" + getVariable(token) + "[");
+            ind.accept(InterpreterGenerator.this);
+            printer.print("], ");
+            b.accept(InterpreterGenerator.this);
+            printer.print(")");
+        }
+
+        public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
+            if (ind.isVariable() || ind.isLiteral()) {
+                Token t = new Token();
+                t.image = ind.toString();
+                String var = getVariable(t);
+                if (var == null) var = ind.toString();
+                printer.print(getVariable(token) + "[" + var + "] = ");
+                int mask = Arithmetic.getBitRangeMask(l, h);
+                int smask = mask << l;
+                int imask = ~smask;
+                printer.print(getVariable(token) + "[" + var + "]" + andString(imask) + ")");
                 printer.print(" | (");
                 emitAnd(val, mask);
                 if (l != 0) printer.print(" << " + l);
@@ -159,7 +226,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     }
 
     protected void initializeMaps() {
-        mapMap.put("regs", new GetterSetterMap("getRegisterByte", "setRegisterByte"));
+        mapMap.put("regs", new ArrayMap("regs"));
         mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "setRegisterByte"));
         mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "setRegisterWord"));
         mapMap.put("sram", new GetterSetterMap("getDataByte", "setDataByte"));
@@ -244,7 +311,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
     public void visit(VarBitRangeAssignStmt s) {
         String var = getVariable(s.variable);
-        int mask = getBitRangeMask(s.low_bit, s.high_bit);
+        int mask = Arithmetic.getBitRangeMask(s.low_bit, s.high_bit);
         int smask = mask << s.low_bit;
         int imask = ~smask;
         printer.print(var + " = (" + var + andString(imask) + ")");
@@ -306,8 +373,9 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
                 mr.generateBitRead(me.index, e.bit);
             } else {
                 if (e.bit.isLiteral()) {
-                    int mask = getSingleBitMask(((Literal.IntExpr)e.bit).value);
+                    int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr)e.bit).value);
                     printer.print("((");
+                    // TODO: is this precedence rule correct? I think it should be Expr.AND
                     inner(e.expr, Expr.PREC_A_ADD);
                     printer.print(" & " + mask + ") != 0");
                     printer.print(")");
@@ -318,7 +386,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void visit(BitRangeExpr e) {
-            int mask = getBitRangeMask(e.low_bit, e.high_bit);
+            int mask = Arithmetic.getBitRangeMask(e.low_bit, e.high_bit);
             int low = e.low_bit;
             if (low != 0) {
                 printer.print("(");
@@ -345,21 +413,5 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         binop("^", e.left, e.right, e.getPrecedence());
     }
 
-
-    protected int getSingleBitMask(int bit) {
-        return 1 << bit;
-    }
-
-    protected int getSingleInverseBitMask(int bit) {
-        return ~(1 << bit);
-    }
-
-    protected int getBitRangeMask(int low, int high) {
-        return (0xffffffff >>> (31 - (high - low)));
-    }
-
-    protected int getInverseBitRangeMask(int low, int high) {
-        return ~getBitRangeMask(low, high);
-    }
 
 }

@@ -47,7 +47,7 @@ import avrora.util.StringUtil;
  */
 public abstract class BaseInterpreter implements State, InstrVisitor {
     protected int pc;
-    protected final byte[] regs;
+    public final byte[] regs;
     protected final State.IOReg[] ioregs;
     protected byte[] sram;
     protected MulticastWatch[] sram_probes;

@@ -117,6 +117,7 @@ public class DBBCInterpreter extends GenInterpreter {
         try {
             compileProgram();
         } catch ( Exception e ) {
+            e.printStackTrace();
             throw Avrora.failure("cannot compile program: "+ e.toString());
         }
     }

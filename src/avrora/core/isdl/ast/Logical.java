@@ -190,8 +190,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -214,8 +214,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -238,8 +238,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -262,8 +262,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -286,8 +286,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -310,8 +310,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -335,8 +335,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -359,8 +359,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -384,8 +384,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 
@@ -408,8 +408,8 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r) {
-            return r.visit(this);
+        public Expr accept(CodeRebuilder r, Object env) {
+            return r.visit(this, env);
         }
     }
 }
