@@ -41,7 +41,7 @@ import avrora.sim.mcu.ATMega128L;
 
 /**
  * The <code>Pc</code> class is a monitor that that is capable
- * of setting up a virtual usart connection to the badPc. You can
+ * of setting up a virtual usart connection to the pc. You can
  * connect the TinyOS serial forwarder to the port 2390.
  *
  * @author Olaf Landsiedel
@@ -76,12 +76,12 @@ public class Pc extends MonitorFactory {
      * method.
      */
     public Pc() {
-        super("The \"badPc\" monitor connects the USART0 of node 0 to the PC using port 2390 as the default.");
+        super("The \"pc\" monitor connects the USART0 of node 0 to the PC using port 2390 as the default.");
     }
 
     /**
      * The <code>newMonitor()</code> method creates a new monitor that is capable
-     * of setting up a virtual usart connection to the badPc. You can connect the TinyOS
+     * of setting up a virtual usart connection to the pc. You can connect the TinyOS
      * serial forwarder to the port 2390.
      * @param s the simulator to create a monitor for
      * @return an instance of the <code>Monitor</code> interface for the

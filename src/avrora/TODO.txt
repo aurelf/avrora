@@ -1,5 +1,5 @@
 #
-# TODO: list of fixes, refactorings, and functionality for Avrora
+# TODO: list of fixes, refactorings, optimizations and functionality for Avrora
 #
 
 ================================ F I X E S ==================================
@@ -37,7 +37,6 @@
     2   devs  Implement watchdog timer
     2  radio  Implement all radio frequency registers
     1   util  Implement Columnifier class
-  2-3   isdl  Regeneration Instr.* classes
     1  probe  Interrupt monitor
 
     1   sim   new: ClockDomain, refactored MCU construction         (1.5.32)
@@ -49,11 +48,10 @@
 ========================= R E F A C T O R I N G S ===========================
  Comp Module Item                                      Completion (Version)
 -----------------------------------------------------------------------------
-  3-4   devs  Extract ATMega128L devices                                85%
+  3-4   devs  Extract ATMega128L devices                                90%
     2    sim  Introduce Simulation class
     1    sim  global migrate to Clock, DerivedClock
     1    sim  Move timeouts out of Simulator
-  1-2    sim  Interpreter inner loop optimization
     2   isdl  Declare state of processor explicitly
     2    sim  read/write vs get/set for State
     2   isdl  AlphaRenamer class for code processing
@@ -69,19 +67,32 @@
     2    sim  Word-aligned PC optimization
     2    sim  Introduce SourceMapping class
 
-    1    sim  Optimize getSP() and setSP() methods                  (1.5.31)
     2   help  global migrate to HelpSystem, HelpCategories          (1.5.30)
     1   main  Remove shortName from Action, MonitorFactory          (1.5.28)
   2-3    sim  Clean up event / verbose printing                      (1.4.0)
-  1-2    sim  Consolidate regs and sram in interpreter               (1.5.x)
     1   main  Move class maps and defaults to Defaults               (1.5.x)
     1    sim  Refactor microcontroller instantiation                 (1.5.x)
-    1    sim  Move boolean xor usages to !=                          (1.4.0)
     2   isdl  Canonicalize isdl code generated                       (1.4.0)
     1    sim  Display seconds from Simulator.Printer                 (1.4.0)
-    1    sim  ProbedInstr refactoring                                (1.5.x)
     1  input  Check for invalid register names                       (1.5.x)
     1    sim  Synchronize simulator output                           (1.4.0)
+
+======================== O P T I M I Z A T I O N S ==========================
+ Comp Module Item                                      Completion (Version)
+-----------------------------------------------------------------------------
+  1-2    sim  Interpreter inner loop optimization
+  2-3    sim  Reduce interp. flags computations with xor's
+    1    sim  Optimize DerivedClock for integer multiples
+  2-3   isdl  Regeneration Instr.* classes
+    1    sim  Use sram[] array directly for interp. register ops
+    1    sim  Convert all clock HZ references to ints
+  1-2    sim  Convert deltaqueue to use ints instead of longs
+
+    1    sim  Allocate all SPI.Frame's statically                   (1.5.35)
+    1    sim  Optimize getSP() and setSP() methods                  (1.5.31)
+  1-2    sim  Consolidate regs and sram in interpreter               (1.5.x)
+    1    sim  ProbedInstr refactoring                                (1.5.x)
+    1    sim  Move boolean xor usages to !=                          (1.4.0)
 
 ======================== D O C U M E N T A T I O N ==========================
  Comp Module Item                                      Completion (Version)

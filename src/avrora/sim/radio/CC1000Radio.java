@@ -36,8 +36,7 @@ import avrora.sim.Energy;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.State;
-import avrora.sim.mcu.ATMega128L;
-import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.*;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.sim.radio.freespace.LocalAir;
 import avrora.sim.radio.freespace.LocalAirImpl;
@@ -45,6 +44,8 @@ import avrora.sim.radio.freespace.Position;
 import avrora.util.Arithmetic;
 import avrora.util.Terminal;
 import avrora.util.Visual;
+import avrora.util.StringUtil;
+import avrora.Avrora;
 
 import java.util.LinkedList;
 
@@ -244,7 +245,7 @@ public class CC1000Radio implements Radio {
 
         // If there are other microcontroller implementations in the future,
         // this code should be adjusted to account for that.
-        controller = new ATMega128LController();
+        controller = new ATMegaController();
         controller.install(mcu);
 
         //setup energy recording
@@ -944,16 +945,18 @@ public class CC1000Radio implements Radio {
      * the CC1000 is the master. RSSI data from the CC1000 is available to the ATMega128L though the ADC
      * (analog to digital converter).
      */
-    public class ATMega128LController implements Radio.RadioController, ATMega128L.SPIDevice, ATMega128L.ADCInput {
+    public class ATMegaController implements Radio.RadioController,
+            ATMega128L.ADCInput,
+            ADC.ADCInput,
+            SPIDevice {
 
         SerialConfigurationInterface pinReader;
 
-        public ATMega128L.SPIDevice connectedDevice;
+        private SPIDevice spiDevice;
         private final TransferTicker ticker;
+        private final Simulator.Printer printer;
 
-        private Simulator.Printer printer;
-
-        ATMega128LController() {
+        ATMegaController() {
             ticker = new TransferTicker();
             printer = sim.getPrinter("radio.cc1000.data");
         }
@@ -996,13 +999,13 @@ public class CC1000Radio implements Radio {
 
             public void fire() {
 
-                SPIFrame frame = connectedDevice.transmitFrame();
+                SPI.Frame frame = spiDevice.transmitFrame();
 
                 if (MAIN_reg.rxtx && !MAIN_reg.txPd) {
                     receiveFrame(frame);
                 }
 
-                connectedDevice.receiveFrame(transmitFrame());
+                spiDevice.receiveFrame(transmitFrame());
 
                 if (tickerOn) {
                     sim.insertEvent(this, Radio.TRANSFER_TIME);
@@ -1011,24 +1014,21 @@ public class CC1000Radio implements Radio {
             }
         }
 
-        byte oldData;
-
         /**
          * <code>receiveFrame</code> receives an <code>SPIFrame</code> from a connected device. If the radio
          * is in a transmission state, this should be the next frame sent into the air.
          */
-        public void receiveFrame(SPIFrame frame) {
+        public void receiveFrame(SPI.Frame frame) {
             if (printer.enabled) {
-                printer.println("CC1000: sending " + (char)frame.data + ", " + Integer.toHexString(0xff & frame.data));
-                if (oldData == (byte)0x03) {
-                    printer.println("Int Data : " + hex(frame.data));
-                }
+                printer.println("CC1000: received "+renderChar(frame.data)+" from SPI");
             }
-            oldData = frame.data;
-            long currentTime = sim.getState().getCycles();
 
             // data, frequency, origination
             if (!MAIN_reg.txPd && MAIN_reg.rxtx) {
+                if (printer.enabled) {
+                    printer.println("CC1000: beginning transmit of "+renderChar(frame.data));
+                }
+                long currentTime = sim.getState().getCycles();
                 new Transmit(new RadioPacket(frame.data, 0, currentTime));
             }
 
@@ -1054,34 +1054,31 @@ public class CC1000Radio implements Radio {
          * Transmits an <code>SPIFrame</code> to be received by the connected device. This frame is either the
          * last byte of data received or a zero byte.
          */
-        public SPIFrame transmitFrame() {
-            SPIFrame frame;
+        public SPI.Frame transmitFrame() {
+            SPI.Frame frame;
 
             if (MAIN_reg.rxtx && MAIN_reg.txPd) {
-                frame = new SPIFrame((byte)0x00);
+                frame = SPI.ZERO_FRAME;
             } else if (!receivedBuffer.isEmpty()) {
                 Radio.RadioPacket receivedPacket = (Radio.RadioPacket)receivedBuffer.removeFirst();
                 packetsRx++;
                 Visual.send(sim.getID(), "packetRx", receivedPacket.data);
                 // Apparently TinyOS expects received data to be inverted
                 byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte)~receivedPacket.data;
-                frame = new SPIFrame(data);
+                frame = SPI.newFrame(data);
                 if (printer.enabled) {
-                    printer.println(getSimulator().getClock().getCount() + " " +
-                            getSimulator().getID() + ' ' +
-                            "CC1000: received " + hex(frame.data));
+                    printer.println("CC1000: received " + renderChar(frame.data)+", sending back to SPI");
                 }
             } else {
-                frame = new SPIFrame((byte)0x00);
+                frame = SPI.ZERO_FRAME;
             }
-
 
             return frame;
         }
 
 
-        public void connect(ATMega128L.SPIDevice d) {
-            connectedDevice = d;
+        public void connect(SPIDevice d) {
+            spiDevice = d;
         }
 
         public int getLevel() {
@@ -1098,6 +1095,19 @@ public class CC1000Radio implements Radio {
                 ATMega128L atm = (ATMega128L)mcu;
                 atm.connectADCInput(this, 0);
                 atm.connectSPIDevice(this);
+            } else if (mcu instanceof ATMegaFamily) {
+                ATMegaFamily atm = (ATMegaFamily)mcu;
+
+                // get ADC device and connect
+                ADC adc = (ADC)atm.getDevice("adc");
+                adc.connectADCInput(this, 0);
+
+                // get SPI device and connect
+                SPI spi = (SPI)atm.getDevice("spi");
+                spi.connect(this);
+                connect(spi); // don't forget to connect ourselves to this device
+            } else {
+                throw Avrora.failure("CC1000: only ATMegaFamily is supported");
             }
         }
 
@@ -1358,10 +1368,18 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * Output helper method.
+     * renderChar() is a helper method to convert a byte value to a character.
+     * @param val
+     * @return
      */
-    private static String hex(byte val) {
-        return Integer.toHexString(0xff & val);
+    private static String renderChar(byte val) {
+        StringBuffer buf = new StringBuffer(16);
+        buf.append("{'");
+        buf.append((char)val);
+        buf.append("' 0x");
+        StringUtil.toHex(buf, val, 2);
+        buf.append('}');
+        return buf.toString();
     }
 
     /**

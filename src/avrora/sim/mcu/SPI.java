@@ -41,7 +41,7 @@ import avrora.util.Arithmetic;
  *
  * @author Daniel Lee, Simon Han
  */
-public class SPI extends AtmelInternalDevice {
+public class SPI extends AtmelInternalDevice implements SPIDevice {
     final SPDReg SPDR_reg;
     final SPCRReg SPCR_reg;
     final SPSReg SPSR_reg;
@@ -59,41 +59,30 @@ public class SPI extends AtmelInternalDevice {
     protected int period;
 
     /**
-     * Interface for devices that can connect to the SPI. Rather than communicating over the MISO, MOSI pins,
-     * the process is expedited and simplified through the use of the transmitFrame() and receiveFrame()
-     * methods in the intefact.
-     */
-    public interface SPIDevice {
-        /**
-         * Transmit a frame from this device.
-         *
-         * @return the frame for transmission
-         */
-        public Frame transmitFrame();
-
-        /**
-         * Receive a frame.
-         *
-         * @param frame the frame to be received
-         */
-        public void receiveFrame(Frame frame);
-
-        public void connect(SPIDevice d);
-
-    }
-
-    /**
      * A single byte data frame for the SPI.
-     * TODO: isn't this a bit of overkill?
      */
     public static class Frame {
         public final byte data;
 
-        public Frame(byte data) {
+        protected Frame(byte data) {
             this.data = data;
         }
     }
 
+    private final static Frame frames[] = new Frame[256];
+    public final static Frame ZERO_FRAME;
+    public final static Frame FF_FRAME;
+
+    static {
+        for ( int cntr = 0; cntr < 256; cntr++ )
+            frames[cntr] = new Frame((byte)cntr);
+        ZERO_FRAME = frames[0];
+        FF_FRAME = frames[0xff];
+    }
+
+    public static Frame newFrame(byte data) {
+        return frames[data & 0xff];
+    }
 
     public void connect(SPIDevice d) {
         connectedDevice = d;
@@ -106,7 +95,7 @@ public class SPI extends AtmelInternalDevice {
     }
 
     public Frame transmitFrame() {
-        return new Frame(SPDR_reg.transmitReg.read());
+        return newFrame(SPDR_reg.transmitReg.read());
     }
 
     public SPI(AtmelMicrocontroller m) {
@@ -329,7 +318,7 @@ public class SPI extends AtmelInternalDevice {
         static final int SPR1 = 1;
         static final int SPR0 = 0;
         //OL: remember old state of spi enable bit
-        boolean oldSpiEnable = false;
+        boolean SPIEnable = false;
 
         public void write(byte val) {
             if (devicePrinter.enabled)
@@ -354,12 +343,12 @@ public class SPI extends AtmelInternalDevice {
             //this is not described in the Atmega128l handbook
             //however, the chip seems to work like this, as S-Mac
             //does not work without it
-            if (Arithmetic.getBit(val, SPIE) && !oldSpiEnable) {
-                oldSpiEnable = true;
+            if (Arithmetic.getBit(val, SPIE) && !SPIEnable) {
+                SPIEnable = true;
                 SPSR_reg.writeBit(SPSR_reg.SPI, false);
             }
-            if (!Arithmetic.getBit(val, SPIE) && oldSpiEnable)
-                oldSpiEnable = false;
+            if (!Arithmetic.getBit(val, SPIE) && SPIEnable)
+                SPIEnable = false;
             //end OL
 
             boolean oldMaster = master;

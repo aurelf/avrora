@@ -313,7 +313,7 @@ public class ATMega128 extends ATMegaFamily {
 
     }
 
-    protected ATMega128(int id, ClockDomain cd, InterpreterFactory f, Program p) {
+    public ATMega128(int id, ClockDomain cd, InterpreterFactory f, Program p) {
         super(cd, props);
         simulator = new Simulator(id, f, this, p);
         interpreter = simulator.getInterpreter();

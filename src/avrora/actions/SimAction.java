@@ -43,6 +43,7 @@ import avrora.sim.dbbc.DBBC;
 import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.platform.Mica2;
 import avrora.util.*;
 
 import java.util.*;
@@ -91,6 +92,11 @@ public abstract class SimAction extends Action {
             "topology, packet transmission, packet reception, energy " +
             "information and more. Syntax is ip address or host name and " +
             "port: 127.0.0.1:2379 \n(Status: experimental)");
+    public final Option.Bool NEW_ATMEGA = newOption("new-atmega128", false,
+            "This option only has effect for the \"mica2\" platform. It enables the use of " +
+            "the new (refactored) ATMega128 code on the mica2 platform. This code " +
+            "is currently experimental and has not been exhaustively verified against the " +
+            "old code, and therefore is (at the moment) only enabled through this option.");
 
     protected LinkedList monitorFactoryList;
     protected HashMap monitorListMap;
@@ -177,6 +183,8 @@ public abstract class SimAction extends Action {
      * @return a new <code>Simulator</code> instance
      */
     protected Simulator newSimulator(InterpreterFactory factory, Program p) {
+        Mica2.USE_NEW_ATMEGA = NEW_ATMEGA.get();
+
         Simulator simulator;
         PlatformFactory pf = getPlatform();
         if (pf != null) {
@@ -184,7 +192,6 @@ public abstract class SimAction extends Action {
         } else {
             simulator = Defaults.newSimulator(simcount++, MCU.get(), factory, p);
         }
-
         processTimeout(simulator);
 
         processMonitorList();

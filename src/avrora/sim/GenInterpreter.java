@@ -194,7 +194,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         innerLoop = true;
         while (innerLoop) {
             // get the current instruction
-            int curPC = nextPC; // at this point badPc == nextPC
+            int curPC = nextPC; // at this point pc == nextPC
             Instr i = getInstr(nextPC);
 
             // visit the actual instruction (or probe)

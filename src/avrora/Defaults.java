@@ -99,7 +99,7 @@ public class Defaults {
             monitorMap.addClass("packet", PacketMonitor.class);
             monitorMap.addClass("gdb", GDBServer.class);
             monitorMap.addClass("simperf", SimPerfMonitor.class);
-            monitorMap.addClass("badPc", Pc.class);
+            monitorMap.addClass("pc", Pc.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
             addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
@@ -359,9 +359,7 @@ public class Defaults {
         // TODO: this has to be configurable somehow
         MicrocontrollerFactory f = getMicrocontroller(mcu);
         ClockDomain cd = new ClockDomain(8000000);
-        MainClock mc = cd.getMainClock();
-        DerivedClock external = new DerivedClock("external", mc, 8000000);
-        cd.addClock(external);
+        cd.newClock("external", 8000000);
 
         return f.newMicrocontroller(id, cd, factory, p).getSimulator();
     }

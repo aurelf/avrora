@@ -30,39 +30,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim.mcu;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
- *
- * @author Ben L. Titzer
+ * Interface for devices that can connect to the SPI. Rather than communicating over the MISO, MOSI pins,
+ * the process is expedited and simplified through the use of the transmitFrame() and receiveFrame()
+ * methods in the intefact.
  */
-public class Version {
+public interface SPIDevice {
+    /**
+     * Transmit a frame from this device.
+     *
+     * @return the frame for transmission
+     */
+    public SPI.Frame transmitFrame();
 
     /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
+     * Receive a frame.
+     *
+     * @param frame the frame to be received
      */
-    public final String prefix = "Beta ";
+    public void receiveFrame(SPI.Frame frame);
 
     /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
+     * The <code>connect()</code> method connects this SPI device to the specified SPIDevice.
+     * @param d the device to connect to.
      */
-    public final String major = "1.5";
+    public void connect(SPIDevice d);
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 36;
-
-    public static Version getVersion() {
-        return new Version();
-    }
-
-    public String toString() {
-        return prefix + major + '.' + commit;
-    }
 }

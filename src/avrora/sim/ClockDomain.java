@@ -94,6 +94,20 @@ public class ClockDomain {
     }
 
     /**
+     * The <code>newClock()</code> method creates a new clock derived from the main clock of
+     * this clock domain with the given name and clockspeed. The clock will automatically be
+     * added to this clock domain with the specified name.
+     * @param name the name of the new clock
+     * @param hz the clockspeed of the new clock in cycles per second
+     * @return a new <code>Clock</code> instance with the specified properties
+     */
+    public Clock newClock(String name, long hz) {
+        DerivedClock c = new DerivedClock(name, mainClock, hz);
+        addClock(c);
+        return c;
+    }
+
+    /**
      * The <code>hasClock()</code> method queries the clock domain whether it contains a particular
      * named clock.
      * @param name the name of the clock to check for

@@ -450,6 +450,16 @@ public class StringUtil {
         return new String(result);
     }
 
+    public static void toHex(StringBuffer buf, long value, int width) {
+        if (value > (long)1 << width * 4) {
+            buf.append(Long.toHexString(value).toUpperCase());
+            return;
+        }
+
+        for (int cntr = 0; cntr < width; cntr++)
+            buf.append(HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf]);
+    }
+
     public static String splice(String a[], String b[]) {
         StringBuffer buf = new StringBuffer();
         int cntr = 0;

@@ -370,7 +370,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
         return true;
     }
 
-    protected SimImpl.SPI spi;
+    protected SimImpl.OldSPI spi;
     protected SimImpl.ADC adc;
     protected SimImpl.PowerManagement pm;
     protected SimImpl.USART0 usart0;
@@ -1868,7 +1868,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
             usart0 = new USART0(interpreter);
             if (!compatibilityMode) new USART1(interpreter);
 
-            spi = new SPI(interpreter);
+            spi = new OldSPI(interpreter);
             adc = new ADC(interpreter);
             pm = new PowerManagement(interpreter);
         }
@@ -2676,7 +2676,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
          *
          * @author Daniel Lee, Simon Han
          */
-        protected class SPI implements SPIDevice {
+        protected class OldSPI implements SPIDevice {
             final SPDReg SPDR_reg;
             final SPCRReg SPCR_reg;
             final SPSReg SPSR_reg;
@@ -2699,17 +2699,17 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
                 connectedDevice = d;
             }
 
-            public void receiveFrame(SPIFrame frame) {
+            public void receiveFrame(SPI.Frame frame) {
                 SPDR_reg.receiveReg.write(frame.data);
                 if (!master && !transmitReceive.transmitting) SPSR_reg.writeBit(7, true); // flag interrupt
 
             }
 
-            public SPIFrame transmitFrame() {
-                return new SPIFrame(SPDR_reg.transmitReg.read());
+            public SPI.Frame transmitFrame() {
+                return SPI.newFrame(SPDR_reg.transmitReg.read());
             }
 
-            SPI(BaseInterpreter ns) {
+            OldSPI(BaseInterpreter ns) {
                 SPDR_reg = new SPDReg();
                 SPCR_reg = new SPCRReg();
                 SPSR_reg = new SPSReg();
@@ -2768,8 +2768,8 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
              */
             protected class TransmitReceive implements Simulator.Event {
 
-                SPIFrame myFrame;
-                SPIFrame connectedFrame;
+                SPI.Frame myFrame;
+                SPI.Frame connectedFrame;
                 boolean transmitting;
 
                 protected void enableTransfer() {
@@ -3056,7 +3056,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
 
             byte oldData;
 
-            public void receiveFrame(SPIFrame frame) {
+            public void receiveFrame(SPI.Frame frame) {
 
                 if (printer.enabled && (frame.data != oldData)) {
                     printer.println("SPIPrinter: " + (char)frame.data + ", " + frame.data);
@@ -3064,11 +3064,11 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
                 oldData = frame.data;
             }
 
-            public SPIFrame transmitFrame() {
+            public SPI.Frame transmitFrame() {
                 if (printer.enabled) {
                     printer.println("SPIPrinter: transmitting...");
                 }
-                return new SPIFrame((byte)0xff);
+                return SPI.FF_FRAME;
             }
         }
 
@@ -3372,46 +3372,6 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
     }
 
     /**
-     * TODO: Cleanup. Move SPIDevice, ADCInput, USARTDevice out of this and into their own package.
-     * These interfaces really aren't ATMega128 specific.
-     */
-
-    /**
-     * Interface for devices that can connect to the SPI. Rather than communicating over the MISO, MOSI pins,
-     * the process is expedited and simplified through the use of the transmitFrame() and receiveFrame()
-     * methods in the intefact.
-     */
-    public interface SPIDevice {
-        /**
-         * Transmit a frame from this device.
-         *
-         * @return the frame for transmission
-         */
-        public SPIFrame transmitFrame();
-
-        /**
-         * Receive a frame.
-         *
-         * @param frame the frame to be received
-         */
-        public void receiveFrame(SPIFrame frame);
-
-        public void connect(SPIDevice d);
-
-        /**
-         * A single byte data frame for the SPI.
-         */
-        public class SPIFrame {
-            public final byte data;
-
-            public SPIFrame(byte data) {
-                this.data = data;
-            }
-        }
-    }
-
-
-    /**
      * The <code>USARTDevice</code> interface describes USARTs and other serial devices which can be connected
      * to the USART. For simplicity, a higher-level interface communicating by frames of data is used, rather
      * than bits or a representation of changing voltages.
@@ -3609,7 +3569,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
      * @author Olaf Landsiedel
      */
     protected class Pc implements USARTDevice {
-        Simulator.Printer pcPrinter = simulator.getPrinter("sim.badPc");
+        Simulator.Printer pcPrinter = simulator.getPrinter("sim.pc");
         private ServerSocket serverSocket;
         private Socket socket;
         private OutputStream out;

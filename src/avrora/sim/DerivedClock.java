@@ -95,7 +95,7 @@ public class DerivedClock extends Clock {
      */
     public void insertEvent(Simulator.Event e, long delta) {
         long driverCount = driveClock.getCount();
-        long nextTick = (long)(((long)(driverCount / divider) + 1) * divider);
+        long nextTick = (long)(((long)(driverCount / divider) + delta) * divider);
         driveClock.insertEvent(e, nextTick - driverCount);
     }
 
