@@ -35,6 +35,8 @@ package avrora.test;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
+import avrora.util.ClassMap;
+import avrora.AVRTestHarness;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -61,7 +63,7 @@ import java.util.Properties;
  */
 public class AutomatedTester {
 
-    private final TestHarness harness;
+    private final ClassMap harnessMap;
 
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
@@ -69,10 +71,10 @@ public class AutomatedTester {
      * The constructor for the <code>AutomatedTester</code> class accepts
      * an instance of <code>TestHarness</code> that is used to create the
      * specific test cases for each file name.
-     * @param th the test harness
      */
-    public AutomatedTester(TestHarness th) {
-        harness = th;
+    public AutomatedTester() {
+        harnessMap = new ClassMap("Test Harness", TestHarness.class);
+        harnessMap.addClass("simulator", AVRTestHarness.class);
     }
 
     private class TestPair {
@@ -200,16 +202,20 @@ public class AutomatedTester {
         r.close();
 
         String expect = vars.getProperty("Result");
+        String hname = vars.getProperty("Harness");
 
         if (expect == null)
             return new TestCase.Malformed(fname, "no result specified");
-        else {
-            try {
-                return harness.newTestCase(fname, vars);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new TestCase.Malformed(fname, "exception in test case initialization");
-            }
+        if (hname == null )
+            return new TestCase.Malformed(fname, "no test harness specified");
+
+        try {
+            TestHarness harness = (TestHarness)harnessMap.getObjectOfClass(hname);
+            return harness.newTestCase(fname, vars);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            // TODO: better error messages for failure to find test harness
+            return new TestCase.Malformed(fname, "exception in test case initialization");
         }
     }
 

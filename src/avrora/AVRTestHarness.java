@@ -211,7 +211,7 @@ public class AVRTestHarness implements TestHarness {
         }
 
         public int evaluate(Program p, State s) {
-            Program.Label l = p.getLabel(name);
+            Program.Location l = p.getLabel(name);
             if (l == null)
                 throw new UnknownLabel(name);
             return l.address;
@@ -477,6 +477,8 @@ public class AVRTestHarness implements TestHarness {
 
     public TestCase newTestCase(String fname, Properties props) throws Exception {
 
+        // TODO: fix these different test cases
+/*
         String target = props.getProperty("Target");
 
         if (target == null)
@@ -485,9 +487,10 @@ public class AVRTestHarness implements TestHarness {
         if (target.equals("avr-simplify"))
             return new SimplifierTest(fname, props);
         else if (target.equals("avr-sim"))
+*/
             return new SimulatorTest(fname, props);
 
-        return new TestCase.Malformed(fname, "invalid target specification " + StringUtil.quote(target));
+//        return new TestCase.Malformed(fname, "invalid target specification " + StringUtil.quote(target));
     }
 
     static class StatePredicate {

@@ -47,7 +47,7 @@ import avrora.util.StringUtil;
  *
  * @author Ben L. Titzer
  */
-public abstract class BaseInterpreter implements State {
+public abstract class BaseInterpreter implements State, InstrVisitor {
     protected int pc;
     protected final byte[] regs;
     protected final State.IOReg[] ioregs;
@@ -101,7 +101,7 @@ public abstract class BaseInterpreter implements State {
         private boolean breakPoint;
         private boolean breakFired;
 
-        ProbedInstr(Instr i, int a, Simulator.Probe p, InstrVisitor interp) {
+        protected ProbedInstr(Instr i, int a, Simulator.Probe p, InstrVisitor interp) {
             super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
             instr = i;
             address = a;
@@ -424,7 +424,9 @@ public abstract class BaseInterpreter implements State {
 
     protected abstract void runLoop();
 
-    protected abstract void insertProbe(Simulator.Probe p, int addr);
+    protected void insertProbe(Simulator.Probe p, int addr) {
+        makeProbedInstr(addr).add(p);
+    }
 
     /**
      * The <code>insertProbe()</code> method allows a probe to be inserted
@@ -437,7 +439,14 @@ public abstract class BaseInterpreter implements State {
         globalProbe.add(p);
     }
 
-    protected abstract void removeProbe(Simulator.Probe p, int addr);
+    protected void removeProbe(Simulator.Probe p, int addr) {
+        ProbedInstr pi = getProbedInstr(addr);
+        if (pi != null) {
+            pi.remove(p);
+            // if the probed instruction has no more probes, remove it altogether
+            if (pi.isEmpty()) setInstr(pi.instr, pi.address);
+        }
+    }
 
     /**
      * The <code>removeProbe()</code> method removes a probe from the global
@@ -450,9 +459,14 @@ public abstract class BaseInterpreter implements State {
         globalProbe.remove(b);
     }
 
-    protected abstract void insertBreakPoint(int addr);
+    protected void insertBreakPoint(int addr) {
+        makeProbedInstr(addr).setBreakPoint();
+    }
 
-    protected abstract void removeBreakPoint(int addr);
+    protected void removeBreakPoint(int addr) {
+        ProbedInstr pi = getProbedInstr(addr);
+        if (pi != null) pi.unsetBreakPoint();
+    }
 
     protected void insertWatch(Simulator.Watch p, int data_addr) {
         if (sram_probes == null)
@@ -484,10 +498,6 @@ public abstract class BaseInterpreter implements State {
         for (int cntr = 0; cntr < ioregs.length; cntr++)
             ioregs[cntr] = new State.RWIOReg();
         SREG_reg = ioregs[SREG] = new SREG_reg();
-    }
-
-    protected void unimplemented(Instr i) {
-        throw Avrora.failure("unimplemented instruction: " + i.getVariant());
     }
 
     protected void advanceCycles(long delta) {
@@ -1014,6 +1024,13 @@ public abstract class BaseInterpreter implements State {
             return ((ProbedInstr) i);
         else
             return null;
+    }
+
+    protected ProbedInstr makeProbedInstr(int addr) {
+        ProbedInstr pi = getProbedInstr(addr);
+        if ( pi == null ) pi = new ProbedInstr(getInstr(addr), addr, null, this);
+        setInstr(pi, addr);
+        return pi;
     }
 
     private class SREG_reg implements State.IOReg {

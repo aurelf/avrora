@@ -111,9 +111,9 @@ public class SimulateAction extends SimAction {
     }
 
     private class Counter extends avrora.sim.util.Counter {
-        private final Main.Location location;
+        private final Program.Location location;
 
-        Counter(Main.Location loc) {
+        Counter(Program.Location loc) {
             location = loc;
         }
 
@@ -130,9 +130,9 @@ public class SimulateAction extends SimAction {
     }
 
     private class BranchCounter extends avrora.sim.util.BranchCounter {
-        private final Main.Location location;
+        private final Program.Location location;
 
-        BranchCounter(Main.Location loc) {
+        BranchCounter(Program.Location loc) {
             location = loc;
         }
 
@@ -209,9 +209,9 @@ public class SimulateAction extends SimAction {
     }
 
     void processBreakPoints() {
-        Iterator i = Main.getLocationList(program, BREAKS.get()).iterator();
+        Iterator i = getLocationList(program, BREAKS.get()).iterator();
         while (i.hasNext()) {
-            Main.Location l = (Main.Location) i.next();
+            Program.Location l = (Program.Location) i.next();
             simulator.insertBreakPoint(l.address);
         }
     }

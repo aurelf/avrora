@@ -71,42 +71,6 @@ public class Main {
         public abstract String getHelp();
     }
 
-    /**
-     * The <code>Location</code> class encapsulates a location within a program
-     * that is specified on the command line. The <code>getLocationList</code> method
-     * can parse a string of locations separated by commas and then return
-     * a list of these locations.
-     */
-    public static class Location {
-        public final String name;
-        public final int address;
-
-        Location(int addr) {
-            name = null;
-            address = addr;
-        }
-
-        Location(String n, int addr) {
-            name = n;
-            address = addr;
-        }
-
-        public int hashCode() {
-            if (name == null)
-                return address;
-            else
-                return name.hashCode();
-        }
-
-        public boolean equals(Object o) {
-            if (o == this) return true;
-            if (!(o instanceof Location)) return false;
-            Location l = ((Location) o);
-            return l.name == this.name && l.address == this.address;
-        }
-
-    }
-
     static final String VERSION = Version.getVersion().toString();
 
     static final ClassMap actions = new ClassMap("Action", Action.class);
@@ -156,26 +120,17 @@ public class Main {
 
 
     static {
-        newAction(new MultiSimulateAction());
-        newAction(new SimulateAction());
-        newAction(new AnalyzeStackAction());
-        newAction(new TestAction());
-        newAction(new ListAction());
-        newAction(new CFGAction());
-        newAction(new CustomAction());
-        newAction(new BenchmarkAction());
-        newInput("auto", AutoProgramReader.class);
-        newInput("gas", GASProgramReader.class);
-        newInput("atmel", AtmelProgramReader.class);
-        newInput("objdump", ObjDumpProgramReader.class);
-    }
-
-    static void newAction(Action a) {
-        actions.addClass(a.getShortName(), a.getClass());
-    }
-
-    static void newInput(String name, Class c) {
-        inputs.addClass(name, c);
+        actions.addClass("multi-simulate", MultiSimulateAction.class);
+        actions.addClass("simulate", SimulateAction.class);
+        actions.addClass("analyze-stack", AnalyzeStackAction.class);
+        actions.addClass("test", TestAction.class);
+        actions.addClass("list", ListAction.class);
+        actions.addClass("cfg", CFGAction.class);
+        actions.addClass("benchmark", BenchmarkAction.class);
+        inputs.addClass("auto", AutoProgramReader.class);
+        inputs.addClass("gas", GASProgramReader.class);
+        inputs.addClass("atmel", AtmelProgramReader.class);
+        inputs.addClass("objdump", ObjDumpProgramReader.class);
     }
 
     public static class AutoProgramReader extends ProgramReader {
@@ -464,54 +419,6 @@ public class Main {
         Terminal.print(" - (c) 2003-2004 UCLA Compilers Group\n\n");
     }
 
-    static class LocationComparator implements java.util.Comparator {
-        public int compare(Object o1, Object o2) {
-            Location l1 = (Location) o1;
-            Location l2 = (Location) o2;
-
-            if (l1.address == l2.address) {
-                if (l1.name == null) return 1;
-                if (l2.name == null) return -1;
-                return l1.name.compareTo(l2.name);
-            }
-            return l1.address - l2.address;
-        }
-    }
-
-    /**
-     * The <code>getLocationList()</code> method is to used to parse a list of
-     * program locations and turn them into a list of <code>Main.Location</code>
-     * instances.
-     * @param program the program to look up labels in
-     * @param v the list of strings that are program locations
-     * @return a list of program locations
-     */
-    public static List getLocationList(Program program, List v) {
-        HashSet locset = new HashSet();
-
-        Iterator i = v.iterator();
-
-        while (i.hasNext()) {
-            String val = (String) i.next();
-            locset.add(getProgramLocation(val, program));
-        }
-
-        List loclist = Collections.list(Collections.enumeration(locset));
-        Collections.sort(loclist, new LocationComparator());
-
-        return loclist;
-    }
-
-    public static Location getProgramLocation(String val, Program program) {
-        if (val.charAt(0) == '$')
-            return (new Location(StringUtil.evaluateIntegerLiteral(val)));
-        else {
-            Program.Label l = program.getLabel(val);
-            if (l == null) Avrora.userError("cannot find label " + StringUtil.quote(val) + " in specified program");
-            return (new Location(l.name, l.address));
-        }
-    }
-
     /**
      * The <code>parseOptions()</code> method takes an array of strings
      * and parses it, extracting the options and storing the option values
@@ -553,8 +460,8 @@ public class Main {
             int ind = s.indexOf(":");
             if (ind <= 0)
                 throw Avrora.failure("invalid indirect edge format: " + StringUtil.quote(s));
-            Location loc = getProgramLocation(s.substring(0, ind), p);
-            Location tar = getProgramLocation(s.substring(ind + 1), p);
+            Program.Location loc = p.getProgramLocation(s.substring(0, ind));
+            Program.Location tar = p.getProgramLocation(s.substring(ind + 1));
             p.addIndirectEdge(loc.address, tar.address);
         }
 

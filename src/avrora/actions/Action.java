@@ -54,6 +54,7 @@ public abstract class Action {
      * The <code>shortName</code> field stores a reference to the string
      * that represents the short (abbreviated) name of this action.
      */
+    // TODO: this is no longer needed
     public final String shortName;
 
     /**

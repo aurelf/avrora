@@ -36,10 +36,7 @@ import avrora.Avrora;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>Program</code> class represents a complete program of AVR
@@ -56,37 +53,54 @@ import java.util.List;
  */
 public class Program {
 
-    /**
-     * The <code>Label</code> class represents a label within the
-     * <code>Program</code> instance that encapsulates it. It may be a label
-     * that refers to the program (code) segment, the data segment, or the
-     * EEPROM segment.
-     */
-    public abstract class Label {
+    public static Comparator LOCATION_COMPARATOR = new Comparator() {
+        public int compare(Object o1, Object o2) {
+            Location l1 = (Location) o1;
+            Location l2 = (Location) o2;
 
-        /**
-         * The <code>name</code> field records the name of this label.
-         */
-        public final String name;
+            if (l1.address == l2.address) {
+                if (l1.name == null) return 1;
+                if (l2.name == null) return -1;
+                return l1.name.compareTo(l2.name);
+            }
+            return l1.address - l2.address;
+        }
+    };
 
+    public class Location {
         /**
          * The <code>address</code> field records the address of this label
          * as a byte address.
          */
         public final int address;
-
         /**
-         * The constructor for the base abstract class <code>Label</code> simply
-         * initializes the internal references to the name and the address of
-         * this label.
-         * @param n the name of the label as a string
-         * @param a the byte address associated with this label
+         * The <code>name</code> field records the name of this label.
          */
-        protected Label(String n, int a) {
-            name = n;
-            address = a;
+        public final String name;
+
+        Location(int addr) {
+            name = null;
+            address = addr;
         }
 
+        Location(String n, int addr) {
+            name = n;
+            address = addr;
+        }
+
+        public int hashCode() {
+            if (name == null)
+                return address;
+            else
+                return name.hashCode();
+        }
+
+        public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof Location)) return false;
+            Location l = ((Location) o);
+            return l.name.equals(this.name) && l.address == this.address;
+        }
 
         /**
          * The <code>isProgramSegment()</code> method returns whether this
@@ -124,13 +138,14 @@ public class Program {
             else if (isEEPromSegment()) seg = "eeprom";
             return seg + "_" + StringUtil.toHex(address, 4);
         }
+
     }
 
     /**
      * The <code>ProgramLabel</code> class represents a label within the program
      * that refers to the program segment.
      */
-    public class ProgramLabel extends Label {
+    public class ProgramLabel extends Location {
 
         ProgramLabel(String n, int a) {
             super(n, a);
@@ -151,7 +166,7 @@ public class Program {
      * The <code>DataLabel</code> class represents a label within the program that
      * refers to the data segment.
      */
-    public class DataLabel extends Label {
+    public class DataLabel extends Location {
 
         DataLabel(String n, int a) {
             super(n, a);
@@ -172,7 +187,7 @@ public class Program {
      * The <code>EEPromLabel</code> class represents a label within the program
      * that refers to the eeprom segment.
      */
-    public class EEPromLabel extends Label {
+    public class EEPromLabel extends Location {
 
         EEPromLabel(String n, int a) {
             super(n, a);
@@ -418,8 +433,16 @@ public class Program {
      * @param name the string name of the label
      * @return an instance of <code>Label</code> if the label exists; null otherwise
      */
-    public Label getLabel(String name) {
-        return (Label) labels.get(labelName(name));
+    public Location getLabel(String name) {
+        return (Location) labels.get(labelName(name));
+    }
+
+    public Location getProgramLocation(String s) {
+        if ( s.startsWith("$") )
+            return new ProgramLabel(null, StringUtil.evaluateIntegerLiteral(s));
+        Location l = getLabel(s);
+        if ( l != null && !l.isProgramSegment() ) return null;
+        return l;
     }
 
     private String labelName(String n) {
@@ -559,7 +582,7 @@ public class Program {
 
         Iterator i = labels.values().iterator();
         while (i.hasNext()) {
-            Label l = (Label) i.next();
+            Location l = (Location) i.next();
             p.println("; label " + l.name + " = " + l.toString());
         }
     }

@@ -198,35 +198,6 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         }
     }
 
-    protected void insertProbe(Simulator.Probe p, int addr) {
-        makeProbedInstr(addr).add(p);
-    }
-
-    protected ProbedInstr makeProbedInstr(int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if ( pi == null ) pi = new ProbedInstr(getInstr(addr), addr, null, this);
-        setInstr(pi, addr);
-        return pi;
-    }
-
-    protected void removeProbe(Simulator.Probe p, int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if (pi != null) {
-            pi.remove(p);
-            // if the probed instruction has no more probes, remove it altogether
-            if (pi.isEmpty()) setInstr(pi.instr, pi.address);
-        }
-    }
-
-    protected void insertBreakPoint(int addr) {
-        makeProbedInstr(addr).setBreakPoint();
-    }
-
-    protected void removeBreakPoint(int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if (pi != null) pi.unsetBreakPoint();
-    }
-
 
 //--BEGIN INTERPRETER GENERATOR--
     public void visit(Instr.ADC i) {

@@ -42,10 +42,7 @@ import avrora.sim.platform.Platforms;
 import avrora.sim.Simulator;
 import avrora.util.*;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>SimAction</code> is an abstract class that collects many of
@@ -229,5 +226,29 @@ public abstract class SimAction extends Action {
         LinkedList ml = (LinkedList)monitorListMap.get(s);
         if ( ml == null ) return false;
         return !ml.isEmpty();
+    }
+
+    /**
+     * The <code>getLocationList()</code> method is to used to parse a list of
+     * program locations and turn them into a list of <code>Main.Location</code>
+     * instances.
+     * @param program the program to look up labels in
+     * @param v the list of strings that are program locations
+     * @return a list of program locations
+     */
+    public static List getLocationList(Program program, List v) {
+        HashSet locset = new HashSet();
+
+        Iterator i = v.iterator();
+
+        while (i.hasNext()) {
+            String val = (String) i.next();
+            locset.add(program.getProgramLocation(val));
+        }
+
+        List loclist = Collections.list(Collections.enumeration(locset));
+        Collections.sort(loclist, Program.LOCATION_COMPARATOR);
+
+        return loclist;
     }
 }

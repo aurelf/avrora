@@ -142,19 +142,10 @@ public class GlobalClock {
         public void fire() {
             try {
                 synchronized (condition) {
-                    /*
-                    if (gqPrinter.enabled) {
-                        SimulatorThread thread = (SimulatorThread)Thread.currentThread();
-                        Simulator simulator = thread.getSimulator();
-                        long cycles = simulator.getState().getCycles();
-                        long gtime = globalTime();
-                        gqPrinter.println(id + " event: local " + cycles
-                                + ", global " + gtime + ", diff " + (cycles - gtime));
-
-                    }
-                    */
+                    // increment the count of the number of threads that have entered
                     count++;
 
+                    // run the code that should happen just before synchronization (parallel)
                     preSynchAction();
 
                     if (count < goal) {
@@ -163,12 +154,12 @@ public class GlobalClock {
                     } else {
                         // last thread to arrive sets the count to zero and notifies all other threads
                         count = 0;
-                        // perform the action that should be run while all threads are stopped
+                        // perform the action that should be run while all threads are stopped (serial)
                         serialAction();
                         // release threads
                         condition.notifyAll();
                     }
-                    // perform action that should be run in parallel at the end
+                    // perform action that should be run after synchronization (parallel)
                     parallelAction((SimulatorThread)Thread.currentThread());
                 }
             } catch (java.lang.InterruptedException e) {

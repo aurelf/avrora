@@ -52,6 +52,6 @@ public class TestAction extends Action {
     }
 
     public void run(String[] args) throws Exception {
-        new AutomatedTester(new AVRTestHarness()).runTests(args);
+        new AutomatedTester().runTests(args);
     }
 }
