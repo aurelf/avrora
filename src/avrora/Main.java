@@ -19,6 +19,7 @@ import avrora.core.Instr;
 import avrora.sim.*;
 import avrora.sim.util.Counter;
 import avrora.sim.util.BranchCounter;
+import avrora.sim.util.ProgramProfiler;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.syntax.gas.GASParser;
 import avrora.stack.Analyzer;
@@ -42,6 +43,7 @@ public class Main extends VPCBase {
     static final Option.Str BREAKS    = options.newOption("breakpoint", "");
     static final Option.Str COUNTS    = options.newOption("count", "");
     static final Option.Str BRANCHCOUNTS = options.newOption("branchcount", "");
+    static final Option.Bool PROFILE  = options.newOption("profile", false);
     static final Option.Bool TIME     = options.newOption("time", false);
     static final Option.Long TIMEOUT  = options.newOption("timeout", (long)0);
     static final Option.Bool TOTAL    = options.newOption("total", false);
@@ -130,6 +132,8 @@ public class Main extends VPCBase {
         List counters;
         List branchcounters;
 
+        ProgramProfiler profile;
+
         public void run(String[] args) throws Exception {
             ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
             program = r.read(args);
@@ -140,6 +144,7 @@ public class Main extends VPCBase {
             processBranchCounters();
             processTotal();
             processTimeout();
+            processProfile();
 
             if ( TRACE.get() ) {
                 simulator.insertProbe(Simulator.TRACEPROBE);
@@ -155,6 +160,7 @@ public class Main extends VPCBase {
                 reportBranchCounters();
                 reportTotal();
                 reportTime();
+                reportProfile();
             }
         }
 
@@ -182,6 +188,7 @@ public class Main extends VPCBase {
         void reportCounters() {
             if ( counters.isEmpty() ) return;
             ColorTerminal.printGreen("Counter results\n");
+            printSeparator();
             Iterator i = counters.iterator();
             // TODO: clean up, make multicolumn, better justified.
             while ( i.hasNext() ) {
@@ -214,6 +221,7 @@ public class Main extends VPCBase {
         void reportBranchCounters() {
             if ( branchcounters.isEmpty() ) return;
             ColorTerminal.printGreen("Branch counter results\n");
+            printSeparator();
             Iterator i = branchcounters.iterator();
             while ( i.hasNext() ) {
                 Location l = (Location)i.next();
@@ -229,6 +237,51 @@ public class Main extends VPCBase {
                 reportQuantity(name, tcnt+" "+ntcnt, "taken/not taken");
             }
 
+        }
+
+        void processProfile() {
+            if ( PROFILE.get() )
+                simulator.insertProbe(profile = new ProgramProfiler(program));
+        }
+
+        void reportProfile() {
+            if ( profile != null ) {
+                ColorTerminal.printGreen("Profiling results\n");
+                printSeparator();
+                double total = 0;
+                long[] icount = profile.icount;
+                int imax = icount.length;
+
+                for ( int cntr = 0; cntr < imax; cntr++ ) {
+                    total += icount[cntr];
+                }
+
+                long last1 = -1;
+
+                for ( int cntr = 0; cntr < imax; cntr += 2) {
+                    long c = icount[cntr];
+
+                    // skip over long runs (e.g. basic blocks) in the profiling counts
+                    if ( c == last1 ) {
+                        if ( cntr < imax - 2 && icount[cntr+2] == c) {
+                            reportQuantity("     ...", StringUtil.rightJustify(c, 8), "");
+                            while ( cntr < imax - 4 && icount[cntr+2] == c ) cntr += 2;
+                            c = icount[cntr];
+                        }
+                    }
+
+                    String cnt = StringUtil.rightJustify(c, 8);
+                    String addr = addrToString(cntr);
+                    float pcnt = (float)(100*c / total);
+                    String percent = toFixedFloat(pcnt, 4);
+                    reportQuantity("    "+addr, cnt, "  "+percent+" %");
+                    last1 = c;
+                }
+            }
+        }
+
+        private void printSeparator() {
+            ColorTerminal.println("===============================================");
         }
 
         void processTotal() {
@@ -399,6 +452,28 @@ public class Main extends VPCBase {
         ColorTerminal.println("This is a prototype simulator and analysis tool intended for evaluation");
         ColorTerminal.println("and experimentation purposes only. It is provided with absolutely no");
         ColorTerminal.println("warranty, expressed or implied.\n");
+    }
+
+    // warning! only works on numbers < 100!!!!
+    public static String toFixedFloat(float f, int places) {
+        // TODO: fix this routine or find an alternative
+        StringBuffer buf = new StringBuffer();
+        float radix = 100;
+        boolean nonzero = false;
+        for ( int cntr = 0; cntr < places+3; cntr++ ) {
+            int digit = ((int)(f/radix))%10;
+            char dchar = (char)(digit+'0');
+
+            if ( digit != 0 ) nonzero = true;
+
+            if ( digit == 0 && !nonzero && cntr < 2) dchar = ' ';
+
+            buf.append(dchar);
+            if ( cntr == 2 ) buf.append('.');
+            radix = radix / 10;
+        }
+
+        return buf.toString();
     }
 
 }
