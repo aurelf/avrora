@@ -5,31 +5,25 @@ import avrora.*;
 import avrora.syntax.*;
 import vpc.VPCBase;
 
-public class AtmelParser extends VPCBase implements AtmelParserConstants {
-
-    protected Module module;
+public class AtmelParser extends AbstractParser implements AtmelParserConstants {
 
     public AtmelParser(java.io.InputStream stream, Module m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
-
         module = m;
     }
 
     public void ReInit(java.io.InputStream stream, Module m, String fname) {
         ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
-
         module = m;
     }
 
     public AtmelParser(java.io.Reader stream, Module m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
-
         module = m;
     }
 
     public void ReInit(java.io.Reader stream, Module m, String fname) {
         ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
-
         module = m;
     }
 
