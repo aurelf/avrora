@@ -59,7 +59,7 @@ public class AnalyzeStackAction extends Action {
             "that yields the maximal stack depth. When true, the analysis will shorten the error " +
             "trace by not reporting edges between states of adjacent instructions that do not " +
             "change the stack height.");
-    public final Option.Bool TRACE = newOption("trace", true,
+    public final Option.Bool TRACE = newOption("trace", false,
             "This option causes the stack analyzer to print a trace of each abstract state " +
             "produced, every edge between states that is inserted, and all propagations " +
             "performed during the analysis. ");

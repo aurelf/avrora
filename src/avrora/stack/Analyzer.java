@@ -37,6 +37,8 @@ import avrora.core.Program;
 import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Verbose;
+import avrora.util.profiling.Distribution;
 import avrora.Avrora;
 import avrora.Main;
 import avrora.actions.AnalyzeStackAction;
@@ -56,6 +58,7 @@ public class Analyzer {
     public static boolean MONITOR_STATES;
     public static boolean TRACE_SUMMARY;
 
+    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("stack.phases");
 
     protected final Program program;
     protected final StateSpace space;
@@ -93,6 +96,7 @@ public class Analyzer {
 
     public static boolean TRACE;
     public static boolean running;
+    public List[] equivClasses;
 
     public Analyzer(Program p) {
         program = p;
@@ -101,6 +105,7 @@ public class Analyzer {
         interpreter = new AbstractInterpreter(program, policy);
         aggregationPoints = new HashMap();
         propmap = new HashMap();
+        equivClasses = new LinkedList[256];
     }
 
     /**
@@ -138,6 +143,33 @@ public class Analyzer {
 
         printStatHeader();
         printStats();
+
+        propmap = null;
+        analyzeAggregationPoints();
+    }
+
+    private void analyzeAggregationPoints() {
+        Distribution hashDist = new Distribution("Distribution of set hashcodes", "Number of sets", null);
+        Distribution sizeDist = new Distribution("Distribution of set size", "Number of sets", "Total elements", "Distribution");
+        Iterator i = aggregationPoints.values().iterator();
+        while ( i.hasNext() ) {
+            HashSet set = (HashSet)i.next();
+//            int hash = set.hashCode() & 0xfff;
+//            hashDist.record(hash);
+            sizeDist.record(set.size());
+        }
+//        hashDist.processData();
+        sizeDist.processData();
+//        hashDist.textReport();
+        sizeDist.textReport();
+
+        Distribution countDist = new Distribution("Distribution of set size count", "Number of different sizes", null, "Distribution");
+        for ( int cntr = 0; cntr < sizeDist.distrib.length; cntr++ ) {
+            countDist.record(sizeDist.distrib[cntr] + sizeDist.distribMin);
+        }
+
+        countDist.processData();
+        countDist.textReport();
     }
 
     /**
@@ -190,10 +222,12 @@ public class Analyzer {
 
     private long countAggregElems() {
         long count = 0;
-        Iterator i = aggregationPoints.values().iterator();
-        while ( i.hasNext() ) {
-            HashSet set = (HashSet)i.next();
-            count += set.size();
+        synchronized ( aggregationPoints) {
+            Iterator i = aggregationPoints.values().iterator();
+            while ( i.hasNext() ) {
+                HashSet set = (HashSet)i.next();
+                count += set.size();
+            }
         }
         return count;
     }
@@ -230,7 +264,14 @@ public class Analyzer {
         while ( s != null || propmap.size() != 0) {
             if ( s != null )
                 processFrontierState(s);
-            else processPropagationList();
+            else {
+                if ( printer.enabled ) {
+                    printer.println("Exhausted frontier list...beginning propagation");
+                    printStatHeader();
+                    printStats();
+                }
+                processPropagationList();
+            }
             s = space.getFrontierState();
         }
     }
@@ -252,6 +293,7 @@ public class Analyzer {
         while ( i.hasNext() ) {
             StateSpace.State target = (StateSpace.State)i.next();
             HashSet callers = (HashSet)altpropmap.get(target);
+            i.remove();
 
             if ( TRACE ) {
                 Terminal.print("Propagating {");
@@ -290,7 +332,9 @@ public class Analyzer {
      */
     private void newAggregationPoint(StateSpace.State t) {
         if ( aggregationPoints.containsKey(t) ) return;
-        aggregationPoints.put(t, new HashSet());
+        synchronized ( aggregationPoints ) {
+            aggregationPoints.put(t, new HashSet());
+        }
     }
 
     // propagate call sites to all reachable return states
@@ -322,6 +366,12 @@ public class Analyzer {
 
             // propagate these calls to all children
             propagate(link.target, newCalls, mark, depth + 1);
+        }
+
+        // if we have reached a state on the frontier, these calls must be
+        // propagated to it and its successors in a later phase
+        if ( space.isFrontier(t) ) {
+            post(t, newCalls);
         }
     }
 
@@ -376,6 +426,14 @@ public class Analyzer {
     }
 
     private void post(StateSpace.State state, HashSet callers) {
+        if ( altpropmap != null ) {
+            HashSet set = (HashSet)altpropmap.get(state);
+            if ( set != null ) {
+                set.addAll(callers);
+                return;
+            }
+        }
+
         HashSet set = (HashSet)propmap.get(state);
         if ( set == null ) {
             set = (HashSet)callers.clone();
