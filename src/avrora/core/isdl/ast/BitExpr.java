@@ -31,19 +31,17 @@
  */
 
 package avrora.core.isdl.ast;
-import avrora.core.isdl.Token;
-import avrora.util.StringUtil;
 
 /**
  * @author Ben L. Titzer
  */
-public class Expr {
+public class BitExpr extends Expr {
 
-    public static int tokenToInt(Token i) {
-        return StringUtil.evaluateIntegerLiteral(i.image);
-    }
+    public final Expr expr;
+    public final Expr bit;
 
-    public static boolean tokenToBool(Token i) {
-        return Boolean.valueOf(i.image).booleanValue();
+    public BitExpr(Expr e, Expr b) {
+        expr = e;
+        bit = b;
     }
 }

@@ -180,6 +180,9 @@ TOKEN :
   | < AND: "and" >
   | < OR: "or" >
   | < XOR: "xor" >
+  | < SUBROUTINE: "subroutine" >
+  | < EXTERNAL: "external" >
+  | < BOOLEAN_LITERAL: "true" | "false" >
 }
 
 TOKEN :
@@ -245,11 +248,12 @@ void Item() : {}
   | FormatDecl()
   | OperandDecl()
   | RegisterDecl()
+  | Subroutine()
 }
 
 void Instruction() : {}
 {
-    "instruction" <IDENTIFIER> Operands() "{"
+    "instruction" <STRING_LITERAL> Operands() "{"
         (InstrItem())*
     "}" ";"
 }
@@ -323,12 +327,18 @@ void Substitution() : {}
 
 void Operands() : {}
 {
-    "(" Operand() ("," Operand())* ")"
+    [ Operand() ("," Operand())* ]
 }
 
 void Operand() : {}
 {
     <IDENTIFIER> ":" <IDENTIFIER>
+}
+
+void Subroutine() : { List l = new LinkedList(); }
+{
+    ("subroutine" <IDENTIFIER> "(" Operands() ")" ":" <IDENTIFIER> Block(l) ";")
+   |("external" <IDENTIFIER> "(" Operands() ")" ":" <IDENTIFIER> ";")
 }
 
 Expr Expr() : { Expr e; }
@@ -366,7 +376,8 @@ Expr VarUse() : { Token t; }
 
 Expr Literal() : { Token t; }
 {
-  t = <INTEGER_LITERAL> { return new LiteralExpr(t); }
+  (t = <INTEGER_LITERAL> { return new Literal.IntExpr(t); })
+ |(t = <BOOLEAN_LITERAL> { return new Literal.BoolExpr(t); })
 }
 
 Expr CallExpr() : { Token t; List l; }
@@ -385,15 +396,15 @@ Stmt Statement() : { Stmt s; }
   (
     s = LocalDecl()
   | s = IfStatement()
-  | s = Assignment()
+  | LOOKAHEAD(2) s = Assignment()
+  | s = CallStmt()
   ) { return s; }
 }
 
-DeclStmt LocalDecl() : { Expr e; }
+DeclStmt LocalDecl() : { Token n, t; Expr e; }
 {
-    "local" <IDENTIFIER> ":" <IDENTIFIER> "=" e = Expr() ";"
-    // TODO: FIXME
-    { return new DeclStmt(null, null, e); }
+    "local" n = <IDENTIFIER> ":" t = <IDENTIFIER> "=" e = Expr() ";"
+    { return new DeclStmt(n, t, e); }
 }
 
 IfStmt IfStatement() : { Expr c; List t = new LinkedList(), f = new LinkedList(); }
@@ -415,17 +426,24 @@ AssignStmt Assignment() : { AssignStmt s; }
     { return s; }
 }
 
+CallStmt CallStmt() : { Token m; List l; }
+{
+    m = <IDENTIFIER> l = Parameters() ";" { return new CallStmt(m, l); }
+}
+
 AssignStmt VarAssignment() : { AssignStmt s; Token v, i, j; Expr e; }
 {
     (v = <IDENTIFIER> s = VarAssignEnd(v))
     { return s; }
 }
 
-AssignStmt VarAssignEnd(Token v) : { AssignStmt s; Token i, j; Expr e; }
+AssignStmt VarAssignEnd(Token v) : { AssignStmt s; Token i, j; Expr e, b; }
 {
     (("=" e = Expr() { s = new VarAssignStmt(v, e); })
-    |("[" i = <INTEGER_LITERAL> ":" j = <INTEGER_LITERAL> "]"
+    | LOOKAHEAD(3) ("[" i = <INTEGER_LITERAL> ":" j = <INTEGER_LITERAL> "]"
       "=" e = Expr() { s = new VarBitRangeAssignStmt(v, i, j, e); })
+    |("[" b = Expr() "]"
+      "=" e = Expr() { s = new VarBitAssignStmt(v, b, e); })
     ) { return s; }
 }
 
@@ -435,12 +453,14 @@ AssignStmt MapAssignment() : { AssignStmt s; Token v, i, j; Expr ind, e; }
     { return s; }
 }
 
-AssignStmt MapAssignmentEnd(Token v, Expr ind) : { AssignStmt s; Token i, j; Expr e; }
+AssignStmt MapAssignmentEnd(Token v, Expr ind) : { AssignStmt s; Token i, j; Expr e, b; }
 {
     (
      ("=" e = Expr() { s = new MapAssignStmt(v, ind, e); })
-    |("[" i = <INTEGER_LITERAL> ":" j = <INTEGER_LITERAL> "]"
+    | LOOKAHEAD(3) ("[" i = <INTEGER_LITERAL> ":" j = <INTEGER_LITERAL> "]"
       "=" e = Expr() { s = new MapBitRangeAssignStmt(v, ind, i, j, e); })
+    |("[" b = Expr() "]"
+      "=" e = Expr() { s = new MapBitAssignStmt(v, ind, b, e); })
     ) { return s; }
 }
 
@@ -450,14 +470,16 @@ List Block(List l) : { Stmt s; }
     { return l; }
 }
 
-Expr BitRange(Expr e) : { Token t1, t2; }
+Expr BitRange(Expr e) : { Expr et; Token t1, t2; }
 {
-    "[" t1 = <INTEGER_LITERAL> ":" t2 = <INTEGER_LITERAL> "]"
-    { return new BitRangeExpr(e, t1, t2); }
+    "["
+    (LOOKAHEAD(2) (t1 = <INTEGER_LITERAL> ":" t2 = <INTEGER_LITERAL>
+     { e =  new BitRangeExpr(e, t1, t2); })
+   | (et = Expr()
+     { e = new BitExpr(e, et); }))
+    "]"
+    { return e; }
 }
-
-
-// expression stuff
 
 
 Expr Cond_Or_Expr() : { Expr e, et; Token tok; }

@@ -36,11 +36,23 @@ import avrora.core.isdl.Token;
 /**
  * @author Ben L. Titzer
  */
-public class LiteralExpr extends Expr {
+public class Literal extends Expr {
 
-    public final int value;
+    public static class IntExpr extends Literal {
 
-    public LiteralExpr(Token v) {
-        value = Expr.tokenToInt(v);
+        public final int value;
+
+        public IntExpr(Token v) {
+            value = Expr.tokenToInt(v);
+        }
+    }
+
+    public static class BoolExpr extends Literal {
+
+        public final boolean value;
+
+        public BoolExpr(Token v) {
+            value = Expr.tokenToBool(v);
+        }
     }
 }

@@ -6,6 +6,7 @@ architecture avr {
 
     format GPRGPR = { opcode[6:0], r2[4:4], r1[4:4], r1[3:0], r2[3:0] };
     format GPR = { opcode[7:0], r1[4:4], r1[3:0], 0b0101 };
+    format HGPRIMM8 = { opcode[3:0], imm1[7:4], r1[3:0], imm1[3:0] };
 
 //---------------------------------------------------------------------------
 //  OPERANDS ALLOWED TO INSTRUCTIONS
@@ -18,11 +19,27 @@ architecture avr {
         r24, r25, r26, r27, r28, r29, r30, r31
     };
 
+    operand HGPR: register = {
+        r16, r17, r18, r19, r20, r21, r22, r23,
+        r24, r25, r26, r27, r28, r29, r30, r31
+    };
+
+    operand EGPR: register = {
+         r0,  r2,  r4,  r6,
+         r8, r10, r12, r14,
+        r16, r18, r20, r22,
+        r24, r26, r28, r30
+    };
+
+    operand RDL: register = {
+        r24, r26, r28, r30
+    };
+
 //---------------------------------------------------------------------------
 //  BEGIN INSTRUCTION SET DESCRIPTION
 //---------------------------------------------------------------------------
 
-    instruction adc(rd: GPR, rr: GPR) {
+    instruction "adc" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr };
         execute = {
             local r1: byte = $regs(rd);
@@ -32,14 +49,754 @@ architecture avr {
         };
     };
 
-    instruction asr(rd: GPR) {
-        encoding = GPR where { opcode = 0b1001010, r1 = rd };
+    instruction "add" rd: GPR, rr: GPR { // add second register to first
+        encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rr };
         execute = {
             local r1: byte = $regs(rd);
-            local result: int = performRightShift(r1, r1[7:7]);
+            local r2: byte = $regs(rr);
+            local result: int = performAddition(r1, r2, 0);
             $regs(rd) = low(result);
         };
     };
+
+    instruction "adiw" rd: RDL, imm: IMM6 { // add immediate to word register
+        encoding = { 0b10010110, imm[5:4], rd[1:0], imm[3:0] };
+        execute = {
+            local r1: int       = word($regs(rd), $regs(rd + 1));
+            local result: int   = r1 + imm;
+            local R15: boolean  = result[15];
+            local Rdh7: boolean = r1[7];
+
+            C = (!R15 and Rdh7);
+            N = (R15);
+            V = (!Rdh7 and R15);
+            Z = (result[15:0] == 0);
+            S = (N xor V);
+
+            $regs(rd) = low(result);
+            $regs(rd + 1) = high(result);
+        };
+    };
+
+    instruction "and" rd: GPR, rr: GPR { // and first register with second
+        encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rr };
+        execute = {
+            local r1: int = $regs(rd);
+            local r2: int = $regs(rr);
+            local result: int = performAnd(r1, r2);
+            $regs(rd) = low(result);
+        };
+    };
+
+    instruction "andi" rd: HGPR, imm: IMM8 { // and register with immediate
+        encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = imm };
+        execute = {
+            local r1: int = $regs(rd);
+            local result: int = performAnd(r1, imm);
+            $regs(rd) = low(result);
+        };
+    };
+
+    instruction "asr" rd: GPR {
+        encoding = GPR where { opcode = 0b1001010, r1 = rd };
+        execute = {
+            local r1: byte = $regs(rd);
+            local result: int = performRightShift(r1, r1[7]);
+            $regs(rd) = low(result);
+        };
+    };
+
+    instruction "bclr" bit: IMM3 {
+        execute = {
+            $ioregs(SREG)[bit] = false;
+        };
+    };
+
+    instruction "bld" rr: GPR, bit: IMM3 {
+        execute = {
+            $regs(rr)[bit] = T;
+        };
+    };
+
+    instruction "brbc" bit: IMM3, target: SREL {
+        execute = {
+            if (!($ioregs(SREG)[bit]) ) relativeBranch(target);
+        };
+    };
+
+    instruction "brbs" bit: IMM3, target: SREL {
+        execute = {
+            if ( $ioregs(SREG)[bit] ) relativeBranch(target);
+        };
+    };
+
+    instruction "brcc" target: SREL {
+        execute = {
+            if ( !C ) relativeBranch(target);
+        };
+    };
+
+    instruction "brcs" target: SREL {
+        execute = {
+            if ( C ) relativeBranch(target);
+        };
+    };
+
+    instruction "break" {
+        execute = {
+            stop();
+        };
+    };
+
+    instruction "breq" target: SREL {
+        execute = {
+            if ( Z ) relativeBranch(target);
+        };
+    };
+
+    instruction "brge" target: SREL{
+        execute = {
+            if ( !S ) relativeBranch(target);
+        };
+    };
+
+    instruction "brhc" target: SREL {
+        execute = {
+            if ( !H ) relativeBranch(target);
+        };
+    };
+
+    instruction "brhs" target: SREL {
+        execute = {
+            if ( H ) relativeBranch(target);
+        };
+    };
+
+    instruction "brid" target: SREL {
+        execute = {
+            if ( !I ) relativeBranch(target);
+        };
+    };
+
+    instruction "brie" target: SREL {
+        execute = {
+            if ( I ) relativeBranch(target);
+        };
+    };
+
+    instruction "brlo" target: SREL {
+        execute = {
+            if ( C ) relativeBranch(target);
+        };
+    };
+
+    instruction "brlt" target: SREL {
+        execute = {
+            if ( S ) relativeBranch(target);
+        };
+    };
+
+    instruction "brmi" target: SREL {
+        execute = {
+            if ( N ) relativeBranch(target);
+        };
+    };
+
+    instruction "brne" target: SREL {
+        execute = {
+            if ( !Z ) relativeBranch(target);
+        };
+    };
+
+    instruction "brpl" target: SREL {
+        execute = {
+            if ( !N ) relativeBranch(target);
+        };
+    };
+
+    instruction "brsh" target: SREL {
+        execute = {
+            if ( !C ) relativeBranch(target);
+        };
+    };
+
+    instruction "brtc" target: SREL {
+        execute = {
+            if ( !T ) relativeBranch(target);
+        };
+    };
+
+    instruction "brts" target: SREL {
+        execute = {
+            if ( T ) relativeBranch(target);
+        };
+    };
+
+    instruction "brvc" target: SREL {
+        execute = {
+            if ( !V ) relativeBranch(target);
+        };
+    };
+
+    instruction "brvs" target: SREL {
+        execute = {
+            if ( V ) relativeBranch(target);
+        };
+    };
+
+    instruction "bset" bit: IMM3 {
+        execute = {
+            $ioregs(SREG)[bit] = true;
+        };
+    };
+
+    instruction "bst" rr: GPR, bit: IMM3 {
+        execute = {
+            T = $regs(rr)[bit];
+        };
+    };
+
+    instruction "call" target: PADDR {
+        execute = {
+            // TODO: fixme
+            pushPC(nextPC);
+            nextPC = absolute(target);
+        };
+    };
+
+    instruction "cbi" ior: IMM5, bit: IMM3{
+        execute = {
+            $ioregs(ior)[bit] = false;
+        };
+    };
+
+    instruction "cbr" rd: HGPR, imm: IMM8 {
+        execute = {
+            $regs(rd) = low(performAnd($regs(rd), ~imm));
+        };
+    };
+
+    instruction "clc" {
+        execute = {
+            C = false;
+        };
+    };
+
+    instruction "clh" {
+        execute = {
+            H = false;
+        };
+    };
+
+    instruction "cli" {
+        execute = {
+            I = false;
+        };
+    };
+
+    instruction "cln" {
+        execute = {
+            N = false;
+        };
+    };
+
+    instruction "clr" rd: GPR {
+        execute = {
+            S = false;
+            V = false;
+            N = false;
+            Z = true;
+            $regs(rd) = low(0);
+        };
+    };
+
+    instruction "cls" {
+        execute = {
+            S = false;
+        };
+    };
+
+    instruction "clt" {
+        execute = {
+            T = false;
+        };
+    };
+
+    instruction "clv" {
+        execute = {
+            V = false;
+        };
+    };
+
+    instruction "clz" {
+        execute = {
+            Z = false;
+        };
+    };
+
+    instruction "com" rd: GPR {
+        execute = {
+            local result: int = 0xff - $regs(rd);
+
+            C = true;
+            N = result[7];
+            Z = low(result) == 0;
+            V = false;
+            S = N xor V;
+
+            $regs(rd) = low(result);
+        };
+    };
+
+    instruction "cp" rd: GPR, rr: GPR {
+        execute = {
+            // perform subtraction for flag side effects.
+            performSubtraction($regs(rd), $regs(rr), false);
+        };
+    };
+
+    instruction "cpc" rd: GPR, rr: GPR {
+        execute = {
+            // perform subtraction for flag side effects.
+            performSubtraction($regs(rd), $regs(rr), C);
+        };
+    };
+
+    instruction "cpi" rd: HGPR, imm: IMM8 {
+        execute = {
+            // perform subtraction for flag side effects.
+            performSubtraction($regs(rd), imm, false);
+        };
+    };
+
+    instruction "cpse" rd: GPR, rr: GPR {
+        execute = {
+            local r1: int = $regs(rd);
+            local r2: int = $regs(rr);
+            // perform subtraction for flag side effects.
+            performSubtraction(r1, r2, 0);
+            if (r1 == r2) skip();
+        };
+    };
+
+    instruction "dec" rd: GPR {
+        execute = {
+            local r1: int = $uregs(rd);
+            local result: int = r1 - 1;
+
+            N = result[7];
+            Z = low(result) == 0;
+            V = r1 == 0x80;
+            S = N xor V;
+
+            $regs(rd) = low(result);
+        };
+    };
+
+    instruction "eicall" {
+        execute = {
+        };
+    };
+
+    instruction "eijmp" {
+        execute = {
+        };
+    };
+
+    instruction "elpm" {
+        execute = {
+        };
+    };
+
+    instruction "elpmd" rd: GPR, rr: Z {
+        // TODO: this is a variant of the ELPM instruction
+        execute = {
+        };
+    };
+
+    instruction "elpmpi" rd: GPR, rr: Z {
+        // TODO: this is a variant of the ELPM instruction
+        execute = {
+        };
+    };
+
+    instruction "eor" rd: GPR, rr: GPR {
+        execute = {
+            local result: int = $regs(rd) ^ $regs(rr);
+
+            N = result[7];
+            Z = low(result) == 0;
+            V = false;
+            S = N xor V;
+
+            $regs(rd) = low(result);
+        };
+    };
+
+    instruction "fmul" rd: MGPR, rr: MGPR {
+        execute = {
+            local result: int = ($uregs(rd) * $uregs(rr)) << 1;
+            Z = result[15:0] == 0;
+            C = result[16];
+            $regs(0) = low(result);
+            $regs(1) = high(result);
+        };
+    };
+
+    instruction "fmuls" rd: MGPR, rr: MGPR {
+        execute = {
+            local result: int = ($regs(rd) * $regs(rr)) << 1;
+            Z = result[15:0] == 0;
+            C = result[16];
+            $regs(0) = low(result);
+            $regs(1) = high(result);
+        };
+    };
+
+    instruction "fmulsu" rd: MGPR, rr: MGPR {
+        execute = {
+            local result: int = ($regs(rd) * $uregs(rr)) << 1;
+            Z = result[15:0] == 0;
+            C = result[16];
+            $regs(0) = low(result);
+            $regs(1) = high(result);
+        };
+    };
+
+    instruction "icall" {
+        execute = {
+        };
+    };
+
+    instruction "ijmp" {
+        execute = {
+        };
+    };
+
+    instruction "in" rd: GPR, imm: IMM6 {
+        execute = {
+        };
+    };
+
+    instruction "inc" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "jmp" target: PADDR {
+        execute = {
+        };
+    };
+
+    instruction "ld" rd: GPR, ar: ADR {
+        execute = {
+        };
+    };
+
+    instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
+        execute = {
+        };
+    };
+
+    instruction "ldi" rd: HGPR, imm: IMM8 {
+        execute = {
+        };
+    };
+
+    instruction "ldpd" rd: GPR, ar: ADR {
+        // TODO: this is a variant of the LD instruction
+        execute = {
+        };
+    };
+
+    instruction "ldpi" rd: GPR, ar: ADR {
+        execute = {
+        };
+    };
+
+    instruction "lds" rd: GPR, addr: DADDR {
+        execute = {
+        };
+    };
+
+    instruction "lpm" {
+        execute = {
+        };
+    };
+
+    instruction "lpmd" rd: GPR, z: Z {
+        // TODO: this is a variant of LPM
+        execute = {
+        };
+    };
+
+    instruction "lpmpi" rd: GPR, z: Z {
+        // TODO: this is a variant of LPM
+        execute = {
+        };
+    };
+
+    instruction "lsl" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "lsr" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "mov" rd: GPR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "movw" rd: EGPR, rr: EGPR {
+        execute = {
+        };
+    };
+
+    instruction "mul" rd: GPR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "muls" rd: HGPR, rr: HGPR {
+        execute = {
+        };
+    };
+
+    instruction "mulsu" rd: MGPR, rr: MGPR {
+        execute = {
+        };
+    };
+
+    instruction "neg" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "nop" {
+        execute = {
+        };
+    };
+
+    instruction "or" rd: GPR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "ori" rd: HGPR, imm: IMM8 {
+        execute = {
+        };
+    };
+
+    instruction "out" imm: IMM6, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "pop" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "push" rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "rcall" target: LREL {
+        execute = {
+        };
+    };
+
+    instruction "ret" {
+        execute = {
+        };
+    };
+
+    instruction "reti" {
+        execute = {
+        };
+    };
+
+    instruction "rjmp" target: LREL {
+        execute = {
+        };
+    };
+
+    instruction "rol" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "ror" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "sbc" rd: GPR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "sbci" rd: HGPR, imm: IMM8 {
+        execute = {
+        };
+    };
+
+    instruction "sbi" imm1: IMM5, bit: IMM3 {
+        execute = {
+        };
+    };
+
+    instruction "sbic" imm1: IMM5, bit: IMM3 {
+        execute = {
+        };
+    };
+
+    instruction "sbis" imm1: IMM5, bit: IMM3 {
+        execute = {
+        };
+    };
+
+    instruction "sbiw" rd: RDL, imm: IMM6 {
+        execute = {
+        };
+    };
+
+    instruction "sbr" rd: HGPR, imm: IMM8 {
+        execute = {
+        };
+    };
+
+    instruction "sbrc" rr: GPR, bit: IMM3 {
+        execute = {
+        };
+    };
+
+    instruction "sbrs" rr: GPR, bit: IMM3 {
+        execute = {
+        };
+    };
+
+    instruction "sec" {
+        execute = {
+        };
+    };
+
+    instruction "seh" {
+        execute = {
+        };
+    };
+
+    instruction "sei" {
+        execute = {
+        };
+    };
+
+    instruction "sen" {
+        execute = {
+        };
+    };
+
+    instruction "ser" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "ses" {
+        execute = {
+        };
+    };
+
+    instruction "set" {
+        execute = {
+        };
+    };
+
+    instruction "sev" {
+        execute = {
+        };
+    };
+
+    instruction "sez" {
+        execute = {
+        };
+    };
+
+    instruction "sleep" {
+        execute = {
+        };
+    };
+
+    instruction "spm" {
+        execute = {
+        };
+    };
+
+    instruction "st" ar: ADR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "std" ar: YZ, imm: IMM6, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "stpd" ar: ADR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "stpi" ar: ADR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "sts" addr: DADDR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "sub" rd: GPR, rr: GPR {
+        execute = {
+        };
+    };
+
+    instruction "subi" rd: HGPR, imm: IMM8 {
+        execute = {
+        };
+    };
+
+    instruction "swap" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "tst" rd: GPR {
+        execute = {
+        };
+    };
+
+    instruction "wdr" {
+        execute = {
+        };
+    };
+
+
+
+
+    // empty instruction template
+    /*
+    instruction "" {
+        encoding = where { };
+        execute = {
+        };
+    };
+    */
 
 
 }

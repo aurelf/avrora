@@ -31,19 +31,19 @@
  */
 
 package avrora.core.isdl.ast;
+
 import avrora.core.isdl.Token;
-import avrora.util.StringUtil;
 
 /**
  * @author Ben L. Titzer
  */
-public class Expr {
+public class VarBitAssignStmt extends AssignStmt {
+    public final Token varname;
+    public final Expr bit;
 
-    public static int tokenToInt(Token i) {
-        return StringUtil.evaluateIntegerLiteral(i.image);
-    }
-
-    public static boolean tokenToBool(Token i) {
-        return Boolean.valueOf(i.image).booleanValue();
+    public VarBitAssignStmt(Token m, Expr b, Expr e) {
+        super(e);
+        varname = m;
+        bit = b;
     }
 }

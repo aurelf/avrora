@@ -31,19 +31,19 @@
  */
 
 package avrora.core.isdl.ast;
+import java.util.List;
 import avrora.core.isdl.Token;
-import avrora.util.StringUtil;
 
 /**
  * @author Ben L. Titzer
  */
-public class Expr {
+public class CallStmt extends Stmt {
 
-    public static int tokenToInt(Token i) {
-        return StringUtil.evaluateIntegerLiteral(i.image);
-    }
+    public final Token method;
+    public final List args;
 
-    public static boolean tokenToBool(Token i) {
-        return Boolean.valueOf(i.image).booleanValue();
+    public CallStmt(Token m, List a) {
+        method = m;
+        args = a;
     }
 }
