@@ -30,56 +30,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core.isdl.ast;
+package avrora.core.isdl;
+
+import java.util.HashMap;
 import java.util.List;
-import avrora.core.isdl.Token;
-import avrora.util.StringUtil;
 
 /**
- * The <code>CallStmt</code> class represents a call to a subroutine that
- * does not produce a value.
+ * The <code>Optimizer</code> class takes the description of an instruction's
+ * code and optimizes it by performing constant and copy propagation as well
+ * as dead code elimination.
  *
  * @author Ben L. Titzer
  */
-public class CallStmt extends Stmt {
+public class Optimizer {
 
-    /**
-     * The <code>method</code> field stores a string that represents
-     * the name of the subroutine being called.
-     */
-    public final Token method;
+    protected final HashMap constMap;
+    protected final List original;
 
-    /**
-     * The <code>args</code> fields stores a reference to a list of expressions
-     * that are evaluated and passed as arguments to the subroutine.
-     */
-    public final List args;
-
-    /**
-     * The constructor of the <code>CallStmt</code> class simply initializes the
-     * references to the subroutine name and arguments.
-     * @param m the name of the subroutine as a string
-     * @param a list of expressions representing the arguments to the subroutine
-     */
-    public CallStmt(Token m, List a) {
-        method = m;
-        args = a;
+    public Optimizer(List stmts) {
+        constMap = new HashMap();
+        original = stmts;
     }
 
-    /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern, allowing each statement to be visited by a client visitor.
-     * @param v the visitor to accept
-     */
-    public void accept(StmtVisitor v) {
-        v.visit(this);
+    public Optimizer(List stmts, HashMap cMap) {
+        constMap = (HashMap)cMap.clone();
+        original = stmts;
     }
 
-    public String toString() {
-        return StringUtil.embed(method.image, StringUtil.commalist(args)) +";";
-    }
-
-    public Stmt accept(StmtRebuilder r) {
-        return r.visit(this);
+    public List optimize() {
+        return original;
     }
 }

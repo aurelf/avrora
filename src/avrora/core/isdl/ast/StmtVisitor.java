@@ -32,6 +32,9 @@
 
 package avrora.core.isdl.ast;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * The <code>StmtVisitor</code> interface implements the visitor pattern
  * so that clients can visit the abstract syntax tree nodes representing
@@ -51,4 +54,64 @@ public interface StmtVisitor {
     public void visit(VarAssignStmt s);
     public void visit(VarBitAssignStmt s);
     public void visit(VarBitRangeAssignStmt s);
+
+    /**
+     * The <code>DepthFirst</code> class is a base implementation of the
+     * <code>StmtVisitor</code> interface that visits the tree in depth-first
+     * order.
+     *
+     * @author Ben L. Titzer
+     */
+    public class DepthFirst implements StmtVisitor {
+        public void visit(CallStmt s) {
+            // terminal node
+        }
+
+        public void visit(DeclStmt s) {
+            // terminal node
+        }
+
+        public void visit(IfStmt s) {
+            visitBlock(s.trueBranch);
+            visitBlock(s.falseBranch);
+        }
+
+        protected void visitBlock(List l) {
+            Iterator i = l.iterator();
+            // visit all the statements in the block
+            while ( i.hasNext() ) {
+                Stmt t = (Stmt)i.next();
+                t.accept(this);
+            }
+        }
+
+        public void visit(MapAssignStmt s) {
+            // terminal node
+        }
+
+        public void visit(MapBitAssignStmt s) {
+            // terminal node
+        }
+
+        public void visit(MapBitRangeAssignStmt s) {
+            // terminal node
+        }
+
+        public void visit(ReturnStmt s) {
+            // terminal node
+        }
+
+        public void visit(VarAssignStmt s) {
+            // terminal node
+        }
+
+        public void visit(VarBitAssignStmt s) {
+            // terminal node
+        }
+
+        public void visit(VarBitRangeAssignStmt s) {
+            // terminal node
+        }
+        
+    }
 }

@@ -41,4 +41,6 @@ package avrora.core.isdl.ast;
 public abstract class Stmt {
 
     public abstract void accept(StmtVisitor v);
+
+    public abstract Stmt accept(StmtRebuilder v);
 }

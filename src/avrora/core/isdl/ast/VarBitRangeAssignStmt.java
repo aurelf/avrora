@@ -76,6 +76,22 @@ public class VarBitRangeAssignStmt extends AssignStmt {
     }
 
     /**
+     * The constructor for the <code>VarAssignStmt</code> class simply
+     * initializes the internal references to the internal members of
+     * this assignment.
+     * @param m the string name of the variable as a token
+     * @param l the low bit of the range of bits being assigned
+     * @param h the high bit of the range of bits being assigned
+     * @param e an expression that represents the right hand side of the assignment
+     */
+    public VarBitRangeAssignStmt(Token m, int l, int h, Expr e) {
+        super(e);
+        variable = m;
+        low_bit = l;
+        high_bit = h;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor
      * pattern, allowing each statement to be visited by a client visitor.
      * @param v the visitor to accept
@@ -83,4 +99,13 @@ public class VarBitRangeAssignStmt extends AssignStmt {
     public void accept(StmtVisitor v) {
         v.visit(this);
     }
+
+    public String toString() {
+        return variable.image +"[" + low_bit + ":" + high_bit + "] = " + expr + ";";
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
+    }
+    
 }

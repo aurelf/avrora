@@ -272,7 +272,8 @@ public class Main {
             File f = new File(args[0]);
             FileInputStream fis = new FileInputStream(f);
             ISDLParser parser = new ISDLParser(fis);
-            parser.Architecture();
+            Architecture a = parser.Architecture();
+            a.dump();
         }
 
         public String getHelp() {

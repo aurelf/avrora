@@ -32,6 +32,8 @@
 
 package avrora.core.isdl.ast;
 
+import java.util.Iterator;
+
 /**
  * The <code>CodeVisitor</code> interface represents a visitor that is
  * more specific than the <code>ExprVisitor</code> visitor, in that it
@@ -74,4 +76,153 @@ public interface CodeVisitor {
     
     public void visit(MapExpr e);
     public void visit(VarExpr e);
+
+
+    /**
+     * The <code>DepthFirst</code> class is a base implementation of the
+     * <code>CodeVisitor</code> interface that visits the tree in depth-first
+     * order.
+     *
+     * @author Ben L. Titzer
+     */
+    public class DepthFirst implements CodeVisitor {
+
+        public void visit(Arith.AddExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.AndExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.CompExpr e) {
+            e.operand.accept(this);
+        }
+
+        public void visit(Arith.DivExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.MulExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.NegExpr e) {
+            e.operand.accept(this);
+        }
+
+        public void visit(Arith.OrExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.ShiftLeftExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.ShiftRightExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.SubExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.XorExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+
+        public void visit(BitExpr e) {
+            e.expr.accept(this);
+            e.bit.accept(this);
+        }
+
+        public void visit(BitRangeExpr e) {
+            e.operand.accept(this);
+        }
+
+        public void visit(CallExpr e) {
+            Iterator i = e.args.iterator();
+            while ( i.hasNext() ) {
+                Expr a = (Expr)i.next();
+                a.accept(this);
+            }
+        }
+
+        public void visit(Literal.BoolExpr e) {
+            // terminal node in the tree
+        }
+
+        public void visit(Literal.IntExpr e) {
+            // terminal node in the tree
+        }
+
+        public void visit(Logical.AndExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.EquExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.GreaterEquExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.GreaterExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.LessEquExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.LessExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.NequExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.NotExpr e) {
+            e.operand.accept(this);
+        }
+
+        public void visit(Logical.OrExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.XorExpr e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+
+        public void visit(MapExpr e) {
+            e.index.accept(this);
+        }
+
+        public void visit(VarExpr e) {
+            // terminal node in the tree
+        }
+
+    }
 }

@@ -236,11 +236,11 @@ TOKEN :
 /* Begin GRAMMAR */
 
 
-void Architecture() : { Token n; Architecture a; }
+Architecture Architecture() : { Token n; Architecture a; }
 {
     "architecture" n = <IDENTIFIER> { a = new Architecture(); }"{"
         (Item(a))*
-    "}"
+    "}" { a.process(); return a; }
 }
 
 void Item(Architecture a) : {}
@@ -334,14 +334,14 @@ void Operands(InstrDecl i) : {}
     [ Operand(i) ("," Operand(i))* ]
 }
 
-List Formals() : { List l = new LinkedList(); }
+List Formals() : { SubroutineDecl.Formal f; List l = new LinkedList(); }
 {
-    [ Formal() ("," Formal())* ] { return l; }
+    [ f = Formal() { l.add(f); } ("," f = Formal() { l.add(f); })* ] { return l; }
 }
 
-void Formal() : { Token n, t; }
+SubroutineDecl.Formal Formal() : { Token n, t; }
 {
-    n = <IDENTIFIER> ":" t = <IDENTIFIER>
+    n = <IDENTIFIER> ":" t = <IDENTIFIER> { return new SubroutineDecl.Formal(n, t); }
 }
 
 void Operand(InstrDecl i) : { Token n, t; }
@@ -349,10 +349,13 @@ void Operand(InstrDecl i) : { Token n, t; }
     n = <IDENTIFIER> ":" t = <IDENTIFIER> { i.addOperand(n, t); }
 }
 
-void Subroutine(Architecture a) : { List l = new LinkedList(); }
+void Subroutine(Architecture a) : { Token m, r; List f, l = new LinkedList(); }
 {
-    ("subroutine" <IDENTIFIER> "(" Formals() ")" ":" <IDENTIFIER> Block(l) ";")
-   |("external" <IDENTIFIER> "(" Formals() ")" ":" <IDENTIFIER> ";")
+    ("subroutine" m = <IDENTIFIER> "(" f = Formals() ")" ":" r = <IDENTIFIER> Block(l) ";"
+        { a.addSubroutine(new SubroutineDecl(m, f, r, l)); } )
+   |("external" m = <IDENTIFIER> "(" f = Formals() ")" ":" r = <IDENTIFIER> ";"
+        { a.addSubroutine(new SubroutineDecl(m, f, r, null)); } )
+
 }
 
 Expr Expr() : { Expr e; }
@@ -362,7 +365,7 @@ Expr Expr() : { Expr e; }
 
 List ExprList() : { List l = new LinkedList(); Expr e; }
 {
-    (e = Expr() { l.add(e); } ("," Expr() { l.add(e); } )*)
+    (e = Expr() { l.add(e); } ("," e = Expr() { l.add(e); } )*)
     { return l; }
 }
 

@@ -67,4 +67,13 @@ public class VarAssignStmt extends AssignStmt {
     public void accept(StmtVisitor v) {
         v.visit(this);
     }
+
+    public String toString() {
+        return variable.image + " = " + expr + ";";
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
+    }
+    
 }

@@ -64,4 +64,12 @@ public class ReturnStmt extends Stmt {
     public void accept(StmtVisitor v) {
         v.visit(this);
     }
+
+    public String toString() {
+        return "return "+expr+";";
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
+    }
 }

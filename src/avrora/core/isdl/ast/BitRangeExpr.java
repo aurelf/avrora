@@ -76,6 +76,19 @@ public class BitRangeExpr extends Expr {
         high_bit = Expr.tokenToInt(h);
     }
 
+    /**
+     * The constructor of the <code>BitRangeExpr</code> class simply initializes
+     * the references to the operands of the bit range expression.
+     * @param o a reference to the expression operand
+     * @param l the lowest bit in the range, inclusive
+     * @param h the highest bit in the range, inclusive
+     */
+    public BitRangeExpr(Expr o, int l, int h) {
+        operand = o;
+        low_bit = l;
+        high_bit = h;
+    }
+
     public int getBitWidth() {
         return high_bit - low_bit + 1;
     }
@@ -102,5 +115,17 @@ public class BitRangeExpr extends Expr {
      */
     public void accept(CodeVisitor v) {
         v.visit(this);
+    }
+
+    public Expr accept(CodeRebuilder r) {
+        return r.visit(this);
+    }
+
+    public String toString() {
+        return innerString(operand) + "[" + low_bit + ":" + high_bit + "]";
+    }
+
+    public int getPrecedence() {
+        return PREC_TERM;
     }
 }

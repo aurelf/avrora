@@ -57,11 +57,22 @@ public class VarExpr extends Expr {
     }
 
     /**
+     * The constructor for the <code>VarExpr</code> class simply initializes
+     * the reference to the name of the variable.
+     * @param v the string name of the variable as a token
+     */
+    public VarExpr(String v) {
+        Token t = new Token();
+        t.image = v;
+        variable = t;
+    }
+
+    /**
      * The <code>isVariable()</code> method tests whether this expression
      * is a direct variable use and is used in copy propagation. For
      * instances of <code>VarExpr</code>, this method returns true. For
      * all other instances, it returns false.
-     * 
+     *
      * @return true because this expression is the direct use of a variable
      */
     public boolean isVariable() {
@@ -86,5 +97,17 @@ public class VarExpr extends Expr {
      */
     public void accept(CodeVisitor v) {
         v.visit(this);
+    }
+
+    public Expr accept(CodeRebuilder r) {
+        return r.visit(this);
+    }
+
+    public String toString() {
+        return variable.image;
+    }
+
+    public int getPrecedence() {
+        return PREC_TERM;
     }
 }

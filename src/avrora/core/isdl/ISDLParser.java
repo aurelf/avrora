@@ -7,8 +7,8 @@ import java.util.LinkedList;
 public class ISDLParser implements ISDLParserConstants {
 
 /* Begin GRAMMAR */
-  final public void Architecture() throws ParseException {
-                        Token n; Architecture a;
+  final public Architecture Architecture() throws ParseException {
+                                Token n; Architecture a;
     jj_consume_token(ARCHITECTURE);
     n = jj_consume_token(IDENTIFIER);
                                       a = new Architecture();
@@ -31,6 +31,8 @@ public class ISDLParser implements ISDLParserConstants {
       Item(a);
     }
     jj_consume_token(RBRACKET);
+          a.process(); {if (true) return a;}
+    throw new Error("Missing return statement in function");
   }
 
   final public void Item(Architecture a) throws ParseException {
@@ -287,10 +289,11 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public List Formals() throws ParseException {
-                   List l = new LinkedList();
+                   SubroutineDecl.Formal f; List l = new LinkedList();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IDENTIFIER:
-      Formal();
+      f = Formal();
+                     l.add(f);
       label_6:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -302,22 +305,25 @@ public class ISDLParser implements ISDLParserConstants {
           break label_6;
         }
         jj_consume_token(COMMA);
-        Formal();
+        f = Formal();
+                                                     l.add(f);
       }
       break;
     default:
       jj_la1[12] = jj_gen;
       ;
     }
-                                   {if (true) return l;}
+                                                                       {if (true) return l;}
     throw new Error("Missing return statement in function");
   }
 
-  final public void Formal() throws ParseException {
-                  Token n, t;
+  final public SubroutineDecl.Formal Formal() throws ParseException {
+                                   Token n, t;
     n = jj_consume_token(IDENTIFIER);
     jj_consume_token(68);
     t = jj_consume_token(IDENTIFIER);
+                                            {if (true) return new SubroutineDecl.Formal(n, t);}
+    throw new Error("Missing return statement in function");
   }
 
   final public void Operand(InstrDecl i) throws ParseException {
@@ -329,28 +335,30 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public void Subroutine(Architecture a) throws ParseException {
-                                    List l = new LinkedList();
+                                    Token m, r; List f, l = new LinkedList();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SUBROUTINE:
       jj_consume_token(SUBROUTINE);
-      jj_consume_token(IDENTIFIER);
+      m = jj_consume_token(IDENTIFIER);
       jj_consume_token(LPAREN);
-      Formals();
+      f = Formals();
       jj_consume_token(RPAREN);
       jj_consume_token(68);
-      jj_consume_token(IDENTIFIER);
+      r = jj_consume_token(IDENTIFIER);
       Block(l);
       jj_consume_token(SEMI);
+          a.addSubroutine(new SubroutineDecl(m, f, r, l));
       break;
     case EXTERNAL:
       jj_consume_token(EXTERNAL);
-      jj_consume_token(IDENTIFIER);
+      m = jj_consume_token(IDENTIFIER);
       jj_consume_token(LPAREN);
-      Formals();
+      f = Formals();
       jj_consume_token(RPAREN);
       jj_consume_token(68);
-      jj_consume_token(IDENTIFIER);
+      r = jj_consume_token(IDENTIFIER);
       jj_consume_token(SEMI);
+          a.addSubroutine(new SubroutineDecl(m, f, r, null));
       break;
     default:
       jj_la1[13] = jj_gen;
@@ -381,8 +389,8 @@ public class ISDLParser implements ISDLParserConstants {
         break label_7;
       }
       jj_consume_token(COMMA);
-      Expr();
-                                            l.add(e);
+      e = Expr();
+                                                l.add(e);
     }
       {if (true) return l;}
     throw new Error("Missing return statement in function");
@@ -1216,18 +1224,18 @@ public class ISDLParser implements ISDLParserConstants {
     return false;
   }
 
-  final private boolean jj_3_1() {
-    if (jj_3R_20()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
   final private boolean jj_3_3() {
     if (jj_scan_token(69)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_scan_token(INTEGER_LITERAL)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     if (jj_scan_token(68)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3_1() {
+    if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }

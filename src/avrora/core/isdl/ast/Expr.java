@@ -44,6 +44,22 @@ import avrora.Avrora;
  */
 public abstract class Expr {
 
+    public static final int PREC_L_OR    =  0;
+    public static final int PREC_L_XOR   =  1;
+    public static final int PREC_L_AND   =  2;
+    public static final int PREC_A_OR    =  3;
+    public static final int PREC_A_XOR   =  4;
+    public static final int PREC_A_AND   =  5;
+    public static final int PREC_L_EQU   =  6;
+    public static final int PREC_L_REL   =  7;
+    public static final int PREC_A_SHIFT =  8;
+    public static final int PREC_A_ADD   =  9;
+    public static final int PREC_A_MUL   = 10;
+    public static final int PREC_UN      = 11;
+    public static final int PREC_TERM    = 12;
+
+
+
     /**
      * The <code>isVariable()</code> method tests whether this expression is
      * a single variable use.
@@ -83,6 +99,8 @@ public abstract class Expr {
         throw Avrora.unimplemented();
     }
 
+    public abstract int getPrecedence();
+
     public static int tokenToInt(Token i) {
         return StringUtil.evaluateIntegerLiteral(i.image);
     }
@@ -92,6 +110,13 @@ public abstract class Expr {
     }
 
     public abstract void accept(ExprVisitor v);
-    
+
     public abstract void accept(CodeVisitor v);
+
+    public abstract Expr accept(CodeRebuilder r);
+
+    public String innerString(Expr e) {
+        if ( e.getPrecedence() < this.getPrecedence() ) return StringUtil.embed(e.toString());
+        else return e.toString();
+    }
 }

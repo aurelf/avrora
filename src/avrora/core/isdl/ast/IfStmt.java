@@ -32,6 +32,8 @@
 
 package avrora.core.isdl.ast;
 
+import avrora.util.StringUtil;
+
 import java.util.List;
 
 /**
@@ -84,4 +86,21 @@ public class IfStmt extends Stmt {
     public void accept(StmtVisitor v) {
         v.visit(this);
     }
+
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("if ( ");
+        buf.append(cond);
+        buf.append(" ) {\n");
+        StringUtil.linelist(buf, trueBranch);
+        buf.append("} else {\n");
+        StringUtil.linelist(buf, falseBranch);
+        buf.append("}");
+        return buf.toString();
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
+    }
+
 }

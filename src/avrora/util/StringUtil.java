@@ -36,6 +36,8 @@ import avrora.Avrora;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.List;
+import java.util.Iterator;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing
@@ -325,6 +327,30 @@ public class StringUtil {
 
     public static String embed(Object lead, Object arg1, Object arg2, Object arg3, Object arg4) {
         return lead + LPAREN + arg1 + COMMA + arg2 + COMMA + arg3 + COMMA + arg4 + RPAREN;
+    }
+
+    public static String commalist(List l) {
+        StringBuffer buf = new StringBuffer();
+        Iterator i = l.iterator();
+        while ( i.hasNext() ) {
+            buf.append(i.next().toString());
+            if ( i.hasNext() ) buf.append(',');
+        }
+        return buf.toString();
+    }
+
+    public static String linelist(List l) {
+        StringBuffer buf = new StringBuffer();
+        linelist(buf, l);
+        return buf.toString();
+    }
+
+    public static void linelist(StringBuffer buf, List l) {
+        Iterator i = l.iterator();
+        while ( i.hasNext() ) {
+            buf.append(i.next().toString());
+            buf.append('\n');
+        }
     }
 
     public static String commalist(Object o1, Object o2) {

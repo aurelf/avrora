@@ -32,6 +32,7 @@
 
 package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
+import avrora.util.StringUtil;
 
 /**
  * The <code>MapBitRangeAssignment</code> class represents an assignment
@@ -84,11 +85,39 @@ public class MapBitRangeAssignStmt extends AssignStmt {
     }
 
     /**
+     * The constructor for the <code>MapAssignStmt</code> class initializes
+     * the public final fields in this class that refer to the elements
+     * of the assignment.
+     * @param m the string name of the map as a token
+     * @param i the expression representing the index into the map
+     * @param l the low bit of the range as an integer
+     * @param h the high bit of the range as an integer
+     * @param e the expression representing the right hand side of the assignment
+     */
+    public MapBitRangeAssignStmt(Token m, Expr i, int l, int h, Expr e) {
+        super(e);
+        mapname = m;
+        index = i;
+        low_bit = l;
+        high_bit = h;
+    }
+
+    /**
      * The <code>accept()</code> method implements one half of the visitor
      * pattern, allowing each statement to be visited by a client visitor.
      * @param v the visitor to accept
      */
     public void accept(StmtVisitor v) {
         v.visit(this);
+    }
+
+
+    public String toString() {
+        return StringUtil.embed("$"+mapname, index) + "[" + low_bit + ":" + high_bit + "]"
+                + " = " + expr + ";";
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
     }
 }

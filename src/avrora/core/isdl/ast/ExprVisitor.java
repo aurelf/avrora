@@ -32,6 +32,8 @@
 
 package avrora.core.isdl.ast;
 
+import java.util.Iterator;
+
 /**
  * The <code>ExprVisitor</code> interface is part of the visitor pattern
  * for expressions within the program. It allows clients to visit nodes
@@ -52,4 +54,62 @@ public interface ExprVisitor {
     public void visit(Logical.UnOp e);
     public void visit(MapExpr e);
     public void visit(VarExpr e);
+
+    /**
+     * The <code>DepthFirst</code> class is a base implementation of the
+     * <code>ExprVisitor</code> interface that visits the tree in depth-first
+     * order.
+     *
+     * @author Ben L. Titzer
+     */
+    public class DepthFirst implements ExprVisitor {
+
+        public void visit(Arith.BinOp e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Arith.UnOp e) {
+            e.operand.accept(this);
+        }
+
+        public void visit(BitExpr e) {
+            e.expr.accept(this);
+            e.bit.accept(this);
+        }
+
+        public void visit(BitRangeExpr e) {
+            e.operand.accept(this);
+        }
+
+        public void visit(CallExpr e) {
+            Iterator i = e.args.iterator();
+            while ( i.hasNext() ) {
+                Expr a = (Expr)i.next();
+                a.accept(this);
+            }
+        }
+
+        public void visit(Literal e) {
+            // terminal node in the tree
+        }
+
+        public void visit(Logical.BinOp e) {
+            e.left.accept(this);
+            e.right.accept(this);
+        }
+
+        public void visit(Logical.UnOp e) {
+            e.operand.accept(this);
+        }
+
+        public void visit(MapExpr e) {
+            e.index.accept(this);
+        }
+
+        public void visit(VarExpr e) {
+            // terminal node in the tree
+        }
+
+    }
 }

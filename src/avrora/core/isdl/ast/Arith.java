@@ -69,17 +69,21 @@ public abstract class Arith extends Expr {
          */
         public final Expr right;
 
+        public final int precedence;
+
         /**
          * The constructor of the <code>BinOp</code> class initializes the
          * public final fields that form the structure of this expression.
+         * @param p the precedence of this expression
          * @param l the left expression operand
          * @param o the string name of the operation
          * @param r the right expression operand
          */
-        public BinOp(Expr l, String o, Expr r) {
+        public BinOp(int p, Expr l, String o, Expr r) {
             left = l;
             right = r;
             operation = o;
+            precedence = p;
         }
 
         public boolean isConstantExpr() {
@@ -94,6 +98,14 @@ public abstract class Arith extends Expr {
          */
         public void accept(ExprVisitor v) {
             v.visit(this);
+        }
+
+        public String toString() {
+            return innerString(left) + " " + operation + " " + innerString(right);
+        }
+
+        public int getPrecedence() {
+            return precedence;
         }
     }
 
@@ -141,6 +153,14 @@ public abstract class Arith extends Expr {
         public void accept(ExprVisitor v) {
             v.visit(this);
         }
+
+        public String toString() {
+            return operation + innerString(operand);
+        }
+
+        public int getPrecedence() {
+            return PREC_UN;
+        }
     }
 
     /**
@@ -149,7 +169,7 @@ public abstract class Arith extends Expr {
      */
     public static class AddExpr extends BinOp {
         public AddExpr(Expr left, Expr right) {
-            super(left, "+", right);
+            super(PREC_A_ADD, left, "+", right);
         }
 
         /**
@@ -160,6 +180,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -169,7 +193,7 @@ public abstract class Arith extends Expr {
      */
     public static class SubExpr extends BinOp {
         public SubExpr(Expr left, Expr right) {
-            super(left, "-", right);
+            super(PREC_A_ADD, left, "-", right);
         }
 
         /**
@@ -180,6 +204,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -189,7 +217,7 @@ public abstract class Arith extends Expr {
      */
     public static class MulExpr extends BinOp {
         public MulExpr(Expr left, Expr right) {
-            super(left, "*", right);
+            super(PREC_A_MUL, left, "*", right);
         }
 
         /**
@@ -200,6 +228,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -209,7 +241,7 @@ public abstract class Arith extends Expr {
      */
     public static class DivExpr extends BinOp {
         public DivExpr(Expr left, Expr right) {
-            super(left, "/", right);
+            super(PREC_A_MUL, left, "/", right);
         }
 
         /**
@@ -220,6 +252,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -229,7 +265,7 @@ public abstract class Arith extends Expr {
      */
     public static class AndExpr extends BinOp {
         public AndExpr(Expr left, Expr right) {
-            super(left, "&", right);
+            super(PREC_A_AND, left, "&", right);
         }
 
         /**
@@ -240,6 +276,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -249,7 +289,7 @@ public abstract class Arith extends Expr {
      */
     public static class OrExpr extends BinOp {
         public OrExpr(Expr left, Expr right) {
-            super(left, "|", right);
+            super(PREC_A_OR, left, "|", right);
         }
 
         /**
@@ -260,6 +300,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -269,7 +313,7 @@ public abstract class Arith extends Expr {
      */
     public static class XorExpr extends BinOp {
         public XorExpr(Expr left, Expr right) {
-            super(left, "^", right);
+            super(PREC_A_XOR, left, "^", right);
         }
 
         /**
@@ -280,6 +324,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -289,7 +337,7 @@ public abstract class Arith extends Expr {
      */
     public static class ShiftLeftExpr extends BinOp {
         public ShiftLeftExpr(Expr left, Expr right) {
-            super(left, "<<", right);
+            super(PREC_A_SHIFT, left, "<<", right);
         }
 
         /**
@@ -300,6 +348,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -309,7 +361,7 @@ public abstract class Arith extends Expr {
      */
     public static class ShiftRightExpr extends BinOp {
         public ShiftRightExpr(Expr left, Expr right) {
-            super(left, ">>", right);
+            super(PREC_A_SHIFT, left, ">>", right);
         }
 
         /**
@@ -320,6 +372,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -341,6 +397,10 @@ public abstract class Arith extends Expr {
         public void accept(CodeVisitor v) {
             v.visit(this);
         }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
+        }
     }
 
     /**
@@ -360,6 +420,10 @@ public abstract class Arith extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 }

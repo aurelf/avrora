@@ -32,6 +32,7 @@
 
 package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
+import avrora.util.StringUtil;
 
 /**
  * The <code>MapExpr</code> class represents an expression that is
@@ -83,5 +84,17 @@ public class MapExpr extends Expr {
      */
     public void accept(CodeVisitor v) {
         v.visit(this);
+    }
+
+    public Expr accept(CodeRebuilder r) {
+        return r.visit(this);
+    }
+
+    public String toString() {
+        return StringUtil.embed("$"+mapname, index);
+    }
+
+    public int getPrecedence() {
+        return PREC_TERM;
     }
 }

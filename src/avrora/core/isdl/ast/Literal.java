@@ -123,6 +123,18 @@ public abstract class Literal extends Expr {
         public void accept(CodeVisitor v) {
             v.visit(this);
         }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
+        }
+
+        public String toString() {
+            return Integer.toString(value);
+        }
+
+        public int getPrecedence() {
+            return PREC_TERM;
+        }
     }
 
     /**
@@ -157,6 +169,18 @@ public abstract class Literal extends Expr {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
+        }
+
+        public String toString() {
+            return value ? "true" : "false";
+        }
+
+        public int getPrecedence() {
+            return PREC_TERM;
         }
     }
 }

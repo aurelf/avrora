@@ -116,6 +116,8 @@ architecture avr {
         Z = (low(result) == 0) and Z;
         V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
         S = N xor V;
+
+        return result;
     };
 
     subroutine performLeftShift(r1: int, lowbit: boolean): int {
@@ -194,20 +196,14 @@ architecture avr {
     instruction "adc" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr };
         execute = {
-            local r1: byte = $regs(rd);
-            local r2: byte = $regs(rr);
-            local result: int = performAddition(r1, r2, C);
-            $regs(rd) = low(result);
+            $regs(rd) = low(performAddition($regs(rd), $regs(rr), C));
         };
     };
 
     instruction "add" rd: GPR, rr: GPR { // add second register to first
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rr };
         execute = {
-            local r1: byte = $regs(rd);
-            local r2: byte = $regs(rr);
-            local result: int = performAddition(r1, r2, 0);
-            $regs(rd) = low(result);
+            $regs(rd) = low(performAddition($regs(rd), $regs(rr), 0));
         };
     };
 
@@ -232,19 +228,14 @@ architecture avr {
     instruction "and" rd: GPR, rr: GPR { // and first register with second
         encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rr };
         execute = {
-            local r1: int = $regs(rd);
-            local r2: int = $regs(rr);
-            local result: int = performAnd(r1, r2);
-            $regs(rd) = low(result);
+            local result: int = performAnd($regs(rd), $regs(rr));
         };
     };
 
     instruction "andi" rd: HGPR, imm: IMM8 { // and register with immediate
         encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = imm };
         execute = {
-            local r1: int = $regs(rd);
-            local result: int = performAnd(r1, imm);
-            $regs(rd) = low(result);
+            $regs(rd) = low(performAnd($regs(rd), imm));
         };
     };
 
@@ -252,8 +243,7 @@ architecture avr {
         encoding = GPR where { opcode = 0b1001010, r1 = rd };
         execute = {
             local r1: byte = $regs(rd);
-            local result: int = performRightShift(r1, r1[7]);
-            $regs(rd) = low(result);
+            $regs(rd) = low(performRightShift(r1, r1[7]));
         };
     };
 
@@ -542,7 +532,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000101, r1 = rd, r2 = rr };
         execute = {
             // perform subtraction for flag side effects.
-            performSubtraction($regs(rd), $regs(rr), false);
+            performSubtraction($regs(rd), $regs(rr), 0);
         };
     };
 
@@ -558,7 +548,7 @@ architecture avr {
         encoding = HGPRIMM8 where { opcode = 0b0011, r1 = rd, imm1 = imm };
         execute = {
             // perform subtraction for flag side effects.
-            performSubtraction($regs(rd), imm, false);
+            performSubtraction($regs(rd), imm, 0);
         };
     };
 
@@ -801,14 +791,14 @@ architecture avr {
     instruction "lsl" rd: GPR {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rd };
         execute = {
-            $regs(rd) = performLeftShift($regs(rd), false);
+            $regs(rd) = performLeftShift($regs(rd), 0);
         };
     };
 
     instruction "lsr" rd: GPR {
         encoding = { 0b1001010, rd[5:0], 0b0110 };
         execute = {
-            $regs(rd) = performRightShift($regs(rd), false);
+            $regs(rd) = performRightShift($regs(rd), 0);
         };
     };
 
@@ -859,7 +849,7 @@ architecture avr {
     instruction "neg" rd: GPR {
         encoding = { 0b1001010, rd[4:0], 0b0001 };
         execute = {
-            $regs(rd) = performSubtraction(0, $regs(rd), false);
+            $regs(rd) = performSubtraction(0, $regs(rd), 0);
         };
     };
 
@@ -1148,14 +1138,14 @@ architecture avr {
     instruction "sub" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000110, r1 = rd, r2 = rr };
         execute = {
-            $regs(rd) = performSubtraction($regs(rd), $regs(rr), false);
+            $regs(rd) = performSubtraction($regs(rd), $regs(rr), 0);
         };
     };
 
     instruction "subi" rd: HGPR, imm: IMM8 {
         encoding = HGPRIMM8 where { opcode = 0b0101 };
         execute = {
-            $regs(rd) = performSubtraction($regs(rd), imm, false);
+            $regs(rd) = performSubtraction($regs(rd), imm, 0);
         };
     };
 

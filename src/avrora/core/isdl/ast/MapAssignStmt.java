@@ -32,6 +32,7 @@
 
 package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
+import avrora.util.StringUtil;
 
 /**
  * The <code>MapAssignStmt</code> class represents a statement that
@@ -74,5 +75,13 @@ public class MapAssignStmt extends AssignStmt {
      */
     public void accept(StmtVisitor v) {
         v.visit(this);
+    }
+
+    public String toString() {
+        return StringUtil.embed("$"+mapname, index) + " = " + expr + ";";
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
     }
 }

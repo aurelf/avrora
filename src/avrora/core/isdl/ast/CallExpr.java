@@ -32,6 +32,7 @@
 
 package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
+import avrora.util.StringUtil;
 
 import java.util.List;
 
@@ -85,5 +86,17 @@ public class CallExpr extends Expr {
      */
     public void accept(CodeVisitor v) {
         v.visit(this);
+    }
+
+    public Expr accept(CodeRebuilder r) {
+        return r.visit(this);
+    }
+
+    public String toString() {
+        return StringUtil.embed(method.image, StringUtil.commalist(args));
+    }
+
+    public int getPrecedence() {
+        return PREC_TERM; 
     }
 }

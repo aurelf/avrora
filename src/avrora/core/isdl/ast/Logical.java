@@ -71,17 +71,21 @@ public abstract class Logical {
          */
         public final Expr right;
 
+        public final int precedence;
+
         /**
          * The constructor of the <code>BinOp</code> class initializes the
          * public final fields that form the structure of this expression.
+         * @param p the binding precedence of this operator
          * @param l the left expression operand
          * @param o the string name of the operation
          * @param r the right expression operand
          */
-        public BinOp(Expr l, String o, Expr r) {
+        public BinOp(int p, Expr l, String o, Expr r) {
             left = l;
             right = r;
             operation = o;
+            precedence = p;
         }
 
         public boolean isConstantExpr() {
@@ -96,6 +100,14 @@ public abstract class Logical {
          */
         public void accept(ExprVisitor v) {
             v.visit(this);
+        }
+
+        public String toString() {
+            return innerString(left) + " " + operation + " " + innerString(right);
+        }
+
+        public int getPrecedence() {
+            return precedence;
         }
 
     }
@@ -143,6 +155,14 @@ public abstract class Logical {
         public void accept(ExprVisitor v) {
             v.visit(this);
         }
+
+        public String toString() {
+            return operation + innerString(operand);
+        }
+
+        public int getPrecedence() {
+            return PREC_UN;
+        }
     }
 
     /**
@@ -151,7 +171,7 @@ public abstract class Logical {
      */
     public static class AndExpr extends BinOp {
         public AndExpr(Expr left, Expr right) {
-            super(left, "and", right);
+            super(PREC_L_AND, left, "and", right);
         }
 
         /**
@@ -162,6 +182,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -171,7 +195,7 @@ public abstract class Logical {
      */
     public static class OrExpr extends BinOp {
         public OrExpr(Expr left, Expr right) {
-            super(left, "or", right);
+            super(PREC_L_OR, left, "or", right);
         }
 
         /**
@@ -182,6 +206,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -191,7 +219,7 @@ public abstract class Logical {
      */
     public static class XorExpr extends BinOp {
         public XorExpr(Expr left, Expr right) {
-            super(left, "xor", right);
+            super(PREC_L_XOR, left, "xor", right);
         }
 
         /**
@@ -202,6 +230,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -212,7 +244,7 @@ public abstract class Logical {
      */
     public static class EquExpr extends BinOp {
         public EquExpr(Expr left, Expr right) {
-            super(left, "==", right);
+            super(PREC_L_EQU, left, "==", right);
         }
 
         /**
@@ -223,6 +255,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -233,7 +269,7 @@ public abstract class Logical {
      */
     public static class NequExpr extends BinOp {
         public NequExpr(Expr left, Expr right) {
-            super(left, "!=", right);
+            super(PREC_L_EQU, left, "!=", right);
         }
 
         /**
@@ -244,6 +280,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -255,7 +295,7 @@ public abstract class Logical {
      */
     public static class LessExpr extends BinOp {
         public LessExpr(Expr left, Expr right) {
-            super(left, "<", right);
+            super(PREC_L_REL, left, "<", right);
         }
 
         /**
@@ -266,6 +306,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -277,7 +321,7 @@ public abstract class Logical {
      */
     public static class LessEquExpr extends BinOp {
         public LessEquExpr(Expr left, Expr right) {
-            super(left, "<=", right);
+            super(PREC_L_REL, left, "<=", right);
         }
 
         /**
@@ -288,6 +332,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -299,7 +347,7 @@ public abstract class Logical {
      */
     public static class GreaterExpr extends BinOp {
         public GreaterExpr(Expr left, Expr right) {
-            super(left, ">", right);
+            super(PREC_L_REL, left, ">", right);
         }
 
         /**
@@ -310,6 +358,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -321,7 +373,7 @@ public abstract class Logical {
      */
     public static class GreaterEquExpr extends BinOp {
         public GreaterEquExpr(Expr left, Expr right) {
-            super(left, ">=", right);
+            super(PREC_L_REL, left, ">=", right);
         }
 
         /**
@@ -332,6 +384,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 
@@ -352,6 +408,10 @@ public abstract class Logical {
          */
         public void accept(CodeVisitor v) {
             v.visit(this);
+        }
+
+        public Expr accept(CodeRebuilder r) {
+            return r.visit(this);
         }
     }
 }

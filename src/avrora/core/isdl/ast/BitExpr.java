@@ -91,4 +91,16 @@ public class BitExpr extends Expr {
     public void accept(CodeVisitor v) {
         v.visit(this);
     }
+
+    public Expr accept(CodeRebuilder r) {
+        return r.visit(this);
+    }
+
+    public String toString() {
+        return innerString(expr) + "[" + bit.toString() + "]";
+    }
+
+    public int getPrecedence() {
+        return PREC_TERM;
+    }
 }

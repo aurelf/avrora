@@ -76,4 +76,13 @@ public class VarBitAssignStmt extends AssignStmt {
     public void accept(StmtVisitor v) {
         v.visit(this);
     }
+
+    public String toString() {
+        return variable.image + "[" + bit + "] = " + expr + ";";
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
+    }
+    
 }

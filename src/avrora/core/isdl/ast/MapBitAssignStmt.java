@@ -33,6 +33,7 @@
 package avrora.core.isdl.ast;
 
 import avrora.core.isdl.Token;
+import avrora.util.StringUtil;
 
 /**
  * The <code>MapBitAssignStmt</code> represents an assignment to a single
@@ -85,4 +86,13 @@ public class MapBitAssignStmt extends AssignStmt {
     public void accept(StmtVisitor v) {
         v.visit(this);
     }
+
+    public String toString() {
+        return StringUtil.embed("$"+mapname, index) + "[" + bit + "]" + " = " + expr + ";";
+    }
+
+    public Stmt accept(StmtRebuilder r) {
+        return r.visit(this);
+    }
+
 }
