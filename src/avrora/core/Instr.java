@@ -7,38 +7,107 @@ import java.util.NoSuchElementException;
 
 /**
  * The <code>Instr</code> class and its descendants represent instructions within the
- * assembly code.
+ * assembly code. The visitor pattern is applied here. Each instruction has an
+ * <code>accept()</code> method that allows it to be visited with double dispatch
+ * by a <code>InstrVisitor</code>. Each instruction in the AVR instruction set
+ * is represented by an inner class whose source has been generated from a simple
+ * specification in the <code>Generator</code> class.
+ *
+ * @see InstrVisitor
+ * @see Generator
  * @author Ben L. Titzer
  */
 public abstract class Instr extends Elem implements InstrPrototype {
 
+    /**
+     * The <code>isInstr()</code> method is part of the is/as convention for
+     * instructions and data as they are unified in the <code>Elem</code>
+     * interface. This convention avoids stupid casts and subtype tests
+     * by replacing them with virtual dispatch. In a small world, this is
+     * manageable.
+     * @return true because this object is an instruction
+     */
     public boolean isInstr() {
         return true;
     }
 
+    /**
+     * The <code>asData()</code> method is part of the is/as convention for
+     * instructions and data as they are unified in the <code>Elem</code>
+     * interface. This convention avoids stupid casts and subtype tests
+     * by replacing them with virtual dispatch. In a small world, this is
+     * manageable.
+     * @param address the address at which this data resides
+     * @throws vpc.VPCInternalError
+     * @return this method does not return but throws an exception, because
+     * instructions cannot be read as data
+     */
     public Data asData(int address) {
         // TODO: define correct error for this.
         throw VPCBase.failure("not data @ " + address);
     }
 
+    /**
+     * The <code>asInstr()</code> method is part of the is/as convention for
+     * instructions and data as they are unified in the <code>Elem</code>
+     * interface. This convention avoids stupid casts and subtype tests
+     * by replacing them with virtual dispatch. In a small world, this is
+     * manageable.
+     * @param address the address at which this data resides
+     * @return this
+     */
     public Instr asInstr(int address) {
         return this;
     }
 
+    /**
+     * The <code>getOperands()</code> method returns a string representation
+     * of the operands of the instruction. This is useful for printing and
+     * tracing of instructions as well as generating listings.
+     * @return a string representing the operands of the instruction
+     */
     public abstract String getOperands();
 
+    /**
+     * The <code>getVariant()</code> method gets the variant of the instruction.
+     * Since instructions like load and store can have multiple forms, each
+     * unique form is a named variant and its own class.
+     * @return the name of this variant
+     */
     public String getVariant() {
         return getName();
     }
 
+    /**
+     * The <code>getSize()</code> method returns the size of the instruction
+     * in bytes.
+     * @return the size of this instruction in bytes
+     */
     public int getSize() {
         return 2;
     }
 
+    /**
+     * The <code>getCycles()</code> method returns the number of cylces consumed
+     * by the instruction in the default case. Most instructions consume the same
+     * amount of clock cycles no matter what behavior. For example, 8-bit arithmetic
+     * takes one cycle, load and stores take two cycles, etc. Some instructions like
+     * the branch and skip instructions take more cycles if they are taken or not
+     * taken. In that case, this count returned is the smallest number of cycles
+     * that can be consumed by this instruction.
+     * @return the number of cycles that this instruction consumes
+     */
     public int getCycles() {
         return 1;
     }
 
+    /**
+     * The <code>accept()</code> method is part of the visitor pattern for
+     * instructions. The visitor pattern uses two virtual dispatches combined
+     * with memory overloading to achieve dispatching on multiple types. The
+     * result is clean and modular code.
+     * @param v the visitor to accept
+     */
     public abstract void accept(InstrVisitor v);
 
     /**

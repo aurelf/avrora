@@ -1105,7 +1105,7 @@ public class Analyzer {
         }
 
         private char performOr(char r1, char r2) {
-            char result = logicalOr(r1, r2);
+            char result = or(r1, r2);
 
             char N = getBit(result, 7);
             char Z = couldBeZero(result);
@@ -1117,7 +1117,7 @@ public class Analyzer {
         }
 
         private char performAnd(char r1, char r2) {
-            char result = logicalAnd(r1, r2);
+            char result = and(r1, r2);
 
             char N = getBit(result, 7);
             char Z = couldBeZero(result);

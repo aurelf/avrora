@@ -252,8 +252,8 @@ public class AbstractArithmetic {
      * @return <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char getBit(char av1, int bit) {
-        int mask = 0x101 << bit;
-        return (char)(av1 & mask);
+        int mask = TRUE << bit;
+        return (char)((av1 & mask) >> bit);
     }
 
     /**
@@ -267,7 +267,7 @@ public class AbstractArithmetic {
      */
     public static char setBit(char av1, int bit, char on) {
         int mask = ~(TRUE << bit);
-        return (char)((av1 & mask) | (on << bit));
+        return (char)((av1 & mask) | ((on & TRUE) << bit));
     }
 
     /**
@@ -288,14 +288,14 @@ public class AbstractArithmetic {
     }
 
     /**
-     * The <code>couldBeZero</code> method performs a "fuzzy" equality test against
+     * The <code>couldBeZero()</code> method performs a "fuzzy" equality test against
      * zero for two abstract values. It will return one of three values, depending on whether
      * the specified abstract values are definately zero, definately not zero, or unknown.
      * @param av1 the first abstract value
      * @param av2 the second abstract value
-     * @return <code>AbstractArithmetic.TRUE</code> if the both abstract values are definately
+     * @return <code>AbstractArithmetic.TRUE</code> if both abstract values are definately
      * zero
-     * @return <code>AbstractArithmetic.FALSE</code> if either the specified abstract values cannot
+     * @return <code>AbstractArithmetic.FALSE</code> if either of the specified abstract values cannot
      * possibly be zero (it contains one bit that is known to be on)
      * @return <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
@@ -305,24 +305,70 @@ public class AbstractArithmetic {
         return UNKNOWN;
     }
 
+    /**
+     * The <code>couldBeEqual()</code> method performs a "fuzzy" equality test
+     * between two abstract values. It will return one of three values, depending on
+     * whether the abstract values are definately equal, definately not equal, or
+     * unknown.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return <code>AbstractArithmetic.TRUE</code> if the abstract values are definately
+     * equal
+     * @return <code>AbstractArithmetic.FALSE</code> if the abstract values are
+     * definately not equal
+     * @return <code>AbstractArithmetic.UNKNOWN</code> otherwise
+     */
     public static char couldBeEqual(char av1, char av2) {
         if ( areKnown(av1, av2) && av1 == av2 ) return TRUE;
         if ( knownBitsOf(av1) != knownBitsOf(av2) ) return FALSE;
         return UNKNOWN;
     }
 
+    /**
+     * The <code>commonMask()</code> method computes the intersection of the
+     * known bit masks of two abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return the intersection of the known bit masks of each abstract value
+     */
     public static char commonMask(char av1, char av2) {
         return (char)(maskOf(av1) & maskOf(av2));
     }
 
-    public static char logicalOr(char av1, char av2) {
-        return canon(commonMask(av1, av2), (char)(av1 | av2));
+    /**
+     * The <code>commonMask()</code> method computes the intersection of the
+     * known bit masks of three abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @param av3 the third abstract value
+     * @return the intersection of the known bit masks of each abstract value
+     */
+    public static char commonMask(char av1, char av2, char av3) {
+        return (char)(maskOf(av1) & maskOf(av2) & maskOf(av3));
     }
 
+    /**
+     * The <code>logicalAnd</code> method computes the logical bitwise AND
+     * of two abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return an abstract value representing the bitwise AND of the two
+     * abstract value operands
+     */
     public static char logicalAnd(char av1, char av2) {
         return (char)(av1 & av2 & TRUE);
     }
 
+    /**
+     * The <code>add()</code> method performs addition of two abstract values.
+     * It relies on the <code>ceiling()</code> and <code>floor()</code> functions
+     * that allow abstract addition to be expressed in terms of two concrete
+     * additions, resulting in a straightforward and clean implementation.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return an abstract value that represents the sum of the two abstract
+     * values.
+     */
     public static char add(char av1, char av2) {
         char common = commonMask(av1, av2);
         // TODO: optimize for common case of known / unknown values.
@@ -332,6 +378,16 @@ public class AbstractArithmetic {
         return mergeMask(common, merge((byte)resultA, (byte)resultB));
     }
 
+    /**
+     * The <code>add()</code> method performs subtraction of two abstract values.
+     * It relies on the <code>ceiling()</code> and <code>floor()</code> functions
+     * that allow abstract subtraction to be expressed in terms of two concrete
+     * subtractions, resulting in a straightforward and clean implementation.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return an abstract value that represents the difference of the two abstract
+     * values.
+     */
     public static char subtract(char av1, char av2) {
         char common = commonMask(av1, av2);
         // TODO: optimize for common case of known / unknown values.
@@ -341,6 +397,14 @@ public class AbstractArithmetic {
         return mergeMask(common, merge((byte)resultA, (byte)resultB));
     }
 
+    /**
+     * The <code>increment()</code> method simply adds 1 to the abstract
+     * value. It is a special case of the <code>add()</code> that is common
+     * enough to warrant its own method.
+     * @param av1 the abstract value
+     * @return an abstract value that represents the sum of the specified
+     * abstract value and the known value 1
+     */
     public static char increment(char av1) {
         char mask = maskOf(av1);
         // TODO: optimize for common case of known / unknown values.
@@ -349,6 +413,14 @@ public class AbstractArithmetic {
         return mergeMask(mask, merge((byte)resultA, (byte)resultB));
     }
 
+    /**
+     * The <code>decrement()</code> method simply subtracts 1 to the abstract
+     * value. It is a special case of the <code>subtract()</code> that is common
+     * enough to warrant its own method.
+     * @param av1 the abstract value
+     * @return an abstract value that represents the difference of the specified
+     * abstract value and the known value 1
+     */
     public static char decrement(char av1) {
         char mask = maskOf(av1);
         // TODO: optimize for common case of known / unknown values.
@@ -357,57 +429,166 @@ public class AbstractArithmetic {
         return mergeMask(mask, merge((byte)resultA, (byte)resultB));
     }
 
+    /**
+     * The <code>mergeMask()</code> merges the given abstract value with the
+     * known bit mask passed. This means that the known bits will be the intersection
+     * of the known bits of the mask and the known bits of the abstract value.
+     * @param mask the known bit mask
+     * @param av1 the abstract value
+     * @return an abstract value in which the known bit mask is the intersection
+     * of the given bit mask and the bit mask of the given abstract value
+     */
     public static char mergeMask(char mask, char av1) {
         char common = (char)(mask & maskOf(av1));
         return canon(common, av1);
     }
 
+    /**
+     * The <code>xor()</code> method computes the bitwise exclusive or operation
+     * on the two given abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return the bitwise exclusive or of the two abstract values
+     */
     public static char xor(char av1, char av2) {
         char mask = AbstractArithmetic.commonMask(av1, av2);
         return AbstractArithmetic.canon(mask, (char)(av1 ^ av2));
     }
 
+    /**
+     * The <code>and()</code> method computes the logical bitwise AND
+     * of two abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return an abstract value representing the bitwise AND of the two
+     * abstract value operands
+     */
     public static char and(char av1, char av2) {
-        return AbstractArithmetic.logicalAnd(av1, av2);
+        return (char)(av1 & av2);
     }
 
+    /**
+     * The <code>or()</code> method computes the logical bitwise or
+     * of two abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @return an abstract value representing the bitwise inclusive or of the two
+     * abstract value operands
+     */
     public static char or(char av1, char av2) {
-        return AbstractArithmetic.logicalOr(av1, av2);
+        return canon(commonMask(av1, av2), (char)(av1 | av2));
     }
 
+    /**
+     * The <code>and()</code> method computes the logical bitwise AND
+     * of three abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @param av3 the third abstract value
+     * @return an abstract value representing the bitwise AND of the three
+     * abstract value operands
+     */
     public static char and(char av1, char av2, char av3) {
-        return AbstractArithmetic.logicalAnd(AbstractArithmetic.logicalAnd(av1, av2), av3);
+        return (char)(av1 & av2 & av3);
     }
 
+    /**
+     * The <code>or()</code> method computes the logical bitwise or
+     * of three abstract values.
+     * @param av1 the first abstract value
+     * @param av2 the second abstract value
+     * @param av3 the third abstract value
+     * @return an abstract value representing the bitwise inclusive or of the two
+     * abstract value operands
+     */
     public static char or(char av1, char av2, char av3) {
-        return AbstractArithmetic.logicalOr(AbstractArithmetic.logicalOr(av1, av2), av3);
+        return canon(commonMask(av1, av2, av3), (char)(av1 | av2 | av3));
     }
 
+    /**
+     * The <code>not()</code> method computes the bitwise negation (one's complement)
+     * of the specified abstract value
+     * @param av1 the abstract value
+     * @return the abstract value representing the bitwise negation of the operand
+     */
     public static char not(char av1) {
-        return (char)(av1 ^ 0x01);
+        return canon((char)(av1 ^ 0xff));
     }
 
+    /**
+     * The <code>ceiling()</code> function computes the concrete value with all
+     * unknown bits set to one. This is useful for implementation of some
+     * arithmetic operations.
+     * @param av1 the abstract value to compute the ceiling of
+     * @return a concrete value where each of the unknown bits of the abstract
+     * value are set to one
+     */
     public static int ceiling(char av1) {
         int invmask = (~AbstractArithmetic.maskOf(av1)) & 0xff;
         return bitsOf(av1) | invmask;
     }
 
+    /**
+     * The <code>ceiling()</code> function computes the concrete value with all
+     * unknown bits set to one. This is useful for implementation of some
+     * arithmetic operations. This variant takes two abstract values representing
+     * the lower and upper bytes of a word and returns a concrete unsigned
+     * 16-bit word representing the ceiling function.
+     * @param av1 the abstract value representing the lower byte
+     * @param av2 the abstract value representing the high byte
+     * @return a concrete word value where each of the unknown bits of the abstract
+     * value are set to one
+     */
     public static int ceiling(char av1, char av2) {
         return ceiling(av1) | (ceiling(av2) << 8);
     }
 
+    /**
+     * The <code>floor()</code> function computes the concrete value with all
+     * unknown bits set to zero. This is useful for implementation of some
+     * arithmetic operations.
+     * @param av1 the abstract value to compute the ceiling of
+     * @return a concrete value where each of the unknown bits of the abstract
+     * value are set to zero
+     */
     public static int floor(char av1) {
         return bitsOf(av1);
     }
 
+    /**
+     * The <code>floor()</code> function computes the concrete value with all
+     * unknown bits set to zero. This is useful for implementation of some
+     * arithmetic operations. This variant takes two abstract values representing
+     * the lower and upper bytes of a word and returns a concrete unsigned
+     * 16-bit word representing the floor function.
+     * @param av1 the abstract value representing the lower byte
+     * @param av2 the abstract value representing the high byte
+     * @return a concrete word value where each of the unknown bits of the abstract
+     * value are set to zero
+     */
     public static int floor(char av1, char av2) {
         return bitsOf(av1) | (bitsOf(av2) << 8);
     }
 
+    /**
+     * The <code>shiftLeftOne()</code> method shifts the abstract value left by
+     * one bit.
+     * @param av1 the abstract value
+     * @return an abstract value representing the operand shifted left by one and
+     * the lower bit is set to known zero
+     */
     public static char shiftLeftOne(char av1) {
-        return (char) ((av1 & 0x7f7f) << 1);
+        return (char) (((av1 & 0x7f7f) << 1) | FALSE);
     }
 
+    /**
+     * The <code>shiftLeftOne()</code> method shifts the abstract value left by
+     * one bit and sets the lowest bit to the given value.
+     * @param av1 the abstract value
+     * @param lowbit the value of the lowest bit
+     * @return an abstract value representing the operand shifted left by one and
+     * the lower bit is set to the given value
+     */
     public static char shiftLeftOne(char av1, char lowbit) {
         return (char) (((av1 & 0x7f7f) << 1) | (lowbit & TRUE));
     }
