@@ -14,7 +14,8 @@ import java.util.*;
  * frequencies are really the same).
  *
  * This class should provide the proper scheduling policy with respect to threads that
- * more complicated radio implementations
+ * more complicated radio implementations can use the time scheduling policy
+ * and only overload the delivery policy.
  *
  * @author Daniel Lee
  */
@@ -22,49 +23,35 @@ public class SimpleAir implements RadioAir {
 
     public final static SimpleAir simpleAir;
 
+    //TODO: This class needs a verbose printer.
+
+    // TODO: Determine whether it is worthwhile to create this initial simple air more cleanly.
     static {
         simpleAir = new SimpleAir();
     }
 
     public boolean messageInAir() {
         return !messages.isEmpty();
-        //return false;
     }
 
-
+    /** GlobalQueue used by the air environment. Essential for synchronization. */
     protected final EnvironmentQueue globalQueue;
 
     protected final LinkedList messages;
 
     protected final HashSet radios;
 
-    private class DebugSet extends LinkedList {
-
-        public boolean add(Object o) {
-            boolean val = super.add(o);
-            System.err.println("Message size (add) " + size() + " " + val);
-            return val;
-        }
-
-        public boolean remove(Object o) {
-            boolean val = super.remove(o);
-            System.err.println("Message size (remove) " + size() + " " + val);
-            return val;
-        }
-    }
-
     private boolean scheduledGlobalMeet;
 
     /** The amount of cycles it takes for one byte to be sent.*/
     public final long bytePeriod = Radio.TRANSFER_TIME;
     public final long bitPeriod = 763;
-    public final double transferTime = .8332651000300227;
 
-    private /* final */ Radio.RadioPacket radioStatic;
+    public final double transferTime = .8332651000300227;
 
     public SimpleAir() {
         radios = new HashSet();
-        messages = new DebugSet();
+        messages = new LinkedList();
         globalQueue = new EnvironmentQueue(bytePeriod);
     }
 
@@ -80,11 +67,9 @@ public class SimpleAir implements RadioAir {
 
     public synchronized void transmit(Radio r, Radio.RadioPacket f) {
         messages.addLast(f);
-        System.err.println("Air.transmit() " + messages.size());
 
         if (!scheduledGlobalMeet) {
             scheduledGlobalMeet = true;
-            //System.err.println("Scheduling... ");
             globalQueue.addTimerEvent(new ScheduleDelivery(f), 1);
         }
     }
@@ -118,6 +103,8 @@ public class SimpleAir implements RadioAir {
     }
 
 
+    /** An extended version of <code>GlobalQueue</code> that implements a version of
+     * <code>LocalMeet</code> that is appropriate for delivering radio packets. */
     protected class EnvironmentQueue extends GlobalQueue {
         protected EnvironmentQueue(long p) {
             super(p);
@@ -125,9 +112,8 @@ public class SimpleAir implements RadioAir {
 
         protected class DeliveryMeet extends LocalMeet {
 
-
             DeliveryMeet(Simulator sim, long scale, long delay) {
-                super(sim, bytePeriod, delay);      // TODO cleanup
+                super(sim, bytePeriod, delay);      // TODO cleanup. either use scale or leave it out
                 id = "DEL";
             }
 
@@ -140,7 +126,6 @@ public class SimpleAir implements RadioAir {
                     Need a sense of time...
                  */
 
-                //System.err.println("D");
                 long currentTime = simulator.getState().getCycles();
                 deliverWaveForm(currentTime);
 
@@ -160,19 +145,16 @@ public class SimpleAir implements RadioAir {
 
     /* Conjecture: I can make this the differentiating point of an Air implementation.
      * Specifically, I can allow more complicated delivery mechanisms to simply be
-     * derived from overriding this method. */
+     * derived from overriding this method.
+     * In order to make this the "differentiating point", I need to abstract
+     * how messages are stored. OR, the transmit() method can be overloaded...
+     * Question: Is it sufficient to only overload transmit and deliver, then?
+     */
     protected synchronized void deliverWaveForm(long time) {
         // in order to calculate the radiopacket
         // grab all frames currently in the air
         // merge any that conflict, lower RSSI
         // deliver calculated form to member radios..
-
-        System.err.println("Delivering... " + messages.size());
-
-        if (messages.isEmpty()) {
-            System.err.println("Empty queue. Blah");
-            return;
-        }
 
         Iterator packetIterator = messages.listIterator();
         Radio.RadioPacket packet = (Radio.RadioPacket) packetIterator.next();
@@ -184,24 +166,19 @@ public class SimpleAir implements RadioAir {
         packetIterator.remove();  // TODO: figure out right palce for this
 
         if (diff <= tolerance && -tolerance <= diff) {
-            System.err.println("Safe time " + del + " " + time + " " + (del - time));
+
             // This packet is meant to be delivered now. We must determine whether any
             // other packets conflict.
 
             // this set is nonempty if there are any overlapping packets.
 
-            //if(!possibleConflicts.isEmpty()) {
-            if (!messages.isEmpty()) {
-                //HashSet possibleConflicts = messages;//messages.headSet(new Radio.RadioPacket((byte)0x00, time, time));
-                System.err.println("Overlap...");
-
+            if(!messages.isEmpty()) {
                 // conflicts exist..
                 // we must perform a waveform calculation...
 
                 TreeSet mappedSet = new TreeSet();
 
                 long base = packet.origination.longValue() / bitPeriod;
-                //Iterator packetIterator = possibleConflicts.iterator();
 
                 while (packetIterator.hasNext()) {
                     Radio.RadioPacket current = (Radio.RadioPacket) packetIterator.next();
@@ -210,7 +187,6 @@ public class SimpleAir implements RadioAir {
                             current.delivery.longValue() / bitPeriod - base));
 
                     packetIterator.remove();
-                    //messages.remove(current);
                 }
 
                 byte acc = packet.data;
@@ -224,16 +200,10 @@ public class SimpleAir implements RadioAir {
                     acc |= (byte) (current.data >> current.delivery.intValue());
                 }
 
-
-                //messages.remove(packet);
-
                 packet = new Radio.RadioPacket(acc, packet.origination.longValue(),
                         packet.delivery.longValue());
                 packet.strength = 0;
             }
-
-            System.err.println("Delivered data " + Integer.toHexString(0xff & packet.data));
-
 
             Iterator radioIterator = radios.iterator();
 
@@ -244,22 +214,14 @@ public class SimpleAir implements RadioAir {
 
 
         } else if (time < del) {
-
-            System.err.println("Unsafe time (early) del: " + del + ", cur: " + time + " " + (del - time));
-
-            //
-            // TODO: Do  I need to resched something?
+            // TODO: handle these bad cases. early/late delivery.
+            // early
             return;
         } else {
-            // del < time. early.
-            System.err.println("Unsafe time (late) del: " + del + ", cur: " + time + " " + (del - time));
+            // late
+            return;
 
-            //globalQueue.addDeliveryMeet(diff);
-            // TODO: schedule next delivery. insert mangled packet into stream.
         }
-
-
     }
-
 
 }

@@ -45,7 +45,6 @@ import avrora.core.Register;
 import avrora.util.Terminal;
 
 /**
- * TODO: Update doc for this.
  *
  * The <code>Mica2</code> class is an implementation of the <code>Platform</code>
  * interface that represents both a specific microcontroller and the

@@ -43,14 +43,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * The <code>GlobalClock</code> class implements a global timer among multiple
- * simulators by inserting periodic timers into each simulator.
+ * The <code>GlobalQueue</code> class implements a global timer among multiple
+ * simulators by inserting periodic timers into each simulator. It is an alternate version
+ * of the <code>GlobalClock</code> class that was developed for use with the synchronization
+ * policy used in the CC1000 - SimpleAir radio implementation.
  *
- * @author Ben L. Titzer
+ * A verbose printer for this class can be accessed through "sim.global".
+ *
+ * @author Ben L. Titzer, Daniel Lee
  */
 public class GlobalQueue {
 
-    //protected double period;
+    /** <code>cycles</code> is the number of cycles on a member local clock per cycle
+     * on the global clock. Some re-coding must be done if microcontrollers running
+     * at difference speeds are to be accurately simulated. */
     protected final long cycles;
     protected int goal;
     protected int count;
@@ -87,6 +93,10 @@ public class GlobalQueue {
         goal--;
     }
 
+    /** Adds an <code>Event</code> to this global event queue. It is important to note
+     * that this method adds an event executed once at the appropriate global time.
+     * It does not execute once in each thread participating in the clock. For such
+     * functionality, see <code>LocalMeet</code>. */
     public void addTimerEvent(Simulator.Event trigger, long ticks) {
         // TODO: synchronization
         eventQueue.add(trigger, ticks);
@@ -97,6 +107,8 @@ public class GlobalQueue {
         eventQueue.remove(trigger);
     }
 
+    /** Adds a <code>LocalMeet</code> event to the event queue of every simulator
+     * participating in the global clock. */
     public void addLocalMeet(LocalMeetFactory f, long scale, long delay) {
         Iterator threadIterator = threadMap.keySet().iterator();
 
@@ -113,8 +125,8 @@ public class GlobalQueue {
     // I argue it might not be safe to remove LocalEvents...?
     // TODO: determine how safe removing LocalEvents would be..
 
-
-
+    /** A <code>LocalMeetFactory</code> is necessary to call the constructor for
+     * a local meet. To be used in conjunction with addLocalmeet. */
     public interface LocalMeetFactory {
         public LocalMeet produce(Simulator s, long scale, long delay);
     }
@@ -125,15 +137,6 @@ public class GlobalQueue {
         protected final long scale;
         protected final long delay;
         protected String id = "CLOCK";
-        //protected int count;
-
-        /*
-        public LocalMeet(Simulator s, double period) {
-            simulator = s;
-            //cycles = simulator.getMicrocontroller().millisToCycles(period);
-            simulator.insertEvent(this, cycles);
-        }
-        */
 
         public LocalMeet(Simulator s, long scale, long delay) {
             simulator = s;
@@ -179,21 +182,22 @@ public class GlobalQueue {
 
     static int iNum = 0;
 
+    /** The <code>LocalTimer</code> class is an event that fires in the local queues
+     * of participating threads. This class is necessary for ensuring the integrity of the
+     * global clock.*/
     public class LocalTimer extends LocalMeet {
         private boolean removed;
 
         LocalTimer(Simulator s) {
-            super(s, 6106, 6106);  // TODO: cleanup
+            super(s, 6106, 6106);  // TODO: cleanup use of this constant
             id += iNum++;
         }
 
         public void fire() {
             super.fire();
 
-            //System.err.println("T " + (simulator.getState().getCycles() + scale));
-
+            // TODO: safely implement removing threads
             //if (!removed) {
-            //System.err.println("Bahz " + delay);
             simulator.insertEvent(this, delay);
             //}
         }

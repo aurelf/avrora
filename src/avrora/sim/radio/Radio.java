@@ -7,10 +7,20 @@ import avrora.sim.SimulatorThread;
 /**
  * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and access an
  * instance of the <code>RadioAir</code> interface.
+ * @author Daniel Lee
  */
 public interface Radio {
 
+    /** Time in ATMega128L cycles it takes for one byte to be sent over the air.
+     * Much of the implementation is derived from this constant, so generalizing in the
+     * future may require some careful consideration. */
     public final static long TRANSFER_TIME = 6106;
+
+    /* How 6106 was calculated:
+        19.2 Manchester kBaud / (2 Baud/Bit)= 9.6 kBits/sec
+        (9600 bits/sec) / (8 bits/byte) = 1150 bytes/sec
+        (7327800 cycles/sec) / (1150 bytes/sec) = 6106 cycles/byte (rounded)
+     */
 
 
     /** A <code>RadioPacket</code> is an object describing the data transmitted over <code>RadioAir</code> over some
@@ -18,7 +28,6 @@ public interface Radio {
     public class RadioPacket implements Comparable {
 
         public final byte data;
-        /** public final boolean data */
         public final long frequency;
 
         public final Long origination;
@@ -26,11 +35,6 @@ public interface Radio {
 
 
         public int strength = 0x3ff;
-
-        /* public final long delivery;
-        *
-        * // delivery = origination + time to deliver
-        */
 
         public RadioPacket(byte data, long frequency, long origination) {
             this.data = data;
@@ -60,16 +64,11 @@ public interface Radio {
          * sends and receives if necessary. */
         public void install(Microcontroller mcu);
 
+        /** Enable transfers. */
         public void enable();
 
+        /** Disable transfers. */
         public void disable();
-
-        /**
-         public void receive();
-
-         public void transmit();
-         */
-        // use Microcontroller.Pin.Input, Microcontroller.Pin.Output. ...
     }
 
     /** Receive a frame from the air. Should be called by the <code>RadioAir</code> and pass data into the
@@ -81,10 +80,13 @@ public interface Radio {
      * the <code>RadioAir</code>. */
     public void transmit(RadioPacket f);
 
+    /** Get the <code>Simulator</code> on which this radio is running.*/
     public Simulator getSimulator();
 
+    /** Get the <code>SimulatorThread</code> thread on which this radio is running. */
     public SimulatorThread getSimulatorThread();
 
+    /** Set the <code>SimulatorThread</code> of this radio.*/
     public void setSimulatorThread(SimulatorThread thread);
 
 }
