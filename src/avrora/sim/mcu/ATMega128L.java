@@ -529,6 +529,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             public void clearBit(int bit) {
                 // ignore writes.
             }
+
+            public void writeBit(int num, boolean val) {
+                // ignore writes
+            }
         }
 
         /**
@@ -917,6 +921,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 public void setBit(int num) {
                     // XXX not yet implemented
                 }
+
+                public void writeBit(int num, boolean val) {
+                    // XXX not yet implemented
+                }
             }
 
             class SPSReg implements State.IOReg {
@@ -976,6 +984,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     if (num == 0) {
                         value = Arithmetic.setBit(value, 0);
                     }
+                }
+
+                public void writeBit(int num, boolean val) {
+                    if ( val ) setBit(num);
+                    else clearBit(num);
                 }
 
                 public void setSPIF() {

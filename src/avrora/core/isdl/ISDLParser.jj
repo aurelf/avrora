@@ -185,6 +185,7 @@ TOKEN :
   | < EXTERNAL: "external" >
   | < RETURN: "return" >
   | < BOOLEAN_LITERAL: "true" | "false" >
+  | < CYCLES: "cycles" >
 }
 
 TOKEN :
@@ -260,13 +261,20 @@ void Instruction(Architecture a) :
     List o = new LinkedList(),
          s = new LinkedList();
     EncodingDecl e = null;
+    Token c = null;
 }
 {
     "instruction" n = <STRING_LITERAL> o = Formals() "{"
         [ e = Encoding(n) ]
+        [ c = Cycles() ]
         [ s = Execute(s) ]
 
-    "}" ";" { a.addInstruction(new InstrDecl(n, null, o, s, e)); }
+    "}" ";" { a.addInstruction(new InstrDecl(n, null, o, c, s, e)); }
+}
+
+Token Cycles() : { Token c; }
+{
+    "cycles" "=" c = <INTEGER_LITERAL> ";" { return c; }
 }
 
 EncodingDecl Encoding(Token n) : { EncodingDecl d; }

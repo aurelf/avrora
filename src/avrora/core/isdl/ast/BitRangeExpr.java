@@ -72,8 +72,11 @@ public class BitRangeExpr extends Expr {
      */
     public BitRangeExpr(Expr o, Token l, Token h) {
         operand = o;
-        low_bit = Expr.tokenToInt(l);
-        high_bit = Expr.tokenToInt(h);
+        int low = Expr.tokenToInt(l);
+        int high = Expr.tokenToInt(h);
+
+        low_bit = low < high ? low : high;
+        high_bit = low > high ? low : high;
     }
 
     /**
@@ -97,6 +100,10 @@ public class BitRangeExpr extends Expr {
 
     public boolean isConstantExpr() {
         return operand.isConstantExpr();
+    }
+
+    public boolean isBitRangeExpr() {
+        return true;
     }
 
     /**

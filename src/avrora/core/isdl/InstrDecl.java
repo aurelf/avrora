@@ -33,6 +33,7 @@
 package avrora.core.isdl;
 
 import avrora.core.isdl.Token;
+import avrora.core.isdl.ast.Expr;
 import avrora.util.StringUtil;
 
 import java.util.List;
@@ -64,16 +65,19 @@ public class InstrDecl extends CodeRegion {
 
     public final String className;
 
+    public final int cycles;
+
     /**
      * The constructor of the <code>InstrDecl</code> class initializes the fields
      * based on the parameters.
      * @param n the name of the instruction as a string
      * @param v the variant of the instruction as a string
      */
-    public InstrDecl(Token n, Token v, List o, List s, EncodingDecl e) {
+    public InstrDecl(Token n, Token v, List o, Token c, List s, EncodingDecl e) {
         super(o, s);
         name = n;
         variant = v;
+        cycles = Expr.tokenToInt(c);
         encoding = e;
         className = "Instr."+StringUtil.trimquotes(name.image).toUpperCase();
     }

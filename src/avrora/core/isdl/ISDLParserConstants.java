@@ -35,34 +35,35 @@ public interface ISDLParserConstants {
   int EXTERNAL = 38;
   int RETURN = 39;
   int BOOLEAN_LITERAL = 40;
-  int LBRACKET = 41;
-  int RBRACKET = 42;
-  int EQUALS = 43;
-  int COMMA = 44;
-  int LPAREN = 45;
-  int RPAREN = 46;
-  int SEMI = 47;
-  int SHIFTLEFT = 48;
-  int SHIFTRIGHT = 49;
-  int ADD = 50;
-  int SUB = 51;
-  int MUL = 52;
-  int DIV = 53;
-  int B_AND = 54;
-  int B_OR = 55;
-  int B_XOR = 56;
-  int NOT = 57;
-  int B_COMP = 58;
-  int EQUAL = 59;
-  int NOTEQUAL = 60;
-  int LESS = 61;
-  int LESSEQ = 62;
-  int GREATER = 63;
-  int GREATEREQ = 64;
-  int DOLLAR = 65;
-  int IDENTIFIER = 66;
-  int LETTER = 67;
-  int DIGIT = 68;
+  int CYCLES = 41;
+  int LBRACKET = 42;
+  int RBRACKET = 43;
+  int EQUALS = 44;
+  int COMMA = 45;
+  int LPAREN = 46;
+  int RPAREN = 47;
+  int SEMI = 48;
+  int SHIFTLEFT = 49;
+  int SHIFTRIGHT = 50;
+  int ADD = 51;
+  int SUB = 52;
+  int MUL = 53;
+  int DIV = 54;
+  int B_AND = 55;
+  int B_OR = 56;
+  int B_XOR = 57;
+  int NOT = 58;
+  int B_COMP = 59;
+  int EQUAL = 60;
+  int NOTEQUAL = 61;
+  int LESS = 62;
+  int LESSEQ = 63;
+  int GREATER = 64;
+  int GREATEREQ = 65;
+  int DOLLAR = 66;
+  int IDENTIFIER = 67;
+  int LETTER = 68;
+  int DIGIT = 69;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -111,6 +112,7 @@ public interface ISDLParserConstants {
     "\"external\"",
     "\"return\"",
     "<BOOLEAN_LITERAL>",
+    "\"cycles\"",
     "\"{\"",
     "\"}\"",
     "\"=\"",

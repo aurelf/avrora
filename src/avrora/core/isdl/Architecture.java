@@ -55,7 +55,8 @@ public class Architecture {
 
             if ( d instanceof EncodingDecl.Derived ) {
                 EncodingDecl.Derived dd = (EncodingDecl.Derived)d;
-                dd.setParent((EncodingDecl)encodingMap.get(dd.pname.image));
+                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
+                dd.setParent(parent);
             }
 
             printer.println("-> result: "+d.getBitWidth()+" bits");
@@ -68,11 +69,19 @@ public class Architecture {
             InstrDecl id = (InstrDecl)i.next();
             printer.print("processing instruction "+id.name+" ");
 
+            // inline and optimize the body of the instruction
             List code = id.getCode();
             code = new Inliner().visitStmtList(code);
             code = new Optimizer(code).optimize();
 
             id.setCode(code);
+
+            // find parent encoding
+            if ( id.encoding instanceof EncodingDecl.Derived ) {
+                EncodingDecl.Derived dd = (EncodingDecl.Derived)id.encoding;
+                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
+                dd.setParent(parent);
+            }
 
             if ( printer.enabled ) {
                 new PrettyPrinter(printer).visitStmtList(code);
@@ -210,7 +219,7 @@ public class Architecture {
 
         public Stmt visit(ReturnStmt s) {
             if ( curSubroutine == null )
-                Avrora.failure("return not within subroutine!");
+                throw Avrora.failure("return not within subroutine!");
 
             retVal = newTemp(null);
             return (new DeclStmt(newToken(retVal), curSubroutine.ret, s.expr.accept(this)));
@@ -251,13 +260,14 @@ public class Architecture {
 
                 // put the arguments in the alpha-rename map for the body
                 bodyBuilder.varMap.put(f.name.image, nn);
-                bodyBuilder.curSubroutine = d;
 
                 // alpha-rename expression that is argument
                 Expr ne = e.accept(this);
                 newStmts.add(new DeclStmt(nn, f.type, ne));
             }
 
+            // set the current subroutine
+            bodyBuilder.curSubroutine = d;
             // process body
             bodyBuilder.visitStmtList(d.getCode());
 

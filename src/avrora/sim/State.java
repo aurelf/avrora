@@ -98,6 +98,8 @@ public interface State extends IORegisterConstants {
          * @param num the number of the bit to clear
          */
         public void setBit(int num);
+
+        public void writeBit(int num, boolean val);
     }
 
     /**
@@ -160,6 +162,10 @@ public interface State extends IORegisterConstants {
         public void setBit(int num) {
             value = Arithmetic.setBit(value, num);
         }
+
+        public void writeBit(int num, boolean val) {
+            value = Arithmetic.setBit(value, num, val);
+        }
     }
 
     /**
@@ -187,6 +193,10 @@ public interface State extends IORegisterConstants {
 
         public void clearBit(int bit) {
             throw new Error("cannot clear bit in reserved register");
+        }
+
+        public void writeBit(int bit, boolean val) {
+            throw new Error("cannot write bit in reserved register");
         }
     };
 

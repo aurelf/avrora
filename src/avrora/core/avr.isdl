@@ -171,7 +171,7 @@ architecture avr {
 
     inline subroutine relativeBranch(target: int): void {
         nextPC = relative(target);
-        cycles = cycles + 1;
+        cyclesConsumed = cyclesConsumed + 1;
     };
 
     inline subroutine relative(target: int): int {
@@ -185,9 +185,23 @@ architecture avr {
     inline subroutine skip(): void {
         local dist: int = $isize(nextPC);
         nextPC = nextPC + dist;
-        if ( dist == 4 ) cycles = cycles + 1;
-        cycles = cycles + 1;
+        if ( dist == 4 ) cyclesConsumed = cyclesConsumed + 2;
+        else cyclesConsumed = cyclesConsumed + 1;
     };
+
+    inline subroutine pushPC(npc: int): void {
+        npc = npc / 2;
+        pushByte(low(npc));
+        pushByte(high(npc));
+    };
+
+    inline subroutine popPC(): int {
+        local high: byte = popByte();
+        local low: byte = popByte();
+        return uword(low, high) * 2;
+    };
+
+
 
 //---------------------------------------------------------------------------
 //  BEGIN INSTRUCTION SET DESCRIPTION
@@ -195,6 +209,7 @@ architecture avr {
 
     instruction "adc" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             $regs(rd) = low(performAddition($regs(rd), $regs(rr), C));
         };
@@ -202,6 +217,7 @@ architecture avr {
 
     instruction "add" rd: GPR, rr: GPR { // add second register to first
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             $regs(rd) = low(performAddition($regs(rd), $regs(rr), 0));
         };
@@ -209,6 +225,7 @@ architecture avr {
 
     instruction "adiw" rd: RDL, imm: IMM6 { // add immediate to word register
         encoding = { 0b10010110, imm[5:4], rd[2:1], imm[3:0] };
+        cycles = 2;
         execute = {
             local r1: int       = $wregs(rd);
             local result: int   = r1 + imm;
@@ -227,6 +244,7 @@ architecture avr {
 
     instruction "and" rd: GPR, rr: GPR { // and first register with second
         encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             local result: int = performAnd($regs(rd), $regs(rr));
         };
@@ -234,6 +252,7 @@ architecture avr {
 
     instruction "andi" rd: HGPR, imm: IMM8 { // and register with immediate
         encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = imm };
+        cycles = 1;
         execute = {
             $regs(rd) = low(performAnd($regs(rd), imm));
         };
@@ -241,6 +260,7 @@ architecture avr {
 
     instruction "asr" rd: GPR {
         encoding = GPR where { opcode = 0b1001010, r1 = rd };
+        cycles = 1;
         execute = {
             local r1: byte = $regs(rd);
             $regs(rd) = low(performRightShift(r1, r1[7]));
@@ -249,6 +269,7 @@ architecture avr {
 
     instruction "bclr" bit: IMM3 {
         encoding = CLR where { bit = bit };
+        cycles = 1;
         execute = {
             $ioregs(SREG)[bit] = false;
         };
@@ -256,6 +277,7 @@ architecture avr {
 
     instruction "bld" rr: GPR, bit: IMM3 {
         encoding = { 0b1111100, rr[4:0], 0[0], bit[2:0] };
+        cycles = 1;
         execute = {
             $regs(rr)[bit] = T;
         };
@@ -263,6 +285,7 @@ architecture avr {
 
     instruction "brbc" bit: IMM3, target: SREL {
         encoding = BRCLR where { bit = bit };
+        cycles = 1;
         execute = {
             if (!($ioregs(SREG)[bit]) ) relativeBranch(target);
         };
@@ -270,6 +293,7 @@ architecture avr {
 
     instruction "brbs" bit: IMM3, target: SREL {
         encoding = BRSET where { bit = bit };
+        cycles = 1;
         execute = {
             if ( $ioregs(SREG)[bit] ) relativeBranch(target);
         };
@@ -277,6 +301,7 @@ architecture avr {
 
     instruction "brcc" target: SREL {
         encoding = BRCLR where { bit = 0b000 };
+        cycles = 1;
         execute = {
             if ( !C ) relativeBranch(target);
         };
@@ -284,6 +309,7 @@ architecture avr {
 
     instruction "brcs" target: SREL {
         encoding = BRSET where { bit = 0b000 };
+        cycles = 1;
         execute = {
             if ( C ) relativeBranch(target);
         };
@@ -291,6 +317,7 @@ architecture avr {
 
     instruction "break" {
         encoding = { 0b10010101, 0b10011000 };
+        cycles = 1;
         execute = {
             stop();
         };
@@ -298,6 +325,7 @@ architecture avr {
 
     instruction "breq" target: SREL {
         encoding = BRSET where { bit = 0b001 };
+        cycles = 1;
         execute = {
             if ( Z ) relativeBranch(target);
         };
@@ -305,6 +333,7 @@ architecture avr {
 
     instruction "brge" target: SREL{
         encoding = BRCLR where { bit = 0b100 };
+        cycles = 1;
         execute = {
             if ( !S ) relativeBranch(target);
         };
@@ -312,6 +341,7 @@ architecture avr {
 
     instruction "brhc" target: SREL {
         encoding = BRCLR where { bit = 0b101 };
+        cycles = 1;
         execute = {
             if ( !H ) relativeBranch(target);
         };
@@ -319,6 +349,7 @@ architecture avr {
 
     instruction "brhs" target: SREL {
         encoding = BRSET where { bit = 0b101 };
+        cycles = 1;
         execute = {
             if ( H ) relativeBranch(target);
         };
@@ -326,6 +357,7 @@ architecture avr {
 
     instruction "brid" target: SREL {
         encoding = BRCLR where { bit = 0b111 };
+        cycles = 1;
         execute = {
             if ( !I ) relativeBranch(target);
         };
@@ -333,6 +365,7 @@ architecture avr {
 
     instruction "brie" target: SREL {
         encoding = BRSET where { bit = 0b111 };
+        cycles = 1;
         execute = {
             if ( I ) relativeBranch(target);
         };
@@ -340,6 +373,7 @@ architecture avr {
 
     instruction "brlo" target: SREL {
         encoding = BRSET where { bit = 0b000 };
+        cycles = 1;
         execute = {
             if ( C ) relativeBranch(target);
         };
@@ -347,6 +381,7 @@ architecture avr {
 
     instruction "brlt" target: SREL {
         encoding = BRSET where { bit = 0b100 };
+        cycles = 1;
         execute = {
             if ( S ) relativeBranch(target);
         };
@@ -354,6 +389,7 @@ architecture avr {
 
     instruction "brmi" target: SREL {
         encoding = BRSET where { bit = 0b010 };
+        cycles = 1;
         execute = {
             if ( N ) relativeBranch(target);
         };
@@ -361,6 +397,7 @@ architecture avr {
 
     instruction "brne" target: SREL {
         encoding = BRCLR where { bit = 0b001 };
+        cycles = 1;
         execute = {
             if ( !Z ) relativeBranch(target);
         };
@@ -368,6 +405,7 @@ architecture avr {
 
     instruction "brpl" target: SREL {
         encoding = BRCLR where { bit = 0b010 };
+        cycles = 1;
         execute = {
             if ( !N ) relativeBranch(target);
         };
@@ -375,6 +413,7 @@ architecture avr {
 
     instruction "brsh" target: SREL {
         encoding = BRCLR where { bit = 0b000 };
+        cycles = 1;
         execute = {
             if ( !C ) relativeBranch(target);
         };
@@ -382,6 +421,7 @@ architecture avr {
 
     instruction "brtc" target: SREL {
         encoding = BRCLR where { bit = 0b110 };
+        cycles = 1;
         execute = {
             if ( !T ) relativeBranch(target);
         };
@@ -389,6 +429,7 @@ architecture avr {
 
     instruction "brts" target: SREL {
         encoding = BRSET where { bit = 0b110 };
+        cycles = 1;
         execute = {
             if ( T ) relativeBranch(target);
         };
@@ -396,6 +437,7 @@ architecture avr {
 
     instruction "brvc" target: SREL {
         encoding = BRCLR where { bit = 0b011 };
+        cycles = 1;
         execute = {
             if ( !V ) relativeBranch(target);
         };
@@ -403,6 +445,7 @@ architecture avr {
 
     instruction "brvs" target: SREL {
         encoding = BRSET where { bit = 0b011 };
+        cycles = 1;
         execute = {
             if ( V ) relativeBranch(target);
         };
@@ -410,6 +453,7 @@ architecture avr {
 
     instruction "bset" bit: IMM3 {
         encoding = SET where { bit = bit };
+        cycles = 1;
         execute = {
             $ioregs(SREG)[bit] = true;
         };
@@ -417,6 +461,7 @@ architecture avr {
 
     instruction "bst" rr: GPR, bit: IMM3 {
         encoding = { 0b1111101, rr[4:0], 0[0], bit[2:0] };
+        cycles = 1;
         execute = {
             T = $regs(rr)[bit];
         };
@@ -424,6 +469,7 @@ architecture avr {
 
     instruction "call" target: PADDR {
         encoding = ABS4 where { opcode = 0b1001010111 };
+        cycles = 4;
         execute = {
             pushPC(nextPC);
             nextPC = absolute(target);
@@ -432,6 +478,7 @@ architecture avr {
 
     instruction "cbi" ior: IMM5, bit: IMM3 {
         encoding = { 0b1001100, ior[4:0], bit[2:0] };
+        cycles = 2;
         execute = {
             $ioregs(ior)[bit] = false;
         };
@@ -440,6 +487,7 @@ architecture avr {
     instruction "cbr" rd: HGPR, imm: IMM8 {
         // note that this is just the ANDI instruction with operand complemented
         encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = ~imm };
+        cycles = 1;
         execute = {
             $regs(rd) = low(performAnd($regs(rd), ~imm));
         };
@@ -447,6 +495,7 @@ architecture avr {
 
     instruction "clc" {
         encoding = CLR where { bit = 0b000 };
+        cycles = 1;
         execute = {
             C = false;
         };
@@ -454,6 +503,7 @@ architecture avr {
 
     instruction "clh" {
         encoding = CLR where { bit = 0b101 };
+        cycles = 1;
         execute = {
             H = false;
         };
@@ -461,6 +511,7 @@ architecture avr {
 
     instruction "cli" {
         encoding = CLR where { bit = 0b111 };
+        cycles = 1;
         execute = {
             I = false;
         };
@@ -468,6 +519,7 @@ architecture avr {
 
     instruction "cln" {
         encoding = CLR where { bit = 0b010 };
+        cycles = 1;
         execute = {
             N = false;
         };
@@ -476,6 +528,7 @@ architecture avr {
     instruction "clr" rd: GPR {
         // note that this is equivalent to eor rd, rd
         encoding = GPRGPR where { opcode = 0b001001, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             S = false;
             V = false;
@@ -487,6 +540,7 @@ architecture avr {
 
     instruction "cls" {
         encoding = CLR where { bit = 0b100 };
+        cycles = 1;
         execute = {
             S = false;
         };
@@ -494,6 +548,7 @@ architecture avr {
 
     instruction "clt" {
         encoding = CLR where { bit = 0b110 };
+        cycles = 1;
         execute = {
             T = false;
         };
@@ -501,6 +556,7 @@ architecture avr {
 
     instruction "clv" {
         encoding = CLR where { bit = 0b011 };
+        cycles = 1;
         execute = {
             V = false;
         };
@@ -508,6 +564,7 @@ architecture avr {
 
     instruction "clz" {
         encoding = CLR where { bit = 0b001 };
+        cycles = 1;
         execute = {
             Z = false;
         };
@@ -515,6 +572,7 @@ architecture avr {
 
     instruction "com" rd: GPR {
         encoding = { 0b1001010, rd[4:0], 0b0000 };
+        cycles = 1;
         execute = {
             local result: int = 0xff - $regs(rd);
 
@@ -530,6 +588,7 @@ architecture avr {
 
     instruction "cp" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000101, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             // perform subtraction for flag side effects.
             performSubtraction($regs(rd), $regs(rr), 0);
@@ -538,6 +597,7 @@ architecture avr {
 
     instruction "cpc" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000001, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             // perform subtraction for flag side effects.
             performSubtraction($regs(rd), $regs(rr), C);
@@ -546,6 +606,7 @@ architecture avr {
 
     instruction "cpi" rd: HGPR, imm: IMM8 {
         encoding = HGPRIMM8 where { opcode = 0b0011, r1 = rd, imm1 = imm };
+        cycles = 1;
         execute = {
             // perform subtraction for flag side effects.
             performSubtraction($regs(rd), imm, 0);
@@ -554,6 +615,7 @@ architecture avr {
 
     instruction "cpse" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000100, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             local r1: int = $regs(rd);
             local r2: int = $regs(rr);
@@ -565,6 +627,7 @@ architecture avr {
 
     instruction "dec" rd: GPR {
         encoding = { 0b1001010, rd[4:0], 0b1010 };
+        cycles = 1;
         execute = {
             local r1: int = $uregs(rd);
             local result: int = r1 - 1;
@@ -580,6 +643,7 @@ architecture avr {
 
     instruction "eicall" {
         encoding = { 0b10010101, 0b00011001 };
+        cycles = 4;
         execute = {
             // TODO: implement me
         };
@@ -587,6 +651,7 @@ architecture avr {
 
     instruction "eijmp" {
         encoding = { 0b10010100, 0b00011001 };
+        cycles = 2;
         execute = {
             // TODO: implement me
         };
@@ -594,6 +659,7 @@ architecture avr {
 
     instruction "elpm" {
         encoding = { 0b10010101, 0b11011000 };
+        cycles = 3;
         execute = {
             local addr: int = $wregs(Z);
             addr[23:16] = $ioregs(RAMPZ);
@@ -604,6 +670,7 @@ architecture avr {
     instruction "elpmd" rd: GPR, rr: Z {
         // TODO: this is a variant of the ELPM instruction
         encoding = { 0b1001000, rd[4:0], 0b0110 };
+        cycles = 3;
         execute = {
             local addr: int = $wregs(Z);
             addr[23:16] = $ioregs(RAMPZ);
@@ -614,6 +681,7 @@ architecture avr {
     instruction "elpmpi" rd: GPR, rr: Z {
         // TODO: this is a variant of the ELPM instruction
         encoding = { 0b1001000, rd[4:0], 0b0111 };
+        cycles = 3;
         execute = {
             local addr: int = $wregs(Z);
             addr[23:16] = $ioregs(RAMPZ);
@@ -624,6 +692,7 @@ architecture avr {
 
     instruction "eor" rd: GPR, rr: GPR {
         encoding = GPR where { opcode = 0b001001, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             local result: int = $regs(rd) ^ $regs(rr);
 
@@ -638,6 +707,7 @@ architecture avr {
 
     instruction "fmul" rd: MGPR, rr: MGPR {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 0, r1 = rd, s2 = 1, r2 = rr };
+        cycles = 2;
         execute = {
             local result: int = ($uregs(rd) * $uregs(rr)) << 1;
             Z = result[15:0] == 0;
@@ -649,6 +719,7 @@ architecture avr {
 
     instruction "fmuls" rd: MGPR, rr: MGPR {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 0, r2 = rr };
+        cycles = 2;
         execute = {
             local result: int = ($regs(rd) * $regs(rr)) << 1;
             Z = result[15:0] == 0;
@@ -660,6 +731,7 @@ architecture avr {
 
     instruction "fmulsu" rd: MGPR, rr: MGPR {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 1, r2 = rr };
+        cycles = 2;
         execute = {
             local result: int = ($regs(rd) * $uregs(rr)) << 1;
             Z = result[15:0] == 0;
@@ -671,6 +743,7 @@ architecture avr {
 
     instruction "icall" {
         encoding = { 0b10010101, 0b000001001 };
+        cycles = 3;
         execute = {
             pushPC(nextPC);
             nextPC = absolute($wregs(0));
@@ -679,6 +752,7 @@ architecture avr {
 
     instruction "ijmp" {
         encoding = { 0b10010100, 0b00001001 };
+        cycles = 2;
         execute = {
             nextPC = absolute($wregs(0));
         };
@@ -686,6 +760,7 @@ architecture avr {
 
     instruction "in" rd: GPR, imm: IMM6 {
         encoding = { 0b10110, imm[5:4], rd[4:0], imm[3:0] };
+        cycles = 1;
         execute = {
             $regs(rd) = $ioregs(imm);
         };
@@ -693,6 +768,7 @@ architecture avr {
 
     instruction "inc" rd: GPR {
         encoding = { 0b1001010, rd[4:0], 0b0011 };
+        cycles = 1;
         execute = {
             local r1: int = $uregs(rd);
             local result: int = r1 + 1;
@@ -708,6 +784,7 @@ architecture avr {
 
     instruction "jmp" target: PADDR {
         encoding = ABS4 where { opcode = 0b1001010110 };
+        cycles = 3;
         execute = {
             nextPC = absolute(target);
         };
@@ -716,6 +793,7 @@ architecture avr {
     instruction "ld" rd: GPR, ar: ADR {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             $regs(rd) = $sram($wregs(ar));
         };
@@ -724,6 +802,7 @@ architecture avr {
     instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             $regs(rd) = $sram($wregs(ar) + imm);
         };
@@ -739,6 +818,7 @@ architecture avr {
     instruction "ldpd" rd: GPR, ar: ADR {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             local addr: int = $wregs(ar) - 1;
             $regs(rd) = $sram(addr);
@@ -749,6 +829,7 @@ architecture avr {
     instruction "ldpi" rd: GPR, ar: ADR {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             local addr: int = $wregs(ar);
             $regs(rd) = $sram(addr);
@@ -758,6 +839,7 @@ architecture avr {
 
     instruction "lds" rd: GPR, addr: DADDR {
         encoding = { 0b1001000, rd[4:0], 0b0000, addr[15:0] };
+        cycles = 2;
         execute = {
             $regs(rd) = $sram(addr);
         };
@@ -765,6 +847,7 @@ architecture avr {
 
     instruction "lpm" {
         encoding = { 0b10010101, 0b11001000 };
+        cycles = 3;
         execute = {
             $regs(0) = $program($wregs(Z));
         };
@@ -773,6 +856,7 @@ architecture avr {
     instruction "lpmd" rd: GPR, z: Z {
         // TODO: this is a variant of LPM
         encoding = { 0b1001000, rd[4:0], 0b0100 };
+        cycles = 3;
         execute = {
             $regs(rd) = $program($wregs(Z));
         };
@@ -781,6 +865,7 @@ architecture avr {
     instruction "lpmpi" rd: GPR, z: Z {
         // TODO: this is a variant of LPM
         encoding = { 0b1001000, rd[4:0], 0b0101 };
+        cycles = 3;
         execute = {
             local addr: int = $wregs(Z);
             $regs(rd) = $program(addr);
@@ -790,6 +875,7 @@ architecture avr {
 
     instruction "lsl" rd: GPR {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rd };
+        cycles = 1;
         execute = {
             $regs(rd) = performLeftShift($regs(rd), 0);
         };
@@ -797,6 +883,7 @@ architecture avr {
 
     instruction "lsr" rd: GPR {
         encoding = { 0b1001010, rd[5:0], 0b0110 };
+        cycles = 1;
         execute = {
             $regs(rd) = performRightShift($regs(rd), 0);
         };
@@ -804,6 +891,7 @@ architecture avr {
 
     instruction "mov" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b001011, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             $regs(rd) = $regs(rr);
         };
@@ -811,6 +899,7 @@ architecture avr {
 
     instruction "movw" rd: EGPR, rr: EGPR {
         encoding = { 0b00000001, rd[3:0], rr[3:0] };
+        cycles = 1;
         execute = {
             $wregs(rd) = $wregs(rr);
         };
@@ -818,6 +907,7 @@ architecture avr {
 
     instruction "mul" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b100111, r1 = rr, r2 = rd };
+        cycles = 2;
         execute = {
             local result: int = $uregs(rd) * $uregs(rr);
             C = result[15];
@@ -828,6 +918,7 @@ architecture avr {
 
     instruction "muls" rd: HGPR, rr: HGPR {
         encoding = { 0b00000010, rd[3:0], rr[3:0] };
+        cycles = 2;
         execute = {
             local result: int = $regs(rd) * $regs(rr);
             C = result[15];
@@ -838,6 +929,7 @@ architecture avr {
 
     instruction "mulsu" rd: MGPR, rr: MGPR {
         encoding = { 0b00000011, 0[0], (rd - 16)[2:0], 0[0], (rr - 16)[2:0] };
+        cycles = 2;
         execute = {
             local result: int = $regs(rd) * $uregs(rr);
             C = result[15];
@@ -848,6 +940,7 @@ architecture avr {
 
     instruction "neg" rd: GPR {
         encoding = { 0b1001010, rd[4:0], 0b0001 };
+        cycles = 1;
         execute = {
             $regs(rd) = performSubtraction(0, $regs(rd), 0);
         };
@@ -855,6 +948,7 @@ architecture avr {
 
     instruction "nop" {
         encoding = { 0b00000000, 0b00000000 };
+        cycles = 1;
         execute = {
             // do nothing.
         };
@@ -862,6 +956,7 @@ architecture avr {
 
     instruction "or" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b001010, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             $regs(rd) = performOr($regs(rd), $regs(rr));
         };
@@ -869,6 +964,7 @@ architecture avr {
 
     instruction "ori" rd: HGPR, imm: IMM8 {
         encoding = HGPRIMM8 where { opcode = 0b0110 };
+        cycles = 1;
         execute = {
             $regs(rd) = performOr($regs(rd), imm);
         };
@@ -876,13 +972,15 @@ architecture avr {
 
     instruction "out" ior: IMM6, rr: GPR {
         encoding = { 0b10011, ior[5:4], rr[4:0], ior[3:0] };
+        cycles = 1;
         execute = {
-            $ioreg(ior) = $regs(rr);
+            $ioregs(ior) = $regs(rr);
         };
     };
 
     instruction "pop" rd: GPR {
         encoding = { 0b1001000, rd[4:0], 0b1111 };
+        cycles = 2;
         execute = {
             $regs(rd) = popByte();
         };
@@ -890,6 +988,7 @@ architecture avr {
 
     instruction "push" rr: GPR {
         encoding = { 0b1001001, rd[4:0], 0b1111 };
+        cycles = 2;
         execute = {
             pushByte($regs(rr));
         };
@@ -897,6 +996,7 @@ architecture avr {
 
     instruction "rcall" target: LREL {
         encoding = { 0b1101, target[11:0] };
+        cycles = 3;
         execute = {
             pushPC(nextPC);
             nextPC = relative(target);
@@ -905,6 +1005,7 @@ architecture avr {
 
     instruction "ret" {
         encoding = { 0b100101010, 0b00010000 };
+        cycles = 4;
         execute = {
             nextPC = popPC();
         };
@@ -912,6 +1013,7 @@ architecture avr {
 
     instruction "reti" {
         encoding = { 0b10010101, 0b00011000 };
+        cycles = 4;
         execute = {
             nextPC = popPC();
             I = true;
@@ -921,6 +1023,7 @@ architecture avr {
 
     instruction "rjmp" target: LREL {
         encoding = { 0b1100, target[11:0] };
+        cycles = 2;
         execute = {
             nextPC = relative(target);
         };
@@ -928,6 +1031,7 @@ architecture avr {
 
     instruction "rol" rd: GPR {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rd };
+        cycles = 1;
         execute = {
             $regs(rd) = performLeftShift($regs(rd), C);
         };
@@ -935,6 +1039,7 @@ architecture avr {
 
     instruction "ror" rd: GPR {
         encoding = { 0b1001010, rd[4:0], 0b0111 };
+        cycles = 1;
         execute = {
             $regs(rd) = performRightShift($regs(rd), C);
         };
@@ -942,6 +1047,7 @@ architecture avr {
 
     instruction "sbc" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b0000010, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             $regs(rd) = performSubtractionPZ($regs(rd), $regs(rr), C);
         };
@@ -949,6 +1055,7 @@ architecture avr {
 
     instruction "sbci" rd: HGPR, imm: IMM8 {
         encoding = HGPRIMM8 where { opcode = 0b0100, r1 = rd };
+        cycles = 1;
         execute = {
             $regs(rd) = performSubtractionPZ($regs(rd), imm, C);
         };
@@ -956,6 +1063,7 @@ architecture avr {
 
     instruction "sbi" ior: IMM5, bit: IMM3 {
         encoding = { 0b10011010, ior[4:0], bit[2:0] };
+        cycles = 2;
         execute = {
             $ioregs(ior)[bit] = true;
         };
@@ -963,6 +1071,7 @@ architecture avr {
 
     instruction "sbic" ior: IMM5, bit: IMM3 {
         encoding = { 0b10011001, ior[4:0], bit[2:0] };
+        cycles = 1;
         execute = {
             if (!($ioregs(ior)[bit])) skip();
         };
@@ -970,6 +1079,7 @@ architecture avr {
 
     instruction "sbis" imm1: IMM5, bit: IMM3 {
         encoding = { 0b10011011, ior[4:0], bit[2:0] };
+        cycles = 1;
         execute = {
             if ( $ioregs(ior)[bit] ) skip();
         };
@@ -977,6 +1087,7 @@ architecture avr {
 
     instruction "sbiw" rd: RDL, imm: IMM6 {
         encoding = { 0b10010111, imm[5:4], rd[2:1], imm[3:0] };
+        cycles = 2;
         execute = {
             local val: int = $wregs(rd);
             local result: int = val - imm;
@@ -996,6 +1107,7 @@ architecture avr {
 
     instruction "sbr" rd: HGPR, imm: IMM8 {
         encoding = HGPRIMM8 where { opcode = 0b0110 };
+        cycles = 1;
         execute = {
             $regs(rd) = performOr($regs(rd), imm);
         };
@@ -1003,6 +1115,7 @@ architecture avr {
 
     instruction "sbrc" rr: GPR, bit: IMM3 {
         encoding = { 0b1111110, rr[4:0], 0[0], bit[2:0] };
+        cycles = 1;
         execute = {
             if (!($regs(rr)[bit])) skip();
         };
@@ -1010,6 +1123,7 @@ architecture avr {
 
     instruction "sbrs" rr: GPR, bit: IMM3 {
         encoding = { 0b1111111, rr[4:0], 0[0], bit[2:0] };
+        cycles = 1;
         execute = {
             if ( $regs(rr)[bit] ) skip();
         };
@@ -1017,6 +1131,7 @@ architecture avr {
 
     instruction "sec" {
         encoding = SET where { bit = 0b000 };
+        cycles = 1;
         execute = {
             C = true;
         };
@@ -1024,6 +1139,7 @@ architecture avr {
 
     instruction "seh" {
         encoding = SET where { bit = 0b101 };
+        cycles = 1;
         execute = {
             H = true;
         };
@@ -1031,6 +1147,7 @@ architecture avr {
 
     instruction "sei" {
         encoding = SET where { bit = 0b111 };
+        cycles = 1;
         execute = {
             I = true;
         };
@@ -1038,6 +1155,7 @@ architecture avr {
 
     instruction "sen" {
         encoding = SET where { bit = 0b010 };
+        cycles = 1;
         execute = {
             N = true;
         };
@@ -1045,6 +1163,7 @@ architecture avr {
 
     instruction "ser" rd: HGPR {
         encoding = { 0b11101111, rd[4:1], 0b1111 };
+        cycles = 1;
         execute = {
             $regs(rd) = low(0xff);
         };
@@ -1052,6 +1171,7 @@ architecture avr {
 
     instruction "ses" {
         encoding = SET where { bit = 0b100 };
+        cycles = 1;
         execute = {
             S = true;
         };
@@ -1059,6 +1179,7 @@ architecture avr {
 
     instruction "set" {
         encoding = SET where { bit = 0b110 };
+        cycles = 1;
         execute = {
             T = true;
         };
@@ -1066,6 +1187,7 @@ architecture avr {
 
     instruction "sev" {
         encoding = SET where { bit = 0b011 };
+        cycles = 1;
         execute = {
             V = true;
         };
@@ -1073,6 +1195,7 @@ architecture avr {
 
     instruction "sez" {
         encoding = SET where { bit = 0b001 };
+        cycles = 1;
         execute = {
             Z = true;
         };
@@ -1080,6 +1203,7 @@ architecture avr {
 
     instruction "sleep" {
         encoding = { 0b10010101, 0b10001000 };
+        cycles = 1;
         execute = {
             enterSleepMode();
         };
@@ -1087,6 +1211,7 @@ architecture avr {
 
     instruction "spm" {
         encoding = { 0b10010101, 0b11101000 };
+        cycles = 1;
         execute = {
             // TODO: don't know how this instruction behaves
         };
@@ -1095,6 +1220,7 @@ architecture avr {
     instruction "st" ar: ADR, rr: GPR {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             $sram($wregs(ar)) = $regs(rr);
         };
@@ -1103,6 +1229,7 @@ architecture avr {
     instruction "std" ar: YZ, imm: IMM6, rr: GPR {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             $sram($wregs(ar) + imm) = $regs(rr);
         };
@@ -1111,6 +1238,7 @@ architecture avr {
     instruction "stpd" ar: ADR, rr: GPR {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             local addr: int = $wregs(ar) - 1;
             $sram(addr) = $regs(rr);
@@ -1121,6 +1249,7 @@ architecture avr {
     instruction "stpi" ar: ADR, rr: GPR {
         // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
+        cycles = 2;
         execute = {
             local addr: int = $wregs(ar);
             $sram(addr) = $regs(rr);
@@ -1130,6 +1259,7 @@ architecture avr {
 
     instruction "sts" addr: DADDR, rr: GPR {
         encoding = { 0b1001001, rr[4:0], 0b0000, addr[15:0] };
+        cycles = 2;
         execute = {
             $sram(addr) = $regs(rr);
         };
@@ -1137,6 +1267,7 @@ architecture avr {
 
     instruction "sub" rd: GPR, rr: GPR {
         encoding = GPRGPR where { opcode = 0b000110, r1 = rd, r2 = rr };
+        cycles = 1;
         execute = {
             $regs(rd) = performSubtraction($regs(rd), $regs(rr), 0);
         };
@@ -1144,6 +1275,7 @@ architecture avr {
 
     instruction "subi" rd: HGPR, imm: IMM8 {
         encoding = HGPRIMM8 where { opcode = 0b0101 };
+        cycles = 1;
         execute = {
             $regs(rd) = performSubtraction($regs(rd), imm, 0);
         };
@@ -1151,6 +1283,7 @@ architecture avr {
 
     instruction "swap" rd: GPR {
         encoding = { 0b1001010, rd[4:0], 0b0010 };
+        cycles = 1;
         execute = {
             local val: byte = $regs(rd);
             local result: byte = 0;
@@ -1162,6 +1295,7 @@ architecture avr {
 
     instruction "tst" rd: GPR {
         encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rd };
+        cycles = 1;
         execute = {
             local r1: int = $regs(rd);
             V = false;
@@ -1173,6 +1307,7 @@ architecture avr {
 
     instruction "wdr" {
         encoding = { 0b10010101, 0b10101000 };
+        cycles = 1;
         execute = {
             // do nothing.
         };

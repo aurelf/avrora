@@ -867,7 +867,7 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.ADIW i) { // add immediate to word register
-            int r1 = readRegisterWord(i.r1);
+            int r1 = getRegisterWord(i.r1);
             int r2 = i.imm1;
             int result = r1 + r2;
             boolean R15 = Arithmetic.getBit(result, 15);
@@ -879,7 +879,7 @@ public abstract class Simulator implements IORegisterConstants {
             Z = ((result & 0xffff) == 0);
             S = (xor(N, V));
 
-            writeRegisterWord(i.r1, result);
+            setRegisterWord(i.r1, result);
         }
 
         public void visit(Instr.AND i) { // and first register with second
@@ -1153,25 +1153,25 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.ELPM i) { // extended load program memory
-            int address = readRegisterWord(Register.Z);
+            int address = getRegisterWord(Register.Z);
             int extra = getIORegisterByte(RAMPZ);
             byte val = getProgramByte(address + (extra << 16));
             setRegisterByte(Register.R0, val);
         }
 
         public void visit(Instr.ELPMD i) { // extended load program memory with destination
-            int address = readRegisterWord(Register.Z);
+            int address = getRegisterWord(Register.Z);
             int extra = getIORegisterByte(RAMPZ);
             byte val = getProgramByte(address + (extra << 16));
             setRegisterByte(i.r1, val);
         }
 
         public void visit(Instr.ELPMPI i) { // extends load program memory with post decrement
-            int address = readRegisterWord(Register.Z);
+            int address = getRegisterWord(Register.Z);
             int extra = getIORegisterByte(RAMPZ);
             byte val = getProgramByte(address + (extra << 16));
             setRegisterByte(i.r1, val);
-            writeRegisterWord(Register.Z, address + 1);
+            setRegisterWord(Register.Z, address + 1);
         }
 
         public void visit(Instr.EOR i) { // exclusive or first register with second
@@ -1216,12 +1216,12 @@ public abstract class Simulator implements IORegisterConstants {
 
         public void visit(Instr.ICALL i) { // indirect call through Z register
             pushPC(nextPC);
-            int target = absolute(readRegisterWord(Register.Z));
+            int target = absolute(getRegisterWord(Register.Z));
             nextPC = target;
         }
 
         public void visit(Instr.IJMP i) { // indirect jump through Z register
-            int target = absolute(readRegisterWord(Register.Z));
+            int target = absolute(getRegisterWord(Register.Z));
             nextPC = target;
         }
 
@@ -1247,13 +1247,13 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.LD i) { // load from SRAM
-            int address = readRegisterWord(i.r2);
+            int address = getRegisterWord(i.r2);
             byte val = getDataByte(address);
             setRegisterByte(i.r1, val);
         }
 
         public void visit(Instr.LDD i) { // load with displacement from register Y or Z
-            int address = readRegisterWord(i.r2) + i.imm1;
+            int address = getRegisterWord(i.r2) + i.imm1;
             byte val = getDataByte(address);
             setRegisterByte(i.r1, val);
         }
@@ -1263,17 +1263,17 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
-            int address = readRegisterWord(i.r2) - 1;
+            int address = getRegisterWord(i.r2) - 1;
             byte val = getDataByte(address);
             setRegisterByte(i.r1, val);
-            writeRegisterWord(i.r2, address);
+            setRegisterWord(i.r2, address);
         }
 
         public void visit(Instr.LDPI i) { // load from SRAM with post-increment
-            int address = readRegisterWord(i.r2);
+            int address = getRegisterWord(i.r2);
             byte val = getDataByte(address);
             setRegisterByte(i.r1, val);
-            writeRegisterWord(i.r2, address + 1);
+            setRegisterWord(i.r2, address + 1);
         }
 
         public void visit(Instr.LDS i) { // load from SRAM at absolute address
@@ -1282,22 +1282,22 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.LPM i) { // load from program memory
-            int address = readRegisterWord(Register.Z);
+            int address = getRegisterWord(Register.Z);
             byte val = getProgramByte(address);
             setRegisterByte(Register.R0, val);
         }
 
         public void visit(Instr.LPMD i) { // load from program memory with destination
-            int address = readRegisterWord(Register.Z);
+            int address = getRegisterWord(Register.Z);
             byte val = getProgramByte(address);
             setRegisterByte(i.r1, val);
         }
 
         public void visit(Instr.LPMPI i) { // load from program memory with post-increment
-            int address = readRegisterWord(Register.Z);
+            int address = getRegisterWord(Register.Z);
             byte val = getProgramByte(address);
             setRegisterByte(i.r1, val);
-            writeRegisterWord(Register.Z, address + 1);
+            setRegisterWord(Register.Z, address + 1);
         }
 
         public void visit(Instr.LSL i) { // logical shift register left by one
@@ -1318,8 +1318,8 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.MOVW i) { // copy second register pair into first
-            int result = readRegisterWord(i.r2);
-            writeRegisterWord(i.r1, result);
+            int result = getRegisterWord(i.r2);
+            setRegisterWord(i.r1, result);
         }
 
         public void visit(Instr.MUL i) { // multiply first register with second
@@ -1328,7 +1328,7 @@ public abstract class Simulator implements IORegisterConstants {
             int result = r1 * r2;
             C = (Arithmetic.getBit(result, 15));
             Z = ((result & 0xffff) == 0);
-            writeRegisterWord(Register.R0, result);
+            setRegisterWord(Register.R0, result);
         }
 
         public void visit(Instr.MULS i) { // multiply first register with second, signed
@@ -1337,7 +1337,7 @@ public abstract class Simulator implements IORegisterConstants {
             int result = r1 * r2;
             C = (Arithmetic.getBit(result, 15));
             Z = ((result & 0xffff) == 0);
-            writeRegisterWord(Register.R0, result);
+            setRegisterWord(Register.R0, result);
         }
 
         public void visit(Instr.MULSU i) { // multiply first register with second, signed and unsigned
@@ -1346,7 +1346,7 @@ public abstract class Simulator implements IORegisterConstants {
             int result = r1 * r2;
             C = (Arithmetic.getBit(result, 15));
             Z = ((result & 0xffff) == 0);
-            writeRegisterWord(Register.R0, result);
+            setRegisterWord(Register.R0, result);
         }
 
         public void visit(Instr.NEG i) { // negate register
@@ -1454,7 +1454,7 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.SBIW i) { // subtract immediate from word
-            int val = readRegisterWord(i.r1);
+            int val = getRegisterWord(i.r1);
             int result = val - i.imm1;
 
             boolean Rdh7 = Arithmetic.getBit(val, 15);
@@ -1466,7 +1466,7 @@ public abstract class Simulator implements IORegisterConstants {
             C = R15 && !Rdh7;
             S = xor(N, V);
 
-            writeRegisterWord(i.r1, result);
+            setRegisterWord(i.r1, result);
         }
 
         public void visit(Instr.SBR i) { // set bits in register
@@ -1535,29 +1535,29 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         public void visit(Instr.ST i) { // store register to data-seg[r1]
-            int address = readRegisterWord(i.r1);
+            int address = getRegisterWord(i.r1);
             byte val = getRegisterByte(i.r2);
             setDataByte(val, address);
         }
 
         public void visit(Instr.STD i) { // store to data space with displacement from Y or Z
-            int address = readRegisterWord(i.r1) + i.imm1;
+            int address = getRegisterWord(i.r1) + i.imm1;
             byte val = getRegisterByte(i.r2);
             setDataByte(val, address);
         }
 
         public void visit(Instr.STPD i) { // decrement r2 and store register to data-seg(r2)
-            int address = readRegisterWord(i.r1) - 1;
+            int address = getRegisterWord(i.r1) - 1;
             byte val = getRegisterByte(i.r2);
             setDataByte(val, address);
-            writeRegisterWord(i.r1, address);
+            setRegisterWord(i.r1, address);
         }
 
         public void visit(Instr.STPI i) { // store register to data-seg(r2) and post-inc
-            int address = readRegisterWord(i.r1);
+            int address = getRegisterWord(i.r1);
             byte val = getRegisterByte(i.r2);
             setDataByte(val, address);
-            writeRegisterWord(i.r1, address + 1);
+            setRegisterWord(i.r1, address + 1);
         }
 
         public void visit(Instr.STS i) { // store direct to data-seg(imm1)
@@ -1640,14 +1640,6 @@ public abstract class Simulator implements IORegisterConstants {
             byte high = popByte();
             byte low = popByte();
             return Arithmetic.uword(low, high) * 2;
-        }
-
-        private int readRegisterWord(Register r1) {
-            return getRegisterWord(r1);
-        }
-
-        private void writeRegisterWord(Register r1, int val) {
-            setRegisterWord(r1, val);
         }
 
         private void unimplemented(Instr i) {
@@ -1923,6 +1915,11 @@ public abstract class Simulator implements IORegisterConstants {
                         throw Avrora.failure("bit out of range: " + num);
                 }
             }
+
+            public void writeBit(int num, boolean value) {
+                if ( value ) setBit(num);
+                else clearBit(num);
+            }
         }
 
         /**
@@ -2093,6 +2090,19 @@ public abstract class Simulator implements IORegisterConstants {
                     resize(address);
                     sram[address - sram_start] = val;
                 }
+        }
+
+        /**
+         * The <code>getInstrSize()</code> method reads the size of the instruction
+         * at the given program address. This is needed in the interpreter to
+         * compute the target of a skip instruction (an instruction that skips
+         * over the instruction following it).
+         * @param npc the program address of the instruction
+         * @return the size in bytes of the instruction at the specified
+         * program address
+         */
+        public int getInstrSize(int npc) {
+            return program.readInstr(npc).getSize();
         }
 
         /**

@@ -92,6 +92,10 @@ public abstract class Expr {
         return false;
     }
 
+    public boolean isBitRangeExpr() {
+        return false;
+    }
+
     /**
      * The <code>getBitWidth()</code> method gets the number of bits needed to
      * represent this value. This is needed in the case of encoding formats, which
@@ -106,6 +110,7 @@ public abstract class Expr {
     public abstract int getPrecedence();
 
     public static int tokenToInt(Token i) {
+        if ( i == null ) return -1;
         return StringUtil.evaluateIntegerLiteral(i.image);
     }
 

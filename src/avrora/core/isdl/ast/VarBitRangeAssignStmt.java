@@ -71,8 +71,11 @@ public class VarBitRangeAssignStmt extends AssignStmt {
     public VarBitRangeAssignStmt(Token m, Token l, Token h, Expr e) {
         super(e);
         variable = m;
-        low_bit = Expr.tokenToInt(l);
-        high_bit = Expr.tokenToInt(h);
+        int low = Expr.tokenToInt(l);
+        int high = Expr.tokenToInt(h);
+
+        low_bit = low < high ? low : high;
+        high_bit = low > high ? low : high;
     }
 
     /**
@@ -87,8 +90,8 @@ public class VarBitRangeAssignStmt extends AssignStmt {
     public VarBitRangeAssignStmt(Token m, int l, int h, Expr e) {
         super(e);
         variable = m;
-        low_bit = l;
-        high_bit = h;
+        low_bit = l < h ? l : h;
+        high_bit = l > h ? l : h;
     }
 
     /**
