@@ -6,14 +6,20 @@ import vpc.VPCError;
 import vpc.test.AutomatedTester;
 import vpc.util.Options;
 import vpc.util.ColorTerminal;
+import vpc.util.StringUtil;
 
 import java.util.HashMap;
 import java.io.File;
 import java.io.FileInputStream;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 
 import avrora.core.Program;
+import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.ATMega128L;
+import avrora.sim.State;
+import avrora.sim.Counter;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.syntax.gas.GASParser;
 import avrora.stack.Analyzer;
@@ -25,15 +31,20 @@ import avrora.stack.Analyzer;
  */
 public class Main extends VPCBase {
 
-    static final String VERSION = "0.9.0";
+    static final String VERSION = "0.9.1";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
     static final Options options = new Options();
 
-    static final Option.Str INPUT    = options.newOption("input", "atmel");
-    static final Option.Str ACTION   = options.newOption("action", "simulate");
-    static final Option.Str OUTPUT   = options.newOption("output", "");
+    static final Option.Str INPUT     = options.newOption("input", "atmel");
+    static final Option.Str ACTION    = options.newOption("action", "simulate");
+    static final Option.Str OUTPUT    = options.newOption("output", "");
+    static final Option.Str BREAKS    = options.newOption("breakpoint", "");
+    static final Option.Str COUNTS    = options.newOption("count", "");
+    static final Option.Bool TIME     = options.newOption("time", false);
+    static final Option.Bool TOTAL    = options.newOption("total", false);
+    static final Option.Bool TRACE    = options.newOption("trace", false);
     static final Option.Bool COLORS   = options.newOption("colors", true);
     static final Option.Bool BANNER   = options.newOption("banner", true);
     static final Option.Bool VERBOSE  = options.newOption("verbose", false);
@@ -71,11 +82,53 @@ public class Main extends VPCBase {
             ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
             Program p = r.read(args);
             Simulator s = new ATMega128L().loadProgram(p);
-            Simulator.TRACE = true;
-            Simulator.TRACEREGS = true;
-            s.start();
-        }
 
+            String breaks = BREAKS.get();
+
+            if ( !breaks.equals("") ) {
+                CharacterIterator i = new StringCharacterIterator(breaks);
+                int brk = StringUtil.readDecimalValue(i, 10);
+                s.insertBreakPoint(brk);
+            }
+
+            String counts = COUNTS.get();
+
+            Counter c = null;
+            if ( !counts.equals("") ) {
+                CharacterIterator i = new StringCharacterIterator(counts);
+                int brk = StringUtil.readDecimalValue(i, 10);
+                s.insertProbe(c = new Counter(brk), brk);
+            }
+
+
+            if ( TRACE.get() ) {
+                s.insertProbe(Simulator.TRACEPROBE);
+            }
+
+            Counter total = null;
+            if ( TOTAL.get() ) {
+                s.insertProbe(total = new Counter(0));
+            }
+
+            long ms = System.currentTimeMillis();
+            try {
+                s.start();
+            } finally {
+                long diff = System.currentTimeMillis() - ms;
+
+                if ( c != null )
+                    ColorTerminal.println("Count for "+VPCBase.toPaddedUpperHex(c.address, 4) + " = "+c.count);
+                if ( total != null )
+                    ColorTerminal.println("Total instruction count = "+total.count);
+                if ( TIME.get() ) {
+                    ColorTerminal.println("Time for simulation = "+((float)diff)/1000+" seconds");
+                    if ( total != null ) {
+                        float thru = ((float)total.count) / (diff*1000);
+                        ColorTerminal.println("Average instruction throughput = "+thru+" MIPS");
+                    }
+                }
+            }
+        }
     }
 
     static class AnalyzeStackAction extends Action {
@@ -95,8 +148,10 @@ public class Main extends VPCBase {
     }
 
     static class ListAction extends Action {
-        public void run(String[] args) {
-            throw VPCBase.unimplemented();
+        public void run(String[] args) throws Exception {
+            ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
+            Program p = r.read(args);
+            p.dump();
         }
 
     }
@@ -109,7 +164,7 @@ public class Main extends VPCBase {
         public Program read(String[] args) throws Exception {
             if ( args.length == 0 )
                 userError("no input files");
-            // TODO: handle multiple GAS files
+            // TODO: handle multiple GAS files and link them
             if ( args.length != 1 )
                 userError("input type \"gas\" accepts only one file at a time.");
 

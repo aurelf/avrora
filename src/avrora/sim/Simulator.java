@@ -7,6 +7,7 @@ import avrora.core.Register;
 import avrora.Arithmetic;
 import avrora.Operand;
 import vpc.util.ColorTerminal;
+import vpc.util.StringUtil;
 import vpc.VPCBase;
 
 /**
@@ -18,13 +19,25 @@ import vpc.VPCBase;
  */
 public abstract class Simulator extends VPCBase implements InstrVisitor, IORegisterConstants {
 
+    public static final Probe TRACEPROBE = new Probe() {
+        public void fireBefore(Instr i, int pc, State s) {
+            ColorTerminal.printBrightCyan(toPaddedUpperHex(pc, 4) + ": ");
+            ColorTerminal.printBrightBlue(i.getVariant() + " ");
+            ColorTerminal.print(i.getOperands());
+            ColorTerminal.nextln();
+        }
+        public void fireAfter(Instr i, int pc, State s) {
+
+        }
+    };
+
     public static boolean TRACE = false;
     public static boolean TRACEREGS = false;
 
     protected final Program program;
     protected State state;
 
-    protected Probe activeProbe;
+    protected final MulticastProbe activeProbe;
 
     protected boolean shouldRun;
     protected boolean justReturnedFromInterrupt;
@@ -38,6 +51,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     public Simulator(Program p) {
         program = p;
         interrupts = new Interrupt[MAX_INTERRUPTS];
+        activeProbe = new MulticastProbe();
 
         // set all interrupts to ignore
         for ( int cntr = 0; cntr < MAX_INTERRUPTS; cntr++ )
@@ -57,20 +71,233 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         public void fire();
     }
 
-    public static class DeltaQueue {
-        void add(Trigger e, long cycles) {
+    class PeriodicTrigger implements Trigger {
+        Trigger trigger;
+        long period;
 
+        PeriodicTrigger(Trigger t, long p) {
+            trigger = t;
+            period = p;
         }
 
-        void remove(Trigger e) {
-
-        }
-
-        void advance(int cycles) {
-
+        public void fire() {
+            deltaQueue.add(this, period);
+            trigger.fire();
         }
     }
 
+    /**
+     * The <code>DeltaQueue</code> class implements an amortized constant time
+     * delta-queue for processing of scheduled events. Events are put into the queue
+     * that will fire at a given number of cycles in the future. An internal delta
+     * list is maintained where each link in the list represents a set of triggers
+     * to be fired some number of clock cycles after the previous link.
+     *
+     * Each delta between links is maintained to be non-zero. Thus, to insert a
+     * trigger X cycles in the future, at most X nodes will be skipped over. Therefore
+     * over X time steps, this cost is amortized to be constant.
+     *
+     * For each clock cycle, only the first node in the list must be checked, leading
+     * to constant time work per clock cycle.
+     *
+     * This class allows the clock to be advanced multiple ticks at a time.
+     *
+     * Also, since this class is used heavily in the simulator, its performance is
+     * important and maintains an internal cache of objects. Thus, it does not create
+     * garbage over its execution and never uses more space than is required to store
+     * the maximum encountered simultaneous events. It does not use standard libraries,
+     * casts, virtual dispatch, etc.
+     */
+    public static class DeltaQueue {
+        static final class TriggerLink {
+            Trigger trigger;
+            TriggerLink next;
+
+            TriggerLink(Trigger t) {
+                trigger = t;
+            }
+
+        }
+
+        final class Link {
+            TriggerLink head;
+            TriggerLink tail;
+
+            Link next;
+            long delta;
+
+            Link(Trigger t, long d) {
+                tail = head = newList(t);
+                delta = d;
+            }
+
+            void add(Trigger t) {
+                if ( head == null ) {
+                    head = tail = newList(t);
+                } else {
+                    tail.next = newList(t);
+                    tail = tail.next;
+                }
+            }
+
+            void remove(Trigger t) {
+                TriggerLink prev = null;
+                TriggerLink pos = head;
+                while ( pos != null ) {
+                    TriggerLink next = pos.next;
+
+                    if ( pos.trigger == t ) {
+                        // remove the whole thing.
+                        if ( prev == null ) head = pos.next;
+                        else prev.next = pos.next;
+
+                        free(pos);
+                    } else {
+                        prev = pos;
+                    }
+                    pos = next;
+                }
+            }
+
+            void fire() {
+                for ( TriggerLink pos = head; pos != null; pos = pos.next )
+                    pos.trigger.fire();
+            }
+        }
+
+        Link head;
+        Link freeLinks;
+        TriggerLink freeTriggerLinks;
+
+        /**
+         * The <code>add</code> method adds a trigger to be executed in the future.
+         * @param t the trigger to fire
+         * @param cycles the number of clock cycles in the future
+         */
+        public void add(Trigger t, long cycles) {
+            // degenerate case, nothing in the queue.
+            if ( head == null ) {
+                head = newLink(t, cycles, null);
+                return;
+            }
+
+            // search for first link that is "after" this cycle delta
+            Link prev = null;
+            Link pos = head;
+            while ( pos != null && cycles > pos.delta ) {
+                cycles -= pos.delta;
+                prev = pos;
+                pos = pos.next;
+            }
+
+            if ( pos == null ) {
+                // end of the head
+                prev.next = newLink(t, cycles, null);
+            } else if ( cycles == pos.delta ) {
+                // exactly matched the delta of some other event
+                pos.add(t);
+            } else {
+                // insert a new link in the chain
+                prev.next = newLink(t, cycles, pos);
+            }
+        }
+
+        /**
+         * The <code>remove</code> method removes all occurrences of the specified
+         * trigger within the delta queue.
+         * @param e
+         */
+        void remove(Trigger e) {
+            if ( head == null ) return;
+
+            // search for first link that is "after" this cycle delta
+            Link prev = null;
+            Link pos = head;
+            while ( pos != null ) {
+                Link next = pos.next;
+                pos.remove(e);
+
+                if ( pos.head == null ) {
+                    // remove the whole thing.
+                    if ( prev == null ) head = pos.next;
+                    else prev.next = pos.next;
+
+                    free(pos);
+                } else {
+                    prev = pos;
+                }
+                pos = next;
+            }
+        }
+
+        /**
+         * The <code>advance</code> method advances timesteps through the queue by the
+         * specified number of clock cycles, processing any triggers.
+         * @param cycles the number of clock cycles to advance
+         */
+        void advance(long cycles) {
+            while ( head != null && cycles >= head.delta ) {
+                Link next = head.next;
+                cycles -= head.delta;
+                head.fire();
+                free(head);
+                head = next;
+            }
+        }
+
+        void free(Link l) {
+            l.next = freeLinks;
+            freeLinks = l;
+
+            l.tail.next = freeTriggerLinks;
+            freeTriggerLinks = l.head;
+        }
+
+        void free(TriggerLink l) {
+            l.next = freeTriggerLinks;
+            freeTriggerLinks = l;
+        }
+
+        Link newLink(Trigger t, long cycles, Link next) {
+            Link l;
+            if ( freeLinks == null )
+                // if none in the free list, allocate one
+                l = new Link(t, cycles);
+            else {
+                // grab one from the free list
+                l = freeLinks;
+                freeLinks = freeLinks.next;
+            }
+
+            // adjust delta in the next link in the chain
+            if ( next != null ) {
+                next.delta -= cycles;
+            }
+
+            l.next = next;
+            return l;
+        }
+
+        TriggerLink newList(Trigger t) {
+            TriggerLink l;
+
+            if ( freeTriggerLinks == null ) {
+                l = new TriggerLink(t);
+            } else {
+                l = freeTriggerLinks;
+                freeTriggerLinks = freeTriggerLinks.next;
+                l.next = null;
+            }
+
+            return l;
+        }
+    }
+
+    /**
+     * The <code>MulticastProbe</code> is a wrapper around multiple probes that
+     * allows them to act as a single probe. It is useful for composing multiple
+     * probes into one and is used internally in the simulator.
+     */
     public static class MulticastProbe implements Probe {
         static class Link {
             Probe probe;
@@ -84,13 +311,38 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         Link head;
         Link tail;
 
-        void add(Probe b) {
+        public void add(Probe b) {
+            if ( b == null ) return;
+
             if ( head == null ) {
                 head = tail = new Link(b);
             } else {
                 tail.next = new Link(b);
                 tail = tail.next;
             }
+        }
+
+        public void remove(Probe b) {
+            if ( b == null ) return;
+
+            Link prev = null;
+            Link pos = head;
+            while ( pos != null ) {
+                Link next = pos.next;
+
+                if ( pos.probe == b ) {
+                    // remove the whole thing.
+                    if ( prev == null ) head = pos.next;
+                    else prev.next = pos.next;
+                } else {
+                    prev = pos;
+                }
+                pos = next;
+            }
+        }
+
+        public boolean isEmpty() {
+            return head == null;
         }
 
         public void fireBefore(Instr i, int address, State state) {
@@ -106,59 +358,96 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public interface MemoryProbe {
 
-        public void fireBeforeRead(Instr i, int address, State state);
+        public void fireBeforeRead(Instr i, int address, State state, byte value);
         public void fireBeforeWrite(Instr i, int address, State state, byte value);
         public void fireAfterRead(Instr i, int address, State state, byte value);
         public void fireAfterWrite(Instr i, int address, State state, byte value);
     }
 
     class BreakPointException extends RuntimeException {
-        public final BreakPoint breakpoint;
+        public final Instr instr;
+        public final int address;
+        public final State state;
 
-        BreakPointException(BreakPoint bp) {
-            super("breakpoint at " + bp.address + " reached");
-            breakpoint = bp;
+        BreakPointException(Instr i, int a, State s) {
+            super("breakpoint @ " + VPCBase.toPaddedUpperHex(a, 4) + " reached");
+            instr = i;
+            address = a;
+            state = s;
         }
     }
 
-    class BreakPoint extends Instr {
-
+    class ProbedInstr extends Instr {
         private final int address;
         private final Instr instr;
-        private final Probe probe;
+        private final MulticastProbe probe;
 
-        BreakPoint(Instr i, int a, Probe p) {
+        private boolean breakPoint;
+        private boolean breakFired;
+
+        ProbedInstr(Instr i, int a, Probe p) {
             instr = i;
             address = a;
-            probe = p;
+            probe = new MulticastProbe();
+            probe.add(p);
         }
 
-        public Instr build(int address, Operand[] ops) {
-            return instr.build(address, ops);
+        void add(Probe p) {
+            probe.add(p);
+        }
+
+        void remove(Probe p) {
+            probe.remove(p);
+        }
+
+        void setBreakPoint() {
+            if ( !breakPoint ) breakFired = false;
+            breakPoint = true;
+        }
+
+        void unsetBreakPoint() {
+            breakPoint = false;
+            breakFired = false;
+        }
+
+        boolean isEmpty() {
+            return probe.isEmpty();
         }
 
         public void accept(InstrVisitor v) {
-            throw new BreakPointException(this);
-        }
+            probe.fireBefore(instr, address, state);
 
-        public String getName() {
-            return "breakpoint: " + instr.getName();
-        }
+            // breakpoint processing.
+            if ( breakPoint ) {
+                if ( !breakFired ) {
+                    breakFired = true;
+                    throw new BreakPointException(instr, address, state);
+                }
+                else breakFired = false;
+            }
 
-        public String getVariant() {
-            return "breakpoint: " + instr.getVariant();
+            instr.accept(v);
+            probe.fireAfter(instr, address, state);
         }
 
         public int getSize() {
             return instr.getSize();
         }
 
+        public Instr build(int address, Operand[] ops) {
+            return instr.build(address, ops);
+        }
+
         public String getOperands() {
             return instr.getOperands();
         }
 
-        public Instr asInstr(int address) {
-            return instr;
+        public String getName() {
+            return instr.getName();
+        }
+
+        public String getVariant() {
+            return instr.getVariant();
         }
     }
 
@@ -168,7 +457,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
      * when it is triggered (handler is executed by the processor). For example,
      * an external interrupt, when posted, sets a bit in an IO register, and if
      * the interrupt is not masked, will add it to the pending interrupts on
-     * the processor. When the interrupt triggers, it remains flagged (the bit
+     * the processor. When the interrupt head, it remains flagged (the bit
      * in the IO register remains on). Some interrupts clear bits in IO registers
      * on triggered (e.g. timer interrupts). This interface allows both of these
      * behaviors to be implemented.
@@ -226,10 +515,6 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public void start() {
 
-        if (TRACE) {
-            ColorTerminal.println("Simulator running...");
-        }
-
         shouldRun = true;
         loop();
     }
@@ -239,12 +524,9 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void reset() {
-        if (TRACEREGS) {
-            state = constructTracingState();
-            TRACE = true;
-        } else {
-            state = constructState();
-        }
+        state = constructState();
+        deltaQueue = new DeltaQueue();
+        justReturnedFromInterrupt = false;
     }
 
     protected abstract State constructState();
@@ -253,6 +535,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     private void loop() {
 
         nextPC = state.getPC();
+        long cycles = state.getCycles();
 
         while (shouldRun) {
 
@@ -292,42 +575,16 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
             Instr i = state.getCurrentInstr();
             nextPC = nextPC + i.getSize();
 
-            if (TRACE) {
-                ColorTerminal.printBrightCyan(toPaddedUpperHex(state.getPC(), 4) + ": ");
-                ColorTerminal.printBrightBlue(i.getVariant() + " ");
-                ColorTerminal.print(i.getOperands());
-                ColorTerminal.nextln();
-            }
+            // visit the actual instruction (or probe)
+            int pc = state.getPC();
+            activeProbe.fireBefore(i, pc, state);
+            execute(i);
+            activeProbe.fireAfter(i, pc, state);
 
-            try {
-                // visit the actual instruction (or probe)
-                if (activeProbe != null) {
-                    int pc = state.getPC();
-                    activeProbe.fireBefore(i, pc, state);
-                    execute(i);
-                    activeProbe.fireAfter(i, pc, state);
-                } else {
-                    execute(i);
-                }
-
-            } catch (BreakPointException bpe) {
-                int pc = state.getPC();
-
-                bpe.breakpoint.probe.fireBefore(bpe.breakpoint.instr, pc, state);
-
-                if (!shouldRun) break;
-                execute(bpe.breakpoint.instr);
-
-                bpe.breakpoint.probe.fireAfter(bpe.breakpoint.instr, pc, state);
-
-                if (activeProbe != null)
-                    activeProbe.fireAfter(i, pc, state);
-            }
-
-            if (TRACEREGS) {
-                state.dump();
-                state.clearTracingState();
-            }
+            // process any timed events
+            long newcycles = state.getCycles();
+            deltaQueue.advance(newcycles - cycles);
+            cycles = newcycles;
         }
     }
 
@@ -339,15 +596,51 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void insertProbe(Probe p) {
-        activeProbe = p;
+        activeProbe.add(p);
     }
 
-    public void setBreakPoint(Probe p, int prog_addr) {
-        Instr i = state.readInstr(prog_addr);
-        if (i instanceof BreakPoint) return;
+    public void insertProbe(Probe p, int addr) {
+        ProbedInstr pi = getProbedInstr(addr);
+        if ( pi != null ) pi.add(p);
+        else {
+            pi = new ProbedInstr(state.readInstr(addr), addr, p);
+            state.writeInstr(pi, addr);
+        }
+    }
 
-        BreakPoint bp = new BreakPoint(i, prog_addr, p);
-        state.writeInstr(bp, prog_addr);
+    public void removeProbe(Probe b) {
+        activeProbe.remove(b);
+    }
+
+    public void removeProbe(Probe p, int addr) {
+        ProbedInstr pi = getProbedInstr(addr);
+        if ( pi != null ) {
+            pi.remove(p);
+            if ( pi.isEmpty() )
+                state.writeInstr(pi.instr, pi.address);
+        }
+    }
+
+    private ProbedInstr getProbedInstr(int addr) {
+        Instr i = state.readInstr(addr);
+        if ( i instanceof ProbedInstr )
+            return ((ProbedInstr)i);
+        else return null;
+    }
+
+    public void insertBreakPoint(int addr) {
+        ProbedInstr pi = getProbedInstr(addr);
+        if ( pi != null ) pi.setBreakPoint();
+        else {
+            pi = new ProbedInstr(state.readInstr(addr), addr, null);
+            state.writeInstr(pi, addr);
+            pi.setBreakPoint();
+        }
+    }
+
+    public void removeBreakPoint(int addr) {
+        ProbedInstr pi = getProbedInstr(addr);
+        if ( pi != null ) pi.unsetBreakPoint();
     }
 
     public void setWatchPoint(MemoryProbe p, int data_addr) {
@@ -363,7 +656,15 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void addTimerEvent(Trigger e, long cycles) {
-        // insert the event in the delta queue
+        deltaQueue.add(e, cycles);
+    }
+
+    public void addPeriodicTimerEvent(Trigger e, long period) {
+        deltaQueue.add(new PeriodicTrigger(e, period), period);
+    }
+
+    public void removeTimerEvent(Trigger e, long cycles) {
+        deltaQueue.remove(e);
     }
 
 
@@ -1164,12 +1465,6 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         state.pushByte(Arithmetic.low(pc));
     }
 
-    private void pushPC() {
-        int pc = state.getPC() / 2;
-        state.pushByte(Arithmetic.high(pc));
-        state.pushByte(Arithmetic.low(pc));
-    }
-
     private int popPC() {
         byte low = state.popByte();
         byte high = state.popByte();
@@ -1185,14 +1480,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     private void unimplemented(Instr i) {
-        if (TRACE) {
-            ColorTerminal.printRed("unimplemented: " + i.getVariant());
-            ColorTerminal.nextln();
-        }
-    }
-
-    private boolean bit(int val, int bit) {
-        return Arithmetic.getBit(val, bit);
+        throw failure("unimplemented instruction: "+i.getVariant());
     }
 
     private boolean xor(boolean a, boolean b) {
@@ -1230,10 +1518,6 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     private void computeFlag_S() {
         state.setFlag_S(xor(state.getFlag_N(), state.getFlag_V()));
-    }
-
-    private void computeFlag_V() {
-        state.setFlag_V(xor(state.getFlag_N(), state.getFlag_C()));
     }
 
     private int performAddition(int r1, int r2, int carry) {
