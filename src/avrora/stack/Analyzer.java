@@ -39,6 +39,7 @@ import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.Avrora;
 import avrora.Main;
+import avrora.actions.AnalyzeStackAction;
 
 import java.util.*;
 
@@ -51,6 +52,10 @@ import java.util.*;
  * @author Ben L. Titzer
  */
 public class Analyzer {
+
+    public static boolean MONITOR_STATES;
+    public static boolean TRACE_SUMMARY;
+
 
     protected final Program program;
     protected final StateSpace space;
@@ -104,7 +109,7 @@ public class Analyzer {
      */
     public void run() {
         running = true;
-        if ( Main.MONITOR_STATES.get() )
+        if ( MONITOR_STATES )
             new MonitorThread().start();
 
         long start = System.currentTimeMillis();
@@ -538,10 +543,9 @@ public class Analyzer {
     private void printPath(Path p) {
         int depth = 0;
         int cntr = 1;
-        boolean summary = Main.TRACE_SUMMARY.get();
         for ( Path path = p; path != null && path.link != null; path = path.tail ) {
 
-            if ( cntr > 1 && summary && path.link.weight == 0 ) {
+            if ( cntr > 1 && TRACE_SUMMARY && path.link.weight == 0 ) {
                 int pc = path.state.getPC();
                 int npc = pc + program.readInstr(pc).getSize();
                 if ( path.link.target.getPC() == npc ) {

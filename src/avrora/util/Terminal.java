@@ -87,7 +87,8 @@ public final class Terminal {
     private static final String CTRL_BRIGHT_CYAN = "\u001b[1;36m";
     private static final String CTRL_WHITE = "\u001b[1;37m";
 
-    private static final int DEFAULT_COLOR = COLOR_LIGHTGRAY;
+    public static final int DEFAULT_COLOR = -1;
+    public static final int BEGIN_COLOR = COLOR_LIGHTGRAY;
 
     private static final String[] COLORS = {
         CTRL_BLACK,
@@ -130,6 +131,13 @@ public final class Terminal {
 
 
     public static final int ERROR_COLOR = COLOR_RED;
+
+    public static void print(int colors[], String s[]) {
+        for ( int cntr = 0; cntr < s.length; cntr++) {
+            if ( cntr < colors.length ) print(colors[cntr], s[cntr]);
+            else print(s[cntr]);
+        }
+    }
 
     public static void print(int color, String s) {
         if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
@@ -225,14 +233,17 @@ public final class Terminal {
                 out.print(">");
                 out.print(s);
                 out.print("</font>");
-            } else {
+                return;
+            } else if ( color != DEFAULT_COLOR && color != BEGIN_COLOR ) {
                 out.print(COLORS[color]);
                 out.print(s);
                 // TODO: get correct begin color from terminal somehow
-                out.print(COLORS[DEFAULT_COLOR]);
+                out.print(COLORS[BEGIN_COLOR]);
+                return;
             }
-        } else
-            out.print(s);
+        }
+
+        out.print(s);
     }
 
 }

@@ -33,18 +33,23 @@
 package avrora.actions;
 
 import avrora.Main;
+import avrora.Avrora;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.util.ProgramProfiler;
 import avrora.sim.util.MemoryProfiler;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.platform.Platforms;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.MicrocontrollerFactory;
+import avrora.sim.mcu.Microcontrollers;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
+import avrora.util.Option;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -60,7 +65,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class SimulateAction extends Action {
+public class SimulateAction extends SimAction {
     Program program;
     Simulator simulator;
     Microcontroller microcontroller;
@@ -81,6 +86,53 @@ public class SimulateAction extends Action {
             "are several options provided to the simulator for profiling and analysis, " +
             "so for more information, see the Options section.";
     public int memStart;
+
+    public final Option.List BREAKS = newOptionList("breakpoint", "",
+            "This option is used in the simulate action. It allows the user to " +
+            "insert a series of breakpoints in the program from the command line. " +
+            "The address of the breakpoint can be given in hexadecimal or as a label " +
+            "within the program. Hexadecimal constants are denoted by a leading '$'.");
+    public final Option.List COUNTS = newOptionList("count", "",
+            "This option is used in the simulate action. It allows the user to " +
+            "insert a list of profiling counters in the program that collect profiling " +
+            "information during the execution of the program.");
+    public final Option.List BRANCHCOUNTS = newOptionList("branchcount", "",
+            "This option is used in the simulate action. It allows the user to " +
+            "insert a list of branch counters in the program that collect information " +
+            "about taken and not taken counts for branches.");
+    public final Option.Bool PROFILE = newOption("profile", false,
+            "This option is used in the simulate action. It compiles a histogram of " +
+            "instruction counts for each instruction in the program and presents the " +
+            "results in a tabular format.");
+    public final Option.Bool TIME = newOption("time", false,
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to report the time used in executing the simulation. When combined with " +
+            "the \"cycles\" and \"total\" options, it will report performance " +
+            "information about the simulation.");
+    public final Option.Bool TOTAL = newOption("total", false,
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to report the total instructions executed in the simulation. When combined " +
+            "with the \"time\" option, it will report performance information.");
+    public final Option.Bool CYCLES = newOption("cycles", false,
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to report the total cycles executed in the simulation. When combined " +
+            "with the \"time\" option, it will report performance information.");
+    public final Option.Bool TRACE = newOption("trace", false,
+            "This option is used in the simulate action. It will cause the simulator " +
+            "to print each instruction as it is executed.");
+    public final Option.Bool MONITOR_STACK = newOption("monitor-stack", false,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to report changes to the stack height.");
+    public final Option.Bool MEMORY_PROFILE = newOption("memory-profile", false,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to analyze the memory traffic of the program and print out the results in " +
+            "a tabular format. This can be useful to see what portions of memory are the " +
+            "most used.");
+    public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", true,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to use the legacy (hand-written) interpreter rather than the interpreter " +
+            "generated from the architecture description language. It is used for " +
+            "benchmarking and regression purposes.");
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -133,9 +185,9 @@ public class SimulateAction extends Action {
      *                   occurs during simulation
      */
     public void run(String[] args) throws Exception {
-        long repeat = Main.REPEAT.get();
+//        long repeat = BenchmarkAction.REPEAT.get();
 
-        for (long cntr = 0; cntr < repeat; cntr++)
+//        for (long cntr = 0; cntr < repeat; cntr++)
             runSimulation(args);
 
     }
@@ -143,14 +195,14 @@ public class SimulateAction extends Action {
     private void runSimulation(String[] args) throws Exception {
         program = Main.readProgram(args);
 
-        Simulator.LEGACY_INTERPRETER = Main.LEGACY_INTERPRETER.get();
+        Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
 
-        PlatformFactory pf = Main.getPlatform();
+        PlatformFactory pf = getPlatform();
         if (pf != null) {
             microcontroller = pf.newPlatform(program).getMicrocontroller();
             simulator = microcontroller.getSimulator();
         } else {
-            microcontroller = Main.getMicrocontroller().newMicrocontroller(program);
+            microcontroller = getMicrocontroller().newMicrocontroller(program);
             simulator = microcontroller.getSimulator();
         }
         counters = new LinkedList();
@@ -166,7 +218,7 @@ public class SimulateAction extends Action {
         processMemoryProfile();
         processStackMonitor();
 
-        if (Main.TRACE.get()) {
+        if (TRACE.get()) {
             simulator.insertProbe(Simulator.TRACEPROBE);
         }
 
@@ -188,7 +240,7 @@ public class SimulateAction extends Action {
     }
 
     void processBreakPoints() {
-        Iterator i = Main.getLocationList(program, Main.BREAKS.get()).iterator();
+        Iterator i = Main.getLocationList(program, BREAKS.get()).iterator();
         while (i.hasNext()) {
             Main.Location l = (Main.Location) i.next();
             simulator.insertBreakPoint(l.address);
@@ -196,7 +248,7 @@ public class SimulateAction extends Action {
     }
 
     void processCounters() {
-        List locs = Main.getLocationList(program, Main.COUNTS.get());
+        List locs = Main.getLocationList(program, COUNTS.get());
         Iterator i = locs.iterator();
         while (i.hasNext()) {
             Main.Location l = (Main.Location) i.next();
@@ -218,7 +270,7 @@ public class SimulateAction extends Action {
     }
 
     void processBranchCounters() {
-        List locs = Main.getLocationList(program, Main.BRANCHCOUNTS.get());
+        List locs = Main.getLocationList(program, BRANCHCOUNTS.get());
         Iterator i = locs.iterator();
         while (i.hasNext()) {
             Main.Location l = (Main.Location) i.next();
@@ -240,7 +292,7 @@ public class SimulateAction extends Action {
     }
 
     void processProfile() {
-        if (Main.PROFILE.get())
+        if (PROFILE.get())
             simulator.insertProbe(profile = new ProgramProfiler(program));
     }
 
@@ -290,7 +342,7 @@ public class SimulateAction extends Action {
     }
 
     void processMemoryProfile() {
-        if (Main.MEMORY_PROFILE.get()) {
+        if (MEMORY_PROFILE.get()) {
             int ramSize = microcontroller.getRamSize();
             memStart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
             memprofile = new MemoryProfiler(ramSize);
@@ -356,7 +408,7 @@ public class SimulateAction extends Action {
     }
 
     void processStackMonitor() {
-        if (Main.MONITOR_STACK.get())
+        if (MONITOR_STACK.get())
             simulator.insertProbe(sprobe = new StackProbe());
     }
 
@@ -365,7 +417,7 @@ public class SimulateAction extends Action {
     }
 
     void processTotal() {
-        if (Main.TOTAL.get()) {
+        if (TOTAL.get()) {
             simulator.insertProbe(total = new avrora.sim.util.Counter());
         }
     }
@@ -376,32 +428,32 @@ public class SimulateAction extends Action {
     }
 
     void processIcount() {
-        long icount = Main.ICOUNT.get();
+        long icount = ICOUNT.get();
         if (icount > 0)
             simulator.insertProbe(new Simulator.InstructionCountTimeout(icount));
     }
 
     void processTimeout() {
-        long timeout = Main.TIMEOUT.get();
+        long timeout = TIMEOUT.get();
         if (timeout > 0)
             simulator.insertTimeout(timeout);
     }
 
     void reportCycles() {
-        if (Main.CYCLES.get()) {
+        if (CYCLES.get()) {
             reportQuantity("Total clock cycles", simulator.getState().getCycles(), "cycles");
         }
     }
 
     void reportTime() {
         long diff = endms - startms;
-        if (Main.TIME.get()) {
+        if (TIME.get()) {
             reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "");
             if (total != null) {
                 float thru = ((float) total.count) / (diff * 1000);
                 reportQuantity("Average throughput", thru, "mips");
             }
-            if (Main.CYCLES.get()) {
+            if (CYCLES.get()) {
                 float thru = ((float) simulator.getState().getCycles()) / (diff * 1000);
                 reportQuantity("Average throughput", thru, "mhz");
             }

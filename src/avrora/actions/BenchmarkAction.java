@@ -41,6 +41,7 @@ import avrora.sim.Simulator;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
+import avrora.util.Option;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -56,7 +57,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class BenchmarkAction extends Action {
+public class BenchmarkAction extends SimAction {
     Program program;
     Simulator simulator;
     avrora.sim.util.Counter total;
@@ -68,6 +69,10 @@ public class BenchmarkAction extends Action {
 
     public static final String HELP = "The \"benchmark\" action benchmarks the simulator's " +
             "performace on an input program and gives tables of performance information. ";
+
+    public final Option.Long REPEAT = newOption("repeat", 1,
+            "This option is used to specify the number of times that the benchmark should be run." +
+            "The benchmarks will be repeated and the average over all runs computed. ");
 
     /**
      * The default constructor of the <code>BenchmarkAction</code> class simply
@@ -88,7 +93,7 @@ public class BenchmarkAction extends Action {
     public void run(String[] args) throws Exception {
         program = Main.readProgram(args);
 
-        long repeat = Main.REPEAT.get();
+        long repeat = REPEAT.get();
 
         Terminal.printGreen("Legacy Interpreter                           Generated Interpreter");
         Terminal.nextln();
@@ -156,11 +161,11 @@ public class BenchmarkAction extends Action {
         long startms = System.currentTimeMillis();
         try {
             Simulator.LEGACY_INTERPRETER = legacy;
-            PlatformFactory pf = Main.getPlatform();
+            PlatformFactory pf = getPlatform();
             if (pf != null)
                 simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();
             else
-                simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
+                simulator = getMicrocontroller().newMicrocontroller(program).getSimulator();
             processIcount();
             processTimeout();
             simulator.start();
@@ -171,64 +176,16 @@ public class BenchmarkAction extends Action {
         return endms - startms;
     }
 
-    void processBreakPoints() {
-        Iterator i = Main.getLocationList(program, Main.BREAKS.get()).iterator();
-        while (i.hasNext()) {
-            Main.Location l = (Main.Location) i.next();
-            simulator.insertBreakPoint(l.address);
-        }
-    }
-
-    void processIcount() {
-        long icount = Main.ICOUNT.get();
+    private void processIcount() {
+        long icount = ICOUNT.get();
         if (icount > 0)
             simulator.insertProbe(new Simulator.InstructionCountTimeout(icount));
     }
 
-    void processTimeout() {
-        long timeout = Main.TIMEOUT.get();
+    private void processTimeout() {
+        long timeout = TIMEOUT.get();
         if (timeout > 0)
             simulator.insertTimeout(timeout);
-    }
-
-    void reportCycles() {
-        if (Main.CYCLES.get()) {
-            reportQuantity("Total clock cycles", simulator.getState().getCycles(), "cycles");
-        }
-    }
-
-    void reportTime() {
-        long diff = endms - startms;
-        if (Main.TIME.get()) {
-            reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "");
-            if (total != null) {
-                float thru = ((float) total.count) / (diff * 1000);
-                reportQuantity("Average throughput", thru, "mips");
-            }
-            if (Main.CYCLES.get()) {
-                float thru = ((float) simulator.getState().getCycles()) / (diff * 1000);
-                reportQuantity("Average throughput", thru, "mhz");
-            }
-        }
-    }
-
-    String addrToString(int address) {
-        return StringUtil.toHex(address, 4);
-    }
-
-    void reportQuantity(String name, long val, String units) {
-        reportQuantity(name, Long.toString(val), units);
-    }
-
-    void reportQuantity(String name, float val, String units) {
-        reportQuantity(name, Float.toString(val), units);
-    }
-
-    void reportQuantity(String name, String val, String units) {
-        Terminal.printGreen(name);
-        Terminal.print(": ");
-        Terminal.printBrightCyan(val);
-        Terminal.println(" " + units);
     }
 
 }

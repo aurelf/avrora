@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.Main;
+import avrora.util.Option;
 import avrora.stack.Analyzer;
 import avrora.core.Program;
 
@@ -45,7 +46,23 @@ import avrora.core.Program;
 public class AnalyzeStackAction extends Action {
 
     public static final String HELP = "The \"analyze-stack\" option invokes the built-in " +
-            "stack analysis tool on the specified program.";
+            "stack analysis tool on the specified program. It uses an abstract interpretation " +
+            "of the program to determine the possible interrupt masks at each program point " +
+            "and determines the worst-case stack depth in the presence of interrupts.";
+
+    public final Option.Bool MONITOR_STATES = newOption("monitor-states", false,
+            "This option is used to monitor the progress of a long-running stack analysis problem. " +
+            "The analyzer will report the count of states, edges, and propagation information " +
+            "produced every 5 seconds. ");
+    public final Option.Bool TRACE_SUMMARY = newOption("trace-summary", true,
+            "This option is used to reduce the amount of output by summarizing the error trace" +
+            "that yields the maximal stack depth. When true, the analysis will shorten the error " +
+            "trace by not reporting edges between states of adjacent instructions that do not " +
+            "change the stack height.");
+    public final Option.Bool TRACE = newOption("trace", true,
+            "This option causes the stack analyzer to print a trace of each abstract state " +
+            "produced, every edge between states that is inserted, and all propagations " +
+            "performed during the analysis. ");
 
     /**
      * The default constructor of the <code>AnalyzeStackAction</code> class simply
@@ -66,7 +83,9 @@ public class AnalyzeStackAction extends Action {
         Program p = Main.readProgram(args);
         Analyzer a = new Analyzer(p);
 
-        if (Main.TRACE.get()) Analyzer.TRACE = true;
+        Analyzer.TRACE_SUMMARY = TRACE_SUMMARY.get();
+        Analyzer.MONITOR_STATES = MONITOR_STATES.get();
+        Analyzer.TRACE = TRACE.get();
 
         a.run();
         a.report();

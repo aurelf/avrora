@@ -32,6 +32,9 @@
 
 package avrora.actions;
 
+import avrora.util.Option;
+import avrora.util.Options;
+
 /**
  * The <code>Action</code> class defines a new action that the main driver is
  * capable of executing. Each instance of <code>Action</code> is inserted into
@@ -44,9 +47,12 @@ public abstract class Action {
     public final String help;
     public final String shortName;
 
+    public final Options options;
+
     protected Action(String sn, String h) {
         shortName = sn;
         help = h;
+        options = new Options();
     }
 
     /**
@@ -77,5 +83,21 @@ public abstract class Action {
      */
     public String getShortName() {
         return shortName;
+    }
+
+    protected Option.Bool newOption(String name, boolean val, String desc) {
+        return options.newOption(name, val, desc);
+    }
+
+    protected Option.Long newOption(String name, long val, String desc) {
+        return options.newOption(name, val, desc);
+    }
+
+    protected Option.Str newOption(String name, String val, String desc) {
+        return options.newOption(name, val, desc);
+    }
+
+    protected Option.List newOptionList(String name, String val, String desc) {
+        return options.newOptionList(name, val, desc);
     }
 }

@@ -45,6 +45,7 @@ import avrora.util.Arithmetic;
 import avrora.test.TestCase;
 import avrora.test.TestHarness;
 import avrora.test.TestResult;
+import avrora.actions.SimulateAction;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -326,7 +327,8 @@ public class AVRTestHarness implements TestHarness {
             Main.ProgramReader r = Main.getProgramReader(input);
             String args[] = {filename};
             program = r.read(args);
-            simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
+            // TODO: this should not be hardcoded!!
+            simulator = new ATMega128L(false).newMicrocontroller(program).getSimulator();
             simulator.start();
         }
 

@@ -131,6 +131,11 @@ public class Options {
             optname = opt.substring(1, index);
         }
 
+        setOption(optname, value);
+
+    }
+
+    private void setOption(String optname, String value) {
         Option option = (Option) knownValues.get(optname);
 
         if (option == null) {
@@ -142,6 +147,26 @@ public class Options {
 
     public Collection getAllOptions() {
         return knownValues.values();
+    }
+
+    public void process(Options o) {
+        Iterator i = o.unknownValues.keySet().iterator();
+
+        while ( i.hasNext() ) {
+            String name = (String)i.next();
+            String val = (String)o.unknownValues.get(name);
+            setOption(name, val);
+        }
+    }
+
+    public void process(Properties p) {
+        Iterator i = p.keySet().iterator();
+
+        while ( i.hasNext() ) {
+            String name = (String)i.next();
+            String val = p.getProperty(name);
+            setOption(name, val);
+        }
     }
 
     public void dump(String title, Printer p) {

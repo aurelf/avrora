@@ -34,13 +34,20 @@ package avrora.actions;
 
 import avrora.Main;
 import avrora.Avrora;
+import avrora.util.Option;
 
 /**
  * @author Simon Han
  */
-public class MultiSimulateAction extends Action {
+public class MultiSimulateAction extends SimAction {
     public static final String HELP = "The \"multi-simulate\" action launches a set of simulators with " +
             "the specified program loaded onto each.";
+    public final Option.Long NODECOUNT = newOption("nodecount", 1,
+            "This option is used in the multi-node simulation. It specifies the " +
+            "number of nodes to be instantiated.");
+    public final Option.Str TOPOLOGY = newOption("topology", "",
+            "This option is used in the multi-node simulation to specify the name of " +
+            "a file that contains information about the topology of the network.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);

@@ -36,6 +36,7 @@ import avrora.core.*;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
 import avrora.util.Printer;
+import avrora.util.Option;
 import avrora.Main;
 import avrora.Avrora;
 
@@ -50,6 +51,21 @@ public class CFGAction extends Action {
             "given input program. This is useful for better program understanding " +
             "and for optimizations. The graph can be outputted in a textual format, or the " +
             "format supported by the \"dot\" graph tool.";
+
+    public final Option.Bool COLOR_PROCEDURES = newOption("color-procedures", true,
+            "This option is used when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures and color them in the output.");
+    public final Option.Bool GROUP_PROCEDURES = newOption("group-procedures", true,
+            "This option is used when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures and group them as subgraphs " +
+            "in the output.");
+    public final Option.Bool COLLAPSE_PROCEDURES = newOption("collapse-procedures", false,
+            "This option is used when outputting in the " +
+            "\"dot\" output format. When this option is true, the control flow graph " +
+            "utility will attempt to discover procedures within the control flow graph " +
+            "and collapse whole procedures to a single node in the output.");
 
     /**
      * The default constructor of the <code>CFGAction</code> class simply
@@ -98,9 +114,9 @@ public class CFGAction extends Action {
         Printer p = Printer.STDOUT;
         p.startblock("digraph G");
 
-        if (Main.COLOR_PROCEDURES.get() ||
-                Main.GROUP_PROCEDURES.get() ||
-                Main.COLLAPSE_PROCEDURES.get())
+        if (COLOR_PROCEDURES.get() ||
+                GROUP_PROCEDURES.get() ||
+                COLLAPSE_PROCEDURES.get())
             pmap = cfg.getProcedureMap();
 
         dumpDotNodes(p);
@@ -109,11 +125,11 @@ public class CFGAction extends Action {
     }
 
     private void dumpDotNodes(Printer p) {
-        if ( Main.COLOR_PROCEDURES.get() )
+        if ( COLOR_PROCEDURES.get() )
             assignProcedureColors();
 
 
-        if ( Main.COLLAPSE_PROCEDURES.get() ) {
+        if ( COLLAPSE_PROCEDURES.get() ) {
 
             Iterator blocks = cfg.getSortedBlockIterator();
             while (blocks.hasNext()) {
@@ -124,7 +140,7 @@ public class CFGAction extends Action {
                 if ( entry == null || entry == block )
                     printBlock(block, p);
             }
-        } else if ( Main.GROUP_PROCEDURES.get() ) {
+        } else if ( GROUP_PROCEDURES.get() ) {
             // print out blocks that have no color
             Iterator block_iter = cfg.getSortedBlockIterator();
             while (block_iter.hasNext()) {
@@ -266,7 +282,7 @@ public class CFGAction extends Action {
             if (isReturnEdge(type)) continue;
 
             // remember only inter-procedural edges
-            if (Main.COLLAPSE_PROCEDURES.get()) {
+            if (COLLAPSE_PROCEDURES.get()) {
                 source = ((es = getEntryOf(source)) == null) ? source : es;
                 target = ((et = getEntryOf(target)) == null) ? target : et;
                 // don't print out intra-block edges if we are collapsing procedures

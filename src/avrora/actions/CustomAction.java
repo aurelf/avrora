@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.util.StringUtil;
+import avrora.util.Option;
 import avrora.Main;
 import avrora.Avrora;
 
@@ -45,13 +46,16 @@ public class CustomAction extends Action {
             "are not part of the standard Avrora distribution. The \"class\" option " +
             "specifies which Java class to load, instantiate and run. This class " +
             "must extend the avrora.Main.Action class within Avrora.";
+    public final Option.Str CLASS = newOption("class", "",
+            "This option is only used in the \"custom\" action to specify which Java " +
+            "class contains an action to load and execute.");
 
     public CustomAction() {
         super("custom", HELP);
     }
 
     public void run(String[] args) throws Exception {
-        String clname = Main.CLASS.get();
+        String clname = CLASS.get();
         if (clname.equals(""))
             Avrora.userError("Custom action class must be specified in -class option");
         try {
