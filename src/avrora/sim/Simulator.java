@@ -52,6 +52,38 @@ import avrora.util.Verbose;
  */
 public abstract class Simulator implements IORegisterConstants {
 
+    public static boolean REPORT_SECONDS;
+    public static int SECONDS_PRECISION = 6;
+    public static int[] PRECISION_TABLE = { 0, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+
+    public String getIDTimeString() {
+        String idstr = StringUtil.rightJustify(id, 4);
+
+        String cycstr;
+
+        if ( REPORT_SECONDS ) {
+            int hz = microcontroller.getHz();
+            long count = clock.getCount();
+            long seconds = count / hz;
+            long fract = count % hz;
+            StringBuffer buf = new StringBuffer(10);
+            double f = (double)fract / hz;
+            buf.append(seconds);
+            if ( SECONDS_PRECISION > 0 ) {
+                buf.append('.');
+                int max = PRECISION_TABLE[SECONDS_PRECISION];
+                for ( int radix = 10; radix < max; radix = radix*10 ) {
+                    int digit = (int)(f*radix) % 10;
+                    buf.append((char)(digit + '0'));
+                }
+            }
+            cycstr = StringUtil.rightJustify(buf.toString(), 10);
+        }
+        else cycstr = StringUtil.rightJustify(clock.getCount(), 10);
+
+        return idstr + ' ' + cycstr+"   ";
+    }
+
     public class Printer {
 
         public final boolean enabled;
@@ -63,11 +95,9 @@ public abstract class Simulator implements IORegisterConstants {
 
         public void println(String s) {
             if (enabled) {
-                String idstr = StringUtil.rightJustify(id, 4);
-                String cycstr = StringUtil.rightJustify(clock.getCount(), 10);
                 synchronized ( Terminal.class ) {
                     // synchronize on the terminal to prevent interleaved output
-                    Terminal.println(idstr + ' ' + cycstr + "   " + s);
+                    Terminal.println(getIDTimeString() + s);
                 }
             } else {
                 throw Avrora.failure("Disabled printer: performance bug!");

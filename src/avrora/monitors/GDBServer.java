@@ -39,10 +39,13 @@ import avrora.util.Terminal;
 import avrora.util.StringUtil;
 import avrora.Avrora;
 import avrora.core.Instr;
+import avrora.core.Register;
 
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.*;
+import java.text.StringCharacterIterator;
+import java.text.CharacterIterator;
 
 /**
  * @author Ben L. Titzer
@@ -66,10 +69,15 @@ public class GDBServer extends MonitorFactory {
         InputStream input;
         OutputStream output;
         final int port;
+        BreakpointProbe BREAKPROBE = new BreakpointProbe();
+        StepProbe STEPPROBE = new StepProbe();
+        Simulator.Printer printer;
+
 
         GDBMonitor(Simulator s, int p) {
             simulator = s;
             port = p;
+            printer = simulator.getPrinter("sim.gdb-server");
             try {
                 serverSocket = new ServerSocket(port);
             } catch ( IOException e ) {
@@ -88,17 +96,204 @@ public class GDBServer extends MonitorFactory {
             }
         }
 
-        synchronized void monitorLoop() {
+        // keep executing commands until a continue is sent
+        synchronized void monitorLoop(String reply) {
             try {
-            while ( true ) {
+                if ( reply != null ) {
+                    sendPacket(reply);
+                }
+
+                while ( true ) {
                     String command = readCommand();
-                    if ( command == null ) break;
-                    Terminal.println(" --> {"+command+"}");
-                    sendPacket("OK");
-            }
+                    if ( command == null ) {
+                        printer.println("Null command: stopping simulator");
+                        // TODO: report the hang up
+                        simulator.stop();
+                        break;
+                    }
+                    printer.println(" --> "+command);
+                    if ( executeCommand(command) )
+                        break;
+                }
             } catch ( IOException e ) {
                 throw Avrora.failure("Unexpected IOException: "+e);
             }
+        }
+
+        boolean executeCommand(String command) throws IOException {
+            CharacterIterator i = new StringCharacterIterator(command);
+            if ( i.current() == '+' ) i.next();
+            if ( !StringUtil.peekAndEat(i, '$') ) {
+                commandError();
+                return false;
+            }
+
+            char c = i.current();
+            i.next();
+
+            switch ( c ) {
+                case 'c':
+                    // CONTINUE WITH EXECUTION
+                    sendPlus();
+                    return true;
+                case 'D':
+                    // DISCONNECT
+                    // TODO: do more work at disconnection time?
+                    sendPlus();
+                    simulator.stop();
+                    return true;
+                case 'g':
+                    // READ REGISTERS
+                    readAllRegisters();
+                    return false;
+                case 'G':
+                    // WRITE REGISTERS
+                    break;
+                case 'H':
+                    // TODO: more work at connection time?
+                    sendPacketOK("OK");
+                    return false;
+                case 'i':
+                    // STEP CYCLE
+                    break;
+                case 'k':
+                    // KILL
+                    // TODO: do more work at disconnection time?
+                    sendPlus();
+                    simulator.stop();
+                    return true;
+                case 'm':
+                    readMemory(i);
+                    return false;
+                case 'M':
+                    // WRITE MEMORY
+                    break;
+                case 'p':
+                    // READ SELECTED REGISTERS
+                    break;
+                case 'P':
+                    // WRITE SELECTED REGISTERS
+                    break;
+                case 'q':
+                    // QUERY A VARIABLE
+                    break;
+                case 's':
+                    // STEP INSTRUCTION
+                    int pc = simulator.getState().getPC();
+                    printer.println("--INSERTING STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
+                    simulator.insertProbe(STEPPROBE, pc);
+                    sendPlus();
+                    return true;
+                case 'z':
+                    // REMOVE BREAKPOINT
+                    setBreakPoint(i, false);
+                    return false;
+                case 'Z':
+                    // SET BREAKPOINT
+                    setBreakPoint(i, true);
+                    return false;
+                case '?':
+                    // TODO: is it ok to always reply with S05?
+                    sendPacketOK("S05");
+                    return false;
+            }
+
+            // didn't understand the comand
+            sendPacketOK("");
+            return false;
+        }
+
+        private void sendPlus() throws IOException {
+            output.write((byte)'+');
+        }
+
+
+        void commandError() throws IOException {
+            output.write((byte)'-');
+        }
+
+        void setBreakPoint(CharacterIterator i, boolean on) throws IOException {
+            char num = i.current();
+            i.next();
+            switch ( num ) {
+                case '0':
+                case '1':
+                    if ( !StringUtil.peekAndEat(i, ',') ) break;
+                    int addr = StringUtil.readHexValue(i, 4);
+                    if ( !StringUtil.peekAndEat(i, ',') ) break;
+                    int len = StringUtil.readHexValue(i, 4);
+                    for ( int cntr = addr; cntr < addr+len; cntr += 2 )
+                        setBreakPoint(addr, on);
+                    sendPacketOK("OK");
+                    return;
+                case '2':
+                    // TODO: other breakpoint types?
+                case '3':
+                    // TODO: other breakpoint types?
+                default:
+            }
+
+            sendPacketOK("");
+        }
+
+        void setBreakPoint(int addr, boolean on) {
+            if ( on )
+                simulator.insertProbe(BREAKPROBE, addr);
+            else
+                simulator.removeProbe(BREAKPROBE, addr);
+        }
+
+        void readAllRegisters() throws IOException {
+            StringBuffer buf = new StringBuffer(84);
+            State s = simulator.getState();
+            for ( int cntr = 0; cntr < 32; cntr++ ) {
+                byte value = s.getRegisterByte(Register.getRegisterByNumber(cntr));
+                buf.append(StringUtil.toHex(value & 0xff, 2));
+            }
+            buf.append(StringUtil.toHex(s.getSREG() & 0xff, 2));
+            buf.append(StringUtil.toHex(s.getSP() & 0xff, 2));
+            buf.append(StringUtil.toHex((s.getSP() >> 8) & 0xff, 2));
+            int pc = s.getPC();
+            buf.append(StringUtil.toHex(pc, 2));
+            buf.append(StringUtil.toHex(pc >> 8, 2));
+            buf.append(StringUtil.toHex(pc >> 16, 2));
+            buf.append(StringUtil.toHex(pc >> 24, 2));
+            sendPacketOK(buf.toString());
+        }
+
+        private static final int MEMMASK = 0xff0000;
+        private static final int MEMBEGIN = 0x800000;
+
+        void readMemory(CharacterIterator i) throws IOException {
+            int addr = StringUtil.readHexValue(i, 8);
+            int length = 1;
+            if ( StringUtil.peekAndEat(i, ',') )
+                length = StringUtil.readHexValue(i, 8);
+            State s = simulator.getState();
+            StringBuffer buf = new StringBuffer(length*2);
+
+            if ( (addr & MEMMASK) == MEMBEGIN ) {
+                // reading from SRAM
+                addr = addr & (~MEMMASK);
+                for ( int cntr = 0; cntr < length; cntr++ ) {
+                    byte value = s.getDataByte(addr+cntr);
+                    buf.append(StringUtil.toHex(value & 0xff, 2));
+                }
+            } else {
+                // reading from program memory
+                for ( int cntr = 0; cntr < length; cntr++ ) {
+                    byte value = s.getProgramByte(addr+cntr);
+                    buf.append(StringUtil.toHex(value & 0xff, 2));
+                }
+            }
+
+
+            sendPacketOK(buf.toString());
+        }
+
+        void sendPacketOK(String s) throws IOException {
+            sendPlus();
+            sendPacket(s);
         }
 
         void sendPacket(String packet) throws IOException {
@@ -107,8 +302,8 @@ public class GDBServer extends MonitorFactory {
             int cksum = 0;
             for ( int cntr = 0; cntr < bytes.length; cksum += bytes[cntr++] ) ;
 
-            String np = "+$"+packet+"#"+StringUtil.toHex(cksum & 0xff, 2);
-            Terminal.println("   <-- {"+np+"}");
+            String np = "$"+packet+"#"+StringUtil.toHex(cksum & 0xff, 2);
+            printer.println("   <-- "+np+"");
 
             output.write(np.getBytes());
         }
@@ -141,22 +336,46 @@ public class GDBServer extends MonitorFactory {
         //---------------------------------------------------------------------------
         protected class StartupProbe implements Simulator.Probe {
             public void fireBefore(Instr i, int address, State s) {
-                Terminal.println("GDBMonitor listening on port "+port+"...");
+                printer.println("--IN STARTUP PROBE @ "+StringUtil.addrToString(address)+"--");
+                printer.println("GDBMonitor listening on port "+port+"...");
                 try {
                     socket = serverSocket.accept();
                     input = socket.getInputStream();
                     output = socket.getOutputStream();
-                    Terminal.println("Connected established with: "+socket.getInetAddress().getCanonicalHostName());
+                    printer.println("Connected established with: "+socket.getInetAddress().getCanonicalHostName());
                     serverSocket.close();
                 } catch ( IOException e ) {
                     throw Avrora.failure("Unexpected IOException: "+e);
                 }
 
-                monitorLoop();
+                monitorLoop(null);
             }
 
             public void fireAfter(Instr i, int address, State s) {
                 // remove ourselves from the beginning of the program after it has started
+                simulator.removeProbe(this, address);
+            }
+        }
+
+        protected class BreakpointProbe implements Simulator.Probe {
+            public void fireBefore(Instr i, int address, State s) {
+                printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(address)+"--");
+                monitorLoop("T05");
+            }
+
+            public void fireAfter(Instr i, int address, State s) {
+                // do nothing
+            }
+        }
+
+        protected class StepProbe implements Simulator.Probe {
+            public void fireBefore(Instr i, int address, State s) {
+                printer.println("--IN STEP PROBE @ "+StringUtil.addrToString(address)+"--");
+            }
+
+            public void fireAfter(Instr i, int address, State s) {
+                printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(address)+"--");
+                monitorLoop("T05");
                 simulator.removeProbe(this, address);
             }
         }

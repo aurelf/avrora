@@ -182,8 +182,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
             // visit the actual instruction (or probe)
             i.accept(this);
-            pc = nextPC;
-            advanceCycles(cyclesConsumed);
+            // NOTE: commit() might be called twice
+            commit();
         }
     }
 
@@ -197,8 +197,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             // visit the actual instruction (or probe)
             globalProbe.fireBefore(i, curPC, this);
             i.accept(this);
-            pc = nextPC;
-            advanceCycles(cyclesConsumed);
+            commit();
             globalProbe.fireAfter(i, curPC, this);
         }
     }

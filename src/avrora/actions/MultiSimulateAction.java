@@ -106,6 +106,8 @@ public class MultiSimulateAction extends SimAction {
 
     public void run(String[] args) throws Exception {
 
+        initializeSimulatorStatics();
+
         int cntr = 0;
         int nodes = 0;
 

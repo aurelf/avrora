@@ -83,6 +83,12 @@ public abstract class SimAction extends Action {
     public final Option.Bool DBBC = newOption("dbbc", false,
             "This option enables the DBBC compiler. \n(Status: experimental)");
     //--END EXPERIMENTAL: dbbc
+    public final Option.Bool REPORT_SECONDS = newOption("report-seconds", false,
+            "This option causes all times printed out by the simulator to be reported " +
+            "in seconds rather than clock cycles.");
+    public final Option.Long SECONDS_PRECISION = newOption("seconds-precision", 6,
+            "This option sets the precision (number of decimal places) reported for " +
+            "event times in the simulation.");
     public final Option.Str VISUAL = newOption("visual", "",
             "This optiobn enables visual representation of the network. For example " +
             "topology, packet transmission, packet recption, energy " +
@@ -286,5 +292,12 @@ public abstract class SimAction extends Action {
 
     protected void printSeparator() {
         Terminal.printSeparator(78);
+    }
+
+    protected void initializeSimulatorStatics() {
+        Simulator.REPORT_SECONDS = REPORT_SECONDS.get();
+        Simulator.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
+        if ( Simulator.SECONDS_PRECISION >= Simulator.PRECISION_TABLE.length)
+            Simulator.SECONDS_PRECISION = Simulator.PRECISION_TABLE.length - 1;
     }
 }

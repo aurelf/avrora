@@ -161,6 +161,7 @@ public class SimulateAction extends SimAction {
      *                             simulation
      */
     public void run(String[] args) throws Exception {
+        initializeSimulatorStatics();
         runSimulation(args);
     }
 

@@ -141,7 +141,15 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
                 probe.fireBefore(instr, address, BaseInterpreter.this);
                 instr.accept(interpreter);
-                probe.fireAfter(instr, address, BaseInterpreter.this);
+                commit();
+
+                if ( probe.isEmpty() )
+                    // if the probed instruction has no more probes, remove it altogether
+                    setInstr(instr, address);
+                else
+                    // fire all of the probes
+                    probe.fireAfter(instr, address, BaseInterpreter.this);
+
             } else {
                 instr.accept(v);
             }
@@ -429,8 +437,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         ProbedInstr pi = getProbedInstr(addr);
         if (pi != null) {
             pi.remove(p);
-            // if the probed instruction has no more probes, remove it altogether
-            if (pi.isEmpty()) setInstr(pi.instr, pi.address);
         }
     }
 
@@ -1027,6 +1033,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         if (pi == null) pi = new ProbedInstr(getInstr(addr), addr, null, this);
         setInstr(pi, addr);
         return pi;
+    }
+
+    protected void commit() {
+        pc = nextPC;
+        advanceCycles(cyclesConsumed);
     }
 
     private class SREG_reg implements State.IOReg {
