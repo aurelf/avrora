@@ -56,6 +56,7 @@ public class Analyzer {
     protected final StateSpace space;
     ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
+    protected HashMap propmap;
     protected PropagationList proplist;
     protected int proplength;
     protected int propprogress;
@@ -104,6 +105,7 @@ public class Analyzer {
         policy = new ContextSensitivePolicy();
         interpreter = new AbstractInterpreter(program, policy);
         aggregationPoints = new HashMap();
+        propmap = new HashMap();
     }
 
     /**
@@ -200,7 +202,13 @@ public class Analyzer {
 
         // if the target is an aggregation point, add all of them
         HashSet agg = getCallers(t);
-        if ( agg != null ) agg.addAll(newCalls);
+        if ( agg != null ) {
+            // if we have seen all of these calls, return
+            if ( agg.containsAll(newCalls) ) return;
+//            newCalls = (HashSet)newCalls.clone();
+//           newCalls.removeAll(agg);
+            agg.addAll(newCalls);
+        }
 
         for (StateSpace.Link link = t.outgoing; link != null; link = link.next) {
 
