@@ -33,11 +33,12 @@
 package avrora.sim;
 
 import avrora.core.Program;
+import avrora.sim.mcu.MicrocontrollerProperties;
 
 /**
  * @author Ben L. Titzer
  */
 public abstract class InterpreterFactory {
 
-    public abstract BaseInterpreter newInterpreter(Simulator s, Program p, int flash_size, int ioreg_size, int sram_size);
+    public abstract BaseInterpreter newInterpreter(Simulator s, Program p, MicrocontrollerProperties pr);
 }

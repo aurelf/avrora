@@ -186,40 +186,6 @@ public interface Microcontroller {
     public String getModeName();
 
     /**
-     * The <code>getRamSize()</code> method returns the number of bytes of SRAM present on this hardware
-     * device. For example, on the Atmega128L, this number is 4096. On the Atmega103, this number is 4000.
-     *
-     * @return the number of bytes of SRAM on this hardware device
-     */
-    int getRamSize();
-
-    /**
-     * The <code>getIORegSize()</code> method returns the number of IO registers that are present on this
-     * hardware device. For example, on the Atmega128L, this number is 224. On the Atmega103, this number is
-     * 64.
-     *
-     * @return the number of IO registers supported on this hardware device
-     */
-    int getIORegSize();
-
-    /**
-     * The <code<getFlashSize()</code> method returns the size in bytes of the flash memory on this hardware
-     * device. The flash memory stores the initialized data and the machine code instructions of the program.
-     * On the Atmega128L, this number is 128K.
-     *
-     * @return the size of the flash memory in bytes
-     */
-    int getFlashSize();
-
-    /**
-     * The <code>getEEPromSize()</code> method returns the size in bytes of the EEPROM on this hardware
-     * device. On the ATmega128L, this number is 4096.
-     *
-     * @return the size of the EEPROM in bytes
-     */
-    int getEEPromSize();
-
-    /**
      * The <code>getHZ()</code> method returns the number of cycles per second at which this hardware device
      * is designed to run.
      *
@@ -267,5 +233,13 @@ public interface Microcontroller {
      * @return the number of the pin if it exists; -1 otherwise
      */
     int getPinNumber(String name);
+
+    /**
+     * The <code>getProperties()</code> method gets an object that describes the microcontroller
+     * including the size of the RAM, EEPROM, flash, etc.
+     * @return an instance of the <code>MicrocontrollerProperties</code> class that contains all
+     * the relevant information about this microcontroller
+     */
+    public MicrocontrollerProperties getProperties();
 
 }

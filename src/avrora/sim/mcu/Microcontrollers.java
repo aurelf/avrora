@@ -46,8 +46,8 @@ public class Microcontrollers {
     private static final ClassMap mcus = new ClassMap("Microcontroller", MicrocontrollerFactory.class);
 
     static {
-        mcus.addInstance("atmega128l", new ATMega128L(false));
-        mcus.addInstance("atmega128l-103", new ATMega128L(true));
+        mcus.addInstance("atmega128l", new ATMega128L.Factory(false));
+        mcus.addInstance("atmega128l-103", new ATMega128L.Factory(true));
     }
 
     /**

@@ -37,6 +37,7 @@ import avrora.core.InstrVisitor;
 import avrora.core.Program;
 import avrora.core.Register;
 import avrora.util.Arithmetic;
+import avrora.sim.mcu.MicrocontrollerProperties;
 
 /**
  * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The
@@ -48,8 +49,8 @@ import avrora.util.Arithmetic;
 public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public static final class Factory extends InterpreterFactory {
-        public BaseInterpreter newInterpreter(Simulator s, Program p, int flash_size, int ioreg_size, int sram_size) {
-            return new GenInterpreter(s, p, flash_size, ioreg_size, sram_size);
+        public BaseInterpreter newInterpreter(Simulator s, Program p, MicrocontrollerProperties pr) {
+            return new GenInterpreter(s, p, pr);
         }
     }
 
@@ -101,8 +102,8 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
      * @param ioreg_size the number of IO registers
      * @param sram_size  the size of the SRAM in bytes
      */
-    protected GenInterpreter(Simulator s, Program p, int flash_size, int ioreg_size, int sram_size) {
-        super(s, p, flash_size, ioreg_size, sram_size);
+    protected GenInterpreter(Simulator s, Program p, MicrocontrollerProperties pr) {
+        super(s, p, pr);
     }
 
     protected void runLoop() {

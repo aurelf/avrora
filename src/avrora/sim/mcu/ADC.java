@@ -65,10 +65,10 @@ public class ADC extends AtmelInternalDevice {
         connectedDevices[8] = new VBG();
         connectedDevices[9] = new GND();
 
-        installIOReg("ADMUX", ADMUX, ADMUX_reg);
-        installIOReg("ADCH", ADCH, ADC_reg.high);
-        installIOReg("ADCL", ADCL, ADC_reg.low);
-        installIOReg("ADCSRA", ADCSRA, ADCSRA_reg);
+        installIOReg("ADMUX", ADMUX_reg);
+        installIOReg("ADCH", ADC_reg.high);
+        installIOReg("ADCL", ADC_reg.low);
+        installIOReg("ADCSRA", ADCSRA_reg);
 
     }
 

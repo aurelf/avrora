@@ -52,7 +52,7 @@ public abstract class ATMega128 extends ATMegaFamily {
     public static final int ATMEGA128_SRAM_SIZE = 4 * _1kb;
     public static final int ATMEGA128_FLASH_SIZE = 128 * _1kb;
     public static final int ATMEGA128_EEPROM_SIZE = 4 * _1kb;
-    public static final int ATMEGA128_NUM_PINS = 64;
+    public static final int ATMEGA128_NUM_PINS = 65;
 
     /**
      * The <code>props</code> field stores a static reference to a properties
@@ -270,7 +270,7 @@ public abstract class ATMega128 extends ATMegaFamily {
     }
 
     public ATMega128(int hz) {
-        super(hz, ATMEGA128_SRAM_SIZE, ATMEGA128_IOREG_SIZE, ATMEGA128_FLASH_SIZE, ATMEGA128_EEPROM_SIZE, ATMEGA128_NUM_PINS);
+        super(hz, props);
     }
 
     public boolean isSupported(InstrPrototype i) {

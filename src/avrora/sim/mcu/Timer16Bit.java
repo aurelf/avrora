@@ -123,22 +123,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     // information about registers and flags that specifies
     // which specific registers this 16-bit timer interacts with
 
-    int n; // number of timer. 1 for Timer1, 3 for Timer3
-
-    int TCNTnH;
-    int TCNTnL;
-    int TCCRnA;
-    int TCCRnB;
-    int TCCRnC;
-
-    int OCRnAH;
-    int OCRnAL;
-    int OCRnBH;
-    int OCRnBL;
-    int OCRnCH;
-    int OCRnCL;
-    int ICRnH;
-    int ICRnL;
+    final int n; // number of timer. 1 for Timer1, 3 for Timer3
 
     // these are the offsets on registers corresponding to these flags
     int OCIEnA;
@@ -161,6 +146,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
     protected Timer16Bit(int n, AtmelMicrocontroller m) {
         super("timer"+n, m);
+        this.n = n;
+
         initValues();
 
         ticker = new Ticker();
@@ -199,24 +186,24 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         ETIMSK_reg = (ATMegaFamily.MaskRegister)m.getIOReg("ETIMSK");
         ETIFR_reg = (ATMegaFamily.FlagRegister)m.getIOReg("ETIFR");
 
-        installIOReg("TCCR"+n+"A", TCCRnA, TCCRnA_reg);
-        installIOReg("TCCR"+n+"B", TCCRnB, TCCRnB_reg);
-        installIOReg("TCCR"+n+"C", TCCRnC, TCCRnC_reg);
+        installIOReg("TCCR"+n+"A", TCCRnA_reg);
+        installIOReg("TCCR"+n+"B", TCCRnB_reg);
+        installIOReg("TCCR"+n+"C", TCCRnC_reg);
 
-        installIOReg("TCNT"+n+"H", TCNTnH, highTempReg);
-        installIOReg("TCNT"+n+"L", TCNTnL, TCNTn_reg);
+        installIOReg("TCNT"+n+"H", highTempReg);
+        installIOReg("TCNT"+n+"L", TCNTn_reg);
 
-        installIOReg("OCR"+n+"AH", OCRnAH, new OCRnxTempHighRegister(OCRnAH_reg));
-        installIOReg("OCR"+n+"AL", OCRnAL, OCRnA_reg);
+        installIOReg("OCR"+n+"AH", new OCRnxTempHighRegister(OCRnAH_reg));
+        installIOReg("OCR"+n+"AL", OCRnA_reg);
 
-        installIOReg("OCR"+n+"BH", OCRnBH, new OCRnxTempHighRegister(OCRnBH_reg));
-        installIOReg("OCR"+n+"BL", OCRnBL, OCRnB_reg);
+        installIOReg("OCR"+n+"BH", new OCRnxTempHighRegister(OCRnBH_reg));
+        installIOReg("OCR"+n+"BL", OCRnB_reg);
 
-        installIOReg("OCR"+n+"CH", OCRnCH, new OCRnxTempHighRegister(OCRnCH_reg));
-        installIOReg("OCR"+n+"CL", OCRnCL, OCRnC_reg);
+        installIOReg("OCR"+n+"CH", new OCRnxTempHighRegister(OCRnCH_reg));
+        installIOReg("OCR"+n+"CL", OCRnC_reg);
 
-        installIOReg("ICR"+n+"H", ICRnH, highTempReg);
-        installIOReg("ICR"+n+"L", ICRnL, ICRn_reg);
+        installIOReg("ICR"+n+"H", highTempReg);
+        installIOReg("ICR"+n+"L", ICRn_reg);
     }
 
     protected void compareMatchA() {

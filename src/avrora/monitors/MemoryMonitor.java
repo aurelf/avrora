@@ -38,6 +38,7 @@ import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.TermUtil;
@@ -81,9 +82,14 @@ public class MemoryMonitor extends MonitorFactory {
             simulator = s;
             microcontroller = simulator.getMicrocontroller();
             program = simulator.getProgram();
-            ramsize = microcontroller.getRamSize();
-            if ( LOWER_ADDRESS.get() ) memstart = 0;
-            else memstart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
+            MicrocontrollerProperties p = microcontroller.getProperties();
+            if ( LOWER_ADDRESS.get() ) {
+                ramsize = p.sram_size + p.ioreg_size + BaseInterpreter.NUM_REGS;
+                memstart = 0;
+            } else {
+                ramsize = p.sram_size;
+                memstart = BaseInterpreter.NUM_REGS + p.ioreg_size;
+            }
             memprofile = new avrora.sim.util.MemoryProfiler(ramsize);
 
             insertWatches(empty);

@@ -43,11 +43,6 @@ import avrora.util.Arithmetic;
  */
 public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
-    public final int SRAM_SIZE;
-    public final int IOREG_SIZE;
-    public final int FLASH_SIZE;
-    public final int EEPROM_SIZE;
-
     abstract static class IMRReg extends State.RWIOReg {
 
         /**
@@ -188,53 +183,80 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
+    public static class DirectionRegister extends State.RWIOReg {
 
-    protected ATMegaFamily(int hz, int sram_size, int ioreg_size, int flash_size, int eeprom_size, int num_pins) {
-        super(hz, num_pins);
-        SRAM_SIZE = sram_size;
-        IOREG_SIZE = ioreg_size;
-        FLASH_SIZE = flash_size;
-        EEPROM_SIZE = eeprom_size;
+        protected ATMegaFamily.Pin[] pins;
+
+        protected DirectionRegister(ATMegaFamily.Pin[] p) {
+            pins = p;
+        }
+
+        public void write(byte val) {
+            for (int cntr = 0; cntr < 8; cntr++)
+                pins[cntr].setOutputDir(Arithmetic.getBit(val, cntr));
+            value = val;
+        }
+
+        public void writeBit(int bit, boolean val) {
+            pins[bit].setOutputDir(val);
+            value = Arithmetic.setBit(value, bit, val);
+        }
     }
 
-    /**
-     * The <code>getRamSize()</code> method returns the number of bytes of SRAM present on this hardware
-     * device.
-     *
-     * @return the number of bytes of SRAM on this hardware device
-     */
-    public int getRamSize() {
-        return SRAM_SIZE;
+    public static class PortRegister extends State.RWIOReg {
+        protected ATMegaFamily.Pin[] pins;
+
+        protected PortRegister(ATMegaFamily.Pin[] p) {
+            pins = p;
+        }
+
+        public void write(byte val) {
+            for (int cntr = 0; cntr < 8; cntr++)
+                pins[cntr].write(Arithmetic.getBit(val, cntr));
+            value = val;
+        }
+
+        public void writeBit(int bit, boolean val) {
+            pins[bit].write(val);
+            value = Arithmetic.setBit(value, bit, val);
+        }
     }
 
-    /**
-     * The <code>getIORegSize()</code> method returns the number of IO registers that are present on this
-     * hardware device.
-     *
-     * @return the number of IO registers supported on this hardware device
-     */
-    public int getIORegSize() {
-        return IOREG_SIZE;
+    public static class PinRegister implements State.IOReg {
+        protected ATMegaFamily.Pin[] pins;
+
+        protected PinRegister(ATMegaFamily.Pin[] p) {
+            pins = p;
+        }
+
+        public byte read() {
+            int value = 0;
+            value |= pins[0].read() ? 1 << 0 : 0;
+            value |= pins[1].read() ? 1 << 1 : 0;
+            value |= pins[2].read() ? 1 << 2 : 0;
+            value |= pins[3].read() ? 1 << 3 : 0;
+            value |= pins[4].read() ? 1 << 4 : 0;
+            value |= pins[5].read() ? 1 << 5 : 0;
+            value |= pins[6].read() ? 1 << 6 : 0;
+            value |= pins[7].read() ? 1 << 7 : 0;
+            return (byte)value;
+        }
+
+        public boolean readBit(int bit) {
+            return pins[bit].read();
+        }
+
+        public void write(byte val) {
+            // ignore writes.
+        }
+
+        public void writeBit(int num, boolean val) {
+            // ignore writes
+        }
     }
 
-    /**
-     * The <code>getFlashSize()</code> method returns the size in bytes of the flash memory on this hardware
-     * device. The flash memory stores the initialized data and the machine code instructions of the program.
-     *
-     * @return the size of the flash memory in bytes
-     */
-    public int getFlashSize() {
-        return FLASH_SIZE;
-    }
-
-    /**
-     * The <code>getEEPromSize()</code> method returns the size in bytes of the EEPROM on this hardware
-     * device.
-     *
-     * @return the size of the EEPROM in bytes
-     */
-    public int getEEPromSize() {
-        return EEPROM_SIZE;
+    protected ATMegaFamily(int hz, MicrocontrollerProperties p) {
+        super(hz, p);
     }
 
     /**

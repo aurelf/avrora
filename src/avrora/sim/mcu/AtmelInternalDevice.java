@@ -68,8 +68,8 @@ public abstract class AtmelInternalDevice {
         throw Avrora.unimplemented();
     }
 
-    protected void installIOReg(String name, int addr, State.IOReg reg) {
-        microcontroller.installIOReg(name, addr, reg);
+    protected void installIOReg(String name, State.IOReg reg) {
+        microcontroller.installIOReg(name, reg);
     }
 
     protected void installInterrupt(String name, int addr, Simulator.Interrupt intr) {

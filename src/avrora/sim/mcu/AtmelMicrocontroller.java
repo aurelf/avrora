@@ -48,13 +48,14 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
      * AtMega128L microcontroller (7.327mhz).
      */
     public final int HZ;
-    public final int NUM_PINS;
 
     protected final Microcontroller.Pin[] pins;
     protected Clock clock;
     protected Simulator simulator;
     protected BaseInterpreter interpreter;
     protected Simulator.Printer pinPrinter;
+
+    public final MicrocontrollerProperties properties;
 
     protected final HashMap clocks;
     protected final HashMap devices;
@@ -147,10 +148,10 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         }
     }
 
-    protected AtmelMicrocontroller(int hz, int np) {
+    protected AtmelMicrocontroller(int hz, MicrocontrollerProperties p) {
         HZ = hz;
-        NUM_PINS = np;
-        pins = new Pin[NUM_PINS];
+        properties = p;
+        pins = new Pin[properties.num_pins];
         clocks = new HashMap();
         devices = new HashMap();
         ioregs = new HashMap();
@@ -195,9 +196,8 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return pins[num];
     }
 
-    protected void installIOReg(String name, int addr, State.IOReg reg) {
-        // TODO: put the IOreg in the hashmap by its name
-        interpreter.setIOReg(addr, reg);
+    protected void installIOReg(String name, State.IOReg reg) {
+        interpreter.setIOReg(properties.getIOReg(name), reg);
     }
 
     protected void installInterrupt(String name, int num, Simulator.Interrupt interrupt) {
@@ -248,5 +248,26 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
 
     public static void addIOReg(HashMap ioregMap, String n, int i) {
         ioregMap.put(n, new Integer(i));
+    }
+
+    /**
+     * The <code>getPin()</code> method looks up the named pin and returns a reference to that pin. Names of
+     * pins should be UPPERCASE. The intended users of this method are external device implementors which
+     * connect their devices to the microcontroller through the pins.
+     *
+     * @param n the name of the pin; for example "PA0" or "OC1A"
+     * @return a reference to the <code>Pin</code> object corresponding to the named pin if it exists; null
+     *         otherwise
+     */
+    public Microcontroller.Pin getPin(String n) {
+        return pins[properties.getPin(n)];
+    }
+
+    public int getPinNumber(String n) {
+        return properties.getPin(n);
+    }
+
+    public MicrocontrollerProperties getProperties() {
+        return properties;
     }
 }

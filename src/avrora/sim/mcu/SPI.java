@@ -88,9 +88,9 @@ public class SPI extends AtmelInternalDevice implements ATMega128L.SPIDevice {
         // add SPI interrupt to simulator
         installInterrupt("SPI", 18, SPI_int);
 
-        installIOReg("SPDR", SPDR, SPDR_reg);
-        installIOReg("SPSR", SPSR, SPSR_reg);
-        installIOReg("SBCR", SPCR, SPCR_reg);
+        installIOReg("SPDR", SPDR_reg);
+        installIOReg("SPSR", SPSR_reg);
+        installIOReg("SBCR", SPCR_reg);
     }
 
     /**

@@ -109,8 +109,12 @@ public class ClassMap {
      *                  parameters is equal to the alias.
      */
     public void addInstance(String shortName, Object o) {
+        Class cz = o.getClass();
+        if (!(clazz.isAssignableFrom(cz)))
+            throw Avrora.failure("Object of class "+StringUtil.quote(cz)+" is not an instance of " + clazz.getName());
+
         objMap.put(shortName, o);
-        classMap.put(shortName, o.getClass());
+        classMap.put(shortName, cz);
     }
 
     /**

@@ -38,6 +38,7 @@ import avrora.sim.BaseInterpreter;
 import avrora.sim.GenInterpreter;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
+import avrora.sim.mcu.MicrocontrollerProperties;
 
 import java.util.Iterator;
 
@@ -54,8 +55,8 @@ public class DBBCInterpreter extends GenInterpreter {
             compiler = comp;
         }
 
-        public BaseInterpreter newInterpreter(Simulator s, Program p, int flash_size, int ioreg_size, int sram_size) {
-            return new DBBCInterpreter(compiler, s, p, flash_size, ioreg_size, sram_size);
+        public BaseInterpreter newInterpreter(Simulator s, Program p, MicrocontrollerProperties pr) {
+            return new DBBCInterpreter(compiler, s, p, pr);
         }
     }
 
@@ -105,8 +106,8 @@ public class DBBCInterpreter extends GenInterpreter {
     }
 
 
-    public DBBCInterpreter(DBBC comp, Simulator s, Program p, int flash_size, int ioreg_size, int sram_size) {
-        super(s, p, flash_size, ioreg_size, sram_size);
+    public DBBCInterpreter(DBBC comp, Simulator s, Program p, MicrocontrollerProperties pr) {
+        super(s, p, pr);
 
         compiler = comp;
         program = p;

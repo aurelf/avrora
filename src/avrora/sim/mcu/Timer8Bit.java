@@ -83,7 +83,7 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
 
     final int[] periods;
 
-    protected Timer8Bit(AtmelMicrocontroller m, int n, int TCCRn, int TCNTn, int OCRn, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
+    protected Timer8Bit(AtmelMicrocontroller m, int n, int OCIEn, int TOIEn, int OCFn, int TOVn, int[] periods) {
         super("timer"+n, m);
         ticker = new Ticker();
         TCCRn_reg = new ControlRegister();
@@ -105,9 +105,9 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
         this.n = n;
         this.periods = periods;
 
-        installIOReg("TCCR"+n, TCCRn, TCCRn_reg);
-        installIOReg("TCNR"+n, TCNTn, TCNTn_reg);
-        installIOReg("OCR"+n, OCRn, OCRn_reg);
+        installIOReg("TCCR"+n, TCCRn_reg);
+        installIOReg("TCNR"+n, TCNTn_reg);
+        installIOReg("OCR"+n, OCRn_reg);
     }
 
     protected void compareMatch() {

@@ -75,13 +75,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
 
     public ATMega128L.USARTDevice connectedDevice;
 
-    int n;
-    int UDRn;
-    int UCSRnA;
-    int UCSRnB;
-    int UCSRnC;
-    int UBRRnL;
-    int UBRRnH;
+    final int n;
 
     int USARTnRX;
     int USARTnUDRE;
@@ -152,7 +146,10 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
 
     protected USART(int n, AtmelMicrocontroller m) {
         super("usart"+n, m);
+        this.n = n;
+
         initValues();
+
         UDRn_reg = new DataRegister();
 
         UCSRnA_reg = new ControlRegisterA();
@@ -167,12 +164,12 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
         connectedDevice = new SerialPrinter();
         //connectedDevice = new LCDScreen();
 
-        installIOReg("UDR"+n, UDRn, UDRn_reg);
-        installIOReg("UCSR"+n+"A", UCSRnA, UCSRnA_reg);
-        installIOReg("UCSR"+n+"B", UCSRnB, UCSRnB_reg);
-        installIOReg("UCSR"+n+"C", UCSRnC, UCSRnC_reg);
-        installIOReg("UBRR"+n+"L", UBRRnL, UBRRnL_reg);
-        installIOReg("UBRR"+n+"H", UBRRnH, UBRRnH_reg);
+        installIOReg("UDR"+n, UDRn_reg);
+        installIOReg("UCSR"+n+"A", UCSRnA_reg);
+        installIOReg("UCSR"+n+"B", UCSRnB_reg);
+        installIOReg("UCSR"+n+"C", UCSRnC_reg);
+        installIOReg("UBRR"+n+"L", UBRRnL_reg);
+        installIOReg("UBRR"+n+"H", UBRRnH_reg);
 
         // USART Receive Complete
         installInterrupt("USART: receive", USARTnRX,

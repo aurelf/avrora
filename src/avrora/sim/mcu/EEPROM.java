@@ -96,10 +96,10 @@ public class EEPROM extends AtmelInternalDevice {
         EEPROM_SIZE = size;
         EEPROM_data = new byte[EEPROM_SIZE];
 
-        installIOReg("EEDR", EEDR, EEDR_reg);
-        installIOReg("EECR", EECR, EECR_reg);
-        installIOReg("EEARL", EEARL, EEARL_reg);
-        installIOReg("EEARH", EEARH, EEARH_reg);
+        installIOReg("EEDR", EEDR_reg);
+        installIOReg("EECR", EECR_reg);
+        installIOReg("EEARL", EEARL_reg);
+        installIOReg("EEARH", EEARH_reg);
 
     }
 

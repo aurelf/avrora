@@ -36,6 +36,7 @@ import avrora.Avrora;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.util.PeriodicEvent;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
@@ -525,10 +526,8 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void reset() {
         clock = new MainClock("MAIN", microcontroller.getHz());
-        interpreter = factory.newInterpreter(this, program,
-                microcontroller.getFlashSize(),
-                microcontroller.getIORegSize(),
-                microcontroller.getRamSize());
+        MicrocontrollerProperties props = microcontroller.getProperties();
+        interpreter = factory.newInterpreter(this, program, props);
     }
 
     /**

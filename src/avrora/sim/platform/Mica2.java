@@ -74,7 +74,7 @@ public class Mica2 implements Platform, PlatformFactory {
     }
 
     public Platform newPlatform(int id, InterpreterFactory f, Program p) {
-        return new Mica2(new ATMega128L(false).newMicrocontroller(id, f, p));
+        return new Mica2(new ATMega128L(id, f, p, false));
     }
 
 

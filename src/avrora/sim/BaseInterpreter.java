@@ -36,6 +36,7 @@ import avrora.Avrora;
 import avrora.core.*;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.MulticastWatch;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 
@@ -321,7 +322,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private static final int SREG_C_MASK = 1 << SREG_C;
 
 
-    public BaseInterpreter(Simulator simulator, Program p, int flash_size, int ioreg_size, int sram_size) {
+    public BaseInterpreter(Simulator simulator, Program p, MicrocontrollerProperties pr) {
 
         globalProbe = new MulticastProbe();
 
@@ -331,17 +332,17 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         this.clock = simulator.clock;
 
         // if program will not fit onto hardware, error
-        if (p.program_end > flash_size)
-            throw Avrora.failure("program will not fit into " + flash_size + " bytes");
+        if (p.program_end > pr.flash_size)
+            throw Avrora.failure("program will not fit into " + pr.flash_size + " bytes");
 
         // beginning address of SRAM array
-        sram_start = ioreg_size + NUM_REGS;
+        sram_start = pr.ioreg_size + NUM_REGS;
 
         // maximum data address
-        sram_max = NUM_REGS + ioreg_size + sram_size;
+        sram_max = NUM_REGS + pr.ioreg_size + pr.sram_size;
 
         // make array of IO registers
-        ioregs = new State.IOReg[ioreg_size];
+        ioregs = new State.IOReg[pr.ioreg_size];
 
         // allocate SRAM
         sram = new byte[sram_max];
