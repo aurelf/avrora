@@ -95,11 +95,6 @@ public class SimulateAction extends SimAction {
     public final Option.Bool TRACE = newOption("trace", false,
             "This option is used in the simulate action. It will cause the simulator " +
             "to print each instruction as it is executed.");
-    public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", false,
-            "This option is used in the \"simulate\" action. It causes the simulator " +
-            "to use the legacy (hand-written) interpreter rather than the interpreter " +
-            "generated from the architecture description language. It is used for " +
-            "benchmarking and regression purposes.");
     public final Option.Bool REALTIME = newOption("real-time", false,
             "This option is used in the simulate action to slow the simulation if it is too fast. " +
             "By default, the simulator will attempt to execute the program as fast as possible. " +

@@ -78,11 +78,6 @@ public class Program {
          */
         public final String name;
 
-        Location(int addr) {
-            name = null;
-            address = addr;
-        }
-
         Location(String n, int addr) {
             name = n;
             address = addr;
@@ -203,8 +198,6 @@ public class Program {
             return true;
         }
     }
-
-    private static final Instr NOP = new Instr.NOP(0);
 
     private final HashMap labels;
 

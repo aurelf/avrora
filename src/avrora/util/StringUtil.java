@@ -181,10 +181,6 @@ public class StringUtil {
         }
     }
 
-    public static void skipToCharacter(CharacterIterator i, char c) {
-        throw Avrora.unimplemented();
-    }
-
     public static char peek(CharacterIterator i) {
         return i.current();
     }

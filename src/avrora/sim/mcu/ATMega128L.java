@@ -1823,7 +1823,6 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
                     if ((interruptEnable && !writeEnable)) {
                         // post interrupt
-                        // do I need to check SREG[I] ?
                         if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: posting interrupt.");
                         interpreter.postInterrupt(EEPROM_INTERRUPT);
                     }
