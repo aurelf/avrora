@@ -31,9 +31,16 @@
  */
 
 package avrora.core.isdl.ast;
+import avrora.core.isdl.Token;
 
 /**
  * @author Ben L. Titzer
  */
-public class Stmt {
+public class VarAssignStmt extends AssignStmt {
+    public final Token name;
+
+    public VarAssignStmt(Token n, Expr e) {
+        super(e);
+        name = n;
+    }
 }

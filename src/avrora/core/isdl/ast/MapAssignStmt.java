@@ -31,9 +31,19 @@
  */
 
 package avrora.core.isdl.ast;
+import avrora.core.isdl.Token;
 
 /**
  * @author Ben L. Titzer
  */
-public class Stmt {
+public class MapAssignStmt extends AssignStmt {
+
+    public final Token mapname;
+    public final Expr index;
+
+    public MapAssignStmt(Token m, Expr i, Expr e) {
+        super(e);
+        mapname = m;
+        index = i;
+    }
 }

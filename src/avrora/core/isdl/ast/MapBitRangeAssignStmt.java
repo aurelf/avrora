@@ -31,9 +31,22 @@
  */
 
 package avrora.core.isdl.ast;
+import avrora.core.isdl.Token;
 
 /**
  * @author Ben L. Titzer
  */
-public class Stmt {
+public class MapBitRangeAssignStmt extends AssignStmt {
+    public final Token mapname;
+    public final int low_bit;
+    public final int high_bit;
+    public final Expr index;
+
+    public MapBitRangeAssignStmt(Token m, Expr i, Token l, Token h, Expr e) {
+        super(e);
+        mapname = m;
+        index = i;
+        low_bit = Expr.tokenToInt(l);
+        high_bit = Expr.tokenToInt(h);
+    }
 }

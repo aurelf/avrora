@@ -25,19 +25,19 @@ architecture avr {
     instruction adc(rd: GPR, rr: GPR) {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr };
         execute = {
-            local r1: byte = regs[rd];
-            local r2: byte = regs[rr];
+            local r1: byte = $regs(rd);
+            local r2: byte = $regs(rr);
             local result: int = performAddition(r1, r2, C);
-            regs[rd] = low(result);
+            $regs(rd) = low(result);
         };
     };
 
     instruction asr(rd: GPR) {
         encoding = GPR where { opcode = 0b1001010, r1 = rd };
         execute = {
-            local r1: byte = regs[rd];
+            local r1: byte = $regs(rd);
             local result: int = performRightShift(r1, r1[7:7]);
-            regs[rd] = low(result);
+            $regs(rd) = low(result);
         };
     };
 

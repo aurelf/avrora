@@ -95,9 +95,10 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public void Execute() throws ParseException {
+                   List l = new LinkedList();
     jj_consume_token(EXECUTE);
     jj_consume_token(EQUALS);
-    Block();
+    Block(l);
     jj_consume_token(SEMI);
   }
 
@@ -112,7 +113,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public void OperandDecl() throws ParseException {
     jj_consume_token(OPERAND);
     jj_consume_token(IDENTIFIER);
-    jj_consume_token(63);
+    jj_consume_token(64);
     Kind();
     jj_consume_token(EQUALS);
     OperandSet();
@@ -244,16 +245,21 @@ public class ISDLParser implements ISDLParserConstants {
 
   final public void Operand() throws ParseException {
     jj_consume_token(IDENTIFIER);
-    jj_consume_token(63);
+    jj_consume_token(64);
     jj_consume_token(IDENTIFIER);
   }
 
-  final public void Expr() throws ParseException {
-    Cond_Or_Expr();
+  final public Expr Expr() throws ParseException {
+                Expr e;
+    e = Cond_Or_Expr();
+                         {if (true) return e;}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void ExprList() throws ParseException {
-    Expr();
+  final public List ExprList() throws ParseException {
+                    List l = new LinkedList(); Expr e;
+    e = Expr();
+                  l.add(e);
     label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -266,87 +272,103 @@ public class ISDLParser implements ISDLParserConstants {
       }
       jj_consume_token(COMMA);
       Expr();
+                                            l.add(e);
     }
+      {if (true) return l;}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void Term() throws ParseException {
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case IDENTIFIER:
-      jj_consume_token(IDENTIFIER);
-      break;
-    case INTEGER_LITERAL:
-      jj_consume_token(INTEGER_LITERAL);
-      break;
-    default:
-      jj_la1[11] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-    label_7:
-    while (true) {
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case LPAREN:
-      case 64:
-        ;
-        break;
-      default:
-        jj_la1[12] = jj_gen;
-        break label_7;
-      }
-      TermSuffix();
-    }
-  }
-
-  final public void TermSuffix() throws ParseException {
-    if (jj_2_1(2147483647)) {
-      BitRange();
+  final public Expr Term() throws ParseException {
+                Expr e;
+    if (jj_2_1(2)) {
+      e = CallExpr();
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 64:
-        MapAccess();
+      case IDENTIFIER:
+        e = VarUse();
+        break;
+      case INTEGER_LITERAL:
+        e = Literal();
+        break;
+      case DOLLAR:
+        e = MapAccess();
         break;
       case LPAREN:
-        Parameters();
+        jj_consume_token(LPAREN);
+        e = Expr();
+        jj_consume_token(RPAREN);
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[11] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
     }
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case 65:
+      e = BitRange(e);
+      break;
+    default:
+      jj_la1[12] = jj_gen;
+      ;
+    }
+      {if (true) return e;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public Expr MapAccess() throws ParseException {
+                     Expr e; Token t;
+    jj_consume_token(DOLLAR);
+    t = jj_consume_token(IDENTIFIER);
+    jj_consume_token(LPAREN);
+    e = Expr();
+    jj_consume_token(RPAREN);
+                                            {if (true) return new MapExpr(t, e);}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public Expr VarUse() throws ParseException {
+                  Token t;
+    t = jj_consume_token(IDENTIFIER);
+                     {if (true) return new VarExpr(t);}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public Expr Literal() throws ParseException {
+                   Token t;
+    t = jj_consume_token(INTEGER_LITERAL);
+                          {if (true) return new LiteralExpr(t);}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public Expr CallExpr() throws ParseException {
+                    Token t; List l;
+    t = jj_consume_token(IDENTIFIER);
+    l = Parameters();
+                                      {if (true) return new CallExpr(t, l);}
+    throw new Error("Missing return statement in function");
   }
 
   final public List Parameters() throws ParseException {
-                      Expr e; List l = new LinkedList();
+                      List l = new LinkedList();
     jj_consume_token(LPAREN);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INTEGER_LITERAL:
+    case LPAREN:
     case SUB:
     case NOT:
     case B_COMP:
+    case DOLLAR:
     case IDENTIFIER:
-      e = Expr();
-                       l.add(e);
-      label_8:
-      while (true) {
-        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case COMMA:
-          ;
-          break;
-        default:
-          jj_la1[14] = jj_gen;
-          break label_8;
-        }
-        jj_consume_token(COMMA);
-        e = Expr();
-                                                     l.add(e);
-      }
+      l = ExprList();
       break;
     default:
-      jj_la1[15] = jj_gen;
+      jj_la1[13] = jj_gen;
       ;
     }
     jj_consume_token(RPAREN);
+      {if (true) return l;}
+    throw new Error("Missing return statement in function");
   }
 
   final public Stmt Statement() throws ParseException {
@@ -358,11 +380,12 @@ public class ISDLParser implements ISDLParserConstants {
     case IF:
       s = IfStatement();
       break;
+    case DOLLAR:
     case IDENTIFIER:
       s = Assignment();
       break;
     default:
-      jj_la1[16] = jj_gen;
+      jj_la1[14] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -374,7 +397,7 @@ public class ISDLParser implements ISDLParserConstants {
                          Expr e;
     jj_consume_token(LOCAL);
     jj_consume_token(IDENTIFIER);
-    jj_consume_token(63);
+    jj_consume_token(64);
     jj_consume_token(IDENTIFIER);
     jj_consume_token(EQUALS);
     e = Expr();
@@ -383,8 +406,8 @@ public class ISDLParser implements ISDLParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public void IfStatement() throws ParseException {
-                       Expr c; List t = new LinkedList(), f = new LinkedList();
+  final public IfStmt IfStatement() throws ParseException {
+                         Expr c; List t = new LinkedList(), f = new LinkedList();
     jj_consume_token(IF);
     jj_consume_token(LPAREN);
     c = Expr();
@@ -396,10 +419,11 @@ public class ISDLParser implements ISDLParserConstants {
       SingleStatement(f);
       break;
     default:
-      jj_la1[17] = jj_gen;
+      jj_la1[15] = jj_gen;
       ;
     }
       {if (true) return new IfStmt(c, t, f);}
+    throw new Error("Missing return statement in function");
   }
 
   final public void SingleStatement(List l) throws ParseException {
@@ -407,6 +431,7 @@ public class ISDLParser implements ISDLParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LOCAL:
     case IF:
+    case DOLLAR:
     case IDENTIFIER:
       s = Statement();
                       l.add(s);
@@ -415,79 +440,145 @@ public class ISDLParser implements ISDLParserConstants {
       Block(l);
       break;
     default:
-      jj_la1[18] = jj_gen;
+      jj_la1[16] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
   }
 
   final public AssignStmt Assignment() throws ParseException {
-                            Expr e;
-    Lvalue();
-    jj_consume_token(EQUALS);
-    e = Expr();
+                            AssignStmt s;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case IDENTIFIER:
+      s = VarAssignment();
+      break;
+    case DOLLAR:
+      s = MapAssignment();
+      break;
+    default:
+      jj_la1[17] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
     jj_consume_token(SEMI);
-      {if (true) return new AssignStmt(e);}
+      {if (true) return s;}
     throw new Error("Missing return statement in function");
   }
 
-  final public void Lvalue() throws ParseException {
-    jj_consume_token(IDENTIFIER);
-    if (jj_2_2(2147483647)) {
-      MapAccess();
-    } else {
-      ;
-    }
+  final public AssignStmt VarAssignment() throws ParseException {
+                               AssignStmt s; Token v, i, j; Expr e;
+    v = jj_consume_token(IDENTIFIER);
+    s = VarAssignEnd(v);
+      {if (true) return s;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public AssignStmt VarAssignEnd(Token v) throws ParseException {
+                                     AssignStmt s; Token i, j; Expr e;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 64:
-      BitRange();
+    case EQUALS:
+      jj_consume_token(EQUALS);
+      e = Expr();
+                       s = new VarAssignStmt(v, e);
+      break;
+    case 65:
+      jj_consume_token(65);
+      i = jj_consume_token(INTEGER_LITERAL);
+      jj_consume_token(64);
+      j = jj_consume_token(INTEGER_LITERAL);
+      jj_consume_token(66);
+      jj_consume_token(EQUALS);
+      e = Expr();
+                       s = new VarBitRangeAssignStmt(v, i, j, e);
+      break;
+    default:
+      jj_la1[18] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+        {if (true) return s;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public AssignStmt MapAssignment() throws ParseException {
+                               AssignStmt s; Token v, i, j; Expr ind, e;
+    jj_consume_token(DOLLAR);
+    v = jj_consume_token(IDENTIFIER);
+    jj_consume_token(LPAREN);
+    ind = Expr();
+    jj_consume_token(RPAREN);
+    s = MapAssignmentEnd(v, ind);
+      {if (true) return s;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public AssignStmt MapAssignmentEnd(Token v, Expr ind) throws ParseException {
+                                                   AssignStmt s; Token i, j; Expr e;
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case EQUALS:
+      jj_consume_token(EQUALS);
+      e = Expr();
+                       s = new MapAssignStmt(v, ind, e);
+      break;
+    case 65:
+      jj_consume_token(65);
+      i = jj_consume_token(INTEGER_LITERAL);
+      jj_consume_token(64);
+      j = jj_consume_token(INTEGER_LITERAL);
+      jj_consume_token(66);
+      jj_consume_token(EQUALS);
+      e = Expr();
+                       s = new MapBitRangeAssignStmt(v, ind, i, j, e);
       break;
     default:
       jj_la1[19] = jj_gen;
-      ;
+      jj_consume_token(-1);
+      throw new ParseException();
     }
+        {if (true) return s;}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void Block(List l) throws ParseException {
+  final public List Block(List l) throws ParseException {
                        Stmt s;
     jj_consume_token(LBRACKET);
-    label_9:
+    label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LOCAL:
       case IF:
+      case DOLLAR:
       case IDENTIFIER:
         ;
         break;
       default:
         jj_la1[20] = jj_gen;
-        break label_9;
+        break label_7;
       }
       s = Statement();
                            l.add(s);
     }
     jj_consume_token(RBRACKET);
+      {if (true) return l;}
+    throw new Error("Missing return statement in function");
   }
 
-  final public void MapAccess() throws ParseException {
-    jj_consume_token(64);
-    Expr();
+  final public Expr BitRange(Expr e) throws ParseException {
+                          Token t1, t2;
     jj_consume_token(65);
-  }
-
-  final public void BitRange() throws ParseException {
+    t1 = jj_consume_token(INTEGER_LITERAL);
     jj_consume_token(64);
-    jj_consume_token(INTEGER_LITERAL);
-    jj_consume_token(63);
-    jj_consume_token(INTEGER_LITERAL);
-    jj_consume_token(65);
+    t2 = jj_consume_token(INTEGER_LITERAL);
+    jj_consume_token(66);
+      {if (true) return new BitRangeExpr(e, t1, t2);}
+    throw new Error("Missing return statement in function");
   }
 
 // expression stuff
   final public Expr Cond_Or_Expr() throws ParseException {
                         Expr e, et; Token tok;
     e = Cond_Xor_Expr();
-    label_10:
+    label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case OR:
@@ -495,7 +586,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[21] = jj_gen;
-        break label_10;
+        break label_8;
       }
       tok = jj_consume_token(OR);
       et = Cond_Xor_Expr();
@@ -508,7 +599,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Cond_Xor_Expr() throws ParseException {
                          Expr e, et; Token tok;
     e = Cond_And_Expr();
-    label_11:
+    label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case XOR:
@@ -516,7 +607,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[22] = jj_gen;
-        break label_11;
+        break label_9;
       }
       tok = jj_consume_token(XOR);
       et = Cond_And_Expr();
@@ -529,7 +620,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Cond_And_Expr() throws ParseException {
                          Expr e, et; Token tok;
     e = Or_Expr();
-    label_12:
+    label_10:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case AND:
@@ -537,7 +628,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[23] = jj_gen;
-        break label_12;
+        break label_10;
       }
       tok = jj_consume_token(AND);
       et = Or_Expr();
@@ -550,7 +641,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Or_Expr() throws ParseException {
                    Expr e, et; Token tok;
     e = Xor_Expr();
-    label_13:
+    label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case B_OR:
@@ -558,7 +649,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[24] = jj_gen;
-        break label_13;
+        break label_11;
       }
       tok = jj_consume_token(B_OR);
       et = Xor_Expr();
@@ -571,7 +662,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Xor_Expr() throws ParseException {
                     Expr e, et; Token tok;
     e = And_Expr();
-    label_14:
+    label_12:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case B_XOR:
@@ -579,7 +670,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[25] = jj_gen;
-        break label_14;
+        break label_12;
       }
       tok = jj_consume_token(B_XOR);
       et = And_Expr();
@@ -592,7 +683,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr And_Expr() throws ParseException {
                     Expr e, et; Token tok;
     e = Equ_Expr();
-    label_15:
+    label_13:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case B_AND:
@@ -600,7 +691,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[26] = jj_gen;
-        break label_15;
+        break label_13;
       }
       tok = jj_consume_token(B_AND);
       et = Equ_Expr();
@@ -613,7 +704,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Equ_Expr() throws ParseException {
                     Expr e, et;
     e = Rel_Expr();
-    label_16:
+    label_14:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case EQUAL:
@@ -622,7 +713,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[27] = jj_gen;
-        break label_16;
+        break label_14;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case EQUAL:
@@ -648,7 +739,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Rel_Expr() throws ParseException {
                     Expr e, et; Token tok;
     e = Shift_Expr();
-    label_17:
+    label_15:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LESS:
@@ -659,7 +750,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[29] = jj_gen;
-        break label_17;
+        break label_15;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LESS:
@@ -675,12 +766,12 @@ public class ISDLParser implements ISDLParserConstants {
       case LESSEQ:
         jj_consume_token(LESSEQ);
         et = Shift_Expr();
-                              e = new Logical.LessEqualExpr(e, et);
+                              e = new Logical.LessEquExpr(e, et);
         break;
       case GREATEREQ:
         jj_consume_token(GREATEREQ);
         et = Shift_Expr();
-                              e = new Logical.GreaterEqualExpr(e, et);
+                              e = new Logical.GreaterEquExpr(e, et);
         break;
       default:
         jj_la1[30] = jj_gen;
@@ -695,7 +786,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Shift_Expr() throws ParseException {
                       Expr e, et; Token tok;
     e = Add_Expr();
-    label_18:
+    label_16:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SHIFTLEFT:
@@ -704,7 +795,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[31] = jj_gen;
-        break label_18;
+        break label_16;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case SHIFTLEFT:
@@ -730,7 +821,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Add_Expr() throws ParseException {
                     Expr e, et; Token tok;
     e = Mul_Expr();
-    label_19:
+    label_17:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ADD:
@@ -739,18 +830,18 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[33] = jj_gen;
-        break label_19;
+        break label_17;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ADD:
         jj_consume_token(ADD);
         et = Mul_Expr();
-                           e = new Arith.AddExpr(tok, e, et);
+                           e = new Arith.AddExpr(e, et);
         break;
       case SUB:
         jj_consume_token(SUB);
         et = Mul_Expr();
-                           e = new Arith.SubExpr(tok, e, et);
+                           e = new Arith.SubExpr(e, et);
         break;
       default:
         jj_la1[34] = jj_gen;
@@ -765,7 +856,7 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Mul_Expr() throws ParseException {
                     Expr e, et; Token tok;
     e = Un_Expr();
-    label_20:
+    label_18:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case MUL:
@@ -774,7 +865,7 @@ public class ISDLParser implements ISDLParserConstants {
         break;
       default:
         jj_la1[35] = jj_gen;
-        break label_20;
+        break label_18;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case MUL:
@@ -800,12 +891,24 @@ public class ISDLParser implements ISDLParserConstants {
   final public Expr Un_Expr() throws ParseException {
                    Expr e;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case SUB:
-    case NOT:
     case B_COMP:
-      e = Unop_Expr();
+      jj_consume_token(B_COMP);
+      e = Term();
+                      e = new Arith.CompExpr(e);
+      break;
+    case NOT:
+      jj_consume_token(NOT);
+      e = Term();
+                      e = new Logical.NotExpr(e);
+      break;
+    case SUB:
+      jj_consume_token(SUB);
+      e = Term();
+                      e = new Arith.NegExpr(e);
       break;
     case INTEGER_LITERAL:
+    case LPAREN:
+    case DOLLAR:
     case IDENTIFIER:
       e = Term();
       break;
@@ -818,33 +921,6 @@ public class ISDLParser implements ISDLParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public Expr Unop_Expr() throws ParseException {
-                     Expr e, et;
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case B_COMP:
-      jj_consume_token(B_COMP);
-      et = Un_Expr();
-                          e = new Arith.CompExpr(et);
-      break;
-    case NOT:
-      jj_consume_token(NOT);
-      et = Un_Expr();
-                          e = new Logical.NotExpr(et);
-      break;
-    case SUB:
-      jj_consume_token(SUB);
-      et = Un_Expr();
-                          e = new Arith.NegExpr(et);
-      break;
-    default:
-      jj_la1[38] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
-    }
-     {if (true) return e;}
-    throw new Error("Missing return statement in function");
-  }
-
   final private boolean jj_2_1(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     boolean retval = !jj_3_1();
@@ -852,555 +928,22 @@ public class ISDLParser implements ISDLParserConstants {
     return retval;
   }
 
-  final private boolean jj_2_2(int xla) {
-    jj_la = xla; jj_lastpos = jj_scanpos = token;
-    boolean retval = !jj_3_2();
-    jj_save(1, xla);
-    return retval;
-  }
-
-  final private boolean jj_3R_33() {
-    if (jj_3R_35()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_36()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_34() {
-    if (jj_scan_token(B_AND)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_33()) return true;
+  final private boolean jj_3R_20() {
+    if (jj_scan_token(LPAREN)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
 
-  final private boolean jj_3R_31() {
-    if (jj_3R_33()) return true;
+  final private boolean jj_3R_19() {
+    if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_34()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_74() {
-    if (jj_3R_21()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_75()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_65() {
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
+    if (jj_3R_20()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
 
   final private boolean jj_3_1() {
-    if (jj_scan_token(64)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(63)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_32() {
-    if (jj_scan_token(B_XOR)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_31()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_73() {
-    if (jj_scan_token(LPAREN)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_74()) jj_scanpos = xsp;
-    else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(RPAREN)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_29() {
-    if (jj_3R_31()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_32()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_70() {
-    if (jj_3R_73()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_69() {
-    if (jj_3R_72()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_30() {
-    if (jj_scan_token(B_OR)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_29()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_68() {
-    if (jj_3R_71()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_67() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_68()) {
-    jj_scanpos = xsp;
-    if (jj_3R_69()) {
-    jj_scanpos = xsp;
-    if (jj_3R_70()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_27() {
-    if (jj_3R_29()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_30()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_66() {
-    if (jj_3R_67()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_64() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_60() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_64()) {
-    jj_scanpos = xsp;
-    if (jj_3R_65()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_66()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_56() {
-    if (jj_3R_60()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_28() {
-    if (jj_scan_token(AND)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_27()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_25() {
-    if (jj_3R_27()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_28()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_63() {
-    if (jj_scan_token(SUB)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_51()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_26() {
-    if (jj_scan_token(XOR)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_25()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_62() {
-    if (jj_scan_token(NOT)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_51()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_21() {
-    if (jj_3R_22()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_61() {
-    if (jj_scan_token(B_COMP)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_51()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_23() {
-    if (jj_3R_25()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_26()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_59() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_61()) {
-    jj_scanpos = xsp;
-    if (jj_3R_62()) {
-    jj_scanpos = xsp;
-    if (jj_3R_63()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3_2() {
-    if (jj_scan_token(64)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_21()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(65)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_24() {
-    if (jj_scan_token(OR)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_23()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_55() {
-    if (jj_3R_59()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_22() {
-    if (jj_3R_23()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_24()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_51() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_55()) {
-    jj_scanpos = xsp;
-    if (jj_3R_56()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_58() {
-    if (jj_scan_token(DIV)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_51()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_57() {
-    if (jj_scan_token(MUL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_51()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_52() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_57()) {
-    jj_scanpos = xsp;
-    if (jj_3R_58()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_71() {
-    if (jj_scan_token(64)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(63)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(65)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_47() {
-    if (jj_3R_51()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_52()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_72() {
-    if (jj_scan_token(64)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_21()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(65)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_54() {
-    if (jj_scan_token(SUB)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_47()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_48() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_53()) {
-    jj_scanpos = xsp;
-    if (jj_3R_54()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_53() {
-    if (jj_scan_token(ADD)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_47()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_41() {
-    if (jj_3R_47()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_48()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_50() {
-    if (jj_scan_token(SHIFTRIGHT)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_41()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_42() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_49()) {
-    jj_scanpos = xsp;
-    if (jj_3R_50()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_49() {
-    if (jj_scan_token(SHIFTLEFT)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_41()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_37() {
-    if (jj_3R_41()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_42()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_75() {
-    if (jj_scan_token(COMMA)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_21()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_46() {
-    if (jj_scan_token(GREATEREQ)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_37()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_45() {
-    if (jj_scan_token(LESSEQ)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_37()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_44() {
-    if (jj_scan_token(GREATER)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_37()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_38() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_43()) {
-    jj_scanpos = xsp;
-    if (jj_3R_44()) {
-    jj_scanpos = xsp;
-    if (jj_3R_45()) {
-    jj_scanpos = xsp;
-    if (jj_3R_46()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_43() {
-    if (jj_scan_token(LESS)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_37()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_35() {
-    if (jj_3R_37()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_38()) { jj_scanpos = xsp; break; }
-      if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_40() {
-    if (jj_scan_token(NOTEQUAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_35()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_36() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_39()) {
-    jj_scanpos = xsp;
-    if (jj_3R_40()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_39() {
-    if (jj_scan_token(EQUAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_35()) return true;
+    if (jj_3R_19()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
@@ -1414,7 +957,7 @@ public class ISDLParser implements ISDLParserConstants {
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[39];
+  final private int[] jj_la1 = new int[38];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -1424,15 +967,15 @@ public class ISDLParser implements ISDLParserConstants {
       jj_la1_2();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x2d00000,0x2d00000,0x30000000,0x30000000,0xe000000,0x0,0x0,0x1000000,0x0,0x0,0x0,0x2000,0x0,0x0,0x0,0x2000,0xc0000000,0x0,0xc0000000,0x0,0xc0000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000,0x0,};
+      jj_la1_0 = new int[] {0x2d00000,0x2d00000,0x30000000,0x30000000,0xe000000,0x0,0x0,0x1000000,0x0,0x0,0x0,0x2000,0x0,0x2000,0xc0000000,0x0,0xc0000000,0x0,0x0,0x0,0xc0000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x80,0x10000010,0x0,0x80,0x80,0x80,0x10000000,0x100,0x100,0x80,0x10304000,0x10000000,0x1,0x10000010,0x0,0x10000000,0x4,0x8,0x2,0x40000,0x80000,0x20000,0xc00000,0xc00000,0xf000000,0xf000000,0x1800,0x1800,0x6000,0x6000,0x18000,0x18000,0x10304000,0x304000,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x80,0x20000010,0x0,0x80,0x80,0x80,0x30000100,0x0,0x30304100,0x30000000,0x1,0x30000010,0x30000000,0x40,0x40,0x30000000,0x4,0x8,0x2,0x40000,0x80000,0x20000,0xc00000,0xc00000,0xf000000,0xf000000,0x1800,0x1800,0x6000,0x6000,0x18000,0x18000,0x30304100,};
    }
    private static void jj_la1_2() {
-      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x1,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[2];
+  final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -1442,7 +985,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 38; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1452,7 +995,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 38; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1462,7 +1005,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 38; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1472,7 +1015,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 38; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1481,7 +1024,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 38; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1490,7 +1033,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 38; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1597,15 +1140,15 @@ public class ISDLParser implements ISDLParserConstants {
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[66];
-    for (int i = 0; i < 66; i++) {
+    boolean[] la1tokens = new boolean[67];
+    for (int i = 0; i < 67; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 39; i++) {
+    for (int i = 0; i < 38; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -1620,7 +1163,7 @@ public class ISDLParser implements ISDLParserConstants {
         }
       }
     }
-    for (int i = 0; i < 66; i++) {
+    for (int i = 0; i < 67; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
@@ -1645,14 +1188,13 @@ public class ISDLParser implements ISDLParserConstants {
 
   final private void jj_rescan_token() {
     jj_rescan = true;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 1; i++) {
       JJCalls p = jj_2_rtns[i];
       do {
         if (p.gen > jj_gen) {
           jj_la = p.arg; jj_lastpos = jj_scanpos = p.first;
           switch (i) {
             case 0: jj_3_1(); break;
-            case 1: jj_3_2(); break;
           }
         }
         p = p.next;

@@ -54,9 +54,10 @@ public interface ISDLParserConstants {
   int LESSEQ = 57;
   int GREATER = 58;
   int GREATEREQ = 59;
-  int IDENTIFIER = 60;
-  int LETTER = 61;
-  int DIGIT = 62;
+  int DOLLAR = 60;
+  int IDENTIFIER = 61;
+  int LETTER = 62;
+  int DIGIT = 63;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -124,6 +125,7 @@ public interface ISDLParserConstants {
     "\"<=\"",
     "\">\"",
     "\">=\"",
+    "\"$\"",
     "<IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",

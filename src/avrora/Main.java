@@ -140,7 +140,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.4";
+    static final String VERSION = "Beta 1.1.5";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
