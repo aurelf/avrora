@@ -24,6 +24,24 @@ public class AbstractArithmetic {
      *
      */
 
+    public static char merge(byte val1, byte val2) {
+        int mm = ~(val1 ^ val2);
+        return canon((char)mm, (char)val1);
+    }
+
+    public static char merge(char val1, byte val2) {
+        int mm = ~(knownBitsOf(val1) ^ val2);
+        return canon((char)(mm & maskOf(val1)), val1);
+    }
+
+    public static char merge(byte val1, byte val2, byte val3) {
+        return merge(merge(val1, val2), val3);
+    }
+
+    public static char merge(byte val1, byte val2, byte val3, byte val4) {
+        return merge(merge(val1, val2), merge(val3, val4));
+    }
+
     public static char merge(char val1, char val2) {
         if ( val1 == val2 ) return val1;
 

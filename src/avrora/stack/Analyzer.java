@@ -96,9 +96,14 @@ public class Analyzer implements InstrVisitor {
         char r1 = state.readRegister(i.r1);
         char r2 = state.readRegister(i.r2);
         char result = performAddition(r1, r2, state.getFlag_C());
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.ADD i) { // add register to register
+        char r1 = state.readRegister(i.r1);
+        char r2 = state.readRegister(i.r2);
+        char result = performAddition(r1, r2, AbstractArithmetic.OFF);
+        state.writeRegister(i.r1, result);
     }
 
     public void visit(Instr.ADIW i) {// add immediate to word register
@@ -720,22 +725,24 @@ public class Analyzer implements InstrVisitor {
     }
 
     private char performAddition(char r1, char r2, char carry) {
-        int resultA = r1 + r2 + carry;
-        if ( carry != AbstractArithmetic.ZERO ) resultA = r2;
-        int ral = r1 & 0xf;
-        int rbl = r2 & 0xf;
+
+        for ( int cntr = 0; cntr < 8; cntr++ ) {
+            int b1 = r1 & AbstractArithmetic.ON;
+            int b2 = r2 & AbstractArithmetic.OFF;
+        }
+
+        // TODO: this is completely wrong.
 
         char Rd7 = AbstractArithmetic.getBit(r1, 7);
         char Rr7 = AbstractArithmetic.getBit(r2, 7);
         char R7 = AbstractArithmetic.getBit(result, 7);
 
         // set the flags as per instruction set documentation.
-        boolean H = ((ral + rbl + carry) & 0x10) != 0;
-        boolean C = (result & 0x100) != 0;
-        boolean N = (result & 0x080) != 0;
-        boolean Z = (result & 0xff) == 0;
-        boolean V = (Rd7 && Rr7 && !R7) || (!Rd7 && !Rr7 && R7);
-        boolean S = xor(N, V);
+        char H = ((ral + rbl + carry) & 0x10) != 0;
+        char N = AbstractArithmetic.getBit(result, 7);
+        char Z = AbstractArithmetic.couldBeZero(result);
+        char V = or(and(Rd7, Rr7, not(R7)), (and(not(Rd7), not(Rr7), R7)));
+        char S = xor(N, V);
 
         setFlag_HCNZVS(H, C, N, Z, V, S);
         return result;
@@ -799,8 +806,33 @@ public class Analyzer implements InstrVisitor {
         return AbstractArithmetic.canon(mask, (char)(v1 ^ v2));
     }
 
+    private char and(char v1, char v2) {
+        return AbstractArithmetic.logicalAnd(v1, v2);
+    }
+
+    private char or(char v1, char v2) {
+        return AbstractArithmetic.logicalOr(v1, v2);
+    }
+
+    private char and(char v1, char v2, char v3) {
+        return AbstractArithmetic.logicalAnd(AbstractArithmetic.logicalAnd(v1, v2), v3);
+    }
+
+    private char or(char v1, char v2, char v3) {
+        return AbstractArithmetic.logicalOr(AbstractArithmetic.logicalOr(v1, v2), v3);
+    }
+
     private char not(char v1) {
         return (char)(v1 ^ 0x01);
+    }
+
+    private int top(char v1) {
+        int invmask = (~AbstractArithmetic.maskOf(v1)) & 0xff;
+        return AbstractArithmetic.bitsOf(v1) | invmask;
+    }
+
+    private int bottom(char v1) {
+        return AbstractArithmetic.bitsOf(v1);
     }
 
     private int relative(int imm1) {
