@@ -256,8 +256,6 @@ public class Main extends VPCBase {
                     total += icount[cntr];
                 }
 
-                long last1 = -1;
-
                 for ( int cntr = 0; cntr < imax; cntr += 2) {
                     int start = cntr;
                     int runlength = 1;
@@ -284,7 +282,6 @@ public class Main extends VPCBase {
                     }
 
                     reportQuantity("    "+addr, cnt, "  "+percent);
-                    last1 = c;
                 }
             }
         }
@@ -313,7 +310,7 @@ public class Main extends VPCBase {
         void reportTime() {
             long diff = endms - startms;
             if ( TIME.get() ) {
-                reportQuantity("Time for simulation", ((float)diff)/1000, "seconds");
+                reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "");
                 if ( total != null ) {
                     float thru = ((float)total.count) / (diff*1000);
                     reportQuantity("Average throughput", thru, "mips");
