@@ -38,10 +38,7 @@ import avrora.core.isdl.gen.*;
 import avrora.core.isdl.parser.ISDLParser;
 import avrora.util.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
+import java.io.*;
 
 /**
  * The <code>ISDLAction</code> class implements an action to load an instruction set description from a file
@@ -68,8 +65,13 @@ public class ISDLAction extends Action {
     public final Option.Bool INLINE = newOption("inline", true,
             "This option controls whether the ISDL processor will inline all subroutines marked as " +
             "\"inline\" in their declaration.");
-    public final Option.Str DISASSEM = newOption("disassembler", "", "");
-    public final Option.Str DISTEST = newOption("disassembler-tests", "", "");
+    public final Option.Str DISASSEM = newOption("disassembler", "",
+            "This option specifies the destination file into which to generate the code for the " +
+            "disassembler. The disassembler decodes a binary stream into source-level instructions.");
+    public final Option.Str DISTEST = newOption("disassembler-tests", "",
+            "This option specifies the directory into which to generate disassembler test cases. " +
+            "These test cases will attempt to cover a reasonable portion of the encoding space to " +
+            "test the correctness of the disassembler generator.");
 
     public ISDLAction() {
         super(HELP);
@@ -89,42 +91,35 @@ public class ISDLAction extends Action {
             Architecture a = parser.Architecture();
             Status.success();
 
-            String interpreter = INTERPRETER.get();
-            if (!"".equals(interpreter)) {
+            SectionFile sf = createSectionFile("interpreter", "INTERPRETER GENERATOR", INTERPRETER);
+            if (sf != null) {
                 // generate vanilla interpreter
-                Status.begin("Generating interpreter to " + interpreter);
-                SectionFile f = new SectionFile(INTERPRETER.get(), "INTERPRETER GENERATOR");
-                new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
-                f.close();
+                new InterpreterGenerator(a, np(sf)).generate();
+                sf.close();
                 Status.success();
             }
 
-            String classes = CLASSES.get();
-            if (!"".equals(classes)) {
+            sf = createSectionFile("Instr.* inner classes", "INSTR GENERATOR", CLASSES);
+            if ( sf != null) {
                 // generate instruction classes
-                Status.begin("Generating Instr inner classes to " + classes);
-                SectionFile f = new SectionFile(classes, "INSTR GENERATOR");
-                new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
-                f.close();
+                new ClassGenerator(a, np(sf)).generate();
+                sf.close();
                 Status.success();
             }
 
-            String codemap = CODEMAP.get();
-            if (!"".equals(codemap)) {
+            sf = createSectionFile("codemap", "CODEBUILDER GENERATOR", CODEMAP);
+            if (sf != null) {
                 // generate instruction classes
-                Status.begin("Generating codemap to " + codemap);
-                SectionFile f = new SectionFile(codemap, "CODEBUILDER GENERATOR");
-                new CodemapGenerator(a, new Printer(new PrintStream(f))).generate();
-                f.close();
+                new CodemapGenerator(a, np(sf)).generate();
+                sf.close();
                 Status.success();
             }
 
-            String disassem = DISASSEM.get();
-            if ( !"".equals(disassem) ) {
-                Status.begin("Generating disassembler to " + disassem);
-                SectionFile f = new SectionFile(disassem, "DISASSEM GENERATOR");
-                new DisassemblerGenerator(a, new Printer(new PrintStream(f))).generate();
-                f.close();
+            sf = createSectionFile("disassembler", "DISASSEM GENERATOR", DISASSEM);
+            if (sf != null) {
+                // generate the disassembler
+                new DisassemblerGenerator(a, np(sf)).generate();
+                sf.close();
                 Status.success();
             }
 
@@ -142,5 +137,18 @@ public class ISDLAction extends Action {
             Status.error(t);
             return;
         }
+    }
+
+    private Printer np(SectionFile f) {
+        return new Printer(new PrintStream(f));
+    }
+
+    private SectionFile createSectionFile(String gen, String sect, Option.Str opt) throws IOException {
+        String s = opt.get();
+        if ( !"".equals(s) ) {
+            Status.begin("Generating "+gen+" to " + s);
+            return new SectionFile(s, sect);
+        } else
+            return null;
     }
 }

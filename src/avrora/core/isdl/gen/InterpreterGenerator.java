@@ -234,7 +234,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         mapMap.put("isize", new GetterSetterMap("getInstrSize", "---"));
     }
 
-    public void generateCode() {
+    public void generate() {
         printer.indent();
         architecture.accept(this);
         printer.unindent();
