@@ -46,6 +46,8 @@ public final class Terminal {
     public static boolean useColors = true;
     public static boolean htmlColors;
 
+    public static final int MAXLINE = 78;
+
     private static PrintStream out = System.out;
 
     public static final int COLOR_BLACK = 0;

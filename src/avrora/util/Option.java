@@ -120,7 +120,7 @@ public abstract class Option {
      * description of the item to the terminal.
      */
     public void printDescription() {
-        Terminal.print(StringUtil.makeParagraphs(description, 8, 0, 78));
+        Terminal.print(StringUtil.makeParagraphs(description, 8, 0, Terminal.MAXLINE));
         Terminal.nextln();
     }
 

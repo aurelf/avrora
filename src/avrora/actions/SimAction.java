@@ -329,14 +329,14 @@ public abstract class SimAction extends Action {
      * the columns for the events outputted by the rest of the simulation.
      */
     protected void printSimHeader() {
-        Terminal.printSeparator(78, "Simulation events");
+        Terminal.printSeparator(Terminal.MAXLINE, "Simulation events");
         Terminal.printGreen("Node       Time   Event");
         Terminal.nextln();
-        Terminal.printThinSeparator(78);
+        Terminal.printThinSeparator(Terminal.MAXLINE);
     }
 
     protected void printSeparator() {
-        Terminal.printSeparator(78);
+        Terminal.printSeparator(Terminal.MAXLINE);
     }
 
     /**

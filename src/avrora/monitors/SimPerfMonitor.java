@@ -74,10 +74,10 @@ public class SimPerfMonitor extends MonitorFactory {
 
         public void report() {
 
-            Terminal.printSeparator(78, "Simulator performance results");
+            Terminal.printSeparator(Terminal.MAXLINE, "Simulator performance results");
             Terminal.printGreen("  Time    Millis  Instant     Cumulative");
             Terminal.nextln();
-            Terminal.printSeparator(78);
+            Terminal.printSeparator(Terminal.MAXLINE);
 
             for ( int cntr = 0; cntr < collected; cntr++ ) {
                 long cycle = cycles[cntr];

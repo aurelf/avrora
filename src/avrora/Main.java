@@ -324,7 +324,7 @@ public class Main {
             printGreenEqYellow("    -action", a);
             Terminal.nextln();
             String help = ((Action)actions.getObjectOfClass(a)).getHelp();
-            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, 78));
+            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, Terminal.MAXLINE));
         }
 
         Terminal.println("");
@@ -343,7 +343,7 @@ public class Main {
             printGreenEqYellow("    -input", a);
             Terminal.nextln();
             String help = ((ProgramReader)inputs.getObjectOfClass(a)).getHelp();
-            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, 78));
+            Terminal.println(StringUtil.makeParagraphs(help, 8, 0, Terminal.MAXLINE));
         }
         Terminal.println("");
     }
@@ -369,7 +369,7 @@ public class Main {
     static void printSection(String title, String paragraphs) {
         Terminal.printBrightBlue(title);
         Terminal.println("\n");
-        Terminal.println(StringUtil.makeParagraphs(paragraphs, 0, 4, 78));
+        Terminal.println(StringUtil.makeParagraphs(paragraphs, 0, 4, Terminal.MAXLINE));
         Terminal.nextln();
     }
 
@@ -378,9 +378,10 @@ public class Main {
         String notice;
         if (!LICENSE.get())
             notice =
-                    "This is a prototype simulator and analysis tool intended for evaluation " +
-                    "and experimentation purposes only. It is provided with absolutely no " +
-                    "warranty, expressed or implied. For more information about the license " +
+                    "This simulator and analysis tool is provided with absolutely no " +
+                    "warranty, either expressed or implied. It is provided to you with the hope " +
+                    "that it be useful for evaluation of and experimentation with microcontroller " +
+                    "and sensor network programs. For more information about the license " +
                     "that this software is provided to you under, specify the \"license\" " +
                     "option.\n\n";
         else
@@ -416,7 +417,7 @@ public class Main {
                     "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE " +
                     "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n";
 
-        Terminal.print(StringUtil.makeParagraphs(notice, 0, 0, 60));
+        Terminal.print(StringUtil.makeParagraphs(notice, 0, 0, Terminal.MAXLINE));
     }
 
     static void title() {
