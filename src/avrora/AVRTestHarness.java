@@ -297,7 +297,7 @@ public class AVRTestHarness implements TestHarness {
             // let all exceptions fall through to AutomatedTester
             parser.Module();
             program = module.build();
-            simulator = new ATMega128L().loadProgram(program);
+            simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
             simulator.start();
         }
 

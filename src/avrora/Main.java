@@ -4,6 +4,7 @@ import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.SimulateAction;
 import avrora.sim.mcu.Microcontrollers;
+import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.stack.AnalyzeStackAction;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.gas.GASProgramReader;
@@ -112,7 +113,7 @@ public class Main {
             "This option is used in the simulate action. It allows the user to "+
             "insert a series of breakpoints in the program from the command line. "+
             "The address of the breakpoint can be given in hexadecimal or as a label "+
-            "within the program.");
+            "within the program. Hexadecimal constants are denoted by a leading '$'.");
     public static final Option.List COUNTS       = options.newOptionList("count", "",
             "This option is used in the simulate action. It allows the user to "+
             "insert a list of profiling counters in the program that collect profiling "+
@@ -440,8 +441,8 @@ public class Main {
 
         while ( i.hasNext() ) {
             String val = (String)i.next();
-            if ( StringUtil.isHexDigit(val.charAt(0)) )
-                locset.add(new Location(Integer.parseInt(val, 16)));
+            if ( val.charAt(0) == '$' )
+                locset.add(new Location(StringUtil.evaluateIntegerLiteral(val)));
             else {
                 Program.Label l = program.getLabel(val);
                 if ( l == null ) Avrora.userError("cannot find label "+StringUtil.quote(val)+" in specified program");
@@ -455,8 +456,8 @@ public class Main {
         return loclist;
     }
 
-    public static Microcontroller getMicrocontroller() {
-        Microcontroller mcu = Microcontrollers.getMicrocontroller(CHIP.get());
+    public static MicrocontrollerFactory getMicrocontroller() {
+        MicrocontrollerFactory mcu = Microcontrollers.getMicrocontroller(CHIP.get());
         if ( mcu == null )
             Avrora.userError("unknown microcontroller", CHIP.get());
         return mcu;

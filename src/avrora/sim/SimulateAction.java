@@ -78,10 +78,10 @@ public class SimulateAction extends Main.Action {
     public void run(String[] args) throws Exception {
         Main.ProgramReader r = Main.getProgramReader();
         program = r.read(args);
-        simulator = Main.getMicrocontroller().loadProgram(program);
+        simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
         counters = new LinkedList();
         branchcounters = new LinkedList();
-        
+
         processBreakPoints();
         processCounters();
         processBranchCounters();

@@ -97,7 +97,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         newPin(64, "AVCC");
     }
 
-    class Pin implements Microcontroller.Pin {
+    /**
+     * The <code>Pin</code> class implements a model of a pin on the ATmega128L for
+     * the general purpose IO ports.
+     */
+    protected class Pin implements Microcontroller.Pin {
         boolean level;
         boolean outputDir;
         boolean pullup;
@@ -171,7 +175,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     }
 
     protected void installPins() {
-        // TODO: install actual pins
+        for ( int cntr = 0; cntr < NUM_PINS; cntr++ )
+            pins[cntr] = new Pin();
+
+        // TODO: install reserved pins like VCC
     }
 
     /**
@@ -334,6 +341,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         public SimImpl(Program p) {
             super(ATMega128L.this, p);
+            populateState(getState());
         }
 
         public static final int RESET_VECT = 1;
@@ -344,6 +352,92 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         protected FlagRegister TIFR_reg;
         protected MaskRegister TIMSK_reg;
+
+        protected class DirectionRegister extends State.RWIOReg {
+
+            protected Pin[] pins;
+
+            protected DirectionRegister(Pin[] p) {
+                pins = p;
+            }
+
+            public void write(byte val) {
+                for ( int cntr = 0; cntr < 8; cntr++ )
+                    pins[cntr].setOutputDir(Arithmetic.getBit(val, cntr));
+                value = val;
+            }
+
+            public void setBit(int bit) {
+                pins[bit].setOutputDir(true);
+                value = Arithmetic.setBit(value, bit);
+            }
+
+            public void clearBit(int bit) {
+                pins[bit].setOutputDir(false);
+                value = Arithmetic.clearBit(value, bit);
+            }
+        }
+
+        protected class PortRegister extends State.RWIOReg {
+            protected Pin[] pins;
+
+            protected PortRegister(Pin[] p) {
+                pins = p;
+            }
+
+            public void write(byte val) {
+                for ( int cntr = 0; cntr < 8; cntr++ )
+                    pins[cntr].write(Arithmetic.getBit(val, cntr));
+                value = val;
+            }
+
+            public void setBit(int bit) {
+                pins[bit].write(true);
+                value = Arithmetic.setBit(value, bit);
+            }
+
+            public void clearBit(int bit) {
+                pins[bit].write(false);
+                value = Arithmetic.clearBit(value, bit);
+            }
+        }
+
+        protected class PinRegister implements State.IOReg {
+            protected Pin[] pins;
+
+            protected PinRegister(Pin[] p) {
+                pins = p;
+            }
+
+            public byte read() {
+                int value = 0;
+                value |= pins[0].read() ? 1 << 0 : 0;
+                value |= pins[1].read() ? 1 << 1 : 0;
+                value |= pins[2].read() ? 1 << 2 : 0;
+                value |= pins[3].read() ? 1 << 3 : 0;
+                value |= pins[4].read() ? 1 << 4 : 0;
+                value |= pins[5].read() ? 1 << 5 : 0;
+                value |= pins[6].read() ? 1 << 6 : 0;
+                value |= pins[7].read() ? 1 << 7 : 0;
+                return (byte)value;
+            }
+
+            public boolean readBit(int bit) {
+                return pins[bit].read();
+            }
+
+            public void write(byte val) {
+                // ignore writes.
+            }
+
+            public void setBit(int bit) {
+                // ignore writes.
+            }
+
+            public void clearBit(int bit) {
+                // ignore writes.
+            }
+        }
 
         /**
          * The <code>Timer0</code> class emulates the functionality and behavior of the
@@ -536,7 +630,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
         protected State constructState() {
-            State ns = new State(program, FLASH_SIZE, IOREG_SIZE, SRAM_SIZE);
+            return new State(program, FLASH_SIZE, IOREG_SIZE, SRAM_SIZE);
+        }
+
+        private void populateState(State ns) {
             // set up the external interrupt mask and flag registers and interrupt range
             EIFR_reg = buildInterruptRange(ns, true, EIMSK, EIFR, 2, 8);
             EIMSK_reg = EIFR_reg.maskRegister;
@@ -548,8 +645,27 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             // build timer 0
             new Timer0(ns);
 
+            buildPorts(ns);
             // TODO: build other devices
-            return ns;
+        }
+
+
+        private void buildPorts(State ns) {
+            buildPort(ns, 'A', PORTA, DDRA, PINA);
+            buildPort(ns, 'B', PORTB, DDRB, PINB);
+            buildPort(ns, 'C', PORTC, DDRC, PINC);
+            buildPort(ns, 'D', PORTD, DDRD, PIND);
+            buildPort(ns, 'E', PORTE, DDRE, PINE);
+            buildPort(ns, 'F', PORTF, DDRF, PINF);
+        }
+
+        private void buildPort(State ns, char p, int portreg, int dirreg, int pinreg) {
+            Pin[] pins = new Pin[8];
+            for ( int cntr = 0; cntr < 8; cntr++ )
+                pins[cntr] = (Pin)getPin("P"+p+cntr);
+            ns.setIOReg(portreg, new PortRegister(pins));
+            ns.setIOReg(dirreg, new DirectionRegister(pins));
+            ns.setIOReg(pinreg, new PinRegister(pins));
         }
 
         private FlagRegister buildInterruptRange(State ns, boolean increasing, int maskRegNum, int flagRegNum, int baseVect, int numVects) {

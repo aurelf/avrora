@@ -24,7 +24,7 @@ public class Microcontrollers {
      * @return an instance of the <code>Microcontroller</code> interface
      * representing the hardware device if implemented; null otherwise
      */
-    public static Microcontroller getMicrocontroller(String name) {
-        return (Microcontroller)mcus.get(name.toLowerCase());
+    public static MicrocontrollerFactory getMicrocontroller(String name) {
+        return (MicrocontrollerFactory)mcus.get(name.toLowerCase());
     }
 }
