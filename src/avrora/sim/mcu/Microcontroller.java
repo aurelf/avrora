@@ -39,7 +39,7 @@ public interface Microcontroller extends MicrocontrollerProperties {
          * will be called.
          */
         public interface Output {
-            public void enableOutput(boolean pullup);
+            public void enableOutput();
             public void disableOutput();
             public void write(boolean level);
         }
