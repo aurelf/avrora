@@ -35,8 +35,8 @@ package avrora.actions;
 import avrora.Avrora;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.gen.ClassGenerator;
-import avrora.core.isdl.gen.InterpreterGenerator;
 import avrora.core.isdl.gen.CodemapGenerator;
+import avrora.core.isdl.gen.InterpreterGenerator;
 import avrora.core.isdl.parser.ISDLParser;
 import avrora.util.Option;
 import avrora.util.Printer;
@@ -84,27 +84,27 @@ public class ISDLAction extends Action {
         Architecture a = parser.Architecture();
 
         String interpreter = INTERPRETER.get();
-        if ( !interpreter.equals("")) {
+        if (!interpreter.equals("")) {
             // generate vanilla interpreter
-            Terminal.println("Generating interpreter to "+interpreter+"...");
+            Terminal.println("Generating interpreter to " + interpreter + "...");
             SectionFile f = new SectionFile(INTERPRETER.get(), "INTERPRETER GENERATOR");
             new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
             f.close();
         }
 
         String classes = CLASSES.get();
-        if ( !classes.equals("")) {
+        if (!classes.equals("")) {
             // generate instruction classes
-            Terminal.println("Generating Instr inner classes to "+classes+"...");
+            Terminal.println("Generating Instr inner classes to " + classes + "...");
             SectionFile f = new SectionFile(classes, "INSTR GENERATOR");
             new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
             f.close();
         }
 
         String codemap = CODEMAP.get();
-        if ( !codemap.equals("")) {
+        if (!codemap.equals("")) {
             // generate instruction classes
-            Terminal.println("Generating codemap to "+codemap+"...");
+            Terminal.println("Generating codemap to " + codemap + "...");
             SectionFile f = new SectionFile(codemap, "CODEBUILDER GENERATOR");
             new CodemapGenerator(a, new Printer(new PrintStream(f))).generate();
             f.close();

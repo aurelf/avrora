@@ -42,20 +42,34 @@ import avrora.sim.Energy;
 import avrora.sim.EnergyControl;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.radio.Radio;
+import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
- * energy monitor implementation this class handles logging and recording of power consumption
+ * energy monitor implementation this class handles logging and recording of power consumption.
+ * <p/>
+ * Furthermore the monitor shutsdown the node, when an energy limit is exceeded.
  *
  * @author Olaf Landsiedel
  */
 public class EnergyMonitor extends MonitorFactory {
 
+    /**
+     * @author Olaf Landsiedel
+     *         <p/>
+     *         The <code>EnergyMonitor</code> energy monitor implementation Creates a file with logging
+     *         information: temp.log that contains the current draw of all devices, and the state changes can
+     *         be loaded into Matlab, Gnuplot, Excel... for further processing and visualization.
+     *         <p/>
+     *         Furthermore the monitor shutsdown the node, when an energy limit is exceeded.
+     */
     public class Monitor implements avrora.monitors.Monitor, EnergyMonitorBase {
 
         // the simulator
@@ -68,6 +82,8 @@ public class EnergyMonitor extends MonitorFactory {
         private BufferedWriter file;
         // the simulator state
         private State state;
+        //energy a node is allowed to consume (in joule)
+        private double energy;
 
         /**
          * Create a new energy monitor. Creates a file with logging information: temp.log that contains the
@@ -95,8 +111,10 @@ public class EnergyMonitor extends MonitorFactory {
             //first: cycle
             write("cycle ");
             //and than all consumers names
-            for (int i = 0; i < consumer.size(); ++i) {
-                Energy en = (Energy)consumer.get(i);
+            Iterator it = consumer.iterator();
+            while (it.hasNext()) {
+                //for (int i = 0; i < consumer.size(); ++i) {
+                Energy en = (Energy)it.next();
                 write(en.getName() + " ");
             }
             write("total");
@@ -104,6 +122,10 @@ public class EnergyMonitor extends MonitorFactory {
             
             //log the startup state
             logCurrentState();
+            
+            //setup energy limit
+            energy = 1000;
+            //new BatteryCheck();
         }
 
         /**
@@ -142,11 +164,15 @@ public class EnergyMonitor extends MonitorFactory {
             logCurrentState();
 
             //provide component energy breakdown
-            Terminal.println("\nEnergy Consumption Component Breakdown:\n");
+            Terminal.printCyan("\nEnergy Consumption Component Breakdown:\n\n");
+            long cycles = simulator.getState().getCycles();
+            Terminal.println("Node lifetime: " + cycles + " cycles,  " + simulator.getMicrocontroller().cyclesToMillis(cycles) / 1000.0 + " seconds\n");
             // get energy information for each device
-            for (int i = 0; i < consumer.size(); ++i) {
+            Iterator it = consumer.iterator();
+            while (it.hasNext()) {
+                //for (int i = 0; i < consumer.size(); ++i) {
                 //get energy information
-                Energy en = (Energy)consumer.get(i);
+                Energy en = (Energy)it.next();
                 int modes = en.getModeNumber();
                 Terminal.println(en.getName() + ": " + en.getTotalConsumedEnergy() + " Joule");
                 // get information for each state
@@ -188,8 +214,10 @@ public class EnergyMonitor extends MonitorFactory {
             write(state.getCycles() + " ");
             //and than all consumers
             double total = 0.0f;
-            for (int i = 0; i < consumer.size(); ++i) {
-                Energy en = (Energy)consumer.get(i);
+            Iterator it = consumer.iterator();
+            while (it.hasNext()) {
+                //for (int i = 0; i < consumer.size(); ++i) {
+                Energy en = (Energy)it.next();
                 double amphere = en.getCurrentAmphere();
                 total += amphere;
                 write(amphere + " ");
@@ -210,8 +238,10 @@ public class EnergyMonitor extends MonitorFactory {
             write((state.getCycles() - 1) + " ");
             //and than all consumers
             double total = 0.0f;
-            for (int i = 0; i < consumer.size(); ++i) {
-                Energy en = (Energy)consumer.get(i);
+            Iterator it = consumer.iterator();
+            //for (int i = 0; i < consumer.size(); ++i) {
+            while (it.hasNext()) {
+                Energy en = (Energy)it.next();
                 double amphere = 0.0f;
                 if (en != energy) {
                     amphere = en.getCurrentAmphere();
@@ -225,7 +255,45 @@ public class EnergyMonitor extends MonitorFactory {
             newLine();
         }
 
+        public class BatteryCheck implements Simulator.Event {
+            private final static int interval = 737280;
+
+            public BatteryCheck() {
+                simulator.insertEvent(this, interval);
+            }
+
+            public void fire() {
+                double totalEnergy = 0.0d;
+                Iterator it = consumer.iterator();
+                //for (int i = 0; i < consumer.size(); ++i) {
+                while (it.hasNext()) {
+                    //get energy information
+                    totalEnergy += ((Energy)it.next()).getTotalConsumedEnergy();
+                }
+                if (totalEnergy <= energy) {
+                    //lets go on
+                    //System.out.println(simulator.getID()+ " consumed: " + totalEnergy + " ... go on");
+                    simulator.insertEvent(this, interval);
+                } else {
+                    //shutdown this node
+                    String idstr = StringUtil.rightJustify(simulator.getID(), 4);
+                    String cycstr = StringUtil.rightJustify(simulator.getClock().getCount(), 10);
+                    Terminal.print(idstr + " " + cycstr + "   ");
+                    Terminal.print("energy limit exceed, shutdown node: ");
+                    Terminal.println("consumed " + totalEnergy + " Joule");
+                    
+                    //System.out.println(simulator.getID() + " consumed: " + totalEnergy + " ... stop !!!!!!");
+                    //remove radio                    
+                    Radio radio = simulator.getMicrocontroller().getRadio();
+                    radio.getAir().removeRadio(radio);
+                    //stop loop
+                    simulator.stop();
+                }
+
+            }
+        }
     }
+
 
     /**
      * create a new monitor

@@ -33,7 +33,6 @@
 package avrora.sim.radio;
 
 
-
 /**
  * Interface for the <code>RadioAir</code>. An implementation of this interface should provide the policies
  * through which radio transmission is handled. Radios should transmit via the transmit method. The air should

@@ -44,6 +44,7 @@ import avrora.topology.Topology;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Visual;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -74,7 +75,7 @@ public class MultiSimulateAction extends SimAction {
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network. " +
             "When this options is specified, the free space radio model will be used " +
-            "to model radio propagation. See sample.top in topology for an example.");
+            "to model radio propagation. See sample.top in topology for an example. Status: Alpha");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option causes the simulator to insert a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
@@ -107,6 +108,11 @@ public class MultiSimulateAction extends SimAction {
 
         // create the specified number of each type of node
         Iterator i = NODECOUNT.get().iterator();
+        String visual = VISUAL.get();
+        if (!visual.equals("")) {
+            //visualisation is turned on
+            Visual.connect(visual);
+        }
         Topology top = null;
         boolean topologyOn = false;
         if (!TOPOLOGY.get().equals("(null)")) {

@@ -1,7 +1,7 @@
 /**
- * Created on 29.10.2004
- * 
- * Copyright (c) 2004, Olaf Landsiedel, Protocol Engineering and 
+ * Created on 15.11.2004
+ *
+ * Copyright (c) 2004, Olaf Landsiedel, Protocol Engineering and
  * Distributed Systems, University of Tuebingen
  * All rights reserved.
  *
@@ -16,10 +16,9 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * Neither the name of the Protocol Engineering and Distributed Systems
- * Group, the name of the University of Tuebingen nor the names of its 
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ * Neither the name of the University of California, Los Angeles nor the
+ * names of its contributors may be used to endorse or promote products
+ * derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -33,32 +32,31 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package avrora.sim.platform;
 
-package avrora.sim.radio.freespace;
-
+import avrora.sim.Energy;
+import avrora.sim.Simulator;
 
 /**
- * stores the between a node and the node who own radio
- *
  * @author Olaf Landsiedel
  */
-public class Distance {
+public class SensorBoard {
 
-    //distance between a node and the node who owns radio
-    public double distance;
+    protected Simulator sim;
+    //energy profile of this device
+    private Energy energy;
+    // names of the states of this device
+    private final String modeName[] = {"on:  "};
+    // power consumption of the device states
+    private final double modeAmphere[] = {0.0007};
+    // default mode of the device is on
+    private final int startMode = 0;
 
-    //the other radio
-    public LocalAir radio;
-
-    /**
-     * new Disance
-     *
-     * @param r   local radio
-     * @param dis distance
-     */
-    public Distance(LocalAir r, double dis) {
-        radio = r;
-        distance = dis;
+    protected SensorBoard(Simulator s) {
+        sim = s;        
+        //setup energy recording
+        energy = new Energy("sensor board", modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
     }
+
 
 }

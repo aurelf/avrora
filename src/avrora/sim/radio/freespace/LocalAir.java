@@ -95,7 +95,7 @@ public interface LocalAir {
      * @param p   packet
      * @param pow transission power
      */
-    public void addPacket(RadioPacket p, double pow);
+    public void addPacket(RadioPacket p, double pow, Radio sender);
 
     /**
      * schedule deivery of packets
@@ -104,6 +104,8 @@ public interface LocalAir {
      * @param sim  the simulator
      */
     public void scheduleDelivery(long time, Simulator sim);
+
+    public Radio getRadio();
 
     /**
      * class to model a packet and transmission power
@@ -117,15 +119,18 @@ public interface LocalAir {
         //transmission power
         protected double power;
 
+        protected Radio sender;
+
         /**
          * new packet
          *
          * @param p   packet
          * @param pow transmission power
          */
-        public PowerRadioPacket(RadioPacket p, double pow) {
+        public PowerRadioPacket(RadioPacket p, double pow, Radio s) {
             this.packet = p;
             this.power = pow;
+            this.sender = s;
         }
 
 

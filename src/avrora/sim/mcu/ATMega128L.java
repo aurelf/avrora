@@ -3213,7 +3213,10 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
                 if (ADMUX_reg.singleEndedInput) {
                     //return 1;// VIN * 102/ VREG
-                    return connectedDevices[ADMUX_reg.singleInputIndex].getLevel();
+                    if (connectedDevices[ADMUX_reg.singleInputIndex] != null)
+                        return connectedDevices[ADMUX_reg.singleInputIndex].getLevel();
+                    else
+                        return 0;
                 } else {
                     return 2; // (VPOS - VNEG) * GAIN * 512 / VREF
                 }

@@ -2,7 +2,6 @@
 package avrora.core.isdl.parser;
 
 
-
 public class ISDLParserTokenManager implements ISDLParserConstants {
     public java.io.PrintStream debugStream = System.out;
 

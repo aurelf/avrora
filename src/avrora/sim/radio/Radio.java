@@ -32,6 +32,7 @@
 
 package avrora.sim.radio;
 
+import avrora.monitors.Monitor;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.mcu.Microcontroller;
@@ -44,7 +45,7 @@ import avrora.sim.radio.freespace.Position;
  *
  * @author Daniel Lee
  */
-public interface Radio {
+public interface Radio extends Monitor {
 
     /**
      * Time in ATMega128L cycles it takes for one byte to be sent over the air. Much of the implementation is
@@ -183,4 +184,6 @@ public interface Radio {
      * @param pos node position
      */
     public void activateLocalAir(Position pos);
+
+    public RadioAir getAir();
 }

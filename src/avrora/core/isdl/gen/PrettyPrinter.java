@@ -33,11 +33,12 @@
 package avrora.core.isdl.gen;
 
 import avrora.core.isdl.ast.*;
+import avrora.core.isdl.gen.PrettyPrinter.MapRep;
 import avrora.core.isdl.parser.Token;
 import avrora.util.Printer;
 
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer
@@ -99,14 +100,15 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
 
         public void generateWrite(Expr ind, Expr val) {
-            printer.print("$"+name+"(");
+            printer.print("$" + name + "(");
             ind.accept(PrettyPrinter.this);
             printer.print(") = ");
             val.accept(PrettyPrinter.this);
             printer.println(";");
         }
-        public void generateBitWrite(Expr ind, Expr b, Expr val){
-            printer.print("$"+name+"(");
+
+        public void generateBitWrite(Expr ind, Expr b, Expr val) {
+            printer.print("$" + name + "(");
             ind.accept(PrettyPrinter.this);
             printer.print(")[");
             b.accept(PrettyPrinter.this);
@@ -114,13 +116,15 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
             val.accept(PrettyPrinter.this);
             printer.println(";");
         }
+
         public void generateRead(Expr ind) {
-            printer.print("$"+name+"(");
+            printer.print("$" + name + "(");
             ind.accept(PrettyPrinter.this);
             printer.print(")");
         }
+
         public void generateBitRead(Expr ind, Expr b) {
-            printer.print("$"+name+"(");
+            printer.print("$" + name + "(");
             ind.accept(PrettyPrinter.this);
             printer.print(")[");
             b.accept(PrettyPrinter.this);
@@ -128,9 +132,9 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
 
         public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-            printer.print("$"+name+"(");
+            printer.print("$" + name + "(");
             ind.accept(PrettyPrinter.this);
-            printer.print(")["+l+":"+h+"] = ");
+            printer.print(")[" + l + ":" + h + "] = ");
             val.accept(PrettyPrinter.this);
             printer.println(";");
         }
@@ -180,7 +184,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(VarBitRangeAssignStmt s) {
         String var = getVariable(s.variable);
-        printer.print(var + "["+s.low_bit+":"+s.high_bit+"] = ");
+        printer.print(var + "[" + s.low_bit + ":" + s.high_bit + "] = ");
         s.expr.accept(this);
         printer.println(";");
     }
@@ -332,7 +336,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
             MapRep mr = getMapRep(me.mapname.image);
             mr.generateBitRead(me.index, e.bit);
         } else {
-            if ( e.expr.getPrecedence() < e.getPrecedence() ) {
+            if (e.expr.getPrecedence() < e.getPrecedence()) {
                 printer.print("(");
                 e.expr.accept(this);
                 printer.print(")");
@@ -346,14 +350,14 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(BitRangeExpr e) {
-        if ( e.operand.getPrecedence() < e.getPrecedence() ) {
+        if (e.operand.getPrecedence() < e.getPrecedence()) {
             printer.print("(");
             e.operand.accept(this);
             printer.print(")");
         } else {
             e.operand.accept(this);
         }
-        printer.print("["+e.low_bit+":"+e.high_bit+"]");
+        printer.print("[" + e.low_bit + ":" + e.high_bit + "]");
     }
 
     protected void visitExprList(List l) {

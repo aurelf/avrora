@@ -39,6 +39,7 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Visual;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -176,6 +177,12 @@ public class SimulateAction extends SimAction {
 
         if (REALTIME.get())
             simulator.insertEvent(new ThrottleEvent(), microcontroller.getHz() / 100);
+
+        String visual = VISUAL.get();
+        if (!visual.equals("")) {
+            //visualisation is turned on
+            Visual.connect(visual);
+        }
 
         startms = System.currentTimeMillis();
         try {

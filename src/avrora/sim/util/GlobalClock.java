@@ -78,6 +78,7 @@ public class GlobalClock {
         threadMap.put(t, ticker);
         t.getSimulator().insertEvent(ticker, period);
         ticker.goal++;
+        //System.out.println("add goal: " + ticker.goal);
     }
 
     public void remove(SimulatorThread t) {
@@ -140,23 +141,37 @@ public class GlobalClock {
 
                     // run the code that should happen just before synchronization (parallel)
                     preSynchAction();
-
                     if (count < goal) {
                         // if all threads have not arrived yet, wait for the last one
                         condition.wait();
                     } else {
-                        // last thread to arrive sets the count to zero and notifies all other threads
-                        count = 0;
-                        // perform the action that should be run while all threads are stopped (serial)
-                        serialAction();
-                        // release threads
-                        condition.notifyAll();
+                        ready();
                     }
                     // perform action that should be run after synchronization (parallel)
                     parallelAction((SimulatorThread)Thread.currentThread());
                 }
             } catch (java.lang.InterruptedException e) {
                 throw new InterruptedException(e);
+            }
+        }
+
+        private void ready() {
+            // last thread to arrive sets the count to zero and notifies all other threads
+            count = 0;
+            // perform the action that should be run while all threads are stopped (serial)
+            serialAction();
+            // release threads
+            condition.notifyAll();
+        }
+
+        public void decGoal() {
+            goal--;
+            //System.out.println("dec goal: " + this.goal + "   count: " + this.count);            
+            if (goal == count) {
+                //System.out.println("goal meet: " + this.goal);            
+                synchronized (condition) {
+                    ready();
+                }
             }
         }
 

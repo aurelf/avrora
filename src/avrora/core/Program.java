@@ -598,4 +598,8 @@ public class Program {
         }
         return cfg;
     }
+
+    public HashMap getLabels() {
+        return labels;
+    }
 }

@@ -79,6 +79,7 @@ public interface StmtVisitor {
         public void visit(CommentStmt s) {
             // terminal node
         }
+
         public void visit(DeclStmt s) {
             // terminal node
         }

@@ -33,7 +33,6 @@
 package avrora.core.isdl.gen;
 
 import avrora.core.isdl.ast.*;
-import avrora.util.Option;
 
 import java.util.*;
 
@@ -69,9 +68,11 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
         }
 
         boolean isDead(String name) {
-            if ( alive.contains(name) ) return false;
-            else if ( dead.contains(name) ) return true;
-            else if ( parent != null ) return parent.isDead(name);
+            if (alive.contains(name))
+                return false;
+            else if (dead.contains(name))
+                return true;
+            else if (parent != null) return parent.isDead(name);
             return true;
         }
 
@@ -83,7 +84,7 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
 
         private void addLiveIns(DefUseEnvironment sibling) {
             Iterator i = sibling.alive.iterator();
-            while ( i.hasNext() ) {
+            while (i.hasNext()) {
                 Object o = i.next();
                 parent.alive.add(o);
             }
@@ -91,10 +92,10 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
 
         private void addDead(DefUseEnvironment sibling) {
             Iterator i = dead.iterator();
-            while ( i.hasNext() ) {
+            while (i.hasNext()) {
                 Object o = i.next();
                 // dead on both branches
-                if ( sibling.dead.contains(o) ) {
+                if (sibling.dead.contains(o)) {
                     parent.alive.remove(o);
                     parent.dead.add(o);
                 }
@@ -123,7 +124,7 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
         while (i.hasNext()) {
             Stmt sa = (Stmt)i.next();
             Stmt na = sa.accept(this, env);
-            if ( na == null ) {
+            if (na == null) {
                 changed = true;
                 continue;
             }
@@ -160,7 +161,7 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
     public Stmt visit(DeclStmt s, Object env) {
         DefUseEnvironment denv = (DefUseEnvironment)env;
 
-        if ( denv.isDead(s.name.toString())) return null;
+        if (denv.isDead(s.name.toString())) return null;
 
         denv.def(s.name.toString());
 
@@ -171,7 +172,7 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
     public Stmt visit(VarAssignStmt s, Object env) {
         DefUseEnvironment denv = (DefUseEnvironment)env;
 
-        if ( denv.isDead(s.variable.toString())) return null;
+        if (denv.isDead(s.variable.toString())) return null;
 
         denv.def(s.variable.toString());
 

@@ -35,11 +35,11 @@ package avrora.actions;
 import avrora.Avrora;
 import avrora.core.Program;
 import avrora.monitors.*;
-import avrora.sim.Simulator;
-import avrora.sim.InterpreterFactory;
 import avrora.sim.GenInterpreter;
-import avrora.sim.dbbc.DBBCInterpreter;
+import avrora.sim.InterpreterFactory;
+import avrora.sim.Simulator;
 import avrora.sim.dbbc.DBBC;
+import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
@@ -84,6 +84,11 @@ public abstract class SimAction extends Action {
             "is running such as profiling data or timing information.");
     public final Option.Bool DBBC_OPT = newOption("dbbc", false,
             "This option enables the DBBC_OPT compiler. Experimental! DO NOT USE!");
+    public final Option.Str VISUAL = newOption("visual", "",
+            "Enable visual representation of the network. For example" +
+            " topology, packet transmission, packet recption, energy" +
+            " information and more. Syntax is ip address or host name and" +
+            " port: 134.2.11.183:2379    Current status: experimental!!");
 
     protected ClassMap monitorMap;
     protected LinkedList monitorFactoryList;
@@ -97,9 +102,11 @@ public abstract class SimAction extends Action {
         addNewMonitorType(new SleepMonitor());
         addNewMonitorType(new StackMonitor());
         //add energy monitor to the list 
-        //-> provides logging of energy consumption
         addNewMonitorType(new EnergyMonitor());
         addNewMonitorType(new TraceMonitor());
+        //add energy profile monitor to the list 
+        addNewMonitorType(new EnergyProfiler());
+        addNewMonitorType(new PacketMonitor());
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }
@@ -183,7 +190,7 @@ public abstract class SimAction extends Action {
      */
     protected Simulator newSimulator(Program p) {
         InterpreterFactory factory;
-        if ( DBBC_OPT.get() ) {
+        if (DBBC_OPT.get()) {
             factory = new DBBCInterpreter.Factory(new DBBC(p, options));
         } else {
             factory = new GenInterpreter.Factory();
@@ -212,7 +219,6 @@ public abstract class SimAction extends Action {
             ml.addLast(m);
         }
         monitorListMap.put(simulator, ml);
-
         return simulator;
     }
 

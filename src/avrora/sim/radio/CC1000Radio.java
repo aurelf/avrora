@@ -43,6 +43,8 @@ import avrora.sim.radio.freespace.LocalAir;
 import avrora.sim.radio.freespace.LocalAirImpl;
 import avrora.sim.radio.freespace.Position;
 import avrora.util.Arithmetic;
+import avrora.util.Terminal;
+import avrora.util.Visual;
 
 import java.util.LinkedList;
 
@@ -137,6 +139,9 @@ public class CC1000Radio implements Radio {
     //the energy recording for this node
     private Energy energy;
 
+    private long packetsTx;
+    private long packetsRx;
+
     /**
      * Sets the <code>SimulatorThread</code> of this radio. Should be done BEFORE adding this radio to a
      * <code>RadioAir</code> environment.
@@ -158,7 +163,6 @@ public class CC1000Radio implements Radio {
      */
     public void receive(Radio.RadioPacket packet) {
         receivedBuffer.addLast(packet);
-
     }
 
     /**
@@ -167,6 +171,7 @@ public class CC1000Radio implements Radio {
     public void transmit(Radio.RadioPacket packet) {
         // send packet into air...
         air.transmit(this, packet);
+        packetsTx++;
     }
 
     public CC1000Radio(Microcontroller mcu) {
@@ -265,6 +270,9 @@ public class CC1000Radio implements Radio {
                 RadioEnergy.startMode,
                 mcu.getSimulator().getEnergyControl(),
                 mcu.getSimulator().getState());
+
+        packetsTx = 0;
+        packetsRx = 0;
     }
 
     /**
@@ -1057,7 +1065,8 @@ public class CC1000Radio implements Radio {
                 frame = new SPIFrame((byte)0x00);
             } else if (!receivedBuffer.isEmpty()) {
                 Radio.RadioPacket receivedPacket = (Radio.RadioPacket)receivedBuffer.removeFirst();
-
+                packetsRx++;
+                Visual.send(sim.getID(), "packetRx", receivedPacket.data);
                 // Apparently TinyOS expects received data to be inverted
                 byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte)~receivedPacket.data;
                 frame = new SPIFrame(data);
@@ -1406,5 +1415,16 @@ public class CC1000Radio implements Radio {
     public void activateLocalAir(Position pos) {
         air = FreeSpaceAir.freeSpaceAir;
         localAir = new LocalAirImpl(this, pos);
+    }
+
+    public RadioAir getAir() {
+        return air;
+    }
+
+    public void report() {
+        Terminal.printCyan("\nPacket Monitor:\n\n");
+        Terminal.println("Bytes Tx: " + packetsTx);
+        Terminal.println("Bytes Rx: " + packetsRx);
+        Terminal.println("");
     }
 }

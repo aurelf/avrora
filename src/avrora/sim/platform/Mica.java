@@ -34,8 +34,8 @@ package avrora.sim.platform;
 
 
 import avrora.core.Program;
-import avrora.sim.Simulator;
 import avrora.sim.InterpreterFactory;
+import avrora.sim.Simulator;
 import avrora.sim.mcu.ATMega128L;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.Terminal;

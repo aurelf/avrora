@@ -1,5 +1,5 @@
 /**
- * Created on 29.10.2004
+ * Created on 17.11.2004
  * 
  * Copyright (c) 2004, Olaf Landsiedel, Protocol Engineering and 
  * Distributed Systems, University of Tuebingen
@@ -34,31 +34,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim.radio.freespace;
+
+package avrora.monitors;
+
+import avrora.sim.Simulator;
 
 
 /**
- * stores the between a node and the node who own radio
+ * energy monitor implementation this class handles logging and recording of power consumption.
+ * <p/>
+ * Furthermore the monitor shutsdown the node, when an energy limit is exceeded.
  *
  * @author Olaf Landsiedel
  */
-public class Distance {
-
-    //distance between a node and the node who owns radio
-    public double distance;
-
-    //the other radio
-    public LocalAir radio;
+public class PacketMonitor extends MonitorFactory {
 
     /**
-     * new Disance
-     *
-     * @param r   local radio
-     * @param dis distance
+     * create a new monitor
      */
-    public Distance(LocalAir r, double dis) {
-        radio = r;
-        distance = dis;
+    public PacketMonitor() {
+        super("packet", "The \"packet\" is a monitor to log packets send and received");
     }
 
+
+    /**
+     * create a new monitor, calls the constructor
+     *
+     * @see avrora.monitors.MonitorFactory#newMonitor(avrora.sim.Simulator)
+     */
+    public avrora.monitors.Monitor newMonitor(Simulator s) {
+        return s.getMicrocontroller().getRadio();
+    }
 }
+

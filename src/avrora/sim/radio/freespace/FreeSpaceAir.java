@@ -42,6 +42,7 @@ import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
 import avrora.sim.util.GlobalClock;
 import avrora.util.Verbose;
+import avrora.util.Visual;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -96,7 +97,6 @@ public class FreeSpaceAir implements RadioAir {
     private final static double lightConst = lightTemp * lightTemp;
     private final static double noiseCutOff = 0.000009;
 
-
     /**
      * new free space air
      */
@@ -132,6 +132,7 @@ public class FreeSpaceAir implements RadioAir {
      * @see avrora.sim.radio.RadioAir#removeRadio(avrora.sim.radio.Radio)
      */
     public synchronized void removeRadio(Radio r) {
+        radioClock.ticker.decGoal();
         radios.remove(r);
         Iterator it = radios.iterator();
         while (it.hasNext()) {
@@ -167,12 +168,20 @@ public class FreeSpaceAir implements RadioAir {
         double temp = power * lightConst * (1 / (freq * freq));
         // send packet to devices in ranges
         Iterator it = r.getLocalAir().getNeighbors();
+        Visual.send(r.getSimulator().getID(),
+                "packetTx",
+                f.data);
         while (it.hasNext()) {
             Distance dis = (Distance)it.next();
             double powerRec = temp / (dis.distance * dis.distance);
             //check if device is in range
-            if (powerRec > noiseCutOff)
-                dis.radio.addPacket(f, powerRec);
+            if (powerRec > noiseCutOff) {
+                Visual.send(r.getSimulator().getID(),
+                        "packetTxInRange",
+                        dis.radio.getRadio().getSimulator().getID(),
+                        f.data);
+                dis.radio.addPacket(f, powerRec, r);
+            }
         }
 
     }

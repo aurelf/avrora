@@ -34,12 +34,11 @@ package avrora.actions;
 
 import avrora.Main;
 import avrora.core.Program;
-import avrora.sim.Simulator;
-import avrora.sim.InterpreterFactory;
 import avrora.sim.GenInterpreter;
-import avrora.sim.dbbc.DBBCInterpreter;
+import avrora.sim.InterpreterFactory;
+import avrora.sim.Simulator;
 import avrora.sim.dbbc.DBBC;
-import avrora.sim.platform.PlatformFactory;
+import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
@@ -90,7 +89,7 @@ public class BenchmarkAction extends SimAction {
 
         long repeat = REPEAT.get();
 
-        if ( DBBC_OPT.get() ) {
+        if (DBBC_OPT.get()) {
             factory = new DBBCInterpreter.Factory(new DBBC(program, options));
         } else {
             factory = new GenInterpreter.Factory();

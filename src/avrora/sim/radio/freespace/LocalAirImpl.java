@@ -39,6 +39,7 @@ package avrora.sim.radio.freespace;
 import avrora.sim.Simulator;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.Radio.RadioPacket;
+import avrora.util.Visual;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -91,6 +92,10 @@ public class LocalAirImpl implements LocalAir {
      */
     public Position getPosition() {
         return position;
+    }
+
+    public Radio getRadio() {
+        return radio;
     }
 
     /**
@@ -162,8 +167,8 @@ public class LocalAirImpl implements LocalAir {
      *
      * @see avrora.sim.radio.freespace.LocalAir#addPacket(avrora.sim.radio.Radio.RadioPacket, double)
      */
-    public synchronized void addPacket(RadioPacket p, double pow) {
-        packets.addLast(new PowerRadioPacket(p, pow));
+    public synchronized void addPacket(RadioPacket p, double pow, Radio sender) {
+        packets.addLast(new PowerRadioPacket(p, pow, sender));
         //find the earliest packet
         if (firstPacket == null) {
             firstPacket = p;
@@ -273,11 +278,14 @@ public class LocalAirImpl implements LocalAir {
             if (finalPacket != null) {
                 lastDeliveryTime = finalPacket.packet.deliveryTime;
                 //Radio radio = s.getSimulator().getMicrocontroller().getRadio();
+                Visual.send(radio.getSimulator().getID(),
+                        "packetRxInRange",
+                        finalPacket.sender.getSimulator().getID(),
+                        finalPacket.packet.data);
                 radio.receive(finalPacket.packet);
             }
 
         }
     }
-
 
 }

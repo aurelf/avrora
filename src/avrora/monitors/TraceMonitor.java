@@ -32,11 +32,10 @@
 
 package avrora.monitors;
 
-import avrora.core.Program;
 import avrora.core.Instr;
+import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.util.ProgramProfiler;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
@@ -70,7 +69,7 @@ public class TraceMonitor extends MonitorFactory {
             }
 
             public void fireAfter(Instr i, int addr, State s) {
-                 count++;
+                count++;
             }
         }
 
@@ -92,7 +91,7 @@ public class TraceMonitor extends MonitorFactory {
             reportQuantity("Instructions executed", count, "");
             reportQuantity("Time elapsed", cycles, "cycles");
             reportQuantity("Program throughput", ipc, "instrs/cycle");
-            reportQuantity("Program throughput", ipc * simulator.getClock().getHZ() /1000000, "mips");
+            reportQuantity("Program throughput", ipc * simulator.getClock().getHZ() / 1000000, "mips");
         }
     }
 

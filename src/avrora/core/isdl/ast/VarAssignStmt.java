@@ -71,6 +71,7 @@ public class VarAssignStmt extends AssignStmt {
         variable = new Token();
         variable.image = n;
     }
+
     /**
      * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
      * syntax trees representing the code of a particular instruction or subroutine.

@@ -32,10 +32,9 @@
 
 package avrora.core.isdl.ast;
 
-import avrora.core.isdl.parser.Token;
+
 
 /**
- *
  * @author Ben L. Titzer
  */
 public class CommentStmt extends Stmt {
@@ -64,7 +63,7 @@ public class CommentStmt extends Stmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return "// "+comment;
+        return "// " + comment;
     }
 
     /**

@@ -33,12 +33,12 @@
 package avrora.actions;
 
 import avrora.Main;
+import avrora.core.ControlFlowGraph;
+import avrora.core.Program;
+import avrora.core.isdl.gen.PrettyPrinter;
+import avrora.sim.dbbc.DBBC;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
-import avrora.sim.dbbc.DBBC;
-import avrora.core.Program;
-import avrora.core.ControlFlowGraph;
-import avrora.core.isdl.gen.PrettyPrinter;
 
 import java.util.Iterator;
 
@@ -62,12 +62,12 @@ public class DBBCAction extends Action {
 
         ControlFlowGraph cfg = p.getCFG();
         Iterator i = cfg.getSortedBlockIterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             ControlFlowGraph.Block b = (ControlFlowGraph.Block)i.next();
-            printer.startblock("block starting at: "+StringUtil.addrToString(b.getAddress()));
+            printer.startblock("block starting at: " + StringUtil.addrToString(b.getAddress()));
             DBBC.CodeBlock code = dbbc.getCodeBlock(b.getAddress());
-            if ( code != null ) {
-                printer.println("// worst case execution time = "+code.wcet+" cycles");
+            if (code != null) {
+                printer.println("// worst case execution time = " + code.wcet + " cycles");
                 pp.visitStmtList(code.stmts);
             } else {
                 printer.println("// no code generated for this block");

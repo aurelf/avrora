@@ -32,14 +32,12 @@
 
 package avrora.sim.dbbc;
 
-import avrora.sim.GenInterpreter;
-import avrora.sim.Simulator;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.InterpreterFactory;
-import avrora.sim.util.MulticastProbe;
-import avrora.core.*;
 import avrora.Avrora;
-import avrora.util.Options;
+import avrora.core.*;
+import avrora.sim.BaseInterpreter;
+import avrora.sim.GenInterpreter;
+import avrora.sim.InterpreterFactory;
+import avrora.sim.Simulator;
 
 import java.util.Iterator;
 
@@ -84,11 +82,10 @@ public class DBBCInterpreter extends GenInterpreter {
             if (v == interpreter) {
                 long headDelta = clock.getFirstEventDelta();
 
-                if ( headDelta < 0 || block.wcet < headDelta ) {
+                if (headDelta < 0 || block.wcet < headDelta) {
                     // there is no event that could happen in the middle of this block
                     block.execute(DBBCInterpreter.this);
-                }
-                else {
+                } else {
                     // an event will happen during this block's execution--simply execute one instruction
                     instr.accept(interpreter);
                 }
@@ -116,20 +113,20 @@ public class DBBCInterpreter extends GenInterpreter {
 
         try {
             compileProgram();
-        } catch ( Exception e ) {
+        } catch (Exception e) {
             e.printStackTrace();
-            throw Avrora.failure("cannot compile program: "+ e.toString());
+            throw Avrora.failure("cannot compile program: " + e.toString());
         }
     }
 
     protected void compileProgram() throws Exception {
         ControlFlowGraph cfg = program.getCFG();
         Iterator i = cfg.getSortedBlockIterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             ControlFlowGraph.Block b = (ControlFlowGraph.Block)i.next();
             int addr = b.getAddress();
             DBBC.CompiledBlock cb = compiler.getCompiledBlock(addr);
-            if ( cb != null ) {
+            if (cb != null) {
                 flash_instr[addr] = new CompiledBlockBeginInstr(flash_instr[addr], addr, cb, this);
             }
         }

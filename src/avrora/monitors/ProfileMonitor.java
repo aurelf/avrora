@@ -36,9 +36,9 @@ import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.util.ProgramProfiler;
 import avrora.sim.util.ProgramTimeProfiler;
+import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import avrora.util.Option;
 
 /**
  * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as
@@ -54,6 +54,7 @@ public class ProfileMonitor extends MonitorFactory {
             "the profiling monitor will report the execution count and total " +
             "cycles consumed by each basic block, rather than each instruction " +
             "or instruction range.");
+
     /**
      * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
      * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that

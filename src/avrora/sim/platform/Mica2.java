@@ -33,8 +33,8 @@
 package avrora.sim.platform;
 
 import avrora.core.Program;
-import avrora.sim.Simulator;
 import avrora.sim.InterpreterFactory;
+import avrora.sim.Simulator;
 import avrora.sim.mcu.ATMega128L;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.radio.CC1000Radio;
@@ -56,6 +56,7 @@ public class Mica2 implements Platform, PlatformFactory {
     protected final Simulator sim;
 
     protected Radio radio;
+    protected SensorBoard sensorboard;
 
     public Mica2() {
         mcu = null;
@@ -84,6 +85,8 @@ public class Mica2 implements Platform, PlatformFactory {
 
         // radio
         radio = new CC1000Radio(mcu);
+        //sensor board
+        sensorboard = new SensorBoard(sim);
     }
 
 }

@@ -2,7 +2,6 @@
 package avrora.core.isdl.parser;
 
 
-
 /**
  * This exception is thrown when parse errors are encountered. You can explicitly create objects of this
  * exception type by calling the method generateParseException in the generated parser.

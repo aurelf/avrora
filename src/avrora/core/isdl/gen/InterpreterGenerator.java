@@ -36,13 +36,12 @@ import avrora.Avrora;
 import avrora.core.isdl.*;
 import avrora.core.isdl.ast.*;
 import avrora.core.isdl.parser.Token;
+import avrora.util.Arithmetic;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
-import avrora.util.Arithmetic;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * The <code>InterpreterGenerator</code> class is a visitor over the code of an instruction declaration or
@@ -127,7 +126,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateWrite(Expr ind, Expr val) {
-            printer.print(getVariable(token)+"[");
+            printer.print(getVariable(token) + "[");
             ind.accept(InterpreterGenerator.this);
             printer.print("] = ");
             val.accept(InterpreterGenerator.this);
@@ -138,7 +137,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
             // TODO: extract out index value if it is not a simple expression
             printer.print(getVariable(token) + "[");
             ind.accept(InterpreterGenerator.this);
-            printer.print("] = Arithmetic.getBit("+getVariable(token)+"[");
+            printer.print("] = Arithmetic.getBit(" + getVariable(token) + "[");
             ind.accept(InterpreterGenerator.this);
             printer.print("], ");
             b.accept(InterpreterGenerator.this);
@@ -148,7 +147,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateRead(Expr ind) {
-            printer.print(getVariable(token)+"[");
+            printer.print(getVariable(token) + "[");
             ind.accept(InterpreterGenerator.this);
             printer.print("]");
         }
@@ -188,7 +187,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            printer.print(getMethod("getIOReg")+"(");
+            printer.print(getMethod("getIOReg") + "(");
             ind.accept(InterpreterGenerator.this);
             printer.print(").writeBit(");
             b.accept(InterpreterGenerator.this);
@@ -198,7 +197,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateBitRead(Expr ind, Expr b) {
-            printer.print(getMethod("getIOReg")+"(");
+            printer.print(getMethod("getIOReg") + "(");
             ind.accept(InterpreterGenerator.this);
             printer.print(").readBit(");
             b.accept(InterpreterGenerator.this);
@@ -366,36 +365,36 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         printer.print(")");
     }
 
-        public void visit(BitExpr e) {
-            if (e.expr.isMap()) {
-                MapExpr me = (MapExpr)e.expr;
-                MapRep mr = getMapRep(me.mapname.image);
-                mr.generateBitRead(me.index, e.bit);
+    public void visit(BitExpr e) {
+        if (e.expr.isMap()) {
+            MapExpr me = (MapExpr)e.expr;
+            MapRep mr = getMapRep(me.mapname.image);
+            mr.generateBitRead(me.index, e.bit);
+        } else {
+            if (e.bit.isLiteral()) {
+                int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr)e.bit).value);
+                printer.print("((");
+                // TODO: is this precedence rule correct? I think it should be Expr.AND
+                inner(e.expr, Expr.PREC_A_ADD);
+                printer.print(" & " + mask + ") != 0");
+                printer.print(")");
             } else {
-                if (e.bit.isLiteral()) {
-                    int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr)e.bit).value);
-                    printer.print("((");
-                    // TODO: is this precedence rule correct? I think it should be Expr.AND
-                    inner(e.expr, Expr.PREC_A_ADD);
-                    printer.print(" & " + mask + ") != 0");
-                    printer.print(")");
-                } else {
-                    emitCall("Arithmetic.getBit", e.expr, e.bit);
-                }
+                emitCall("Arithmetic.getBit", e.expr, e.bit);
             }
         }
+    }
 
-        public void visit(BitRangeExpr e) {
-            int mask = Arithmetic.getBitRangeMask(e.low_bit, e.high_bit);
-            int low = e.low_bit;
-            if (low != 0) {
-                printer.print("(");
-                emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
-                printer.print(" & 0x" + StringUtil.toHex(mask, 8) + ")");
-            } else {
-                emitAnd(e.operand, mask);
-            }
+    public void visit(BitRangeExpr e) {
+        int mask = Arithmetic.getBitRangeMask(e.low_bit, e.high_bit);
+        int low = e.low_bit;
+        if (low != 0) {
+            printer.print("(");
+            emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
+            printer.print(" & 0x" + StringUtil.toHex(mask, 8) + ")");
+        } else {
+            emitAnd(e.operand, mask);
         }
+    }
 
     public void visit(Logical.AndExpr e) {
         binop("&&", e.left, e.right, e.getPrecedence());

@@ -37,7 +37,6 @@ import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.util.PeriodicEvent;
-import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;

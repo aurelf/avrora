@@ -54,8 +54,8 @@ public class ProgramTimeProfiler implements Simulator.Probe {
 
     /**
      * The <code>itime</code> field stores the cumulative number of cycles consumed  for each instruction in
-     * the program. It is indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the
-     * time for the instruction at <code>program.getInstr(addr)</code>.
+     * the program. It is indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the time for
+     * the instruction at <code>program.getInstr(addr)</code>.
      */
     public final long itime[];
 

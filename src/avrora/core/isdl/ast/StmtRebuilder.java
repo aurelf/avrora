@@ -84,7 +84,7 @@ public interface StmtRebuilder extends CodeRebuilder {
         public Stmt visit(CommentStmt s, Object env) {
             return s;
         }
-        
+
         public Stmt visit(DeclStmt s, Object env) {
             Expr ni = s.init.accept(this, env);
             if (ni != s.init)

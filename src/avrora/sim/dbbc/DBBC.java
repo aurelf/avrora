@@ -32,26 +32,29 @@
 
 package avrora.sim.dbbc;
 
-import avrora.core.Program;
+import avrora.Avrora;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
+import avrora.core.Program;
 import avrora.core.isdl.CodeRegion;
-import avrora.core.isdl.parser.Token;
-import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.ast.*;
 import avrora.core.isdl.gen.ConstantPropagator;
 import avrora.core.isdl.gen.DeadCodeEliminator;
-import avrora.core.isdl.ast.*;
-import avrora.Avrora;
-import avrora.util.*;
-import avrora.sim.BaseInterpreter;
+import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.parser.Token;
 import avrora.sim.GenInterpreter;
+import avrora.sim.dbbc.DBBC.DBBCClassLoader;
+import avrora.util.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.HashMap;
-import java.io.*;
-import java.lang.reflect.Method;
 
 /**
  * @author Ben L. Titzer
@@ -142,11 +145,11 @@ public class DBBC {
         loader = new DBBCClassLoader();
         options.process(o);
         String cd;
-        if ( (cd = CACHE_DIRECTORY.get()).equals("") ) cd = "/tmp";
+        if ((cd = CACHE_DIRECTORY.get()).equals("")) cd = "/tmp";
         tmpDir = cd;
         codeBlockMap = new HashMap();
         compiledCodeMap = new HashMap();
-        printer.println("Created new compiler for "+program+" to "+tmpDir);
+        printer.println("Created new compiler for " + program + " to " + tmpDir);
     }
 
     public Program getProgram() {
@@ -163,10 +166,10 @@ public class DBBC {
     }
 
     /**
-     * The <code>invalidateBlock()</code> method invalidates any compiled copies of
-     * the block that contains the specified program address. This might be called
-     * as the result of a write to program memory (flash update) or insertion of
-     * a probe into the middle of a basic block.
+     * The <code>invalidateBlock()</code> method invalidates any compiled copies of the block that contains
+     * the specified program address. This might be called as the result of a write to program memory (flash
+     * update) or insertion of a probe into the middle of a basic block.
+     *
      * @param addr the byte address for which the enclosing block should be invalidated
      */
     public void invalidateBlock(int addr) {
@@ -174,31 +177,32 @@ public class DBBC {
     }
 
     /**
-     * The <code>getCompiledBlock()</code> method instructs the DBBC to compile the basic
-     * block that begins at the specified byte address.
+     * The <code>getCompiledBlock()</code> method instructs the DBBC to compile the basic block that begins at
+     * the specified byte address.
+     *
      * @param addr the byte address of the beginning of the basic block to compile
      * @return a reference to the compiled block of code when complete
      */
     public CompiledBlock getCompiledBlock(int addr) throws Exception {
-        printer.println("Getting CompiledBlock for "+StringUtil.addrToString(addr));
+        printer.println("Getting CompiledBlock for " + StringUtil.addrToString(addr));
         CodeBlock block = getCodeBlock(addr);
-        if ( block == null ) return null;
+        if (block == null) return null;
         return getCompiledBlock(block);
     }
 
     public CodeBlock getCodeBlock(int addr) {
-        printer.println("Getting CodeBlock for "+StringUtil.addrToString(addr));
+        printer.println("Getting CodeBlock for " + StringUtil.addrToString(addr));
         int wcet = 0;
         ControlFlowGraph.Block b = cfg.getBlockStartingAt(addr);
 
         CodeBlock nblock = (CodeBlock)codeBlockMap.get(b);
-        if ( nblock != null ) {
+        if (nblock != null) {
             printer.println("Cache hit.");
             return nblock;
         }
 
-        if ( b.getSize() < MINIMUM_BLOCK_SIZE.get() ) {
-            printer.println("Block "+StringUtil.addrToString(addr)+" is too small: "+b.getSize());
+        if (b.getSize() < MINIMUM_BLOCK_SIZE.get()) {
+            printer.println("Block " + StringUtil.addrToString(addr) + " is too small: " + b.getSize());
             return null;
         }
 
@@ -210,13 +214,12 @@ public class DBBC {
             wcet += instr.getCycles();
             CodeRegion r = CodeMap.getCodeForInstr(curPC, instr);
             curPC += instr.getSize();
-            if ( !i.hasNext() ) { // is this the last instruction?
+            if (!i.hasNext()) { // is this the last instruction?
                 // inject an assignment to nextPC
                 stmts.add(new VarAssignStmt("nextPC", new Literal.IntExpr(curPC)));
                 stmts.addAll(r.getCode());
                 stmts.add(new VarAssignStmt("cyclesConsumed",
-                        new Arith.BinOp.AddExpr(
-                                new VarExpr("cyclesConsumed"),
+                        new Arith.BinOp.AddExpr(new VarExpr("cyclesConsumed"),
                                 new Literal.IntExpr(wcet))));
             } else {
                 stmts.addAll(r.getCode());
@@ -224,10 +227,10 @@ public class DBBC {
 
         }
 
-        if ( CONSTANT_PROPAGATION.get() ) {
+        if (CONSTANT_PROPAGATION.get()) {
             stmts = new ConstantPropagator().process(stmts);
         }
-        if ( DEAD_CODE_ELIMINATION.get() ) {
+        if (DEAD_CODE_ELIMINATION.get()) {
             stmts = new DeadCodeEliminator(globalMap.keySet()).process(stmts);
         }
 
@@ -237,7 +240,7 @@ public class DBBC {
     }
 
     protected File generateClassForCode(int addr, List stmts, int wcet) throws Exception {
-        String classname = "Block_"+StringUtil.addrToString(addr);
+        String classname = "Block_" + StringUtil.addrToString(addr);
         String fname = javaName(classname);
         File f = new File(fname);
         FileOutputStream fos = new FileOutputStream(f);
@@ -247,10 +250,10 @@ public class DBBC {
         p.println("import avrora.util.Arithmetic;");
 
         // generate the class
-        p.startblock("public class "+classname+" extends avrora.sim.dbbc.DBBC.CompiledBlock");
+        p.startblock("public class " + classname + " extends avrora.sim.dbbc.DBBC.CompiledBlock");
 
         // generate constructor
-        p.println("public "+classname+"() { super("+addr+", "+wcet+"); }");
+        p.println("public " + classname + "() { super(" + addr + ", " + wcet + "); }");
 
         // generate the execute method
         p.startblock("public void execute(avrora.sim.GenInterpreter interpreter)");
@@ -269,7 +272,7 @@ public class DBBC {
 
     public CompiledBlock getCompiledBlock(CodeBlock b) throws Exception {
         CompiledBlock cb = (CompiledBlock)compiledCodeMap.get(b);
-        if ( cb != null ) return cb;
+        if (cb != null) return cb;
         File f = generateClassForCode(b.beginAddr, b.stmts, b.wcet);
         File c = compileGeneratedCode(f);
         Class cf = loader.defineClass(c);
@@ -280,17 +283,17 @@ public class DBBC {
 
     protected File compileGeneratedCode(File f) throws Exception {
         String name = f.toString();
-        String[] args = { name };
+        String[] args = {name};
 
         // TODO: generate a nicer error message for failure to find Javac
         Class javac = Class.forName("com.sun.tools.javac.Main");
         Class sac = new String[0].getClass();
-        Method m = javac.getMethod("compile", new Class[] { sac });
-        Object r = m.invoke(null, new Object[] {args});
+        Method m = javac.getMethod("compile", new Class[]{sac});
+        Object r = m.invoke(null, new Object[]{args});
         int result = ((Integer)r).intValue();
 
-        if ( result != 0 )
-            throw Avrora.failure("DBBC failed to compile: "+f.toString());
+        if (result != 0)
+            throw Avrora.failure("DBBC failed to compile: " + f.toString());
         String cname = name.replaceAll(".java", ".class");
         File c = new File(cname);
         return c;
@@ -313,7 +316,7 @@ public class DBBC {
     }
 
     protected static void add(String s) {
-        globalMap.put(s, "interpreter."+s);
+        globalMap.put(s, "interpreter." + s);
     }
 
 
@@ -331,25 +334,25 @@ public class DBBC {
         }
 
         protected String newTemp() {
-            return "temp_"+(tmps++);
+            return "temp_" + (tmps++);
         }
 
         protected String getMethod(String s) {
-            return "interpreter."+s;
+            return "interpreter." + s;
         }
 
         protected String getVariable(Token t) {
             String var = (String)variableMap.get(t.image);
-            if (var == null) var = "interpreter."+t.image;
+            if (var == null) var = "interpreter." + t.image;
             return var;
         }
     }
 
     protected String javaName(String cname) {
-        return tmpDir+"/"+cname+".java";
+        return tmpDir + "/" + cname + ".java";
     }
 
     protected String className(String cname) {
-        return tmpDir+"/"+cname+".class";
+        return tmpDir + "/" + cname + ".class";
     }
 }
