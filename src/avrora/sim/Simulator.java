@@ -295,6 +295,7 @@ public abstract class Simulator implements IORegisterConstants {
         private boolean breakFired;
 
         ProbedInstr(Instr i, int a, Probe p) {
+            super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
             instr = i;
             address = a;
             probe = new MulticastProbe();
@@ -323,16 +324,6 @@ public abstract class Simulator implements IORegisterConstants {
             return probe.isEmpty();
         }
 
-        public int getCycles() {
-            // This is an extremely subtle hack to keep timings correct.
-            // A ProbedInstr causes the execute(Instr i) method to be called
-            // twice, once for the ProbedInstr instance, and once for the
-            // actual instruction. Since execute() advances the cycle count,
-            // don't allow it to advance the cycle count twice for this
-            // instruction.
-            return 0;
-        }
-
         public void accept(InstrVisitor v) {
 
             // if the simulator is visiting us, execute the instruction instead of accept(v).
@@ -352,10 +343,6 @@ public abstract class Simulator implements IORegisterConstants {
             }
         }
 
-        public int getSize() {
-            return instr.getSize();
-        }
-
         public Instr build(int address, Operand[] ops) {
             return instr.build(address, ops);
         }
@@ -364,13 +351,6 @@ public abstract class Simulator implements IORegisterConstants {
             return instr.getOperands();
         }
 
-        public String getName() {
-            return instr.getName();
-        }
-
-        public String getVariant() {
-            return instr.getVariant();
-        }
     }
 
     /**
@@ -789,9 +769,11 @@ public abstract class Simulator implements IORegisterConstants {
                     // get the current instruction
                     int curPC = nextPC;
                     Instr i = impression.readInstr(nextPC);
-                    nextPC = nextPC + i.getSize();
+                    nextPC = nextPC + i.properties.size;
 
                     // visit the actual instruction (or probe)
+                    // OPTIMIZATION OPPORTUNITY: common case of no active global probes
+                    // could be approximately 18% of loop overhead
                     activeProbe.fireBefore(i, curPC, this);
                     execute(i);
                     activeProbe.fireAfter(i, curPC, this);
@@ -847,7 +829,7 @@ public abstract class Simulator implements IORegisterConstants {
             i.accept(this);
             pc = nextPC;
             // process any timed events and advance state clock
-            advanceCycles(cyclesConsumed + i.getCycles());
+            advanceCycles(cyclesConsumed + i.properties.cycles);
         }
 
         private void executeProbed(Instr instr, int address, Probe probe) {
@@ -857,7 +839,7 @@ public abstract class Simulator implements IORegisterConstants {
             // execute actual instruction
             instr.accept(this);
             pc = nextPC;
-            advanceCycles(cyclesConsumed + instr.getCycles());
+            advanceCycles(cyclesConsumed + instr.properties.cycles);
 
             // fire the probe(s) after
             probe.fireAfter(instr, address, this);
@@ -1632,7 +1614,7 @@ public abstract class Simulator implements IORegisterConstants {
 
         private void skip() {
             // skip over next instruction
-            int dist = impression.readInstr(nextPC).getSize();
+            int dist = impression.readInstr(nextPC).properties.size;
             if (dist == 2)
                 cyclesConsumed++;
             else

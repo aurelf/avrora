@@ -106,7 +106,7 @@ public class Generator {
             defaults = StringUtil.commalist("0", d(o1));
             formals = StringUtil.commalist("int pc", o1.getType() + " a");
             params = "pc, a";
-            constraints = c(1, o1);
+            constraints = ", " + c(1, o1);
         }
 
         ParamTypes(String bc, Operand o1, Operand o2) {
@@ -114,7 +114,7 @@ public class Generator {
             defaults = StringUtil.commalist("0", d(o1), d(o2));
             formals = StringUtil.commalist("int pc", p(1, o1), p(2, o2));
             params = "pc, a, b";
-            constraints = StringUtil.commalist(c(1, o1), c(2, o2));
+            constraints = ", " + StringUtil.commalist(c(1, o1), c(2, o2));
         }
 
         ParamTypes(String bc, Operand o1, Operand o2, Operand o3) {
@@ -122,7 +122,7 @@ public class Generator {
             defaults = StringUtil.commalist("0", d(o1), d(o2), d(o3));
             formals = StringUtil.commalist("int pc", p(1, o1), p(2, o2), p(3, o3));
             params = "pc, a, b, c";
-            constraints = StringUtil.commalist(c(1, o1), c(2, o2), c(3, o3));
+            constraints = ", " + StringUtil.commalist(c(1, o1), c(2, o2), c(3, o3));
         }
 
         private String d(Operand o) {
@@ -177,19 +177,23 @@ public class Generator {
         }
 
         void writeClassDecl(SectionFile f) throws java.io.IOException {
-            f.writeLine("    public static class " + VARIANT + " extends " + params.baseClass + " { // " + comment);
-            f.writeLine("        public String getName() { return " + StringUtil.quote(name) + "; }");
+            String qVariant = StringUtil.quote(variant);
+            String qName = StringUtil.quote(name);
 
-            if (variant != name)
-                f.writeLine("        public String getVariant() { return " + StringUtil.quote(variant) + "; }");
-            f.writeLine("        static InstrPrototype prototype = new " + VARIANT + "(" + params.defaults + ");");
+            f.writeLine("    public static class " + VARIANT + " extends " + params.baseClass + " { // " + comment);
+//            f.writeLine("        public String getName() { return " + StringUtil.quote(name) + "; }");
+
+//            if (variant != name)
+//                f.writeLine("        public String getVariant() { return " + StringUtil.quote(variant) + "; }");
+            f.writeLine("        static final InstrProperties props = new InstrProperties(" + qName + ", " + qVariant + ", " + (large ? 4 : 2) + ", " + cycles + ");");
+            f.writeLine("        static final InstrPrototype prototype = new " + VARIANT + "(" + params.defaults + ");");
             f.writeLine("        Instr allocate(" + params.formals + ") { return new " + VARIANT + "(" + params.params + "); }");
-            f.writeLine("        public " + VARIANT + "(" + params.formals + ") { super(" + params.constraints + "); }");
+            f.writeLine("        public " + VARIANT + "(" + params.formals + ") { super(props" + params.constraints + "); }");
             f.writeLine("        public void accept(InstrVisitor v) { v.visit(this); }");
-            if (large)
-                f.writeLine("        public int getSize() { return 4; }");
-            if (cycles != 1)
-                f.writeLine("        public int getCycles() { return " + cycles + "; }");
+//            if (large)
+//                f.writeLine("        public int getSize() { return 4; }");
+//            if (cycles != 1)
+//                f.writeLine("        public int getCycles() { return " + cycles + "; }");
             f.writeLine("    }");
         }
 
