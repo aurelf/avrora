@@ -199,10 +199,10 @@ public class Generator {
     static ParamTypes GPR_YZ_IMM6 = new ParamTypes("REGREGIMM_class", GPR, YZ, IMM6);
     static ParamTypes YZ_IMM6_GPR = new ParamTypes("REGIMMREG_class", YZ, IMM6, GPR);
     static ParamTypes IMM3_ = new ParamTypes("IMM_class", IMM3);
-    static ParamTypes IMM3_SREL = new ParamTypes("IMMIMM_class", IMM3, SREL); // fixme ??
-    static ParamTypes SREL_ = new ParamTypes("IMM_class", SREL); // fixme ??
-    static ParamTypes PADDR_ = new ParamTypes("IMM_class", PADDR); // fixme ??
-    static ParamTypes LREL_ = new ParamTypes("IMM_class", LREL); // fixme ??
+    static ParamTypes IMM3_SREL = new ParamTypes("IMMWORD_class", IMM3, SREL); // fixme ??
+    static ParamTypes SREL_ = new ParamTypes("WORD_class", SREL); // fixme ??
+    static ParamTypes PADDR_ = new ParamTypes("WORD_class", PADDR); // fixme ??
+    static ParamTypes LREL_ = new ParamTypes("WORD_class", LREL); // fixme ??
 
     static ParamTypes DADDR_GPR = new ParamTypes("IMMREG_class", DADDR, GPR);
     static ParamTypes IMM6_GPR = new ParamTypes("IMMREG_class", IMM6, GPR);

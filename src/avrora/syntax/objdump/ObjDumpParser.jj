@@ -585,7 +585,7 @@ void InstrOutput() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.E
 SyntacticOperand.Register Register() : { Token tok; }
 {
     tok = <IDENTIFIER>
-    { return new SyntacticOperand.Register(tok); }
+    { return module.newOperand(tok); }
 }
 
 void Label() : { Token tok; }
@@ -601,7 +601,7 @@ void Label() : { Token tok; }
 SyntacticOperand.Expr Const() : { Expr e; }
 {
   (LOOKAHEAD(".") e = RelExpr() | e = Term() )
-  { return new SyntacticOperand.Expr(e); }
+  { return module.newOperand(e); }
 }
 
 Expr Term() : { Token tok; Expr e; }

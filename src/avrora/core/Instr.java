@@ -265,7 +265,6 @@ public abstract class Instr extends Elem implements InstrPrototype {
     }
 
     private static int DADDR(int num, int val) {
-        // TODO: fix checking of program addresses
         return checkImm(num, val, 0, 65536);
     }
 
@@ -295,6 +294,12 @@ public abstract class Instr extends Elem implements InstrPrototype {
         Operand.Constant c = o.asConstant();
         if ( c == null ) throw new ImmediateRequired(o);
         return c.getValue();
+    }
+
+    private static int WORD(Operand o) {
+        Operand.Constant c = o.asConstant();
+        if ( c == null ) throw new ImmediateRequired(o);
+        return c.getValueAsWord();
     }
 
     /**
@@ -407,6 +412,27 @@ public abstract class Instr extends Elem implements InstrPrototype {
         abstract Instr allocate(int pc, int imm1, int imm2);
     }
 
+    public abstract static class IMMWORD_class extends Instr {
+        public final int imm1;
+        public final int imm2;
+
+        IMMWORD_class(int i1, int i2) {
+            imm1 = i1;
+            imm2 = i2;
+        }
+
+        public String getOperands() {
+            return imm1 + ", " + imm2;
+        }
+
+        public Instr build(int pc, Operand[] ops) {
+            need(2, ops);
+            return allocate(pc, IMM(ops[0]), WORD(ops[1]));
+        }
+
+        abstract Instr allocate(int pc, int imm1, int imm2);
+    }
+
     public abstract static class IMM_class extends Instr {
         public final int imm1;
 
@@ -425,6 +451,26 @@ public abstract class Instr extends Elem implements InstrPrototype {
 
         abstract Instr allocate(int pc, int imm1);
     }
+
+    public abstract static class WORD_class extends Instr {
+        public final int imm1;
+
+        WORD_class(int i1) {
+            imm1 = i1;
+        }
+
+        public String getOperands() {
+            return "" + imm1;
+        }
+
+        public Instr build(int pc, Operand[] ops) {
+            need(1, ops);
+            return allocate(pc, WORD(ops[0]));
+        }
+
+        abstract Instr allocate(int pc, int imm1);
+    }
+
 
     public abstract static class REGREGIMM_class extends Instr {
         public final Register r1;
@@ -571,28 +617,28 @@ public abstract class Instr extends Elem implements InstrPrototype {
         public BLD(int pc,Register a,int b) { super(GPR(1, a),IMM3(2, b)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRBC extends IMMIMM_class { // branch if bit in status register is clear
+    public static class BRBC extends IMMWORD_class { // branch if bit in status register is clear
         public String getName() { return "brbc"; }
         static InstrPrototype prototype = new BRBC(0,IMM3_default,SREL_default);
         Instr allocate(int pc,int a,int b) { return new BRBC(pc, a, b); }
         public BRBC(int pc,int a,int b) { super(IMM3(1, a),SREL(pc, 2, b)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRBS extends IMMIMM_class { // branch if bit in status register is set
+    public static class BRBS extends IMMWORD_class { // branch if bit in status register is set
         public String getName() { return "brbs"; }
         static InstrPrototype prototype = new BRBS(0,IMM3_default,SREL_default);
         Instr allocate(int pc,int a,int b) { return new BRBS(pc, a, b); }
         public BRBS(int pc,int a,int b) { super(IMM3(1, a),SREL(pc, 2, b)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRCC extends IMM_class { // branch if carry flag is clear
+    public static class BRCC extends WORD_class { // branch if carry flag is clear
         public String getName() { return "brcc"; }
         static InstrPrototype prototype = new BRCC(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRCC(pc, a); }
         public BRCC(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRCS extends IMM_class { // branch if carry flag is set
+    public static class BRCS extends WORD_class { // branch if carry flag is set
         public String getName() { return "brcs"; }
         static InstrPrototype prototype = new BRCS(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRCS(pc, a); }
@@ -606,112 +652,112 @@ public abstract class Instr extends Elem implements InstrPrototype {
         public BREAK(int pc) { super(); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BREQ extends IMM_class { // branch if equal
+    public static class BREQ extends WORD_class { // branch if equal
         public String getName() { return "breq"; }
         static InstrPrototype prototype = new BREQ(0,SREL_default);
         Instr allocate(int pc,int a) { return new BREQ(pc, a); }
         public BREQ(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRGE extends IMM_class { // branch if greater or equal (signed)
+    public static class BRGE extends WORD_class { // branch if greater or equal (signed)
         public String getName() { return "brge"; }
         static InstrPrototype prototype = new BRGE(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRGE(pc, a); }
         public BRGE(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRHC extends IMM_class { // branch if H flag is clear
+    public static class BRHC extends WORD_class { // branch if H flag is clear
         public String getName() { return "brhc"; }
         static InstrPrototype prototype = new BRHC(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRHC(pc, a); }
         public BRHC(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRHS extends IMM_class { // branch if H flag is set
+    public static class BRHS extends WORD_class { // branch if H flag is set
         public String getName() { return "brhs"; }
         static InstrPrototype prototype = new BRHS(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRHS(pc, a); }
         public BRHS(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRID extends IMM_class { // branch if interrupts are disabled
+    public static class BRID extends WORD_class { // branch if interrupts are disabled
         public String getName() { return "brid"; }
         static InstrPrototype prototype = new BRID(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRID(pc, a); }
         public BRID(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRIE extends IMM_class { // branch if interrupts are enabled
+    public static class BRIE extends WORD_class { // branch if interrupts are enabled
         public String getName() { return "brie"; }
         static InstrPrototype prototype = new BRIE(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRIE(pc, a); }
         public BRIE(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRLO extends IMM_class { // branch if lower
+    public static class BRLO extends WORD_class { // branch if lower
         public String getName() { return "brlo"; }
         static InstrPrototype prototype = new BRLO(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRLO(pc, a); }
         public BRLO(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRLT extends IMM_class { // branch if less than zero (signed)
+    public static class BRLT extends WORD_class { // branch if less than zero (signed)
         public String getName() { return "brlt"; }
         static InstrPrototype prototype = new BRLT(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRLT(pc, a); }
         public BRLT(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRMI extends IMM_class { // branch if minus
+    public static class BRMI extends WORD_class { // branch if minus
         public String getName() { return "brmi"; }
         static InstrPrototype prototype = new BRMI(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRMI(pc, a); }
         public BRMI(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRNE extends IMM_class { // branch if not equal
+    public static class BRNE extends WORD_class { // branch if not equal
         public String getName() { return "brne"; }
         static InstrPrototype prototype = new BRNE(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRNE(pc, a); }
         public BRNE(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRPL extends IMM_class { // branch if positive
+    public static class BRPL extends WORD_class { // branch if positive
         public String getName() { return "brpl"; }
         static InstrPrototype prototype = new BRPL(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRPL(pc, a); }
         public BRPL(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRSH extends IMM_class { // branch if same or higher
+    public static class BRSH extends WORD_class { // branch if same or higher
         public String getName() { return "brsh"; }
         static InstrPrototype prototype = new BRSH(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRSH(pc, a); }
         public BRSH(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRTC extends IMM_class { // branch if T flag is clear
+    public static class BRTC extends WORD_class { // branch if T flag is clear
         public String getName() { return "brtc"; }
         static InstrPrototype prototype = new BRTC(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRTC(pc, a); }
         public BRTC(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRTS extends IMM_class { // branch if T flag is set
+    public static class BRTS extends WORD_class { // branch if T flag is set
         public String getName() { return "brts"; }
         static InstrPrototype prototype = new BRTS(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRTS(pc, a); }
         public BRTS(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRVC extends IMM_class { // branch if V flag is clear
+    public static class BRVC extends WORD_class { // branch if V flag is clear
         public String getName() { return "brvc"; }
         static InstrPrototype prototype = new BRVC(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRVC(pc, a); }
         public BRVC(int pc,int a) { super(SREL(pc, 1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class BRVS extends IMM_class { // branch if V flag is set
+    public static class BRVS extends WORD_class { // branch if V flag is set
         public String getName() { return "brvs"; }
         static InstrPrototype prototype = new BRVS(0,SREL_default);
         Instr allocate(int pc,int a) { return new BRVS(pc, a); }
@@ -732,7 +778,7 @@ public abstract class Instr extends Elem implements InstrPrototype {
         public BST(int pc,Register a,int b) { super(GPR(1, a),IMM3(2, b)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class CALL extends IMM_class { // call absolute address
+    public static class CALL extends WORD_class { // call absolute address
         public String getName() { return "call"; }
         static InstrPrototype prototype = new CALL(0,PADDR_default);
         Instr allocate(int pc,int a) { return new CALL(pc, a); }
@@ -964,7 +1010,7 @@ public abstract class Instr extends Elem implements InstrPrototype {
         public INC(int pc,Register a) { super(GPR(1, a)); }
         public void accept(InstrVisitor v) { v.visit(this); }
     }
-    public static class JMP extends IMM_class { // absolute jump
+    public static class JMP extends WORD_class { // absolute jump
         public String getName() { return "jmp"; }
         static InstrPrototype prototype = new JMP(0,PADDR_default);
         Instr allocate(int pc,int a) { return new JMP(pc, a); }
@@ -1152,7 +1198,7 @@ public abstract class Instr extends Elem implements InstrPrototype {
         public void accept(InstrVisitor v) { v.visit(this); }
         public int getCycles() { return 2; }
     }
-    public static class RCALL extends IMM_class { // relative call
+    public static class RCALL extends WORD_class { // relative call
         public String getName() { return "rcall"; }
         static InstrPrototype prototype = new RCALL(0,LREL_default);
         Instr allocate(int pc,int a) { return new RCALL(pc, a); }
@@ -1176,7 +1222,7 @@ public abstract class Instr extends Elem implements InstrPrototype {
         public void accept(InstrVisitor v) { v.visit(this); }
         public int getCycles() { return 4; }
     }
-    public static class RJMP extends IMM_class { // relative jump
+    public static class RJMP extends WORD_class { // relative jump
         public String getName() { return "rjmp"; }
         static InstrPrototype prototype = new RJMP(0,LREL_default);
         Instr allocate(int pc,int a) { return new RJMP(pc, a); }

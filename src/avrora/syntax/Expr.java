@@ -281,7 +281,11 @@ public abstract class Expr extends ASTNode {
         }
 
         public int evaluate(int currentByteAddress, Context c) {
-            return currentByteAddress;
+            int offset = StringUtil.evaluateIntegerLiteral(num.image);
+            if ( op.image.equals("+") ) return currentByteAddress + offset;
+            if ( op.image.equals("-") ) return currentByteAddress - offset;
+
+            throw Avrora.failure("unknown operation in relative computation: "+op.image);
         }
     }
 

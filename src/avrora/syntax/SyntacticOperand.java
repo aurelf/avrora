@@ -90,11 +90,13 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
     public static class Expr extends SyntacticOperand implements Operand.Constant {
         public final avrora.syntax.Expr expr;
         private boolean simplified;
+        private boolean useByteAddress;
         private int value;
 
-        public Expr(avrora.syntax.Expr e) {
+        public Expr(avrora.syntax.Expr e, boolean b) {
             super(e.getLeftMostToken(), e.getRightMostToken());
             expr = e;
+            useByteAddress = b;
         }
 
         public Operand.Constant asConstant() {
@@ -106,6 +108,15 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
             // sanity check to avoid possibly hard to find bugs in the future
             if ( !simplified ) throw Avrora.failure("expression operand not yet simplified: "+expr);
             return value;
+        }
+
+        public int getValueAsWord() {
+            if ( !simplified ) throw Avrora.failure("expression operand not yet simplified: "+expr);
+            if ( !useByteAddress ) // already using a word address for this.
+                return value;
+            else {
+                return (value >> 1);
+            }
         }
 
         public void simplify(int currentByteAddress, Context c) {

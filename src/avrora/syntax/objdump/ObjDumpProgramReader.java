@@ -37,7 +37,7 @@ public class ObjDumpProgramReader extends Main.ProgramReader {
             Avrora.userError("input type \"objdump\" accepts only one file at a time.");
 
         File f = new File(args[0]);
-        Module module = new Module(false, false);
+        Module module = new Module(true, true);
         FileInputStream fis = new FileInputStream(f);
         ObjDumpParser parser = new ObjDumpParser(fis, module, f.getName());
         parser.Module();

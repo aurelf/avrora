@@ -551,7 +551,7 @@ void InstrOutput() : { Token t; SyntacticOperand.Register r1; SyntacticOperand.E
 SyntacticOperand.Register Register() : { Token tok; }
 {
     tok = <IDENTIFIER>
-    { return new SyntacticOperand.Register(tok); }
+    { return module.newOperand(tok); }
 }
 
 void Label() : { Token tok; }
@@ -636,7 +636,7 @@ void SegDirective() : {}
 SyntacticOperand.Expr Const() : { Expr e; }
 {
     e = Expr()
-    { return new SyntacticOperand.Expr(e); }
+    { return module.newOperand(e); }
 }
 
 ExprList DataList() : { ExprList list = new ExprList(); Expr e; }

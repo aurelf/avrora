@@ -216,7 +216,7 @@ public class Module implements Context {
     // <instruction>
     public void addInstruction(String variant, AbstractToken name) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v));
+        modulePrinter.println(StringUtil.embed("addInstr", v)+"  @ line "+name.beginLine);
         SyntacticOperand[] o = NO_OPERANDS;
         makeInstr(variant, name, o);
     }
@@ -224,7 +224,7 @@ public class Module implements Context {
     // <instruction> <operand>
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v, o1));
+        modulePrinter.println(StringUtil.embed("addInstr", v, o1)+"  @ line "+name.beginLine);
         SyntacticOperand[] o = {o1};
         makeInstr(variant, name, o);
     }
@@ -232,7 +232,7 @@ public class Module implements Context {
     // <instruction> <operand> <operand>
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2));
+        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2)+"  @ line "+name.beginLine);
         SyntacticOperand[] o = {o1, o2};
         makeInstr(variant, name, o);
     }
@@ -240,7 +240,7 @@ public class Module implements Context {
     // <instruction> <operand> <operand> <operand>
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2, SyntacticOperand o3) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2, o3));
+        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2, o3)+"  @ line "+name.beginLine);
         SyntacticOperand[] o = {o1, o2, o3};
         makeInstr(variant, name, o);
     }
@@ -273,7 +273,24 @@ public class Module implements Context {
     }
 
     private void simplify(Item i) {
-        i.simplify();
+        Item.Instruction instr = null;
+        if ( i instanceof Item.Instruction ) instr = (Item.Instruction)i;
+
+        try {
+
+            i.simplify();
+
+        } catch (Instr.ImmediateRequired e) {
+            ERROR.ConstantExpected((SyntacticOperand)e.operand);
+        } catch (Instr.InvalidImmediate e) {
+            ERROR.ConstantOutOfRange(instr.operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
+        } catch (Instr.InvalidRegister e) {
+            ERROR.IncorrectRegister(instr.operands[e.number - 1], e.register, e.set.toString());
+        } catch (Instr.RegisterRequired e) {
+            ERROR.RegisterExpected((SyntacticOperand)e.operand);
+        } catch (Instr.WrongNumberOfOperands e) {
+            ERROR.WrongNumberOfOperands(instr.name, e.found, e.expected);
+        }
     }
 
     public void addVariable(String name, int value) {
@@ -306,6 +323,14 @@ public class Module implements Context {
             else return li.getByteAddress();
         } else
             return v.intValue();
+    }
+
+    public SyntacticOperand.Expr newOperand(Expr e) {
+        return new SyntacticOperand.Expr(e, useByteAddresses);
+    }
+
+    public SyntacticOperand.Register newOperand(AbstractToken tok) {
+        return new SyntacticOperand.Register(tok);
     }
 
     private void addItem(Item i) {

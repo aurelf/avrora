@@ -999,7 +999,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
   final public SyntacticOperand.Register Register() throws ParseException {
                                          Token tok;
     tok = jj_consume_token(IDENTIFIER);
-      {if (true) return new SyntacticOperand.Register(tok);}
+      {if (true) return module.newOperand(tok);}
     throw new Error("Missing return statement in function");
   }
 
@@ -1041,7 +1041,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         throw new ParseException();
       }
     }
-    {if (true) return new SyntacticOperand.Expr(e);}
+    {if (true) return module.newOperand(e);}
     throw new Error("Missing return statement in function");
   }
 
