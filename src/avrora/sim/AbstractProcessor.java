@@ -15,6 +15,9 @@ public interface AbstractProcessor {
     public int getEEPromSize();
     public int getHz();
 
+    public long millisToCycles(double ms);
+    public double cyclesToMillis(long ms);
+
     public boolean isSupported(InstrPrototype i);
 
     public Simulator loadProgram(Program p);

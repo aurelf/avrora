@@ -45,6 +45,14 @@ public class ATMega128L implements AbstractProcessor {
         return HZ;
     }
 
+    public long millisToCycles(double ms) {
+        return (long)(ms * HZ / 1000);
+    }
+
+    public double cyclesToMillis(long cyc) {
+        return 1000*((double)cyc) / HZ;
+    }
+
     public class SimImpl extends Simulator {
 
         public SimImpl(Program p) {
