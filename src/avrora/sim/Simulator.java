@@ -391,12 +391,12 @@ public abstract class Simulator implements IORegisterConstants {
      * <code>Simulator</code> instance.
      */
     public static final Interrupt IGNORE = new Interrupt() {
-        public void force() {
-        }
+	    public void force() {
+	    }
 
-        public void fire() {
-        }
-    };
+	    public void fire() {
+	    }
+	};
 
     /**
      * The <code>getMicrocontroller()</code> method gets a reference to the
@@ -456,14 +456,14 @@ public abstract class Simulator implements IORegisterConstants {
                     microcontroller.getRamSize());
         } else if (LEGACY_INTERPRETER) {
             interpreter = new LegacyInterpreter(this, program,
-                    microcontroller.getFlashSize(),
-                    microcontroller.getIORegSize(),
-                    microcontroller.getRamSize());
+						microcontroller.getFlashSize(),
+						microcontroller.getIORegSize(),
+						microcontroller.getRamSize());
         } else {
             interpreter = new GenInterpreter(this, program,
-                    microcontroller.getFlashSize(),
-                    microcontroller.getIORegSize(),
-                    microcontroller.getRamSize());
+					     microcontroller.getFlashSize(),
+					     microcontroller.getIORegSize(),
+					     microcontroller.getRamSize());
         }
     }
 
@@ -757,6 +757,12 @@ public abstract class Simulator implements IORegisterConstants {
         protected final int baseVect;
         protected final boolean increasingVectors;
 
+        IMRReg(int bv) {
+
+            baseVect = bv;
+            increasingVectors = false;
+        }
+
         IMRReg(boolean inc, int bv) {
             baseVect = bv;
             increasingVectors = inc;
@@ -767,8 +773,9 @@ public abstract class Simulator implements IORegisterConstants {
             int shift = baseVect;
             if (!increasingVectors) {
                 shift -= 8;
-                posted = Arithmetic.reverseBits((byte) posted);
+                posted = (0xff) & Arithmetic.reverseBits((byte) posted);
             }
+
             long previousPosted = interpreter.postedInterrupts & ~(0xff << shift);
             long newPosted = previousPosted | (posted << shift);
             interpreter.postedInterrupts = (newPosted);
@@ -815,6 +822,7 @@ public abstract class Simulator implements IORegisterConstants {
                 interpreter.unpostInterrupt(getVectorNum(bit));
             }
         }
+
     }
 
     public class MaskRegister extends IMRReg {
@@ -842,21 +850,44 @@ public abstract class Simulator implements IORegisterConstants {
         }
     }
 
+
     /** Flag register for flag register that corresponds to a
      * group of interrupts that do not necessarily have a clean,
      * linear mapping to bits on the register.  */
     public class UnorderedFlagRegister extends FlagRegister {
         final int[] mapping;
+        byte byteMask;
 
-        public UnorderedFlagRegister(boolean b, int i, int[] mapping) {
-            super(b, i);
+        public UnorderedFlagRegister(boolean b, int i, int[] mapping, byte byteMask) {
+            super(true, i);
             this.mapping = mapping;
-            maskRegister = new UnorderedMaskRegister(b, i, this, mapping);
+            maskRegister = new UnorderedMaskRegister(b, i, this, mapping, byteMask);
+            this.byteMask = byteMask;
         }
 
         protected int getVectorNum(int bit) {
             return mapping[bit];
         }
+
+        public void update(IMRReg other) {
+            int posts = this.value & other.value & byteMask;
+            long posted = 0;
+            int count = 0;
+            while(posts != 0) {
+                if((posts & 0x1) != 0) {
+                    posted |= (0x1 << mapping[count]);
+
+                }
+
+                posts = posts >> 1;
+                count++;
+            }
+
+            long previousPosted = interpreter.postedInterrupts & ~(byteMask << baseVect);
+            long newPosted = previousPosted | posted;
+            interpreter.postedInterrupts = (newPosted);
+        }
+
     }
 
     /** Mask register associated with an
@@ -864,15 +895,40 @@ public abstract class Simulator implements IORegisterConstants {
     public class UnorderedMaskRegister extends MaskRegister {
         final int[] mapping;
 
+        byte byteMask;
 
-        public UnorderedMaskRegister(boolean b, int i, FlagRegister fr, int[] mapping) {
-            super(b, i, fr);
+
+        public UnorderedMaskRegister(boolean b, int i, FlagRegister fr, int[] mapping, byte byteMask) {
+            super(true, i, fr);
             this.mapping = mapping;
+            this.byteMask = byteMask;
         }
 
         protected int getVectorNum(int bit) {
             return mapping[bit];
         }
+
+
+                public void update(IMRReg other) {
+            int posts = this.value & other.value & byteMask;
+            long posted = 0;
+            int count = 0;
+            while(posts != 0) {
+                if((posts & 0x1) != 0) {
+                    posted |= (0x1 << mapping[count]);
+
+                }
+
+                posts = posts >> 1;
+                count++;
+            }
+
+            long previousPosted = interpreter.postedInterrupts & ~(byteMask << baseVect);
+            long newPosted = previousPosted | posted;
+            interpreter.postedInterrupts = (newPosted);
+        }
+
     }
+
 
 }

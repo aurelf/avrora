@@ -32,9 +32,16 @@
 
 package avrora.sim.platform;
 
+
 import avrora.core.Program;
+import avrora.core.Instr;
+import avrora.core.Register;
+
 import avrora.sim.mcu.ATMega128L;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.Simulator;
+import avrora.sim.State;
+
 import avrora.util.Terminal;
 
 /**
@@ -66,6 +73,7 @@ public class Mica implements Platform, PlatformFactory {
         return new Mica(new ATMega128L(true).newMicrocontroller(p));
     }
 
+    // TODO: Merge Mica and Mica2 LED implementation.
     protected class LED implements Microcontroller.Pin.Output {
         protected boolean initialized;
         protected boolean on;
@@ -109,5 +117,7 @@ public class Mica implements Platform, PlatformFactory {
         mcu.getPin("PA0").connect(new LED(Terminal.COLOR_YELLOW, "Yellow"));
         mcu.getPin("PA1").connect(new LED(Terminal.COLOR_GREEN, "Green"));
         mcu.getPin("PA2").connect(new LED(Terminal.COLOR_RED, "Red"));
+
     }
+
 }

@@ -33,10 +33,22 @@
 package avrora.actions;
 
 import avrora.Avrora;
+import avrora.Main;
+import avrora.core.Program;
+import avrora.sim.Simulator;
+import avrora.sim.SimulatorThread;
+import avrora.sim.radio.SimpleAir;
+import avrora.sim.radio.Radio;
+import avrora.sim.mcu.Microcontroller;
+import avrora.sim.platform.PlatformFactory;
 import avrora.util.Option;
 
+import java.util.LinkedList;
+import java.util.Iterator;
+
 /**
- * @author Simon Han
+ * TODO: Doc this
+ * @author Daniel Lee, Simon Han
  */
 public class MultiSimulateAction extends SimAction {
     public static final String HELP = "The \"multi-simulate\" action launches a set of simulators with " +
@@ -47,12 +59,93 @@ public class MultiSimulateAction extends SimAction {
     public final Option.Str TOPOLOGY = newOption("topology", "",
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network.");
+    public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", false,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to use the legacy (hand-written) interpreter rather than the interpreter " +
+            "generated from the architecture description language. It is used for " +
+            "benchmarking and regression purposes.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
     }
 
-    public void run(String[] args) {
-        throw Avrora.unimplemented();
+    Program program;
+
+    double startms;
+    double endms;
+
+
+
+    public void run(String[] args) throws Exception {
+
+        Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
+
+        Simulator simulator;
+
+        Microcontroller microcontroller;
+        LinkedList simulatorThreadList = new LinkedList();
+
+        //program = Main.readProgram(args);
+
+        //Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
+
+        PlatformFactory pf = getPlatform();
+        SimulatorThread st;
+
+        for(int i = 0; i < NODECOUNT.get(); i++) {
+
+            // TODO: Use a hashtable to avoid creating duplicate programs of the same input
+            // files.
+            Program program = null;
+            String[] argS = new String[1];
+
+            if(i < args.length) {
+                argS[0] = args[i];
+            }
+            program = Main.readProgram(argS);
+
+
+            if (pf != null) {
+                microcontroller = pf.newPlatform(program).getMicrocontroller();
+                simulator = microcontroller.getSimulator();
+                st = new SimulatorThread(simulator);
+                simulatorThreadList.addFirst(st);
+
+            } else {
+                microcontroller = getMicrocontroller().newMicrocontroller(program);
+                simulator = microcontroller.getSimulator();
+                st = new SimulatorThread(simulator);
+                simulatorThreadList.addFirst(st);
+            }
+
+            Radio radio = microcontroller.getRadio();
+            radio.setSimulatorThread(st);
+
+            if(radio != null) {
+                SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
+            }
+
+            // TODO: port over other "process" routines from SimulateAction
+            processTimeout(simulator);
+        }
+
+        startms = System.currentTimeMillis();
+        try {
+            //simulator.start();
+            Iterator threadIterator = simulatorThreadList.iterator();
+
+            while(threadIterator.hasNext()) {
+                SimulatorThread thread = (SimulatorThread)threadIterator.next();
+                thread.start();
+            }
+        } finally {
+            endms = System.currentTimeMillis();
+        }
+    }
+
+    void processTimeout(Simulator simulator) {
+        long timeout = TIMEOUT.get();
+        if (timeout > 0)
+            simulator.insertTimeout(timeout);
     }
 }

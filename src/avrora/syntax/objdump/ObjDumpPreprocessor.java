@@ -66,6 +66,7 @@ public class ObjDumpPreprocessor {
 
         } catch (Exception e) {
             System.err.println("Error reading file \"" + inFile + "\":\n" + e);
+            e.printStackTrace(System.err);// TODO: remove this line
             System.exit(-1);
         }
     }

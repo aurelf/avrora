@@ -52,9 +52,10 @@ public class SimulatorThread extends Thread {
      * as a parameter and stores it internally.
      * @param s the simulator this thread is intended to run.
      */
-    SimulatorThread(Simulator s) {
+    public SimulatorThread(Simulator s) {
         simulator = s;
     }
+    // TODO: clean up how simulators are put into simulator threads.
 
     /**
      * The <code>getSimulator()</code> method gets the <code>Simulator</code> instance that

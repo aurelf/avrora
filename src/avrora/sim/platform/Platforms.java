@@ -49,6 +49,7 @@ public class Platforms {
 
     static {
         platforms.put("mica", new Mica());
+        platforms.put("mica2", new Mica2());
     }
 
     public static PlatformFactory getPlatform(String name) {

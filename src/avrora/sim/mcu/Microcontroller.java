@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
+import avrora.sim.radio.Radio;
 
 /**
  * The <code>Microcontroller</code> interface corresponds to a hardware device
@@ -165,4 +166,10 @@ public interface Microcontroller extends MicrocontrollerProperties {
      *         the named pin if it exists; null otherwise
      */
     public Pin getPin(int num);
+
+    //TODO: Doc this
+
+    public void setRadio(Radio r);
+
+    public Radio getRadio();
 }

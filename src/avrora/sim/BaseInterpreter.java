@@ -501,7 +501,13 @@ public abstract class BaseInterpreter implements State {
             sram[offset] = val;
             p.fireAfterWrite(i, pc, this, offset + sram_start, val);
         } else {
-            sram[offset] = val;
+            try{
+                sram[offset] = val;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                Instr i = getCurrentInstr();
+                System.err.println(i + ", " + regs[22] +", " + getSP());
+                throw e;
+            }
         }
     }
 
@@ -779,10 +785,13 @@ public abstract class BaseInterpreter implements State {
      *
      * @param num the interrupt number to post
      */
-    protected void unpostInterrupt(int num) {
-        postedInterrupts &= ~(1 << num);
-        innerLoop = false;
+    public void unpostInterrupt(int num) {
+        if(num > 0) {
+            postedInterrupts &= ~(1 << num);
+            innerLoop = false;
+        }
     }
+
 
     /**
      * The <code>postInterrupt()</code> method is generally only used within the
@@ -794,8 +803,10 @@ public abstract class BaseInterpreter implements State {
      * @param num the interrupt number to post
      */
     public void postInterrupt(int num) {
-        postedInterrupts |= 1 << num;
-        innerLoop = false;
+        if(num > 0) {
+            postedInterrupts |= 1 << num;
+            innerLoop = false;
+        }
     }
 
     protected void enableInterrupts() {

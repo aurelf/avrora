@@ -124,7 +124,7 @@ public class SimulateAction extends SimAction {
             "to analyze the memory traffic of the program and print out the results in " +
             "a tabular format. This can be useful to see what portions of memory are the " +
             "most used.");
-    public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", true,
+    public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", false,
             "This option is used in the \"simulate\" action. It causes the simulator " +
             "to use the legacy (hand-written) interpreter rather than the interpreter " +
             "generated from the architecture description language. It is used for " +

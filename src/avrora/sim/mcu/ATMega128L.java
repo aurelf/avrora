@@ -38,6 +38,8 @@ import avrora.core.Program;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.radio.Radio;
+
 import avrora.util.Arithmetic;
 import avrora.util.Verbose;
 
@@ -73,6 +75,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
     protected static final HashMap pinNumbers;
     private final boolean compatibilityMode;
+
 
     static {
         pinNumbers = new HashMap();
@@ -240,7 +243,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         pinNumbers.put(n3, integer);
     }
 
-    protected final Simulator simulator;
+    protected final SimImpl simulator;
     protected final Pin[] pins;
 
     /**
@@ -462,6 +465,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         /** The ETIMSK register. Address 0x7d.*/
         protected UnorderedMaskRegister ETIMSK_reg;
 
+        protected SPI spi;
+        protected ADC adc;
+
         protected class DirectionRegister extends State.RWIOReg {
 
             protected Pin[] pins;
@@ -533,19 +539,69 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 // ignore writes
             }
         }
+        protected class StandardClock implements Clock {
+            public void scheduleEvent(Simulator.Event e, long cycles) {
+                insertEvent(e, cycles);
+            }
+        }
 
-        int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
+        protected class Timer0ExternalClock extends StandardClock {
+            long delay;
+            Timer0ExternalClock() {
+                long Hz = 32768; // Cycles per second
+                double secondsPerCycle = 1.0 / Hz;
+                double millisPerCycle = secondsPerCycle * 1000.0;
+                delay = millisToCycles(millisPerCycle);
+            }
+
+            public void scheduleEvent(Simulator.Event e, long cycles) {
+                insertEvent(e, cycles * delay);
+            }
+
+        }
+
+        final int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
 
         /** <code>Timer0</code> is the default 8-bit timer on the
          * ATMega128L. */
         protected class Timer0 extends Timer8Bit {
 
+            final Timer0ExternalClock externalClock = new Timer0ExternalClock();
+
             protected Timer0(BaseInterpreter ns) {
                 super(ns, 0, TCCR0, TCNT0, OCR0, 1, 0, 1, 0, periods0);
+                installIOReg(ns, ASSR, new ASSRRegister());
             }
+
+            // See pg. 104 of the ATmega128L doc
+            protected class ASSRRegister extends State.RWIOReg {
+                final int AS0 = 3;
+                final int TCN0UB = 2;
+                final int OCR0UB = 1;
+                final int TCR0UB = 0;
+
+                public void write(byte val) {
+                    super.write((byte)(0xf & val));
+                    decode(val);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    super.writeBit(bit, val);
+                    decode(value);
+                }
+
+                protected void decode(byte val) {
+                    // TODO: if there is a change, remove ticker and requeue?
+                    clock = Arithmetic.getBit(val, AS0) ? externalClock : standardClock;
+                }
+
+
+            }
+
+
         }
 
-        int[] periods2 = {0, 1, 8, 64, 256, 1024};
+        final int[] periods2 = {0, 1, 8, 64, 256, 1024};
 
         /** <code>Timer2</code> is an additional 8-bit timer on the
          * ATMega128L. It is not available in ATMega103 compatibility
@@ -879,9 +935,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
              * describing the control registers of a 16-bit timer. */
             protected abstract class ControlRegister extends State.RWIOReg {
 
+                abstract protected void decode(byte val) ;
 
-                private void decode(byte val) {
-                }
 
                 public void write(byte val) {
                     value = val;
@@ -1012,7 +1067,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 public static final int WGMn0 = 0;
 
 
-                private void decode(byte val) {
+                protected void decode(byte val) {
 // get the mode of operation
                     timerModeA = Arithmetic.getBit(val, WGMn1) ? 2 : 0;
                     timerModeA |= Arithmetic.getBit(val, WGMn0) ? 1 : 0;
@@ -1051,7 +1106,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
 
-                private void decode(byte val) {
+                protected void decode(byte val) {
 // get the mode of operation
                     timerModeB = Arithmetic.getBit(val, WGMn3) ? 8 : 0;
                     timerModeB |= Arithmetic.getBit(val, WGMn2) ? 4 : 0;
@@ -1098,6 +1153,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 public static final int FOCnB = 6;
                 public static final int FOCnC = 5;
                 //bits 4-0 are unspecified in the manual
+
+                protected void decode(byte val) {}
 
                 public void write(byte val) {
                     if ((val & 0x20) != 0) {
@@ -1256,7 +1313,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     }
 
                     // What exactly should I do when I phase/frequency current?
-                    // TODO: Figure out what differentiates the OCRnA, B, C
                     // registers.
                     // Make sure these cases are doing what they are supposed to
                     // do.
@@ -1460,6 +1516,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             final int n; // number of timer. 0 for Timer0, 2 for Timer2
 
             final Ticker ticker;
+
+            protected final StandardClock standardClock = new StandardClock();
+
+            protected Clock clock = standardClock;
+
+            // TODO: Remove this..
+            private void insertEvent() {}
 
             boolean timerEnabled;
             boolean countUp;
@@ -1671,7 +1734,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " enabled: period = " + m + " mode = " + timerMode);
                     period = m;
                     timerEnabled = true;
-                    insertEvent(ticker, period);
+                    clock.scheduleEvent(ticker, period);
                 }
             }
 
@@ -1748,7 +1811,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     // I probably want to verify the timing on this.
                     blockCompareMatch = false;
 
-                    if (period != 0) insertEvent(this, period);
+                    if (period != 0) clock.scheduleEvent(this, period);
                 }
             }
         }
@@ -1770,10 +1833,15 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                interrupt vector. Therefore, we have to line this up by
                hand.
             */
-            //ETIFR_reg = new FlagRegister(true, 25);
-            int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
-            ETIFR_reg = new UnorderedFlagRegister(true, 25, ETIFR_mapping); // false, 0 are just placeholder falues
-            ETIMSK_reg = (UnorderedMaskRegister) ETIFR_reg.maskRegister;
+
+            if (!compatibilityMode) {
+                //ETIFR_reg = new FlagRegister(true, 25);
+                int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
+                ETIFR_reg = new UnorderedFlagRegister(true, 25, ETIFR_mapping, (byte)0xfc); // false, 0 are just placeholder falues
+                ETIMSK_reg = (UnorderedMaskRegister) ETIFR_reg.maskRegister;
+                installIOReg(ns, ETIMSK, ETIMSK_reg);
+                installIOReg(ns, ETIFR, ETIFR_reg);
+            }
 
 
             // Timer1 COMPC
@@ -1788,9 +1856,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             interrupts[29] = new Simulator.MaskableInterrupt(29, ETIMSK_reg, ETIFR_reg, 1, false);
             // Timer3 OVF
             interrupts[30] = new Simulator.MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false);
-
-            installIOReg(ns, ETIMSK, ETIMSK_reg);
-            installIOReg(ns, ETIFR, ETIFR_reg);
 
             // 8-Bit Timers
             // build timer 0
@@ -1811,10 +1876,17 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             new USART0(ns);
             //new USART1(ns);
+            if (!compatibilityMode) new USART1(ns);
 
             // Add SPI device by Simon
-            new SPI(ns);
+            spi = new SPI(ns);
 
+
+            adc = new ADC(ns);
+
+            //new RadioPinReader();
+
+            installIOReg(ns, XDIV, new XTALRegister());
 
         }
 
@@ -1854,21 +1926,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             return fr;
         }
 
-        private int read16(State.RWIOReg high, State.RWIOReg low) {
-            int result = low.read() & 0xff;
-            result |= (high.read() & 0xff) << 8;
-            return result;
-        }
-
-        private void write16(int val, State.RWIOReg high, State.RWIOReg low) {
-
-            high.write((byte) ((val & 0xff00) >> 8));
-            low.write((byte) (val & 0x00ff));
-        }
-
         /**
          * This is an implementation of the non-volatile EEPROM on the
-         * ATMega128 microcontroller.  TODO: CPU halting after
+         * ATMega128 microcontroller.  TODO: CPU halting after EEPROM read/write
          * reads/writes.
          * @author Daniel Lee
          */
@@ -1888,6 +1948,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             final int EEMWE = 2;
             final int EEWE = 1;
             final int EERE = 0;
+
+            final int EEPROM_INTERRUPT = 23;
 
             boolean interruptEnable;
             boolean masterWriteEnable;
@@ -1943,19 +2005,30 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                 public void decode(byte val) {
                     boolean readEnableOld = readEnable;
-                    readEnable = (value & 0x1) != 0;
+                    readEnable = readBit(EERE);
                     if (!readEnableOld && readEnable) {
                         if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: EERE flagged");
                         readEnableWritten = true;
                     }
                     boolean writeEnableOld = writeEnable;
-                    writeEnable = (value & 0x2) != 0;
+                    writeEnable = readBit(EEWE);
                     if (!writeEnableOld && writeEnable) {
                         if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: EEWE flagged");
                         writeEnableWritten = true;
                     }
-                    masterWriteEnable = (value & 0x4) != 0;
-                    interruptEnable = (value & 0x8) != 0;
+                    masterWriteEnable = readBit(EEMWE);
+                    interruptEnable = readBit(EERIE);
+                    if(!interruptEnable) {
+                        interpreter.unpostInterrupt(EEPROM_INTERRUPT);
+                    }
+
+
+                    if ((interruptEnable && !writeEnable)) {
+                        // post interrupt
+                        // do I need to check SREG[I] ?
+                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: posting interrupt.");
+                        interpreter.postInterrupt(EEPROM_INTERRUPT);
+                    }
                     insertEvent(ticker, 1);
                 }
 
@@ -1989,6 +2062,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             protected class EEPROMTicker implements Simulator.Event {
                 public void fire() {
+
                     /*if(eepromPrinter.enabled) {
                     eepromPrinter.println("EEPROM: " + EECR_reg.read() + " " + EEARH_reg.read() + " " + EEARL_reg.read());
                     }
@@ -1997,12 +2071,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                         eepromPrinter.println("Tick : " + writeCount);
                     }
 
-                    if (interruptEnable && !writeEnable) {
-                        // post interrupt
-                        // do I need to check SREG[I] ?
-                        if (eepromPrinter.enabled) eepromPrinter.println("EEPROM: posting interrupt.");
-                        interpreter.postInterrupt(23);
-                    }
                     int address = read16(EEARH_reg, EEARL_reg);
                     if (writeCount > 0) {
                         // if EEMWE has been written to 1 within
@@ -2168,6 +2236,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             int USARTnUDRE;
             int USARTnTX;
 
+
+
             int[] INTERRUPT_MAPPING;
 
             //boolean UDREnFlagged;
@@ -2226,18 +2296,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             /* *********************************************** */
 
             /*
-            //ETIFR_reg = new FlagRegister(true, 25);
-            int [] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
-            ETIFR_reg = new UnorderedFlagRegister(true, 25, ETIFR_mapping); // false, 0 are just placeholder falues
-            ETIMSK_reg = (UnorderedMaskRegister)ETIFR_reg.maskRegister;
 
-
-            // increasing?
 
             int [] UCSR2A_mapping = {-1, -1, -1, -1, -1, 33, 31, 32};
 
              */
 
+            /** Initialize the parameters such as interrupt numbers and I/O register numbers that make this USART unique. */
             abstract protected void initValues();
 
             USART(BaseInterpreter ns) {
@@ -2257,6 +2322,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 receiver = new Receiver();
 
                 connectedDevice = new SerialPrinter();
+                //connectedDevice = new LCDScreen();
 
                 usartPrinter = Verbose.getVerbosePrinter("sim.usart" + n);
 
@@ -2268,11 +2334,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 installIOReg(ns, UBRRnH, UBRRnH_reg);
 
                 // USART Receive Complete
-                interrupts[19] = new Simulator.MaskableInterrupt(19, UCSRnB_reg, UCSRnA_reg, 7, false);
+                interrupts[USARTnRX] = new Simulator.MaskableInterrupt(USARTnRX, UCSRnB_reg, UCSRnA_reg, RXCn, false);
                 // USART Data Register Empty
-                interrupts[20] = new Simulator.MaskableInterrupt(20, UCSRnB_reg, UCSRnA_reg, 5, false);
+                interrupts[USARTnUDRE] = new Simulator.MaskableInterrupt(USARTnUDRE, UCSRnB_reg, UCSRnA_reg, UDREn, false);
                 // USART Transmit Complete
-                interrupts[21] = new Simulator.MaskableInterrupt(21, UCSRnB_reg, UCSRnA_reg, 6, false);
+                interrupts[USARTnTX] = new Simulator.MaskableInterrupt(USARTnTX, UCSRnB_reg, UCSRnA_reg, TXCn, false);
 
             }
 
@@ -2407,6 +2473,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     return receiveRegister.readBit(bit);
                 }
 
+
+                /** An implementation of the FIFO used to buffer the received frames. This is not quite a two-level
+                 * FIFO, as the shift-receive register in the actual implementation can act as a third level to the
+                 * buffer. In order to account for this, the FIFO is implemented as a queue that can hold at most three
+                 * elements (limited by the implementation). Although the implementation does not mirror the how the
+                 * hardware does this, functionally it should behave the same way.  */
                 private class TwoLevelFIFO extends State.RWIOReg {
 
                     LinkedList readyQueue;
@@ -2424,9 +2496,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                         return Arithmetic.getBit(bit, read());
                     }
 
+
                     public byte read() {
                         if (readyQueue.isEmpty()) {
-                            System.err.println("read 0 empty");
+                            //System.err.println("read 0 empty");
                             return (byte) 0;
                         }
                         USARTFrameWrapper current = (USARTFrameWrapper) readyQueue.removeLast();
@@ -2435,7 +2508,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                         }
                         UCSRnB_reg.writeBit(RXB8n, current.frame.high);
                         waitQueue.add(current);
-                        System.err.println("read " + current.frame.low);
+                        //System.err.println("read " + current.frame.low);
                         return current.frame.low;
                     }
 
@@ -2451,7 +2524,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     }
 
                     protected void flush() {
-                        // clear RXCn
+                        while(!waitQueue.isEmpty()) {
+                            // empty the wait queue. fill the ready queue.
+                            readyQueue.add(waitQueue.removeLast());
+                        }
                     }
 
                     private class USARTFrameWrapper {
@@ -2462,28 +2538,27 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             }
 
+            private final byte flagByteMask = (byte)0xe0;
 
+
+            /** UCSRnA (<code>ControlRegisterA</code>) is one of three control/status registers for the USART. The
+             * high three bits are actually interrupt flag bits. */
             protected class ControlRegisterA extends UnorderedFlagRegister {
 
                 public ControlRegisterA() {
-                    super(true, 19, INTERRUPT_MAPPING);
+                    super(true, USARTnRX, INTERRUPT_MAPPING, flagByteMask);
                     value = 0x20; // init UDREn to true
-
 
                 }
 
                 public void write(byte val) {
-                    //System.err.println("Control A BYTE " + Integer.toBinaryString(val) + " " + read() + " " + UCSRnB_reg.read());
                     super.write((byte) (0xe3 & val));
                     decode(val);
 
                 }
 
                 public void writeBit(int bit, boolean val) {
-                    //System.err.println("Control A BIT  " + Integer.toBinaryString(value) + " " + bit + " " + val);
 
-
-                    byte old = value;
                     if (bit < 1 || bit > 4) {
                         super.writeBit(bit, val);
                     }
@@ -2517,31 +2592,30 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             }
 
+            /** UCSRnB (<code>ControlRegisterB</code>) is one of three control/status registers for the USART. The
+             * high three bits are actually interrupt mask bits. */
             protected class ControlRegisterB extends UnorderedMaskRegister {
                 int count = 0;
 
                 ControlRegisterB() {
-                    super(true, 19, UCSRnA_reg, INTERRUPT_MAPPING);
+                    super(true, USARTnRX, UCSRnA_reg, INTERRUPT_MAPPING, flagByteMask);
                     UCSRnA_reg.maskRegister = this;
                 }
 
                 public void write(byte val) {
 
-                    boolean oldReadEnable = readBit(RXENn);
                     super.write(val);
 
                     decode(val);
                 }
 
                 public void writeBit(int bit, boolean val) {
-                    boolean oldReadEnable = readBit(RXENn);
                     super.writeBit(bit, val);
 
                     decode(value);
                 }
 
                 protected void decode(byte value) {
-
 
                     if (readBit(UCSZn2) && UCSRnC_reg.readBit(UCSZn1)
                             && UCSRnC_reg.readBit(UCSZn0)) {
@@ -2553,6 +2627,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             int stopBits = 1;
 
+
+            /** UCSRnC (<code>ControlRegisterC</code>) is one of three control/status registers for the USART.  */
             protected class ControlRegisterC extends State.RWIOReg {
 
                 protected void decode(byte val) {
@@ -2582,6 +2658,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             }
 
+            /** The high byte of the Baud Rate register. */
             protected class UBRRnHReg extends State.RWIOReg {
 
                 public void write(byte val) {
@@ -2595,6 +2672,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
             }
 
+            /** The low byte of the Baud Rate register. The baud rate is not updated until the low bit is updated. */
             protected class UBRRnLReg extends State.RWIOReg {
 
                 public void write(byte val) {
@@ -2608,17 +2686,18 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
             }
 
+            /** A simple implementation of the USARTDevice interface that connects to a USART on the processor.
+             * It simply prints out a representation of each frame it receives. */
             protected class SerialPrinter implements USARTDevice {
 
-                Verbose.Printer serialPrinter = Verbose.getVerbosePrinter("serialprinter");
+                Verbose.Printer serialPrinter = Verbose.getVerbosePrinter("sim.serialprinter");
                 //char [] stream = {0};
 
                 //char[] stream=  {'h', 'e', 'l', 'l', 'o',  'w', 'o', 'r', 'l', 'd'};
-                char[] stream = {0, 0, 0, 2, 0, 0, 2};
+                char[] stream = {0x7e, 0, 0, 2, 0, 0, 2};
                 int count = 0;
 
                 public USARTFrame transmitFrame() {
-                    //return new SerialFrame((byte)0, false, 8);
                     return new USARTFrame((byte) stream[count++ % stream.length], false, 8);
                 }
 
@@ -2630,21 +2709,18 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 SerialPrinter() {
                     PrinterTicker printerTicker = new PrinterTicker();
 
-                    insertPeriodicEvent(printerTicker, 2000);
+                    //insertPeriodicEvent(printerTicker, 2000);
                 }
 
                 private class PrinterTicker implements Simulator.Event {
                     public void fire() {
-                        receiver.enableReceive();
+                        if(UCSRnB_reg.readBit(RXENn)) receiver.enableReceive();
                     }
                 }
-
-
             }
-
-
         }
 
+        /** Debug class. Connect this for TestUart test case. "Formats" LCD display. */
         protected class LCDScreen implements USARTDevice {
             Verbose.Printer lcdPrinter = Verbose.getVerbosePrinter("sim.lcd");
 
@@ -2678,11 +2754,43 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
             }
 
-            final Vector line1 = new Vector(40);
-            final Vector line2 = new Vector(40);
+            final Vector line1;
+            final Vector line2;
+
+            public LCDScreen() {
+                line1 = new Vector(40);
+                line2 = new Vector(40);
+                initScreen();
+            }
 
             public USARTFrame transmitFrame() {
                 return new USARTFrame((byte) 0, false, 8);
+            }
+
+            private void scrollRight() {
+                line1.add(0, line1.remove(39));
+                line2.add(0, line2.remove(39));
+            }
+
+            private void scrollLeft() {
+                line1.add(39, line1.remove(0));
+                line2.add(39, line2.remove(0));
+            }
+
+            private void clearScreen() {
+                for(int i = 0; i < 40; i++) {
+                    line1.set(i, new Character(' '));
+                    line2.set(i, new Character(' '));
+
+                }
+            }
+
+            private void initScreen() {
+                for(int i = 0; i < 40; i++) {
+                    line1.add(new Character(' '));
+                    line2.add(new Character(' '));
+
+                }
             }
 
             public void receiveFrame(USARTFrame frame) {
@@ -2691,13 +2799,16 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 if (mode) { // Instruction mode
                     switch (data) {
                         case CLEAR_SCREEN:
+                            clearScreen();
                             break;
                         case SCROLL_LEFT:
+                            scrollLeft();
                             break;
                         case SCROLL_RIGHT:
+                            scrollRight();
                             break;
                         case HOME:
-                            cursor = 128;
+                            cursor = 0;
                             break;
                         default:
                             if (data >= 192) {
@@ -2708,40 +2819,85 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                     }
                     mode = MODE_DATA;
-                } else if (data == 254) {
+                } else if (data == (byte)254) {
                     mode = MODE_INSTRUCTION;
+                    return;
                 } else {
                     //memory[cursor] = frame.low;
+                    setCursor(frame.low);
                     cursor = (cursor + 1) % 80;
-                    lcdPrinter.print(this.toString());
+
+                }
+                lcdPrinter.print(this.toString());
+            }
+
+            private void setCursor(byte b) {
+                if (cursor < 40) {
+                    line1.set(cursor, new Character((char)b));
+                } else if (cursor < 80) {
+                    line2.set(cursor - 40, new Character((char)b));
                 }
             }
 
             public String toString() {
-                return "";
+                String sline1 = "";
+                String sline2 = "";
+                for(int i = 0; i < 40; i++) {
+                    sline1 += line1.get(i);
+                    sline2 += line2.get(i);
+                }
+                return "\n"+sline1 + "\n" + sline2+"\n";
             }
         }
 
 
+
         /**
-         * SPI Class by Simon
+         * SPI Class by Simon, heavily modified by Daniel Lee
          */
-        protected class SPI {
+        protected class SPI implements SPIDevice {
             final SPDReg SPDR_reg;
-            final State.RWIOReg SPCR_reg;
+            final SPCRReg SPCR_reg;
             final SPSReg SPSR_reg;
             final SPIInterrupt SPI_int;
-            final SPITicker ticker;
+            //final SPITicker ticker;
 
-            byte radio_in;
-            byte radio_out;
+            final Verbose.Printer spiPrinter = Verbose.getVerbosePrinter("sim.spi");
+
+            SPIDevice connectedDevice;// = new SPIPrinter(this);
+
+            final TransmitReceive transmitReceive= new TransmitReceive();
+
+                        /** TODO: delete these, temporary */
+            int SPR;
+            boolean SPI2x;
+            boolean master;
+            boolean SPIenabled;
+
+            protected int period;
+
+            public void connect(SPIDevice d) {
+                connectedDevice = d;
+            }
+
+            public void receiveFrame(SPIFrame frame) {
+                SPDR_reg.receiveReg.write(frame.data);
+                if(!master && !transmitReceive.transmitting) SPSR_reg.writeBit(7, true); // flag interrupt
+
+            }
+
+            public SPIFrame transmitFrame() {
+                return new SPIFrame(SPDR_reg.transmitReg.read());
+            }
+
 
 // need to complete alternative SPIF bit clear rule!!!
 
+
             SPI(BaseInterpreter ns) {
-                ticker = new SPITicker();
+                //ticker = new SPITicker();
                 SPDR_reg = new SPDReg();
-                SPCR_reg = new State.RWIOReg();
+                SPCR_reg = new SPCRReg();
                 SPSR_reg = new SPSReg();
                 SPI_int = new SPIInterrupt();
 
@@ -2751,7 +2907,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 installIOReg(ns, SPDR, SPDR_reg);
                 installIOReg(ns, SPSR, SPSR_reg);
                 installIOReg(ns, SPCR, SPCR_reg);
-                insertPeriodicEvent(ticker, millisToCycles(0.418));
+
+                //getPin("SS").connect(new SSInput());
+                //getPin("SS").connect(new SSOutput());
             }
 
             /**
@@ -2759,29 +2917,80 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
              */
             private void postSPIInterrupt() {
                 if (SPCR_reg.readBit(7)) {
-                    SPSR_reg.setSPIF();
-// TODO: fix access rights for this method
+
+                    //SPSR_reg.setSPIF();
+
                     interpreter.postInterrupt(18);
                 }
             }
 
             private void unpostSPIInterrupt() {
+                interpreter.unpostInterrupt(18);
 
             }
 
-            class SPITicker implements Simulator.Event {
+            private void calculatePeriod () {
+                int divider = 0;
+
+                switch(SPR) {
+                    case 0:
+                        divider = 4;
+                        break;
+                    case 1:
+                        divider = 16;
+                        break;
+                    case 2:
+                        divider = 64;
+                        break;
+                    case 3:
+                        divider = 128;
+                        break;
+                }
+
+                if(SPI2x) {
+                    divider /= 2;
+                }
+
+                period = divider * 8;
+            }
+
+
+            protected class TransmitReceive implements Simulator.Event {
+
+                SPIFrame myFrame;
+                SPIFrame connectedFrame;
+                boolean transmitting;
+
+                protected void enableTransfer() {
+
+
+                    if(master && SPIenabled && !transmitting) {
+                        if(spiPrinter.enabled) {
+                            spiPrinter.println("SPI: Master mode. Enabling transfer. ");
+                        }
+                        transmitting = true;
+                        myFrame = transmitFrame();
+                        connectedFrame = connectedDevice.transmitFrame();
+                        insertEvent(this, period);
+                    }
+                }
+
+
+                /** Notes. The way this delay is setup right now, when the ATMega128L is in master mode
+                 * and transmits, the connected device has a delayed receive. For the radio, this is not a problem,
+                 * as the radio is the master and is responsible for ensuring correct delivery time for the SPI.
+                 * TODO: rewrite this comment so that it actually makes sense. */
                 public void fire() {
-// put raiod_out in the environment
-// env = raiod_out;
-
-// read environment and store in raido_in
-// radio_in = env;
-
-// post interrupt
-                    postSPIInterrupt();
-
+                    if(SPIenabled) {
+                        connectedDevice.receiveFrame(myFrame);
+                        receiveFrame(connectedFrame);
+                        transmitting = false;
+                        postSPIInterrupt();
+                    }
                 }
             }
+
+
 
             class SPIInterrupt implements Interrupt {
                 public void force() {
@@ -2790,6 +2999,9 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
                 public void fire() {
                     SPSR_reg.clearSPIF();
+
+                    // should this also unpost the interrupt?
+                     unpostSPIInterrupt();
                 }
             }
 
@@ -2799,20 +3011,69 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
              * Currently, only read and write the whole byte are implemented
              */
             class SPDReg implements State.IOReg {
+
+                protected final ReceiveRegister receiveReg;
+                protected final TransmitRegister transmitReg;
+
+                protected class ReceiveRegister extends State.RWIOReg {
+
+                    public byte read() {
+                        byte val = super.read();
+                        if(spiPrinter.enabled) spiPrinter.println("SPI: read " + hex(val) + " from SPDR ");
+                        return val;
+
+                    }
+
+                    public boolean readBit(int bit) {
+                        if(spiPrinter.enabled) spiPrinter.println("SPI: read bit " + bit + " from SPDR");
+                        return super.readBit(bit);
+                    }
+                }
+
+                protected class TransmitRegister extends State.RWIOReg {
+
+                    byte oldData;
+
+                    public void write(byte val) {
+                        if(spiPrinter.enabled && oldData != val) spiPrinter.println("SPI: wrote " + Integer.toHexString(0xff & val) + " to SPDR" );
+                        super.write(val);
+                        oldData = val;
+
+                        // the enableTransfer method has the necessary checks to make sure a transfer at this point
+                        // is necessary
+                        transmitReceive.enableTransfer();
+
+                    }
+
+                    public void writeBit(int bit, boolean val) {
+                        if(spiPrinter.enabled) spiPrinter.println("SPI: wrote " + val + " to SPDR, bit " + bit);
+                        super.writeBit(bit, val);
+                        transmitReceive.enableTransfer();
+                    }
+
+                }
+
+                SPDReg () {
+
+                    receiveReg = new ReceiveRegister();
+                    transmitReg = new TransmitRegister();
+                }
+
                 /**
                  * The <code>read()</code> method
-                 * @return the value from radio environment
+                 * @return the value from the receive buffer
                  */
                 public byte read() {
-                    return radio_in;
+                    return receiveReg.read();
                 }
 
                 /**
                  * The <code>write()</code> method
-                 * @param val the value to radio environment
+                 * @param val the value to transmit buffer
                  */
                 public void write(byte val) {
-                    radio_out = val;
+                    //radio_out = val;
+                    transmitReg.write(val);
                 }
 
                 /**
@@ -2822,8 +3083,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                  * @return false
                  */
                 public boolean readBit(int num) {
-// XXX not yet implemented
-                    return false;
+                    return receiveReg.readBit(num);
+
                 }
 
                 /**
@@ -2831,109 +3092,513 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                  * @param num
                  */
                 public void writeBit(int num, boolean val) {
-// XXX not yet implemented
+                    transmitReg.writeBit(num, val);
+
                 }
             }
 
-            class SPSReg implements State.IOReg {
-                byte value;
+            protected class SPCRReg extends State.RWIOReg {
 
-                /**
-                 * The <code>read()</code> method
-                 * @return the value from radio environment
-                 */
-                public byte read() {
-                    return value;
-                }
+                final int SPIE = 7;
+                final int SPE = 6;
+                final int DORD = 5; // does not really matter, because we are fastforwarding data
+                final int MSTR = 4;
+                final int CPOL = 3; // does not really matter, because we are fastforwarding data
+                final int CPHA = 2; // does not really matter, because we are fastforwarding data
+                final int SPR1 = 1;
+                final int SPR0 = 0;
 
-                /**
-                 * The <code>write()</code> method
-                 * @param val the value to radio environment
-                 */
                 public void write(byte val) {
-                    boolean bit0 = Arithmetic.getBit(val, 0);
+                    if(spiPrinter.enabled) spiPrinter.println("SPI: wrote " + hex(val) + " to SPCR" );
+                    super.write(val);
+                    decode(val);
 
-                    value = Arithmetic.setBit(value, 0, bit0);
                 }
 
-                /**
-                 * The <code>readBit()</code> method
-                 *
-                 * @param num
-                 * @return false
-                 */
-                public boolean readBit(int num) {
-                    return Arithmetic.getBit(value, num);
+                public void writeBit(int bit, boolean val) {
+                    if(spiPrinter.enabled) spiPrinter.println("SPI: wrote " + val + " to SPCR, bit " + bit);
+                    super.writeBit(bit, val);
+                    decode(value);
                 }
 
-                public void writeBit(int num, boolean val) {
-                    if (num == 0) {
-                        value = Arithmetic.setBit(value, 0, val);
+                protected void decode(byte val) {
+
+                    SPIenabled = Arithmetic.getBit(val, SPE);
+
+                    boolean oldMaster = master;
+                    master = Arithmetic.getBit(val, MSTR);
+
+                    SPR = 0;
+                    SPR |= Arithmetic.getBit(val, SPR1) ? 0x02 : 0;
+                    SPR |= Arithmetic.getBit(val, SPR0) ? 0x01 : 0;
+                    calculatePeriod();
+
+                    if(!oldMaster && master) {
+                        transmitReceive.enableTransfer();
                     }
                 }
 
+            }
+
+            class SPSReg extends State.RWIOReg {
+                // TODO: implement write collision
+                // TODO: finish implementing interrupt
+
+                final int SPI = 7;
+                final int WCOL = 6;
+                /* 1-5 reserved */
+                //final int SPI2x = 0;
+
+                public void write(byte val) {
+                    if(spiPrinter.enabled) spiPrinter.println("SPI: wrote " + val + " to SPSR" );
+                    super.write(val);
+                    decode(val);
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    if(spiPrinter.enabled) spiPrinter.println("SPI: wrote " + val + " to SPSR " + bit);
+                    super.writeBit(bit, val);
+                    decode(value);
+                }
+
+                byte oldVal;
+
+                protected void decode(byte val) {
+
+                    // SPIF ??
+                    if(!Arithmetic.getBit(oldVal, SPI) && Arithmetic.getBit(val, SPI) && SPCR_reg.readBit(SPI)) {
+                        postSPIInterrupt();
+                    }
+                    // TODO: write COLlision
+
+                    SPI2x = Arithmetic.getBit(value, 0);
+                    oldVal = val;
+                }
+
                 public void setSPIF() {
-                    value = Arithmetic.setBit(value, 7);
+                    writeBit(SPI, true);
                 }
 
                 public void clearSPIF() {
-                    value = Arithmetic.clearBit(value, 7);
+                    writeBit(SPI, false);
                 }
 
                 public boolean getSPIF() {
-                    return Arithmetic.getBit(value, 7);
+                    return readBit(SPI);
                 }
 
             }
+
+            /*
+            protected class SSInput implements Pin.Input {
+                public boolean read() {
+                    return false;
+                }
+
+                public void enableInput() {
+                    if(spiPrinter.enabled) {
+                        spiPrinter.println("SPI: SS pin input enabled");
+                    }
+                }
+
+                public void disableInput() {
+                    if(spiPrinter.enabled) {
+                        spiPrinter.println("SPI: SS pin input disabled");
+                    }
+                }
+            }
+
+            protected class SSOutput implements Pin.Output {
+                public void write(boolean b) {
+
+                }
+
+                public void enableOutput() {
+                    if(spiPrinter.enabled) {
+                        spiPrinter.println("SPI: SS pin output enabled");
+                    }
+                }
+
+                public void disableOutput() {
+                    if(spiPrinter.enabled) {
+                        spiPrinter.println("SPI: SS pin output disabled");
+                    }
+                }
+            }
+            */
         }
+
+        /** Debug class. Connect to SPI to give the SPI a duped input. */
+        protected class SPIPrinter implements SPIDevice {
+
+            public SPIDevice connectedDevice;
+            private PrinterTicker ticker;
+
+            private Verbose.Printer printer = Verbose.getVerbosePrinter("sim.spiPrinter");
+
+            public void connect(SPIDevice d) {
+                connectedDevice = d;
+            }
+
+            SPIPrinter(SPIDevice cd) {
+                connectedDevice = cd;
+                ticker = new PrinterTicker();
+                insertEvent(ticker, 3000);
+
+            }
+
+
+            private class PrinterTicker implements Simulator.Event {
+
+                public void fire() {
+                    receiveFrame(connectedDevice.transmitFrame());
+                    connectedDevice.receiveFrame(transmitFrame());
+                    insertEvent(this, 15000);
+
+
+                }
+            }
+
+            byte oldData;
+
+            public void receiveFrame(SPIFrame frame) {
+
+                if(printer.enabled && (frame.data != oldData)) {
+                    printer.println("SPIPrinter: " + (char)frame.data +", " + frame.data);
+                }
+                oldData = frame.data;
+            }
+
+            public SPIFrame transmitFrame() {
+                if(printer.enabled) {
+                    printer.println("SPIPrinter: transmitting...");
+                }
+                return new SPIFrame((byte)0xff);
+            }
+        }
+
+        /**
+         * Analog to digital converter.
+         * @author Daniel Lee
+         */
+        protected class ADC {
+
+            final Verbose.Printer adcPrinter = Verbose.getVerbosePrinter("sim.adc");
+
+            final MUXRegister ADMUX_reg = new MUXRegister();
+            final DataRegister ADC_reg = new DataRegister();
+            final ControlRegister ADCSRA_reg = new ControlRegister();
+
+            final ADCInput [] connectedDevices = new ADCInput[10];
+
+            final BaseInterpreter interpreter;
+
+            ADC(BaseInterpreter ns) {
+
+                interpreter = ns;
+
+                connectedDevices[8] = new VBG();
+                connectedDevices[9] = new GND();
+
+                installIOReg(ns, ADMUX, ADMUX_reg);
+                installIOReg(ns, ADCH, ADC_reg.high);
+                installIOReg(ns, ADCL, ADC_reg.low);
+                installIOReg(ns, ADCSRA, ADCSRA_reg);
+
+            }
+
+            private class VBG implements ADCInput {
+                public int getLevel() {
+                    System.err.println("GOT VBG LEVEL");
+                    return 0x3ff; // figure out correct value for this eventually
+                }
+            }
+
+            private class GND implements ADCInput {
+                public int getLevel() {
+                    System.err.println("GOT GND LEVEL");
+                    return 0;
+                }
+            }
+
+            private int calculateADC() {
+
+                if(ADMUX_reg.singleEndedInput) {
+                    //return 1;// VIN * 102/ VREG
+                    return connectedDevices[ADMUX_reg.singleInputIndex].getLevel();
+                } else {
+                    return 2; // (VPOS - VNEG) * GAIN * 512 / VREF
+                }
+            }
+
+	        public void connectADCInput(ADCInput input, int bit) {
+                connectedDevices[bit] = input;
+            }
+
+            /** Abstract class grouping together registers related to the ADC. */
+            protected abstract class ADCRegister extends State.RWIOReg {
+                public void write(byte val) {
+                    super.write(val);
+                    decode(val);
+                    if(adcPrinter.enabled) {
+                        printStatus();
+                    }
+                }
+
+                public void writeBit(int bit, boolean val) {
+                    super.writeBit(bit, val);
+                    decode(value);
+                    if(adcPrinter.enabled) {
+                        printStatus();
+                    }
+                }
+
+                protected abstract void decode(byte val) ;
+
+                protected void printStatus() {}
+            }
+
+            /** <code>MUXRegister</code> defines the behavior of the ADMUX register. */
+            protected class MUXRegister extends ADCRegister {
+
+                final int REFS_AREF = 0;
+                final int REFS_AVCC = 1;
+                // 2 reserved
+                final int REFS_INTERNAL = 3;
+
+                final int [] SINGLE_ENDED_INPUT = { 0, 1, 2, 3, 4, 5, 6, 7,
+                                                   -1,-1,-1,-1,-1,-1,-1,-1,
+                                                   -1,-1,-1,-1,-1,-1,-1,-1,
+                                                   -1,-1,-1,-1,-1,-1, 8, 9};
+
+                int singleInputIndex = 0;
+
+                final int [] GAIN = {-1,-1,-1,-1,-1,-1,-1,-1,
+                                     10, 10, 200, 200, 10, 10, 200, 200,
+                                      1, 1, 1, 1, 1, 1, 1, 1,
+                                      1, 1, 1, 1, 1, 1, -1, -1};
+
+                int gain = -1;
+
+
+
+                final int [] POS_INPUT = {-1,-1,-1,-1,-1,-1,-1,-1,
+                                           0, 1, 0, 1, 2, 3, 2, 3,
+                                           0, 1, 2, 3, 4, 5, 6, 7,
+                                           0, 1, 2, 3, 4, 5,-1,-1};
+
+                int positiveInputIndex = -1;
+
+                final int [] NEG_INPUT = {-1,-1,-1,-1,-1,-1,-1,-1,
+                                           0, 0, 0, 0, 2, 2, 2, 2,
+                                           1, 1, 1, 1, 1, 1, 1, 1,
+                                           2, 2, 2, 2, 2, 2,-1,1};
+
+                int negativeInputIndex = -1;
+
+                boolean singleEndedInput = true;
+
+                int refs;
+                boolean adlar;
+                int mux;
+
+                protected void decode(byte val) {
+                    refs = (val & 0xc0) >> 6;
+                    adlar = Arithmetic.getBit(val, 5);
+                    mux = (val & 0x1f);
+
+                    singleInputIndex = SINGLE_ENDED_INPUT[mux];
+                    positiveInputIndex = POS_INPUT[mux];
+                    negativeInputIndex = NEG_INPUT[mux];
+
+                    singleEndedInput = (val < 8 || val == 0x1e || val == 0x1f);
+                }
+
+                protected void printStatus() {
+                    adcPrinter.println("ADC (ADMUX): refs: " + refs + ", adlar: " + adlar + ", mux: " + mux);
+                }
+            }
+
+            /** <code>DataRegister</code> defines the behavior of the ADC's 10-bit data
+             * register. */
+            protected class DataRegister extends State.RWIOReg {
+                public final High high = new High();
+                public final Low low = new Low();
+
+                private class High extends State.RWIOReg {
+                    public void write(byte val) {
+                        super.write(((byte)(val & 0x3)));
+                        if(adcPrinter.enabled) {
+                            adcPrinter.println("ADC (ADCH): " + hex(val));
+                        }
+                    }
+
+                    public void writeBit(int bit, boolean val) {
+                        if(bit < 2) super.writeBit(bit, val);
+                        if(adcPrinter.enabled) {
+                            adcPrinter.println("ADC (ADCH): " + hex(value));
+                        }
+                    }
+
+                    public byte read() {
+                        if(adcPrinter.enabled) {
+                            adcPrinter.println("ADC (ADCH): read " + hex(super.read()));
+                        }
+                        return super.read();
+                    }
+                }
+
+                private class Low extends State.RWIOReg {
+                    public byte read() {
+                        if(adcPrinter.enabled) {
+                            adcPrinter.println("ADC (ADCL): read " + hex(super.read()));
+                        }
+                        return super.read();
+                        //return (byte)0;
+                    }
+
+                    public void write(byte val) {
+                        super.write(val);
+                        if(adcPrinter.enabled) {
+                            adcPrinter.println("ADC (ADCL): " + hex(value));
+                        }
+
+                    }
+                }
+
+            }
+
+            /** <code>ControlRegister</code> defines the behavior of the ADC control register,
+             TODO: write ... */
+            protected class ControlRegister extends ADCRegister {
+
+                final int ADEN = 7;
+                final int ADSC = 6;
+                final int ADFR = 5;
+                final int ADIF = 4;
+                final int ADIE = 3;
+                final int ADPS2 = 2;
+                final int ADPS1 = 1;
+                final int ADPS0 = 0;
+
+                boolean aden;
+                boolean adsc;
+                boolean adfr;
+                boolean adif;
+                boolean adie;
+
+                int prescalerDivider = 2;
+
+                final int [] PRESCALER = {2, 2, 4, 8, 16, 32, 64, 128};
+
+                final Conversion conversion;
+
+                byte oldVal;
+
+                ControlRegister() {
+                    conversion = new Conversion();
+                    interrupts[22] = new ADCInterrupt();
+                }
+
+                protected void decode(byte val) {
+
+                    aden = Arithmetic.getBit(val, ADEN);
+                    adsc = Arithmetic.getBit(val, ADSC);
+                    adfr = Arithmetic.getBit(val, ADFR);
+                    adif = Arithmetic.getBit(val, ADIF);
+                    adie = Arithmetic.getBit(val, ADIE);
+
+                    prescalerDivider = PRESCALER[(val & 0x7)];
+
+                    if(aden && adsc && !Arithmetic.getBit(oldVal, ADSC) && !firing) {
+                        // queue event for converting
+                        firing = true;
+                        insertEvent(conversion, prescalerDivider * 13 * 25); // TODO: the 25 is arbitrary
+                    }
+
+                    //if(adif && !Arithmetic.getBit(oldVal, ADIF)) {
+                    //    interpreter.postInterrupt(22);
+
+                    //}
+
+
+                    oldVal = val;
+
+                }
+
+                protected void printStatus() {
+                    adcPrinter.println("ADC (ADCSRA): enable: " + aden + ", start conversion: " + adsc +
+                            ", free running: " + adfr + ", interrupt flag: " + adif + ", interrupt enable: " + adie +
+                            ", prescaler divider: "+ prescalerDivider);
+                }
+
+                boolean firing;
+
+                private class Conversion implements Simulator.Event {
+                    public void fire() {
+
+                        if(adcPrinter.enabled) {
+                            adcPrinter.println("ADC: Conversion complete.");
+                        }
+
+                        writeBit(ADSC, false);
+
+                        if(aden) {
+                            write16(calculateADC(), ADC_reg.high, ADC_reg.low);
+                            if(adie) {
+                                writeBit(ADIF, true);
+                                interpreter.postInterrupt(22);
+                            }
+                        }
+                    }
+                }
+
+                protected class ADCInterrupt implements Simulator.Interrupt {
+                    public void force() {
+                        //fire();
+                    }
+
+                    public void fire() {
+                        interpreter.unpostInterrupt(22);
+                        writeBit(ADIF, false);
+                        firing = false;
+                    }
+
+                }
+            }
 
     }
 
-    /** A <code>USARTFrame</code> is a representation of the serial
-     * frames being passed between the USART and a connected
-     * device. */
-    public class USARTFrame {
-        public byte low;
-        public boolean high;
-        int size;
+    }
 
-        public USARTFrame(byte low, boolean high, int size) {
-            this.low = low;
-            this.high = high;
-            this.size = size;
-        }
+    /** Interface for devices that can connect to the SPI*/
+    public interface SPIDevice {
+        /** Transmit a frame from this device.
+         * @return the frame for transmission */
+        public SPIFrame transmitFrame();
 
-        public int value() {
-            int value = 0;
-            switch (size) {
-                case 9:
-                    value = high ? 0x100 : 0x0;
-                    value |= 0xff & low;
-                    break;
-                case 8:
-                    value = 0xff & low;
-                    break;
-                case 7:
-                    value = 0x7f & low;
-                    break;
-                case 6:
-                    value = 0x3f & low;
-                    break;
-                case 5:
-                    value = 0x1f & low;
-                    break;
-            }
-            return value;
-        }
+        /** Receive a frame.
+         * @param frame the frame to be received */
+        public void receiveFrame(SPIFrame frame);
 
-        public String toString() {
-            if (size == 9) {
-                return "" + value();
-            } else {
-                return "" + (char) value() + " (" + value() + ")";
+        public void connect(SPIDevice d);
+
+        /**
+         * TODO: Cleanup. Move SPIFrame, SPIDevice, USARTFrame, USARTDevice out of this and into their own package.
+         * These interfaces really aren't ATMega128 specific.
+         */
+
+        /** A single byte data frame for the SPI. */
+        public class SPIFrame {
+            public final byte data;
+
+            public SPIFrame(byte data) {
+                this.data = data;
             }
         }
     }
+
+
 
     /** The <code>USARTDevice</code> interface describes USARTs and
      * other serial devices which can be connected to the USART. For
@@ -2941,30 +3606,124 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
      * data is used, rather than bits or a representation of changing
      * voltages.  */
     public interface USARTDevice {
+                /** Transmit a frame from this device.
+         * @return the frame for transmission */
         public USARTFrame transmitFrame();
 
+
+        /** Receive a frame.
+         * @param frame the frame to be received */
         public void receiveFrame(USARTFrame frame);
-    }
 
-    private class TestWatch implements Simulator.Watch {
-        public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
+        /** A <code>USARTFrame</code> is a representation of the serial
+         * frames being passed between the USART and a connected
+         * device. */
+        public class USARTFrame {
+            public final byte low;
+            public final boolean high;
+            final int size;
 
-        }
+            /** Constructor for a USARTFrame. The <code>high</code> bit is used for
+             * 9 bit frame sizes. */
+            public USARTFrame(byte low, boolean high, int size) {
+                this.low = low;
+                this.high = high;
+                this.size = size;
+            }
 
-        public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+            /** Returns the integer value of this data frame.
+             * @return intended value of this data frame*/
+            public int value() {
+                int value = 0;
+                switch (size) {
+                    case 9:
+                        value = high ? 0x100 : 0x0;
+                        value |= 0xff & low;
+                        break;
+                    case 8:
+                        value = 0xff & low;
+                        break;
+                    case 7:
+                        value = 0x7f & low;
+                        break;
+                    case 6:
+                        value = 0x3f & low;
+                        break;
+                    case 5:
+                        value = 0x1f & low;
+                        break;
+                }
+                return value;
+            }
 
-        }
-
-
-        public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
-
-        }
-
-        public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
-            if (data_addr == 0xcc) {
-                System.err.println("Watched address 0xcc changed to " + value);
+            public String toString() {
+                if (size == 9) {
+                    return "" + value();
+                } else {
+                    return "" + (char) value() + " (" + value() + ")";
+                }
             }
         }
+    }
+
+    /** The <code>ADCInput</code> interface is used by inputs into the analog to digital
+     * converter. */
+    public interface ADCInput {
+
+        /** Report the current voltage level of the input. */
+        public int getLevel();
+    }
+
+    /** Connect an instance of the <code>SPIDevice</code> interface to the SPI of this
+     * microcontroller. */
+    public void connectSPIDevice(SPIDevice d) {
+        simulator.spi.connectedDevice = d;
+        d.connect(simulator.spi);
+    }
+
+    /** Connect an instance of the <code>ADCInput</code> interface to the ADC of this
+     * microcontroller. The ADC unit on the ATMega128L can support up to 8 ADC inputs,
+     * on bits 0 - 7. */
+    public void connectADCInput(ADCInput d, int bit) {
+        simulator.adc.connectADCInput(d, bit);
+    }
+
+    protected class XTALRegister extends State.RWIOReg {
+        public void write(byte val) {
+            System.err.println("XTAL written to " + Integer.toHexString(0xff & val));
+        }
+    }
+
+    private static int read16(State.RWIOReg high, State.RWIOReg low) {
+        int result = low.read() & 0xff;
+        result |= (high.read() & 0xff) << 8;
+        return result;
+    }
+
+    private static void write16(int val, State.RWIOReg high, State.RWIOReg low) {
+
+        high.write((byte) ((val & 0xff00) >> 8));
+        low.write((byte) (val & 0x00ff));
+    }
+
+    private static String hex(byte val) {
+        return Integer.toHexString(0xff & val);
+    }
+
+    protected interface Clock {
+
+        public void scheduleEvent(Simulator.Event e, long cycles);
+
+    }
+
+    protected Radio radio;
+
+    public void setRadio(Radio radio) {
+        this.radio = radio;
+    }
+
+    public Radio getRadio() {
+        return radio;
     }
 
 }
