@@ -48,7 +48,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     public final int FLASH_SIZE;
     public final int EEPROM_SIZE;
 
-    abstract class IMRReg extends State.RWIOReg {
+    abstract static class IMRReg extends State.RWIOReg {
 
         /**
          * The <code>mapping</code> array maps a bit number (0-7) to an interrupt number (0-35). This is used
@@ -56,8 +56,9 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
          */
         protected final int mapping[];
         protected final long interruptMask;
+        protected final BaseInterpreter interpreter;
 
-        IMRReg(int[] map) {
+        IMRReg(BaseInterpreter interp, int[] map) {
             long mask = 0;
             mapping = new int[8];
             for (int cntr = 0; cntr < 8; cntr++) {
@@ -65,6 +66,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
                 if (mapping[cntr] >= 0)
                     mask |= 1 << mapping[cntr];
             }
+            interpreter = interp;
             interruptMask = mask;
         }
 
@@ -97,13 +99,13 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
-    public class FlagRegister extends IMRReg {
+    public static class FlagRegister extends IMRReg {
 
         public MaskRegister maskRegister;
 
-        public FlagRegister(int[] map) {
-            super(map);
-            maskRegister = new MaskRegister(map, this);
+        public FlagRegister(BaseInterpreter interp, int[] map) {
+            super(interp, map);
+            maskRegister = new MaskRegister(interp, map, this);
         }
 
         public void write(byte val) {
@@ -125,12 +127,12 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     }
 
-    public class MaskRegister extends IMRReg {
+    public static class MaskRegister extends IMRReg {
 
         public final FlagRegister flagRegister;
 
-        public MaskRegister(int[] map, FlagRegister fr) {
-            super(map);
+        public MaskRegister(BaseInterpreter interp, int[] map, FlagRegister fr) {
+            super(interp, map);
             flagRegister = fr;
         }
 
@@ -156,7 +158,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
      * at the same offset. When this interrupt fires, it automatically clears the flag bit in
      * the flag register.
      */
-    public class MaskableInterrupt implements Simulator.Interrupt {
+    public static class MaskableInterrupt implements Simulator.Interrupt {
         protected final int interruptNumber;
 
         protected final MaskRegister maskRegister;

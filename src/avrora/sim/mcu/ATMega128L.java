@@ -1822,7 +1822,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
 
             if (!compatibilityMode) {
                 int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
-                ETIFR_reg = new FlagRegister(ETIFR_mapping); // false, 0 are just placeholder falues
+                ETIFR_reg = new FlagRegister(interpreter, ETIFR_mapping); // false, 0 are just placeholder falues
                 ETIMSK_reg = ETIFR_reg.maskRegister;
                 installIOReg(interpreter, ETIMSK, ETIMSK_reg);
                 installIOReg(interpreter, ETIFR, ETIFR_reg);
@@ -1892,7 +1892,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 for (int cntr = 0; cntr < 8; cntr++) mapping[cntr] = baseVect - cntr;
             }
 
-            FlagRegister fr = new FlagRegister(mapping);
+            FlagRegister fr = new FlagRegister(interpreter, mapping);
             for (int cntr = 0; cntr < numVects; cntr++) {
                 int inum = increasing ? baseVect + cntr : baseVect - cntr;
                 interrupts[inum] = new MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false);
@@ -2477,7 +2477,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             protected class ControlRegisterA extends FlagRegister {
 
                 public ControlRegisterA() {
-                    super(INTERRUPT_MAPPING);
+                    super(ATMega128L.this.interpreter, INTERRUPT_MAPPING);
                     value = 0x20; // init UDREn to true
 
                 }
@@ -2535,7 +2535,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 int count = 0;
 
                 ControlRegisterB() {
-                    super(INTERRUPT_MAPPING, UCSRnA_reg);
+                    super(ATMega128L.this.interpreter, INTERRUPT_MAPPING, UCSRnA_reg);
                     UCSRnA_reg.maskRegister = this;
                 }
 

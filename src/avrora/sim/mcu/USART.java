@@ -174,16 +174,15 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
         installIOReg("UBRR"+n+"L", UBRRnL, UBRRnL_reg);
         installIOReg("UBRR"+n+"H", UBRRnH, UBRRnH_reg);
 
-        // TODO: fix maskable interrupts!
         // USART Receive Complete
-        //installInterrupt("USART: receive", USARTnRX,
-        //        new ATMegaFamily.MaskableInterrupt(USARTnRX, UCSRnB_reg, UCSRnA_reg, RXCn, false));
+        installInterrupt("USART: receive", USARTnRX,
+                new ATMegaFamily.MaskableInterrupt(USARTnRX, UCSRnB_reg, UCSRnA_reg, RXCn, false));
         // USART Data Register Empty
-        //installInterrupt("USART: empty", USARTnUDRE,
-        //        new ATMegaFamily.MaskableInterrupt(USARTnUDRE, UCSRnB_reg, UCSRnA_reg, UDREn, false));
+        installInterrupt("USART: empty", USARTnUDRE,
+                new ATMegaFamily.MaskableInterrupt(USARTnUDRE, UCSRnB_reg, UCSRnA_reg, UDREn, false));
         // USART Transmit Complete
-        //installInterrupt("USART transmit", USARTnTX,
-        //        new ATMegaFamily.MaskableInterrupt(USARTnTX, UCSRnB_reg, UCSRnA_reg, TXCn, false));
+        installInterrupt("USART transmit", USARTnTX,
+                new ATMegaFamily.MaskableInterrupt(USARTnTX, UCSRnB_reg, UCSRnA_reg, TXCn, false));
 
     }
 
@@ -199,8 +198,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
         protected void enableTransmit() {
             if (!transmitting) {
                 transmit.frame = transmitFrame();
-                // TODO: fixme
-                //UCSRnA_reg.flagBit(UDREn);
+                UCSRnA_reg.flagBit(UDREn);
                 transmitting = true;
                 mainClock.insertEvent(transmit, (1 + frameSize + stopBits) * period);
             }
@@ -216,8 +214,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
                 if (devicePrinter.enabled)
                     devicePrinter.println("USART: Transmitted frame " + frame /*+ " " + simulator.getState().getCycles()*/);
                 transmitting = false;
-                // TODO: fixme
-                // UCSRnA_reg.flagBit(TXCn);
+                UCSRnA_reg.flagBit(TXCn);
                 if (!UCSRnA_reg.readBit(UDREn)) {
                     transmitter.enableTransmit();
                 }
@@ -255,8 +252,7 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
                 if (devicePrinter.enabled)
                     devicePrinter.println("USART: Received frame " + frame + ' ' + simulator.getState().getCycles() + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
 
-                // TODO: fixme
-                // UCSRnA_reg.flagBit(RXCn);
+                UCSRnA_reg.flagBit(RXCn);
 
                 receiving = false;
             }
@@ -380,11 +376,10 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
      * UCSRnA (<code>ControlRegisterA</code>) is one of three control/status registers for the USART.
      * The high three bits are actually interrupt flag bits.
      */
-    // TODO: this should be a FLAG REGISTER
-    protected class ControlRegisterA extends State.RWIOReg  {
+    protected class ControlRegisterA extends ATMegaFamily.FlagRegister  {
 
         public ControlRegisterA() {
-//            super(INTERRUPT_MAPPING);
+            super(USART.this.interpreter, INTERRUPT_MAPPING);
             value = 0x20; // init UDREn to true
 
         }
@@ -438,13 +433,12 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
      * UCSRnB (<code>ControlRegisterB</code>) is one of three control/status registers for the USART.
      * The high three bits are actually interrupt mask bits.
      */
-    // TODO: this should be a FLAG REGISTER
-    protected class ControlRegisterB extends State.RWIOReg {
+    protected class ControlRegisterB extends ATMegaFamily.MaskRegister {
         int count = 0;
 
         ControlRegisterB() {
-//            super(INTERRUPT_MAPPING, UCSRnA_reg);
-//            UCSRnA_reg.maskRegister = this;
+            super(USART.this.interpreter, INTERRUPT_MAPPING, UCSRnA_reg);
+            UCSRnA_reg.maskRegister = this;
         }
 
         public void write(byte val) {
@@ -564,4 +558,5 @@ public abstract class USART extends AtmelInternalDevice implements ATMega128L.US
             }
         }
     }
+
 }
