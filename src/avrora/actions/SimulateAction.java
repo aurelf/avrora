@@ -216,7 +216,8 @@ public class SimulateAction extends SimAction {
         Iterator i = getLocationList(program, BREAKS.get()).iterator();
         while (i.hasNext()) {
             Program.Location l = (Program.Location)i.next();
-            simulator.insertBreakPoint(l.address);
+            // TODO: implement breakpoints--AGAIN
+            // simulator.insertBreakPoint(l.address);
         }
     }
 

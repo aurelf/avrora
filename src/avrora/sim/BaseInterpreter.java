@@ -91,15 +91,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         protected final MulticastProbe probe;
         protected final InstrVisitor interpreter;
 
-        private boolean breakPoint;
-        private boolean breakFired;
-
-        protected ProbedInstr(Instr i, int a, Simulator.Probe p, InstrVisitor interp) {
+        protected ProbedInstr(Instr i, int a, Simulator.Probe p) {
             super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
             instr = i;
             address = a;
             probe = new MulticastProbe();
-            interpreter = interp;
+            interpreter = BaseInterpreter.this;
             probe.add(p);
         }
 
@@ -111,51 +108,27 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             probe.remove(p);
         }
 
-        void setBreakPoint() {
-            if (!breakPoint) breakFired = false;
-            breakPoint = true;
-        }
-
-        void unsetBreakPoint() {
-            breakPoint = false;
-            breakFired = false;
-        }
-
         boolean isEmpty() {
             return probe.isEmpty();
         }
 
         public void accept(InstrVisitor v) {
 
-            // if the simulator is visiting us, execute the instruction instead of accept(v).
-            if (v == interpreter) {
-                // breakpoint processing.
-                if (breakPoint) {
-                    if (!breakFired) {
-                        breakFired = true;
-                        throw new Simulator.BreakPointException(instr, address, BaseInterpreter.this);
-                    } else
-                        breakFired = false;
-                }
+            probe.fireBefore(instr, address, BaseInterpreter.this);
+            instr.accept(interpreter);
+            commit();
 
-                probe.fireBefore(instr, address, BaseInterpreter.this);
-                instr.accept(interpreter);
-                commit();
-
-                if ( probe.isEmpty() )
-                    // if the probed instruction has no more probes, remove it altogether
-                    setInstr(instr, address);
-                else
-                    // fire all of the probes
-                    probe.fireAfter(instr, address, BaseInterpreter.this);
-
+            if ( probe.isEmpty() ) {
+                // if the probed instruction has no more probes, remove it altogether
+                setInstr(instr, address);
             } else {
-                instr.accept(v);
+                // fire all of the probes
+                probe.fireAfter(instr, address, BaseInterpreter.this);
             }
         }
 
         public Instr build(int address, Operand[] ops) {
-            return instr.build(address, ops);
+            throw Avrora.failure("ProbedInstr should be confined to BaseInterpreter");
         }
 
         public String getOperands() {
@@ -447,15 +420,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public void removeProbe(Simulator.Probe b) {
         innerLoop = false;
         globalProbe.remove(b);
-    }
-
-    protected void insertBreakPoint(int addr) {
-        makeProbedInstr(addr).setBreakPoint();
-    }
-
-    protected void removeBreakPoint(int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if (pi != null) pi.unsetBreakPoint();
     }
 
     protected void insertWatch(Simulator.Watch p, int data_addr) {
@@ -1029,7 +993,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected ProbedInstr makeProbedInstr(int addr) {
         ProbedInstr pi = getProbedInstr(addr);
-        if (pi == null) pi = new ProbedInstr(getInstr(addr), addr, null, this);
+        if (pi == null) pi = new ProbedInstr(getInstr(addr), addr, null);
         setInstr(pi, addr);
         return pi;
     }

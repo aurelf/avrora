@@ -590,27 +590,6 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertBreakPoint()</code> method inserts a breakpoint at the instruction at the specified
-     * address. At most one breakpoint can be inserted at a particular instruction. Subsequent calls to this
-     * method would then have no effect for the same address.
-     *
-     * @param addr
-     */
-    public void insertBreakPoint(int addr) {
-        interpreter.insertBreakPoint(addr);
-    }
-
-    /**
-     * The <code>removeBreakPoint</code> method removes all breakpoints at the specified instruction at the
-     * specified address.
-     *
-     * @param addr
-     */
-    public void removeBreakPoint(int addr) {
-        interpreter.removeBreakPoint(addr);
-    }
-
-    /**
      * The <code>insertWatch()</code> method allows a watch to be inserted at a memory location. The probe
      * will be executed before every read or write to that memory location.
      *

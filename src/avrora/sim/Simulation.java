@@ -30,39 +30,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim;
+
+import avrora.util.Options;
+
+import java.util.Iterator;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>Simulation</code> class represents a complete simulation, including
+ * the nodes, the programs, the radio model (if any), the environment model, for
+ * simulations of one or many nodes.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public abstract class Simulation {
 
     /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
+     * The <code>Factory</code> interface represents a factory capable of creating
+     * new simulations based on the command line options and arguments. 
      */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 12;
-
-    public static Version getVersion() {
-        return new Version();
+    public interface Factory {
+        public Simulation newSimulation(Options options, String[] args);
     }
 
-    public String toString() {
-        return prefix + major + '.' + commit;
+    /**
+     * The <code>Node</code> class represents a node in the simulation.
+     */
+    public abstract static class Node {
+        public final Simulator simulator;
+        public final Clock clock;
+
+        protected Node(Simulator s) {
+            simulator = s;
+            clock = s.getClock();
+        }
     }
+
+    /**
+     * The <code>start()</code> method begins the simulation by starting all nodes.
+     */
+    public abstract void start();
+
+    /**
+     * The <code>getNodeCount()</code> method returns the number of nodes that are
+     * in this simulation.
+     * @return the number of nodes that are in the simulation
+     */
+    public abstract int getNodeCount();
+
+    /**
+     * The <code>getNodeIterator()</code> method returns an iterator over all the nodes
+     * in the simulation. This can be used by monitors to instrument nodes, etc.
+     * @return an instance of the <code>Iterator</code> interface that can iterate over
+     * the nodes in this simulation
+     */
+    public abstract Iterator getNodeIterator();
 }
