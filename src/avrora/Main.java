@@ -71,6 +71,8 @@ public class Main extends VPCBase {
             ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
             Program p = r.read(args);
             Simulator s = new ATMega128L().loadProgram(p);
+            Simulator.TRACE = true;
+            Simulator.TRACEREGS = true;
             s.start();
         }
 

@@ -31,15 +31,19 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     protected int nextPC;
     protected Interrupt[] interrupts;
 
+    protected DeltaQueue deltaQueue;
+
     public static int MAX_INTERRUPTS = 35;
 
     public Simulator(Program p) {
         program = p;
         interrupts = new Interrupt[MAX_INTERRUPTS];
 
+        // set all interrupts to ignore
         for ( int cntr = 0; cntr < MAX_INTERRUPTS; cntr++ )
             interrupts[cntr] = IGNORE;
 
+        // reset the state of the simulation
         reset();
     }
 
@@ -47,6 +51,57 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
         public void fireBefore(Instr i, int address, State state);
         public void fireAfter(Instr i, int address, State state);
+    }
+
+    public interface Trigger {
+        public void fire();
+    }
+
+    public static class DeltaQueue {
+        void add(Trigger e, long cycles) {
+
+        }
+
+        void remove(Trigger e) {
+
+        }
+
+        void advance(int cycles) {
+
+        }
+    }
+
+    public static class MulticastProbe implements Probe {
+        static class Link {
+            Probe probe;
+            Link next;
+
+            Link(Probe p) {
+                probe = p;
+            }
+        }
+
+        Link head;
+        Link tail;
+
+        void add(Probe b) {
+            if ( head == null ) {
+                head = tail = new Link(b);
+            } else {
+                tail.next = new Link(b);
+                tail = tail.next;
+            }
+        }
+
+        public void fireBefore(Instr i, int address, State state) {
+            for ( Link pos = head; pos != null; pos = pos.next )
+                pos.probe.fireBefore(i, address, state);
+        }
+
+        public void fireAfter(Instr i, int address, State state) {
+            for ( Link pos = head; pos != null; pos = pos.next )
+                pos.probe.fireAfter(i, address, state);
+        }
     }
 
     public interface MemoryProbe {
@@ -213,13 +268,16 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
                 // check if there are any pending (posted) interrupts
                 if ( interruptPostMask != 0 ) {
                     // the lowest set bit is the highest priority posted interrupt
-                    int lowbit = Arithmetic.lowestBit(interruptPostMask);
+                    int lowestbit = Arithmetic.lowestBit(interruptPostMask);
 
                     // fire the interrupt (update flag register(s) state)
-                    interrupts[lowbit].fire();
+                    interrupts[lowestbit].fire();
+
+                    // store the return address
+                    pushPC(nextPC);
 
                     // set PC to interrupt handler
-                    nextPC = lowbit * 4;
+                    nextPC = lowestbit * 4;
                     state.writePC(nextPC);
 
                     // hardware manual says handling of interrupt requires 4 cycles
@@ -302,6 +360,10 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     protected void triggerInterrupt(int num) {
         interrupts[num].fire();
+    }
+
+    public void addTimerEvent(Trigger e, long cycles) {
+        // insert the event in the delta queue
     }
 
 
