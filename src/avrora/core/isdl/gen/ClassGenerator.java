@@ -58,12 +58,19 @@ public class ClassGenerator {
 
     public void generate() {
         printer.indent();
-        architecture.accept(new ConstructorEmitter());
-        architecture.accept(new ClassEmitter());
+        new CheckEmitter().generate(architecture);
+        new ConstructorEmitter().generate(architecture);
+        new ClassEmitter().generate(architecture);
         printer.unindent();
     }
 
     private class ClassEmitter implements Architecture.InstrVisitor {
+        public void generate(Architecture a) {
+            printer.println("// Class definitions individual instructions ");
+
+            a.accept(this);
+        }
+
         public void visit(InstrDecl d) {
             String cName = (d.variant == null) ? d.name.image : d.variant.image;
             cName = StringUtil.trimquotes(cName.toUpperCase());
@@ -127,6 +134,12 @@ public class ClassGenerator {
     }
 
     private class ConstructorEmitter implements Architecture.InstrVisitor {
+        public void generate(Architecture a) {
+            printer.println("// Static factory methods for individual instructions ");
+
+            a.accept(this);
+        }
+
         public void visit(InstrDecl d) {
             String cName = (d.variant == null) ? d.name.image : d.variant.image;
             cName = StringUtil.trimquotes(cName.toUpperCase());
@@ -179,6 +192,21 @@ public class ClassGenerator {
             printer.print(o.getType()+" ");
             printer.print(o.name.toString());
             if ( i.hasNext()) printer.print(", ");
+        }
+    }
+
+    private class CheckEmitter implements Architecture.OperandVisitor {
+        public void generate(Architecture a) {
+            printer.println("// Methods to check the validity of individual operands ");
+
+            a.accept(this);
+        }
+
+        public void visit(OperandDecl d) {
+            String type = d.name.toString();
+            String ptype = d.isRegister() ? "Register" : "int";
+            printer.startblock("public "+ptype+" check_"+type+"("+ptype+" v)");
+            printer.endblock();
         }
     }
 
