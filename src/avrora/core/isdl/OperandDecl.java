@@ -33,6 +33,7 @@
 package avrora.core.isdl;
 
 import avrora.core.isdl.parser.Token;
+import avrora.util.StringUtil;
 
 import java.util.List;
 
@@ -46,24 +47,63 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class OperandDecl {
+public abstract class OperandDecl {
 
     public final Token name;
     public final Token kind;
+    public final int bitSize;
 
-    public final List members;
-
-    public OperandDecl(Token n, Token k, List m) {
+    protected OperandDecl(Token n, Token b, Token k) {
         name = n;
         kind = k;
-        members = m;
+        bitSize = StringUtil.evaluateIntegerLiteral(b.image);
+    }
+
+    public static class Immediate extends OperandDecl {
+
+        public final int low;
+        public final int high;
+
+        public Immediate(Token n, Token b, Token k, Token l, Token h) {
+            super(n, b, k);
+            low = StringUtil.evaluateIntegerLiteral(l.image);
+            high = StringUtil.evaluateIntegerLiteral(h.image);
+        }
+
+        public boolean isImmediate() {
+            return true;
+        }
+    }
+
+    public static class RegisterSet extends OperandDecl {
+        public final List members;
+
+        public RegisterSet(Token n, Token b, Token k, List l) {
+            super(n, b, k);
+            members = l;
+        }
+
+        public boolean isRegister() {
+            return true;
+        }
+
+    }
+
+    public static class RegisterEncoding {
+        public final Token name;
+        public final int value;
+
+        public RegisterEncoding(Token n, Token v) {
+            name = n;
+            value = StringUtil.evaluateIntegerLiteral(v.image);
+        }
     }
 
     public boolean isRegister() {
-        return kind.image.equals("register");
+        return false;
     }
 
     public boolean isImmediate() {
-        return kind.image.equals("immediate");
+        return false;
     }
 }

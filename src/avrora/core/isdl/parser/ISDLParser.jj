@@ -62,6 +62,7 @@ PARSER_BEGIN(ISDLParser)
 
 package avrora.core.isdl.parser;
 import avrora.core.isdl.ast.*;
+import avrora.core.isdl.*;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -126,7 +127,7 @@ TOKEN :
        (<DECIMAL_LITERAL> | <HEX_LITERAL> | <BIN_LITERAL> | <OCTAL_LITERAL>)
   >
 |
-  < #DECIMAL_LITERAL: (["1"-"9"] (["0"-"9"])*) >
+  < #DECIMAL_LITERAL: (("-")? ["1"-"9"] (["0"-"9"])*) >
 |
   < #HEX_LITERAL: (("0" ["x","X"])|"$") (["0"-"9","a"-"f","A"-"F"])+ >
 |
@@ -240,7 +241,7 @@ TOKEN :
 
 Architecture Architecture() : { Token n; Architecture a; }
 {
-    "architecture" n = <IDENTIFIER> { a = new Architecture(); }"{"
+    "architecture" n = <IDENTIFIER> { a = new Architecture(n); }"{"
         (Item(a))*
     "}" { a.process(); return a; }
 }
@@ -292,10 +293,33 @@ void FormatDecl(Architecture a) : { Token n; EncodingDecl d; }
     "format" n = <IDENTIFIER> "=" d = Format(n) ";" { a.addEncoding(d); }
 }
 
-void OperandDecl(Architecture a) : { Token n, k; List l; }
+void OperandDecl(Architecture a) : { Token n, k, b; }
 {
-    "operand" n = <IDENTIFIER> ":" k = Kind() "=" l = OperandSet() ";"
-    { a.addOperand(new OperandDecl(n, k, l)); }
+    "operand" n = <IDENTIFIER> "[" b = <INTEGER_LITERAL> "]" ":" k = Kind() "=" OperandTail(a, n, b, k) ";"
+}
+
+void OperandTail(Architecture a, Token n, Token k, Token b) : { OperandDecl d; }
+{
+    (d = OperandSetDecl(n, b, k) | d = OperandRangeDecl(n, b, k))
+    { a.addOperand(d); }
+}
+
+OperandDecl OperandSetDecl(Token n, Token k, Token b) : { List l = new LinkedList(); }
+{
+    "{" OperandSetElem(l) ("," OperandSetElem(l))* "}"
+    { return new OperandDecl.RegisterSet(n, b, k, l); }
+}
+
+void OperandSetElem(List l) : { Token n, i; }
+{
+    (n = <IDENTIFIER> "=" i = <INTEGER_LITERAL>)
+    { l.add(new OperandDecl.RegisterEncoding(n, i)); }
+}
+
+OperandDecl OperandRangeDecl(Token n, Token k, Token b) : { Token l, h; }
+{
+    "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]"
+    { return new OperandDecl.Immediate(n, b, k, l, h); }
 }
 
 Token Kind() : { Token t; }

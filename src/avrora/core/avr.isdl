@@ -46,8 +46,8 @@ architecture avr {
         y = 0, z = 1
     };
 
-    operand Z: register = {
-        z
+    operand Z[0]: register = {
+        z = 0
     };
 
     operand EGPR[4]: register = {
@@ -61,27 +61,18 @@ architecture avr {
         r24 = 0, r26 = 1, r28 = 2, r30 = 3
     };
 
-    operand ADR: register = {
-        x, y, z
+    operand ADR[2]: register = {
+        x = 0, y = 1, z = 2
     };
 
-    // TODO: fix these immediate declarations!
-    operand IMM3: immediate = [0, 7];
-
-    operand IMM5: immediate = [0, 31];
-
-    operand IMM6: immediate = [0, 63];
-
-    operand IMM7: immediate = [0, 127];
-
-    operand IMM8: immediate = [0, 255];
-
-    operand SREL[7]: immediate = [pc-64, pc+63];
-
-    operand LREL[11]: immediate = [pc-1024, pc+1023];
-
+    operand IMM3[3]: immediate = [0, 7];
+    operand IMM5[5]: immediate = [0, 31];
+    operand IMM6[6]: immediate = [0, 63];
+    operand IMM7[7]: immediate = [0, 127];
+    operand IMM8[8]: immediate = [0, 255];
+    operand SREL[7]: immediate = [-64, 63];
+    operand LREL[11]: immediate = [-1024, 1023];
     operand PADDR[16]: immediate = [0, 65536];
-
     operand DADDR[12]: immediate = [0, 4096];
 
 

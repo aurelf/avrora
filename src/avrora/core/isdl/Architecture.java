@@ -56,6 +56,8 @@ public class Architecture {
 
     Verbose.Printer printer = Verbose.getVerbosePrinter("isdl");
 
+    public final Token name;
+
     HashMap subroutineMap;
     HashMap instructionMap;
     HashMap operandMap;
@@ -90,7 +92,9 @@ public class Architecture {
     public interface Visitor extends InstrVisitor, SubroutineVisitor, OperandVisitor, EncodingVisitor {
     }
 
-    public Architecture() {
+    public Architecture(Token n) {
+        name = n;
+
         subroutineMap = new HashMap();
         instructionMap = new HashMap();
         operandMap = new HashMap();
