@@ -11,7 +11,7 @@ import avrora.util.Options;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Option;
-import vpc.test.AutomatedTester;
+import avrora.test.AutomatedTester;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;

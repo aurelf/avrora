@@ -8,9 +8,9 @@ import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import vpc.test.TestCase;
-import vpc.test.TestHarness;
-import vpc.test.TestResult;
+import avrora.test.TestCase;
+import avrora.test.TestHarness;
+import avrora.test.TestResult;
 
 import java.io.File;
 import java.io.FileInputStream;

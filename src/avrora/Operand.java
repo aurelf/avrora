@@ -2,7 +2,7 @@ package avrora;
 
 import avrora.syntax.ASTNode;
 import avrora.syntax.Expr;
-import vpc.core.AbstractToken;
+import avrora.syntax.AbstractToken;
 
 /**
  * @author Ben L. Titzer

@@ -4,9 +4,9 @@ import avrora.core.Register;
 import avrora.syntax.ASTNode;
 import avrora.syntax.ExprList;
 import avrora.util.StringUtil;
-import vpc.ErrorReporter;
-import vpc.core.AbstractToken;
-import vpc.core.ProgramPoint;
+import avrora.ErrorReporter;
+import avrora.syntax.AbstractToken;
+import avrora.syntax.ProgramPoint;
 
 /**
  * The <code>AVRErrorReporter</code> contains one method per compilation

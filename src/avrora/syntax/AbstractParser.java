@@ -2,7 +2,7 @@
 package avrora.syntax;
 
 import avrora.Module;
-import vpc.core.AbstractParseException;
+import avrora.syntax.AbstractParseException;
 
 /**
  */

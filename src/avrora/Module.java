@@ -6,8 +6,8 @@ import avrora.syntax.Expr;
 import avrora.syntax.ExprList;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
-import vpc.core.AbstractParseException;
-import vpc.core.AbstractToken;
+import avrora.syntax.AbstractParseException;
+import avrora.syntax.AbstractToken;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

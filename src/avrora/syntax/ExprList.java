@@ -1,6 +1,6 @@
 package avrora.syntax;
 
-import vpc.core.AbstractToken;
+import avrora.syntax.AbstractToken;
 
 /**
  * @author Ben L. Titzer
