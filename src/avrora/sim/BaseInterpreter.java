@@ -11,7 +11,7 @@ import avrora.core.*;
  */
 public abstract class BaseInterpreter implements State, InstrVisitor {
     protected int pc;
-    protected long cycles;
+    protected long totalCycles;
     protected final byte[] regs;
     protected final State.IOReg[] ioregs;
     protected byte[] sram;
@@ -191,7 +191,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     protected void advanceCycles(long delta) {
-        cycles += delta;
+        totalCycles += delta;
         simulator.eventQueue.advance(delta);
         cyclesConsumed = 0;
     }
@@ -481,7 +481,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @return the number of clock cycles elapsed in the simulation
      */
     public long getCycles() {
-        return cycles;
+        return totalCycles;
     }
 
     /**

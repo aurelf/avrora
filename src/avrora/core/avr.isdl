@@ -1064,6 +1064,7 @@ architecture avr {
         execute = {
             nextPC = popPC();
             I = true;
+            // lastRETI = totalCycles;
             justReturnedFromInterrupt = true;
         };
     };

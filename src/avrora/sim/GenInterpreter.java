@@ -32,10 +32,7 @@
 
 package avrora.sim;
 
-import avrora.core.InstrVisitor;
-import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.core.Register;
+import avrora.core.*;
 import avrora.Avrora;
 import avrora.sim.util.MulticastProbe;
 import avrora.util.Arithmetic;
@@ -81,6 +78,10 @@ public class GenInterpreter extends BaseInterpreter {
     public static final Register RX = Register.X;
     public static final Register RY = Register.Y;
     public static final Register RZ = Register.Z;
+
+    protected long lastRETI = -8;
+    // TODO: this is just a hack for now
+    protected final int cyclesRETI = 4;
 
     /**
      * The constructor for the <code>Interpreter</code> class builds the internal data
@@ -135,6 +136,7 @@ public class GenInterpreter extends BaseInterpreter {
                     // process any timed events
                     advanceCycles(4);
                     sleeping = false;
+
                 }
             }
 

@@ -40,6 +40,7 @@ import avrora.core.isdl.*;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.SimulateAction;
 import avrora.sim.MultiSimulateAction;
+import avrora.sim.BenchmarkAction;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
 import avrora.sim.mcu.Microcontrollers;
@@ -141,7 +142,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.5";
+    static final String VERSION = "Beta 1.1.7";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -208,10 +209,8 @@ public class Main {
             "subsystems within Avrora. For more information, see the section on verbose " +
             "printing.");
     public static final Option.Long REPEAT = options.newOption("repeat", 1,
-            "This option is used to repeat the specified action a given number of times. " +
-            "It is useful for testing and profiling the simulator itself and collecting " +
-            "measurements on simulations. It is mostly useful for warming up the Java " +
-            "Virtual Machine that is executing Avrora.");
+            "This option is used in the \"benchmark\" option. It specifies the number " +
+            "of times to repeat the benchmark to compute average performance.");
     public static final Option.Str CHIP = options.newOption("chip", "atmega128l",
             "This option selects the microcontroller from a library of supported " +
             "microcontroller models.");
@@ -257,6 +256,7 @@ public class Main {
         newAction("cfg", new CFGAction());
         newAction("isdl", new ISDLAction());
         newAction("custom", new CustomAction());
+        newAction("benchmark", new BenchmarkAction());
         newInput("gas", new GASProgramReader());
         newInput("atmel", new AtmelProgramReader());
         newInput("objdump", new ObjDumpProgramReader());
@@ -425,7 +425,7 @@ public class Main {
 
                 args = options.getArguments();
 
-                for (int cntr = 0; cntr < REPEAT.get(); cntr++)
+//                for (int cntr = 0; cntr < REPEAT.get(); cntr++)
                     a.run(args);
             }
 
