@@ -41,8 +41,6 @@ package avrora.syntax;
  * @author Ben L. Titzer
  */
 public class ProgramPoint {
-    // TODO: turn program point into interface
-
     public final String file;
     public final int line;
     public final int beginColumn;

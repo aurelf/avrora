@@ -53,6 +53,13 @@ public abstract class Literal extends Expr {
         return true;
     }
 
+    /**
+     * The <code>isConstantExpr()</code> method tests whether this expression
+     * is a constant expression (i.e. it is reducable to a constant and has
+     * no references to variables, maps, etc). For literals, this method will
+     * always return true because a literal is a constant value.
+     * @return true if this expression can be evaluated to a constant; false otherwise
+     */
     public boolean isConstantExpr() {
         return true;
     }

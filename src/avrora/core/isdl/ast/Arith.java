@@ -69,6 +69,12 @@ public abstract class Arith extends Expr {
          */
         public final Expr right;
 
+        /**
+         * The <code>precedence</code> field stores the precedence level of
+         * this binary operation. This is used to compute when to surround
+         * inner expressions with parentheses when printing code in infix
+         * notation.
+         */
         public final int precedence;
 
         /**
@@ -86,6 +92,12 @@ public abstract class Arith extends Expr {
             precedence = p;
         }
 
+        /**
+         * The <code>isConstantExpr()</code> method tests whether this expression
+         * is a constant expression (i.e. it is reducable to a constant and has
+         * no references to variables, maps, etc).
+         * @return true if this expression can be evaluated to a constant; false otherwise
+         */
         public boolean isConstantExpr() {
             return left.isConstantExpr() && right.isConstantExpr();
         }
@@ -100,10 +112,25 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>toString()</code> method recursively converts this expression
+         * to a string. For binary operations, inner expressions will be nested
+         * within parentheses if their precedence is lower than the precedence
+         * of the parent expression.
+         * @return a string representation of this expression
+         */
         public String toString() {
             return innerString(left) + " " + operation + " " + innerString(right);
         }
 
+        /**
+         * The <code>getPrecedence()</code> method gets the binding precedence for
+         * this expression. This is used to compute when inner expressions must be
+         * nested within parentheses in order to preserve the implied order of
+         * evaluation.
+         * @return an integer representing the precedence of this expression; higher
+         * numbers are higher precedence
+         */
         public int getPrecedence() {
             return precedence;
         }
@@ -140,6 +167,12 @@ public abstract class Arith extends Expr {
             operation = op;
         }
 
+        /**
+         * The <code>isConstantExpr()</code> method tests whether this expression
+         * is a constant expression (i.e. it is reducable to a constant and has
+         * no references to variables, maps, etc).
+         * @return true if this expression can be evaluated to a constant; false otherwise
+         */
         public boolean isConstantExpr() {
             return operand.isConstantExpr();
         }
@@ -154,10 +187,25 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>toString()</code> method recursively converts this expression
+         * to a string. For binary operations, inner expressions will be nested
+         * within parentheses if their precedence is lower than the precedence
+         * of the parent expression.
+         * @return a string representation of this expression
+         */
         public String toString() {
             return operation + innerString(operand);
         }
 
+        /**
+         * The <code>getPrecedence()</code> method gets the binding precedence for
+         * this expression. This is used to compute when inner expressions must be
+         * nested within parentheses in order to preserve the implied order of
+         * evaluation.
+         * @return an integer representing the precedence of this expression; higher
+         * numbers are higher precedence
+         */
         public int getPrecedence() {
             return PREC_UN;
         }
@@ -182,6 +230,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -206,6 +263,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -230,6 +296,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -254,6 +329,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -278,6 +362,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -302,6 +395,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -326,6 +428,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -350,6 +461,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -374,6 +494,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -398,6 +527,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }
@@ -422,6 +560,15 @@ public abstract class Arith extends Expr {
             v.visit(this);
         }
 
+        /**
+         * The <code>accept()</code> method implements one half of the visitor
+         * pattern for rebuilding of expressions. This visitor allows code to
+         * be slightly modified while only writing visit methods for the
+         * parts of the syntax tree affected.
+         * @param r the rebuilder to accept
+         * @return the result of calling the appropriate <code>visit()</code>
+         * method of the rebuilder
+         */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
         }

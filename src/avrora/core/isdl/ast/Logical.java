@@ -71,6 +71,12 @@ public abstract class Logical {
          */
         public final Expr right;
 
+        /**
+         * The <code>precedence</code> field stores the precedence level of
+         * this binary operation. This is used to compute when to surround
+         * inner expressions with parentheses when printing code in infix
+         * notation.
+         */
         public final int precedence;
 
         /**
@@ -88,6 +94,12 @@ public abstract class Logical {
             precedence = p;
         }
 
+        /**
+         * The <code>isConstantExpr()</code> method tests whether this expression
+         * is a constant expression (i.e. it is reducable to a constant and has
+         * no references to variables, maps, etc).
+         * @return true if this expression can be evaluated to a constant; false otherwise
+         */
         public boolean isConstantExpr() {
             return left.isConstantExpr() && right.isConstantExpr();
         }

@@ -96,17 +96,33 @@ public class VarBitRangeAssignStmt extends AssignStmt {
 
     /**
      * The <code>accept()</code> method implements one half of the visitor
-     * pattern, allowing each statement to be visited by a client visitor.
+     * pattern for visiting the abstract syntax trees representing the
+     * code of a particular instruction or subroutine.
      * @param v the visitor to accept
      */
     public void accept(StmtVisitor v) {
         v.visit(this);
     }
 
+    /**
+     * The <code>toString()</code> method recursively converts this statement
+     * to a string.
+     * @return a string representation of this statement
+     */
     public String toString() {
         return variable.image +"[" + low_bit + ":" + high_bit + "] = " + expr + ";";
     }
 
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern for visiting the abstract syntax trees representing the
+     * code of a particular instruction or subroutine. The
+     * <code>StmtRebuilder</code> interface allows visitors to rearrange
+     * and rebuild the statements.
+     * @param r the visitor to accept
+     * @return the result of calling the appropriate <code>visit()</code>
+     * of the rebuilder passed
+     */
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);
     }

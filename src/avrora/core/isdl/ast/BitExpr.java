@@ -64,10 +64,24 @@ public class BitExpr extends Expr {
         bit = b;
     }
 
+    /**
+     * The <code>getBitWidth()</code> method gets the number of bits needed to
+     * represent this value. This is needed in the case of encoding formats, which
+     * need to compute the size of an instruction based on the width of its
+     * internal fields. For a <code>BitExpr</code>, only one bit is required,
+     * so this method returns 1.
+     * @return 1
+     */
     public int getBitWidth() {
         return 1;
     }
 
+    /**
+     * The <code>isConstantExpr()</code> method tests whether this expression
+     * is a constant expression (i.e. it is reducable to a constant and has
+     * no references to variables, maps, etc).
+     * @return true if this expression can be evaluated to a constant; false otherwise
+     */
     public boolean isConstantExpr() {
         return expr.isConstantExpr() && bit.isConstantExpr();
     }
@@ -92,14 +106,38 @@ public class BitExpr extends Expr {
         v.visit(this);
     }
 
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern for rebuilding of expressions. This visitor allows code to
+     * be slightly modified while only writing visit methods for the
+     * parts of the syntax tree affected.
+     * @param r the rebuilder to accept
+     * @return the result of calling the appropriate <code>visit()</code>
+     * method of the rebuilder
+     */
     public Expr accept(CodeRebuilder r) {
         return r.visit(this);
     }
 
+    /**
+     * The <code>toString()</code> method recursively converts this expression
+     * to a string. For binary operations, inner expressions will be nested
+     * within parentheses if their precedence is lower than the precedence
+     * of the parent expression.
+     * @return a string representation of this expression
+     */
     public String toString() {
         return innerString(expr) + "[" + bit.toString() + "]";
     }
 
+    /**
+     * The <code>getPrecedence()</code> method gets the binding precedence for
+     * this expression. This is used to compute when inner expressions must be
+     * nested within parentheses in order to preserve the implied order of
+     * evaluation.
+     * @return an integer representing the precedence of this expression; higher
+     * numbers are higher precedence
+     */
     public int getPrecedence() {
         return PREC_TERM;
     }

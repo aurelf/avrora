@@ -86,18 +86,49 @@ public class MapExpr extends Expr {
         v.visit(this);
     }
 
+    /**
+     * The <code>accept()</code> method implements one half of the visitor
+     * pattern for rebuilding of expressions. This visitor allows code to
+     * be slightly modified while only writing visit methods for the
+     * parts of the syntax tree affected.
+     * @param r the rebuilder to accept
+     * @return the result of calling the appropriate <code>visit()</code>
+     * method of the rebuilder
+     */
     public Expr accept(CodeRebuilder r) {
         return r.visit(this);
     }
 
+    /**
+     * The <code>toString()</code> method recursively converts this expression
+     * to a string. For binary operations, inner expressions will be nested
+     * within parentheses if their precedence is lower than the precedence
+     * of the parent expression.
+     * @return a string representation of this expression
+     */
     public String toString() {
         return StringUtil.embed("$"+mapname, index);
     }
 
+    /**
+     * The <code>getPrecedence()</code> method gets the binding precedence for
+     * this expression. This is used to compute when inner expressions must be
+     * nested within parentheses in order to preserve the implied order of
+     * evaluation.
+     * @return an integer representing the precedence of this expression; higher
+     * numbers are higher precedence
+     */
     public int getPrecedence() {
         return PREC_TERM;
     }
 
+    /**
+     * The <code>isMap()</code> method tests whether this expression is a
+     * reference to an element of a map. This is used in pattern matching in
+     * some parts of the tools that work on abstract syntax trees. For
+     * instances of <code>MapExpr</code>, this method returns always true.
+     * @return true
+     */
     public boolean isMap() {
         return true;
     }
