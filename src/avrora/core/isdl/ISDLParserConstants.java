@@ -31,37 +31,38 @@ public interface ISDLParserConstants {
   int OR = 34;
   int XOR = 35;
   int SUBROUTINE = 36;
-  int EXTERNAL = 37;
-  int RETURN = 38;
-  int BOOLEAN_LITERAL = 39;
-  int LBRACKET = 40;
-  int RBRACKET = 41;
-  int EQUALS = 42;
-  int COMMA = 43;
-  int LPAREN = 44;
-  int RPAREN = 45;
-  int SEMI = 46;
-  int SHIFTLEFT = 47;
-  int SHIFTRIGHT = 48;
-  int ADD = 49;
-  int SUB = 50;
-  int MUL = 51;
-  int DIV = 52;
-  int B_AND = 53;
-  int B_OR = 54;
-  int B_XOR = 55;
-  int NOT = 56;
-  int B_COMP = 57;
-  int EQUAL = 58;
-  int NOTEQUAL = 59;
-  int LESS = 60;
-  int LESSEQ = 61;
-  int GREATER = 62;
-  int GREATEREQ = 63;
-  int DOLLAR = 64;
-  int IDENTIFIER = 65;
-  int LETTER = 66;
-  int DIGIT = 67;
+  int INLINE = 37;
+  int EXTERNAL = 38;
+  int RETURN = 39;
+  int BOOLEAN_LITERAL = 40;
+  int LBRACKET = 41;
+  int RBRACKET = 42;
+  int EQUALS = 43;
+  int COMMA = 44;
+  int LPAREN = 45;
+  int RPAREN = 46;
+  int SEMI = 47;
+  int SHIFTLEFT = 48;
+  int SHIFTRIGHT = 49;
+  int ADD = 50;
+  int SUB = 51;
+  int MUL = 52;
+  int DIV = 53;
+  int B_AND = 54;
+  int B_OR = 55;
+  int B_XOR = 56;
+  int NOT = 57;
+  int B_COMP = 58;
+  int EQUAL = 59;
+  int NOTEQUAL = 60;
+  int LESS = 61;
+  int LESSEQ = 62;
+  int GREATER = 63;
+  int GREATEREQ = 64;
+  int DOLLAR = 65;
+  int IDENTIFIER = 66;
+  int LETTER = 67;
+  int DIGIT = 68;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -106,6 +107,7 @@ public interface ISDLParserConstants {
     "\"or\"",
     "\"xor\"",
     "\"subroutine\"",
+    "\"inline\"",
     "\"external\"",
     "\"return\"",
     "<BOOLEAN_LITERAL>",

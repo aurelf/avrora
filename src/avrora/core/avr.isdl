@@ -4,8 +4,8 @@ architecture avr {
 //  ENCODING FORMATS OF INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    format GPRGPR = { opcode[6:0], r2[4:4], r1[4:4], r1[3:0], r2[3:0] };
-    format GPR = { opcode[7:0], r1[4:4], r1[3:0], 0b0101 };
+    format GPRGPR = { opcode[5:0], r2[4:4], r1[4:4], r1[3:0], r2[3:0] };
+    format GPR = { opcode[6:0], r1[4:4], r1[3:0], 0b0101 };
     format HGPRIMM8 = { opcode[3:0], imm1[7:4], r1[4:1], imm1[3:0] };
     format BRSET = { 0b111100, target[6:0], bit[2:0] };
     format BRCLR = { 0b111101, target[6:0], bit[2:0] };
@@ -57,7 +57,7 @@ architecture avr {
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
-    subroutine performAddition(r1: int, r2: int, carry: int): int {
+    inline subroutine performAddition(r1: int, r2: int, carry: int): int {
         local result: int = r1 + r2 + carry;
         local ral: int = r1[3:0];
         local rbl: int = r2[3:0];
@@ -77,7 +77,7 @@ architecture avr {
         return result;
     };
 
-    subroutine performSubtraction(r1: int, r2: int, carry: int): int {
+    inline subroutine performSubtraction(r1: int, r2: int, carry: int): int {
         local result: int = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
@@ -99,7 +99,7 @@ architecture avr {
     };
 
     // perform subtraction, but preserve zero flag if result is zero
-    subroutine performSubtractionPZ(r1: int, r2: int, carry: int): int {
+    inline subroutine performSubtractionPZ(r1: int, r2: int, carry: int): int {
         local result: int = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
@@ -120,7 +120,7 @@ architecture avr {
         return result;
     };
 
-    subroutine performLeftShift(r1: int, lowbit: boolean): int {
+    inline subroutine performLeftShift(r1: int, lowbit: boolean): int {
         local result: int = r1 << 1;
         result[0] = lowbit;
 
@@ -134,7 +134,7 @@ architecture avr {
         return result;
     };
 
-    subroutine performRightShift(r1: int, highbit: boolean): int {
+    inline subroutine performRightShift(r1: int, highbit: boolean): int {
         local result: int = ((r1 & 0xff) >> 1);
         if ( highbit ) result[7] = true;
 
@@ -147,7 +147,7 @@ architecture avr {
         return result;
     };
 
-    subroutine performOr(r1: int, r2: int): int {
+    inline subroutine performOr(r1: int, r2: int): int {
         local result: int = r1 | r2;
 
         N = result[7];
@@ -158,7 +158,7 @@ architecture avr {
         return result;
     };
 
-    subroutine performAnd(r1: int, r2: int): int {
+    inline subroutine performAnd(r1: int, r2: int): int {
         local result: int = r1 & r2;
 
         N = result[7];
@@ -169,20 +169,20 @@ architecture avr {
         return result;
     };
 
-    subroutine relativeBranch(target: int): void {
+    inline subroutine relativeBranch(target: int): void {
         nextPC = relative(target);
         cycles = cycles + 1;
     };
 
-    subroutine relative(target: int): int {
+    inline subroutine relative(target: int): int {
         return (target * 2) + nextPC;
     };
 
-    subroutine absolute(target: int): int {
+    inline subroutine absolute(target: int): int {
         return target * 2;
     };
 
-    subroutine skip(): void {
+    inline subroutine skip(): void {
         local dist: int = $isize(nextPC);
         nextPC = nextPC + dist;
         if ( dist == 4 ) cycles = cycles + 1;

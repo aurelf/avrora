@@ -90,7 +90,9 @@ public class BitRangeExpr extends Expr {
     }
 
     public int getBitWidth() {
-        return high_bit - low_bit + 1;
+        int diff = (high_bit - low_bit);
+        if ( diff < 0 ) diff = -diff;
+        return diff + 1;
     }
 
     public boolean isConstantExpr() {

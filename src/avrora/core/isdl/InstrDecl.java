@@ -33,6 +33,7 @@
 package avrora.core.isdl;
 
 import avrora.core.isdl.Token;
+import avrora.util.StringUtil;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -46,17 +47,7 @@ import java.util.LinkedList;
  *
  * @author Ben L. Titzer
  */
-public class InstrDecl {
-
-    public class Operand {
-        public final Token name;
-        public final Token type;
-
-        Operand(Token n, Token t) {
-            name = n;
-            type = t;
-        }
-    }
+public class InstrDecl extends CodeRegion {
 
     /**
      * The <code>name</code> field stores a string representing the name of the instruction.
@@ -69,9 +60,9 @@ public class InstrDecl {
      */
     public final Token variant;
 
-    public List execute;
-    public List operands;
     public EncodingDecl encoding;
+
+    public final String className;
 
     /**
      * The constructor of the <code>InstrDecl</code> class initializes the fields
@@ -79,21 +70,20 @@ public class InstrDecl {
      * @param n the name of the instruction as a string
      * @param v the variant of the instruction as a string
      */
-    public InstrDecl(Token n, Token v) {
+    public InstrDecl(Token n, Token v, List o, List s, EncodingDecl e) {
+        super(o, s);
         name = n;
         variant = v;
-        operands = new LinkedList();
+        encoding = e;
+        className = "Instr."+StringUtil.trimquotes(name.image).toUpperCase();
     }
 
-    public void addOperand(Token n, Token t) {
-        operands.add(new Operand(n, t));
+    public int getEncodingSize() {
+        return encoding.getBitWidth();
     }
 
-    public void setExecuteBlock(List b) {
-        execute = b;
+    public String getClassName() {
+        return className;
     }
 
-    public void setEncoding(EncodingDecl l) {
-        encoding = l;
-    }
 }

@@ -72,11 +72,11 @@ public interface StmtVisitor {
         }
 
         public void visit(IfStmt s) {
-            visitBlock(s.trueBranch);
-            visitBlock(s.falseBranch);
+            visitStmtList(s.trueBranch);
+            visitStmtList(s.falseBranch);
         }
 
-        protected void visitBlock(List l) {
+        protected void visitStmtList(List l) {
             Iterator i = l.iterator();
             // visit all the statements in the block
             while ( i.hasNext() ) {

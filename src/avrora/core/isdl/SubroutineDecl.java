@@ -5,27 +5,17 @@ import java.util.List;
 /**
  * @author Ben L. Titzer
  */
-public class SubroutineDecl {
+public class SubroutineDecl extends CodeRegion {
 
     public final Token name;
-    public final List args;
     public final Token ret;
-    public List execute;
+    public final boolean inline;
 
-    public SubroutineDecl(Token n, List a, Token r, List e) {
+    public SubroutineDecl(boolean i, Token n, List o, Token r, List s) {
+        super(o, s);
+        inline = i;
         name = n;
-        args = a;
         ret = r;
-        execute = e;
     }
 
-    public static class Formal {
-        public final Token name;
-        public final Token type;
-
-        public Formal(Token n, Token t) {
-            name = n;
-            type = t;
-        }
-    }
 }

@@ -181,6 +181,7 @@ TOKEN :
   | < OR: "or" >
   | < XOR: "xor" >
   | < SUBROUTINE: "subroutine" >
+  | < INLINE: "inline" >
   | < EXTERNAL: "external" >
   | < RETURN: "return" >
   | < BOOLEAN_LITERAL: "true" | "false" >
@@ -252,27 +253,30 @@ void Item(Architecture a) : {}
   | Subroutine(a)
 }
 
-void Instruction(Architecture a) : { Token n; InstrDecl i; }
+void Instruction(Architecture a) :
 {
-    "instruction" n = <STRING_LITERAL> { i = new InstrDecl(n, null); } Operands(i) "{"
-        (InstrItem(i))*
-    "}" ";" { a.addInstruction(i); }
+    Token n;
+    InstrDecl i;
+    List o = new LinkedList(),
+         s = new LinkedList();
+    EncodingDecl e = null;
+}
+{
+    "instruction" n = <STRING_LITERAL> o = Formals() "{"
+        [ e = Encoding(n) ]
+        [ s = Execute(s) ]
+
+    "}" ";" { a.addInstruction(new InstrDecl(n, null, o, s, e)); }
 }
 
-void InstrItem(InstrDecl i) : {}
+EncodingDecl Encoding(Token n) : { EncodingDecl d; }
 {
-    Encoding(i)
-  | Execute(i)
+    "encoding" "=" d = Format(n) ";" { return d; }
 }
 
-void Encoding(InstrDecl i) : { EncodingDecl d; }
+List Execute(List s) : { }
 {
-    "encoding" "=" d = Format(i.name) ";" { i.setEncoding(d); }
-}
-
-void Execute(InstrDecl i) : { List l = new LinkedList(); }
-{
-    "execute" "=" Block(l) ";" { i.setExecuteBlock(l); }
+    "execute" "=" Block(s) ";" { return s; }
 }
 
 void FormatDecl(Architecture a) : { Token n; EncodingDecl d; }
@@ -329,32 +333,23 @@ void Substitution() : {}
     <IDENTIFIER> "=" Expr()
 }
 
-void Operands(InstrDecl i) : {}
+List Formals() : { CodeRegion.Operand o; List l = new LinkedList(); }
 {
-    [ Operand(i) ("," Operand(i))* ]
+    [ o = Formal() { l.add(o); } ("," o = Formal() { l.add(o); })* ] { return l; }
 }
 
-List Formals() : { SubroutineDecl.Formal f; List l = new LinkedList(); }
+CodeRegion.Operand Formal() : { Token n, t; }
 {
-    [ f = Formal() { l.add(f); } ("," f = Formal() { l.add(f); })* ] { return l; }
+    n = <IDENTIFIER> ":" t = <IDENTIFIER> { return new CodeRegion.Operand(n, t); }
 }
 
-SubroutineDecl.Formal Formal() : { Token n, t; }
+void Subroutine(Architecture a) : { boolean i = false; Token m, r; List f, l = new LinkedList(); }
 {
-    n = <IDENTIFIER> ":" t = <IDENTIFIER> { return new SubroutineDecl.Formal(n, t); }
-}
-
-void Operand(InstrDecl i) : { Token n, t; }
-{
-    n = <IDENTIFIER> ":" t = <IDENTIFIER> { i.addOperand(n, t); }
-}
-
-void Subroutine(Architecture a) : { Token m, r; List f, l = new LinkedList(); }
-{
-    ("subroutine" m = <IDENTIFIER> "(" f = Formals() ")" ":" r = <IDENTIFIER> Block(l) ";"
-        { a.addSubroutine(new SubroutineDecl(m, f, r, l)); } )
+    (["inline" { i = true; }] "subroutine" m = <IDENTIFIER>
+       "(" f = Formals() ")" ":" r = <IDENTIFIER> Block(l) ";"
+        { a.addSubroutine(new SubroutineDecl(i, m, f, r, l)); } )
    |("external" m = <IDENTIFIER> "(" f = Formals() ")" ":" r = <IDENTIFIER> ";"
-        { a.addSubroutine(new SubroutineDecl(m, f, r, null)); } )
+        { a.addSubroutine(new SubroutineDecl(i, m, f, r, null)); } )
 
 }
 

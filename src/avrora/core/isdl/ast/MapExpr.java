@@ -97,4 +97,8 @@ public class MapExpr extends Expr {
     public int getPrecedence() {
         return PREC_TERM;
     }
+
+    public boolean isMap() {
+        return true;
+    }
 }

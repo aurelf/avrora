@@ -88,6 +88,10 @@ public abstract class Expr {
         return false;
     }
 
+    public boolean isMap() {
+        return false;
+    }
+
     /**
      * The <code>getBitWidth()</code> method gets the number of bits needed to
      * represent this value. This is needed in the case of encoding formats, which
