@@ -33,7 +33,9 @@
 package avrora.monitors;
 
 import avrora.core.Program;
+import avrora.core.Instr;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.util.ProgramProfiler;
 import avrora.sim.util.ProgramTimeProfiler;
 import avrora.util.Option;
@@ -64,17 +66,77 @@ public class ProfileMonitor extends MonitorFactory {
     public class Monitor implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
-        public final ProgramProfiler profile;
-        public final ProgramTimeProfiler timeprofile;
+//        public final ProgramProfiler profile;
+//        public final ProgramTimeProfiler timeprofile;
+        public final ProfProbe probe;
 
         Monitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
-            profile = new ProgramProfiler(program);
-            timeprofile = new ProgramTimeProfiler(program);
+//            profile = new ProgramProfiler(program);
+//            timeprofile = new ProgramTimeProfiler(program);
+            probe = new ProfProbe(program);
             // insert the global probe
-            s.insertProbe(profile);
-            s.insertProbe(timeprofile);
+//            s.insertProbe(profile);
+//            s.insertProbe(timeprofile);
+            s.insertProbe(probe);
+        }
+
+        public class ProfProbe implements Simulator.Probe {
+            /**
+             * The <code>program</code> field stores a reference to the program being profiled.
+             */
+            public final Program program;
+
+            /**
+             * The <code>itime</code> field stores the invocation count for each instruction in the program. It is
+             * indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the invocation for the
+             * instruction at <code>program.getInstr(addr)</code>.
+             */
+            public final long icount[];
+
+            public final long itime[];
+
+            protected long timeBegan;
+
+            /**
+             * The constructor for the program profiler constructs the required internal state to store the invocation
+             * counts of each instruction.
+             *
+             * @param p the program to profile
+             */
+            public ProfProbe(Program p) {
+                int size = p.program_end;
+                icount = new long[size];
+                itime = new long[size];
+                program = p;
+            }
+
+            /**
+             * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
+             * implementation of the program profiler, it simply increments the count of the instruction at the
+             * specified address.
+             *
+             * @param i       the instruction being probed
+             * @param address the address at which this instruction resides
+             * @param state   the state of the simulation
+             */
+            public void fireBefore(Instr i, int address, State state) {
+                icount[address]++;
+                timeBegan = state.getCycles();
+            }
+
+            /**
+             * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
+             * implementation of the profiler, it does nothing.
+             *
+             * @param i       the instruction being probed
+             * @param address the address at which this instruction resides
+             * @param state   the state of the simulation
+             */
+            public void fireAfter(Instr i, int address, State state) {
+                itime[address] += state.getCycles() - timeBegan;
+            }
         }
 
         /**
@@ -87,8 +149,8 @@ public class ProfileMonitor extends MonitorFactory {
             Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
-            long[] icount = profile.icount;
-            long[] itime = timeprofile.itime;
+            long[] icount = probe.icount;
+            long[] itime = probe.itime;
             int imax = icount.length;
             float totalcycles = 0;
 
