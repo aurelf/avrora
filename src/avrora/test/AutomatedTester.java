@@ -130,9 +130,9 @@ public class AutomatedTester {
         report(mlist, "Malformed test cases", Terminal.COLOR_CYAN, fnames.length);
 
         if ( slist.size() == fnames.length )
-            System.exit(0);
-        else
             System.exit(1);
+        else
+            System.exit(0);
     }
 
     private static void report(List l, String c, int color, int total) {
