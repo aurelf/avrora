@@ -254,6 +254,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected abstract void removeBreakPoint(int addr);
 
+    protected void insertWatchPoint(Simulator.MemoryProbe p, int data_addr) {
+        throw Avrora.unimplemented();
+    }
+
+    protected void removeWatchPoint(Simulator.MemoryProbe p, int data_addr) {
+        throw Avrora.unimplemented();
+    }
+
     protected void initializeIORegs() {
         for (int cntr = 0; cntr < ioregs.length; cntr++)
             ioregs[cntr] = new State.RWIOReg();

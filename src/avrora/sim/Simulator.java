@@ -505,15 +505,27 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>setWatchPoint()</code> method allows a probe to be inserted
+     * The <code>insertWatchPoint()</code> method allows a probe to be inserted
      * at a memory location. The probe will be executed before every read
      * or write to that memory location.
      *
      * @param p         the probe to insert
      * @param data_addr the data address at which to insert the probe
      */
-    public void setWatchPoint(MemoryProbe p, int data_addr) {
-        // TODO: implement watchpoints
+    public void insertWatchPoint(MemoryProbe p, int data_addr) {
+        interpreter.insertWatchPoint(p, data_addr);
+    }
+
+    /**
+     * The <code>removeWatchPoint()</code> method removes a given memory
+     * probe from the memory location. Reference equality is used to check
+     * for equality when removing probes, not <code>.equals()</code>.
+     *
+     * @param p         the probe to remove
+     * @param data_addr the data address from which to remove the probe
+     */
+    public void removeWatchPoint(MemoryProbe p, int data_addr) {
+        interpreter.removeWatchPoint(p, data_addr);
     }
 
     /**
@@ -623,7 +635,7 @@ public abstract class Simulator implements IORegisterConstants {
          * The constructor for <code>InstructionCountTimeout</code> creates
          * with the specified initial value.
          *
-         * @param t
+         * @param t the number of clock cycles before timeout should occur
          */
         public InstructionCountTimeout(long t) {
             timeout = t;
@@ -632,8 +644,7 @@ public abstract class Simulator implements IORegisterConstants {
 
         /**
          * The <code>fireBefore()</code> method is called before the probed instruction
-         * executes. In the implementation of the timeout, it simply decrements the
-         * timeout and and throws a TimeoutException when the count reaches zero.
+         * executes. In the implementation of the timeout, it does nothing.
          *
          * @param i       the instruction being probed
          * @param address the address at which this instruction resides
@@ -645,7 +656,8 @@ public abstract class Simulator implements IORegisterConstants {
 
         /**
          * The <code>fireAfter()</code> method is called after the probed instruction
-         * executes. In the implementation of the timeout, it does nothing.
+         * executes. In the implementation of the timeout, it simply decrements the
+         * timeout and and throws a TimeoutException when the count reaches zero.
          *
          * @param i       the instruction being probed
          * @param address the address at which this instruction resides
@@ -680,8 +692,11 @@ public abstract class Simulator implements IORegisterConstants {
         }
 
         /**
-         * The <code>fire()</code> method is called when the  timeout is up.
-         *
+         * The <code>fire()</code> method is called when the timeout is up.
+         * It gathers the state from the simulator and throws an instance
+         * of <code>Simulator.TimeoutException</code> that signals that the
+         * timeout has been reached. This exception then falls through
+         * the <code>run()</code> method of the caller of the simulator.
          */
         public void fire() {
             int pc = interpreter.getPC();
