@@ -1,5 +1,8 @@
 /**
- * Copyright (c) 2004, Regents of the University of California
+ * Created on 29.10.2004
+ * 
+ * Copyright (c) 2004, Olaf Landsiedel, Protocol Engineering and 
+ * Distributed Systems, University of Tuebingen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -13,9 +16,10 @@
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
  *
- * Neither the name of the University of California, Los Angeles nor the
- * names of its contributors may be used to endorse or promote products
- * derived from this software without specific prior written permission.
+ * Neither the name of the Protocol Engineering and Distributed Systems
+ * Group, the name of the University of Tuebingen nor the names of its 
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -30,39 +34,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim.radio.freespace;
 
-/**
- * The <code>Version</code> class represents a version number, including the major
- * version, the commit number, as well as the date and time of the last commit.
+import avrora.sim.radio.*;
+
+/** stores the between a node and the node who own radio
+ * @author Olaf Landsiedel
  *
- * @author Ben L. Titzer
  */
-public class Version {
-
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version
-     * (if any) for this version.
+public class Distance {
+    
+    //distance between a node and the node who owns radio
+    public double distance;
+    
+    //the other radio
+    public LocalAir radio;
+    
+    /** new Disance 
+     * @param r local radio
+     * @param dis distance
      */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version
-     * number (the release number).
-     */
-    public final String major = "1.3";
-
-    /**
-     * The <code>commit</code> field stores the commit number
-     * (i.e. the number of code revisions committed to CVS since the last release).
-     */
-    public final int commit = 14;
-
-    public static Version getVersion() {
-        return new Version();
+    public Distance(LocalAir r, double dis){
+        radio = r;
+        distance = dis;
     }
 
-    public String toString() {
-        return prefix + major + "." + commit;
-    }
 }
