@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import vpc.VPCBase;
 import vpc.util.StringUtil;
+import vpc.util.ColorTerminal;
 
 /**
  * The <code>Analyzer</code> class implements the analysis phase that determines
@@ -26,20 +27,21 @@ public class Analyzer {
     protected final StateSpace space;
     ContextSensitivePolicy policy;
     AbstractInterpreter interpreter;
+    HashMap frontierInfoMap;
+    long time;
 
     protected final StateSpace.SpecialState returnState;
     protected final StateSpace.SpecialState returnIState;
 
-    HashMap frontierInfoMap;
-
+    public static boolean TRACE;
 
     public static class FrontierInfo {
         public static class CallSiteList {
-            public final StateSpace.State state;
+            public final FrontierInfo caller;
             public final CallSiteList next;
 
-            CallSiteList(StateSpace.State s, CallSiteList n) {
-                state = s;
+            CallSiteList(FrontierInfo s, CallSiteList n) {
+                caller = s;
                 next = n;
             }
         }
@@ -55,20 +57,16 @@ public class Analyzer {
             state = s;
             callsites = cl;
         }
-
-        void addCallSite(StateSpace.State s) {
-            callsites = new CallSiteList(s, callsites);
-        }
     }
 
     public Analyzer(Program p) {
         program = p;
-        space = new StateSpace();
+        space = new StateSpace(p);
         policy = new ContextSensitivePolicy();
         interpreter = new AbstractInterpreter(program, policy);
         frontierInfoMap = new HashMap();
-        returnState = space.makeSpecialState("RET");
-        returnIState = space.makeSpecialState("RETI");
+        returnState = space.makeSpecialState("---RET----");
+        returnIState = space.makeSpecialState("---RETI---");
     }
 
     /**
@@ -76,20 +74,11 @@ public class Analyzer {
      * with an initial default state serves as the first state to start exploring.
      */
     public void run() {
-        String headerStr = AbstractState.getHeaderString();
-        int states = 0;
         StateSpace.State s = space.getEdenState();
 
+        long ms = System.currentTimeMillis();
         while ( s != null ) {
-            if ( VPCBase.VERBOSE ) {
-                String i = program.readInstr(s.getPC()).getVariant();
-                i = StringUtil.leftJustify(i, 6);
-                if ( states++ % 32 == 0 ) {
-                    VPCBase.verboseln("INSTR "+headerStr);
-                    VPCBase.verbosesep(headerStr.length()+5);
-                }
-                VPCBase.verboseln(i+s.toShortString());
-            }
+            traceState(s);
 
             // get the frontier information (call sites)
             FrontierInfo fs = getFrontierInfo(s);
@@ -107,16 +96,30 @@ public class Analyzer {
             // get the next frontier state
             s = space.getFrontierState();
         }
+        time = System.currentTimeMillis() - ms;
+    }
+
+    public void report() {
+        ColorTerminal.printBrightGreen("Total cached states");
+        ColorTerminal.println(": "+space.getTotalStateCount());
+        ColorTerminal.printBrightGreen("Total reachable states");
+        ColorTerminal.println(": "+space.getStatesInSpaceCount());
+        String ts = StringUtil.milliAsString(time);
+        ColorTerminal.printBrightGreen("Time for analysis");
+        ColorTerminal.println(": "+ts);
     }
 
     private FrontierInfo getFrontierInfo(StateSpace.State s) {
         FrontierInfo fs = (FrontierInfo)frontierInfoMap.get(s);
-        if ( fs == null ) fs = new FrontierInfo(s);
+        if ( fs == null ) {
+            fs = new FrontierInfo(s);
+            frontierInfoMap.put(s, fs);
+        }
         return fs;
     }
 
     private void removeFrontierInfo(FrontierInfo fs) {
-        frontierInfoMap.remove(fs.state);
+        //frontierInfoMap.remove(fs.state);
     }
 
 
@@ -157,10 +160,8 @@ public class Analyzer {
                 return null;
             }
 
-            FrontierInfo info = getFrontierInfo(target);
-            info.addCallSite(frontierState.state);
-            space.addFrontier(target);
-            space.addEdge(frontierState.state, target, 2);
+            addEdge("CALL", frontierState.state, target, 2);
+            pushFrontier(target, new FrontierInfo.CallSiteList(frontierState, null));
 
             return null;
         }
@@ -180,12 +181,15 @@ public class Analyzer {
             FrontierInfo.CallSiteList list = frontierState.callsites;
             while ( list != null ) {
                 MutableState retState = s.copy();
-                int pc = list.state.getPC();
+                int pc = list.caller.state.getPC();
                 int npc = pc + program.readInstr(pc).getSize();
                 retState.setPC(npc);
-                space.addEdge(list.state, space.getStateFor(retState));
+                StateSpace.State immRetState = space.getStateFor(retState);
+                addEdge("RET", list.caller.state, immRetState, 0);
+                pushFrontier(immRetState, list.caller.callsites);
+                list = list.next;
             }
-            space.addEdge(frontierState.state, returnState);
+            addEdge("$RET", frontierState.state, returnState, 0);
             return null;
         }
 
@@ -197,16 +201,7 @@ public class Analyzer {
          * the policy, and the abstract interpreter should not be concerned.
          */
         public MutableState reti(MutableState s) {
-            FrontierInfo.CallSiteList list = frontierState.callsites;
-            while ( list != null ) {
-                MutableState retState = s.copy();
-                retState.setFlag_I(AbstractArithmetic.TRUE);
-                int pc = list.state.getPC();
-                int npc = pc + program.readInstr(pc).getSize();
-                retState.setPC(npc);
-                space.addEdge(list.state, space.getStateFor(retState));
-            }
-            space.addEdge(frontierState.state, returnIState);
+            // TODO: implement returns from interrupts.
             return null;
         }
 
@@ -304,11 +299,114 @@ public class Analyzer {
          */
         public void pushState(MutableState newState) {
             StateSpace.State t = space.getStateFor(newState);
-            space.addEdge(frontierState.state, t, stackDelta);
-            if ( !space.isExplored(t) )
-                space.addFrontier(t);
+            traceProducedState(t);
+            addEdge(null, frontierState.state, t, stackDelta);
+            pushFrontier(t, frontierState.callsites);
         }
 
+        private void pushFrontier(StateSpace.State t, FrontierInfo.CallSiteList l) {
+            if ( !space.isExplored(t) ) {
+                space.addFrontier(t);
+                FrontierInfo fs = getFrontierInfo(t);
+                fs.callsites = l;
+            }
+        }
+
+        private void addEdge(String type, StateSpace.State s, StateSpace.State t, int weight) {
+            traceEdge(type, s, t, weight);
+            space.addEdge(s, t, weight);
+        }
 
     }
+
+    //-----------------------------------------------------------------------
+    //             D E B U G G I N G   A N D   T R A C I N G
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+
+
+    private void traceState(StateSpace.State s) {
+        if ( TRACE ) {
+            Instr instr = program.readInstr(s.getPC());
+            String str = StringUtil.leftJustify(instr.toString(), 14);
+            printState(str, s);
+        }
+    }
+
+    private void traceProducedState(StateSpace.State s) {
+        if ( TRACE ) {
+            String str;
+            if ( space.isExplored(s) ) {
+                str = "        E ==> ";
+            } if ( space.isFrontier(s) ) {
+                str = "        F ==> ";
+
+            } else {
+                str = "        N ==> ";
+            }
+            printState(str, s);
+        }
+    }
+
+    private void traceEdge(String type, StateSpace.State s, StateSpace.State t, int weight) {
+        if ( !TRACE ) return;
+        ColorTerminal.print("[");
+        ColorTerminal.printBrightCyan(s.getUniqueName());
+        ColorTerminal.print("] --(");
+        if ( type != null ) ColorTerminal.print(type+" ");
+        if ( weight > 0 ) ColorTerminal.print("+");
+        ColorTerminal.print(weight+")--> ");
+        ColorTerminal.print("[");
+        ColorTerminal.printBrightCyan(t.getUniqueName());
+        ColorTerminal.println("]");
+    }
+
+    private void printState(String beg, StateSpace.State s) {
+        ColorTerminal.printBrightRed(beg);
+
+        ColorTerminal.print("[");
+        ColorTerminal.printBrightGreen(VPCBase.toHex(s.getPC(), 4));
+        ColorTerminal.print("|");
+        ColorTerminal.printBrightCyan(s.getUniqueName());
+        ColorTerminal.print("] ");
+
+        for ( int cntr = 0; cntr < 8; cntr++ ) {
+            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            ColorTerminal.print(" ");
+        }
+        ColorTerminal.nextln();
+
+        ColorTerminal.print("                [");
+        ColorTerminal.printBrightGreen("SREG");
+        ColorTerminal.print(":");
+        ColorTerminal.print(AbstractArithmetic.toString(s.getSREG()));
+        ColorTerminal.print("] ");
+        for ( int cntr = 8; cntr < 16; cntr++ ) {
+            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            ColorTerminal.print(" ");
+        }
+
+        ColorTerminal.nextln();
+
+        ColorTerminal.print("                 [");
+        ColorTerminal.printBrightGreen("IMR");
+        ColorTerminal.print(":");
+        ColorTerminal.print(AbstractArithmetic.toString((char)0));
+        ColorTerminal.print("] ");
+        for ( int cntr = 16; cntr < 24; cntr++ ) {
+            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            ColorTerminal.print(" ");
+        }
+
+        ColorTerminal.nextln();
+
+        ColorTerminal.print("                                ");
+        for ( int cntr = 24; cntr < 32; cntr++ ) {
+            ColorTerminal.print(AbstractArithmetic.toString(s.getRegisterAV(cntr)));
+            ColorTerminal.print(" ");
+        }
+
+        ColorTerminal.nextln();
+    }
+
 }

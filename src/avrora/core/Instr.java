@@ -87,6 +87,10 @@ public abstract class Instr extends Elem implements InstrPrototype {
         return 2;
     }
 
+    public String toString() {
+        return getVariant()+" "+getOperands();
+    }
+
     /**
      * The <code>getCycles()</code> method returns the number of cylces consumed
      * by the instruction in the default case. Most instructions consume the same

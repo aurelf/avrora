@@ -290,7 +290,7 @@ public class Main extends VPCBase {
         }
 
         private void printSeparator() {
-            ColorTerminal.println("=========================================================");
+            ColorTerminal.printSeparator(60);
         }
 
         void processTotal() {
@@ -377,7 +377,11 @@ public class Main extends VPCBase {
             ProgramReader r = (ProgramReader)inputs.get(INPUT.get());
             Program p = r.read(args);
             Analyzer a = new Analyzer(p);
+
+            if ( TRACE.get() ) Analyzer.TRACE = true;
+
             a.run();
+            a.report();
         }
     }
 

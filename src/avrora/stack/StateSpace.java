@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 
 import avrora.sim.IORegisterConstants;
+import avrora.core.Program;
 
 /**
  * The <code>StateSpace</code> class represents the reachable state space
@@ -28,16 +29,19 @@ public class StateSpace {
         }
     }
 
+    private long uidCount;
 
     public class State extends AbstractState implements IORegisterConstants {
 
         private final int hashCode;
+        public final long UID;
 
         boolean inSpace;
         boolean onFrontier;
 
         State() {
             hashCode = computeHashCode();
+            UID = uidCount++;
         }
 
         State(MutableState s) {
@@ -48,6 +52,7 @@ public class StateSpace {
                 av_REGISTERS[cntr] = s.av_REGISTERS[cntr];
             }
             hashCode = computeHashCode();
+            UID = uidCount++;
         }
 
         public int hashCode() {
@@ -67,9 +72,12 @@ public class StateSpace {
 
         public Link outgoing;
 
-
         void addEdge(State t, int weight) {
             outgoing = new Link(t, outgoing, weight);
+        }
+
+        public String getUniqueName() {
+            return VPCBase.toHex(UID, 10);
         }
 
     }
@@ -80,16 +88,25 @@ public class StateSpace {
         SpecialState(String name) {
             stateName = name;
         }
+
+        public String getUniqueName() {
+            return stateName;
+        }
     }
 
 
     private HashMap stateMap;
     private Link frontier;
     private final State edenState;
+    private final Program program;
+    private long statesInSpace;
+    private long totalStateCount;
+    private long specialStates;
 
-    public StateSpace() {
+    public StateSpace(Program p) {
         stateMap = new HashMap();
         edenState = getStateFor(new MutableState());
+        program = p;
     }
 
     public State getEdenState() {
@@ -115,6 +132,7 @@ public class StateSpace {
 
     public boolean addState(State s) {
         boolean wasBefore = s.inSpace;
+        if ( !wasBefore ) statesInSpace++;
         s.inSpace = true;
         s.onFrontier = false;
         return wasBefore;
@@ -128,6 +146,7 @@ public class StateSpace {
     }
 
     public SpecialState makeSpecialState(String name) {
+        specialStates++;
         return new SpecialState(name);
     }
 
@@ -139,6 +158,7 @@ public class StateSpace {
             // if the state is already in the state map, return original
             return cs;
         } else {
+            totalStateCount++;
             // the state is new, put it in the map and return it.
             stateMap.put(is, is);
             return is;
@@ -151,5 +171,17 @@ public class StateSpace {
 
     public void addEdge(State s, State t) {
         s.addEdge(t, 0);
+    }
+
+    public long getTotalStateCount() {
+        return totalStateCount;
+    }
+
+    public long getStatesInSpaceCount() {
+        return statesInSpace;
+    }
+
+    public long getSpecialStateCount() {
+        return specialStates;
     }
 }

@@ -759,6 +759,7 @@ public class State implements IORegisterConstants {
 
     /**
      * Delta lists of things that have changed recently.
+     * These things are manipulated in the subclass <code>TracingState</code>.
      */
     protected final boolean[] reg_delta;
     protected final boolean[] flag_delta;
