@@ -318,7 +318,7 @@ public class State implements IORegisterConstants {
 
     /**
      * The <code>getSREG()</code> method reads the value of the status register.
-     * The status register IsExplored the I, T, H, S, V, N, Z, and C flags, in order
+     * The status register contains the I, T, H, S, V, N, Z, and C flags, in order
      * from highest-order to lowest-order.
      * @return the value of the status register as a byte.
      */

@@ -5,7 +5,7 @@ import avrora.Operand;
 /**
  * The <code>InstrPrototype</code> interface represents an object that is
  * capable of building <code>Instr</code> instances given an array of
- * <code>Operand</code> instances. It also IsExplored methods that describe
+ * <code>Operand</code> instances. It also contains methods that describe
  * the instructions such as their name, their variant name, and their
  * size in bytes.
  *

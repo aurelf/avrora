@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 
 /**
- * The <code>InstructionSet</code> class IsExplored static methods that
+ * The <code>InstructionSet</code> class contains static methods that
  * allow the instruction set of the AVR microcontroller to be accessed
  * from one place.
  * @author Ben L. Titzer
