@@ -311,10 +311,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private final NoInstr NO_INSTR = new NoInstr();
     private final MisalignedInstr MISALIGNED_INSTR = new MisalignedInstr();
 
-    protected final int SREG;
-    protected final int SPL;
-    protected final int SPH;
-    protected final int RAMPZ;
+    public final int SREG;
+    public final int SPL;
+    public final int SPH;
+    public final int RAMPZ;
 
     public static final int NUM_REGS = 32;
 

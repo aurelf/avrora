@@ -1377,7 +1377,7 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * get transission frequency
+     * get transmission frequency
      *
      * @see avrora.sim.radio.Radio#getFrequency()
      */

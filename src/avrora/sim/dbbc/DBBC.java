@@ -281,6 +281,8 @@ public class DBBC {
         File f = generateClassForCode(b.beginAddr, b.stmts, b.wcet);
         File c = compileGeneratedCode(f);
         Class cf = loader.defineClass(c);
+        // TODO: investigate whether this makes much difference
+        Compiler.compileClass(cf);
         cb = (CompiledBlock)cf.newInstance();
         compiledCodeMap.put(b, cb);
         return cb;
