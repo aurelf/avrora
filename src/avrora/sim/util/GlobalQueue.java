@@ -54,9 +54,11 @@ import java.util.Iterator;
  */
 public class GlobalQueue {
 
-    /** <code>cycles</code> is the number of cycles on a member local clock per cycle
+    /**
+     * <code>cycles</code> is the number of cycles on a member local clock per cycle
      * on the global clock. Some re-coding must be done if microcontrollers running
-     * at difference speeds are to be accurately simulated. */
+     * at difference speeds are to be accurately simulated.
+     */
     protected final long cycles;
     protected int goal;
     protected int count;
@@ -93,22 +95,26 @@ public class GlobalQueue {
         goal--;
     }
 
-    /** Adds an <code>Event</code> to this global event queue. It is important to note
+    /**
+     * Adds an <code>Event</code> to this global event queue. It is important to note
      * that this method adds an event executed once at the appropriate global time.
      * It does not execute once in each thread participating in the clock. For such
-     * functionality, see <code>LocalMeet</code>. */
-    public void addTimerEvent(Simulator.Event trigger, long ticks) {
+     * functionality, see <code>LocalMeet</code>.
+     */
+    public void addTimerEvent(Simulator.Event event, long ticks) {
         // TODO: synchronization
-        eventQueue.add(trigger, ticks);
+        eventQueue.add(event, ticks);
     }
 
-    public void removeTimerEvent(Simulator.Event trigger) {
+    public void removeTimerEvent(Simulator.Event event) {
         // TODO: synchronization
-        eventQueue.remove(trigger);
+        eventQueue.remove(event);
     }
 
-    /** Adds a <code>LocalMeet</code> event to the event queue of every simulator
-     * participating in the global clock. */
+    /**
+     * Adds a <code>LocalMeet</code> event to the event queue of every simulator
+     * participating in the global clock.
+     */
     public void addLocalMeet(LocalMeetFactory f, long scale, long delay) {
         Iterator threadIterator = threadMap.keySet().iterator();
 

@@ -75,14 +75,14 @@ public class GlobalClock {
         goal--;
     }
 
-    public void addTimerEvent(Simulator.Event trigger, long ticks) {
+    public void addTimerEvent(Simulator.Event event, long ticks) {
         // TODO: synchronization
-        eventQueue.add(trigger, ticks);
+        eventQueue.add(event, ticks);
     }
 
-    public void removeTimerEvent(Simulator.Event trigger) {
+    public void removeTimerEvent(Simulator.Event event) {
         // TODO: synchronization
-        eventQueue.remove(trigger);
+        eventQueue.remove(event);
     }
 
     protected void tick() {

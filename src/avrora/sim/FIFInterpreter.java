@@ -170,7 +170,7 @@ public class FIFInterpreter extends BaseInterpreter {
         FIFBuilder builder = new FIFBuilder();
 
         for (int cntr = 0; cntr < simulator.program.program_end; cntr += 2) {
-            Instr i = getInstr(cntr);
+            Instr i = simulator.program.readInstr(cntr);
             if (i == null) continue;
             FIFInstr cur = builder.build(cntr, i);
             if (last != null) {

@@ -179,7 +179,7 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>Simulator.Trigger</code> interface represents a trigger that is
+     * The <code>Simulator.Event</code> interface represents an event that is
      * fired when a timed event occurs within the simulator. Users of the simulator
      * can insert timed events that model environmental factors, implement timeouts,
      * timers, or any other type of functionality that is simulation-time dependent.
@@ -423,7 +423,7 @@ public abstract class Simulator implements IORegisterConstants {
     /**
      * The <code>start()</code> method begins the simulation. It causes the
      * simulator to enter a runLoop that executes instructions, firing probes
-     * and triggers as it executes. The <code>start()</code> method returns
+     * and events as it executes. The <code>start()</code> method returns
      * normally when the </code>break</code> AVR instruction is executed,
      * when a <code>BreakPointException</code> is thrown, when a <code>
      * TimeoutException</code> is thrown, or when the <code>stop()</code>
@@ -435,7 +435,7 @@ public abstract class Simulator implements IORegisterConstants {
 
     /**
      * The <code>stop()</code> method stops the simulation if it is running.
-     * This method can be called from within a probe or trigger or from another
+     * This method can be called from within a probe or event or from another
      * thread.
      */
     public void stop() {
@@ -445,7 +445,7 @@ public abstract class Simulator implements IORegisterConstants {
     /**
      * The <code>reset()</code> method stops the simulation and resets its
      * state to the default initial state. Probes inserted in the program
-     * are retained. All triggers are removed.
+     * are retained. All events are removed.
      */
     public void reset() {
         eventQueue = new DeltaQueue();
@@ -608,12 +608,12 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertEvent()</code> method inserts a trigger into the
+     * The <code>insertEvent()</code> method inserts an event into the
      * event queue of the simulator with the specified delay in clock cycles.
-     * The trigger will then be executed at the future time specified
+     * The event will then be executed at the future time specified
      *
-     * @param e      the trigger to be inserted
-     * @param cycles the number of cycles in the future at which to trigger
+     * @param e      the event to be inserted
+     * @param cycles the number of cycles in the future at which to fire
      */
     public void insertEvent(Event e, long cycles) {
         if (eventPrinter.enabled)
@@ -634,12 +634,12 @@ public abstract class Simulator implements IORegisterConstants {
     }
 
     /**
-     * The <code>insertPeriodicEvent()</code> method inserts a trigger into
+     * The <code>insertPeriodicEvent()</code> method inserts an event into
      * the event queue of the simulator with the specified period. The <code>
      * PeriodicTrigger</code> instance created will continually reinsert the
-     * trigger after each firing to achieve predictable periodic behavior.
+     * event after each firing to achieve predictable periodic behavior.
      *
-     * @param e      the trigger to insert
+     * @param e      the event to insert
      * @param period the period in clock cycles
      * @return the <code>PeriodicTrigger</code> instance inserted
      */
@@ -656,7 +656,7 @@ public abstract class Simulator implements IORegisterConstants {
      * the event queue of the simulator. The comparison used is reference
      * equality, not <code>.equals()</code>.
      *
-     * @param e the trigger to remove
+     * @param e the event to remove
      */
     public void removeEvent(Event e) {
         if (eventPrinter.enabled)
@@ -730,7 +730,7 @@ public abstract class Simulator implements IORegisterConstants {
 
         /**
          * The constructor for <code>InstructionCountTimeout</code> creates a
-         * timeout trigger with the specified initial value.
+         * timeout event with the specified initial value.
          *
          * @param t the number of cycles in the future
          */

@@ -38,12 +38,12 @@ import avrora.sim.Simulator;
  * The <code>DeltaQueue</code> class implements an amortized constant time
  * delta-queue for processing of scheduled events. Events are put into the queue
  * that will fire at a given number of cycles in the future. An internal delta
- * list is maintained where each link in the list represents a set of triggers
+ * list is maintained where each link in the list represents a set of events
  * to be fired some number of clock cycles after the previous link.
  * <p/>
- * Each delta between links is maintained to be non-zero. Thus, to insert a
- * trigger X cycles in the future, at most X nodes will be skipped over. Therefore
- * over X time steps, this cost is amortized to be constant.
+ * Each delta between links is maintained to be non-zero. Thus, to insert an
+ * event X cycles in the future, at most X nodes will be skipped over. Therefore,
+ * when the list is advanced over X time steps, this cost is amortized to be constant.
  * <p/>
  * For each clock cycle, only the first node in the list must be checked, leading
  * to constant time work per clock cycle.
@@ -59,22 +59,22 @@ import avrora.sim.Simulator;
 public class DeltaQueue {
 
     /**
-     * The <code>TriggerLink</code> class represents a link in the list of triggers
+     * The <code>EventList</code> class represents a link in the list of events
      * for a given <code>Link</code> in the delta queue chain.
      */
-    static final class TriggerLink {
-        Simulator.Event trigger;
-        TriggerLink next;
+    private static class EventList {
+        Simulator.Event event;
+        EventList next;
 
         /**
-         * The constructor for the <code>TriggerLink</code> class simply initializes
-         * the internal references to the trigger and the next link in the chain
+         * The constructor for the <code>EventList</code> class simply initializes
+         * the internal references to the event and the next link in the chain
          * based on the parameters passed.
-         * @param t a reference the trigger
+         * @param t a reference the event
          * @param n the next link in the chain
          */
-        TriggerLink(Simulator.Event t, TriggerLink n) {
-            trigger = t;
+        EventList(Simulator.Event t, EventList n) {
+            event = t;
             next = n;
         }
 
@@ -82,34 +82,34 @@ public class DeltaQueue {
 
     /**
      * The <code>Link</code> class represents a link in the list of delta queue
-     * items that are being stored. It contains a list of triggers that share
+     * items that are being stored. It contains a list of events that share
      * the same delta.
      */
-    final class Link {
-        TriggerLink triggers;
+    private class Link {
+        EventList events;
 
         Link next;
         long delta;
 
         Link(Simulator.Event t, long d) {
-            triggers = newList(t, null);
+            events = newEventList(t, null);
             delta = d;
         }
 
         void add(Simulator.Event t) {
-            triggers = newList(t, triggers);
+            events = newEventList(t, events);
         }
 
         void remove(Simulator.Event t) {
-            TriggerLink prev = null;
-            TriggerLink pos = triggers;
+            EventList prev = null;
+            EventList pos = events;
             while (pos != null) {
-                TriggerLink next = pos.next;
+                EventList next = pos.next;
 
-                if (pos.trigger == t) {
+                if (pos.event == t) {
                     if (prev == null)
                     // remove the whole thing.
-                        triggers = pos.next;
+                        events = pos.next;
                     else
                     // remove the "pos" link
                         prev.next = pos.next;
@@ -123,8 +123,8 @@ public class DeltaQueue {
         }
 
         void fire() {
-            for (TriggerLink pos = triggers; pos != null; pos = pos.next) {
-                pos.trigger.fire();
+            for (EventList pos = events; pos != null; pos = pos.next) {
+                pos.event.fire();
             }
         }
     }
@@ -143,11 +143,11 @@ public class DeltaQueue {
     protected Link freeLinks;
 
     /**
-     * The <code>freeTriggerLinks</code> field stores a reference to any free trigger
+     * The <code>freeEventLists</code> field stores a reference to any free event
      * links that have become unused during the processing of events. A free list
      * is used to prevent garbage from accumulating.
      */
-    protected TriggerLink freeTriggerLinks;
+    protected EventList freeEventLists;
 
     /**
      * The <code>count</code> field stores the total number of cycles that this
@@ -156,9 +156,9 @@ public class DeltaQueue {
     protected long count;
 
     /**
-     * The <code>add</code> method adds a trigger to be executed in the future.
+     * The <code>add</code> method adds an event to be executed in the future.
      *
-     * @param t      the trigger to fire
+     * @param t      the event to add
      * @param cycles the number of clock cycles in the future
      */
     public void add(Simulator.Event t, long cycles) {
@@ -198,9 +198,9 @@ public class DeltaQueue {
 
     /**
      * The <code>remove</code> method removes all occurrences of the specified
-     * trigger within the delta queue.
+     * event within the delta queue.
      *
-     * @param e the trigger to remove
+     * @param e the event to remove
      */
     public void remove(Simulator.Event e) {
         if (head == null) return;
@@ -212,8 +212,8 @@ public class DeltaQueue {
             Link next = pos.next;
             pos.remove(e);
 
-            if (pos.triggers == null) {
-                // the link became empty because of removing this trigger
+            if (pos.events == null) {
+                // the link became empty because of removing this event
                 if (prev == null)
                     head = pos.next;
                 else
@@ -235,7 +235,7 @@ public class DeltaQueue {
 
     /**
      * The <code>advance</code> method advances timesteps through the queue by the
-     * specified number of clock cycles, processing any triggers.
+     * specified number of clock cycles, processing any events.
      *
      * @param cycles the number of clock cycles to advance
      */
@@ -290,14 +290,14 @@ public class DeltaQueue {
         l.next = freeLinks;
         freeLinks = l;
 
-        freeTriggerLinks = l.triggers;
-        l.triggers = null;
+        freeEventLists = l.events;
+        l.events = null;
     }
 
-    private void free(TriggerLink l) {
-        l.trigger = null;
-        l.next = freeTriggerLinks;
-        freeTriggerLinks = l;
+    private void free(EventList l) {
+        l.event = null;
+        l.next = freeEventLists;
+        freeEventLists = l;
     }
 
     private Link newLink(Simulator.Event t, long cycles, Link next) {
@@ -322,18 +322,18 @@ public class DeltaQueue {
         return l;
     }
 
-    private TriggerLink newList(Simulator.Event t, TriggerLink next) {
-        TriggerLink l;
+    private EventList newEventList(Simulator.Event t, EventList next) {
+        EventList l;
 
-        if (freeTriggerLinks == null) {
+        if (freeEventLists == null) {
             // no free links, so allocate one
-            l = new TriggerLink(t, next);
+            l = new EventList(t, next);
         } else {
             // grab the first link off the free chain
-            l = freeTriggerLinks;
-            freeTriggerLinks = freeTriggerLinks.next;
+            l = freeEventLists;
+            freeEventLists = freeEventLists.next;
             l.next = next;
-            l.trigger = t;
+            l.event = t;
         }
 
         return l;
