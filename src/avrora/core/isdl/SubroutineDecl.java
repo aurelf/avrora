@@ -32,6 +32,8 @@
 
 package avrora.core.isdl;
 
+import avrora.core.isdl.parser.Token;
+
 import java.util.List;
 
 /**

@@ -30,10 +30,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core.isdl;
+package avrora.core.isdl.gen;
 
 import avrora.Avrora;
 import avrora.core.isdl.ast.*;
+import avrora.core.isdl.parser.Token;
+import avrora.core.isdl.*;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 
@@ -153,6 +155,17 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
     }
 
 
+    /**
+     * The constructor for the <code>InterpreterGenerator</code> class builds
+     * an object capable of generating the interpreter for a particular architecture
+     * that outputs to the specified printer. In this implementation, the interpreter
+     * generator simply outputs visit() methods for each instruction that are meant
+     * to be pasted into a template file containing the rest of the interpreter.
+     * This can be done by constructing a <code>SectionFile</code> instance.
+     *
+     * @param a the architecture to generate an interrupter for
+     * @param p a printer to output the code implementing the interpreter
+     */
     public InterpreterGenerator(Architecture a, Printer p) {
         printer = p;
         architecture = a;

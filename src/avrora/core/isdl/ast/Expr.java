@@ -33,7 +33,7 @@
 package avrora.core.isdl.ast;
 
 import avrora.Avrora;
-import avrora.core.isdl.Token;
+import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
 
 /**

@@ -32,7 +32,7 @@
 
 package avrora.core.isdl.ast;
 
-import avrora.core.isdl.Token;
+import avrora.core.isdl.parser.Token;
 
 /**
  * The <code>BitRangeExpr</code> class represents an expression whose

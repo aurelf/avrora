@@ -30,78 +30,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core.isdl;
+package avrora.core.isdl.gen;
 
-import avrora.core.isdl.parser.Token;
-
-import java.util.Iterator;
-import java.util.List;
+import avrora.core.isdl.*;
 
 /**
- * The <code>CodeRegion</code> class represents a piece of code that has
- * external inputs. For example, a subroutine is a piece of code that
- * has a list of statements and a list of formal parameters. An instruction
- * declaration is a code region where the external inputs are the operands
- * to the instruction.
+ * The <code>ClassGenerator</code> class generates a set of classes that
+ * represent instructions in an architecture. It will generate an outer
+ * class <code>Instr</code> that contains as inner classes, the individual
+ * instructions contained in the architecture description.
  *
  * @author Ben L. Titzer
  */
-public class CodeRegion {
+public class ClassGenerator implements Architecture.Visitor {
 
-    public static class Operand {
-        public final Token name;
-        public final Token type;
-        protected OperandDecl operandType;
-
-        Operand(Token n, Token t) {
-            name = n;
-            type = t;
-        }
-
-        public void setOperandType(OperandDecl d) {
-            operandType = d;
-        }
-
-        public boolean isRegister() {
-            return operandType.isRegister();
-        }
-
-        public boolean isImmediate() {
-            return operandType.isImmediate();
-        }
-
+    public void visit(InstrDecl d) {
+        // TODO: implement me
     }
 
-    public final List operands;
-    protected List stmts;
-
-    public CodeRegion(List o, List s) {
-        operands = o;
-        stmts = s;
+    public void visit(SubroutineDecl d) {
+        // do nothing.
     }
 
-    public int numOperands() {
-        return operands.size();
+    public void visit(OperandDecl d) {
+        // do nothing.
     }
 
-    public List getOperands() {
-        return operands;
+    public void visit(EncodingDecl d) {
+        // do nothing.
     }
-
-    public Iterator getOperandIterator() {
-        return operands.iterator();
-    }
-
-    public List getCode() {
-        return stmts;
-    }
-
-    public void setCode(List s) {
-        stmts = s;
-    }
-
-    public boolean hasBody() {
-        return stmts != null;
-    }
-
 }

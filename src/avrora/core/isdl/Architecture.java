@@ -34,6 +34,8 @@ package avrora.core.isdl;
 
 import avrora.Avrora;
 import avrora.core.isdl.ast.*;
+import avrora.core.isdl.parser.ISDLParserConstants;
+import avrora.core.isdl.parser.Token;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
@@ -279,7 +281,7 @@ public class Architecture {
 
         public Stmt visit(CallStmt s) {
             SubroutineDecl d = getSubroutine(s.method.image);
-            if (shouldInline(d)) {
+            if (shouldNotInline(d)) {
                 return super.visit(s);
             } else {
                 inlineCall(s.method, d, s.args);
@@ -369,7 +371,7 @@ public class Architecture {
 
         public Expr visit(CallExpr v) {
             SubroutineDecl d = getSubroutine(v.method.image);
-            if (shouldInline(d)) {
+            if (shouldNotInline(d)) {
                 return super.visit(v);
             } else {
                 String result = inlineCall(v.method, d, v.args);
@@ -377,7 +379,7 @@ public class Architecture {
             }
         }
 
-        protected boolean shouldInline(SubroutineDecl d) {
+        protected boolean shouldNotInline(SubroutineDecl d) {
             if (d == null || !d.inline || !d.hasBody()) return true;
             return false;
         }

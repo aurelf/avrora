@@ -60,7 +60,7 @@ options {
 
 PARSER_BEGIN(ISDLParser)
 
-package avrora.core.isdl;
+package avrora.core.isdl.parser;
 import avrora.core.isdl.ast.*;
 import java.util.List;
 import java.util.LinkedList;

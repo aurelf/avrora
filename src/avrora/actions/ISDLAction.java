@@ -34,8 +34,8 @@ package avrora.actions;
 
 import avrora.Avrora;
 import avrora.core.isdl.Architecture;
-import avrora.core.isdl.ISDLParser;
-import avrora.core.isdl.InterpreterGenerator;
+import avrora.core.isdl.parser.ISDLParser;
+import avrora.core.isdl.gen.InterpreterGenerator;
 import avrora.util.Printer;
 import avrora.util.SectionFile;
 

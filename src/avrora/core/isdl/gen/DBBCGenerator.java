@@ -30,78 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core.isdl;
-
-import avrora.core.isdl.parser.Token;
-
-import java.util.Iterator;
-import java.util.List;
+package avrora.core.isdl.gen;
 
 /**
- * The <code>CodeRegion</code> class represents a piece of code that has
- * external inputs. For example, a subroutine is a piece of code that
- * has a list of statements and a list of formal parameters. An instruction
- * declaration is a code region where the external inputs are the operands
- * to the instruction.
+ * The <code>DBBCGenerator</code> class can generate a dynamic basic block
+ * compiler given an architecture description. The dynamic basic block
+ * compiler translates blocks of machine instructions into Java code
+ * that can be compiled into bytecode and loaded into the VM.
  *
  * @author Ben L. Titzer
  */
-public class CodeRegion {
-
-    public static class Operand {
-        public final Token name;
-        public final Token type;
-        protected OperandDecl operandType;
-
-        Operand(Token n, Token t) {
-            name = n;
-            type = t;
-        }
-
-        public void setOperandType(OperandDecl d) {
-            operandType = d;
-        }
-
-        public boolean isRegister() {
-            return operandType.isRegister();
-        }
-
-        public boolean isImmediate() {
-            return operandType.isImmediate();
-        }
-
-    }
-
-    public final List operands;
-    protected List stmts;
-
-    public CodeRegion(List o, List s) {
-        operands = o;
-        stmts = s;
-    }
-
-    public int numOperands() {
-        return operands.size();
-    }
-
-    public List getOperands() {
-        return operands;
-    }
-
-    public Iterator getOperandIterator() {
-        return operands.iterator();
-    }
-
-    public List getCode() {
-        return stmts;
-    }
-
-    public void setCode(List s) {
-        stmts = s;
-    }
-
-    public boolean hasBody() {
-        return stmts != null;
-    }
-
+public class DBBCGenerator {
 }

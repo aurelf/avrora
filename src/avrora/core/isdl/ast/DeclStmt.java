@@ -32,7 +32,7 @@
 
 package avrora.core.isdl.ast;
 
-import avrora.core.isdl.Token;
+import avrora.core.isdl.parser.Token;
 
 /**
  * The <code>DeclStmt</code> represents a declaration of a local, temporary
