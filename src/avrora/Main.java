@@ -40,6 +40,7 @@ import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.util.*;
+import avrora.util.help.HelpCategory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -206,6 +207,37 @@ public class Main {
         } else {
             Avrora.userError("Configuration file does not exist", fname);
         }
+    }
+
+    static HelpCategory buildHelpCategory() {
+        HelpCategory hc = new HelpCategory("main", "");
+        hc.addSection("OVERVIEW","Avrora is a tool for working with " +
+                "assembly language programs for the AVR architecture microcontrollers. " +
+                "It contains tools to read AVR programs in multiple formats, perform " +
+                "actions on them, and generate output in multiple formats.\n" +
+                "Typical usage is to specify a list of files that contain a program " +
+                "in some format supported by Avrora and then specifying the action " +
+                "to perform on that program. For example, giving the name of a file " +
+                "that contains a program written in assembly language and a simulate " +
+                "action might look like: \n\n" +
+                "avrora -action=simulate -input=atmel program.asm \n\n" +
+                "Other actions that are available include giving a listing of the " +
+                "program or running one of the analysis tools on the program. See the " +
+                "actions section for more information.");
+        hc.addOptionSection("The main options to Avrora specify the action to be performed as well as the input " +
+                "format, the output format (if any), and any general configuration parameters for " +
+                "Avrora. The available main options are listed below along with their types and default " +
+                "values. Each action also has its own set of options. To access help for the options " +
+                "related to an action, specify the name of the action along with the \"help\" option.", mainOptions);
+
+        hc.addSection("ADDITIONAL HELP CATEGORIES", "Additional help is available on a category by category " +
+                "basis. Below is a list of the additional categories available to provide help with actions, " +
+                "input formats, monitors, and more. To access help for a specific category, specify the " +
+                "\"-help\" option followed by the name of category.");
+
+        hc.addSection(null, "For more information, see the online documentation:\n" +
+                "http://compilers.cs.ucla.edu/avrora");
+        return hc;
     }
 
     static void printHelp(String[] args) {

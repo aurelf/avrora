@@ -30,39 +30,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.util.help;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
- *
  * @author Ben L. Titzer
  */
-public class Version {
+public interface HelpItem {
+    /**
+     * The <code>getHelp()</code> method returns a string that is suitable to being formatted into
+     * a single paragraph. This string should contain a few sentences about what the option, action,
+     * input format, etc represents and how to use it.
+     * @return a string representation of the help for this item
+     */
+    public String getHelp();
 
     /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
+     * The <code>printHelp()</code> method prints a representation of the help to the console,
+     * formatted appropriately according to the terminal size.
      */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 27;
-
-    public static Version getVersion() {
-        return new Version();
-    }
-
-    public String toString() {
-        return prefix + major + '.' + commit;
-    }
+    public void printHelp();
 }

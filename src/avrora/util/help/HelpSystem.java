@@ -30,39 +30,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.util.help;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>HelpSystem</code> is the global repository for help information, indexing
+ * categories for help, while each category can have sub categories, etc.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class HelpSystem {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    static final HashMap categories = new HashMap();
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 27;
-
-    public static Version getVersion() {
-        return new Version();
+    public static HelpCategory getCategory(String name) {
+        return (HelpCategory)categories.get(name);
     }
 
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public static void addCategory(String name, HelpCategory cat) {
+        categories.put(name, cat);
+    }
+
+    public static List getCategories() {
+        ArrayList list = Collections.list(Collections.enumeration(categories.keySet()));
+        Collections.sort(list);
+        return list;
     }
 }
