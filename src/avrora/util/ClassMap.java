@@ -45,17 +45,45 @@ import java.util.Collections;
  * useful for dynamic resolution of classes but with a small set of known
  * defaults that have a short name. If the short name is not in the default
  * set, this class will treat the short name as a fully qualified Java class
- * name and load it.
+ * name and load it. This class does the requisite checking--that the class
+ * exists, that it can be loaded, that it is of the appropriate type, that it
+ * can be instantiated, etc.
  *
  * @author Ben L. Titzer
  */
 public class ClassMap {
 
+    /**
+     * The <code>type</code> field stores a string that represents the name of
+     * the "type" that this map contains. For example, a class map for actions
+     * might be called "Action" and for input formats might be called "Input Format".
+     */
     protected final String type;
+
+    /**
+     * The <code>clazz</code> field stores a reference to the Java class of which
+     * the objects stored in this map are instances of.
+     */
     protected final Class clazz;
+
+    /**
+     * The <code>classMap</code> field is a hash map that maps a string to a Java
+     * class.
+     */
     protected final HashMap classMap;
+
+    /**
+     * The <code>objMap</code> field is a hash map that maps a string to an instance
+     * of a particular class, i.e. an object.
+     */
     protected final HashMap objMap;
 
+    /**
+     * The constructor for the <code>ClassMap</code> class creates a new class map
+     * with the specified type, which maps strings to instances of the specified class.
+     * @param t the name of the type of this class as a string
+     * @param clz the class which objects should be instances of
+     */
     public ClassMap(String t, Class clz) {
         clazz = clz;
         classMap = new HashMap();
@@ -73,11 +101,27 @@ public class ClassMap {
         classMap.put(shortName, clz);
     }
 
+    /**
+     * The <code>addInstance()</code> method adds a mapping between a short name (alias) and
+     * an object that is the instance of the class represented by that short name.
+     * @param shortName the alias for the instance
+     * @param o the actual object that will be returned from <code>getObjectOfClass()</code> when
+     * the parameters is equal to the alias.
+     */
     public void addInstance(String shortName, Object o) {
         objMap.put(shortName, o);
         classMap.put(shortName, o.getClass());
     }
 
+    /**
+     * The <code>getClass()</code> method gets the Java class representing the class returned
+     * for a given short name. If there is no short name (alias) for the passed argument,
+     * this method will assume that the parameter is the fully qualified name of a class. It
+     * will then load that class and instantiate an instance of that class. That instance will
+     * be returned in subsequent calls to <code>getObjectOfClass()</code>.
+     * @param shortName the short name of the class
+     * @return a Java class representing the class for that alias or fully qualified name
+     */
     public Class getClass(String shortName) {
         Object o = objMap.get(shortName);
         if ( o != null ) return o.getClass();
@@ -124,12 +168,23 @@ public class ClassMap {
         throw Avrora.failure("Unreachable state in dynamic instantiation of class");
     }
 
+    /**
+     * The <code>getSortedList()</code> method returns a sorted list of the short names (aliases)
+     * stored in this class map.
+     * @return an alphabetically sorted list that contains all the aliases in this map
+     */
     public List getSortedList() {
         List list = Collections.list(Collections.enumeration(classMap.keySet()));
         Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
         return list;
     }
 
+    /**
+     * The <code>iterator()</code> method returns an interator over the short names (aliases)
+     * stored in this map.
+     * @return an instance of <code>java.util.Iterator</code> which can be used to iterate over
+     * each alias in this map.
+     */
     public Iterator iterator() {
         return classMap.keySet().iterator();
     }
