@@ -36,10 +36,10 @@ public class Module implements Context {
     public final boolean caseSensitivity;
     public final boolean useByteAddresses;
 
-    private Seg segment;
-    private Seg programSegment;
-    private Seg dataSegment;
-    private Seg eepromSegment;
+    protected Seg segment;
+    protected Seg programSegment;
+    protected Seg dataSegment;
+    protected Seg eepromSegment;
 
     public Program newprogram;
 
@@ -50,7 +50,7 @@ public class Module implements Context {
     private static final SyntacticOperand[] NO_OPERANDS = {};
 
 
-    class Seg {
+    protected class Seg {
         private final String name;
         private final boolean acceptsInstrs;
         private final boolean acceptsData;
@@ -58,7 +58,6 @@ public class Module implements Context {
         int lowest_address;
         int highest_address;
 
-        int origin;
         int cursor;
         final int align;
 
@@ -67,7 +66,7 @@ public class Module implements Context {
             acceptsInstrs = i;
             acceptsData = d;
             align = a;
-            origin = lowest_address = highest_address = cursor = o;
+            lowest_address = highest_address = cursor = o;
         }
 
         public Module getModule() {
@@ -98,17 +97,17 @@ public class Module implements Context {
             if ( name.equals("data")) newprogram.newDataLabel(labelname, baddr);
         }
 
-        void setOrigin(int org) {
-            origin = org;
+        public void setOrigin(int org) {
+            cursor = org;
             if (org < lowest_address) lowest_address = org;
             if (org > highest_address) highest_address = org;
         }
 
-        int getCurrentAddress() {
+        public int getCurrentAddress() {
             return cursor;
         }
 
-        void advance(int dist) {
+        public void advance(int dist) {
             cursor = align(cursor + dist, align);
             if ( cursor > highest_address ) highest_address = cursor;
         }
@@ -166,21 +165,31 @@ public class Module implements Context {
         segment = eepromSegment;
     }
 
+    private void print(String what, ASTNode where) {
+        String addr = StringUtil.toHex(segment.getCurrentAddress(), 4);
+        modulePrinter.println(segment.getName()+" @ 0x"+addr+": "+what+" on line "+where.getLeftMostToken().beginLine);
+    }
+
+    private void print(String what, AbstractToken where) {
+        String addr = StringUtil.toHex(segment.getCurrentAddress(), 4);
+        modulePrinter.println(segment.getName()+" @ 0x"+addr+": "+what+" on line "+where.beginLine);
+    }
+
     // .db directive
     public void addDataBytes(ExprList l) {
-        modulePrinter.println("addDataBytes");
+        print("addDataBytes", l);
         addItem(new Item.InitializedData(segment, l, 1));
     }
 
     // .dw directive
     public void addDataWords(ExprList l) {
-        modulePrinter.println("addDataWords");
+        print("addDataWords", l);
         addItem(new Item.InitializedData(segment, l, 2));
     }
 
     // .dd directive
     public void addDataDoubleWords(ExprList l) {
-        modulePrinter.println("addDataDoubleWords");
+        print("addDataDoubleWords", l);
         addItem(new Item.InitializedData(segment, l, 4));
     }
 
@@ -216,7 +225,7 @@ public class Module implements Context {
     // <instruction>
     public void addInstruction(String variant, AbstractToken name) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v)+"  @ line "+name.beginLine);
+        print(StringUtil.embed("addInstr", v), name);
         SyntacticOperand[] o = NO_OPERANDS;
         makeInstr(variant, name, o);
     }
@@ -224,7 +233,7 @@ public class Module implements Context {
     // <instruction> <operand>
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v, o1)+"  @ line "+name.beginLine);
+        print(StringUtil.embed("addInstr", v, o1), name);
         SyntacticOperand[] o = {o1};
         makeInstr(variant, name, o);
     }
@@ -232,7 +241,7 @@ public class Module implements Context {
     // <instruction> <operand> <operand>
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2)+"  @ line "+name.beginLine);
+        print(StringUtil.embed("addInstr", v, o1, o2), name);
         SyntacticOperand[] o = {o1, o2};
         makeInstr(variant, name, o);
     }
@@ -240,7 +249,7 @@ public class Module implements Context {
     // <instruction> <operand> <operand> <operand>
     public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2, SyntacticOperand o3) {
         String v = StringUtil.quote(variant);
-        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2, o3)+"  @ line "+name.beginLine);
+        print(StringUtil.embed("addInstr", v, o1, o2, o3), name);
         SyntacticOperand[] o = {o1, o2, o3};
         makeInstr(variant, name, o);
     }
@@ -272,7 +281,7 @@ public class Module implements Context {
         return newprogram;
     }
 
-    private void simplify(Item i) {
+    protected void simplify(Item i) {
         Item.Instruction instr = null;
         if ( i instanceof Item.Instruction ) instr = (Item.Instruction)i;
 

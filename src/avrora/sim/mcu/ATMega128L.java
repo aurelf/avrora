@@ -627,6 +627,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             if ( timerPrinter.enabled ) timerPrinter.println("Timer0 disabled");
                             removeTimerEvent(ticker);
                         }
+                        return;
                     }
                     if (timerEnabled) {
                         removeTimerEvent(ticker);
@@ -700,7 +701,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                             break;
                     }
                     TCNT0_reg.write((byte) count);
-                    addTimerEvent(this, period);
+                    if ( period != 0 ) addTimerEvent(this, period);
                 }
             }
         }

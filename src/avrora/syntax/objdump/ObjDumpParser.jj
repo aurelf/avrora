@@ -34,30 +34,34 @@ import avrora.syntax.*;
 
 public class ObjDumpParser extends AbstractParser  {
 
-    protected Module module;
+    protected RawModule rawModule;
 
-    public ObjDumpParser(java.io.InputStream stream, Module m, String fname) {
+    public ObjDumpParser(java.io.InputStream stream, RawModule m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
+        rawModule = m;
     }
 
-    public void ReInit(java.io.InputStream stream, Module m, String fname) {
+    public void ReInit(java.io.InputStream stream, RawModule m, String fname) {
         ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
+        rawModule = m;
     }
 
-    public ObjDumpParser(java.io.Reader stream, Module m, String fname) {
+    public ObjDumpParser(java.io.Reader stream, RawModule m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
+        rawModule = m;
     }
 
-    public void ReInit(java.io.Reader stream, Module m, String fname) {
+    public void ReInit(java.io.Reader stream, RawModule m, String fname) {
         ReInit(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
         module = m;
+        rawModule = m;
     }
 
 }
@@ -161,6 +165,10 @@ TOKEN :
   | < SECTION   : "section"  >
   | < PROGRAM   : "program"  >
   | < LABEL   : "label"  >
+  | < SIZE   : "size"  >
+  | < VMA   : "vma"  >
+  | < LMA   : "lma"  >
+  | < OFFSET   : "offset"  >
 }
 
 /* Instruction MNEMONICS */
@@ -318,9 +326,14 @@ void Header() : {}
     (SectionDecl())+
 }
 
-void SectionDecl() : {}
+void SectionDecl() : { Token name, vma, lma; }
 {
-    "section" <DOT_IDENTIFIER> (Property())+
+    "section" name = <DOT_IDENTIFIER>
+    "size" "=" <INTEGER_LITERAL>
+    "vma" "=" vma = <INTEGER_LITERAL>
+    "lma" "=" lma = <INTEGER_LITERAL>
+    "offset" "=" <INTEGER_LITERAL>
+    { rawModule.newSection(name, vma, lma); }
 }
 
 void Property() : {}
@@ -328,9 +341,10 @@ void Property() : {}
     <IDENTIFIER> "=" <INTEGER_LITERAL>
 }
 
-void Section() : {}
+void Section() : { Token sect; }
 {
-   "start" <DOT_IDENTIFIER> ":"
+   "start" sect = <DOT_IDENTIFIER> ":"
+   { rawModule.enterSection(sect); }
    (Statement())*
 }
 
@@ -340,12 +354,31 @@ void Statement() : {}
   | Item()
 }
 
-void Item() : {}
+void Item() : { Token addr; }
 {
-    <INTEGER_LITERAL> ":"
-    <INTEGER_LITERAL> <INTEGER_LITERAL>
-    [<INTEGER_LITERAL> <INTEGER_LITERAL>]
+    addr = <INTEGER_LITERAL> ":"
+    { rawModule.setAddress(addr); }
+    RawData()
+    { rawModule.setAddress(addr); }
     (Instruction() | Data())
+}
+
+void RawData() : {}
+{
+    LOOKAHEAD(3) Raw4() | Raw2()
+}
+
+void Raw2() : { Token b1, b2; }
+{
+    b1 = <INTEGER_LITERAL> b2 = <INTEGER_LITERAL>
+    { rawModule.addBytes(b1, b2); }
+}
+
+void Raw4() : { Token b1, b2, b3, b4; }
+{
+    b1 = <INTEGER_LITERAL> b2 = <INTEGER_LITERAL>
+    b3 = <INTEGER_LITERAL> b4 = <INTEGER_LITERAL>
+    { rawModule.addBytes(b1, b2, b3, b4); }
 }
 
 void Instruction() : {}

@@ -103,6 +103,10 @@ public abstract class Item {
 
         public void simplify() {
 
+            // TODO: define correct error for this
+            if ( (byteAddress & 0x1) == 0x1 )
+                throw Avrora.failure("misaligned instruction");
+
             for (int cntr = 0; cntr < operands.length; cntr++)
                 operands[cntr].simplify(byteAddress + proto.getSize(), module);
 
