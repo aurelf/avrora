@@ -33,15 +33,42 @@
 package avrora.core.isdl.ast;
 
 /**
+ * The <code>BitExpr</code> class represents an access of an individual
+ * bit within a value. In the IR, individual bits of values can be
+ * addressed for both reading and writing.
+ *
  * @author Ben L. Titzer
  */
 public class BitExpr extends Expr {
 
+    /**
+     * The <code>expr</code> field stores a reference to the expression whose
+     * value the bit will be extracted from.
+     */
     public final Expr expr;
+
+    /**
+     * The <code>bit</code> field stores a reference to an expression that
+     * when evaluated indicates which bit to read.
+     */
     public final Expr bit;
 
+    /**
+     * The constructor of the <code>BitExpr</code> class simply initializes
+     * the references to the expression and the bit.
+     * @param e the expression representing the value to extract the bit from
+     * @param b the expression representing the number of the bit to extract
+     */
     public BitExpr(Expr e, Expr b) {
         expr = e;
         bit = b;
+    }
+
+    public int getBitWidth() {
+        return 1;
+    }
+
+    public boolean isConstantExpr() {
+        return expr.isConstantExpr() && bit.isConstantExpr();
     }
 }

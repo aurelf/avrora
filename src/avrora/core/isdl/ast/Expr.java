@@ -33,11 +33,55 @@
 package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
 import avrora.util.StringUtil;
+import avrora.Avrora;
 
 /**
+ * The <code>Expr</code> class represents an expression in the IR. Expressions
+ * are evaluated and produce a value that can be assigned to locals, globals,
+ * maps, used in if statements, and passed as parameters.
+ *
  * @author Ben L. Titzer
  */
-public class Expr {
+public abstract class Expr {
+
+    /**
+     * The <code>isVariable()</code> method tests whether this expression is
+     * a single variable use.
+     * @return true if this expression is a direct use of a variable; false otherwise
+     */
+    public boolean isVariable() {
+        return false;
+    }
+
+    /**
+     * The <code>isLiteral()</code> method tests whether this expression is
+     * a known constant directly (i.e. a literal).
+     * @return true if this expression is a literal; false otherwise
+     */
+    public boolean isLiteral() {
+        return false;
+    }
+
+    /**
+     * The <code>isConstantExpr()</code> method tests whether this expression
+     * is a constant expression (i.e. it is reducable to a constant and has
+     * no references to variables, maps, etc).
+     * @return true if this expression can be evaluated to a constant; false otherwise
+     */
+    public boolean isConstantExpr() {
+        return false;
+    }
+
+    /**
+     * The <code>getBitWidth()</code> method gets the number of bits needed to
+     * represent this value. This is needed in the case of encoding formats, which
+     * need to compute the size of an instruction based on the width of its
+     * internal fields.
+     * @return
+     */
+    public int getBitWidth() {
+        throw Avrora.unimplemented();
+    }
 
     public static int tokenToInt(Token i) {
         return StringUtil.evaluateIntegerLiteral(i.image);

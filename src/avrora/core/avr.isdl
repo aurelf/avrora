@@ -31,6 +31,18 @@ architecture avr {
         r24, r25, r26, r27, r28, r29, r30, r31
     };
 
+    operand MGPR: register = {
+        r16, r17, r18, r19, r20, r21, r22, r23
+    };
+
+    operand YZ: register = {
+        y, z
+    };
+
+    operand Z: register = {
+        z
+    };
+
     operand EGPR: register = {
          r0,  r2,  r4,  r6,
          r8, r10, r12, r14,
@@ -288,6 +300,7 @@ architecture avr {
     };
 
     instruction "break" {
+        encoding = { 0b10010101, 0b10011000 };
         execute = {
             stop();
         };
@@ -711,14 +724,16 @@ architecture avr {
     };
 
     instruction "ld" rd: GPR, ar: ADR {
-        // TODO: figure out a strategy for this encoding
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             $regs(rd) = $sram($wregs(ar));
         };
     };
 
     instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
-        // TODO: figure out a strategy for this encoding
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             $regs(rd) = $sram($wregs(ar) + imm);
         };
@@ -732,7 +747,8 @@ architecture avr {
     };
 
     instruction "ldpd" rd: GPR, ar: ADR {
-        // TODO: this is a variant of the LD instruction
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             local addr: int = $wregs(ar) - 1;
             $regs(rd) = $sram(addr);
@@ -741,6 +757,8 @@ architecture avr {
     };
 
     instruction "ldpi" rd: GPR, ar: ADR {
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             local addr: int = $wregs(ar);
             $regs(rd) = $sram(addr);
@@ -926,7 +944,7 @@ architecture avr {
     };
 
     instruction "ror" rd: GPR {
-        encoding = { opcode = 0b1001010, rd[4:0], 0b0111 };
+        encoding = { 0b1001010, rd[4:0], 0b0111 };
         execute = {
             $regs(rd) = performRightShift($regs(rd), C);
         };
@@ -1085,18 +1103,24 @@ architecture avr {
     };
 
     instruction "st" ar: ADR, rr: GPR {
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             $sram($wregs(ar)) = $regs(rr);
         };
     };
 
     instruction "std" ar: YZ, imm: IMM6, rr: GPR {
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             $sram($wregs(ar) + imm) = $regs(rr);
         };
     };
 
     instruction "stpd" ar: ADR, rr: GPR {
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             local addr: int = $wregs(ar) - 1;
             $sram(addr) = $regs(rr);
@@ -1105,6 +1129,8 @@ architecture avr {
     };
 
     instruction "stpi" ar: ADR, rr: GPR {
+        // TODO: THIS ENCODING IS NOT CORRECT
+        encoding = { 0b1001000, rd[4:0], 0b1100 };
         execute = {
             local addr: int = $wregs(ar);
             $sram(addr) = $regs(rr);

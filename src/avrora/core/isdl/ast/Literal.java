@@ -32,18 +32,50 @@
 
 package avrora.core.isdl.ast;
 import avrora.core.isdl.Token;
+import avrora.Avrora;
 
 /**
+ * The <code>Literal</code> class represents a literal (constant value) as
+ * part of an expression. Literals have known, constant values, either
+ * boolean or integer.
+ *
  * @author Ben L. Titzer
  */
 public class Literal extends Expr {
+
+    /**
+     * The <code>token</code> fields stores a reference to the original
+     * token representing this literal.
+     */
+    public final Token token;
+
+    public boolean isLiteral() {
+        return true;
+    }
+
+    public boolean isConstantExpr() {
+        return true;
+    }
+
+    public Literal(Token t) {
+        token = t;
+    }
 
     public static class IntExpr extends Literal {
 
         public final int value;
 
         public IntExpr(Token v) {
+            super(v);
             value = Expr.tokenToInt(v);
+        }
+
+        public int getBitWidth() {
+            if ( token.image.charAt(1) == 'b' ) {
+                return token.image.length() - 2;
+            } else {
+                throw Avrora.failure("unknown bit width of integer constant");
+            }
         }
     }
 
@@ -52,6 +84,7 @@ public class Literal extends Expr {
         public final boolean value;
 
         public BoolExpr(Token v) {
+            super(v);
             value = Expr.tokenToBool(v);
         }
     }

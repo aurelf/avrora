@@ -236,89 +236,92 @@ TOKEN :
 /* Begin GRAMMAR */
 
 
-void Architecture() : {}
+void Architecture() : { Token n; Architecture a; }
 {
-    "architecture" <IDENTIFIER> "{"
-        (Item())*
+    "architecture" n = <IDENTIFIER> { a = new Architecture(); }"{"
+        (Item(a))*
     "}"
 }
 
-void Item() : {}
+void Item(Architecture a) : {}
 {
-    Instruction()
-  | FormatDecl()
-  | OperandDecl()
-  | RegisterDecl()
-  | Subroutine()
+    Instruction(a)
+  | FormatDecl(a)
+  | OperandDecl(a)
+  | RegisterDecl(a)
+  | Subroutine(a)
 }
 
-void Instruction() : {}
+void Instruction(Architecture a) : { Token n; InstrDecl i; }
 {
-    "instruction" <STRING_LITERAL> Operands() "{"
-        (InstrItem())*
-    "}" ";"
+    "instruction" n = <STRING_LITERAL> { i = new InstrDecl(n, null); } Operands(i) "{"
+        (InstrItem(i))*
+    "}" ";" { a.addInstruction(i); }
 }
 
-void InstrItem() : {}
+void InstrItem(InstrDecl i) : {}
 {
-    Encoding()
-  | Execute()
+    Encoding(i)
+  | Execute(i)
 }
 
-void Encoding() : {}
+void Encoding(InstrDecl i) : { EncodingDecl d; }
 {
-    "encoding" "=" Format() ";"
+    "encoding" "=" d = Format(i.name) ";" { i.setEncoding(d); }
 }
 
-void Execute() : { List l = new LinkedList(); }
+void Execute(InstrDecl i) : { List l = new LinkedList(); }
 {
-    "execute" "=" Block(l) ";"
+    "execute" "=" Block(l) ";" { i.setExecuteBlock(l); }
 }
 
-void FormatDecl() : {}
+void FormatDecl(Architecture a) : { Token n; EncodingDecl d; }
 {
-    "format" <IDENTIFIER> "=" Format() ";"
+    "format" n = <IDENTIFIER> "=" d = Format(n) ";" { a.addEncoding(d); }
 }
 
-void OperandDecl() : {}
+void OperandDecl(Architecture a) : { Token n, k; List l; }
 {
-    "operand" <IDENTIFIER> ":" Kind() "=" OperandSet() ";"
+    "operand" n = <IDENTIFIER> ":" k = Kind() "=" l = OperandSet() ";"
+    { a.addOperand(new OperandDecl(n, k, l)); }
 }
 
-void Kind() : {}
+Token Kind() : { Token t; }
 {
-    "register" | "immediate" | "address"
+    ( t = "register" | t = "immediate" | t = "address" )
+    { return t; }
 }
 
-void OperandSet() : {}
+List OperandSet() : { Token i; List l = new LinkedList(); }
 {
-    "{" <IDENTIFIER> ("," <IDENTIFIER>)* "}"
+    "{" i = <IDENTIFIER> { l.add(i); } ("," i = <IDENTIFIER> { l.add(i); })* "}"
+    { return l; }
 }
 
-void RegisterDecl() : {}
+void RegisterDecl(Architecture a) : {}
 {
     "register" <IDENTIFIER> "=" <INTEGER_LITERAL> ";"
 }
 
-void Format() : {}
+EncodingDecl Format(Token n) : { EncodingDecl d; }
 {
-    DerivedFormat()
-  | NewFormat()
+   (d = DerivedFormat(n) | d = NewFormat(n)) { return d; }
 }
 
-void DerivedFormat() : {}
+EncodingDecl DerivedFormat(Token n) : { Token p; EncodingDecl d; List l = new LinkedList(); }
 {
-    <IDENTIFIER> ["where" SubstitutionList()]
+    p = <IDENTIFIER> ["where" l = SubstitutionList()]
+    { return new EncodingDecl.Derived(n, p, l); }
 }
 
-void NewFormat() : {}
+EncodingDecl NewFormat(Token n) : { List l; }
 {
-    "{" ExprList() "}"
+    "{" l = ExprList() "}" { return new EncodingDecl(n, l); }
 }
 
-void SubstitutionList() : {}
+List SubstitutionList() : { List l = new LinkedList(); }
 {
-    "{" Substitution() ("," Substitution())* "}"
+    "{" Substitution() ("," Substitution())* "}" { return l; }
 }
 
 void Substitution() : {}
@@ -326,20 +329,30 @@ void Substitution() : {}
     <IDENTIFIER> "=" Expr()
 }
 
-void Operands() : {}
+void Operands(InstrDecl i) : {}
 {
-    [ Operand() ("," Operand())* ]
+    [ Operand(i) ("," Operand(i))* ]
 }
 
-void Operand() : {}
+List Formals() : { List l = new LinkedList(); }
 {
-    <IDENTIFIER> ":" <IDENTIFIER>
+    [ Formal() ("," Formal())* ] { return l; }
 }
 
-void Subroutine() : { List l = new LinkedList(); }
+void Formal() : { Token n, t; }
 {
-    ("subroutine" <IDENTIFIER> "(" Operands() ")" ":" <IDENTIFIER> Block(l) ";")
-   |("external" <IDENTIFIER> "(" Operands() ")" ":" <IDENTIFIER> ";")
+    n = <IDENTIFIER> ":" t = <IDENTIFIER>
+}
+
+void Operand(InstrDecl i) : { Token n, t; }
+{
+    n = <IDENTIFIER> ":" t = <IDENTIFIER> { i.addOperand(n, t); }
+}
+
+void Subroutine(Architecture a) : { List l = new LinkedList(); }
+{
+    ("subroutine" <IDENTIFIER> "(" Formals() ")" ":" <IDENTIFIER> Block(l) ";")
+   |("external" <IDENTIFIER> "(" Formals() ")" ":" <IDENTIFIER> ";")
 }
 
 Expr Expr() : { Expr e; }

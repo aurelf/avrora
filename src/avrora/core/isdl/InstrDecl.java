@@ -30,21 +30,70 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core.isdl.ast;
+package avrora.core.isdl;
+
+import avrora.core.isdl.Token;
+
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>InstrDecl</code> class represents the declaration
  * of an instruction in an instruction set description language
- * file.
+ * file. It include a description of the encoding format of the
+ * instruction as well as a block of IR code that describe how
+ * to execute the instruction.
+ *
  * @author Ben L. Titzer
  */
 public class InstrDecl {
 
-    public final String name;
-    public final String variant;
+    public class Operand {
+        public final Token name;
+        public final Token type;
 
-    public InstrDecl(String n, String v) {
+        Operand(Token n, Token t) {
+            name = n;
+            type = t;
+        }
+    }
+
+    /**
+     * The <code>name</code> field stores a string representing the name of the instruction.
+     */
+    public final Token name;
+
+    /**
+     * The <code>variant</code> field stores a string representing the variant name
+     * of this instruction.
+     */
+    public final Token variant;
+
+    public List execute;
+    public List operands;
+    public EncodingDecl encoding;
+
+    /**
+     * The constructor of the <code>InstrDecl</code> class initializes the fields
+     * based on the parameters.
+     * @param n the name of the instruction as a string
+     * @param v the variant of the instruction as a string
+     */
+    public InstrDecl(Token n, Token v) {
         name = n;
         variant = v;
+        operands = new LinkedList();
+    }
+
+    public void addOperand(Token n, Token t) {
+        operands.add(new Operand(n, t));
+    }
+
+    public void setExecuteBlock(List b) {
+        execute = b;
+    }
+
+    public void setEncoding(EncodingDecl l) {
+        encoding = l;
     }
 }

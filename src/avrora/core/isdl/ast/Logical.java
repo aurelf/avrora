@@ -47,6 +47,11 @@ public abstract class Logical {
             right = r;
             operation = o;
         }
+
+        public boolean isConstantExpr() {
+            return left.isConstantExpr() && right.isConstantExpr();
+        }
+
     }
 
     public abstract static class UnOp extends Arith {
@@ -56,6 +61,10 @@ public abstract class Logical {
         public UnOp(String op, Expr o) {
             operand = o;
             operation = op;
+        }
+
+        public boolean isConstantExpr() {
+            return operand.isConstantExpr();
         }
     }
 

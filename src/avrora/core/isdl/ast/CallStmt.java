@@ -35,13 +35,31 @@ import java.util.List;
 import avrora.core.isdl.Token;
 
 /**
+ * The <code>CallStmt</code> class represents a call to a subroutine that
+ * does not produce a value.
+ *
  * @author Ben L. Titzer
  */
 public class CallStmt extends Stmt {
 
+    /**
+     * The <code>method</code> field stores a string that represents
+     * the name of the subroutine being called.
+     */
     public final Token method;
+
+    /**
+     * The <code>args</code> fields stores a reference to a list of expressions
+     * that are evaluated and passed as arguments to the subroutine.
+     */
     public final List args;
 
+    /**
+     * The constructor of the <code>CallStmt</code> class simply initializes the
+     * references to the subroutine name and arguments.
+     * @param m the name of the subroutine as a string
+     * @param a list of expressions representing the arguments to the subroutine
+     */
     public CallStmt(Token m, List a) {
         method = m;
         args = a;

@@ -42,4 +42,8 @@ public class VarExpr extends Expr {
     public VarExpr(Token v) {
         variable = v;
     }
+
+    public boolean isVariable() {
+        return true;
+    }
 }

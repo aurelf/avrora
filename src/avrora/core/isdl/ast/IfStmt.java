@@ -35,13 +35,41 @@ package avrora.core.isdl.ast;
 import java.util.List;
 
 /**
+ * The <code>IfStmt</code> class represents a simple branch within the IR.
+ * Since loops and switch statements are not allowed, if statements
+ * (and subroutine calls) are the only form of control flow.
+ *
  * @author Ben L. Titzer
  */
 public class IfStmt extends Stmt {
+    /**
+     * The <code>cond</code> field stores a reference to the expression
+     * that is evaluated as the condition determining which branch
+     * is executed.
+     */
     public final Expr cond;
+
+    /**
+     * The <code>trueBranch</code> field stores a reference to the
+     * list of statements to be executed if the condition is true.
+     */
     public final List trueBranch;
+
+    /**
+     * The <code>falseBranch</code> field stores a reference to the
+     * list of statements to be executed if the condition is false.
+     */
     public final List falseBranch;
 
+    /**
+     * The constructor of the <code>IfStmt</code> class simply initializes
+     * the internal fields based on the parameters.
+     * @param c a reference to the expression representing the condition
+     * @param t a reference to the list of statements to execute if the condition
+     * evaluates to true
+     * @param f a reference to the list of statements to execute if the condition
+     * evaluates to false
+     */
     public IfStmt(Expr c, List t, List f) {
         cond = c;
         trueBranch = t;

@@ -36,12 +36,32 @@ import avrora.core.isdl.Token;
 import java.util.List;
 
 /**
+ * The <code>CallExpr</code> class represents a subroutine call within
+ * the IR. Subroutines can be called for side effects and produce results
+ * in the IR, allowing factoring of common pieces of code.
+ *
  * @author Ben L. Titzer
  */
 public class CallExpr extends Expr {
+
+    /**
+     * The <code>method</code> field stores a string that represents
+     * the name of the subroutine being called.
+     */
     public final Token method;
+
+    /**
+     * The <code>args</code> fields stores a reference to a list of expressions
+     * that are evaluated and passed as arguments to the subroutine.
+     */
     public final List args;
 
+    /**
+     * The constructor of the <code>CallExpr</code> class simply initializes the
+     * references to the subroutine name and arguments.
+     * @param m the name of the subroutine as a string
+     * @param a list of expressions representing the arguments to the subroutine
+     */
     public CallExpr(Token m, List a) {
         method = m;
         args = a;
