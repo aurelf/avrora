@@ -71,6 +71,10 @@ public abstract class OperandDecl {
         public boolean isImmediate() {
             return true;
         }
+
+        public String getSomeMember() {
+            return (low+((high-low)/2))+"";
+        }
     }
 
     public static class RegisterSet extends OperandDecl {
@@ -85,6 +89,10 @@ public abstract class OperandDecl {
             return true;
         }
 
+        public String getSomeMember() {
+            RegisterEncoding enc = (RegisterEncoding)members.get(0);
+            return enc.name.toString();
+        }
     }
 
     public static class RegisterEncoding {
@@ -104,4 +112,6 @@ public abstract class OperandDecl {
     public boolean isImmediate() {
         return false;
     }
+
+    public abstract String getSomeMember();
 }

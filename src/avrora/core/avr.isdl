@@ -373,6 +373,8 @@ architecture avr {
         };
     };
 
+    // BCLR is the general form of clearing a bit in the SREG register
+    // each case has its own name: CLI, CLS, CLS, etc
     pseudo instruction "bclr" bit: IMM3 {
         encoding = CLR where { bit = bit };
         cycles = 1;
@@ -389,6 +391,8 @@ architecture avr {
         };
     };
 
+    // BRBC is the general form of the "branch if bit is clear" instruction
+    // each special case has its own name, and thus the general one is pseudo
     pseudo instruction "brbc" bit: IMM3, target: SREL {
         encoding = BRCLR where { bit = bit };
         cycles = 1;
@@ -397,6 +401,8 @@ architecture avr {
         };
     };
 
+    // BRBC is the general form of the "branch if bit is set" instruction
+    // each special case has its own name, and thus the general one is pseudo
     pseudo instruction "brbs" bit: IMM3, target: SREL {
         encoding = BRSET where { bit = bit };
         cycles = 1;
@@ -413,6 +419,7 @@ architecture avr {
         };
     };
 
+    // BRCS is equivalen to the BRLO instruction, thus this one is a pseudo instruction
     pseudo instruction "brcs" target: SREL {
         encoding = BRSET where { bit = 0b000 };
         cycles = 1;
@@ -517,8 +524,8 @@ architecture avr {
         };
     };
 
+    // BRSH is equivalent to the BRCC instruction
     pseudo instruction "brsh" target: SREL {
-        // note that this is equivalent to brcc
         encoding = BRCLR where { bit = 0b000 };
         cycles = 1;
         execute = {
@@ -558,6 +565,8 @@ architecture avr {
         };
     };
 
+    // BRSET is the general form of the "branch if bit is set" instruction
+    // each possibility has its own name, so the general case is a pseudo instruction
     pseudo instruction "bset" bit: IMM3 {
         encoding = SET where { bit = bit };
         cycles = 1;
@@ -591,8 +600,9 @@ architecture avr {
         };
     };
 
+    // CBR (clear bits in register) is equivalent to an ANDI instruction
+    // and is encoded as an ANDI instruction with the operand complemented
     pseudo instruction "cbr" rd: HGPR, imm: IMM8 {
-        // note that this is just the ANDI instruction with operand complemented
         encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = ~imm };
         cycles = 1;
         execute = {
@@ -632,6 +642,7 @@ architecture avr {
         };
     };
 
+    // CLR (clear register A) is equivalent to EOR A, A (exclusive-or A with itself)
     pseudo instruction "clr" rd: GPR {
         // note that this is equivalent to eor rd, rd
         encoding = GPRGPR where { opcode = 0b001001, r1 = rd, r2 = rr };
@@ -897,8 +908,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "ld" rd: GPR, ar: ADR {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -906,8 +917,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -923,8 +934,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "ldpd" rd: GPR, ar: ADR {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -934,8 +945,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "ldpi" rd: GPR, ar: ADR {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -981,6 +992,8 @@ architecture avr {
         };
     };
 
+    // LSL (logical shift left by 1) is encoded as an ADD instruction where
+    // the register is simply added to itself
     pseudo instruction "lsl" rd: GPR {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rd };
         cycles = 1;
@@ -1138,8 +1151,9 @@ architecture avr {
         };
     };
 
+    // ROL (rotate left by 1) is encoded an ADC (add with carry instruction)
+    // where the register is simply added to itself
     pseudo instruction "rol" rd: GPR {
-        // note that this encoded as an ADC instruction
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rd };
         cycles = 1;
         execute = {
@@ -1215,6 +1229,7 @@ architecture avr {
         };
     };
 
+    // SBR (set bits in register) is equivalent to the ORI (or with immediate) instruction
     pseudo instruction "sbr" rd: HGPR, imm: IMM8 {
         encoding = HGPRIMM8 where { opcode = 0b0110 };
         cycles = 1;
@@ -1327,8 +1342,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "st" ar: ADR, rr: GPR {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -1336,8 +1351,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "std" ar: YZ, imm: IMM6, rr: GPR {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -1345,8 +1360,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "stpd" ar: ADR, rr: GPR {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -1356,8 +1371,8 @@ architecture avr {
         };
     };
 
+    // TODO: THIS ENCODING IS NOT CORRECT
     pseudo instruction "stpi" ar: ADR, rr: GPR {
-        // TODO: THIS ENCODING IS NOT CORRECT
         encoding = { 0b1001000, rd[4:0], 0b1100 };
         cycles = 2;
         execute = {
@@ -1403,6 +1418,7 @@ architecture avr {
         };
     };
 
+    // TST (test) is encoded as an AND instruction
     pseudo instruction "tst" rd: GPR {
         encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rd };
         cycles = 1;

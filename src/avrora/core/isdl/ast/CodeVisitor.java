@@ -252,4 +252,134 @@ public interface CodeVisitor {
         }
 
     }
+
+    /**
+     * The <code>DepthFirst</code> class is a base implementation of the <code>CodeVisitor</code> interface
+     * that visits the tree in depth-first order.
+     *
+     * @author Ben L. Titzer
+     */
+    public abstract class Default implements CodeVisitor {
+
+        public abstract void error(Expr e);
+
+        public void visit(Arith.AddExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.AndExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.CompExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.DivExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.MulExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.NegExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.OrExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.ShiftLeftExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.ShiftRightExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.SubExpr e) {
+            error(e);
+        }
+
+        public void visit(Arith.XorExpr e) {
+            error(e);
+        }
+
+
+        public void visit(BitExpr e) {
+            error(e);
+        }
+
+        public void visit(BitRangeExpr e) {
+            error(e);
+        }
+
+        public void visit(CallExpr e) {
+            error(e);
+        }
+
+        public void visit(ConversionExpr e) {
+            error(e);
+        }
+
+        public void visit(Literal.BoolExpr e) {
+            error(e);
+        }
+
+        public void visit(Literal.IntExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.AndExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.EquExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.GreaterEquExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.GreaterExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.LessEquExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.LessExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.NequExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.NotExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.OrExpr e) {
+            error(e);
+        }
+
+        public void visit(Logical.XorExpr e) {
+            error(e);
+        }
+
+
+        public void visit(MapExpr e) {
+            error(e);
+        }
+
+        public void visit(VarExpr e) {
+            error(e);
+        }
+
+    }
 }

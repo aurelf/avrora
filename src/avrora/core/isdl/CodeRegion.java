@@ -75,6 +75,9 @@ public class CodeRegion {
                 return type.image;
         }
 
+        public OperandDecl getOperandDecl() {
+            return operandType;
+        }
     }
 
     public final List operands;

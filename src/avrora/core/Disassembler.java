@@ -41,14 +41,15 @@ import avrora.Avrora;
 public class Disassembler {
 
     int pc;
+    byte[] code;
 
     public Instr disassemble(byte[] buffer, int index) {
         int word1 = Arithmetic.word(buffer[index+0], buffer[index+1]);
-        pc = index;
+        this.pc = index;
+        this.code = buffer;
         return decode_root(word1);
     }
 
-//--BEGIN DISASSEM GENERATOR--
     private Register getReg(Register[] table, int index) {
         if ( index < 0 || index >= table.length )  {
             throw Avrora.failure("INVALID INSTRUCTION");
@@ -59,6 +60,16 @@ public class Disassembler {
         }
         return reg;
     }
+
+    private int getWord(int word) {
+        return Arithmetic.uword(code[word*2], code[word*2 + 1]);
+    }
+
+    private int getByte(int word) {
+        return code[word*2] & 0xff;
+    }
+
+//--BEGIN DISASSEM GENERATOR--
     static final Register[] GPR_table = {
         Register.R0, 
         Register.R1, 
@@ -164,12 +175,12 @@ public class Disassembler {
         }
         int rr = 0;
         int bit = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
         rr |= ((word1 >> 4) & 0x0001F);
-        // word[12:12]
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.BST(pc, getReg(GPR_table, rr), bit);
     }
     private Instr decode_BLD(int word1) {
@@ -178,16 +189,16 @@ public class Disassembler {
         }
         int rr = 0;
         int bit = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
         rr |= ((word1 >> 4) & 0x0001F);
-        // word[12:12]
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.BLD(pc, getReg(GPR_table, rr), bit);
     }
     private Instr decode_0(int word1) {
-        // get value of bits word[6:6]
+        // get value of bits logical[6:6]
         int value = (word1 >> 9) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_BST(word1);
@@ -198,70 +209,70 @@ public class Disassembler {
     }
     private Instr decode_BRPL(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRPL(pc, target);
     }
     private Instr decode_BRGE(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRGE(pc, target);
     }
     private Instr decode_BRTC(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRTC(pc, target);
     }
     private Instr decode_BRNE(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRNE(pc, target);
     }
     private Instr decode_BRVC(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRVC(pc, target);
     }
     private Instr decode_BRID(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRID(pc, target);
     }
     private Instr decode_BRHC(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRHC(pc, target);
     }
     private Instr decode_BRCC(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRCC(pc, target);
     }
     private Instr decode_1(int word1) {
-        // get value of bits word[13:15]
+        // get value of bits logical[13:15]
         int value = (word1 >> 0) & 0x00007;
         switch ( value ) {
             case 0x00002: return decode_BRPL(word1);
@@ -282,12 +293,12 @@ public class Disassembler {
         }
         int rr = 0;
         int bit = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
         rr |= ((word1 >> 4) & 0x0001F);
-        // word[12:12]
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.SBRS(pc, getReg(GPR_table, rr), bit);
     }
     private Instr decode_SBRC(int word1) {
@@ -296,16 +307,16 @@ public class Disassembler {
         }
         int rr = 0;
         int bit = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
         rr |= ((word1 >> 4) & 0x0001F);
-        // word[12:12]
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.SBRC(pc, getReg(GPR_table, rr), bit);
     }
     private Instr decode_2(int word1) {
-        // get value of bits word[6:6]
+        // get value of bits logical[6:6]
         int value = (word1 >> 9) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_SBRS(word1);
@@ -316,70 +327,70 @@ public class Disassembler {
     }
     private Instr decode_BRMI(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRMI(pc, target);
     }
     private Instr decode_BRLT(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRLT(pc, target);
     }
     private Instr decode_BRTS(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRTS(pc, target);
     }
     private Instr decode_BREQ(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BREQ(pc, target);
     }
     private Instr decode_BRVS(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRVS(pc, target);
     }
     private Instr decode_BRIE(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRIE(pc, target);
     }
     private Instr decode_BRHS(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRHS(pc, target);
     }
     private Instr decode_BRLO(int word1) {
         int target = 0;
-        // word[0:5]
-        // word[6:12]
+        // logical[0:5] -> 
+        // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
-        // word[13:15]
+        // logical[13:15] -> 
         return new Instr.BRLO(pc, target);
     }
     private Instr decode_3(int word1) {
-        // get value of bits word[13:15]
+        // get value of bits logical[13:15]
         int value = (word1 >> 0) & 0x00007;
         switch ( value ) {
             case 0x00002: return decode_BRMI(word1);
@@ -395,7 +406,7 @@ public class Disassembler {
         }
     }
     private Instr decode_4(int word1) {
-        // get value of bits word[4:5]
+        // get value of bits logical[4:5]
         int value = (word1 >> 10) & 0x00003;
         switch ( value ) {
             case 0x00002: return decode_0(word1);
@@ -409,41 +420,41 @@ public class Disassembler {
     private Instr decode_SBCI(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:3]
-        // word[4:7]
+        // logical[0:3] -> 
+        // logical[4:7] -> imm[7:4]
         imm |= ((word1 >> 8) & 0x0000F) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[4:1]
         rd |= ((word1 >> 4) & 0x0000F) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.SBCI(pc, getReg(HGPR_table, rd), imm);
     }
     private Instr decode_OUT(int word1) {
         int ior = 0;
         int rr = 0;
-        // word[0:4]
-        // word[5:6]
+        // logical[0:4] -> 
+        // logical[5:6] -> ior[5:4]
         ior |= ((word1 >> 9) & 0x00003) << 4;
-        // word[7:11]
+        // logical[7:11] -> rr[4:0]
         rr |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
-        ior |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> ior[3:0]
+        ior |= (word1 & 0x0000F);
         return new Instr.OUT(pc, ior, getReg(GPR_table, rr));
     }
     private Instr decode_IN(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:4]
-        // word[5:6]
+        // logical[0:4] -> 
+        // logical[5:6] -> imm[5:4]
         imm |= ((word1 >> 9) & 0x00003) << 4;
-        // word[7:11]
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.IN(pc, getReg(GPR_table, rd), imm);
     }
     private Instr decode_5(int word1) {
-        // get value of bits word[4:4]
+        // get value of bits logical[4:4]
         int value = (word1 >> 11) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_OUT(word1);
@@ -455,92 +466,92 @@ public class Disassembler {
     private Instr decode_CPI(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:3]
-        // word[4:7]
+        // logical[0:3] -> 
+        // logical[4:7] -> imm[7:4]
         imm |= ((word1 >> 8) & 0x0000F) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[4:1]
         rd |= ((word1 >> 4) & 0x0000F) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.CPI(pc, getReg(HGPR_table, rd), imm);
     }
     private Instr decode_ANDI(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:3]
-        // word[4:7]
+        // logical[0:3] -> 
+        // logical[4:7] -> imm[7:4]
         imm |= ((word1 >> 8) & 0x0000F) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[4:1]
         rd |= ((word1 >> 4) & 0x0000F) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.ANDI(pc, getReg(HGPR_table, rd), imm);
     }
     private Instr decode_RJMP(int word1) {
         int target = 0;
-        // word[0:3]
-        // word[4:15]
-        target |= ((word1 >> 0) & 0x00FFF);
+        // logical[0:3] -> 
+        // logical[4:15] -> target[11:0]
+        target |= (word1 & 0x00FFF);
         return new Instr.RJMP(pc, target);
     }
     private Instr decode_OR(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.OR(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_EOR(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.EOR(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_MOV(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.MOV(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_AND(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.AND(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_6(int word1) {
-        // get value of bits word[4:5]
+        // get value of bits logical[4:5]
         int value = (word1 >> 10) & 0x00003;
         switch ( value ) {
             case 0x00002: return decode_OR(word1);
@@ -553,53 +564,53 @@ public class Disassembler {
     }
     private Instr decode_RCALL(int word1) {
         int target = 0;
-        // word[0:3]
-        // word[4:15]
-        target |= ((word1 >> 0) & 0x00FFF);
+        // logical[0:3] -> 
+        // logical[4:15] -> target[11:0]
+        target |= (word1 & 0x00FFF);
         return new Instr.RCALL(pc, target);
     }
     private Instr decode_SBI(int word1) {
         int ior = 0;
         int bit = 0;
-        // word[0:7]
-        // word[8:12]
+        // logical[0:7] -> 
+        // logical[8:12] -> ior[4:0]
         ior |= ((word1 >> 3) & 0x0001F);
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.SBI(pc, ior, bit);
     }
     private Instr decode_SBIC(int word1) {
         int ior = 0;
         int bit = 0;
-        // word[0:7]
-        // word[8:12]
+        // logical[0:7] -> 
+        // logical[8:12] -> ior[4:0]
         ior |= ((word1 >> 3) & 0x0001F);
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.SBIC(pc, ior, bit);
     }
     private Instr decode_SBIS(int word1) {
         int ior = 0;
         int bit = 0;
-        // word[0:7]
-        // word[8:12]
+        // logical[0:7] -> 
+        // logical[8:12] -> ior[4:0]
         ior |= ((word1 >> 3) & 0x0001F);
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.SBIS(pc, ior, bit);
     }
     private Instr decode_CBI(int word1) {
         int ior = 0;
         int bit = 0;
-        // word[0:7]
-        // word[8:12]
+        // logical[0:7] -> 
+        // logical[8:12] -> ior[4:0]
         ior |= ((word1 >> 3) & 0x0001F);
-        // word[13:15]
-        bit |= ((word1 >> 0) & 0x00007);
+        // logical[13:15] -> bit[2:0]
+        bit |= (word1 & 0x00007);
         return new Instr.CBI(pc, ior, bit);
     }
     private Instr decode_7(int word1) {
-        // get value of bits word[6:7]
+        // get value of bits logical[6:7]
         int value = (word1 >> 8) & 0x00003;
         switch ( value ) {
             case 0x00002: return decode_SBI(word1);
@@ -613,29 +624,29 @@ public class Disassembler {
     private Instr decode_SBIW(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:7]
-        // word[8:9]
+        // logical[0:7] -> 
+        // logical[8:9] -> imm[5:4]
         imm |= ((word1 >> 6) & 0x00003) << 4;
-        // word[10:11]
+        // logical[10:11] -> rd[2:1]
         rd |= ((word1 >> 4) & 0x00003) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.SBIW(pc, getReg(RDL_table, rd), imm);
     }
     private Instr decode_ADIW(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:7]
-        // word[8:9]
+        // logical[0:7] -> 
+        // logical[8:9] -> imm[5:4]
         imm |= ((word1 >> 6) & 0x00003) << 4;
-        // word[10:11]
+        // logical[10:11] -> rd[2:1]
         rd |= ((word1 >> 4) & 0x00003) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.ADIW(pc, getReg(RDL_table, rd), imm);
     }
     private Instr decode_8(int word1) {
-        // get value of bits word[7:7]
+        // get value of bits logical[7:7]
         int value = (word1 >> 8) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_SBIW(word1);
@@ -649,82 +660,82 @@ public class Disassembler {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
         int rd = 0;
-        // word[0:6]
-        // word[7:7]
+        // logical[0:6] -> 
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.ASR(pc, getReg(GPR_table, rd));
     }
     private Instr decode_CLI(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLI(pc);
     }
     private Instr decode_SES(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SES(pc);
     }
     private Instr decode_SPM(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.SPM(pc);
     }
     private Instr decode_CLC(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLC(pc);
     }
     private Instr decode_WDR(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.WDR(pc);
     }
     private Instr decode_CLV(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLV(pc);
     }
     private Instr decode_ICALL(int word1) {
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.ICALL(pc);
     }
     private Instr decode_RET(int word1) {
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.RET(pc);
     }
     private Instr decode_9(int word1) {
-        // get value of bits word[15:15]
+        // get value of bits logical[15:15]
         int value = (word1 >> 0) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_ICALL(word1);
@@ -737,44 +748,44 @@ public class Disassembler {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SEV(pc);
     }
     private Instr decode_SEI(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SEI(pc);
     }
     private Instr decode_CLS(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLS(pc);
     }
     private Instr decode_EICALL(int word1) {
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.EICALL(pc);
     }
     private Instr decode_RETI(int word1) {
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.RETI(pc);
     }
     private Instr decode_10(int word1) {
-        // get value of bits word[15:15]
+        // get value of bits logical[15:15]
         int value = (word1 >> 0) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_EICALL(word1);
@@ -787,64 +798,64 @@ public class Disassembler {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SEN(pc);
     }
     private Instr decode_CLH(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLH(pc);
     }
     private Instr decode_CLZ(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLZ(pc);
     }
     private Instr decode_LPM(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.LPM(pc);
     }
     private Instr decode_SET(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SET(pc);
     }
     private Instr decode_EIJMP(int word1) {
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.EIJMP(pc);
     }
     private Instr decode_SEZ(int word1) {
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SEZ(pc);
     }
     private Instr decode_11(int word1) {
-        // get value of bits word[15:15]
+        // get value of bits logical[15:15]
         int value = (word1 >> 0) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_EIJMP(word1);
@@ -857,70 +868,70 @@ public class Disassembler {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.ELPM(pc);
     }
     private Instr decode_CLT(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLT(pc);
     }
     private Instr decode_BREAK(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.BREAK(pc);
     }
     private Instr decode_SLEEP(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.SLEEP(pc);
     }
     private Instr decode_CLN(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.CLN(pc);
     }
     private Instr decode_SEH(int word1) {
         if ( (word1 & 0x00001) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SEH(pc);
     }
     private Instr decode_IJMP(int word1) {
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.IJMP(pc);
     }
     private Instr decode_SEC(int word1) {
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
-        // word[12:15]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> 
+        // logical[12:15] -> 
         return new Instr.SEC(pc);
     }
     private Instr decode_12(int word1) {
-        // get value of bits word[15:15]
+        // get value of bits logical[15:15]
         int value = (word1 >> 0) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_IJMP(word1);
@@ -930,7 +941,7 @@ public class Disassembler {
         }
     }
     private Instr decode_13(int word1) {
-        // get value of bits word[7:11]
+        // get value of bits logical[7:11]
         int value = (word1 >> 4) & 0x0001F;
         switch ( value ) {
             case 0x0000F: return decode_CLI(word1);
@@ -962,33 +973,36 @@ public class Disassembler {
         }
     }
     private Instr decode_JMP(int word1) {
+        int word2 = getWord(1);
         int target = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> target[21:17]
         target |= ((word1 >> 4) & 0x0001F) << 17;
-        // word[12:14]
-        // word[15:31]
-        target |= ((word1 >> -16) & 0x1FFFF);
+        // logical[12:14] -> 
+        // logical[15:15] -> target[16:16]
+        target |= (word1 & 0x00001) << 16;
+        // logical[16:31] -> target[15:0]
+        target |= (word2 & 0x0FFFF);
         return new Instr.JMP(pc, target);
     }
     private Instr decode_INC(int word1) {
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.INC(pc, getReg(GPR_table, rd));
     }
     private Instr decode_SWAP(int word1) {
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.SWAP(pc, getReg(GPR_table, rd));
     }
     private Instr decode_14(int word1) {
-        // get value of bits word[15:15]
+        // get value of bits logical[15:15]
         int value = (word1 >> 0) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_INC(word1);
@@ -999,22 +1013,22 @@ public class Disassembler {
     }
     private Instr decode_ROR(int word1) {
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.ROR(pc, getReg(GPR_table, rd));
     }
     private Instr decode_LSR(int word1) {
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.LSR(pc, getReg(GPR_table, rd));
     }
     private Instr decode_15(int word1) {
-        // get value of bits word[15:15]
+        // get value of bits logical[15:15]
         int value = (word1 >> 0) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_ROR(word1);
@@ -1024,13 +1038,16 @@ public class Disassembler {
         }
     }
     private Instr decode_CALL(int word1) {
+        int word2 = getWord(1);
         int target = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> target[21:17]
         target |= ((word1 >> 4) & 0x0001F) << 17;
-        // word[12:14]
-        // word[15:31]
-        target |= ((word1 >> -16) & 0x1FFFF);
+        // logical[12:14] -> 
+        // logical[15:15] -> target[16:16]
+        target |= (word1 & 0x00001) << 16;
+        // logical[16:31] -> target[15:0]
+        target |= (word2 & 0x0FFFF);
         return new Instr.CALL(pc, target);
     }
     private Instr decode_DEC(int word1) {
@@ -1038,30 +1055,30 @@ public class Disassembler {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.DEC(pc, getReg(GPR_table, rd));
     }
     private Instr decode_NEG(int word1) {
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.NEG(pc, getReg(GPR_table, rd));
     }
     private Instr decode_COM(int word1) {
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.COM(pc, getReg(GPR_table, rd));
     }
     private Instr decode_16(int word1) {
-        // get value of bits word[15:15]
+        // get value of bits logical[15:15]
         int value = (word1 >> 0) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_NEG(word1);
@@ -1071,7 +1088,7 @@ public class Disassembler {
         }
     }
     private Instr decode_17(int word1) {
-        // get value of bits word[12:14]
+        // get value of bits logical[12:14]
         int value = (word1 >> 1) & 0x00007;
         switch ( value ) {
             case 0x00002: return decode_ASR(word1);
@@ -1087,7 +1104,7 @@ public class Disassembler {
         }
     }
     private Instr decode_18(int word1) {
-        // get value of bits word[6:6]
+        // get value of bits logical[6:6]
         int value = (word1 >> 9) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_8(word1);
@@ -1099,38 +1116,39 @@ public class Disassembler {
     private Instr decode_MUL(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rd[4:4]
         rd |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rr[4:4]
         rr |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rr[3:0]
         rr |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rd |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rd[3:0]
+        rd |= (word1 & 0x0000F);
         return new Instr.MUL(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_PUSH(int word1) {
         int rr = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
         rr |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.PUSH(pc, getReg(GPR_table, rr));
     }
     private Instr decode_STS(int word1) {
+        int word2 = getWord(1);
         int addr = 0;
         int rr = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
         rr |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
-        // word[16:31]
-        addr |= ((word1 >> -16) & 0x0FFFF);
+        // logical[12:15] -> 
+        // logical[16:31] -> addr[15:0]
+        addr |= (word2 & 0x0FFFF);
         return new Instr.STS(pc, addr, getReg(GPR_table, rr));
     }
     private Instr decode_19(int word1) {
-        // get value of bits word[12:15]
+        // get value of bits logical[12:15]
         int value = (word1 >> 0) & 0x0000F;
         switch ( value ) {
             case 0x0000F: return decode_PUSH(word1);
@@ -1141,61 +1159,62 @@ public class Disassembler {
     }
     private Instr decode_POP(int word1) {
         int rd = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.POP(pc, getReg(GPR_table, rd));
     }
     private Instr decode_LPMD(int word1) {
         int rd = 0;
         int z = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.LPMD(pc, getReg(GPR_table, rd), getReg(Z_table, z));
     }
     private Instr decode_ELPMD(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.ELPMD(pc, getReg(GPR_table, rd), getReg(Z_table, rr));
     }
     private Instr decode_ELPMPI(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.ELPMPI(pc, getReg(GPR_table, rd), getReg(Z_table, rr));
     }
     private Instr decode_LPMPI(int word1) {
         int rd = 0;
         int z = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
+        // logical[12:15] -> 
         return new Instr.LPMPI(pc, getReg(GPR_table, rd), getReg(Z_table, z));
     }
     private Instr decode_LDS(int word1) {
+        int word2 = getWord(1);
         int rd = 0;
         int addr = 0;
-        // word[0:6]
-        // word[7:11]
+        // logical[0:6] -> 
+        // logical[7:11] -> rd[4:0]
         rd |= ((word1 >> 4) & 0x0001F);
-        // word[12:15]
-        // word[16:31]
-        addr |= ((word1 >> -16) & 0x0FFFF);
+        // logical[12:15] -> 
+        // logical[16:31] -> addr[15:0]
+        addr |= (word2 & 0x0FFFF);
         return new Instr.LDS(pc, getReg(GPR_table, rd), addr);
     }
     private Instr decode_20(int word1) {
-        // get value of bits word[12:15]
+        // get value of bits logical[12:15]
         int value = (word1 >> 0) & 0x0000F;
         switch ( value ) {
             case 0x0000F: return decode_POP(word1);
@@ -1209,7 +1228,7 @@ public class Disassembler {
         }
     }
     private Instr decode_21(int word1) {
-        // get value of bits word[6:6]
+        // get value of bits logical[6:6]
         int value = (word1 >> 9) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_19(word1);
@@ -1219,7 +1238,7 @@ public class Disassembler {
         }
     }
     private Instr decode_22(int word1) {
-        // get value of bits word[4:5]
+        // get value of bits logical[4:5]
         int value = (word1 >> 10) & 0x00003;
         switch ( value ) {
             case 0x00002: return decode_7(word1);
@@ -1233,73 +1252,73 @@ public class Disassembler {
     private Instr decode_ORI(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:3]
-        // word[4:7]
+        // logical[0:3] -> 
+        // logical[4:7] -> imm[7:4]
         imm |= ((word1 >> 8) & 0x0000F) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[4:1]
         rd |= ((word1 >> 4) & 0x0000F) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.ORI(pc, getReg(HGPR_table, rd), imm);
     }
     private Instr decode_SUB(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.SUB(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_CP(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.CP(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_ADC(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.ADC(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_CPSE(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.CPSE(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_23(int word1) {
-        // get value of bits word[4:5]
+        // get value of bits logical[4:5]
         int value = (word1 >> 10) & 0x00003;
         switch ( value ) {
             case 0x00002: return decode_SUB(word1);
@@ -1313,115 +1332,115 @@ public class Disassembler {
     private Instr decode_LDI(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:3]
-        // word[4:7]
+        // logical[0:3] -> 
+        // logical[4:7] -> imm[7:4]
         imm |= ((word1 >> 8) & 0x0000F) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[4:1]
         rd |= ((word1 >> 4) & 0x0000F) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.LDI(pc, getReg(HGPR_table, rd), imm);
     }
     private Instr decode_SUBI(int word1) {
         int rd = 0;
         int imm = 0;
-        // word[0:3]
-        // word[4:7]
+        // logical[0:3] -> 
+        // logical[4:7] -> imm[7:4]
         imm |= ((word1 >> 8) & 0x0000F) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[4:1]
         rd |= ((word1 >> 4) & 0x0000F) << 1;
-        // word[12:15]
-        imm |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> imm[3:0]
+        imm |= (word1 & 0x0000F);
         return new Instr.SUBI(pc, getReg(HGPR_table, rd), imm);
     }
     private Instr decode_SBC(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.SBC(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_CPC(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.CPC(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_ADD(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:5]
-        // word[6:6]
+        // logical[0:5] -> 
+        // logical[6:6] -> rr[4:4]
         rr |= ((word1 >> 9) & 0x00001) << 4;
-        // word[7:7]
+        // logical[7:7] -> rd[4:4]
         rd |= ((word1 >> 8) & 0x00001) << 4;
-        // word[8:11]
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.ADD(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
     private Instr decode_MULS(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:7]
-        // word[8:11]
+        // logical[0:7] -> 
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.MULS(pc, getReg(HGPR_table, rd), getReg(HGPR_table, rr));
     }
     private Instr decode_MOVW(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:7]
-        // word[8:11]
+        // logical[0:7] -> 
+        // logical[8:11] -> rd[3:0]
         rd |= ((word1 >> 4) & 0x0000F);
-        // word[12:15]
-        rr |= ((word1 >> 0) & 0x0000F);
+        // logical[12:15] -> rr[3:0]
+        rr |= (word1 & 0x0000F);
         return new Instr.MOVW(pc, getReg(EGPR_table, rd), getReg(EGPR_table, rr));
     }
     private Instr decode_FMULSU(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> rd[2:0]
         rd |= ((word1 >> 4) & 0x00007);
-        // word[12:12]
-        // word[13:15]
-        rr |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> rr[2:0]
+        rr |= (word1 & 0x00007);
         return new Instr.FMULSU(pc, getReg(MGPR_table, rd), getReg(MGPR_table, rr));
     }
     private Instr decode_FMULS(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> rd[2:0]
         rd |= ((word1 >> 4) & 0x00007);
-        // word[12:12]
-        // word[13:15]
-        rr |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> rr[2:0]
+        rr |= (word1 & 0x00007);
         return new Instr.FMULS(pc, getReg(MGPR_table, rd), getReg(MGPR_table, rr));
     }
     private Instr decode_24(int word1) {
-        // get value of bits word[12:12]
+        // get value of bits logical[12:12]
         int value = (word1 >> 3) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_FMULSU(word1);
@@ -1433,29 +1452,29 @@ public class Disassembler {
     private Instr decode_FMUL(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> rd[2:0]
         rd |= ((word1 >> 4) & 0x00007);
-        // word[12:12]
-        // word[13:15]
-        rr |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> rr[2:0]
+        rr |= (word1 & 0x00007);
         return new Instr.FMUL(pc, getReg(MGPR_table, rd), getReg(MGPR_table, rr));
     }
     private Instr decode_MULSU(int word1) {
         int rd = 0;
         int rr = 0;
-        // word[0:7]
-        // word[8:8]
-        // word[9:11]
+        // logical[0:7] -> 
+        // logical[8:8] -> 
+        // logical[9:11] -> rd[2:0]
         rd |= ((word1 >> 4) & 0x00007);
-        // word[12:12]
-        // word[13:15]
-        rr |= ((word1 >> 0) & 0x00007);
+        // logical[12:12] -> 
+        // logical[13:15] -> rr[2:0]
+        rr |= (word1 & 0x00007);
         return new Instr.MULSU(pc, getReg(MGPR_table, rd), getReg(MGPR_table, rr));
     }
     private Instr decode_25(int word1) {
-        // get value of bits word[12:12]
+        // get value of bits logical[12:12]
         int value = (word1 >> 3) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_FMUL(word1);
@@ -1465,7 +1484,7 @@ public class Disassembler {
         }
     }
     private Instr decode_26(int word1) {
-        // get value of bits word[8:8]
+        // get value of bits logical[8:8]
         int value = (word1 >> 7) & 0x00001;
         switch ( value ) {
             case 0x00001: return decode_24(word1);
@@ -1478,12 +1497,12 @@ public class Disassembler {
         if ( (word1 & 0x000FF) != 0x00000 ) {
             throw Avrora.failure("INVALID INSTRUCTION");
         }
-        // word[0:7]
-        // word[8:15]
+        // logical[0:7] -> 
+        // logical[8:15] -> 
         return new Instr.NOP(pc);
     }
     private Instr decode_27(int word1) {
-        // get value of bits word[6:7]
+        // get value of bits logical[6:7]
         int value = (word1 >> 8) & 0x00003;
         switch ( value ) {
             case 0x00002: return decode_MULS(word1);
@@ -1495,7 +1514,7 @@ public class Disassembler {
         }
     }
     private Instr decode_28(int word1) {
-        // get value of bits word[4:5]
+        // get value of bits logical[4:5]
         int value = (word1 >> 10) & 0x00003;
         switch ( value ) {
             case 0x00002: return decode_SBC(word1);
@@ -1507,7 +1526,7 @@ public class Disassembler {
         }
     }
     private Instr decode_root(int word1) {
-        // get value of bits word[0:3]
+        // get value of bits logical[0:3]
         int value = (word1 >> 12) & 0x0000F;
         switch ( value ) {
             case 0x0000F: return decode_4(word1);

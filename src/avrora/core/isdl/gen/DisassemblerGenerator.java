@@ -51,57 +51,76 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
     private static final byte ENC_VAR  = 0;
 
     protected static final int LARGEST_INSTR = 15;
+    protected static final int WORD_SIZE = 16;
 
     final Printer printer;
     Verbose.Printer verbose = Verbose.getVerbosePrinter("isdl.disassem");
 
-    class EncodingExpr {
+    class EncodingField extends CodeVisitor.Default {
+        final EncodingInfo ei;
         final int bitsize;
         final Expr expr;
+        final int offset;
 
-        EncodingExpr(int s, Expr e) {
+        EncodingField(EncodingInfo ei, int o, int s, Expr e) {
+            this.ei = ei;
+            offset = o;
             expr = e;
             bitsize = s;
         }
 
-        void generateDecoder(int offset) {
+        void generateDecoder() {
+            printer.print("// logical["+offset+":"+(offset+bitsize-1)+"] -> ");
+            expr.accept(this);
+        }
 
-            printer.println("// word["+offset+":"+(offset+bitsize-1)+"]");
+        public void visit(VarExpr ve) {
+            printer.println(ve.variable.toString());
+            printer.println(ve.variable+" = ");
+            generateRead(offset, offset+bitsize-1);
+            printer.println(";");
+        }
 
-            if ( expr.isLiteral() ) return;
-            if ( expr.isVariable() ) {
-                VarExpr ve = (VarExpr)expr;
-                printer.println(ve.variable+" = ");
+        public void visit(BitExpr bre) {
+            if ( !bre.expr.isVariable() ) {
+                throw Avrora.failure("bit range use not invertible: value is not a variable or constant");
+            } else if ( !bre.bit.isLiteral() ) {
+                throw Avrora.failure("bit range use not invertible: bit is not a constant");
+            }
+            VarExpr ve = (VarExpr)bre.expr;
+            int bit = ((Literal.IntExpr)bre.bit).value;
+            printer.println(ve.variable+"["+bit+"]");
+            printer.println(ve.variable+" = Arithmetic.setBit("+ve.variable+", "+bit+", Arithmetic.getBit(word1, "+nativeBitOrder(offset)+"));");
+        }
+
+        public void visit(BitRangeExpr bre) {
+            if ( bre.operand.isVariable() ) {
+                VarExpr ve = (VarExpr)bre.operand;
+                printer.println(ve.variable+"["+bre.high_bit+":"+bre.low_bit+"]");
+                printer.print(ve.variable+" |= ");
                 generateRead(offset, offset+bitsize-1);
-                printer.println(";");
-            } else if ( expr.isBitRangeExpr() ) {
-                BitRangeExpr bre = (BitRangeExpr)expr;
-                if ( bre.operand.isVariable() ) {
-                    VarExpr ve = (VarExpr)bre.operand;
-                    printer.print(ve.variable+" |= ");
-                    generateRead(offset, offset+bitsize-1);
-                    if ( bre.low_bit > 0)
-                        printer.println(" << "+bre.low_bit+";");
-                    else printer.println(";");
-                } else {
-                    throw Avrora.failure("bit range use not invertible");
-                }
-            } else if ( expr instanceof BitExpr ) {
-                BitExpr bre = (BitExpr)expr;
-                if ( !bre.expr.isVariable() ) {
-                    throw Avrora.failure("bit range use not invertible: value is not a variable or constant");
-                } else if ( !bre.bit.isLiteral() ) {
-                    throw Avrora.failure("bit range use not invertible: bit is not a constant");
-                }
-                VarExpr ve = (VarExpr)bre.expr;
-                int bit = ((Literal.IntExpr)bre.bit).value;
-                printer.println(ve.variable+" = Arithmetic.setBit("+ve.variable+", "+bit+", Arithmetic.getBit(word1, "+nativeBitOrder(offset)+"));");
-
+                if ( bre.low_bit > 0)
+                    printer.println(" << "+bre.low_bit+";");
+                else printer.println(";");
             } else {
-                throw Avrora.failure("expression not invertible");
+                throw Avrora.failure("bit range use not invertible");
             }
         }
 
+        public void visit(Literal.IntExpr e) {
+            printer.nextln();
+            // do nothing for literals.
+        }
+
+        public void visit(Literal.BoolExpr e) {
+            printer.nextln();
+            // do nothing for literals.
+        }
+
+        public void error(Expr e) {
+            // this method is called when the expression does not match any of the overridden methods
+            throw Avrora.failure("expression not invertible");
+        }
     }
 
     class EncodingInfo {
@@ -118,8 +137,6 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
 
         private void initializeBitStates(InstrDecl id) {
-
-
             EncodingDecl ed = id.encoding;
             Iterator i1; // iterator over expressions in the encoding
 
@@ -143,39 +160,81 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
             // scan through the expressions corresponding to the fields that make up this encoding
             // and initialize the bitState array to either ENC_ONE, ENC_ZERO, or ENC_VAR
-            int bitNum = 0;
+            int offset = 0;
             while ( i1.hasNext() ) {
                 // get the expression of the parent encoding
                 Expr e = (Expr)i1.next();
-                // evaluate the parent encoding expression, given values for operands
-                Expr e1 = e.accept(cp,ce);
                 // get the bit width of the parent encoding field
                 int size = e.getBitWidth();
 
-                // store the expression for future use
-                EncodingExpr ee = new EncodingExpr(size, e1);
-                simplifiedExprs.add(ee);
 
-                // if this field corresponds to an integer literal, initialize each bit to
-                // either ENC_ZERO or ENC_ONE
-                if ( e1 instanceof Literal.IntExpr ) {
-                    Literal.IntExpr l = (Literal.IntExpr)e1;
-                    for ( int cntr = 0; cntr < size; cntr++) {
-                        boolean bit = Arithmetic.getBit(l.value, size-cntr-1);
-                        bitStates[bitNum++] = bit ? ENC_ONE : ENC_ZERO;
+                int endbit = offset + size - 1;
+                if ( (offset / WORD_SIZE) != (endbit / WORD_SIZE) ) {
+                    // this field spans a word boundary; we will need to split it up
+                    int f_offset = offset;
+                    int h_bit = size - 1;
+                    while ( f_offset < endbit ) {
+                        int bits = WORD_SIZE - (f_offset % WORD_SIZE);
+                        if ( bits > WORD_SIZE ) bits = WORD_SIZE;
+                        // evaluate the expression with a smaller bit interval
+                        Expr simpleExpr = eval(e, cp, ce, h_bit, h_bit-bits+1);
+                        addExpr(f_offset, bits, simpleExpr);
+
+                        f_offset += bits;
+                        h_bit -= bits;
                     }
-                } else if (e1 instanceof Literal.BoolExpr) {
-                    // if it is a boolean literal, initialize one bit
-                    Literal.BoolExpr l = (Literal.BoolExpr)e1;
-                    bitStates[bitNum++] = l.value ? ENC_ONE : ENC_ZERO;
                 } else {
-                    // not a known value; initialize each bit to variable
-                    for ( int cntr = 0; cntr < size; cntr++) {
-                        bitStates[bitNum++] = ENC_VAR;
-                    }
+                    // evaluate the parent encoding expression, given values for operands
+                    Expr simpleExpr = e.accept(cp,ce);
+
+                    addExpr(offset, size, simpleExpr);
                 }
+
+                offset += size;
             }
             print();
+        }
+
+        private void addExpr(int offset, int size, Expr simpleExpr) {
+            // store the expression for future use
+            EncodingField ee = new EncodingField(this, offset, size, simpleExpr);
+            simplifiedExprs.add(ee);
+
+            setBitStates(simpleExpr, size, offset);
+        }
+
+        Expr eval(Expr e, ConstantPropagator cp, ConstantPropagator.ConstantEnvironment ce, int h_bit, int l_bit) {
+            if ( e.isBitRangeExpr() ) {
+                BitRangeExpr orig = (BitRangeExpr)e;
+                int nmax = h_bit + orig.low_bit;
+                if ( orig.high_bit - orig.low_bit < h_bit - l_bit )
+                    nmax = orig.high_bit;
+                int nmin = l_bit + orig.low_bit;
+                e = new BitRangeExpr(orig.operand, nmin, nmax);
+            }
+
+            return e.accept(cp, ce);
+        }
+
+        private void setBitStates(Expr simpleExpr, int size, int offset) {
+            // if this field corresponds to an integer literal, initialize each bit to
+            // either ENC_ZERO or ENC_ONE
+            if ( simpleExpr instanceof Literal.IntExpr ) {
+                Literal.IntExpr l = (Literal.IntExpr)simpleExpr;
+                for ( int cntr = 0; cntr < size; cntr++) {
+                    boolean bit = Arithmetic.getBit(l.value, size-cntr-1);
+                    bitStates[offset++] = bit ? ENC_ONE : ENC_ZERO;
+                }
+            } else if (simpleExpr instanceof Literal.BoolExpr) {
+                // if it is a boolean literal, initialize one bit
+                Literal.BoolExpr l = (Literal.BoolExpr)simpleExpr;
+                bitStates[offset++] = l.value ? ENC_ONE : ENC_ZERO;
+            } else {
+                // not a known value; initialize each bit to variable
+                for ( int cntr = 0; cntr < size; cntr++) {
+                    bitStates[offset++] = ENC_VAR;
+                }
+            }
         }
 
         void print() {
@@ -371,7 +430,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             int high_bit = nativeBitOrder(left_bit);
             int low_bit = nativeBitOrder(right_bit);
             int mask = Arithmetic.getBitRangeMask(low_bit, high_bit);
-            printer.println("// get value of bits word["+left_bit+":"+right_bit+"]");
+            printer.println("// get value of bits logical["+left_bit+":"+right_bit+"]");
             printer.println("int value = (word1 >> "+low_bit+") & 0x"+StringUtil.toHex(mask, 5)+";");
             printer.startblock("switch ( value )");
 
@@ -394,7 +453,6 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             boolean check = false;
             int mask = 0;
             int value = 0;
-            // TODO: double check bit ordering for this test.
             // first check for any left over concrete bits that must match
             EncodingInfo ei = (EncodingInfo)encodings.iterator().next();
 
@@ -435,12 +493,10 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
 
         private void generateDecodeStatements(EncodingInfo ei) {
-            int offset = 0;
             Iterator i = ei.simplifiedExprs.iterator();
             while ( i.hasNext() ) {
-                EncodingExpr e = (EncodingExpr)i.next();
-                e.generateDecoder(offset);
-                offset += e.bitsize;
+                EncodingField e = (EncodingField)i.next();
+                e.generateDecoder();
             }
         }
 
@@ -461,6 +517,14 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
 
         private void declareOperands(EncodingInfo ei) {
+            int size = ei.bitStates.length / 8;
+            for ( int cntr = 2; size > 2; cntr += 2, size -= 2 ) {
+                int wordnum = (cntr / 2) + 1;
+                if ( size > 3 )
+                    printer.println("int word"+wordnum+" = getWord("+(wordnum-1)+");");
+                else
+                    printer.println("int word"+wordnum+" = getByte("+(wordnum-1)+");");
+            }
             Iterator i = ei.instr.getOperandIterator();
             while ( i.hasNext() ) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
@@ -488,7 +552,6 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         architecture.accept(this);
         rootSet.compute();
         printer.indent();
-        generateGetRegMethod();
         generateDecodeTables();
         rootSet.generateCode();
         printer.unindent();
@@ -506,19 +569,6 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     private void invalidInstr() {
         printer.println("throw Avrora.failure(\"INVALID INSTRUCTION\");");
-    }
-
-    private void generateGetRegMethod() {
-        printer.startblock("private Register getReg(Register[] table, int index)");
-        printer.startblock("if ( index < 0 || index >= table.length ) ");
-        invalidInstr();
-        printer.endblock();
-        printer.println("Register reg = table[index];");
-        printer.startblock("if ( reg == null ) ");
-        invalidInstr();
-        printer.endblock();
-        printer.println("return reg;");
-        printer.endblock();
     }
 
     private void generateDecodeTables() {
@@ -566,10 +616,16 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         int high_bit = nativeBitOrder(left_bit);
         int low_bit = nativeBitOrder(right_bit);
         int mask = Arithmetic.getBitRangeMask(low_bit, high_bit);
-        printer.print("((word1 >> "+low_bit+") & 0x"+StringUtil.toHex(mask, 5)+")");
+
+        int word = 1 + (left_bit / WORD_SIZE);
+
+        if ( low_bit > 0 )
+            printer.print("((word"+word+" >> "+low_bit+") & 0x"+StringUtil.toHex(mask, 5)+")");
+        else
+            printer.print("(word"+word+" & 0x"+StringUtil.toHex(mask, 5)+")");
     }
 
     private int nativeBitOrder(int bit) {
-        return 15-bit;
+        return 15-(bit % WORD_SIZE);
     }
 }

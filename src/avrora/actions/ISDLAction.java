@@ -34,10 +34,7 @@ package avrora.actions;
 
 import avrora.Avrora;
 import avrora.core.isdl.Architecture;
-import avrora.core.isdl.gen.ClassGenerator;
-import avrora.core.isdl.gen.CodemapGenerator;
-import avrora.core.isdl.gen.InterpreterGenerator;
-import avrora.core.isdl.gen.DisassemblerGenerator;
+import avrora.core.isdl.gen.*;
 import avrora.core.isdl.parser.ISDLParser;
 import avrora.util.Option;
 import avrora.util.Printer;
@@ -47,6 +44,7 @@ import avrora.util.Terminal;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintStream;
+import java.io.FileOutputStream;
 
 /**
  * The <code>ISDLAction</code> class implements an action to load an instruction set description from a file
@@ -74,6 +72,7 @@ public class ISDLAction extends Action {
             "This option controls whether the ISDL processor will inline all subroutines marked as " +
             "\"inline\" in their declaration.");
     public final Option.Str DISASSEM = newOption("disassembler", "", "");
+    public final Option.Str DISTEST = newOption("disassembler-tests", "", "");
 
     public ISDLAction() {
         super(HELP);
@@ -123,6 +122,13 @@ public class ISDLAction extends Action {
             SectionFile f = new SectionFile(disassem, "DISASSEM GENERATOR");
             new DisassemblerGenerator(a, new Printer(new PrintStream(f))).generate();
             f.close();
+        }
+
+        String distest = DISTEST.get();
+        if ( !"".equals(distest) ) {
+            Terminal.println("Generating disassembler tests to " + distest + "...");
+            Printer p = new Printer(new PrintStream(new FileOutputStream(distest)));
+            new DisassemblerTestGenerator(a, p).generate();
         }
     }
 }
