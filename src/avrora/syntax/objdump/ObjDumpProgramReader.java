@@ -34,6 +34,7 @@ package avrora.syntax.objdump;
 
 import avrora.Avrora;
 import avrora.Main;
+import avrora.core.ProgramReader;
 import avrora.core.Program;
 
 import java.io.File;
@@ -47,7 +48,7 @@ import java.io.StringReader;
  *
  * @author Ben L. Titzer
  */
-public class ObjDumpProgramReader extends Main.ProgramReader {
+public class ObjDumpProgramReader extends ProgramReader {
 
     /**
      * The <code>read()</code> method takes the command line arguments passed to

@@ -34,7 +34,9 @@ package avrora.syntax.atmel;
 
 import avrora.Avrora;
 import avrora.Main;
+import avrora.core.ProgramReader;
 import avrora.core.Program;
+import avrora.core.ProgramReader;
 import avrora.syntax.Module;
 
 import java.io.File;
@@ -47,7 +49,7 @@ import java.io.FileInputStream;
  *
  * @author Ben L. Titzer
  */
-public class AtmelProgramReader extends Main.ProgramReader {
+public class AtmelProgramReader extends ProgramReader {
 
     /**
      * The <code>read()</code> method takes the command line arguments passed to

@@ -30,28 +30,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.actions;
-
-import avrora.test.SimulatorTestHarness;
-import avrora.test.AutomatedTester;
+package avrora.core;
 
 /**
- * The <code>TestAction</code> class represents an action to invoke the
- * built-in automated testing framework that is used for regression testing
- * in Avrora.
- *
- * @author Ben L. Titzer
+ * The <code>ProgramReader</code> class represents an object capable of reading
+ * a program given the special command line arguments. It may for example read
+ * source assembly and produce a simplified program.
  */
-public class TestAction extends Action {
-    public static final String HELP = "The \"test\" action invokes the internal automated testing framework " +
-            "that runs testcases supplied at the command line. The testcases are " +
-            "used in regressions for diagnosing bugs.";
+public abstract class ProgramReader {
+    /**
+     * The <code>read()</code> method will read a program in and produce a
+     * simplified format.
+     *
+     * @param args the command line arguments
+     * @return a program instance representing the program
+     * @throws Exception
+     */
+    public abstract Program read(String[] args) throws Exception;
 
-    public TestAction() {
-        super("test", HELP);
-    }
-
-    public void run(String[] args) throws Exception {
-        new AutomatedTester().runTests(args);
-    }
+    public abstract String getHelp();
 }

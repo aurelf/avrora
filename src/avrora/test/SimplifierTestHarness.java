@@ -30,28 +30,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.actions;
+package avrora.test;
 
-import avrora.test.SimulatorTestHarness;
-import avrora.test.AutomatedTester;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
+import avrora.syntax.Module;
+import avrora.test.TestCase.ExpectCompilationError;
+import avrora.Main;
+
+import java.util.*;
 
 /**
- * The <code>TestAction</code> class represents an action to invoke the
- * built-in automated testing framework that is used for regression testing
- * in Avrora.
+ * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the
+ * <code>avrora.test.AutomatedTester</code> in order to automate testing of the
+ * AVR parser and simulator.
  *
  * @author Ben L. Titzer
  */
-public class TestAction extends Action {
-    public static final String HELP = "The \"test\" action invokes the internal automated testing framework " +
-            "that runs testcases supplied at the command line. The testcases are " +
-            "used in regressions for diagnosing bugs.";
+public class SimplifierTestHarness implements TestHarness {
 
-    public TestAction() {
-        super("test", HELP);
+    class SimplifierTest extends ExpectCompilationError {
+
+        Module module;
+        Program program;
+
+        SimplifierTest(String fname, Properties props) {
+            super(fname, props);
+        }
+
+        public void run() throws Exception {
+            String input = properties.getProperty("input");
+            if (input == null) input = "atmel";
+            ProgramReader r = Main.getProgramReader(input);
+            String args[] = {filename};
+            program = r.read(args);
+        }
     }
 
-    public void run(String[] args) throws Exception {
-        new AutomatedTester().runTests(args);
+    public TestCase newTestCase(String fname, Properties props) throws Exception {
+        return new SimplifierTest(fname, props);
     }
+
 }

@@ -36,7 +36,6 @@ import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
 import avrora.util.ClassMap;
-import avrora.AVRTestHarness;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -74,8 +73,8 @@ public class AutomatedTester {
      */
     public AutomatedTester() {
         harnessMap = new ClassMap("Test Harness", TestHarness.class);
-        harnessMap.addClass("simulator", AVRTestHarness.class);
-        harnessMap.addClass("simplifier", AVRTestHarness.class);
+        harnessMap.addClass("simulator", SimulatorTestHarness.class);
+        harnessMap.addClass("simplifier", SimplifierTestHarness.class);
     }
 
     private class TestPair {

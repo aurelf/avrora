@@ -187,7 +187,7 @@ public class MemoryMatrixProfiler {
                 return 0;
             else
                 return matrix[address][data_addr];
-        throw Avrora.failure("no count for data address " + StringUtil.addrToString(data_addr));
+        return 0;
     }
 
 }

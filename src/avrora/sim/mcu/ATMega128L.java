@@ -590,17 +590,12 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             int timerMode;
             long period;
 
-            //boolean blockCompareMatch;
             boolean blockCompareMatch;
-            //final int[] periods;
 
             Simulator.Printer timerPrinter;
 
             // information about registers and flags that specifies
             // which specific registers this 16-bit timer interacts with
-            //final TimerValues timerValues;
-
-            /* should define these fields in an actual instance of this class */
 
             int n; // number of timer. 1 for Timer1, 3 for Timer3
 
@@ -619,8 +614,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             int ICRnH;
             int ICRnL;
 
-            // these are the offsets on registers corresponding to
-            // these flags
+            // these are the offsets on registers corresponding to these flags
             int OCIEnA;
             int OCIEnB;
             int OCIEnC;
@@ -2280,8 +2274,6 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 }
 
             }
-
-            private final byte flagByteMask = (byte) 0xe0;
 
 
             /** UCSRnA (<code>ControlRegisterA</code>) is one of three control/status registers for the USART. The

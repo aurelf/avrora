@@ -34,6 +34,7 @@ package avrora.syntax.gas;
 
 import avrora.Avrora;
 import avrora.Main;
+import avrora.core.ProgramReader;
 import avrora.core.Program;
 import avrora.syntax.Module;
 
@@ -46,7 +47,7 @@ import java.io.FileInputStream;
  *
  * @author Ben L. Titzer
  */
-public class GASProgramReader extends Main.ProgramReader {
+public class GASProgramReader extends ProgramReader {
 
     /**
      * The <code>read()</code> method accepts a list of filenames as strings, loads

@@ -81,14 +81,10 @@ public interface Radio {
         }
 
         public int compareTo(Object o) {
-            if (o instanceof RadioPacket) {
-                RadioPacket p = (RadioPacket) o;
-                if ( p.originTime > originTime ) return -1;
-                if ( p.originTime < originTime ) return 1;
-                return 0;
-            } else {
-                throw Avrora.failure("cannot compare RadioPacket to "+o.getClass());
-            }
+            RadioPacket p = (RadioPacket) o;
+            if ( p.originTime > originTime ) return -1;
+            if ( p.originTime < originTime ) return 1;
+            return 0;
         }
 
     }
