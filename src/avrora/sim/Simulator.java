@@ -624,6 +624,7 @@ public abstract class Simulator implements InstrVisitor, IORegisterConstants {
         }
 
         public void force() {
+            // flagging the bit will cause the interrupt to be posted if it is not masked
             flagRegister.flagBit(bit);
         }
 
