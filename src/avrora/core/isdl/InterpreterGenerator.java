@@ -48,7 +48,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class InterpreterGenerator extends StmtVisitor.DepthFirst {
+public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Architecture.Visitor {
 
     protected final Printer printer;
     protected final Architecture architecture;
@@ -174,23 +174,19 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
     public void generateCode() {
         printer.indent();
-        // process all the instruction declarations
-        Iterator i = architecture.getInstrIterator();
-        while (i.hasNext()) {
-            InstrDecl d = (InstrDecl) i.next();
-            generateCode(d);
-        }
-
-        // process all the subroutine declarations
-        i = architecture.getSubroutineIterator();
-        while (i.hasNext()) {
-            SubroutineDecl d = (SubroutineDecl) i.next();
-            if (!d.inline && d.hasBody()) generateCode(d);
-        }
+        architecture.accept(this);
         printer.unindent();
     }
 
-    public void generateCode(InstrDecl d) {
+    public void visit(OperandDecl d) {
+        // don't care about operand declarations
+    }
+
+    public void visit(EncodingDecl d) {
+        // don't care about operand declarations
+    }
+
+    public void visit(InstrDecl d) {
         printer.startblock("public void visit(" + d.getClassName() + " i) ");
         // emit the default next pc computation
         printer.println("nextPC = pc + " + (d.getEncodingSize() / 8) + ";");
@@ -226,7 +222,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         }
     }
 
-    public void generateCode(SubroutineDecl d) {
+    public void visit(SubroutineDecl d) {
         printer.print("public " + d.ret.image + " " + d.name.image + "(");
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {
@@ -363,6 +359,11 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         printer.print(")");
     }
 
+    /**
+     * The <code>CodeGenerator</code> class is used to generate code for individual
+     * expressions. It generates textual code for each expression and dumps it to
+     * the printer.
+     */
     public class CodeGenerator implements CodeVisitor {
 
         private void inner(Expr e, int outerPrecedence) {

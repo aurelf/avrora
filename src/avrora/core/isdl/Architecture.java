@@ -64,6 +64,18 @@ public class Architecture {
     List operands;
     List encodings;
 
+    /**
+     * The <code>Visitor</code> class represents a visitor over the elements of
+     * the architecture description. It has methods to visit each subroutine,
+     * instruction, operand, and encoding declared in the specification.
+     */
+    public interface Visitor {
+        public void visit(SubroutineDecl d);
+        public void visit(InstrDecl d);
+        public void visit(OperandDecl d);
+        public void visit(EncodingDecl d);
+    }
+
     public Architecture() {
         subroutineMap = new HashMap();
         instructionMap = new HashMap();
@@ -178,6 +190,27 @@ public class Architecture {
         printer.println("loading encoding format " + d.name.image + "...");
         encodingMap.put(d.name.image, d);
         encodings.add(d);
+    }
+
+    /**
+     * The <code>accept()</code> method implements part of the visitor pattern that
+     * allows a visitor to visit each part of the architecture description.
+     * @param v the visitor to accept
+     */
+    public void accept(Visitor v) {
+        Iterator i;
+
+        i = operands.iterator();
+        while ( i.hasNext() ) v.visit((OperandDecl)i.next());
+
+        i = encodings.iterator();
+        while ( i.hasNext() ) v.visit((EncodingDecl)i.next());
+
+        i = subroutines.iterator();
+        while ( i.hasNext() ) v.visit((SubroutineDecl)i.next());
+
+        i = instructions.iterator();
+        while ( i.hasNext() ) v.visit((InstrDecl)i.next());
     }
 
     public InstrDecl getInstruction(String name) {
