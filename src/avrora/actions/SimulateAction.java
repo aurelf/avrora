@@ -75,6 +75,8 @@ public class SimulateAction extends SimAction {
 
     ProgramProfiler profile;
 
+    SleepCounter sleepCounter;
+
     MemoryProfiler memprofile;
 
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
@@ -157,6 +159,20 @@ public class SimulateAction extends SimAction {
         }
     }
 
+    private class SleepCounter implements Simulator.Event {
+        protected long sleepCycles;
+        protected long awakeCycles;
+
+        public void fire() {
+            if ( simulator.getState().isSleeping() )
+                sleepCycles++;
+            else
+                awakeCycles++;
+
+            simulator.insertEvent(this, 1);
+        }
+    }
+
     private class BranchCounter extends avrora.sim.util.BranchCounter {
         private final Main.Location location;
 
@@ -218,6 +234,7 @@ public class SimulateAction extends SimAction {
         processProfile();
         processMemoryProfile();
         processStackMonitor();
+        processSleepStats();
 
         if (TRACE.get()) {
             simulator.insertProbe(Simulator.TRACEPROBE);
@@ -237,6 +254,7 @@ public class SimulateAction extends SimAction {
             reportProfile();
             reportMemoryProfile();
             reportStackMonitor();
+            reportSleepStats();
         }
     }
 
@@ -339,6 +357,12 @@ public class SimulateAction extends SimAction {
 
                 reportQuantity("    " + addr, cnt, "  " + percent);
             }
+        }
+    }
+
+    void processSleepStats() {
+        if ( SLEEP_STATS.get() ) {
+            simulator.insertEvent(sleepCounter = new SleepCounter(), 1);
         }
     }
 
@@ -458,6 +482,15 @@ public class SimulateAction extends SimAction {
                 float thru = ((float) simulator.getState().getCycles()) / (diff * 1000);
                 reportQuantity("Average throughput", thru, "mhz");
             }
+        }
+    }
+
+    void reportSleepStats() {
+        if ( SLEEP_STATS.get() ) {
+            reportQuantity("Time slept", sleepCounter.sleepCycles, "cycles");
+            reportQuantity("Time awake", sleepCounter.awakeCycles, "cycles");
+            float percent = 100*((float)sleepCounter.sleepCycles) / (sleepCounter.sleepCycles + sleepCounter.awakeCycles);
+            reportQuantity("Total", percent, "%");
         }
     }
 

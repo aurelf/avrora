@@ -380,5 +380,11 @@ public interface State extends IORegisterConstants {
      */
     public long getCycles();
 
+    /**
+     * The <code>isSleeping()</code> method returns whether the simulator is currently
+     * in a sleep mode.
+     * @return true if the simulator is in a sleep mode; false otherwise
+     */
+    public boolean isSleeping();
 
 }

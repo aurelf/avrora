@@ -55,6 +55,10 @@ public abstract class SimAction extends Action {
     public final Option.Str CHIP = newOption("chip", "atmega128l",
             "This option selects the microcontroller from a library of supported " +
             "microcontroller models.");
+    public final Option.Bool SLEEP_STATS = newOption("sleep-statistics", false,
+            "This option collects statistics on the sleeping behavior of the program, " +
+            "recording the length of sleeping intervals and the total amount of time " +
+            "spent in sleep modes.");
     public final Option.Str PLATFORM = newOption("platform", "",
             "This option selects the platform on which the microcontroller is built, " +
             "including the external devices such as LEDs and radio. If the platform " +

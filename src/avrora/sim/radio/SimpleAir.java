@@ -141,6 +141,10 @@ public class SimpleAir implements RadioAir {
         RSSIWait w = new RSSIWait(s, t);
         RSSIWait f = null;
 
+        // TODO: gross hack to handle the case of only one node
+        if ( !(Thread.currentThread() instanceof SimulatorThread) )
+            return 0x3ff;
+
         synchronized ( this ) {
             if ( rssiPrinter.enabled ) {
                 rssiPrinter.println("RSSI: sampleRSSI @ "+t);

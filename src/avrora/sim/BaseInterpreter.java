@@ -952,6 +952,15 @@ public abstract class BaseInterpreter implements State {
     }
 
     /**
+     * The <code>isSleeping()</code> method returns whether the simulator is currently
+     * in a sleep mode.
+     * @return true if the simulator is in a sleep mode; false otherwise
+     */
+    public boolean isSleeping() {
+        return sleeping;
+    }
+
+    /**
      * The <code>unpostInterrupt()</code> method is generally only used within the
      * simulator which does pre-processing of interrupts before it posts them
      * into the internal <code>State</code> instance. This method causes the
