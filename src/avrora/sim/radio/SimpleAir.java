@@ -4,7 +4,7 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.util.GlobalClock;
-import avrora.util.GlobalQueue;
+import avrora.sim.util.GlobalQueue;
 
 import java.util.*;
 
@@ -12,6 +12,9 @@ import java.util.*;
  * Very simple implementation of radio air. It assumes a lossless environment where all radios are able to communicate
  * with each other. This simple air is blind to the frequencies used in transmission (i.e. it assumes that all
  * frequencies are really the same).
+ *
+ * This class should provide the proper scheduling policy with respect to threads that
+ * more complicated radio implementations
  *
  * @author Daniel Lee
  */
