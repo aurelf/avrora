@@ -71,15 +71,6 @@ public class MultiSimulateAction extends SimAction {
     public final Option.Str TOPOLOGY = newOption("topology", "",
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network.");
-    public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", false,
-            "This option selects the legacy (hand-written) interpreter rather than the " +
-            "interpreter generated from the architecture description language. It is used for " +
-            "benchmarking and regression purposes only.");
-    public final Option.Bool TIME = newOption("time", false,
-            "This option will cause the simulator " +
-            "to report the time used in executing the simulation. When combined with " +
-            "the \"cycles\" and \"total\" options, it will report performance " +
-            "information about the simulation.");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option causes the simulator to insert a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
