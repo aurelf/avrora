@@ -41,6 +41,7 @@ import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
+import avrora.Avrora;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator
@@ -69,6 +70,8 @@ public abstract class Simulator implements IORegisterConstants {
                 String idstr = StringUtil.rightJustify(id, 4);
                 String cycstr = StringUtil.rightJustify(clock.getCount(), 10);
                 Terminal.println(idstr+" "+cycstr+"   "+s);
+            } else {
+                throw Avrora.failure("Disabled printer: performance bug!");
             }
         }
     }

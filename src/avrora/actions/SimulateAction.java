@@ -197,8 +197,14 @@ public class SimulateAction extends SimAction {
 
         startms = System.currentTimeMillis();
         try {
+            printSimHeader();
             simulator.start();
+        } catch ( Simulator.BreakPointException e ) {
+            Terminal.println("Breakpoint at "+StringUtil.addrToString(e.address)+" reached.");
+        } catch ( Simulator.TimeoutException e ) {
+            Terminal.println("Timeout reached: pc = "+StringUtil.addrToString(e.address)+", time = "+simulator.getClock().getCount());
         } finally {
+            printSeparator();
             endms = System.currentTimeMillis();
 
             reportTotal();

@@ -88,7 +88,7 @@ public class BenchmarkAction extends SimAction {
 
         Terminal.printGreen("Generated Interpreter");
         Terminal.nextln();
-        Terminal.printSeparator(78);
+        printSeparator();
 
         for (long cntr = 0; cntr < repeat; cntr++) {
 
@@ -100,7 +100,7 @@ public class BenchmarkAction extends SimAction {
             report(cyclesA, millisA);
         }
 
-        Terminal.printSeparator(78);
+        printSeparator();
 
         long avgCyclesA = totalCyclesA / repeat;
         long avgMillisA = totalMillisA / repeat;

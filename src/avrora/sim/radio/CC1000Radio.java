@@ -104,7 +104,7 @@ public class CC1000Radio implements Radio {
     protected final FSCTRLRegister FSCTRL_reg;
     protected final PrescalerRegister PRESCALER_reg;
 
-    protected final Verbose.Printer radioPrinter = Verbose.getVerbosePrinter("sim.cc1000");
+    protected final Simulator.Printer radioPrinter;
 
     protected final Receiver receiver = new Receiver();
     protected final Transmitter transmitter = new Transmitter();
@@ -151,6 +151,8 @@ public class CC1000Radio implements Radio {
 
         this.mcu = mcu;
         this.sim = mcu.getSimulator();
+
+        radioPrinter = sim.getPrinter("sim.cc1000");
 
         MAIN_reg = new MainRegister();
 
@@ -847,10 +849,11 @@ public class CC1000Radio implements Radio {
         public ATMega128L.SPIDevice connectedDevice;
         private final TransferTicker ticker;
 
-        private Verbose.Printer printer = Verbose.getVerbosePrinter("sim.cc1000.data");
+        private Simulator.Printer printer;
 
         ATMega128LController() {
             ticker = new TransferTicker();
+            printer = sim.getPrinter("sim.cc100.data");
         }
 
         public void enable() {
@@ -1121,17 +1124,20 @@ public class CC1000Radio implements Radio {
 
         int bitsRead;
 
-        Verbose.Printer readerPrinter = Verbose.getVerbosePrinter("sim.cc1000.pinconfig");
+        Simulator.Printer readerPrinter;
 
         Microcontroller.Pin.Input paleInput;
 
         SerialConfigurationInterface(Microcontroller mcu) {
+
+            readerPrinter = sim.getPrinter("sim.cc1000.pinconfig");
 
             //install outputs
             mcu.getPin(31).connect(new PCLKOutput());
             mcu.getPin(32).connect(new PDATAOutput());
             mcu.getPin(32).connect(new PDATAInput());
             mcu.getPin(29).connect(new PALEOutput());
+
         }
 
         /**
@@ -1222,7 +1228,8 @@ public class CC1000Radio implements Radio {
             if (bitsRead == 16) {
                 String rw = write ? " write " : " read ";
                 byte printData = write ? data : registers[(0x7f & address)].read();
-                readerPrinter.println("Address " + Integer.toHexString(0x7f & address) + rw + " data " + Integer.toBinaryString(0xff & printData));
+                if ( readerPrinter.enabled )
+                    readerPrinter.println("Address " + Integer.toHexString(0x7f & address) + rw + " data " + Integer.toBinaryString(0xff & printData));
                 bitsRead = 0;
 
                 if (write) {

@@ -251,4 +251,14 @@ public abstract class SimAction extends Action {
 
         return loclist;
     }
+
+    protected void printSimHeader() {
+        Terminal.printGreen("Node       Time   Event");
+        Terminal.nextln();
+        printSeparator();
+    }
+
+    protected void printSeparator() {
+        Terminal.printSeparator(78);
+    }
 }

@@ -143,10 +143,12 @@ public class MultiSimulateAction extends SimAction {
 
         long startms = System.currentTimeMillis();
         try {
+            printSimHeader();
             startSimulationThreads(simulatorThreadList);
 
         } finally {
             joinSimulationThreads(simulatorThreadList);
+            printSeparator();
 
             // compute simulation time
             long endms = System.currentTimeMillis();
@@ -162,12 +164,11 @@ public class MultiSimulateAction extends SimAction {
         while ( i.hasNext() ) {
             Simulator s = ((SimulatorThread)i.next()).getSimulator();
             if ( hasMonitors(s) ) {
-                Terminal.printSeparator(78);
                 Terminal.printGreen(" Monitors for node ");
                 Terminal.print(": ");
                 Terminal.printCyan(""+cntr);
                 Terminal.nextln();
-                Terminal.printSeparator(78);
+                printSeparator();
             }
             reportMonitors(s);
             cntr++;
