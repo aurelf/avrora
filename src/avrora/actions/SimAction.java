@@ -182,7 +182,7 @@ public abstract class SimAction extends Action {
         if (pf != null) {
             simulator = pf.newPlatform(simcount++, factory, p).getMicrocontroller().getSimulator();
         } else {
-            simulator = getMicrocontroller().newMicrocontroller(simcount++, factory, p).getSimulator();
+            simulator = Defaults.newSimulator(simcount++, MCU.get(), factory, p);
         }
 
         processTimeout(simulator);
@@ -210,7 +210,7 @@ public abstract class SimAction extends Action {
         if (TIMEOUT.get() > 0)
             s.insertTimeout(TIMEOUT.get());
         else if (SECONDS.get() > 0.0)
-            s.insertTimeout((long)(SECONDS.get() * s.getMicrocontroller().getHz()));
+            s.insertTimeout((long)(SECONDS.get() * s.getMicrocontroller().getHZ()));
         if (ICOUNT.get() > 0)
             s.insertProbe(new Simulator.InstructionCountTimeout(ICOUNT.get()));
     }

@@ -147,7 +147,7 @@ public class SimulateAction extends SimAction {
                 // interrupt exceptions are dumb.
             }
             lastMs = newMs;
-            simulator.insertEvent(this, microcontroller.getHz() / 100);
+            simulator.insertEvent(this, microcontroller.getHZ() / 100);
         }
     }
 
@@ -175,7 +175,7 @@ public class SimulateAction extends SimAction {
         processTotal();
 
         if (REALTIME.get())
-            simulator.insertEvent(new ThrottleEvent(), microcontroller.getHz() / 100);
+            simulator.insertEvent(new ThrottleEvent(), microcontroller.getHZ() / 100);
 
         String visual = VISUAL.get();
         if (!"".equals(visual)) {

@@ -35,10 +35,7 @@ package avrora.sim.mcu;
 import avrora.Avrora;
 import avrora.util.Arithmetic;
 import avrora.sim.radio.Radio;
-import avrora.sim.InterpreterFactory;
-import avrora.sim.Simulator;
-import avrora.sim.FiniteStateMachine;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.sim.platform.Platform;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
@@ -308,28 +305,20 @@ public class ATMega128 extends ATMegaFamily {
          * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
          *         program loaded onto it
          */
-        public Microcontroller newMicrocontroller(int id, InterpreterFactory f, Program p) {
-            return new ATMega128(7372800, id, f, p);
+        public Microcontroller newMicrocontroller(int id, ClockDomain cd, InterpreterFactory f, Program p) {
+            return new ATMega128(id, cd, f, p);
         }
 
     }
 
-    protected ATMega128(int hz, int id, InterpreterFactory f, Program p) {
-        super(hz, props);
+    protected ATMega128(int id, ClockDomain cd, InterpreterFactory f, Program p) {
+        super(cd, props);
         simulator = new Simulator(id, f, this, p);
-        clock = simulator.getClock();
         interpreter = simulator.getInterpreter();
-        installClocks();
-        sleepState = new FiniteStateMachine(clock, 0, idleModeName, transitionTimeMatrix);
+        sleepState = new FiniteStateMachine(mainClock, 0, idleModeName, transitionTimeMatrix);
         MCUCR_reg = getIOReg("MCUCR");
         installPins();
         installDevices();
-    }
-
-    private void installClocks() {
-        // by default, the external clock is the same speed as the main clock
-        addClock("main", clock);
-        addClock("external", clock);
     }
 
     public boolean isSupported(InstrPrototype i) {

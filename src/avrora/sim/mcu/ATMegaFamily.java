@@ -32,10 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.BaseInterpreter;
-import avrora.sim.Clock;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.util.Arithmetic;
 
 /**
@@ -255,8 +252,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
-    protected ATMegaFamily(int hz, MicrocontrollerProperties p) {
-        super(hz, p);
+    protected ATMegaFamily(ClockDomain cd, MicrocontrollerProperties p) {
+        super(cd, p);
     }
 
     /**
@@ -265,7 +262,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
      *
      * @return the number of cycles per second on this device
      */
-    public int getHz() {
+    public long getHZ() {
         return HZ;
     }
 
@@ -300,7 +297,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
             protected void decode(byte val) {
                 // TODO: if there is a change, remove ticker and requeue?
-                clock = Arithmetic.getBit(val, AS0) ? externalClock : clock;
+                timerClock = Arithmetic.getBit(val, AS0) ? externalClock : mainClock;
             }
 
 

@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
+import avrora.sim.ClockDomain;
 import avrora.sim.radio.Radio;
 import avrora.core.InstrPrototype;
 
@@ -193,7 +194,9 @@ public interface Microcontroller {
      *
      * @return the number of cycles per second on this device
      */
-    int getHz();
+    public long getHZ();
+
+    public ClockDomain getClockDomain();
 
     /**
      * The <code>millisToCycles()</code> method converts the specified number of milliseconds to a cycle

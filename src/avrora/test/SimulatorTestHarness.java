@@ -305,8 +305,7 @@ public class SimulatorTestHarness implements TestHarness {
             ProgramReader r = Defaults.getProgramReader(input);
             String args[] = {filename};
             program = r.read(args);
-            // TODO: this should not be hardcoded!!
-            simulator = new ATMega128L(0, new GenInterpreter.Factory(), program, false).getSimulator();
+            simulator = Defaults.newSimulator(0, program);
             simulator.start();
         }
 

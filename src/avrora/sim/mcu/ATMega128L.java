@@ -120,8 +120,8 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
          * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
          *         program loaded onto it
          */
-        public Microcontroller newMicrocontroller(int id, InterpreterFactory f, Program p) {
-            return new ATMega128L(id, f, p, compatibilityMode);
+        public Microcontroller newMicrocontroller(int id, ClockDomain cd, InterpreterFactory f, Program p) {
+            return new ATMega128L(id, cd, f, p, compatibilityMode);
         }
 
     }
@@ -342,16 +342,15 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
 
     }
 
-    public ATMega128L(int id, InterpreterFactory f, Program p, boolean compatibility) {
-        super(7372800, compatibility ? compat_props : props);
+    public ATMega128L(int id, ClockDomain cd, InterpreterFactory f, Program p, boolean compatibility) {
+        super(cd, compatibility ? compat_props : props);
         compatibilityMode = compatibility;
         installPins();
         simulator = new SimImpl(id, f, p);
-        clock = simulator.getClock();
         interpreter = simulator.getInterpreter();
         ((SimImpl)simulator).populateState();
         //init the energy profiling system for the CPU
-        energy = new Energy("CPU", clock, modeAmpere, modeName, startMode, this.getSimulator().getEnergyControl());
+        energy = new Energy("CPU", mainClock, modeAmpere, modeName, startMode, this.getSimulator().getEnergyControl());
     }
 
 

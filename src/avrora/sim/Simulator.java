@@ -78,7 +78,7 @@ public class Simulator {
         String cycstr;
 
         if ( REPORT_SECONDS ) {
-            int hz = microcontroller.getHz();
+            long hz = clock.getHZ();
             long count = clock.getCount();
             long seconds = count / hz;
             long fract = count % hz;
@@ -225,7 +225,9 @@ public class Simulator {
         energyControl = new EnergyControlImpl();
 
         // reset the state of the simulation
-        reset();
+        clock = mcu.getClockDomain().getMainClock();
+        MicrocontrollerProperties props = microcontroller.getProperties();
+        interpreter = factory.newInterpreter(this, program, props);
     }
 
     /**
@@ -517,16 +519,6 @@ public class Simulator {
      */
     public void stop() {
         interpreter.stop();
-    }
-
-    /**
-     * The <code>reset()</code> method stops the simulation and resets its state to the default initial state.
-     * Probes inserted in the program are retained. All events are removed.
-     */
-    public void reset() {
-        clock = new MainClock("main", microcontroller.getHz());
-        MicrocontrollerProperties props = microcontroller.getProperties();
-        interpreter = factory.newInterpreter(this, program, props);
     }
 
     /**

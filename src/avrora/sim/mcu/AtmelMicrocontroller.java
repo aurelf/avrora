@@ -32,10 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.Clock;
-import avrora.sim.Simulator;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.util.StringUtil;
 
 import java.util.HashMap;
@@ -45,21 +42,17 @@ import java.util.NoSuchElementException;
  * @author Ben L. Titzer
  */
 public abstract class AtmelMicrocontroller implements Microcontroller {
-    /**
-     * The <code>HZ</code> field stores a public static final integer that represents the clockspeed of the
-     * AtMega128L microcontroller (7.327mhz).
-     */
-    public final int HZ;
+    public final long HZ;
 
     protected final Microcontroller.Pin[] pins;
-    protected Clock clock;
+    protected final MainClock mainClock;
     protected Simulator simulator;
     protected BaseInterpreter interpreter;
     protected Simulator.Printer pinPrinter;
 
     public final MicrocontrollerProperties properties;
 
-    protected final HashMap clocks;
+    protected final ClockDomain clockDomain;
     protected final HashMap devices;
     protected final HashMap ioregs;
 
@@ -150,11 +143,12 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         }
     }
 
-    protected AtmelMicrocontroller(int hz, MicrocontrollerProperties p) {
-        HZ = hz;
+    protected AtmelMicrocontroller(ClockDomain cd, MicrocontrollerProperties p) {
+        HZ = cd.getMainClock().getHZ();
+        clockDomain = cd;
+        mainClock = cd.getMainClock();
         properties = p;
         pins = new Pin[properties.num_pins];
-        clocks = new HashMap();
         devices = new HashMap();
         ioregs = new HashMap();
     }
@@ -222,15 +216,8 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return device;
     }
 
-    protected void addClock(String name, Clock c) {
-        clocks.put(name, c);
-    }
-
     public Clock getClock(String name) {
-        Clock clock = (Clock)clocks.get(name);
-        if ( clock == null )
-            throw new NoSuchElementException(StringUtil.quote(name)+" clock not found");
-        return clock;
+        return clockDomain.getClock(name);
     }
 
     public Simulator getSimulator() {
@@ -277,5 +264,9 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
 
     public MicrocontrollerProperties getProperties() {
         return properties;
+    }
+
+    public ClockDomain getClockDomain() {
+        return clockDomain;
     }
 }

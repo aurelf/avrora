@@ -44,8 +44,10 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.*;
 import avrora.actions.*;
 import avrora.core.ProgramReader;
+import avrora.core.Program;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
@@ -349,5 +351,20 @@ public class Defaults {
             nl.addLast(HelpSystem.getCategory(s));
         }
         return nl;
+    }
+
+    public static Simulator newSimulator(int id, Program p) {
+        return newSimulator(id, "atmega128l", new GenInterpreter.Factory(), p);
+    }
+
+    public static Simulator newSimulator(int id, String mcu, InterpreterFactory factory, Program p) {
+        // TODO: this has to be configurable somehow
+        MicrocontrollerFactory f = getMicrocontroller(mcu);
+        ClockDomain cd = new ClockDomain(8000000);
+        MainClock mc = cd.getMainClock();
+        DerivedClock external = new DerivedClock("external", mc, 8000000);
+        cd.addClock(external);
+
+        return f.newMicrocontroller(id, cd, factory, p).getSimulator();
     }
 }

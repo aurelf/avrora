@@ -34,6 +34,7 @@ package avrora.test;
 
 import avrora.Main;
 import avrora.Avrora;
+import avrora.Defaults;
 import avrora.sim.Simulator;
 import avrora.sim.GenInterpreter;
 import avrora.sim.mcu.MicrocontrollerFactory;
@@ -75,8 +76,7 @@ public class ProbeTestHarness implements TestHarness {
             // TODO: better error checking: file not found, not specified, etc
             ProgramReader pr = Main.getProgramReader();
             Program p = pr.read(new String[] { progName });
-            Microcontroller m = new ATMega128L(0, new GenInterpreter.Factory(), p, false);
-            Simulator s = m.getSimulator();
+            Simulator s = Defaults.newSimulator(0, p);
             probeTest.run(s);
         }
 

@@ -329,7 +329,6 @@ public abstract class Timer8Bit extends AtmelInternalDevice {
                     countSave = count;
                     count++;
                     if (countSave == compare) {
-                        //compareMatch();
                         count = 0;
                     }
                     break;

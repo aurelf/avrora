@@ -35,6 +35,8 @@ package avrora.sim.platform;
 import avrora.core.Program;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
+import avrora.sim.ClockDomain;
+import avrora.sim.DerivedClock;
 import avrora.sim.mcu.ATMega128L;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.radio.CC1000Radio;
@@ -74,7 +76,11 @@ public class Mica2 implements Platform, PlatformFactory {
     }
 
     public Platform newPlatform(int id, InterpreterFactory f, Program p) {
-        return new Mica2(new ATMega128L(id, f, p, false));
+        ClockDomain cd = new ClockDomain(7372800);
+        DerivedClock externalClock = new DerivedClock("external", cd.getMainClock(), 32768);
+        cd.addClock(externalClock);
+
+        return new Mica2(new ATMega128L(id, cd, f, p, false));
     }
 
 
