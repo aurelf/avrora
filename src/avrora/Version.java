@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004, Regents of the University of California
+ * Copyright (c) 2004-2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ public class Version {
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public final int commit = 33;
+    public final int commit = 34;
 
     public static Version getVersion() {
         return new Version();

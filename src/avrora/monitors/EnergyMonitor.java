@@ -1,7 +1,7 @@
 /**
  * Created on 18. September 2004, 22:02
  * 
- * Copyright (c) 2004, Olaf Landsiedel, Protocol Engineering and 
+ * Copyright (c) 2004-2005, Olaf Landsiedel, Protocol Engineering and
  * Distributed Systems, University of Tuebingen
  * All rights reserved.
  *
