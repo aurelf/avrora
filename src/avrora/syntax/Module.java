@@ -198,13 +198,13 @@ public class Module implements Context {
     }
 
     private void print(String what, ASTNode where) {
-        String addr = StringUtil.toHex(segment.getCurrentAddress(), 4);
-        modulePrinter.println(segment.getName() + " @ 0x" + addr + ": " + what + " on line " + where.getLeftMostToken().beginLine);
+        String addr = StringUtil.addrToString(segment.getCurrentAddress());
+        modulePrinter.println(segment.getName() + " @ " + addr + ": " + what + " on line " + where.getLeftMostToken().beginLine);
     }
 
     private void print(String what, AbstractToken where) {
-        String addr = StringUtil.toHex(segment.getCurrentAddress(), 4);
-        modulePrinter.println(segment.getName() + " @ 0x" + addr + ": " + what + " on line " + where.beginLine);
+        String addr = StringUtil.addrToString(segment.getCurrentAddress());
+        modulePrinter.println(segment.getName() + " @ " + addr + ": " + what + " on line " + where.beginLine);
     }
 
     // .db directive

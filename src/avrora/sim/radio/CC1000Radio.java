@@ -853,7 +853,7 @@ public class CC1000Radio implements Radio {
 
         ATMega128LController() {
             ticker = new TransferTicker();
-            printer = sim.getPrinter("sim.cc100.data");
+            printer = sim.getPrinter("sim.cc1000.data");
         }
 
         public void enable() {
@@ -912,7 +912,7 @@ public class CC1000Radio implements Radio {
          */
         public void receiveFrame(SPIFrame frame) {
             if (printer.enabled) {
-                printer.println("CC1000: sending " + (char) frame.data + ", " + Integer.toHexString(0xff & frame.data));
+                printer.println("CC1000: sending '" + (char) frame.data + "', " + Integer.toHexString(0xff & frame.data));
                 if (oldData == (byte) 0x03) {
                     printer.println("Int Data : " + hex(frame.data));
                 }

@@ -112,10 +112,10 @@ public class StackMonitor extends MonitorFactory {
          * and then is initialized one byte at a time).
          */
         public void report() {
-            reportQuantity("Minimum stack pointer #1", "0x" + StringUtil.toHex(minStack1, 4), "");
-            reportQuantity("Minimum stack pointer #2", "0x" + StringUtil.toHex(minStack2, 4), "");
-            reportQuantity("Minimum stack pointer #3", "0x" + StringUtil.toHex(minStack3, 4), "");
-            reportQuantity("Maximum stack pointer", "0x" + StringUtil.toHex(maxStack, 4), "");
+            reportQuantity("Minimum stack pointer #1", StringUtil.addrToString(minStack1), "");
+            reportQuantity("Minimum stack pointer #2", StringUtil.addrToString(minStack2), "");
+            reportQuantity("Minimum stack pointer #3", StringUtil.addrToString(minStack3), "");
+            reportQuantity("Maximum stack pointer", StringUtil.addrToString(maxStack), "");
             reportQuantity("Maximum stack size #1", (maxStack - minStack1), "bytes");
             reportQuantity("Maximum stack size #2", (maxStack - minStack2), "bytes");
             reportQuantity("Maximum stack size #3", (maxStack - minStack3), "bytes");
