@@ -9,9 +9,9 @@ import avrora.sim.Simulator;
  * The <code>ProgramProfiler</code> class implements a probe that can be
  * used to profile pieces of the program or the whole program. It maintains
  * a simple array of <code>long</code> that stores the count for every
- * instruction
+ * instruction.
  *
- * @ see avrora.sim.util.Counter
+ * @see avrora.sim.util.Counter
  * @author Ben L. Titzer
  */
 public class ProgramProfiler implements Simulator.Probe {
@@ -24,7 +24,7 @@ public class ProgramProfiler implements Simulator.Probe {
 
     /**
      * The <code>icount</code> field stores the invocation count
-     * for every instruction in the program. It is indexed by byte addresses.
+     * for each instruction in the program. It is indexed by byte addresses.
      * Thus <code>icount[addr]</code> corresponds to the invocation for the instruction
      * at <code>program.readInstr(addr)</code>.
      */

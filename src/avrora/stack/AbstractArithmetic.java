@@ -3,7 +3,8 @@ package avrora.stack;
 /**
  * The <code>AbstractArithmetic</code> arithmetic class implements operations that
  * are useful for working on abstract integers which are represented as characters.
- *
+ * <br><br>
+ * 
  * The abstract values (e.g. register values) are represented as
  * characters. Thus, an 8 bit register is modelled using a 16-bit
  * character. The upper 8 bits represent the "mask", those bits
@@ -11,7 +12,7 @@ package avrora.stack;
  * of the value. Thus, if bit(regs[R], i+8) is set, then bit(R, i)
  * is known and its value is bit(regs[R], i). If bit(regs[R], i+8)
  * is clear, then the value of bit(regs[R], i) is unknown in
- * this abstract value.
+ * this abstract value. <br><br>
  *
  * Since there are 3 possible values (on, off, unknown) for each
  * bit in the abstract state and there are two bits reserved for
