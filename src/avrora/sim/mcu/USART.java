@@ -118,8 +118,8 @@ public abstract class USART extends AtmelInternalDevice {
     final int PARITY_EVEN = 2;
     final int PARITY_ODD = 3;
 
-    // Frame sizes
-    final int[] SIZE = {5, 6, 7, 8, 8, 8, 8, 9};
+    // TODO: Frame sizes are not used!!
+    static final int[] SIZE = {5, 6, 7, 8, 8, 8, 8, 9};
 
     int period = 0;
     int UBRRMultiplier = 16;

@@ -141,6 +141,7 @@ public class CC1000Radio implements Radio {
 
     private long packetsTx;
     private long packetsRx;
+    protected static final String[] allModeNames = allModeNames();
 
     /**
      * Sets the <code>SimulatorThread</code> of this radio. Should be done BEFORE adding this radio to a
@@ -245,8 +246,21 @@ public class CC1000Radio implements Radio {
         // this code should be adjusted to account for that.
         controller = new ATMega128LController();
         controller.install(mcu);
-        
-        //setup mode names
+
+        //setup energy recording
+        energy = new Energy("Radio",
+                RadioEnergy.modeAmpere,
+                allModeNames,
+                mcu.getHz(),
+                RadioEnergy.startMode,
+                mcu.getSimulator().getEnergyControl(),
+                mcu.getSimulator().getState());
+
+        packetsTx = 0;
+        packetsRx = 0;
+    }
+
+    private static String[] allModeNames() {
         String[] modeName = new String[262];
 
         for (int i = 0; i < 6; i++)
@@ -261,18 +275,7 @@ public class CC1000Radio implements Radio {
                 space = ":    ";
             modeName[i + 6] = RadioEnergy.modeName[6] + i + space;
         }
-        
-        //setup energy recording
-        energy = new Energy("Radio",
-                RadioEnergy.modeAmpere,
-                modeName,
-                mcu.getHz(),
-                RadioEnergy.startMode,
-                mcu.getSimulator().getEnergyControl(),
-                mcu.getSimulator().getState());
-
-        packetsTx = 0;
-        packetsRx = 0;
+        return modeName;
     }
 
     /**
@@ -535,20 +538,19 @@ public class CC1000Radio implements Radio {
         }
     }
 
+    static final int[] VCO_CURRENT = {150, 250, 350, 450, 950, 1050, 1150, 1250,
+                                   1450, 1550, 1650, 1750, 2250, 2350, 2450, 2550}; // in microamperes
+
+    static final double[] LO_DRIVE = {0.5, 1.0, 1.5, 2.0}; // in milliamperes
+    static final int[] PA_DRIVE = {1, 2, 3, 4}; // in milliamperes
+
     /**
      * The <code>CurrentRegister</code> controls various currents running through the CC1000 wiring.
      */
     protected class CurrentRegister extends RadioRegister {
 
-        final int[] VCO_CURRENT = {150, 250, 350, 450, 950, 1050, 1150, 1250,
-                                   1450, 1550, 1650, 1750, 2250, 2350, 2450, 2550}; // in microamperes
-
         int vcoCurrent = 150;
-
-        final double[] LO_DRIVE = {0.5, 1.0, 1.5, 2.0}; // in milliamperes
         double loDrive = 0.5;
-
-        final int[] PA_DRIVE = {1, 2, 3, 4}; // in milliamperes
         int paDrive = 1;
 
         CurrentRegister() {
@@ -568,12 +570,13 @@ public class CC1000Radio implements Radio {
         }
     }
 
+    static final int[] BUF_CURRENT = {520, 690}; // in microamperes
+    static final double[] LNA_CURRENT = {0.8, 1.4, 1.8, 2.2}; // in milliamperes
+
     protected class FrontEndRegister extends RadioRegister {
 
-        final int[] BUF_CURRENT = {520, 690}; // in microamperes
         int bufCurrent = 520;
 
-        final double[] LNA_CURRENT = {0.8, 1.4, 1.8, 2.2}; // in milliamperes
         double lnaCurrent = 0.8;
 
         final int IF_RSSI_INACTIVE = 0;
@@ -618,12 +621,7 @@ public class CC1000Radio implements Radio {
         }
 
         protected int getPower() {
-            int ret;
-            if (value >= 0)
-                ret = value;
-            else
-                ret = (value & 0x7F) + 0x80;
-            return ret;
+            return value & 0xff;
         }
 
         protected void printStatus() {
@@ -651,6 +649,10 @@ public class CC1000Radio implements Radio {
             alarmLow = Arithmetic.getBit(val, 0);
         }
     }
+
+    //PLL_LOCK_ACCURACY
+    static final int[] SETS_LOCK_THRESHOLD = {127, 31};
+    static final int[] RESET_LOCK_THRESHOLD = {111, 15};
 
     protected class LockRegister extends RadioRegister {
 
@@ -680,12 +682,7 @@ public class CC1000Radio implements Radio {
 
         boolean pllLockLength;
 
-        //PLL_LOCK_ACCURACY
-        final int[] SETS_LOCK_THRESHOLD = {127, 31};
-
         int setsLockThreshold = 127;
-
-        final int[] RESET_LOCK_THRESHOLD = {111, 15};
         int resetLockThreshold = 111;
 
         boolean lockInstant;
@@ -810,6 +807,8 @@ public class CC1000Radio implements Radio {
         }
     }
 
+    static final int[] SETTLING = {11, 22, 43, 86};
+
     protected class Modem1Register extends RadioRegister {
 
         int mlimit;
@@ -818,7 +817,6 @@ public class CC1000Radio implements Radio {
 
         boolean lockAvgMode;
 
-        final int[] SETTLING = {11, 22, 43, 86};
         int settling = 11;
 
         boolean modemResetN;
@@ -837,24 +835,23 @@ public class CC1000Radio implements Radio {
         }
     }
 
+    static final int[] BAUDRATE = {600, 1200, 2400, 4800, 9600, 19200, 0, 0};
+    static final int[] XOSC_FREQ = {3686400, // 3-4 Mhz
+                             7372800, // 6-8 Mhz
+                             1105920, // 9-12 Mhz
+                             1474560};// 12-16 Mhz
 
     /**
      * The baud rate of the system is determined by values on the MODEM0 register. TinyOS uses a baud rate of
      * 19.2 kBaud with manchester encoding, which translates into 9.6 kbps of data.
      */
     protected class Modem0Register extends RadioRegister {
-        final int[] BAUDRATE = {600, 1200, 2400, 4800, 9600, 19200, 0, 0};
         int baudrate = 2400;
 
         final int DATA_FORMAT_NRZ = 0;
         final int DATA_FORMAT_MANCHESTER = 1;
         final int DATA_FORMAT_UART = 2;
         int dataFormat = DATA_FORMAT_MANCHESTER;
-
-        final int[] XOSC_FREQ = {3686400, // 3-4 Mhz
-                                 7372800, // 6-8 Mhz
-                                 1105920, // 9-12 Mhz
-                                 1474560};// 12-16 Mhz
 
         int xoscFreq = 3686400;
 
@@ -915,12 +912,14 @@ public class CC1000Radio implements Radio {
         }
     }
 
+    // TODO: are there integer round off problems with these values?
+    static final double[] PRE_SWING = {1.0, 2 / 3, 7 / 3, 5 / 3};
+    static final double[] PRE_CURRENT = {1.0, 2 / 3, 1 / 2, 2 / 5};
+
     protected class PrescalerRegister extends RadioRegister {
 
-        final double[] PRE_SWING = {1.0, 2 / 3, 7 / 3, 5 / 3};
         double preSwing = 1.0;
 
-        final double[] PRE_CURRENT = {1.0, 2 / 3, 1 / 2, 2 / 5};
         double preCurrent = 1.0;
 
         boolean ifInput;

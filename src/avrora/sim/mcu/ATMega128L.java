@@ -71,7 +71,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
     //this class records energy consumption
     private Energy energy;
     //mode names of the mcu
-    private final String modeName[] = {
+    private static final String modeName[] = {
         "Active:         ",
         "Idle:           ",
         "RESERVED 1:     ",
@@ -84,7 +84,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
     };
 
     //power consumption of each mode
-    private final double modeAmpere[] = {
+    private static final double modeAmpere[] = {
         0.0075667,
         0.0033433,
         0.0,
@@ -96,7 +96,10 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
         0.0002433
     };
 
-    private final int startMode = 0;
+    private static final int startMode = 0;
+
+    private static final char[] SPstream = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd'};
+
 
     public static class Factory implements MicrocontrollerFactory {
         boolean compatibilityMode;
@@ -2651,12 +2654,11 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
 
                 Simulator.Printer serialPrinter = simulator.getPrinter("atmega.usart.printer");
 
-                char[] stream = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd'};
 
                 int count = 0;
 
                 public USARTFrame transmitFrame() {
-                    return new USARTFrame((byte)stream[count++ % stream.length], false, 8);
+                    return new USARTFrame((byte)SPstream[count++ % SPstream.length], false, 8);
                 }
 
                 public void receiveFrame(USARTFrame frame) {
@@ -2674,141 +2676,6 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
                 }
             }
         }
-
-        /**
-         * Debug class. Connect this for TestUart test case. "Formats" LCD display.
-         *
-         * @author Daniel Lee
-         */
-        // TODO: this has major performance problems
-        protected class LCDScreen implements USARTDevice {
-            Simulator.Printer lcdPrinter = simulator.getPrinter("atmega.usart.lcd");
-
-            boolean mode;
-
-            final boolean MODE_DATA = false;
-            final boolean MODE_INSTRUCTION = true;
-
-            final int CLEAR_SCREEN = 1;
-            final int SCROLL_LEFT = 24;
-            final int SCROLL_RIGHT = 28;
-            final int HOME = 2;
-            final int CURSOR_UNDERLINE = 14;
-            final int CURSOR_BLOCK = 13;
-            final int CURSOR_INVIS = 12;
-            final int BLANK_DISPLAY = 8;
-            final int RESTORE_DISPLAY = 12;
-
-
-            int cursor;
-
-            final Character dump = new Character('c');
-
-            public Character memory(byte cursor) {
-                if (cursor < 40) {
-                    return (Character)line1.get(cursor);
-                } else if (cursor < 80) {
-                    return (Character)line2.get(cursor - 40);
-                } else {
-                    return dump;
-                }
-            }
-
-            final Vector line1;
-            final Vector line2;
-
-            public LCDScreen() {
-                line1 = new Vector(40);
-                line2 = new Vector(40);
-                initScreen();
-            }
-
-            public USARTFrame transmitFrame() {
-                return new USARTFrame((byte)0, false, 8);
-            }
-
-            private void scrollRight() {
-                line1.add(0, line1.remove(39));
-                line2.add(0, line2.remove(39));
-            }
-
-            private void scrollLeft() {
-                line1.add(39, line1.remove(0));
-                line2.add(39, line2.remove(0));
-            }
-
-            private void clearScreen() {
-                for (int i = 0; i < 40; i++) {
-                    line1.set(i, new Character(' '));
-                    line2.set(i, new Character(' '));
-
-                }
-            }
-
-            private void initScreen() {
-                for (int i = 0; i < 40; i++) {
-                    line1.add(new Character(' '));
-                    line2.add(new Character(' '));
-
-                }
-            }
-
-            public void receiveFrame(USARTFrame frame) {
-                byte data = frame.low;
-
-                if (mode) { // Instruction mode
-                    switch (data) {
-                        case CLEAR_SCREEN:
-                            clearScreen();
-                            break;
-                        case SCROLL_LEFT:
-                            scrollLeft();
-                            break;
-                        case SCROLL_RIGHT:
-                            scrollRight();
-                            break;
-                        case HOME:
-                            cursor = 0;
-                            break;
-                        default:
-                            if (data >= 192) {
-                                cursor = data + 40 - 192;
-                            } else if (data >= 128) {
-                                cursor = data - 128;
-                            }
-                            break;
-                    }
-                    mode = MODE_DATA;
-                } else if (data == (byte)254) {
-                    mode = MODE_INSTRUCTION;
-                    return;
-                } else {
-                    setCursor(frame.low);
-                    cursor = (cursor + 1) % 80;
-
-                }
-                lcdPrinter.println(this.toString());
-            }
-
-            private void setCursor(byte b) {
-                if (cursor < 40) {
-                    line1.set(cursor, new Character((char)b));
-                } else if (cursor < 80) {
-                    line2.set(cursor - 40, new Character((char)b));
-                }
-            }
-
-            public String toString() {
-                String sline1 = "";
-                String sline2 = "";
-                for (int i = 0; i < 40; i++) {
-                    sline1 += line1.get(i);
-                    sline2 += line2.get(i);
-                }
-                return '\n' + sline1 + '\n' + sline2 + '\n';
-            }
-        }
-
 
         /**
          * Serial Peripheral Interface. Used on the <code>Mica2</code> platform for radio communication.

@@ -56,9 +56,9 @@ class LED implements Microcontroller.Pin.Output {
     //energy profile of this device
     private Energy energy;
     // names of the states of this device
-    private final String modeName[] = {"off: ", "on:  "};
+    private static final String modeName[] = {"off: ", "on:  "};
     // power consumption of the device states
-    private final double modeAmpere[] = {0.0, 0.0022};
+    private static final double modeAmpere[] = {0.0, 0.0022};
     // default mode of the device is off
     private static final int startMode = 0;
 

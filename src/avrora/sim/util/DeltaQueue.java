@@ -213,7 +213,6 @@ public class DeltaQueue {
                 else
                     prev.next = pos.next;
 
-
                 // fixes up the delta of the next item in the queue
                 if (pos.next != null) {
                     pos.next.delta += pos.delta;
@@ -221,8 +220,10 @@ public class DeltaQueue {
 
                 free(pos);
             } else {
+                // the link did not become empty, just move on
                 prev = pos;
             }
+            // advance to next link in the list
             pos = next;
         }
     }

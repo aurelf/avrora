@@ -139,6 +139,26 @@ public class ADC extends AtmelInternalDevice {
         }
     }
 
+    static final int[] SINGLE_ENDED_INPUT = {0, 1, 2, 3, 4, 5, 6, 7,
+                                      -1, -1, -1, -1, -1, -1, -1, -1,
+                                      -1, -1, -1, -1, -1, -1, -1, -1,
+                                      -1, -1, -1, -1, -1, -1, 8, 9};
+
+    static final int[] GAIN = {-1, -1, -1, -1, -1, -1, -1, -1,
+                        10, 10, 200, 200, 10, 10, 200, 200,
+                        1, 1, 1, 1, 1, 1, 1, 1,
+                        1, 1, 1, 1, 1, 1, -1, -1};
+
+    static final int[] POS_INPUT = {-1, -1, -1, -1, -1, -1, -1, -1,
+                             0, 1, 0, 1, 2, 3, 2, 3,
+                             0, 1, 2, 3, 4, 5, 6, 7,
+                             0, 1, 2, 3, 4, 5, -1, -1};
+
+    static final int[] NEG_INPUT = {-1, -1, -1, -1, -1, -1, -1, -1,
+                             0, 0, 0, 0, 2, 2, 2, 2,
+                             1, 1, 1, 1, 1, 1, 1, 1,
+                             2, 2, 2, 2, 2, 2, -1, 1};
+
     /**
      * <code>MUXRegister</code> defines the behavior of the ADMUX register.
      */
@@ -149,33 +169,10 @@ public class ADC extends AtmelInternalDevice {
         // 2 reserved
         final int REFS_INTERNAL = 3;
 
-        final int[] SINGLE_ENDED_INPUT = {0, 1, 2, 3, 4, 5, 6, 7,
-                                          -1, -1, -1, -1, -1, -1, -1, -1,
-                                          -1, -1, -1, -1, -1, -1, -1, -1,
-                                          -1, -1, -1, -1, -1, -1, 8, 9};
 
         int singleInputIndex = 0;
-
-        final int[] GAIN = {-1, -1, -1, -1, -1, -1, -1, -1,
-                            10, 10, 200, 200, 10, 10, 200, 200,
-                            1, 1, 1, 1, 1, 1, 1, 1,
-                            1, 1, 1, 1, 1, 1, -1, -1};
-
         int gain = -1;
-
-
-        final int[] POS_INPUT = {-1, -1, -1, -1, -1, -1, -1, -1,
-                                 0, 1, 0, 1, 2, 3, 2, 3,
-                                 0, 1, 2, 3, 4, 5, 6, 7,
-                                 0, 1, 2, 3, 4, 5, -1, -1};
-
         int positiveInputIndex = -1;
-
-        final int[] NEG_INPUT = {-1, -1, -1, -1, -1, -1, -1, -1,
-                                 0, 0, 0, 0, 2, 2, 2, 2,
-                                 1, 1, 1, 1, 1, 1, 1, 1,
-                                 2, 2, 2, 2, 2, 2, -1, 1};
-
         int negativeInputIndex = -1;
 
         boolean singleEndedInput = true;
@@ -250,6 +247,8 @@ public class ADC extends AtmelInternalDevice {
 
     }
 
+    static final int[] PRESCALER = {2, 2, 4, 8, 16, 32, 64, 128};
+
     /**
      * <code>ControlRegister</code> defines the behavior of the ADC control register,
      */
@@ -271,8 +270,6 @@ public class ADC extends AtmelInternalDevice {
         boolean adie;
 
         int prescalerDivider = 2;
-
-        final int[] PRESCALER = {2, 2, 4, 8, 16, 32, 64, 128};
 
         final ControlRegister.Conversion conversion;
 
