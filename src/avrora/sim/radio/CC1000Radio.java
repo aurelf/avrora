@@ -358,9 +358,9 @@ public class CC1000Radio implements Radio {
             String rxtxS = rxtx ? "TX" : "RX";
             String fRegS = fReg ? "B" : "A";
 
-            radioPrinter.println("CC1000[MAIN]: " + rxtxS + ", frequency register: " + fRegS + ", rx powerdown :"
+            radioPrinter.println("CC1000[MAIN]: " + rxtxS + ", frequency register: " + fRegS + ", rx powerdown: "
                     + rxPd + ", tx powerdown: " + txPd + ", fs powerdown: " + fsPd + ", core powerdown: "
-                    + corePd + ", bias powerdown: " + biasPd + ", reset : " + resetN);
+                    + corePd + ", bias powerdown: " + biasPd + ", reset: " + resetN);
         }
 
     }
@@ -666,8 +666,8 @@ public class CC1000Radio implements Radio {
         }
 
         protected void printStatus() {
-            radioPrinter.println("CC1000[CAL]: cal start:" + calStart + ", cal dual: " + calDual +
-                    ", cal wait:" + calWait + ", cal current: " + calCurrent + ", calComplete: " + calComplete +
+            radioPrinter.println("CC1000[CAL]: cal start: " + calStart + ", cal dual: " + calDual +
+                    ", cal wait: " + calWait + ", cal current: " + calCurrent + ", calComplete: " + calComplete +
                     ", cal iterate: " + calIterate + " ... " + sim.getState().getCycles());
         }
 

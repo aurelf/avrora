@@ -617,7 +617,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void insertEvent(Event e, long cycles) {
         if (eventPrinter.enabled)
-            eventPrinter.println("Simulator.insertEvent(" + cycles + ")");
+            eventPrinter.println("EVENT: " + e.getClass() + " @ " + interpreter.getCycles()+" + " +cycles);
         eventQueue.add(e, cycles);
     }
 
@@ -645,8 +645,9 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public PeriodicEvent insertPeriodicEvent(Event e, long period) {
         if (eventPrinter.enabled)
-            eventPrinter.println("Simulator.insertPeriodicEvent(" + period + ")");
-        PeriodicEvent pt = new PeriodicEvent(this, e, period);
+            eventPrinter.println("PERIODIC EVENT: " + e.getClass()
+                    + " @ " + interpreter.getCycles()+" + " +period);
+         PeriodicEvent pt = new PeriodicEvent(this, e, period);
         eventQueue.add(pt, period);
         return pt;
     }
@@ -660,7 +661,7 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void removeEvent(Event e) {
         if (eventPrinter.enabled)
-            eventPrinter.println("Simulator.removeEvent()");
+            eventPrinter.println("REMOVE: " + e.getClass() + " @ " + interpreter.getCycles());
         eventQueue.remove(e);
     }
 

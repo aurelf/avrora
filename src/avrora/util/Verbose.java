@@ -44,14 +44,21 @@ import java.util.HashMap;
 public class Verbose {
 
     final static HashMap printerMap = new HashMap();
+    final static Printer verbosePrinter = getVerbosePrinter("verbose");
 
     public static Printer getVerbosePrinter(String category) {
         Printer p = getPrinter(category);
+        if ( verbosePrinter != null && verbosePrinter.enabled ) {
+            verbosePrinter.println("verbose: requested printer for "+StringUtil.quote(category));
+        }
         return p;
     }
 
     public static void setVerbose(String category, boolean on) {
         Printer p = getPrinter(category);
+        if ( verbosePrinter != null && verbosePrinter.enabled ) {
+            verbosePrinter.println("verbose: set printer "+StringUtil.quote(category)+" to "+on);
+        }
         p.enabled = on;
     }
 

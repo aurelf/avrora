@@ -49,7 +49,7 @@ public interface Radio {
      * Much of the implementation is derived from this constant, so generalizing in the
      * future may require some careful consideration.
      */
-    public final static long TRANSFER_TIME = 6106;
+    public final static int TRANSFER_TIME = 6106;
 
     /* How 6106 was calculated:
         19.2 Manchester kBaud / (2 Baud/Bit)= 9.6 kBits/sec

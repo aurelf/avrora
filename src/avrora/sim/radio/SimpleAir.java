@@ -62,25 +62,26 @@ public class SimpleAir implements RadioAir {
     /** GlobalClock used by the air environment. Essential for synchronization. */
     protected final EnvironmentQueue globalQueue;
 
-    protected TreeSet packetsThisPeriod;
-    protected TreeSet packetsLeftOver;
+    protected Radio.RadioPacket firstPacket;
+    protected LinkedList packetsThisPeriod;
+    protected LinkedList packetsLeftOver;
 
     protected final HashSet radios;
 
-    private boolean scheduledDelivery;
     private long lastDeliveryTime;
     private long nextDeliveryTime;
 
     protected final Simulator.Event scheduleDelivery;
 
     /** The amount of cycles it takes for one byte to be sent.*/
-    public final long bytePeriod = Radio.TRANSFER_TIME;
-    public final long bitPeriod = Radio.TRANSFER_TIME / 8;
+    public final int bytePeriod = Radio.TRANSFER_TIME;
+    public final int bitPeriod = Radio.TRANSFER_TIME / 8;
+    public final int bitPeriod2 = Radio.TRANSFER_TIME / 16;
 
     public SimpleAir() {
         radios = new HashSet();
-        packetsThisPeriod = new TreeSet();
-        packetsLeftOver = new TreeSet();
+        packetsThisPeriod = new LinkedList();
+        packetsLeftOver = new LinkedList();
         globalQueue = new EnvironmentQueue(bytePeriod);
         scheduleDelivery = new ScheduleDelivery();
     }
@@ -96,11 +97,14 @@ public class SimpleAir implements RadioAir {
     }
 
     public synchronized void transmit(Radio r, Radio.RadioPacket f) {
-        packetsThisPeriod.add(f);
+        packetsThisPeriod.addLast(f);
 
-        if (!scheduledDelivery) {
-            scheduledDelivery = true;
+        if ( firstPacket == null ) {
             globalQueue.insertEvent(scheduleDelivery, 1);
+            firstPacket = f;
+        }
+        else {
+            if ( f.originTime < firstPacket.originTime ) firstPacket = f;
         }
     }
 
@@ -114,27 +118,33 @@ public class SimpleAir implements RadioAir {
             long globalTime = globalQueue.getCount() * globalQueue.period;
             long deliveryGoal;
 
-            Radio.RadioPacket first = (Radio.RadioPacket)packetsThisPeriod.first();
-            deliveryGoal = first.deliveryTime;
+            deliveryGoal = firstPacket.deliveryTime;
 
             if ( lastDeliveryTime > globalTime - bytePeriod ) {
                 // there was a byte delivered in the period just finished
-                if ( first.deliveryTime <= lastDeliveryTime + bytePeriod ) {
-                    // the first packet in this interval overlapped a bit with the last delivery
+                if ( firstPacket.deliveryTime <= lastDeliveryTime + bytePeriod ) {
+                    // the firstPacket packet in this interval overlapped a bit with the last delivery
                     deliveryGoal = lastDeliveryTime + bytePeriod;
                 }
             }
 
-            // TODO: pick out individual packets one by one?
-            Set pastPackets = packetsLeftOver.tailSet(new Radio.RadioPacket((byte)0, 0, lastDeliveryTime-bytePeriod));
-            packetsThisPeriod.addAll(pastPackets);
-            globalQueue.addLocalMeet(globalQueue.meet, deliveryGoal);
-            scheduledDelivery = false;
+            // add any packets from the previous period that have a delivery
+            // point after the last delivery
+            Iterator i = packetsLeftOver.iterator();
+            while ( i.hasNext() ) {
+                Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                if ( p.deliveryTime > lastDeliveryTime )
+                    packetsThisPeriod.addLast(p);
+            }
+
+            // add a local meet for the delivery of the packet
+            globalQueue.addLocalMeet(globalQueue.meet, deliveryGoal - globalTime);
 
             // just finished this period, so create a new set for the next period
             packetsLeftOver = packetsThisPeriod;
-            packetsThisPeriod = new TreeSet();
+            packetsThisPeriod = new LinkedList();
             nextDeliveryTime = deliveryGoal;
+            firstPacket = null;
         }
 
     }
@@ -167,25 +177,54 @@ public class SimpleAir implements RadioAir {
 
                 long currentTime = nextDeliveryTime;
 
-                byte data = 0;
+                int data = 0;
+                int bitsFront = 0, bitsEnd = 0;
 
                 // iterate over all of the packets in the past two intervals
                 Iterator pastIterator = packetsLeftOver.iterator();
-                while ( pastIterator.hasNext() ) {
-                    Radio.RadioPacket p = (Radio.RadioPacket)pastIterator.next();
-                    data = addToWaveform(data, currentTime, p);
+                Iterator curIterator = packetsThisPeriod.iterator();
+                while ( true ) {
+                    Radio.RadioPacket packet;
+                    if ( pastIterator.hasNext() )
+                        packet = (Radio.RadioPacket)pastIterator.next();
+                    else if ( curIterator.hasNext() )
+                        packet = (Radio.RadioPacket)curIterator.next();
+                    else break;
+
+                    // NOTE: this calculation assumes MSB first
+                    if ( currentTime == packet.deliveryTime ) {
+                        // exact match!
+                        data |= packet.data;
+                        bitsFront = 8;
+                        bitsEnd = 8;
+                    } else if ( currentTime < packet.deliveryTime ) {
+                        // end of the packet is sliced off
+                        int bitdiffx2 = ((int)(packet.deliveryTime - currentTime)) / bitPeriod2;
+                        int bitdiff = (bitdiffx2 + 1) / 2;
+                        int bitsE = 8 - bitdiff;
+                        if ( bitsE > bitsEnd ) bitsEnd = bitsE;
+                        data |= packet.data >>> bitdiff;
+                    } else {
+                        // front of packet is sliced off
+                        int bitdiffx2 = ((int)(currentTime - packet.deliveryTime)) / bitPeriod2;
+                        int bitdiff = (bitdiffx2 + 1) / 2;
+                        int bitsF = 8 - bitdiff;
+                        if ( bitsF > bitsFront ) bitsFront = bitsF;
+                        data |= packet.data << bitdiff;
+                    }
                 }
 
-                // iterate over all of the packets in the current interval
-                Iterator curIterator = packetsThisPeriod.iterator();
-                while ( curIterator.hasNext() ) {
-                    Radio.RadioPacket p = (Radio.RadioPacket)curIterator.next();
-                    data = addToWaveform(data, currentTime, p);
-                }
 
                 // finish building the radio packet
-                computedPacket = new Radio.RadioPacket(data, 0, nextDeliveryTime - bytePeriod);
-                lastDeliveryTime = nextDeliveryTime;
+                if ( bitsFront + bitsEnd >= 8) {
+                    // enough bits were collected to deliver a packet
+                    computedPacket = new Radio.RadioPacket((byte)data, 0, nextDeliveryTime - bytePeriod);
+                    lastDeliveryTime = nextDeliveryTime;
+                } else {
+                    // not enough bits were collected to deliver a packet
+                    computedPacket = null;
+                }
+
             }
 
             protected byte addToWaveform(byte data, long currentTime, Radio.RadioPacket p) {
@@ -193,8 +232,11 @@ public class SimpleAir implements RadioAir {
             }
 
             public void parallelAction(SimulatorThread s) {
-                Radio radio = s.getSimulator().getMicrocontroller().getRadio();
-                radio.receive(computedPacket);
+                if ( computedPacket != null) {
+                    // if there was a complete radio packet assembled
+                    Radio radio = s.getSimulator().getMicrocontroller().getRadio();
+                    radio.receive(computedPacket);
+                }
             }
         }
 
