@@ -152,7 +152,7 @@ public abstract class USART extends AtmelInternalDevice {
      * A <code>USARTFrame</code> is a representation of the serial frames being passed between the USART
      * and a connected device.
      */
-    public class Frame {
+    public static class Frame {
         public final byte low;
         public final boolean high;
         final int size;

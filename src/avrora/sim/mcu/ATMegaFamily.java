@@ -280,7 +280,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
         protected Timer0() {
             super(ATMegaFamily.this, 0, 1, 0, 1, 0, periods0);
-            externalClock = getClock("external");
+            externalClock = microcontroller.getClock("external");
             installIOReg("ASSR", new ASSRRegister());
         }
 

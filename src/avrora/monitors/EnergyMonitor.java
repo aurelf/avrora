@@ -100,6 +100,7 @@ public class EnergyMonitor extends MonitorFactory {
             this.state = simulator.getState();
 
             //setup energy limit
+            // TODO: fix this usage of options
             if( options.hasOption("battery") ){
                 energy = Double.parseDouble(options.getOptionValue("battery"));
                 new BatteryCheck();

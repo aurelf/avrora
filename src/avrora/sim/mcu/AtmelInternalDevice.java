@@ -100,4 +100,8 @@ public abstract class AtmelInternalDevice {
         return Integer.toHexString(0xff & val);
     }
 
+    public Clock getClock() {
+        return mainClock;
+    }
+
 }

@@ -217,12 +217,8 @@ public class EnergyMonitorLog extends EnergyMonitor {
             //for (int i = 0; i < consumer.size(); ++i) {
             while( it.hasNext() ){
                 Energy en = (Energy)it.next();
-                double ampere = 0.0f;
-                if (en != energy) {
-                    ampere = en.getCurrentAmpere();
-                } else {
-                    ampere = en.getOldAmpere();
-                }
+                double ampere = (en != energy) ? en.getCurrentAmpere() : en.getOldAmpere();
+
                 total += ampere;
                 write(ampere + " ");
             }

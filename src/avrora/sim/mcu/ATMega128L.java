@@ -385,9 +385,6 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
             super(id, f, ATMega128L.this, p);
         }
 
-        public static final int RES_VECT = 1;
-        public static final int EXT_VECT = 2;
-
         protected FlagRegister EIFR_reg;
         protected MaskRegister EIMSK_reg;
 

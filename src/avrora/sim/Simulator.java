@@ -524,7 +524,7 @@ public class Simulator {
      * Probes inserted in the program are retained. All events are removed.
      */
     public void reset() {
-        clock = new MainClock("MAIN", microcontroller.getHz());
+        clock = new MainClock("main", microcontroller.getHz());
         MicrocontrollerProperties props = microcontroller.getProperties();
         interpreter = factory.newInterpreter(this, program, props);
     }
