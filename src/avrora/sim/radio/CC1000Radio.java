@@ -975,8 +975,8 @@ public class CC1000Radio implements Radio {
         }
 
         public int getLevel() {
-            // TODO: implement wait for neighbors
-            return 0x3ff;
+            // ask the air for the current RSSI value
+            return air.sampleRSSI(CC1000Radio.this);
         }
 
         //////////////////////////

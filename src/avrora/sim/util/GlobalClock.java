@@ -62,22 +62,17 @@ public class GlobalClock {
      * at difference speeds are to be accurately simulated.
      */
     public final long period;
-    protected int goal;
-    protected int count;
-    protected final Object condition;
     protected final HashMap threadMap;
-    protected final DeltaQueue eventQueue;
-    protected final Ticker timer = new Ticker();
+    public final Ticker ticker;
 
     protected final Verbose.Printer gqPrinter = Verbose.getVerbosePrinter("sim.global");
 
-    public long getCount() {
-        return eventQueue.getCount();
+    public GlobalClock(long p) {
+        this(p, new Ticker(p));
     }
 
-    public GlobalClock(long p) {
-        condition = new Object();
-        eventQueue = new DeltaQueue();
+    protected GlobalClock(long p, Ticker t) {
+        ticker = t;
         period = p;
         threadMap = new HashMap();
     }
@@ -85,9 +80,9 @@ public class GlobalClock {
     public synchronized void add(SimulatorThread t) {
         if (threadMap.containsKey(t)) return;
 
-        threadMap.put(t, timer);
-        t.getSimulator().insertEvent(timer, period);
-        goal++;
+        threadMap.put(t, ticker);
+        t.getSimulator().insertEvent(ticker, period);
+        ticker.goal++;
     }
 
     public void remove(SimulatorThread t) {
@@ -103,11 +98,11 @@ public class GlobalClock {
      * necessarily the same thread each time.
      */
     public synchronized void insertEvent(Simulator.Event event, long ticks) {
-        eventQueue.add(event, ticks);
+        ticker.eventQueue.add(event, ticks);
     }
 
     public synchronized void removeEvent(Simulator.Event event) {
-        eventQueue.remove(event);
+        ticker.eventQueue.remove(event);
     }
 
     /**
@@ -125,11 +120,15 @@ public class GlobalClock {
         }
     }
 
-    public abstract class LocalMeet implements Simulator.Event {
+    public static abstract class LocalMeet implements Simulator.Event {
         protected final String id;
+        protected final Object condition;
+        protected int goal;
+        protected int count;
 
         protected LocalMeet(String id) {
             this.id = id;
+            condition = new Object();
         }
 
         /**
@@ -143,14 +142,20 @@ public class GlobalClock {
         public void fire() {
             try {
                 synchronized (condition) {
+                    /*
                     if (gqPrinter.enabled) {
                         SimulatorThread thread = (SimulatorThread)Thread.currentThread();
                         Simulator simulator = thread.getSimulator();
-                        gqPrinter.println(id + " event: local " + simulator.getState().getCycles()
-                                + ", global " + globalTime() + ", diff " + (simulator.getState().getCycles() - globalTime()));
+                        long cycles = simulator.getState().getCycles();
+                        long gtime = globalTime();
+                        gqPrinter.println(id + " event: local " + cycles
+                                + ", global " + gtime + ", diff " + (cycles - gtime));
 
                     }
+                    */
                     count++;
+
+                    preSynchAction();
 
                     if (count < goal) {
                         // if all threads have not arrived yet, wait for the last one
@@ -172,6 +177,14 @@ public class GlobalClock {
         }
 
         /**
+         * The <code>preSynchAction()</code> method implements the functionality that
+         * must be performed just after the thread enters the local meet, but before
+         * it blocks waiting for the other threads. It is called with the
+         * <code>condition</code> monitor held.
+         */
+        public abstract void preSynchAction();
+
+        /**
          * The <code>serialAction()</code> method implements the functionality that
          * must be performed in serial when the threads have joined at this local meet.
          * This method will execute in the last thread to enter the fire() method.
@@ -189,20 +202,36 @@ public class GlobalClock {
 
     }
 
-    public long globalTime() {
-        return eventQueue.getCount() * period;
+    public long getCount() {
+        return ticker.eventQueue.getCount();
     }
 
+    public long globalTime() {
+        return ticker.eventQueue.getCount() * period;
+    }
+
+    public int getNumberOfThreads() {
+        return ticker.goal;
+    }
 
     /**
      * The <code>Ticker</code> class is an event that fires in the local queues
      * of participating threads. This class is necessary for ensuring the integrity of the
      * global clock.
      */
-    public class Ticker extends LocalMeet {
+    public static class Ticker extends LocalMeet {
 
-        Ticker() {
+        public final long period;
+        protected final DeltaQueue eventQueue;
+
+        protected Ticker(long p) {
             super("GLOBAL CLOCK");
+            period = p;
+            eventQueue = new DeltaQueue();
+        }
+
+        public void preSynchAction() {
+            // do nothing.
         }
 
         public void serialAction() {
@@ -223,10 +252,10 @@ public class GlobalClock {
      * It's not clear what useful purpose interrupted exceptions could
      * serve in the implementation of the global clock.
      */
-    public class InterruptedException extends RuntimeException {
+    public static class InterruptedException extends RuntimeException {
         public final java.lang.InterruptedException exception;
 
-        InterruptedException(java.lang.InterruptedException e) {
+        public InterruptedException(java.lang.InterruptedException e) {
             exception = e;
         }
     }

@@ -52,4 +52,5 @@ public interface RadioAir {
     /** Transmits frame <code>f</code> into the radio environment.  */
     public void transmit(Radio r, Radio.RadioPacket f);
 
+    public int sampleRSSI(Radio r);
 }

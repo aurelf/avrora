@@ -3370,7 +3370,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                     if (aden && adsc && !Arithmetic.getBit(oldVal, ADSC) && !firing) {
                         // queue event for converting
                         firing = true;
-                        insertEvent(conversion, prescalerDivider * 13 * 25); // TODO: the 25 is arbitrary
+                        insertEvent(conversion, prescalerDivider * 13);
                     }
 
                     oldVal = val;

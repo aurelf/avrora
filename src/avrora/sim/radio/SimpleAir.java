@@ -37,6 +37,7 @@ import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.util.GlobalClock;
 import avrora.Avrora;
+import avrora.util.Verbose;
 
 import java.util.*;
 
@@ -55,12 +56,14 @@ public class SimpleAir implements RadioAir {
 
     public final static SimpleAir simpleAir;
 
+    private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("sim.rssi");
+
     static {
         simpleAir = new SimpleAir();
     }
 
     /** GlobalClock used by the air environment. Essential for synchronization. */
-    protected final EnvironmentQueue globalQueue;
+    protected final RadioClock globalQueue;
 
     protected Radio.RadioPacket firstPacket;
     protected LinkedList packetsThisPeriod;
@@ -71,7 +74,12 @@ public class SimpleAir implements RadioAir {
     private long lastDeliveryTime;
     private long nextDeliveryTime;
 
-    protected final Simulator.Event scheduleDelivery;
+    private final DeliveryMeet deliveryMeet;
+
+    /** State for maintaining RSSI wait for neighbors */
+    int rssi_count;
+    int meet_count;
+    TreeSet rssi_waiters;
 
     /** The amount of cycles it takes for one byte to be sent.*/
     public final int bytePeriod = Radio.TRANSFER_TIME;
@@ -82,14 +90,15 @@ public class SimpleAir implements RadioAir {
         radios = new HashSet();
         packetsThisPeriod = new LinkedList();
         packetsLeftOver = new LinkedList();
-        globalQueue = new EnvironmentQueue(bytePeriod);
-        scheduleDelivery = new ScheduleDelivery();
+        globalQueue = new RadioClock(bytePeriod);
+        deliveryMeet = new DeliveryMeet();
+        rssi_waiters = new TreeSet();
     }
 
     public synchronized void addRadio(Radio r) {
         radios.add(r);
         globalQueue.add(r.getSimulatorThread());
-
+        deliveryMeet.setGoal(globalQueue.getNumberOfThreads());
     }
 
     public synchronized void removeRadio(Radio r) {
@@ -100,22 +109,162 @@ public class SimpleAir implements RadioAir {
         packetsThisPeriod.addLast(f);
 
         if ( firstPacket == null ) {
-            globalQueue.insertEvent(scheduleDelivery, 1);
+            firstPacket = f;
+        } else if ( f.originTime < firstPacket.originTime ) {
             firstPacket = f;
         }
-        else {
-            if ( f.originTime < firstPacket.originTime ) firstPacket = f;
+    }
+
+    private class RSSIWait implements Comparable {
+        boolean shouldWait;
+        final long sampleTime;
+        final Simulator simulator;
+
+        RSSIWait(Simulator s, long st) {
+            simulator = s;
+            sampleTime = st;
+            shouldWait = true;
+        }
+
+        public int compareTo(Object o) {
+            if ( o == this ) return 0;
+            RSSIWait w = (RSSIWait)o;
+            int diff = (int)(w.sampleTime - this.sampleTime);
+            if ( diff == 0 ) return w.hashCode() - this.hashCode();
+            return diff;
+        }
+    }
+
+    public int sampleRSSI(Radio r) {
+        Simulator s = r.getSimulator();
+        long t = s.getState().getCycles();
+        RSSIWait w = new RSSIWait(s, t);
+        RSSIWait f = null;
+
+        synchronized ( this ) {
+            if ( rssiPrinter.enabled ) {
+                rssiPrinter.println("RSSI: sampleRSSI @ "+t);
+            }
+            // add use to the waiters
+            rssi_waiters.add(w);
+            rssi_count++;
+            // check to see if everyone is ready to go
+            f = checkRSSIWaiters(w);
+        }
+
+        // are we at the head of the RSSI waiter's list, and everyone is ready to go?
+        if ( f != w ) {
+            // we are not at the head of the RSSI waiters list, wait until we are notified
+            try {
+                synchronized ( w ) {
+                    if ( rssiPrinter.enabled ) {
+                        rssiPrinter.println("RSSI: wait @ "+t+" "+w);
+                    }
+                    // check that no thread got to us in between giving up the global lock
+                    if ( w.shouldWait ) w.wait();
+                }
+            } catch ( InterruptedException e ) {
+                throw new GlobalClock.InterruptedException(e);
+            }
+        }
+
+        int strength = 0x3ff;
+
+        // we just got woken up (or returned immediately from checkRSSIWaiters
+        // this means we are now ready to proceed and compute our RSSI value.
+        synchronized ( this ) {
+            Iterator i = packetsLeftOver.iterator();
+            while ( i.hasNext() ) {
+                Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                if ( p.deliveryTime > t && p.originTime < t ) strength = 0;
+            }
+            i = packetsThisPeriod.iterator();
+            while ( i.hasNext() ) {
+                Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                if ( p.deliveryTime > t && p.originTime < t ) strength = 0;
+            }
+        }
+
+        return strength;
+    }
+
+    private synchronized void incrementMeets() {
+        meet_count++;
+        // wake up the first RSSI waiter (if there are any)
+        checkRSSIWaiters(null);
+    }
+
+    /**
+     * Tricky! This method checks whether every thread has reached either a local meet
+     * or has tried to read the RSSI value. If every thread has joined, it will select
+     * the RSSI waiter that made the earliest request. If that waiter is NOT the waiter
+     * passed, it will wake that waiter. If that waiter IS the waiter passed, it will
+     * NOT wake it.
+     * @param curWait the current waiter, null if this method is being called as a result
+     * of a thread entering a local meet
+     * @return the waiter at the head of the line if all threads have joined, null otherwise
+     */
+    private RSSIWait checkRSSIWaiters(RSSIWait curWait) {
+        if ( rssiPrinter.enabled )  rssiPrinter.print("RSSI check("+curWait+"): met "+meet_count+", sampling "+rssi_count+": ");
+
+        if ( meet_count + rssi_count == globalQueue.getNumberOfThreads() ) {
+
+            // are there any waiters?
+            if ( rssi_waiters.isEmpty() ) {
+                if ( rssiPrinter.enabled ) rssiPrinter.println("no waiters");
+                return null;
+            }
+
+            // signal first thread to continue
+            RSSIWait w = (RSSIWait)rssi_waiters.first();
+            rssi_count--;
+            rssi_waiters.remove(w);
+
+            if ( w != curWait ) {
+                synchronized(w) {
+                    if ( rssiPrinter.enabled ) rssiPrinter.println("notify "+w);
+                    w.shouldWait = false;
+                    w.notifyAll();
+                }
+            }
+            return w;
+
+        } else {
+            // not everyone has joined
+            if ( rssiPrinter.enabled ) rssiPrinter.println("not ready");
+            return null;
         }
     }
 
     /**
-     * The event entered into the GLOBAL event queue, which will schedule
-     * synchronization events for individual nodes.
+     * The <code>RadioTicker</code> class is the global timer for the radio. It is
+     * specialized in that it will schedule delivery meets when, at the end of
+     * the interval, there was at least one packet sent.
      */
-    protected class ScheduleDelivery implements Simulator.Event {
+    protected class RadioTicker extends GlobalClock.Ticker {
+        long deliveryDelta;
 
-        public void fire() {
-            long globalTime = globalQueue.getCount() * globalQueue.period;
+        RadioTicker(long p) {
+            super(p);
+        }
+
+        public void preSynchAction() {
+            incrementMeets();
+        }
+
+        public void serialAction() {
+            eventQueue.advance(1);
+            if ( firstPacket != null ) {
+                deliveryDelta = computeNextDelivery();
+                firstPacket = null;
+            } else {
+                deliveryDelta = 0;
+            }
+            meet_count = 0;
+        }
+
+        protected long computeNextDelivery() {
+            long globalTime = globalQueue.globalTime();
             long deliveryGoal;
 
             deliveryGoal = firstPacket.deliveryTime;
@@ -137,107 +286,113 @@ public class SimpleAir implements RadioAir {
                     packetsThisPeriod.addLast(p);
             }
 
-            // add a local meet for the delivery of the packet
-            globalQueue.addLocalMeet(globalQueue.meet, deliveryGoal - globalTime);
-
             // just finished this period, so create a new set for the next period
             packetsLeftOver = packetsThisPeriod;
             packetsThisPeriod = new LinkedList();
             nextDeliveryTime = deliveryGoal;
-            firstPacket = null;
+            return deliveryGoal - globalTime;
         }
 
+        public void parallelAction(SimulatorThread t) {
+            Simulator simulator = t.getSimulator();
+            simulator.insertEvent(this, period);
+            if ( deliveryDelta > 0 )
+                simulator.insertEvent(deliveryMeet, deliveryDelta);
+
+        }
     }
 
+    protected class DeliveryMeet extends GlobalClock.LocalMeet {
 
+        protected Radio.RadioPacket computedPacket;
+
+        DeliveryMeet() {
+            super("DELIVERY");
+        }
+
+        public void preSynchAction() {
+            incrementMeets();
+        }
+
+        public void serialAction() {
+            computeWaveForm();
+            meet_count = 0;
+        }
+
+        protected void computeWaveForm() {
+
+            long currentTime = nextDeliveryTime;
+
+            int data = 0;
+            int bitsFront = 0, bitsEnd = 0;
+
+            // iterate over all of the packets in the past two intervals
+            Iterator pastIterator = packetsLeftOver.iterator();
+            Iterator curIterator = packetsThisPeriod.iterator();
+            while ( true ) {
+                Radio.RadioPacket packet;
+                if ( pastIterator.hasNext() )
+                    packet = (Radio.RadioPacket)pastIterator.next();
+                else if ( curIterator.hasNext() )
+                    packet = (Radio.RadioPacket)curIterator.next();
+                else break;
+
+                // NOTE: this calculation assumes MSB first
+                if ( currentTime == packet.deliveryTime ) {
+                    // exact match!
+                    data |= packet.data;
+                    bitsFront = 8;
+                    bitsEnd = 8;
+                } else if ( currentTime < packet.deliveryTime ) {
+                    // end of the packet is sliced off
+                    int bitdiffx2 = ((int)(packet.deliveryTime - currentTime)) / bitPeriod2;
+                    int bitdiff = (bitdiffx2 + 1) / 2;
+                    int bitsE = 8 - bitdiff;
+                    if ( bitsE > bitsEnd ) bitsEnd = bitsE;
+                    data |= packet.data >>> bitdiff;
+                } else {
+                    // front of packet is sliced off
+                    int bitdiffx2 = ((int)(currentTime - packet.deliveryTime)) / bitPeriod2;
+                    int bitdiff = (bitdiffx2 + 1) / 2;
+                    int bitsF = 8 - bitdiff;
+                    if ( bitsF > bitsFront ) bitsFront = bitsF;
+                    data |= packet.data << bitdiff;
+                }
+            }
+
+
+            // finish building the radio packet
+            if ( bitsFront + bitsEnd >= 8) {
+                // enough bits were collected to deliver a packet
+                computedPacket = new Radio.RadioPacket((byte)data, 0, nextDeliveryTime - bytePeriod);
+                lastDeliveryTime = nextDeliveryTime;
+            } else {
+                // not enough bits were collected to deliver a packet
+                computedPacket = null;
+            }
+
+
+        }
+
+        protected void setGoal(int goal) {
+            this.goal = goal;
+        }
+
+        public void parallelAction(SimulatorThread s) {
+            if ( computedPacket != null) {
+                // if there was a complete radio packet assembled
+                Radio radio = s.getSimulator().getMicrocontroller().getRadio();
+                radio.receive(computedPacket);
+            }
+        }
+    }
     /**
      * An extended version of <code>GlobalClock</code> that implements a version of
      * <code>LocalMeet</code> that is appropriate for delivering radio packets.
      */
-    protected class EnvironmentQueue extends GlobalClock {
-        DeliveryMeet meet = new DeliveryMeet();
-
-        protected EnvironmentQueue(long p) {
-            super(p);
-        }
-
-        protected class DeliveryMeet extends LocalMeet {
-
-            protected Radio.RadioPacket computedPacket;
-
-            DeliveryMeet() {
-                super("DELIVERY");
-            }
-
-            public void serialAction() {
-                computeWaveForm();
-            }
-
-            protected void computeWaveForm() {
-
-                long currentTime = nextDeliveryTime;
-
-                int data = 0;
-                int bitsFront = 0, bitsEnd = 0;
-
-                // iterate over all of the packets in the past two intervals
-                Iterator pastIterator = packetsLeftOver.iterator();
-                Iterator curIterator = packetsThisPeriod.iterator();
-                while ( true ) {
-                    Radio.RadioPacket packet;
-                    if ( pastIterator.hasNext() )
-                        packet = (Radio.RadioPacket)pastIterator.next();
-                    else if ( curIterator.hasNext() )
-                        packet = (Radio.RadioPacket)curIterator.next();
-                    else break;
-
-                    // NOTE: this calculation assumes MSB first
-                    if ( currentTime == packet.deliveryTime ) {
-                        // exact match!
-                        data |= packet.data;
-                        bitsFront = 8;
-                        bitsEnd = 8;
-                    } else if ( currentTime < packet.deliveryTime ) {
-                        // end of the packet is sliced off
-                        int bitdiffx2 = ((int)(packet.deliveryTime - currentTime)) / bitPeriod2;
-                        int bitdiff = (bitdiffx2 + 1) / 2;
-                        int bitsE = 8 - bitdiff;
-                        if ( bitsE > bitsEnd ) bitsEnd = bitsE;
-                        data |= packet.data >>> bitdiff;
-                    } else {
-                        // front of packet is sliced off
-                        int bitdiffx2 = ((int)(currentTime - packet.deliveryTime)) / bitPeriod2;
-                        int bitdiff = (bitdiffx2 + 1) / 2;
-                        int bitsF = 8 - bitdiff;
-                        if ( bitsF > bitsFront ) bitsFront = bitsF;
-                        data |= packet.data << bitdiff;
-                    }
-                }
-
-
-                // finish building the radio packet
-                if ( bitsFront + bitsEnd >= 8) {
-                    // enough bits were collected to deliver a packet
-                    computedPacket = new Radio.RadioPacket((byte)data, 0, nextDeliveryTime - bytePeriod);
-                    lastDeliveryTime = nextDeliveryTime;
-                } else {
-                    // not enough bits were collected to deliver a packet
-                    computedPacket = null;
-                }
-
-            }
-
-            protected byte addToWaveform(byte data, long currentTime, Radio.RadioPacket p) {
-                return data;
-            }
-
-            public void parallelAction(SimulatorThread s) {
-                if ( computedPacket != null) {
-                    // if there was a complete radio packet assembled
-                    Radio radio = s.getSimulator().getMicrocontroller().getRadio();
-                    radio.receive(computedPacket);
-                }
-            }
+    protected class RadioClock extends GlobalClock {
+        protected RadioClock(long p) {
+            super(p, new RadioTicker(p));
         }
 
     }
