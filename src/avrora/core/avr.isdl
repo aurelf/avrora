@@ -19,39 +19,46 @@ architecture avr {
 //  OPERANDS ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    operand GPR: register = {
-         r0,  r1,  r2,  r3,  r4,  r5,  r6,  r7,
-         r8,  r9, r10, r11, r12, r13, r14, r15,
-        r16, r17, r18, r19, r20, r21, r22, r23,
-        r24, r25, r26, r27, r28, r29, r30, r31
+    operand GPR[5]: register = {
+        r0  = 0,  r1  = 1,  r2  = 2,  r3  = 3,
+        r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,
+        r8  = 8,  r9  = 9,  r10 = 10, r11 = 11,
+        r12 = 12, r13 = 13, r14 = 14, r15 = 15,
+        r16 = 16, r17 = 17, r18 = 18, r19 = 19,
+        r20 = 20, r21 = 21, r22 = 22, r23 = 23,
+        r24 = 24, r25 = 25, r26 = 26, r27 = 27,
+        r28 = 28, r29 = 29, r30 = 30, r31 = 31
     };
 
-    operand HGPR: register = {
-        r16, r17, r18, r19, r20, r21, r22, r23,
-        r24, r25, r26, r27, r28, r29, r30, r31
+    operand HGPR[4]: register = {
+        r16 = 0,  r17 = 1,  r18 = 2,  r19 = 3,
+        r20 = 4,  r21 = 5,  r22 = 6,  r23 = 7,
+        r24 = 8,  r25 = 9,  r26 = 10, r27 = 11,
+        r28 = 12, r29 = 13, r30 = 14, r31 = 15
     };
 
-    operand MGPR: register = {
-        r16, r17, r18, r19, r20, r21, r22, r23
+    operand MGPR[3]: register = {
+        r16 = 0, r17 = 1, r18 = 2, r19 = 3,
+        r20 = 4, r21 = 5, r22 = 6, r23 = 7
     };
 
-    operand YZ: register = {
-        y, z
+    operand YZ[1]: register = {
+        y = 0, z = 1
     };
 
     operand Z: register = {
         z
     };
 
-    operand EGPR: register = {
-         r0,  r2,  r4,  r6,
-         r8, r10, r12, r14,
-        r16, r18, r20, r22,
-        r24, r26, r28, r30
+    operand EGPR[4]: register = {
+        r0  = 0,  r2  = 1,  r4  = 2,  r6  = 3,
+        r8  = 4,  r10 = 5,  r12 = 6,  r14 = 7,
+        r16 = 8,  r18 = 9,  r20 = 10, r22 = 11,
+        r24 = 12, r26 = 13, r28 = 14, r30 = 15
     };
 
-    operand RDL: register = {
-        r24, r26, r28, r30
+    operand RDL[2]: register = {
+        r24 = 0, r26 = 1, r28 = 2, r30 = 3
     };
 
     operand ADR: register = {
@@ -59,45 +66,23 @@ architecture avr {
     };
 
     // TODO: fix these immediate declarations!
-    operand IMM3: immediate = {
-        a, b
-    };
+    operand IMM3: immediate = [0, 7];
 
-    operand IMM5: immediate = {
-        a, b
-    };
+    operand IMM5: immediate = [0, 31];
 
-    operand IMM6: immediate = {
-        a, b
-    };
+    operand IMM6: immediate = [0, 63];
 
-    operand IMM7: immediate = {
-        a, b
-    };
+    operand IMM7: immediate = [0, 127];
 
-    operand IMM8: immediate = {
-        a, b
-    };
+    operand IMM8: immediate = [0, 255];
 
-    operand IMM8: immediate = {
-        a, b
-    };
+    operand SREL[7]: immediate = [pc-64, pc+63];
 
-    operand SREL: immediate = {
-        a, b
-    };
+    operand LREL[11]: immediate = [pc-1024, pc+1023];
 
-    operand LREL: immediate = {
-        a, b
-    };
+    operand PADDR[16]: immediate = [0, 65536];
 
-    operand PADDR: immediate = {
-        a, b
-    };
-
-    operand DADDR: immediate = {
-        a, b
-    };
+    operand DADDR[12]: immediate = [0, 4096];
 
 
 //---------------------------------------------------------------------------
