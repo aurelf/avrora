@@ -58,7 +58,8 @@ public class ClassGenerator {
 
     public void generate() {
         printer.indent();
-        new SetEmitter().generate(architecture);
+        new InstrSetEmitter().generate(architecture);
+        new RegSetEmitter().generate(architecture);
         new CheckEmitter().generate(architecture);
         new ConstructorEmitter().generate(architecture);
         new ClassEmitter().generate(architecture);
@@ -67,7 +68,10 @@ public class ClassGenerator {
 
     private class ClassEmitter implements Architecture.InstrVisitor {
         public void generate(Architecture a) {
-            printer.println("// Class definitions individual instructions ");
+            printer.println("");
+            printer.println("//-------------------------------------------------------");
+            printer.println("// GENERATED: Class definitions individual instructions ");
+            printer.println("//-------------------------------------------------------");
 
             a.accept(this);
         }
@@ -136,14 +140,16 @@ public class ClassGenerator {
 
     private class ConstructorEmitter implements Architecture.InstrVisitor {
         public void generate(Architecture a) {
-            printer.println("// Static factory methods for individual instructions ");
+            printer.println("");
+            printer.println("//----------------------------------------------------------------");
+            printer.println("// GENERATED: Static factory methods for individual instructions ");
+            printer.println("//----------------------------------------------------------------");
 
             a.accept(this);
         }
 
         public void visit(InstrDecl d) {
-            String cName = (d.variant == null) ? d.name.image : d.variant.image;
-            cName = StringUtil.trimquotes(cName.toUpperCase());
+            String cName = getClassName(d);
             emitArrayMethod(cName, d);
             emitSpecificMethod(cName, d);
 
@@ -159,7 +165,8 @@ public class ClassGenerator {
             int cntr = 0;
             while ( i.hasNext() ) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                printer.print("check_"+o.type.image+"(ops["+cntr+"])");
+                String asMeth = o.isRegister() ? "asReg" : "asImm";
+                printer.print("check_"+o.type.image+"("+cntr+", "+asMeth+"("+cntr+", ops))");
                 if ( i.hasNext() ) printer.print(", ");
                 cntr++;
             }
@@ -175,11 +182,13 @@ public class ClassGenerator {
             printer.print("return new "+cName+"(");
             // emit the checking code for each operand
             Iterator i = d.getOperandIterator();
+            int cntr = 0;
             while ( i.hasNext() ) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String n = o.name.toString();
-                printer.print("check_"+o.type.image+"("+n+")");
+                printer.print("check_"+o.type.image+"("+cntr+", "+n+")");
                 if ( i.hasNext() ) printer.print(", ");
+                cntr++;
             }
             printer.println(");");
             printer.endblock();
@@ -196,9 +205,12 @@ public class ClassGenerator {
         }
     }
 
-    private class SetEmitter implements Architecture.OperandVisitor {
+    private class RegSetEmitter implements Architecture.OperandVisitor {
         public void generate(Architecture a) {
-            printer.println("// Sets of registers to check constraints ");
+            printer.println("");
+            printer.println("//-------------------------------------------------------");
+            printer.println("// GENERATED: Sets of registers to check constraints ");
+            printer.println("//-------------------------------------------------------");
 
             a.accept(this);
         }
@@ -213,10 +225,13 @@ public class ClassGenerator {
             printer.indent();
 
             Iterator i = rset.members.iterator();
+            int cntr = 0;
             while ( i.hasNext() ) {
                 OperandDecl.RegisterEncoding renc = (OperandDecl.RegisterEncoding)i.next();
-                printer.print(renc.name.image.toUpperCase());
+                printer.print("Register."+renc.name.image.toUpperCase());
                 if ( i.hasNext() ) printer.print(", ");
+                cntr++;
+                if ( cntr != 0 && (cntr % 4) == 0) printer.nextln();
             }
 
             printer.unindent();
@@ -226,9 +241,31 @@ public class ClassGenerator {
         }
     }
 
+    private class InstrSetEmitter implements Architecture.InstrVisitor {
+        public void generate(Architecture a) {
+            printer.println("");
+            printer.println("//-------------------------------------------------------------------");
+            printer.println("// GENERATED: Method to initialize the instruction set mapping ");
+            printer.println("//-------------------------------------------------------------------");
+
+            printer.startblock("private static void initializeInstrSet()");
+
+            a.accept(this);
+
+            printer.endblock();
+        }
+
+        public void visit(InstrDecl d) {
+            printer.println("instructions.put("+d.name+", "+getClassName(d)+".prototype);");
+        }
+    }
+
     private class CheckEmitter implements Architecture.OperandVisitor {
         public void generate(Architecture a) {
-            printer.println("// Methods to check the validity of individual operands ");
+            printer.println("");
+            printer.println("//-------------------------------------------------------------------");
+            printer.println("// GENERATED: Methods to check the validity of individual operands ");
+            printer.println("//-------------------------------------------------------------------");
 
             a.accept(this);
         }
@@ -236,17 +273,24 @@ public class ClassGenerator {
         public void visit(OperandDecl d) {
             String type = d.name.toString();
             String ptype = d.isRegister() ? "Register" : "int";
-            printer.startblock("private static "+ptype+" check_"+type+"("+ptype+" v)");
+            printer.startblock("private static "+ptype+" check_"+type+"(int n, "+ptype+" v)");
 
             if ( d.isRegister() ) {
-                printer.println("return checkRegSet(v, "+type+"_set);");
+                printer.println("return checkRegSet(n, v, "+type+"_set);");
             } else {
                 OperandDecl.Immediate imm = (OperandDecl.Immediate)d;
-                printer.println("return checkRange(v, "+imm.low+", "+imm.high+");");
+                printer.println("return checkRange(n, v, "+imm.low+", "+imm.high+");");
             }
 
             printer.endblock();
         }
     }
+
+    private static String getClassName(InstrDecl d) {
+        String cName = (d.variant == null) ? d.name.image : d.variant.image;
+        cName = StringUtil.trimquotes(cName.toUpperCase());
+        return cName;
+    }
+
 
 }

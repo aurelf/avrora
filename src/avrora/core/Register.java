@@ -125,14 +125,15 @@ public class Register {
     private static final Register[] REGS_RDL = {
         R24, R26, R28, R30
     };
-    public static final Set GPR_set = new Set("{r0, r1, ..., r31}", REGS_0_31);
-    public static final Set HGPR_set = new Set("{r16, r17, ..., r31}", REGS_16_31);
-    public static final Set MGPR_set = new Set("{r16, r17, ..., r23}", REGS_16_23);
-    public static final Set EGPR_set = new Set("{r0, r2, ..., r30}", EREGS);
-    public static final Set ADR_set = new Set("{x, y, z}", REGS_XYZ);
-    public static final Set RDL_set = new Set("{r24, r26, r28, r30}", REGS_RDL);
-    public static final Set YZ_set = new Set("{y, z}", REGS_YZ);
-    public static final Set Z_set = new Set("{z}", REGS_Z);
+    
+    public static final Set GPR_set = new Set(REGS_0_31);
+    public static final Set HGPR_set = new Set(REGS_16_31);
+    public static final Set MGPR_set = new Set(REGS_16_23);
+    public static final Set EGPR_set = new Set(EREGS);
+    public static final Set ADR_set = new Set(REGS_XYZ);
+    public static final Set RDL_set = new Set(REGS_RDL);
+    public static final Set YZ_set = new Set(REGS_YZ);
+    public static final Set Z_set = new Set(REGS_Z);
 
     private static HashMap initializeRegisterMap() {
         HashMap map = new HashMap();
@@ -259,14 +260,26 @@ public class Register {
          * represents the contents of the registers and an array of registers
          * that are members of the set. It then constructs an internal hash set
          * for fast membership tests.
-         * @param n the string representing the contents of this set
          * @param regs an array of registers that are members of this set
          */
-        Set(String n, Register[] regs) {
-            contents = n;
+        Set(Register[] regs) {
             registers = new HashSet(2 * regs.length);
-            for (int cntr = 0; cntr < regs.length; cntr++)
+            for (int cntr = 0; cntr < regs.length; cntr++) {
                 registers.add(regs[cntr]);
+            }
+
+            StringBuffer buf = new StringBuffer();
+            for (int cntr = 0; cntr < regs.length; cntr++) {
+                registers.add(regs[cntr]);
+                // abreviate large sets
+                if ( cntr == 2 && regs.length > 4 ) buf.append("..., ");
+                // print first two, and last, or all if the set is fewer than five
+                if ( cntr < 2 || cntr == regs.length-1 || regs.length < 5) {
+                    buf.append(regs[cntr]);
+                    if ( cntr < regs.length-1 ) buf.append(", ");
+                }
+            }
+            contents = buf.toString();
         }
 
         /**
