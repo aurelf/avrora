@@ -41,111 +41,12 @@ import avrora.util.Arithmetic;
 /**
  * @author Ben L. Titzer
  */
-public abstract class ATMegaFamily implements Microcontroller {
-    /**
-     * The <code>HZ</code> field stores a public static final integer that represents the clockspeed of the
-     * AtMega128L microcontroller (7.327mhz).
-     */
-    public final int HZ;
+public abstract class ATMegaFamily extends AtmelMicrocontroller {
+
     public final int SRAM_SIZE;
     public final int IOREG_SIZE;
     public final int FLASH_SIZE;
     public final int EEPROM_SIZE;
-    public final int NUM_PINS;
-
-    protected Simulator.Printer pinPrinter;
-    protected final Pin[] pins;
-
-    protected Clock clock;
-    protected Simulator simulator;
-    protected BaseInterpreter interpreter;
-
-    /**
-     * The <code>Pin</code> class implements a model of a pin on the ATMegaFamily for the general purpose IO
-     * ports.
-     */
-    protected class Pin implements Microcontroller.Pin {
-        protected final int number;
-
-        boolean level;
-        boolean outputDir;
-        boolean pullup;
-
-        Microcontroller.Pin.Input input;
-        Microcontroller.Pin.Output output;
-
-        protected Pin(int num) {
-            number = num;
-        }
-
-        public void connect(Output o) {
-            output = o;
-        }
-
-        public void connect(Input i) {
-            input = i;
-        }
-
-        protected void setOutputDir(boolean out) {
-            outputDir = out;
-            if (out) write(level);
-        }
-
-        protected void setPullup(boolean pull) {
-            pullup = pull;
-        }
-
-        protected boolean read() {
-            boolean result;
-            if (!outputDir) {
-                if (input != null)
-                    result = input.read();
-                else
-                    result = pullup;
-
-            } else {
-                result = level;
-            }
-            // print the result of the read
-            printRead(result);
-            return result;
-        }
-
-        private void printRead(boolean result) {
-            if (pinPrinter == null) pinPrinter = simulator.getPrinter("mcu.pin");
-            if (pinPrinter.enabled) {
-                String dir = getDirection();
-                pinPrinter.println("READ PIN: " + number + ' ' + dir + "<- " + result);
-            }
-        }
-
-        private String getDirection() {
-            if (!outputDir) {
-                if (input != null)
-                    return "[input] ";
-                else
-                    return "[pullup:" + pullup + "] ";
-
-            } else {
-                return "[output] ";
-            }
-        }
-
-        protected void write(boolean value) {
-            level = value;
-            // print the write
-            printWrite(value);
-            if (outputDir && output != null) output.write(value);
-        }
-
-        private void printWrite(boolean value) {
-            if (pinPrinter == null) pinPrinter = simulator.getPrinter("mcu.pin");
-            if (pinPrinter.enabled) {
-                String dir = getDirection();
-                pinPrinter.println("WRITE PIN: " + number + ' ' + dir + "-> " + value);
-            }
-        }
-    }
 
     abstract class IMRReg extends State.RWIOReg {
 
@@ -287,13 +188,11 @@ public abstract class ATMegaFamily implements Microcontroller {
 
 
     protected ATMegaFamily(int hz, int sram_size, int ioreg_size, int flash_size, int eeprom_size, int num_pins) {
-        HZ = hz;
+        super(hz, num_pins);
         SRAM_SIZE = sram_size;
         IOREG_SIZE = ioreg_size;
         FLASH_SIZE = flash_size;
         EEPROM_SIZE = eeprom_size;
-        NUM_PINS = num_pins;
-        pins = new Pin[NUM_PINS];
     }
 
     /**
@@ -345,44 +244,4 @@ public abstract class ATMegaFamily implements Microcontroller {
     public int getHz() {
         return HZ;
     }
-
-    /**
-     * The <code>millisToCycles()</code> method converts the specified number of milliseconds to a cycle
-     * count. The conversion factor used is the number of cycles per second of this device. This method serves
-     * as a utility so that clients need not do repeated work in converting milliseconds to cycles and back.
-     *
-     * @param ms a time quantity in milliseconds as a double
-     * @return the same time quantity in clock cycles, rounded up to the nearest integer
-     */
-    public long millisToCycles(double ms) {
-        return (long)(ms * HZ / 1000);
-    }
-
-    /**
-     * The <code>cyclesToMillis()</code> method converts the specified number of cycles to a time quantity in
-     * milliseconds. The conversion factor used is the number of cycles per second of this device. This method
-     * serves as a utility so that clients need not do repeated work in converting milliseconds to cycles and
-     * back.
-     *
-     * @param cycles the number of cycles
-     * @return the same time quantity in milliseconds
-     */
-    public double cyclesToMillis(long cycles) {
-        return 1000 * ((double)cycles) / HZ;
-    }
-
-    /**
-     * The <code>getPin()</code> method looks up the specified pin by its number and returns a reference to
-     * that pin. The intended users of this method are external device implementors which connect their
-     * devices to the microcontroller through the pins.
-     *
-     * @param num the pin number to look up
-     * @return a reference to the <code>Pin</code> object corresponding to the named pin if it exists; null
-     *         otherwise
-     */
-    public Microcontroller.Pin getPin(int num) {
-        if (num < 0 || num > pins.length) return null;
-        return pins[num];
-    }
-
 }

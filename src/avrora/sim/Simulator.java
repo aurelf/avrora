@@ -694,6 +694,12 @@ public abstract class Simulator implements IORegisterConstants {
         clock.removeEvent(e);
     }
 
+    public void installInterrupt(int num, Simulator.Interrupt i) {
+        interrupts[num] = i;
+    }
+
+
+
     /**
      * The <code>delay()</code> method introduces a delay in the execution of the instructions of the program.
      * This is used by some devices for correct timing behavior. For example, the EEPROM, when written, causes
