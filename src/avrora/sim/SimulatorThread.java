@@ -40,7 +40,6 @@ package avrora.sim;
  * Multiple simulators are then synchronized by being inserted into a group
  * using the <code>GlobalClock</code> class.
  *
- * @see avrora.sim.util.GlobalClock
  * @author Ben L. Titzer
  */
 public class SimulatorThread extends Thread {
@@ -54,7 +53,6 @@ public class SimulatorThread extends Thread {
     public SimulatorThread(Simulator s) {
         simulator = s;
     }
-    // TODO: clean up how simulators are put into simulator threads.
 
     /**
      * The <code>getSimulator()</code> method gets the <code>Simulator</code> instance that

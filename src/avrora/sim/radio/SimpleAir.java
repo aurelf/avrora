@@ -35,7 +35,8 @@ package avrora.sim.radio;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.util.GlobalQueue;
+import avrora.sim.util.GlobalClock;
+import avrora.Avrora;
 
 import java.util.*;
 
@@ -61,11 +62,7 @@ public class SimpleAir implements RadioAir {
         simpleAir = new SimpleAir();
     }
 
-    public boolean messageInAir() {
-        return !messages.isEmpty();
-    }
-
-    /** GlobalQueue used by the air environment. Essential for synchronization. */
+    /** GlobalClock used by the air environment. Essential for synchronization. */
     protected final EnvironmentQueue globalQueue;
 
     protected final LinkedList messages;
@@ -76,9 +73,7 @@ public class SimpleAir implements RadioAir {
 
     /** The amount of cycles it takes for one byte to be sent.*/
     public final long bytePeriod = Radio.TRANSFER_TIME;
-    public final long bitPeriod = 763;
-
-    public final double transferTime = .8332651000300227;
+    public final long bitPeriod = Radio.TRANSFER_TIME / 8;
 
     public SimpleAir() {
         radios = new HashSet();
@@ -101,7 +96,7 @@ public class SimpleAir implements RadioAir {
 
         if (!scheduledGlobalMeet) {
             scheduledGlobalMeet = true;
-            globalQueue.addTimerEvent(new ScheduleDelivery(f), 1);
+            globalQueue.insertEvent(new ScheduleDelivery(f), 1);
         }
     }
 
@@ -117,16 +112,9 @@ public class SimpleAir implements RadioAir {
 
         public void fire() {
             // Schedule local events.
-            //double delay = 1.0; // TODO: calculate delay properly
             long globalTime = (globalQueue.getCount()) * Radio.TRANSFER_TIME;
             long delay = Radio.TRANSFER_TIME - (globalTime - packet.originTime);
 
-            //System.err.println("Delay " + delay + ", Global Time: " + globalTime +
-            //        " , or: " + packet.origination.longValue() + ", dif: " + (globalTime - packet.origination.longValue()));
-            /*
-                delay = TXTime - (GT - LT); if GT is ahead of LT when this is fired
-
-            */
             globalQueue.addDeliveryMeet(delay);
             scheduledGlobalMeet = false;
         }
@@ -134,43 +122,33 @@ public class SimpleAir implements RadioAir {
     }
 
 
-    /** An extended version of <code>GlobalQueue</code> that implements a version of
+    /** An extended version of <code>GlobalClock</code> that implements a version of
      * <code>LocalMeet</code> that is appropriate for delivering radio packets. */
-    protected class EnvironmentQueue extends GlobalQueue {
+    protected class EnvironmentQueue extends GlobalClock {
+        DeliveryMeet meet = new DeliveryMeet();
+
         protected EnvironmentQueue(long p) {
             super(p);
         }
 
         protected class DeliveryMeet extends LocalMeet {
 
-            DeliveryMeet(Simulator sim, long scale, long delay) {
-                super(sim, bytePeriod, delay);      // TODO cleanup. either use scale or leave it out
-                id = "DEL";
+            DeliveryMeet() {
+                super("DELIVERY");
             }
 
-            public void action() {
-                // TODO: Implement the action of this...
-                /*
-                    What am I doing here?
-                    I am calculating the waveform.
-                    Then, I am deliverying the waveform.
-                    Need a sense of time...
-                 */
-
-                long currentTime = simulator.getState().getCycles();
-                deliverWaveForm(currentTime);
-
+            public void serialAction() {
+                // throw Avrora.unimplemented();
+                // deliverWaveForm();
             }
-        }
 
-        protected class DeliveryMeetFactory implements LocalMeetFactory {
-            public LocalMeet produce(Simulator s, long scale, long delay) { // TODO: cleanup
-                return new DeliveryMeet(s, scale, delay);     // TODO: cleanup
+            public void parallelAction(SimulatorThread s) {
+                // do nothing right now.
             }
         }
 
         protected void addDeliveryMeet(long delay) {
-            addLocalMeet(new DeliveryMeetFactory(), bytePeriod, delay);
+            addLocalMeet(meet, delay);
         }
     }
 
@@ -245,13 +223,11 @@ public class SimpleAir implements RadioAir {
 
 
         } else if (time < del) {
-            // TODO: handle these bad cases. early/late delivery.
-            // early
-            return;
+            // TODO: what about early delivery times??
+            throw Avrora.failure("early deliver time");
         } else {
-            // late
-            return;
-
+            // TODO: what about late delivery times??
+            throw Avrora.failure("late deliver time");
         }
     }
 

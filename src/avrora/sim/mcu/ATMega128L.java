@@ -267,8 +267,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
     protected void installPins() {
         for (int cntr = 0; cntr < NUM_PINS; cntr++)
             pins[cntr] = new Pin(cntr);
-
-        // TODO: install reserved pins like VCC
     }
 
     /**
@@ -459,10 +457,7 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         protected FlagRegister TIFR_reg;
         protected MaskRegister TIMSK_reg;
 
-        /** The ETIFR register. Address 0x7c.*/
         protected UnorderedFlagRegister ETIFR_reg;
-
-        /** The ETIMSK register. Address 0x7d.*/
         protected UnorderedMaskRegister ETIMSK_reg;
 
         protected SPI spi;
@@ -564,8 +559,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         final int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};
 
-        /** <code>Timer0</code> is the default 8-bit timer on the
-         * ATMega128L. */
+        /**
+         * <code>Timer0</code> is the default 8-bit timer on the
+         * ATMega128L.
+         */
         protected class Timer0 extends Timer8Bit {
 
             final Timer0ExternalClock externalClock = new Timer0ExternalClock();
@@ -605,9 +602,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         final int[] periods2 = {0, 1, 8, 64, 256, 1024};
 
-        /** <code>Timer2</code> is an additional 8-bit timer on the
+        /**
+         * <code>Timer2</code> is an additional 8-bit timer on the
          * ATMega128L. It is not available in ATMega103 compatibility
-         * mode. */
+         * mode.
+         */
         protected class Timer2 extends Timer8Bit {
             protected Timer2(BaseInterpreter ns) {
                 super(ns, 2, TCCR2, TCNT2, OCR2, 7, 6, 7, 6, periods2);
@@ -615,8 +614,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
 
-        /** <code>Timer1</code> is a 16-bit timer available on the
-         * ATMega128L.*/
+        /**
+         * <code>Timer1</code> is a 16-bit timer available on the
+         * ATMega128L.
+         */
         protected class Timer1 extends Timer16Bit {
 
             protected void initValues() {
@@ -660,8 +661,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
         }
 
-        /** <code>Timer3</code> is an additional 16-bit timer available on the
-         * ATMega128L, but not in ATMega103 compatability mode. */
+        /**
+         * <code>Timer3</code> is an additional 16-bit timer available on the
+         * ATMega128L, but not in ATMega103 compatability mode.
+         */
         protected class Timer3 extends Timer16Bit {
 
             protected void initValues() {
@@ -821,8 +824,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             protected int[] periods;
 
-            /* end of fields that should be defined. */
-
             // This method should be overloaded to initialize the above values.
             abstract protected void initValues();
 
@@ -877,8 +878,6 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 installIOReg(ns, ICRnH, highTempReg);
                 installIOReg(ns, ICRnL, ICRn_reg);
             }
-
-            /* Rembmer to clarify the behavior of these methods.*/
 
             protected void compareMatchA() {
                 if (timerPrinter.enabled) {
@@ -1023,9 +1022,11 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
             }
 
-            /** Overloads the write behavior of this class of register
+            /**
+             * Overloads the write behavior of this class of register
              * in order to implement compare match blocking for one
-             * timer period. */
+             * timer period.
+             */
             protected class TCNTnRegister extends State.RWIOReg {
                 /* index of the blockCompareMatch corresponding to
                  * this register in the array of boolean flags.  */
@@ -1040,10 +1041,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
             }
 
-            /** <code>ControlRegisterA</code> describes the TCCRnA
+            /**
+             * <code>ControlRegisterA</code> describes the TCCRnA
              * control register associated with a 160bit
              * timer. Changing the values of this register generally
-             * alter the mode of operation of the timer.*/
+             * alter the mode of operation of the timer.
+             */
             protected class ControlRegisterA extends ControlRegister {
                 public static final int COMnA1 = 7;
                 public static final int COMnA0 = 6;
@@ -1066,11 +1069,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             }
 
-            /** <code>ControlRegisterA</code> describes the TCCRnB
+            /**
+             * <code>ControlRegisterA</code> describes the TCCRnB
              * control register associated with a 160bit
              * timer. Changing the values of this register generally
              * alter the mode of operation of the timer. The low three
-             * bits also set the prescalar of the timer. */
+             * bits also set the prescalar of the timer.
+             */
             protected class ControlRegisterB extends ControlRegister {
                 public static final int ICNCn = 7;
                 public static final int ICESn = 6;
@@ -1131,11 +1136,13 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
 
             }
 
-            /** <code>ControlRegisterA</code> describes the TCCRnA
+            /**
+             * <code>ControlRegisterA</code> describes the TCCRnA
              * control register associated with a 16-bit
              * timer. Writing to the three high bits of this register
              * will cause a forced output compare on at least one of
-             * the three output compare units.*/
+             * the three output compare units.
+             */
             protected class ControlRegisterC extends ControlRegister {
                 public static final int FOCnA = 7;
                 public static final int FOCnB = 6;
@@ -1220,7 +1227,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             }
 
 
-            /** In PWN modes, writes to the OCRnx registers are
+            /**
+             * In PWN modes, writes to the OCRnx registers are
              * buffered. Specifically, the actual write is delayed
              * until a certain event (the counter reaching either TOP
              * or BOTTOM) specified by the particular PWN
@@ -1228,7 +1236,8 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
              * buffer register on a write and reading from the
              * buffered register in a read. When the buffered register
              * is to be updated, the flush() method should be
-             * called.  */
+             * called.
+             */
             protected class BufferedRegister extends State.RWIOReg {
                 final State.RWIOReg register;
 
@@ -1487,8 +1496,10 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
         }
 
 
-        /** 8-bit timers. Timer0 and Timer2 are subclasses of this.
-         * @author Daniel Lee*/
+        /**
+         * Base class of 8-bit timers. Timer0 and Timer2 are subclasses of this.
+         * @author Daniel Lee
+         */
         protected class Timer8Bit {
             public static final int MODE_NORMAL = 0;
             public static final int MODE_PWM = 1;
@@ -1837,30 +1848,20 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
             // Timer3 OVF
             interrupts[30] = new Simulator.MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false);
 
-            // 8-Bit Timers
-            // build timer 0
             new Timer0(ns);
-            // build timer 2
             if (!compatibilityMode) new Timer2(ns);
 
-            // 16-Bit Timers
-            // build timer 1
             new Timer1(ns);
-            // build Timer 3
             if (!compatibilityMode) new Timer3(ns);
 
             buildPorts(ns);
-            // TODO: build other devices
 
             new EEPROM(ns);
-
             new USART0(ns);
             if (!compatibilityMode) new USART1(ns);
 
             spi = new SPI(ns);
-
             adc = new ADC(ns);
-
         }
 
 
@@ -2873,10 +2874,12 @@ public class ATMega128L implements Microcontroller, MicrocontrollerFactory {
                 }
 
 
-                /** Notes. The way this delay is setup right now, when the ATMega128L is in master mode
-                 * and transmits, the connected device has a delayed receive. For the radio, this is not a problem,
-                 * as the radio is the master and is responsible for ensuring correct delivery time for the SPI.
-                 * TODO: rewrite this comment so that it actually makes sense. */
+                /**
+                 * Notes. The way this delay is setup right now, when the ATMega128L is in
+                 * master mode and transmits, the connected device has a delayed receive.
+                 * For the radio, this is not a problem, as the radio is the master and is
+                 * responsible for ensuring correct delivery time for the SPI.
+                 */
                 public void fire() {
                     if (SPIenabled) {
                         connectedDevice.receiveFrame(myFrame);

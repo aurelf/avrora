@@ -34,76 +34,122 @@ package avrora.sim.util;
 
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.radio.Radio;
+import avrora.sim.util.DeltaQueue;
 
+import avrora.util.Verbose;
+import avrora.Avrora;
+
+import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * The <code>GlobalClock</code> class implements a global timer among multiple
- * simulators by inserting periodic timers into each simulator.
+ * simulators by inserting periodic timers into each simulator. It is an alternate version
+ * of the <code>GlobalClock</code> class that was developed for use with the synchronization
+ * policy used in the CC1000 - SimpleAir radio implementation.
  *
- * @author Ben L. Titzer
+ * A verbose printer for this class can be accessed through "sim.global".
+ *
+ * @author Ben L. Titzer, Daniel Lee
  */
 public class GlobalClock {
 
-    protected final double period;
+    /**
+     * <code>cycles</code> is the number of cycles on a member local clock per cycle
+     * on the global clock. Some re-coding must be done if microcontrollers running
+     * at difference speeds are to be accurately simulated.
+     */
+    protected final long cycles;
     protected int goal;
     protected int count;
     protected final Object condition;
     protected final HashMap threadMap;
     protected final DeltaQueue eventQueue;
+    protected final Ticker timer = new Ticker();
 
-    public GlobalClock(double p) {
+    protected final Verbose.Printer gqPrinter = Verbose.getVerbosePrinter("sim.global");
+
+    public long getCount() {
+        return eventQueue.getCount();
+    }
+
+    public GlobalClock(long p) {
         condition = new Object();
         eventQueue = new DeltaQueue();
-        period = p;
+        cycles = p;
         threadMap = new HashMap();
     }
 
-    public void add(SimulatorThread t) {
-        // TODO: synchronization
+    public synchronized void add(SimulatorThread t) {
         if (threadMap.containsKey(t)) return;
-        threadMap.put(t, new LocalTimer(t.getSimulator(), period));
+
+        threadMap.put(t, timer);
+        t.getSimulator().insertEvent(timer, cycles);
         goal++;
     }
 
     public void remove(SimulatorThread t) {
-        // TODO: synchronization
-        if (!threadMap.containsKey(t)) return;
-        LocalTimer lt = (LocalTimer) threadMap.get(t);
-        lt.remove();
-        threadMap.remove(t);
-        goal--;
+        throw Avrora.unimplemented();
     }
 
-    public void addTimerEvent(Simulator.Event event, long ticks) {
-        // TODO: synchronization
+    /**
+     * Adds an <code>Event</code> to this global event queue. It is important to note
+     * that this method adds an event executed once at the appropriate global time.
+     * It does not execute once in each thread participating in the clock. For such
+     * functionality, see <code>LocalMeet</code>. Note that the event, when fired,
+     * may run in any one of the threads participating in the global clock, and not
+     * necessarily the same thread each time.
+     */
+    public synchronized void insertEvent(Simulator.Event event, long ticks) {
         eventQueue.add(event, ticks);
     }
 
-    public void removeTimerEvent(Simulator.Event event) {
-        // TODO: synchronization
+    public synchronized void removeEvent(Simulator.Event event) {
         eventQueue.remove(event);
     }
 
-    protected void tick() {
-        count = 0;
-        eventQueue.advance(1);
+    /**
+     * Adds a <code>LocalMeet</code> event to the event queue of every simulator
+     * participating in the global clock.
+     */
+    public void addLocalMeet(LocalMeet m, long delay) {
+        Iterator threadIterator = threadMap.keySet().iterator();
+
+        while (threadIterator.hasNext()) {
+            SimulatorThread thread = (SimulatorThread) threadIterator.next();
+            Simulator sim = thread.getSimulator();
+
+            sim.insertEvent(m, delay);
+        }
     }
 
-    public class LocalTimer implements Simulator.Event {
-        private final Simulator simulator;
-        private final long cycles;
-        private boolean removed;
+    public abstract class LocalMeet implements Simulator.Event {
+        protected final String id;
 
-        LocalTimer(Simulator s, double period) {
-            simulator = s;
-            cycles = simulator.getMicrocontroller().millisToCycles(period);
-            simulator.insertEvent(this, cycles);
+        protected LocalMeet(String id) {
+            this.id = id;
         }
 
+        /**
+         * The <code>fire()</code> method of this event is called by the individual
+         * event queues of each simulator as they reach this point in time. The implementation
+         * of this method waits for all threads to join. It will then execute the
+         * <code>serialAction()</code> method in the last thread to join the clock, and execute
+         * the <code>parallelAction</code> in each of the threads, in parallel, and then release
+         * the threads by returning back to the Simulator.
+         */
         public void fire() {
             try {
                 synchronized (condition) {
+                    if (gqPrinter.enabled) {
+                        SimulatorThread thread = (SimulatorThread)Thread.currentThread();
+                        Simulator simulator = thread.getSimulator();
+                        gqPrinter.println(id + " event: local " + simulator.getState().getCycles()
+                                + ", global " + globalTime() + ", diff " + (simulator.getState().getCycles() - globalTime()));
+
+                    }
                     count++;
 
                     if (count < goal) {
@@ -111,24 +157,64 @@ public class GlobalClock {
                         condition.wait();
                     } else {
                         // last thread to arrive sets the count to zero and notifies all other threads
-                        tick();
+                        count = 0;
+                        // perform the action that should be run while all threads are stopped
+                        serialAction();
+                        // release threads
                         condition.notifyAll();
                     }
+                    // perform action that should be run in parallel at the end
+                    parallelAction((SimulatorThread)Thread.currentThread());
                 }
             } catch (java.lang.InterruptedException e) {
                 throw new InterruptedException(e);
             }
-
-            if (!removed)
-                simulator.insertEvent(this, cycles);
         }
 
-        protected void remove() {
-            simulator.removeEvent(this);
-            removed = true;
+        /**
+         * The <code>serialAction()</code> method implements the functionality that
+         * must be performed in serial when the threads have joined at this local meet.
+         * This method will execute in the last thread to enter the fire() method.
+         */
+        public abstract void serialAction();
+
+        /**
+         * The <code>parallelAction()</code> method implements the functionality that
+         * must be performed in parallel when the threads have joined at this local
+         * meet, and after the serial action has been completed. It will be called in
+         * each thread, with the parameter passed being the current SimulatorThread.
+         * @param st the current <code>SimulatorThread</code> instance for this thread
+         */
+        public abstract void parallelAction(SimulatorThread st);
+
+    }
+
+    public long globalTime() {
+        return eventQueue.getCount() * cycles;
+    }
+
+
+    /**
+     * The <code>Ticker</code> class is an event that fires in the local queues
+     * of participating threads. This class is necessary for ensuring the integrity of the
+     * global clock.
+     */
+    public class Ticker extends LocalMeet {
+
+        Ticker() {
+            super("GLOBAL CLOCK");
+        }
+
+        public void serialAction() {
+            eventQueue.advance(1);
+        }
+
+        public void parallelAction(SimulatorThread s) {
+            s.getSimulator().insertEvent(this, cycles);
         }
 
     }
+
 
     /**
      * How sad. The <code>InterruptedException</code> wraps an interrupted

@@ -52,6 +52,4 @@ public interface RadioAir {
     /** Transmits frame <code>f</code> into the radio environment.  */
     public void transmit(Radio r, Radio.RadioPacket f);
 
-    /** Determines whether this is a message currently in the air. */
-    public boolean messageInAir();
 }
