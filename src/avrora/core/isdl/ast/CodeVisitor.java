@@ -35,10 +35,8 @@ package avrora.core.isdl.ast;
 import java.util.Iterator;
 
 /**
- * The <code>CodeVisitor</code> interface represents a visitor that is
- * more specific than the <code>ExprVisitor</code> visitor, in that it
- * contains visit methods for every type of arithmetic and logical
- * operation in the IR.
+ * The <code>CodeVisitor</code> interface represents a visitor that is more specific than the <code>ExprVisitor</code>
+ * visitor, in that it contains visit methods for every type of arithmetic and logical operation in the IR.
  *
  * @author Ben L. Titzer
  */
@@ -102,9 +100,8 @@ public interface CodeVisitor {
 
 
     /**
-     * The <code>DepthFirst</code> class is a base implementation of the
-     * <code>CodeVisitor</code> interface that visits the tree in depth-first
-     * order.
+     * The <code>DepthFirst</code> class is a base implementation of the <code>CodeVisitor</code> interface that visits
+     * the tree in depth-first order.
      *
      * @author Ben L. Titzer
      */
@@ -176,7 +173,7 @@ public interface CodeVisitor {
         public void visit(CallExpr e) {
             Iterator i = e.args.iterator();
             while (i.hasNext()) {
-                Expr a = (Expr) i.next();
+                Expr a = (Expr)i.next();
                 a.accept(this);
             }
         }

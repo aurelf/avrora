@@ -44,37 +44,13 @@ import java.util.LinkedList;
 
 import avrora.sim.Energy;
 import avrora.sim.radio.freespace.*;
+
 /**
- * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with
- * avrora. The CC1000 radio is used with the Mica2 platform in the real world.
- * Verbose printers for this class include "sim.cc1000", "sim.cc1000.data",
+ * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with avrora. The CC1000 radio is used
+ * with the Mica2 platform in the real world. Verbose printers for this class include "sim.cc1000", "sim.cc1000.data",
  * "sim.cc1000.pinconfig".
  *
  * @author Daniel Lee
- */
-/**
- * @author Olaf Landsiedel
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-/**
- * @author Olaf Landsiedel
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-/**
- * @author Olaf Landsiedel
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-/**
- * @author Olaf Landsiedel
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class CC1000Radio implements Radio {
 
@@ -82,7 +58,9 @@ public class CC1000Radio implements Radio {
 
     protected RadioRegister registers [] = new RadioRegister[0x47];
 
-    /** Register addresses. */
+    /**
+     * Register addresses.
+     */
     public static final int MAIN = 0x00;      //1
     public static final int FREQ_2A = 0x01;   //2
     public static final int FREQ_1A = 0x02;
@@ -112,7 +90,9 @@ public class CC1000Radio implements Radio {
     public static final int TEST1 = 0x45;
     public static final int TEST0 = 0x46;
 
-    /** Registers */
+    /**
+     * Registers
+     */
     protected final MainRegister MAIN_reg;
     protected final FrequencyRegister FREQ_A_reg;
     protected final FrequencyRegister FREQ_B_reg;
@@ -135,44 +115,56 @@ public class CC1000Radio implements Radio {
     protected final Receiver receiver = new Receiver();
     protected final Transmitter transmitter = new Transmitter();
 
-    /** Connected Microcontroller, Simulator and SimulatorThread should all correspond. */
+    /**
+     * Connected Microcontroller, Simulator and SimulatorThread should all correspond.
+     */
     protected final Microcontroller mcu;
     protected final Simulator sim;
     protected SimulatorThread simThread;
 
-    /** Radio environment into which this radio broadcasts. */
+    /**
+     * Radio environment into which this radio broadcasts.
+     */
     protected RadioAir air = SimpleAir.simpleAir;
 
     FrequencyRegister currentFrequencyRegister;
 
     private final LinkedList receivedBuffer = new LinkedList();
 
-    //the local air, it stores all packets that where heart by this node 
-    private LocalAir localAir;    
+    //the local air, it stores all packets that where heard by this node
+    private LocalAir localAir;
     //the energy recording for this node
     private Energy energy;
 
-    /** Sets the <code>SimulatorThread</code> of this radio. Should be done BEFORE
-     * adding this radio to a <code>RadioAir</code> environment. */
+    /**
+     * Sets the <code>SimulatorThread</code> of this radio. Should be done BEFORE adding this radio to a
+     * <code>RadioAir</code> environment.
+     */
     public void setSimulatorThread(SimulatorThread thread) {
         simThread = thread;
     }
 
-    /** Gets the <code>SimulatorThread</code> of this radio. */
+    /**
+     * Gets the <code>SimulatorThread</code> of this radio.
+     */
     public SimulatorThread getSimulatorThread() {
         return simThread;
     }
 
-    /** Part of the <code>Radio</code> interface. It should be called by the <code>RadioAir</code>
-     * that this radio is transmitting over when data is to be received. */
+    /**
+     * Part of the <code>Radio</code> interface. It should be called by the <code>RadioAir</code> that this radio is
+     * transmitting over when data is to be received.
+     */
     public void receive(Radio.RadioPacket packet) {
         receivedBuffer.addLast(packet);
 
     }
 
-    /** Transmit a packet of data into the <code>RadioAir</code>.*/
+    /**
+     * Transmit a packet of data into the <code>RadioAir</code>.
+     */
     public void transmit(Radio.RadioPacket packet) {
-        // send packet into air..
+        // send packet into air...
         air.transmit(this, packet);
     }
 
@@ -249,34 +241,33 @@ public class CC1000Radio implements Radio {
         controller.install(mcu);
         
         //setup mode names
-        String[] modeName = new String[262]; 
-        
-        for( int i = 0; i < 6; i++)
+        String[] modeName = new String[262];
+
+        for (int i = 0; i < 6; i++)
             modeName[i] = RadioEnergy.modeName[i];
         String space = "";
-        for( int i = 0; i < 256; i++){
-            if( i < 10)
+        for (int i = 0; i < 256; i++) {
+            if (i < 10)
                 space = ":      ";
-            if( i >= 10 && i < 100)
+            if (i >= 10 && i < 100)
                 space = ":     ";
-            if( i >=100 )
+            if (i >= 100)
                 space = ":    ";
-            modeName[i+6] = RadioEnergy.modeName[6] + i + space;
+            modeName[i + 6] = RadioEnergy.modeName[6] + i + space;
         }
         
-        //setup energy recoding
-        energy = new Energy("Radio", 
-        		RadioEnergy.modeAmphere, 
-        		modeName, 
-        		mcu.getHz(), 
-        		RadioEnergy.startMode, 
-        		mcu.getSimulator().getEnergyControl(), 
-        		mcu.getSimulator().getState());  
-            }
+        //setup energy recording
+        energy = new Energy("Radio",
+                            RadioEnergy.modeAmphere,
+                            modeName,
+                            mcu.getHz(),
+                            RadioEnergy.startMode,
+                            mcu.getSimulator().getEnergyControl(),
+                            mcu.getSimulator().getState());
+    }
 
     /**
-     * The <code>RadioRegister</code> is an abstract register grouping together
-     * registers on the CC1000 radio.
+     * The <code>RadioRegister</code> is an abstract register grouping together registers on the CC1000 radio.
      */
     protected abstract class RadioRegister extends State.RWIOReg {
         public void write(byte val) {
@@ -319,13 +310,13 @@ public class CC1000Radio implements Radio {
 
     }
 
-    /** The <code>DummyRegister</code> is a filler class for registers within the
-     * 7-bit address space of the radio registers, but do not actually exist/do
-     * anything in the real radio.
+    /**
+     * The <code>DummyRegister</code> is a filler class for registers within the 7-bit address space of the radio
+     * registers, but do not actually exist/do anything in the real radio.
      */
     protected class DummyRegister extends RadioRegister {
         DummyRegister(int i) {
-            super("Dummy " + Integer.toHexString(i), (byte) 0);
+            super("Dummy " + Integer.toHexString(i), (byte)0);
         }
 
         protected void decode(byte val) {
@@ -358,7 +349,7 @@ public class CC1000Radio implements Radio {
         boolean oldRn;
 
         MainRegister() {
-            super("MAIN", (byte) 0x3e);
+            super("MAIN", (byte)0x3e);
         }
 
         protected void decode(byte val) {
@@ -408,32 +399,32 @@ public class CC1000Radio implements Radio {
             }
             
             //OL: start energy tracking
-            if( val != oldVal ){
+            if (val != oldVal) {
                 int state = 0;
                 //check for power down state
                 // this row of "if" statements can probably be
                 // optimized a little bit
                 // however, in the current way it is easy to understand
                 // and these changes do not happen too often
-                if( corePd )
+                if (corePd)
                     state = 1; //power down state
                 else
                     state = 2; // core, e.g. crystal on state
-                if( !corePd && !biasPd)
+                if (!corePd && !biasPd)
                     state = 3; // crystal and bias on state
-                if( !corePd && !biasPd && !fsPd)
+                if (!corePd && !biasPd && !fsPd)
                     state = 4; // crystal, bias and synth. on
-                if( !corePd && !biasPd && !fsPd && !rxtx && !rxPd)
+                if (!corePd && !biasPd && !fsPd && !rxtx && !rxPd)
                     state = 5; // receive state
-                if( !corePd && ! biasPd && !fsPd && rxtx && !txPd)
+                if (!corePd && !biasPd && !fsPd && rxtx && !txPd)
                     state = PA_POW_reg.getPower() + 6;
                 energy.setMode(state);
             }
             //end energy tracking
             
             oldVal = val;
-            
-            
+
+
         }
 
         protected void printStatus() {
@@ -441,8 +432,8 @@ public class CC1000Radio implements Radio {
             String fRegS = fReg ? "B" : "A";
 
             radioPrinter.println("CC1000[MAIN]: " + rxtxS + ", frequency register: " + fRegS + ", rx powerdown: "
-                    + rxPd + ", tx powerdown: " + txPd + ", fs powerdown: " + fsPd + ", core powerdown: "
-                    + corePd + ", bias powerdown: " + biasPd + ", reset: " + resetN);
+                                 + rxPd + ", tx powerdown: " + txPd + ", fs powerdown: " + fsPd + ", core powerdown: "
+                                 + corePd + ", bias powerdown: " + biasPd + ", reset: " + resetN);
         }
 
     }
@@ -468,24 +459,25 @@ public class CC1000Radio implements Radio {
         }
 
         protected void updateFrequency() {
-            //OL: hmm, somehow the frequnecy is not computed correct without the a logic AND with 0x00...
+            //OL: hmm, somehow the frequency is not computed correct without the a logic AND with 0x00...
             frequency = 0x00ff0000 & (reg2.read() << 16);
             frequency |= 0x0000ff00 & (reg1.read() << 8);
             frequency |= 0x000000ff & reg0.read();
-            //System.out.println("freq: " + frequency + " " + reg2.read() + " " + reg1.read() + " " + reg0.read());
         }
 
         protected void setFrequency(int frequency) {
-            reg2.write((byte) ((0x00ff0000 & frequency) >> 16));
-            reg1.write((byte) ((0x0000ff00 & frequency) >> 8));
-            reg0.write((byte) ((0x000000ff & frequency)));
+            reg2.write((byte)((0x00ff0000 & frequency) >> 16));
+            reg1.write((byte)((0x0000ff00 & frequency) >> 8));
+            reg0.write((byte)((0x000000ff & frequency)));
         }
 
-        /** One of the three sub-registers in the 24-bit frequency register. */
+        /**
+         * One of the three sub-registers in the 24-bit frequency register.
+         */
         protected class FrequencySubRegister extends RadioRegister {
 
             FrequencySubRegister(String id) {
-                super(id, (byte) 0);
+                super(id, (byte)0);
             }
 
             protected void decode(byte val) {
@@ -496,8 +488,7 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * The frequency separation register on the CC1000. It is divided into two
-     * 8-bit registers.
+     * The frequency separation register on the CC1000. It is divided into two 8-bit registers.
      */
     protected class FrequencySeparationRegister extends State.RWIOReg {
         protected final SubRegister reg1 = new SubRegister("FSEP1");
@@ -515,15 +506,17 @@ public class CC1000Radio implements Radio {
         }
 
         protected void setFrequencySeparation(int val) {
-            reg1.write((byte) ((0x0f00 & val) >> 8));
-            reg0.write((byte) (0xff & val));
+            reg1.write((byte)((0x0f00 & val) >> 8));
+            reg0.write((byte)(0xff & val));
         }
 
-        /** One of the two sub-registers in the 18-bit frequency separation register. */
+        /**
+         * One of the two sub-registers in the 18-bit frequency separation register.
+         */
         protected class SubRegister extends RadioRegister {
 
             SubRegister(String id) {
-                super(id, (byte) 0);
+                super(id, (byte)0);
             }
 
             protected void decode(byte val) {
@@ -534,8 +527,7 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * The <code>CurrentRegister</code> controls various currents running through the
-     * CC1000 wiring.
+     * The <code>CurrentRegister</code> controls various currents running through the CC1000 wiring.
      */
     protected class CurrentRegister extends RadioRegister {
 
@@ -551,7 +543,7 @@ public class CC1000Radio implements Radio {
         int paDrive = 1;
 
         CurrentRegister() {
-            super("CURRENT", (byte) 0xca);
+            super("CURRENT", (byte)0xca);
             // default value 0b 1100 1010
         }
 
@@ -563,7 +555,7 @@ public class CC1000Radio implements Radio {
 
         protected void printStatus() {
             radioPrinter.println("CC1000[CURRENT]: vco current: " + vcoCurrent + ", LO drive: " + loDrive
-                    + ", PA drive:" + paDrive);
+                                 + ", PA drive:" + paDrive);
         }
     }
 
@@ -583,7 +575,7 @@ public class CC1000Radio implements Radio {
         boolean xoscBypassExternal;
 
         FrontEndRegister() {
-            super("FRONT_END", (byte) 0);
+            super("FRONT_END", (byte)0);
         }
 
         protected void decode(byte val) {
@@ -603,7 +595,7 @@ public class CC1000Radio implements Radio {
         //int pa_power;
 
         PA_POWRegister() {
-            super("PA_POW", (byte) 0x0f);
+            super("PA_POW", (byte)0x0f);
             // default value 0b 0000 1111
         }
 
@@ -614,17 +606,17 @@ public class CC1000Radio implements Radio {
             //start energy tracking
             //pa_power = val;
             //check for transmission mode enabled
-            if( !MAIN_reg.corePd && ! MAIN_reg.biasPd && !MAIN_reg.fsPd && MAIN_reg.rxtx && !MAIN_reg.txPd)
+            if (!MAIN_reg.corePd && !MAIN_reg.biasPd && !MAIN_reg.fsPd && MAIN_reg.rxtx && !MAIN_reg.txPd)
                 energy.setMode(getPower() + 6);
         }
-        
-        protected int getPower(){
+
+        protected int getPower() {
             int ret = 0;
-            if(  value >= 0 )
+            if (value >= 0)
                 ret = value;
             else
                 ret = (int)(value & 0x7F) + 0x80;
-            return ret;               
+            return ret;
         }
 
         protected void printStatus() {
@@ -640,7 +632,7 @@ public class CC1000Radio implements Radio {
         boolean alarmLow;
 
         PLLRegister() {
-            super("PLL", (byte) 0x10);
+            super("PLL", (byte)0x10);
             // default value 0b 00010000
         }
 
@@ -693,7 +685,7 @@ public class CC1000Radio implements Radio {
         boolean lockContinuous;
 
         LockRegister() {
-            super("LOCK", (byte) 0);
+            super("LOCK", (byte)0);
         }
 
         protected void decode(byte val) {
@@ -710,12 +702,12 @@ public class CC1000Radio implements Radio {
 
         protected void printStatus() {
             radioPrinter.println("CC1000[LOCK]: lock select: " + LOCK_SELECT[lockSelect] + ", sets lock threshold: "
-                    + setsLockThreshold + ", reset lock threshold: " + resetLockThreshold +
-                    ", lock instant: " + lockInstant + ", lockContinuous: " + lockContinuous);
+                                 + setsLockThreshold + ", reset lock threshold: " + resetLockThreshold +
+                                 ", lock instant: " + lockInstant + ", lockContinuous: " + lockContinuous);
         }
 
         public byte read() {
-            return (byte) (super.read() & 0x03);
+            return (byte)(super.read() & 0x03);
         }
     }
 
@@ -741,7 +733,7 @@ public class CC1000Radio implements Radio {
 
 
         CALRegister() {
-            super("CAL", (byte) 0x05);
+            super("CAL", (byte)0x05);
             // default value 0b 00000101
         }
 
@@ -767,15 +759,15 @@ public class CC1000Radio implements Radio {
                 //in the current TinyOS version (1.1.7) REFDIV seems to be 14
                 //resulting in a delay of a little more than 32ms 
                 //Reference: CC1000 datasheet (rev 2.1) pages 20 and 22
-                sim.insertEvent(calibrate, mcu.millisToCycles( (34.0 * 1000000.0 / 14745600.0) * PLL_reg.refDiv));                
+                sim.insertEvent(calibrate, mcu.millisToCycles((34.0 * 1000000.0 / 14745600.0) * PLL_reg.refDiv));
             }
 
         }
 
         protected void printStatus() {
             radioPrinter.println("CC1000[CAL]: cal start: " + calStart + ", cal dual: " + calDual +
-                    ", cal wait: " + calWait + ", cal current: " + calCurrent + ", calComplete: " + calComplete +
-                    ", cal iterate: " + calIterate + " ... " + sim.getState().getCycles());
+                                 ", cal wait: " + calWait + ", cal current: " + calCurrent + ", calComplete: " + calComplete +
+                                 ", cal iterate: " + calIterate + " ... " + sim.getState().getCycles());
         }
 
         /** */
@@ -785,7 +777,7 @@ public class CC1000Radio implements Radio {
                 // TODO: finish implementation of calibrate routine
                 writeBit(CAL_START, false);
                 writeBit(CAL_COMPLETE, true);
-                LOCK_reg.write((byte) ((LOCK_reg.read() & 0x0f) | 0x50)); // LOCK = CAL_COMPLETE
+                LOCK_reg.write((byte)((LOCK_reg.read() & 0x0f) | 0x50)); // LOCK = CAL_COMPLETE
                 if (radioPrinter.enabled) {
                     radioPrinter.println("CC1000: Calibration complete ");
                 }
@@ -801,7 +793,7 @@ public class CC1000Radio implements Radio {
         int peakLevelOffset;
 
         Modem2Register() {
-            super("MODEM2", (byte) 0x96);
+            super("MODEM2", (byte)0x96);
             // default value 0b 1001 0110
         }
 
@@ -825,7 +817,7 @@ public class CC1000Radio implements Radio {
         boolean modemResetN;
 
         Modem1Register() {
-            super("MODEM1", (byte) 0x67);
+            super("MODEM1", (byte)0x67);
             // default value 0b 0110 0111
         }
 
@@ -840,9 +832,8 @@ public class CC1000Radio implements Radio {
 
 
     /**
-     * The baud rate of the system is determined by values on the MODEM0 register.
-     * TinyOS uses a baud rate of 19.2 kBaud with manchester encoding, which translates
-     * into 9.6 kbps of data.
+     * The baud rate of the system is determined by values on the MODEM0 register. TinyOS uses a baud rate of 19.2 kBaud
+     * with manchester encoding, which translates into 9.6 kbps of data.
      */
     protected class Modem0Register extends RadioRegister {
         final int[] BAUDRATE = {600, 1200, 2400, 4800, 9600, 19200, 0, 0};
@@ -863,7 +854,7 @@ public class CC1000Radio implements Radio {
         long byteTimeCycles;
 
         Modem0Register() {
-            super("MODEM0", (byte) 0x24);
+            super("MODEM0", (byte)0x24);
             decode(value);
             // default value 0b 0010 0100
         }
@@ -893,7 +884,7 @@ public class CC1000Radio implements Radio {
         int txMatch;
 
         MatchRegister() {
-            super("MATCH", (byte) 0);
+            super("MATCH", (byte)0);
         }
 
         protected void decode(byte val) {
@@ -908,7 +899,7 @@ public class CC1000Radio implements Radio {
         boolean fsResetN;
 
         FSCTRLRegister() {
-            super("FSCTRL", (byte) 0x01);
+            super("FSCTRL", (byte)0x01);
             // default value 0b 0000 0001
         }
 
@@ -929,7 +920,7 @@ public class CC1000Radio implements Radio {
         boolean ifFront;
 
         PrescalerRegister() {
-            super("PRESCALER", (byte) 0);
+            super("PRESCALER", (byte)0);
         }
 
         protected void decode(byte val) {
@@ -942,11 +933,10 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * A CC1000 Controller class for the ATMega128L microcontroller cpu. Installing
-     * an ATMega128L into this class connects the microcontroller to this radio.
-     * Data is communicated over the SPI interface, on which the CC1000 is the master.
-     * RSSI data from the CC1000 is available to the ATMega128L though the ADC (analog to
-     * digital converter).
+     * A CC1000 Controller class for the ATMega128L microcontroller cpu. Installing an ATMega128L into this class
+     * connects the microcontroller to this radio. Data is communicated over the SPI interface, on which the CC1000 is
+     * the master. RSSI data from the CC1000 is available to the ATMega128L though the ADC (analog to digital
+     * converter).
      */
     public class ATMega128LController implements Radio.RadioController, ATMega128L.SPIDevice, ATMega128L.ADCInput {
 
@@ -971,9 +961,9 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * The <code>TransferTicker</code> class is responsible for timing/facilitating
-         * transfer between the radio and the connected microcontroller. The receiveFrame(),
-         * transmitFrame() methods from the SPIDevice interface are used.
+         * The <code>TransferTicker</code> class is responsible for timing/facilitating transfer between the radio and
+         * the connected microcontroller. The receiveFrame(), transmitFrame() methods from the SPIDevice interface are
+         * used.
          */
         private class TransferTicker implements Simulator.Event {
             private boolean tickerOn;
@@ -983,13 +973,13 @@ public class CC1000Radio implements Radio {
                 if (!tickerOn) {
                     tickerOn = true;
                     //OL:
-                    //used to switch radio to transmit or recieve mode
+                    //used to switch radio to transmit or receive mode
                     //this takes 250us, e.g. 1843.2 cycles
                     //however, a delay is not really needed for TinyOS
                     //as TinyOS itself waits 250us via TOSH_uwait(250) before it
                     //sends or reads data
                     //Based on this, probably Radio.TRANSFER_TIME fits best
-                    sim.insertEvent(ticker, Radio.TRANSFER_TIME); 
+                    sim.insertEvent(ticker, Radio.TRANSFER_TIME);
                 }
             }
 
@@ -1018,14 +1008,13 @@ public class CC1000Radio implements Radio {
         byte oldData;
 
         /**
-         * <code>receiveFrame</code> receives an <code>SPIFrame</code> from a connected device.
-         * If the radio is in a transmission state, this should be the next frame sent into the
-         * air.
+         * <code>receiveFrame</code> receives an <code>SPIFrame</code> from a connected device. If the radio is in a
+         * transmission state, this should be the next frame sent into the air.
          */
         public void receiveFrame(SPIFrame frame) {
             if (printer.enabled) {
-                printer.println("CC1000: sending " + (char) frame.data + ", " + Integer.toHexString(0xff & frame.data));
-                if (oldData == (byte) 0x03) {
+                printer.println("CC1000: sending " + (char)frame.data + ", " + Integer.toHexString(0xff & frame.data));
+                if (oldData == (byte)0x03) {
                     printer.println("Int Data : " + hex(frame.data));
                 }
             }
@@ -1040,8 +1029,7 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * <code>Transmit</code> is an event that transmits a packet of data after
-         * a one bit period delay.
+         * <code>Transmit</code> is an event that transmits a packet of data after a one bit period delay.
          */
         protected class Transmit implements Simulator.Event {
             final Radio.RadioPacket packet;
@@ -1057,8 +1045,8 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * Transmits an <code>SPIFrame</code> to be received by the connected device.
-         * This frame is either the last byte of data received or a zero byte.
+         * Transmits an <code>SPIFrame</code> to be received by the connected device. This frame is either the last byte
+         * of data received or a zero byte.
          */
         public SPIFrame transmitFrame() {
             SPIFrame frame;
@@ -1066,16 +1054,16 @@ public class CC1000Radio implements Radio {
             if (MAIN_reg.rxtx && MAIN_reg.txPd) {
                 frame = new SPIFrame((byte)0x00);
             } else if (!receivedBuffer.isEmpty()) {
-                Radio.RadioPacket receivedPacket = (Radio.RadioPacket) receivedBuffer.removeFirst();
+                Radio.RadioPacket receivedPacket = (Radio.RadioPacket)receivedBuffer.removeFirst();
 
                 // Apparently TinyOS expects received data to be inverted
-                byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte) ~receivedPacket.data;
+                byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte)~receivedPacket.data;
                 frame = new SPIFrame(data);
                 receivedPacket = null;
                 if (printer.enabled) {
                     printer.println(getSimulator().getClock().getCount() + " " +
-                            getSimulator().getID() + " " + 
-                            "CC1000: received " + hex(frame.data));
+                                    getSimulator().getID() + " " +
+                                    "CC1000: received " + hex(frame.data));
                 }
             } else {
                 frame = new SPIFrame((byte)0x00);
@@ -1101,7 +1089,7 @@ public class CC1000Radio implements Radio {
             pinReader = new SerialConfigurationInterface(mcu);
 
             if (mcu instanceof ATMega128L) {
-                ATMega128L atm = (ATMega128L) mcu;
+                ATMega128L atm = (ATMega128L)mcu;
                 atm.connectADCInput(this, 0);
                 atm.connectSPIDevice(this);
             }
@@ -1111,10 +1099,11 @@ public class CC1000Radio implements Radio {
     }
 
 
-    /** TODO: determine if I will really need this for anything more than debugging.
-     * This class is more or less a state machine on the status of the receiver for
-     * this radio. It is "activated" when the receiver unit is powered up and it is
-     * "receiving" when the radio is in receive mode. */
+    /**
+     * TODO: determine if I will really need this for anything more than debugging. This class is more or less a state
+     * machine on the status of the receiver for this radio. It is "activated" when the receiver unit is powered up and
+     * it is "receiving" when the radio is in receive mode.
+     */
     protected class Receiver {
 
         boolean activated;
@@ -1165,11 +1154,9 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * This class is a state machine similar to <code>Receiver</code>, but for the
-     * transmitter on the radio. So it is "activated" when the transmitter is powered up
-     * and "transmitting" when the radio is in transmit mode. It is very likely that
-     * moving this functionality into the <code>MainRegister</code> class would be a good
-     * design decision.
+     * This class is a state machine similar to <code>Receiver</code>, but for the transmitter on the radio. So it is
+     * "activated" when the transmitter is powered up and "transmitting" when the radio is in transmit mode. It is very
+     * likely that moving this functionality into the <code>MainRegister</code> class would be a good design decision.
      */
     protected class Transmitter {
 
@@ -1221,9 +1208,8 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * Reads the three pins used in the three wire serial configuration interface.
-     * Microcontrollers can program this radio by communication over this interfance.
-     * Debug output for communication over this interface is available on
+     * Reads the three pins used in the three wire serial configuration interface. Microcontrollers can program this
+     * radio by communication over this interfance. Debug output for communication over this interface is available on
      * "sim.cc1000.pinconfig"
      */
     protected class SerialConfigurationInterface {
@@ -1255,8 +1241,8 @@ public class CC1000Radio implements Radio {
         }
 
         /**
-         * Clocking the PCLK pin is what drives the action of the configuration interface.
-         * One bit of data on PDATA per clock.
+         * Clocking the PCLK pin is what drives the action of the configuration interface. One bit of data on PDATA per
+         * clock.
          */
         protected class PCLKOutput implements Microcontroller.Pin.Output {
 
@@ -1306,17 +1292,17 @@ public class CC1000Radio implements Radio {
         // If you don't, then PALE should be implemented.
         protected class PALEOutput implements Microcontroller.Pin.Output {
             public void write(boolean level) {
-                if(!level) {
+                if (!level) {
                     bitsRead = 0;
                 } else {
                     bitsRead = 8;
                 }
             }
 
-            public void enableOutput(){
+            public void enableOutput() {
             }
 
-            public void disableOutput(){
+            public void disableOutput() {
             }
         }
 
@@ -1344,7 +1330,7 @@ public class CC1000Radio implements Radio {
             if (bitsRead == 16) {
                 String rw = write ? " write " : " read ";
                 byte printData = write ? data : registers[(0x7f & address)].read();
-                if ( readerPrinter.enabled )
+                if (readerPrinter.enabled)
                     readerPrinter.println("Address " + Integer.toHexString(0x7f & address) + rw + " data " + Integer.toBinaryString(0xff & printData));
                 bitsRead = 0;
 
@@ -1356,54 +1342,66 @@ public class CC1000Radio implements Radio {
 
     }
 
-    
-    /** Get the <code>Simulator</code> on which this radio is running. */
+
+    /**
+     * Get the <code>Simulator</code> on which this radio is running.
+     */
     public Simulator getSimulator() {
         return sim;
     }
 
-    /** Output helper method. */
+    /**
+     * Output helper method.
+     */
     private static String hex(byte val) {
         return Integer.toHexString(0xff & val);
     }
-    
-    /** get the transmission power
+
+    /**
+     * get the transmission power
+     *
      * @see avrora.sim.radio.Radio#getPower()
      */
-    public int getPower(){
+    public int getPower() {
         return PA_POW_reg.getPower();
     }
-    
-    /** get transission frequency
+
+    /**
+     * get transission frequency
+     *
      * @see avrora.sim.radio.Radio#getFrequency()
      */
-    public double getFrequency(){
+    public double getFrequency() {
         // according to CC1000 handbook
         // fRef = fXosc / REFDIV
         // frequency = fRef * ( ( FREQ + 8192 ) / 16384 )
         double ret = 14745600.0 / PLL_reg.refDiv;
         int freq = 0;
-        if( MAIN_reg.F_REG == 0)
-            //register A
+        if (MAIN_reg.F_REG == 0)
+        //register A
             freq = FREQ_A_reg.frequency;
         else
             freq = FREQ_B_reg.frequency;
-        ret *= (( freq + 8192) / 16384);
+        ret *= ((freq + 8192) / 16384);
         return ret;
-    }    
-    
-    /** get local air
+    }
+
+    /**
+     * get local air
+     *
      * @see avrora.sim.radio.Radio#getLocalAir()
      */
-    public LocalAir getLocalAir(){
+    public LocalAir getLocalAir() {
         return localAir;
     }
-    
-    /** activate positions
+
+    /**
+     * activate positions
+     *
      * @see avrora.sim.radio.Radio#activateLocalAir(avrora.sim.radio.freespace.Position)
      */
-    public void activateLocalAir(Position pos){
+    public void activateLocalAir(Position pos) {
         air = FreeSpaceAir.freeSpaceAir;
-        localAir = new LocalAirImpl(this, pos);        
+        localAir = new LocalAirImpl(this, pos);
     }
 }

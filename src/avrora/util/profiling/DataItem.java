@@ -34,10 +34,11 @@ package avrora.util.profiling;
 
 
 /**
- * This class represents a data item that can be placed inside a database.
- * Things like Proportion, Distribution, and MinMaxMean inherit from this.
+ * This class represents a data item that can be placed inside a database. Things like Proportion, Distribution, and
+ * MinMaxMean inherit from this.
+ *
  * @author Ben L. Titzer
- **/
+ */
 abstract public class DataItem {
     protected String name;
 

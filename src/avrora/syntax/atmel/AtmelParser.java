@@ -2307,7 +2307,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
             }
             boolean exists = false;
             for (java.util.Enumeration enum = jj_expentries.elements(); enum.hasMoreElements();) {
-                int[] oldentry = (int[]) (enum.nextElement());
+                int[] oldentry = (int[])(enum.nextElement());
                 if (oldentry.length == jj_expentry.length) {
                     exists = true;
                     for (int i = 0; i < jj_expentry.length; i++) {
@@ -2370,7 +2370,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         jj_add_error_token(0, 0);
         int[][] exptokseq = new int[jj_expentries.size()][];
         for (int i = 0; i < jj_expentries.size(); i++) {
-            exptokseq[i] = (int[]) jj_expentries.elementAt(i);
+            exptokseq[i] = (int[])jj_expentries.elementAt(i);
         }
         return new ParseException(token, exptokseq, tokenImage);
     }

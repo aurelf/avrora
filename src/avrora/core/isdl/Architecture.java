@@ -46,9 +46,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>Architecture</code> class represents a collection of
- * instructions, encodings, operands, and subroutines that describe
- * an instruction set architecture.
+ * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and subroutines
+ * that describe an instruction set architecture.
  *
  * @author Ben L. Titzer
  */
@@ -85,9 +84,8 @@ public class Architecture {
     }
 
     /**
-     * The <code>Visitor</code> class represents a visitor over the elements of
-     * the architecture description. It has methods to visit each subroutine,
-     * instruction, operand, and encoding declared in the specification.
+     * The <code>Visitor</code> class represents a visitor over the elements of the architecture description. It has
+     * methods to visit each subroutine, instruction, operand, and encoding declared in the specification.
      */
     public interface Visitor extends InstrVisitor, SubroutineVisitor, OperandVisitor, EncodingVisitor {
     }
@@ -115,14 +113,14 @@ public class Architecture {
     private void processEncodings() {
         Iterator i = getEncodingIterator();
         while (i.hasNext()) {
-            EncodingDecl d = (EncodingDecl) i.next();
+            EncodingDecl d = (EncodingDecl)i.next();
             if (printer.enabled) {
                 printer.print("processing encoding " + d.name.image + " ");
             }
 
             if (d instanceof EncodingDecl.Derived) {
-                EncodingDecl.Derived dd = (EncodingDecl.Derived) d;
-                EncodingDecl parent = (EncodingDecl) encodingMap.get(dd.pname.image);
+                EncodingDecl.Derived dd = (EncodingDecl.Derived)d;
+                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
                 dd.setParent(parent);
             }
 
@@ -133,13 +131,13 @@ public class Architecture {
     private void processSubroutines() {
         Iterator i = subroutines.iterator();
         while (i.hasNext()) {
-            SubroutineDecl sd = (SubroutineDecl) i.next();
+            SubroutineDecl sd = (SubroutineDecl)i.next();
             printer.print("processing subroutine " + sd.name + " ");
 
             // find operand decl
             Iterator oi = sd.getOperandIterator();
             while (oi.hasNext()) {
-                CodeRegion.Operand od = (CodeRegion.Operand) oi.next();
+                CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
                 OperandDecl opdec = getOperandDecl(od.type.image);
                 if (opdec != null)
                     od.setOperandType(opdec);
@@ -155,7 +153,7 @@ public class Architecture {
     private void processInstructions() {
         Iterator i = getInstrIterator();
         while (i.hasNext()) {
-            InstrDecl id = (InstrDecl) i.next();
+            InstrDecl id = (InstrDecl)i.next();
             printer.print("processing instruction " + id.name + " ");
 
             // inline and optimize the body of the instruction
@@ -167,8 +165,8 @@ public class Architecture {
 
             // find parent encoding
             if (id.encoding instanceof EncodingDecl.Derived) {
-                EncodingDecl.Derived dd = (EncodingDecl.Derived) id.encoding;
-                EncodingDecl parent = (EncodingDecl) encodingMap.get(dd.pname.image);
+                EncodingDecl.Derived dd = (EncodingDecl.Derived)id.encoding;
+                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
                 dd.setParent(parent);
             }
 
@@ -179,7 +177,7 @@ public class Architecture {
             // find operand decl
             Iterator oi = id.getOperandIterator();
             while (oi.hasNext()) {
-                CodeRegion.Operand od = (CodeRegion.Operand) oi.next();
+                CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
                 OperandDecl opdec = getOperandDecl(od.type.image);
                 if (opdec == null)
                     throw Avrora.failure("operand type undefined " + StringUtil.quote(od.type.image));
@@ -234,65 +232,64 @@ public class Architecture {
     }
 
     /**
-     * The <code>accept()</code> method implements part of the visitor pattern that
-     * allows a visitor to visit each part of the architecture description.
+     * The <code>accept()</code> method implements part of the visitor pattern that allows a visitor to visit each part
+     * of the architecture description.
+     *
      * @param v the visitor to accept
      */
     public void accept(Visitor v) {
 
-        accept((OperandVisitor) v);
-        accept((EncodingVisitor) v);
-        accept((SubroutineVisitor) v);
-        accept((InstrVisitor) v);
+        accept((OperandVisitor)v);
+        accept((EncodingVisitor)v);
+        accept((SubroutineVisitor)v);
+        accept((InstrVisitor)v);
     }
 
     public void accept(OperandVisitor v) {
         Iterator i;
         i = operands.iterator();
-        while (i.hasNext()) v.visit((OperandDecl) i.next());
+        while (i.hasNext()) v.visit((OperandDecl)i.next());
     }
 
     public void accept(EncodingVisitor v) {
         Iterator i;
         i = encodings.iterator();
-        while (i.hasNext()) v.visit((EncodingDecl) i.next());
+        while (i.hasNext()) v.visit((EncodingDecl)i.next());
     }
 
     public void accept(SubroutineVisitor v) {
         Iterator i;
         i = subroutines.iterator();
-        while (i.hasNext()) v.visit((SubroutineDecl) i.next());
+        while (i.hasNext()) v.visit((SubroutineDecl)i.next());
     }
 
     public void accept(InstrVisitor v) {
         Iterator i;
         i = instructions.iterator();
-        while (i.hasNext()) v.visit((InstrDecl) i.next());
+        while (i.hasNext()) v.visit((InstrDecl)i.next());
     }
 
     public InstrDecl getInstruction(String name) {
-        return (InstrDecl) instructionMap.get(name);
+        return (InstrDecl)instructionMap.get(name);
     }
 
     public SubroutineDecl getSubroutine(String name) {
-        return (SubroutineDecl) subroutineMap.get(name);
+        return (SubroutineDecl)subroutineMap.get(name);
     }
 
     public OperandDecl getOperandDecl(String name) {
-        return (OperandDecl) operandMap.get(name);
+        return (OperandDecl)operandMap.get(name);
     }
 
 
     /**
-     * The <code>Inliner</code> class implements a visitor over the code that
-     * inlines calls to known subroutines. This produces code that is free
-     * of calls to the subroutines declared within the architecture description
-     * and therefore is ready for constant and copy propagation optimizations.
-     *
-     * The <code>Inliner</code> will aggressively inline all calls, therefore
-     * it cannot detect recursion. It assumes that return statements are at
-     * the end of subroutines and do not occur in branches. This is not
-     * enforced by any checking, which should be done in the future.
+     * The <code>Inliner</code> class implements a visitor over the code that inlines calls to known subroutines. This
+     * produces code that is free of calls to the subroutines declared within the architecture description and therefore
+     * is ready for constant and copy propagation optimizations.
+     * <p/>
+     * The <code>Inliner</code> will aggressively inline all calls, therefore it cannot detect recursion. It assumes
+     * that return statements are at the end of subroutines and do not occur in branches. This is not enforced by any
+     * checking, which should be done in the future.
      *
      * @author Ben L. Titzer
      */
@@ -326,7 +323,7 @@ public class Architecture {
 
             Iterator i = l.iterator();
             while (i.hasNext()) {
-                Stmt a = (Stmt) i.next();
+                Stmt a = (Stmt)i.next();
                 Stmt na = a.accept(this);
                 if (na != null) newStmts.add(na);
             }
@@ -401,8 +398,8 @@ public class Architecture {
             Iterator arg_iter = args.iterator();
 
             while (formal_iter.hasNext()) {
-                CodeRegion.Operand f = (CodeRegion.Operand) formal_iter.next();
-                Expr e = (Expr) arg_iter.next();
+                CodeRegion.Operand f = (CodeRegion.Operand)formal_iter.next();
+                Expr e = (Expr)arg_iter.next();
 
                 // get a new temporary
                 String nn = newTemp(null);
@@ -445,7 +442,7 @@ public class Architecture {
         }
 
         protected String varName(String n) {
-            String nn = (String) varMap.get(n);
+            String nn = (String)varMap.get(n);
             if (nn == null && parent != null) nn = parent.varName(n);
             if (nn == null) return n;
             return nn;
@@ -475,7 +472,7 @@ public class Architecture {
             p.startblock();
             Iterator i = s.iterator();
             while (i.hasNext()) {
-                Stmt st = (Stmt) i.next();
+                Stmt st = (Stmt)i.next();
                 st.accept(this);
             }
             p.endblock();

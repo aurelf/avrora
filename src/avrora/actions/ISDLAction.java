@@ -47,10 +47,8 @@ import java.io.FileInputStream;
 import java.io.PrintStream;
 
 /**
- * The <code>ISDLAction</code> class implements an action to load an
- * instruction set description from a file and perform various actions
- * with it, including generating the <code>Instr</code> classes and
- * generating an interpreter.
+ * The <code>ISDLAction</code> class implements an action to load an instruction set description from a file and perform
+ * various actions with it, including generating the <code>Instr</code> classes and generating an interpreter.
  *
  * @author Ben L. Titzer
  */
@@ -60,14 +58,14 @@ public class ISDLAction extends Action {
             "instruction set.";
 
     public final Option.Bool CLASSES = newOption("classes", true,
-            "This option controls whether the ISDL generation tool will emit the code " +
-            "for instruction classes.");
+                                                 "This option controls whether the ISDL generation tool will emit the code " +
+                                                 "for instruction classes.");
     public final Option.Bool INTERPRETER = newOption("interpreter", true,
-            "This option controls whether the ISDL generation tool will emit the code " +
-            "for the interpreter for this architecture.");
+                                                     "This option controls whether the ISDL generation tool will emit the code " +
+                                                     "for the interpreter for this architecture.");
     public final Option.Bool DBBC = newOption("dbbc", true,
-            "This option controls the generation of the dynamic basic block compiler " +
-            "(DBBC).");
+                                              "This option controls the generation of the dynamic basic block compiler " +
+                                              "(DBBC).");
 
     public ISDLAction() {
         super("isdl", HELP);

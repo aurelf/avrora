@@ -54,7 +54,7 @@ class LED implements Microcontroller.Pin.Output {
     // names of the states of this device
     private final String modeName[] = {"off: ", "on:  "};
     // power consumption of the device states
-    private final double modeAmphere[] = {0.0, 0.0022}; 
+    private final double modeAmphere[] = {0.0, 0.0022};
     // default mode of the device is off
     private final int startMode = 0;
 
@@ -63,7 +63,7 @@ class LED implements Microcontroller.Pin.Output {
         colornum = n;
         color = c;
         //setup energy recording
-        energy = new Energy(color, modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());                    
+        energy = new Energy(color, modeAmphere, modeName, sim.getMicrocontroller().getHz(), startMode, sim.getEnergyControl(), sim.getState());
     }
 
     public void write(boolean level) {
@@ -72,18 +72,18 @@ class LED implements Microcontroller.Pin.Output {
         if (!initialized) {
             initialized = true;
             on = !level;
-            if( on )
-                energy.setMode( 1 );
+            if (on)
+                energy.setMode(1);
             else
-                energy.setMode( 0 );                
-           print();
+                energy.setMode(0);
+            print();
         } else {
             if (level == on) {
                 on = !level;
-                if( on )
-                    energy.setMode( 1 );
+                if (on)
+                    energy.setMode(1);
                 else
-                    energy.setMode( 0 );                    
+                    energy.setMode(0);
                 print();
             }
         }
@@ -92,7 +92,7 @@ class LED implements Microcontroller.Pin.Output {
     public void print() {
         String idstr = StringUtil.rightJustify(sim.getID(), 4);
         String cycstr = StringUtil.rightJustify(sim.getClock().getCount(), 10);
-        Terminal.print(idstr+" "+cycstr+"   ");
+        Terminal.print(idstr + " " + cycstr + "   ");
         Terminal.print(colornum, color);
         Terminal.println(": " + (on ? "on" : "off"));
     }

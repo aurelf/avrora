@@ -36,25 +36,23 @@ import avrora.Avrora;
 
 
 /**
- * The <code>SimulatorThread</code> class is a thread intended to run a
- * <code>Simulator</code> in a multiple-node simulation. The mapping is
- * one-to-one: each simulator is expected to be run in its own thread.
- * Multiple simulators are then synchronized by being inserted into a group
- * using the <code>GlobalClock</code> class.
+ * The <code>SimulatorThread</code> class is a thread intended to run a <code>Simulator</code> in a multiple-node
+ * simulation. The mapping is one-to-one: each simulator is expected to be run in its own thread. Multiple simulators
+ * are then synchronized by being inserted into a group using the <code>GlobalClock</code> class.
  *
  * @author Ben L. Titzer
  */
 public class SimulatorThread extends Thread {
 
     /**
-     * The <code>simulator</code> field stores a reference to the simulator that
-     * this thread encapsulates.
+     * The <code>simulator</code> field stores a reference to the simulator that this thread encapsulates.
      */
     protected final Simulator simulator;
 
     /**
-     * The constructor for the simulator thread accepts an instance of <code>Simulator</code>
-     * as a parameter and stores it internally.
+     * The constructor for the simulator thread accepts an instance of <code>Simulator</code> as a parameter and stores
+     * it internally.
+     *
      * @param s the simulator this thread is intended to run.
      */
     public SimulatorThread(Simulator s) {
@@ -62,8 +60,8 @@ public class SimulatorThread extends Thread {
     }
 
     /**
-     * The <code>getSimulator()</code> method gets the <code>Simulator</code> instance that
-     * this thread is bound to.
+     * The <code>getSimulator()</code> method gets the <code>Simulator</code> instance that this thread is bound to.
+     *
      * @return the instance of <code>Simulator</code> this thread is intended to run.
      */
     public Simulator getSimulator() {
@@ -71,15 +69,15 @@ public class SimulatorThread extends Thread {
     }
 
     /**
-     * The <code>run()</code> method begins the simulation, calling the <code>start()</code>
-     * method of the <code>Simulator</code> instance associated with this thread.
+     * The <code>run()</code> method begins the simulation, calling the <code>start()</code> method of the
+     * <code>Simulator</code> instance associated with this thread.
      */
     public void run() {
         try {
             simulator.start();
-        } catch ( Simulator.TimeoutException te ) {
+        } catch (Simulator.TimeoutException te) {
             // suppress timeout exceptions.
-        } catch ( Avrora.Error e ) {
+        } catch (Avrora.Error e) {
             e.report();
         }
     }

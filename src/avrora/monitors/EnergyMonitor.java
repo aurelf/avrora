@@ -38,57 +38,62 @@
 package avrora.monitors;
 
 import avrora.sim.*;
+
 import java.io.*;
 import java.util.*;
-import avrora.sim.Energy;
 
-/** energy monitor implementation
- *  this class handles logging and recording of power consumption
+import avrora.sim.Energy;
+import avrora.Avrora;
+import avrora.util.Terminal;
+
+/**
+ * energy monitor implementation this class handles logging and recording of power consumption
  *
- * @author  Olaf Landsiedel
+ * @author Olaf Landsiedel
  */
 public class EnergyMonitor extends MonitorFactory {
 
     public class Monitor implements avrora.monitors.Monitor, EnergyMonitorBase {
-    
+
         // the simulator
-    	private Simulator simulator;
-    	// energy control, propagtes energy updates
+        private Simulator simulator;
+        // energy control, propagates energy updates
         private EnergyControl energyControl;
-        // list of conumers
+        // list of consumers
         private LinkedList consumer;
         // file for data logging
         private BufferedWriter file;
         // the simulator state
-        private State state;        
-        
-        /** create new energy monitor
-         *  creates a file with logging information: temp.log
-         *  it contains the current draw of all devices and the state changes
-         *  can be loaded into Matlab, Gnuplot, Excel...
-         *  for further processing and visualisation
+        private State state;
+
+        /**
+         * Create a new energy monitor.
+         * Creates a file with logging information: temp.log that contains the current draw of
+         * all devices, and the state changes can be loaded into Matlab, Gnuplot, Excel... for
+         * further processing and visualization.
+         *
          * @param s the simulator
          */
         Monitor(Simulator s) {
             this.simulator = s;
             this.energyControl = simulator.getEnergyControl();
             // subscribe the monitor to the energy  control
-            energyControl.subsribe((EnergyMonitorBase)this);            
+            energyControl.subscribe((EnergyMonitorBase)this);
             this.consumer = energyControl.getConsumers();
             this.state = simulator.getState();
             //open file for logging, currently with fixed path and file name
+            String fileName = "energy" + simulator.getID() + ".log";
             try {
-                this.file = new BufferedWriter(new FileWriter("energy" + simulator.getID() + ".log"));
-            } catch (IOException e) {   
-                System.out.println("Error: could not create log file -> will exit");
-                System.exit(-1);
+                this.file = new BufferedWriter(new FileWriter(fileName));
+            } catch (IOException e) {
+                Avrora.userError("Cannot create log file", fileName);
             }
             
             //write headlines 
             //first: cycle
             write("cycle ");
             //and than all consumers names
-            for(int i = 0; i < consumer.size(); ++i) {
+            for (int i = 0; i < consumer.size(); ++i) {
                 Energy en = (Energy)consumer.get(i);
                 write(en.getName() + " ");
             }
@@ -99,69 +104,70 @@ public class EnergyMonitor extends MonitorFactory {
             logCurrentState();
         }
 
-        /** write text or data to the log file
+        /**
+         * write text or data to the log file
+         *
          * @param text data or text to write
          */
-        private void write(String text){
-            try{
+        private void write(String text) {
+            try {
                 file.write(text);
-            } catch (IOException e) {   
-                System.out.println("Error: could not write to log file -> will exit");
-                System.exit(-1);
-            }
-        }
-        
-        /** add new line to the log file
-         * 
-         */
-        private void newLine(){
-            try{
-                file.newLine();
-            } catch (IOException e) {   
-                System.out.println("Error: could not write to log file -> will exit");
-                System.exit(-1);
+            } catch (IOException e) {
+                throw Avrora.failure("cannot write to log file");
             }
         }
 
-        /** implemenation of report of Monitor class.
-         * Called when the simulation ends and reports 
-         * summaries for the power consumption of all devices
-         * to the stdout 
+        /**
+         * add new line to the log file
+         */
+        private void newLine() {
+            try {
+                file.newLine();
+            } catch (IOException e) {
+                throw Avrora.failure("cannot write to log file");
+            }
+        }
+
+        /**
+         * implemenation of report of Monitor class. Called when the simulation ends and reports summaries for the power
+         * consumption of all devices to the stdout
+         *
          * @see avrora.monitors.Monitor#report()
          */
-        public void report(){
+        public void report() {
             //simulation will end
             //update log file
             logCurrentState();
 
-        	//provide component energy breakdown
-            System.out.println("\nEnergy Consumption Component Breakdown:\n");
+            //provide component energy breakdown
+            Terminal.println("\nEnergy Consumption Component Breakdown:\n");
             // get energy information for each device
-            for(int i = 0; i < consumer.size(); ++i) {                
+            for (int i = 0; i < consumer.size(); ++i) {
                 //get energy information
                 Energy en = (Energy)consumer.get(i);
                 int modes = en.getModeNumber();
-                System.out.println( en.getName() + ": " + en.getTotalConsumedEnergy() + " Joule");
+                Terminal.println(en.getName() + ": " + en.getTotalConsumedEnergy() + " Joule");
                 // get information for each state
-                for( int j = 0; j < modes; j++)
-                    //when there are more than 10 modes, only print the ones the system was in
-                    if( modes <= 10 || en.getCycles(j) > 0)
-                        System.out.println("   " + en.getModeName(j) + en.getConsumedEnergy(j) + " Joule, " + en.getCycles(j) + " cycles");
-                System.out.println();
+                for (int j = 0; j < modes; j++)
+                        //when there are more than 10 modes, only print the ones the system was in
+                    if (modes <= 10 || en.getCycles(j) > 0)
+                        Terminal.println("   " + en.getModeName(j) + en.getConsumedEnergy(j) + " Joule, " + en.getCycles(j) + " cycles");
+                Terminal.nextln();
             }
             
             //close log file
-            try{
+            try {
                 file.flush();
                 file.close();
-            } catch (IOException e) {   
-                System.out.println("Error: could not flush and / or close log file");
+            } catch (IOException e) {
+                throw Avrora.failure("could not flush and / or close log file");
             }
         }
-        
-        
-        /** called when the state of the device changes
-         * this compoent logs these state changes
+
+
+        /**
+         * called when the state of the device changes this compoent logs these state changes
+         *
          * @see avrora.monitors.EnergyMonitorBase#fire(avrora.sim.Energy)
          */
         public void fire(Energy energy) {
@@ -170,40 +176,42 @@ public class EnergyMonitor extends MonitorFactory {
             return;
         }
 
-        
-        /** log the current state
-         * 
+
+        /**
+         * log the current state
          */
-        private void logCurrentState(){
+        private void logCurrentState() {
             //write new state
             //first: current cycles
             write(state.getCycles() + " ");
             //and than all consumers
             double total = 0.0f;
-            for(int i = 0; i < consumer.size(); ++i) {
+            for (int i = 0; i < consumer.size(); ++i) {
                 Energy en = (Energy)consumer.get(i);
                 double amphere = en.getCurrentAmphere();
-                total +=  amphere;
+                total += amphere;
                 write(amphere + " ");
             }
-            write( total + "" );
-            newLine();            
+            write(total + "");
+            newLine();
         }
 
-        
-        /** log the old state
+
+        /**
+         * log the old state
+         *
          * @param energy device, which state changed
          */
-        private void logOldState(Energy energy){
+        private void logOldState(Energy energy) {
             //write old state
             //first: old cycles
-            write((state.getCycles()-1) + " ");
+            write((state.getCycles() - 1) + " ");
             //and than all consumers
             double total = 0.0f;
-            for(int i = 0; i < consumer.size(); ++i) {                
+            for (int i = 0; i < consumer.size(); ++i) {
                 Energy en = (Energy)consumer.get(i);
                 double amphere = 0.0f;
-                if( en != energy){
+                if (en != energy) {
                     amphere = en.getCurrentAmphere();
                 } else {
                     amphere = en.getOldAmphere();
@@ -211,22 +219,24 @@ public class EnergyMonitor extends MonitorFactory {
                 total += amphere;
                 write(amphere + " ");
             }
-            write( total + "");
-            newLine();            
+            write(total + "");
+            newLine();
         }
-        
-    }
-        
-    /** create a new monitos
-     * 
-     */
-    public EnergyMonitor() {
-        super("energy", "The \"energy\" is a monitor to trace energy consumption ,"+
-               "the trace file is temp.log");
+
     }
 
-    
-    /** create a new monitor, calls the constructor
+    /**
+     * create a new monitor
+     */
+    public EnergyMonitor() {
+        super("energy", "The \"energy\" is a monitor to trace energy consumption ," +
+                        "the trace file is temp.log");
+    }
+
+
+    /**
+     * create a new monitor, calls the constructor
+     *
      * @see avrora.monitors.MonitorFactory#newMonitor(avrora.sim.Simulator)
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {

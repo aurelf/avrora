@@ -38,33 +38,41 @@
 package avrora.sim;
 
 import avrora.monitors.*;
+
 import java.util.LinkedList;
 
-/** interface for energy control
- *  handles subsrciption of monitors and consumers
- * 
- * @author Olaf Landsiedel
+/**
+ * interface for energy control handles subsrciption of monitors and consumers
  *
+ * @author Olaf Landsiedel
  */
 
 public interface EnergyControl {
 
-    /**add energy monitor
+    /**
+     * add energy monitor
+     *
      * @param energyMonitor monitor
      */
-    public void subsribe(EnergyMonitorBase energyMonitor);
-    
-    /** add consumer
+    public void subscribe(EnergyMonitorBase energyMonitor);
+
+    /**
+     * add consumer
+     *
      * @param energy consumer
      */
     public void addConsumer(Energy energy);
-    
-    /** get list of consumers
+
+    /**
+     * get list of consumers
+     *
      * @return conumer list
      */
     public LinkedList getConsumers();
-    
-    /** update the state of a device
+
+    /**
+     * update the state of a device
+     *
      * @param energy the energy model of the device
      */
     public void stateChange(Energy energy);

@@ -46,8 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>Module</code> class collects together the instructions and data
- * into an AVR assembly program.
+ * The <code>Module</code> class collects together the instructions and data into an AVR assembly program.
  *
  * @author Ben L. Titzer
  */
@@ -301,12 +300,12 @@ public class Module implements Context {
 
     public Program build() {
         newprogram = new Program(programSegment.lowest_address, programSegment.highest_address,
-                dataSegment.lowest_address, dataSegment.highest_address,
-                eepromSegment.lowest_address, eepromSegment.highest_address);
+                                 dataSegment.lowest_address, dataSegment.highest_address,
+                                 eepromSegment.lowest_address, eepromSegment.highest_address);
 
         Iterator i = itemList.iterator();
         while (i.hasNext()) {
-            Item pos = (Item) i.next();
+            Item pos = (Item)i.next();
             simplify(pos);
         }
 
@@ -315,20 +314,20 @@ public class Module implements Context {
 
     protected void simplify(Item i) {
         Item.Instruction instr = null;
-        if (i instanceof Item.Instruction) instr = (Item.Instruction) i;
+        if (i instanceof Item.Instruction) instr = (Item.Instruction)i;
 
         try {
 
             i.simplify();
 
         } catch (Instr.ImmediateRequired e) {
-            ERROR.ConstantExpected((SyntacticOperand) e.operand);
+            ERROR.ConstantExpected((SyntacticOperand)e.operand);
         } catch (Instr.InvalidImmediate e) {
             ERROR.ConstantOutOfRange(instr.operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
         } catch (Instr.InvalidRegister e) {
             ERROR.IncorrectRegister(instr.operands[e.number - 1], e.register, e.set.toString());
         } catch (Instr.RegisterRequired e) {
-            ERROR.RegisterExpected((SyntacticOperand) e.operand);
+            ERROR.RegisterExpected((SyntacticOperand)e.operand);
         } catch (Instr.WrongNumberOfOperands e) {
             ERROR.WrongNumberOfOperands(instr.name, e.found, e.expected);
         }
@@ -347,7 +346,7 @@ public class Module implements Context {
         String name = labelName(tok);
         Register reg = Register.getRegisterByName(name);
         if (reg == null)
-            reg = (Register) definitions.get(name);
+            reg = (Register)definitions.get(name);
 
         if (reg == null) ERROR.UnknownRegister(tok);
         return reg;
@@ -356,9 +355,9 @@ public class Module implements Context {
     public int getVariable(AbstractToken tok) {
         String name = labelName(tok);
 
-        Integer v = (Integer) constants.get(name);
+        Integer v = (Integer)constants.get(name);
         if (v == null) {
-            Item.Label li = (Item.Label) labels.get(name);
+            Item.Label li = (Item.Label)labels.get(name);
             if (li == null) ERROR.UnknownVariable(tok);
             if (li.segment == programSegment && !useByteAddresses)
                 return li.getByteAddress() >> 1;

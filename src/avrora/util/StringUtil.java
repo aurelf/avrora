@@ -40,8 +40,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * The <code>StringUtil</code> class implements several useful functions for dealing
- * with strings such as parsing pieces of syntax, formatting, etc.
+ * The <code>StringUtil</code> class implements several useful functions for dealing with strings such as parsing pieces
+ * of syntax, formatting, etc.
  *
  * @author Ben L. Titzer
  */
@@ -57,12 +57,10 @@ public class StringUtil {
     public static final String[] EMPTY_STRING_ARRAY = {};
 
     /**
-     * The <code>addToString()</code> method converts a numerical address
-     * (represented as a signed 32-bit integer) and converts it to a string
-     * in the format 0xXXXX where 'X' represents a hexadecimal character.
-     * The address is assumed to fit in 4 hexadecimal characters. If it does
-     * not, the string will have as many characters as necessary (max 8) to
-     * represent the address.
+     * The <code>addToString()</code> method converts a numerical address (represented as a signed 32-bit integer) and
+     * converts it to a string in the format 0xXXXX where 'X' represents a hexadecimal character. The address is assumed
+     * to fit in 4 hexadecimal characters. If it does not, the string will have as many characters as necessary (max 8)
+     * to represent the address.
      *
      * @param address the address value as an integer
      * @return a standard string representation of the address
@@ -199,14 +197,14 @@ public class StringUtil {
         i.next();
         if (r != c)
             throw new Exception("expected " + squote(c) + " @ "
-                    + (i.getIndex() - 1) + ", found " + squote(r));
+                                + (i.getIndex() - 1) + ", found " + squote(r));
     }
 
     /**
-     * The <code>isHexDigit()</code> method tests whether the given character
-     * corresponds to one of the characters used in the hexadecimal representation
-     * (i.e. is '0'-'9' or 'a'-'b', case insensitive. This method is generally used
-     * in parsing and lexing of input.
+     * The <code>isHexDigit()</code> method tests whether the given character corresponds to one of the characters used
+     * in the hexadecimal representation (i.e. is '0'-'9' or 'a'-'b', case insensitive. This method is generally used in
+     * parsing and lexing of input.
+     *
      * @param c the character to test
      * @return true if this character is a hexadecimal digit; false otherwise
      */
@@ -263,39 +261,39 @@ public class StringUtil {
     }
 
     /**
-     * The <code>rightJustify()</code> method pads a string to a specified length
-     * by adding spaces on the left, thus justifying the string to the right margin.
-     * This is extremely useful in generating columnar output in textual tables.
-     * @param v a long value to convert to a string and justify
+     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the left, thus
+     * justifying the string to the right margin. This is extremely useful in generating columnar output in textual
+     * tables.
+     *
+     * @param v     a long value to convert to a string and justify
      * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the
-     * left with spaces to achieve the desired length.
+     * @return a string representation of the input, padded on the left with spaces to achieve the desired length.
      */
     public static String rightJustify(long v, int width) {
         return rightJustify(Long.toString(v), width);
     }
 
     /**
-     * The <code>rightJustify()</code> method pads a string to a specified length
-     * by adding spaces on the left, thus justifying the string to the right margin.
-     * This is extremely useful in generating columnar output in textual tables.
-     * @param v a floating point value to convert to a string and justify
+     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the left, thus
+     * justifying the string to the right margin. This is extremely useful in generating columnar output in textual
+     * tables.
+     *
+     * @param v     a floating point value to convert to a string and justify
      * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the
-     * left with spaces to achieve the desired length.
+     * @return a string representation of the input, padded on the left with spaces to achieve the desired length.
      */
     public static String rightJustify(float v, int width) {
         return rightJustify(Float.toString(v), width);
     }
 
     /**
-     * The <code>rightJustify()</code> method pads a string to a specified length
-     * by adding spaces on the left, thus justifying the string to the right margin.
-     * This is extremely useful in generating columnar output in textual tables.
-     * @param s a string to justify
+     * The <code>rightJustify()</code> method pads a string to a specified length by adding spaces on the left, thus
+     * justifying the string to the right margin. This is extremely useful in generating columnar output in textual
+     * tables.
+     *
+     * @param s     a string to justify
      * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the
-     * left with spaces to achieve the desired length.
+     * @return a string representation of the input, padded on the left with spaces to achieve the desired length.
      */
     public static String rightJustify(String s, int width) {
         StringBuffer buf = new StringBuffer();
@@ -306,39 +304,39 @@ public class StringUtil {
     }
 
     /**
-     * The <code>leftJustify()</code> method pads a string to a specified length
-     * by adding spaces on the right, thus justifying the string to the left margin.
-     * This is extremely useful in generating columnar output in textual tables.
-     * @param v a long value to convert to a string and justify
+     * The <code>leftJustify()</code> method pads a string to a specified length by adding spaces on the right, thus
+     * justifying the string to the left margin. This is extremely useful in generating columnar output in textual
+     * tables.
+     *
+     * @param v     a long value to convert to a string and justify
      * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the
-     * right with spaces to achieve the desired length.
+     * @return a string representation of the input, padded on the right with spaces to achieve the desired length.
      */
     public static String leftJustify(long v, int width) {
         return leftJustify(Long.toString(v), width);
     }
 
     /**
-     * The <code>leftJustify()</code> method pads a string to a specified length
-     * by adding spaces on the right, thus justifying the string to the left margin.
-     * This is extremely useful in generating columnar output in textual tables.
-     * @param v a floating point value to convert to a string and justify
+     * The <code>leftJustify()</code> method pads a string to a specified length by adding spaces on the right, thus
+     * justifying the string to the left margin. This is extremely useful in generating columnar output in textual
+     * tables.
+     *
+     * @param v     a floating point value to convert to a string and justify
      * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the
-     * right with spaces to achieve the desired length.
+     * @return a string representation of the input, padded on the right with spaces to achieve the desired length.
      */
     public static String leftJustify(float v, int width) {
         return leftJustify(Float.toString(v), width);
     }
 
     /**
-     * The <code>leftJustify()</code> method pads a string to a specified length
-     * by adding spaces on the right, thus justifying the string to the left margin.
-     * This is extremely useful in generating columnar output in textual tables.
-     * @param s a string to justify
+     * The <code>leftJustify()</code> method pads a string to a specified length by adding spaces on the right, thus
+     * justifying the string to the left margin. This is extremely useful in generating columnar output in textual
+     * tables.
+     *
+     * @param s     a string to justify
      * @param width the number of characters to pad the string to
-     * @return a string representation of the input, padded on the
-     * right with spaces to achieve the desired length.
+     * @return a string representation of the input, padded on the right with spaces to achieve the desired length.
      */
     public static String leftJustify(String s, int width) {
         StringBuffer buf = new StringBuffer(s);
@@ -357,11 +355,11 @@ public class StringUtil {
     public static final long MILLISECS_PER_SEC = 1000;
 
     /**
-     * The <code>millisAsString()</code> method converts a number of milliseconds
-     * into a more suitable format for printing. The format is 'Ad Bh Cm D.EFGs',
-     * corresponding to the breakdown of days, hours, minutes, and seconds. The
-     * most significant nonzero digit of { A, B, C, } begins the string (e.g.
-     * if the value corresponds to 0 days, days will not be reported).
+     * The <code>millisAsString()</code> method converts a number of milliseconds into a more suitable format for
+     * printing. The format is 'Ad Bh Cm D.EFGs', corresponding to the breakdown of days, hours, minutes, and seconds.
+     * The most significant nonzero digit of { A, B, C, } begins the string (e.g. if the value corresponds to 0 days,
+     * days will not be reported).
+     *
      * @param millis the number of milliseconds to convert
      * @return a string representation of the time useful for printing
      */
@@ -404,13 +402,13 @@ public class StringUtil {
     public static final int MILLIS = 4;
 
     /**
-     * The <code>millisToDays()</code> method converts the given milliseconds into
-     * a breakdown of days, hours, minutes, seconds, and milliseconds, returning a
-     * long array where the index 0 corresponds to days, index 1 corresponds to hours,
-     * etc.
+     * The <code>millisToDays()</code> method converts the given milliseconds into a breakdown of days, hours, minutes,
+     * seconds, and milliseconds, returning a long array where the index 0 corresponds to days, index 1 corresponds to
+     * hours, etc.
+     *
      * @param millis the number of milliseconds to convert
-     * @return the breakdown of milliseconds into days, hours, minutes, seconds,
-     * and milliseconds in an array, with most significant units first
+     * @return the breakdown of milliseconds into days, hours, minutes, seconds, and milliseconds in an array, with most
+     *         significant units first
      */
     public static long[] millisToDays(long millis) {
         int denom[] = {24, 60, 60, 1000};
@@ -429,21 +427,21 @@ public class StringUtil {
     }
 
     /**
-     * The <code>toHex()</code> converts the specified long value into a hexadecimal
-     * string of the given with. The value will be padded on the left with zero values
-     * to achieve the desired with.
+     * The <code>toHex()</code> converts the specified long value into a hexadecimal string of the given with. The value
+     * will be padded on the left with zero values to achieve the desired with.
+     *
      * @param value the long value to convert to a string
      * @param width the desired length of the string
-     * @return a hexadecimal string representation of the given value, padded on the
-     * left with zeroes to the length specified
+     * @return a hexadecimal string representation of the given value, padded on the left with zeroes to the length
+     *         specified
      */
     public static String toHex(long value, int width) {
         char result[] = new char[width];
 
-        if (value > (long) 1 << width * 4) return Long.toHexString(value).toUpperCase();
+        if (value > (long)1 << width * 4) return Long.toHexString(value).toUpperCase();
 
         for (int cntr = 0; cntr < width; cntr++)
-            result[width - cntr - 1] = HEX_CHARS[(int) (value >> (cntr * 4)) & 0xf];
+            result[width - cntr - 1] = HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf];
 
         return new String(result);
     }
@@ -464,9 +462,10 @@ public class StringUtil {
 
     /**
      * The <code>quote()</code> method simply adds double quotes around a string.
+     *
      * @param s the string to add double quotes to
-     * @return a new string that is the result of concatenating the double quote character,
-     * the specified string, and another double quote character in sequence
+     * @return a new string that is the result of concatenating the double quote character, the specified string, and
+     *         another double quote character in sequence
      */
     public static String quote(Object s) {
         return QUOTE + s + QUOTE;
@@ -474,9 +473,10 @@ public class StringUtil {
 
     /**
      * The <code>squote()</code> method simply adds single quotes around a character.
+     *
      * @param c the character to add double quotes to
-     * @return a new string that is the result of concatenating the double quote character,
-     * the specified string, and another double quote character in sequence
+     * @return a new string that is the result of concatenating the double quote character, the specified string, and
+     *         another double quote character in sequence
      */
     public static String squote(char c) {
         return SQUOTE + c + SQUOTE;
@@ -484,9 +484,10 @@ public class StringUtil {
 
     /**
      * The <code>embed()</code> method simply adds parentheses around a string.
+     *
      * @param s the string to add parentheses to
-     * @return a new string that is the result of concatenating the parenthesis character,
-     * the specified string, and another parenthesis character in sequence
+     * @return a new string that is the result of concatenating the parenthesis character, the specified string, and
+     *         another parenthesis character in sequence
      */
     public static String embed(Object s) {
         return LPAREN + s + RPAREN;
@@ -549,7 +550,7 @@ public class StringUtil {
     }
 
     public static char alpha(int num) {
-        return (char) ('a' + num - 1);
+        return (char)('a' + num - 1);
     }
 
     public static String qembed(String s1, String s2, String s3) {
@@ -625,7 +626,7 @@ public class StringUtil {
             case 'x':
                 { /* hexadecimal constant */
                     int value = readHexValue(i, 4);
-                    return (char) value;
+                    return (char)value;
                 }
             case '0': /* octal constant */
             case '1':
@@ -638,7 +639,7 @@ public class StringUtil {
                 {
                     i.previous();
                     int value = readOctalValue(i, 3);
-                    return (char) value;
+                    return (char)value;
                 }
 
         }
@@ -713,14 +714,12 @@ public class StringUtil {
     }
 
     /**
-     * The <code>dup()</code> method takes a character and a count and returns
-     * a string where that character has been duplicated the specified number of
-     * times.
+     * The <code>dup()</code> method takes a character and a count and returns a string where that character has been
+     * duplicated the specified number of times.
      *
-     * @param c the character to duplicate
+     * @param c   the character to duplicate
      * @param len the number of times to duplicate the character
-     * @return a string representation of the particular character duplicated the
-     * specified number of times
+     * @return a string representation of the particular character duplicated the specified number of times
      */
     public static String dup(char c, int len) {
         StringBuffer buf = new StringBuffer(len);
@@ -732,14 +731,14 @@ public class StringUtil {
 
     // warning! only works on numbers < 100!!!!
     public static String toFixedFloat(float f, int places) {
-        if ( f > 100 ) return Float.toString(f);
+        if (f > 100) return Float.toString(f);
         // TODO: fix this routine or find an alternative
         StringBuffer buf = new StringBuffer();
         float radix = 100;
         boolean nonzero = false;
         for (int cntr = 0; cntr < places + 3; cntr++) {
-            int digit = ((int) (f / radix)) % 10;
-            char dchar = (char) (digit + '0');
+            int digit = ((int)(f / radix)) % 10;
+            char dchar = (char)(digit + '0');
 
             if (digit != 0) nonzero = true;
 

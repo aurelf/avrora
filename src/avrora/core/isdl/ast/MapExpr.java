@@ -36,29 +36,27 @@ import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
 
 /**
- * The <code>MapExpr</code> class represents an expression that is
- * an access of an element within a map.
+ * The <code>MapExpr</code> class represents an expression that is an access of an element within a map.
  *
  * @author Ben L. Titzer
  */
 public class MapExpr extends Expr {
 
     /**
-     * The <code>mapname</code> field stores a reference to the name of
-     * the map whose element is being accessed.
+     * The <code>mapname</code> field stores a reference to the name of the map whose element is being accessed.
      */
     public final Token mapname;
 
     /**
-     * The <code>index</code> field stores a references to the expression
-     * which is evaluated to yield the index into the map.
+     * The <code>index</code> field stores a references to the expression which is evaluated to yield the index into the
+     * map.
      */
     public final Expr index;
 
     /**
-     * The constructor of the <code>MapExpr</code> class initializes
-     * the publicly accessable fields that represent the members of
-     * this expression
+     * The constructor of the <code>MapExpr</code> class initializes the publicly accessable fields that represent the
+     * members of this expression
+     *
      * @param s the string name of the map as a token
      * @param i an expression representing the index into the map
      */
@@ -68,9 +66,9 @@ public class MapExpr extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern so that client visitors can traverse the syntax tree easily
-     * and in an extensible way.
+     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can traverse
+     * the syntax tree easily and in an extensible way.
+     *
      * @param v the visitor to accept
      */
     public void accept(ExprVisitor v) {
@@ -78,9 +76,9 @@ public class MapExpr extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern so that client visitors can traverse the syntax tree easily
-     * and in an extensible way.
+     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can traverse
+     * the syntax tree easily and in an extensible way.
+     *
      * @param v the visitor to accept
      */
     public void accept(CodeVisitor v) {
@@ -88,23 +86,22 @@ public class MapExpr extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for rebuilding of expressions. This visitor allows code to
-     * be slightly modified while only writing visit methods for the
-     * parts of the syntax tree affected.
+     * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions. This
+     * visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax tree
+     * affected.
+     *
      * @param r the rebuilder to accept
-     * @return the result of calling the appropriate <code>visit()</code>
-     * method of the rebuilder
+     * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
     public Expr accept(CodeRebuilder r) {
         return r.visit(this);
     }
 
     /**
-     * The <code>toString()</code> method recursively converts this expression
-     * to a string. For binary operations, inner expressions will be nested
-     * within parentheses if their precedence is lower than the precedence
-     * of the parent expression.
+     * The <code>toString()</code> method recursively converts this expression to a string. For binary operations, inner
+     * expressions will be nested within parentheses if their precedence is lower than the precedence of the parent
+     * expression.
+     *
      * @return a string representation of this expression
      */
     public String toString() {
@@ -112,22 +109,20 @@ public class MapExpr extends Expr {
     }
 
     /**
-     * The <code>getPrecedence()</code> method gets the binding precedence for
-     * this expression. This is used to compute when inner expressions must be
-     * nested within parentheses in order to preserve the implied order of
-     * evaluation.
-     * @return an integer representing the precedence of this expression; higher
-     * numbers are higher precedence
+     * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is used to compute
+     * when inner expressions must be nested within parentheses in order to preserve the implied order of evaluation.
+     *
+     * @return an integer representing the precedence of this expression; higher numbers are higher precedence
      */
     public int getPrecedence() {
         return PREC_TERM;
     }
 
     /**
-     * The <code>isMap()</code> method tests whether this expression is a
-     * reference to an element of a map. This is used in pattern matching in
-     * some parts of the tools that work on abstract syntax trees. For
-     * instances of <code>MapExpr</code>, this method returns always true.
+     * The <code>isMap()</code> method tests whether this expression is a reference to an element of a map. This is used
+     * in pattern matching in some parts of the tools that work on abstract syntax trees. For instances of
+     * <code>MapExpr</code>, this method returns always true.
+     *
      * @return true
      */
     public boolean isMap() {

@@ -41,8 +41,8 @@ import avrora.sim.*;
  */
 public abstract class ATMegaFamily implements Microcontroller {
     /**
-     * The <code>HZ</code> field stores a public static final integer that
-     * represents the clockspeed of the AtMega128L microcontroller (7.327mhz).
+     * The <code>HZ</code> field stores a public static final integer that represents the clockspeed of the AtMega128L
+     * microcontroller (7.327mhz).
      */
     public final int HZ;
     public final int SRAM_SIZE;
@@ -59,8 +59,7 @@ public abstract class ATMegaFamily implements Microcontroller {
     protected BaseInterpreter interpreter;
 
     /**
-     * The <code>Pin</code> class implements a model of a pin on the ATMegaFamily for
-     * the general purpose IO ports.
+     * The <code>Pin</code> class implements a model of a pin on the ATMegaFamily for the general purpose IO ports.
      */
     protected class Pin implements Microcontroller.Pin {
         protected final int number;
@@ -86,7 +85,7 @@ public abstract class ATMegaFamily implements Microcontroller {
 
         protected void setOutputDir(boolean out) {
             outputDir = out;
-            if ( out ) write(level);
+            if (out) write(level);
         }
 
         protected void setPullup(boolean pull) {
@@ -110,10 +109,10 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
 
         private void printRead(boolean result) {
-            if ( pinPrinter == null ) pinPrinter = simulator.getPrinter("sim.pin");
-            if ( pinPrinter.enabled ) {
+            if (pinPrinter == null) pinPrinter = simulator.getPrinter("sim.pin");
+            if (pinPrinter.enabled) {
                 String dir = getDirection();
-                pinPrinter.println("READ PIN: " + number + " "+dir+"<- "+result);
+                pinPrinter.println("READ PIN: " + number + " " + dir + "<- " + result);
             }
         }
 
@@ -137,8 +136,8 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
 
         private void printWrite(boolean value) {
-            if ( pinPrinter == null ) pinPrinter = simulator.getPrinter("sim.pin");
-            if ( pinPrinter.enabled ) {
+            if (pinPrinter == null) pinPrinter = simulator.getPrinter("sim.pin");
+            if (pinPrinter.enabled) {
                 String dir = getDirection();
                 pinPrinter.println("WRITE PIN: " + number + " " + dir + "-> " + value);
             }
@@ -148,8 +147,8 @@ public abstract class ATMegaFamily implements Microcontroller {
     abstract class IMRReg extends State.RWIOReg {
 
         /**
-         * The <code>mapping</code> array maps a bit number (0-7) to an interrupt
-         * number (0-35). This is used for calculating the posted interrupts.
+         * The <code>mapping</code> array maps a bit number (0-7) to an interrupt number (0-35). This is used for
+         * calculating the posted interrupts.
          */
         protected final int mapping[];
         protected final long interruptMask;
@@ -157,9 +156,9 @@ public abstract class ATMegaFamily implements Microcontroller {
         IMRReg(int[] map) {
             long mask = 0;
             mapping = new int[8];
-            for ( int cntr = 0; cntr < 8; cntr++ ) {
+            for (int cntr = 0; cntr < 8; cntr++) {
                 mapping[cntr] = map[cntr];
-                if ( mapping[cntr] >= 0 )
+                if (mapping[cntr] >= 0)
                     mask |= 1 << mapping[cntr];
             }
             interruptMask = mask;
@@ -170,10 +169,10 @@ public abstract class ATMegaFamily implements Microcontroller {
             long posted = 0;
 
             // calculate all posted interrupts at correct bit positions
-            for ( int count = 0; posts != 0; count++ ) {
-                if (Arithmetic.getBit(posts, count) ) {
+            for (int count = 0; posts != 0; count++) {
+                if (Arithmetic.getBit(posts, count)) {
                     int vnum = getVectorNum(count);
-                    if ( vnum >= 0 ) posted |= (0x1 << vnum);
+                    if (vnum >= 0) posted |= (0x1 << vnum);
                 }
             }
 
@@ -183,7 +182,7 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
 
         public void update(int bit, IMRReg other) {
-            if ( Arithmetic.getBit((byte)(this.value & other.value), bit) )
+            if (Arithmetic.getBit((byte)(this.value & other.value), bit))
                 interpreter.postInterrupt(getVectorNum(bit));
             else
                 interpreter.unpostInterrupt(getVectorNum(bit));
@@ -204,7 +203,7 @@ public abstract class ATMegaFamily implements Microcontroller {
         }
 
         public void write(byte val) {
-            value = (byte) (value & ~val);
+            value = (byte)(value & ~val);
             update(maskRegister);
         }
 
@@ -278,7 +277,6 @@ public abstract class ATMegaFamily implements Microcontroller {
     }
 
 
-
     protected ATMegaFamily(int hz, int sram_size, int ioreg_size, int flash_size, int eeprom_size, int num_pins) {
         HZ = hz;
         SRAM_SIZE = sram_size;
@@ -290,8 +288,7 @@ public abstract class ATMegaFamily implements Microcontroller {
     }
 
     /**
-     * The <code>getRamSize()</code> method returns the number of bytes of
-     * SRAM present on this hardware device.
+     * The <code>getRamSize()</code> method returns the number of bytes of SRAM present on this hardware device.
      *
      * @return the number of bytes of SRAM on this hardware device
      */
@@ -300,8 +297,8 @@ public abstract class ATMegaFamily implements Microcontroller {
     }
 
     /**
-     * The <code>getIORegSize()</code> method returns the number of IO registers
-     * that are present on this hardware device.
+     * The <code>getIORegSize()</code> method returns the number of IO registers that are present on this hardware
+     * device.
      *
      * @return the number of IO registers supported on this hardware device
      */
@@ -310,9 +307,8 @@ public abstract class ATMegaFamily implements Microcontroller {
     }
 
     /**
-     * The <code>getFlashSize()</code> method returns the size in bytes of
-     * the flash memory on this hardware device. The flash memory stores the
-     * initialized data and the machine code instructions of the program.
+     * The <code>getFlashSize()</code> method returns the size in bytes of the flash memory on this hardware device. The
+     * flash memory stores the initialized data and the machine code instructions of the program.
      *
      * @return the size of the flash memory in bytes
      */
@@ -321,8 +317,7 @@ public abstract class ATMegaFamily implements Microcontroller {
     }
 
     /**
-     * The <code>getEEPromSize()</code> method returns the size in bytes of
-     * the EEPROM on this hardware device.
+     * The <code>getEEPromSize()</code> method returns the size in bytes of the EEPROM on this hardware device.
      *
      * @return the size of the EEPROM in bytes
      */
@@ -331,8 +326,8 @@ public abstract class ATMegaFamily implements Microcontroller {
     }
 
     /**
-     * The <code>getHZ()</code> method returns the number of cycles per second
-     * at which this hardware device is designed to run.
+     * The <code>getHZ()</code> method returns the number of cycles per second at which this hardware device is designed
+     * to run.
      *
      * @return the number of cycles per second on this device
      */
@@ -341,43 +336,36 @@ public abstract class ATMegaFamily implements Microcontroller {
     }
 
     /**
-     * The <code>millisToCycles()</code> method converts the specified number
-     * of milliseconds to a cycle count. The conversion factor used is the
-     * number of cycles per second of this device. This method serves as a
-     * utility so that clients need not do repeated work in converting
-     * milliseconds to cycles and back.
+     * The <code>millisToCycles()</code> method converts the specified number of milliseconds to a cycle count. The
+     * conversion factor used is the number of cycles per second of this device. This method serves as a utility so that
+     * clients need not do repeated work in converting milliseconds to cycles and back.
      *
      * @param ms a time quantity in milliseconds as a double
-     * @return the same time quantity in clock cycles, rounded up to the nearest
-     *         integer
+     * @return the same time quantity in clock cycles, rounded up to the nearest integer
      */
     public long millisToCycles(double ms) {
-        return (long) (ms * HZ / 1000);
+        return (long)(ms * HZ / 1000);
     }
 
     /**
-     * The <code>cyclesToMillis()</code> method converts the specified number
-     * of cycles to a time quantity in milliseconds. The conversion factor used
-     * is the number of cycles per second of this device. This method serves
-     * as a utility so that clients need not do repeated work in converting
-     * milliseconds to cycles and back.
+     * The <code>cyclesToMillis()</code> method converts the specified number of cycles to a time quantity in
+     * milliseconds. The conversion factor used is the number of cycles per second of this device. This method serves as
+     * a utility so that clients need not do repeated work in converting milliseconds to cycles and back.
      *
      * @param cycles the number of cycles
      * @return the same time quantity in milliseconds
      */
     public double cyclesToMillis(long cycles) {
-        return 1000 * ((double) cycles) / HZ;
+        return 1000 * ((double)cycles) / HZ;
     }
 
     /**
-     * The <code>getPin()</code> method looks up the specified pin by its number
-     * and returns a reference to that pin. The intended
-     * users of this method are external device implementors which connect
-     * their devices to the microcontroller through the pins.
+     * The <code>getPin()</code> method looks up the specified pin by its number and returns a reference to that pin.
+     * The intended users of this method are external device implementors which connect their devices to the
+     * microcontroller through the pins.
      *
      * @param num the pin number to look up
-     * @return a reference to the <code>Pin</code> object corresponding to
-     *         the named pin if it exists; null otherwise
+     * @return a reference to the <code>Pin</code> object corresponding to the named pin if it exists; null otherwise
      */
     public Microcontroller.Pin getPin(int num) {
         if (num < 0 || num > pins.length) return null;

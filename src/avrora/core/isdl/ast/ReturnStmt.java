@@ -34,22 +34,22 @@
 package avrora.core.isdl.ast;
 
 /**
- * The <code>ReturnStmt</code> class represents a return statement
- * within a subroutine that returns a value to its caller.
+ * The <code>ReturnStmt</code> class represents a return statement within a subroutine that returns a value to its
+ * caller.
  *
  * @author Ben L. Titzer
  */
 public class ReturnStmt extends Stmt {
 
     /**
-     * The <code>expr</code> field stores a reference to the expression that
-     * is evaluated and returned to the caller.
+     * The <code>expr</code> field stores a reference to the expression that is evaluated and returned to the caller.
      */
     public final Expr expr;
 
     /**
-     * The constructor of the <code>ReturnStmt</code> class simply initializes
-     * the public reference to the expression that is returned as the result.
+     * The constructor of the <code>ReturnStmt</code> class simply initializes the public reference to the expression
+     * that is returned as the result.
+     *
      * @param e the expression representing the result to return
      */
     public ReturnStmt(Expr e) {
@@ -57,9 +57,9 @@ public class ReturnStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine.
+     *
      * @param v the visitor to accept
      */
     public void accept(StmtVisitor v) {
@@ -67,8 +67,8 @@ public class ReturnStmt extends Stmt {
     }
 
     /**
-     * The <code>toString()</code> method recursively converts this statement
-     * to a string.
+     * The <code>toString()</code> method recursively converts this statement to a string.
+     *
      * @return a string representation of this statement
      */
     public String toString() {
@@ -76,14 +76,12 @@ public class ReturnStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine. The
-     * <code>StmtRebuilder</code> interface allows visitors to rearrange
-     * and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
+     * allows visitors to rearrange and rebuild the statements.
+     *
      * @param r the visitor to accept
-     * @return the result of calling the appropriate <code>visit()</code>
-     * of the rebuilder passed
+     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);

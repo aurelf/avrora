@@ -35,9 +35,8 @@ package avrora.util.profiling;
 import avrora.util.Terminal;
 
 /**
- * @author Ben L. Titzer
- * This class is used to record instances of profiling data from a Hashtable.
- **/
+ * @author Ben L. Titzer This class is used to record instances of profiling data from a Hashtable.
+ */
 public abstract class ProfilingData {
 
     abstract void computeStatistics();
@@ -58,11 +57,11 @@ public abstract class ProfilingData {
             if (data[cntr] > max) max = data[cntr];
         }
 
-        if (max > 70) scale = ((float) max) / 70;
+        if (max > 70) scale = ((float)max) / 70;
 
         for (cntr = 0; cntr < data.length; cntr++) {
-            float fstars = ((float) data[cntr]) / scale;
-            int stars = (int) fstars;
+            float fstars = ((float)data[cntr]) / scale;
+            int stars = (int)fstars;
             if ((fstars - stars) >= 0.5) stars++;
 
             Terminal.print("\n" + (base + cntr) + ":" + data[cntr] + "\t");

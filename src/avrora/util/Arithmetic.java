@@ -33,55 +33,54 @@
 package avrora.util;
 
 /**
- * The <code>Arithmetic</code> class implements a set of useful methods that
- * are used by the simulator and assembler for converting java types to
- * various data types used by the machine.
+ * The <code>Arithmetic</code> class implements a set of useful methods that are used by the simulator and assembler for
+ * converting java types to various data types used by the machine.
  *
  * @author Ben L. Titzer
  */
 public class Arithmetic {
     public static short word(byte b1, byte b2) {
-        return (short) ((b1 & 0xff) | (b2 << 8));
+        return (short)((b1 & 0xff) | (b2 << 8));
     }
 
     public static char uword(byte b1, byte b2) {
-        return (char) ((b1 & 0xff) | ((b2 & 0xff) << 8));
+        return (char)((b1 & 0xff) | ((b2 & 0xff) << 8));
     }
 
     public static char ubyte(byte b1) {
-        return (char) (b1 & 0xff);
+        return (char)(b1 & 0xff);
     }
 
     public static byte low(short val) {
-        return (byte) val;
+        return (byte)val;
     }
 
     public static byte high(short val) {
-        return (byte) (val >> 8);
+        return (byte)(val >> 8);
     }
 
     public static byte low(int val) {
-        return (byte) val;
+        return (byte)val;
     }
 
     public static byte high(int val) {
-        return (byte) ((val & 0xff00) >> 8);
+        return (byte)((val & 0xff00) >> 8);
     }
 
     public static char ulow(char val) {
-        return (char) (val & 0xff);
+        return (char)(val & 0xff);
     }
 
     public static char uhigh(char val) {
-        return (char) (val >> 8);
+        return (char)(val >> 8);
     }
 
     public static char ulow(short val) {
-        return (char) (val & 0xff);
+        return (char)(val & 0xff);
     }
 
     public static char uhigh(short val) {
-        return (char) ((val & 0xff00) >> 8);
+        return (char)((val & 0xff00) >> 8);
     }
 
     public static boolean getBit(byte val, int bit) {
@@ -93,7 +92,7 @@ public class Arithmetic {
     }
 
     public static byte setBit(byte val, int bit) {
-        return (byte) (val | (1 << bit));
+        return (byte)(val | (1 << bit));
     }
 
     public static byte setBit(byte val, int bit, boolean on) {
@@ -108,7 +107,7 @@ public class Arithmetic {
     }
 
     public static byte clearBit(byte val, int bit) {
-        return (byte) (val & ~(1 << bit));
+        return (byte)(val & ~(1 << bit));
     }
 
     public static int lowestBit(long value) {
@@ -148,7 +147,7 @@ public class Arithmetic {
     };
 
     public static byte reverseBits(byte value) {
-        return (byte) (reverseKey[value & 0x0f] << 4 | reverseKey[(value >> 4) & 0x0f]);
+        return (byte)(reverseKey[value & 0x0f] << 4 | reverseKey[(value >> 4) & 0x0f]);
     }
 
     // key for the number of bits set to one in a 4 bit quantity

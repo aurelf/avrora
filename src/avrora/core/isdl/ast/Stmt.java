@@ -33,30 +33,27 @@
 package avrora.core.isdl.ast;
 
 /**
- * The <code>Stmt</code> class represents a statement in the IR that
- * expresses the computation of an instruction.
+ * The <code>Stmt</code> class represents a statement in the IR that expresses the computation of an instruction.
  *
  * @author Ben L. Titzer
  */
 public abstract class Stmt {
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine.
+     *
      * @param v the visitor to accept
      */
     public abstract void accept(StmtVisitor v);
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine. The
-     * <code>StmtRebuilder</code> interface allows visitors to rearrange
-     * and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
+     * allows visitors to rearrange and rebuild the statements.
+     *
      * @param v the visitor to accept
-     * @return the result of calling the appropriate <code>visit()</code>
-     * of the rebuilder passed
+     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
     public abstract Stmt accept(StmtRebuilder v);
 }

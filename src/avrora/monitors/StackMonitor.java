@@ -43,58 +43,55 @@ import avrora.util.Options;
 import avrora.util.Verbose;
 
 /**
- * The <code>StackMonitor</code> class is a monitor that tracks the height
- * of the program's stack over the execution of the simulation and reports
- * the maximum stack of the program.
+ * The <code>StackMonitor</code> class is a monitor that tracks the height of the program's stack over the execution of
+ * the simulation and reports the maximum stack of the program.
  *
  * @author Ben L. Titzer
  */
 public class StackMonitor extends MonitorFactory {
 
     /**
-     * The <code>Monitor</code> class implements a monitor for the
-     * stack height that inserts a probe after every instruction in
-     * the program and checks the stack height after each instruction
-     * is executed.
+     * The <code>Monitor</code> class implements a monitor for the stack height that inserts a probe after every
+     * instruction in the program and checks the stack height after each instruction is executed.
      */
     public class Monitor implements avrora.monitors.Monitor, Simulator.Probe {
         public final Simulator simulator;
         public final Program program;
         public final ProgramProfiler profile;
 
-            int minStack1 = Integer.MAX_VALUE;
-            int minStack2 = Integer.MAX_VALUE;
-            int minStack3 = Integer.MAX_VALUE;
-            int maxStack = Integer.MIN_VALUE;
+        int minStack1 = Integer.MAX_VALUE;
+        int minStack2 = Integer.MAX_VALUE;
+        int minStack3 = Integer.MAX_VALUE;
+        int maxStack = Integer.MIN_VALUE;
 
-            final Verbose.Printer printer = Verbose.getVerbosePrinter("sim.stack");
+        final Verbose.Printer printer = Verbose.getVerbosePrinter("sim.stack");
 
-            public void fireBefore(Instr i, int address, State s) {
-                // do nothing
+        public void fireBefore(Instr i, int address, State s) {
+            // do nothing
+        }
+
+        public void fireAfter(Instr i, int address, State s) {
+            int newStack = s.getSP();
+            if (newStack == minStack1) return;
+
+            if (printer.enabled)
+                printer.println("new stack: " + newStack);
+
+            if (newStack < minStack1) {
+                minStack3 = minStack2;
+                minStack2 = minStack1;
+                minStack1 = newStack;
+            } else if (newStack < minStack2) {
+                minStack3 = minStack2;
+                minStack2 = newStack;
+            } else if (newStack == minStack2)
+                return;
+            else if (newStack < minStack3) {
+                minStack3 = newStack;
             }
 
-            public void fireAfter(Instr i, int address, State s) {
-                int newStack = s.getSP();
-                if (newStack == minStack1) return;
-
-                if ( printer.enabled )
-                    printer.println("new stack: " + newStack);
-
-                if (newStack < minStack1) {
-                    minStack3 = minStack2;
-                    minStack2 = minStack1;
-                    minStack1 = newStack;
-                } else if (newStack < minStack2) {
-                    minStack3 = minStack2;
-                    minStack2 = newStack;
-                } else if (newStack == minStack2)
-                    return;
-                else if (newStack < minStack3) {
-                    minStack3 = newStack;
-                }
-
-                if (newStack > maxStack) maxStack = newStack;
-            }
+            if (newStack > maxStack) maxStack = newStack;
+        }
 
         Monitor(Simulator s) {
             simulator = s;
@@ -105,11 +102,9 @@ public class StackMonitor extends MonitorFactory {
         }
 
         /**
-         * The <code>report()</code> method generates a textual report
-         * after the simulation is complete. The text report contains
-         * the 3 smallest stack pointers encountered (tracking all
-         * three is necessary because the stack pointer begins at 0
-         * and then is initialized one byte at a time).
+         * The <code>report()</code> method generates a textual report after the simulation is complete. The text report
+         * contains the 3 smallest stack pointers encountered (tracking all three is necessary because the stack pointer
+         * begins at 0 and then is initialized one byte at a time).
          */
         public void report() {
             reportQuantity("Minimum stack pointer #1", StringUtil.addrToString(minStack1), "");
@@ -124,23 +119,20 @@ public class StackMonitor extends MonitorFactory {
     }
 
     /**
-     * The constructor for the <code>StackMonitor</code> class builds a
-     * new <code>MonitorFactory</code> capable of creating monitors for
-     * each <code>Simulator</code> instance passed to the <code>newMonitor()</code>
-     * method.
+     * The constructor for the <code>StackMonitor</code> class builds a new <code>MonitorFactory</code> capable of
+     * creating monitors for each <code>Simulator</code> instance passed to the <code>newMonitor()</code> method.
      */
     public StackMonitor() {
         super("stack", "The \"stack\" monitor tracks the height of the stack while " +
-                "the program executes, reporting the maximum stack height seen.");
+                       "the program executes, reporting the maximum stack height seen.");
     }
 
     /**
-     * The <code>newMonitor()</code> method creates a new monitor that is
-     * capable of monitoring the stack height of the program over its
-     * execution.
+     * The <code>newMonitor()</code> method creates a new monitor that is capable of monitoring the stack height of the
+     * program over its execution.
+     *
      * @param s the simulator to create a monitor for
-     * @return an instance of the <code>Monitor</code> interface for the
-     * specified simulator
+     * @return an instance of the <code>Monitor</code> interface for the specified simulator
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Monitor(s);

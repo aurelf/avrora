@@ -47,8 +47,8 @@ public class MainClock extends Clock {
     }
 
     /**
-     * The <code>getCount()</code> method returns the number of clock cycles (ticks)
-     * that have elapsed for this clock.
+     * The <code>getCount()</code> method returns the number of clock cycles (ticks) that have elapsed for this clock.
+     *
      * @return the number of elapsed time ticks in clock cycles
      */
     public long getCount() {
@@ -56,9 +56,8 @@ public class MainClock extends Clock {
     }
 
     /**
-     * The <code>insertEvent()</code> method inserts an event into the
-     * event queue of the clock with the specified delay in clock cycles.
-     * The event will then be executed at the future time specified.
+     * The <code>insertEvent()</code> method inserts an event into the event queue of the clock with the specified delay
+     * in clock cycles. The event will then be executed at the future time specified.
      *
      * @param e      the event to be inserted
      * @param cycles the number of cycles in the future at which to fire
@@ -68,9 +67,8 @@ public class MainClock extends Clock {
     }
 
     /**
-     * The <code>removeEvent()</code> method removes an event from
-     * the event queue of the clock. The comparison used is reference
-     * equality, not <code>.equals()</code>.
+     * The <code>removeEvent()</code> method removes an event from the event queue of the clock. The comparison used is
+     * reference equality, not <code>.equals()</code>.
      *
      * @param e the event to remove
      */
@@ -79,11 +77,9 @@ public class MainClock extends Clock {
     }
 
     /**
-     * The <code>advance()</code> method advances the time of the clock
-     * by the number of cycles. This may happen as the result of executing
-     * an instruction, sleeping for a time, delaying, etc. This method is
-     * only intended for use by the agent driving the clock; e.g. the
-     * simulator, and not a monitor or probe.
+     * The <code>advance()</code> method advances the time of the clock by the number of cycles. This may happen as the
+     * result of executing an instruction, sleeping for a time, delaying, etc. This method is only intended for use by
+     * the agent driving the clock; e.g. the simulator, and not a monitor or probe.
      *
      * @param cycles the number of cycles to advance the clock
      */

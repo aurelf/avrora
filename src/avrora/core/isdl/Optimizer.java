@@ -36,9 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * The <code>Optimizer</code> class takes the description of an instruction's
- * code and optimizes it by performing constant and copy propagation as well
- * as dead code elimination.
+ * The <code>Optimizer</code> class takes the description of an instruction's code and optimizes it by performing
+ * constant and copy propagation as well as dead code elimination.
  *
  * @author Ben L. Titzer
  */
@@ -53,7 +52,7 @@ public class Optimizer {
     }
 
     public Optimizer(List stmts, HashMap cMap) {
-        constMap = (HashMap) cMap.clone();
+        constMap = (HashMap)cMap.clone();
         original = stmts;
     }
 

@@ -50,8 +50,8 @@ import avrora.topology.Topology;
 import java.util.*;
 
 /**
- * The <code>MultiSimulateAction</code> class represents an action available
- * to the simulator where multiple nodes are run in simulation.
+ * The <code>MultiSimulateAction</code> class represents an action available to the simulator where multiple nodes are
+ * run in simulation.
  *
  * @author Simon Han
  * @author Daniel Lee
@@ -62,36 +62,36 @@ public class MultiSimulateAction extends SimAction {
             "the specified program loaded onto each. This is useful for simulating a network of " +
             "sensor nodes and monitoring the behavior of the entire network. ";
     public final Option.List NODECOUNT = newOptionList("nodecount", "1",
-            "This option is used in the multi-node simulation. It specifies the " +
-            "number of nodes to be instantiated of each program specified as an argument.");
+                                                       "This option is used in the multi-node simulation. It specifies the " +
+                                                       "number of nodes to be instantiated of each program specified as an argument.");
     public final Option.Long RANDOMSEED = newOption("random-seed", 0,
-            "This option is used to seed a pseudo-random number generator used in the " +
-            "simulation. If this option is set to non-zero, then its value is used as " +
-            "the seed for reproducible simulation results. If this option is not set, " +
-            "those parts of simulation that rely on random numbers will have seeds " +
-            "chosen based on system parameters that vary from run to run.");
+                                                    "This option is used to seed a pseudo-random number generator used in the " +
+                                                    "simulation. If this option is set to non-zero, then its value is used as " +
+                                                    "the seed for reproducible simulation results. If this option is not set, " +
+                                                    "those parts of simulation that rely on random numbers will have seeds " +
+                                                    "chosen based on system parameters that vary from run to run.");
     public final Option.Str TOPOLOGY = newOption("topology", "(null)",
-            "This option is used in the multi-node simulation to specify the name of " +
-            "a file that contains information about the topology of the network. " +
-            "When this options is specified, the free space radio model will be used " +
-            "to model radio propagation. See sample.top in topology for an example.");
+                                                 "This option is used in the multi-node simulation to specify the name of " +
+                                                 "a file that contains information about the topology of the network. " +
+                                                 "When this options is specified, the free space radio model will be used " +
+                                                 "to model radio propagation. See sample.top in topology for an example.");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
-            "This option causes the simulator to insert a random delay before starting " +
-            "each node in order to prevent artificial cycle-level synchronization. The " +
-            "starting delay is pseudo-randomly chosen with uniform distribution over the " +
-            "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
-            "option is set to a non-zero value, then its value is used as the seed to the " +
-            "pseudo-random number generator.");
+                                                          "This option causes the simulator to insert a random delay before starting " +
+                                                          "each node in order to prevent artificial cycle-level synchronization. The " +
+                                                          "starting delay is pseudo-randomly chosen with uniform distribution over the " +
+                                                          "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
+                                                          "option is set to a non-zero value, then its value is used as the seed to the " +
+                                                          "pseudo-random number generator.");
     public final Option.Long STAGGER_START = newOption("stagger-start", 0,
-            "This option causes the simulator to insert a progressively longer delay " +
-            "before starting each node in order to avoid artificial cycle-level " +
-            "synchronization between nodes. The starting times are staggered by the number " +
-            "of clock cycles given as a value. For example, if this option is given the" +
-            "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
-            "time 2*X, etc.");
+                                                       "This option causes the simulator to insert a progressively longer delay " +
+                                                       "before starting each node in order to avoid artificial cycle-level " +
+                                                       "synchronization between nodes. The starting times are staggered by the number " +
+                                                       "of clock cycles given as a value. For example, if this option is given the" +
+                                                       "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
+                                                       "time 2*X, etc.");
     public final Option.Bool CHANNEL_UTIL = newOption("channel-utilization", false,
-            "This option causes the simulator to record statistics about the amount of radio " +
-            "traffic in the network and report it after the simulation is complete.");
+                                                      "This option causes the simulator to record statistics about the amount of radio " +
+                                                      "traffic in the network and report it after the simulation is complete.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
@@ -109,20 +109,20 @@ public class MultiSimulateAction extends SimAction {
         Iterator i = NODECOUNT.get().iterator();
         Topology top = null;
         boolean topologyOn = false;
-        if (!TOPOLOGY.get().equals("(null)")){
+        if (!TOPOLOGY.get().equals("(null)")) {
             topologyOn = true;
             top = new Topology(TOPOLOGY.get());
         }
         while (i.hasNext()) {
 
-            if ( args.length <= cntr ) break;
+            if (args.length <= cntr) break;
 
-            String singleArg[] = { args[cntr++] };
+            String singleArg[] = {args[cntr++]};
             Program program = Main.getProgramReader().read(singleArg);
 
             // create a number of nodes with the same program
             int max = StringUtil.evaluateIntegerLiteral((String)i.next());
-            for ( int node = 0; node < max; node++ ) {
+            for (int node = 0; node < max; node++) {
                 Simulator simulator = newSimulator(program);
                 Microcontroller microcontroller = simulator.getMicrocontroller();
                 SimulatorThread st = new SimulatorThread(simulator);
@@ -134,16 +134,14 @@ public class MultiSimulateAction extends SimAction {
                 if (radio != null) {
                     radio.setSimulatorThread(st);
                     //no topology defined, use simple air
-                    if ( !topologyOn ){
-                        //System.out.println("using simple air");
-                    	SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
+                    if (!topologyOn) {
+                        SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
                     } else {
                         //wonderful, there is a toplogy definded, use the free space air model
-                        //System.out.println("using free space air");
                         //activate free space and local air at this radio
-                        radio.activateLocalAir( top.getPosition(nodes) );
-                       	FreeSpaceAir.freeSpaceAir.addRadio(microcontroller.getRadio());
-                     }
+                        radio.activateLocalAir(top.getPosition(nodes));
+                        FreeSpaceAir.freeSpaceAir.addRadio(microcontroller.getRadio());
+                    }
                 }
                 nodes++;
 
@@ -175,12 +173,12 @@ public class MultiSimulateAction extends SimAction {
     private void reportAllMonitors() {
         int cntr = 0;
         Iterator i = simulatorThreadList.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             Simulator s = ((SimulatorThread)i.next()).getSimulator();
-            if ( hasMonitors(s) ) {
+            if (hasMonitors(s)) {
                 Terminal.printGreen(" Monitors for node ");
                 Terminal.print(": ");
-                Terminal.printCyan(""+cntr);
+                Terminal.printCyan("" + cntr);
                 Terminal.nextln();
                 printSeparator();
             }
@@ -191,11 +189,11 @@ public class MultiSimulateAction extends SimAction {
 
     private void reportTime(long startms, long endms) {
         Terminal.printGreen("Time for simulation");
-        Terminal.println(": "+StringUtil.milliToSecs((endms - startms)));
+        Terminal.println(": " + StringUtil.milliToSecs((endms - startms)));
     }
 
     private void reportUtilization() {
-        if ( CHANNEL_UTIL.get() ) {
+        if (CHANNEL_UTIL.get()) {
             reportQuantity("First transmit time", SimpleAir.simpleAir.firstPacketTime, "cycles");
             reportQuantity("Bytes attempted", SimpleAir.simpleAir.bytesAttempted, "");
             reportQuantity("Bytes delivered", SimpleAir.simpleAir.bytesDelivered, "");
@@ -209,7 +207,7 @@ public class MultiSimulateAction extends SimAction {
         Iterator threadIterator = simulatorThreadList.iterator();
 
         while (threadIterator.hasNext()) {
-            SimulatorThread thread = (SimulatorThread) threadIterator.next();
+            SimulatorThread thread = (SimulatorThread)threadIterator.next();
             thread.join();
         }
     }
@@ -219,7 +217,7 @@ public class MultiSimulateAction extends SimAction {
         Iterator threadIterator = simulatorThreadList.iterator();
 
         while (threadIterator.hasNext()) {
-            SimulatorThread thread = (SimulatorThread) threadIterator.next();
+            SimulatorThread thread = (SimulatorThread)threadIterator.next();
             thread.start();
         }
     }
@@ -229,15 +227,17 @@ public class MultiSimulateAction extends SimAction {
     void processRandom(Simulator simulator) {
         long size = RANDOM_START.getHigh() - RANDOM_START.getLow();
         long delay = 0;
-        if ( size > 0 ) {
-            if ( random == null ) {
+        if (size > 0) {
+            if (random == null) {
                 long seed;
-                if ( (seed = RANDOMSEED.get()) != 0 ) random = new Random(seed);
-                else random = new Random();
+                if ((seed = RANDOMSEED.get()) != 0)
+                    random = new Random(seed);
+                else
+                    random = new Random();
             }
 
             delay = random.nextLong();
-            if ( delay < 0 ) delay = -delay;
+            if (delay < 0) delay = -delay;
             delay = delay % size;
         }
 
@@ -249,5 +249,5 @@ public class MultiSimulateAction extends SimAction {
     void processStagger(Simulator simulator) {
         simulator.delay(stagger);
         stagger += STAGGER_START.get();
-    }    
+    }
 }

@@ -52,12 +52,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>SimulateAction</code> implements the bridge between the functionality
- * in the <code>avrora.sim</code> package and the entrypoint to Avrora in
- * <code>avrora.Main</code>. This class has a <code>run()</code> method that is
- * called by the main class after the options have been processed. The <code>run()</code>
- * reads in the program, processes breakpoints, profiling counters, and other
- * options, and begins the simulation.
+ * The <code>SimulateAction</code> implements the bridge between the functionality in the <code>avrora.sim</code>
+ * package and the entrypoint to Avrora in <code>avrora.Main</code>. This class has a <code>run()</code> method that is
+ * called by the main class after the options have been processed. The <code>run()</code> reads in the program,
+ * processes breakpoints, profiling counters, and other options, and begins the simulation.
  *
  * @author Ben L. Titzer
  */
@@ -75,31 +73,31 @@ public class SimulateAction extends SimAction {
             "for the specified microcontroller and begins executing the program. There " +
             "are several options provided by the simulator for profiling and analysis.";
     public final Option.List BREAKS = newOptionList("breakpoint", "",
-            "This option is used in the simulate action. It allows the user to " +
-            "insert a series of breakpoints in the program from the command line. " +
-            "The address of the breakpoint can be given in hexadecimal or as a label " +
-            "within the program. Hexadecimal constants are denoted by a leading '$'.");
+                                                    "This option is used in the simulate action. It allows the user to " +
+                                                    "insert a series of breakpoints in the program from the command line. " +
+                                                    "The address of the breakpoint can be given in hexadecimal or as a label " +
+                                                    "within the program. Hexadecimal constants are denoted by a leading '$'.");
     public final Option.Bool TIME = newOption("time", false,
-            "This option is used in the simulate action. It will cause the simulator " +
-            "to report the time used in executing the simulation. When combined with " +
-            "the \"cycles\" and \"total\" options, it will report performance " +
-            "information about the simulation.");
+                                              "This option is used in the simulate action. It will cause the simulator " +
+                                              "to report the time used in executing the simulation. When combined with " +
+                                              "the \"cycles\" and \"total\" options, it will report performance " +
+                                              "information about the simulation.");
     public final Option.Bool TOTAL = newOption("total", false,
-            "This option is used in the simulate action. It will cause the simulator " +
-            "to report the total instructions executed in the simulation. When combined " +
-            "with the \"time\" option, it will report performance information.");
+                                               "This option is used in the simulate action. It will cause the simulator " +
+                                               "to report the total instructions executed in the simulation. When combined " +
+                                               "with the \"time\" option, it will report performance information.");
     public final Option.Bool CYCLES = newOption("cycles", false,
-            "This option is used in the simulate action. It will cause the simulator " +
-            "to report the total cycles executed in the simulation. When combined " +
-            "with the \"time\" option, it will report performance information.");
+                                                "This option is used in the simulate action. It will cause the simulator " +
+                                                "to report the total cycles executed in the simulation. When combined " +
+                                                "with the \"time\" option, it will report performance information.");
     public final Option.Bool TRACE = newOption("trace", false,
-            "This option is used in the simulate action. It will cause the simulator " +
-            "to print each instruction as it is executed.");
+                                               "This option is used in the simulate action. It will cause the simulator " +
+                                               "to print each instruction as it is executed.");
     public final Option.Bool REALTIME = newOption("real-time", false,
-            "This option is used in the simulate action to slow the simulation if it is too fast. " +
-            "By default, the simulator will attempt to execute the program as fast as possible. " +
-            "This option will cause the simulation to pause periodically for a few milliseconds in " +
-            "order that it does not run faster than real-time.");
+                                                  "This option is used in the simulate action to slow the simulation if it is too fast. " +
+                                                  "By default, the simulator will attempt to execute the program as fast as possible. " +
+                                                  "This option will cause the simulation to pause periodically for a few milliseconds in " +
+                                                  "order that it does not run faster than real-time.");
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -151,13 +149,13 @@ public class SimulateAction extends SimAction {
             long newMs = System.currentTimeMillis();
             long diff = newMs - lastMs;
             try {
-            if ( diff < 10 )
-                Thread.sleep(10-diff);
-            } catch ( InterruptedException e) {
+                if (diff < 10)
+                    Thread.sleep(10 - diff);
+            } catch (InterruptedException e) {
                 // interrupt exceptions are dumb.
             }
             lastMs = newMs;
-            simulator.insertEvent(this, microcontroller.getHz()/100);
+            simulator.insertEvent(this, microcontroller.getHz() / 100);
         }
     }
 
@@ -165,8 +163,7 @@ public class SimulateAction extends SimAction {
      * The <code>run()</code> method is called by the main class.
      *
      * @param args the command line arguments after the options have been stripped out
-     * @throws java.lang.Exception if there is a problem loading the program, or an exception
-     *                   occurs during simulation
+     * @throws java.lang.Exception if there is a problem loading the program, or an exception occurs during simulation
      */
     public void run(String[] args) throws Exception {
         runSimulation(args);
@@ -188,16 +185,16 @@ public class SimulateAction extends SimAction {
         }
 
         if (REALTIME.get())
-            simulator.insertEvent(new ThrottleEvent(), microcontroller.getHz()/100);
+            simulator.insertEvent(new ThrottleEvent(), microcontroller.getHz() / 100);
 
         startms = System.currentTimeMillis();
         try {
             printSimHeader();
             simulator.start();
-        } catch ( Simulator.BreakPointException e ) {
-            Terminal.println("Breakpoint at "+StringUtil.addrToString(e.address)+" reached.");
-        } catch ( Simulator.TimeoutException e ) {
-            Terminal.println("Timeout reached: pc = "+StringUtil.addrToString(e.address)+", time = "+simulator.getClock().getCount());
+        } catch (Simulator.BreakPointException e) {
+            Terminal.println("Breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
+        } catch (Simulator.TimeoutException e) {
+            Terminal.println("Timeout reached: pc = " + StringUtil.addrToString(e.address) + ", time = " + simulator.getClock().getCount());
         } finally {
             printSeparator();
             endms = System.currentTimeMillis();
@@ -212,7 +209,7 @@ public class SimulateAction extends SimAction {
     void processBreakPoints() {
         Iterator i = getLocationList(program, BREAKS.get()).iterator();
         while (i.hasNext()) {
-            Program.Location l = (Program.Location) i.next();
+            Program.Location l = (Program.Location)i.next();
             simulator.insertBreakPoint(l.address);
         }
     }
@@ -239,11 +236,11 @@ public class SimulateAction extends SimAction {
         if (TIME.get()) {
             reportQuantity("Time for simulation", StringUtil.milliAsString(diff), "");
             if (total != null) {
-                float thru = ((float) total.count) / (diff * 1000);
+                float thru = ((float)total.count) / (diff * 1000);
                 reportQuantity("Average throughput", thru, "mips");
             }
             if (CYCLES.get()) {
-                float thru = ((float) simulator.getState().getCycles()) / (diff * 1000);
+                float thru = ((float)simulator.getState().getCycles()) / (diff * 1000);
                 reportQuantity("Average throughput", thru, "mhz");
             }
         }

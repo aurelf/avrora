@@ -41,17 +41,14 @@ import avrora.sim.IORegisterConstants;
 import avrora.util.StringUtil;
 
 /**
- * The <code>AbstractInterpreter</code> class implements the abstract transfer
- * function for each instruction type. Given an abstract state, it updates
- * the abstract state according to the semantics of each instruction. The abstract
- * interpreter works on the simple instructions. For complex instructions such as
- * calls, returns, and pushes, it consults a <code>Policy</code> instance that
- * implements the context sensitivity/insensitivity and stack modelling behavior
- * of the particular analysis.
+ * The <code>AbstractInterpreter</code> class implements the abstract transfer function for each instruction type. Given
+ * an abstract state, it updates the abstract state according to the semantics of each instruction. The abstract
+ * interpreter works on the simple instructions. For complex instructions such as calls, returns, and pushes, it
+ * consults a <code>Policy</code> instance that implements the context sensitivity/insensitivity and stack modelling
+ * behavior of the particular analysis.
  * <p/>
- * The <code>AbstractInterpreter</code> works on abstract values and uses abstract
- * arithmetic. It operates on instances of the <code>AbstractState</code> class
- * that represent the state of the processor.
+ * The <code>AbstractInterpreter</code> works on abstract values and uses abstract arithmetic. It operates on instances
+ * of the <code>AbstractState</code> class that represent the state of the processor.
  *
  * @author Ben L. Titzer
  * @see AbstractArithmetic
@@ -70,13 +67,11 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     /**
-     * The <code>computeNextStates()</code> method computes the possible next
-     * states that follow the given immutable old state and then will
-     * push them to the <code>AnalyzerPolicy</code> instance that
-     * was passed in the constructor to this interpreter instance.
+     * The <code>computeNextStates()</code> method computes the possible next states that follow the given immutable old
+     * state and then will push them to the <code>AnalyzerPolicy</code> instance that was passed in the constructor to
+     * this interpreter instance.
      *
-     * @param os the immutable old state to compute the next state
-     *           from
+     * @param os the immutable old state to compute the next state from
      */
     public void computeNextStates(StateCache.State os) {
         oldState = os;
@@ -175,7 +170,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.ANDI i) {// and register with immediate
         char r1 = state.getRegisterAV(i.r1);
-        char r2 = knownVal((byte) i.imm1);
+        char r2 = knownVal((byte)i.imm1);
         char result = performAnd(r1, r2);
         state.setRegisterAV(i.r1, result);
     }
@@ -309,7 +304,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.CBR i) { // clear bits in register
         char r1 = state.getRegisterAV(i.r1);
-        char r2 = knownVal((byte) ~i.imm1);
+        char r2 = knownVal((byte)~i.imm1);
         char result = performAnd(r1, r2);
         state.setRegisterAV(i.r1, result);
     }
@@ -357,7 +352,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     public void visit(Instr.COM i) { // one's compliment register
         char r1 = state.getRegisterAV(i.r1);
         char mask = maskOf(r1);
-        char result = canon(mask, (char) ~r1);
+        char result = canon(mask, (char)~r1);
 
         char C = TRUE;
         char N = getBit(result, 7);
@@ -385,7 +380,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.CPI i) { // compare register with immediate
         char r1 = state.getRegisterAV(i.r1);
-        char r2 = knownVal((byte) i.imm1);
+        char r2 = knownVal((byte)i.imm1);
         // perform subtraction for flag side effects.
         performSubtraction(r1, r2, FALSE);
     }
@@ -403,7 +398,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
         char N = getBit(result, 7);
         char Z = couldBeZero(result);
-        char V = couldBeEqual(r1, knownVal((byte) 0x80));
+        char V = couldBeEqual(r1, knownVal((byte)0x80));
         char S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
@@ -517,7 +512,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
         char N = getBit(result, 7);
         char Z = couldBeZero(result);
-        char V = couldBeEqual(r1, knownVal((byte) 0x7f));
+        char V = couldBeEqual(r1, knownVal((byte)0x7f));
         char S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
@@ -539,7 +534,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.LDI i) { // load immediate into register
-        state.setRegisterAV(i.r1, knownVal((byte) i.imm1));
+        state.setRegisterAV(i.r1, knownVal((byte)i.imm1));
     }
 
     public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
@@ -643,7 +638,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.ORI i) { // or register with immediate
         char r1 = state.getRegisterAV(i.r1);
-        char r2 = knownVal((byte) i.imm1);
+        char r2 = knownVal((byte)i.imm1);
         char result = performOr(r1, r2);
         state.setRegisterAV(i.r1, result);
     }
@@ -702,7 +697,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.SBCI i) { // subtract immediate from register with carry
         char r1 = state.getRegisterAV(i.r1);
-        char imm = knownVal((byte) i.imm1);
+        char imm = knownVal((byte)i.imm1);
         char result = performSubtraction(r1, imm, state.getFlag_C());
         state.setRegisterAV(i.r1, result);
     }
@@ -749,7 +744,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.SBR i) { // set bits in register
         char r1 = state.getRegisterAV(i.r1);
-        char r2 = knownVal((byte) i.imm1);
+        char r2 = knownVal((byte)i.imm1);
         char result = performOr(r1, r2);
         state.setRegisterAV(i.r1, result);
     }
@@ -781,7 +776,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.SER i) { // set bits in register
-        state.setRegisterAV(i.r1, knownVal((byte) 0xff));
+        state.setRegisterAV(i.r1, knownVal((byte)0xff));
     }
 
     public void visit(Instr.SES i) { // set S (signed) flag
@@ -838,7 +833,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.SUBI i) { // subtract immediate from register
         char r1 = state.getRegisterAV(i.r1);
-        char imm = knownVal((byte) i.imm1);
+        char imm = knownVal((byte)i.imm1);
         char result = performSubtraction(r1, imm, FALSE);
         state.setRegisterAV(i.r1, result);
     }
@@ -847,7 +842,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         char result = state.getRegisterAV(i.r1);
         int high = ((result & 0xF0F0) >> 4);
         int low = ((result & 0x0F0F) << 4);
-        result = (char) (low | high);
+        result = (char)(low | high);
         state.setRegisterAV(i.r1, result);
     }
 
@@ -981,7 +976,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     private char performRightShift(char val, char highbit) {
-        char result = (char) (((val & 0xfefe) >> 1) | (highbit));
+        char result = (char)(((val & 0xfefe) >> 1) | (highbit));
 
         char C = getBit(val, 1);
         char N = highbit;
@@ -1038,8 +1033,8 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         int resultA = ceiling(v1, v2) + imm;
         int resultB = floor(v1, v2) + imm;
 
-        char RL = mergeMask(maskOf(v1), merge((byte) resultA, (byte) resultB));
-        char RH = mergeMask(maskOf(v2), merge((byte) (resultA >> 8), (byte) (resultB >> 8)));
+        char RL = mergeMask(maskOf(v1), merge((byte)resultA, (byte)resultB));
+        char RH = mergeMask(maskOf(v2), merge((byte)(resultA >> 8), (byte)(resultB >> 8)));
 
         state.setRegisterAV(r, RL);
         state.setRegisterAV(r.nextRegister(), RH);
@@ -1057,9 +1052,9 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         int resultD = floor1 * floor2;
 
         // merge partial results into upper and lower abstract bytes
-        char RL = merge((byte) resultA, (byte) resultB, (byte) resultC, (byte) resultD);
-        char RH = merge((byte) (resultA >> 8), (byte) (resultB >> 8),
-                (byte) (resultC >> 8), (byte) (resultD >> 8));
+        char RL = merge((byte)resultA, (byte)resultB, (byte)resultC, (byte)resultD);
+        char RH = merge((byte)(resultA >> 8), (byte)(resultB >> 8),
+                        (byte)(resultC >> 8), (byte)(resultD >> 8));
 
         // pack the two results into a single integer
         return RH << 16 | RL;
@@ -1073,7 +1068,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     private int ceiling(char v1, boolean s1) {
         // sign extend the value if s1 is true.
         if (s1)
-            return (int) (byte) ceiling(v1);
+            return (int)(byte)ceiling(v1);
         else
             return ceiling(v1);
     }
@@ -1081,17 +1076,17 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     private int floor(char v1, boolean s1) {
         // sign extend the value if s1 is true.
         if (s1)
-            return (int) (byte) floor(v1);
+            return (int)(byte)floor(v1);
         else
             return floor(v1);
     }
 
     private char highAbstractByte(int result) {
-        return (char) ((result >> 16) & 0xffff);
+        return (char)((result >> 16) & 0xffff);
     }
 
     private char lowAbstractByte(int result) {
-        return (char) (result & 0xffff);
+        return (char)(result & 0xffff);
     }
 
     private int relative(int imm1) {

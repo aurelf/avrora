@@ -34,19 +34,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 package avrora.monitors;
 
-/** simple battery monitors
- *  to shut down a node when an energy limit is exceeded
- *  ---- not yet implemented ----
+import avrora.Avrora;
+
+/**
+ * simple battery monitors to shut down a node when an energy limit is exceeded ---- not yet implemented ----
  *
  * @author Olaf Landsiedel
  */
 public class SimpleBatteryMonitor {
-    
-    /** Creates a new instance of BatteryMonitor */
+
+    /**
+     * Creates a new instance of BatteryMonitor
+     */
     public SimpleBatteryMonitor() {
+        throw Avrora.unimplemented();
     }
-    
+
 }

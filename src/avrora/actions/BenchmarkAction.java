@@ -41,12 +41,10 @@ import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
 /**
- * The <code>SimulateAction</code> implements the bridge between the functionality
- * in the <code>avrora.sim</code> package and the entrypoint to Avrora in
- * <code>avrora.Main</code>. This class has a <code>run()</code> method that is
- * called by the main class after the options have been processed. The <code>run()</code>
- * reads in the program, processes breakpoints, profiling counters, and other
- * options, and begins the simulation.
+ * The <code>SimulateAction</code> implements the bridge between the functionality in the <code>avrora.sim</code>
+ * package and the entrypoint to Avrora in <code>avrora.Main</code>. This class has a <code>run()</code> method that is
+ * called by the main class after the options have been processed. The <code>run()</code> reads in the program,
+ * processes breakpoints, profiling counters, and other options, and begins the simulation.
  *
  * @author Ben L. Titzer
  */
@@ -62,12 +60,12 @@ public class BenchmarkAction extends SimAction {
             "performace on an input program and gives tables of performance information. ";
 
     public final Option.Long REPEAT = newOption("repeat", 1,
-            "This option is used to specify the number of times that the benchmark should be run." +
-            "The benchmarks will be repeated and the average over all runs computed. ");
+                                                "This option is used to specify the number of times that the benchmark should be run." +
+                                                "The benchmarks will be repeated and the average over all runs computed. ");
 
     /**
-     * The default constructor of the <code>BenchmarkAction</code> class simply
-     * creates an empty instance with the appropriate name and help string.
+     * The default constructor of the <code>BenchmarkAction</code> class simply creates an empty instance with the
+     * appropriate name and help string.
      */
     public BenchmarkAction() {
         super("benchmark", HELP);
@@ -78,8 +76,7 @@ public class BenchmarkAction extends SimAction {
      * The <code>run()</code> method is called by the main class.
      *
      * @param args the command line arguments after the options have been stripped out
-     * @throws java.lang.Exception if there is a problem loading the program, or an exception
-     *                   occurs during simulation
+     * @throws java.lang.Exception if there is a problem loading the program, or an exception occurs during simulation
      */
     public void run(String[] args) throws Exception {
         program = Main.readProgram(args);
@@ -117,7 +114,7 @@ public class BenchmarkAction extends SimAction {
     private float reportResult(long cyclesA, long millisA) {
         String cstrA = StringUtil.rightJustify(cyclesA, 9);
         String timA = StringUtil.rightJustify(StringUtil.milliAsString(millisA), 8);
-        float mhzA = ((float) cyclesA) / (millisA * 1000);
+        float mhzA = ((float)cyclesA) / (millisA * 1000);
         String mstrA = StringUtil.rightJustify(mhzA, 9);
 
         Terminal.printBrightCyan(cstrA + " ");

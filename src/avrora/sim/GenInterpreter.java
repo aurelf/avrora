@@ -39,11 +39,9 @@ import avrora.core.Register;
 import avrora.util.Arithmetic;
 
 /**
- * The <code>GenInterpreter</code> class is largely generated from the
- * instruction specification. The framework around the generated code
- * (utilities) has been written by hand, but most of the code for
- * each instruction is generated. Therefore it is not recommended
- * to edit this code extensively.
+ * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The framework around
+ * the generated code (utilities) has been written by hand, but most of the code for each instruction is generated.
+ * Therefore it is not recommended to edit this code extensively.
  *
  * @author Ben L. Titzer
  */
@@ -87,12 +85,10 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     public static final Register RZ = Register.Z;
 
     /**
-     * The constructor for the <code>Interpreter</code> class builds the internal data
-     * structures needed to store the complete state of the machine, including registers,
-     * IO registers, the SRAM, and the flash. All IO registers are initialized to be
-     * instances of <code>RWIOReg</code>. Reserved and special IO registers must be
-     * inserted by the <code>getIOReg()</code> and <code>setIOReg()</code>
-     * methods.
+     * The constructor for the <code>Interpreter</code> class builds the internal data structures needed to store the
+     * complete state of the machine, including registers, IO registers, the SRAM, and the flash. All IO registers are
+     * initialized to be instances of <code>RWIOReg</code>. Reserved and special IO registers must be inserted by the
+     * <code>getIOReg()</code> and <code>setIOReg()</code> methods.
      *
      * @param p          the program to construct the state for
      * @param flash_size the size of the flash (program) memory in bytes
@@ -111,7 +107,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         while (shouldRun) {
 
             // TODO: would a "mode" and switch be faster than several branches?
-            if ( delayCycles > 0 ) {
+            if (delayCycles > 0) {
                 advanceCycles(delayCycles);
                 delayCycles = 0;
             }
@@ -144,11 +140,10 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
                     I = false;
 
                     // process any timed events
-                    //System.out.println(clock.getCount() + " interrupt " + pc);
                     advanceCycles(4);
 
                     //time to wake up
-                    if(sleeping)
+                    if (sleeping)
                         leaveSleepMode();
 
                 }
@@ -1552,11 +1547,11 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     private byte low(int val) {
-        return (byte) val;
+        return (byte)val;
     }
 
     private byte high(int val) {
-        return (byte) (val >> 8);
+        return (byte)(val >> 8);
     }
 
     private byte bit(boolean val) {
@@ -1568,20 +1563,20 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         return Arithmetic.uword(low, high);
     }
 
-    /** send the node to sleep
-     * 
+    /**
+     * send the node to sleep
      */
-    private void enterSleepMode(){
+    private void enterSleepMode() {
         sleeping = true;
         innerLoop = false;
         simulator.getMicrocontroller().sleep();
     }
 
-    /** time to wake up
-     * 
+    /**
+     * time to wake up
      */
-    private void leaveSleepMode(){
-    	sleeping = false;
-    	advanceCycles(simulator.getMicrocontroller().wakeup());
+    private void leaveSleepMode() {
+        sleeping = false;
+        advanceCycles(simulator.getMicrocontroller().wakeup());
     }
 }

@@ -43,9 +43,8 @@ import java.util.Collection;
 import java.util.HashSet;
 
 /**
- * The <code>StateSpace</code> class represents the reachable state space
- * as it is explored by the <code>Analyzer</code> class. It stores reachable
- * states and the outgoing edges that connect them.
+ * The <code>StateSpace</code> class represents the reachable state space as it is explored by the <code>Analyzer</code>
+ * class. It stores reachable states and the outgoing edges that connect them.
  *
  * @author Ben L. Titzer
  */
@@ -54,9 +53,8 @@ public class StateCache {
     private long uidCount;
 
     /**
-     * The <code>State</code> class represents an immutable state within the state
-     * space of the program. Such a state is cached and cannot be modified. It
-     * contains a unique identifier, a mark for graph traversals, and a list of
+     * The <code>State</code> class represents an immutable state within the state space of the program. Such a state is
+     * cached and cannot be modified. It contains a unique identifier, a mark for graph traversals, and a list of
      * outgoing edges.
      */
     public class State extends AbstractState implements IORegisterConstants {
@@ -88,22 +86,21 @@ public class StateCache {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof State)) return false;
-            return deepCompare((State) o);
+            return deepCompare((State)o);
         }
 
         /**
-         * The <code>mark</code> field is used by graph traversal algorithms to
-         * detect cycles and terminate traversals. Concurrent traversal is not
-         * supported.
+         * The <code>mark</code> field is used by graph traversal algorithms to detect cycles and terminate traversals.
+         * Concurrent traversal is not supported.
          */
         public Object mark;
 
         public StateTransitionGraph.StateInfo info;
 
         /**
-         * The <code>getUniqueName()</code> gets a string that uniquely identifies this
-         * state. For immutable states, this is simply the UID. For special states, this
-         * is the name of the special state.
+         * The <code>getUniqueName()</code> gets a string that uniquely identifies this state. For immutable states,
+         * this is simply the UID. For special states, this is the name of the special state.
+         *
          * @return a unique identifying string for this state
          */
         public String getUniqueName() {
@@ -247,8 +244,9 @@ public class StateCache {
     private long totalStateCount;
 
     /**
-     * The constructor for the <code>StateSpace</code> accepts a program as a parameter.
-     * This is currently unused, but is reserved for use later.
+     * The constructor for the <code>StateSpace</code> accepts a program as a parameter. This is currently unused, but
+     * is reserved for use later.
+     *
      * @param p the program to create the state space for
      */
     public StateCache(Program p) {
@@ -258,8 +256,8 @@ public class StateCache {
     }
 
     /**
-     * The <code>getEdenState()</code> method gets the starting state of the abstract
-     * interpretation.
+     * The <code>getEdenState()</code> method gets the starting state of the abstract interpretation.
+     *
      * @return the initial state to begin abstract interpretation
      */
     public State getEdenState() {
@@ -267,16 +265,16 @@ public class StateCache {
     }
 
     /**
-     * The <code>getCachedState()</code> method searches the state cache for an
-     * immutable state that corresponds to the given mutable state. If no
-     * immutable state exists in the cache, one will be created and inserted.
+     * The <code>getCachedState()</code> method searches the state cache for an immutable state that corresponds to the
+     * given mutable state. If no immutable state exists in the cache, one will be created and inserted.
+     *
      * @param s the state to search for
-     * @return an instance of the <code>StateSpace.State</code> immutable state
-     * that corresponds to the given mutable state
+     * @return an instance of the <code>StateSpace.State</code> immutable state that corresponds to the given mutable
+     *         state
      */
     public State getStateFor(MutableState s) {
         State is = new State(s);
-        State cs = (State) stateMap.get(is);
+        State cs = (State)stateMap.get(is);
 
         if (cs != null) {
             // if the state is already in the state map, return original
@@ -290,9 +288,9 @@ public class StateCache {
     }
 
     /**
-     * The <code>getTotalStateCount()</code> method returns the internally recorded
-     * number of states created in this state space. This is mainly used for reporting
-     * purposes.
+     * The <code>getTotalStateCount()</code> method returns the internally recorded number of states created in this
+     * state space. This is mainly used for reporting purposes.
+     *
      * @return the total number of states in the state cache
      */
     public long getTotalStateCount() {

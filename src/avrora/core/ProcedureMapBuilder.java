@@ -35,13 +35,11 @@ package avrora.core;
 import java.util.*;
 
 /**
- * The <code>ProcedureMapBuilder</code> class is used internally in the
- * implementation of the <code>ControlFlowGraph</code> and
- * <code>ProcedureMap</code> classes to build the mapping between basic
- * blocks and procedures.
+ * The <code>ProcedureMapBuilder</code> class is used internally in the implementation of the
+ * <code>ControlFlowGraph</code> and <code>ProcedureMap</code> classes to build the mapping between basic blocks and
+ * procedures.
  *
  * @author Ben L. Titzer
- *
  * @see ProcedureMap
  */
 class ProcedureMapBuilder {
@@ -79,7 +77,7 @@ class ProcedureMapBuilder {
 
         iter = ENTRYPOINTS.iterator();
         while (iter.hasNext()) {
-            ControlFlowGraph.Block block = (ControlFlowGraph.Block) iter.next();
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block)iter.next();
             propagate(block, block, new HashSet());
         }
 
@@ -91,7 +89,7 @@ class ProcedureMapBuilder {
         // discover edges that have incoming call edges
         Iterator edges = cfg.getEdgeIterator();
         while (edges.hasNext()) {
-            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge) edges.next();
+            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge)edges.next();
             if (edge.getType().equals("CALL")) {
                 if (edge.getTarget() == null) {
                     addIndirectEntrypoints(edge, cfg);
@@ -106,7 +104,7 @@ class ProcedureMapBuilder {
         if (l == null) return;
         Iterator i = l.iterator();
         while (i.hasNext()) {
-            int target_addr = ((Integer) i.next()).intValue();
+            int target_addr = ((Integer)i.next()).intValue();
             ControlFlowGraph.Block target = cfg.getBlockStartingAt(target_addr);
             if (target != null) {
                 ENTRYPOINTS.add(target);
@@ -119,7 +117,7 @@ class ProcedureMapBuilder {
 
         Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
-            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge) edges.next();
+            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge)edges.next();
             if (edge.getType().equals("CALL")) continue;
             ControlFlowGraph.Block target = edge.getTarget();
             if (target == null) continue;
@@ -150,7 +148,7 @@ class ProcedureMapBuilder {
 
         Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
-            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge) edges.next();
+            ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge)edges.next();
             if (edge.getType().equals("CALL")) continue;
             ControlFlowGraph.Block target = edge.getTarget();
             if (target == null) continue;
@@ -165,20 +163,20 @@ class ProcedureMapBuilder {
         // create the initial map of entry points to empty lists
         Iterator entry_iter = ENTRYPOINTS.iterator();
         while (entry_iter.hasNext()) {
-            ControlFlowGraph.Block entry = (ControlFlowGraph.Block) entry_iter.next();
+            ControlFlowGraph.Block entry = (ControlFlowGraph.Block)entry_iter.next();
             procMap.put(entry, new LinkedList());
         }
 
         // add each block to the list of its respective procedure
         Iterator block_iter = cfg.getBlockIterator();
         while (block_iter.hasNext()) {
-            ControlFlowGraph.Block block = (ControlFlowGraph.Block) block_iter.next();
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block)block_iter.next();
             Object mark = ENTRYMAP.get(block);
             if (mark == null || !(mark instanceof ControlFlowGraph.Block)) continue;
-            ControlFlowGraph.Block entry = (ControlFlowGraph.Block) mark;
+            ControlFlowGraph.Block entry = (ControlFlowGraph.Block)mark;
 
             if (entry != null) {
-                LinkedList list = (LinkedList) procMap.get(entry);
+                LinkedList list = (LinkedList)procMap.get(entry);
                 list.add(block);
             }
         }

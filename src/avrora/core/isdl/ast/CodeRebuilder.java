@@ -37,10 +37,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>CodeVisitor</code> interface represents a visitor that is
- * more specific than the <code>ExprVisitor</code> visitor, in that it
- * contains visit methods for every type of arithmetic and logical
- * operation in the IR.
+ * The <code>CodeVisitor</code> interface represents a visitor that is more specific than the <code>ExprVisitor</code>
+ * visitor, in that it contains visit methods for every type of arithmetic and logical operation in the IR.
  *
  * @author Ben L. Titzer
  */
@@ -104,9 +102,8 @@ public interface CodeRebuilder {
 
 
     /**
-     * The <code>DepthFirst</code> class is a base implementation of the
-     * <code>CodeVisitor</code> interface that visits the tree in depth-first
-     * order.
+     * The <code>DepthFirst</code> class is a base implementation of the <code>CodeVisitor</code> interface that visits
+     * the tree in depth-first order.
      *
      * @author Ben L. Titzer
      */
@@ -227,7 +224,7 @@ public interface CodeRebuilder {
 
             Iterator i = l.iterator();
             while (i.hasNext()) {
-                Expr a = (Expr) i.next();
+                Expr a = (Expr)i.next();
                 Expr na = a.accept(this);
                 if (na != a) changed = true;
                 nl.add(na);

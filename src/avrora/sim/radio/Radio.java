@@ -43,14 +43,14 @@ import avrora.sim.radio.freespace.*;
 /**
  * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and access an
  * instance of the <code>RadioAir</code> interface.
+ *
  * @author Daniel Lee
  */
 public interface Radio {
 
     /**
-     * Time in ATMega128L cycles it takes for one byte to be sent over the air.
-     * Much of the implementation is derived from this constant, so generalizing in the
-     * future may require some careful consideration.
+     * Time in ATMega128L cycles it takes for one byte to be sent over the air. Much of the implementation is derived
+     * from this constant, so generalizing in the future may require some careful consideration.
      */
     public final static int TRANSFER_TIME = 3072;
 
@@ -96,45 +96,49 @@ public interface Radio {
         }
 
         public int compareTo(Object o) {
-            RadioPacket p = (RadioPacket) o;
-            if ( p.originTime > originTime ) return -1;
-            if ( p.originTime < originTime ) return 1;
+            RadioPacket p = (RadioPacket)o;
+            if (p.originTime > originTime) return -1;
+            if (p.originTime < originTime) return 1;
             return 0;
         }
 
     }
 
     /**
-     * A <code>RadioController</code> is an object installed into a Microcontroller. The recommended implementation
-     * is to implement specialized IO registers as inner classes and install them into the Microcontroller. Changes to
+     * A <code>RadioController</code> is an object installed into a Microcontroller. The recommended implementation is
+     * to implement specialized IO registers as inner classes and install them into the Microcontroller. Changes to
      * these specialized registers should initiate appropriate behavior with the radio.
      */
     public interface RadioController {
 
         /**
-         * Installs this Controller into a microcontroller. This should setup the pins, IO registers in such a way
-         * that changes to CPU state will make corresponding changes to the RadioController state that will initiate
-         * sends and receives if necessary.
+         * Installs this Controller into a microcontroller. This should setup the pins, IO registers in such a way that
+         * changes to CPU state will make corresponding changes to the RadioController state that will initiate sends
+         * and receives if necessary.
          */
         public void install(Microcontroller mcu);
 
-        /** Enable transfers. */
+        /**
+         * Enable transfers.
+         */
         public void enable();
 
-        /** Disable transfers. */
+        /**
+         * Disable transfers.
+         */
         public void disable();
     }
 
     /**
-     * Receive a frame from the air. Should be called by the <code>RadioAir</code>
-     * and pass data into the <code>RadioController</code>.
+     * Receive a frame from the air. Should be called by the <code>RadioAir</code> and pass data into the
+     * <code>RadioController</code>.
      */
     public void receive(RadioPacket f);
 
 
     /**
-     * Transmit a frame from the controller. Should be called by the
-     * <code>RadioController</code> and transmitted into the <code>RadioAir</code>.
+     * Transmit a frame from the controller. Should be called by the <code>RadioController</code> and transmitted into
+     * the <code>RadioAir</code>.
      */
     public void transmit(RadioPacket f);
 
@@ -152,23 +156,31 @@ public interface Radio {
      * Set the <code>SimulatorThread</code> of this radio.
      */
     public void setSimulatorThread(SimulatorThread thread);
-    
-    /** get the transmission power 
+
+    /**
+     * get the transmission power
+     *
      * @return transmission power
      */
     public int getPower();
-    
-    /** get the current frequency
+
+    /**
+     * get the current frequency
+     *
      * @return frequency
      */
     public double getFrequency();
-    
-    /** get local air implementation
+
+    /**
+     * get local air implementation
+     *
      * @return local air
      */
     public LocalAir getLocalAir();
-    
-    /** activate local air, by setting params 
+
+    /**
+     * activate local air, by setting params
+     *
      * @param pos node position
      */
     public void activateLocalAir(Position pos);

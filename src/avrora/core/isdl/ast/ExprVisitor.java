@@ -35,10 +35,8 @@ package avrora.core.isdl.ast;
 import java.util.Iterator;
 
 /**
- * The <code>ExprVisitor</code> interface is part of the visitor pattern
- * for expressions within the program. It allows clients to visit nodes
- * of the abstract syntax tree that represent expressions within the
- * program.
+ * The <code>ExprVisitor</code> interface is part of the visitor pattern for expressions within the program. It allows
+ * clients to visit nodes of the abstract syntax tree that represent expressions within the program.
  *
  * @author Ben L. Titzer
  */
@@ -65,9 +63,8 @@ public interface ExprVisitor {
     public void visit(VarExpr e);
 
     /**
-     * The <code>DepthFirst</code> class is a base implementation of the
-     * <code>ExprVisitor</code> interface that visits the tree in depth-first
-     * order.
+     * The <code>DepthFirst</code> class is a base implementation of the <code>ExprVisitor</code> interface that visits
+     * the tree in depth-first order.
      *
      * @author Ben L. Titzer
      */
@@ -94,7 +91,7 @@ public interface ExprVisitor {
         public void visit(CallExpr e) {
             Iterator i = e.args.iterator();
             while (i.hasNext()) {
-                Expr a = (Expr) i.next();
+                Expr a = (Expr)i.next();
                 a.accept(this);
             }
         }

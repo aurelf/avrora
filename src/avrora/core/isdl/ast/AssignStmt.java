@@ -33,26 +33,24 @@
 package avrora.core.isdl.ast;
 
 /**
- * The <code>AssignStmt</code> class represents an assignment statement
- * in the IR. This is an abstract class whose subclasses represent the
- * different cases of assignments: assignments to locals, to maps, and
- * to ranges of bits, individual bits, etc.
+ * The <code>AssignStmt</code> class represents an assignment statement in the IR. This is an abstract class whose
+ * subclasses represent the different cases of assignments: assignments to locals, to maps, and to ranges of bits,
+ * individual bits, etc.
  *
  * @author Ben L. Titzer
  */
 public abstract class AssignStmt extends Stmt {
 
     /**
-     * The <code>expr</code> field stores a reference to the expression
-     * whose result is assigned to the left hand side.
+     * The <code>expr</code> field stores a reference to the expression whose result is assigned to the left hand side.
      */
     public final Expr expr;
 
     /**
-     * The constructor of the <code>AssignStmt</code> class simply stores
-     * a reference to the right hand side expression internally.
-     * @param r the expression representing the right hand side of the
-     * assignment
+     * The constructor of the <code>AssignStmt</code> class simply stores a reference to the right hand side expression
+     * internally.
+     *
+     * @param r the expression representing the right hand side of the assignment
      */
     public AssignStmt(Expr r) {
         expr = r;

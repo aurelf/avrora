@@ -35,10 +35,9 @@ package avrora.util;
 import java.io.PrintStream;
 
 /**
- * The <code>Terminal</code> class provides Avrora with the
- * ability to print color on the terminal by using control characters. The
- * portability of these particular control sequences is not guaranteed,
- * but seem to work most places a color terminal is supported.
+ * The <code>Terminal</code> class provides Avrora with the ability to print color on the terminal by using control
+ * characters. The portability of these particular control sequences is not guaranteed, but seem to work most places a
+ * color terminal is supported.
  *
  * @author Ben L. Titzer
  */
@@ -137,8 +136,8 @@ public final class Terminal {
     }
 
     public static void setForegroundColor(String color) {
-        for ( int cntr = 0; cntr < HTML_COLORS.length; cntr++ ) {
-            if ( HTML_COLORS[cntr].equals(color) )
+        for (int cntr = 0; cntr < HTML_COLORS.length; cntr++) {
+            if (HTML_COLORS[cntr].equals(color))
                 FOREGROUND_COLOR = cntr;
         }
     }

@@ -36,10 +36,10 @@ import avrora.util.Terminal;
 
 
 /**
- * This class implements a simple counter as a data item. It is
- * used by more complicated data item classes.
+ * This class implements a simple counter as a data item. It is used by more complicated data item classes.
+ *
  * @author Ben L. Titzer
- **/
+ */
 public class Counter extends DataItem {
     protected int count;
 

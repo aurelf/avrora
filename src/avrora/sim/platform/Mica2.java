@@ -45,13 +45,10 @@ import avrora.core.Register;
 import avrora.util.Terminal;
 
 /**
- *
- * The <code>Mica2</code> class is an implementation of the <code>Platform</code>
- * interface that represents both a specific microcontroller and the
- * devices connected to it. This implementation therefore uses the ATMega128L
- * microcontroller and uses LED and Radio devices, etc. The
- * Mica2 class differs from Mica in that it runs the ATMega128L not in compatibility
- * mode. In addition, the CC1000 radio implementation is installed on the Mica2.
+ * The <code>Mica2</code> class is an implementation of the <code>Platform</code> interface that represents both a
+ * specific microcontroller and the devices connected to it. This implementation therefore uses the ATMega128L
+ * microcontroller and uses LED and Radio devices, etc. The Mica2 class differs from Mica in that it runs the ATMega128L
+ * not in compatibility mode. In addition, the CC1000 radio implementation is installed on the Mica2.
  *
  * @author Ben L. Titzer, Daniel Lee
  */

@@ -35,23 +35,22 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.parser.Token;
 
 /**
- * The <code>VarAssignStmt</code> class represents an assignment to
- * a local or global variable within the IR for an instruction or a
- * subroutine.
+ * The <code>VarAssignStmt</code> class represents an assignment to a local or global variable within the IR for an
+ * instruction or a subroutine.
  *
  * @author Ben L. Titzer
  */
 public class VarAssignStmt extends AssignStmt {
     /**
-     * The <code>variable</code> field stores a reference to the token
-     * that represents the name of the variable being assigned to.
+     * The <code>variable</code> field stores a reference to the token that represents the name of the variable being
+     * assigned to.
      */
     public final Token variable;
 
     /**
-     * The constructor for the <code>VarAssignStmt</code> class simply
-     * initializes the internal references to the internal members of
-     * this assignment.
+     * The constructor for the <code>VarAssignStmt</code> class simply initializes the internal references to the
+     * internal members of this assignment.
+     *
      * @param n the string name of the variable as a token
      * @param e the expression representing the right hand side of the assignment
      */
@@ -61,9 +60,9 @@ public class VarAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine.
+     *
      * @param v the visitor to accept
      */
     public void accept(StmtVisitor v) {
@@ -71,8 +70,8 @@ public class VarAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>toString()</code> method recursively converts this statement
-     * to a string.
+     * The <code>toString()</code> method recursively converts this statement to a string.
+     *
      * @return a string representation of this statement
      */
     public String toString() {
@@ -80,14 +79,12 @@ public class VarAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine. The
-     * <code>StmtRebuilder</code> interface allows visitors to rearrange
-     * and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
+     * allows visitors to rearrange and rebuild the statements.
+     *
      * @param r the visitor to accept
-     * @return the result of calling the appropriate <code>visit()</code>
-     * of the rebuilder passed
+     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);

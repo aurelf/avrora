@@ -36,9 +36,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * The <code>Verbose</code> class is used to get instances of <code>Verbose.Printer</code>
- * for reporting the internal operations of parts of Avrora. This class centralizes the
- * management for verbose flags.
+ * The <code>Verbose</code> class is used to get instances of <code>Verbose.Printer</code> for reporting the internal
+ * operations of parts of Avrora. This class centralizes the management for verbose flags.
  *
  * @author Ben L. Titzer
  */
@@ -51,17 +50,17 @@ public class Verbose {
 
     public static Printer getVerbosePrinter(String category) {
         Printer p = getPrinter(category);
-        if ( verbosePrinter != null && verbosePrinter.enabled ) {
-            verbosePrinter.println("verbose: requested printer for "+StringUtil.quote(category));
+        if (verbosePrinter != null && verbosePrinter.enabled) {
+            verbosePrinter.println("verbose: requested printer for " + StringUtil.quote(category));
         }
         return p;
     }
 
     public static void setVerbose(String category, boolean on) {
-        if ( category.equals("all") ) {
+        if (category.equals("all")) {
             ALL = on;
             Iterator i = printerMap.values().iterator();
-            while ( i.hasNext() ) {
+            while (i.hasNext()) {
                 Printer p = (Printer)i.next();
                 p.enabled = on;
             }
@@ -69,14 +68,14 @@ public class Verbose {
         }
 
         Printer p = getPrinter(category);
-        if ( verbosePrinter != null && verbosePrinter.enabled ) {
-            verbosePrinter.println("verbose: set printer "+StringUtil.quote(category)+" to "+on);
+        if (verbosePrinter != null && verbosePrinter.enabled) {
+            verbosePrinter.println("verbose: set printer " + StringUtil.quote(category) + " to " + on);
         }
         p.enabled = on;
     }
 
     private static Printer getPrinter(String category) {
-        Printer p = (Printer) printerMap.get(category);
+        Printer p = (Printer)printerMap.get(category);
         if (p == null) {
             p = new Printer();
             printerMap.put(category, p);

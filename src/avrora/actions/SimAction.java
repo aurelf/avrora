@@ -45,37 +45,36 @@ import avrora.util.*;
 import java.util.*;
 
 /**
- * The <code>SimAction</code> is an abstract class that collects many of
- * the options common to single node and multiple-node simulations into
- * one place.
+ * The <code>SimAction</code> is an abstract class that collects many of the options common to single node and
+ * multiple-node simulations into one place.
  *
  * @author Ben L. Titzer
  */
 public abstract class SimAction extends Action {
     public final Option.Long ICOUNT = newOption("icount", 0,
-            "This option is used to terminate the " +
-            "simulation after the specified number of instructions have been executed. " +
-            "It is useful for non-terminating programs.");
+                                                "This option is used to terminate the " +
+                                                "simulation after the specified number of instructions have been executed. " +
+                                                "It is useful for non-terminating programs.");
     public final Option.Double SECONDS = newOption("seconds", 0.0,
-            "This option is used to terminate the " +
-            "simulation after the specified number of simulated seconds have passed. " +
-            "It is useful for non-terminating programs and benchmarks.");
+                                                   "This option is used to terminate the " +
+                                                   "simulation after the specified number of simulated seconds have passed. " +
+                                                   "It is useful for non-terminating programs and benchmarks.");
     public final Option.Long TIMEOUT = newOption("timeout", 0,
-            "This option is used to terminate the " +
-            "simulation after the specified number of clock cycles have passed. " +
-            "It is useful for non-terminating programs and benchmarks.");
+                                                 "This option is used to terminate the " +
+                                                 "simulation after the specified number of clock cycles have passed. " +
+                                                 "It is useful for non-terminating programs and benchmarks.");
     public final Option.Str CHIP = newOption("chip", "atmega128l",
-            "This option selects the microcontroller from a library of supported " +
-            "microcontroller models.");
+                                             "This option selects the microcontroller from a library of supported " +
+                                             "microcontroller models.");
     public final Option.Str PLATFORM = newOption("platform", "",
-            "This option selects the platform on which the microcontroller is built, " +
-            "including the external devices such as LEDs and radio. If the platform " +
-            "option is not set, the default platform is the microcontroller specified " +
-            "in the \"chip\" option, with no external devices.");
+                                                 "This option selects the platform on which the microcontroller is built, " +
+                                                 "including the external devices such as LEDs and radio. If the platform " +
+                                                 "option is not set, the default platform is the microcontroller specified " +
+                                                 "in the \"chip\" option, with no external devices.");
     public final Option.List MONITORS = newOptionList("monitors", "",
-            "This option specifies a list of monitors to be attached to the program. " +
-            "Monitors collect information about the execution of the program while it " +
-            "is running such as profiling data or timing information.");
+                                                      "This option specifies a list of monitors to be attached to the program. " +
+                                                      "Monitors collect information about the execution of the program while it " +
+                                                      "is running such as profiling data or timing information.");
 
     protected ClassMap monitorMap;
     protected LinkedList monitorFactoryList;
@@ -90,7 +89,7 @@ public abstract class SimAction extends Action {
         addNewMonitorType(new StackMonitor());
         //add energy monitor to the list 
         //-> provides logging of energy consumption
-        addNewMonitorType(new EnergyMonitor());        
+        addNewMonitorType(new EnergyMonitor());
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }
@@ -100,11 +99,11 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>getMicrocontroller()</code> method is used to get the current
-     * microcontroller from the library of implemented ones, based on the
-     * command line option that was specified (-chip=xyz).
-     * @return an instance of <code>MicrocontrollerFactory</code> for the
-     * microcontroller specified on the command line.
+     * The <code>getMicrocontroller()</code> method is used to get the current microcontroller from the library of
+     * implemented ones, based on the command line option that was specified (-chip=xyz).
+     *
+     * @return an instance of <code>MicrocontrollerFactory</code> for the microcontroller specified on the command
+     *         line.
      */
     protected MicrocontrollerFactory getMicrocontroller() {
         MicrocontrollerFactory mcu = Microcontrollers.getMicrocontroller(CHIP.get());
@@ -114,11 +113,10 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>getPlatform()</code> method is used to get the current
-     * platform from the library of implemented ones, based on the command
-     * line option that was specified (-platform=xyz).
-     * @return an instance of <code>PlatformFactory</code> for the
-     * platform specified on the command line
+     * The <code>getPlatform()</code> method is used to get the current platform from the library of implemented ones,
+     * based on the command line option that was specified (-platform=xyz).
+     *
+     * @return an instance of <code>PlatformFactory</code> for the platform specified on the command line
      */
     protected PlatformFactory getPlatform() {
         String pf = PLATFORM.get();
@@ -145,18 +143,16 @@ public abstract class SimAction extends Action {
     }
 
     /**
-     * The <code>processMonitorList()</code> method builds a list of
-     * <code>MonitorFactory</code> instances from the list of strings
-     * given as an option at the command line. The list of
-     * <code>MonitorFactory</code> instances is used to create monitors for
-     * each simulator as it is created.
+     * The <code>processMonitorList()</code> method builds a list of <code>MonitorFactory</code> instances from the list
+     * of strings given as an option at the command line. The list of <code>MonitorFactory</code> instances is used to
+     * create monitors for each simulator as it is created.
      */
     protected void processMonitorList() {
-        if ( monitorFactoryList.size() > 0 ) return;
+        if (monitorFactoryList.size() > 0) return;
 
         List l = MONITORS.get();
         Iterator i = l.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             String clname = (String)i.next();
             MonitorFactory mf = (MonitorFactory)monitorMap.getObjectOfClass(clname);
             mf.processOptions(options);
@@ -167,14 +163,13 @@ public abstract class SimAction extends Action {
     int simcount;
 
     /**
-     * The <code>newSimulator()</code> method is used by subclasses of
-     * this action to create a new instance of a simulator with the
-     * correct platform. This method also creates monitors for the
-     * simulator instance as specified from the command line.
+     * The <code>newSimulator()</code> method is used by subclasses of this action to create a new instance of a
+     * simulator with the correct platform. This method also creates monitors for the simulator instance as specified
+     * from the command line.
+     *
      * @param p the program to load onto the simulator
-     * @return an instance of the <code>Simulator</code> class that has
-     * the specified programs loaded onto it and has monitors attached to
-     * as specified on the command line
+     * @return an instance of the <code>Simulator</code> class that has the specified programs loaded onto it and has
+     *         monitors attached to as specified on the command line
      */
     protected Simulator newSimulator(Program p) {
         Simulator simulator;
@@ -190,7 +185,7 @@ public abstract class SimAction extends Action {
         processMonitorList();
         LinkedList ml = new LinkedList();
         Iterator i = monitorFactoryList.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             MonitorFactory mf = (MonitorFactory)i.next();
             Monitor m = mf.newMonitor(simulator);
             ml.addLast(m);
@@ -201,25 +196,25 @@ public abstract class SimAction extends Action {
     }
 
     protected void processTimeout(Simulator s) {
-        if ( TIMEOUT.get() > 0 )
+        if (TIMEOUT.get() > 0)
             s.insertTimeout(TIMEOUT.get());
-        else if ( SECONDS.get() > 0.0 )
-            s.insertTimeout((long)(SECONDS.get()*s.getMicrocontroller().getHz()));
-        if ( ICOUNT.get() > 0 )
+        else if (SECONDS.get() > 0.0)
+            s.insertTimeout((long)(SECONDS.get() * s.getMicrocontroller().getHz()));
+        if (ICOUNT.get() > 0)
             s.insertProbe(new Simulator.InstructionCountTimeout(ICOUNT.get()));
     }
 
     /**
-     * The <code>reportMonitors()</code> method gets a list of <code>Monitor</code>
-     * instances attached to the simulator and calls each of their <code>report()</code>
-     * methods.
+     * The <code>reportMonitors()</code> method gets a list of <code>Monitor</code> instances attached to the simulator
+     * and calls each of their <code>report()</code> methods.
+     *
      * @param s the simulator for which to report all the monitors
      */
     protected void reportMonitors(Simulator s) {
         LinkedList ml = (LinkedList)monitorListMap.get(s);
-        if ( ml == null ) return;
+        if (ml == null) return;
         Iterator i = ml.iterator();
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             Monitor m = (Monitor)i.next();
             m.report();
         }
@@ -227,16 +222,16 @@ public abstract class SimAction extends Action {
 
     protected boolean hasMonitors(Simulator s) {
         LinkedList ml = (LinkedList)monitorListMap.get(s);
-        if ( ml == null ) return false;
+        if (ml == null) return false;
         return !ml.isEmpty();
     }
 
     /**
-     * The <code>getLocationList()</code> method is to used to parse a list of
-     * program locations and turn them into a list of <code>Main.Location</code>
-     * instances.
+     * The <code>getLocationList()</code> method is to used to parse a list of program locations and turn them into a
+     * list of <code>Main.Location</code> instances.
+     *
      * @param program the program to look up labels in
-     * @param v the list of strings that are program locations
+     * @param v       the list of strings that are program locations
      * @return a list of program locations
      */
     public static List getLocationList(Program program, List v) {
@@ -245,7 +240,7 @@ public abstract class SimAction extends Action {
         Iterator i = v.iterator();
 
         while (i.hasNext()) {
-            String val = (String) i.next();
+            String val = (String)i.next();
             locset.add(program.getProgramLocation(val));
         }
 

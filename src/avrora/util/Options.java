@@ -35,9 +35,8 @@ package avrora.util;
 import java.util.*;
 
 /**
- * The <code>Options</code> class represents a collection of command
- * line options and utility methods for parsing the command line. Very
- * useful for getting cheap and powerful parsing of command line options.
+ * The <code>Options</code> class represents a collection of command line options and utility methods for parsing the
+ * command line. Very useful for getting cheap and powerful parsing of command line options.
  *
  * @author Ben L. Titzer
  */
@@ -92,13 +91,13 @@ public class Options {
     }
 
     public String getOptionValue(String name) {
-        Option o = (Option) knownValues.get(name);
+        Option o = (Option)knownValues.get(name);
         if (o != null) return o.stringValue();
-        return (String) unknownValues.get(name);
+        return (String)unknownValues.get(name);
     }
 
     public Option getOption(String name) {
-        return (Option) knownValues.get(name);
+        return (Option)knownValues.get(name);
     }
 
     public boolean hasOption(String name) {
@@ -148,7 +147,7 @@ public class Options {
     }
 
     private void setOption(String optname, String value) {
-        Option option = (Option) knownValues.get(optname);
+        Option option = (Option)knownValues.get(optname);
 
         if (option == null) {
             unknownValues.put(optname, value);
@@ -165,8 +164,8 @@ public class Options {
         Iterator i = o.unknownValues.keySet().iterator();
 
         while (i.hasNext()) {
-            String name = (String) i.next();
-            String val = (String) o.unknownValues.get(name);
+            String name = (String)i.next();
+            String val = (String)o.unknownValues.get(name);
             setOption(name, val);
         }
     }
@@ -175,7 +174,7 @@ public class Options {
         Iterator i = p.keySet().iterator();
 
         while (i.hasNext()) {
-            String name = (String) i.next();
+            String name = (String)i.next();
             String val = p.getProperty(name);
             setOption(name, val);
         }

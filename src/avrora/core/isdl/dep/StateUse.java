@@ -35,44 +35,38 @@ package avrora.core.isdl.dep;
 import avrora.core.isdl.CodeRegion;
 
 /**
- * The <code>StateUse</code> class represents the result of a dependency
- * analysis of a particular instruction declaration (e.g. the ADD
- * instruction's declaration). It represents a value that might be
- * read or written by the instruction. For example, the instruction
- * might read registers, memory, or write registers, memory, or other
- * internal state.
+ * The <code>StateUse</code> class represents the result of a dependency analysis of a particular instruction
+ * declaration (e.g. the ADD instruction's declaration). It represents a value that might be read or written by the
+ * instruction. For example, the instruction might read registers, memory, or write registers, memory, or other internal
+ * state.
  *
  * @author Ben L. Titzer
  */
 public abstract class StateUse {
 
     /**
-     * The <code>Index</code> class represents a possible index into
-     * a map (such as the register file or memory). An index might
-     * be a constant, an instruction operand, a linear combination
-     * of an operand and a constant, or it could be an unknown
-     * (dynamically computed) value.
+     * The <code>Index</code> class represents a possible index into a map (such as the register file or memory). An
+     * index might be a constant, an instruction operand, a linear combination of an operand and a constant, or it could
+     * be an unknown (dynamically computed) value.
      */
     public static class Index {
 
         /**
-         * The <code>isConstant()</code> method returns whether this index
-         * is a constant that is not dependent on either operands to the
-         * instruction or runtime values
-         * @return true if this index is a constant that is not dependent
-         * on either instruction operands or runtime values; false otherwise
+         * The <code>isConstant()</code> method returns whether this index is a constant that is not dependent on either
+         * operands to the instruction or runtime values
+         *
+         * @return true if this index is a constant that is not dependent on either instruction operands or runtime
+         *         values; false otherwise
          */
         public boolean isConstant() {
             return false;
         }
 
         /**
-         * The <code>isKnown()</code> method returns whether this index is
-         * known statically given the instruction operands. Thus, for a
-         * given instruction instance, this index can be computed without
-         * runtime values.
-         * @return true if this index can be computed solely from instruction
-         * operands.
+         * The <code>isKnown()</code> method returns whether this index is known statically given the instruction
+         * operands. Thus, for a given instruction instance, this index can be computed without runtime values.
+         *
+         * @return true if this index can be computed solely from instruction operands.
          */
         public boolean isKnown() {
             return true;
@@ -117,10 +111,9 @@ public abstract class StateUse {
     }
 
     /**
-     * The <code>MapUse</code> class represents the usage of a map (i.e. a
-     * register file or memory). The map has a string that describes its name
-     * as well as an instance of the <code>StateUse.Index</code> class that
-     * indicates the index in the map that is read or written.
+     * The <code>MapUse</code> class represents the usage of a map (i.e. a register file or memory). The map has a
+     * string that describes its name as well as an instance of the <code>StateUse.Index</code> class that indicates the
+     * index in the map that is read or written.
      */
     public static class MapUse extends StateUse {
         public final String mapname;
@@ -136,9 +129,8 @@ public abstract class StateUse {
 
 
     /**
-     * The <code>GlobalUse</code> class represents the usage of a globally
-     * declared state variable that is visible within the instruction
-     * specification. Its name as a string is given.
+     * The <code>GlobalUse</code> class represents the usage of a globally declared state variable that is visible
+     * within the instruction specification. Its name as a string is given.
      */
     public static class GlobalUse extends StateUse {
         public final String globalName;
@@ -151,11 +143,9 @@ public abstract class StateUse {
     }
 
     /**
-     * The <code>BitUse</code> class represents the usage of a bit of
-     * some state that is used. It contains a reference to the
-     * <code>StateUse</code> representing the whole state variable,
-     * as well as an index that indicates the actual bit that is
-     * read or written.
+     * The <code>BitUse</code> class represents the usage of a bit of some state that is used. It contains a reference
+     * to the <code>StateUse</code> representing the whole state variable, as well as an index that indicates the actual
+     * bit that is read or written.
      */
     public static class BitUse extends StateUse {
         public final StateUse value;

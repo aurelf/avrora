@@ -37,12 +37,10 @@ import avrora.core.Program;
 import avrora.sim.State;
 
 /**
- * The <code>RangeProfiler</code> class implements a probe that can be
- * used to profile a range of addresses in the program. It maintains
- * a simple array of <code>long</code> that stores the count for each
- * instruction in the specified range. It is more space efficient than
- * the <code>ProgramProfiler</code> since it only stores the count for
- * the range specified instead of for the entire program.
+ * The <code>RangeProfiler</code> class implements a probe that can be used to profile a range of addresses in the
+ * program. It maintains a simple array of <code>long</code> that stores the count for each instruction in the specified
+ * range. It is more space efficient than the <code>ProgramProfiler</code> since it only stores the count for the range
+ * specified instead of for the entire program.
  *
  * @author Ben L. Titzer
  * @see avrora.sim.util.Counter
@@ -50,8 +48,7 @@ import avrora.sim.State;
  */
 public class RangeProfiler {
     /**
-     * The <code>program</code> field stores a reference to the program
-     * being profiled.
+     * The <code>program</code> field stores a reference to the program being profiled.
      */
     public final Program program;
 
@@ -66,16 +63,15 @@ public class RangeProfiler {
     public final int high_addr;
 
     /**
-     * The <code>icount</code> field stores the invocation count
-     * for each instruction in the range. It is indexed by byte addresses, with
-     * index 0 corresponding to the lowest address in the range (<code>low_addr</code>).
-     * at <code>program.getInstr(addr)</code>.
+     * The <code>icount</code> field stores the invocation count for each instruction in the range. It is indexed by
+     * byte addresses, with index 0 corresponding to the lowest address in the range (<code>low_addr</code>). at
+     * <code>program.getInstr(addr)</code>.
      */
     public final long icount[];
 
     /**
-     * The constructor for the program profiler constructs the required internal
-     * state to store the invocation counts of each instruction.
+     * The constructor for the program profiler constructs the required internal state to store the invocation counts of
+     * each instruction.
      *
      * @param p    the program to profile
      * @param low  the low address in the range
@@ -90,10 +86,9 @@ public class RangeProfiler {
     }
 
     /**
-     * The <code>fireBefore()</code> method is called before the probed instruction
-     * executes. In the implementation of the range profiler, it simply increments the
-     * count of the instruction at the specified address if that address is in
-     * the given range.
+     * The <code>fireBefore()</code> method is called before the probed instruction executes. In the implementation of
+     * the range profiler, it simply increments the count of the instruction at the specified address if that address is
+     * in the given range.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
@@ -106,8 +101,8 @@ public class RangeProfiler {
     }
 
     /**
-     * The <code>fireAfter()</code> method is called after the probed instruction
-     * executes. In the implementation of the range profiler, it does nothing.
+     * The <code>fireAfter()</code> method is called after the probed instruction executes. In the implementation of the
+     * range profiler, it does nothing.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides

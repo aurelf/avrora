@@ -36,20 +36,19 @@ import avrora.Avrora;
 import avrora.util.StringUtil;
 
 /**
- * The <code>Expr</code> class represents an expression within the program that
- * must be evaluated to a value. This could be an integer constant, a computable
- * expression involving arithmetic operators, a variable, or an expression
- * relative to the current position within the program.
+ * The <code>Expr</code> class represents an expression within the program that must be evaluated to a value. This could
+ * be an integer constant, a computable expression involving arithmetic operators, a variable, or an expression relative
+ * to the current position within the program.
  *
  * @author Ben L. Titzer
  */
 public abstract class Expr extends ASTNode {
 
     /**
-     * The <code>evaluate()</code> method computes the value of the expression
-     * in this context and returns its value.
+     * The <code>evaluate()</code> method computes the value of the expression in this context and returns its value.
+     *
      * @param currentByteAddress the current byte address within the program
-     * @param c the context in which to evaluate this expression
+     * @param c                  the context in which to evaluate this expression
      * @return the value of the expression as a 32-bit integer
      */
     public abstract int evaluate(int currentByteAddress, Context c);
@@ -63,26 +62,24 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>BinOp</code> class represents a simple binary arithmetic operator
-     * such as addition, multiplication, etc. It contains two internal expressions,
-     * the left and right.
+     * The <code>BinOp</code> class represents a simple binary arithmetic operator such as addition, multiplication,
+     * etc. It contains two internal expressions, the left and right.
      */
     public static class BinOp extends Expr {
         /**
-         * The <code>op</code> field records the token that corresponds to the
-         * actual arithmetic operator.
+         * The <code>op</code> field records the token that corresponds to the actual arithmetic operator.
          */
         public final AbstractToken op;
 
         /**
-         * The <code>left</code> field records an expression that represents
-         * the operand on the left side of the operator.
+         * The <code>left</code> field records an expression that represents the operand on the left side of the
+         * operator.
          */
         public final Expr left;
 
         /**
-         * The <code>right</code> field records an expression that represents
-         * the operand on the right side of the operator.
+         * The <code>right</code> field records an expression that represents the operand on the right side of the
+         * operator.
          */
         public final Expr right;
 
@@ -93,12 +90,12 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. This implementation works
-         * straightforwardly by first evaluating the left operand, then the right,
-         * and then computing the result of the arithmetic operation.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. This implementation works straightforwardly by first evaluating the left operand, then the right, and
+         * then computing the result of the arithmetic operation.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
@@ -143,10 +140,8 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>UnOp</code> class represents an expression that is a single
-     * operand with a unary operation applied to it. For example, "!" takes
-     * the logical complement of an operand, "~" takes the bitwise complement,
-     * etc.
+     * The <code>UnOp</code> class represents an expression that is a single operand with a unary operation applied to
+     * it. For example, "!" takes the logical complement of an operand, "~" takes the bitwise complement, etc.
      */
     public static class UnOp extends Expr {
         public final AbstractToken op;
@@ -158,12 +153,12 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. This implementation works
-         * straightforwardly by first evaluating the operand
-         * and then computing the result of the arithmetic operation.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. This implementation works straightforwardly by first evaluating the operand and then computing the
+         * result of the arithmetic operation.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
@@ -191,10 +186,8 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>Func</code> class represents a builtin function that is
-     * applied to an operand. For example, a function might be "high" which
-     * returns the high byte of a 16-bit operand, "log2" which returns the
-     * logarithm, etc.
+     * The <code>Func</code> class represents a builtin function that is applied to an operand. For example, a function
+     * might be "high" which returns the high byte of a 16-bit operand, "log2" which returns the logarithm, etc.
      */
     public static class Func extends Expr {
         public final AbstractToken func;
@@ -208,12 +201,12 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. This implementation works
-         * straightforwardly by first evaluating the operand,
-         * and then computing the result of the function.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. This implementation works straightforwardly by first evaluating the operand, and then computing the
+         * result of the function.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
@@ -279,8 +272,7 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>Term</code> class is a superclass for all expressions that
-     * consist of a single lexical token.
+     * The <code>Term</code> class is a superclass for all expressions that consist of a single lexical token.
      */
     public abstract static class Term extends Expr {
         public final AbstractToken token;
@@ -303,8 +295,7 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>Variable</code> class represents a variable reference within
-     * the program.
+     * The <code>Variable</code> class represents a variable reference within the program.
      */
     public static class Variable extends Term {
 
@@ -313,12 +304,12 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. This implementation works
-         * straightforwardly by looking up the variable in the context and
-         * returning its value.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. This implementation works straightforwardly by looking up the variable in the context and returning
+         * its value.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
@@ -328,8 +319,7 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>Constant</code> class represents a integer literal (a constant)
-     * within the program.
+     * The <code>Constant</code> class represents a integer literal (a constant) within the program.
      */
     public static class Constant extends Term {
         public final int value;
@@ -340,11 +330,11 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. Since this is a constant, it
-         * simply returns its value.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. Since this is a constant, it simply returns its value.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
@@ -360,8 +350,8 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>CharLiteral</code> class represents a character literal in the
-     * program that can be used as an integer value.
+     * The <code>CharLiteral</code> class represents a character literal in the program that can be used as an integer
+     * value.
      */
     public static class CharLiteral extends Term {
         public final int value;
@@ -372,11 +362,11 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. Since this is a constant, it
-         * simply returns its value.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. Since this is a constant, it simply returns its value.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
@@ -386,10 +376,9 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>StringLiteral</code> class represents a string literal within
-     * the program. A string literal can be used within a list of initialized
-     * data and occupies a span of bytes. However, it cannot be evaluated to
-     * an integer. It is treated specifially in the simplification phase.
+     * The <code>StringLiteral</code> class represents a string literal within the program. A string literal can be used
+     * within a list of initialized data and occupies a span of bytes. However, it cannot be evaluated to an integer. It
+     * is treated specifially in the simplification phase.
      */
     public static class StringLiteral extends Term {
         public final String value;
@@ -400,14 +389,13 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. A string cannot be evaluated to
-         * a 32-bit integer; this method throws an exception.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. A string cannot be evaluated to a 32-bit integer; this method throws an exception.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
-         * @throws Avrora.InternalError because a string cannot be evaluated to a
-         * 32-bit integer
+         * @throws Avrora.InternalError because a string cannot be evaluated to a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
             throw Avrora.failure("cannot evaluate a string to an integer");
@@ -415,9 +403,8 @@ public abstract class Expr extends ASTNode {
     }
 
     /**
-     * The <code>RelativeAddress</code> class represents an expression that is
-     * derived from the addition (or subtraction) of a constant to the current
-     * byte address. This occurs in the GAS formats and Objdump.
+     * The <code>RelativeAddress</code> class represents an expression that is derived from the addition (or
+     * subtraction) of a constant to the current byte address. This occurs in the GAS formats and Objdump.
      */
     public static class RelativeAddress extends Expr {
 
@@ -444,12 +431,12 @@ public abstract class Expr extends ASTNode {
         }
 
         /**
-         * The <code>evaluate()</code> method computes the value of the expression
-         * in this context and returns its value. Since this is a relative address,
-         * it simply evaluates the offset and adds it to the current address
-         * in the program and returns that value.
+         * The <code>evaluate()</code> method computes the value of the expression in this context and returns its
+         * value. Since this is a relative address, it simply evaluates the offset and adds it to the current address in
+         * the program and returns that value.
+         *
          * @param currentByteAddress the current byte address within the program
-         * @param c the context in which to evaluate this expression
+         * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {

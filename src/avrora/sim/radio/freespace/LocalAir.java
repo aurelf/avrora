@@ -42,88 +42,107 @@ import avrora.sim.Simulator;
 
 import java.util.*;
 
-/** local air
- * each device has a local view on the global air. It sees different 
- * packets and transmission power.
- * 
- * @author Olaf Landsiedel
+/**
+ * local air each device has a local view on the global air. It sees different packets and transmission power.
  *
+ * @author Olaf Landsiedel
  */
-public interface LocalAir{
+public interface LocalAir {
     //some radio const
     public final static int sampleTime = 13 * 64;
-    public final static int bytePeriod = Radio.TRANSFER_TIME;    
+    public final static int bytePeriod = Radio.TRANSFER_TIME;
 
-    /** get the position of this node
+    /**
+     * get the position of this node
+     *
      * @return node position
      */
     public Position getPosition();
-    
-    /** add a new node the air
+
+    /**
+     * add a new node the air
+     *
      * @param r node radio
      */
     public void addNeighbor(LocalAir r);
-    
-    /** remove node from the air
+
+    /**
+     * remove node from the air
+     *
      * @param r node radio
      */
     public void removeNeighbor(LocalAir r);
-        
-    /** get list of nodes around
+
+    /**
+     * get list of nodes around
+     *
      * @return node list iterator
      */
     public Iterator getNeighbors();
-        
-    /** measure the signal strength around here
+
+    /**
+     * measure the signal strength around here
+     *
      * @param cycles time
      * @return signal strength
      */
     public int sampleRSSI(long cycles);
-    
-    /** add packet to be received, called by transmitting nodes
-     * @param p packet
+
+    /**
+     * add packet to be received, called by transmitting nodes
+     *
+     * @param p   packet
      * @param pow transission power
      */
     public void addPacket(RadioPacket p, double pow);
-    
-    /** schedule deivery of packets
+
+    /**
+     * schedule deivery of packets
+     *
      * @param time delivery time
-     * @param sim the simulator
+     * @param sim  the simulator
      */
     public void scheduleDelivery(long time, Simulator sim);
-    
-    /** class to model a packet and transmission power
-     * @author Olaf Landsiedel
+
+    /**
+     * class to model a packet and transmission power
      *
+     * @author Olaf Landsiedel
      */
-    public class PowerRadioPacket{
+    public class PowerRadioPacket {
 
         //radio packet
         protected RadioPacket packet;
         //transmission power
         protected double power;
-        
-        /** new packet
-         * @param p packet
+
+        /**
+         * new packet
+         *
+         * @param p   packet
          * @param pow transmission power
          */
-        public PowerRadioPacket(RadioPacket p, double pow){
+        public PowerRadioPacket(RadioPacket p, double pow) {
             this.packet = p;
-            this.power =pow;
+            this.power = pow;
         }
-                
-        
-        /** get the radio packet
+
+
+        /**
+         * get the radio packet
+         *
          * @return radio packet
          */
-        public RadioPacket getRadioPacket(){
+        public RadioPacket getRadioPacket() {
             return packet;
         }
-        
-        /** get the transmission power
+
+        /**
+         * get the transmission power
+         *
          * @return power
          */
-        public double getPower(){
+        public double getPower() {
             return power;
         }
     }

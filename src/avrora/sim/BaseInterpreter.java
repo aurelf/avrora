@@ -41,9 +41,8 @@ import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 
 /**
- * The <code>BaseInterpreter</code> class represents a base class of
- * the legacy interpreter and the generated interpreter(s) that stores
- * the state of the executing program, e.g. registers and flags, etc.
+ * The <code>BaseInterpreter</code> class represents a base class of the legacy interpreter and the generated
+ * interpreter(s) that stores the state of the executing program, e.g. registers and flags, etc.
  *
  * @author Ben L. Titzer
  */
@@ -69,28 +68,23 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected State.IOReg SREG_reg;
 
     /**
-     * The <code>activeProbe</code> field stores a reference to a
-     * <code>MulticastProbe</code> that contains all of the probes to be fired
-     * before and after the main execution runLoop--i.e. before and after
-     * every instruction.
+     * The <code>activeProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains all of the
+     * probes to be fired before and after the main execution runLoop--i.e. before and after every instruction.
      */
     protected final MulticastProbe globalProbe;
 
     /**
-     * The <code>innerLoop</code> field is a boolean that is used internally
-     * in the implementation of the interpreter. When something in the
-     * simulation changes (e.g. an interrupt is posted), this field is
-     * set to false, and the execution loop (e.g. an interpretation or
-     * sleep loop) is broken out of.
+     * The <code>innerLoop</code> field is a boolean that is used internally in the implementation of the interpreter.
+     * When something in the simulation changes (e.g. an interrupt is posted), this field is set to false, and the
+     * execution loop (e.g. an interpretation or sleep loop) is broken out of.
      */
     protected boolean innerLoop;
 
 
     /**
-     * The ProbedInstr class represents a wrapper around an instruction in
-     * the program that executes the probes before executing the instruction
-     * and after the instruction. For most methods on the <code>Instr</code>
-     * class, it simply forwards the call to the original instruction.
+     * The ProbedInstr class represents a wrapper around an instruction in the program that executes the probes before
+     * executing the instruction and after the instruction. For most methods on the <code>Instr</code> class, it simply
+     * forwards the call to the original instruction.
      */
     class ProbedInstr extends Instr {
         protected final int address;
@@ -164,53 +158,47 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>nextPC</code> field is used internally in maintaining the correct
-     * execution order of the instructions.
+     * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the instructions.
      */
     protected int nextPC;
 
     /**
-     * The <code>cyclesConsumed</code> field stores the number of cycles consumed
-     * in doing a part of the simulation (e.g. executing an instruction or
-     * processing an interrupt).
+     * The <code>cyclesConsumed</code> field stores the number of cycles consumed in doing a part of the simulation
+     * (e.g. executing an instruction or processing an interrupt).
      */
     protected int cyclesConsumed;
 
     /**
-     * The <code>delayCycles</code> field tracks the number of cycles that the
-     * microcontroller is delayed. Delay is needed because some devices pause
-     * execution of the program for some number of cycles, and also to implement
-     * random delay at the beginning of startup in multiple node scenarios to
-     * prevent artificial cycle-level synchronization. 
+     * The <code>delayCycles</code> field tracks the number of cycles that the microcontroller is delayed. Delay is
+     * needed because some devices pause execution of the program for some number of cycles, and also to implement
+     * random delay at the beginning of startup in multiple node scenarios to prevent artificial cycle-level
+     * synchronization.
      */
     protected long delayCycles;
 
     /**
-     * The <code>shouldRun</code> flag is used internally in the main execution
-     * runLoop to implement the correct semantics of <code>start()</code> and
-     * <code>stop()</code> to the clients.
+     * The <code>shouldRun</code> flag is used internally in the main execution runLoop to implement the correct
+     * semantics of <code>start()</code> and <code>stop()</code> to the clients.
      */
     protected boolean shouldRun;
 
     /**
-     * The <code>sleeping</code> flag is used internally in the simulator when the
-     * microcontroller enters the sleep mode.
+     * The <code>sleeping</code> flag is used internally in the simulator when the microcontroller enters the sleep
+     * mode.
      */
     protected boolean sleeping;
 
     /**
-     * The <code>justReturnedFromInterrupt</code> field is used internally in
-     * maintaining the invariant stated in the hardware manual that at least one
-     * instruction following a return from an interrupt is executed before another
+     * The <code>justReturnedFromInterrupt</code> field is used internally in maintaining the invariant stated in the
+     * hardware manual that at least one instruction following a return from an interrupt is executed before another
      * interrupt can be processed.
      */
     protected boolean justReturnedFromInterrupt;
 
     /**
-     * The <code>simulator</code> field stores a reference to the simulator that
-     * this interpreter instance corresponds to. There should be a one-to-one
-     * mapping between instances of the <code>Simulator</code> class and instances
-     * of the <code>BaseInterpreter</code> class.
+     * The <code>simulator</code> field stores a reference to the simulator that this interpreter instance corresponds
+     * to. There should be a one-to-one mapping between instances of the <code>Simulator</code> class and instances of
+     * the <code>BaseInterpreter</code> class.
      */
     protected final Simulator simulator;
 
@@ -218,24 +206,27 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     public class NoSuchInstructionException extends Avrora.Error {
         public final int pc;
+
         protected NoSuchInstructionException(int pc) {
-            super("Program error", "attempt to execute non-existant instruction at "+StringUtil.addrToString(pc));
+            super("Program error", "attempt to execute non-existant instruction at " + StringUtil.addrToString(pc));
             this.pc = pc;
         }
     }
 
     public class PCOutOfBoundsException extends Avrora.Error {
         public final int pc;
+
         protected PCOutOfBoundsException(int pc) {
-            super("Program error", "PC out of bounds at "+StringUtil.addrToString(pc));
+            super("Program error", "PC out of bounds at " + StringUtil.addrToString(pc));
             this.pc = pc;
         }
     }
 
     public class PCAlignmentException extends Avrora.Error {
         public final int pc;
+
         protected PCAlignmentException(int pc) {
-            super("Program error", "PC misaligned at "+StringUtil.addrToString(pc));
+            super("Program error", "PC misaligned at " + StringUtil.addrToString(pc));
             this.pc = pc;
         }
     }
@@ -243,8 +234,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public class AddressOutOfBoundsException extends Avrora.Error {
         public final String segment;
         public final int data_addr;
+
         protected AddressOutOfBoundsException(String s, int da) {
-            super("Program error", "access to "+StringUtil.quote(s)+" out of bounds at "+StringUtil.addrToString(da));
+            super("Program error", "access to " + StringUtil.quote(s) + " out of bounds at " + StringUtil.addrToString(da));
             this.data_addr = da;
             this.segment = s;
         }
@@ -255,10 +247,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         NoInstr() {
             super(null);
         }
+
         /**
-         * The <code>getOperands()</code> method returns a string representation
-         * of the operands of the instruction. This is useful for printing and
-         * tracing of instructions as well as generating listings.
+         * The <code>getOperands()</code> method returns a string representation of the operands of the instruction.
+         * This is useful for printing and tracing of instructions as well as generating listings.
          *
          * @return a string representing the operands of the instruction
          */
@@ -267,10 +259,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         /**
-         * The <code>accept()</code> method is part of the visitor pattern for
-         * instructions. The visitor pattern uses two virtual dispatches combined
-         * with memory overloading to achieve dispatching on multiple types. The
-         * result is clean and modular code.
+         * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor pattern uses
+         * two virtual dispatches combined with memory overloading to achieve dispatching on multiple types. The result
+         * is clean and modular code.
          *
          * @param v the visitor to accept
          */
@@ -279,14 +270,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         /**
-         * The <code>build()</code> method constructs a new <code>Instr</code>
-         * instance with the given operands, checking the operands against
-         * the constraints that are specific to each instruction.
+         * The <code>build()</code> method constructs a new <code>Instr</code> instance with the given operands,
+         * checking the operands against the constraints that are specific to each instruction.
          *
          * @param pc  the address at which the instruction will be located
          * @param ops the operands to the instruction
-         * @return a new <code>Instr</code> instance representing the
-         *         instruction with the given operands
+         * @return a new <code>Instr</code> instance representing the instruction with the given operands
          */
         public Instr build(int pc, Operand[] ops) {
             throw Avrora.failure("no instruction here");
@@ -301,9 +290,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         /**
-         * The <code>getOperands()</code> method returns a string representation
-         * of the operands of the instruction. This is useful for printing and
-         * tracing of instructions as well as generating listings.
+         * The <code>getOperands()</code> method returns a string representation of the operands of the instruction.
+         * This is useful for printing and tracing of instructions as well as generating listings.
          *
          * @return a string representing the operands of the instruction
          */
@@ -312,10 +300,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         /**
-         * The <code>accept()</code> method is part of the visitor pattern for
-         * instructions. The visitor pattern uses two virtual dispatches combined
-         * with memory overloading to achieve dispatching on multiple types. The
-         * result is clean and modular code.
+         * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor pattern uses
+         * two virtual dispatches combined with memory overloading to achieve dispatching on multiple types. The result
+         * is clean and modular code.
          *
          * @param v the visitor to accept
          */
@@ -324,14 +311,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         /**
-         * The <code>build()</code> method constructs a new <code>Instr</code>
-         * instance with the given operands, checking the operands against
-         * the constraints that are specific to each instruction.
+         * The <code>build()</code> method constructs a new <code>Instr</code> instance with the given operands,
+         * checking the operands against the constraints that are specific to each instruction.
          *
          * @param pc  the address at which the instruction will be located
          * @param ops the operands to the instruction
-         * @return a new <code>Instr</code> instance representing the
-         *         instruction with the given operands
+         * @return a new <code>Instr</code> instance representing the instruction with the given operands
          */
         public Instr build(int pc, Operand[] ops) {
             throw Avrora.failure("no instruction here");
@@ -351,7 +336,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private static final int SREG_N_MASK = 1 << SREG_N;
     private static final int SREG_Z_MASK = 1 << SREG_Z;
     private static final int SREG_C_MASK = 1 << SREG_C;
-
 
 
     public BaseInterpreter(Simulator simulator, Program p, int flash_size, int ioreg_size, int sram_size) {
@@ -393,22 +377,22 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         flash_instr = new Instr[p.program_end];
         flash_data = new byte[p.program_end];
 
-        for ( int cntr = 0; cntr < p.program_end; ) {
+        for (int cntr = 0; cntr < p.program_end;) {
             Instr i = p.readInstr(cntr);
-            if ( i != null ) {
+            if (i != null) {
                 flash_instr[cntr] = i;
-                for ( int s = 1; s < i.getSize(); s++ )
-                    flash_instr[cntr+s] = NO_INSTR;
+                for (int s = 1; s < i.getSize(); s++)
+                    flash_instr[cntr + s] = NO_INSTR;
                 cntr += i.getSize();
             } else {
                 flash_instr[cntr] = NO_INSTR;
-                flash_instr[cntr+1] = MISALIGNED_INSTR;
+                flash_instr[cntr + 1] = MISALIGNED_INSTR;
                 cntr += 2;
             }
         }
 
         // now initialize the flash data
-        for ( int cntr = 0; cntr < p.program_end; cntr++ )
+        for (int cntr = 0; cntr < p.program_end; cntr++)
             flash_data[cntr] = p.readProgramByte(cntr);
     }
 
@@ -429,9 +413,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>insertProbe()</code> method allows a probe to be inserted
-     * that is executed before and after every instruction that is executed
-     * by the simulator
+     * The <code>insertProbe()</code> method allows a probe to be inserted that is executed before and after every
+     * instruction that is executed by the simulator
      *
      * @param p the probe to insert
      */
@@ -449,9 +432,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>removeProbe()</code> method removes a probe from the global
-     * probe table (the probes executed before and after every instruction).
-     * The comparison used is reference equality, not <code>.equals()</code>.
+     * The <code>removeProbe()</code> method removes a probe from the global probe table (the probes executed before and
+     * after every instruction). The comparison used is reference equality, not <code>.equals()</code>.
      *
      * @param b the probe to remove
      */
@@ -521,8 +503,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * Read a general purpose register's current value as an integer, without any sign
-     * extension.
+     * Read a general purpose register's current value as an integer, without any sign extension.
      *
      * @param reg the register to read
      * @return the current unsigned value of the register
@@ -532,11 +513,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * Read a general purpose register pair as an unsigned word. This method will
-     * read the value of the specified register and the value of the next register
-     * in numerical order and return the two values combined as an unsigned integer
-     * The specified register should be less than r31, because r32 (the next register)
-     * does not exist.
+     * Read a general purpose register pair as an unsigned word. This method will read the value of the specified
+     * register and the value of the next register in numerical order and return the two values combined as an unsigned
+     * integer The specified register should be less than r31, because r32 (the next register) does not exist.
      *
      * @param reg the low register of the pair to read
      * @return the current unsigned word value of the register pair
@@ -548,9 +527,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>setRegisterByte()</code> method writes a value to a general purpose
-     * register. This is a destructive update and should only be called from the
-     * appropriate places in the simulator.
+     * The <code>setRegisterByte()</code> method writes a value to a general purpose register. This is a destructive
+     * update and should only be called from the appropriate places in the simulator.
      *
      * @param reg the register to write the value to
      * @param val the value to write to the register
@@ -560,12 +538,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>setRegisterWord</code> method writes a word value to a general
-     * purpose register pair. This is a destructive update and should only be
-     * called from the appropriate places in the simulator. The specified register
-     * and the next register in numerical order are updated with the low-order and
-     * high-order byte of the value passed, respectively. The specified register should
-     * be less than r31, since r32 (the next register) does not exist.
+     * The <code>setRegisterWord</code> method writes a word value to a general purpose register pair. This is a
+     * destructive update and should only be called from the appropriate places in the simulator. The specified register
+     * and the next register in numerical order are updated with the low-order and high-order byte of the value passed,
+     * respectively. The specified register should be less than r31, since r32 (the next register) does not exist.
      *
      * @param reg the low register of the pair to write
      * @param val the word value to write to the register pair
@@ -578,9 +554,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getSREG()</code> method reads the value of the status register.
-     * The status register contains the I, T, H, S, V, N, Z, and C flags, in order
-     * from highest-order to lowest-order.
+     * The <code>getSREG()</code> method reads the value of the status register. The status register contains the I, T,
+     * H, S, V, N, Z, and C flags, in order from highest-order to lowest-order.
      *
      * @return the value of the status register as a byte.
      */
@@ -589,8 +564,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>setSREG()</code> method writes the value of the status register.
-     * This method should only be called from the appropriate places in the simulator.
+     * The <code>setSREG()</code> method writes the value of the status register. This method should only be called from
+     * the appropriate places in the simulator.
      *
      * @param val
      */
@@ -599,21 +574,22 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getDataByte()</code> method reads a byte value from the data memory
-     * (SRAM) at the specified address.
+     * The <code>getDataByte()</code> method reads a byte value from the data memory (SRAM) at the specified address.
      *
      * @param address the byte address to read
      * @return the value of the data memory at the specified address
-     * @throws java.lang.ArrayIndexOutOfBoundsException if the specified address is not the valid
-     *                                        memory range
+     * @throws java.lang.ArrayIndexOutOfBoundsException
+     *          if the specified address is not the valid memory range
      */
     public byte getDataByte(int address) {
         if (address >= sram_max) throw new AddressOutOfBoundsException("sram", address);
         if (address >= sram_start)
             return readDataByte(address - sram_start);
         if (address >= NUM_REGS) return ioregs[address - NUM_REGS].read();
-        if (address >= 0) return regs[address];
-        else throw new AddressOutOfBoundsException("sram", address);
+        if (address >= 0)
+            return regs[address];
+        else
+            throw new AddressOutOfBoundsException("sram", address);
     }
 
     private byte readDataByte(int offset) {
@@ -631,43 +607,44 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
 
     /**
-     * The <code>getProgramByte()</code> method reads a byte value from
-     * the program (Flash) memory. The flash memory generally stores read-only
-     * values and the instructions of the program. Care should be taken that
-     * the program memory at the specified address does not contain an instruction.
-     * This is because, in general, programs should not read instructions as
-     * data, and secondly, because no assembler is present in Avrora and therefore
-     * the actual byte value of an instruction may not be known.
+     * The <code>getProgramByte()</code> method reads a byte value from the program (Flash) memory. The flash memory
+     * generally stores read-only values and the instructions of the program. Care should be taken that the program
+     * memory at the specified address does not contain an instruction. This is because, in general, programs should not
+     * read instructions as data, and secondly, because no assembler is present in Avrora and therefore the actual byte
+     * value of an instruction may not be known.
      *
      * @param address the byte address at which to read
      * @return the byte value of the program memory at the specified address
-     * @throws java.lang.ArrayIndexOutOfBoundsException if the specified address is not the valid
-     *                                        program memory range
+     * @throws java.lang.ArrayIndexOutOfBoundsException
+     *          if the specified address is not the valid program memory range
      */
     public byte getProgramByte(int address) {
         try {
             return flash_data[address];
-        } catch ( ArrayIndexOutOfBoundsException e ) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             throw new AddressOutOfBoundsException("program", address);
         }
     }
 
     /**
-     * The <code>setDataByte()</code> method writes a value to the data
-     * memory (SRAM) of the state. This is generally meant for the simulator, related
-     * classes, and device implementations to use, but could also be used by
-     * debuggers and other tools.
+     * The <code>setDataByte()</code> method writes a value to the data memory (SRAM) of the state. This is generally
+     * meant for the simulator, related classes, and device implementations to use, but could also be used by debuggers
+     * and other tools.
      *
      * @param address the byte address at which to write the value
      * @param val     the value to write
      */
     public void setDataByte(int address, byte val) {
-        if (address >= sram_max) throw new AddressOutOfBoundsException("sram", address);
+        if (address >= sram_max)
+            throw new AddressOutOfBoundsException("sram", address);
         else if (address >= sram_start)
             writeDataByte(address - sram_start, val);
-        else if (address >= NUM_REGS) ioregs[address - NUM_REGS].write(val);
-        else if (address >= 0) regs[address] = val;
-        else throw new AddressOutOfBoundsException("sram", address);
+        else if (address >= NUM_REGS)
+            ioregs[address - NUM_REGS].write(val);
+        else if (address >= 0)
+            regs[address] = val;
+        else
+            throw new AddressOutOfBoundsException("sram", address);
     }
 
     private void writeDataByte(int offset, byte val) {
@@ -684,33 +661,30 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getCurrentInstr()</code> method reads the instruction at the current
-     * program counter value (PC).
-     * @return a reference to the <code>Instr</code> representing the instruction at
-     * the current program counter value
+     * The <code>getCurrentInstr()</code> method reads the instruction at the current program counter value (PC).
+     *
+     * @return a reference to the <code>Instr</code> representing the instruction at the current program counter value
      */
     public Instr getCurrentInstr() {
         return getInstr(pc);
     }
 
     /**
-     * The <code>getInstrSize()</code> method reads the size of the instruction
-     * at the given program address. This is needed in the interpreter to
-     * compute the target of a skip instruction (an instruction that skips
-     * over the instruction following it).
+     * The <code>getInstrSize()</code> method reads the size of the instruction at the given program address. This is
+     * needed in the interpreter to compute the target of a skip instruction (an instruction that skips over the
+     * instruction following it).
+     *
      * @param npc the program address of the instruction
-     * @return the size in bytes of the instruction at the specified
-     * program address
+     * @return the size in bytes of the instruction at the specified program address
      */
     public int getInstrSize(int npc) {
         return simulator.program.readInstr(npc).getSize();
     }
 
     /**
-     * The <code>getIORegisterByte()</code> method reads the value of an IO register.
-     * Invocation of this method causes an invocatiobn of the <code>.read()</code>
-     * method on the corresponding internal <code>IOReg</code> object, and its value
-     * returned.
+     * The <code>getIORegisterByte()</code> method reads the value of an IO register. Invocation of this method causes
+     * an invocatiobn of the <code>.read()</code> method on the corresponding internal <code>IOReg</code> object, and
+     * its value returned.
      *
      * @param ioreg the IO register number
      * @return the value of the IO register
@@ -720,10 +694,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>setIOReg</code> method installs the specified <code>IOReg</code>
-     * object to the specified IO register number. This method is generally only used
-     * in the simulator and in device implementations to set up the state correctly
-     * during initialization.
+     * The <code>setIOReg</code> method installs the specified <code>IOReg</code> object to the specified IO register
+     * number. This method is generally only used in the simulator and in device implementations to set up the state
+     * correctly during initialization.
      *
      * @param ioreg the IO register number
      * @param reg   the <code>IOReg<code> object to install
@@ -733,10 +706,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getIOReg()</code> method is used to retrieve a reference to
-     * the actual <code>IOReg</code> instance stored internally in the state. This is
-     * generally only used in the simulator and device implementations, and clients
-     * should probably not call this memory directly.
+     * The <code>getIOReg()</code> method is used to retrieve a reference to the actual <code>IOReg</code> instance
+     * stored internally in the state. This is generally only used in the simulator and device implementations, and
+     * clients should probably not call this memory directly.
      *
      * @param ioreg the IO register number to retrieve
      * @return a reference to the <code>IOReg</code> instance of the specified IO register
@@ -746,10 +718,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>setIORegisterByte()</code> method writes a value to the specified
-     * IO register. This is generally only used internally to the simulator and
-     * device implementations, and client interfaces should probably not call
-     * this method.
+     * The <code>setIORegisterByte()</code> method writes a value to the specified IO register. This is generally only
+     * used internally to the simulator and device implementations, and client interfaces should probably not call this
+     * method.
      *
      * @param ioreg the IO register number to which to write the value
      * @param val   the value to write to the IO register
@@ -759,12 +730,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>popByte()</code> method pops a byte from the stack by reading
-     * from the address pointed to by SP+1 and incrementing the stack pointer.
-     * This method, like all of the other methods that change the state,
-     * should probably only be used within the simulator. This method should not
-     * be called with an empty stack, as it will cause an exception consistent
-     * with trying to read non-existent memory.
+     * The <code>popByte()</code> method pops a byte from the stack by reading from the address pointed to by SP+1 and
+     * incrementing the stack pointer. This method, like all of the other methods that change the state, should probably
+     * only be used within the simulator. This method should not be called with an empty stack, as it will cause an
+     * exception consistent with trying to read non-existent memory.
      *
      * @return the value on the top of the stack
      */
@@ -775,10 +744,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>pushByte()</code> method pushes a byte onto the stack by writing
-     * to the memory address pointed to by the stack pointer and decrementing the
-     * stack pointer. This method, like all of the other methods that change the state,
-     * should probably only be used within the simulator.
+     * The <code>pushByte()</code> method pushes a byte onto the stack by writing to the memory address pointed to by
+     * the stack pointer and decrementing the stack pointer. This method, like all of the other methods that change the
+     * state, should probably only be used within the simulator.
      *
      * @param val the value to push onto the stack
      */
@@ -789,9 +757,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>setSP()</code> method updates the value of the stack pointer. Generally
-     * the stack pointer is stored in two IO registers <code>SPL</code> and <code>SPH</code>.
-     * This method should generally only be used within the simulator.
+     * The <code>setSP()</code> method updates the value of the stack pointer. Generally the stack pointer is stored in
+     * two IO registers <code>SPL</code> and <code>SPH</code>. This method should generally only be used within the
+     * simulator.
      *
      * @param val
      * @see avrora.sim.IORegisterConstants
@@ -802,8 +770,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getCycles()</code> method returns the clock cycle count recorded
-     * so far in the simulation.
+     * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the simulation.
      *
      * @return the number of clock cycles elapsed in the simulation
      */
@@ -812,9 +779,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getPostedInterrupts()</code> method returns a mask that represents
-     * all interrupts that are currently pending (meaning they are ready to be
-     * fired in priority order as long as the I flag is on).
+     * The <code>getPostedInterrupts()</code> method returns a mask that represents all interrupts that are currently
+     * pending (meaning they are ready to be fired in priority order as long as the I flag is on).
      *
      * @return a mask representing the interrupts which are posted for processing
      */
@@ -832,8 +798,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_I()</code> method returns the current value of the I bit
-     * in the status register as a boolean.
+     * The <code>getFlag_I()</code> method returns the current value of the I bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -842,8 +807,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_T()</code> method returns the current value of the T bit
-     * in the status register as a boolean.
+     * The <code>getFlag_T()</code> method returns the current value of the T bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -852,8 +816,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_H()</code> method returns the current value of the H bit
-     * in the status register as a boolean.
+     * The <code>getFlag_H()</code> method returns the current value of the H bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -862,8 +825,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_S()</code> method returns the current value of the S bit
-     * in the status register as a boolean.
+     * The <code>getFlag_S()</code> method returns the current value of the S bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -872,8 +834,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_V()</code> method returns the current value of the V bit
-     * in the status register as a boolean.
+     * The <code>getFlag_V()</code> method returns the current value of the V bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -882,8 +843,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_N()</code> method returns the current value of the N bit
-     * in the status register as a boolean.
+     * The <code>getFlag_N()</code> method returns the current value of the N bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -892,8 +852,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_Z()</code> method returns the current value of the Z bit
-     * in the status register as a boolean.
+     * The <code>getFlag_Z()</code> method returns the current value of the Z bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -902,8 +861,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getFlag_C()</code> method returns the current value of the C bit
-     * in the status register as a boolean.
+     * The <code>getFlag_C()</code> method returns the current value of the C bit in the status register as a boolean.
      *
      * @return the value of the flag
      */
@@ -912,21 +870,18 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getInstr()</code> can be used to retrieve a reference to the
-     * <code>Instr</code> object representing the instruction at the specified program
-     * address. Care should be taken that the address in program memory specified does
-     * not contain data. This is because Avrora does have a functioning disassembler
-     * and assumes that the <code>Instr</code> objects for each instruction in the
-     * program are known a priori.
+     * The <code>getInstr()</code> can be used to retrieve a reference to the <code>Instr</code> object representing the
+     * instruction at the specified program address. Care should be taken that the address in program memory specified
+     * does not contain data. This is because Avrora does have a functioning disassembler and assumes that the
+     * <code>Instr</code> objects for each instruction in the program are known a priori.
      *
      * @param address the byte address from which to read the instruction
-     * @return a reference to the <code>Instr</code> object representing the instruction
-     *         at that address in the program
+     * @return a reference to the <code>Instr</code> object representing the instruction at that address in the program
      */
     public Instr getInstr(int address) {
         try {
             return flash_instr[address];
-        } catch ( ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             throw new PCOutOfBoundsException(address);
         }
     }
@@ -936,10 +891,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getStackByte()</code> method reads a byte from the address
-     * specified by SP+1. This method should not be called with an empty stack,
-     * as it will cause an exception consistent with trying to read non-existent
-     * memory.
+     * The <code>getStackByte()</code> method reads a byte from the address specified by SP+1. This method should not be
+     * called with an empty stack, as it will cause an exception consistent with trying to read non-existent memory.
      *
      * @return the value on the top of the stack
      */
@@ -949,10 +902,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getSP()</code> method reads the current value of the stack pointer.
-     * Since the stack pointer is stored in two IO registers, this method will cause the
-     * invocation of the <code>.read()</code> method on each of the <code>IOReg</code>
-     * objects that store these values.
+     * The <code>getSP()</code> method reads the current value of the stack pointer. Since the stack pointer is stored
+     * in two IO registers, this method will cause the invocation of the <code>.read()</code> method on each of the
+     * <code>IOReg</code> objects that store these values.
      *
      * @return the value of the stack pointer as a byte address
      */
@@ -963,8 +915,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>isSleeping()</code> method returns whether the simulator is currently
-     * in a sleep mode.
+     * The <code>isSleeping()</code> method returns whether the simulator is currently in a sleep mode.
+     *
      * @return true if the simulator is in a sleep mode; false otherwise
      */
     public boolean isSleeping() {
@@ -972,11 +924,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>unpostInterrupt()</code> method is generally only used within the
-     * simulator which does pre-processing of interrupts before it posts them
-     * into the internal <code>State</code> instance. This method causes the
-     * specified interrupt number to be removed from the pending list of interrupts
-     * Clients should not use this method directly.
+     * The <code>unpostInterrupt()</code> method is generally only used within the simulator which does pre-processing
+     * of interrupts before it posts them into the internal <code>State</code> instance. This method causes the
+     * specified interrupt number to be removed from the pending list of interrupts Clients should not use this method
+     * directly.
      *
      * @param num the interrupt number to post
      */
@@ -993,11 +944,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>postInterrupt()</code> method is generally only used within the
-     * simulator which does pre-processing of interrupts before it posts them
-     * into the internal <code>State</code> instance. This method causes the
-     * specified interrupt number to be added to the pending list of interrupts
-     * Clients should not use this method directly.
+     * The <code>postInterrupt()</code> method is generally only used within the simulator which does pre-processing of
+     * interrupts before it posts them into the internal <code>State</code> instance. This method causes the specified
+     * interrupt number to be added to the pending list of interrupts Clients should not use this method directly.
      *
      * @param num the interrupt number to post
      */
@@ -1021,14 +970,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected ProbedInstr getProbedInstr(int addr) {
         Instr i = getInstr(addr);
         if (i instanceof ProbedInstr)
-            return ((ProbedInstr) i);
+            return ((ProbedInstr)i);
         else
             return null;
     }
 
     protected ProbedInstr makeProbedInstr(int addr) {
         ProbedInstr pi = getProbedInstr(addr);
-        if ( pi == null ) pi = new ProbedInstr(getInstr(addr), addr, null, this);
+        if (pi == null) pi = new ProbedInstr(getInstr(addr), addr, null, this);
         setInstr(pi, addr);
         return pi;
     }
@@ -1036,9 +985,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private class SREG_reg implements State.IOReg {
 
         /**
-         * The <code>read()</code> method reads the 8-bit value of the IO register
-         * as a byte. For simple <code>RWIOReg</code> instances, this simply returns
-         * the internally stored value.
+         * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For simple
+         * <code>RWIOReg</code> instances, this simply returns the internally stored value.
          *
          * @return the value of the register as a byte
          */
@@ -1052,13 +1000,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             if (N) value |= BaseInterpreter.SREG_N_MASK;
             if (Z) value |= BaseInterpreter.SREG_Z_MASK;
             if (C) value |= BaseInterpreter.SREG_C_MASK;
-            return (byte) value;
+            return (byte)value;
         }
 
         /**
-         * The <code>write()</code> method writes an 8-bit value to the IO register
-         * as a byte. For simple <code>RWIOReg</code> instances, this simply writes
-         * the internally stored value.
+         * The <code>write()</code> method writes an 8-bit value to the IO register as a byte. For simple
+         * <code>RWIOReg</code> instances, this simply writes the internally stored value.
          *
          * @param val the value to write
          */

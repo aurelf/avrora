@@ -40,45 +40,41 @@ import java.util.Comparator;
 import java.util.LinkedList;
 
 /**
- * The <code>Option</code> class represents an option that has been given on the
- * command line. The inner classes represent specific types of options such
- * as integers, booleans, and strings.
+ * The <code>Option</code> class represents an option that has been given on the command line. The inner classes
+ * represent specific types of options such as integers, booleans, and strings.
  *
  * @author Ben L. Titzer
  * @see Options
  */
 public abstract class Option {
     /**
-     * The <code>name</code> field stores a reference to the string name of
-     * this option.
+     * The <code>name</code> field stores a reference to the string name of this option.
      */
     protected final String name;
 
     /**
-     * The <code>description</code> field stores a reference to the string
-     * that represents the help item for this option.
+     * The <code>description</code> field stores a reference to the string that represents the help item for this
+     * option.
      */
     protected final String description;
 
     /**
-     * The <code>OptionComparator</code> is an implementation of the
-     * <code>java.util.Comparator</code> interface that is used to sort options
-     * alphabetically for printing in the help system.
+     * The <code>OptionComparator</code> is an implementation of the <code>java.util.Comparator</code> interface that is
+     * used to sort options alphabetically for printing in the help system.
      */
     public static final Comparator COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
-            Option opt1 = (Option) o1;
-            Option opt2 = (Option) o2;
+            Option opt1 = (Option)o1;
+            Option opt2 = (Option)o2;
             return String.CASE_INSENSITIVE_ORDER.compare(opt1.getName(), opt2.getName());
         }
     };
 
     /**
-     * The constructor of the <code>Option</code> class creates a new option
-     * with the specified name and description.
+     * The constructor of the <code>Option</code> class creates a new option with the specified name and description.
+     *
      * @param n a string name of the option
-     * @param d the description, as an unformatted string, of the help item for
-     * this option
+     * @param d the description, as an unformatted string, of the help item for this option
      */
     public Option(String n, String d) {
         name = n;
@@ -86,8 +82,9 @@ public abstract class Option {
     }
 
     /**
-     * The <code>getName()</code> method returns the string name of the option. This
-     * name is the same name used at the command line; i.e. -name=value.
+     * The <code>getName()</code> method returns the string name of the option. This name is the same name used at the
+     * command line; i.e. -name=value.
+     *
      * @return a string that is the name of this option
      */
     public String getName() {
@@ -95,30 +92,31 @@ public abstract class Option {
     }
 
     /**
-     * The <code>set()</code> method updates the value of the option. It is passed
-     * a string that is converted to the option's value by each respective option
-     * implementation. For example, an integer option converts the string from an
-     * integer into an integer value.
+     * The <code>set()</code> method updates the value of the option. It is passed a string that is converted to the
+     * option's value by each respective option implementation. For example, an integer option converts the string from
+     * an integer into an integer value.
+     *
      * @param val the string value passed at the command line
      */
     public abstract void set(String val);
 
     /**
-     * The <code>stringValue()</code> method returns a string representation of
-     * the value of the option. This is used in debugging and reporting purposes.
+     * The <code>stringValue()</code> method returns a string representation of the value of the option. This is used in
+     * debugging and reporting purposes.
+     *
      * @return a string representation of the value of the option.
      */
     public abstract String stringValue();
 
     /**
-     * The <code>printHelp()</code> method prints out a textual paragraph of the
-     * help item for this option to the terminal.
+     * The <code>printHelp()</code> method prints out a textual paragraph of the help item for this option to the
+     * terminal.
      */
     public abstract void printHelp();
 
     /**
-     * The <code>printDescription()</code> method prints out a well-formatted
-     * representation of the description of the item to the terminal.
+     * The <code>printDescription()</code> method prints out a well-formatted representation of the description of the
+     * item to the terminal.
      */
     public void printDescription() {
         Terminal.print(StringUtil.makeParagraphs(description, 8, 0, 78));
@@ -126,10 +124,10 @@ public abstract class Option {
     }
 
     /**
-     * The <code>printHeader()</code> method prints out the first line of the
-     * help text for this item. This includes the option's name, type, and its
-     * default value.
-     * @param type the type of the item as a string
+     * The <code>printHeader()</code> method prints out the first line of the help text for this item. This includes the
+     * option's name, type, and its default value.
+     *
+     * @param type     the type of the item as a string
      * @param defvalue the default value for the item as a string
      */
     public void printHeader(String type, String defvalue) {
@@ -142,36 +140,36 @@ public abstract class Option {
     }
 
     /**
-     * The <code>parseError()</code> method is called by an option implementation
-     * when there is a problem parsing the value for an option supplied by the user
-     * on the command line. For example, if an integer is not in the correct format,
-     * this method will be called, which will report an error.
+     * The <code>parseError()</code> method is called by an option implementation when there is a problem parsing the
+     * value for an option supplied by the user on the command line. For example, if an integer is not in the correct
+     * format, this method will be called, which will report an error.
+     *
      * @param name the name of the option
-     * @param val the (invalid) value passed
+     * @param val  the (invalid) value passed
      */
     protected void parseError(String name, String type, String val) {
-        Avrora.userError("Option Error", "invalid value for "+type+" option " +
-                StringUtil.quote(name) + " = " + StringUtil.quote(val));
+        Avrora.userError("Option Error", "invalid value for " + type + " option " +
+                                         StringUtil.quote(name) + " = " + StringUtil.quote(val));
     }
 
     /**
-     * The <code>Option.Long</code> class is an implementation of the
-     * <code>Option</code> class that encapsulates a long integer value.
+     * The <code>Option.Long</code> class is an implementation of the <code>Option</code> class that encapsulates a long
+     * integer value.
      */
     public static class Long extends Option {
         /**
-         * The <code>defvalue</code> field stores the default (initial) value for
-         * this option. It is used in reporting the help item.
+         * The <code>defvalue</code> field stores the default (initial) value for this option. It is used in reporting
+         * the help item.
          */
         protected final long defvalue;
         protected long value;
 
         /**
-         * The constructor for the <code>Option.Long</code> class creates a new option
-         * that can store long integers. It is given an option name, a help description,
-         * and a default value.
-         * @param nm the string name of the option
-         * @param val the default value of the option
+         * The constructor for the <code>Option.Long</code> class creates a new option that can store long integers. It
+         * is given an option name, a help description, and a default value.
+         *
+         * @param nm   the string name of the option
+         * @param val  the default value of the option
          * @param desc the description of the option
          */
         public Long(String nm, long val, String desc) {
@@ -182,6 +180,7 @@ public abstract class Option {
 
         /**
          * The <code>set()</code> method updates the value of the option.
+         *
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
@@ -194,6 +193,7 @@ public abstract class Option {
 
         /**
          * The <code>get()</code> method returns the current value of the option.
+         *
          * @return the value of the option as a long integer.
          */
         public long get() {
@@ -201,8 +201,9 @@ public abstract class Option {
         }
 
         /**
-         * The <code>stringValue()</code> method returns a string representation of
-         * the value of the option. This is used in debugging and reporting purposes.
+         * The <code>stringValue()</code> method returns a string representation of the value of the option. This is
+         * used in debugging and reporting purposes.
+         *
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
@@ -210,8 +211,8 @@ public abstract class Option {
         }
 
         /**
-         * The <code>printHelp()</code> method prints out a textual paragraph of the
-         * help item for this option to the terminal.
+         * The <code>printHelp()</code> method prints out a textual paragraph of the help item for this option to the
+         * terminal.
          */
         public void printHelp() {
             printHeader("long", "" + defvalue);
@@ -220,23 +221,23 @@ public abstract class Option {
     }
 
     /**
-     * The <code>Option.Double</code> class is an implementation of the
-     * <code>Option</code> class that encapsulates a double value.
+     * The <code>Option.Double</code> class is an implementation of the <code>Option</code> class that encapsulates a
+     * double value.
      */
     public static class Double extends Option {
         /**
-         * The <code>defvalue</code> field stores the default (initial) value for
-         * this option. It is used in reporting the help item.
+         * The <code>defvalue</code> field stores the default (initial) value for this option. It is used in reporting
+         * the help item.
          */
         protected final double defvalue;
         protected double value;
 
         /**
-         * The constructor for the <code>Option.Double</code> class creates a new option
-         * that can store long integers. It is given an option name, a help description,
-         * and a default value.
-         * @param nm the string name of the option
-         * @param val the default value of the option
+         * The constructor for the <code>Option.Double</code> class creates a new option that can store long integers.
+         * It is given an option name, a help description, and a default value.
+         *
+         * @param nm   the string name of the option
+         * @param val  the default value of the option
          * @param desc the description of the option
          */
         public Double(String nm, double val, String desc) {
@@ -247,6 +248,7 @@ public abstract class Option {
 
         /**
          * The <code>set()</code> method updates the value of the option.
+         *
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
@@ -259,6 +261,7 @@ public abstract class Option {
 
         /**
          * The <code>get()</code> method returns the current value of the option.
+         *
          * @return the value of the option as a double.
          */
         public double get() {
@@ -266,8 +269,9 @@ public abstract class Option {
         }
 
         /**
-         * The <code>stringValue()</code> method returns a string representation of
-         * the value of the option. This is used in debugging and reporting purposes.
+         * The <code>stringValue()</code> method returns a string representation of the value of the option. This is
+         * used in debugging and reporting purposes.
+         *
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
@@ -275,8 +279,8 @@ public abstract class Option {
         }
 
         /**
-         * The <code>printHelp()</code> method prints out a textual paragraph of the
-         * help item for this option to the terminal.
+         * The <code>printHelp()</code> method prints out a textual paragraph of the help item for this option to the
+         * terminal.
          */
         public void printHelp() {
             printHeader("double", "" + defvalue);
@@ -285,30 +289,31 @@ public abstract class Option {
     }
 
     /**
-     * The <code>Option.Long</code> class is an implementation of the
-     * <code>Option</code> class that encapsulates a long integer value.
+     * The <code>Option.Long</code> class is an implementation of the <code>Option</code> class that encapsulates a long
+     * integer value.
      */
     public static class Interval extends Option {
         /**
-         * The <code>default_low</code> field stores the default (initial) low value for
-         * this option. It is used in reporting the help item.
+         * The <code>default_low</code> field stores the default (initial) low value for this option. It is used in
+         * reporting the help item.
          */
         protected final long default_low;
         /**
-         * The <code>default_high</code> field stores the default (initial) high value for
-         * this option. It is used in reporting the help item.
+         * The <code>default_high</code> field stores the default (initial) high value for this option. It is used in
+         * reporting the help item.
          */
         protected final long default_high;
         protected long low;
         protected long high;
 
         /**
-         * The constructor for the <code>Option.Interval</code> class creates a new option
-         * that can store an interval which is denoted by a low integer and a high integer.
-         * It is given an option name, a help description, and a default value.
-         * @param nm the string name of the option
-         * @param l the default lowest value of the interval
-         * @param h the default highest value of the interval
+         * The constructor for the <code>Option.Interval</code> class creates a new option that can store an interval
+         * which is denoted by a low integer and a high integer. It is given an option name, a help description, and a
+         * default value.
+         *
+         * @param nm   the string name of the option
+         * @param l    the default lowest value of the interval
+         * @param h    the default highest value of the interval
          * @param desc the description of the option
          */
         public Interval(String nm, long l, long h, String desc) {
@@ -319,27 +324,28 @@ public abstract class Option {
 
         /**
          * The <code>set()</code> method updates the value of the option.
+         *
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
             CharacterIterator iter = new StringCharacterIterator(val);
             try {
                 // check for leading [
-                if ( !StringUtil.peekAndEat(iter, '['))
+                if (!StringUtil.peekAndEat(iter, '['))
                     parseError(name, "interval", val);
 
                 String lstr = StringUtil.readDecimalString(iter, 12);
                 low = java.lang.Long.parseLong(lstr);
 
                 // check for ',' separator
-                if ( !StringUtil.peekAndEat(iter, ','))
+                if (!StringUtil.peekAndEat(iter, ','))
                     parseError(name, "interval", val);
 
                 String hstr = StringUtil.readDecimalString(iter, 12);
                 high = java.lang.Long.parseLong(hstr);
 
                 // check for trailing ]
-                if ( !StringUtil.peekAndEat(iter, ']'))
+                if (!StringUtil.peekAndEat(iter, ']'))
                     parseError(name, "interval", val);
 
             } catch (NumberFormatException e) {
@@ -349,8 +355,8 @@ public abstract class Option {
         }
 
         /**
-         * The <code>getLow()</code> method returns the current lowest value of the
-         * interval for this option.
+         * The <code>getLow()</code> method returns the current lowest value of the interval for this option.
+         *
          * @return the lowest value of the interval as a long.
          */
         public long getLow() {
@@ -358,8 +364,8 @@ public abstract class Option {
         }
 
         /**
-         * The <code>getHigh()</code> method returns the current highest value of the
-         * interval for this option.
+         * The <code>getHigh()</code> method returns the current highest value of the interval for this option.
+         *
          * @return the highest value of the interval as a long.
          */
         public long getHigh() {
@@ -367,42 +373,43 @@ public abstract class Option {
         }
 
         /**
-         * The <code>stringValue()</code> method returns a string representation of
-         * the value of the option. This is used in debugging and reporting purposes.
+         * The <code>stringValue()</code> method returns a string representation of the value of the option. This is
+         * used in debugging and reporting purposes.
+         *
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return "[" + low +", "+high+"]";
+            return "[" + low + ", " + high + "]";
         }
 
         /**
-         * The <code>printHelp()</code> method prints out a textual paragraph of the
-         * help item for this option to the terminal.
+         * The <code>printHelp()</code> method prints out a textual paragraph of the help item for this option to the
+         * terminal.
          */
         public void printHelp() {
-            printHeader("interval", "[" + default_low +","+default_high+"]");
+            printHeader("interval", "[" + default_low + "," + default_high + "]");
             printDescription();
         }
     }
 
     /**
-     * The <code>Option.Str</code> class is an implementation of the
-     * <code>Option</code> class that encapsulates a string.
+     * The <code>Option.Str</code> class is an implementation of the <code>Option</code> class that encapsulates a
+     * string.
      */
     public static class Str extends Option {
         /**
-         * The <code>defvalue</code> field stores the default (initial) value for
-         * this option. It is used in reporting the help item.
+         * The <code>defvalue</code> field stores the default (initial) value for this option. It is used in reporting
+         * the help item.
          */
         protected final String defvalue;
         protected String value;
 
         /**
-         * The constructor for the <code>Option.Str</code> class creates a new option
-         * that can store a string. It is given an option name, a help description,
-         * and a default value.
-         * @param nm the string name of the option
-         * @param val the default value of the option
+         * The constructor for the <code>Option.Str</code> class creates a new option that can store a string. It is
+         * given an option name, a help description, and a default value.
+         *
+         * @param nm   the string name of the option
+         * @param val  the default value of the option
          * @param desc the description of the option
          */
         public Str(String nm, String val, String desc) {
@@ -413,6 +420,7 @@ public abstract class Option {
 
         /**
          * The <code>set()</code> method updates the value of the option.
+         *
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
@@ -421,6 +429,7 @@ public abstract class Option {
 
         /**
          * The <code>get()</code> method returns the current value of the option.
+         *
          * @return the value of the option as a string.
          */
         public String get() {
@@ -428,8 +437,9 @@ public abstract class Option {
         }
 
         /**
-         * The <code>stringValue()</code> method returns a string representation of
-         * the value of the option. This is used in debugging and reporting purposes.
+         * The <code>stringValue()</code> method returns a string representation of the value of the option. This is
+         * used in debugging and reporting purposes.
+         *
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
@@ -437,8 +447,8 @@ public abstract class Option {
         }
 
         /**
-         * The <code>printHelp()</code> method prints out a textual paragraph of the
-         * help item for this option to the terminal.
+         * The <code>printHelp()</code> method prints out a textual paragraph of the help item for this option to the
+         * terminal.
          */
         public void printHelp() {
             printHeader("string", "" + defvalue);
@@ -447,19 +457,19 @@ public abstract class Option {
     }
 
     /**
-     * The <code>Option.List</code> class is an implementation of the
-     * <code>Option</code> class that encapsulates a list.
+     * The <code>Option.List</code> class is an implementation of the <code>Option</code> class that encapsulates a
+     * list.
      */
     public static class List extends Option {
         protected java.util.List value;
         protected String orig;
 
         /**
-         * The constructor for the <code>Option.List</code> class creates a new option
-         * that can store a list of strings. It is given an option name, a help description,
-         * and a default value.
-         * @param nm the string name of the option
-         * @param val the default value of the option
+         * The constructor for the <code>Option.List</code> class creates a new option that can store a list of strings.
+         * It is given an option name, a help description, and a default value.
+         *
+         * @param nm   the string name of the option
+         * @param val  the default value of the option
          * @param desc the description of the option
          */
         public List(String nm, String val, String desc) {
@@ -469,6 +479,7 @@ public abstract class Option {
 
         /**
          * The <code>set()</code> method updates the value of the option.
+         *
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
@@ -477,6 +488,7 @@ public abstract class Option {
 
         /**
          * The <code>get()</code> method returns the current value of the option.
+         *
          * @return the value of the option as a <code>java.util.List</code>.
          */
         public java.util.List get() {
@@ -484,8 +496,9 @@ public abstract class Option {
         }
 
         /**
-         * The <code>stringValue()</code> method returns a string representation of
-         * the value of the option. This is used in debugging and reporting purposes.
+         * The <code>stringValue()</code> method returns a string representation of the value of the option. This is
+         * used in debugging and reporting purposes.
+         *
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
@@ -513,8 +526,8 @@ public abstract class Option {
         }
 
         /**
-         * The <code>printHelp()</code> method prints out a textual paragraph of the
-         * help item for this option to the terminal.
+         * The <code>printHelp()</code> method prints out a textual paragraph of the help item for this option to the
+         * terminal.
          */
         public void printHelp() {
             String defvalue = orig.equals("") ? "(null)" : orig;
@@ -524,23 +537,23 @@ public abstract class Option {
     }
 
     /**
-     * The <code>Option.Bool</code> class is an implementation of the
-     * <code>Option</code> class that encapsulates a boolean.
+     * The <code>Option.Bool</code> class is an implementation of the <code>Option</code> class that encapsulates a
+     * boolean.
      */
     public static class Bool extends Option {
         /**
-         * The <code>defvalue</code> field stores the default (initial) value for
-         * this option. It is used in reporting the help item.
+         * The <code>defvalue</code> field stores the default (initial) value for this option. It is used in reporting
+         * the help item.
          */
         protected final boolean defvalue;
         protected boolean value;
 
         /**
-         * The constructor for the <code>Option.Long</code> class creates a new option
-         * that can store a boolean value. It is given an option name, a help description,
-         * and a default value.
-         * @param nm the string name of the option
-         * @param val the default value of the option
+         * The constructor for the <code>Option.Long</code> class creates a new option that can store a boolean value.
+         * It is given an option name, a help description, and a default value.
+         *
+         * @param nm   the string name of the option
+         * @param val  the default value of the option
          * @param desc the description of the option
          */
         public Bool(String nm, boolean val, String desc) {
@@ -551,6 +564,7 @@ public abstract class Option {
 
         /**
          * The <code>set()</code> method updates the value of the option.
+         *
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
@@ -564,6 +578,7 @@ public abstract class Option {
 
         /**
          * The <code>get()</code> method returns the current value of the option.
+         *
          * @return the value of the option as a boolean.
          */
         public boolean get() {
@@ -571,8 +586,9 @@ public abstract class Option {
         }
 
         /**
-         * The <code>stringValue()</code> method returns a string representation of
-         * the value of the option. This is used in debugging and reporting purposes.
+         * The <code>stringValue()</code> method returns a string representation of the value of the option. This is
+         * used in debugging and reporting purposes.
+         *
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
@@ -580,8 +596,8 @@ public abstract class Option {
         }
 
         /**
-         * The <code>printHelp()</code> method prints out a textual paragraph of the
-         * help item for this option to the terminal.
+         * The <code>printHelp()</code> method prints out a textual paragraph of the help item for this option to the
+         * terminal.
          */
         public void printHelp() {
             printHeader("boolean", "" + defvalue);

@@ -33,53 +33,49 @@
 package avrora.core.isdl.ast;
 
 /**
- * The <code>Arith</code> class is a container for classes that represent
- * integer arithmetic in the IR. For example, the class <code>Arith.AddExpr</code>
- * represents an expression that is the addition of two integers. The result
- * of all operations on integers are integers, therefore, every expression
- * that is a subclass of <code>Arith</code> has a result type of integer.
+ * The <code>Arith</code> class is a container for classes that represent integer arithmetic in the IR. For example, the
+ * class <code>Arith.AddExpr</code> represents an expression that is the addition of two integers. The result of all
+ * operations on integers are integers, therefore, every expression that is a subclass of <code>Arith</code> has a
+ * result type of integer.
  *
  * @author Ben L. Titzer
  */
 public abstract class Arith extends Expr {
 
     /**
-     * The <code>BinOp</code> inner class represents an operation on
-     * two integers with an infix binary operation. For example, addition,
-     * multiplication, bitwise and, and such operations are binary infix
-     * and therefore subclasses of this class.
+     * The <code>BinOp</code> inner class represents an operation on two integers with an infix binary operation. For
+     * example, addition, multiplication, bitwise and, and such operations are binary infix and therefore subclasses of
+     * this class.
      */
     public abstract static class BinOp extends Arith {
         /**
-         * The <code>operation</code> field stores the string name of the
-         * operation of this binary operation. For example, '+' represents
-         * addition.
+         * The <code>operation</code> field stores the string name of the operation of this binary operation. For
+         * example, '+' represents addition.
          */
         public final String operation;
 
         /**
-         * The <code>left</code> field stores a reference to the expression
-         * that is the left operand of the binary operation.
+         * The <code>left</code> field stores a reference to the expression that is the left operand of the binary
+         * operation.
          */
         public final Expr left;
 
         /**
-         * The <code>left</code> field stores a reference to the expression
-         * that is the right operand of the binary operation.
+         * The <code>left</code> field stores a reference to the expression that is the right operand of the binary
+         * operation.
          */
         public final Expr right;
 
         /**
-         * The <code>precedence</code> field stores the precedence level of
-         * this binary operation. This is used to compute when to surround
-         * inner expressions with parentheses when printing code in infix
-         * notation.
+         * The <code>precedence</code> field stores the precedence level of this binary operation. This is used to
+         * compute when to surround inner expressions with parentheses when printing code in infix notation.
          */
         public final int precedence;
 
         /**
-         * The constructor of the <code>BinOp</code> class initializes the
-         * public final fields that form the structure of this expression.
+         * The constructor of the <code>BinOp</code> class initializes the public final fields that form the structure
+         * of this expression.
+         *
          * @param p the precedence of this expression
          * @param l the left expression operand
          * @param o the string name of the operation
@@ -93,9 +89,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>isConstantExpr()</code> method tests whether this expression
-         * is a constant expression (i.e. it is reducable to a constant and has
-         * no references to variables, maps, etc).
+         * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e. it is
+         * reducable to a constant and has no references to variables, maps, etc).
+         *
          * @return true if this expression can be evaluated to a constant; false otherwise
          */
         public boolean isConstantExpr() {
@@ -103,9 +99,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(ExprVisitor v) {
@@ -113,10 +109,10 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>toString()</code> method recursively converts this expression
-         * to a string. For binary operations, inner expressions will be nested
-         * within parentheses if their precedence is lower than the precedence
-         * of the parent expression.
+         * The <code>toString()</code> method recursively converts this expression to a string. For binary operations,
+         * inner expressions will be nested within parentheses if their precedence is lower than the precedence of the
+         * parent expression.
+         *
          * @return a string representation of this expression
          */
         public String toString() {
@@ -124,12 +120,11 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>getPrecedence()</code> method gets the binding precedence for
-         * this expression. This is used to compute when inner expressions must be
-         * nested within parentheses in order to preserve the implied order of
+         * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is used to
+         * compute when inner expressions must be nested within parentheses in order to preserve the implied order of
          * evaluation.
-         * @return an integer representing the precedence of this expression; higher
-         * numbers are higher precedence
+         *
+         * @return an integer representing the precedence of this expression; higher numbers are higher precedence
          */
         public int getPrecedence() {
             return precedence;
@@ -137,30 +132,28 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>UnOp</code> inner class represents an operation on a
-     * single integer value. For example, the bitwise complement and the
-     * negation of an integer are operations on a single integer that
-     * produce a single integer result.
+     * The <code>UnOp</code> inner class represents an operation on a single integer value. For example, the bitwise
+     * complement and the negation of an integer are operations on a single integer that produce a single integer
+     * result.
      */
     public abstract static class UnOp extends Arith {
         /**
-         * The <code>operation</code> field stores the string name of the
-         * operation being performed on the expression. For example, '~'
-         * represents bitwise negation.
+         * The <code>operation</code> field stores the string name of the operation being performed on the expression.
+         * For example, '~' represents bitwise negation.
          */
         public final String operation;
 
         /**
-         * The <code>operand</code> field stores a reference to the
-         * expression operand of this operation.
+         * The <code>operand</code> field stores a reference to the expression operand of this operation.
          */
         public final Expr operand;
 
         /**
-         * The constructor of the <code>UnOp</code> class initializes the
-         * public final fields that form the structure of this expression.
+         * The constructor of the <code>UnOp</code> class initializes the public final fields that form the structure of
+         * this expression.
+         *
          * @param op the string name of the operation
-         * @param o the operand of this operation
+         * @param o  the operand of this operation
          */
         public UnOp(String op, Expr o) {
             operand = o;
@@ -168,9 +161,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>isConstantExpr()</code> method tests whether this expression
-         * is a constant expression (i.e. it is reducable to a constant and has
-         * no references to variables, maps, etc).
+         * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e. it is
+         * reducable to a constant and has no references to variables, maps, etc).
+         *
          * @return true if this expression can be evaluated to a constant; false otherwise
          */
         public boolean isConstantExpr() {
@@ -178,9 +171,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(ExprVisitor v) {
@@ -188,10 +181,10 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>toString()</code> method recursively converts this expression
-         * to a string. For binary operations, inner expressions will be nested
-         * within parentheses if their precedence is lower than the precedence
-         * of the parent expression.
+         * The <code>toString()</code> method recursively converts this expression to a string. For binary operations,
+         * inner expressions will be nested within parentheses if their precedence is lower than the precedence of the
+         * parent expression.
+         *
          * @return a string representation of this expression
          */
         public String toString() {
@@ -199,12 +192,11 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>getPrecedence()</code> method gets the binding precedence for
-         * this expression. This is used to compute when inner expressions must be
-         * nested within parentheses in order to preserve the implied order of
+         * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is used to
+         * compute when inner expressions must be nested within parentheses in order to preserve the implied order of
          * evaluation.
-         * @return an integer representing the precedence of this expression; higher
-         * numbers are higher precedence
+         *
+         * @return an integer representing the precedence of this expression; higher numbers are higher precedence
          */
         public int getPrecedence() {
             return PREC_UN;
@@ -212,8 +204,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>AddExpr</code> inner class represents the addition
-     * of two integer values that produces a new integer value.
+     * The <code>AddExpr</code> inner class represents the addition of two integer values that produces a new integer
+     * value.
      */
     public static class AddExpr extends BinOp {
         public AddExpr(Expr left, Expr right) {
@@ -221,9 +213,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -231,13 +223,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -245,8 +236,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>SubExpr</code> inner class represents the subtraction
-     * of one integer value from another that results in a new integer value.
+     * The <code>SubExpr</code> inner class represents the subtraction of one integer value from another that results in
+     * a new integer value.
      */
     public static class SubExpr extends BinOp {
         public SubExpr(Expr left, Expr right) {
@@ -254,9 +245,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -264,13 +255,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -278,8 +268,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>MulExpr</code> inner class represents the multiplication
-     * of two integer values which produces a single integer result.
+     * The <code>MulExpr</code> inner class represents the multiplication of two integer values which produces a single
+     * integer result.
      */
     public static class MulExpr extends BinOp {
         public MulExpr(Expr left, Expr right) {
@@ -287,9 +277,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -297,13 +287,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -311,8 +300,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>DivExpr</code> inner class represents a division operation
-     * on two integer values which produces a single integer result.
+     * The <code>DivExpr</code> inner class represents a division operation on two integer values which produces a
+     * single integer result.
      */
     public static class DivExpr extends BinOp {
         public DivExpr(Expr left, Expr right) {
@@ -320,9 +309,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -330,13 +319,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -344,8 +332,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>AndExpr</code> class represents the bitwise and of two
-     * integer values that produces a single integer result.
+     * The <code>AndExpr</code> class represents the bitwise and of two integer values that produces a single integer
+     * result.
      */
     public static class AndExpr extends BinOp {
         public AndExpr(Expr left, Expr right) {
@@ -353,9 +341,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -363,13 +351,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -377,8 +364,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>OrExpr</code> class represents the bitwise inclusive or of two
-     * integer values that produces a single integer result.
+     * The <code>OrExpr</code> class represents the bitwise inclusive or of two integer values that produces a single
+     * integer result.
      */
     public static class OrExpr extends BinOp {
         public OrExpr(Expr left, Expr right) {
@@ -386,9 +373,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -396,13 +383,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -410,8 +396,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>XorExpr</code> class represents the bitwise exclusive or of two
-     * integer values that produces a single integer result.
+     * The <code>XorExpr</code> class represents the bitwise exclusive or of two integer values that produces a single
+     * integer result.
      */
     public static class XorExpr extends BinOp {
         public XorExpr(Expr left, Expr right) {
@@ -419,9 +405,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -429,13 +415,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -443,8 +428,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>ShiftLeftExpr</code> class represents the shift left of an
-     * integer value that produces a single integer result.
+     * The <code>ShiftLeftExpr</code> class represents the shift left of an integer value that produces a single integer
+     * result.
      */
     public static class ShiftLeftExpr extends BinOp {
         public ShiftLeftExpr(Expr left, Expr right) {
@@ -452,9 +437,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -462,13 +447,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -476,8 +460,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>ShiftRightExpr</code> class represents the shift left of an
-     * integer value that produces a single integer result.
+     * The <code>ShiftRightExpr</code> class represents the shift left of an integer value that produces a single
+     * integer result.
      */
     public static class ShiftRightExpr extends BinOp {
         public ShiftRightExpr(Expr left, Expr right) {
@@ -485,9 +469,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -495,13 +479,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -509,8 +492,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>CompExpr</code> class represents the bitwise complement of
-     * an integer value that produces a single integer result.
+     * The <code>CompExpr</code> class represents the bitwise complement of an integer value that produces a single
+     * integer result.
      */
     public static class CompExpr extends UnOp {
         public CompExpr(Expr l) {
@@ -518,9 +501,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -528,13 +511,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);
@@ -542,8 +524,8 @@ public abstract class Arith extends Expr {
     }
 
     /**
-     * The <code>NegExpr</code> class represents the negation (sign reversal)
-     * of an integer value that produces a single integer result.
+     * The <code>NegExpr</code> class represents the negation (sign reversal) of an integer value that produces a single
+     * integer result.
      */
     public static class NegExpr extends UnOp {
         public NegExpr(Expr l) {
@@ -551,9 +533,9 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -561,13 +543,12 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern for rebuilding of expressions. This visitor allows code to
-         * be slightly modified while only writing visit methods for the
-         * parts of the syntax tree affected.
+         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions.
+         * This visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax
+         * tree affected.
+         *
          * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code>
-         * method of the rebuilder
+         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
         public Expr accept(CodeRebuilder r) {
             return r.visit(this);

@@ -36,9 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * The <code>StmtVisitor</code> interface implements the visitor pattern
- * so that clients can visit the abstract syntax tree nodes representing
- * statements in the program.
+ * The <code>StmtVisitor</code> interface implements the visitor pattern so that clients can visit the abstract syntax
+ * tree nodes representing statements in the program.
  *
  * @author Ben L. Titzer
  */
@@ -65,9 +64,8 @@ public interface StmtVisitor {
     public void visit(VarBitRangeAssignStmt s);
 
     /**
-     * The <code>DepthFirst</code> class is a base implementation of the
-     * <code>StmtVisitor</code> interface that visits the tree in depth-first
-     * order.
+     * The <code>DepthFirst</code> class is a base implementation of the <code>StmtVisitor</code> interface that visits
+     * the tree in depth-first order.
      *
      * @author Ben L. Titzer
      */
@@ -89,7 +87,7 @@ public interface StmtVisitor {
             Iterator i = l.iterator();
             // visit all the statements in the block
             while (i.hasNext()) {
-                Stmt t = (Stmt) i.next();
+                Stmt t = (Stmt)i.next();
                 t.accept(this);
             }
         }

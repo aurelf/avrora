@@ -49,8 +49,8 @@ import java.io.PrintStream;
 import java.io.FileOutputStream;
 
 /**
- * The <code>CFGAction</code> is an Avrora action that allows a control flow graph to
- * be generated and output to the terminal or to a file.
+ * The <code>CFGAction</code> is an Avrora action that allows a control flow graph to be generated and output to the
+ * terminal or to a file.
  *
  * @author Ben L. Titzer
  */
@@ -62,31 +62,31 @@ public class CFGAction extends Action {
             "format supported by the \"dot\" graph tool.";
 
     public final Option.Bool COLOR_PROCEDURES = newOption("color-procedures", true,
-            "This option is used when outputting in the " +
-            "\"dot\" output format. When this option is true, the control flow graph " +
-            "utility will attempt to discover procedures and color them in the output.");
+                                                          "This option is used when outputting in the " +
+                                                          "\"dot\" output format. When this option is true, the control flow graph " +
+                                                          "utility will attempt to discover procedures and color them in the output.");
     public final Option.Bool GROUP_PROCEDURES = newOption("group-procedures", true,
-            "This option is used when outputting in the " +
-            "\"dot\" output format. When this option is true, the control flow graph " +
-            "utility will attempt to discover procedures and group them as subgraphs " +
-            "in the output.");
+                                                          "This option is used when outputting in the " +
+                                                          "\"dot\" output format. When this option is true, the control flow graph " +
+                                                          "utility will attempt to discover procedures and group them as subgraphs " +
+                                                          "in the output.");
     public final Option.Bool COLLAPSE_PROCEDURES = newOption("collapse-procedures", false,
-            "This option is used when outputting in the " +
-            "\"dot\" output format. When this option is true, the control flow graph " +
-            "utility will attempt to discover procedures within the control flow graph " +
-            "and collapse whole procedures to a single node in the output.");
+                                                             "This option is used when outputting in the " +
+                                                             "\"dot\" output format. When this option is true, the control flow graph " +
+                                                             "utility will attempt to discover procedures within the control flow graph " +
+                                                             "and collapse whole procedures to a single node in the output.");
     public final Option.Str OUTPUT = newOption("output", "",
-            "This option selects the output format for the control flow graph. When this " +
-            "option is set to \"dot\", then the control flow graph will be outputted in " +
-            "a format suitable for parsing by the dot graph rendering tool.");
+                                               "This option selects the output format for the control flow graph. When this " +
+                                               "option is set to \"dot\", then the control flow graph will be outputted in " +
+                                               "a format suitable for parsing by the dot graph rendering tool.");
     public final Option.Str FILE = newOption("file", "",
-            "This option specifies the output file for the result of generating a" +
-            "\"dot\" format control flow graph. When this option is not set, a textual " +
-            "representation of the graph will be printed to the terminal.");
+                                             "This option specifies the output file for the result of generating a" +
+                                             "\"dot\" format control flow graph. When this option is not set, a textual " +
+                                             "representation of the graph will be printed to the terminal.");
 
     /**
-     * The default constructor of the <code>CFGAction</code> class simply
-     * creates an empty instance with the appropriate name and help string.
+     * The default constructor of the <code>CFGAction</code> class simply creates an empty instance with the appropriate
+     * name and help string.
      */
     public CFGAction() {
         super("cfg", HELP);
@@ -111,13 +111,13 @@ public class CFGAction extends Action {
         Iterator biter = cfg.getSortedBlockIterator();
 
         while (biter.hasNext()) {
-            ControlFlowGraph.Block block = (ControlFlowGraph.Block) biter.next();
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block)biter.next();
             Terminal.print("[");
             Terminal.printBrightCyan(StringUtil.addrToString(block.getAddress()));
             Terminal.println(":" + block.getSize() + "]");
             Iterator iiter = block.getInstrIterator();
             while (iiter.hasNext()) {
-                Instr instr = (Instr) iiter.next();
+                Instr instr = (Instr)iiter.next();
                 Terminal.printBrightBlue("    " + instr.getName());
                 Terminal.println(" " + instr.getOperands());
             }
@@ -130,7 +130,7 @@ public class CFGAction extends Action {
     private void dumpDotCFG(ControlFlowGraph cfg) throws java.io.IOException {
         String fname;
         Printer p;
-        if ( (fname = FILE.get()).equals(""))
+        if ((fname = FILE.get()).equals(""))
             p = Printer.STDOUT;
         else
             p = new Printer(new PrintStream(new FileOutputStream(fname)));
@@ -156,7 +156,7 @@ public class CFGAction extends Action {
 
             Iterator blocks = cfg.getSortedBlockIterator();
             while (blocks.hasNext()) {
-                ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
+                ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
                 ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
                 // only print out nodes that have no color, are shared, or are entrypoints
@@ -167,7 +167,7 @@ public class CFGAction extends Action {
             // print out blocks that have no color
             Iterator block_iter = cfg.getSortedBlockIterator();
             while (block_iter.hasNext()) {
-                ControlFlowGraph.Block block = (ControlFlowGraph.Block) block_iter.next();
+                ControlFlowGraph.Block block = (ControlFlowGraph.Block)block_iter.next();
                 ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
                 // only print out nodes that have no color first
@@ -179,11 +179,11 @@ public class CFGAction extends Action {
             int num = 0;
             Iterator entry_iter = pmap.getProcedureEntrypoints().iterator();
             while (entry_iter.hasNext()) {
-                ControlFlowGraph.Block entry = (ControlFlowGraph.Block) entry_iter.next();
+                ControlFlowGraph.Block entry = (ControlFlowGraph.Block)entry_iter.next();
                 p.startblock("subgraph cluster" + (num++));
                 Iterator blocks = pmap.getProcedureBlocks(entry).iterator();
                 while (blocks.hasNext()) {
-                    ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
+                    ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
                     printBlock(block, p);
                 }
                 p.endblock();
@@ -193,7 +193,7 @@ public class CFGAction extends Action {
             // no grouping or collapsing of nodes
             Iterator blocks = cfg.getSortedBlockIterator();
             while (blocks.hasNext()) {
-                ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
+                ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
                 printBlock(block, p);
             }
         }
@@ -203,7 +203,7 @@ public class CFGAction extends Action {
         // add each block to its respective color set
         Iterator blocks = cfg.getBlockIterator();
         while (blocks.hasNext()) {
-            ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
             ControlFlowGraph.Block entry = pmap.getProcedureContaining(block);
 
             if (entry != null) {
@@ -225,7 +225,7 @@ public class CFGAction extends Action {
     private void dumpDotEdges(Printer p) {
         Iterator blocks = cfg.getBlockIterator();
         while (blocks.hasNext()) {
-            ControlFlowGraph.Block block = (ControlFlowGraph.Block) blocks.next();
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block)blocks.next();
             dumpDotEdges(block.getEdgeIterator(), p);
         }
     }
@@ -240,7 +240,7 @@ public class CFGAction extends Action {
 
         Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
-            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge) edges.next();
+            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
             String type = e.getType();
             if (isReturnEdge(type)) return "hexagon";
         }
@@ -254,7 +254,7 @@ public class CFGAction extends Action {
                                              "deeppink2", "yellow", "seagreen3", "orangered1"};
 
     private String colorize(ControlFlowGraph.Block b) {
-        String color = (String) BLOCK_COLORS.get(b);
+        String color = (String)BLOCK_COLORS.get(b);
         if (color != null) return color;
         color = palette[colorCounter];
         colorCounter = (colorCounter + 1) % palette.length;
@@ -263,7 +263,7 @@ public class CFGAction extends Action {
     }
 
     private String getColor(ControlFlowGraph.Block block) {
-        String color = (String) BLOCK_COLORS.get(block);
+        String color = (String)BLOCK_COLORS.get(block);
         if (color == null) return "";
         return color;
     }
@@ -274,7 +274,7 @@ public class CFGAction extends Action {
 
     private void dumpEdges(Iterator edges) {
         while (edges.hasNext()) {
-            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge) edges.next();
+            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
             ControlFlowGraph.Block t = e.getTarget();
 
             if (e.getType().equals(""))
@@ -295,7 +295,7 @@ public class CFGAction extends Action {
 
     private void dumpDotEdges(Iterator edges, Printer p) {
         while (edges.hasNext()) {
-            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge) edges.next();
+            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
             ControlFlowGraph.Block source = e.getSource();
             ControlFlowGraph.Block target = e.getTarget();
             ControlFlowGraph.Block es, et;
@@ -339,7 +339,7 @@ public class CFGAction extends Action {
             // emit indirect edges
             Iterator i = l.iterator();
             while (i.hasNext()) {
-                int taddr = ((Integer) i.next()).intValue();
+                int taddr = ((Integer)i.next()).intValue();
                 ControlFlowGraph.Block target = cfg.getBlockStartingAt(taddr);
                 emitEdge(target, p, sName, type, false);
             }

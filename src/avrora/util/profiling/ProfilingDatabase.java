@@ -35,12 +35,11 @@ package avrora.util.profiling;
 import avrora.util.Terminal;
 
 /**
- * The profiling database. Collects information about profiling
- * and is implemented as a static class. This allows other tools
- * to register subclasses of ProfilingData and the Database will
- * collect them and report their statistics.
+ * The profiling database. Collects information about profiling and is implemented as a static class. This allows other
+ * tools to register subclasses of ProfilingData and the Database will collect them and report their statistics.
+ *
  * @author Ben L. Titzer
- **/
+ */
 public class ProfilingDatabase {
 
     static ProfilingDataList datalist = null;
@@ -48,14 +47,14 @@ public class ProfilingDatabase {
 
     /**
      * Register a ProfilingData object
-     **/
+     */
     public static void register(ProfilingData d) {
         datalist = new ProfilingDataList(d, datalist);
     }
 
     /**
      * Generate report of the profiling statistics.
-     **/
+     */
     public static void reportData() {
         if (datalist == null) {
             Terminal.println("Profiling Database has no information.");
@@ -82,7 +81,7 @@ public class ProfilingDatabase {
 
 /**
  * A class that represents a linked list of ProfilingData objects.
- **/
+ */
 class ProfilingDataList {
     ProfilingData data;
     ProfilingDataList next;

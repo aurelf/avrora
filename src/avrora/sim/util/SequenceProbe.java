@@ -37,56 +37,46 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 
 /**
- * The <code>SequenceProbe</code> is a probe composer that allows a probe to
- * be fired for every instruction executed between a specified entrypoint
- * and a specified exit point. For example, if the entrypoint is a call
- * instruction and the exit point is the instruction following the call
- * instruction, then the probe will fire for every instruction executed
- * between the call and return, including both the call and the instruction
- * following the call. <br><br>
+ * The <code>SequenceProbe</code> is a probe composer that allows a probe to be fired for every instruction executed
+ * between a specified entrypoint and a specified exit point. For example, if the entrypoint is a call instruction and
+ * the exit point is the instruction following the call instruction, then the probe will fire for every instruction
+ * executed between the call and return, including both the call and the instruction following the call. <br><br>
  * <p/>
- * This probe supports nested entries (e.g. recursive calls). It is best
- * used on pieces of the program that are single-entry/single-exit such as
- * calls, interrupts, basic blocks, and SSE regions of control flow
- * graphs. It does not work well for loops because of the nesting
- * behavior.
+ * This probe supports nested entries (e.g. recursive calls). It is best used on pieces of the program that are
+ * single-entry/single-exit such as calls, interrupts, basic blocks, and SSE regions of control flow graphs. It does not
+ * work well for loops because of the nesting behavior.
  *
  * @author Ben L. Titzer
  */
 public class SequenceProbe implements Simulator.Probe {
 
     /**
-     * The immutable <code>entry_addr</code> field stores the address
-     * that enables the per-instruction calling of the probe passed
-     * in the constructor.
+     * The immutable <code>entry_addr</code> field stores the address that enables the per-instruction calling of the
+     * probe passed in the constructor.
      */
     public final int entry_addr;
 
     /**
-     * The immutable <code>exit_addr</code> field stores the address
-     * that disables the per-instruction calling of the probe passed
-     * when the nesting level reaches zero.
+     * The immutable <code>exit_addr</code> field stores the address that disables the per-instruction calling of the
+     * probe passed when the nesting level reaches zero.
      */
     public final int exit_addr;
 
     /**
-     * The immutable <code>probe</code> field stores a reference to
-     * the probe passed in the constructor.
+     * The immutable <code>probe</code> field stores a reference to the probe passed in the constructor.
      */
     public final Simulator.Probe probe;
 
     /**
-     * The <code>nesting</code> field stores the current nesting level
-     * (i.e. the number of times <code>entry_addr</code> has been
-     * reached without <code>exit_addr</code> intervening).
+     * The <code>nesting</code> field stores the current nesting level (i.e. the number of times <code>entry_addr</code>
+     * has been reached without <code>exit_addr</code> intervening).
      */
     public int nesting;
 
     /**
-     * The constructor for the <code>SequenceProbe</code> class simply stores
-     * its arguments into the corresponding public final fields in this object,
-     * leaving the probe in a state where it is ready to be inserted into
-     * a simulator.
+     * The constructor for the <code>SequenceProbe</code> class simply stores its arguments into the corresponding
+     * public final fields in this object, leaving the probe in a state where it is ready to be inserted into a
+     * simulator.
      *
      * @param p     the probe to fire for each instruction when the sequence is entered
      * @param entry the byte address of the entrypoint to the sequence
@@ -99,11 +89,10 @@ public class SequenceProbe implements Simulator.Probe {
     }
 
     /**
-     * The <code>fireBefore()</code> method is called before the probed instruction
-     * executes. In the implementation of the sequence probe, if the address is
-     * the entrypoint address, then the nesting level is incremented. When
-     * the nesting level is greater than one, then the sequence probe will
-     * delegate the <code>fireBefore()</code> call to the user probe.
+     * The <code>fireBefore()</code> method is called before the probed instruction executes. In the implementation of
+     * the sequence probe, if the address is the entrypoint address, then the nesting level is incremented. When the
+     * nesting level is greater than one, then the sequence probe will delegate the <code>fireBefore()</code> call to
+     * the user probe.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
@@ -115,11 +104,10 @@ public class SequenceProbe implements Simulator.Probe {
     }
 
     /**
-     * The <code>fireBefore()</code> method is called before the probed instruction
-     * executes. When the nesting level is greater than one, then the sequence probe will
-     * delegate the <code>fireAfter()</code> call to the user probe.  If the
-     * address is the exit point, then the nesting level is decremented after the
-     * call to <code>fireAfter()</code> of the user probe.
+     * The <code>fireBefore()</code> method is called before the probed instruction executes. When the nesting level is
+     * greater than one, then the sequence probe will delegate the <code>fireAfter()</code> call to the user probe.  If
+     * the address is the exit point, then the nesting level is decremented after the call to <code>fireAfter()</code>
+     * of the user probe.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
@@ -132,9 +120,8 @@ public class SequenceProbe implements Simulator.Probe {
     }
 
     /**
-     * The <code>reset()</code> method simply resets the nesting level of the
-     * sequence probe, as if it had exited from all nested entries into the
-     * region.
+     * The <code>reset()</code> method simply resets the nesting level of the sequence probe, as if it had exited from
+     * all nested entries into the region.
      */
     public void reset() {
         nesting = 0;

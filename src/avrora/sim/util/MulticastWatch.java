@@ -37,9 +37,8 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 
 /**
- * The <code>MulticastProbe</code> is a wrapper around multiple watches that
- * allows them to act as a single watch. It is useful for composing multiple
- * watches into one and is used internally in the simulator.
+ * The <code>MulticastProbe</code> is a wrapper around multiple watches that allows them to act as a single watch. It is
+ * useful for composing multiple watches into one and is used internally in the simulator.
  *
  * @author Ben L. Titzer
  * @see Simulator
@@ -47,11 +46,9 @@ import avrora.sim.State;
 public class MulticastWatch implements Simulator.Watch {
 
     /**
-     * The <code>Link</code> class is used internally to implement the
-     * linked list of the watches. It exists because a simple, custom
-     * list structure allows for the most efficient dispatching code
-     * possible. Performance is critical since the multicast watch
-     * may be called for every instruction executed in the simulator.
+     * The <code>Link</code> class is used internally to implement the linked list of the watches. It exists because a
+     * simple, custom list structure allows for the most efficient dispatching code possible. Performance is critical
+     * since the multicast watch may be called for every instruction executed in the simulator.
      */
     private static class Link {
         final Simulator.Watch probe;
@@ -66,10 +63,8 @@ public class MulticastWatch implements Simulator.Watch {
     private Link tail;
 
     /**
-     * The <code>add()</code> method allows another watch to be inserted into
-     * the multicast set. It will be inserted at the end of the list of current
-     * watch and will therefore fire after any probes already in the multicast
-     * set.
+     * The <code>add()</code> method allows another watch to be inserted into the multicast set. It will be inserted at
+     * the end of the list of current watch and will therefore fire after any probes already in the multicast set.
      *
      * @param b the watch to insert
      */
@@ -85,9 +80,8 @@ public class MulticastWatch implements Simulator.Watch {
     }
 
     /**
-     * The <code>remove</code> method removes a watch from the multicast set.
-     * The order of the remaining probes is not changed. The comparison used
-     * is reference equality, not the <code>.equals()</code> method.
+     * The <code>remove</code> method removes a watch from the multicast set. The order of the remaining probes is not
+     * changed. The comparison used is reference equality, not the <code>.equals()</code> method.
      *
      * @param b the watch to remove
      */
@@ -113,8 +107,7 @@ public class MulticastWatch implements Simulator.Watch {
     }
 
     /**
-     * The <code>isEmpty()</code> method tests whether the multicast set
-     * of this watch is empty.
+     * The <code>isEmpty()</code> method tests whether the multicast set of this watch is empty.
      *
      * @return false otherwise
      */
@@ -123,10 +116,9 @@ public class MulticastWatch implements Simulator.Watch {
     }
 
     /**
-     * The <code>fireBeforeRead()</code> method is called before the probed address
-     * is read by the program. In the implementation of the multicast probe, it
-     * simply calls the <code>fireBeforeRead()</code> method on each of the probes
-     * in the multicast set in the order in which they were inserted.
+     * The <code>fireBeforeRead()</code> method is called before the probed address is read by the program. In the
+     * implementation of the multicast probe, it simply calls the <code>fireBeforeRead()</code> method on each of the
+     * probes in the multicast set in the order in which they were inserted.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
@@ -139,10 +131,9 @@ public class MulticastWatch implements Simulator.Watch {
     }
 
     /**
-     * The <code>fireAfterRead()</code> method is called after the probed address
-     * is read by the program. In the implementation of the multicast probe, it
-     * simply calls the <code>fireAfterRead()</code> method on each of the probes
-     * in the multicast set in the order in which they were inserted.
+     * The <code>fireAfterRead()</code> method is called after the probed address is read by the program. In the
+     * implementation of the multicast probe, it simply calls the <code>fireAfterRead()</code> method on each of the
+     * probes in the multicast set in the order in which they were inserted.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
@@ -155,10 +146,9 @@ public class MulticastWatch implements Simulator.Watch {
     }
 
     /**
-     * The <code>fireBeforeWrite()</code> method is called before the probed address
-     * is written by the program. In the implementation of the multicast probe, it
-     * simply calls the <code>fireBeforeWrite()</code> method on each of the probes
-     * in the multicast set in the order in which they were inserted.
+     * The <code>fireBeforeWrite()</code> method is called before the probed address is written by the program. In the
+     * implementation of the multicast probe, it simply calls the <code>fireBeforeWrite()</code> method on each of the
+     * probes in the multicast set in the order in which they were inserted.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides
@@ -171,10 +161,9 @@ public class MulticastWatch implements Simulator.Watch {
     }
 
     /**
-     * The <code>fireAfterWrite()</code> method is called after the probed address
-     * is written by the program. In the implementation of the multicast probe, it
-     * simply calls the <code>fireAfterWrite()</code> method on each of the probes
-     * in the multicast set in the order in which they were inserted.
+     * The <code>fireAfterWrite()</code> method is called after the probed address is written by the program. In the
+     * implementation of the multicast probe, it simply calls the <code>fireAfterWrite()</code> method on each of the
+     * probes in the multicast set in the order in which they were inserted.
      *
      * @param i       the instruction being probed
      * @param address the address at which this instruction resides

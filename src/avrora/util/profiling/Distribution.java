@@ -36,67 +36,58 @@ import avrora.Avrora;
 import avrora.util.Terminal;
 
 /**
- * This class keeps track of the min, max, and median
- * of a stream of integers, as well as the distribution
- * of each. The distribution aids in computing the median
- * without having to store the sequence of integers.
+ * This class keeps track of the min, max, and median of a stream of integers, as well as the distribution of each. The
+ * distribution aids in computing the median without having to store the sequence of integers.
  *
  * @author Ben L. Titzer
- **/
+ */
 public class Distribution extends MinMaxMean {
 
     /**
-     * The <code>distrib</code> field stores an array that records the number of
-     * occurrences for each value in the distribution. The <code>distribMin</code>
-     * field stores the value which corresponds to index 0 in the array. Therefore,
-     * <code>distrib[myval - distribMin]</code> contains the count for <code>myval</code>,
-     * provided that the array is large enough. Values outside the array have
-     * have a count of zero.
+     * The <code>distrib</code> field stores an array that records the number of occurrences for each value in the
+     * distribution. The <code>distribMin</code> field stores the value which corresponds to index 0 in the array.
+     * Therefore, <code>distrib[myval - distribMin]</code> contains the count for <code>myval</code>, provided that the
+     * array is large enough. Values outside the array have have a count of zero.
      */
     public int distrib[]; // table of number of occurrences of each value
 
     /**
-     * The <code>median</code> field stores the median value of the distribution.
-     * This field is not computed until the <code>processData()</code> method has
-     * been called after data has been collected.
+     * The <code>median</code> field stores the median value of the distribution. This field is not computed until the
+     * <code>processData()</code> method has been called after data has been collected.
      */
     public int median;
 
     /**
-     * The <code>distribMin</code> field stores the value corresponding to index
-     * 0 in the <code>distrib</code> array.
+     * The <code>distribMin</code> field stores the value corresponding to index 0 in the <code>distrib</code> array.
      */
     public int distribMin; // the base value of the occurences table
 
     /**
-     * The <code>distribname</code> field stores the string that should be reported
-     * as the name of the distribution, e.g. "Distribution of hashcodes". When this
-     * string is non-null, a textual table of the distribution will be printed to
-     * the terminal when the <code>textReport()</code> method is called.
+     * The <code>distribname</code> field stores the string that should be reported as the name of the distribution,
+     * e.g. "Distribution of hashcodes". When this string is non-null, a textual table of the distribution will be
+     * printed to the terminal when the <code>textReport()</code> method is called.
      */
     protected String distribname;
 
     /**
      * This is the public constructor.
-     **/
+     */
     public Distribution(String name) {
         super(name);
         distribMin = observedMinimum;
     }
 
     /**
-     * Public constructor initializes the statistics for a sequence
-     * of integers.
-     **/
+     * Public constructor initializes the statistics for a sequence of integers.
+     */
     public Distribution(String newname, String tn, String cn) {
         super(newname, tn, cn);
         distribMin = observedMinimum;
     }
 
     /**
-     * Public constructor initializes the statistics for a sequence
-     * of integers.
-     **/
+     * Public constructor initializes the statistics for a sequence of integers.
+     */
     public Distribution(String newname, String tn, String cn, String dn) {
         super(newname, tn, cn);
         distribname = dn;
@@ -105,7 +96,7 @@ public class Distribution extends MinMaxMean {
 
     /**
      * Record the next value and update internal state.
-     **/
+     */
     public synchronized void record(int value) {
 
         if (!someData) {
@@ -129,7 +120,7 @@ public class Distribution extends MinMaxMean {
 
     /**
      * Generate a textual report of the data gathered.
-     **/
+     */
     public void textReport() {
         Terminal.print("\n " + name);
         Terminal.print("\n---------------------------------------------------------------------\n");
@@ -154,7 +145,7 @@ public class Distribution extends MinMaxMean {
 
     /**
      * Print the distribution using stars
-     **/
+     */
     protected void printDistribution(int base, int data[]) {
         int cntr, max;
         float scale = 1;
@@ -169,12 +160,12 @@ public class Distribution extends MinMaxMean {
             if (data[cntr] > max) max = data[cntr];
         }
 
-        if (max > 70) scale = ((float) max) / 70;
+        if (max > 70) scale = ((float)max) / 70;
 
         // loop through occurrences and print distribution
         for (cntr = 0; cntr < num; cntr++) {
-            float fstars = ((float) data[cntr]) / scale;
-            int stars = (int) fstars;
+            float fstars = ((float)data[cntr]) / scale;
+            int stars = (int)fstars;
             if ((fstars - stars) >= 0.5) stars++;
 
             // collapse a string of redundant 0's.
@@ -215,17 +206,15 @@ public class Distribution extends MinMaxMean {
 
 
     /**
-     * Increment the number of occurrences for a particular
-     * integer.
-     **/
+     * Increment the number of occurrences for a particular integer.
+     */
     protected void incrementDistrib(int value) {
         distrib[value - distribMin]++;
     }
 
     /**
-     * Resize the occurrence table with a new maximum
-     * value.
-     **/
+     * Resize the occurrence table with a new maximum value.
+     */
     protected void recomputeMaxDistrib(int newMax) {
         int newsize = 1 + newMax - distribMin;
         int newdistrib[] = new int[newsize];
@@ -239,7 +228,7 @@ public class Distribution extends MinMaxMean {
 
     /**
      * Resize the occurences table with the given new minimum.
-     **/
+     */
     protected void recomputeMinDistrib(int newMin) {
         int mindiff = distribMin - newMin;
         int newsize = mindiff + distrib.length;
@@ -274,7 +263,7 @@ public class Distribution extends MinMaxMean {
 
     /**
      * Merge this statistical information with another.
-     **/
+     */
     public MinMaxMean merge(MinMaxMean m) {
         throw Avrora.unimplemented();
     }

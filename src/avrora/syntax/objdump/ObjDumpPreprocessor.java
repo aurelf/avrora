@@ -41,9 +41,9 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 
 /**
- * The <code>ObjDumpPreprocessor</code> class is a utility class that takes the output
- * from the <code>avr-objdump</code> utility and produces a cleaned up version that is
- * more suitable for parsing into the internal format of Avrora.
+ * The <code>ObjDumpPreprocessor</code> class is a utility class that takes the output from the <code>avr-objdump</code>
+ * utility and produces a cleaned up version that is more suitable for parsing into the internal format of Avrora.
+ *
  * @author Ben L. Titzer
  * @author Vids Samanta
  */
@@ -54,7 +54,6 @@ public class ObjDumpPreprocessor {
     StringBuffer out;
 
     /**
-     *
      * @param inFile of file with avr-objdump format code
      */
     public ObjDumpPreprocessor(String inFile) {
@@ -72,8 +71,7 @@ public class ObjDumpPreprocessor {
     }
 
     /**
-     * @return output StringBuffer of well formated
-     * cleaned up objdump file contents
+     * @return output StringBuffer of well formated cleaned up objdump file contents
      */
     public StringBuffer getCleanObjDumpCode() {
         return out;

@@ -27,14 +27,12 @@ public class TokenMgrError extends Error {
     static final int LOOP_DETECTED = 3;
 
     /**
-     * Indicates the reason why the exception is thrown. It will have
-     * one of the above 4 values.
+     * Indicates the reason why the exception is thrown. It will have one of the above 4 values.
      */
     int errorCode;
 
     /**
-     * Replaces unprintable characters by their espaced (or unicode escaped)
-     * equivalents in the given string
+     * Replaces unprintable characters by their espaced (or unicode escaped) equivalents in the given string
      */
     protected static final String addEscapes(String str) {
         StringBuffer retval = new StringBuffer();
@@ -81,32 +79,26 @@ public class TokenMgrError extends Error {
     }
 
     /**
-     * Returns a detailed message for the Error when it is thrown by the
-     * token manager to indicate a lexical error.
-     * Parameters :
-     *    EOFSeen     : indicates if EOF caused the lexicl error
-     *    curLexState : lexical state in which this error occured
-     *    errorLine   : line number when the error occured
-     *    errorColumn : column number when the error occured
-     *    errorAfter  : prefix that was seen before this error occured
-     *    curchar     : the offending character
-     * Note: You can customize the lexical error message by modifying this method.
+     * Returns a detailed message for the Error when it is thrown by the token manager to indicate a lexical error.
+     * Parameters : EOFSeen     : indicates if EOF caused the lexicl error curLexState : lexical state in which this
+     * error occured errorLine   : line number when the error occured errorColumn : column number when the error occured
+     * errorAfter  : prefix that was seen before this error occured curchar     : the offending character Note: You can
+     * customize the lexical error message by modifying this method.
      */
     protected static String LexicalError(boolean EOFSeen, int lexState, int errorLine, int errorColumn, String errorAfter, char curChar) {
         return ("Lexical error at line " +
                 errorLine + ", column " +
                 errorColumn + ".  Encountered: " +
-                (EOFSeen ? "<EOF> " : ("\"" + addEscapes(String.valueOf(curChar)) + "\"") + " (" + (int) curChar + "), ") +
+                (EOFSeen ? "<EOF> " : ("\"" + addEscapes(String.valueOf(curChar)) + "\"") + " (" + (int)curChar + "), ") +
                 "after : \"" + addEscapes(errorAfter) + "\"");
     }
 
     /**
-     * You can also modify the body of this method to customize your error messages.
-     * For example, cases like LOOP_DETECTED and INVALID_LEXICAL_STATE are not
-     * of end-users concern, so you can return something like :
-     *
-     *     "Internal Error : Please file a bug report .... "
-     *
+     * You can also modify the body of this method to customize your error messages. For example, cases like
+     * LOOP_DETECTED and INVALID_LEXICAL_STATE are not of end-users concern, so you can return something like :
+     * <p/>
+     * "Internal Error : Please file a bug report .... "
+     * <p/>
      * from this method for such cases in the release version of your parser.
      */
     public String getMessage() {

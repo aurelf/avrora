@@ -38,13 +38,15 @@ package avrora.monitors;
 
 import avrora.sim.*;
 
-/** energy monitor interface
- * 
- * @author  Olaf Landsiedel
+/**
+ * energy monitor interface
+ *
+ * @author Olaf Landsiedel
  */
 public interface EnergyMonitorBase {
-    /** called when the state of the device changes
-     * this compoent logs these state changes
+    /**
+     * called when the state of the device changes this component logs these state changes
+     *
      * @param energy
      */
     public void fire(Energy energy);

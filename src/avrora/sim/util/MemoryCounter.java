@@ -37,54 +37,48 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 
 /**
- * The <code>MemoryCounter</code> is the simplest example of memory profiling
- * functionality. When inserted as a watch at a particular memory location,
- * it will simply count the number of reads and writes to that memory location.
- * It is analagous to the <code>Counter</code> probe which is used to count
- * the execution frequency of a particular instruction.
- *
- * @see avrora.sim.Simulator.Watch
- * @see Counter
+ * The <code>MemoryCounter</code> is the simplest example of memory profiling functionality. When inserted as a watch at
+ * a particular memory location, it will simply count the number of reads and writes to that memory location. It is
+ * analagous to the <code>Counter</code> probe which is used to count the execution frequency of a particular
+ * instruction.
  *
  * @author Ben L. Titzer
+ * @see avrora.sim.Simulator.Watch
+ * @see Counter
  */
 public class MemoryCounter implements Simulator.Watch {
 
     /**
-     * The <code>rcount</code> field stores the number of reads encountered for
-     * this memory location.
+     * The <code>rcount</code> field stores the number of reads encountered for this memory location.
      */
     public long rcount;
 
     /**
-     * The <code>wcount</code> field stores the number of writes encountered for
-     * this memory location.
+     * The <code>wcount</code> field stores the number of writes encountered for this memory location.
      */
     public long wcount;
 
     /**
-     * The <code>fireBeforeRead()</code> method is called before the data address
-     * is read by the program. In the implementation of <code>MemoryCounter</code>,
-     * it simply increments the count of reads by one.
+     * The <code>fireBeforeRead()</code> method is called before the data address is read by the program. In the
+     * implementation of <code>MemoryCounter</code>, it simply increments the count of reads by one.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
+     * @param i         the instruction being probed
+     * @param address   the address at which this instruction resides
+     * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
-     * @param value   the value of the memory location being read
+     * @param value     the value of the memory location being read
      */
     public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {
         rcount++;
     }
 
     /**
-     * The <code>fireBeforeWrite()</code> method is called before the data address
-     * is written by the program. In the implementation of <code>MemoryCounter</code>,
-     * it simply increments the count of writes by one.
+     * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program. In the
+     * implementation of <code>MemoryCounter</code>, it simply increments the count of writes by one.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
+     * @param i         the instruction being probed
+     * @param address   the address at which this instruction resides
+     * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
      * @param value     the value being written to the memory location
      */
@@ -93,30 +87,28 @@ public class MemoryCounter implements Simulator.Watch {
     }
 
     /**
-     * The <code>fireAfterRead()</code> method is called after the data address
-     * is read by the program. In the implementation of <code>MemoryCounter</code>,
-     * it does nothing.
+     * The <code>fireAfterRead()</code> method is called after the data address is read by the program. In the
+     * implementation of <code>MemoryCounter</code>, it does nothing.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
+     * @param i         the instruction being probed
+     * @param address   the address at which this instruction resides
+     * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
-     * @param value   the value of the memory location being read
+     * @param value     the value of the memory location being read
      */
     public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
         // do nothing
     }
 
     /**
-     * The <code>fireAfterWrite()</code> method is called after the data address
-     * is written by the program. In the implementation of <code>MemoryCounter</code>,
-     * it does nothing.
+     * The <code>fireAfterWrite()</code> method is called after the data address is written by the program. In the
+     * implementation of <code>MemoryCounter</code>, it does nothing.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
+     * @param i         the instruction being probed
+     * @param address   the address at which this instruction resides
+     * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
-     * @param value   the value being written to the memory location
+     * @param value     the value being written to the memory location
      */
     public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
         // do nothing

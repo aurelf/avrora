@@ -53,8 +53,7 @@ import java.util.*;
 
 /**
  * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the
- * <code>avrora.test.AutomatedTester</code> in order to automate testing of the
- * AVR parser and simulator.
+ * <code>avrora.test.AutomatedTester</code> in order to automate testing of the AVR parser and simulator.
  *
  * @author Ben L. Titzer
  */
@@ -103,7 +102,7 @@ public class SimulatorTestHarness implements TestHarness {
         });
         map.put("cc", new ProcessorState("cc") {
             public int evaluate(Program p, State s) {
-                return (int) s.getCycles();
+                return (int)s.getCycles();
             }
         });
         map.put("sp", new ProcessorState("sp") {
@@ -320,7 +319,7 @@ public class SimulatorTestHarness implements TestHarness {
 
             try {
                 while (i.hasNext()) {
-                    StatePredicate p = (StatePredicate) i.next();
+                    StatePredicate p = (StatePredicate)i.next();
                     if (!p.check(program, state))
                         return new StateMismatch(p, state);
                 }
@@ -417,7 +416,7 @@ public class SimulatorTestHarness implements TestHarness {
             }
 
             String name = buf.toString();
-            Expr e = (Expr) known.get(name.toLowerCase());
+            Expr e = (Expr)known.get(name.toLowerCase());
             if (e != null) return e;
             return new Label(name);
         }
@@ -442,7 +441,7 @@ public class SimulatorTestHarness implements TestHarness {
 
         StateMismatch(StatePredicate pred, State st) {
             super("incorrect result: (" + pred.left + " -> " + pred.leftvalue + ") != ("
-                    + pred.right + " -> " + pred.rightvalue + ")");
+                  + pred.right + " -> " + pred.rightvalue + ")");
             state = st;
             predicate = pred;
         }

@@ -37,58 +37,67 @@
 package avrora.sim;
 
 import avrora.monitors.*;
+
 import java.util.LinkedList;
 
-/** implementation of energy control
- *  handles subsrciption of monitors and consumers
+/**
+ * implementation of energy control handles subsrciption of monitors and consumers
  *
- * @author  Olaf Landsiedel
+ * @author Olaf Landsiedel
  */
 public class EnergyControlImpl implements EnergyControl {
-    
+
     //consumer list
-	// e.g. list of devices which consume energy
-	private LinkedList consumer;
-	
-	//list of monitors which want to be informed about 
-	//energy consumption
+    // e.g. list of devices which consume energy
+    private LinkedList consumer;
+
+    //list of monitors which want to be informed about
+    //energy consumption
     private LinkedList subscriber;
-        
-    /** create a new instance of energy control
-     * 
+
+    /**
+     * create a new instance of energy control
      */
     public EnergyControlImpl() {
-       consumer = new LinkedList();
-       subscriber = new LinkedList();
+        consumer = new LinkedList();
+        subscriber = new LinkedList();
     }
-    
-    /**add energy monitor
+
+    /**
+     * add energy monitor
+     *
      * @param energyMonitor monitor
      */
-    public void subsribe(EnergyMonitorBase energyMonitor){
+    public void subscribe(EnergyMonitorBase energyMonitor) {
         subscriber.add(energyMonitor);
     }
-        
-    /** add consumer
+
+    /**
+     * add consumer
+     *
      * @param energy consumer
      */
-    public void addConsumer(Energy energy){
+    public void addConsumer(Energy energy) {
         consumer.add(energy);
     }
-        
-    /** get list of consumers
+
+    /**
+     * get list of consumers
+     *
      * @return conumer list
      */
-    public LinkedList getConsumers(){
+    public LinkedList getConsumers() {
         return consumer;
-    }        
-        
-    /** update the state of a device
+    }
+
+    /**
+     * update the state of a device
+     *
      * @param energy the energy model of the device
      */
-    public void stateChange(Energy energy){
-        for(int i = 0; i < subscriber.size(); ++i) {
+    public void stateChange(Energy energy) {
+        for (int i = 0; i < subscriber.size(); ++i) {
             ((EnergyMonitorBase)subscriber.get(i)).fire(energy);
         }
-    } 
+    }
 }

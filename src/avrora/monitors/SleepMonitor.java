@@ -40,9 +40,8 @@ import avrora.util.StringUtil;
 import avrora.util.Options;
 
 /**
- * The <code>SleepMonitor</code> class is a monitor that tracks statistics
- * about the sleeping patterns of programs, including the total number of
- * cycles awake and the total number of cycles asleep during the simulation.
+ * The <code>SleepMonitor</code> class is a monitor that tracks statistics about the sleeping patterns of programs,
+ * including the total number of cycles awake and the total number of cycles asleep during the simulation.
  *
  * @author Ben L. Titzer
  */
@@ -64,12 +63,12 @@ public class SleepMonitor extends MonitorFactory {
         public void report() {
             reportQuantity("Time slept", sleepCycles, "cycles");
             reportQuantity("Time awake", awakeCycles, "cycles");
-            float percent = 100*((float)sleepCycles) / (sleepCycles + awakeCycles);
+            float percent = 100 * ((float)sleepCycles) / (sleepCycles + awakeCycles);
             reportQuantity("Total", percent, "%");
         }
 
         public void fire() {
-            if ( simulator.getState().isSleeping() )
+            if (simulator.getState().isSleeping())
                 sleepCycles++;
             else
                 awakeCycles++;
@@ -80,9 +79,9 @@ public class SleepMonitor extends MonitorFactory {
     }
 
     public SleepMonitor() {
-        super("sleep", "The \"sleep\" is a monitor that tracks statistics "+
-               "about the sleeping patterns of programs, including the total number of "+
-               "cycles awake and the total number of cycles asleep during the simulation.");
+        super("sleep", "The \"sleep\" is a monitor that tracks statistics " +
+                       "about the sleeping patterns of programs, including the total number of " +
+                       "cycles awake and the total number of cycles asleep during the simulation.");
     }
 
     public avrora.monitors.Monitor newMonitor(Simulator s) {

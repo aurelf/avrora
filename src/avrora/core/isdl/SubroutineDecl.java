@@ -37,10 +37,9 @@ import avrora.core.isdl.parser.Token;
 import java.util.List;
 
 /**
- * The <code>SubroutineDecl</code> class represents the declaration
- * of a subroutine within the instruction set description. A subroutine
- * has a list of formal parameters and a return type as well as a list
- * of statements that represent its body.
+ * The <code>SubroutineDecl</code> class represents the declaration of a subroutine within the instruction set
+ * description. A subroutine has a list of formal parameters and a return type as well as a list of statements that
+ * represent its body.
  *
  * @author Ben L. Titzer
  */

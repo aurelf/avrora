@@ -36,36 +36,33 @@ import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
 
 /**
- * The <code>MapBitAssignStmt</code> represents an assignment to a single
- * bit within an element within a map.
+ * The <code>MapBitAssignStmt</code> represents an assignment to a single bit within an element within a map.
  *
  * @author Ben L. Titzer
  */
 public class MapBitAssignStmt extends AssignStmt {
 
     /**
-     * The <code>mapname</code> field stores a reference to the name of
-     * the map whose element is being assigned to.
+     * The <code>mapname</code> field stores a reference to the name of the map whose element is being assigned to.
      */
     public final Token mapname;
 
     /**
-     * The <code>index</code> field stores a references to the expression
-     * which is evaluated to yield the index into the map.
+     * The <code>index</code> field stores a references to the expression which is evaluated to yield the index into the
+     * map.
      */
     public final Expr index;
 
     /**
-     * The <code>bit</code> field stores a reference to the expression
-     * which is evaluated to yield the bit index into the element of
-     * the map.
+     * The <code>bit</code> field stores a reference to the expression which is evaluated to yield the bit index into
+     * the element of the map.
      */
     public final Expr bit;
 
     /**
-     * The constructor for the <code>MapAssignStmt</code> class initializes
-     * the public final fields in this class that refer to the elements
-     * of the assignment.
+     * The constructor for the <code>MapAssignStmt</code> class initializes the public final fields in this class that
+     * refer to the elements of the assignment.
+     *
      * @param m the string name of the map as a token
      * @param i the expression representing the index into the map
      * @param b the expression representing the bit index into the element
@@ -79,9 +76,9 @@ public class MapBitAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine.
+     *
      * @param v the visitor to accept
      */
     public void accept(StmtVisitor v) {
@@ -89,8 +86,8 @@ public class MapBitAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>toString()</code> method recursively converts this statement
-     * to a string.
+     * The <code>toString()</code> method recursively converts this statement to a string.
+     *
      * @return a string representation of this statement
      */
     public String toString() {
@@ -98,14 +95,12 @@ public class MapBitAssignStmt extends AssignStmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine. The
-     * <code>StmtRebuilder</code> interface allows visitors to rearrange
-     * and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
+     * allows visitors to rearrange and rebuild the statements.
+     *
      * @param r the visitor to accept
-     * @return the result of calling the appropriate <code>visit()</code>
-     * of the rebuilder passed
+     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);

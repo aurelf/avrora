@@ -35,22 +35,21 @@ package avrora.core.isdl.ast;
 import avrora.core.isdl.parser.Token;
 
 /**
- * The <code>VarExpr</code> class represents an expression in the IR
- * that is a use of a local or global variable.
+ * The <code>VarExpr</code> class represents an expression in the IR that is a use of a local or global variable.
  *
  * @author Ben L. Titzer
  */
 public class VarExpr extends Expr {
 
     /**
-     * The <code>variable</code> field stores a reference to the token
-     * representing the name of the variable being accessed.
+     * The <code>variable</code> field stores a reference to the token representing the name of the variable being
+     * accessed.
      */
     public final Token variable;
 
     /**
-     * The constructor for the <code>VarExpr</code> class simply initializes
-     * the reference to the name of the variable.
+     * The constructor for the <code>VarExpr</code> class simply initializes the reference to the name of the variable.
+     *
      * @param v the string name of the variable as a token
      */
     public VarExpr(Token v) {
@@ -58,8 +57,8 @@ public class VarExpr extends Expr {
     }
 
     /**
-     * The constructor for the <code>VarExpr</code> class simply initializes
-     * the reference to the name of the variable.
+     * The constructor for the <code>VarExpr</code> class simply initializes the reference to the name of the variable.
+     *
      * @param v the string name of the variable as a token
      */
     public VarExpr(String v) {
@@ -69,10 +68,9 @@ public class VarExpr extends Expr {
     }
 
     /**
-     * The <code>isVariable()</code> method tests whether this expression
-     * is a direct variable use and is used in copy propagation. For
-     * instances of <code>VarExpr</code>, this method returns true. For
-     * all other instances, it returns false.
+     * The <code>isVariable()</code> method tests whether this expression is a direct variable use and is used in copy
+     * propagation. For instances of <code>VarExpr</code>, this method returns true. For all other instances, it returns
+     * false.
      *
      * @return true because this expression is the direct use of a variable
      */
@@ -81,9 +79,9 @@ public class VarExpr extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern so that client visitors can traverse the syntax tree easily
-     * and in an extensible way.
+     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can traverse
+     * the syntax tree easily and in an extensible way.
+     *
      * @param v the visitor to accept
      */
     public void accept(ExprVisitor v) {
@@ -91,9 +89,9 @@ public class VarExpr extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern so that client visitors can traverse the syntax tree easily
-     * and in an extensible way.
+     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can traverse
+     * the syntax tree easily and in an extensible way.
+     *
      * @param v the visitor to accept
      */
     public void accept(CodeVisitor v) {
@@ -101,23 +99,22 @@ public class VarExpr extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for rebuilding of expressions. This visitor allows code to
-     * be slightly modified while only writing visit methods for the
-     * parts of the syntax tree affected.
+     * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of expressions. This
+     * visitor allows code to be slightly modified while only writing visit methods for the parts of the syntax tree
+     * affected.
+     *
      * @param r the rebuilder to accept
-     * @return the result of calling the appropriate <code>visit()</code>
-     * method of the rebuilder
+     * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
     public Expr accept(CodeRebuilder r) {
         return r.visit(this);
     }
 
     /**
-     * The <code>toString()</code> method recursively converts this expression
-     * to a string. For binary operations, inner expressions will be nested
-     * within parentheses if their precedence is lower than the precedence
-     * of the parent expression.
+     * The <code>toString()</code> method recursively converts this expression to a string. For binary operations, inner
+     * expressions will be nested within parentheses if their precedence is lower than the precedence of the parent
+     * expression.
+     *
      * @return a string representation of this expression
      */
     public String toString() {
@@ -125,12 +122,10 @@ public class VarExpr extends Expr {
     }
 
     /**
-     * The <code>getPrecedence()</code> method gets the binding precedence for
-     * this expression. This is used to compute when inner expressions must be
-     * nested within parentheses in order to preserve the implied order of
-     * evaluation.
-     * @return an integer representing the precedence of this expression; higher
-     * numbers are higher precedence
+     * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is used to compute
+     * when inner expressions must be nested within parentheses in order to preserve the implied order of evaluation.
+     *
+     * @return an integer representing the precedence of this expression; higher numbers are higher precedence
      */
     public int getPrecedence() {
         return PREC_TERM;

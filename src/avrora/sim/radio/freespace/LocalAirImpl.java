@@ -48,11 +48,12 @@ import avrora.sim.radio.freespace.*;
 
 import java.util.*;
 
-/** Implementation of Local Air
- * @author Olaf Landsiedel
+/**
+ * Implementation of Local Air
  *
+ * @author Olaf Landsiedel
  */
-public class LocalAirImpl implements LocalAir{
+public class LocalAirImpl implements LocalAir {
 
     //neighbor list, sorted by distance
     private LinkedList neighbors;
@@ -60,7 +61,7 @@ public class LocalAirImpl implements LocalAir{
     private Position position;
     //delivery of the packets
     private Deliver deliver;
-    //received packet lisr
+    //received packet list
     private LinkedList packets;
     //first received packet -> earliest packet
     private Radio.RadioPacket firstPacket;
@@ -68,143 +69,162 @@ public class LocalAirImpl implements LocalAir{
     private PowerRadioPacket finalPacket;
     //the radio sending and receiving from this air
     private Radio radio;
-    
+
     // state for maintaining meeting of threads for delivery
     private long lastDeliveryTime;
     private long nextDeliveryTime;
-    
-    /** new local air
-     * @param r radio
+
+    /**
+     * new local air
+     *
+     * @param r   radio
      * @param pos position
      */
-    public LocalAirImpl(Radio r, Position pos){
+    public LocalAirImpl(Radio r, Position pos) {
         position = pos;
         neighbors = new LinkedList();
         packets = new LinkedList();
         deliver = new Deliver();
         radio = r;
     }
-    
-    /** get node position
+
+    /**
+     * get node position
+     *
      * @see avrora.sim.radio.freespace.LocalAir#getPosition()
      */
-    public Position getPosition(){
+    public Position getPosition() {
         return position;
     }
-    
-    /** add neighbor
+
+    /**
+     * add neighbor
+     *
      * @see avrora.sim.radio.freespace.LocalAir#addNeighbor(avrora.sim.radio.freespace.LocalAir)
      */
-    public synchronized void addNeighbor(LocalAir r){
+    public synchronized void addNeighbor(LocalAir r) {
         double x = r.getPosition().getX() - position.getX();
         double y = r.getPosition().getY() - position.getY();
         double z = r.getPosition().getZ() - position.getZ();
-        double distance = Math.sqrt(x*x + y*y + z*z);
+        double distance = Math.sqrt(x * x + y * y + z * z);
         if (distance == 0)
             distance = 0.000001;
         addNeighbor(r, distance);
     }
-    
-    /** local helper for adding a neighbo
-     * @param r radio
+
+    /**
+     * local helper for adding a neighbo
+     *
+     * @param r        radio
      * @param distance distance
      */
-    private void addNeighbor(LocalAir r, double distance){
+    private void addNeighbor(LocalAir r, double distance) {
         ListIterator it = neighbors.listIterator();
         boolean done = false;
-        while( !done && it.hasNext()) {
-            Distance dis = (Distance) it.next();
-            if( distance < dis.distance ){
+        while (!done && it.hasNext()) {
+            Distance dis = (Distance)it.next();
+            if (distance < dis.distance) {
                 it.previous();
-                it.add( new Distance(r, distance));
+                it.add(new Distance(r, distance));
                 done = true;
             }
         }
         //either the list is empty
         //or this new radio shall go to the end of the list
         //as it has the greatest distance
-        if( !done ){
-            it.add( new Distance(r, distance));
+        if (!done) {
+            it.add(new Distance(r, distance));
         }
     }
-    
-    /** remove a node
+
+    /**
+     * remove a node
+     *
      * @see avrora.sim.radio.freespace.LocalAir#removeNeighbor(avrora.sim.radio.freespace.LocalAir)
      */
-    public synchronized void removeNeighbor(LocalAir r){
+    public synchronized void removeNeighbor(LocalAir r) {
         ListIterator it = neighbors.listIterator();
-        while( it.hasNext()) {
-            Distance dis = (Distance) it.next();            
-            if( dis.radio == r ){
+        while (it.hasNext()) {
+            Distance dis = (Distance)it.next();
+            if (dis.radio == r) {
                 it.remove();
             }
         }
     }
-        
-    /** tell me, who is around
+
+    /**
+     * tell me, who is around
+     *
      * @see avrora.sim.radio.freespace.LocalAir#getNeighbors()
      */
-    public synchronized Iterator getNeighbors(){
+    public synchronized Iterator getNeighbors() {
         return neighbors.iterator();
     }
-    
-    /** receive a packet
+
+    /**
+     * receive a packet
+     *
      * @see avrora.sim.radio.freespace.LocalAir#addPacket(avrora.sim.radio.Radio.RadioPacket, double)
      */
-    public synchronized void addPacket(RadioPacket p, double pow){
+    public synchronized void addPacket(RadioPacket p, double pow) {
         packets.addLast(new PowerRadioPacket(p, pow));
         //find the earliest packet
-        if ( firstPacket == null ) {
+        if (firstPacket == null) {
             firstPacket = p;
-        } else if ( p.originTime < firstPacket.originTime ) {
+        } else if (p.originTime < firstPacket.originTime) {
             firstPacket = p;
         }
-        
+
     }
 
 
-    /** compute signal strength
-     *  bases on @see avrora.sim.radio.SimpleAir#sampleRSSI(long) by Daniel Lee
+    /**
+     * compute signal strength bases on @see avrora.sim.radio.SimpleAir#sampleRSSI(long) by Daniel Lee
+     *
      * @see avrora.sim.radio.freespace.LocalAir#sampleRSSI(long)
      */
-    public int sampleRSSI(long cycles){
+    public int sampleRSSI(long cycles) {
         int strength = 0x3ff;
         Iterator i = packets.iterator();
         //see whether there are packets around
         //if so, set strength to 0 (it works inverted)
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             Radio.RadioPacket p = ((PowerRadioPacket)i.next()).packet;
-            if ( p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles ) strength = 0;
+            if (p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles) strength = 0;
         }
         //TODO: hmm... do I really need the lines
         //this packet shall be included in the while loop
-        if( finalPacket != null && finalPacket.packet != null){
-        	Radio.RadioPacket p = finalPacket.packet;
-            if ( p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles ) strength = 0;
+        if (finalPacket != null && finalPacket.packet != null) {
+            Radio.RadioPacket p = finalPacket.packet;
+            if (p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles) strength = 0;
         }
         return strength;
     }
-    
-    /** schedule a packet for delivery
+
+    /**
+     * schedule a packet for delivery
+     *
      * @see avrora.sim.radio.freespace.LocalAir#scheduleDelivery(long, avrora.sim.Simulator)
      */
-    public void scheduleDelivery(long globalTime, Simulator sim){
+    public void scheduleDelivery(long globalTime, Simulator sim) {
         long deliveryDelta = 0;
         //when there is at least one packet to deliver, find the right one 
         //and the delivery time
-        if ( firstPacket != null ) {
+        if (firstPacket != null) {
             deliveryDelta = computeNextDelivery(globalTime);
             firstPacket = null;
         } else {
             deliveryDelta = 0;
         }
         //when there is a packet to deliver, do so...
-        if ( deliveryDelta > 0 )
+        if (deliveryDelta > 0)
             sim.insertEvent(deliver, deliveryDelta);
         return;
     }
-    
-    /** find the right packet to deliver
+
+    /**
+     * find the right packet to deliver
+     *
      * @param globalTime current time
      * @return time to deliver
      */
@@ -212,9 +232,9 @@ public class LocalAirImpl implements LocalAir{
 
         long limit = lastDeliveryTime;
 
-        if ( lastDeliveryTime > globalTime - bytePeriod ) {
+        if (lastDeliveryTime > globalTime - bytePeriod) {
             // there was a byte delivered in the period just finished
-            limit +=  bytePeriod;
+            limit += bytePeriod;
         }
 
         finalPacket = null;
@@ -222,40 +242,39 @@ public class LocalAirImpl implements LocalAir{
         //iterate over all of the packets
         Iterator it = packets.iterator();
         packets = new LinkedList();
-        while ( it.hasNext() ) {
+        while (it.hasNext()) {
             PowerRadioPacket packet = (PowerRadioPacket)it.next();            
-            //System.out.print(radio.getSimulator().getClock().getCount() + " " +
-            //        radio.getSimulator().getID() + " choose " + ~packet.packet.data + " " + globalTime + " " + packet.packet.deliveryTime + "   |   ");            
+            //        radio.getSimulator().getID() + " choose " + ~packet.packet.data + " " + globalTime + " " + packet.packet.deliveryTime + "   |   ");
             //check, whether packet maybe delivered
-            if( packet.packet.deliveryTime >= limit ){
-                if( finalPacket == null )
+            if (packet.packet.deliveryTime >= limit) {
+                if (finalPacket == null)
                     finalPacket = packet;
                 // find the strongest packet
                 else if (packet.power > finalPacket.power)
                     finalPacket = packet;
             }
         }
-        if( finalPacket == null )
+        if (finalPacket == null)
             return 0;
         nextDeliveryTime = finalPacket.packet.deliveryTime;
-        //System.out.println();
-        //System.out.println(radio.getSimulator().getClock().getCount() + " " +
-        //        radio.getSimulator().getID() + " final packet: " + ~finalPacket.packet.data);        
         return nextDeliveryTime - globalTime;
     }
 
-    /** handles the final delivery to the radio
-     * @author Olaf Landsiedel
+    /**
+     * handles the final delivery to the radio
      *
+     * @author Olaf Landsiedel
      */
     protected class Deliver implements Simulator.Event {
 
-        /** it is time for a delivery
+        /**
+         * it is time for a delivery
+         *
          * @see avrora.sim.Simulator.Event#fire()
          */
         public void fire() {
             //long currentTime = nextDeliveryTime;
-            if( finalPacket != null ){
+            if (finalPacket != null) {
                 lastDeliveryTime = finalPacket.packet.deliveryTime;
                 //Radio radio = s.getSimulator().getMicrocontroller().getRadio();
                 radio.receive(finalPacket.packet);
@@ -263,6 +282,6 @@ public class LocalAirImpl implements LocalAir{
 
         }
     }
-    
+
 
 }

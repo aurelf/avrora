@@ -36,9 +36,9 @@ import avrora.util.Terminal;
 
 
 /**
- * This models the min, max, mean, accumulation,
- * total, and number of occurrences of min and max
- * in a stream of integers.
+ * This models the min, max, mean, accumulation, total, and number of occurrences of min and max in a stream of
+ * integers.
+ *
  * @author Ben L. Titzer
  */
 public class MinMaxMean extends DataItem {
@@ -54,9 +54,8 @@ public class MinMaxMean extends DataItem {
     protected String cumulname; // name to report for cumul field
 
     /**
-     * Public constructor initializes the statistics for a sequence
-     * of integers.
-     **/
+     * Public constructor initializes the statistics for a sequence of integers.
+     */
     public MinMaxMean(String newname) {
         name = newname;
         totalname = "Total";
@@ -65,9 +64,8 @@ public class MinMaxMean extends DataItem {
     }
 
     /**
-     * Public constructor initializes the statistics for a sequence
-     * of integers.
-     **/
+     * Public constructor initializes the statistics for a sequence of integers.
+     */
     public MinMaxMean(String newname, String tn, String cn) {
         name = newname;
         totalname = tn;
@@ -77,7 +75,7 @@ public class MinMaxMean extends DataItem {
 
     /**
      * Update the statistical data for the next input value.
-     **/
+     */
     public void record(int value) {
 
         if (!someData) {
@@ -108,14 +106,14 @@ public class MinMaxMean extends DataItem {
 
     /**
      * process the data so far and update internal statistics.
-     **/
+     */
     public void processData() {
-        mean = ((float) accumulation) / ((float) total);
+        mean = ((float)accumulation) / ((float)total);
     }
 
     /**
      * Generate a textual report of the data gathered.
-     **/
+     */
     public void textReport() {
         Terminal.print("\n " + name);
         Terminal.print("\n---------------------------------------------------------------------\n");
@@ -134,9 +132,8 @@ public class MinMaxMean extends DataItem {
     }
 
     /**
-     * Merge the results of two MinMaxMean objects into
-     * one.
-     **/
+     * Merge the results of two MinMaxMean objects into one.
+     */
     public MinMaxMean merge(MinMaxMean m) {
         MinMaxMean result = new MinMaxMean(name);
 

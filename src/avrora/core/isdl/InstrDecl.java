@@ -39,11 +39,9 @@ import avrora.util.StringUtil;
 import java.util.List;
 
 /**
- * The <code>InstrDecl</code> class represents the declaration
- * of an instruction in an instruction set description language
- * file. It include a description of the encoding format of the
- * instruction as well as a block of IR code that describe how
- * to execute the instruction.
+ * The <code>InstrDecl</code> class represents the declaration of an instruction in an instruction set description
+ * language file. It include a description of the encoding format of the instruction as well as a block of IR code that
+ * describe how to execute the instruction.
  *
  * @author Ben L. Titzer
  */
@@ -55,8 +53,7 @@ public class InstrDecl extends CodeRegion {
     public final Token name;
 
     /**
-     * The <code>variant</code> field stores a string representing the variant name
-     * of this instruction.
+     * The <code>variant</code> field stores a string representing the variant name of this instruction.
      */
     public final Token variant;
 
@@ -69,8 +66,8 @@ public class InstrDecl extends CodeRegion {
     public final int cycles;
 
     /**
-     * The constructor of the <code>InstrDecl</code> class initializes the fields
-     * based on the parameters.
+     * The constructor of the <code>InstrDecl</code> class initializes the fields based on the parameters.
+     *
      * @param n the name of the instruction as a string
      * @param v the variant of the instruction as a string
      */

@@ -42,8 +42,7 @@ import java.util.*;
 
 /**
  * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the
- * <code>avrora.test.AutomatedTester</code> in order to automate testing of the
- * AVR parser and simulator.
+ * <code>avrora.test.AutomatedTester</code> in order to automate testing of the AVR parser and simulator.
  *
  * @author Ben L. Titzer
  */

@@ -39,8 +39,7 @@ import avrora.util.StringUtil;
 import java.util.Properties;
 
 /**
- * The <code>TestCase</code> class encapsulates the notion of a test case
- * in the automated testing framework.
+ * The <code>TestCase</code> class encapsulates the notion of a test case in the automated testing framework.
  *
  * @author Ben L. Titzer
  */
@@ -68,7 +67,7 @@ public abstract class TestCase {
 
         // internal error encountered.
         if (t instanceof Avrora.InternalError)
-            return new TestResult.InternalError((Avrora.InternalError) t);
+            return new TestResult.InternalError((Avrora.InternalError)t);
 
         // default: unexpected exception
         return new TestResult.UnexpectedException(t);
@@ -85,7 +84,6 @@ public abstract class TestCase {
             if (result.equals("PASS"))
                 shouldPass = true;
             else {
-                // TODO: could clean up some using StringUtil
                 // format = "$id @ $num:$num"
                 int i = result.indexOf("@");
                 if (i >= 0)
@@ -101,7 +99,7 @@ public abstract class TestCase {
                 if (t == null) // no exceptions encountered, passed.
                     return new TestResult.TestSuccess();
                 if (t instanceof CompilationError) { // encountered compilation error.
-                    CompilationError ce = (CompilationError) t;
+                    CompilationError ce = (CompilationError)t;
                     return new TestResult.ExpectedPass(ce);
                 }
             } else {
@@ -109,7 +107,7 @@ public abstract class TestCase {
                     return new TestResult.ExpectedError(error);
 
                 if (t instanceof CompilationError) {
-                    CompilationError ce = (CompilationError) t;
+                    CompilationError ce = (CompilationError)t;
                     if (ce.getErrorClass().equals(error)) // correct error encountered.
                         return new TestResult.TestSuccess();
                     else // incorrect compilation error.

@@ -36,17 +36,15 @@ import avrora.Avrora;
 import avrora.core.isdl.parser.Token;
 
 /**
- * The <code>Literal</code> class represents a literal (constant value) as
- * part of an expression. Literals have known, constant values, either
- * boolean or integer.
+ * The <code>Literal</code> class represents a literal (constant value) as part of an expression. Literals have known,
+ * constant values, either boolean or integer.
  *
  * @author Ben L. Titzer
  */
 public abstract class Literal extends Expr {
 
     /**
-     * The <code>token</code> fields stores a reference to the original
-     * token representing this literal.
+     * The <code>token</code> fields stores a reference to the original token representing this literal.
      */
     public final Token token;
 
@@ -55,10 +53,10 @@ public abstract class Literal extends Expr {
     }
 
     /**
-     * The <code>isConstantExpr()</code> method tests whether this expression
-     * is a constant expression (i.e. it is reducable to a constant and has
-     * no references to variables, maps, etc). For literals, this method will
-     * always return true because a literal is a constant value.
+     * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e. it is
+     * reducable to a constant and has no references to variables, maps, etc). For literals, this method will always
+     * return true because a literal is a constant value.
+     *
      * @return true if this expression can be evaluated to a constant; false otherwise
      */
     public boolean isConstantExpr() {
@@ -66,9 +64,9 @@ public abstract class Literal extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern so that client visitors can traverse the syntax tree easily
-     * and in an extensible way.
+     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can traverse
+     * the syntax tree easily and in an extensible way.
+     *
      * @param v the visitor to accept
      */
     public void accept(ExprVisitor v) {
@@ -80,24 +78,22 @@ public abstract class Literal extends Expr {
     }
 
     /**
-     * The <code>IntExpr</code> inner class represents an integer literal
-     * that has a known, constant value.
+     * The <code>IntExpr</code> inner class represents an integer literal that has a known, constant value.
      *
      * @author Ben L. Titzer
      */
     public static class IntExpr extends Literal {
 
         /**
-         * The <code>value</code> class stores the constant integer value of
-         * this literal.
+         * The <code>value</code> class stores the constant integer value of this literal.
          */
         public final int value;
 
         /**
-         * The constructor of the <code>IntExpr</code> class evaluates the
-         * token's string value to an integer and stores it in the publicly
-         * accessable <code>value</code> field, as well as storing a reference
-         * to the original token.
+         * The constructor of the <code>IntExpr</code> class evaluates the token's string value to an integer and stores
+         * it in the publicly accessable <code>value</code> field, as well as storing a reference to the original
+         * token.
+         *
          * @param v the token representing the value of this integer
          */
         public IntExpr(Token v) {
@@ -106,13 +102,11 @@ public abstract class Literal extends Expr {
         }
 
         /**
-         * The <code>getBitWidth()</code> method returns the known bit size
-         * of this expression which is needed in computing the size of an
-         * encoding. For integer literals, the known bit width is
-         * only defined for binary constants (e.g. "0b0101011"), in which
-         * case it is the number of bits after the "0b" prefix.
-         * @return the width of this integer in bits if it is a binary literal; an error
-         * otherwise
+         * The <code>getBitWidth()</code> method returns the known bit size of this expression which is needed in
+         * computing the size of an encoding. For integer literals, the known bit width is only defined for binary
+         * constants (e.g. "0b0101011"), in which case it is the number of bits after the "0b" prefix.
+         *
+         * @return the width of this integer in bits if it is a binary literal; an error otherwise
          */
         public int getBitWidth() {
             if (token.image.charAt(1) == 'b') {
@@ -123,9 +117,9 @@ public abstract class Literal extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {
@@ -146,22 +140,20 @@ public abstract class Literal extends Expr {
     }
 
     /**
-     * The <code>BoolExpr</code> inner class represents a boolean literal
-     * that has a known, constant value (true or false).
+     * The <code>BoolExpr</code> inner class represents a boolean literal that has a known, constant value (true or
+     * false).
      */
     public static class BoolExpr extends Literal {
 
         /**
-         * The <code>value</code> class stores the constant boolean value of
-         * this literal.
+         * The <code>value</code> class stores the constant boolean value of this literal.
          */
         public final boolean value;
 
         /**
-         * The constructor of the <code>BoolExpr</code> class evaluates the
-         * token's string value as a boolean and stores it in the publicly
-         * accessable <code>value</code> field, as well as storing a reference
-         * to the original token
+         * The constructor of the <code>BoolExpr</code> class evaluates the token's string value as a boolean and stores
+         * it in the publicly accessable <code>value</code> field, as well as storing a reference to the original token
+         *
          * @param v the token representing the value of this boolean
          */
         public BoolExpr(Token v) {
@@ -170,9 +162,9 @@ public abstract class Literal extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor
-         * pattern so that client visitors can traverse the syntax tree easily
-         * and in an extensible way.
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
+         * traverse the syntax tree easily and in an extensible way.
+         *
          * @param v the visitor to accept
          */
         public void accept(CodeVisitor v) {

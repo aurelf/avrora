@@ -34,12 +34,10 @@ package avrora.core;
 
 
 /**
- * The <code>Instr</code> class and its descendants represent instructions within the
- * assembly code. The visitor pattern is applied here. Each instruction has an
- * <code>accept()</code> method that allows it to be visited with double dispatch
- * by a <code>InstrVisitor</code>. Each instruction in the AVR instruction set
- * is represented by an inner class whose source has been generated from a simple
- * specification.
+ * The <code>Instr</code> class and its descendants represent instructions within the assembly code. The visitor pattern
+ * is applied here. Each instruction has an <code>accept()</code> method that allows it to be visited with double
+ * dispatch by a <code>InstrVisitor</code>. Each instruction in the AVR instruction set is represented by an inner class
+ * whose source has been generated from a simple specification.
  *
  * @author Ben L. Titzer
  * @see InstrVisitor
@@ -53,21 +51,18 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>getOperands()</code> method returns a string representation
-     * of the operands of the instruction. This is useful for printing and
-     * tracing of instructions as well as generating listings.
+     * The <code>getOperands()</code> method returns a string representation of the operands of the instruction. This is
+     * useful for printing and tracing of instructions as well as generating listings.
      *
      * @return a string representing the operands of the instruction
      */
     public abstract String getOperands();
 
     /**
-     * The <code>getVariant()</code> method returns the variant name of the
-     * instruction as a string. Since instructions like load and store have
-     * multiple variants, they each have specific variant names to distinguish
-     * them internally in the core of Avrora. For example, for "ld x+, (addr)",
-     * the variant is "ldpi" (load with post increment), but the actual instruction
-     * is "ld", so this method will return "ldpi".
+     * The <code>getVariant()</code> method returns the variant name of the instruction as a string. Since instructions
+     * like load and store have multiple variants, they each have specific variant names to distinguish them internally
+     * in the core of Avrora. For example, for "ld x+, (addr)", the variant is "ldpi" (load with post increment), but
+     * the actual instruction is "ld", so this method will return "ldpi".
      *
      * @return the variant of the instruction that this prototype represents
      */
@@ -76,8 +71,7 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>getSize()</code> method returns the size of the instruction
-     * in bytes.
+     * The <code>getSize()</code> method returns the size of the instruction in bytes.
      *
      * @return the size of this instruction in bytes
      */
@@ -86,11 +80,10 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>getName()</code> method returns the name of the instruction as
-     * a string. For instructions that are variants of instructions, this method
-     * returns the actual name of the instruction. For example, for "ld x+, (addr)",
-     * the variant is "ldpi" (load with post increment), but the actual instruction
-     * is "ld", so this method will return "ld".
+     * The <code>getName()</code> method returns the name of the instruction as a string. For instructions that are
+     * variants of instructions, this method returns the actual name of the instruction. For example, for "ld x+,
+     * (addr)", the variant is "ldpi" (load with post increment), but the actual instruction is "ld", so this method
+     * will return "ld".
      *
      * @return the name of the instruction
      */
@@ -103,13 +96,11 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>getCycles()</code> method returns the number of cylces consumed
-     * by the instruction in the default case. Most instructions consume the same
-     * amount of clock cycles no matter what behavior. For example, 8-bit arithmetic
-     * takes one cycle, load and stores take two cycles, etc. Some instructions like
-     * the branch and skip instructions take more cycles if they are taken or not
-     * taken. In that case, this count returned is the smallest number of cycles
-     * that can be consumed by this instruction.
+     * The <code>getCycles()</code> method returns the number of cylces consumed by the instruction in the default case.
+     * Most instructions consume the same amount of clock cycles no matter what behavior. For example, 8-bit arithmetic
+     * takes one cycle, load and stores take two cycles, etc. Some instructions like the branch and skip instructions
+     * take more cycles if they are taken or not taken. In that case, this count returned is the smallest number of
+     * cycles that can be consumed by this instruction.
      *
      * @return the number of cycles that this instruction consumes
      */
@@ -118,27 +109,24 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>accept()</code> method is part of the visitor pattern for
-     * instructions. The visitor pattern uses two virtual dispatches combined
-     * with memory overloading to achieve dispatching on multiple types. The
-     * result is clean and modular code.
+     * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor pattern uses two
+     * virtual dispatches combined with memory overloading to achieve dispatching on multiple types. The result is clean
+     * and modular code.
      *
      * @param v the visitor to accept
      */
     public abstract void accept(InstrVisitor v);
 
     /**
-     * The <code>InvalidOperand</code> class represents a runtime error
-     * thrown by the constructor of an instruction or the <code>build</code>
-     * method of a prototype when an operand does not meet the restrictions
-     * imposed by the AVR instruction set architecture.
+     * The <code>InvalidOperand</code> class represents a runtime error thrown by the constructor of an instruction or
+     * the <code>build</code> method of a prototype when an operand does not meet the restrictions imposed by the AVR
+     * instruction set architecture.
      */
     public static class InvalidOperand extends RuntimeException {
         /**
-         * The <code>number</code> field of the <code>InvalidOperand</code>
-         * instance records which operand this error refers to. For example,
-         * if the first operand was the source of the problem, then this
-         * field will be set to 1.
+         * The <code>number</code> field of the <code>InvalidOperand</code> instance records which operand this error
+         * refers to. For example, if the first operand was the source of the problem, then this field will be set to
+         * 1.
          */
         public final int number;
 
@@ -149,24 +137,20 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>InvalidRegister</code> class represents an error in
-     * constructing an instance of <code>Instr</code> where a register
-     * operand does not meet the instruction set specification. For
-     * example, the "ldi" instruction can only load values into the
-     * upper 16 registers; attempting to create a <code>Instr.LDI</code>
-     * instance with a destination register of <code>Register.RO</code>
-     * will generate this exception.
+     * The <code>InvalidRegister</code> class represents an error in constructing an instance of <code>Instr</code>
+     * where a register operand does not meet the instruction set specification. For example, the "ldi" instruction can
+     * only load values into the upper 16 registers; attempting to create a <code>Instr.LDI</code> instance with a
+     * destination register of <code>Register.RO</code> will generate this exception.
      */
     public static class InvalidRegister extends InvalidOperand {
         /**
-         * The <code>set</code> field records the expected register set
-         * for the operand.
+         * The <code>set</code> field records the expected register set for the operand.
          */
         public final Register.Set set;
 
         /**
-         * The <code>register</code> field records the offending register
-         * that was found not to be in the expected register set.
+         * The <code>register</code> field records the offending register that was found not to be in the expected
+         * register set.
          */
         public final Register register;
 
@@ -178,32 +162,27 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>InvalidImmediate</code> class represents an error in
-     * construction of an instance of <code>Instr</code> where the
-     * given immediate operand is not within the range that
-     * is specified by the instruction set manual. For example, the
-     * "sbic" instruction skips the next instruction if the specified
-     * bit in the status register is clear. Its operand is expected
-     * to be in the range [0, ..., 7]. If the specified operand is
-     * not in the range, then this exception will be thrown.
+     * The <code>InvalidImmediate</code> class represents an error in construction of an instance of <code>Instr</code>
+     * where the given immediate operand is not within the range that is specified by the instruction set manual. For
+     * example, the "sbic" instruction skips the next instruction if the specified bit in the status register is clear.
+     * Its operand is expected to be in the range [0, ..., 7]. If the specified operand is not in the range, then this
+     * exception will be thrown.
      */
     public static class InvalidImmediate extends InvalidOperand {
 
         /**
-         * The <code>low</code> field stores the lowest value that is
-         * allowed for this operand.
+         * The <code>low</code> field stores the lowest value that is allowed for this operand.
          */
         public final int low;
 
         /**
-         * The <code>high</code> field stores the highest value that is
-         * allowed for this operand.
+         * The <code>high</code> field stores the highest value that is allowed for this operand.
          */
         public final int high;
 
         /**
-         * The <code>value</code> field stores the actual value that was
-         * passed during the attempeted construction of this instruction.
+         * The <code>value</code> field stores the actual value that was passed during the attempeted construction of
+         * this instruction.
          */
         public final int value;
 
@@ -216,9 +195,8 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>RegisterRequired</code> class represents an error
-     * in construction of an instance of <code>Instr</code> where the
-     * given operand is expected to be a register but is not.
+     * The <code>RegisterRequired</code> class represents an error in construction of an instance of <code>Instr</code>
+     * where the given operand is expected to be a register but is not.
      */
     public static class RegisterRequired extends RuntimeException {
 
@@ -231,9 +209,8 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>ImmediateRequired</code> class represents an error
-     * in construction of an instance of <code>Instr</code> where the
-     * given operand is expected to be an immediate but is not.
+     * The <code>ImmediateRequired</code> class represents an error in construction of an instance of <code>Instr</code>
+     * where the given operand is expected to be an immediate but is not.
      */
     public static class ImmediateRequired extends RuntimeException {
 
@@ -246,9 +223,8 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * The <code>WrongNumberOfOperands</code> class represents a runtime
-     * error thrown by the <code>build</code> method of a prototype when
-     * the wrong number of operands is passed to build an instruction.
+     * The <code>WrongNumberOfOperands</code> class represents a runtime error thrown by the <code>build</code> method
+     * of a prototype when the wrong number of operands is passed to build an instruction.
      */
     public static class WrongNumberOfOperands extends RuntimeException {
         public final int expected;
@@ -263,11 +239,9 @@ public abstract class Instr implements InstrPrototype {
 
 
     /**
-     * U T I L I T Y   F U N C T I O N S
-     * ------------------------------------------------------------
+     * U T I L I T Y   F U N C T I O N S ------------------------------------------------------------
      * <p/>
-     * These utility functions help in the checking of operands
-     * in individual instructions.
+     * These utility functions help in the checking of operands in individual instructions.
      */
     private static void need(int num, Operand[] ops) {
         if (ops.length != num)
@@ -369,11 +343,10 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
-     * A B S T R A C T   C L A S S E S
-     * --------------------------------------------------------
+     * A B S T R A C T   C L A S S E S --------------------------------------------------------
      * <p/>
-     * These abstract implementations of the instruction simplify
-     * the specification of each individual instruction considerably.
+     * These abstract implementations of the instruction simplify the specification of each individual instruction
+     * considerably.
      */
     public abstract static class REGREG_class extends Instr {
         public final Register r1;
@@ -631,11 +604,9 @@ public abstract class Instr implements InstrPrototype {
 
 
     /**
-     * I N S T R U C T I O N   D E S C R I P T I O N S
-     * ----------------------------------------------------------------
+     * I N S T R U C T I O N   D E S C R I P T I O N S ----------------------------------------------------------------
      * <p/>
-     * These are the actual instruction descriptions that contain the
-     * constraints on operands and sizes, etc.
+     * These are the actual instruction descriptions that contain the constraints on operands and sizes, etc.
      * <p/>
      * DO NOT MODIFY THIS CODE!!!!
      */

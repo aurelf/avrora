@@ -48,14 +48,15 @@ import avrora.sim.radio.RadioAir;
 import avrora.sim.util.GlobalClock;
 import avrora.util.Verbose;
 
-/** Implementation of the free space radio propagation model
- * @author Olaf Landsiedel
+/**
+ * Implementation of the free space radio propagation model
  *
- * Yes, the free space radio model is not very realitic, but this is not the porpose 
- * of thie implementation. It shall model the characteristics of radio propagation and
- * so enable multihop scenarios.
- * This implementation bases heavily on the SimpleAir class by Daniel Lee. However, the 
- * changes needed, where to heavy to allow for standard class extension  
+ * @author Olaf Landsiedel
+ *         <p/>
+ *         Yes, the free space radio model is not very realitic, but this is not the porpose of thie implementation. It
+ *         shall model the characteristics of radio propagation and so enable multihop scenarios. This implementation
+ *         bases heavily on the SimpleAir class by Daniel Lee. However, the changes needed, where to heavy to allow for
+ *         standard class extension
  */
 public class FreeSpaceAir implements RadioAir {
 
@@ -69,30 +70,36 @@ public class FreeSpaceAir implements RadioAir {
         freeSpaceAir = new FreeSpaceAir();
     }
 
-    /** GlobalClock used by the air environment. Essential for synchronization. */
+    /**
+     * GlobalClock used by the air environment. Essential for synchronization.
+     */
     protected final RadioClock radioClock;
 
     // all radios
     protected final HashSet radios;
 
-    /** State for maintaining RSSI wait for neighbors */
+    /**
+     * State for maintaining RSSI wait for neighbors
+     */
     int rssi_count;
     int meet_count;
     TreeSet rssi_waiters;
 
-    /** The amount of cycles it takes for one byte to be sent.*/
+    /**
+     * The amount of cycles it takes for one byte to be sent.
+     */
     public final static int bytePeriod = Radio.TRANSFER_TIME;
     public final static int bitPeriod = Radio.TRANSFER_TIME / 8;
     public final static int bitPeriod2 = Radio.TRANSFER_TIME / 16;
-    
+
     //const. for radio propagation
-    private final static double lightTemp = 299792458 / (4* Math.PI);
+    private final static double lightTemp = 299792458 / (4 * Math.PI);
     private final static double lightConst = lightTemp * lightTemp;
     private final static double noiseCutOff = 0.000009;
-    
 
-    /** new free space air
-     * 
+
+    /**
+     * new free space air
      */
     public FreeSpaceAir() {
         radios = new HashSet();
@@ -100,38 +107,44 @@ public class FreeSpaceAir implements RadioAir {
         rssi_waiters = new TreeSet();
     }
 
-    /** add radio
+    /**
+     * add radio
+     *
      * @see avrora.sim.radio.RadioAir#addRadio(avrora.sim.radio.Radio)
      */
     public synchronized void addRadio(Radio r) {
         //add this radio to the other radio's neighbor list
         Iterator it = radios.iterator();
-        while( it.hasNext() ) {
+        while (it.hasNext()) {
             LocalAir localAir = ((Radio)it.next()).getLocalAir();
             //add the new radio to the other radio's neighbor list
             localAir.addNeighbor(r.getLocalAir());
             //add the other radios to this radio's neighbor list
             r.getLocalAir().addNeighbor(localAir);
-        }        
+        }
         radios.add(r);
         radioClock.add(r.getSimulatorThread());
         //deliveryMeet.setGoal(radioClock.getNumberOfThreads());
     }
 
-    /** remove radio
+    /**
+     * remove radio
+     *
      * @see avrora.sim.radio.RadioAir#removeRadio(avrora.sim.radio.Radio)
      */
-    public synchronized void removeRadio(Radio r) {                
+    public synchronized void removeRadio(Radio r) {
         radios.remove(r);
         Iterator it = radios.iterator();
-        while ( it.hasNext()) {
+        while (it.hasNext()) {
             LocalAir localAir = ((Radio)it.next()).getLocalAir();
             //remove the radio from the other radio's neighbor list
             localAir.removeNeighbor(r.getLocalAir());
-        }        
+        }
     }
 
-    /** transmit packet
+    /**
+     * transmit packet
+     *
      * @see avrora.sim.radio.RadioAir#transmit(avrora.sim.radio.Radio, avrora.sim.radio.Radio.RadioPacket)
      */
     public synchronized void transmit(Radio r, Radio.RadioPacket f) {
@@ -139,34 +152,34 @@ public class FreeSpaceAir implements RadioAir {
         //first compute tranmission power in Watt
         double powerSet = (double)r.getPower();
         double power = 0;
-        //convert to db (by linarization) and than to Watts
-        //for linearization, we destinguish values less than 16
-        //and higher ones. Probalby a lookup table and Spline 
-        //interpolation woulb be nice here
-        if( powerSet < 16 )
-            power = Math.pow(10,(0.12 * powerSet - 1.8));
+        //convert to dB (by linearization) and than to Watts
+        //for linearization, we distinguish values less than 16
+        //and higher ones. Probably a lookup table and Spline
+        //interpolation would be nice here
+        if (powerSet < 16)
+            power = Math.pow(10, (0.12 * powerSet - 1.8));
         else
-            power = Math.pow(10,(0.00431 * powerSet - 0.06459));
+            power = Math.pow(10, (0.00431 * powerSet - 0.06459));
         
         //second compute free space formula (without distance)
         //SignalRec = SignalSend * lightTerm * (1 / ( distance * freq))^2;
         // where lightTerm is ( c / ( 4Pi ))^2
         double freq = r.getFrequency();
-        double temp = power * lightConst * ( 1 / (freq * freq));
+        double temp = power * lightConst * (1 / (freq * freq));
         // send packet to devices in ranges
         Iterator it = r.getLocalAir().getNeighbors();
-        while( it.hasNext()) {
-            Distance dis = (Distance) it.next();    
+        while (it.hasNext()) {
+            Distance dis = (Distance)it.next();
             double powerRec = temp / (dis.distance * dis.distance);
-            //System.out.println("signal power: " + powerRec + " " + noiseCutOff + " distance: " + dis.distance);
-            //chekc, if device is in range
-            if( powerRec > noiseCutOff )
+            //check if device is in range
+            if (powerRec > noiseCutOff)
                 dis.radio.addPacket(f, powerRec);
         }
 
     }
 
-    /**see SimpleAir
+    /**
+     * see SimpleAir
      */
     protected class RSSIWait implements Comparable {
         boolean shouldWait;
@@ -180,15 +193,17 @@ public class FreeSpaceAir implements RadioAir {
         }
 
         public int compareTo(Object o) {
-            if ( o == this ) return 0;
+            if (o == this) return 0;
             RSSIWait w = (RSSIWait)o;
             int diff = (int)(w.sampleTime - this.sampleTime);
-            if ( diff == 0 ) return w.hashCode() - this.hashCode();
+            if (diff == 0) return w.hashCode() - this.hashCode();
             return diff;
         }
     }
 
-    /** see simple air for more 
+    /**
+     * see simple air for more
+     *
      * @see avrora.sim.radio.RadioAir#sampleRSSI(avrora.sim.radio.Radio)
      */
     public int sampleRSSI(Radio r) {
@@ -198,12 +213,12 @@ public class FreeSpaceAir implements RadioAir {
         RSSIWait f = null;
 
         // TODO: gross hack to handle the case of only one node
-        if ( !(Thread.currentThread() instanceof SimulatorThread) )
+        if (!(Thread.currentThread() instanceof SimulatorThread))
             return 0x3ff;
 
-        synchronized ( this ) {
-            if ( rssiPrinter.enabled ) {
-                rssiPrinter.println("RSSI: sampleRSSI @ "+t);
+        synchronized (this) {
+            if (rssiPrinter.enabled) {
+                rssiPrinter.println("RSSI: sampleRSSI @ " + t);
             }
             // add use to the waiters
             rssi_waiters.add(w);
@@ -213,17 +228,17 @@ public class FreeSpaceAir implements RadioAir {
         }
 
         // are we at the head of the RSSI waiter's list, and everyone is ready to go?
-        if ( f != w ) {
+        if (f != w) {
             // we are not at the head of the RSSI waiters list, wait until we are notified
             try {
-                synchronized ( w ) {
-                    if ( rssiPrinter.enabled ) {
-                        rssiPrinter.println("RSSI: wait @ "+t+" "+w);
+                synchronized (w) {
+                    if (rssiPrinter.enabled) {
+                        rssiPrinter.println("RSSI: wait @ " + t + " " + w);
                     }
                     // check that no thread got to us in between giving up the global lock
-                    if ( w.shouldWait ) w.wait();
+                    if (w.shouldWait) w.wait();
                 }
-            } catch ( InterruptedException e ) {
+            } catch (InterruptedException e) {
                 throw new GlobalClock.InterruptedException(e);
             }
         }
@@ -232,7 +247,7 @@ public class FreeSpaceAir implements RadioAir {
 
         // we just got woken up (or returned immediately from checkRSSIWaiters
         // this means we are now ready to proceed and compute our RSSI value.
-        synchronized ( this ) {
+        synchronized (this) {
             strength = r.getLocalAir().sampleRSSI(t);
         }
 
@@ -246,24 +261,24 @@ public class FreeSpaceAir implements RadioAir {
         checkRSSIWaiters(null);
     }
 
-    /** see simple air
-     * Tricky! This method checks whether every thread has reached either a local meet
-     * or has tried to read the RSSI value. If every thread has joined in one of these
-     * two ways this method will select the RSSI waiter that made the earliest request.
-     * If that waiter is NOT the waiter passed as a parameter, it will wake that waiter.
+    /**
+     * see simple air Tricky! This method checks whether every thread has reached either a local meet or has tried to
+     * read the RSSI value. If every thread has joined in one of these two ways this method will select the RSSI waiter
+     * that made the earliest request. If that waiter is NOT the waiter passed as a parameter, it will wake that waiter.
      * If that waiter IS the waiter passed, it will NOT wake it.
-     * @param curWait the current waiter, null if this method is being called as a result
-     * of a thread entering a local meet
+     *
+     * @param curWait the current waiter, null if this method is being called as a result of a thread entering a local
+     *                meet
      * @return the waiter at the head of the line if all threads have joined, null otherwise
      */
     private RSSIWait checkRSSIWaiters(RSSIWait curWait) {
-        if ( rssiPrinter.enabled )  rssiPrinter.print("RSSI check("+curWait+"): met "+meet_count+", sampling "+rssi_count+": ");
+        if (rssiPrinter.enabled) rssiPrinter.print("RSSI check(" + curWait + "): met " + meet_count + ", sampling " + rssi_count + ": ");
 
-        if ( meet_count + rssi_count == radioClock.getNumberOfThreads() ) {
+        if (meet_count + rssi_count == radioClock.getNumberOfThreads()) {
 
             // are there any waiters?
-            if ( rssi_waiters.isEmpty() ) {
-                if ( rssiPrinter.enabled ) rssiPrinter.println("no waiters");
+            if (rssi_waiters.isEmpty()) {
+                if (rssiPrinter.enabled) rssiPrinter.println("no waiters");
                 return null;
             }
 
@@ -272,9 +287,9 @@ public class FreeSpaceAir implements RadioAir {
             rssi_count--;
             rssi_waiters.remove(w);
 
-            if ( w != curWait ) {
-                synchronized(w) {
-                    if ( rssiPrinter.enabled ) rssiPrinter.println("notify "+w);
+            if (w != curWait) {
+                synchronized (w) {
+                    if (rssiPrinter.enabled) rssiPrinter.println("notify " + w);
                     w.shouldWait = false;
                     w.notifyAll();
                 }
@@ -283,38 +298,42 @@ public class FreeSpaceAir implements RadioAir {
 
         } else {
             // not everyone has joined
-            if ( rssiPrinter.enabled ) rssiPrinter.println("not ready");
+            if (rssiPrinter.enabled) rssiPrinter.println("not ready");
             return null;
         }
     }
 
     /**
      * @author Olaf Landsiedel
-     *
-     * The <code>RadioTicker</code> class is the global timer for the radio. It is
-     * specialized in that it will schedule delivery meets when, at the end of
-     * the interval, there was at least one packet sent.
-     * The simple air version (by Daniel Lee) has been heavily changed to enable
-     * free space radio modelling
+     *         <p/>
+     *         The <code>RadioTicker</code> class is the global timer for the radio. It is specialized in that it will
+     *         schedule delivery meets when, at the end of the interval, there was at least one packet sent. The simple
+     *         air version (by Daniel Lee) has been heavily changed to enable free space radio modelling
      */
     protected class RadioTicker extends GlobalClock.Ticker {
         //long deliveryDelta;
 
-        /** new radio ticket
-         * @param period until event
+        /**
+         * new radio ticket
+         *
+         * @param p until event
          */
         RadioTicker(long p) {
             super(p);
         }
 
-        /** do the work needed before the synched action
+        /**
+         * do the work needed before the synched action
+         *
          * @see avrora.sim.util.GlobalClock.LocalMeet#preSynchAction()
          */
         public void preSynchAction() {
             incrementMeets();
         }
 
-        /** do the action, which needs to be done in serialized
+        /**
+         * do the action, which needs to be done in serialized
+         *
          * @see avrora.sim.util.GlobalClock.LocalMeet#serialAction()
          */
         public void serialAction() {
@@ -323,20 +342,22 @@ public class FreeSpaceAir implements RadioAir {
             meet_count = 0;
         }
 
-        /** schedule the delivery time to the local air implementation
-         * 
+        /**
+         * schedule the delivery time to the local air implementation
          */
         private void scheduleDelivery() {
             Iterator it = radios.iterator();
             long temp;
-            while ( it.hasNext() ) {
+            while (it.hasNext()) {
                 Radio r = (Radio)it.next();
                 LocalAir pr = r.getLocalAir();
                 pr.scheduleDelivery(radioClock.globalTime(), r.getSimulator());
             }
         }
 
-        /** the actions, that can be done in parallel
+        /**
+         * the actions, that can be done in parallel
+         *
          * @see avrora.sim.util.GlobalClock.LocalMeet#parallelAction(avrora.sim.SimulatorThread)
          */
         public void parallelAction(SimulatorThread t) {
@@ -348,9 +369,9 @@ public class FreeSpaceAir implements RadioAir {
     }
 
     /**
-     * An extended version of <code>GlobalClock</code> that implements a version of
-     * <code>LocalMeet</code> that is appropriate for delivering radio packets.
-     * 
+     * An extended version of <code>GlobalClock</code> that implements a version of <code>LocalMeet</code> that is
+     * appropriate for delivering radio packets.
+     *
      * @author Daniel Lee
      */
     protected class RadioClock extends GlobalClock {

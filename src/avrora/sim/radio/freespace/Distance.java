@@ -38,23 +38,26 @@ package avrora.sim.radio.freespace;
 
 import avrora.sim.radio.*;
 
-/** stores the between a node and the node who own radio
- * @author Olaf Landsiedel
+/**
+ * stores the between a node and the node who own radio
  *
+ * @author Olaf Landsiedel
  */
 public class Distance {
-    
+
     //distance between a node and the node who owns radio
     public double distance;
-    
+
     //the other radio
     public LocalAir radio;
-    
-    /** new Disance 
-     * @param r local radio
+
+    /**
+     * new Disance
+     *
+     * @param r   local radio
      * @param dis distance
      */
-    public Distance(LocalAir r, double dis){
+    public Distance(LocalAir r, double dis) {
         radio = r;
         distance = dis;
     }

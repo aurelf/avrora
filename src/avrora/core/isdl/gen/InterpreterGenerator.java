@@ -44,9 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * The <code>InterpreterGenerator</code> class is a visitor over the code of an
- * instruction declaration or subroutine that generates the appropriate Java
- * code that implements an interpreter for the architecture.
+ * The <code>InterpreterGenerator</code> class is a visitor over the code of an instruction declaration or subroutine
+ * that generates the appropriate Java code that implements an interpreter for the architecture.
  *
  * @author Ben L. Titzer
  */
@@ -113,7 +112,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
 
         public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
             if (ind.isVariable() || ind.isLiteral()) {
-                String var = (String) operandMap.get(ind.toString());
+                String var = (String)operandMap.get(ind.toString());
                 if (var == null) var = ind.toString();
                 printer.print(writeMeth + "(" + var + ", ");
                 int mask = getBitRangeMask(l, h);
@@ -156,12 +155,11 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
 
 
     /**
-     * The constructor for the <code>InterpreterGenerator</code> class builds
-     * an object capable of generating the interpreter for a particular architecture
-     * that outputs to the specified printer. In this implementation, the interpreter
-     * generator simply outputs visit() methods for each instruction that are meant
-     * to be pasted into a template file containing the rest of the interpreter.
-     * This can be done by constructing a <code>SectionFile</code> instance.
+     * The constructor for the <code>InterpreterGenerator</code> class builds an object capable of generating the
+     * interpreter for a particular architecture that outputs to the specified printer. In this implementation, the
+     * interpreter generator simply outputs visit() methods for each instruction that are meant to be pasted into a
+     * template file containing the rest of the interpreter. This can be done by constructing a <code>SectionFile</code>
+     * instance.
      *
      * @param a the architecture to generate an interrupter for
      * @param p a printer to output the code implementing the interpreter
@@ -217,7 +215,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         operandMap = new HashMap();
         Iterator i = cr.getOperandIterator();
         while (i.hasNext()) {
-            CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
 
             String image = o.name.image;
             if (cr instanceof InstrDecl)
@@ -232,7 +230,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         printer.print("public " + d.ret.image + " " + d.name.image + "(");
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {
-            CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
             printer.print(o.type.image + " " + o.name.image);
             if (i.hasNext()) printer.print(", ");
         }
@@ -285,7 +283,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
     }
 
     protected MapRep getMapRep(String n) {
-        MapRep mr = (MapRep) mapMap.get(n);
+        MapRep mr = (MapRep)mapMap.get(n);
         if (mr == null)
             throw Avrora.failure("unknown map " + StringUtil.quote(n));
         return mr;
@@ -324,7 +322,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
     }
 
     protected String getVariable(Token variable) {
-        String var = (String) operandMap.get(variable.image);
+        String var = (String)operandMap.get(variable.image);
         if (var == null) var = variable.image;
         return var;
     }
@@ -368,9 +366,8 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
     }
 
     /**
-     * The <code>CodeGenerator</code> class is used to generate code for individual
-     * expressions. It generates textual code for each expression and dumps it to
-     * the printer.
+     * The <code>CodeGenerator</code> class is used to generate code for individual expressions. It generates textual
+     * code for each expression and dumps it to the printer.
      */
     public class CodeGenerator implements CodeVisitor {
 
@@ -439,12 +436,12 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
 
         public void visit(BitExpr e) {
             if (e.expr.isMap()) {
-                MapExpr me = (MapExpr) e.expr;
+                MapExpr me = (MapExpr)e.expr;
                 MapRep mr = getMapRep(me.mapname.image);
                 mr.generateBitRead(me.index, e.bit);
             } else {
                 if (e.bit.isLiteral()) {
-                    int mask = getSingleBitMask(((Literal.IntExpr) e.bit).value);
+                    int mask = getSingleBitMask(((Literal.IntExpr)e.bit).value);
                     printer.print("((");
                     inner(e.expr, Expr.PREC_A_ADD);
                     printer.print(" & " + mask + ") != 0");
@@ -476,7 +473,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         protected void visitExprList(List l) {
             Iterator i = l.iterator();
             while (i.hasNext()) {
-                Expr a = (Expr) i.next();
+                Expr a = (Expr)i.next();
                 a.accept(this);
                 if (i.hasNext()) printer.print(", ");
             }

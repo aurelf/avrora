@@ -55,13 +55,13 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
     public void generateCode() {
         printer.indent();
         new FIFBuilderEmitter().generate(architecture);
-        architecture.accept((Architecture.SubroutineVisitor) this);
+        architecture.accept((Architecture.SubroutineVisitor)this);
         generateExecuteMethod();
         printer.unindent();
     }
 
     private void generateExecuteMethod() {
-        architecture.accept((Architecture.InstrVisitor) this);
+        architecture.accept((Architecture.InstrVisitor)this);
     }
 
     public void visit(InstrDecl d) {
@@ -117,7 +117,7 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
             printer.println("instr = new FIFInstr_" + d.getInnerClassName() + "(i, pc);");
             Iterator i = d.getOperandIterator();
             while (i.hasNext()) {
-                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String n, s = "";
                 if (o.isRegister()) {
                     n = "r" + (++regcount);
@@ -138,7 +138,7 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
         int immcount = 0;
 
         while (i.hasNext()) {
-            CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
 
             String image = o.name.image;
             if (cr instanceof InstrDecl) {
@@ -158,7 +158,7 @@ public class FIFInterpreterGenerator extends InterpreterGenerator {
         if (var.image.startsWith("tmp_"))
             return var.image;
         else if (operandMap.get(var.image) != null) {
-            return (String) operandMap.get(var.image);
+            return (String)operandMap.get(var.image);
         } else {
             return "interp." + var.image;
         }

@@ -35,44 +35,37 @@ package avrora.sim.util;
 import avrora.sim.Simulator;
 
 /**
- * The <code>PeriodicEvent</code> class is a utility that allows a <code>Simulator.Event</code>
- * to be inserted into the simulator that will fire with a specified period of clock
- * cycles. It works by automatically adding itself back into the timer queue at each
- * firing.
+ * The <code>PeriodicEvent</code> class is a utility that allows a <code>Simulator.Event</code> to be inserted into the
+ * simulator that will fire with a specified period of clock cycles. It works by automatically adding itself back into
+ * the timer queue at each firing.
  *
  * @author Ben L. Titzer
  * @see avrora.sim.Simulator.Event
  */
 public class PeriodicEvent implements Simulator.Event {
     /**
-     * This field stores the simulator in which the event will
-     * continually be reinserted.
+     * This field stores the simulator in which the event will continually be reinserted.
      */
     public final Simulator simulator;
 
     /**
-     * This field stores the event that will be fired after each
-     * period.
+     * This field stores the event that will be fired after each period.
      */
     public final Simulator.Event event;
 
     /**
-     * This field stores the period (in clock cycles) that the event
-     * will be fired.
+     * This field stores the period (in clock cycles) that the event will be fired.
      */
     public final long period;
 
     /**
-     * The constructor for the <code>PeriodicEvent</code> class creates a
-     * new periodic event with the specified period. Each time the event
-     * fires, it will be added again back into the simulator's timer event
-     * queue with the same delta. The result is the specified event fires
-     * with the precise period specified.
+     * The constructor for the <code>PeriodicEvent</code> class creates a new periodic event with the specified period.
+     * Each time the event fires, it will be added again back into the simulator's timer event queue with the same
+     * delta. The result is the specified event fires with the precise period specified.
      * <p/>
-     * Creating the <code>PeriodicEvent</code> does not insert it into
-     * the simulator. It is important that these instances of
-     * <code>Simulator</code> match--this probe will always reinsert itself
-     * into the instance passed in the constructor.
+     * Creating the <code>PeriodicEvent</code> does not insert it into the simulator. It is important that these
+     * instances of <code>Simulator</code> match--this probe will always reinsert itself into the instance passed in the
+     * constructor.
      *
      * @param s the simulator in which to reinsert the event each time
      * @param t the event to fire after each period
@@ -85,10 +78,9 @@ public class PeriodicEvent implements Simulator.Event {
     }
 
     /**
-     * The <code>fire()</code> method is called by the simulator when the
-     * timer event occurs. In this implementation, the periodic event is
-     * reinserted into the timer queue, and then the <code>fire()</code>
-     * method of the event is called.
+     * The <code>fire()</code> method is called by the simulator when the timer event occurs. In this implementation,
+     * the periodic event is reinserted into the timer queue, and then the <code>fire()</code> method of the event is
+     * called.
      */
     public void fire() {
         simulator.insertEvent(this, period);

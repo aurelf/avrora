@@ -42,11 +42,9 @@ import avrora.util.StringUtil;
 import avrora.util.Options;
 
 /**
- * The <code>MemoryMonitor</code> class implements a monitor that collects
- * information about how the program accesses the data memory over its
- * execution. For each RAM address it keeps an account of the number of
- * reads and the number of writes and reports that information after the
- * program is completed.
+ * The <code>MemoryMonitor</code> class implements a monitor that collects information about how the program accesses
+ * the data memory over its execution. For each RAM address it keeps an account of the number of reads and the number of
+ * writes and reports that information after the program is completed.
  *
  * @author Ben L. Titzer
  */
@@ -108,11 +106,11 @@ public class MemoryMonitor extends MonitorFactory {
                 } else if (zeroes > 2) continue;
 
                 String rcnt = StringUtil.rightJustify(r, 8);
-                float rpcnt = (float) (100 * r / rtotal);
+                float rpcnt = (float)(100 * r / rtotal);
                 String rpercent = StringUtil.toFixedFloat(rpcnt, 4) + " %";
 
                 String wcnt = StringUtil.rightJustify(w, 8);
-                float wpcnt = (float) (100 * w / wtotal);
+                float wpcnt = (float)(100 * w / wtotal);
                 String wpercent = StringUtil.toFixedFloat(wpcnt, 4) + " %";
 
                 String addr = StringUtil.addrToString(start);
@@ -130,8 +128,8 @@ public class MemoryMonitor extends MonitorFactory {
 
     public MemoryMonitor() {
         super("memory", "The \"memory\" monitor collects information about the " +
-                "memory usage statistics of the program, which includes the number " +
-                "of reads and writes to every byte of data memory.");
+                        "memory usage statistics of the program, which includes the number " +
+                        "of reads and writes to every byte of data memory.");
     }
 
     public avrora.monitors.Monitor newMonitor(Simulator s) {

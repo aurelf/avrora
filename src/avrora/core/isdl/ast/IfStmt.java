@@ -37,40 +37,36 @@ import avrora.util.StringUtil;
 import java.util.List;
 
 /**
- * The <code>IfStmt</code> class represents a simple branch within the IR.
- * Since loops and switch statements are not allowed, if statements
- * (and subroutine calls) are the only form of control flow.
+ * The <code>IfStmt</code> class represents a simple branch within the IR. Since loops and switch statements are not
+ * allowed, if statements (and subroutine calls) are the only form of control flow.
  *
  * @author Ben L. Titzer
  */
 public class IfStmt extends Stmt {
     /**
-     * The <code>cond</code> field stores a reference to the expression
-     * that is evaluated as the condition determining which branch
-     * is executed.
+     * The <code>cond</code> field stores a reference to the expression that is evaluated as the condition determining
+     * which branch is executed.
      */
     public final Expr cond;
 
     /**
-     * The <code>trueBranch</code> field stores a reference to the
-     * list of statements to be executed if the condition is true.
+     * The <code>trueBranch</code> field stores a reference to the list of statements to be executed if the condition is
+     * true.
      */
     public final List trueBranch;
 
     /**
-     * The <code>falseBranch</code> field stores a reference to the
-     * list of statements to be executed if the condition is false.
+     * The <code>falseBranch</code> field stores a reference to the list of statements to be executed if the condition
+     * is false.
      */
     public final List falseBranch;
 
     /**
-     * The constructor of the <code>IfStmt</code> class simply initializes
-     * the internal fields based on the parameters.
+     * The constructor of the <code>IfStmt</code> class simply initializes the internal fields based on the parameters.
+     *
      * @param c a reference to the expression representing the condition
-     * @param t a reference to the list of statements to execute if the condition
-     * evaluates to true
-     * @param f a reference to the list of statements to execute if the condition
-     * evaluates to false
+     * @param t a reference to the list of statements to execute if the condition evaluates to true
+     * @param f a reference to the list of statements to execute if the condition evaluates to false
      */
     public IfStmt(Expr c, List t, List f) {
         cond = c;
@@ -79,9 +75,9 @@ public class IfStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine.
+     *
      * @param v the visitor to accept
      */
     public void accept(StmtVisitor v) {
@@ -89,8 +85,8 @@ public class IfStmt extends Stmt {
     }
 
     /**
-     * The <code>toString()</code> method recursively converts this statement
-     * to a string.
+     * The <code>toString()</code> method recursively converts this statement to a string.
+     *
      * @return a string representation of this statement
      */
     public String toString() {
@@ -106,14 +102,12 @@ public class IfStmt extends Stmt {
     }
 
     /**
-     * The <code>accept()</code> method implements one half of the visitor
-     * pattern for visiting the abstract syntax trees representing the
-     * code of a particular instruction or subroutine. The
-     * <code>StmtRebuilder</code> interface allows visitors to rearrange
-     * and rebuild the statements.
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract syntax
+     * trees representing the code of a particular instruction or subroutine. The <code>StmtRebuilder</code> interface
+     * allows visitors to rearrange and rebuild the statements.
+     *
      * @param r the visitor to accept
-     * @return the result of calling the appropriate <code>visit()</code>
-     * of the rebuilder passed
+     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
     public Stmt accept(StmtRebuilder r) {
         return r.visit(this);

@@ -39,10 +39,9 @@ import avrora.util.StringUtil;
 import java.util.Iterator;
 
 /**
- * The <code>ClassGenerator</code> class generates a set of classes that
- * represent instructions in an architecture. It will generate an outer
- * class <code>Instr</code> that contains as inner classes, the individual
- * instructions contained in the architecture description.
+ * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an architecture. It
+ * will generate an outer class <code>Instr</code> that contains as inner classes, the individual instructions contained
+ * in the architecture description.
  *
  * @author Ben L. Titzer
  */
@@ -113,7 +112,7 @@ public class ClassGenerator {
             Iterator i = d.getOperandIterator();
             while (i.hasNext()) {
                 printer.print("public final ");
-                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 printer.print(o.getType() + " ");
                 printer.println(o.name.toString() + ";");
             }
@@ -128,7 +127,7 @@ public class ClassGenerator {
             // emit the initialization code for each field
             Iterator i = d.getOperandIterator();
             while (i.hasNext()) {
-                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String n = o.name.toString();
                 printer.println("this." + n + " = " + n + ";");
             }
@@ -164,7 +163,7 @@ public class ClassGenerator {
             Iterator i = d.getOperandIterator();
             int cntr = 0;
             while (i.hasNext()) {
-                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String asMeth = o.isRegister() ? "asReg" : "asImm";
                 printer.print("check_" + o.type.image + "(" + cntr + ", " + asMeth + "(" + cntr + ", ops))");
                 if (i.hasNext()) printer.print(", ");
@@ -184,7 +183,7 @@ public class ClassGenerator {
             Iterator i = d.getOperandIterator();
             int cntr = 0;
             while (i.hasNext()) {
-                CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String n = o.name.toString();
                 printer.print("check_" + o.type.image + "(" + cntr + ", " + n + ")");
                 if (i.hasNext()) printer.print(", ");
@@ -198,7 +197,7 @@ public class ClassGenerator {
     private void emitParams(InstrDecl d) {
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {
-            CodeRegion.Operand o = (CodeRegion.Operand) i.next();
+            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
             printer.print(o.getType() + " ");
             printer.print(o.name.toString());
             if (i.hasNext()) printer.print(", ");
@@ -218,7 +217,7 @@ public class ClassGenerator {
         public void visit(OperandDecl d) {
             if (!d.isRegister()) return;
 
-            OperandDecl.RegisterSet rset = (OperandDecl.RegisterSet) d;
+            OperandDecl.RegisterSet rset = (OperandDecl.RegisterSet)d;
 
             String type = d.name.image;
             printer.println("private static final Register[] " + type + "_array = {");
@@ -227,7 +226,7 @@ public class ClassGenerator {
             Iterator i = rset.members.iterator();
             int cntr = 0;
             while (i.hasNext()) {
-                OperandDecl.RegisterEncoding renc = (OperandDecl.RegisterEncoding) i.next();
+                OperandDecl.RegisterEncoding renc = (OperandDecl.RegisterEncoding)i.next();
                 printer.print("Register." + renc.name.image.toUpperCase());
                 if (i.hasNext()) printer.print(", ");
                 cntr++;
@@ -278,7 +277,7 @@ public class ClassGenerator {
             if (d.isRegister()) {
                 printer.println("return checkRegSet(n, v, " + type + "_set);");
             } else {
-                OperandDecl.Immediate imm = (OperandDecl.Immediate) d;
+                OperandDecl.Immediate imm = (OperandDecl.Immediate)d;
                 printer.println("return checkRange(n, v, " + imm.low + ", " + imm.high + ");");
             }
 

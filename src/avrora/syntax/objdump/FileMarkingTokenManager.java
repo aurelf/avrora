@@ -33,11 +33,9 @@
 package avrora.syntax.objdump;
 
 /**
- * The <code>FileMarkingTokenManager</code> is a subclass of the TokenManager
- * for the Atmel parser that marks each token that is seen with the name of the
- * file that it came from. This is useful in unifying multiple grammars that
- * each have their own definition of Token, since an AbstractToken can be used
- * by any part of the compiler.
+ * The <code>FileMarkingTokenManager</code> is a subclass of the TokenManager for the Atmel parser that marks each token
+ * that is seen with the name of the file that it came from. This is useful in unifying multiple grammars that each have
+ * their own definition of Token, since an AbstractToken can be used by any part of the compiler.
  *
  * @author Ben L. Titzer
  */

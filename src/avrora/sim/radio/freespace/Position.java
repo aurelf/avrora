@@ -36,9 +36,10 @@
 
 package avrora.sim.radio.freespace;
 
-/** Represents a three dim. position
- * @author Olaf Landsiedel
+/**
+ * Represents a three dim. position
  *
+ * @author Olaf Landsiedel
  */
 public class Position {
 
@@ -46,57 +47,69 @@ public class Position {
     private int y;
     private int z;
     private String nodeName;
-    
-    /** new position
-     * @param x 
+
+    /**
+     * new position
+     *
+     * @param x
      * @param y
      * @param z
      */
-    public Position(int x, int y, int z){
+    public Position(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.nodeName = "";
     }
-    
-    /** new position, including node name
+
+    /**
+     * new position, including node name
+     *
      * @param name node name
      * @param x
      * @param y
      * @param z
      */
-    public Position(String name,int x, int y, int z){
+    public Position(String name, int x, int y, int z) {
         this.nodeName = name;
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    /** get x coordinate
+    /**
+     * get x coordinate
+     *
      * @return x
      */
-    public int getX(){
+    public int getX() {
         return x;
     }
-    
-    /**get y coordinate
+
+    /**
+     * get y coordinate
+     *
      * @return y
      */
-    public int getY(){
+    public int getY() {
         return y;
     }
-    
-    /**get z coordinate
+
+    /**
+     * get z coordinate
+     *
      * @return z
      */
-    public int getZ(){
+    public int getZ() {
         return z;
     }
-    
-    /**get node name
+
+    /**
+     * get node name
+     *
      * @return node name
      */
-    public String getNodeName(){
+    public String getNodeName() {
         return nodeName;
     }
 }
