@@ -1,6 +1,22 @@
 
 main.exe:     file format elf32-avr
 
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000c86  00000000  00000000  00000094  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000032  00800060  00000c86  00000d1a  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000071  00800092  00800092  00000d4c  2**0
+                  ALLOC
+  3 .noinit       00000000  00800103  00800103  00000d4c  2**0
+                  CONTENTS
+  4 .eeprom       00000000  00810000  00810000  00000d4c  2**0
+                  CONTENTS
+  5 .stab         000006c0  00000000  00000000  00000d4c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  6 .stabstr      000000e8  00000000  00000000  0000140c  2**0
+                  CONTENTS, READONLY, DEBUGGING
 Disassembly of section .text:
 
 00000000 <__vectors>:
@@ -1427,3 +1443,31 @@ Disassembly of section .text:
  c80:	8a 2f       	mov	r24, r26
  c82:	9b 2f       	mov	r25, r27
  c84:	08 95       	ret
+Disassembly of section .data:
+
+00800060 <HPLPowerManagementM$disabled>:
+  800060:	01 fe       	sbrs	r0, 1
+  800062:	01 fe       	sbrs	r0, 1
+  800064:	f0 20       	and	r15, r0
+  800066:	20 20       	and	r2, r0
+  800068:	20 20       	and	r2, r0
+  80006a:	20 20       	and	r2, r0
+  80006c:	20 54       	subi	r18, 0x40	; 64
+  80006e:	69 6e       	ori	r22, 0xE9	; 233
+  800070:	79 4f       	sbci	r23, 0xF9	; 249
+  800072:	53 20       	and	r5, r3
+  800074:	31 2e       	mov	r3, r17
+  800076:	78 00       	.word	0x0078	; ????
+  800078:	3a 00       	.word	0x003a	; ????
+  80007a:	54 65       	ori	r21, 0x54	; 84
+  80007c:	73 74       	andi	r23, 0x43	; 67
+  80007e:	20 23       	and	r18, r16
+  800080:	20 00       	.word	0x0020	; ????
+  800082:	54 68       	ori	r21, 0x84	; 132
+  800084:	69 73       	andi	r22, 0x39	; 57
+  800086:	20 69       	ori	r18, 0x90	; 144
+  800088:	73 20       	and	r7, r3
+  80008a:	61 20       	and	r6, r1
+  80008c:	74 65       	ori	r23, 0x54	; 84
+  80008e:	73 74       	andi	r23, 0x43	; 67
+	...

@@ -1,6 +1,22 @@
 
 main.exe:     file format elf32-avr
 
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000470  00000000  00000000  00000094  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00000470  00000504  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000024  00800060  00800060  00000504  2**0
+                  ALLOC
+  3 .noinit       00000000  00800084  00800084  00000504  2**0
+                  CONTENTS
+  4 .eeprom       00000000  00810000  00810000  00000504  2**0
+                  CONTENTS
+  5 .stab         00000360  00000000  00000000  00000504  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  6 .stabstr      00000051  00000000  00000000  00000864  2**0
+                  CONTENTS, READONLY, DEBUGGING
 Disassembly of section .text:
 
 00000000 <__vectors>:
@@ -518,3 +534,4 @@ Disassembly of section .text:
  46a:	f8 94       	cli
  46c:	99 27       	eor	r25, r25
  46e:	08 95       	ret
+Disassembly of section .data:

@@ -1,6 +1,22 @@
 
 main.exe:     file format elf32-avr
 
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000016e4  00000000  00000000  00000094  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000004  00800060  000016e4  00001778  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000126  00800064  00800064  0000177c  2**0
+                  ALLOC
+  3 .noinit       00000000  0080018a  0080018a  0000177c  2**0
+                  CONTENTS
+  4 .eeprom       00000000  00810000  00810000  0000177c  2**0
+                  CONTENTS
+  5 .stab         00000360  00000000  00000000  0000177c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  6 .stabstr      00000051  00000000  00000000  00001adc  2**0
+                  CONTENTS, READONLY, DEBUGGING
 Disassembly of section .text:
 
 00000000 <__vectors>:
@@ -2615,3 +2631,14 @@ Disassembly of section .text:
     16de:	95 2f       	mov	r25, r21
     16e0:	80 2d       	mov	r24, r0
     16e2:	08 95       	ret
+Disassembly of section .data:
+
+00800060 <TOS_LOCAL_ADDRESS>:
+  800060:	01 00       	.word	0x0001	; ????
+
+00800062 <TOS_AM_GROUP>:
+  800062:	7d 01       	movw	r14, r26
+
+00800063 <HPLPowerManagementM$disabled>:
+  800063:	01 00       	Address 0x800063 is out of bounds.
+.word	0xffff	; ????

@@ -1,6 +1,22 @@
 
 main.exe:     file format elf32-avr
 
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00003bf8  00000000  00000000  00000094  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000016  00800060  00003bf8  00003c8c  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000703  00800076  00800076  00003ca2  2**0
+                  ALLOC
+  3 .noinit       00000000  00800779  00800779  00003ca2  2**0
+                  CONTENTS
+  4 .eeprom       00000000  00810000  00810000  00003ca2  2**0
+                  CONTENTS
+  5 .stab         00000d14  00000000  00000000  00003ca4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  6 .stabstr      00000662  00000000  00000000  000049b8  2**0
+                  CONTENTS, READONLY, DEBUGGING
 Disassembly of section .text:
 
 00000000 <__vectors>:
@@ -6807,3 +6823,30 @@ Disassembly of section .text:
     3bf2:	8e 2f       	mov	r24, r30
     3bf4:	9f 2f       	mov	r25, r31
     3bf6:	08 95       	ret
+Disassembly of section .data:
+
+00800060 <TOS_LOCAL_ADDRESS>:
+  800060:	01 00       	.word	0x0001	; ????
+
+00800062 <INITIAL_TIMER_RATE>:
+  800062:	00 08       	sbc	r0, r0
+
+00800064 <FOCUS_TIMER_RATE>:
+  800064:	e8 03       	fmulsu	r22, r16
+
+00800066 <FOCUS_NOTME_TIMER_RATE>:
+  800066:	e8 03       	fmulsu	r22, r16
+
+00800068 <TOS_AM_GROUP>:
+  800068:	7d 01       	movw	r14, r26
+
+00800069 <HPLPowerManagementM$disabled>:
+  800069:	01 f0       	breq	.+0      	; 0x80006b
+
+0080006a <TOSH_MHSR_start>:
+  80006a:	f0 f0       	brcs	.+60     	; 0x8000a8
+  80006c:	f0 ff       	sbrs	r31, 0
+  80006e:	00 ff       	sbrs	r16, 0
+  800070:	0f 00       	.word	0x000f	; ????
+  800072:	ff 0f       	add	r31, r31
+  800074:	0f 0f       	add	r16, r31

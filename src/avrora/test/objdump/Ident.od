@@ -1,5 +1,5 @@
 
-/project/palsberg/tinyos-1.1.0/apps/Ident/build/mica/main.exe:     file format elf32-avr
+main.exe:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn

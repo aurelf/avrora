@@ -1,6 +1,22 @@
 
 main.exe:     file format elf32-avr
 
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00003f12  00000000  00000000  00000094  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000012  00800060  00003f12  00003fa6  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          000002e1  00800072  00800072  00003fb8  2**0
+                  ALLOC
+  3 .noinit       00000000  00800353  00800353  00003fb8  2**0
+                  CONTENTS
+  4 .eeprom       00000000  00810000  00810000  00003fb8  2**0
+                  CONTENTS
+  5 .stab         00000360  00000000  00000000  00003fb8  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  6 .stabstr      00000051  00000000  00000000  00004318  2**0
+                  CONTENTS, READONLY, DEBUGGING
 Disassembly of section .text:
 
 00000000 <__vectors>:
@@ -7023,3 +7039,24 @@ Disassembly of section .text:
     3f0c:	8e 2f       	mov	r24, r30
     3f0e:	9f 2f       	mov	r25, r31
     3f10:	08 95       	ret
+Disassembly of section .data:
+
+00800060 <TOS_LOCAL_ADDRESS>:
+  800060:	01 00       	.word	0x0001	; ????
+
+00800062 <TOS_AM_GROUP>:
+  800062:	7d 02       	muls	r23, r29
+
+00800063 <BufferedLog$state>:
+  800063:	02 f0       	brmi	.+0      	; 0x800065
+
+00800064 <TOSH_MHSR_start>:
+  800064:	f0 f0       	brcs	.+60     	; 0x8000a2
+  800066:	f0 ff       	sbrs	r31, 0
+  800068:	00 ff       	sbrs	r16, 0
+  80006a:	0f 00       	.word	0x000f	; ????
+  80006c:	ff 0f       	add	r31, r31
+  80006e:	0f 0f       	add	r16, r31
+
+00800070 <HPLPowerManagementM$disabled>:
+  800070:	01 00       	.word	0x0001	; ????

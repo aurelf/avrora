@@ -1,6 +1,22 @@
 
 main.exe:     file format elf32-avr
 
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00001c26  00000000  00000000  00000094  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000010  00800060  00001c26  00001cba  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          000001f9  00800070  00800070  00001cca  2**0
+                  ALLOC
+  3 .noinit       00000000  00800269  00800269  00001cca  2**0
+                  CONTENTS
+  4 .eeprom       00000000  00810000  00810000  00001cca  2**0
+                  CONTENTS
+  5 .stab         00000360  00000000  00000000  00001ccc  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  6 .stabstr      00000051  00000000  00000000  0000202c  2**0
+                  CONTENTS, READONLY, DEBUGGING
 Disassembly of section .text:
 
 00000000 <__vectors>:
@@ -3193,3 +3209,22 @@ Disassembly of section .text:
     1c20:	c9 f7       	brne	.-14     	; 0x1c14
     1c22:	80 95       	com	r24
     1c24:	08 95       	ret
+Disassembly of section .data:
+
+00800060 <TOS_LOCAL_ADDRESS>:
+  800060:	01 00       	.word	0x0001	; ????
+
+00800062 <TOS_AM_GROUP>:
+  800062:	7d f0       	brhs	.+30     	; 0x800082
+
+00800063 <TOSH_MHSR_start>:
+  800063:	f0 f0       	brcs	.+60     	; 0x8000a1
+  800065:	f0 ff       	sbrs	r31, 0
+  800067:	00 ff       	sbrs	r16, 0
+  800069:	0f 00       	.word	0x000f	; ????
+  80006b:	ff 0f       	add	r31, r31
+  80006d:	0f 0f       	add	r16, r31
+
+0080006f <HPLPowerManagementM$disabled>:
+  80006f:	01 18       	Address 0x80006f is out of bounds.
+.word	0xffff	; ????
