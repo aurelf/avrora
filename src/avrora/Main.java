@@ -55,8 +55,6 @@ public class Main {
 
     static final String VERSION = Version.getVersion().toString();
 
-    static final ClassMap actions = new ClassMap("Action", Action.class);
-    static final ClassMap inputs = new ClassMap("Input Format", ProgramReader.class);
     static final Options mainOptions = new Options();
 
     public static final Option.Str INPUT = mainOptions.newOption("input", "auto",
@@ -104,26 +102,6 @@ public class Main {
             "file specified on the command line \n   3) Command line options to Avrora");
 
 
-    static {
-        actions.addClass("multi-simulate", MultiSimulateAction.class);
-        actions.addClass("simulate", SimulateAction.class);
-        actions.addClass("analyze-stack", AnalyzeStackAction.class);
-        actions.addClass("test", TestAction.class);
-        actions.addClass("list", ListAction.class);
-        actions.addClass("cfg", CFGAction.class);
-        actions.addClass("benchmark", BenchmarkAction.class);
-        //--BEGIN EXPERIMENTAL: isdl
-        actions.addClass("isdl", ISDLAction.class);
-        //--END EXPERIMENTAL: isdl
-        //--BEGIN EXPERIMENTAL: dbbc
-        actions.addClass("dbbc", DBBCAction.class);
-        //--END EXPERIMENTAL: dbbc
-        inputs.addClass("auto", AutoProgramReader.class);
-        inputs.addClass("gas", GASProgramReader.class);
-        inputs.addClass("atmel", AtmelProgramReader.class);
-        inputs.addClass("objdump", ObjDumpProgramReader.class);
-    }
-
     public static class AutoProgramReader extends ProgramReader {
         public Program read(String[] args) throws Exception {
             if (args.length == 0)
@@ -158,11 +136,7 @@ public class Main {
     }
 
     public static ProgramReader getProgramReader() {
-        return (ProgramReader)inputs.getObjectOfClass(INPUT.get());
-    }
-
-    public static ProgramReader getProgramReader(String format) {
-        return (ProgramReader)inputs.getObjectOfClass(format);
+        return Defaults.getProgramReader(INPUT.get());
     }
 
     /**
@@ -193,7 +167,7 @@ public class Main {
 
                 if (BANNER.get()) banner();
 
-                Action a = (Action)actions.getObjectOfClass(ACTION.get());
+                Action a = Defaults.getAction(ACTION.get());
                 if (a == null)
                     Avrora.userError("Unknown Action", StringUtil.quote(ACTION.get()));
 
@@ -287,7 +261,7 @@ public class Main {
     }
 
     private static void printHelp(String a) {
-        Action action = (Action)actions.getObjectOfClass(a);
+        Action action = Defaults.getAction(a);
         if (action == null)
             Avrora.userError("no help available for unknown action " + StringUtil.quote(a));
 
@@ -316,13 +290,13 @@ public class Main {
                 "flexibility allows this single frontend to select from multiple useful " +
                 "tools. The currently supported actions are given below.");
 
-        List list = actions.getSortedList();
+        List list = Defaults.getActionList();
         i = list.iterator();
         while (i.hasNext()) {
             String a = (String)i.next();
             printGreenEqYellow("    -action", a);
             Terminal.nextln();
-            String help = ((Action)actions.getObjectOfClass(a)).getHelp();
+            String help = (Defaults.getAction(a)).getHelp();
             Terminal.println(StringUtil.makeParagraphs(help, 8, 0, Terminal.MAXLINE));
         }
 
@@ -335,13 +309,13 @@ public class Main {
                 "be Atmel syntax, GAS syntax, or the output of a disassembler such as avr-objdump. Currently " +
                 "no binary formats are supported.");
 
-        list = inputs.getSortedList();
+        list = Defaults.getProgramReaderList();
         i = list.iterator();
         while (i.hasNext()) {
             String a = (String)i.next();
             printGreenEqYellow("    -input", a);
             Terminal.nextln();
-            String help = ((ProgramReader)inputs.getObjectOfClass(a)).getHelp();
+            String help = (Defaults.getProgramReader(a)).getHelp();
             Terminal.println(StringUtil.makeParagraphs(help, 8, 0, Terminal.MAXLINE));
         }
         Terminal.println("");
@@ -457,7 +431,7 @@ public class Main {
      *                   error, etc
      */
     public static Program readProgram(String[] args) throws Exception {
-        ProgramReader reader = getProgramReader();
+        ProgramReader reader = Defaults.getProgramReader(INPUT.get());
         Program p = reader.read(args);
 
         Iterator i = INDIRECT_EDGES.get().iterator();

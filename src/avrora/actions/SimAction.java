@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.Avrora;
+import avrora.Defaults;
 import avrora.core.Program;
 import avrora.monitors.*;
 import avrora.sim.GenInterpreter;
@@ -41,9 +42,7 @@ import avrora.sim.Simulator;
 import avrora.sim.dbbc.DBBC;
 import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
-import avrora.sim.platform.Platforms;
 import avrora.util.*;
 
 import java.util.*;
@@ -65,14 +64,14 @@ public abstract class SimAction extends Action {
     public final Option.Long TIMEOUT = newOption("timeout", 0,
             "This option is used to terminate the " +
             "simulation after the specified number of clock cycles have passed.");
-    public final Option.Str CHIP = newOption("chip", "atmega128l",
+    public final Option.Str MCU = newOption("mcu", "atmega128l",
             "This option selects the microcontroller from a library of supported " +
             "microcontroller models.");
     public final Option.Str PLATFORM = newOption("platform", "",
             "This option selects the platform on which the microcontroller is built, " +
             "including the external devices such as LEDs and radio. If the platform " +
             "option is not set, the default platform is the microcontroller specified " +
-            "in the \"chip\" option, with no external devices.");
+            "in the \"mcu\" option, with no external devices.");
     public final Option.List MONITORS = newOptionList("monitors", "",
             "This option specifies a list of monitors to be attached to the program. " +
             "Monitors collect information about the execution of the program while it " +
@@ -88,38 +87,18 @@ public abstract class SimAction extends Action {
             "This option sets the precision (number of decimal places) reported for " +
             "event times in the simulation.");
     public final Option.Str VISUAL = newOption("visual", "",
-            "This optiobn enables visual representation of the network. For example " +
+            "This option enables visual representation of the network. For example " +
             "topology, packet transmission, packet reception, energy " +
             "information and more. Syntax is ip address or host name and " +
-            "port: 134.2.11.183:2379 \n(Status: experimental)");
+            "port: 127.0.0.1:2379 \n(Status: experimental)");
 
-    protected ClassMap monitorMap;
     protected LinkedList monitorFactoryList;
     protected HashMap monitorListMap;
 
     protected SimAction(String sn, String h) {
         super(sn, h);
-        monitorMap = new ClassMap("Monitor", MonitorFactory.class);
-        addNewMonitorType(new ProfileMonitor());
-        addNewMonitorType(new MemoryMonitor());
-        addNewMonitorType(new SleepMonitor());
-        addNewMonitorType(new StackMonitor());
-        //add energy monitor to the list 
-        addNewMonitorType(new EnergyMonitor());
-        addNewMonitorType(new EnergyMonitorLog());
-        addNewMonitorType(new TraceMonitor());
-        //add energy profile monitor to the list 
-        addNewMonitorType(new EnergyProfiler());
-        addNewMonitorType(new PacketMonitor());
-        addNewMonitorType(new GDBServer());
-        addNewMonitorType(new SimPerfMonitor());
-        addNewMonitorType(new Pc());
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
-    }
-
-    private void addNewMonitorType(MonitorFactory f) {
-        monitorMap.addClass(f.getShortName(), f.getClass());
     }
 
     /**
@@ -130,9 +109,9 @@ public abstract class SimAction extends Action {
      *         command line.
      */
     protected MicrocontrollerFactory getMicrocontroller() {
-        MicrocontrollerFactory mcu = Microcontrollers.getMicrocontroller(CHIP.get());
+        MicrocontrollerFactory mcu = Defaults.getMicrocontroller(MCU.get());
         if (mcu == null)
-            Avrora.userError("Unknown microcontroller", StringUtil.quote(CHIP.get()));
+            Avrora.userError("Unknown microcontroller", StringUtil.quote(MCU.get()));
         return mcu;
     }
 
@@ -145,7 +124,7 @@ public abstract class SimAction extends Action {
     protected PlatformFactory getPlatform() {
         String pf = PLATFORM.get();
         if ("".equals(pf)) return null;
-        PlatformFactory pff = Platforms.getPlatform(pf);
+        PlatformFactory pff = Defaults.getPlatform(pf);
         if (pff == null)
             Avrora.userError("Unknown platform", StringUtil.quote(pf));
         return pff;
@@ -163,7 +142,7 @@ public abstract class SimAction extends Action {
         Iterator i = l.iterator();
         while (i.hasNext()) {
             String clname = (String)i.next();
-            MonitorFactory mf = (MonitorFactory)monitorMap.getObjectOfClass(clname);
+            MonitorFactory mf = Defaults.getMonitor(clname);
             mf.processOptions(options);
             monitorFactoryList.addLast(mf);
         }

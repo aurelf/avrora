@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.Main;
+import avrora.Defaults;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;

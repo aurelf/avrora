@@ -33,6 +33,7 @@
 package avrora.test;
 
 import avrora.Main;
+import avrora.Defaults;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.core.Register;
@@ -301,7 +302,7 @@ public class SimulatorTestHarness implements TestHarness {
         public void run() throws Exception {
             String input = properties.getProperty("input");
             if (input == null) input = "atmel";
-            ProgramReader r = Main.getProgramReader(input);
+            ProgramReader r = Defaults.getProgramReader(input);
             String args[] = {filename};
             program = r.read(args);
             // TODO: this should not be hardcoded!!

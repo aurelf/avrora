@@ -64,7 +64,7 @@ public class MainClock extends Clock {
      * @param cycles the number of cycles in the future at which to fire
      */
     public void insertEvent(Simulator.Event e, long cycles) {
-        eventQueue.add(e, cycles);
+        eventQueue.insertEvent(e, cycles);
     }
 
     /**
@@ -74,7 +74,7 @@ public class MainClock extends Clock {
      * @param e the event to remove
      */
     public void removeEvent(Simulator.Event e) {
-        eventQueue.remove(e);
+        eventQueue.removeEvent(e);
     }
 
     /**
@@ -96,6 +96,6 @@ public class MainClock extends Clock {
      * events in the queue
      */
     public long getFirstEventDelta() {
-        return eventQueue.getHeadDelta();
+        return eventQueue.getFirstEventTime();
     }
 }

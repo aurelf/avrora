@@ -32,10 +32,10 @@
 
 package avrora.test;
 
-import avrora.util.ClassMap;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
+import avrora.Defaults;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -61,8 +61,6 @@ public class AutomatedTester {
 
     public static boolean LONG_REPORT;
 
-    private final ClassMap harnessMap;
-
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
     /**
@@ -70,10 +68,6 @@ public class AutomatedTester {
      * <code>TestHarness</code> that is used to create the specific test cases for each file name.
      */
     public AutomatedTester() {
-        harnessMap = new ClassMap("Test Harness", TestHarness.class);
-        harnessMap.addClass("simulator", SimulatorTestHarness.class);
-        harnessMap.addClass("simplifier", SimplifierTestHarness.class);
-        harnessMap.addClass("probes", ProbeTestHarness.class);
     }
 
     private class TestPair {
@@ -208,7 +202,7 @@ public class AutomatedTester {
             return new TestCase.Malformed(fname, "no test harness specified");
 
         try {
-            TestHarness harness = (TestHarness)harnessMap.getObjectOfClass(hname);
+            TestHarness harness = Defaults.getTestHarness(hname);
             return harness.newTestCase(fname, vars);
         } catch (Throwable t) {
             // TODO: better error messages for failure to find test harness

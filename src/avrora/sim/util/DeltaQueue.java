@@ -156,7 +156,7 @@ public class DeltaQueue {
      * @param t      the event to add
      * @param cycles the number of clock cycles in the future
      */
-    public void add(Simulator.Event t, long cycles) {
+    public void insertEvent(Simulator.Event t, long cycles) {
         // degenerate case, nothing in the queue.
         if (head == null) {
             head = newLink(t, cycles, null);
@@ -174,17 +174,17 @@ public class DeltaQueue {
 
         if (pos == null) {
             // end of the head
-            addAfter(prev, t, cycles, null);
+            insertAfter(prev, t, cycles, null);
         } else if (cycles == pos.delta) {
             // exactly matched the delta of some other event
             pos.add(t);
         } else {
             // insert a new link in the chain
-            addAfter(prev, t, cycles, pos);
+            insertAfter(prev, t, cycles, pos);
         }
     }
 
-    private void addAfter(Link prev, Simulator.Event t, long cycles, Link next) {
+    private void insertAfter(Link prev, Simulator.Event t, long cycles, Link next) {
         if (prev != null)
             prev.next = newLink(t, cycles, next);
         else
@@ -196,7 +196,7 @@ public class DeltaQueue {
      *
      * @param e the event to remove
      */
-    public void remove(Simulator.Event e) {
+    public void removeEvent(Simulator.Event e) {
         if (head == null) return;
 
         // search for first link that is "after" this cycle delta
@@ -296,7 +296,7 @@ public class DeltaQueue {
      *
      * @return the number of clock cycles until the first event will fire
      */
-    public long getHeadDelta() {
+    public long getFirstEventTime() {
         if (head != null) return head.delta;
         return -1;
     }

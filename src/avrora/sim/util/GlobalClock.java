@@ -92,11 +92,11 @@ public class GlobalClock {
      * the same thread each time.
      */
     public synchronized void insertEvent(Simulator.Event event, long ticks) {
-        ticker.eventQueue.add(event, ticks);
+        ticker.eventQueue.insertEvent(event, ticks);
     }
 
     public synchronized void removeEvent(Simulator.Event event) {
-        ticker.eventQueue.remove(event);
+        ticker.eventQueue.removeEvent(event);
     }
 
     /**

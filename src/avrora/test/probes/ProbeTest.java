@@ -172,12 +172,12 @@ public class ProbeTest {
 
         void insert(int value) {
             if ( simulator != null ) simulator.insertEvent(this, value);
-            else eventqueue.add(this, value);
+            else eventqueue.insertEvent(this, value);
         }
 
         void remove(int value) {
             if ( simulator != null ) simulator.removeEvent(this);
-            else eventqueue.remove(this);
+            else eventqueue.removeEvent(this);
         }
     }
 
