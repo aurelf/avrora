@@ -65,7 +65,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * The <code>hashCode()</code> method computes an integer hash code for this
      * state. A good hash code is needed to make hashtables in <code>StateSpace</code>
      * efficient.
-     * @throws vpc.VPCInternalError
+     * @throws avrora.Avrora.InternalError
      */
     public int hashCode() {
         throw Avrora.failure("cannot compute hash code of MutableState");
@@ -75,7 +75,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * The <code>equals()</code> method implements the standard <code>java.lang.Object</code>
      * equality testing contract.
      * @param o the object to test equality against.
-     * @throws vpc.VPCInternalError
+     * @throws avrora.Avrora.InternalError
      */
     public boolean equals(Object o) {
         throw Avrora.failure("cannot perform .equals() on MutableState");

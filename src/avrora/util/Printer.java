@@ -1,10 +1,8 @@
 package avrora.util;
 
-import vpc.VPCBase;
-
 import java.io.PrintStream;
 
-public class Printer extends VPCBase {
+public class Printer {
 
     private final PrintStream o;
     private boolean begLine;

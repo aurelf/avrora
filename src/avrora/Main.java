@@ -10,8 +10,7 @@ import avrora.syntax.gas.GASProgramReader;
 import avrora.util.Options;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import vpc.Option;
-import vpc.VPCError;
+import avrora.util.Option;
 import vpc.test.AutomatedTester;
 
 import java.text.CharacterIterator;
@@ -185,7 +184,7 @@ public class Main {
             for ( int cntr = 0; cntr < REPEAT.get(); cntr++ )
                 a.run(args);
 
-        } catch ( VPCError e ) {
+        } catch ( Avrora.Error e ) {
             e.report();
         } catch ( Exception e ) {
             e.printStackTrace();
@@ -252,6 +251,10 @@ public class Main {
         if ( mcu == null )
             Avrora.userError("unknown microcontroller", CHIP.get());
         return mcu;
+    }
+
+    public static void parseOptions(String args[]) {
+        options.parseCommandLine(args);
     }
 
 }

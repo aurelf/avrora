@@ -385,7 +385,7 @@ public class Generator {
     }
 
     public static void main(String[] args) throws java.io.IOException {
-        vpc.Main.parseOptions(args);
+        avrora.Main.parseOptions(args);
         Generator g = new Generator();
 
         Terminal.printBrightBlue("AVR Instruction Set Class Generator");

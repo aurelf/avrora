@@ -36,7 +36,7 @@ public abstract class Instr extends Elem implements InstrPrototype {
      * by replacing them with virtual dispatch. In a small world, this is
      * manageable.
      * @param address the address at which this data resides
-     * @throws vpc.VPCInternalError
+     * @throws avrora.Avrora.InternalError
      * @return this method does not return but throws an exception, because
      * instructions cannot be read as data
      */

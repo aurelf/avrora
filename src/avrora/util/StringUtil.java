@@ -1,6 +1,6 @@
 package avrora.util;
 
-import vpc.VPCBase;
+import avrora.Avrora;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
@@ -98,7 +98,7 @@ public class StringUtil {
     }
 
     public static void skipToCharacter(CharacterIterator i, char c) {
-        throw VPCBase.unimplemented();
+        throw Avrora.unimplemented();
     }
 
     public static char peek(CharacterIterator i) {

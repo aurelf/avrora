@@ -1,7 +1,5 @@
 package avrora.util;
 
-import vpc.Option;
-
 import java.util.HashMap;
 import java.util.HashSet;
 
