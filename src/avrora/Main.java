@@ -160,7 +160,6 @@ public class Main {
         newAction(new TestAction());
         newAction(new ListAction());
         newAction(new CFGAction());
-        newAction(new ISDLAction());
         newAction(new CustomAction());
         newAction(new BenchmarkAction());
         newInput("auto", new AutoProgramReader());
@@ -219,6 +218,13 @@ public class Main {
         return (ProgramReader) inputs.get(format);
     }
 
+    /**
+     * The <code>main()</code> method is the entrypoint into Avrora. It processes
+     * the command line options, looks up the action, and prints help (if there
+     * are no arguments or the <code>-help</code> option is specified.
+     * @param args an array of strings representing the command line arguments passed
+     * by the user
+     */
     public static void main(String[] args) {
         try {
             loadUserDefaults();
@@ -524,6 +530,19 @@ public class Main {
 
     }
 
+    /**
+     * The <code>readProgram()</code> method reads a program from the
+     * command line arguments given the format specified at the command line.
+     * It will also process the indirect call edge information and add
+     * it to the <code>Program</code> instance returned. This method is
+     * primarily used by actions that manipulate programs.
+     * @param args an array of strings representing command line arguments with
+     * the options removed
+     * @return an instance of the <code>Program</code> class if the program
+     * can be loaded correctly
+     * @throws Exception if there is an error loading the program, such as a file
+     * not found exception, parse error, etc
+     */
     public static Program readProgram(String[] args) throws Exception {
         ProgramReader reader = getProgramReader();
         Program p = reader.read(args);

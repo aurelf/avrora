@@ -135,7 +135,6 @@ public class MultiSimulateAction extends SimAction {
                     SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
                 }
 
-                processTimeout(simulator);
                 processRandom(simulator);
                 processStagger(simulator);
             }
@@ -210,12 +209,6 @@ public class MultiSimulateAction extends SimAction {
             SimulatorThread thread = (SimulatorThread) threadIterator.next();
             thread.start();
         }
-    }
-
-    void processTimeout(Simulator simulator) {
-        long timeout = TIMEOUT.get();
-        if (timeout > 0)
-            simulator.insertTimeout(timeout);
     }
 
     Random random;

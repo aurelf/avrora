@@ -159,7 +159,7 @@ public class SimulateAction extends SimAction {
             if ( diff < 10 )
                 Thread.sleep(10-diff);
             } catch ( InterruptedException e) {
-
+                // interrupt exceptions are dumb.
             }
             lastMs = newMs;
             simulator.insertEvent(this, microcontroller.getHz()/100);
@@ -189,8 +189,6 @@ public class SimulateAction extends SimAction {
 
         processBreakPoints();
         processTotal();
-        processIcount();
-        processTimeout();
 
         if (TRACE.get()) {
             simulator.insertProbe(Simulator.TRACEPROBE);
@@ -229,18 +227,6 @@ public class SimulateAction extends SimAction {
     void reportTotal() {
         if (total != null)
             reportQuantity("Total instructions executed", total.count, "");
-    }
-
-    void processIcount() {
-        long icount = ICOUNT.get();
-        if (icount > 0)
-            simulator.insertProbe(new Simulator.InstructionCountTimeout(icount));
-    }
-
-    void processTimeout() {
-        long timeout = TIMEOUT.get();
-        if (timeout > 0)
-            simulator.insertTimeout(timeout);
     }
 
     void reportCycles() {

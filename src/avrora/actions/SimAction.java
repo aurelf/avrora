@@ -51,6 +51,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * The <code>SimAction</code> is an abstract class that collects many of
+ * the options common to single node and multiple-node simulations into
+ * one place.
+ *
  * @author Ben L. Titzer
  */
 public abstract class SimAction extends Action {
@@ -58,6 +62,10 @@ public abstract class SimAction extends Action {
             "This option is used to terminate the " +
             "simulation after the specified number of instructions have been executed. " +
             "It is useful for non-terminating programs.");
+    public final Option.Double SECONDS = newOption("seconds", 0.0,
+            "This option is used to terminate the " +
+            "simulation after the specified number of seconds have passed. " +
+            "It is useful for non-terminating programs and benchmarks.");
     public final Option.Long TIMEOUT = newOption("timeout", 0,
             "This option is used to terminate the " +
             "simulation after the specified number of clock cycles have passed. " +
@@ -139,7 +147,16 @@ public abstract class SimAction extends Action {
         Terminal.println(" " + units);
     }
 
+    /**
+     * The <code>processMonitorList()</code> method builds a list of
+     * <code>MonitorFactory</code> instances from the list of strings
+     * given as an option at the command line. The list of
+     * <code>MonitorFactory</code> instances is used to create monitors for
+     * each simulator as it is created.
+     */
     protected void processMonitorList() {
+        if ( monitorFactoryList.size() > 0 ) return;
+
         List l = MONITORS.get();
         Iterator i = l.iterator();
         while ( i.hasNext() ) {
@@ -164,6 +181,16 @@ public abstract class SimAction extends Action {
         }
     }
 
+    /**
+     * The <code>newSimulator()</code> method is used by subclasses of
+     * this action to create a new instance of a simulator with the
+     * correct platform. This method also creates monitors for the
+     * simulator instance as specified from the command line.
+     * @param p the program to load onto the simulator
+     * @return an instance of the <code>Simulator</code> class that has
+     * the specified programs loaded onto it and has monitors attached to
+     * as specified on the command line
+     */
     protected Simulator newSimulator(Program p) {
         Simulator simulator;
         PlatformFactory pf = getPlatform();
@@ -172,6 +199,8 @@ public abstract class SimAction extends Action {
         } else {
             simulator = getMicrocontroller().newMicrocontroller(p).getSimulator();
         }
+
+        processTimeout(simulator);
 
         processMonitorList();
         LinkedList ml = new LinkedList();
@@ -186,6 +215,21 @@ public abstract class SimAction extends Action {
         return simulator;
     }
 
+    protected void processTimeout(Simulator s) {
+        if ( TIMEOUT.get() > 0 )
+            s.insertTimeout(TIMEOUT.get());
+        else if ( SECONDS.get() > 0.0 )
+            s.insertTimeout((long)(SECONDS.get()*s.getMicrocontroller().getHz()));
+        if ( ICOUNT.get() > 0 )
+            s.insertProbe(new Simulator.InstructionCountTimeout(ICOUNT.get()));
+    }
+
+    /**
+     * The <code>reportMonitors()</code> method gets a list of <code>Monitor</code>
+     * instances attached to the simulator and calls each of their <code>report()</code>
+     * methods.
+     * @param s the simulator for which to report all the monitors
+     */
     protected void reportMonitors(Simulator s) {
         LinkedList ml = (LinkedList)monitorListMap.get(s);
         if ( ml == null ) return;

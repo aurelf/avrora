@@ -79,6 +79,12 @@ public class Options {
         return o;
     }
 
+    public Option.Double newOption(String name, double val, String desc) {
+        Option.Double o = new Option.Double(name, val, desc);
+        knownValues.put(name, o);
+        return o;
+    }
+
     public Option.Interval newOption(String name, long l, long h, String desc) {
         Option.Interval o = new Option.Interval(name, l, h, desc);
         knownValues.put(name, o);

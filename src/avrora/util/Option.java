@@ -220,6 +220,71 @@ public abstract class Option {
     }
 
     /**
+     * The <code>Option.Double</code> class is an implementation of the
+     * <code>Option</code> class that encapsulates a double value.
+     */
+    public static class Double extends Option {
+        /**
+         * The <code>defvalue</code> field stores the default (initial) value for
+         * this option. It is used in reporting the help item.
+         */
+        protected final double defvalue;
+        protected double value;
+
+        /**
+         * The constructor for the <code>Option.Double</code> class creates a new option
+         * that can store long integers. It is given an option name, a help description,
+         * and a default value.
+         * @param nm the string name of the option
+         * @param val the default value of the option
+         * @param desc the description of the option
+         */
+        public Double(String nm, double val, String desc) {
+            super(nm, desc);
+            value = val;
+            defvalue = val;
+        }
+
+        /**
+         * The <code>set()</code> method updates the value of the option.
+         * @param val a string representation of the new value of the option.
+         */
+        public void set(String val) {
+            try {
+                value = java.lang.Double.parseDouble(val);
+            } catch (Exception e) {
+                parseError(name, "double", val);
+            }
+        }
+
+        /**
+         * The <code>get()</code> method returns the current value of the option.
+         * @return the value of the option as a double.
+         */
+        public double get() {
+            return value;
+        }
+
+        /**
+         * The <code>stringValue()</code> method returns a string representation of
+         * the value of the option. This is used in debugging and reporting purposes.
+         * @return a string representation of the value of the option.
+         */
+        public String stringValue() {
+            return "" + value;
+        }
+
+        /**
+         * The <code>printHelp()</code> method prints out a textual paragraph of the
+         * help item for this option to the terminal.
+         */
+        public void printHelp() {
+            printHeader("double", "" + defvalue);
+            printDescription();
+        }
+    }
+
+    /**
      * The <code>Option.Long</code> class is an implementation of the
      * <code>Option</code> class that encapsulates a long integer value.
      */

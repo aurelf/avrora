@@ -36,6 +36,10 @@ import avrora.AVRTestHarness;
 import avrora.test.AutomatedTester;
 
 /**
+ * The <code>TestAction</code> class represents an action to invoke the
+ * built-in automated testing framework that is used for regression testing
+ * in Avrora.
+ *
  * @author Ben L. Titzer
  */
 public class TestAction extends Action {

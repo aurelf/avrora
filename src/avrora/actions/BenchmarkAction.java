@@ -157,26 +157,14 @@ public class BenchmarkAction extends SimAction {
                 simulator = pf.newPlatform(program).getMicrocontroller().getSimulator();
             else
                 simulator = getMicrocontroller().newMicrocontroller(program).getSimulator();
-            processIcount();
-            processTimeout();
+
             simulator.start();
         } catch (Throwable t) {
+            // ignore all exceptions
         }
 
         endms = System.currentTimeMillis();
         return endms - startms;
-    }
-
-    private void processIcount() {
-        long icount = ICOUNT.get();
-        if (icount > 0)
-            simulator.insertProbe(new Simulator.InstructionCountTimeout(icount));
-    }
-
-    private void processTimeout() {
-        long timeout = TIMEOUT.get();
-        if (timeout > 0)
-            simulator.insertTimeout(timeout);
     }
 
 }

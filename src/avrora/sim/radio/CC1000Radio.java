@@ -39,7 +39,6 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.ATMega128L;
 import avrora.util.Verbose;
 import avrora.util.Arithmetic;
-import avrora.core.isdl.ast.Arith;
 
 import java.util.LinkedList;
 
