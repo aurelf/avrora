@@ -44,10 +44,7 @@ import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
-import avrora.util.ClassMap;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
+import avrora.util.*;
 
 import java.util.*;
 
@@ -152,45 +149,6 @@ public abstract class SimAction extends Action {
         if (pff == null)
             Avrora.userError("Unknown platform", StringUtil.quote(pf));
         return pff;
-    }
-
-    /**
-     * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
-     * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
-     * cycles) in a colorized and standardized way.
-     * @param name the name of the quantity as a string
-     * @param val the value of the quantity as a long integer
-     * @param units the name of the units as a string
-     */
-    protected void reportQuantity(String name, long val, String units) {
-        reportQuantity(name, Long.toString(val), units);
-    }
-
-    /**
-     * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
-     * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
-     * cycles) in a colorized and standardized way.
-     * @param name the name of the quantity as a string
-     * @param val the value of the quantity as a floating point number
-     * @param units the name of the units as a string
-     */
-    protected void reportQuantity(String name, float val, String units) {
-        reportQuantity(name, Float.toString(val), units);
-    }
-
-    /**
-     * The <code>reportQuantity()</code> method is a simply utility to print out a quantity's name
-     * (such as "Number of instructions executed", the value (such as 2002), and the units (such as
-     * cycles) in a colorized and standardized way.
-     * @param name the name of the quantity as a string
-     * @param val the value of the quantity as a string
-     * @param units the name of the units as a string
-     */
-    protected void reportQuantity(String name, String val, String units) {
-        Terminal.printGreen(name);
-        Terminal.print(": ");
-        Terminal.printBrightCyan(val);
-        Terminal.println(' ' + units);
     }
 
     /**
@@ -332,14 +290,14 @@ public abstract class SimAction extends Action {
      * the columns for the events outputted by the rest of the simulation.
      */
     protected void printSimHeader() {
-        Terminal.printSeparator(Terminal.MAXLINE, "Simulation events");
+        TermUtil.printSeparator(Terminal.MAXLINE, "Simulation events");
         Terminal.printGreen("Node       Time   Event");
         Terminal.nextln();
-        Terminal.printThinSeparator(Terminal.MAXLINE);
+        TermUtil.printThinSeparator(Terminal.MAXLINE);
     }
 
     protected void printSeparator() {
-        Terminal.printSeparator(Terminal.MAXLINE);
+        TermUtil.printSeparator(Terminal.MAXLINE);
     }
 
     /**

@@ -41,10 +41,7 @@ import avrora.sim.radio.Radio;
 import avrora.sim.radio.SimpleAir;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.topology.Topology;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Visual;
+import avrora.util.*;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -195,7 +192,7 @@ public class MultiSimulateAction extends SimAction {
         while (i.hasNext()) {
             Simulator s = ((SimulatorThread)i.next()).getSimulator();
             if (hasMonitors(s)) {
-                Terminal.printSeparator(Terminal.MAXLINE, "Monitors for node "+cntr);
+                TermUtil.printSeparator(Terminal.MAXLINE, "Monitors for node "+cntr);
             }
             reportMonitors(s);
             cntr++;
@@ -203,16 +200,17 @@ public class MultiSimulateAction extends SimAction {
     }
 
     private void reportTime(long startms, long endms) {
-        reportQuantity("Time for simulation", StringUtil.milliToSecs(endms - startms), "seconds");
+        TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(endms - startms), "seconds");
     }
 
     private void reportUtilization() {
         if (CHANNEL_UTIL.get()) {
-            reportQuantity("First transmit time", SimpleAir.simpleAir.firstPacketTime, "cycles");
-            reportQuantity("Bytes attempted", SimpleAir.simpleAir.bytesAttempted, "");
-            reportQuantity("Bytes delivered", SimpleAir.simpleAir.bytesDelivered, "");
-            reportQuantity("Bytes corrupted", SimpleAir.simpleAir.bytesCorrupted, "");
-            reportQuantity("Bits discarded", SimpleAir.simpleAir.bitsDiscarded, "");
+            TermUtil.reportQuantity("First transmit time", SimpleAir.simpleAir.firstPacketTime, "cycles");
+            long total = SimpleAir.simpleAir.bytesAttempted;
+            TermUtil.reportQuantity("Bytes attempted", total, "");
+            TermUtil.reportProportion("Bytes delivered", SimpleAir.simpleAir.bytesDelivered, total, "");
+            TermUtil.reportProportion("Bytes corrupted", SimpleAir.simpleAir.bytesCorrupted, total, "");
+            TermUtil.reportQuantity("Bits discarded", SimpleAir.simpleAir.bitsDiscarded, "");
         }
     }
 

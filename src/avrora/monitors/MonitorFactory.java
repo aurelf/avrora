@@ -108,42 +108,4 @@ public abstract class MonitorFactory {
         return shortName;
     }
 
-    /**
-     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to
-     * report various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
-     *
-     * @param name  the name of the quantity being reported
-     * @param val   the value to be reported as a long integer
-     * @param units the units for the quantity as a string
-     */
-    protected void reportQuantity(String name, long val, String units) {
-        reportQuantity(name, Long.toString(val), units);
-    }
-
-    /**
-     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to
-     * report various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
-     *
-     * @param name  the name of the quantity being reported
-     * @param val   the value to be reported as a floating point number
-     * @param units the units for the quantity as a string
-     */
-    protected void reportQuantity(String name, float val, String units) {
-        reportQuantity(name, Float.toString(val), units);
-    }
-
-    /**
-     * The <code>reportQuantity()</code> method can be used by subclasses of <code>MonitorFactory</code> to
-     * report various quantities such as execution time, cycles spent sleeping, etc, to the terminal.
-     *
-     * @param name  the name of the quantity being reported
-     * @param val   the value to be reported as a string
-     * @param units the units for the quantity as a string
-     */
-    protected void reportQuantity(String name, String val, String units) {
-        Terminal.printGreen(name);
-        Terminal.print(": ");
-        Terminal.printBrightCyan(val);
-        Terminal.println(' ' + units);
-    }
 }

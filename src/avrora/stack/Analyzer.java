@@ -35,10 +35,7 @@ package avrora.stack;
 import avrora.Avrora;
 import avrora.core.Instr;
 import avrora.core.Program;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Verbose;
+import avrora.util.*;
 import avrora.util.profiling.Distribution;
 
 import java.util.HashMap;
@@ -229,7 +226,7 @@ public class Analyzer {
     private void printStatHeader() {
         Terminal.printBrightGreen(" Frontier Explored    Edges   Aggreg       Elems      ret(i)   Pend-R   Pend-E");
         Terminal.nextln();
-        Terminal.printSeparator(88);
+        TermUtil.printSeparator(88);
     }
 
     private void print_just_9(long val) {

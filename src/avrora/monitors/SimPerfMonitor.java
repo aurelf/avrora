@@ -36,6 +36,7 @@ import avrora.sim.Simulator;
 import avrora.util.Option;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.TermUtil;
 
 /**
  * This monitor measures the instantaneous performance of the simulator by inserting
@@ -74,10 +75,10 @@ public class SimPerfMonitor extends MonitorFactory {
 
         public void report() {
 
-            Terminal.printSeparator(Terminal.MAXLINE, "Simulator performance results");
+            TermUtil.printSeparator(Terminal.MAXLINE, "Simulator performance results");
             Terminal.printGreen("  Time    Millis  Instant     Cumulative");
             Terminal.nextln();
-            Terminal.printSeparator(Terminal.MAXLINE);
+            TermUtil.printSeparator(Terminal.MAXLINE);
 
             for ( int cntr = 0; cntr < collected; cntr++ ) {
                 long cycle = cycles[cntr];

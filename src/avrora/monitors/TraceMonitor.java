@@ -38,6 +38,7 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.TermUtil;
 
 /**
  * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as
@@ -87,9 +88,9 @@ public class TraceMonitor extends MonitorFactory {
         public void report() {
             long cycles = simulator.getClock().getCount();
             float ipc = count / (float)cycles;
-            reportQuantity("Instructions executed", count, "");
-            reportQuantity("Program throughput", ipc, "instrs/cycle");
-            reportQuantity("Program throughput", ipc * simulator.getClock().getHZ() / 1000000, "mips");
+            TermUtil.reportQuantity("Instructions executed", count, "");
+            TermUtil.reportQuantity("Program throughput", ipc, "instrs/cycle");
+            TermUtil.reportQuantity("Program throughput", ipc * simulator.getClock().getHZ() / 1000000, "mips");
         }
     }
 

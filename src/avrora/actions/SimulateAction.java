@@ -37,10 +37,7 @@ import avrora.Avrora;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Visual;
+import avrora.util.*;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -111,7 +108,7 @@ public class SimulateAction extends SimAction {
                 name = "    " + location.name + " @ " + addr;
             else
                 name = "    " + addr;
-            reportQuantity(name, cnt, "");
+            TermUtil.reportQuantity(name, cnt, "");
         }
     }
 
@@ -131,7 +128,7 @@ public class SimulateAction extends SimAction {
                 name = "    " + location.name + " @ " + addr;
             else
                 name = "    " + addr;
-            reportQuantity(name, tcnt + ' ' + ntcnt, "taken/not taken");
+            TermUtil.reportQuantity(name, tcnt + ' ' + ntcnt, "taken/not taken");
         }
     }
 
@@ -231,26 +228,26 @@ public class SimulateAction extends SimAction {
 
     void reportTotal() {
         if (total != null)
-            reportQuantity("Instructions executed", total.count, "");
+            TermUtil.reportQuantity("Instructions executed", total.count, "");
     }
 
     void reportCycles() {
         if (CYCLES.get()) {
-            reportQuantity("Simulated time", simulator.getState().getCycles(), "cycles");
+            TermUtil.reportQuantity("Simulated time", simulator.getState().getCycles(), "cycles");
         }
     }
 
     void reportTime() {
         long diff = endms - startms;
         if (TIME.get()) {
-            reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
+            TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
             if (total != null) {
                 float thru = ((float)total.count) / (diff * 1000);
-                reportQuantity("Simulator throughput", thru, "mips");
+                TermUtil.reportQuantity("Simulator throughput", thru, "mips");
             }
             if (CYCLES.get()) {
                 float thru = ((float)simulator.getState().getCycles()) / (diff * 1000);
-                reportQuantity("Simulator throughput", thru, "mhz");
+                TermUtil.reportQuantity("Simulator throughput", thru, "mhz");
             }
         }
     }

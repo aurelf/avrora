@@ -38,6 +38,7 @@ import avrora.sim.Simulator;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.TermUtil;
 
 /**
  * The <code>MemoryMonitor</code> class implements a monitor that collects information about how the program
@@ -69,10 +70,10 @@ public class MemoryMonitor extends MonitorFactory {
         }
 
         public void report() {
-            Terminal.printSeparator(Terminal.MAXLINE, "Memory profiling results");
+            TermUtil.printSeparator(Terminal.MAXLINE, "Memory profiling results");
             Terminal.printGreen("   Address     Reads               Writes");
             Terminal.nextln();
-            Terminal.printThinSeparator(Terminal.MAXLINE);
+            TermUtil.printThinSeparator(Terminal.MAXLINE);
             double rtotal = 0;
             long[] rcount = memprofile.rcount;
             double wtotal = 0;
@@ -105,11 +106,11 @@ public class MemoryMonitor extends MonitorFactory {
 
                 String rcnt = StringUtil.rightJustify(r, 8);
                 float rpcnt = (float)(100 * r / rtotal);
-                String rpercent = StringUtil.toFixedFloat(rpcnt, 4) + " %";
+                String rpercent = StringUtil.rightJustify(StringUtil.toFixedFloat(rpcnt, 4),8) + " %";
 
                 String wcnt = StringUtil.rightJustify(w, 8);
                 float wpcnt = (float)(100 * w / wtotal);
-                String wpercent = StringUtil.toFixedFloat(wpcnt, 4) + " %";
+                String wpercent = StringUtil.rightJustify(StringUtil.toFixedFloat(wpcnt, 4),8) + " %";
 
                 String addr = StringUtil.addrToString(start);
 

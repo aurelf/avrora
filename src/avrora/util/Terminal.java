@@ -220,30 +220,6 @@ public final class Terminal {
         out.flush();
     }
 
-    public static void printSeparator(int width) {
-        while (width > 0) {
-            Terminal.print("=");
-            width--;
-        }
-        Terminal.nextln();
-    }
-
-    public static void printThinSeparator(int width) {
-        while (width > 0) {
-            Terminal.print("-");
-            width--;
-        }
-        Terminal.nextln();
-    }
-
-    public static void printSeparator(int width, String header) {
-        print("=={ ");
-        Terminal.print(header);
-        print(" }");
-        print(StringUtil.dup('=', width - 6 - header.length()));
-        nextln();
-    }
-
     public static void printPair(int c1, int c2, String s1, String sep, String s2) {
         print(c1, s1);
         print(sep);

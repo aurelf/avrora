@@ -39,6 +39,7 @@ import avrora.sim.State;
 import avrora.sim.util.ProgramProfiler;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
+import avrora.util.TermUtil;
 
 /**
  * The <code>StackMonitor</code> class is a monitor that tracks the height of the program's stack over the
@@ -106,13 +107,13 @@ public class StackMonitor extends MonitorFactory {
          * because the stack pointer begins at 0 and then is initialized one byte at a time).
          */
         public void report() {
-            reportQuantity("Minimum stack pointer #1", StringUtil.addrToString(minStack1), "");
-            reportQuantity("Minimum stack pointer #2", StringUtil.addrToString(minStack2), "");
-            reportQuantity("Minimum stack pointer #3", StringUtil.addrToString(minStack3), "");
-            reportQuantity("Maximum stack pointer", StringUtil.addrToString(maxStack), "");
-            reportQuantity("Maximum stack size #1", (maxStack - minStack1), "bytes");
-            reportQuantity("Maximum stack size #2", (maxStack - minStack2), "bytes");
-            reportQuantity("Maximum stack size #3", (maxStack - minStack3), "bytes");
+            TermUtil.reportQuantity("Minimum stack pointer #1", StringUtil.addrToString(minStack1), "");
+            TermUtil.reportQuantity("Minimum stack pointer #2", StringUtil.addrToString(minStack2), "");
+            TermUtil.reportQuantity("Minimum stack pointer #3", StringUtil.addrToString(minStack3), "");
+            TermUtil.reportQuantity("Maximum stack pointer", StringUtil.addrToString(maxStack), "");
+            TermUtil.reportQuantity("Maximum stack size #1", (maxStack - minStack1), "bytes");
+            TermUtil.reportQuantity("Maximum stack size #2", (maxStack - minStack2), "bytes");
+            TermUtil.reportQuantity("Maximum stack size #3", (maxStack - minStack3), "bytes");
         }
 
     }

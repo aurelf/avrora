@@ -724,13 +724,11 @@ public class StringUtil {
         boolean nonzero = false;
         for (int cntr = 0; cntr < places + 3; cntr++) {
             int digit = ((int)(f / radix)) % 10;
-            char dchar = (char)(digit + '0');
-
             if (digit != 0) nonzero = true;
 
-            if (digit == 0 && !nonzero && cntr < 2) dchar = ' ';
+            char dchar = (char)(digit + '0');
 
-            buf.append(dchar);
+            if ( nonzero | cntr >= 2) buf.append(dchar);
             if (cntr == 2) buf.append('.');
             radix = radix / 10;
         }

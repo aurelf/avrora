@@ -3,17 +3,16 @@
 # @Program: simple.asm
 # @Purpose: this tests the operation of the low-level probing infrastructure
 
-probe A { | }
+probe A { remove B 0x000; | insert B 0x000; }
 probe B { | }
 
 main {
   insert A 0x000;
-  insert B 0x002;
+  insert B 0x000;
 }
 
 result {
   0 A.before;
   1 A.after;
-  1 B.before;
-  2 B.after;
+  1 B.after;
 }

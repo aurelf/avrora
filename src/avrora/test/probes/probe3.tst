@@ -8,12 +8,12 @@ probe B { | }
 
 main {
   insert A 0x000;
-  insert B 0x002;
+  insert B 0x000;
 }
 
 result {
   0 A.before;
+  0 B.before;
   1 A.after;
-  1 B.before;
-  2 B.after;
+  1 B.after;
 }

@@ -34,6 +34,7 @@ package avrora.monitors;
 
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.util.TermUtil;
 
 /**
  * The <code>SleepMonitor</code> class is a monitor that tracks statistics about the sleeping patterns of
@@ -58,10 +59,9 @@ public class SleepMonitor extends MonitorFactory {
         }
 
         public void report() {
-            reportQuantity("Time slept", sleepCycles, "cycles");
-            reportQuantity("Time awake", awakeCycles, "cycles");
-            float percent = 100 * ((float)sleepCycles) / (sleepCycles + awakeCycles);
-            reportQuantity("Total", percent, "%");
+            long total = (sleepCycles + awakeCycles);
+            TermUtil.reportProportion("Time slept", sleepCycles, total, "cycles");
+            TermUtil.reportProportion("Time awake", awakeCycles, total, "cycles");
         }
 
         public void fire() {

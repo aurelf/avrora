@@ -39,6 +39,7 @@ import avrora.sim.util.ProgramTimeProfiler;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.TermUtil;
 
 /**
  * The <code>ProfileMonitor</code> class represents a monitor that can collect profiling information such as
@@ -82,10 +83,10 @@ public class ProfileMonitor extends MonitorFactory {
          * number of executions of each instruction, compressed for basic blocks.
          */
         public void report() {
-            Terminal.printSeparator(Terminal.MAXLINE, "Profiling results");
+            TermUtil.printSeparator(Terminal.MAXLINE, "Profiling results");
             Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
-            Terminal.printThinSeparator(Terminal.MAXLINE);
+            TermUtil.printThinSeparator(Terminal.MAXLINE);
             long[] icount = profile.icount;
             long[] itime = timeprofile.itime;
             int imax = icount.length;
@@ -131,10 +132,10 @@ public class ProfileMonitor extends MonitorFactory {
                 // compute the percentage of total execution time
                 if (curcount != 0) {
                     percent += StringUtil.rightJustify(cumulcycles, 8);
-                    percent += " = " + StringUtil.toFixedFloat(pcnt, 4) + " %";
+                    percent += " = " + StringUtil.rightJustify(StringUtil.toFixedFloat(pcnt, 4),8) + " %";
                 }
 
-                reportQuantity(' ' + addr, cnt, percent);
+                TermUtil.reportQuantity(' ' + addr, cnt, percent);
             }
         }
 
