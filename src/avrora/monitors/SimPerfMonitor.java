@@ -57,8 +57,8 @@ public class SimPerfMonitor extends MonitorFactory {
 
     public class Monitor implements avrora.monitors.Monitor {
         final Simulator simulator;
-        final long cycles[];
-        final long millis[];
+        final long[] cycles;
+        final long[] millis;
         long start;
         int collected;
         long interval;

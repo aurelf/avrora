@@ -32,7 +32,6 @@ package avrora.sim;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import avrora.sim.util.DeltaQueue;
 import avrora.sim.Clock;
 import avrora.sim.Simulator;
 import avrora.Avrora;
@@ -90,17 +89,6 @@ public class SystemClock extends Clock {
      */
     public void removeEvent(Simulator.Event e) {
         throw Avrora.unimplemented();
-    }
-
-    /**
-     * The <code>advance()</code> method advances the time of the clock by the number of cycles. This may
-     * happen as the result of executing an instruction, sleeping for a time, delaying, etc. This method is
-     * only intended for use by the agent driving the clock; e.g. the simulator, and not a monitor or probe.
-     *
-     * @param cycles the number of cycles to advance the clock
-     */
-    public void advance(long cycles) {
-        throw Avrora.failure("Cannot explicitly advance the system clock");
     }
 
     /**

@@ -90,6 +90,7 @@ public class TraceMonitor extends MonitorFactory {
                 pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
             }
 
+            // TODO: is this field hiding correct?
             int count;
 
             public void fireBefore(Instr i, int addr, State s) {

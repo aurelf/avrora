@@ -216,6 +216,7 @@ public class GlobalClock {
      */
     public static class Ticker extends LocalMeet {
 
+        // TODO: this field hides out class field
         public final long period;
         protected final DeltaQueue eventQueue;
 

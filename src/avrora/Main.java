@@ -41,7 +41,6 @@ import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.util.*;
 import avrora.util.help.HelpCategory;
-import avrora.util.help.HelpSystem;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -265,7 +264,7 @@ public class Main {
     }
 
     private static void printUsage() {
-        int colors[] = {Terminal.COLOR_RED,
+        int[] colors = {Terminal.COLOR_RED,
                         -1,
                         Terminal.COLOR_GREEN,
                         -1,
@@ -278,18 +277,18 @@ public class Main {
                         Terminal.COLOR_YELLOW,
                         -1};
 
-        String strs[] = {"Usage", ": ", "avrora", " [", "-action", "=", "action", "] [", "options", "] ", "<files>"};
+        String[] strs = {"Usage", ": ", "avrora", " [", "-action", "=", "action", "] [", "options", "] ", "<files>"};
         Terminal.print(colors, strs);
         Terminal.nextln();
 
-        int colors2[] = {Terminal.COLOR_RED,
+        int[] colors2 = {Terminal.COLOR_RED,
                          -1,
                          Terminal.COLOR_GREEN,
                          -1,
                          Terminal.COLOR_YELLOW,
                          -1};
 
-        String strs2[] = {"Usage", ": ", "avrora -help", " [", "category", "]"};
+        String[] strs2 = {"Usage", ": ", "avrora -help", " [", "category", "]"};
         Terminal.print(colors2, strs2);
         Terminal.println("\n");
     }
@@ -365,7 +364,7 @@ public class Main {
      *
      * @param args the array of strings to parse into options
      */
-    public static void parseOptions(String args[]) {
+    public static void parseOptions(String[] args) {
         mainOptions.parseCommandLine(args);
         Terminal.useColors = COLORS.get();
         Terminal.htmlColors = HTML.get();

@@ -67,7 +67,7 @@ public class RangeProfiler {
      * indexed by byte addresses, with expr 0 corresponding to the lowest address in the range
      * (<code>low_addr</code>). at <code>program.getInstr(addr)</code>.
      */
-    public final long icount[];
+    public final long[] icount;
 
     /**
      * The constructor for the program profiler constructs the required internal state to store the invocation

@@ -35,12 +35,10 @@ package avrora;
 import avrora.util.ClassMap;
 import avrora.util.help.HelpSystem;
 import avrora.util.help.HelpCategory;
-import avrora.util.help.ValueItem;
 import avrora.util.help.ClassMapValueItem;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.ATMega128;
 import avrora.sim.mcu.ATMega128L;
-import avrora.sim.mcu.Microcontroller;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
@@ -101,7 +99,7 @@ public class Defaults {
             monitorMap.addClass("packet", PacketMonitor.class);
             monitorMap.addClass("gdb", GDBServer.class);
             monitorMap.addClass("simperf", SimPerfMonitor.class);
-            monitorMap.addClass("pc", Pc.class);
+            monitorMap.addClass("badPc", Pc.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
             addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +

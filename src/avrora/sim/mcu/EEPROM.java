@@ -33,7 +33,6 @@
 package avrora.sim.mcu;
 
 import avrora.sim.State;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 
 /**
@@ -46,10 +45,10 @@ public class EEPROM extends AtmelInternalDevice {
     // TODO: CPU halting after EEPROM read/write reads/writes.
     final int EEPROM_SIZE;
 
-    public final int EEARH = 0x1F;
-    public final int EEARL = 0x1E;
-    public final int EEDR = 0x1D;
-    public final int EECR = 0x1C;
+    public static final int EEARH = 0x1F;
+    public static final int EEARL = 0x1E;
+    public static final int EEDR = 0x1D;
+    public static final int EECR = 0x1C;
 
     final byte[] EEPROM_data;
     final State.RWIOReg EEDR_reg;
@@ -58,12 +57,12 @@ public class EEPROM extends AtmelInternalDevice {
     final EEARHReg EEARH_reg;
 
     // flag bits on EECR
-    final int EERIE = 3;
-    final int EEMWE = 2;
-    final int EEWE = 1;
-    final int EERE = 0;
+    static final int EERIE = 3;
+    static final int EEMWE = 2;
+    static final int EEWE = 1;
+    static final int EERE = 0;
 
-    final int EEPROM_INTERRUPT = 23;
+    static final int EEPROM_INTERRUPT = 23;
 
     boolean interruptEnable;
     boolean masterWriteEnable;

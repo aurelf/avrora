@@ -37,7 +37,6 @@ import avrora.sim.Simulator;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Clock;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
 /**
@@ -59,9 +58,9 @@ public class LED implements Microcontroller.Pin.Output {
     //energy profile of this device
     private Energy energy;
     // names of the states of this device
-    private static final String modeName[] = {"off", "on"};
+    private static final String[] modeName = {"off", "on"};
     // power consumption of the device states
-    private static final double modeAmpere[] = {0.0, 0.0022};
+    private static final double[] modeAmpere = {0.0, 0.0022};
     // default mode of the device is off
     private static final int startMode = 0;
 

@@ -47,13 +47,13 @@ public abstract class AbstractState implements IORegisterConstants {
     protected char av_SREG;   // canonical status register value
     protected char av_EIMSK;  // canonical interrupt mask register value
     protected char av_TIMSK;  // canonical interrupt mask register value
-    protected char av_REGISTERS[]; // canonical register values
+    protected char[] av_REGISTERS; // canonical register values
 
     /**
      * The <code>primes</code> field stores the first 32 prime integers that follow 2. This is used in the
      * computation of the hash code.
      */
-    public static final int primes[] = {
+    public static final int[] primes = {
         3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
         37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
         79, 83, 89, 97, 101, 103, 107, 109, 113, 127,

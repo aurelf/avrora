@@ -36,9 +36,6 @@ import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.Clock;
-import avrora.sim.util.ProgramProfiler;
-import avrora.sim.util.ProgramTimeProfiler;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
@@ -85,8 +82,8 @@ public class ProfileMonitor extends MonitorFactory {
         public final CCProbe ccprobe;
         public final CProbe cprobe;
 
-        public final long icount[];
-        public final long itime[];
+        public final long[] icount;
+        public final long[] itime;
 
         Monitor(Simulator s) {
             simulator = s;
@@ -142,7 +139,7 @@ public class ProfileMonitor extends MonitorFactory {
          * measure the performance overhead introduced by inserting probes into the
          * simulation.
          */
-        public class EmptyProbe implements Simulator.Probe {
+        public static class EmptyProbe implements Simulator.Probe {
             public void fireBefore(Instr i, int address, State state) {
             }
 
@@ -155,9 +152,9 @@ public class ProfileMonitor extends MonitorFactory {
          * execution count of each instruction as well as the number of cycles that
          * it has consumed.
          */
-        public class CCProbe implements Simulator.Probe {
-            public final long count[];
-            public final long time[];
+        public static class CCProbe implements Simulator.Probe {
+            public final long[] count;
+            public final long[] time;
 
             protected long timeBegan;
 
@@ -180,9 +177,9 @@ public class ProfileMonitor extends MonitorFactory {
          * The <code>CProbe</code> class implements a simple probe that keeps a count
          * of how many times each instruction in the program has been executed.
          */
-        public class CProbe implements Simulator.Probe {
+        public static class CProbe implements Simulator.Probe {
 
-            public final long count[];
+            public final long[] count;
 
             public CProbe(long[] ic) {
                 count = ic;

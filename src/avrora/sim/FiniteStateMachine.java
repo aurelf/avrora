@@ -34,7 +34,6 @@ package avrora.sim;
 
 import avrora.Avrora;
 import avrora.sim.util.MulticastFSMProbe;
-import avrora.sim.util.MulticastProbe;
 
 /**
  * The <code>FiniteStateMachine</code> class represents a model of a finite state machine that
@@ -109,12 +108,12 @@ public class FiniteStateMachine {
 
     }
 
-    private void fireBefore(MulticastFSMProbe p, int oldState, int newState) {
+    private static void fireBefore(MulticastFSMProbe p, int oldState, int newState) {
         if ( !p.isEmpty() )
             p.fireBeforeTransition(oldState, newState);
     }
 
-    private void fireAfter(MulticastFSMProbe p, int oldState, int newState) {
+    private static void fireAfter(MulticastFSMProbe p, int oldState, int newState) {
         if ( !p.isEmpty() )
             p.fireAfterTransition(oldState, newState);
     }

@@ -45,8 +45,7 @@ import java.util.LinkedList;
  */
 public class CodeMap {
 
-    protected final static CodeBuilder builder = new CodeBuilder();
-    protected final static HashMap codeMap = new HashMap();
+    protected static final CodeBuilder builder = new CodeBuilder();
 
     public static CodeRegion getCodeForInstr(int addr, Instr i) {
         builder.nextPC = addr + i.getSize();

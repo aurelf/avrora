@@ -33,9 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.State;
-import avrora.sim.Clock;
 import avrora.util.Arithmetic;
 
 /**
@@ -88,7 +86,7 @@ public class SPI extends AtmelInternalDevice {
      * A single byte data frame for the SPI.
      * TODO: isn't this a bit of overkill?
      */
-    public class Frame {
+    public static class Frame {
         public final byte data;
 
         public Frame(byte data) {
@@ -322,14 +320,14 @@ public class SPI extends AtmelInternalDevice {
      */
     protected class SPCRReg extends State.RWIOReg {
 
-        final int SPIE = 7;
-        final int SPE = 6;
-        final int DORD = 5; // does not really matter, because we are fastforwarding data
-        final int MSTR = 4;
-        final int CPOL = 3; // does not really matter, because we are fastforwarding data
-        final int CPHA = 2; // does not really matter, because we are fastforwarding data
-        final int SPR1 = 1;
-        final int SPR0 = 0;
+        static final int SPIE = 7;
+        static final int SPE = 6;
+        static final int DORD = 5; // does not really matter, because we are fastforwarding data
+        static final int MSTR = 4;
+        static final int CPOL = 3; // does not really matter, because we are fastforwarding data
+        static final int CPHA = 2; // does not really matter, because we are fastforwarding data
+        static final int SPR1 = 1;
+        static final int SPR0 = 0;
         //OL: remember old state of spi enable bit
         boolean oldSpiEnable = false;
 
@@ -386,8 +384,8 @@ public class SPI extends AtmelInternalDevice {
         // TODO: implement write collision
         // TODO: finish implementing interrupt
 
-        final int SPI = 7;
-        final int WCOL = 6;
+        static final int SPI = 7;
+        static final int WCOL = 6;
 
         public void write(byte val) {
             if (devicePrinter.enabled)

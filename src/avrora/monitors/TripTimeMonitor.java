@@ -37,12 +37,10 @@ import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.profiling.Distribution;
-import avrora.util.profiling.MinMaxMean;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.Avrora;
 
-import java.util.HashMap;
 import java.util.Iterator;
 
 /**

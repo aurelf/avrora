@@ -85,7 +85,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         return s;
     }
 
-    protected abstract class MapRep {
+    protected abstract static class MapRep {
         public abstract void generateWrite(Expr ind, Expr val);
 
         public abstract void generateBitWrite(Expr ind, Expr b, Expr val);

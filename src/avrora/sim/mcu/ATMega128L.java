@@ -46,7 +46,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Vector;
 
 
 /**
@@ -71,7 +70,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
     //this class records energy consumption
     private Energy energy;
     //mode names of the mcu
-    private static final String modeName[] = {
+    private static final String[] modeName = {
         "Active:         ",
         "Idle:           ",
         "RESERVED 1:     ",
@@ -84,7 +83,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
     };
 
     //power consumption of each mode
-    private static final double modeAmpere[] = {
+    private static final double[] modeAmpere = {
         0.0075667,
         0.0033433,
         0.0,
@@ -136,8 +135,8 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
 
     static {
         // statically initialize the pin assignments for this microcontroller
-        HashMap pinAssignments = new HashMap();
-        HashMap ioregAssignments = new HashMap();
+        HashMap pinAssignments = new HashMap(150);
+        HashMap ioregAssignments = new HashMap(120);
 
         addPin(pinAssignments, 1, "PEN");
         addPin(pinAssignments, 2, "PE0", "RXD0", "PDI");
@@ -671,7 +670,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
             protected int[] periods;
 
             // This method should be overloaded to initialize the above values.
-            abstract protected void initValues();
+            protected abstract void initValues();
 
             private Timer16Bit(BaseInterpreter ns) {
                 initValues();
@@ -772,7 +771,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
              */
             protected abstract class ControlRegister extends State.RWIOReg {
 
-                abstract protected void decode(byte val);
+                protected abstract void decode(byte val);
 
 
                 public void write(byte val) {
@@ -2261,7 +2260,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
              * Initialize the parameters such as interrupt numbers and I/O register numbers that make this
              * USART unique.
              */
-            abstract protected void initValues();
+            protected abstract void initValues();
 
             USART(BaseInterpreter ns) {
                 initValues();
@@ -3610,7 +3609,7 @@ public class ATMega128L extends ATMegaFamily implements IORegisterConstants, Mic
      * @author Olaf Landsiedel
      */
     protected class Pc implements USARTDevice {
-        Simulator.Printer pcPrinter = simulator.getPrinter("sim.pc");
+        Simulator.Printer pcPrinter = simulator.getPrinter("sim.badPc");
         private ServerSocket serverSocket;
         private Socket socket;
         private OutputStream out;

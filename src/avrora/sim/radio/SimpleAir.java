@@ -55,7 +55,7 @@ import java.util.TreeSet;
  */
 public class SimpleAir implements RadioAir {
 
-    public final static SimpleAir simpleAir;
+    public static final SimpleAir simpleAir;
 
     private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("radio.rssi");
 
@@ -145,19 +145,19 @@ public class SimpleAir implements RadioAir {
 
     private class RSSIWait implements Comparable {
         boolean shouldWait;
-        final long sampleTime;
+        final long sampleBeginTime;
         final Simulator simulator;
 
         RSSIWait(Simulator s, long st) {
             simulator = s;
-            sampleTime = st;
+            sampleBeginTime = st;
             shouldWait = true;
         }
 
         public int compareTo(Object o) {
             if (o == this) return 0;
             RSSIWait w = (RSSIWait)o;
-            int diff = (int)(w.sampleTime - this.sampleTime);
+            int diff = (int)(w.sampleBeginTime - this.sampleBeginTime);
             if (diff == 0) return w.hashCode() - this.hashCode();
             return diff;
         }

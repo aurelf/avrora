@@ -32,11 +32,9 @@
 
 package avrora.sim.mcu;
 
-import avrora.Avrora;
 import avrora.util.Arithmetic;
 import avrora.sim.radio.Radio;
 import avrora.sim.*;
-import avrora.sim.platform.Platform;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
 
@@ -100,8 +98,8 @@ public class ATMega128 extends ATMegaFamily {
 
     static {
         // statically initialize the pin assignments for this microcontroller
-        HashMap pinAssignments = new HashMap();
-        HashMap ioregAssignments = new HashMap();
+        HashMap pinAssignments = new HashMap(150);
+        HashMap ioregAssignments = new HashMap(120);
 
         addPin(pinAssignments, 1, "PEN");
         addPin(pinAssignments, 2, "PE0", "RXD0", "PDI");

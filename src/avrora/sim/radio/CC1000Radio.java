@@ -59,7 +59,7 @@ public class CC1000Radio implements Radio {
 
     Radio.RadioController controller;
 
-    protected RadioRegister registers [] = new RadioRegister[0x47];
+    protected RadioRegister[] registers  = new RadioRegister[0x47];
 
     /**
      * Register addresses.
@@ -340,14 +340,14 @@ public class CC1000Radio implements Radio {
      * The main register on the CC1000.
      */
     protected class MainRegister extends RadioRegister {
-        public final int RXTX = 7;      // 0: RX, 1: TX
-        public final int F_REG = 6;     // 0: A, 1: B
-        public final int RX_PD = 5;     // Power down of RX part of interface
-        public final int TX_PD = 4;     // Power down of TX part of interface
-        public final int FS_PD = 3;     // Power down of Frequency Synthesizer
-        public final int CORE_PD = 2;   // Power down of Crystal Oscillator Core
-        public final int BIAS_PD = 1;   // Power down of BIAS and Crystal Oscillator Buffer
-        public final int RESET_N = 0;   // Reset other registers to default value
+        public static final int RXTX = 7;      // 0: RX, 1: TX
+        public static final int F_REG = 6;     // 0: A, 1: B
+        public static final int RX_PD = 5;     // Power down of RX part of interface
+        public static final int TX_PD = 4;     // Power down of TX part of interface
+        public static final int FS_PD = 3;     // Power down of Frequency Synthesizer
+        public static final int CORE_PD = 2;   // Power down of Crystal Oscillator Core
+        public static final int BIAS_PD = 1;   // Power down of BIAS and Crystal Oscillator Buffer
+        public static final int RESET_N = 0;   // Reset other registers to default value
 
         boolean rxtx;
         boolean fReg;
@@ -579,9 +579,9 @@ public class CC1000Radio implements Radio {
 
         double lnaCurrent = 0.8;
 
-        final int IF_RSSI_INACTIVE = 0;
-        final int IF_RSSI_ACTIVE = 1;
-        final int IF_RSSI_MIXER = 2;
+        static final int IF_RSSI_INACTIVE = 0;
+        static final int IF_RSSI_ACTIVE = 1;
+        static final int IF_RSSI_MIXER = 2;
         int ifRSSI;
 
         boolean xoscBypassExternal;
@@ -656,22 +656,22 @@ public class CC1000Radio implements Radio {
 
     protected class LockRegister extends RadioRegister {
 
-        final int LOCK_NORMAL = 0;
-        final int LOCK_CONTINUOUS = 1;
-        final int LOCK_INSTANT = 2;
-        final int ALARM_H = 3;
-        final int ALARM_L = 4;
-        final int CAL_COMPLETE = 5;
-        final int IF_OUT = 6;
-        final int REFERENCE_DIVIDER = 7;
-        final int TX_DPB = 8;
-        final int MANCHESTER_VIOLATION = 9;
-        final int RX_PDB = 10;
+        static final int LOCK_NORMAL = 0;
+        static final int LOCK_CONTINUOUS = 1;
+        static final int LOCK_INSTANT = 2;
+        static final int ALARM_H = 3;
+        static final int ALARM_L = 4;
+        static final int CAL_COMPLETE = 5;
+        static final int IF_OUT = 6;
+        static final int REFERENCE_DIVIDER = 7;
+        static final int TX_DPB = 8;
+        static final int MANCHESTER_VIOLATION = 9;
+        static final int RX_PDB = 10;
         // 11 undefined
         // 12 undefined
-        final int LOCK_AVG_FILTER = 13;
-        final int N_DIVIDER = 14;
-        final int F_COMP = 15;
+        static final int LOCK_AVG_FILTER = 13;
+        static final int N_DIVIDER = 14;
+        static final int F_COMP = 15;
 
         final String[] LOCK_SELECT = {"LOCK NORMAL", "LOCK CONTINUOUS", "LOCK INSTANT", "ALARM HIGH", "ALARM LOW",
                                       "CAL COMPLETE", "IF OUT", "REFERENCE DIVIDER", "TX DPB", "MANCHESTER VIOLATION",
@@ -717,11 +717,11 @@ public class CC1000Radio implements Radio {
 
     protected class CALRegister extends RadioRegister {
 
-        final int CAL_START = 7;
-        final int CAL_DUAL = 6;
-        final int CAL_WAIT = 5;
-        final int CAL_CURRENT = 4;
-        final int CAL_COMPLETE = 3;
+        static final int CAL_START = 7;
+        static final int CAL_DUAL = 6;
+        static final int CAL_WAIT = 5;
+        static final int CAL_CURRENT = 4;
+        static final int CAL_COMPLETE = 3;
 
         boolean calStart;
         boolean calDual;
@@ -729,7 +729,7 @@ public class CC1000Radio implements Radio {
         boolean calCurrent;
         boolean calComplete;
 
-        final int CAL_ITERATE_NORMAL = 0x6;
+        static final int CAL_ITERATE_NORMAL = 0x6;
 
         int calIterate;
 
@@ -848,9 +848,9 @@ public class CC1000Radio implements Radio {
     protected class Modem0Register extends RadioRegister {
         int baudrate = 2400;
 
-        final int DATA_FORMAT_NRZ = 0;
-        final int DATA_FORMAT_MANCHESTER = 1;
-        final int DATA_FORMAT_UART = 2;
+        static final int DATA_FORMAT_NRZ = 0;
+        static final int DATA_FORMAT_MANCHESTER = 1;
+        static final int DATA_FORMAT_UART = 2;
         int dataFormat = DATA_FORMAT_MANCHESTER;
 
         int xoscFreq = 3686400;

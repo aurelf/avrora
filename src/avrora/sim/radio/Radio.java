@@ -51,7 +51,7 @@ public interface Radio extends Monitor {
      * Time in ATMega128L cycles it takes for one byte to be sent over the air. Much of the implementation is
      * derived from this constant, so generalizing in the future may require some careful consideration.
      */
-    public final static int TRANSFER_TIME = 3072;
+    int TRANSFER_TIME = 3072;
 
     /* changed on 10/28/2004 OL
      * 

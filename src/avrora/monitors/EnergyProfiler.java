@@ -177,12 +177,12 @@ public class EnergyProfiler extends MonitorFactory {
             while (i < program.program_length) {
                 Instr instr = program.readInstr(i);
                 if (instr != null) {
-                    if (instr.properties.name.equals("sleep")) {
+                    if ("sleep".equals(instr.properties.name)) {
                         simulator.insertProbe(sleepProbe, i);
                     }
-                    i = i + instr.getSize();
+                    i += instr.getSize();
                 } else
-                    i = i + 1;
+                    i += 1;
             }
         }
 

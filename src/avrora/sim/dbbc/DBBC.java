@@ -146,7 +146,7 @@ public class DBBC {
         loader = new DBBCClassLoader();
         options.process(o);
         String cd;
-        if ((cd = CACHE_DIRECTORY.get()).equals("")) cd = "/tmp";
+        if ("".equals(cd = CACHE_DIRECTORY.get())) cd = "/tmp";
         tmpDir = cd;
         codeBlockMap = new HashMap();
         compiledCodeMap = new HashMap();
@@ -160,7 +160,7 @@ public class DBBC {
     protected class DBBCClassLoader extends ClassLoader {
         public Class defineClass(File c) throws Exception {
             FileInputStream fis = new FileInputStream(c);
-            byte buf[] = new byte[fis.available()];
+            byte[] buf = new byte[fis.available()];
             fis.read(buf);
             return super.defineClass(null, buf, 0, buf.length);
         }

@@ -34,7 +34,6 @@ package avrora.monitors;
 
 import avrora.sim.Simulator;
 import avrora.util.Options;
-import avrora.util.Terminal;
 import avrora.util.help.HelpCategory;
 
 /**

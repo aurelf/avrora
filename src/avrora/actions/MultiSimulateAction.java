@@ -33,7 +33,6 @@
 package avrora.actions;
 
 import avrora.Main;
-import avrora.Defaults;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
@@ -126,7 +125,7 @@ public class MultiSimulateAction extends SimAction {
         }
         Topology top = null;
         boolean topologyOn = false;
-        if (!TOPOLOGY.get().equals("(null)")) {
+        if (!"(null)".equals(TOPOLOGY.get())) {
             topologyOn = true;
             top = new Topology(TOPOLOGY.get());
         }
@@ -134,7 +133,7 @@ public class MultiSimulateAction extends SimAction {
 
             if (args.length <= cntr) break;
 
-            String singleArg[] = {args[cntr++]};
+            String[] singleArg = {args[cntr++]};
             Program program = Main.getProgramReader().read(singleArg);
 
             // create a number of nodes with the same program

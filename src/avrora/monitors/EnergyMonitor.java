@@ -37,20 +37,15 @@
 
 package avrora.monitors;
 
-import avrora.Avrora;
 import avrora.sim.Energy;
 import avrora.sim.EnergyControl;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.radio.Radio;
-import avrora.sim.radio.RadioAir;
 import avrora.util.Options;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -140,7 +135,7 @@ public class EnergyMonitor extends MonitorFactory {
 
         public class BatteryCheck implements Simulator.Event{
             //check 10 times per second
-            private final static int interval = 737280;
+            private static final int interval = 737280;
 
             public BatteryCheck(){
                 simulator.insertEvent(this, interval);

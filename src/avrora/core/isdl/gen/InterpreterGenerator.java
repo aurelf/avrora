@@ -250,8 +250,8 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
     public void visit(InstrDecl d) {
         printer.startblock("public void visit(" + d.getClassName() + " i) ");
-        // emit the default next pc computation
-        printer.println("nextPC = pc + " + (d.getEncodingSize() / 8) + ';');
+        // emit the default next badPc computation
+        printer.println("nextPC = badPc + " + (d.getEncodingSize() / 8) + ';');
 
         // initialize the map of local variables to operands
         initializeOperandMap(d);

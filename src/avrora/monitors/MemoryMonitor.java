@@ -181,7 +181,7 @@ public class MemoryMonitor extends MonitorFactory {
 
     }
 
-    public class EmptyWatch implements Simulator.Watch {
+    public static class EmptyWatch implements Simulator.Watch {
         public void fireBeforeRead(Instr i, int address, State state, int data_addr) {}
 
         public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {}

@@ -32,15 +32,12 @@
 
 package avrora.test;
 
-import avrora.Main;
 import avrora.Defaults;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.core.Register;
-import avrora.sim.GenInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.mcu.ATMega128L;
 import avrora.syntax.Module;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
@@ -94,7 +91,7 @@ public class SimulatorTestHarness implements TestHarness {
         map.put("r29", new ReadRegister("r29"));
         map.put("r30", new ReadRegister("r30"));
         map.put("r31", new ReadRegister("r31"));
-        map.put("pc", new ProcessorState("pc") {
+        map.put("badPc", new ProcessorState("badPc") {
             public int evaluate(Program p, State s) {
                 return s.getPC();
             }
@@ -303,7 +300,7 @@ public class SimulatorTestHarness implements TestHarness {
             String input = properties.getProperty("input");
             if (input == null) input = "atmel";
             ProgramReader r = Defaults.getProgramReader(input);
-            String args[] = {filename};
+            String[] args = {filename};
             program = r.read(args);
             simulator = Defaults.newSimulator(0, program);
             simulator.start();

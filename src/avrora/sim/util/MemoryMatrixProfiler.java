@@ -53,7 +53,7 @@ public class MemoryMatrixProfiler {
      * matrix is row-sparse in that rows of all zero (e.g. a non-memory instruction) are not stored. To access
      * this matrix, use the <code>getReadCount()</code> method.
      */
-    public final long rcount[][];
+    public final long[][] rcount;
 
     /**
      * The <code>rcount</code> field stores a two dimensional array that records the write count for each
@@ -61,7 +61,7 @@ public class MemoryMatrixProfiler {
      * matrix is row-sparse in that rows of all zero (e.g. a non-memory instruction) are not stored. To access
      * this matrix, use the <code>getWriteCount()</code> method.
      */
-    public final long wcount[][];
+    public final long[][] wcount;
 
     /**
      * The <code>ramSize</code> field stores the maximum RAM address that should be recorded.
@@ -169,7 +169,7 @@ public class MemoryMatrixProfiler {
         return getCount(wcount, data_addr, address);
     }
 
-    private long getCount(long matrix[][], int data_addr, int address) {
+    private long getCount(long[][] matrix, int data_addr, int address) {
         if (data_addr < ramSize)
             if (matrix[address] == null)
                 return 0;

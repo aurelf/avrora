@@ -57,7 +57,7 @@ public class ProgramTimeProfiler implements Simulator.Probe {
      * the program. It is indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the time for
      * the instruction at <code>program.getInstr(addr)</code>.
      */
-    public final long itime[];
+    public final long[] itime;
 
     protected long timeBegan;
 

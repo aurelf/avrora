@@ -45,7 +45,7 @@ import avrora.util.TermUtil;
  */
 public class SleepMonitor extends MonitorFactory {
 
-    public class Monitor implements avrora.monitors.Monitor, Simulator.Event {
+    public static class Monitor implements avrora.monitors.Monitor, Simulator.Event {
         public final Simulator simulator;
         public final Program program;
 

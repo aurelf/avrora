@@ -37,8 +37,6 @@ import avrora.core.Program;
 import avrora.core.ProgramReader;
 
 import java.io.File;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.FileReader;
 
 /**

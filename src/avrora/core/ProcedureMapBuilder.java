@@ -102,7 +102,7 @@ class ProcedureMapBuilder {
         Iterator edges = cfg.getEdgeIterator();
         while (edges.hasNext()) {
             ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge)edges.next();
-            if (edge.getType().equals("CALL")) {
+            if ("CALL".equals(edge.getType())) {
                 if (edge.getTarget() == null) {
                     addIndirectEntrypoints(edge, cfg);
                 } else
@@ -130,7 +130,7 @@ class ProcedureMapBuilder {
         Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
             ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge)edges.next();
-            if (edge.getType().equals("CALL")) continue;
+            if ("CALL".equals(edge.getType())) continue;
             ControlFlowGraph.Block target = edge.getTarget();
             if (target == null) continue;
             mark(entry, target);
@@ -161,7 +161,7 @@ class ProcedureMapBuilder {
         Iterator edges = block.getEdgeIterator();
         while (edges.hasNext()) {
             ControlFlowGraph.Edge edge = (ControlFlowGraph.Edge)edges.next();
-            if (edge.getType().equals("CALL")) continue;
+            if ("CALL".equals(edge.getType())) continue;
             ControlFlowGraph.Block target = edge.getTarget();
             if (target == null) continue;
             markShared(target);

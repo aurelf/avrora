@@ -61,7 +61,7 @@ import java.util.TreeSet;
 public class FreeSpaceAir implements RadioAir {
 
     //one global air for everybody
-    public final static FreeSpaceAir freeSpaceAir;
+    public static final FreeSpaceAir freeSpaceAir;
 
     private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("radio.rssi");
 
@@ -88,14 +88,14 @@ public class FreeSpaceAir implements RadioAir {
     /**
      * The amount of cycles it takes for one byte to be sent.
      */
-    public final static int bytePeriod = Radio.TRANSFER_TIME;
-    public final static int bitPeriod = Radio.TRANSFER_TIME / 8;
-    public final static int bitPeriod2 = Radio.TRANSFER_TIME / 16;
+    public static final int bytePeriod = Radio.TRANSFER_TIME;
+    public static final int bitPeriod = Radio.TRANSFER_TIME / 8;
+    public static final int bitPeriod2 = Radio.TRANSFER_TIME / 16;
 
     //const. for radio propagation
-    private final static double lightTemp = 299792458 / (4 * Math.PI);
-    private final static double lightConst = lightTemp * lightTemp;
-    private final static double noiseCutOff = 0.000009;
+    private static final double lightTemp = 299792458 / (4 * Math.PI);
+    private static final double lightConst = lightTemp * lightTemp;
+    private static final double noiseCutOff = 0.000009;
 
     /**
      * new free space air

@@ -33,7 +33,6 @@
 package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.State;
 import avrora.util.Arithmetic;
 
@@ -45,11 +44,11 @@ import avrora.util.Arithmetic;
  */
 public class ADC extends AtmelInternalDevice {
 
-    public final int ACSR = 0x08;
-    public final int ADMUX = 0x07;
-    public final int ADCSRA = 0x06;
-    public final int ADCH = 0x05;
-    public final int ADCL = 0x04;
+    public static final int ACSR = 0x08;
+    public static final int ADMUX = 0x07;
+    public static final int ADCSRA = 0x06;
+    public static final int ADCH = 0x05;
+    public static final int ADCL = 0x04;
 
     final MUXRegister ADMUX_reg = new MUXRegister();
     final DataRegister ADC_reg = new DataRegister();
@@ -83,13 +82,14 @@ public class ADC extends AtmelInternalDevice {
 
     }
 
+    // TODO: make these classes singletons
     private class VBG implements ADCInput {
         public int getLevel() {
             return 0x3ff; // figure out correct value for this eventually
         }
     }
 
-    private class GND implements ADCInput {
+    private static class GND implements ADCInput {
         public int getLevel() {
             return 0;
         }
@@ -170,10 +170,10 @@ public class ADC extends AtmelInternalDevice {
      */
     protected class MUXRegister extends ADCRegister {
 
-        final int REFS_AREF = 0;
-        final int REFS_AVCC = 1;
+        static final int REFS_AREF = 0;
+        static final int REFS_AVCC = 1;
         // 2 reserved
-        final int REFS_INTERNAL = 3;
+        static final int REFS_INTERNAL = 3;
 
 
         int singleInputIndex = 0;
@@ -260,14 +260,14 @@ public class ADC extends AtmelInternalDevice {
      */
     protected class ControlRegister extends ADCRegister {
 
-        final int ADEN = 7;
-        final int ADSC = 6;
-        final int ADFR = 5;
-        final int ADIF = 4;
-        final int ADIE = 3;
-        final int ADPS2 = 2;
-        final int ADPS1 = 1;
-        final int ADPS0 = 0;
+        static final int ADEN = 7;
+        static final int ADSC = 6;
+        static final int ADFR = 5;
+        static final int ADIF = 4;
+        static final int ADIE = 3;
+        static final int ADPS2 = 2;
+        static final int ADPS1 = 1;
+        static final int ADPS0 = 0;
 
         boolean aden;
         boolean adsc;

@@ -77,7 +77,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         registerMap.put("RZ", new Integer(Register.Z.getNumber()));
     }
 
-    class Operand {
+    static class Operand {
         boolean integer;
         String name;
     }
@@ -469,7 +469,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         private void generateVarUse(VarExpr e) {
-            if (e.variable.toString().equals("nextPC"))
+            if ("nextPC".equals(e.variable.toString()))
                 printer.print("new Literal.IntExpr(nextPC)");
             else
                 printer.print("new VarExpr(" + StringUtil.quote(e.variable) + ')');

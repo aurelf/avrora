@@ -33,7 +33,6 @@
 package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.State;
 import avrora.sim.Clock;
 import avrora.util.Arithmetic;

@@ -49,9 +49,9 @@ public class SensorBoard {
     //energy profile of this device
     private Energy energy;
     // names of the states of this device
-    private final String modeName[] = {"on:  "};
+    private final String[] modeName = {"on:  "};
     // power consumption of the device states
-    private final double modeAmpere[] = {0.0007};
+    private final double[] modeAmpere = {0.0007};
     // default mode of the device is on
     private static final int startMode = 0;
 

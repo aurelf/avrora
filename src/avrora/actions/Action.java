@@ -34,11 +34,7 @@ package avrora.actions;
 
 import avrora.util.Option;
 import avrora.util.Options;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.help.HelpItem;
 import avrora.util.help.HelpCategory;
-import avrora.Avrora;
 
 /**
  * The <code>Action</code> class defines a new action that the main driver is capable of executing. Each

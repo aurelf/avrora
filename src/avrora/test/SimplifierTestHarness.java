@@ -32,7 +32,6 @@
 
 package avrora.test;
 
-import avrora.Main;
 import avrora.Defaults;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
@@ -61,7 +60,7 @@ public class SimplifierTestHarness implements TestHarness {
             String input = properties.getProperty("input");
             if (input == null) input = "atmel";
             ProgramReader r = Defaults.getProgramReader(input);
-            String args[] = {filename};
+            String[] args = {filename};
             program = r.read(args);
         }
     }

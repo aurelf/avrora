@@ -246,7 +246,7 @@ public abstract class SimAction extends Action {
      * @return a list of program locations
      */
     public static List getLocationList(Program program, List v) {
-        HashSet locset = new HashSet();
+        HashSet locset = new HashSet(v.size()*2);
 
         Iterator i = v.iterator();
 
@@ -268,14 +268,14 @@ public abstract class SimAction extends Action {
      * The <code>printSimHeader()</code> method simply prints the first line of output that names
      * the columns for the events outputted by the rest of the simulation.
      */
-    protected void printSimHeader() {
+    protected static void printSimHeader() {
         TermUtil.printSeparator(Terminal.MAXLINE, "Simulation events");
         Terminal.printGreen("Node       Time   Event");
         Terminal.nextln();
         TermUtil.printThinSeparator(Terminal.MAXLINE);
     }
 
-    protected void printSeparator() {
+    protected static void printSeparator() {
         TermUtil.printSeparator(Terminal.MAXLINE);
     }
 

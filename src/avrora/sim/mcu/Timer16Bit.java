@@ -34,7 +34,6 @@ package avrora.sim.mcu;
 
 import avrora.sim.State;
 import avrora.sim.Simulator;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.Clock;
 import avrora.util.Arithmetic;
 
@@ -141,7 +140,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     protected int[] periods;
 
     // This method should be overloaded to initialize the above values.
-    abstract protected void initValues();
+    protected abstract void initValues();
 
     protected Timer16Bit(int n, AtmelMicrocontroller m) {
         super("timer"+n, m);
@@ -254,7 +253,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
      */
     protected abstract class ControlRegister extends State.RWIOReg {
 
-        abstract protected void decode(byte val);
+        protected abstract void decode(byte val);
 
 
         public void write(byte val) {

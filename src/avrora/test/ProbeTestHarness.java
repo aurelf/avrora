@@ -33,13 +33,8 @@
 package avrora.test;
 
 import avrora.Main;
-import avrora.Avrora;
 import avrora.Defaults;
 import avrora.sim.Simulator;
-import avrora.sim.GenInterpreter;
-import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.mcu.ATMega128L;
-import avrora.sim.mcu.Microcontroller;
 import avrora.test.probes.ProbeParser;
 import avrora.test.probes.ProbeTest;
 import avrora.core.Program;

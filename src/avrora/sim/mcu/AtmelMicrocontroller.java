@@ -59,7 +59,6 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
 
     protected final ClockDomain clockDomain;
     protected final HashMap devices;
-    protected final HashMap ioregs;
 
     /**
      * The <code>Pin</code> class implements a model of a pin on the ATMegaFamily for the general purpose IO
@@ -155,7 +154,6 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         properties = p;
         pins = new Pin[properties.num_pins];
         devices = new HashMap();
-        ioregs = new HashMap();
     }
 
     /**

@@ -35,27 +35,13 @@
 
 package avrora.monitors;
 
-import java.util.Iterator;
-
-import avrora.Avrora;
-import avrora.core.ControlFlowGraph.*;
-import avrora.core.Program.*;
-import avrora.core.Program.Location;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.mcu.ATMega128L;
-import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
-import avrora.util.Options;
-import avrora.util.Verbose;
-import java.util.*;
 
 
 /**
  * The <code>Pc</code> class is a monitor that that is capable
- * of setting up a virtual usart connection to the pc. You can 
+ * of setting up a virtual usart connection to the badPc. You can
  * connect the TinyOS serial forwarder to the port 2390.
  *
  * @author Olaf Landsiedel
@@ -90,12 +76,12 @@ public class Pc extends MonitorFactory {
      * method.
      */
     public Pc() {
-        super("The \"pc\" monitor connects the USART0 of node 0 to the PC using port 2390 as the default.");
+        super("The \"badPc\" monitor connects the USART0 of node 0 to the PC using port 2390 as the default.");
     }
 
     /**
      * The <code>newMonitor()</code> method creates a new monitor that is capable
-     * of setting up a virtual usart connection to the pc. You can connect the TinyOS
+     * of setting up a virtual usart connection to the badPc. You can connect the TinyOS
      * serial forwarder to the port 2390.
      * @param s the simulator to create a monitor for
      * @return an instance of the <code>Monitor</code> interface for the

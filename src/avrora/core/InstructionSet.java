@@ -42,7 +42,7 @@ import java.util.HashMap;
  */
 public class InstructionSet {
 
-    private static final HashMap instructions = new HashMap();
+    private static final HashMap instructions = new HashMap(150);
 
     static {
 //--BEGIN INSTRUCTIONSET GENERATOR--

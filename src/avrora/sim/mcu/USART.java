@@ -32,7 +32,6 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.Arithmetic;
@@ -82,38 +81,38 @@ public abstract class USART extends AtmelInternalDevice {
 
     //boolean UDREnFlagged;
 
-    final int RXCn = 7;
-    final int TXCn = 6;
-    final int UDREn = 5;
-    final int FEn = 4;
-    final int DORn = 3;
-    final int UPEn = 2;
-    final int U2Xn = 1;
-    final int MPCMn = 0;
+    static final int RXCn = 7;
+    static final int TXCn = 6;
+    static final int UDREn = 5;
+    static final int FEn = 4;
+    static final int DORn = 3;
+    static final int UPEn = 2;
+    static final int U2Xn = 1;
+    static final int MPCMn = 0;
 
-    final int RXCIEn = 7;
-    final int TXCIEn = 6;
-    final int UDRIEn = 5;
-    final int RXENn = 4;
-    final int TXENn = 3;
-    final int UCSZn2 = 2;
-    final int RXB8n = 1;
-    final int TXB8n = 0;
+    static final int RXCIEn = 7;
+    static final int TXCIEn = 6;
+    static final int UDRIEn = 5;
+    static final int RXENn = 4;
+    static final int TXENn = 3;
+    static final int UCSZn2 = 2;
+    static final int RXB8n = 1;
+    static final int TXB8n = 0;
 
     // bit 7 is reserved
-    final int UMSELn = 6;
-    final int UPMn1 = 5;
-    final int UPMn0 = 4;
-    final int USBSn = 3;
-    final int UCSZn1 = 2;
-    final int UCSZn0 = 1;
-    final int UCPOLn = 0;
+    static final int UMSELn = 6;
+    static final int UPMn1 = 5;
+    static final int UPMn0 = 4;
+    static final int USBSn = 3;
+    static final int UCSZn1 = 2;
+    static final int UCSZn0 = 1;
+    static final int UCPOLn = 0;
 
     // parity modes
-    final int PARITY_DISABLED = 0;
+    static final int PARITY_DISABLED = 0;
     // 2 is reserved
-    final int PARITY_EVEN = 2;
-    final int PARITY_ODD = 3;
+    static final int PARITY_EVEN = 2;
+    static final int PARITY_ODD = 3;
 
     // TODO: Frame sizes are not used!!
     static final int[] SIZE = {5, 6, 7, 8, 8, 8, 8, 9};
@@ -217,7 +216,7 @@ public abstract class USART extends AtmelInternalDevice {
      * Initialize the parameters such as interrupt numbers and I/O register numbers that make this
      * USART unique.
      */
-    abstract protected void initValues();
+    protected abstract void initValues();
 
     protected USART(int n, AtmelMicrocontroller m) {
         super("usart"+n, m);

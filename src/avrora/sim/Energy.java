@@ -51,11 +51,11 @@ public class Energy {
     //this class instance
     private String deviceName;
     //current draw for each state
-    private double ampere[];
+    private double[] ampere;
     // name of each state
-    private String name[];
+    private String[] name;
     //cycles spend in each state
-    private long cycles[];
+    private long[] cycles;
     // current state, e.g. mode
     private int currentMode;
     // the mode (e.g. state) the system was in before
@@ -84,7 +84,7 @@ public class Energy {
      * @param startMode   mode or state of the device at startup and reset
      * @param ec          the simulator energy control
      */
-    public Energy(String deviceName, Clock c, double modeAmpere[], String modeName[], int startMode, EnergyControl ec) {
+    public Energy(String deviceName, Clock c, double[] modeAmpere, String[] modeName, int startMode, EnergyControl ec) {
         // remember all params
         this.deviceName = deviceName;
         this.clock = c;

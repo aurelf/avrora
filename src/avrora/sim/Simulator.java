@@ -63,7 +63,7 @@ public class Simulator {
      * reported for times in seconds when outputting events from the simulator.
      */
     public static int SECONDS_PRECISION = 6;
-    public final static int[] PRECISION_TABLE = { 0, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+    public static final int[] PRECISION_TABLE = { 0, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
 
     /**
      * The <code>getIDTimeString()</code> is a public helper method that gets the node ID and the

@@ -52,7 +52,7 @@ import java.io.IOException;
  */
 public class SerialForwarder implements USART.USARTDevice {
 
-    public final int BPS = 2400;
+    public static final int BPS = 2400;
 
     private ServerSocket serverSocket;
     private Socket socket;

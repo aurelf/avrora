@@ -38,7 +38,6 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.ProgramProfiler;
 import avrora.util.StringUtil;
-import avrora.util.Verbose;
 import avrora.util.TermUtil;
 
 /**

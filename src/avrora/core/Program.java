@@ -499,7 +499,7 @@ public class Program {
     /**
      * The <code>getNextPC()</code> method computes the program counter value of the next instruction
      * following the instruction referenced by the given program counter value. Thus, it simply adds the size
-     * of the instruction at the specified pc to the pc. It is useful as a commonly-used utility method.
+     * of the instruction at the specified badPc to the badPc. It is useful as a commonly-used utility method.
      *
      * @param pc the program counter location of the current instruction
      * @return the program counter value of the instruction following the specified instruction in program

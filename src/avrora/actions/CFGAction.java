@@ -258,7 +258,7 @@ public class CFGAction extends Action {
 
     private int colorCounter;
     private final HashMap BLOCK_COLORS = new HashMap();
-    private static final String palette[] = {"aquamarine", "blue2", "brown1", "cadetblue1",
+    private static final String[] palette = {"aquamarine", "blue2", "brown1", "cadetblue1",
                                              "chartreuse1", "cyan4", "darkgoldenrod1", "darkorchid3", "darkslateblue",
                                              "deeppink2", "yellow", "seagreen3", "orangered1"};
 

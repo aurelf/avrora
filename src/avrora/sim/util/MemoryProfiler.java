@@ -41,8 +41,8 @@ import avrora.sim.State;
  */
 public class MemoryProfiler implements Simulator.Watch {
 
-    public final long rcount[];
-    public final long wcount[];
+    public final long[] rcount;
+    public final long[] wcount;
 
     public MemoryProfiler(int size) {
         rcount = new long[size];

@@ -10,7 +10,7 @@ import java.util.LinkedList;
 public class ISDLParser implements ISDLParserConstants {
 
 /* Begin GRAMMAR */
-    final public Architecture Architecture() throws ParseException {
+    public final Architecture Architecture() throws ParseException {
         Token n;
         Architecture a;
         jj_consume_token(ARCHITECTURE);
@@ -43,7 +43,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public void Item(Architecture a) throws ParseException {
+    public final void Item(Architecture a) throws ParseException {
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case INSTRUCTION:
                 Instruction(a);
@@ -69,7 +69,7 @@ public class ISDLParser implements ISDLParserConstants {
         }
     }
 
-    final public void Instruction(Architecture a) throws ParseException {
+    public final void Instruction(Architecture a) throws ParseException {
         Token n;
         InstrDecl i;
         List o = new LinkedList(),
@@ -109,7 +109,7 @@ public class ISDLParser implements ISDLParserConstants {
         a.addInstruction(new InstrDecl(n, null, o, c, s, e));
     }
 
-    final public Token Cycles() throws ParseException {
+    public final Token Cycles() throws ParseException {
         Token c;
         jj_consume_token(CYCLES);
         jj_consume_token(EQUALS);
@@ -121,7 +121,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public EncodingDecl Encoding(Token n) throws ParseException {
+    public final EncodingDecl Encoding(Token n) throws ParseException {
         EncodingDecl d;
         jj_consume_token(ENCODING);
         jj_consume_token(EQUALS);
@@ -133,7 +133,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public List Execute(List s) throws ParseException {
+    public final List Execute(List s) throws ParseException {
         jj_consume_token(EXECUTE);
         jj_consume_token(EQUALS);
         Block(s);
@@ -144,7 +144,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public void FormatDecl(Architecture a) throws ParseException {
+    public final void FormatDecl(Architecture a) throws ParseException {
         Token n;
         EncodingDecl d;
         jj_consume_token(FORMAT);
@@ -155,7 +155,7 @@ public class ISDLParser implements ISDLParserConstants {
         a.addEncoding(d);
     }
 
-    final public void OperandDecl(Architecture a) throws ParseException {
+    public final void OperandDecl(Architecture a) throws ParseException {
         Token n, k, b;
         jj_consume_token(OPERAND);
         n = jj_consume_token(IDENTIFIER);
@@ -169,7 +169,7 @@ public class ISDLParser implements ISDLParserConstants {
         jj_consume_token(SEMI);
     }
 
-    final public void OperandTail(Architecture a, Token n, Token k, Token b) throws ParseException {
+    public final void OperandTail(Architecture a, Token n, Token k, Token b) throws ParseException {
         OperandDecl d;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LBRACKET:
@@ -186,7 +186,7 @@ public class ISDLParser implements ISDLParserConstants {
         a.addOperand(d);
     }
 
-    final public OperandDecl OperandSetDecl(Token n, Token k, Token b) throws ParseException {
+    public final OperandDecl OperandSetDecl(Token n, Token k, Token b) throws ParseException {
         List l = new LinkedList();
         jj_consume_token(LBRACKET);
         OperandSetElem(l);
@@ -210,7 +210,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public void OperandSetElem(List l) throws ParseException {
+    public final void OperandSetElem(List l) throws ParseException {
         Token n, i;
         n = jj_consume_token(IDENTIFIER);
         jj_consume_token(EQUALS);
@@ -218,7 +218,7 @@ public class ISDLParser implements ISDLParserConstants {
         l.add(new OperandDecl.RegisterEncoding(n, i));
     }
 
-    final public OperandDecl OperandRangeDecl(Token n, Token k, Token b) throws ParseException {
+    public final OperandDecl OperandRangeDecl(Token n, Token k, Token b) throws ParseException {
         Token l, h;
         jj_consume_token(70);
         l = jj_consume_token(INTEGER_LITERAL);
@@ -231,7 +231,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Token Kind() throws ParseException {
+    public final Token Kind() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case REGISTER:
@@ -254,7 +254,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public List OperandSet() throws ParseException {
+    public final List OperandSet() throws ParseException {
         Token i;
         List l = new LinkedList();
         jj_consume_token(LBRACKET);
@@ -281,7 +281,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public void RegisterDecl(Architecture a) throws ParseException {
+    public final void RegisterDecl(Architecture a) throws ParseException {
         jj_consume_token(REGISTER);
         jj_consume_token(IDENTIFIER);
         jj_consume_token(EQUALS);
@@ -289,7 +289,7 @@ public class ISDLParser implements ISDLParserConstants {
         jj_consume_token(SEMI);
     }
 
-    final public EncodingDecl Format(Token n) throws ParseException {
+    public final EncodingDecl Format(Token n) throws ParseException {
         EncodingDecl d;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case IDENTIFIER:
@@ -309,7 +309,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public EncodingDecl DerivedFormat(Token n) throws ParseException {
+    public final EncodingDecl DerivedFormat(Token n) throws ParseException {
         Token p;
         EncodingDecl d;
         List l = new LinkedList();
@@ -329,7 +329,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public EncodingDecl NewFormat(Token n) throws ParseException {
+    public final EncodingDecl NewFormat(Token n) throws ParseException {
         List l;
         jj_consume_token(LBRACKET);
         l = ExprList();
@@ -340,7 +340,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public List SubstitutionList() throws ParseException {
+    public final List SubstitutionList() throws ParseException {
         List l = new LinkedList();
         jj_consume_token(LBRACKET);
         Substitution();
@@ -364,13 +364,13 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public void Substitution() throws ParseException {
+    public final void Substitution() throws ParseException {
         jj_consume_token(IDENTIFIER);
         jj_consume_token(EQUALS);
         Expr();
     }
 
-    final public List Formals() throws ParseException {
+    public final List Formals() throws ParseException {
         CodeRegion.Operand o;
         List l = new LinkedList();
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
@@ -402,7 +402,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public CodeRegion.Operand Formal() throws ParseException {
+    public final CodeRegion.Operand Formal() throws ParseException {
         Token n, t;
         n = jj_consume_token(IDENTIFIER);
         jj_consume_token(72);
@@ -413,7 +413,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public void Subroutine(Architecture a) throws ParseException {
+    public final void Subroutine(Architecture a) throws ParseException {
         boolean i = false;
         Token m, r;
         List f, l = new LinkedList();
@@ -458,7 +458,7 @@ public class ISDLParser implements ISDLParserConstants {
         }
     }
 
-    final public Expr Expr() throws ParseException {
+    public final Expr Expr() throws ParseException {
         Expr e;
         e = Cond_Or_Expr();
         {
@@ -467,7 +467,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public List ExprList() throws ParseException {
+    public final List ExprList() throws ParseException {
         List l = new LinkedList();
         Expr e;
         e = Expr();
@@ -492,7 +492,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Term() throws ParseException {
+    public final Expr Term() throws ParseException {
         Expr e;
         if (jj_2_1(2)) {
             e = CallExpr();
@@ -541,7 +541,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Conversion(Expr e) throws ParseException {
+    public final Expr Conversion(Expr e) throws ParseException {
         Token t;
         jj_consume_token(72);
         t = jj_consume_token(IDENTIFIER);
@@ -551,7 +551,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr MapAccess() throws ParseException {
+    public final Expr MapAccess() throws ParseException {
         Expr e;
         Token t;
         jj_consume_token(DOLLAR);
@@ -565,7 +565,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr VarUse() throws ParseException {
+    public final Expr VarUse() throws ParseException {
         Token t;
         t = jj_consume_token(IDENTIFIER);
         {
@@ -574,7 +574,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Literal() throws ParseException {
+    public final Expr Literal() throws ParseException {
         Token t;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case INTEGER_LITERAL:
@@ -597,7 +597,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr CallExpr() throws ParseException {
+    public final Expr CallExpr() throws ParseException {
         Token t;
         List l;
         t = jj_consume_token(IDENTIFIER);
@@ -608,7 +608,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public List Parameters() throws ParseException {
+    public final List Parameters() throws ParseException {
         List l = new LinkedList();
         jj_consume_token(LPAREN);
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
@@ -633,7 +633,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Stmt Statement() throws ParseException {
+    public final Stmt Statement() throws ParseException {
         Stmt s;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LOCAL:
@@ -667,7 +667,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public DeclStmt LocalDecl() throws ParseException {
+    public final DeclStmt LocalDecl() throws ParseException {
         Token n, t;
         Expr e;
         jj_consume_token(LOCAL);
@@ -683,7 +683,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public IfStmt IfStatement() throws ParseException {
+    public final IfStmt IfStatement() throws ParseException {
         Expr c;
         List t = new LinkedList(), f = new LinkedList();
         jj_consume_token(IF);
@@ -706,7 +706,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public ReturnStmt ReturnStmt() throws ParseException {
+    public final ReturnStmt ReturnStmt() throws ParseException {
         Expr e;
         jj_consume_token(RETURN);
         e = Expr();
@@ -717,7 +717,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public void SingleStatement(List l) throws ParseException {
+    public final void SingleStatement(List l) throws ParseException {
         Stmt s;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LOCAL:
@@ -738,7 +738,7 @@ public class ISDLParser implements ISDLParserConstants {
         }
     }
 
-    final public AssignStmt Assignment() throws ParseException {
+    public final AssignStmt Assignment() throws ParseException {
         AssignStmt s;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case IDENTIFIER:
@@ -759,7 +759,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public CallStmt CallStmt() throws ParseException {
+    public final CallStmt CallStmt() throws ParseException {
         Token m;
         List l;
         m = jj_consume_token(IDENTIFIER);
@@ -771,7 +771,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public AssignStmt VarAssignment() throws ParseException {
+    public final AssignStmt VarAssignment() throws ParseException {
         AssignStmt s;
         Token v, i, j;
         Expr e;
@@ -783,7 +783,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public AssignStmt VarAssignEnd(Token v) throws ParseException {
+    public final AssignStmt VarAssignEnd(Token v) throws ParseException {
         AssignStmt s;
         Token i, j;
         Expr e, b;
@@ -827,7 +827,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public AssignStmt MapAssignment() throws ParseException {
+    public final AssignStmt MapAssignment() throws ParseException {
         AssignStmt s;
         Token v, i, j;
         Expr ind, e;
@@ -843,7 +843,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public AssignStmt MapAssignmentEnd(Token v, Expr ind) throws ParseException {
+    public final AssignStmt MapAssignmentEnd(Token v, Expr ind) throws ParseException {
         AssignStmt s;
         Token i, j;
         Expr e, b;
@@ -887,7 +887,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public List Block(List l) throws ParseException {
+    public final List Block(List l) throws ParseException {
         Stmt s;
         jj_consume_token(LBRACKET);
         label_7:
@@ -914,7 +914,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr BitRange(Expr e) throws ParseException {
+    public final Expr BitRange(Expr e) throws ParseException {
         Expr et;
         Token t1, t2;
         jj_consume_token(70);
@@ -949,7 +949,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Cond_Or_Expr() throws ParseException {
+    public final Expr Cond_Or_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Cond_Xor_Expr();
@@ -973,7 +973,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Cond_Xor_Expr() throws ParseException {
+    public final Expr Cond_Xor_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Cond_And_Expr();
@@ -997,7 +997,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Cond_And_Expr() throws ParseException {
+    public final Expr Cond_And_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Or_Expr();
@@ -1021,7 +1021,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Or_Expr() throws ParseException {
+    public final Expr Or_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Xor_Expr();
@@ -1045,7 +1045,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Xor_Expr() throws ParseException {
+    public final Expr Xor_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = And_Expr();
@@ -1069,7 +1069,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr And_Expr() throws ParseException {
+    public final Expr And_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Equ_Expr();
@@ -1093,7 +1093,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Equ_Expr() throws ParseException {
+    public final Expr Equ_Expr() throws ParseException {
         Expr e, et;
         e = Rel_Expr();
         label_14:
@@ -1130,7 +1130,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Rel_Expr() throws ParseException {
+    public final Expr Rel_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Shift_Expr();
@@ -1180,7 +1180,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Shift_Expr() throws ParseException {
+    public final Expr Shift_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Add_Expr();
@@ -1218,7 +1218,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Add_Expr() throws ParseException {
+    public final Expr Add_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Mul_Expr();
@@ -1256,7 +1256,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Mul_Expr() throws ParseException {
+    public final Expr Mul_Expr() throws ParseException {
         Expr e, et;
         Token tok;
         e = Un_Expr();
@@ -1294,7 +1294,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final public Expr Un_Expr() throws ParseException {
+    public final Expr Un_Expr() throws ParseException {
         Expr e;
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case B_COMP:
@@ -1330,7 +1330,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw new Error("Missing return statement in function");
     }
 
-    final private boolean jj_2_1(int xla) {
+    private final boolean jj_2_1(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_1();
@@ -1338,7 +1338,7 @@ public class ISDLParser implements ISDLParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_2(int xla) {
+    private final boolean jj_2_2(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_2();
@@ -1346,7 +1346,7 @@ public class ISDLParser implements ISDLParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_3(int xla) {
+    private final boolean jj_2_3(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_3();
@@ -1354,7 +1354,7 @@ public class ISDLParser implements ISDLParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_4(int xla) {
+    private final boolean jj_2_4(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_4();
@@ -1362,7 +1362,7 @@ public class ISDLParser implements ISDLParserConstants {
         return retval;
     }
 
-    final private boolean jj_2_5(int xla) {
+    private final boolean jj_2_5(int xla) {
         jj_la = xla;
         jj_lastpos = jj_scanpos = token;
         boolean retval = !jj_3_5();
@@ -1370,13 +1370,13 @@ public class ISDLParser implements ISDLParserConstants {
         return retval;
     }
 
-    final private boolean jj_3R_27() {
+    private final boolean jj_3R_27() {
         if (jj_scan_token(EQUALS)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_26() {
+    private final boolean jj_3R_26() {
         Token xsp;
         xsp = jj_scanpos;
         if (jj_3R_27()) {
@@ -1390,19 +1390,19 @@ public class ISDLParser implements ISDLParserConstants {
         return false;
     }
 
-    final private boolean jj_3_1() {
+    private final boolean jj_3_1() {
         if (jj_3R_19()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3_2() {
+    private final boolean jj_3_2() {
         if (jj_3R_20()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3_4() {
+    private final boolean jj_3_4() {
         if (jj_scan_token(70)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(INTEGER_LITERAL)) return true;
@@ -1412,7 +1412,7 @@ public class ISDLParser implements ISDLParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_24() {
+    private final boolean jj_3R_24() {
         if (jj_scan_token(IDENTIFIER)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_26()) return true;
@@ -1420,7 +1420,7 @@ public class ISDLParser implements ISDLParserConstants {
         return false;
     }
 
-    final private boolean jj_3_5() {
+    private final boolean jj_3_5() {
         if (jj_scan_token(INTEGER_LITERAL)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(72)) return true;
@@ -1428,13 +1428,13 @@ public class ISDLParser implements ISDLParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_21() {
+    private final boolean jj_3R_21() {
         if (jj_scan_token(LPAREN)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_25() {
+    private final boolean jj_3R_25() {
         if (jj_scan_token(DOLLAR)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(IDENTIFIER)) return true;
@@ -1442,19 +1442,19 @@ public class ISDLParser implements ISDLParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_23() {
+    private final boolean jj_3R_23() {
         if (jj_3R_25()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_22() {
+    private final boolean jj_3R_22() {
         if (jj_3R_24()) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_20() {
+    private final boolean jj_3R_20() {
         Token xsp;
         xsp = jj_scanpos;
         if (jj_3R_22()) {
@@ -1465,13 +1465,13 @@ public class ISDLParser implements ISDLParserConstants {
         return false;
     }
 
-    final private boolean jj_3R_28() {
+    private final boolean jj_3R_28() {
         if (jj_scan_token(70)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         return false;
     }
 
-    final private boolean jj_3R_19() {
+    private final boolean jj_3R_19() {
         if (jj_scan_token(IDENTIFIER)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_3R_21()) return true;
@@ -1479,7 +1479,7 @@ public class ISDLParser implements ISDLParserConstants {
         return false;
     }
 
-    final private boolean jj_3_3() {
+    private final boolean jj_3_3() {
         if (jj_scan_token(70)) return true;
         if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
         if (jj_scan_token(INTEGER_LITERAL)) return true;
@@ -1498,10 +1498,10 @@ public class ISDLParser implements ISDLParserConstants {
     public boolean lookingAhead = false;
     private boolean jj_semLA;
     private int jj_gen;
-    final private int[] jj_la1 = new int[50];
-    static private int[] jj_la1_0;
-    static private int[] jj_la1_1;
-    static private int[] jj_la1_2;
+    private final int[] jj_la1 = new int[50];
+    private static int[] jj_la1_0;
+    private static int[] jj_la1_1;
+    private static int[] jj_la1_2;
 
     static {
         jj_la1_0();
@@ -1521,7 +1521,7 @@ public class ISDLParser implements ISDLParserConstants {
         jj_la1_2 = new int[]{0x0, 0x0, 0x0, 0x0, 0x0, 0x40, 0x0, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0x8, 0x0, 0x0, 0x0, 0xc, 0x40, 0x100, 0x0, 0xc, 0x0, 0x8, 0x0, 0xc, 0xc, 0x0, 0x40, 0x0, 0x40, 0xc, 0xc, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xc, };
     }
 
-    final private JJCalls[] jj_2_rtns = new JJCalls[5];
+    private final JJCalls[] jj_2_rtns = new JJCalls[5];
     private boolean jj_rescan = false;
     private int jj_gc = 0;
 
@@ -1583,7 +1583,7 @@ public class ISDLParser implements ISDLParserConstants {
         for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
     }
 
-    final private Token jj_consume_token(int kind) throws ParseException {
+    private final Token jj_consume_token(int kind) throws ParseException {
         Token oldToken;
         if ((oldToken = token).next != null)
             token = token.next;
@@ -1609,7 +1609,7 @@ public class ISDLParser implements ISDLParserConstants {
         throw generateParseException();
     }
 
-    final private boolean jj_scan_token(int kind) {
+    private final boolean jj_scan_token(int kind) {
         if (jj_scanpos == jj_lastpos) {
             jj_la--;
             if (jj_scanpos.next == null) {
@@ -1632,7 +1632,7 @@ public class ISDLParser implements ISDLParserConstants {
         return (jj_scanpos.kind != kind);
     }
 
-    final public Token getNextToken() {
+    public final Token getNextToken() {
         if (token.next != null)
             token = token.next;
         else
@@ -1642,7 +1642,7 @@ public class ISDLParser implements ISDLParserConstants {
         return token;
     }
 
-    final public Token getToken(int index) {
+    public final Token getToken(int index) {
         Token t = lookingAhead ? jj_scanpos : token;
         for (int i = 0; i < index; i++) {
             if (t.next != null)
@@ -1653,7 +1653,7 @@ public class ISDLParser implements ISDLParserConstants {
         return t;
     }
 
-    final private int jj_ntk() {
+    private final int jj_ntk() {
         if ((jj_nt = token.next) == null)
             return (jj_ntk = (token.next = token_source.getNextToken()).kind);
         else
@@ -1736,13 +1736,13 @@ public class ISDLParser implements ISDLParserConstants {
         return new ParseException(token, exptokseq, tokenImage);
     }
 
-    final public void enable_tracing() {
+    public final void enable_tracing() {
     }
 
-    final public void disable_tracing() {
+    public final void disable_tracing() {
     }
 
-    final private void jj_rescan_token() {
+    private final void jj_rescan_token() {
         jj_rescan = true;
         for (int i = 0; i < 5; i++) {
             JJCalls p = jj_2_rtns[i];
@@ -1774,7 +1774,7 @@ public class ISDLParser implements ISDLParserConstants {
         jj_rescan = false;
     }
 
-    final private void jj_save(int index, int xla) {
+    private final void jj_save(int index, int xla) {
         JJCalls p = jj_2_rtns[index];
         while (p.gen > jj_gen) {
             if (p.next == null) {

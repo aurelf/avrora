@@ -391,7 +391,7 @@ public class Analyzer {
     private void findMaximalPath() {
         // the stack hashmap contains a mapping between states on the stack
         // and the current stack depth at which they are being explored
-        HashMap stack = new HashMap();
+        HashMap stack = new HashMap(1000);
         StateCache.State state = graph.getEdenState();
 
         try {

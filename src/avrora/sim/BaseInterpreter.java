@@ -189,29 +189,29 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected final MainClock clock;
 
     public class NoSuchInstructionException extends Avrora.Error {
-        public final int pc;
+        public final int badPc;
 
         protected NoSuchInstructionException(int pc) {
             super("Program error", "attempt to execute non-existant instruction at " + StringUtil.addrToString(pc));
-            this.pc = pc;
+            this.badPc = pc;
         }
     }
 
     public class PCOutOfBoundsException extends Avrora.Error {
-        public final int pc;
+        public final int badPc;
 
         protected PCOutOfBoundsException(int pc) {
             super("Program error", "PC out of bounds at " + StringUtil.addrToString(pc));
-            this.pc = pc;
+            this.badPc = pc;
         }
     }
 
     public class PCAlignmentException extends Avrora.Error {
-        public final int pc;
+        public final int badPc;
 
         protected PCAlignmentException(int pc) {
             super("Program error", "PC misaligned at " + StringUtil.addrToString(pc));
-            this.pc = pc;
+            this.badPc = pc;
         }
     }
 
@@ -382,7 +382,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         SPH_reg = (State.RWIOReg)ioregs[props.getIOReg("SPH")];
     }
 
-    protected void makeImpression(Program p) {
+    protected final void makeImpression(Program p) {
         flash_instr = new Instr[p.program_end];
         flash_data = new byte[p.program_end];
 
@@ -471,7 +471,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         w.remove(p);
     }
 
-    protected void initializeIORegs() {
+    protected final void initializeIORegs() {
         for (int cntr = 0; cntr < ioregs.length; cntr++)
             ioregs[cntr] = new State.RWIOReg();
         SREG_reg = ioregs[SREG] = new SREG_reg();

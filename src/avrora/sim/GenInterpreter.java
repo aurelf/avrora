@@ -194,7 +194,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         innerLoop = true;
         while (innerLoop) {
             // get the current instruction
-            int curPC = nextPC; // at this point pc == nextPC
+            int curPC = nextPC; // at this point badPc == nextPC
             Instr i = getInstr(nextPC);
 
             // visit the actual instruction (or probe)
@@ -1550,20 +1550,20 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         return Arithmetic.uword(low, high) * 2;
     }
 
-    public byte low(int val) {
+    public static byte low(int val) {
         return (byte)val;
     }
 
-    public byte high(int val) {
+    public static byte high(int val) {
         return (byte)(val >> 8);
     }
 
-    public byte bit(boolean val) {
+    public static byte bit(boolean val) {
         if (val) return 1;
         return 0;
     }
 
-    public int uword(byte low, byte high) {
+    public static int uword(byte low, byte high) {
         return Arithmetic.uword(low, high);
     }
 

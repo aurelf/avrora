@@ -49,8 +49,8 @@ import java.util.Iterator;
  */
 public interface LocalAir {
     //some radio const
-    public final static int sampleTime = 13 * 64;
-    public final static int bytePeriod = Radio.TRANSFER_TIME;
+    int sampleTime = 13 * 64;
+    int bytePeriod = Radio.TRANSFER_TIME;
 
     /**
      * get the position of this node

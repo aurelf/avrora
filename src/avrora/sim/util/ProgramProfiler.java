@@ -57,7 +57,7 @@ public class ProgramProfiler implements Simulator.Probe {
      * indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the invocation for the
      * instruction at <code>program.getInstr(addr)</code>.
      */
-    public final long icount[];
+    public final long[] icount;
 
     /**
      * The constructor for the program profiler constructs the required internal state to store the invocation

@@ -54,7 +54,7 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
          * The <code>mapping</code> array maps a bit number (0-7) to an interrupt number (0-35). This is used
          * for calculating the posted interrupts.
          */
-        protected final int mapping[];
+        protected final int[] mapping;
         protected final long interruptMask;
         protected final BaseInterpreter interpreter;
 
@@ -288,10 +288,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
         // See pg. 104 of the ATmega128L doc
         protected class ASSRRegister extends State.RWIOReg {
-            final int AS0 = 3;
-            final int TCN0UB = 2;
-            final int OCR0UB = 1;
-            final int TCR0UB = 0;
+            static final int AS0 = 3;
+            static final int TCN0UB = 2;
+            static final int OCR0UB = 1;
+            static final int TCR0UB = 0;
 
             public void write(byte val) {
                 super.write((byte)(0xf & val));
@@ -437,12 +437,12 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
      * @param p the last character of the port name
      */
     protected void buildPort(char p) {
-        ATMegaFamily.Pin[] pins = new ATMegaFamily.Pin[8];
+        ATMegaFamily.Pin[] portPins = new ATMegaFamily.Pin[8];
         for (int cntr = 0; cntr < 8; cntr++)
-            pins[cntr] = (ATMegaFamily.Pin)getPin("P" + p + cntr);
-        installIOReg("PORT"+p, new PortRegister(pins));
-        installIOReg("DDR"+p, new DirectionRegister(pins));
-        installIOReg("PIN"+p, new PinRegister(pins));
+            portPins[cntr] = (ATMegaFamily.Pin)getPin("P" + p + cntr);
+        installIOReg("PORT"+p, new PortRegister(portPins));
+        installIOReg("DDR"+p, new DirectionRegister(portPins));
+        installIOReg("PIN"+p, new PinRegister(portPins));
     }
 
     /**

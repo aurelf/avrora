@@ -122,9 +122,9 @@ public class Module implements Context {
         }
 
         public void addLabel(int baddr, String labelname) {
-            if (name.equals("program")) newprogram.newProgramLabel(labelname, baddr);
-            if (name.equals("eeprom")) newprogram.newEEPromLabel(labelname, baddr);
-            if (name.equals("data")) newprogram.newDataLabel(labelname, baddr);
+            if ("program".equals(name)) newprogram.newProgramLabel(labelname, baddr);
+            if ("eeprom".equals(name)) newprogram.newEEPromLabel(labelname, baddr);
+            if ("data".equals(name)) newprogram.newDataLabel(labelname, baddr);
         }
 
         public void setOrigin(int org) {

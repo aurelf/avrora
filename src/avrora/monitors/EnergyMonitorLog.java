@@ -39,14 +39,8 @@ package avrora.monitors;
 
 import avrora.Avrora;
 import avrora.sim.Energy;
-import avrora.sim.EnergyControl;
 import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.radio.Radio;
-import avrora.sim.radio.RadioAir;
 import avrora.util.Options;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

@@ -105,23 +105,23 @@ public abstract class Expr extends ASTNode {
             String o = op.image;
 
             // TODO: this is a bit ugly.
-            if (o.equals("*")) return lval * rval;
-            if (o.equals("/")) return lval / rval;
-            if (o.equals("-")) return lval - rval;
-            if (o.equals("+")) return lval + rval;
-            if (o.equals("<<")) return lval << rval;
-            if (o.equals(">>")) return lval >> rval;
-            if (o.equals("<")) return asInt(lval < rval);
-            if (o.equals(">")) return asInt(lval > rval);
-            if (o.equals("<=")) return asInt(lval <= rval);
-            if (o.equals(">=")) return asInt(lval >= rval);
-            if (o.equals("==")) return asInt(lval == rval);
-            if (o.equals("!=")) return asInt(lval != rval);
-            if (o.equals("&")) return lval & rval;
-            if (o.equals("^")) return lval ^ rval;
-            if (o.equals("|")) return lval | rval;
-            if (o.equals("&&")) return asInt(asBool(lval) && asBool(rval));
-            if (o.equals("||")) return asInt(asBool(lval) || asBool(rval));
+            if ("*".equals(o)) return lval * rval;
+            if ("/".equals(o)) return lval / rval;
+            if ("-".equals(o)) return lval - rval;
+            if ("+".equals(o)) return lval + rval;
+            if ("<<".equals(o)) return lval << rval;
+            if (">>".equals(o)) return lval >> rval;
+            if ("<".equals(o)) return asInt(lval < rval);
+            if (">".equals(o)) return asInt(lval > rval);
+            if ("<=".equals(o)) return asInt(lval <= rval);
+            if (">=".equals(o)) return asInt(lval >= rval);
+            if ("==".equals(o)) return asInt(lval == rval);
+            if ("!=".equals(o)) return asInt(lval != rval);
+            if ("&".equals(o)) return lval & rval;
+            if ("^".equals(o)) return lval ^ rval;
+            if ("|".equals(o)) return lval | rval;
+            if ("&&".equals(o)) return asInt(asBool(lval) && asBool(rval));
+            if ("||".equals(o)) return asInt(asBool(lval) || asBool(rval));
 
             throw Avrora.failure("unknown binary operator: " + op);
         }
@@ -167,9 +167,9 @@ public abstract class Expr extends ASTNode {
             int oval = operand.evaluate(currentByteAddress, c);
             String o = op.image;
 
-            if (o.equals("!")) return asInt(!asBool(oval));
-            if (o.equals("~")) return ~oval;
-            if (o.equals("-")) return -oval;
+            if ("!".equals(o)) return asInt(!asBool(oval));
+            if ("~".equals(o)) return ~oval;
+            if ("-".equals(o)) return -oval;
 
             throw Avrora.failure("unknown unary operator: " + op);
         }
@@ -217,17 +217,17 @@ public abstract class Expr extends ASTNode {
             String f = func.image;
 
             // TODO: verify correctness of these functions
-            if (f.equalsIgnoreCase("byte")) return aval & 0xff;
-            if (f.equalsIgnoreCase("low") || f.equals("lo8")) return aval & 0xff;
-            if (f.equalsIgnoreCase("high") || f.equals("hi8")) return (aval >>> 8) & 0xff;
-            if (f.equalsIgnoreCase("byte2")) return (aval >>> 8) & 0xff;
-            if (f.equalsIgnoreCase("byte3")) return (aval >>> 16) & 0xff;
-            if (f.equalsIgnoreCase("byte4")) return (aval >>> 24) & 0xff;
-            if (f.equalsIgnoreCase("lwrd")) return aval & 0xffff;
-            if (f.equalsIgnoreCase("hwrd")) return (aval >>> 16) & 0xffff;
-            if (f.equalsIgnoreCase("page")) return (aval >>> 16) & 0x3f;
-            if (f.equalsIgnoreCase("exp2")) return 1 << aval;
-            if (f.equalsIgnoreCase("log2")) return log(aval);
+            if ("byte".equalsIgnoreCase(f)) return aval & 0xff;
+            if ("low".equalsIgnoreCase(f) || "lo8".equals(f)) return aval & 0xff;
+            if ("high".equalsIgnoreCase(f) || "hi8".equals(f)) return (aval >>> 8) & 0xff;
+            if ("byte2".equalsIgnoreCase(f)) return (aval >>> 8) & 0xff;
+            if ("byte3".equalsIgnoreCase(f)) return (aval >>> 16) & 0xff;
+            if ("byte4".equalsIgnoreCase(f)) return (aval >>> 24) & 0xff;
+            if ("lwrd".equalsIgnoreCase(f)) return aval & 0xffff;
+            if ("hwrd".equalsIgnoreCase(f)) return (aval >>> 16) & 0xffff;
+            if ("page".equalsIgnoreCase(f)) return (aval >>> 16) & 0x3f;
+            if ("exp2".equalsIgnoreCase(f)) return 1 << aval;
+            if ("log2".equalsIgnoreCase(f)) return log(aval);
 
             throw Avrora.failure("unknown function: " + func);
         }
@@ -346,7 +346,7 @@ public abstract class Expr extends ASTNode {
         }
 
         private static int evaluateLiteral(String val) {
-            if (val.startsWith("$"))                          // hexadecimal
+            if (val.charAt(0) == '$')                          // hexadecimal
                 return Integer.parseInt(val.substring(1), 16);
             else
                 return StringUtil.evaluateIntegerLiteral(val);
@@ -445,8 +445,8 @@ public abstract class Expr extends ASTNode {
          */
         public int evaluate(int currentByteAddress, Context c) {
             int offset = StringUtil.evaluateIntegerLiteral(num.image);
-            if (op.image.equals("+")) return currentByteAddress + offset;
-            if (op.image.equals("-")) return currentByteAddress - offset;
+            if ("+".equals(op.image)) return currentByteAddress + offset;
+            if ("-".equals(op.image)) return currentByteAddress - offset;
 
             throw Avrora.failure("unknown operation in relative computation: " + op.image);
         }

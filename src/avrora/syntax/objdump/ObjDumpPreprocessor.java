@@ -141,7 +141,7 @@ public class ObjDumpPreprocessor extends Action {
 
     private String readSection(BufferedReader in, StringBuffer out, String section) throws IOException {
 
-        if ( section.equals(".data") || section.equals(".text") )
+        if ( ".data".equals(section) || ".text".equals(section) )
             return convertSection(in, out, section);
         else
             return ignoreSection(in, out, section);
