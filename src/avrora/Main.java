@@ -46,8 +46,8 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * This is the main entrypoint to Avrora. It is responsible for parsing the options to the main program and selecting
- * the appropriate action. Currently, it also implements the help system.
+ * This is the main entrypoint to Avrora. It is responsible for parsing the options to the main program and
+ * selecting the appropriate action. Currently, it also implements the help system.
  *
  * @author Ben L. Titzer
  */
@@ -158,8 +158,9 @@ public class Main {
     }
 
     /**
-     * The <code>main()</code> method is the entrypoint into Avrora. It processes the command line options, looks up the
-     * action, and prints help (if there are no arguments or the <code>-help</code> option is specified.
+     * The <code>main()</code> method is the entrypoint into Avrora. It processes the command line options,
+     * looks up the action, and prints help (if there are no arguments or the <code>-help</code> option is
+     * specified.
      *
      * @param args an array of strings representing the command line arguments passed by the user
      */
@@ -401,8 +402,8 @@ public class Main {
     }
 
     /**
-     * The <code>parseOptions()</code> method takes an array of strings and parses it, extracting the options and
-     * storing the option values in the internal state of main.
+     * The <code>parseOptions()</code> method takes an array of strings and parses it, extracting the options
+     * and storing the option values in the internal state of main.
      *
      * @param args the array of strings to parse into options
      */
@@ -419,13 +420,15 @@ public class Main {
     }
 
     /**
-     * The <code>readProgram()</code> method reads a program from the command line arguments given the format specified
-     * at the command line. It will also process the indirect-call edge information and add it to the
-     * <code>Program</code> instance returned. This method is primarily used by actions that manipulate programs.
+     * The <code>readProgram()</code> method reads a program from the command line arguments given the format
+     * specified at the command line. It will also process the indirect-call edge information and add it to
+     * the <code>Program</code> instance returned. This method is primarily used by actions that manipulate
+     * programs.
      *
      * @param args an array of strings representing command line arguments with the options removed
      * @return an instance of the <code>Program</code> class if the program can be loaded correctly
-     * @throws Exception if there is an error loading the program, such as a file not found exception, parse error, etc
+     * @throws Exception if there is an error loading the program, such as a file not found exception, parse
+     *                   error, etc
      */
     public static Program readProgram(String[] args) throws Exception {
         ProgramReader reader = getProgramReader();

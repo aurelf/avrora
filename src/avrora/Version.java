@@ -33,26 +33,28 @@
 package avrora;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number, as well
- * as the date and time of the last commit.
+ * The <code>Version</code> class represents a version number, including the major version, the commit number,
+ * as well as the date and time of the last commit.
  *
  * @author Ben L. Titzer
  */
 public class Version {
 
     /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this version.
+     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
+     * version.
      */
     public final String prefix = "Beta ";
 
     /**
-     * The <code>major</code> field stores the string that represents the major version number (the release number).
+     * The <code>major</code> field stores the string that represents the major version number (the release
+     * number).
      */
     public final String major = "1.3";
 
     /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to CVS since
-     * the last release).
+     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
+     * CVS since the last release).
      */
     public final int commit = 14;
 
