@@ -103,6 +103,10 @@ public class Arithmetic {
             return clearBit(val, bit);
     }
 
+    public static int setBit(int val, int bit, boolean on) {
+        return on ? (val | (1 << bit)) : (val & ~(1 << bit));
+    }
+
     public static byte clearBit(byte val, int bit) {
         return (byte) (val & ~(1 << bit));
     }

@@ -18,4 +18,11 @@ public class OperandDecl {
         members = m;
     }
 
+    public boolean isRegister() {
+        return kind.image.equals("register");
+    }
+
+    public boolean isImmediate() {
+        return kind.image.equals("immediate");
+    }
 }

@@ -52,9 +52,13 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
             // TODO: fixme
             printer.print(writeMeth+"(");
             ind.accept(codeGen);
+            printer.print(", Arithmetic.setBit("+readMeth+"(");
+            ind.accept(codeGen);
+            printer.print("), ");
+            b.accept(codeGen);
             printer.print(", ");
             val.accept(codeGen);
-            printer.println(");");
+            printer.println("));");
         }
 
         public void generateRead(Expr ind) {
@@ -124,12 +128,12 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
 
     private void initializeMaps() {
         mapMap.put("regs", new GetterSetterMap("getRegisterByte", "setRegisterByte"));
-        mapMap.put("uregs", new GetterSetterMap("readRegisterUnsigned", "writeRegisterByte"));
-        mapMap.put("wregs", new GetterSetterMap("readRegisterWord", "writeRegisterWord"));
-        mapMap.put("sram", new GetterSetterMap("readDataByte", "writeDataByte"));
+        mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "setRegisterByte"));
+        mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "setRegisterWord"));
+        mapMap.put("sram", new GetterSetterMap("getDataByte", "setDataByte"));
         mapMap.put("ioregs", new IORegMap());
-        mapMap.put("program", new GetterSetterMap("readProgramByte", "writeProgramByte"));
-        mapMap.put("isize", new GetterSetterMap("readInstrSize", "---"));
+        mapMap.put("program", new GetterSetterMap("getProgramByte", "setProgramByte"));
+        mapMap.put("isize", new GetterSetterMap("getInstrSize", "---"));
     }
 
     public void generateCode() {
@@ -156,17 +160,34 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         printer.println("nextPC = pc + "+(d.getEncodingSize()/8)+";");
 
         // initialize the map of local variables to operands
-        operandMap = new HashMap();
-        Iterator i = d.getOperandIterator();
-        while ( i.hasNext() ) {
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-            operandMap.put(o.name.image, "i."+o.name.image);
-        }
+        initializeOperandMap(d);
         // emit the code of the body
         visitStmtList(d.getCode());
         // emit the cycle count update
         printer.println("cyclesConsumed += "+d.cycles+";");
         printer.endblock();
+    }
+
+    private void initializeOperandMap(InstrDecl d) {
+        int regcount = 0;
+        int immcount = 0;
+
+        operandMap = new HashMap();
+        Iterator i = d.getOperandIterator();
+        while ( i.hasNext() ) {
+            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+
+            String name = "i.";
+            if ( o.isRegister() ) {
+                name += "r"+(++regcount);
+            } else if ( o.isImmediate() ) {
+                name += "imm"+(++immcount);
+            } else {
+                name += o.name.image;
+            }
+
+            operandMap.put(o.name.image, name);
+        }
     }
 
     public void generateCode(SubroutineDecl d) {
@@ -246,7 +267,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
     public void visit(VarBitAssignStmt s) {
         String var = getVariable(s.variable);
         printer.print(var+" = ");
-        emitCall("Arithmetic.setBit", var, s.expr);
+        emitCall("Arithmetic.setBit", var, s.bit, s.expr);
         printer.println(";");
     }
 
@@ -295,6 +316,24 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst {
         e1.accept(codeGen);
         printer.print(", ");
         e2.accept(codeGen);
+        printer.print(")");
+    }
+
+    private void emitCall(String s, Expr e1, Expr e2, Expr e3) {
+        printer.print(s+"(");
+        e1.accept(codeGen);
+        printer.print(", ");
+        e2.accept(codeGen);
+        printer.print(", ");
+        e3.accept(codeGen);
+        printer.print(")");
+    }
+
+    private void emitCall(String s, String e1, Expr e2, Expr e3) {
+        printer.print(s+"("+e1+", ");
+        e2.accept(codeGen);
+        printer.print(", ");
+        e3.accept(codeGen);
         printer.print(")");
     }
 

@@ -54,10 +54,56 @@ architecture avr {
         r24, r26, r28, r30
     };
 
+    operand ADR: register = {
+        x, y, z
+    };
+
+    // TODO: fix these immediate declarations!
+    operand IMM3: immediate = {
+        a, b
+    };
+
+    operand IMM5: immediate = {
+        a, b
+    };
+
+    operand IMM6: immediate = {
+        a, b
+    };
+
+    operand IMM7: immediate = {
+        a, b
+    };
+
+    operand IMM8: immediate = {
+        a, b
+    };
+
+    operand IMM8: immediate = {
+        a, b
+    };
+
+    operand SREL: immediate = {
+        a, b
+    };
+
+    operand LREL: immediate = {
+        a, b
+    };
+
+    operand PADDR: immediate = {
+        a, b
+    };
+
+    operand DADDR: immediate = {
+        a, b
+    };
+
+
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
-    inline subroutine performAddition(r1: int, r2: int, carry: int): int {
+    inline subroutine performAddition(r1: int, r2: int, carry: int): byte {
         local result: int = r1 + r2 + carry;
         local ral: int = r1[3:0];
         local rbl: int = r2[3:0];
@@ -74,10 +120,10 @@ architecture avr {
         V = (Rd7 and Rr7 and !R7) or (!Rd7 and !Rr7 and R7);
         S = N xor V;
 
-        return result;
+        return low(result);
     };
 
-    inline subroutine performSubtraction(r1: int, r2: int, carry: int): int {
+    inline subroutine performSubtraction(r1: int, r2: int, carry: int): byte {
         local result: int = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
@@ -95,11 +141,11 @@ architecture avr {
         V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
         S = N xor V;
 
-        return result;
+        return low(result);
     };
 
     // perform subtraction, but preserve zero flag if result is zero
-    inline subroutine performSubtractionPZ(r1: int, r2: int, carry: int): int {
+    inline subroutine performSubtractionPZ(r1: int, r2: int, carry: int): byte {
         local result: int = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
@@ -117,10 +163,10 @@ architecture avr {
         V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
         S = N xor V;
 
-        return result;
+        return low(result);
     };
 
-    inline subroutine performLeftShift(r1: int, lowbit: boolean): int {
+    inline subroutine performLeftShift(r1: int, lowbit: boolean): byte {
         local result: int = r1 << 1;
         result[0] = lowbit;
 
@@ -131,12 +177,12 @@ architecture avr {
         V = N xor C;
         S = N xor V;
 
-        return result;
+        return low(result);
     };
 
-    inline subroutine performRightShift(r1: int, highbit: boolean): int {
+    inline subroutine performRightShift(r1: int, highbit: boolean): byte {
         local result: int = ((r1 & 0xff) >> 1);
-        if ( highbit ) result[7] = true;
+        result[7] = highbit;
 
         C = r1[0];
         N = highbit;
@@ -144,10 +190,10 @@ architecture avr {
         V = N xor C;
         S = N xor V;
 
-        return result;
+        return low(result);
     };
 
-    inline subroutine performOr(r1: int, r2: int): int {
+    inline subroutine performOr(r1: int, r2: int): byte {
         local result: int = r1 | r2;
 
         N = result[7];
@@ -155,10 +201,10 @@ architecture avr {
         V = false;
         S = N xor V;
 
-        return result;
+        return low(result);
     };
 
-    inline subroutine performAnd(r1: int, r2: int): int {
+    inline subroutine performAnd(r1: int, r2: int): byte {
         local result: int = r1 & r2;
 
         N = result[7];
@@ -166,7 +212,7 @@ architecture avr {
         V = false;
         S = N xor V;
 
-        return result;
+        return low(result);
     };
 
     inline subroutine relativeBranch(target: int): void {
@@ -211,7 +257,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr };
         cycles = 1;
         execute = {
-            $regs(rd) = low(performAddition($uregs(rd), $uregs(rr), C));
+            $regs(rd) = performAddition($uregs(rd), $uregs(rr), bit(C));
         };
     };
 
@@ -219,7 +265,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rr };
         cycles = 1;
         execute = {
-            $regs(rd) = low(performAddition($uregs(rd), $uregs(rr), 0));
+            $regs(rd) = performAddition($uregs(rd), $uregs(rr), 0);
         };
     };
 
@@ -254,7 +300,7 @@ architecture avr {
         encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = imm };
         cycles = 1;
         execute = {
-            $regs(rd) = low(performAnd($regs(rd), imm));
+            $regs(rd) = performAnd($regs(rd), imm);
         };
     };
 
@@ -263,7 +309,7 @@ architecture avr {
         cycles = 1;
         execute = {
             local r1: byte = $regs(rd);
-            $regs(rd) = low(performRightShift(r1, r1[7]));
+            $regs(rd) = performRightShift(r1, r1[7]);
         };
     };
 
@@ -489,7 +535,7 @@ architecture avr {
         encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = ~imm };
         cycles = 1;
         execute = {
-            $regs(rd) = low(performAnd($regs(rd), ~imm));
+            $regs(rd) = performAnd($regs(rd), ~imm);
         };
     };
 
@@ -600,7 +646,7 @@ architecture avr {
         cycles = 1;
         execute = {
             // perform subtraction for flag side effects.
-            performSubtraction($regs(rd), $regs(rr), C);
+            performSubtraction($regs(rd), $regs(rr), bit(C));
         };
     };
 
@@ -630,14 +676,14 @@ architecture avr {
         cycles = 1;
         execute = {
             local r1: int = $uregs(rd);
-            local result: int = r1 - 1;
+            local result: byte = low(r1 - 1);
 
             N = result[7];
-            Z = low(result) == 0;
+            Z = result == 0;
             V = r1 == 0x80;
             S = N xor V;
 
-            $regs(rd) = low(result);
+            $regs(rd) = result;
         };
     };
 
@@ -661,9 +707,9 @@ architecture avr {
         encoding = { 0b10010101, 0b11011000 };
         cycles = 3;
         execute = {
-            local addr: int = $wregs(Z);
+            local addr: int = $wregs(RZ);
             addr[23:16] = $ioregs(RAMPZ);
-            $regs(0) = $program(addr);
+            $regs(R0) = $program(addr);
         };
     };
 
@@ -672,7 +718,7 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b0110 };
         cycles = 3;
         execute = {
-            local addr: int = $wregs(Z);
+            local addr: int = $wregs(RZ);
             addr[23:16] = $ioregs(RAMPZ);
             $regs(rd) = $program(addr);
         };
@@ -683,10 +729,10 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b0111 };
         cycles = 3;
         execute = {
-            local addr: int = $wregs(Z);
+            local addr: int = $wregs(RZ);
             addr[23:16] = $ioregs(RAMPZ);
             $regs(rd) = $program(addr);
-            $wregs(Z) = addr + 1;
+            $wregs(RZ) = addr + 1;
         };
     };
 
@@ -694,14 +740,14 @@ architecture avr {
         encoding = GPR where { opcode = 0b001001, r1 = rd, r2 = rr };
         cycles = 1;
         execute = {
-            local result: int = $regs(rd) ^ $regs(rr);
+            local result: byte = low($regs(rd) ^ $regs(rr));
 
             N = result[7];
-            Z = low(result) == 0;
+            Z = result == 0;
             V = false;
             S = N xor V;
 
-            $regs(rd) = low(result);
+            $regs(rd) = result;
         };
     };
 
@@ -712,8 +758,8 @@ architecture avr {
             local result: int = ($uregs(rd) * $uregs(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            $regs(0) = low(result);
-            $regs(1) = high(result);
+            $regs(R0) = low(result);
+            $regs(R1) = high(result);
         };
     };
 
@@ -724,8 +770,8 @@ architecture avr {
             local result: int = ($regs(rd) * $regs(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            $regs(0) = low(result);
-            $regs(1) = high(result);
+            $regs(R0) = low(result);
+            $regs(R1) = high(result);
         };
     };
 
@@ -736,8 +782,8 @@ architecture avr {
             local result: int = ($regs(rd) * $uregs(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            $regs(0) = low(result);
-            $regs(1) = high(result);
+            $regs(R0) = low(result);
+            $regs(R1) = high(result);
         };
     };
 
@@ -746,7 +792,7 @@ architecture avr {
         cycles = 3;
         execute = {
             pushPC(nextPC);
-            nextPC = absolute($wregs(0));
+            nextPC = absolute($wregs(R0));
         };
     };
 
@@ -754,7 +800,7 @@ architecture avr {
         encoding = { 0b10010100, 0b00001001 };
         cycles = 2;
         execute = {
-            nextPC = absolute($wregs(0));
+            nextPC = absolute($wregs(R0));
         };
     };
 
@@ -771,14 +817,14 @@ architecture avr {
         cycles = 1;
         execute = {
             local r1: int = $uregs(rd);
-            local result: int = r1 + 1;
+            local result: byte = low(r1 + 1);
 
             N = result[7];
-            Z = low(result) == 0;
+            Z = result == 0;
             V = r1 == 0x7f;
             S = N xor V;
 
-            $regs(rd) = low(result);
+            $regs(rd) = result;
         };
     };
 
@@ -849,7 +895,7 @@ architecture avr {
         encoding = { 0b10010101, 0b11001000 };
         cycles = 3;
         execute = {
-            $regs(0) = $program($wregs(Z));
+            $regs(R0) = $program($wregs(RZ));
         };
     };
 
@@ -858,7 +904,7 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b0100 };
         cycles = 3;
         execute = {
-            $regs(rd) = $program($wregs(Z));
+            $regs(rd) = $program($wregs(RZ));
         };
     };
 
@@ -867,9 +913,9 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b0101 };
         cycles = 3;
         execute = {
-            local addr: int = $wregs(Z);
+            local addr: int = $wregs(RZ);
             $regs(rd) = $program(addr);
-            $wregs(Z) = addr + 1;
+            $wregs(RZ) = addr + 1;
         };
     };
 
@@ -877,7 +923,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rd };
         cycles = 1;
         execute = {
-            $regs(rd) = performLeftShift($regs(rd), 0);
+            $regs(rd) = performLeftShift($regs(rd), false);
         };
     };
 
@@ -885,7 +931,7 @@ architecture avr {
         encoding = { 0b1001010, rd[5:0], 0b0110 };
         cycles = 1;
         execute = {
-            $regs(rd) = performRightShift($regs(rd), 0);
+            $regs(rd) = performRightShift($regs(rd), false);
         };
     };
 
@@ -912,7 +958,7 @@ architecture avr {
             local result: int = $uregs(rd) * $uregs(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            $wregs(0) = result;
+            $wregs(R0) = result;
         };
     };
 
@@ -923,7 +969,7 @@ architecture avr {
             local result: int = $regs(rd) * $regs(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            $wregs(0) = result;
+            $wregs(R0) = result;
         };
     };
 
@@ -934,7 +980,7 @@ architecture avr {
             local result: int = $regs(rd) * $uregs(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            $wregs(0) = result;
+            $wregs(R0) = result;
         };
     };
 
@@ -1049,7 +1095,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b0000010, r1 = rd, r2 = rr };
         cycles = 1;
         execute = {
-            $regs(rd) = performSubtractionPZ($regs(rd), $regs(rr), C);
+            $regs(rd) = performSubtractionPZ($regs(rd), $regs(rr), bit(C));
         };
     };
 
@@ -1057,7 +1103,7 @@ architecture avr {
         encoding = HGPRIMM8 where { opcode = 0b0100, r1 = rd };
         cycles = 1;
         execute = {
-            $regs(rd) = performSubtractionPZ($regs(rd), imm, C);
+            $regs(rd) = performSubtractionPZ($regs(rd), imm, bit(C));
         };
     };
 
@@ -1077,7 +1123,7 @@ architecture avr {
         };
     };
 
-    instruction "sbis" imm1: IMM5, bit: IMM3 {
+    instruction "sbis" ior: IMM5, bit: IMM3 {
         encoding = { 0b10011011, ior[4:0], bit[2:0] };
         cycles = 1;
         execute = {
@@ -1205,7 +1251,7 @@ architecture avr {
         encoding = { 0b10010101, 0b10001000 };
         cycles = 1;
         execute = {
-            enterSleepMode();
+            sleeping = true;
         };
     };
 
@@ -1289,7 +1335,7 @@ architecture avr {
             local result: int = 0;
             result[3:0] = val[7:4];
             result[7:4] = val[3:0];
-            $regs(rd) = result;
+            $regs(rd) = low(result);
         };
     };
 

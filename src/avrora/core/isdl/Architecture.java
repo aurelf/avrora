@@ -83,6 +83,16 @@ public class Architecture {
                 dd.setParent(parent);
             }
 
+            // find operand decl
+            Iterator oi = id.getOperandIterator();
+            while ( oi.hasNext() ) {
+                CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
+                OperandDecl opdec = getOperandDecl(od.type.image);
+                if ( opdec == null )
+                    throw Avrora.failure("operand type undefined "+StringUtil.quote(od.type.image));
+                od.setOperandType(opdec);
+            }
+
             if ( printer.enabled ) {
                 new PrettyPrinter(printer).visitStmtList(code);
             }
@@ -136,6 +146,10 @@ public class Architecture {
 
     public SubroutineDecl getSubroutine(String name) {
         return (SubroutineDecl)subroutineMap.get(name);
+    }
+
+    public OperandDecl getOperandDecl(String name) {
+        return (OperandDecl)operandMap.get(name);
     }
 
 
@@ -301,6 +315,7 @@ public class Architecture {
 
         protected String varName(String n) {
             String nn = (String)varMap.get(n);
+            if ( nn == null && parent != null) nn = parent.varName(n);
             if ( nn == null ) return n;
             return nn;
         }
