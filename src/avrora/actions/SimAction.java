@@ -92,7 +92,7 @@ public abstract class SimAction extends Action {
             "event times in the simulation.");
     public final Option.Str VISUAL = newOption("visual", "",
             "This optiobn enables visual representation of the network. For example " +
-            "topology, packet transmission, packet recption, energy " +
+            "topology, packet transmission, packet reception, energy " +
             "information and more. Syntax is ip address or host name and " +
             "port: 134.2.11.183:2379 \n(Status: experimental)");
 

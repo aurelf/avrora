@@ -1,0 +1,15 @@
+# @Harness: probes
+# @Result: 
+# @Program: simple.asm
+# @Purpose: this tests the operation of the low-level probing infrastructure
+
+probe A { | }
+probe B { | }
+watch C { | | | }
+event E { }
+
+main {
+  insert A 0x010;
+  insert B 0x012;
+  run;
+}

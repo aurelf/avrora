@@ -30,39 +30,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.test;
+
+import avrora.Main;
+import avrora.Avrora;
+import avrora.test.probes.ProbeParser;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
+import avrora.syntax.Module;
+
+import java.util.Properties;
+import java.io.FileInputStream;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the
+ * <code>avrora.test.AutomatedTester</code> in order to automate testing of the AVR parser and simulator.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class ProbeTestHarness implements TestHarness {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    class ProbeTest extends TestCase {
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
+        Module module;
+        Program program;
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 2;
+        ProbeTest(String fname, Properties props) throws Exception {
+            super(fname, props);
 
-    public static Version getVersion() {
-        return new Version();
+            ProbeParser p = new ProbeParser(new FileInputStream(fname));
+            p.ProbeTest();
+        }
+
+        public void run() throws Exception {
+            throw Avrora.unimplemented();
+        }
     }
 
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public TestCase newTestCase(String fname, Properties props) throws Exception {
+        return new ProbeTest(fname, props);
     }
+
 }
