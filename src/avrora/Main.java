@@ -440,7 +440,7 @@ public class Main {
     /**
      * The <code>readProgram()</code> method reads a program from the
      * command line arguments given the format specified at the command line.
-     * It will also process the indirect call edge information and add
+     * It will also process the indirect-call edge information and add
      * it to the <code>Program</code> instance returned. This method is
      * primarily used by actions that manipulate programs.
      * @param args an array of strings representing command line arguments with
