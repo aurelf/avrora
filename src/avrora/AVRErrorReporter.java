@@ -73,9 +73,9 @@ public class AVRErrorReporter extends ErrorReporter {
         error(report, "UnknownVariable", name.image, point(name));
     }
 
-    public void DataCannotBeInSegment(ExprList l) {
-        String report = "initialized data cannot be in data cseg";
-        error(report, "DataCannotBeInSegment", point(l));
+    public void DataCannotBeInSegment(String seg, ASTNode loc) {
+        String report = "initialized data cannot be in "+seg+" segment";
+        error(report, "DataCannotBeInSegment", seg, point(loc));
     }
 
     public void IncludeFileNotFound(AbstractToken tok) {

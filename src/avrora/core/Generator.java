@@ -178,7 +178,8 @@ public class Generator {
     static Operand IMM8 = new Operand("int", "IMM8");
     static Operand SREL = new RelOperand("int", "SREL");
     static Operand LREL = new RelOperand("int", "LREL");
-    static Operand MEM = new Operand("int", "MEM");
+    static Operand DADDR = new Operand("int", "DADDR");
+    static Operand PADDR = new Operand("int", "PADDR");
 
     static ParamTypes GPR_GPR = new ParamTypes("REGREG_class", GPR, GPR);
     static ParamTypes MGPR_MGPR = new ParamTypes("REGREG_class", MGPR, MGPR);
@@ -186,7 +187,7 @@ public class Generator {
     static ParamTypes HGPR_HGPR = new ParamTypes("REGREG_class", HGPR, HGPR);
     static ParamTypes HGPR_IMM8 = new ParamTypes("REGIMM_class", HGPR, IMM8);
     static ParamTypes RDL_IMM6 = new ParamTypes("REGIMM_class", RDL, IMM6);
-    static ParamTypes GPR_MEM = new ParamTypes("REGIMM_class", GPR, MEM);
+    static ParamTypes GPR_DADDR = new ParamTypes("REGIMM_class", GPR, DADDR);
     static ParamTypes NONE = new ParamTypes("NONE_class");
     static ParamTypes GPR_ = new ParamTypes("REG_class", GPR);
     static ParamTypes GPR_IMM3 = new ParamTypes("REGIMM_class", GPR, IMM3);
@@ -200,10 +201,10 @@ public class Generator {
     static ParamTypes IMM3_ = new ParamTypes("IMM_class", IMM3);
     static ParamTypes IMM3_SREL = new ParamTypes("IMMIMM_class", IMM3, SREL); // fixme ??
     static ParamTypes SREL_ = new ParamTypes("IMM_class", SREL); // fixme ??
-    static ParamTypes MEM_ = new ParamTypes("IMM_class", MEM); // fixme ??
+    static ParamTypes PADDR_ = new ParamTypes("IMM_class", PADDR); // fixme ??
     static ParamTypes LREL_ = new ParamTypes("IMM_class", LREL); // fixme ??
 
-    static ParamTypes MEM_GPR = new ParamTypes("IMMREG_class", MEM, GPR);
+    static ParamTypes DADDR_GPR = new ParamTypes("IMMREG_class", DADDR, GPR);
     static ParamTypes IMM6_GPR = new ParamTypes("IMMREG_class", IMM6, GPR);
 
     private static List list;
@@ -247,7 +248,7 @@ public class Generator {
         instr2("brvs", SREL_, _1cyc, "branch if V flag is set");
         instr2("bset", IMM3_, _1cyc, "set flag in status register");
         instr2("bst", GPR_IMM3, _1cyc, "store bit in register into T flag");
-        instr4("call", MEM_, _4cyc, "call absolute address");
+        instr4("call", PADDR_, _4cyc, "call absolute address");
         instr2("cbi", IMM5_IMM3, _2cyc, "clear bit in IO register");
         instr2("cbr", HGPR_IMM8, _1cyc, "clear bits in register");
         instr2("clc", NONE, _1cyc, "clear C flag");
@@ -278,13 +279,13 @@ public class Generator {
         instr2("ijmp", NONE, _2cyc, "indirect jump through Z register");
         instr2("in", GPR_IMM6, _1cyc, "read from IO register into register");
         instr2("inc", GPR_, _1cyc, "increment register by one");
-        instr4("jmp", MEM_, _3cyc, "absolute jump");
+        instr4("jmp", PADDR_, _3cyc, "absolute jump");
         instr2("ld", "ld", GPR_ADR, _2cyc, "load from SRAM");
         instr2("ldd", GPR_YZ_IMM6, _2cyc, "load from SRAM with displacement");
         instr2("ldi", HGPR_IMM8, _1cyc, "load immediate into register");
         instr2("ldpd", "ld", GPR_ADR, _2cyc, "load from SRAM with pre-decrement"); // variant
         instr2("ldpi", "ld", GPR_ADR, _2cyc, "load from SRAM with post-increment"); // variant
-        instr4("lds", GPR_MEM, _2cyc, "load direct from SRAM");
+        instr4("lds", GPR_DADDR, _2cyc, "load direct from SRAM");
         instr2("lpm", NONE, _3cyc, "load program memory into r0");
         instr2("lpmd", "lpm", GPR_Z, _3cyc, "load program memory into register"); // variant
         instr2("lpmpi", "lpm", GPR_Z, _3cyc, "load program memory into register and post-increment"); // variant
@@ -332,7 +333,7 @@ public class Generator {
         instr2("std", YZ_IMM6_GPR, _2cyc, "store from register to SRAM with displacement");
         instr2("stpd", "st", ADR_GPR, _2cyc, "store from register to SRAM with pre-decrement"); // variant
         instr2("stpi", "st", ADR_GPR, _2cyc, "store from register to SRAM with post-increment"); // variant
-        instr4("sts", MEM_GPR, _2cyc, "store direct to SRAM");
+        instr4("sts", DADDR_GPR, _2cyc, "store direct to SRAM");
         instr2("sub", GPR_GPR, _1cyc, "subtract register from register");
         instr2("subi", HGPR_IMM8, _1cyc, "subtract immediate from register");
         instr2("swap", GPR_, _1cyc, "swap nibbles in register");

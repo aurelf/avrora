@@ -16,6 +16,9 @@ import avrora.core.Operand;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
 
 /**
  * The <code>Module</code> class collects together the instructions and data
@@ -30,235 +33,69 @@ public class Module implements Context {
     public final HashMap labels;
     public final AVRErrorReporter ERROR;
 
-    private Segment segment;
-    private ProgramSegment programSegment;
-    private DataSegment dataSegment;
-    private EEPROMSegment eepromSegment;
+    public final boolean caseSensitivity;
+    public final boolean useByteAddresses;
+
+    private Seg segment;
+    private Seg programSegment;
+    private Seg dataSegment;
+    private Seg eepromSegment;
 
     public Program newprogram;
 
-    private Item head;
-    private Item tail;
+    private List itemList;
 
     static Verbose.Printer modulePrinter = Verbose.getVerbosePrinter("module");
 
-    // TODO: this is not managed correctly in all cases
-    public int currentAddress;
     private static final SyntacticOperand[] NO_OPERANDS = {};
 
-    /**
-     * I T E M   C L A S S E S
-     * --------------------------------------------------------
-     * <p/>
-     * These item classes represent the various parts of the assembly
-     * file that are recorded in the module.
-     */
-    private abstract class Item {
 
-        private Item next;
-
-        abstract void build();
-
-        Segment getSegment() {
-            if (next != null) return next.getSegment();
-            throw Avrora.failure("unknown cseg");
-        }
-
-    }
-
-    private class EquItem extends Item {
-        private final AbstractToken name;
-        private final Expr value;
-
-        EquItem(AbstractToken n, Expr v) {
-            name = n;
-            value = v;
-        }
-
-        void build() {
-            int result = value.evaluate(Module.this);
-            constants.put(name.image.toLowerCase(), new Integer(result));
-        }
-
-        public String toString() {
-            return ".equ " + name;
-        }
-    }
-
-    private class DefItem extends Item {
-        private final AbstractToken name;
-        private final AbstractToken register;
-
-        DefItem(AbstractToken n, AbstractToken r) {
-            name = n;
-            register = r;
-        }
-
-        void build() {
-            Register reg = Register.getRegisterByName(register.image);
-            if (reg == null) ERROR.UnknownRegister(register);
-            definitions.put(name.image.toLowerCase(), reg);
-        }
-
-        public String toString() {
-            return ".def " + name + " = " + register;
-        }
-    }
-
-    private abstract class AddressableItem extends Item {
-        protected Segment cseg;
-        protected int address;
-
-        AddressableItem(Segment s, int addr) {
-            cseg = s;
-            address = addr;
-        }
-
-        Segment getSegment() {
-            return cseg;
-        }
-
-        int getAddress() {
-            // the program cseg is word-addressable.
-            if (cseg == programSegment)
-                return address >> 1;
-            return address;
-        }
-
-        int getByteAddress() {
-            return address;
-        }
-    }
-
-    private class InstrItem extends AddressableItem {
-        private final String variant;
-        private final AbstractToken name;
-        private final SyntacticOperand[] operands;
-        private final InstrPrototype proto;
-
-        InstrItem(Segment s, int a, String v, AbstractToken n, InstrPrototype p, SyntacticOperand[] ops) {
-            super(s, a);
-            variant = v;
-            name = n;
-            operands = ops;
-            proto = p;
-        }
-
-        void build() {
-            int address = getAddress();
-
-            for (int cntr = 0; cntr < operands.length; cntr++)
-                operands[cntr].simplify(Module.this);
-
-            try {
-                Instr instr = proto.build(address, operands);
-
-                newprogram.writeInstr(instr, getByteAddress());
-
-            } catch (Instr.ImmediateRequired e) {
-                ERROR.ConstantExpected((SyntacticOperand)e.operand);
-            } catch (Instr.InvalidImmediate e) {
-                ERROR.ConstantOutOfRange(operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
-            } catch (Instr.InvalidRegister e) {
-                ERROR.IncorrectRegister(operands[e.number - 1], e.register, e.set.toString());
-            } catch (Instr.RegisterRequired e) {
-                ERROR.RegisterExpected((SyntacticOperand)e.operand);
-            } catch (Instr.WrongNumberOfOperands e) {
-                ERROR.WrongNumberOfOperands(name, e.found, e.expected);
-            }
-        }
-
-        public String toString() {
-            return "instr: " + variant + " @ " + address;
-        }
-    }
-
-    private class LabelItem extends AddressableItem {
-        private final AbstractToken name;
-
-        LabelItem(Segment s, int a, AbstractToken n) {
-            super(s, a);
-            name = n;
-        }
-
-        void build() {
-            if (cseg == programSegment)
-                newprogram.newProgramLabel(name.image, getAddress());
-            if (cseg == dataSegment)
-                newprogram.newDataLabel(name.image, getAddress());
-            if (cseg == eepromSegment)
-                newprogram.newEEPromLabel(name.image, getAddress());
-        }
-
-        public String toString() {
-            return "label: " + name + " in " + cseg.getName() + " @ " + address;
-        }
-    }
-
-    private class DataItem extends AddressableItem {
-
-        private final ExprList list;
-        private final int width;
-
-        DataItem(Segment s, int a, ExprList l, int w) {
-            super(s, a);
-            list = l;
-            width = w;
-        }
-
-        void build() {
-            int cursor = getByteAddress();
-
-            for (ExprList.ExprItem item = list.head; item != null; item = item.next) {
-                Expr e = item.expr;
-                if (e instanceof Expr.StringLiteral) {
-                    String str = ((Expr.StringLiteral) e).value;
-                    cseg.writeBytes(str.getBytes(), cursor);
-                    cursor = align(cursor, width);
-                } else {
-                    currentAddress = cursor;
-                    int val = e.evaluate(Module.this);
-                    for (int cntr = 0; cntr < width; cntr++) {
-                        cseg.writeByte((byte) val, cursor);
-                        val = val >> 8;
-                        cursor++;
-                    }
-                }
-            }
-        }
-
-        public String toString() {
-            return "data @ " + getByteAddress() + " to " + cseg.getName();
-        }
-    }
-
-    private class ReserveItem extends AddressableItem {
-        private final int length;
-
-        ReserveItem(Segment s, int a, int l) {
-            super(s, a);
-            length = l;
-        }
-
-        void build() {
-            // nothing to build with a reserve item
-        }
-
-        public String toString() {
-            return "reserve " + length + " in " + cseg.getName();
-        }
-    }
-
-    private abstract class Segment {
+    class Seg {
+        private final String name;
+        private final boolean acceptsInstrs;
+        private final boolean acceptsData;
 
         int lowest_address;
         int highest_address;
 
         int origin;
         int cursor;
+        final int align;
 
-        Segment(int org) {
-            lowest_address = highest_address = origin = cursor = org;
+        Seg(String n, int a, int o, boolean i, boolean d) {
+            name = n;
+            acceptsInstrs = i;
+            acceptsData = d;
+            align = a;
+            origin = lowest_address = highest_address = cursor = o;
+        }
+
+        public Module getModule() {
+            return Module.this;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void writeDataBytes(ASTNode loc, int baddr, byte[] b) {
+            if ( !acceptsData ) ERROR.DataCannotBeInSegment(name, loc);
+            else  newprogram.writeProgramBytes(b, baddr);
+        }
+        public void writeDataByte(ASTNode loc, int baddr, byte b) {
+            if ( !acceptsData ) ERROR.DataCannotBeInSegment(name, loc);
+            else  newprogram.writeProgramByte(b, baddr);
+        }
+
+        public void writeInstr(AbstractToken loc, int baddr, Instr i) {
+            if ( !acceptsInstrs ) ERROR.InstructionCannotBeInSegment(name, loc);
+            else newprogram.writeInstr(i, baddr);
+        }
+
+        public void addLabel(int baddr, String labelname) {
+            if ( name.equals("program")) newprogram.newProgramLabel(labelname, baddr);
+            if ( name.equals("eeprom")) newprogram.newEEPromLabel(labelname, baddr);
+            if ( name.equals("data")) newprogram.newDataLabel(labelname, baddr);
         }
 
         void setOrigin(int org) {
@@ -267,173 +104,231 @@ public class Module implements Context {
             if (org > highest_address) highest_address = org;
         }
 
-        Item addInstruction(String variant, AbstractToken name, SyntacticOperand[] ops) {
-            InstrPrototype p = InstructionSet.getPrototype(variant);
-            if (p == null) ERROR.UnknownInstruction(name);
-            InstrItem i = new InstrItem(this, cursor, variant, name, p, ops);
-            advance(p.getSize());
-            return i;
-        }
-
-        Item addBytes(ExprList l) {
-            Item i = new DataItem(this, cursor, l, 1);
-            addListSize(l, 1);
-            return i;
-        }
-
-        Item addWords(ExprList l) {
-            Item i = new DataItem(this, cursor, l, 2);
-            addListSize(l, 2);
-            return i;
-        }
-
-        Item addDoubleWords(ExprList l) {
-            Item i = new DataItem(this, cursor, l, 4);
-            addListSize(l, 4);
-            return i;
-        }
-
-        private void addListSize(ExprList l, int itemsize) {
-            int total = 0;
-
-            for (ExprList.ExprItem ei = l.head; ei != null; ei = ei.next) {
-                Expr e = ei.expr;
-                if (e instanceof Expr.StringLiteral) {
-                    total += ((Expr.StringLiteral) e).value.length();
-                    total = align(total, itemsize);
-                } else
-                    total += itemsize;
-
-            }
-
-            advance(total);
-        }
-
-        Item reserveBytes(int count) {
-            Item i = new ReserveItem(this, cursor, count);
-            advance(count);
-            return i;
-        }
-
-        void advance(int dist) {
-            cursor += dist;
-            if (cursor > highest_address) highest_address = cursor;
-        }
-
-        int getCurrentPosition() {
+        int getCurrentAddress() {
             return cursor;
         }
 
-        abstract String getName();
-
-        abstract void writeByte(byte val, int address);
-
-        abstract void writeBytes(byte[] val, int address);
-    }
-
-    private class ProgramSegment extends Segment {
-        ProgramSegment() {
-            super(0);
-        }
-
         void advance(int dist) {
-            cursor = align(cursor + dist, 2);
-            if (cursor > highest_address) highest_address = cursor;
-        }
-
-        void writeByte(byte val, int address) {
-            newprogram.writeProgramByte(val, address);
-        }
-
-        void writeBytes(byte[] val, int address) {
-            newprogram.writeProgramBytes(val, address);
-        }
-
-        String getName() {
-            return "program";
+            cursor = align(cursor + dist, align);
+            if ( cursor > highest_address ) highest_address = cursor;
         }
     }
 
-    private class DataSegment extends Segment {
-        DataSegment() {
-            super(32);
-        }
 
-        Item addInstruction(String variant, AbstractToken name, SyntacticOperand[] ops) {
-            ERROR.InstructionCannotBeInSegment("data", name);
-            throw Avrora.failure("instruction cannot be in data cseg");
-        }
+    public Module(boolean cs, boolean ba) {
+        caseSensitivity = cs;
+        useByteAddresses = ba;
 
-        Item addBytes(ExprList l) {
-            ERROR.DataCannotBeInSegment(l);
-            throw Avrora.failure("initialized data cannot be in data cseg");
-        }
-
-        Item addWords(ExprList l) {
-            ERROR.DataCannotBeInSegment(l);
-            throw Avrora.failure("initialized data cannot be in data cseg");
-        }
-
-        Item addDoubleWords(ExprList l) {
-            ERROR.DataCannotBeInSegment(l);
-            throw Avrora.failure("initialized data cannot be in data cseg");
-        }
-
-        void writeByte(byte val, int address) {
-            // TODO: define correct error for this.
-            throw Avrora.failure("cannot write initialized data into data segment @ " + address);
-        }
-
-        void writeBytes(byte[] val, int address) {
-            // TODO: define correct error for this.
-            throw Avrora.failure("cannot write initialized data into data segment @ " + address);
-        }
-
-        String getName() {
-            return "data";
-        }
-    }
-
-    private class EEPROMSegment extends Segment {
-        EEPROMSegment() {
-            super(0);
-        }
-
-        Item addInstruction(String variant, AbstractToken name, SyntacticOperand[] ops) {
-            ERROR.InstructionCannotBeInSegment("eeprom", name);
-            throw Avrora.failure("instruction cannot be in eeprom cseg");
-        }
-
-        void writeByte(byte val, int address) {
-            // TODO: define correct error for this.
-            throw Avrora.failure("cannot write initialized data into eeprom segment @ " + address);
-        }
-
-        void writeBytes(byte[] val, int address) {
-            // TODO: define correct error for this.
-            throw Avrora.failure("cannot write initialized data into eeprom segment @ " + address);
-        }
-
-        String getName() {
-            return "eeprom";
-        }
-    }
-
-    public Module() {
         definitions = new HashMap();
         constants = new HashMap();
         labels = new HashMap();
 
-        programSegment = new ProgramSegment();
-        dataSegment = new DataSegment();
-        eepromSegment = new EEPROMSegment();
+        programSegment = new Seg("program", 2, 0, true, true);
+        dataSegment = new Seg("data", 1, 32, false, false);
+        eepromSegment = new Seg("eeprom", 1, 0, false, false);
 
         segment = programSegment;
+        itemList = new LinkedList();
 
         addGlobalConstants();
 
         ERROR = new AVRErrorReporter();
     }
+
+
+    // .def directive
+    public void addDefinition(AbstractToken name, AbstractToken rtok) {
+        modulePrinter.println(".def "+labelName(name)+" = "+labelName(rtok));
+        addItem(new Item.RegisterAlias(segment, name, rtok));
+    }
+
+    // .equ directive
+    public void addConstant(AbstractToken name, Expr val) {
+        modulePrinter.println(".equ "+labelName(name)+" = "+val);
+        addItem(new Item.NamedConstant(segment, name, val));
+    }
+
+    // .dseg directive
+    public void enterDataSegment() {
+        modulePrinter.println("enter segment: data");
+        segment = dataSegment;
+    }
+
+    // .cseg directive
+    public void enterProgramSegment() {
+        modulePrinter.println("enter segment: program");
+        segment = programSegment;
+    }
+
+    // .eseg directive
+    public void enterEEPROMSegment() {
+        modulePrinter.println("enter segment: eeprom");
+        segment = eepromSegment;
+    }
+
+    // .db directive
+    public void addDataBytes(ExprList l) {
+        modulePrinter.println("addDataBytes");
+        addItem(new Item.InitializedData(segment, l, 1));
+    }
+
+    // .dw directive
+    public void addDataWords(ExprList l) {
+        modulePrinter.println("addDataWords");
+        addItem(new Item.InitializedData(segment, l, 2));
+    }
+
+    // .dd directive
+    public void addDataDoubleWords(ExprList l) {
+        modulePrinter.println("addDataDoubleWords");
+        addItem(new Item.InitializedData(segment, l, 4));
+    }
+
+    // .org directive
+    public void setOrigin(Expr.Constant c) {
+        int result = c.evaluate(segment.getCurrentAddress(), this);
+        modulePrinter.println("setOrigin("+c+") -> "+result);
+        segment.setOrigin(result);
+    }
+
+    // .byte directive
+    public void reserveBytes(Expr e, Expr f) {
+        // TODO: fill section with particular value
+        int result = e.evaluate(segment.getCurrentAddress(), this);
+        modulePrinter.println("reserveBytes("+e+") -> "+result);
+        addItem(new Item.UninitializedData(segment, result));
+    }
+
+    // .include directive
+    public void includeFile(AbstractToken fname) throws AbstractParseException {
+        try {
+            modulePrinter.println("includeFile("+fname.image+")");
+            String fn = StringUtil.trimquotes(fname.image);
+            AtmelParser parser = new AtmelParser(new FileInputStream(fn), this, fn);
+            // TODO: handle infinite include recursion possibility
+            parser.Module();
+        } catch (FileNotFoundException e) {
+            ERROR.IncludeFileNotFound(fname);
+        }
+    }
+
+
+    // <instruction>
+    public void addInstruction(String variant, AbstractToken name) {
+        String v = StringUtil.quote(variant);
+        modulePrinter.println(StringUtil.embed("addInstr", v));
+        SyntacticOperand[] o = NO_OPERANDS;
+        makeInstr(variant, name, o);
+    }
+
+    // <instruction> <operand>
+    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1) {
+        String v = StringUtil.quote(variant);
+        modulePrinter.println(StringUtil.embed("addInstr", v, o1));
+        SyntacticOperand[] o = {o1};
+        makeInstr(variant, name, o);
+    }
+
+    // <instruction> <operand> <operand>
+    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2) {
+        String v = StringUtil.quote(variant);
+        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2));
+        SyntacticOperand[] o = {o1, o2};
+        makeInstr(variant, name, o);
+    }
+
+    // <instruction> <operand> <operand> <operand>
+    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2, SyntacticOperand o3) {
+        String v = StringUtil.quote(variant);
+        modulePrinter.println(StringUtil.embed("addInstr", v, o1, o2, o3));
+        SyntacticOperand[] o = {o1, o2, o3};
+        makeInstr(variant, name, o);
+    }
+
+    // <label>
+    public void addLabel(AbstractToken name) {
+        Item.Label li = new Item.Label(segment, name);
+        addItem(li);
+        labels.put(name.image.toLowerCase(), li);
+    }
+
+    private void makeInstr(String variant, AbstractToken name, SyntacticOperand[] o) {
+        InstrPrototype proto = InstructionSet.getPrototype(variant);
+        addItem(new Item.Instruction(segment, variant, name, proto, o));
+    }
+
+
+    public Program build() {
+        newprogram = new Program(programSegment.lowest_address, programSegment.highest_address,
+                dataSegment.lowest_address, dataSegment.highest_address,
+                eepromSegment.lowest_address, eepromSegment.highest_address);
+
+        Iterator i = itemList.iterator();
+        while (i.hasNext()) {
+            Item pos = (Item)i.next();
+            simplify(pos);
+        }
+
+        return newprogram;
+    }
+
+    private void simplify(Item i) {
+        i.simplify();
+    }
+
+    public void addVariable(String name, int value) {
+        constants.put(labelName(name), new Integer(value));
+    }
+
+    public void addRegisterName(String name, String reg) {
+        // TODO: error check for invalid register name
+        definitions.put(labelName(name), Register.getRegisterByName(reg));
+    }
+
+    public Register getRegister(AbstractToken tok) {
+        String name = labelName(tok);
+        Register reg = Register.getRegisterByName(name);
+        if (reg == null)
+            reg = (Register) definitions.get(name);
+
+        if (reg == null) ERROR.UnknownRegister(tok);
+        return reg;
+    }
+
+    public int getVariable(AbstractToken tok) {
+        String name = labelName(tok);
+
+        Integer v = (Integer) constants.get(name);
+        if (v == null) {
+            Item.Label li = (Item.Label) labels.get(name);
+            if (li == null) ERROR.UnknownVariable(tok);
+            if (li.segment == programSegment && !useByteAddresses )  return li.getByteAddress() >> 1;
+            else return li.getByteAddress();
+        } else
+            return v.intValue();
+    }
+
+    private void addItem(Item i) {
+        itemList.add(i);
+        segment.advance(i.itemSize());
+    }
+
+    public static int align(int val, int width) {
+        if (val % width == 0) return val;
+        return val + (width - (val % width));
+    }
+
+    private String labelName(AbstractToken tok) {
+        if ( caseSensitivity ) return tok.image;
+        else return tok.image.toLowerCase();
+    }
+
+    private String labelName(String n) {
+        if ( caseSensitivity ) return n;
+        else return n.toLowerCase();
+    }
+
+
 
     private void addGlobalConstants() {
         // TODO: pull out machine-specific constants to somewhere.
@@ -556,8 +451,6 @@ public class Module implements Context {
         ioreg("DDRE", 0x02);
         ioreg("PINE", 0x01);
         ioreg("PINF", 0x00);
-
-
     }
 
     private void constant(String name, int value) {
@@ -566,153 +459,6 @@ public class Module implements Context {
 
     private void ioreg(String name, int offset) {
         constants.put(name.toLowerCase(), new Integer(offset));
-    }
-
-    // .def directive
-    public void addDefinition(AbstractToken name, AbstractToken rtok) {
-        addItem(new DefItem(name, rtok));
-    }
-
-    // .equ directive
-    public void addConstant(AbstractToken name, Expr val) {
-        addItem(new EquItem(name, val));
-    }
-
-    // .dseg directive
-    public void enterDataSegment() {
-        segment = dataSegment;
-    }
-
-    // .cseg directive
-    public void enterProgramSegment() {
-        segment = programSegment;
-    }
-
-    // .eseg directive
-    public void enterEEPROMSegment() {
-        segment = eepromSegment;
-    }
-
-    // .db directive
-    public void addDataBytes(ExprList l) {
-        addItem(segment.addBytes(l));
-    }
-
-    // .dw directive
-    public void addDataWords(ExprList l) {
-        addItem(segment.addWords(l));
-    }
-
-    // .dd directive
-    public void addDataDoubleWords(ExprList l) {
-        addItem(segment.addDoubleWords(l));
-    }
-
-    // .org directive
-    public void setOrigin(Expr.Constant c) {
-        segment.setOrigin(c.evaluate(this));
-    }
-
-    // .byte directive
-    public void reserveBytes(Expr e, Expr f) {
-        // TODO: fill section with particular value
-        segment.reserveBytes(e.evaluate(this));
-    }
-
-    // .include directive
-    public void includeFile(AbstractToken fname) throws AbstractParseException {
-        try {
-            String fn = StringUtil.trimquotes(fname.image);
-            AtmelParser parser = new AtmelParser(new FileInputStream(fn), this, fn);
-            // TODO: handle infinite include recursion possibility
-            parser.Module();
-        } catch (FileNotFoundException e) {
-            ERROR.IncludeFileNotFound(fname);
-        }
-    }
-
-
-    // <instruction>
-    public void addInstruction(String variant, AbstractToken name) {
-        SyntacticOperand[] o = NO_OPERANDS;
-        addItem(segment.addInstruction(variant, name, o));
-    }
-
-    // <instruction> <operand>
-    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1) {
-        SyntacticOperand[] o = {o1};
-        addItem(segment.addInstruction(variant, name, o));
-    }
-
-    // <instruction> <operand> <operand>
-    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2) {
-        SyntacticOperand[] o = {o1, o2};
-        addItem(segment.addInstruction(variant, name, o));
-    }
-
-    // <instruction> <operand> <operand> <operand>
-    public void addInstruction(String variant, AbstractToken name, SyntacticOperand o1, SyntacticOperand o2, SyntacticOperand o3) {
-        SyntacticOperand[] o = {o1, o2, o3};
-        addItem(segment.addInstruction(variant, name, o));
-    }
-
-    // <label>
-    public void addLabel(AbstractToken name) {
-        LabelItem li = new LabelItem(segment, segment.getCurrentPosition(), name);
-        addItem(li);
-        labels.put(name.image.toLowerCase(), li);
-    }
-
-    public Program build() {
-        newprogram = new Program(programSegment.lowest_address, programSegment.highest_address,
-                dataSegment.lowest_address, dataSegment.highest_address,
-                eepromSegment.lowest_address, eepromSegment.highest_address);
-
-        for (Item pos = head; pos != null; pos = pos.next) {
-            pos.build();
-        }
-
-        return newprogram;
-    }
-
-
-    public Register getRegister(AbstractToken tok) {
-        String name = tok.image.toLowerCase();
-        Register reg = Register.getRegisterByName(name);
-        if (reg == null)
-            reg = (Register) definitions.get(name);
-
-        if (reg == null) ERROR.UnknownRegister(tok);
-        return reg;
-    }
-
-    public int getVariable(AbstractToken tok) {
-        String name = tok.image.toLowerCase();
-
-        Integer v = (Integer) constants.get(name);
-        if (v == null) {
-            LabelItem li = (LabelItem) labels.get(name);
-            if (li == null) ERROR.UnknownVariable(tok);
-            return li.getAddress();
-        } else
-            return v.intValue();
-    }
-
-    public int getCurrentAddress() {
-        return currentAddress;
-    }
-
-    private void addItem(Item i) {
-        if (head == null)
-            head = i;
-        else
-            tail.next = i;
-        tail = i;
-    }
-
-    public static int align(int val, int width) {
-        if (val % width == 0) return val;
-        return val + (width - (val % width));
     }
 
 }

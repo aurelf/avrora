@@ -36,7 +36,7 @@ public class GASProgramReader extends Main.ProgramReader {
             Avrora.userError("input type \"gas\" accepts only one file at a time.");
 
         File f = new File(args[0]);
-        Module module = new Module();
+        Module module = new Module(true, true);
         FileInputStream fis = new FileInputStream(f);
         GASParser parser = new GASParser(fis, module, f.getName());
         parser.Module();

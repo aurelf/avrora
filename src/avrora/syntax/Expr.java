@@ -9,11 +9,7 @@ import avrora.syntax.AbstractToken;
  */
 public abstract class Expr extends ASTNode {
 
-    public abstract int evaluate(Context c);
-
-    public boolean isConstant() {
-        return false;
-    }
+    public abstract int evaluate(int currentByteAddress, Context c);
 
     private static int asInt(boolean b) {
         return b ? 1 : 0;
@@ -34,9 +30,9 @@ public abstract class Expr extends ASTNode {
             right = r;
         }
 
-        public int evaluate(Context c) {
-            int lval = left.evaluate(c);
-            int rval = right.evaluate(c);
+        public int evaluate(int currentByteAddress, Context c) {
+            int lval = left.evaluate(currentByteAddress, c);
+            int rval = right.evaluate(currentByteAddress, c);
             String o = op.image;
 
             // TODO: this is a bit ugly.
@@ -69,6 +65,10 @@ public abstract class Expr extends ASTNode {
             return right.getRightMostToken();
         }
 
+        public String toString() {
+            return StringUtil.embed(op.image, left, right);
+        }
+
     }
 
     public static class UnOp extends Expr {
@@ -80,8 +80,8 @@ public abstract class Expr extends ASTNode {
             operand = oper;
         }
 
-        public int evaluate(Context c) {
-            int oval = operand.evaluate(c);
+        public int evaluate(int currentByteAddress, Context c) {
+            int oval = operand.evaluate(currentByteAddress, c);
             String o = op.image;
 
             if (o.equals("!")) return asInt(!asBool(oval));
@@ -99,6 +99,9 @@ public abstract class Expr extends ASTNode {
             return operand.getRightMostToken();
         }
 
+        public String toString() {
+            return StringUtil.embed(op.image, operand);
+        }
     }
 
     public static class Func extends Expr {
@@ -112,8 +115,8 @@ public abstract class Expr extends ASTNode {
             last = l;
         }
 
-        public int evaluate(Context c) {
-            int aval = argument.evaluate(c);
+        public int evaluate(int currentByteAddress, Context c) {
+            int aval = argument.evaluate(currentByteAddress, c);
             String f = func.image;
 
             // TODO: verify correctness of these functions
@@ -167,6 +170,11 @@ public abstract class Expr extends ASTNode {
         public AbstractToken getRightMostToken() {
             return last;
         }
+
+        public String toString() {
+            return StringUtil.embed(func.image, argument);
+        }
+
     }
 
     public abstract static class Term extends Expr {
@@ -183,6 +191,10 @@ public abstract class Expr extends ASTNode {
         public AbstractToken getRightMostToken() {
             return token;
         }
+
+        public String toString() {
+            return token.image;
+        }
     }
 
     public static class Variable extends Term {
@@ -191,7 +203,7 @@ public abstract class Expr extends ASTNode {
             super(n);
         }
 
-        public int evaluate(Context c) {
+        public int evaluate(int currentByteAddress, Context c) {
             return c.getVariable(token);
         }
 
@@ -205,36 +217,8 @@ public abstract class Expr extends ASTNode {
             value = evaluateLiteral(tok.image);
         }
 
-        public int evaluate(Context c) {
+        public int evaluate(int currentByteAddress, Context c) {
             return value;
-        }
-
-        public boolean isConstant() {
-            return true;
-        }
-
-        private static int evaluateLiteral(String val) {
-            if (val.startsWith("$"))                          // hexadecimal
-                return Integer.parseInt(val.substring(1), 16);
-            else
-                return StringUtil.evaluateIntegerLiteral(val);
-        }
-    }
-
-    public static class HalfConstant extends Term {
-        public final int value;
-
-        public HalfConstant(AbstractToken tok) {
-            super(tok);
-            value = evaluateLiteral(tok.image) >> 1;
-        }
-
-        public int evaluate(Context c) {
-            return value;
-        }
-
-        public boolean isConstant() {
-            return true;
         }
 
         private static int evaluateLiteral(String val) {
@@ -253,13 +237,10 @@ public abstract class Expr extends ASTNode {
             value = StringUtil.evaluateCharLiteral(tok.image);
         }
 
-        public int evaluate(Context c) {
+        public int evaluate(int currentByteAddress, Context c) {
             return value;
         }
 
-        public boolean isConstant() {
-            return true;
-        }
     }
 
     public static class StringLiteral extends Term {
@@ -270,19 +251,37 @@ public abstract class Expr extends ASTNode {
             value = StringUtil.evaluateStringLiteral(tok.image);
         }
 
-        public int evaluate(Context c) {
+        public int evaluate(int currentByteAddress, Context c) {
             throw Avrora.failure("cannot evaluate a string to an integer");
         }
     }
 
-    public static class CurrentAddress extends Term {
+    public static class RelativeAddress extends Expr {
 
-        public CurrentAddress(AbstractToken tok) {
-            super(tok);
+        public final AbstractToken dot;
+        public final AbstractToken op;
+        public final AbstractToken num;
+
+        public RelativeAddress(AbstractToken d, AbstractToken o, AbstractToken n) {
+            dot = d;
+            op = o;
+            num = n;
         }
 
-        public int evaluate(Context c) {
-            return c.getCurrentAddress();
+        public AbstractToken getLeftMostToken() {
+            return dot;
+        }
+
+        public AbstractToken getRightMostToken() {
+            return num;
+        }
+
+        public String toString() {
+            return "." + op.image + num.image;
+        }
+
+        public int evaluate(int currentByteAddress, Context c) {
+            return currentByteAddress;
         }
     }
 

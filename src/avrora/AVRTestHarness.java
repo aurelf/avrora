@@ -39,13 +39,11 @@ public class AVRTestHarness implements TestHarness {
         }
 
         public void run() throws Exception {
-            FileInputStream fis = new FileInputStream(new File(filename));
-            Module module = new Module();
-            AtmelParser parser = new AtmelParser(fis, module, filename);
-
-            // let all exceptions fall through to AutomatedTester
-            parser.Module();
-            program = module.build();
+            String input = properties.getProperty("input");
+            if ( input == null ) input = "atmel";
+            Main.ProgramReader r = Main.getProgramReader(input);
+            String args[] = {filename};
+            program = r.read(args);
         }
     }
 
@@ -284,20 +282,18 @@ public class AVRTestHarness implements TestHarness {
         List predicates;
 
         SimulatorTest(String fname, Properties props) throws Exception {
-            super(fname);
+            super(fname, props);
             String result = StringUtil.trimquotes(props.getProperty("Result").trim());
             predicates = new LinkedList();
             parseResult(result);
         }
 
         public void run() throws Exception {
-            FileInputStream fis = new FileInputStream(new File(filename));
-            Module module = new Module();
-            AtmelParser parser = new AtmelParser(fis, module, filename);
-
-            // let all exceptions fall through to AutomatedTester
-            parser.Module();
-            program = module.build();
+            String input = properties.getProperty("input");
+            if ( input == null ) input = "atmel";
+            Main.ProgramReader r = Main.getProgramReader(input);
+            String args[] = {filename};
+            program = r.read(args);
             simulator = Main.getMicrocontroller().newMicrocontroller(program).getSimulator();
             simulator.start();
         }

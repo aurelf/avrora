@@ -600,7 +600,7 @@ void Label() : { Token tok; }
 
 SyntacticOperand.Expr Const() : { Expr e; }
 {
-  (LOOKAHEAD(Term() BinOp()) e = BinOpExpr() | e = Term() )
+  (LOOKAHEAD(".") e = RelExpr() | e = Term() )
   { return new SyntacticOperand.Expr(e); }
 }
 
@@ -609,17 +609,15 @@ Expr Term() : { Token tok; Expr e; }
   (
     tok = <IDENTIFIER> { e = new Expr.Variable(tok); }
   | tok = <INTEGER_LITERAL> { e = new Expr.Constant(tok); }
-  | tok = "." { e = new Expr.CurrentAddress(tok); }
   )
 
   { return e; }
 }
 
-Expr BinOpExpr() : { Token ltok; Token op; Token rtok; }
+Expr RelExpr() : { Token ltok; Token op; Token rtok; }
 {
  (ltok = "." op = BinOp() rtok = <INTEGER_LITERAL>)
- // note: objdump format gives this offset as a byte address, so divide by 2!!
- { return new Expr.BinOp(op, new Expr.CurrentAddress(ltok), new Expr.HalfConstant(rtok)); }
+ { return new Expr.RelativeAddress(ltok, op, rtok); }
 }
 
 Token BinOp() : { Token tok; }

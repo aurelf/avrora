@@ -13,9 +13,11 @@ import java.util.Properties;
 public abstract class TestCase {
 
     public final String filename;
+    protected final Properties properties;
 
-    public TestCase(String fname) {
+    public TestCase(String fname, Properties props) {
         filename = fname;
+        properties = props;
     }
 
 
@@ -44,7 +46,7 @@ public abstract class TestCase {
         String error;
 
         public ExpectCompilationError(String fname, Properties props) {
-            super(fname);
+            super(fname, props);
             String result = StringUtil.trimquotes(props.getProperty("Result"));
             if (result.equals("PASS"))
                 shouldPass = true;
@@ -89,7 +91,7 @@ public abstract class TestCase {
         final String error;
 
         public Malformed(String fname, String e) {
-            super(fname);
+            super(fname, null);
             error = e;
         }
 

@@ -266,6 +266,10 @@ public class Main {
         return (ProgramReader) inputs.get(INPUT.get());
     }
 
+    public static ProgramReader getProgramReader(String format) {
+        return (ProgramReader) inputs.get(format);
+    }
+
     public static void main(String[] args) {
         try {
             parseOptions(args);

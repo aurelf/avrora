@@ -133,9 +133,9 @@ public class Program {
         return program[address - program_start].asInstr(address);
     }
 
-    public void writeProgramByte(byte val, int address) {
-        checkAddress(address);
-        int offset = address - program_start;
+    public void writeProgramByte(byte val, int byteAddress) {
+        checkAddress(byteAddress);
+        int offset = byteAddress - program_start;
         writeByteInto(val, offset);
     }
 
@@ -153,28 +153,28 @@ public class Program {
         }
     }
 
-    public void writeProgramBytes(byte[] val, int address) {
-        checkAddress(address);
-        checkAddress(address + val.length - 1);
-        int offset = address - program_start;
+    public void writeProgramBytes(byte[] val, int byteAddress) {
+        checkAddress(byteAddress);
+        checkAddress(byteAddress + val.length - 1);
+        int offset = byteAddress - program_start;
         for (int cntr = 0; cntr < val.length; cntr++)
             writeByteInto(val[cntr], offset + cntr);
     }
 
-    public Label newProgramLabel(String name, int address) {
-        Label label = new ProgramLabel(name, address * 2);
+    public Label newProgramLabel(String name, int byteAddress) {
+        Label label = new ProgramLabel(name, byteAddress);
         labels.put(labelName(name), label);
         return label;
     }
 
-    public Label newDataLabel(String name, int address) {
-        Label label = new DataLabel(name, address);
+    public Label newDataLabel(String name, int byteAddress) {
+        Label label = new DataLabel(name, byteAddress);
         labels.put(labelName(name), label);
         return label;
     }
 
-    public Label newEEPromLabel(String name, int address) {
-        Label label = new EEPromLabel(name, address);
+    public Label newEEPromLabel(String name, int byteAddress) {
+        Label label = new EEPromLabel(name, byteAddress);
         labels.put(labelName(name), label);
         return label;
     }
