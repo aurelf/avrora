@@ -67,7 +67,7 @@ public class Avrora {
 
         public void report() {
             Terminal.print(Terminal.ERROR_COLOR, message);
-            Terminal.print(": " + param + "\n");
+            Terminal.print(": " + param + '\n');
             if (STACKTRACES) {
                 printStackTrace();
             }
@@ -85,7 +85,7 @@ public class Avrora {
 
         public void report() {
             Terminal.print(Terminal.ERROR_COLOR, "Avrora Internal Error");
-            Terminal.print(": " + param + "\n");
+            Terminal.print(": " + param + '\n');
             printStackTrace();
         }
     }

@@ -151,7 +151,7 @@ public class FreeSpaceAir implements RadioAir {
         //compute transmission range, incl. noise
         //first compute tranmission power in Watt
         double powerSet = (double)r.getPower();
-        double power = 0;
+        double power;
         //convert to dB (by linearization) and than to Watts
         //for linearization, we distinguish values less than 16
         //and higher ones. Probably a lookup table and Spline
@@ -218,7 +218,7 @@ public class FreeSpaceAir implements RadioAir {
         Simulator s = r.getSimulator();
         long t = s.getState().getCycles();
         RSSIWait w = new RSSIWait(s, t);
-        RSSIWait f = null;
+        RSSIWait f;
 
         // TODO: gross hack to handle the case of only one node
         if (!(Thread.currentThread() instanceof SimulatorThread))
@@ -241,7 +241,7 @@ public class FreeSpaceAir implements RadioAir {
             try {
                 synchronized (w) {
                     if (rssiPrinter.enabled) {
-                        rssiPrinter.println("RSSI: wait @ " + t + " " + w);
+                        rssiPrinter.println("RSSI: wait @ " + t + ' ' + w);
                     }
                     // check that no thread got to us in between giving up the global lock
                     if (w.shouldWait) w.wait();
@@ -251,7 +251,7 @@ public class FreeSpaceAir implements RadioAir {
             }
         }
 
-        int strength = 0x3ff;
+        int strength;
 
         // we just got woken up (or returned immediately from checkRSSIWaiters
         // this means we are now ready to proceed and compute our RSSI value.
@@ -356,7 +356,6 @@ public class FreeSpaceAir implements RadioAir {
          */
         private void scheduleDelivery() {
             Iterator it = radios.iterator();
-            long temp;
             while (it.hasNext()) {
                 Radio r = (Radio)it.next();
                 LocalAir pr = r.getLocalAir();

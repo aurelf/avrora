@@ -5,8 +5,6 @@ import avrora.syntax.*;
 
 public class GASParser extends AbstractParser implements GASParserConstants {
 
-    protected Module module;
-
     public GASParser(java.io.InputStream stream, Module m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
@@ -1006,7 +1004,7 @@ public class GASParser extends AbstractParser implements GASParserConstants {
         r1 = Register();
         jj_consume_token(156);
         r2 = Register();
-        module.addInstruction(t.image + "d", t, r1, r2);
+        module.addInstruction(t.image + 'd', t, r1, r2);
     }
 
     final public void InstrLPMGPRGPRP() throws ParseException {

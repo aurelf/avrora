@@ -126,7 +126,7 @@ public class VarBitRangeAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return variable.image + "[" + low_bit + ":" + high_bit + "] = " + expr + ";";
+        return variable.image + '[' + low_bit + ':' + high_bit + "] = " + expr + ';';
     }
 
     /**

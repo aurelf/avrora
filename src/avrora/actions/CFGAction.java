@@ -100,7 +100,7 @@ public class CFGAction extends Action {
         program = Main.readProgram(args);
         cfg = program.getCFG();
 
-        if (OUTPUT.get().equals("dot"))
+        if ("dot".equals(OUTPUT.get()))
             dumpDotCFG(cfg);
         else
             dumpCFG(cfg);
@@ -114,12 +114,12 @@ public class CFGAction extends Action {
             ControlFlowGraph.Block block = (ControlFlowGraph.Block)biter.next();
             Terminal.print("[");
             Terminal.printBrightCyan(StringUtil.addrToString(block.getAddress()));
-            Terminal.println(":" + block.getSize() + "]");
+            Terminal.println(":" + block.getSize() + ']');
             Iterator iiter = block.getInstrIterator();
             while (iiter.hasNext()) {
                 Instr instr = (Instr)iiter.next();
                 Terminal.printBrightBlue("    " + instr.getName());
-                Terminal.println(" " + instr.getOperands());
+                Terminal.println(' ' + instr.getOperands());
             }
             Terminal.print("    [");
             dumpEdges(block.getEdgeIterator());
@@ -130,7 +130,7 @@ public class CFGAction extends Action {
     private void dumpDotCFG(ControlFlowGraph cfg) throws java.io.IOException {
         String fname;
         Printer p;
-        if ((fname = FILE.get()).equals(""))
+        if ("".equals(fname = FILE.get()))
             p = Printer.STDOUT;
         else
             p = new Printer(new PrintStream(new FileOutputStream(fname)));
@@ -218,7 +218,7 @@ public class CFGAction extends Action {
         String shape = getShape(block);
         String color = getColor(block);
         p.print(bName + " [shape=" + shape);
-        if (!color.equals("")) p.print(",style=filled,fillcolor=" + color);
+        if (!"".equals(color)) p.print(",style=filled,fillcolor=" + color);
         p.println("];");
     }
 
@@ -269,7 +269,7 @@ public class CFGAction extends Action {
     }
 
     private boolean isReturnEdge(String type) {
-        return type != null && (type.equals("RET") || type.equals("RETI"));
+        return type != null && ("RET".equals(type) || "RETI".equals(type));
     }
 
     private void dumpEdges(Iterator edges) {
@@ -277,7 +277,7 @@ public class CFGAction extends Action {
             ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
             ControlFlowGraph.Block t = e.getTarget();
 
-            if (e.getType().equals(""))
+            if ("".equals(e.getType()))
                 Terminal.print("--> ");
             else
                 Terminal.print("--(" + e.getType() + ")--> ");
@@ -357,7 +357,7 @@ public class CFGAction extends Action {
             p.print(",style=dotted");
 
         // change the style of the edge based on its type
-        if (t.equals("CALL"))
+        if ("CALL".equals(t))
             p.print(",color=red");
 
         p.println("];");

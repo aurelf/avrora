@@ -56,7 +56,7 @@ class LED implements Microcontroller.Pin.Output {
     // power consumption of the device states
     private final double modeAmphere[] = {0.0, 0.0022};
     // default mode of the device is off
-    private final int startMode = 0;
+    private static final int startMode = 0;
 
     protected LED(Simulator s, int n, String c) {
         sim = s;
@@ -94,7 +94,7 @@ class LED implements Microcontroller.Pin.Output {
         String cycstr = StringUtil.rightJustify(sim.getClock().getCount(), 10);
         synchronized ( Terminal.class ) {
             // synchronize on the terminal to prevent interleaved output
-            Terminal.print(idstr + " " + cycstr + "   ");
+            Terminal.print(idstr + ' ' + cycstr + "   ");
             Terminal.print(colornum, color);
             Terminal.println(": " + (on ? "on" : "off"));
         }

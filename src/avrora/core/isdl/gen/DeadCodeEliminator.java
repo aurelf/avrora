@@ -43,9 +43,6 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
 
     Set globals;
 
-    HashSet dead;
-    HashSet alive;
-
     protected class DefUseEnvironment {
         DefUseEnvironment parent;
         HashSet dead;
@@ -114,8 +111,6 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
     }
 
     public List visitStmtList(List l, Object env) {
-        DefUseEnvironment du = (DefUseEnvironment)env;
-
         Collections.reverse(l);
         List nl = new LinkedList();
         boolean changed = false;

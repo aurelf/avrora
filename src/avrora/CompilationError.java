@@ -46,7 +46,7 @@ public class CompilationError extends Avrora.Error {
     public final String errclass;
     public final String[] errparams;
 
-    public static boolean CLASSES = false;
+    public static boolean CLASSES;
 
     public CompilationError(ProgramPoint p, String msg, String ec, String ps[]) {
         super(msg, null);

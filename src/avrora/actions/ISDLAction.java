@@ -89,7 +89,7 @@ public class ISDLAction extends Action {
         Architecture a = parser.Architecture();
 
         String interpreter = INTERPRETER.get();
-        if (!interpreter.equals("")) {
+        if (!"".equals(interpreter)) {
             // generate vanilla interpreter
             Terminal.println("Generating interpreter to " + interpreter + "...");
             SectionFile f = new SectionFile(INTERPRETER.get(), "INTERPRETER GENERATOR");
@@ -98,7 +98,7 @@ public class ISDLAction extends Action {
         }
 
         String classes = CLASSES.get();
-        if (!classes.equals("")) {
+        if (!"".equals(classes)) {
             // generate instruction classes
             Terminal.println("Generating Instr inner classes to " + classes + "...");
             SectionFile f = new SectionFile(classes, "INSTR GENERATOR");
@@ -107,7 +107,7 @@ public class ISDLAction extends Action {
         }
 
         String codemap = CODEMAP.get();
-        if (!codemap.equals("")) {
+        if (!"".equals(codemap)) {
             // generate instruction classes
             Terminal.println("Generating codemap to " + codemap + "...");
             SectionFile f = new SectionFile(codemap, "CODEBUILDER GENERATOR");

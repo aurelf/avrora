@@ -242,7 +242,7 @@ public class Module implements Context {
     // .include directive
     public void includeFile(AbstractToken fname) throws AbstractParseException {
         try {
-            modulePrinter.println("includeFile(" + fname.image + ")");
+            modulePrinter.println("includeFile(" + fname.image + ')');
             String fn = StringUtil.trimquotes(fname.image);
             AtmelParser parser = new AtmelParser(new FileInputStream(fn), this, fn);
             // TODO: handle infinite include recursion possibility

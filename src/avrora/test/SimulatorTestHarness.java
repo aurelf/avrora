@@ -134,14 +134,14 @@ public class SimulatorTestHarness implements TestHarness {
 
     abstract static class ProcessorState extends Expr {
 
-        String register;
+        String regname;
 
         ProcessorState(String s) {
-            register = s;
+            regname = s;
         }
 
         public String toString() {
-            return register;
+            return regname;
         }
     }
 
@@ -231,7 +231,7 @@ public class SimulatorTestHarness implements TestHarness {
         }
 
         public String toString() {
-            return "$(" + expr + ")";
+            return "$(" + expr + ')';
         }
     }
 
@@ -371,7 +371,7 @@ public class SimulatorTestHarness implements TestHarness {
         // const
         private Expr readTerm(CharacterIterator i) throws Exception {
             // verboseln("Term @ "+i.getIndex()+" > '"+i.current()+"'");
-            Expr e = null;
+            Expr e;
             char c = i.current();
 
             if (c == '$') {
@@ -401,7 +401,7 @@ public class SimulatorTestHarness implements TestHarness {
 
         // ident
         private Expr readIdent(CharacterIterator i) {
-            StringBuffer buf = new StringBuffer();
+            StringBuffer buf = new StringBuffer(32);
 
             while (true) {
                 char c = i.current();
@@ -439,7 +439,7 @@ public class SimulatorTestHarness implements TestHarness {
 
         StateMismatch(StatePredicate pred, State st) {
             super("incorrect result: (" + pred.left + " -> " + pred.leftvalue + ") != ("
-                    + pred.right + " -> " + pred.rightvalue + ")");
+                    + pred.right + " -> " + pred.rightvalue + ')');
             state = st;
             predicate = pred;
         }

@@ -117,7 +117,7 @@ public abstract class Arith extends Expr {
          * @return a string representation of this expression
          */
         public String toString() {
-            return innerString(left) + " " + operation + " " + innerString(right);
+            return innerString(left) + ' ' + operation + ' ' + innerString(right);
         }
 
         /**

@@ -47,7 +47,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     protected final Printer printer;
 
     public void visit(CallExpr e) {
-        printer.print(getMethod(e.method.image) + "(");
+        printer.print(getMethod(e.method.image) + '(');
         visitExprList(e.args);
         printer.print(")");
     }
@@ -59,7 +59,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(ConversionExpr e) {
         inner(e.expr, Expr.PREC_TERM);
-        printer.print(":" + e.typename.image);
+        printer.print(':' + e.typename.image);
     }
 
     public void visit(VarExpr e) {
@@ -105,7 +105,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
 
         public void generateWrite(Expr ind, Expr val) {
-            printer.print("$" + name + "(");
+            printer.print('$' + name + '(');
             ind.accept(PrettyPrinter.this);
             printer.print(") = ");
             val.accept(PrettyPrinter.this);
@@ -113,7 +113,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            printer.print("$" + name + "(");
+            printer.print('$' + name + '(');
             ind.accept(PrettyPrinter.this);
             printer.print(")[");
             b.accept(PrettyPrinter.this);
@@ -123,13 +123,13 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
 
         public void generateRead(Expr ind) {
-            printer.print("$" + name + "(");
+            printer.print('$' + name + '(');
             ind.accept(PrettyPrinter.this);
             printer.print(")");
         }
 
         public void generateBitRead(Expr ind, Expr b) {
-            printer.print("$" + name + "(");
+            printer.print('$' + name + '(');
             ind.accept(PrettyPrinter.this);
             printer.print(")[");
             b.accept(PrettyPrinter.this);
@@ -137,9 +137,9 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
 
         public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-            printer.print("$" + name + "(");
+            printer.print('$' + name + '(');
             ind.accept(PrettyPrinter.this);
-            printer.print(")[" + l + ":" + h + "] = ");
+            printer.print(")[" + l + ':' + h + "] = ");
             val.accept(PrettyPrinter.this);
             printer.println(";");
         }
@@ -151,7 +151,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(CallStmt s) {
-        printer.print(getMethod(s.method.image) + "(");
+        printer.print(getMethod(s.method.image) + '(');
         visitExprList(s.args);
         printer.println(");");
     }
@@ -180,7 +180,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(VarBitAssignStmt s) {
         String var = getVariable(s.variable);
-        printer.print(var + "[");
+        printer.print(var + '[');
         s.bit.accept(this);
         printer.print("] = ");
         s.expr.accept(this);
@@ -189,7 +189,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(VarBitRangeAssignStmt s) {
         String var = getVariable(s.variable);
-        printer.print(var + "[" + s.low_bit + ":" + s.high_bit + "] = ");
+        printer.print(var + '[' + s.low_bit + ':' + s.high_bit + "] = ");
         s.expr.accept(this);
         printer.println(";");
     }
@@ -203,7 +203,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(DeclStmt s) {
-        printer.print(s.type.image + " " + getVariable(s.name) + " = ");
+        printer.print(s.type.image + ' ' + getVariable(s.name) + " = ");
         s.init.accept(this);
         printer.println(";");
     }
@@ -227,7 +227,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     protected void binop(String op, Expr left, Expr right, int p) {
         inner(left, p);
-        printer.print(" " + op + " ");
+        printer.print(' ' + op + ' ');
         inner(right, p);
     }
 
@@ -362,7 +362,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         } else {
             e.operand.accept(this);
         }
-        printer.print("[" + e.low_bit + ":" + e.high_bit + "]");
+        printer.print("[" + e.low_bit + ':' + e.high_bit + ']');
     }
 
     protected void visitExprList(List l) {

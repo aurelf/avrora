@@ -87,10 +87,7 @@ public class ProcedureMap {
      */
     public boolean isSharedBetweenProcedures(ControlFlowGraph.Block b) {
         Object o = entryMap.get(b);
-        if (o != null && !(o instanceof ControlFlowGraph.Block))
-            return true;
-        else
-            return false;
+        return o != null && !(o instanceof ControlFlowGraph.Block);
     }
 
     /**

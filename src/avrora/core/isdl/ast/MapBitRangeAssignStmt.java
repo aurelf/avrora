@@ -141,8 +141,8 @@ public class MapBitRangeAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return StringUtil.embed("$" + mapname, index) + "[" + low_bit + ":" + high_bit + "]"
-                + " = " + expr + ";";
+        return StringUtil.embed("$" + mapname, index) + '[' + low_bit + ':' + high_bit + ']'
+                + " = " + expr + ';';
     }
 
     /**

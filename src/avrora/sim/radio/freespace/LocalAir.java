@@ -38,7 +38,6 @@ package avrora.sim.radio.freespace;
 
 import avrora.sim.Simulator;
 import avrora.sim.radio.Radio;
-import avrora.sim.radio.Radio.RadioPacket;
 
 import java.util.Iterator;
 
@@ -95,7 +94,7 @@ public interface LocalAir {
      * @param p   packet
      * @param pow transission power
      */
-    public void addPacket(RadioPacket p, double pow, Radio sender);
+    public void addPacket(Radio.RadioPacket p, double pow, Radio sender);
 
     /**
      * schedule deivery of packets
@@ -115,7 +114,7 @@ public interface LocalAir {
     public class PowerRadioPacket {
 
         //radio packet
-        protected RadioPacket packet;
+        protected Radio.RadioPacket packet;
         //transmission power
         protected double power;
 
@@ -127,7 +126,7 @@ public interface LocalAir {
          * @param p   packet
          * @param pow transmission power
          */
-        public PowerRadioPacket(RadioPacket p, double pow, Radio s) {
+        public PowerRadioPacket(Radio.RadioPacket p, double pow, Radio s) {
             this.packet = p;
             this.power = pow;
             this.sender = s;
@@ -139,7 +138,7 @@ public interface LocalAir {
          *
          * @return radio packet
          */
-        public RadioPacket getRadioPacket() {
+        public Radio.RadioPacket getRadioPacket() {
             return packet;
         }
 

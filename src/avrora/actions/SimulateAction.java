@@ -130,7 +130,7 @@ public class SimulateAction extends SimAction {
                 name = "    " + location.name + " @ " + addr;
             else
                 name = "    " + addr;
-            reportQuantity(name, tcnt + " " + ntcnt, "taken/not taken");
+            reportQuantity(name, tcnt + ' ' + ntcnt, "taken/not taken");
         }
     }
 
@@ -179,7 +179,7 @@ public class SimulateAction extends SimAction {
             simulator.insertEvent(new ThrottleEvent(), microcontroller.getHz() / 100);
 
         String visual = VISUAL.get();
-        if (!visual.equals("")) {
+        if (!"".equals(visual)) {
             //visualisation is turned on
             Visual.connect(visual);
         }

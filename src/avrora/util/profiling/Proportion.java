@@ -71,7 +71,7 @@ public class Proportion extends DataItem {
         }
 
         public void textReport() {
-            Terminal.print("\n   " + name + ": " + count + ", " + (100 * fraction) + "%");
+            Terminal.print("\n   " + name + ": " + count + ", " + (100 * fraction) + '%');
         }
     }
 

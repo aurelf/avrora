@@ -174,11 +174,8 @@ class ProcedureMapBuilder {
             Object mark = ENTRYMAP.get(block);
             if (mark == null || !(mark instanceof ControlFlowGraph.Block)) continue;
             ControlFlowGraph.Block entry = (ControlFlowGraph.Block)mark;
-
-            if (entry != null) {
-                LinkedList list = (LinkedList)procMap.get(entry);
-                list.add(block);
-            }
+            LinkedList list = (LinkedList)procMap.get(entry);
+            list.add(block);
         }
         return procMap;
     }

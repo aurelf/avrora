@@ -116,9 +116,9 @@ public class MemoryMonitor extends MonitorFactory {
                 Terminal.printGreen("    " + addr);
                 Terminal.print(": ");
                 Terminal.printBrightCyan(rcnt);
-                Terminal.print(" " + ("  " + rpercent));
+                Terminal.print(' ' + ("  " + rpercent));
                 Terminal.printBrightCyan(wcnt);
-                Terminal.println(" " + ("  " + wpercent));
+                Terminal.println(' ' + ("  " + wpercent));
             }
         }
 

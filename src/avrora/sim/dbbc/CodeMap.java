@@ -62,7 +62,7 @@ public class CodeMap {
         public void visit(Instr.ADC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -104,7 +104,7 @@ public class CodeMap {
         public void visit(Instr.ADD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -146,7 +146,7 @@ public class CodeMap {
         public void visit(Instr.ADIW i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -174,7 +174,7 @@ public class CodeMap {
         public void visit(Instr.AND i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -200,7 +200,7 @@ public class CodeMap {
         public void visit(Instr.ANDI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -226,7 +226,7 @@ public class CodeMap {
         public void visit(Instr.ASR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "byte", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -258,7 +258,7 @@ public class CodeMap {
         public void visit(Instr.BCLR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapBitAssignStmt("ioregs", new VarExpr("SREG"), new Literal.IntExpr(i.imm1), new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -268,7 +268,7 @@ public class CodeMap {
         public void visit(Instr.BLD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapBitAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new Literal.IntExpr(i.imm1), new VarExpr("T"));
             list0.addLast(stmt);
@@ -278,7 +278,7 @@ public class CodeMap {
         public void visit(Instr.BRBC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm2));
@@ -300,7 +300,7 @@ public class CodeMap {
         public void visit(Instr.BRBS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm2));
@@ -322,7 +322,7 @@ public class CodeMap {
         public void visit(Instr.BRCC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -344,7 +344,7 @@ public class CodeMap {
         public void visit(Instr.BRCS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -366,7 +366,7 @@ public class CodeMap {
         public void visit(Instr.BREAK i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new CallStmt("stop", new LinkedList());
             list0.addLast(stmt);
@@ -376,7 +376,7 @@ public class CodeMap {
         public void visit(Instr.BREQ i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -398,7 +398,7 @@ public class CodeMap {
         public void visit(Instr.BRGE i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -420,7 +420,7 @@ public class CodeMap {
         public void visit(Instr.BRHC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -442,7 +442,7 @@ public class CodeMap {
         public void visit(Instr.BRHS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -464,7 +464,7 @@ public class CodeMap {
         public void visit(Instr.BRID i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -486,7 +486,7 @@ public class CodeMap {
         public void visit(Instr.BRIE i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -508,7 +508,7 @@ public class CodeMap {
         public void visit(Instr.BRLO i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -530,7 +530,7 @@ public class CodeMap {
         public void visit(Instr.BRLT i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -552,7 +552,7 @@ public class CodeMap {
         public void visit(Instr.BRMI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -574,7 +574,7 @@ public class CodeMap {
         public void visit(Instr.BRNE i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -596,7 +596,7 @@ public class CodeMap {
         public void visit(Instr.BRPL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -618,7 +618,7 @@ public class CodeMap {
         public void visit(Instr.BRSH i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -640,7 +640,7 @@ public class CodeMap {
         public void visit(Instr.BRTC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -662,7 +662,7 @@ public class CodeMap {
         public void visit(Instr.BRTS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -684,7 +684,7 @@ public class CodeMap {
         public void visit(Instr.BRVC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -706,7 +706,7 @@ public class CodeMap {
         public void visit(Instr.BRVS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
@@ -728,7 +728,7 @@ public class CodeMap {
         public void visit(Instr.BSET i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapBitAssignStmt("ioregs", new VarExpr("SREG"), new Literal.IntExpr(i.imm1), new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -738,7 +738,7 @@ public class CodeMap {
         public void visit(Instr.BST i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("T", new BitExpr(new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())), new Literal.IntExpr(i.imm1)));
             list0.addLast(stmt);
@@ -748,7 +748,7 @@ public class CodeMap {
         public void visit(Instr.CALL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(nextPC));
             list0.addLast(stmt);
@@ -770,7 +770,7 @@ public class CodeMap {
         public void visit(Instr.CBI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapBitAssignStmt("ioregs", new Literal.IntExpr(i.imm1), new Literal.IntExpr(i.imm2), new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -780,7 +780,7 @@ public class CodeMap {
         public void visit(Instr.CBR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -806,7 +806,7 @@ public class CodeMap {
         public void visit(Instr.CLC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("C", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -816,7 +816,7 @@ public class CodeMap {
         public void visit(Instr.CLH i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("H", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -826,7 +826,7 @@ public class CodeMap {
         public void visit(Instr.CLI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new CallStmt("disableInterrupts", new LinkedList());
             list0.addLast(stmt);
@@ -836,7 +836,7 @@ public class CodeMap {
         public void visit(Instr.CLN i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("N", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -846,7 +846,7 @@ public class CodeMap {
         public void visit(Instr.CLR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("S", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -864,7 +864,7 @@ public class CodeMap {
         public void visit(Instr.CLS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("S", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -874,7 +874,7 @@ public class CodeMap {
         public void visit(Instr.CLT i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("T", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -884,7 +884,7 @@ public class CodeMap {
         public void visit(Instr.CLV i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("V", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -894,7 +894,7 @@ public class CodeMap {
         public void visit(Instr.CLZ i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("Z", new Literal.BoolExpr(false));
             list0.addLast(stmt);
@@ -904,7 +904,7 @@ public class CodeMap {
         public void visit(Instr.COM i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.SubExpr(new Literal.IntExpr(255), new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber()))));
             list0.addLast(stmt);
@@ -926,7 +926,7 @@ public class CodeMap {
         public void visit(Instr.CP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -968,7 +968,7 @@ public class CodeMap {
         public void visit(Instr.CPC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1010,7 +1010,7 @@ public class CodeMap {
         public void visit(Instr.CPI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1052,7 +1052,7 @@ public class CodeMap {
         public void visit(Instr.CPSE i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1114,7 +1114,7 @@ public class CodeMap {
         public void visit(Instr.DEC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1136,7 +1136,7 @@ public class CodeMap {
         public void visit(Instr.EICALL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             result = new CodeRegion(new LinkedList(), list0);
         }
@@ -1144,7 +1144,7 @@ public class CodeMap {
         public void visit(Instr.EIJMP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             result = new CodeRegion(new LinkedList(), list0);
         }
@@ -1152,7 +1152,7 @@ public class CodeMap {
         public void visit(Instr.ELPM i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(30)));
             list0.addLast(stmt);
@@ -1166,7 +1166,7 @@ public class CodeMap {
         public void visit(Instr.ELPMD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(30)));
             list0.addLast(stmt);
@@ -1180,7 +1180,7 @@ public class CodeMap {
         public void visit(Instr.ELPMPI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(30)));
             list0.addLast(stmt);
@@ -1196,7 +1196,7 @@ public class CodeMap {
         public void visit(Instr.EOR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "byte", new CallExpr("low", tolist1(new Arith.BinOp.XorExpr(new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("regs", new Literal.IntExpr(i.r2.getNumber()))))));
             list0.addLast(stmt);
@@ -1216,7 +1216,7 @@ public class CodeMap {
         public void visit(Instr.FMUL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.ShiftLeftExpr(new Arith.BinOp.MulExpr(new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("uregs", new Literal.IntExpr(i.r2.getNumber()))), new Literal.IntExpr(1)));
             list0.addLast(stmt);
@@ -1234,7 +1234,7 @@ public class CodeMap {
         public void visit(Instr.FMULS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.ShiftLeftExpr(new Arith.BinOp.MulExpr(new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("regs", new Literal.IntExpr(i.r2.getNumber()))), new Literal.IntExpr(1)));
             list0.addLast(stmt);
@@ -1252,7 +1252,7 @@ public class CodeMap {
         public void visit(Instr.FMULSU i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.ShiftLeftExpr(new Arith.BinOp.MulExpr(new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("uregs", new Literal.IntExpr(i.r2.getNumber()))), new Literal.IntExpr(1)));
             list0.addLast(stmt);
@@ -1270,7 +1270,7 @@ public class CodeMap {
         public void visit(Instr.ICALL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(nextPC));
             list0.addLast(stmt);
@@ -1292,7 +1292,7 @@ public class CodeMap {
         public void visit(Instr.IJMP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(30)));
             list0.addLast(stmt);
@@ -1306,7 +1306,7 @@ public class CodeMap {
         public void visit(Instr.IN i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new MapExpr("ioregs", new Literal.IntExpr(i.imm1)));
             list0.addLast(stmt);
@@ -1316,7 +1316,7 @@ public class CodeMap {
         public void visit(Instr.INC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1338,7 +1338,7 @@ public class CodeMap {
         public void visit(Instr.JMP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
             list0.addLast(stmt);
@@ -1352,7 +1352,7 @@ public class CodeMap {
         public void visit(Instr.LD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new MapExpr("sram", new MapExpr("wregs", new Literal.IntExpr(i.r2.getNumber()))));
             list0.addLast(stmt);
@@ -1362,7 +1362,7 @@ public class CodeMap {
         public void visit(Instr.LDD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new MapExpr("sram", new Arith.BinOp.AddExpr(new MapExpr("wregs", new Literal.IntExpr(i.r2.getNumber())), new Literal.IntExpr(i.imm1))));
             list0.addLast(stmt);
@@ -1372,7 +1372,7 @@ public class CodeMap {
         public void visit(Instr.LDI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new CallExpr("low", tolist1(new Literal.IntExpr(i.imm1))));
             list0.addLast(stmt);
@@ -1382,7 +1382,7 @@ public class CodeMap {
         public void visit(Instr.LDPD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.SubExpr(new MapExpr("wregs", new Literal.IntExpr(i.r2.getNumber())), new Literal.IntExpr(1)));
             list0.addLast(stmt);
@@ -1396,7 +1396,7 @@ public class CodeMap {
         public void visit(Instr.LDPI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(i.r2.getNumber())));
             list0.addLast(stmt);
@@ -1410,7 +1410,7 @@ public class CodeMap {
         public void visit(Instr.LDS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new MapExpr("sram", new Literal.IntExpr(i.imm1)));
             list0.addLast(stmt);
@@ -1420,7 +1420,7 @@ public class CodeMap {
         public void visit(Instr.LPM i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(0), new MapExpr("program", new MapExpr("wregs", new Literal.IntExpr(30))));
             list0.addLast(stmt);
@@ -1430,7 +1430,7 @@ public class CodeMap {
         public void visit(Instr.LPMD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new MapExpr("program", new MapExpr("wregs", new Literal.IntExpr(30))));
             list0.addLast(stmt);
@@ -1440,7 +1440,7 @@ public class CodeMap {
         public void visit(Instr.LPMPI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(30)));
             list0.addLast(stmt);
@@ -1454,7 +1454,7 @@ public class CodeMap {
         public void visit(Instr.LSL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1486,7 +1486,7 @@ public class CodeMap {
         public void visit(Instr.LSR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1516,7 +1516,7 @@ public class CodeMap {
         public void visit(Instr.MOV i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new MapExpr("regs", new Literal.IntExpr(i.r2.getNumber())));
             list0.addLast(stmt);
@@ -1526,7 +1526,7 @@ public class CodeMap {
         public void visit(Instr.MOVW i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("wregs", new Literal.IntExpr(i.r1.getNumber()), new MapExpr("wregs", new Literal.IntExpr(i.r2.getNumber())));
             list0.addLast(stmt);
@@ -1536,7 +1536,7 @@ public class CodeMap {
         public void visit(Instr.MUL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.MulExpr(new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("uregs", new Literal.IntExpr(i.r2.getNumber()))));
             list0.addLast(stmt);
@@ -1552,7 +1552,7 @@ public class CodeMap {
         public void visit(Instr.MULS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.MulExpr(new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("regs", new Literal.IntExpr(i.r2.getNumber()))));
             list0.addLast(stmt);
@@ -1568,7 +1568,7 @@ public class CodeMap {
         public void visit(Instr.MULSU i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.MulExpr(new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("uregs", new Literal.IntExpr(i.r2.getNumber()))));
             list0.addLast(stmt);
@@ -1584,7 +1584,7 @@ public class CodeMap {
         public void visit(Instr.NEG i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(0));
             list0.addLast(stmt);
@@ -1628,7 +1628,7 @@ public class CodeMap {
         public void visit(Instr.NOP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             result = new CodeRegion(new LinkedList(), list0);
         }
@@ -1636,7 +1636,7 @@ public class CodeMap {
         public void visit(Instr.OR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1662,7 +1662,7 @@ public class CodeMap {
         public void visit(Instr.ORI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1688,7 +1688,7 @@ public class CodeMap {
         public void visit(Instr.OUT i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("ioregs", new Literal.IntExpr(i.imm1), new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1698,7 +1698,7 @@ public class CodeMap {
         public void visit(Instr.POP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new CallExpr("popByte", new LinkedList()));
             list0.addLast(stmt);
@@ -1708,7 +1708,7 @@ public class CodeMap {
         public void visit(Instr.PUSH i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new CallStmt("pushByte", tolist1(new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber()))));
             list0.addLast(stmt);
@@ -1718,7 +1718,7 @@ public class CodeMap {
         public void visit(Instr.RCALL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(nextPC));
             list0.addLast(stmt);
@@ -1740,7 +1740,7 @@ public class CodeMap {
         public void visit(Instr.RET i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "byte", new CallExpr("popByte", new LinkedList()));
             list0.addLast(stmt);
@@ -1756,7 +1756,7 @@ public class CodeMap {
         public void visit(Instr.RETI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "byte", new CallExpr("popByte", new LinkedList()));
             list0.addLast(stmt);
@@ -1776,7 +1776,7 @@ public class CodeMap {
         public void visit(Instr.RJMP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Literal.IntExpr(i.imm1));
             list0.addLast(stmt);
@@ -1790,7 +1790,7 @@ public class CodeMap {
         public void visit(Instr.ROL i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1822,7 +1822,7 @@ public class CodeMap {
         public void visit(Instr.ROR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1852,7 +1852,7 @@ public class CodeMap {
         public void visit(Instr.SBC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1896,7 +1896,7 @@ public class CodeMap {
         public void visit(Instr.SBCI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -1940,7 +1940,7 @@ public class CodeMap {
         public void visit(Instr.SBI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapBitAssignStmt("ioregs", new Literal.IntExpr(i.imm1), new Literal.IntExpr(i.imm2), new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -1950,7 +1950,7 @@ public class CodeMap {
         public void visit(Instr.SBIC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("isize", new Literal.IntExpr(nextPC)));
@@ -1974,7 +1974,7 @@ public class CodeMap {
         public void visit(Instr.SBIS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("isize", new Literal.IntExpr(nextPC)));
@@ -1998,7 +1998,7 @@ public class CodeMap {
         public void visit(Instr.SBIW i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2026,7 +2026,7 @@ public class CodeMap {
         public void visit(Instr.SBR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2052,7 +2052,7 @@ public class CodeMap {
         public void visit(Instr.SBRC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("isize", new Literal.IntExpr(nextPC)));
@@ -2076,7 +2076,7 @@ public class CodeMap {
         public void visit(Instr.SBRS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             LinkedList list1 = new LinkedList();
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("isize", new Literal.IntExpr(nextPC)));
@@ -2100,7 +2100,7 @@ public class CodeMap {
         public void visit(Instr.SEC i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("C", new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -2110,7 +2110,7 @@ public class CodeMap {
         public void visit(Instr.SEH i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("H", new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -2120,7 +2120,7 @@ public class CodeMap {
         public void visit(Instr.SEI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new CallStmt("enableInterrupts", new LinkedList());
             list0.addLast(stmt);
@@ -2130,7 +2130,7 @@ public class CodeMap {
         public void visit(Instr.SEN i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("N", new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -2140,7 +2140,7 @@ public class CodeMap {
         public void visit(Instr.SER i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("regs", new Literal.IntExpr(i.r1.getNumber()), new CallExpr("low", tolist1(new Literal.IntExpr(255))));
             list0.addLast(stmt);
@@ -2150,7 +2150,7 @@ public class CodeMap {
         public void visit(Instr.SES i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("S", new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -2160,7 +2160,7 @@ public class CodeMap {
         public void visit(Instr.SET i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("T", new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -2170,7 +2170,7 @@ public class CodeMap {
         public void visit(Instr.SEV i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("V", new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -2180,7 +2180,7 @@ public class CodeMap {
         public void visit(Instr.SEZ i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new VarAssignStmt("Z", new Literal.BoolExpr(true));
             list0.addLast(stmt);
@@ -2190,7 +2190,7 @@ public class CodeMap {
         public void visit(Instr.SLEEP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new CallStmt("enterSleepMode", new LinkedList());
             list0.addLast(stmt);
@@ -2200,7 +2200,7 @@ public class CodeMap {
         public void visit(Instr.SPM i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             result = new CodeRegion(new LinkedList(), list0);
         }
@@ -2208,7 +2208,7 @@ public class CodeMap {
         public void visit(Instr.ST i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("sram", new MapExpr("wregs", new Literal.IntExpr(i.r1.getNumber())), new MapExpr("regs", new Literal.IntExpr(i.r2.getNumber())));
             list0.addLast(stmt);
@@ -2218,7 +2218,7 @@ public class CodeMap {
         public void visit(Instr.STD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("sram", new Arith.BinOp.AddExpr(new MapExpr("wregs", new Literal.IntExpr(i.r1.getNumber())), new Literal.IntExpr(i.imm1)), new MapExpr("regs", new Literal.IntExpr(i.r2.getNumber())));
             list0.addLast(stmt);
@@ -2228,7 +2228,7 @@ public class CodeMap {
         public void visit(Instr.STPD i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new Arith.BinOp.SubExpr(new MapExpr("wregs", new Literal.IntExpr(i.r1.getNumber())), new Literal.IntExpr(1)));
             list0.addLast(stmt);
@@ -2242,7 +2242,7 @@ public class CodeMap {
         public void visit(Instr.STPI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("wregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2256,7 +2256,7 @@ public class CodeMap {
         public void visit(Instr.STS i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new MapAssignStmt("sram", new Literal.IntExpr(i.imm1), new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2266,7 +2266,7 @@ public class CodeMap {
         public void visit(Instr.SUB i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2310,7 +2310,7 @@ public class CodeMap {
         public void visit(Instr.SUBI i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2354,7 +2354,7 @@ public class CodeMap {
         public void visit(Instr.SWAP i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("uregs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2372,7 +2372,7 @@ public class CodeMap {
         public void visit(Instr.TST i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             stmt = new DeclStmt("tmp_0", "int", new MapExpr("regs", new Literal.IntExpr(i.r1.getNumber())));
             list0.addLast(stmt);
@@ -2390,7 +2390,7 @@ public class CodeMap {
         public void visit(Instr.WDR i) {
             Stmt stmt;
             LinkedList list0 = new LinkedList();
-            stmt = new CommentStmt("===== " + i.getName() + " " + i.getOperands() + " ==========================================");
+            stmt = new CommentStmt("===== " + i.getName() + ' ' + i.getOperands() + " ==========================================");
             list0.addLast(stmt);
             result = new CodeRegion(new LinkedList(), list0);
         }

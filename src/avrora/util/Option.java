@@ -381,7 +381,7 @@ public abstract class Option {
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return "[" + low + ", " + high + "]";
+            return "[" + low + ", " + high + ']';
         }
 
         /**
@@ -389,7 +389,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            printHeader("interval", "[" + default_low + "," + default_high + "]");
+            printHeader("interval", "[" + default_low + ',' + default_high + ']');
             printDescription();
         }
     }
@@ -514,11 +514,11 @@ public abstract class Option {
             if (val.equals("")) return;
 
             CharacterIterator i = new StringCharacterIterator(val);
-            StringBuffer buf = new StringBuffer();
+            StringBuffer buf = new StringBuffer(32);
             while (i.current() != CharacterIterator.DONE) {
                 if (i.current() == ',') {
                     value.add(buf.toString().trim());
-                    buf = new StringBuffer();
+                    buf = new StringBuffer(32);
                 } else {
                     buf.append(i.current());
                 }

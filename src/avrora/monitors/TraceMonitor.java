@@ -61,9 +61,9 @@ public class TraceMonitor extends MonitorFactory {
             public void fireBefore(Instr i, int addr, State s) {
                 String idstr = StringUtil.rightJustify(simulator.getID(), 4);
                 String cycstr = StringUtil.rightJustify(s.getCycles(), 10);
-                Terminal.print(idstr + " " + cycstr + "   ");
+                Terminal.print(idstr + ' ' + cycstr + "   ");
                 Terminal.printBrightCyan(StringUtil.toHex(s.getPC(), 4) + ": ");
-                Terminal.printBrightBlue(i.getVariant() + " ");
+                Terminal.printBrightBlue(i.getVariant() + ' ');
                 Terminal.print(i.getOperands());
                 Terminal.nextln();
             }

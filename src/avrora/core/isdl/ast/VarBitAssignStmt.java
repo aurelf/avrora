@@ -99,7 +99,7 @@ public class VarBitAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return variable.image + "[" + bit + "] = " + expr + ";";
+        return variable.image + '[' + bit + "] = " + expr + ';';
     }
 
     /**

@@ -73,9 +73,9 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
             // TODO: extract out expr value if it is not a simple expression
-            printer.print(getMethod(writeMeth) + "(");
+            printer.print(getMethod(writeMeth) + '(');
             ind.accept(InterpreterGenerator.this);
-            printer.print(", Arithmetic.setBit(" + readMeth + "(");
+            printer.print(", Arithmetic.setBit(" + readMeth + '(');
             ind.accept(InterpreterGenerator.this);
             printer.print("), ");
             b.accept(InterpreterGenerator.this);
@@ -89,7 +89,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateBitRead(Expr ind, Expr b) {
-            printer.print("Arithmetic.getBit(" + getMethod(readMeth) + "(");
+            printer.print("Arithmetic.getBit(" + getMethod(readMeth) + '(');
             ind.accept(InterpreterGenerator.this);
             printer.print("), ");
             b.accept(InterpreterGenerator.this);
@@ -100,11 +100,11 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
             if (ind.isVariable() || ind.isLiteral()) {
                 String var = (String)variableMap.get(ind.toString());
                 if (var == null) var = ind.toString();
-                printer.print(writeMeth + "(" + var + ", ");
+                printer.print(writeMeth + '(' + var + ", ");
                 int mask = Arithmetic.getBitRangeMask(l, h);
                 int smask = mask << l;
                 int imask = ~smask;
-                printer.print("(" + readMeth + "(" + var + ")" + andString(imask) + ")");
+                printer.print('(' + readMeth + '(' + var + ')' + andString(imask) + ')');
                 printer.print(" | (");
                 emitAnd(val, mask);
                 if (l != 0) printer.print(" << " + l);
@@ -126,7 +126,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateWrite(Expr ind, Expr val) {
-            printer.print(getVariable(token) + "[");
+            printer.print(getVariable(token) + '[');
             ind.accept(InterpreterGenerator.this);
             printer.print("] = ");
             val.accept(InterpreterGenerator.this);
@@ -135,9 +135,9 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
             // TODO: extract out expr value if it is not a simple expression
-            printer.print(getVariable(token) + "[");
+            printer.print(getVariable(token) + '[');
             ind.accept(InterpreterGenerator.this);
-            printer.print("] = Arithmetic.getBit(" + getVariable(token) + "[");
+            printer.print("] = Arithmetic.getBit(" + getVariable(token) + '[');
             ind.accept(InterpreterGenerator.this);
             printer.print("], ");
             b.accept(InterpreterGenerator.this);
@@ -147,13 +147,13 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateRead(Expr ind) {
-            printer.print(getVariable(token) + "[");
+            printer.print(getVariable(token) + '[');
             ind.accept(InterpreterGenerator.this);
             printer.print("]");
         }
 
         public void generateBitRead(Expr ind, Expr b) {
-            printer.print("Arithmetic.getBit(" + getVariable(token) + "[");
+            printer.print("Arithmetic.getBit(" + getVariable(token) + '[');
             ind.accept(InterpreterGenerator.this);
             printer.print("], ");
             b.accept(InterpreterGenerator.this);
@@ -166,11 +166,11 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
                 t.image = ind.toString();
                 String var = getVariable(t);
                 if (var == null) var = ind.toString();
-                printer.print(getVariable(token) + "[" + var + "] = ");
+                printer.print(getVariable(token) + '[' + var + "] = ");
                 int mask = Arithmetic.getBitRangeMask(l, h);
                 int smask = mask << l;
                 int imask = ~smask;
-                printer.print(getVariable(token) + "[" + var + "]" + andString(imask) + ")");
+                printer.print(getVariable(token) + '[' + var + ']' + andString(imask) + ')');
                 printer.print(" | (");
                 emitAnd(val, mask);
                 if (l != 0) printer.print(" << " + l);
@@ -187,7 +187,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            printer.print(getMethod("getIOReg") + "(");
+            printer.print(getMethod("getIOReg") + '(');
             ind.accept(InterpreterGenerator.this);
             printer.print(").writeBit(");
             b.accept(InterpreterGenerator.this);
@@ -197,7 +197,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         }
 
         public void generateBitRead(Expr ind, Expr b) {
-            printer.print(getMethod("getIOReg") + "(");
+            printer.print(getMethod("getIOReg") + '(');
             ind.accept(InterpreterGenerator.this);
             printer.print(").readBit(");
             b.accept(InterpreterGenerator.this);
@@ -251,14 +251,14 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     public void visit(InstrDecl d) {
         printer.startblock("public void visit(" + d.getClassName() + " i) ");
         // emit the default next pc computation
-        printer.println("nextPC = pc + " + (d.getEncodingSize() / 8) + ";");
+        printer.println("nextPC = pc + " + (d.getEncodingSize() / 8) + ';');
 
         // initialize the map of local variables to operands
         initializeOperandMap(d);
         // emit the code of the body
         visitStmtList(d.getCode());
         // emit the cycle count update
-        printer.println("cyclesConsumed += " + d.cycles + ";");
+        printer.println("cyclesConsumed += " + d.cycles + ';');
         printer.endblock();
     }
 
@@ -282,11 +282,11 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
     public void visit(SubroutineDecl d) {
         if (d.inline || !d.hasBody()) return;
-        printer.print("public " + d.ret.image + " " + d.name.image + "(");
+        printer.print("public " + d.ret.image + ' ' + d.name.image + '(');
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {
             CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-            printer.print(o.type.image + " " + o.name.image);
+            printer.print(o.type.image + ' ' + o.name.image);
             if (i.hasNext()) printer.print(", ");
         }
         printer.print(") ");
@@ -317,7 +317,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         int mask = Arithmetic.getBitRangeMask(s.low_bit, s.high_bit);
         int smask = mask << s.low_bit;
         int imask = ~smask;
-        printer.print(var + " = (" + var + andString(imask) + ")");
+        printer.print(var + " = (" + var + andString(imask) + ')');
         printer.print(" | (");
         emitAnd(s.expr, mask);
         if (s.low_bit != 0) printer.print(" << " + s.low_bit);
@@ -334,7 +334,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     protected void emitBinOp(Expr e, String op, int p, int val) {
         printer.print("(");
         this.inner(e, p);
-        printer.print(" " + op + " " + val + ")");
+        printer.print(' ' + op + ' ' + val + ')');
     }
 
     protected String andString(int mask) {
@@ -344,17 +344,17 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     protected void emitAnd(Expr e, int val) {
         printer.print("(");
         this.inner(e, Expr.PREC_A_AND);
-        printer.print(andString(val) + ")");
+        printer.print(andString(val) + ')');
     }
 
     protected void emitCall(String s, Expr e) {
-        printer.print(s + "(");
+        printer.print(s + '(');
         e.accept(this);
         printer.print(")");
     }
 
     protected void emitCall(String s, Expr e1, Expr e2) {
-        printer.print(s + "(");
+        printer.print(s + '(');
         e1.accept(this);
         printer.print(", ");
         e2.accept(this);
@@ -362,7 +362,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     }
 
     protected void emitCall(String s, String e1, Expr e2, Expr e3) {
-        printer.print(s + "(" + e1 + ", ");
+        printer.print(s + '(' + e1 + ", ");
         e2.accept(this);
         printer.print(", ");
         e3.accept(this);
@@ -394,7 +394,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         if (low != 0) {
             printer.print("(");
             emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
-            printer.print(" & 0x" + StringUtil.toHex(mask, 8) + ")");
+            printer.print(" & 0x" + StringUtil.toHex(mask, 8) + ')');
         } else {
             emitAnd(e.operand, mask);
         }

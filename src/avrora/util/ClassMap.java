@@ -152,7 +152,7 @@ public class ClassMap {
                 Avrora.userError(type + " class not found", clname);
             }
         } else {
-            clname = clname + " (" + c.toString() + ")";
+            clname = clname + " (" + c.toString() + ')';
         }
 
         if (!(clazz.isAssignableFrom(c)))

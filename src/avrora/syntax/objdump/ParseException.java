@@ -66,7 +66,7 @@ public class ParseException extends AbstractParseException {
                 maxSize = expectedTokenSequences[i].length;
             }
             for (int j = 0; j < expectedTokenSequences[i].length; j++) {
-                expected += tokenImage[expectedTokenSequences[i][j]] + " ";
+                expected += tokenImage[expectedTokenSequences[i][j]] + ' ';
             }
             if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
                 expected += "...";
@@ -86,7 +86,7 @@ public class ParseException extends AbstractParseException {
             tok = tok.next;
         }
         retval += "\" at line " + next.beginLine + ", column " + next.beginColumn;
-        retval += "." + eol;
+        retval += '.' + eol;
         if (expectedTokenSequences.length == 1) {
             retval += "Was expecting:" + eol + "    ";
         } else {
@@ -95,11 +95,6 @@ public class ParseException extends AbstractParseException {
         retval += expected;
         return retval;
     }
-
-    /**
-     * The end of line string for this machine.
-     */
-    protected String eol = System.getProperty("line.separator", "\n");
 
     /**
      * Used to convert raw characters to their escaped version when these raw version cannot be used as part

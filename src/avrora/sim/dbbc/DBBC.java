@@ -41,7 +41,6 @@ import avrora.core.isdl.ast.*;
 import avrora.core.isdl.gen.ConstantPropagator;
 import avrora.core.isdl.gen.DeadCodeEliminator;
 import avrora.core.isdl.gen.InterpreterGenerator;
-import avrora.core.isdl.gen.Canonicalizer;
 import avrora.core.isdl.parser.Token;
 import avrora.sim.GenInterpreter;
 import avrora.sim.dbbc.DBBC.DBBCClassLoader;
@@ -113,6 +112,7 @@ public class DBBC {
 
     protected final HashMap codeBlockMap;
     protected final HashMap compiledCodeMap;
+    private static final Class STRING_ARRAY_CLASS = new String[0].getClass();
 
     public static class CodeBlock {
         public final int beginAddr;
@@ -292,7 +292,7 @@ public class DBBC {
 
         // TODO: generate a nicer error message for failure to find Javac
         Class javac = Class.forName("com.sun.tools.javac.Main");
-        Class sac = new String[0].getClass();
+        Class sac = STRING_ARRAY_CLASS;
         Method m = javac.getMethod("compile", new Class[]{sac});
         Object r = m.invoke(null, new Object[]{args});
         int result = ((Integer)r).intValue();
@@ -354,10 +354,10 @@ public class DBBC {
     }
 
     protected String javaName(String cname) {
-        return tmpDir + "/" + cname + ".java";
+        return tmpDir + '/' + cname + ".java";
     }
 
     protected String className(String cname) {
-        return tmpDir + "/" + cname + ".class";
+        return tmpDir + '/' + cname + ".class";
     }
 }

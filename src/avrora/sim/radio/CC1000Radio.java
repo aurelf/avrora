@@ -410,7 +410,7 @@ public class CC1000Radio implements Radio {
             
             //OL: start energy tracking
             if (val != oldVal) {
-                int state = 0;
+                int state;
                 //check for power down state
                 // this row of "if" statements can probably be
                 // optimized a little bit
@@ -625,7 +625,7 @@ public class CC1000Radio implements Radio {
             if (value >= 0)
                 ret = value;
             else
-                ret = (int)(value & 0x7F) + 0x80;
+                ret = (value & 0x7F) + 0x80;
             return ret;
         }
 
@@ -1070,10 +1070,9 @@ public class CC1000Radio implements Radio {
                 // Apparently TinyOS expects received data to be inverted
                 byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte)~receivedPacket.data;
                 frame = new SPIFrame(data);
-                receivedPacket = null;
                 if (printer.enabled) {
                     printer.println(getSimulator().getClock().getCount() + " " +
-                            getSimulator().getID() + " " +
+                            getSimulator().getID() + ' ' +
                             "CC1000: received " + hex(frame.data));
                 }
             } else {
@@ -1388,7 +1387,7 @@ public class CC1000Radio implements Radio {
         // fRef = fXosc / REFDIV
         // frequency = fRef * ( ( FREQ + 8192 ) / 16384 )
         double ret = 14745600.0 / PLL_reg.refDiv;
-        int freq = 0;
+        int freq;
         if (MAIN_reg.F_REG == 0)
         //register A
             freq = FREQ_A_reg.frequency;

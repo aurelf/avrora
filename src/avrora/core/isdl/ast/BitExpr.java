@@ -126,7 +126,7 @@ public class BitExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return innerString(expr) + "[" + bit.toString() + "]";
+        return innerString(expr) + '[' + bit.toString() + ']';
     }
 
     /**

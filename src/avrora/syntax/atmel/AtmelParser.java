@@ -5,8 +5,6 @@ import avrora.syntax.*;
 
 public class AtmelParser extends AbstractParser implements AtmelParserConstants {
 
-    protected Module module;
-
     public AtmelParser(java.io.InputStream stream, Module m, String fname) {
         this(new FileMarkingTokenManager(new SimpleCharStream(stream, 1, 1), fname));
 
@@ -993,7 +991,7 @@ public class AtmelParser extends AbstractParser implements AtmelParserConstants 
         r1 = Register();
         jj_consume_token(145);
         r2 = Register();
-        module.addInstruction(t.image + "d", t, r1, r2);
+        module.addInstruction(t.image + 'd', t, r1, r2);
     }
 
     final public void InstrLPMGPRGPRP() throws ParseException {

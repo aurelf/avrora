@@ -118,7 +118,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
     public final ExprGenerator egen = new ExprGenerator();
     public final StmtGenerator sgen = new StmtGenerator();
 
-    protected int biggestList = 0;
+    protected int biggestList;
 
     protected String generateBlock(List stmts, String comment) {
         String lname = "list" + (++sgen.lastblock);
@@ -142,7 +142,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
 
     protected void generateHelperMethods() {
         for (int cntr = 1; cntr <= biggestList; cntr++) {
-            printer.print("protected LinkedList tolist" + cntr + "(");
+            printer.print("protected LinkedList tolist" + cntr + '(');
             for (int var = 1; var <= cntr; var++) {
                 printer.print("Object o" + var);
                 if (var < cntr) printer.print(", ");
@@ -167,7 +167,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         if (len == 0) {
             printer.print("new LinkedList()");
         } else {
-            printer.print(hname + "(");
+            printer.print(hname + '(');
             Iterator i = exprs.iterator();
             while (i.hasNext()) {
                 Expr e = (Expr)i.next();
@@ -213,7 +213,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         public void visit(MapBitRangeAssignStmt s) {
-            printer.print("stmt = new " + "MapBitRangeAssignStmt" + "(");
+            printer.print("stmt = new " + "MapBitRangeAssignStmt" + '(');
             generate(s.mapname);
             printer.print(", ");
             generate(s.index);
@@ -241,7 +241,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         public void visit(VarBitRangeAssignStmt s) {
-            printer.print("stmt = new " + "VarBitRangeAssignStmt" + "(");
+            printer.print("stmt = new " + "VarBitRangeAssignStmt" + '(');
             generate(s.variable);
             printer.print(", ");
             generate(s.low_bit);
@@ -253,7 +253,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         private void generate(String clname, Object o1, Object o2, Object o3, Object o4) {
-            printer.print("stmt = new " + clname + "(");
+            printer.print("stmt = new " + clname + '(');
             generate(o1);
             printer.print(", ");
             generate(o2);
@@ -265,7 +265,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         private void generate(String clname, Object o1, Object o2, Object o3) {
-            printer.print("stmt = new " + clname + "(");
+            printer.print("stmt = new " + clname + '(');
             generate(o1);
             printer.print(", ");
             generate(o2);
@@ -275,7 +275,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         private void generate(String clname, Object o1, Object o2) {
-            printer.print("stmt = new " + clname + "(");
+            printer.print("stmt = new " + clname + '(');
             generate(o1);
             printer.print(", ");
             generate(o2);
@@ -300,7 +300,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         HashMap operands;
 
         public void generate(Arith.BinOp e, String clname) {
-            printer.print("new Arith.BinOp." + clname + "(");
+            printer.print("new Arith.BinOp." + clname + '(');
             e.left.accept(this);
             printer.print(", ");
             e.right.accept(this);
@@ -308,13 +308,13 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         private void generate(Arith.UnOp e, String clname) {
-            printer.print("new Arith.UnOp." + clname + "(");
+            printer.print("new Arith.UnOp." + clname + '(');
             e.operand.accept(this);
             printer.print(")");
         }
 
         public void generate(Logical.BinOp e, String clname) {
-            printer.print("new Logical.BinOp." + clname + "(");
+            printer.print("new Logical.BinOp." + clname + '(');
             e.left.accept(this);
             printer.print(", ");
             e.right.accept(this);
@@ -322,7 +322,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         private void generate(Logical.UnOp e, String clname) {
-            printer.print("new Logical.UnOp." + clname + "(");
+            printer.print("new Logical.UnOp." + clname + '(');
             e.operand.accept(this);
             printer.print(")");
         }
@@ -384,7 +384,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         public void visit(BitRangeExpr e) {
             printer.print("new BitRangeExpr(");
             e.operand.accept(this);
-            printer.print(", " + e.low_bit + ", " + e.high_bit + ")");
+            printer.print(", " + e.low_bit + ", " + e.high_bit + ')');
         }
 
         public void visit(CallExpr e) {
@@ -401,11 +401,11 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
 
         public void visit(Literal.BoolExpr e) {
-            printer.print("new Literal.BoolExpr(" + e.value + ")");
+            printer.print("new Literal.BoolExpr(" + e.value + ')');
         }
 
         public void visit(Literal.IntExpr e) {
-            printer.print("new Literal.IntExpr(" + e.value + ")");
+            printer.print("new Literal.IntExpr(" + e.value + ')');
         }
 
         public void visit(Logical.AndExpr e) {
@@ -462,7 +462,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
             } else {
                 Integer i = getRegister(name);
                 if (i != null) {
-                    printer.print("new Literal.IntExpr(" + i.intValue() + ")");
+                    printer.print("new Literal.IntExpr(" + i.intValue() + ')');
                 } else
                     generateVarUse(e);
             }
@@ -472,12 +472,12 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
             if (e.variable.toString().equals("nextPC"))
                 printer.print("new Literal.IntExpr(nextPC)");
             else
-                printer.print("new VarExpr(" + StringUtil.quote(e.variable) + ")");
+                printer.print("new VarExpr(" + StringUtil.quote(e.variable) + ')');
         }
 
         private void generateOperandUse(Operand op) {
             if (op.integer) {
-                printer.print("new Literal.IntExpr(i." + op.name + ")");
+                printer.print("new Literal.IntExpr(i." + op.name + ')');
             } else {
                 printer.print("new Literal.IntExpr(i." + op.name + ".getNumber())");
             }

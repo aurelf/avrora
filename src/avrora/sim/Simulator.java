@@ -67,7 +67,7 @@ public abstract class Simulator implements IORegisterConstants {
                 String cycstr = StringUtil.rightJustify(clock.getCount(), 10);
                 synchronized ( Terminal.class ) {
                     // synchronize on the terminal to prevent interleaved output
-                    Terminal.println(idstr + " " + cycstr + "   " + s);
+                    Terminal.println(idstr + ' ' + cycstr + "   " + s);
                 }
             } else {
                 throw Avrora.failure("Disabled printer: performance bug!");
@@ -315,7 +315,7 @@ public abstract class Simulator implements IORegisterConstants {
         public final long timeout;
 
         TimeoutException(Instr i, int a, State s, long t, String l) {
-            super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + " " + l);
+            super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + ' ' + l);
             instr = i;
             address = a;
             state = s;

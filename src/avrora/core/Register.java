@@ -265,7 +265,7 @@ public class Register {
          */
         public final String contents;
 
-        private final HashSet registers;
+        private final HashSet registerSet;
 
         /**
          * The constructor for the <code>Set</code> class takes a string that represents the contents of the
@@ -275,14 +275,14 @@ public class Register {
          * @param regs an array of registers that are members of this set
          */
         Set(Register[] regs) {
-            registers = new HashSet(2 * regs.length);
+            registerSet = new HashSet(2 * regs.length);
             for (int cntr = 0; cntr < regs.length; cntr++) {
-                registers.add(regs[cntr]);
+                registerSet.add(regs[cntr]);
             }
 
             StringBuffer buf = new StringBuffer("{");
             for (int cntr = 0; cntr < regs.length; cntr++) {
-                registers.add(regs[cntr]);
+                registerSet.add(regs[cntr]);
                 // abreviate large sets
                 if (cntr == 2 && regs.length > 4) buf.append("..., ");
                 // print first two, and last, or all if the set is fewer than five
@@ -291,7 +291,7 @@ public class Register {
                     if (cntr < regs.length - 1) buf.append(", ");
                 }
             }
-            buf.append("}");
+            buf.append('}');
             contents = buf.toString();
         }
 
@@ -303,7 +303,7 @@ public class Register {
          * @return true if the specified register is a member of this set; false otherwise
          */
         public boolean contains(Register reg) {
-            return registers.contains(reg);
+            return registerSet.contains(reg);
         }
 
         /**

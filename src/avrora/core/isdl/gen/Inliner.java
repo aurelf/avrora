@@ -144,7 +144,7 @@ public class Inliner extends StmtRebuilder.DepthFirst {
 
     protected String inlineCall(Token m, SubroutineDecl d, List args) {
         if (d.numOperands() != args.size())
-            Avrora.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ":" + m.beginColumn);
+            Avrora.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ':' + m.beginColumn);
 
         Context nc = new Context(context);
 

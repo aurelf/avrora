@@ -128,7 +128,7 @@ public class MinMaxMean extends DataItem {
         Terminal.print("\n Statistics: ");
         Terminal.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
         Terminal.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
-        Terminal.print("\n   Mean: " + mean + "\n");
+        Terminal.print("\n   Mean: " + mean + '\n');
     }
 
     /**

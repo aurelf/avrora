@@ -138,11 +138,11 @@ public class Main {
 
             String extension = n.substring(offset).toLowerCase();
 
-            if (extension.equals(".asm"))
+            if (".asm".equals(extension))
                 return new AtmelProgramReader().read(args);
-            if (extension.equals(".s"))
+            if (".s".equals(extension))
                 return new GASProgramReader().read(args);
-            if (extension.equals(".od"))
+            if (".od".equals(extension))
                 return new ObjDumpProgramReader().read(args);
 
             Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
@@ -180,7 +180,7 @@ public class Main {
             parseOptions(args);
             Terminal.setForegroundColor(FOREGROUND.get());
 
-            if ( !CONFIGFILE.get().equals("") ) {
+            if ( !"".equals(CONFIGFILE.get()) ) {
                 loadFile(CONFIGFILE.get());
                 parseOptions(args);
             }
@@ -211,7 +211,7 @@ public class Main {
 
     private static void loadUserDefaults() throws IOException {
         String hdir = System.getProperty("user.home");
-        if (hdir == null || hdir.equals("")) return;
+        if (hdir == null || "".equals(hdir)) return;
 
         File f = new File(hdir + "/.avrora");
         if (f.exists()) {

@@ -38,7 +38,6 @@ package avrora.monitors;
 import avrora.core.ControlFlowGraph.Block;
 import avrora.core.Instr;
 import avrora.core.Program;
-import avrora.core.Program.Location;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.Terminal;
@@ -127,8 +126,8 @@ public class EnergyProfiler extends MonitorFactory {
             currentMode = nearestLabel(0);
             //scan each basic block and fine the corresponding label, e.g. procedure
             Iterator it = program.getCFG().getSortedBlockIterator();
-            int address = 0;
-            int size = 0;
+            int address;
+            int size;
             while (it.hasNext()) {
                 Block block = (Block)it.next();
                 size = block.getSize();
@@ -147,7 +146,7 @@ public class EnergyProfiler extends MonitorFactory {
             Iterator it = program.getLabels().entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry)it.next();
-                Location tempLoc = (Location)entry.getValue();
+                Program.Location tempLoc = (Program.Location)entry.getValue();
                 profiles.add(new EnergyProfile(tempLoc));
             }
         }
@@ -212,7 +211,7 @@ public class EnergyProfiler extends MonitorFactory {
             while (it.hasNext()) {
                 EnergyProfile profile = (EnergyProfile)it.next();
                 if (profile.cycles > 0) {
-                    Terminal.println("   " + profile.location.name + "@" + profile.location.address + ": " + profile.cycles);
+                    Terminal.println("   " + profile.location.name + '@' + profile.location.address + ": " + profile.cycles);
                 }
             }
             if (sleepCycles > 0)
@@ -329,14 +328,14 @@ public class EnergyProfiler extends MonitorFactory {
         /**
          * <code>location</code>: name and address of this procedure
          */
-        public Location location;
+        public Program.Location location;
 
         /**
          * construct a new energy profile
          *
          * @param loc Location, e.g. name and address, of the profile
          */
-        public EnergyProfile(Location loc) {
+        public EnergyProfile(Program.Location loc) {
             cycles = 0;
             location = loc;
         }

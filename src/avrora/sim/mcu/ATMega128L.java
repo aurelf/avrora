@@ -706,7 +706,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             protected void compareMatchA() {
                 if (timerPrinter.enabled) {
                     boolean enabled = xTIMSK_reg.readBit(OCIEnA);
-                    timerPrinter.println("Timer" + n + ".compareMatchA (enabled: " + enabled + ")");
+                    timerPrinter.println("Timer" + n + ".compareMatchA (enabled: " + enabled + ')');
                 }
                 // set the compare flag for this timer
                 xTIFR_reg.flagBit(OCFnA);
@@ -715,7 +715,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             protected void compareMatchB() {
                 if (timerPrinter.enabled) {
                     boolean enabled = xTIMSK_reg.readBit(OCIEnB);
-                    timerPrinter.println("Timer" + n + ".compareMatchB (enabled: " + enabled + ")");
+                    timerPrinter.println("Timer" + n + ".compareMatchB (enabled: " + enabled + ')');
                 }
                 // set the compare flag for this timer
                 xTIFR_reg.flagBit(OCFnB);
@@ -725,7 +725,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 if (timerPrinter.enabled) {
                     // the OCIEnC flag is on ETIMSK for both Timer1 and Timer3
                     boolean enabled = ETIMSK_reg.readBit(OCIEnC);
-                    timerPrinter.println("Timer" + n + ".compareMatchC (enabled: " + enabled + ")");
+                    timerPrinter.println("Timer" + n + ".compareMatchC (enabled: " + enabled + ')');
                 }
                 // the OCFnC flag is on ETIFR for both Timer1 and Timer3
                 // set the compare flag for this timer
@@ -738,7 +738,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             protected void overflow() {
                 if (timerPrinter.enabled) {
                     boolean enabled = xTIMSK_reg.readBit(TOIEn);
-                    timerPrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ")" + "  ");
+                    timerPrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ')' + "  ");
                 }
                 // set the overflow flag for this timer
                 xTIFR_reg.flagBit(TOVn);
@@ -1124,7 +1124,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                     int compareI = read16(ICRnH_reg, ICRnL_reg);
 
                     if (timerPrinter.enabled) {
-                        timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "],  OCR" + n + "B = " + compareB + "], OCR" + n + "C = " + compareC + "]");
+                        timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "],  OCR" + n + "B = " + compareB + "], OCR" + n + "C = " + compareC + ']');
                     }
 
                     // What exactly should I do when I phase/frequency current?
@@ -1383,7 +1383,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             protected void compareMatch() {
                 if (timerPrinter.enabled) {
                     boolean enabled = TIMSK_reg.readBit(OCIEn);
-                    timerPrinter.println("Timer" + n + ".compareMatch (enabled: " + enabled + ")");
+                    timerPrinter.println("Timer" + n + ".compareMatch (enabled: " + enabled + ')');
                 }
                 // set the compare flag for this timer
                 TIFR_reg.flagBit(OCFn);
@@ -1396,7 +1396,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
             protected void overflow() {
                 if (timerPrinter.enabled) {
                     boolean enabled = TIMSK_reg.readBit(TOIEn);
-                    timerPrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ")");
+                    timerPrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ')');
                 }
                 // set the overflow flag for this timer
                 TIFR_reg.flagBit(TOVn);
@@ -1567,7 +1567,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                     int compare = OCRn_reg.read() & 0xff;
                     int countSave = count;
                     if (timerPrinter.enabled)
-                        timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "(actual) = " + compare + ", OCR" + n + "(buffer) = " + (0xff & OCRn_reg.readBuffer()) + "]");
+                        timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "(actual) = " + compare + ", OCR" + n + "(buffer) = " + (0xff & OCRn_reg.readBuffer()) + ']');
 
                     // TODO: this code has one off counting bugs!!!
                     switch (timerMode) {
@@ -1694,7 +1694,6 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 energy.setMode(mode + 1);
 //Terminal.print(simulator.getState().getCycles() + ": " );
 //Terminal.println("sleep start, mode: " + getModeName() + ", " + mode);
-                return;
             }
 
             /**
@@ -2340,7 +2339,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                         receiveFrame(frame);
 
                         if (usartPrinter.enabled)
-                            usartPrinter.println("USART: Received frame " + frame + " " + simulator.getState().getCycles() + " " + UBRRnH_reg.read() + " " + UBRRnL_reg.read() + " " + UBRRMultiplier + " ");
+                            usartPrinter.println("USART: Received frame " + frame + ' ' + simulator.getState().getCycles() + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
 
                         UCSRnA_reg.flagBit(RXCn);
 
@@ -2650,6 +2649,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
          *
          * @author Daniel Lee
          */
+        // TODO: this has major performance problems
         protected class LCDScreen implements USARTDevice {
             Simulator.Printer lcdPrinter = simulator.getPrinter("sim.lcd");
 
@@ -2774,7 +2774,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                     sline1 += line1.get(i);
                     sline2 += line2.get(i);
                 }
-                return "\n" + sline1 + "\n" + sline2 + "\n";
+                return '\n' + sline1 + '\n' + sline2 + '\n';
             }
         }
 
@@ -3576,7 +3576,7 @@ public class ATMega128L extends ATMegaFamily implements Microcontroller, Microco
                 if (size == 9) {
                     return "" + value();
                 } else {
-                    return "" + (char)value() + " (" + value() + ")";
+                    return "" + (char)value() + " (" + value() + ')';
                 }
             }
         }

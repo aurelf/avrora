@@ -431,7 +431,7 @@ public abstract class Expr extends ASTNode {
         }
 
         public String toString() {
-            return "." + op.image + num.image;
+            return '.' + op.image + num.image;
         }
 
         /**

@@ -115,7 +115,7 @@ public class EnergyMonitor extends MonitorFactory {
             while (it.hasNext()) {
                 //for (int i = 0; i < consumer.size(); ++i) {
                 Energy en = (Energy)it.next();
-                write(en.getName() + " ");
+                write(en.getName() + ' ');
             }
             write("total");
             newLine();
@@ -201,7 +201,6 @@ public class EnergyMonitor extends MonitorFactory {
         public void fire(Energy energy) {
             logOldState(energy);
             logCurrentState();
-            return;
         }
 
 
@@ -242,7 +241,7 @@ public class EnergyMonitor extends MonitorFactory {
             //for (int i = 0; i < consumer.size(); ++i) {
             while (it.hasNext()) {
                 Energy en = (Energy)it.next();
-                double amphere = 0.0f;
+                double amphere;
                 if (en != energy) {
                     amphere = en.getCurrentAmphere();
                 } else {
@@ -277,7 +276,7 @@ public class EnergyMonitor extends MonitorFactory {
                     //shutdown this node
                     String idstr = StringUtil.rightJustify(simulator.getID(), 4);
                     String cycstr = StringUtil.rightJustify(simulator.getClock().getCount(), 10);
-                    Terminal.print(idstr + " " + cycstr + "   ");
+                    Terminal.print(idstr + ' ' + cycstr + "   ");
                     Terminal.print("energy limit exceed, shutdown node: ");
                     Terminal.println("consumed " + totalEnergy + " Joule");
                     

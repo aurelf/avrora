@@ -91,7 +91,7 @@ public class ParseException extends AbstractParseException {
                 maxSize = expectedTokenSequences[i].length;
             }
             for (int j = 0; j < expectedTokenSequences[i].length; j++) {
-                expected += tokenImage[expectedTokenSequences[i][j]] + " ";
+                expected += tokenImage[expectedTokenSequences[i][j]] + ' ';
             }
             if (expectedTokenSequences[i][expectedTokenSequences[i].length - 1] != 0) {
                 expected += "...";
@@ -111,7 +111,7 @@ public class ParseException extends AbstractParseException {
             tok = tok.next;
         }
         retval += "\" at line " + next.beginLine + ", column " + next.beginColumn;
-        retval += "." + eol;
+        retval += '.' + eol;
         if (expectedTokenSequences.length == 1) {
             retval += "Was expecting:" + eol + "    ";
         } else {

@@ -73,7 +73,7 @@ public class ReturnStmt extends Stmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return "return " + expr + ";";
+        return "return " + expr + ';';
     }
 
     /**

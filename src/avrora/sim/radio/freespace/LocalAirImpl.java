@@ -38,7 +38,6 @@ package avrora.sim.radio.freespace;
 
 import avrora.sim.Simulator;
 import avrora.sim.radio.Radio;
-import avrora.sim.radio.Radio.RadioPacket;
 import avrora.util.Visual;
 
 import java.util.Iterator;
@@ -165,9 +164,9 @@ public class LocalAirImpl implements LocalAir {
     /**
      * receive a packet
      *
-     * @see avrora.sim.radio.freespace.LocalAir#addPacket(avrora.sim.radio.Radio.RadioPacket, double)
+     * @see avrora.sim.radio.freespace.LocalAir#addPacket
      */
-    public synchronized void addPacket(RadioPacket p, double pow, Radio sender) {
+    public synchronized void addPacket(Radio.RadioPacket p, double pow, Radio sender) {
         packets.addLast(new PowerRadioPacket(p, pow, sender));
         //find the earliest packet
         if (firstPacket == null) {
@@ -208,7 +207,7 @@ public class LocalAirImpl implements LocalAir {
      * @see avrora.sim.radio.freespace.LocalAir#scheduleDelivery(long, avrora.sim.Simulator)
      */
     public void scheduleDelivery(long globalTime, Simulator sim) {
-        long deliveryDelta = 0;
+        long deliveryDelta;
         //when there is at least one packet to deliver, find the right one 
         //and the delivery time
         if (firstPacket != null) {
@@ -220,7 +219,6 @@ public class LocalAirImpl implements LocalAir {
         //when there is a packet to deliver, do so...
         if (deliveryDelta > 0)
             sim.insertEvent(deliver, deliveryDelta);
-        return;
     }
 
     /**

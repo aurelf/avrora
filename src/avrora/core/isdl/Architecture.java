@@ -34,7 +34,6 @@ package avrora.core.isdl;
 
 import avrora.Avrora;
 import avrora.core.isdl.ast.*;
-import avrora.core.isdl.parser.ISDLParserConstants;
 import avrora.core.isdl.parser.Token;
 import avrora.core.isdl.gen.Inliner;
 import avrora.util.Printer;
@@ -119,7 +118,7 @@ public class Architecture {
         while (i.hasNext()) {
             EncodingDecl d = (EncodingDecl)i.next();
             if (printer.enabled) {
-                printer.print("processing encoding " + d.name.image + " ");
+                printer.print("processing encoding " + d.name.image + ' ');
             }
 
             if (d instanceof EncodingDecl.Derived) {
@@ -136,7 +135,7 @@ public class Architecture {
         Iterator i = subroutines.iterator();
         while (i.hasNext()) {
             SubroutineDecl sd = (SubroutineDecl)i.next();
-            printer.print("processing subroutine " + sd.name + " ");
+            printer.print("processing subroutine " + sd.name + ' ');
 
             // find operand decl
             Iterator oi = sd.getOperandIterator();
@@ -158,7 +157,7 @@ public class Architecture {
         Iterator i = getInstrIterator();
         while (i.hasNext()) {
             InstrDecl id = (InstrDecl)i.next();
-            printer.print("processing instruction " + id.name + " ");
+            printer.print("processing instruction " + id.name + ' ');
 
             // inline and optimize the body of the instruction
             List code = id.getCode();

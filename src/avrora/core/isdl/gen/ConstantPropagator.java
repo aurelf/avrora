@@ -522,7 +522,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
     }
 
     public Expr visit(Literal.BoolExpr e, Object env) {
-        if (e.value == true)
+        if (e.value)
             return TRUE;
         else
             return FALSE;

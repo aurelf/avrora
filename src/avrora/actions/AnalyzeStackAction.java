@@ -82,6 +82,8 @@ public class AnalyzeStackAction extends Action {
         super("analyze-stack", HELP);
     }
 
+    public static final int MEGABYTES = 1024 * 1024;
+
     /**
      * The <code>run()</code> method runs the stack analysis by loading the program from the command line
      * options specified, creating an instance of the <code>Analyzer</code> class, and running the analysis.
@@ -96,7 +98,7 @@ public class AnalyzeStackAction extends Action {
         Analyzer.TRACE_SUMMARY = TRACE_SUMMARY.get();
         Analyzer.MONITOR_STATES = MONITOR_STATES.get();
         Analyzer.TRACE = TRACE.get();
-        Analyzer.reserve = new byte[(int)(RESERVE.get() * 1024 * 1024)];
+        Analyzer.reserve = new byte[(int)(RESERVE.get() * MEGABYTES)];
 
         a.run();
         a.report();

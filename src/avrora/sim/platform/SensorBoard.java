@@ -50,7 +50,7 @@ public class SensorBoard {
     // power consumption of the device states
     private final double modeAmphere[] = {0.0007};
     // default mode of the device is on
-    private final int startMode = 0;
+    private static final int startMode = 0;
 
     protected SensorBoard(Simulator s) {
         sim = s;        

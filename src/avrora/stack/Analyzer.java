@@ -214,7 +214,7 @@ public class Analyzer {
         countAggregElems();
         print_just_9(numSets);
         print_just_12(numElems);
-        String s = Long.toString(retCount) + "/" + Long.toString(retiCount);
+        String s = Long.toString(retCount) + '/' + Long.toString(retiCount);
         Terminal.print(StringUtil.rightJustify(s, 12));
         print_just_9(newRetCount);
         print_just_9(newEdgeCount);
@@ -823,7 +823,7 @@ public class Analyzer {
     }
 
     private void printFullState(String head, StateCache.State s) {
-        Terminal.print(head + " ");
+        Terminal.print(head + ' ');
         StatePrinter.printStateName(s);
         Terminal.nextln();
         Instr instr = program.readInstr(s.getPC());

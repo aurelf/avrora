@@ -130,7 +130,7 @@ public class Program {
             else if (isDataSegment())
                 seg = "data";
             else if (isEEPromSegment()) seg = "eeprom";
-            return seg + "_" + StringUtil.toHex(address, 4);
+            return seg + '_' + StringUtil.toHex(address, 4);
         }
 
     }
@@ -546,7 +546,7 @@ public class Program {
         Instr i = instrs[cursor];
 
         if (i != null) {
-            p.println(i.getVariant() + " " + i.getOperands());
+            p.println(i.getVariant() + ' ' + i.getOperands());
 
             return i.getSize();
         } else {

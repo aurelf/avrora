@@ -111,7 +111,7 @@ public abstract class Logical extends Expr {
         }
 
         public String toString() {
-            return innerString(left) + " " + operation + " " + innerString(right);
+            return innerString(left) + ' ' + operation + ' ' + innerString(right);
         }
 
         public int getPrecedence() {

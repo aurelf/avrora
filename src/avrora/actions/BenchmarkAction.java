@@ -134,11 +134,11 @@ public class BenchmarkAction extends SimAction {
         float mhzA = ((float)cyclesA) / (millisA * 1000);
         String mstrA = StringUtil.rightJustify(mhzA, 9);
 
-        Terminal.printBrightCyan(cstrA + " ");
+        Terminal.printBrightCyan(cstrA + ' ');
         Terminal.print("cycles  ");
-        Terminal.printBrightCyan(timA + " ");
+        Terminal.printBrightCyan(timA + ' ');
         Terminal.print("  ");
-        Terminal.printBrightCyan(mstrA + " ");
+        Terminal.printBrightCyan(mstrA + ' ');
         Terminal.print("mhz  ");
         return mhzA;
     }

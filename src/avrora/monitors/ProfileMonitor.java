@@ -119,7 +119,7 @@ public class ProfileMonitor extends MonitorFactory {
                 String addr;
                 if (runlength > 1) {
                     // if there is a run, adjust the count and address strings appropriately
-                    addr = StringUtil.addrToString(start) + "-" + StringUtil.addrToString(cntr);
+                    addr = StringUtil.addrToString(start) + '-' + StringUtil.addrToString(cntr);
                     percent = " x" + runlength;
                 } else {
                     addr = "       " + StringUtil.addrToString(start);
@@ -133,7 +133,7 @@ public class ProfileMonitor extends MonitorFactory {
                     percent += " = " + StringUtil.toFixedFloat(pcnt, 4) + " %";
                 }
 
-                reportQuantity(" " + addr, cnt, percent);
+                reportQuantity(' ' + addr, cnt, percent);
             }
         }
 

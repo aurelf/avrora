@@ -93,7 +93,7 @@ public abstract class Instr implements InstrPrototype {
     }
 
     public String toString() {
-        return getVariant() + " " + getOperands();
+        return getVariant() + ' ' + getOperands();
     }
 
     /**
@@ -189,7 +189,7 @@ public abstract class Instr implements InstrPrototype {
         public final int value;
 
         public InvalidImmediate(int num, int v, int l, int h) {
-            super(num, "value out of required range [" + l + ", " + h + "]");
+            super(num, "value out of required range [" + l + ", " + h + ']');
             low = l;
             high = h;
             value = v;
@@ -535,7 +535,7 @@ public abstract class Instr implements InstrPrototype {
         }
 
         public String getOperands() {
-            return r1 + ", " + r2 + "+" + imm1;
+            return r1 + ", " + r2 + '+' + imm1;
         }
 
         public Instr build(int pc, Operand[] ops) {

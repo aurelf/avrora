@@ -99,7 +99,7 @@ public class MapAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return StringUtil.embed("$" + mapname, index) + " = " + expr + ";";
+        return StringUtil.embed("$" + mapname, index) + " = " + expr + ';';
     }
 
     /**

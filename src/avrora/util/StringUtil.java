@@ -297,7 +297,7 @@ public class StringUtil {
      *         length.
      */
     public static String rightJustify(String s, int width) {
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(width);
         for (int pad = width - s.length(); pad > 0; pad--)
             buf.append(' ');
         buf.append(s);
@@ -368,7 +368,7 @@ public class StringUtil {
      * @return a string representation of the time useful for printing
      */
     public static String milliAsString(long millis) {
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(10);
         long[] result = millisToDays(millis);
 
         if (result[DAYS] > 0) buf.append(result[DAYS] + "d ");
@@ -389,9 +389,9 @@ public class StringUtil {
     public static String milliToSecs(long millis) {
         long secs = millis / 1000;
         millis = millis % 1000;
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(10);
         buf.append(secs);
-        buf.append(".");
+        buf.append('.');
 
         if (millis < 100) buf.append('0');
         if (millis < 10) buf.append('0');
@@ -550,7 +550,7 @@ public class StringUtil {
     }
 
     public static String interval(int low, int high) {
-        return "[" + low + ", " + high + "]";
+        return "[" + low + ", " + high + ']';
     }
 
     public static char alpha(int num) {
@@ -558,7 +558,7 @@ public class StringUtil {
     }
 
     public static String qembed(String s1, String s2, String s3) {
-        return s1 + " " + quote(s2) + " " + s3;
+        return s1 + ' ' + quote(s2) + ' ' + s3;
     }
 
     public static int evaluateIntegerLiteral(String val) {
@@ -719,7 +719,7 @@ public class StringUtil {
     public static String toFixedFloat(float f, int places) {
         if (f > 100) return Float.toString(f);
         // TODO: fix this routine or find an alternative
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(12);
         float radix = 100;
         boolean nonzero = false;
         for (int cntr = 0; cntr < places + 3; cntr++) {

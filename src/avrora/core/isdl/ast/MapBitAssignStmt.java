@@ -109,7 +109,7 @@ public class MapBitAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return StringUtil.embed("$" + mapname, index) + "[" + bit + "]" + " = " + expr + ";";
+        return StringUtil.embed("$" + mapname, index) + '[' + bit + ']' + " = " + expr + ';';
     }
 
     /**

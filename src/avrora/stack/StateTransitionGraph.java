@@ -307,23 +307,23 @@ public class StateTransitionGraph {
 
     private StringBuffer dumpToBuffer(Edge e) {
         StringBuffer buf = new StringBuffer(32);
-        buf.append("[");
+        buf.append('[');
         buf.append(e.source.getUniqueName());
         buf.append("] --(");
         buf.append(Analyzer.EDGE_NAMES[e.type]);
-        buf.append(",");
+        buf.append(',');
         buf.append(e.weight);
         buf.append(")--> [");
         buf.append(e.target.getUniqueName());
-        buf.append("]");
+        buf.append(']');
         return buf;
     }
 
     private StringBuffer dumpToBuffer(StateCache.State state) {
         StringBuffer buf = new StringBuffer(300);
-        buf.append("[");
+        buf.append('[');
         buf.append(state.getUniqueName());
-        buf.append(":");
+        buf.append(':');
         buf.append(state.getType());
         buf.append("] PC=");
         buf.append(StringUtil.addrToString(state.getPC()));
@@ -334,7 +334,7 @@ public class StateTransitionGraph {
         buf.append(" TIMSK=");
         buf.append(AbstractArithmetic.toString(state.getIORegisterAV(IORegisterConstants.TIMSK)));
         for (int cntr = 0; cntr < IORegisterConstants.NUM_REGS; cntr++) {
-            buf.append(" ");
+            buf.append(' ');
             buf.append(AbstractInterpreter.toShortString(state.getRegisterAV(cntr)));
         }
         return buf;

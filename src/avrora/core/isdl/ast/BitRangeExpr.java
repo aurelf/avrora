@@ -164,7 +164,7 @@ public class BitRangeExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return innerString(operand) + "[" + low_bit + ":" + high_bit + "]";
+        return innerString(operand) + '[' + low_bit + ':' + high_bit + ']';
     }
 
     /**

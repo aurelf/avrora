@@ -112,7 +112,7 @@ public class MultiSimulateAction extends SimAction {
         // create the specified number of each type of node
         Iterator i = NODECOUNT.get().iterator();
         String visual = VISUAL.get();
-        if (!visual.equals("")) {
+        if (!"".equals(visual)) {
             //visualisation is turned on
             Visual.connect(visual);
         }

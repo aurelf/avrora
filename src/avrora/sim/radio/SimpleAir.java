@@ -98,10 +98,10 @@ public class SimpleAir implements RadioAir {
     /**
      * The amount of cycles it takes for one byte to be sent.
      */
-    public final int bytePeriod = Radio.TRANSFER_TIME;
-    public final int bitPeriod = Radio.TRANSFER_TIME / 8;
-    public final int bitPeriod2 = Radio.TRANSFER_TIME / 16;
-    public final int sampleTime = 13 * 64;
+    public static final int bytePeriod = Radio.TRANSFER_TIME;
+    public static final int bitPeriod = Radio.TRANSFER_TIME / 8;
+    public static final int bitPeriod2 = Radio.TRANSFER_TIME / 16;
+    public static final int sampleTime = 13 * 64;
 
     public SimpleAir() {
         radios = new HashSet();
@@ -190,7 +190,7 @@ public class SimpleAir implements RadioAir {
             try {
                 synchronized (w) {
                     if (rssiPrinter.enabled) {
-                        rssiPrinter.println("RSSI: wait @ " + t + " " + w);
+                        rssiPrinter.println("RSSI: wait @ " + t + ' ' + w);
                     }
                     // check that no thread got to us in between giving up the global lock
                     if (w.shouldWait) w.wait();

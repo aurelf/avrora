@@ -88,7 +88,7 @@ public class VarAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return variable.image + " = " + expr + ";";
+        return variable.image + " = " + expr + ';';
     }
 
     /**

@@ -98,7 +98,7 @@ public class IfStmt extends Stmt {
         StringUtil.linelist(buf, trueBranch);
         buf.append("} else {\n");
         StringUtil.linelist(buf, falseBranch);
-        buf.append("}");
+        buf.append('}');
         return buf.toString();
     }
 

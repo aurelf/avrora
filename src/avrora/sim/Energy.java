@@ -57,11 +57,11 @@ public class Energy {
     //cycles spend in each state
     private long cycles[];
     // current state, e.g. mode
-    private int currentMode = 0;
+    private int currentMode;
     // the mode (e.g. state) the system was in before
-    private int oldMode = 0;
+    private int oldMode;
     // cycle the state was changed last
-    private long lastChange = 0;
+    private long lastChange;
     // voltage, needed for computation of energy consumption
     private static final double voltage = 3.0d;
     // mcu frequecy
@@ -115,9 +115,7 @@ public class Energy {
             currentMode = mode;
             lastChange = state.getCycles();
             energyControl.stateChange(this);
-            return;
         }
-        return;
     }
 
     /**

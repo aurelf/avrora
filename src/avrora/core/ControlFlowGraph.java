@@ -242,7 +242,7 @@ public class ControlFlowGraph {
      * The <code>edges</code> field contains a reference to the list of edges (instances of class
      * <code>Edge</code>) within this control flow graph.
      */
-    protected final List edges;
+    protected final List allEdges;
 
     /**
      * The <code>program</code> field stores a reference to the program to which this control flow graph
@@ -267,7 +267,7 @@ public class ControlFlowGraph {
     ControlFlowGraph(Program p) {
         program = p;
         blocks = new HashMap();
-        edges = new LinkedList();
+        allEdges = new LinkedList();
     }
 
     /**
@@ -295,7 +295,7 @@ public class ControlFlowGraph {
     public void addEdge(Block s, Block t, String type) {
         Edge edge = new Edge(type, s, t);
         s.edges.add(edge);
-        edges.add(edge);
+        allEdges.add(edge);
     }
 
     /**
@@ -308,7 +308,7 @@ public class ControlFlowGraph {
     public void addEdge(Block s, Block t) {
         Edge edge = new Edge("", s, t);
         s.edges.add(edge);
-        edges.add(edge);
+        allEdges.add(edge);
     }
 
     /**
@@ -365,7 +365,7 @@ public class ControlFlowGraph {
      * @return an instance of <code>Iterator</code> that iterates over the edges of this control flow graph.
      */
     public Iterator getEdgeIterator() {
-        return edges.iterator();
+        return allEdges.iterator();
     }
 
     private ProcedureMap pmap;

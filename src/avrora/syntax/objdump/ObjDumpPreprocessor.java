@@ -139,7 +139,7 @@ public class ObjDumpPreprocessor {
                     out.append("\nlabel 0x");
                     StringTokenizer st = new StringTokenizer(line);
                     out.append(st.nextToken());
-                    out.append("  " + (st.nextToken()).replaceAll("[<,>]", "\"") + "\n");
+                    out.append("  " + (st.nextToken()).replaceAll("[<,>]", "\"") + '\n');
                 } else {
 
                     String tok;
@@ -156,7 +156,7 @@ public class ObjDumpPreprocessor {
                                 out.append("  " + tok);
 
                         }
-                        out.append("\n");
+                        out.append('\n');
                     }
                 }
             }

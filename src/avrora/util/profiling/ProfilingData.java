@@ -64,7 +64,7 @@ public abstract class ProfilingData {
             int stars = (int)fstars;
             if ((fstars - stars) >= 0.5) stars++;
 
-            Terminal.print("\n" + (base + cntr) + ":" + data[cntr] + "\t");
+            Terminal.print("\n" + (base + cntr) + ':' + data[cntr] + '\t');
 
             for (int scntr = 0; scntr < stars; scntr++) {
                 Terminal.print("*");

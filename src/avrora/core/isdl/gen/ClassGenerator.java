@@ -116,14 +116,14 @@ public class ClassGenerator {
             while (i.hasNext()) {
                 printer.print("public final ");
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                printer.print(o.getType() + " ");
-                printer.println(o.name.toString() + ";");
+                printer.print(o.getType() + ' ');
+                printer.println(o.name.toString() + ';');
             }
         }
 
         private void emitConstructor(String cName, InstrDecl d) {
             // emit the declaration of the constructor
-            printer.print("private " + cName + "(");
+            printer.print("private " + cName + '(');
             emitParams(d);
             printer.startblock(")");
 
@@ -132,7 +132,7 @@ public class ClassGenerator {
             while (i.hasNext()) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String n = o.name.toString();
-                printer.println("this." + n + " = " + n + ";");
+                printer.println("this." + n + " = " + n + ';');
             }
 
             printer.endblock();
@@ -161,14 +161,14 @@ public class ClassGenerator {
             printer.startblock("public static Instr." + cName + " new" + cName + "(Operand[] ops)");
             printer.println("count(ops, " + d.operands.size() + ");");
 
-            printer.print("return new " + cName + "(");
+            printer.print("return new " + cName + '(');
             // emit the checking code for each operand
             Iterator i = d.getOperandIterator();
             int cntr = 0;
             while (i.hasNext()) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String asMeth = o.isRegister() ? "asReg" : "asImm";
-                printer.print("check_" + o.type.image + "(" + cntr + ", " + asMeth + "(" + cntr + ", ops))");
+                printer.print("check_" + o.type.image + '(' + cntr + ", " + asMeth + '(' + cntr + ", ops))");
                 if (i.hasNext()) printer.print(", ");
                 cntr++;
             }
@@ -177,18 +177,18 @@ public class ClassGenerator {
         }
 
         private void emitSpecificMethod(String cName, InstrDecl d) {
-            printer.print("public static Instr." + cName + " new" + cName + "(");
+            printer.print("public static Instr." + cName + " new" + cName + '(');
             emitParams(d);
             printer.startblock(")");
 
-            printer.print("return new " + cName + "(");
+            printer.print("return new " + cName + '(');
             // emit the checking code for each operand
             Iterator i = d.getOperandIterator();
             int cntr = 0;
             while (i.hasNext()) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i.next();
                 String n = o.name.toString();
-                printer.print("check_" + o.type.image + "(" + cntr + ", " + n + ")");
+                printer.print("check_" + o.type.image + '(' + cntr + ", " + n + ')');
                 if (i.hasNext()) printer.print(", ");
                 cntr++;
             }
@@ -201,7 +201,7 @@ public class ClassGenerator {
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {
             CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-            printer.print(o.getType() + " ");
+            printer.print(o.getType() + ' ');
             printer.print(o.name.toString());
             if (i.hasNext()) printer.print(", ");
         }

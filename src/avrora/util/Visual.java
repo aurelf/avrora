@@ -79,7 +79,7 @@ public class Visual {
 
     public static synchronized void send(int node, String messageType, String m, int[] mA) {
         if (connected) {
-            String send = node + " " + messageType + " " + m;
+            String send = node + " " + messageType + ' ' + m;
             for (int i = 0; i < mA.length; i++) {
                 send += " " + mA[i];
             }
@@ -90,25 +90,25 @@ public class Visual {
 
     public static synchronized void send(int node, String messageType, String message) {
         if (connected) {
-            out(node + " " + messageType + " " + message + "\n");
+            out(node + " " + messageType + ' ' + message + '\n');
         }
     }
 
     public static synchronized void send(int node, String messageType, int message) {
         if (connected) {
-            out(node + " " + messageType + " " + message + "\n");
+            out(node + " " + messageType + ' ' + message + '\n');
         }
     }
 
     public static synchronized void send(int node, String messageType, String m1, String m2) {
         if (connected) {
-            out(node + " " + messageType + " " + m1 + " " + m2 + "\n");
+            out(node + " " + messageType + ' ' + m1 + ' ' + m2 + '\n');
         }
     }
 
     public static synchronized void send(int node, String messageType, int m1, int m2) {
         if (connected) {
-            out(node + " " + messageType + " " + m1 + " " + m2 + "\n");
+            out(node + " " + messageType + ' ' + m1 + ' ' + m2 + '\n');
         }
     }
 

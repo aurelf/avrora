@@ -44,7 +44,7 @@ import java.io.PrintStream;
 public final class Terminal {
 
     public static boolean useColors = true;
-    public static boolean htmlColors = false;
+    public static boolean htmlColors;
 
     private static PrintStream out = System.out;
 

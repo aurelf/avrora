@@ -136,7 +136,7 @@ public abstract class SimAction extends Action {
      */
     protected PlatformFactory getPlatform() {
         String pf = PLATFORM.get();
-        if (pf.equals("")) return null;
+        if ("".equals(pf)) return null;
         PlatformFactory pff = Platforms.getPlatform(pf);
         if (pff == null)
             Avrora.userError("Unknown platform", StringUtil.quote(pf));
@@ -155,7 +155,7 @@ public abstract class SimAction extends Action {
         Terminal.printGreen(name);
         Terminal.print(": ");
         Terminal.printBrightCyan(val);
-        Terminal.println(" " + units);
+        Terminal.println(' ' + units);
     }
 
     /**

@@ -937,7 +937,7 @@ public class ObjDumpParser extends AbstractParser implements ObjDumpParserConsta
         r1 = Register();
         jj_consume_token(156);
         r2 = Register();
-        module.addInstruction(t.image + "d", t, r1, r2);
+        module.addInstruction(t.image + 'd', t, r1, r2);
     }
 
     final public void InstrLPMGPRGPRP() throws ParseException {

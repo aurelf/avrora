@@ -144,6 +144,6 @@ public abstract class MonitorFactory {
         Terminal.printGreen(name);
         Terminal.print(": ");
         Terminal.printBrightCyan(val);
-        Terminal.println(" " + units);
+        Terminal.println(' ' + units);
     }
 }

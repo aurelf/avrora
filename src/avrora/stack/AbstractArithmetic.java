@@ -624,7 +624,7 @@ public class AbstractArithmetic {
      * @return a string representation of the abstract value
      */
     public static String toString(char av1) {
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(9);
         toString(av1, buf);
         return buf.toString();
     }
@@ -638,7 +638,7 @@ public class AbstractArithmetic {
      */
     public static String toShortString(char av1) {
         if (av1 == ZERO) return "0";
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(9);
         toString(av1, buf);
         return buf.toString();
     }

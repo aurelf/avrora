@@ -53,6 +53,6 @@ public class ProgramPoint {
     }
 
     public String toString() {
-        return file + " " + line + ":" + beginColumn;
+        return file + ' ' + line + ':' + beginColumn;
     }
 }

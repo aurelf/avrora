@@ -2,7 +2,6 @@
 package avrora.core.isdl.parser;
 
 import avrora.core.isdl.ast.*;
-import avrora.core.isdl.*;
 
 import java.util.List;
 import java.util.LinkedList;

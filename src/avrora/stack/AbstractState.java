@@ -214,7 +214,7 @@ public abstract class AbstractState implements IORegisterConstants {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer();
+        StringBuffer buf = new StringBuffer(100);
         buf.append("PC: ");
         buf.append(StringUtil.toHex(pc, 4));
 

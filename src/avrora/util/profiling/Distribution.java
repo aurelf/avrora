@@ -136,7 +136,7 @@ public class Distribution extends MinMaxMean {
         Terminal.print("\n Statistics: ");
         Terminal.print("\n   Minimum: " + observedMinimum + ", " + countMinimum + " occurences of min.");
         Terminal.print("\n   Maximum: " + observedMaximum + ", " + countMaximum + " occurences of max.");
-        Terminal.print("\n   Mean: " + mean + ", Median: " + median + "\n");
+        Terminal.print("\n   Mean: " + mean + ", Median: " + median + '\n');
 
         if (distribname != null) {
             Terminal.print("\n Distribution: ");
