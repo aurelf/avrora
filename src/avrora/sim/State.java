@@ -28,21 +28,7 @@ public class State implements IORegisterConstants {
     private final int sram_start;
     private final int sram_max;
 
-    // TODO: collapse some of this information with AbstractState.
-    /**
-     * Constants needed internally.
-     */
-    public static final int FLAG_I = 7;
-    public static final int FLAG_T = 6;
-    public static final int FLAG_H = 5;
-    public static final int FLAG_S = 4;
-    public static final int FLAG_V = 3;
-    public static final int FLAG_N = 2;
-    public static final int FLAG_Z = 1;
-    public static final int FLAG_C = 0;
-
     public static final int NUM_REGS = 32;
-
     private static final int SRAM_MINSIZE = 128;
 
 
@@ -209,23 +195,23 @@ public class State implements IORegisterConstants {
         else ioregs[SREG].clearBit(bit);
     }
 
-    public void setFlag_I(boolean val) { setSREG_bit(FLAG_I, val); }
-    public void setFlag_T(boolean val) { setSREG_bit(FLAG_T, val); }
-    public void setFlag_H(boolean val) { setSREG_bit(FLAG_H, val); }
-    public void setFlag_S(boolean val) { setSREG_bit(FLAG_S, val); }
-    public void setFlag_V(boolean val) { setSREG_bit(FLAG_V, val); }
-    public void setFlag_N(boolean val) { setSREG_bit(FLAG_N, val); }
-    public void setFlag_Z(boolean val) { setSREG_bit(FLAG_Z, val); }
-    public void setFlag_C(boolean val) { setSREG_bit(FLAG_C, val); }
+    public void setFlag_I(boolean val) { setSREG_bit(SREG_I, val); }
+    public void setFlag_T(boolean val) { setSREG_bit(SREG_T, val); }
+    public void setFlag_H(boolean val) { setSREG_bit(SREG_H, val); }
+    public void setFlag_S(boolean val) { setSREG_bit(SREG_S, val); }
+    public void setFlag_V(boolean val) { setSREG_bit(SREG_V, val); }
+    public void setFlag_N(boolean val) { setSREG_bit(SREG_N, val); }
+    public void setFlag_Z(boolean val) { setSREG_bit(SREG_Z, val); }
+    public void setFlag_C(boolean val) { setSREG_bit(SREG_C, val); }
 
-    public boolean getFlag_I() { return ioregs[SREG].readBit(FLAG_I); }
-    public boolean getFlag_T() { return ioregs[SREG].readBit(FLAG_T); }
-    public boolean getFlag_H() { return ioregs[SREG].readBit(FLAG_H); }
-    public boolean getFlag_S() { return ioregs[SREG].readBit(FLAG_S); }
-    public boolean getFlag_V() { return ioregs[SREG].readBit(FLAG_V); }
-    public boolean getFlag_N() { return ioregs[SREG].readBit(FLAG_N); }
-    public boolean getFlag_Z() { return ioregs[SREG].readBit(FLAG_Z); }
-    public boolean getFlag_C() { return ioregs[SREG].readBit(FLAG_C); }
+    public boolean getFlag_I() { return ioregs[SREG].readBit(SREG_I); }
+    public boolean getFlag_T() { return ioregs[SREG].readBit(SREG_T); }
+    public boolean getFlag_H() { return ioregs[SREG].readBit(SREG_H); }
+    public boolean getFlag_S() { return ioregs[SREG].readBit(SREG_S); }
+    public boolean getFlag_V() { return ioregs[SREG].readBit(SREG_V); }
+    public boolean getFlag_N() { return ioregs[SREG].readBit(SREG_N); }
+    public boolean getFlag_Z() { return ioregs[SREG].readBit(SREG_Z); }
+    public boolean getFlag_C() { return ioregs[SREG].readBit(SREG_C); }
 
     public byte readStackByte() {
         int address = readSP();
@@ -374,14 +360,14 @@ public class State implements IORegisterConstants {
         ColorTerminal.print("    ");
         printPair("PC", pc, pc_delta);
         printPair("CC", cycles, true);
-        printPair("I", getBitAsString(sreg, FLAG_I), flag_delta[FLAG_I]);
-        printPair("T", getBitAsString(sreg, FLAG_T), flag_delta[FLAG_T]);
-        printPair("H", getBitAsString(sreg, FLAG_H), flag_delta[FLAG_H]);
-        printPair("S", getBitAsString(sreg, FLAG_S), flag_delta[FLAG_S]);
-        printPair("V", getBitAsString(sreg, FLAG_V), flag_delta[FLAG_V]);
-        printPair("N", getBitAsString(sreg, FLAG_N), flag_delta[FLAG_N]);
-        printPair("Z", getBitAsString(sreg, FLAG_Z), flag_delta[FLAG_Z]);
-        printPair("C", getBitAsString(sreg, FLAG_C), flag_delta[FLAG_C]);
+        printPair("I", getBitAsString(sreg, SREG_I), flag_delta[SREG_I]);
+        printPair("T", getBitAsString(sreg, SREG_T), flag_delta[SREG_T]);
+        printPair("H", getBitAsString(sreg, SREG_H), flag_delta[SREG_H]);
+        printPair("S", getBitAsString(sreg, SREG_S), flag_delta[SREG_S]);
+        printPair("V", getBitAsString(sreg, SREG_V), flag_delta[SREG_V]);
+        printPair("N", getBitAsString(sreg, SREG_N), flag_delta[SREG_N]);
+        printPair("Z", getBitAsString(sreg, SREG_Z), flag_delta[SREG_Z]);
+        printPair("C", getBitAsString(sreg, SREG_C), flag_delta[SREG_C]);
 
         ColorTerminal.print("\n    ");
 

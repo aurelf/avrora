@@ -121,4 +121,13 @@ public interface IORegisterConstants {
     public final int DDRE   = 0x02;
     public final int PINE   = 0x01;
     public final int PINF   = 0x00;
+
+    public final int SREG_I = 7;
+    public final int SREG_T = 6;
+    public final int SREG_H = 5;
+    public final int SREG_S = 4;
+    public final int SREG_V = 3;
+    public final int SREG_N = 2;
+    public final int SREG_Z = 1;
+    public final int SREG_C = 0;
 }

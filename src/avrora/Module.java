@@ -455,7 +455,7 @@ public class Module extends VPCBase implements Context {
         // TODO: pull out machine-specific constants to somewhere.
         constant("RAMEND", 4095);
 
-        // TODO: double check these IO register numbers.
+        // TODO: use numbers definition in IORegisterConstants
         ioreg("UCSR1C", 0x9D);
         ioreg("UDR1", 0x9C);
         ioreg("UCSR1A", 0x9B);

@@ -2,6 +2,7 @@ package avrora.stack;
 
 import vpc.VPCBase;
 import avrora.sir.Register;
+import avrora.sim.IORegisterConstants;
 
 /**
  * The <code>AbstractState</code> class represents a state in the
@@ -18,10 +19,10 @@ import avrora.sir.Register;
  * is clear, then the value of bit(regs[R], i) is unknown in
  * this abstract value.
  *
- * Since there are 3 possible states (on, off, unknown) for each
+ * Since there are 3 possible values (on, off, unknown) for each
  * bit in the abstract state and there are two bits reserved for
  * representing each of these states, there are 4 bit states
- * and 3 abstract states. We canonicalize the values when the
+ * to represent 3 values. We canonicalize the values when the
  * bit value is unknown, i.e. when the known mask bit is clear,
  * then the value bit is clear as well. This makes comparison
  * of canonical abstract values the same as character equality.
@@ -30,13 +31,13 @@ import avrora.sir.Register;
  *
  * @author Ben L. Titzer
  */
-public class AbstractState {
+public class AbstractState implements IORegisterConstants {
 
     private static final char KNOWN_MASK = 0xFF00;
     private static final char BIT_MASK = 0x00FF;
     private static final int SHIFT = 8;
 
-    public static final int NUM_REGS = 32;
+    public static final int  NUM_REGS = 32;
     public static final char ZERO = KNOWN_MASK;
     public static final char ON = 0x101;
     public static final char OFF = 0x100;
@@ -55,16 +56,6 @@ public class AbstractState {
         131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
         181, 191
     };
-
-    public static final int FLAG_I = 7;
-    public static final int FLAG_T = 6;
-    public static final int FLAG_H = 5;
-    public static final int FLAG_S = 4;
-    public static final int FLAG_V = 3;
-    public static final int FLAG_N = 2;
-    public static final int FLAG_Z = 1;
-    public static final int FLAG_C = 0;
-
 
     public AbstractState() {
         regs = new char[NUM_REGS];
@@ -132,23 +123,23 @@ public class AbstractState {
         SREG = canon((char)(SREG ^ getBit(val, bit)));
     }
 
-    public void setFlag_I(char val) { setSREG_bit(FLAG_I, val); }
-    public void setFlag_T(char val) { setSREG_bit(FLAG_T, val); }
-    public void setFlag_H(char val) { setSREG_bit(FLAG_H, val); }
-    public void setFlag_S(char val) { setSREG_bit(FLAG_S, val); }
-    public void setFlag_V(char val) { setSREG_bit(FLAG_V, val); }
-    public void setFlag_N(char val) { setSREG_bit(FLAG_N, val); }
-    public void setFlag_Z(char val) { setSREG_bit(FLAG_Z, val); }
-    public void setFlag_C(char val) { setSREG_bit(FLAG_C, val); }
+    public void setFlag_I(char val) { setSREG_bit(SREG_I, val); }
+    public void setFlag_T(char val) { setSREG_bit(SREG_T, val); }
+    public void setFlag_H(char val) { setSREG_bit(SREG_H, val); }
+    public void setFlag_S(char val) { setSREG_bit(SREG_S, val); }
+    public void setFlag_V(char val) { setSREG_bit(SREG_V, val); }
+    public void setFlag_N(char val) { setSREG_bit(SREG_N, val); }
+    public void setFlag_Z(char val) { setSREG_bit(SREG_Z, val); }
+    public void setFlag_C(char val) { setSREG_bit(SREG_C, val); }
 
-    public char getFlag_I() { return getBit(SREG, FLAG_I); }
-    public char getFlag_T() { return getBit(SREG, FLAG_T); }
-    public char getFlag_H() { return getBit(SREG, FLAG_H); }
-    public char getFlag_S() { return getBit(SREG, FLAG_S); }
-    public char getFlag_V() { return getBit(SREG, FLAG_V); }
-    public char getFlag_N() { return getBit(SREG, FLAG_N); }
-    public char getFlag_Z() { return getBit(SREG, FLAG_Z); }
-    public char getFlag_C() { return getBit(SREG, FLAG_C); }
+    public char getFlag_I() { return getBit(SREG, SREG_I); }
+    public char getFlag_T() { return getBit(SREG, SREG_T); }
+    public char getFlag_H() { return getBit(SREG, SREG_H); }
+    public char getFlag_S() { return getBit(SREG, SREG_S); }
+    public char getFlag_V() { return getBit(SREG, SREG_V); }
+    public char getFlag_N() { return getBit(SREG, SREG_N); }
+    public char getFlag_Z() { return getBit(SREG, SREG_Z); }
+    public char getFlag_C() { return getBit(SREG, SREG_C); }
 
     public char readIORegister(int num) {
         // TODO: read correct IO registers
