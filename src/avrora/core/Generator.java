@@ -338,7 +338,7 @@ public class Generator extends VPCBase {
         instr("sub", GPR_GPR, _1cyc, "subtract register from register");
         instr("subi", HGPR_IMM8, _1cyc, "subtract immediate from register");
         instr("swap", GPR_, _1cyc, "swap nibbles in register");
-        instr("tst", GPR_, _1cyc, "compare registers");
+        instr("tst", GPR_, _1cyc, "test for zero or minus");
         instr("wdr", NONE, _1cyc, "watchdog timer reset");
 
     }

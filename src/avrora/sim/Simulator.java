@@ -933,6 +933,8 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     public void visit(Instr.CPSE i) { // compare and skip next instruction if equal
         int r1 = state.readRegister(i.r1);
         int r2 = state.readRegister(i.r2);
+        // TODO: test this instruction more thoroughly!!!!
+        performSubtraction(r1, r2, 0);
         if (r1 == r2) skip();
     }
 
@@ -1397,8 +1399,9 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     public void visit(Instr.TST i) { // test for zero or minus
         int r1 = state.readRegister(i.r1);
         state.setFlag_V(false);
-        computeFlag_ZN(r1);
-        computeFlag_S();
+        state.setFlag_Z((r1 & 0xff) == 0);
+        state.setFlag_N(Arithmetic.getBit(r1, 7));
+        state.setFlag_S(xor(state.getFlag_N(), state.getFlag_V()));
     }
 
     public void visit(Instr.WDR i) { // watchdog reset
@@ -1488,15 +1491,6 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         state.setFlag_Z(Z);
         state.setFlag_V(V);
         state.setFlag_S(S);
-    }
-
-    private void computeFlag_ZN(int result) {
-        state.setFlag_Z((result & 0xff) == 0);
-        state.setFlag_N(Arithmetic.getBit(result, 7));
-    }
-
-    private void computeFlag_S() {
-        state.setFlag_S(xor(state.getFlag_N(), state.getFlag_V()));
     }
 
     private int performAddition(int r1, int r2, int carry) {

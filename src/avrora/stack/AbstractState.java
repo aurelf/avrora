@@ -10,25 +10,6 @@ import avrora.sim.IORegisterConstants;
  * the general purpose registers and a couple of IO registers that
  * control the interrupt behavior.
  *
- * The abstract values (e.g. register values) are represented as
- * characters. Thus, an 8 bit register is modelled using a 16-bit
- * character. The upper 8 bits represent the "mask", those bits
- * which are known. The lower 8 bits represent the known bits
- * of the value. Thus, if bit(regs[R], i+8) is set, then bit(R, i)
- * is known and its value is bit(regs[R], i). If bit(regs[R], i+8)
- * is clear, then the value of bit(regs[R], i) is unknown in
- * this abstract value.
- *
- * Since there are 3 possible values (on, off, unknown) for each
- * bit in the abstract state and there are two bits reserved for
- * representing each of these states, there are 4 bit states
- * to represent 3 values. We canonicalize the values when the
- * bit value is unknown, i.e. when the known mask bit is clear,
- * then the value bit is clear as well. This makes comparison
- * of canonical abstract values the same as character equality.
- * All abstract values stored within <code>AbstractState</code>
- * are canonical for efficiency and clarity.
- *
  * @author Ben L. Titzer
  */
 public class AbstractState implements IORegisterConstants {
