@@ -28,7 +28,7 @@ import avrora.stack.Analyzer;
  */
 public class Main extends VPCBase {
 
-    static final String VERSION = "0.9.1";
+    static final String VERSION = "0.9.2";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -136,12 +136,12 @@ public class Main extends VPCBase {
             processBreakPoints();
             processCounters();
             processBranchCounters();
+            processTotal();
+            processTimeout();
 
             if ( TRACE.get() ) {
                 simulator.insertProbe(Simulator.TRACEPROBE);
             }
-
-            processTotal();
 
             startms = System.currentTimeMillis();
             try {
@@ -238,6 +238,12 @@ public class Main extends VPCBase {
         void reportTotal() {
             if ( total != null )
                 reportQuantity("Total instructions executed", total.count, "");
+        }
+
+        void processTimeout() {
+            long timeout = TIMEOUT.get();
+            if ( timeout > 0 )
+                simulator.insertProbe(new Simulator.InstructionCountTimeout(timeout));
         }
 
         void reportTime() {

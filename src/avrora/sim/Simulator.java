@@ -302,7 +302,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         public void fireAfterWrite(Instr i, int address, State state, byte value);
     }
 
-    class BreakPointException extends RuntimeException {
+    public static class BreakPointException extends RuntimeException {
         public final Instr instr;
         public final int address;
         public final State state;
@@ -312,6 +312,21 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
             instr = i;
             address = a;
             state = s;
+        }
+    }
+
+    public static class TimeoutException extends RuntimeException {
+        public final Instr instr;
+        public final int address;
+        public final State state;
+        public final long timeout;
+
+        TimeoutException(Instr i, int a, State s, long t) {
+            super("timeout @ " + VPCBase.toPaddedUpperHex(a, 4) + " reached after "+t+" instructions");
+            instr = i;
+            address = a;
+            state = s;
+            timeout = t;
         }
     }
 
@@ -1572,6 +1587,25 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         setFlag_NZVS(N, Z, V, S);
 
         return result;
+    }
+
+    public static class InstructionCountTimeout implements Probe {
+        final long timeout;
+        long left;
+
+        public InstructionCountTimeout(long t) {
+            timeout = t;
+            left = t;
+        }
+
+        public void fireBefore(Instr i, int address, State s) {
+            if ( --left <= 0 )
+                throw new TimeoutException(i, address, s, timeout);
+        }
+
+        public void fireAfter(Instr i, int address, State s) {
+            // do nothing.
+        }
     }
 
 }
