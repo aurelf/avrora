@@ -105,7 +105,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.18";
+    static final String VERSION = "Beta 1.1.19";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -139,7 +139,7 @@ public class Main {
             "easier inclusion in webpages.");
     public static final Option.List INDIRECT_EDGES = mainOptions.newOptionList("indirect-edges", "",
             "This option can be used to specify the possible targets of indirect calls and " +
-            "jumps within a program, which may be needed in performing stack analysis or" +
+            "jumps within a program, which may be needed in performing stack analysis or " +
             "building a control flow graph. Each element of the list is a pair of " +
             "program addresses separated by a colon, where a program address can be a " +
             "label or a hexadecimal number preceded by a \"$\". The first program address " +
