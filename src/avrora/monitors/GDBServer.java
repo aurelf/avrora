@@ -488,8 +488,9 @@ public class GDBServer extends MonitorFactory {
             public void fireBefore(Instr i, int address, State s) {
                 if ( printer.enabled ) {
                     printer.println("--IN STARTUP PROBE @ "+StringUtil.addrToString(address)+"--");
-                    Terminal.println("GDBServer listening on port "+port+"...");
                 }
+                Terminal.println("GDBServer listening on port "+port+"...");
+                Terminal.flush();
                 try {
                     socket = serverSocket.accept();
                     input = socket.getInputStream();

@@ -216,6 +216,10 @@ public final class Terminal {
         outputColor(COLOR_BRIGHT_CYAN, s);
     }
 
+    public static void flush() {
+        out.flush();
+    }
+
     public static void printSeparator(int width) {
         while (width > 0) {
             Terminal.print("=");

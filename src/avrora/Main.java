@@ -246,7 +246,7 @@ public class Main {
                         Terminal.COLOR_YELLOW,
                         -1};
 
-        String strs[] = {"Usage", ": ", "avrora", " [", "-action", "=", "<action>", "] [", "options", "] ", "<files>"};
+        String strs[] = {"Usage", ": ", "avrora", " [", "-action", "=", "action", "] [", "options", "] ", "<files>"};
         Terminal.print(colors, strs);
         Terminal.nextln();
 
@@ -257,7 +257,7 @@ public class Main {
                          Terminal.COLOR_YELLOW,
                          -1};
 
-        String strs2[] = {"Usage", ": ", "avrora -help", " [", "<action>", "]"};
+        String strs2[] = {"Usage", ": ", "avrora -help", " [", "action", "]"};
         Terminal.print(colors2, strs2);
         Terminal.println("\n");
 

@@ -254,7 +254,8 @@ public abstract class SimAction extends Action {
         while (i.hasNext()) {
             MonitorFactory mf = (MonitorFactory)i.next();
             Monitor m = mf.newMonitor(simulator);
-            ml.addLast(m);
+            if ( m != null )
+                ml.addLast(m);
         }
         monitorListMap.put(simulator, ml);
         return simulator;
