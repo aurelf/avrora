@@ -673,6 +673,12 @@ public abstract class BaseInterpreter implements State {
         }
     }
 
+    /**
+     * The <code>getCurrentInstr()</code> method reads the instruction at the current
+     * program counter value (PC).
+     * @return a reference to the <code>Instr</code> representing the instruction at
+     * the current program counter value
+     */
     public Instr getCurrentInstr() {
         return getInstr(pc);
     }

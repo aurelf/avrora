@@ -40,10 +40,7 @@ import avrora.sim.mcu.Microcontrollers;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
 import avrora.sim.Simulator;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Options;
+import avrora.util.*;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -83,13 +80,13 @@ public abstract class SimAction extends Action {
             "Monitors collect information about the execution of the program while it " +
             "is running such as profiling data or timing information.");
 
-    protected HashMap monitorNameMap;
+    protected ClassMap monitorMap;
     protected LinkedList monitorFactoryList;
     protected HashMap monitorListMap;
 
     protected SimAction(String sn, String h) {
         super(sn, h);
-        monitorNameMap = new HashMap();
+        monitorMap = new ClassMap("Monitor", MonitorFactory.class);
         addNewMonitorType(new ProfileMonitor());
         addNewMonitorType(new MemoryMonitor());
         addNewMonitorType(new SleepMonitor());
@@ -99,7 +96,7 @@ public abstract class SimAction extends Action {
     }
 
     private void addNewMonitorType(MonitorFactory f) {
-        monitorNameMap.put(f.getShortName(), f);
+        monitorMap.addClass(f.getShortName(), f.getClass());
     }
 
     /**
@@ -161,21 +158,7 @@ public abstract class SimAction extends Action {
         Iterator i = l.iterator();
         while ( i.hasNext() ) {
             String clname = (String)i.next();
-            MonitorFactory mf = (MonitorFactory)monitorNameMap.get(clname);
-            if ( mf == null ) {
-                try {
-                    Class mfc = Class.forName(clname);
-                    mf = (MonitorFactory)mfc.newInstance();
-                } catch (ClassNotFoundException e) {
-                    Avrora.userError("Monitor class not found", StringUtil.quote(clname));
-                } catch (ClassCastException e) {
-                    Avrora.userError("The specified class does not extend avrora.monitors.MonitorFactory", StringUtil.quote(clname));
-                } catch (InstantiationException e) {
-                    Avrora.userError("The specified class does not have a default constructor", StringUtil.quote(clname));
-                } catch (IllegalAccessException e) {
-                    Avrora.userError("Illegal access to class", StringUtil.quote(clname));
-                }
-            }
+            MonitorFactory mf = (MonitorFactory)monitorMap.getObjectOfClass(clname);
             mf.processOptions(options);
             monitorFactoryList.addLast(mf);
         }

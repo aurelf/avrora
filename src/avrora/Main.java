@@ -105,10 +105,10 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.3.3";
+    static final String VERSION = Version.getVersion().toString();
 
-    static final HashMap actions = new HashMap();
-    static final HashMap inputs = new HashMap();
+    static final ClassMap actions = new ClassMap("Action", Action.class);
+    static final ClassMap inputs = new ClassMap("Input Format", ProgramReader.class);
     static final Options mainOptions = new Options();
 
     public static final Option.Str INPUT = mainOptions.newOption("input", "auto",
@@ -125,8 +125,8 @@ public class Main {
             "This option is used to enable or disable the printing of the banner.");
     public static final Option.List VERBOSE = mainOptions.newOptionList("verbose", "",
             "This option allows users to enable verbose printing of individual " +
-            "subsystems within Avrora. For more information, see the section on verbose " +
-            "printing.");
+            "subsystems within Avrora. A list can be given with individual items separated " +
+            "by commas. For example: -verbose=sim.pin,sim.interrupt,sim.event");
     public static final Option.Bool HELP = mainOptions.newOption("help", false,
             "Displays this help message.");
     public static final Option.Bool LICENSE = mainOptions.newOption("license", false,
@@ -162,21 +162,21 @@ public class Main {
         newAction(new CFGAction());
         newAction(new CustomAction());
         newAction(new BenchmarkAction());
-        newInput("auto", new AutoProgramReader());
-        newInput("gas", new GASProgramReader());
-        newInput("atmel", new AtmelProgramReader());
-        newInput("objdump", new ObjDumpProgramReader());
+        newInput("auto", AutoProgramReader.class);
+        newInput("gas", GASProgramReader.class);
+        newInput("atmel", AtmelProgramReader.class);
+        newInput("objdump", ObjDumpProgramReader.class);
     }
 
     static void newAction(Action a) {
-        actions.put(a.getShortName(), a);
+        actions.addClass(a.getShortName(), a.getClass());
     }
 
-    static void newInput(String name, ProgramReader r) {
-        inputs.put(name, r);
+    static void newInput(String name, Class c) {
+        inputs.addClass(name, c);
     }
 
-    static class AutoProgramReader extends ProgramReader {
+    public static class AutoProgramReader extends ProgramReader {
         public Program read(String[] args) throws Exception {
             if (args.length == 0)
                 Avrora.userError("no input files");
@@ -211,11 +211,11 @@ public class Main {
 
 
     public static ProgramReader getProgramReader() {
-        return (ProgramReader) inputs.get(INPUT.get());
+        return (ProgramReader) inputs.getObjectOfClass(INPUT.get());
     }
 
     public static ProgramReader getProgramReader(String format) {
-        return (ProgramReader) inputs.get(format);
+        return (ProgramReader) inputs.getObjectOfClass(format);
     }
 
     /**
@@ -242,7 +242,7 @@ public class Main {
 
                 if (BANNER.get()) banner();
 
-                Action a = (Action) actions.get(ACTION.get());
+                Action a = (Action) actions.getObjectOfClass(ACTION.get());
                 if (a == null)
                     Avrora.userError("Unknown Action", StringUtil.quote(ACTION.get()));
 
@@ -325,7 +325,7 @@ public class Main {
     }
 
     private static void printHelp(String a) {
-        Action action = (Action) actions.get(a);
+        Action action = (Action) actions.getObjectOfClass(a);
         if (action == null)
             Avrora.userError("no help available for unknown action " + StringUtil.quote(a));
 
@@ -353,14 +353,13 @@ public class Main {
                 "flexibility allows this single frontend to select from multiple useful " +
                 "tools. The currently supported actions are given below.");
 
-        List list = Collections.list(Collections.enumeration(actions.keySet()));
-        Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+        List list = actions.getSortedList();
         i = list.iterator();
         while (i.hasNext()) {
             String a = (String) i.next();
             printGreenEqYellow("    -action", a);
             Terminal.nextln();
-            String help = ((Action) actions.get(a)).getHelp();
+            String help = ((Action) actions.getObjectOfClass(a)).getHelp();
             Terminal.println(StringUtil.makeParagraphs(help, 8, 0, 78));
         }
 
@@ -373,14 +372,13 @@ public class Main {
                 "be Atmel syntax, GAS syntax, or the output of a disassembler. Currently " +
                 "no binary formats are supported.");
 
-        list = Collections.list(Collections.enumeration(inputs.keySet()));
-        Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
+        list = inputs.getSortedList();
         i = list.iterator();
         while (i.hasNext()) {
             String a = (String) i.next();
             printGreenEqYellow("    -input", a);
             Terminal.nextln();
-            String help = ((ProgramReader) inputs.get(a)).getHelp();
+            String help = ((ProgramReader) inputs.getObjectOfClass(a)).getHelp();
             Terminal.println(StringUtil.makeParagraphs(help, 8, 0, 78));
         }
     }

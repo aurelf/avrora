@@ -32,6 +32,8 @@
 
 package avrora.sim.platform;
 
+import avrora.util.ClassMap;
+
 import java.util.HashMap;
 
 /**
@@ -45,14 +47,14 @@ import java.util.HashMap;
  */
 public class Platforms {
 
-    private static final HashMap platforms = new HashMap();
+    private static final ClassMap platforms = new ClassMap("Platform", Platform.class);
 
     static {
-        platforms.put("mica", new Mica());
-        platforms.put("mica2", new Mica2());
+        platforms.addClass("mica", Mica.class);
+        platforms.addClass("mica2", Mica2.class);
     }
 
     public static PlatformFactory getPlatform(String name) {
-        return (PlatformFactory) platforms.get(name);
+        return (PlatformFactory) platforms.getObjectOfClass(name);
     }
 }

@@ -30,38 +30,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim.mcu;
-
-import avrora.util.ClassMap;
-
-import java.util.HashMap;
+package avrora;
 
 /**
- * The <code>Microcontrollers</code> class represents a static, known mapping between
- * names and implementations of microcontroller models. For example, "atmega128l" is
- * mapped to an instance of the <code>ATMega128L</code> class.
+ * The <code>Version</code> class represents a version number, including the major
+ * version, the commit number, as well as the date and time of the last commit.
  *
  * @author Ben L. Titzer
  */
-public class Microcontrollers {
-
-    private static final ClassMap mcus = new ClassMap("Microcontroller", MicrocontrollerFactory.class);
-
-    static {
-        mcus.addInstance("atmega128l", new ATMega128L(false));
-        mcus.addInstance("atmega128l-103", new ATMega128L(true));
-    }
+public class Version {
 
     /**
-     * The <code>getMicrocontroller</code> method retrieves an instance of
-     * the <code>Microcontroller</code> interface that represents the
-     * named microcontroller.
-     *
-     * @param name the name of the microcontroller
-     * @return an instance of the <code>Microcontroller</code> interface
-     *         representing the hardware device if implemented; null otherwise
+     * The <code>prefix</code> field stores the string that the prefix of the version
+     * (if any) for this version.
      */
-    public static MicrocontrollerFactory getMicrocontroller(String name) {
-        return (MicrocontrollerFactory) mcus.getObjectOfClass(name);
+    public final String prefix = "Beta ";
+
+    /**
+     * The <code>major</code> field stores the string that represents the major version
+     * number (the release number).
+     */
+    public final String major = "1.3";
+
+    /**
+     * The <code>commit</code> field stores the commit number
+     * (i.e. the number of code revisions committed to CVS since the last release).
+     */
+    public final int commit = 4;
+
+    public static Version getVersion() {
+        return new Version();
+    }
+
+    public String toString() {
+        return prefix + major + "." + commit;
     }
 }
