@@ -30,39 +30,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim.platform;
+
+import avrora.sim.mcu.Microcontroller;
+import avrora.sim.Simulator;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
- * The <code>Version</code> class represents a version number, including the major
- * version, the commit number, as well as the date and time of the last commit.
- *
  * @author Ben L. Titzer
  */
-public class Version {
+class LED implements Microcontroller.Pin.Output {
+    protected boolean initialized;
+    protected boolean on;
+    protected Simulator sim;
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version
-     * (if any) for this version.
-     */
-    public final String prefix = "Beta ";
+    protected final int colornum;
+    protected final String color;
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version
-     * number (the release number).
-     */
-    public final String major = "1.3";
-
-    /**
-     * The <code>commit</code> field stores the commit number
-     * (i.e. the number of code revisions committed to CVS since the last release).
-     */
-    public final int commit = 10;
-
-    public static Version getVersion() {
-        return new Version();
+    protected LED(Simulator s, int n, String c) {
+        sim = s;
+        colornum = n;
+        color = c;
     }
 
-    public String toString() {
-        return prefix + major + "." + commit;
+    public void write(boolean level) {
+        // NOTE: there is an inverter between the port and the LED!
+        // reverse the level!
+        if (!initialized) {
+            initialized = true;
+            on = !level;
+            print();
+        } else {
+            if (level == on) {
+                on = !level;
+                print();
+            }
+        }
+    }
+
+    public void print() {
+        String idstr = StringUtil.rightJustify(sim.getID(), 4);
+        String cycstr = StringUtil.rightJustify(sim.getClock().getCount(), 10);
+        Terminal.print(idstr+" "+cycstr+"   ");
+        Terminal.print(colornum, color);
+        Terminal.println(": " + (on ? "on" : "off"));
+    }
+
+    public void enableOutput() {
+        // do nothing
+    }
+
+    public void disableOutput() {
+        // do nothing
     }
 }
