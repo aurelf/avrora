@@ -517,11 +517,13 @@ public abstract class Simulator implements IORegisterConstants {
      * @param num the interrupt number to force
      */
     public void forceInterrupt(int num) {
-        interruptPrinter.println("Simulator.forceInterrupt(" + num + ")");
+        if ( interruptPrinter.enabled )
+            interruptPrinter.println("Simulator.forceInterrupt(" + num + ")");
         interrupts[num].force();
     }
 
     protected void triggerInterrupt(int num) {
+        if ( interruptPrinter.enabled )
         interruptPrinter.println("Simulator.triggerInterrupt(" + num + ")");
         interrupts[num].fire();
     }
@@ -535,7 +537,8 @@ public abstract class Simulator implements IORegisterConstants {
      * @param cycles the number of cycles in the future at which to trigger
      */
     public void addTimerEvent(Trigger e, long cycles) {
-        eventPrinter.println("Simulator.addTimerEvent(" + cycles + ")");
+        if ( eventPrinter.enabled )
+            eventPrinter.println("Simulator.addTimerEvent(" + cycles + ")");
         eventQueue.add(e, cycles);
     }
 
@@ -550,7 +553,8 @@ public abstract class Simulator implements IORegisterConstants {
      * @return the <code>PeriodicTrigger</code> instance inserted
      */
     public PeriodicTrigger addPeriodicTimerEvent(Trigger e, long period) {
-        eventPrinter.println("Simulator.addPeriodicTimerEvent(" + period + ")");
+        if ( eventPrinter.enabled )
+            eventPrinter.println("Simulator.addPeriodicTimerEvent(" + period + ")");
         PeriodicTrigger pt = new PeriodicTrigger(this, e, period);
         eventQueue.add(pt, period);
         return pt;
@@ -564,7 +568,8 @@ public abstract class Simulator implements IORegisterConstants {
      * @param e the trigger to remove
      */
     public void removeTimerEvent(Trigger e) {
-        eventPrinter.println("Simulator.removeTimerEvent()");
+        if ( eventPrinter.enabled )
+            eventPrinter.println("Simulator.removeTimerEvent()");
         eventQueue.remove(e);
     }
 
