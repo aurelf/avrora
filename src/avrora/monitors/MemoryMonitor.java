@@ -63,6 +63,11 @@ public class MemoryMonitor extends MonitorFactory {
             "This option is used to test the overhead of adding an empty watch to every" +
             "memory location. ");
 
+    public final Option.Bool LOWER_ADDRESS = options.newOption("low-addresses", false,
+            "When this option is enabled, the memory monitor will be inserted for lower addresses, " +
+            "recording reads and writes to IO registers and indirect reads and writes to the IO " +
+            "registers.");
+
     public class Monitor implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Microcontroller microcontroller;
@@ -77,7 +82,8 @@ public class MemoryMonitor extends MonitorFactory {
             microcontroller = simulator.getMicrocontroller();
             program = simulator.getProgram();
             ramsize = microcontroller.getRamSize();
-            memstart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
+            if ( LOWER_ADDRESS.get() ) memstart = 0;
+            else memstart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
             memprofile = new avrora.sim.util.MemoryProfiler(ramsize);
 
             insertWatches(empty);

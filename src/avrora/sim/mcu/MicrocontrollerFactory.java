@@ -41,7 +41,7 @@ import avrora.sim.InterpreterFactory;
  *
  * @author Ben L. Titzer
  */
-public interface MicrocontrollerFactory extends MicrocontrollerProperties {
+public interface MicrocontrollerFactory {
 
     /**
      * The <code>newMicrocontroller()</code> method is used to instantiate a microcontroller instance for the

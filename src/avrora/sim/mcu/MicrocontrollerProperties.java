@@ -32,95 +32,81 @@
 
 package avrora.sim.mcu;
 
-import avrora.core.InstrPrototype;
+import avrora.util.StringUtil;
+
+import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 /**
- * The <code>MicrocontrollerProperties</code> interface represents a set of methods that get information about
- * a particular microcontroller implementation.
+ * The <code>MicrocontrollerProperties</code> class is simply a wrapper class around several
+ * properties of a microcontroller including the size of the IO registers, the size of SRAM,
+ * flash, and EEPROM, as well as the mapping between names of pins and their physical pin
+ * number.
  *
  * @author Ben L. Titzer
  */
-public interface MicrocontrollerProperties {
-    /**
-     * The <code>getRamSize()</code> method returns the number of bytes of SRAM present on this hardware
-     * device. For example, on the Atmega128L, this number is 4096. On the Atmega103, this number is 4000.
-     *
-     * @return the number of bytes of SRAM on this hardware device
-     */
-    int getRamSize();
+public class MicrocontrollerProperties {
+
+    public final int ioreg_size;
+    public final int sram_size;
+    public final int flash_size;
+    public final int eeprom_size;
+    public final int num_pins;
+
+    protected final HashMap pinAssignments;
+    protected final HashMap ioregAssignments;
 
     /**
-     * The <code>getIORegSize()</code> method returns the number of IO registers that are present on this
-     * hardware device. For example, on the Atmega128L, this number is 224. On the Atmega103, this number is
-     * 64.
+     * The constructor for the <code>MicrocontrollerProperties</code> class creates a new
+     * instance with the specified register size, flash size, etc. All such fields are immutable,
+     * and the pin assignments and IO register assignments cannot be changed.
      *
-     * @return the number of IO registers supported on this hardware device
+     * @param is the number of IO registers on this microcontroller
+     * @param ss the size of the SRAM in bytes
+     * @param fs the size of the flash in bytes
+     * @param es the size of the EEPROM in bytes
+     * @param np the number of physical pins on the microcontroller
+     * @param pa a <code>HashMap</code> instance mapping string names to <code>Integer</code>
+     * indexes for the pins
+     * @param ia a <code>HashMap</code> instance mapping string names to <code>Integer</code>
+     * indexes for the IO registers
      */
-    int getIORegSize();
+    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, HashMap pa, HashMap ia) {
+        ioreg_size = is;
+        sram_size = ss;
+        flash_size = fs;
+        eeprom_size = es;
+        num_pins = np;
+
+        pinAssignments = pa;
+        ioregAssignments = ia;
+    }
 
     /**
-     * The <code<getFlashSize()</code> method returns the size in bytes of the flash memory on this hardware
-     * device. The flash memory stores the initialized data and the machine code instructions of the program.
-     * On the Atmega128L, this number is 128K.
-     *
-     * @return the size of the flash memory in bytes
+     * The <code>getPin()</code> method retrieves the pin number for the given pin name for this
+     * microcontroller.
+     * @param n the name of the pin such as "OC0"
+     * @return an integer representing the physical pin number if it exists;
+     * @throws NoSuchElementException if the specified pin name does not have an assignment
      */
-    int getFlashSize();
+    public int getPin(String n) {
+        Integer i = (Integer)pinAssignments.get(n);
+        if ( i == null )
+            throw new NoSuchElementException(StringUtil.quote(n)+" pin not found");
+        return i.intValue();
+    }
 
     /**
-     * The <code>getEEPromSize()</code> method returns the size in bytes of the EEPROM on this hardware
-     * device. On the ATmega128L, this number is 4096.
-     *
-     * @return the size of the EEPROM in bytes
+     * The <code>getIOReg()</code> method retrieves the IO register number for the given IO
+     * Register name for this microcontroller.
+     * @param n the name of the IO register such as "TCNT0"
+     * @return an integer representing the IO register number if it exists
+     * @throws NoSuchElementException if the specified IO register name does not have an assignment
      */
-    int getEEPromSize();
-
-    /**
-     * The <code>getHZ()</code> method returns the number of cycles per second at which this hardware device
-     * is designed to run.
-     *
-     * @return the number of cycles per second on this device
-     */
-    int getHz();
-
-    /**
-     * The <code>millisToCycles()</code> method converts the specified number of milliseconds to a cycle
-     * count. The conversion factor used is the number of cycles per second of this device. This method serves
-     * as a utility so that clients need not do repeated work in converting milliseconds to cycles and back.
-     *
-     * @param ms a time quantity in milliseconds as a double
-     * @return the same time quantity in clock cycles, rounded up to the nearest integer
-     */
-    long millisToCycles(double ms);
-
-    /**
-     * The <code>cyclesToMillis()</code> method converts the specified number of cycles to a time quantity in
-     * milliseconds. The conversion factor used is the number of cycles per second of this device. This method
-     * serves as a utility so that clients need not do repeated work in converting milliseconds to cycles and
-     * back.
-     *
-     * @param cycles the number of cycles
-     * @return the same time quantity in milliseconds
-     */
-    double cyclesToMillis(long cycles);
-
-    /**
-     * The <code>isSupported()</code> method allows a client to query whether a particular instruction is
-     * implemented on this hardware device. Older implementations of the AVR instruction set preceded the
-     * introduction of certain instructions, and therefore did not support the new instructions.
-     *
-     * @param i the instruction prototype of the instruction
-     * @return true if the specified instruction is supported on this device; false otherwise
-     */
-    boolean isSupported(InstrPrototype i);
-
-    /**
-     * The <code>getPinNumber()</code> method looks up the named pin and returns its number. Names of pins
-     * should be UPPERCASE. The intended users of this method are external device implementors which connect
-     * their devices to the microcontroller through the pins.
-     *
-     * @param name the name of the pin; for example "PA0" or "OC1A"
-     * @return the number of the pin if it exists; -1 otherwise
-     */
-    int getPinNumber(String name);
+    public int getIOReg(String n) {
+        Integer i = (Integer)ioregAssignments.get(n);
+        if ( i == null )
+            throw new NoSuchElementException(StringUtil.quote(n)+" IO register not found");
+        return i.intValue();
+    }
 }

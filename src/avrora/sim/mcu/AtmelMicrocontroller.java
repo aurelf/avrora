@@ -224,4 +224,29 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     public Clock getClock(String name) {
         return (Clock)clocks.get(name);
     }
+
+    public Simulator getSimulator() {
+        return simulator;
+    }
+
+    public static void addPin(HashMap pinMap, int p, String n) {
+        pinMap.put(n, new Integer(p));
+    }
+
+    public static void addPin(HashMap pinMap, int p, String n1, String n2) {
+        Integer i = new Integer(p);
+        pinMap.put(n1, i);
+        pinMap.put(n2, i);
+    }
+
+    public static void addPin(HashMap pinMap, int p, String n1, String n2, String n3) {
+        Integer i = new Integer(p);
+        pinMap.put(n1, i);
+        pinMap.put(n2, i);
+        pinMap.put(n3, i);
+    }
+
+    public static void addIOReg(HashMap ioregMap, String n, int i) {
+        ioregMap.put(n, new Integer(i));
+    }
 }
