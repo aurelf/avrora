@@ -1131,7 +1131,7 @@ public class CC1000Radio implements Radio {
             mcu.getPin(31).connect(new PCLKOutput());
             mcu.getPin(32).connect(new PDATAOutput());
             mcu.getPin(32).connect(new PDATAInput());
-
+            mcu.getPin(29).connect(new PALEOutput());
         }
 
         /**
@@ -1181,14 +1181,12 @@ public class CC1000Radio implements Radio {
             }
         }
 
-        // TODO install PALEOutput
         // PALE is the address latch. It really isn't necessary, if you assume
         // that software will respect the packet formatting.
         // If you don't, then PALE should be implemented.
-        /*
         protected class PALEOutput implements Microcontroller.Pin.Output {
             public void write(boolean level) {
-                if(level) {
+                if(!level) {
                     bitsRead = 0;
                 } else {
                     bitsRead = 8;
@@ -1199,7 +1197,6 @@ public class CC1000Radio implements Radio {
 
             public void disableOutput() {}
         }
-        */
 
         public void action() {
             if (bitsRead < 7) {

@@ -75,6 +75,7 @@ public class AutomatedTester {
     public AutomatedTester() {
         harnessMap = new ClassMap("Test Harness", TestHarness.class);
         harnessMap.addClass("simulator", AVRTestHarness.class);
+        harnessMap.addClass("simplifier", AVRTestHarness.class);
     }
 
     private class TestPair {
