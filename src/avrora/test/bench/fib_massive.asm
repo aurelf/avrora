@@ -2,13 +2,18 @@
 	ldi r17, 0xff
 	out 0x3d, r17
 	ldi r16, 0
-
+	ldi r17, 0
 loop:		
 	push r16
+	push r17
 	call fib
+	pop r17
 	pop r16
 	inc r16
 	cpi r16, 250
+	brne loop
+	inc r17
+	cpi r17, 5
 	brne loop
 	break
 	
