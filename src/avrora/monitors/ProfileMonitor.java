@@ -36,6 +36,7 @@ import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.Clock;
 import avrora.sim.util.ProgramProfiler;
 import avrora.sim.util.ProgramTimeProfiler;
 import avrora.util.Option;
@@ -64,37 +65,65 @@ public class ProfileMonitor extends MonitorFactory {
     public final Option.Bool EMPTY = options.newOption("empty-probe", false,
             "This option is used to test the overhead of adding an empty probe to every" +
             "instruction. ");
+    public final Option.Long PERIOD = options.newOption("period", 0,
+            "This option specifies whether the profiling will be exact or periodic. When " +
+            "this option is set to non-zero, then a sample of the program counter is taken at " +
+            "the specified period in clock cycles, rather than through probes at each instruction.");
 
-    /**
-     * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
-     * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
-     * collects execution counts for every instruction in the program.
-     */
     public class Monitor implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
-//        public final ProgramProfiler profile;
-//        public final ProgramTimeProfiler timeprofile;
         public final CCProbe ccprobe;
         public final CProbe cprobe;
+
+        public final long icount[];
+        public final long itime[];
 
         Monitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
-//            profile = new ProgramProfiler(program);
-//            timeprofile = new ProgramTimeProfiler(program);
-            ccprobe = new CCProbe(program);
-            cprobe = new CProbe(program);
+            icount = new long[program.program_end];
+            itime = new long[program.program_end];
+
+            ccprobe = new CCProbe(icount, itime);
+            cprobe = new CProbe(icount);
+
             // insert the global probe
-//            s.insertProbe(profile);
-//            s.insertProbe(timeprofile);
+            insertInstrumentation(s);
+        }
+
+        private void insertInstrumentation(Simulator s) {
             if ( EMPTY.get() ) {
                 s.insertProbe(new EmptyProbe());
-            } else {
-                if ( CYCLES.get() )
-                    s.insertProbe(ccprobe);
-                else
-                    s.insertProbe(cprobe);
+                return;
+            }
+            long period = PERIOD.get();
+            if ( period > 0 ) {
+                s.insertEvent(new PeriodicProfile(period), period);
+                return;
+            }
+
+            if ( CYCLES.get() )
+                s.insertProbe(ccprobe);
+            else
+                s.insertProbe(cprobe);
+
+        }
+
+        public class PeriodicProfile implements Simulator.Event {
+            private final long period;
+            State s;
+
+            PeriodicProfile(long p) {
+                period = p;
+                // TODO: this getState() is actually unsafe;
+                // optimizations in the future may break this!!!!
+                s = simulator.getState();
+            }
+
+            public void fire() {
+                icount[s.getPC()]++;
+                simulator.insertEvent(this, period);
             }
         }
 
@@ -107,134 +136,49 @@ public class ProfileMonitor extends MonitorFactory {
         }
 
         public class CCProbe implements Simulator.Probe {
-            /**
-             * The <code>program</code> field stores a reference to the program being profiled.
-             */
-            public final Program program;
-
-            /**
-             * The <code>itime</code> field stores the invocation count for each instruction in the program. It is
-             * indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the invocation for the
-             * instruction at <code>program.getInstr(addr)</code>.
-             */
-            public final long icount[];
-
-            public final long itime[];
+            public final long count[];
+            public final long time[];
 
             protected long timeBegan;
 
-            /**
-             * The constructor for the program profiler constructs the required internal state to store the invocation
-             * counts of each instruction.
-             *
-             * @param p the program to profile
-             */
-            public CCProbe(Program p) {
-                int size = p.program_end;
-                icount = new long[size];
-                itime = new long[size];
-                program = p;
+            public CCProbe(long[] ic, long[] it) {
+                count = ic;
+                time = it;
             }
 
-            /**
-             * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
-             * implementation of the program profiler, it simply increments the count of the instruction at the
-             * specified address.
-             *
-             * @param i       the instruction being probed
-             * @param address the address at which this instruction resides
-             * @param state   the state of the simulation
-             */
             public void fireBefore(Instr i, int address, State state) {
-                icount[address]++;
+                count[address]++;
                 timeBegan = state.getCycles();
             }
 
-            /**
-             * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
-             * implementation of the profiler, it does nothing.
-             *
-             * @param i       the instruction being probed
-             * @param address the address at which this instruction resides
-             * @param state   the state of the simulation
-             */
             public void fireAfter(Instr i, int address, State state) {
-                itime[address] += state.getCycles() - timeBegan;
+                time[address] += state.getCycles() - timeBegan;
             }
         }
 
         public class CProbe implements Simulator.Probe {
-            /**
-             * The <code>program</code> field stores a reference to the program being profiled.
-             */
-            public final Program program;
 
-            /**
-             * The <code>itime</code> field stores the invocation count for each instruction in the program. It is
-             * indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the invocation for the
-             * instruction at <code>program.getInstr(addr)</code>.
-             */
-            public final long icount[];
+            public final long count[];
 
-
-            /**
-             * The constructor for the program profiler constructs the required internal state to store the invocation
-             * counts of each instruction.
-             *
-             * @param p the program to profile
-             */
-            public CProbe(Program p) {
-                int size = p.program_end;
-                icount = new long[size];
-                program = p;
+            public CProbe(long[] ic) {
+                count = ic;
             }
 
-            /**
-             * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
-             * implementation of the program profiler, it simply increments the count of the instruction at the
-             * specified address.
-             *
-             * @param i       the instruction being probed
-             * @param address the address at which this instruction resides
-             * @param state   the state of the simulation
-             */
             public void fireBefore(Instr i, int address, State state) {
-                icount[address]++;
+                count[address]++;
             }
 
-            /**
-             * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
-             * implementation of the profiler, it does nothing.
-             *
-             * @param i       the instruction being probed
-             * @param address the address at which this instruction resides
-             * @param state   the state of the simulation
-             */
             public void fireAfter(Instr i, int address, State state) {
                 // do nothing
             }
         }
 
-        /**
-         * The <code>report()</code> method generates a textual report for the profiling information gathered
-         * from the execution of the program. The result is a table of performance information giving the
-         * number of executions of each instruction, compressed for basic blocks.
-         */
         public void report() {
             TermUtil.printSeparator(Terminal.MAXLINE, "Profiling results");
             Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
-            long[] icount;
-            long[] itime;
 
-            if ( CYCLES.get() ) {
-                icount = ccprobe.icount;
-                itime = ccprobe.itime;
-            } else {
-                icount = cprobe.icount;
-                itime = new long[icount.length];
-            }
             reportProfile(icount, itime);
 
         }
@@ -292,24 +236,12 @@ public class ProfileMonitor extends MonitorFactory {
 
     }
 
-    /**
-     * The constructor for the <code>ProfileMonitor</code> class creates a factory that is capable of
-     * producing profile monitors for each simulator passed.
-     */
     public ProfileMonitor() {
         super("profile", "The \"profile\" monitor profiles the execution history " +
                 "of every instruction in the program and generates a textual report " +
                 "of the execution frequency for all instructions.");
     }
 
-    /**
-     * The <code>newMonitor()</code> method creates a new monitor for the given simulator that is capable of
-     * collecting performance information as the program executes.
-     *
-     * @param s the simulator to create the monitor for
-     * @return an instance of the <code>Monitor</code> interface that tracks performance information from the
-     *         program
-     */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Monitor(s);
     }

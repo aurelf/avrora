@@ -33,12 +33,19 @@
 package avrora.monitors;
 
 import avrora.core.Program;
+import avrora.core.Instr;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.TermUtil;
+import avrora.util.Option;
+import avrora.actions.SimAction;
+
+import java.util.List;
+import java.util.Iterator;
 
 /**
  * The <code>MemoryMonitor</code> class implements a monitor that collects information about how the program
@@ -49,6 +56,13 @@ import avrora.util.TermUtil;
  */
 public class MemoryMonitor extends MonitorFactory {
 
+    public final Option.Bool EMPTY = options.newOption("empty-watch", false,
+            "This option is used to test the overhead of adding an empty watch to every" +
+            "memory location. ");
+    public final Option.List LOCATIONS = options.newOptionList("locations", "",
+            "This option is used to test the overhead of adding an empty watch to every" +
+            "memory location. ");
+
     public class Monitor implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Microcontroller microcontroller;
@@ -58,14 +72,39 @@ public class MemoryMonitor extends MonitorFactory {
         public final avrora.sim.util.MemoryProfiler memprofile;
 
         Monitor(Simulator s) {
+            boolean empty = EMPTY.get();
             simulator = s;
             microcontroller = simulator.getMicrocontroller();
             program = simulator.getProgram();
             ramsize = microcontroller.getRamSize();
             memstart = BaseInterpreter.NUM_REGS + microcontroller.getIORegSize();
             memprofile = new avrora.sim.util.MemoryProfiler(ramsize);
-            for (int cntr = memstart; cntr < ramsize; cntr++) {
-                simulator.insertWatch(memprofile, cntr);
+
+            insertWatches(empty);
+
+        }
+
+        private void insertWatches(boolean empty) {
+
+            Simulator.Watch w;
+            if (  empty ) w = new EmptyWatch();
+            else w = memprofile;
+
+            if ( LOCATIONS.get().size() > 0 ) {
+                // instrument only the locations specified
+                List l = LOCATIONS.get();
+                List loc = SimAction.getLocationList(program, l);
+                Iterator i = loc.iterator();
+                while ( i.hasNext() ) {
+                    // TODO: this should not be program locations, but memory locations!!!
+                    Program.Location location = (Program.Location)i.next();
+                    simulator.insertWatch(w, location.address);
+                }
+            } else {
+                // instrument the entire memory
+                for (int cntr = memstart; cntr < ramsize; cntr++) {
+                    simulator.insertWatch(w, cntr);
+                }
             }
         }
 
@@ -104,25 +143,40 @@ public class MemoryMonitor extends MonitorFactory {
                     continue;
                 } else if (zeroes > 2) continue;
 
-                String rcnt = StringUtil.rightJustify(r, 8);
-                float rpcnt = (float)(100 * r / rtotal);
-                String rpercent = StringUtil.rightJustify(StringUtil.toFixedFloat(rpcnt, 4),8) + " %";
-
-                String wcnt = StringUtil.rightJustify(w, 8);
-                float wpcnt = (float)(100 * w / wtotal);
-                String wpercent = StringUtil.rightJustify(StringUtil.toFixedFloat(wpcnt, 4),8) + " %";
-
                 String addr = StringUtil.addrToString(start);
+                printLine(addr, r, rtotal, w, wtotal);
 
-                Terminal.printGreen("    " + addr);
-                Terminal.print(": ");
-                Terminal.printBrightCyan(rcnt);
-                Terminal.print(' ' + ("  " + rpercent));
-                Terminal.printBrightCyan(wcnt);
-                Terminal.println(' ' + ("  " + wpercent));
             }
+            printLine("total ", (long)rtotal, rtotal, (long)wtotal, wtotal);
         }
 
+        private void printLine(String addr, long r, double rtotal, long w, double wtotal) {
+            String rcnt = StringUtil.rightJustify(r, 8);
+            float rpcnt = (float)(100 * r / rtotal);
+            String rpercent = StringUtil.rightJustify(StringUtil.toFixedFloat(rpcnt, 4),8) + " %";
+
+            String wcnt = StringUtil.rightJustify(w, 8);
+            float wpcnt = (float)(100 * w / wtotal);
+            String wpercent = StringUtil.rightJustify(StringUtil.toFixedFloat(wpcnt, 4),8) + " %";
+
+            Terminal.printGreen("    " + addr);
+            Terminal.print(": ");
+            Terminal.printBrightCyan(rcnt);
+            Terminal.print(' ' + ("  " + rpercent));
+            Terminal.printBrightCyan(wcnt);
+            Terminal.println(' ' + ("  " + wpercent));
+        }
+
+    }
+
+    public class EmptyWatch implements Simulator.Watch {
+        public void fireBeforeRead(Instr i, int address, State state, int data_addr, byte value) {}
+
+        public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {}
+
+        public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {}
+
+        public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {}
     }
 
     public MemoryMonitor() {

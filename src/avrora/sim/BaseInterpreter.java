@@ -50,7 +50,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public final byte[] regs;
     protected final State.IOReg[] ioregs;
     protected byte[] sram;
-    protected MulticastWatch[] sram_probes;
+    protected MulticastWatch[] sram_watches;
     protected Instr[] flash_instr;
     protected byte[] flash_data;
     protected long postedInterrupts;
@@ -463,27 +463,27 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     protected void insertWatch(Simulator.Watch p, int data_addr) {
-        if (sram_probes == null)
-            sram_probes = new MulticastWatch[sram.length];
+        if (sram_watches == null)
+            sram_watches = new MulticastWatch[sram.length];
         if (data_addr < sram_start)
             throw Avrora.failure("not a valid data address: " + StringUtil.addrToString(data_addr));
 
         // add the probe to the multicast probe present at the location (if there is one)
         int offset = data_addr - sram_start;
-        MulticastWatch w = sram_probes[offset];
-        if (w == null) w = sram_probes[offset] = new MulticastWatch();
+        MulticastWatch w = sram_watches[offset];
+        if (w == null) w = sram_watches[offset] = new MulticastWatch();
         w.add(p);
     }
 
     protected void removeWatch(Simulator.Watch p, int data_addr) {
-        if (sram_probes == null)
+        if (sram_watches == null)
             return;
         if (data_addr < sram_start)
             throw Avrora.failure("not a valid data address: " + StringUtil.addrToString(data_addr));
 
         // remove the probe from the multicast probe present at the location (if there is one)
         int offset = data_addr - sram_start;
-        MulticastWatch w = sram_probes[offset];
+        MulticastWatch w = sram_watches[offset];
         if (w == null) return;
         w.remove(p);
     }
@@ -637,7 +637,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         byte val = sram[offset];
         // read memory, checking for any memory probes
         Simulator.Watch p;
-        if (sram_probes != null && (p = sram_probes[offset]) != null) {
+        if (sram_watches != null && (p = sram_watches[offset]) != null) {
             Instr i = getCurrentInstr();
             p.fireBeforeRead(i, pc, this, offset + sram_start, val);
             val = sram[offset]; // the value might have been updated by the probe
@@ -691,7 +691,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     private void writeDataByte(int offset, byte val) {
         // write to memory, checking for any memory probes
         Simulator.Watch p;
-        if (sram_probes != null && (p = sram_probes[offset]) != null) {
+        if (sram_watches != null && (p = sram_watches[offset]) != null) {
             Instr i = getCurrentInstr();
             p.fireBeforeWrite(i, pc, this, offset + sram_start, val);
             sram[offset] = val;
