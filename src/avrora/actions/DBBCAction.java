@@ -48,7 +48,7 @@ import java.util.Iterator;
 public class DBBCAction extends Action {
 
     public static String HELP = "The \"dbbc\" action tests the operation of the Dynamic Basic Block Compiler " +
-            "(DBBC_OPT) in Avrora, which dynamically compiles AVR code to Java source code.";
+            "(DBBC) in Avrora, which dynamically compiles AVR code to Java source code.";
 
     public DBBCAction() {
         super("dbbc", HELP);

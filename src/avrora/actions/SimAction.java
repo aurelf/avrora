@@ -82,13 +82,13 @@ public abstract class SimAction extends Action {
             "This option specifies a list of monitors to be attached to the program. " +
             "Monitors collect information about the execution of the program while it " +
             "is running such as profiling data or timing information.");
-    public final Option.Bool DBBC_OPT = newOption("dbbc", false,
-            "This option enables the DBBC_OPT compiler. Experimental! DO NOT USE!");
+    public final Option.Bool DBBC = newOption("dbbc", false,
+            "This option enables the DBBC compiler. \n(Status: experimental)");
     public final Option.Str VISUAL = newOption("visual", "",
-            "Enable visual representation of the network. For example" +
-            " topology, packet transmission, packet recption, energy" +
-            " information and more. Syntax is ip address or host name and" +
-            " port: 134.2.11.183:2379    Current status: experimental!!");
+            "Enable visual representation of the network. For example " +
+            "topology, packet transmission, packet recption, energy " +
+            "information and more. Syntax is ip address or host name and " +
+            "port: 134.2.11.183:2379 \n(Status: experimental)");
 
     protected ClassMap monitorMap;
     protected LinkedList monitorFactoryList;
@@ -190,7 +190,7 @@ public abstract class SimAction extends Action {
      */
     protected Simulator newSimulator(Program p) {
         InterpreterFactory factory;
-        if (DBBC_OPT.get()) {
+        if (DBBC.get()) {
             factory = new DBBCInterpreter.Factory(new DBBC(p, options));
         } else {
             factory = new GenInterpreter.Factory();

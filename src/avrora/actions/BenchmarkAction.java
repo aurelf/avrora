@@ -89,7 +89,7 @@ public class BenchmarkAction extends SimAction {
 
         long repeat = REPEAT.get();
 
-        if (DBBC_OPT.get()) {
+        if (DBBC.get()) {
             factory = new DBBCInterpreter.Factory(new DBBC(program, options));
         } else {
             factory = new GenInterpreter.Factory();

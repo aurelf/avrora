@@ -75,7 +75,7 @@ public class MultiSimulateAction extends SimAction {
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network. " +
             "When this options is specified, the free space radio model will be used " +
-            "to model radio propagation. See sample.top in topology for an example. Status: Alpha");
+            "to model radio propagation. See sample.top in topology for an example. \n(Status: alpha)");
     public final Option.Interval RANDOM_START = newOption("random-start", 0, 0,
             "This option causes the simulator to insert a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
@@ -87,7 +87,7 @@ public class MultiSimulateAction extends SimAction {
             "This option causes the simulator to insert a progressively longer delay " +
             "before starting each node in order to avoid artificial cycle-level " +
             "synchronization between nodes. The starting times are staggered by the number " +
-            "of clock cycles given as a value. For example, if this option is given the" +
+            "of clock cycles given as a value. For example, if this option is given the " +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
     public final Option.Bool CHANNEL_UTIL = newOption("channel-utilization", false,

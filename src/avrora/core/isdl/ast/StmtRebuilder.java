@@ -73,6 +73,9 @@ public interface StmtRebuilder extends CodeRebuilder {
      * @author Ben L. Titzer
      */
     public class DepthFirst extends CodeRebuilder.DepthFirst implements StmtRebuilder {
+        List newList;
+        boolean changed;
+
         public Stmt visit(CallStmt s, Object env) {
             List na = visitExprList(s.args, env);
             if (na != s.args)
@@ -105,19 +108,28 @@ public interface StmtRebuilder extends CodeRebuilder {
         }
 
         public List visitStmtList(List l, Object env) {
-            List nl = new LinkedList();
-            boolean changed = false;
+            List oldList = this.newList;
+            boolean oldChanged = changed;
+            newList = new LinkedList();
+            changed = false;
 
             Iterator i = l.iterator();
             while (i.hasNext()) {
                 Stmt sa = (Stmt)i.next();
                 Stmt na = sa.accept(this, env);
                 if (na != sa) changed = true;
-                nl.add(na);
+                newList.add(na);
             }
 
-            if (changed) return nl;
+            if (changed) l = newList;
+            this.newList = oldList;
+            changed = oldChanged;
             return l;
+        }
+
+        protected void addStmt(Stmt s) {
+            newList.add(s);
+            changed = true;
         }
 
         public Stmt visit(MapAssignStmt s, Object env) {

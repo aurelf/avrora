@@ -41,6 +41,7 @@ import avrora.core.isdl.ast.*;
 import avrora.core.isdl.gen.ConstantPropagator;
 import avrora.core.isdl.gen.DeadCodeEliminator;
 import avrora.core.isdl.gen.InterpreterGenerator;
+import avrora.core.isdl.gen.Canonicalizer;
 import avrora.core.isdl.parser.Token;
 import avrora.sim.GenInterpreter;
 import avrora.sim.dbbc.DBBC.DBBCClassLoader;
@@ -226,6 +227,9 @@ public class DBBC {
             }
 
         }
+
+        // canonicalize the statement lists
+        // stmts = new Canonicalizer().process(stmts);
 
         if (CONSTANT_PROPAGATION.get()) {
             stmts = new ConstantPropagator().process(stmts);
