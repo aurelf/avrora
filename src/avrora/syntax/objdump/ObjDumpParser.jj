@@ -1,5 +1,5 @@
 /**
- * This is a modified version of AmtelParser.jj. It supports the 
+ * This is a modified version of AmtelParser.jj. It supports the
  * avr-object dump syntax
  *
  * @author Ben L. Titzer, Vids Samanta
@@ -270,7 +270,7 @@ TOKEN :
   | < SWAP   : "swap"  >
   | < TST    : "tst"   >
   | < WDR    : "wdr"   >
-  | < WORD   : "word"  >
+  | < WORD   : ".word"  >
 }
 
 /* IDENTIFIERS */
@@ -288,7 +288,7 @@ TOKEN :
       [ "0"-"9" ]
   >
 |
-  < DOT_IDENTIFIER: "." <IDENTIFIER> >		   
+  < DOT_IDENTIFIER: "." <IDENTIFIER> >
 |
 /*  Warning:  "adc" ,  "dec" and  "add"  will not be matched as  <ADDRESS>. */
   < ADDRESS: (["0"-"9","a"-"f","A"-"F"])+ >
@@ -303,55 +303,54 @@ void Module() : {}
 }
 
 void Text() : {}
-{ 
+{
    "Disassembly of section .text:"
-   (Statement())* 
+   (Statement())*
 }
 
-void Data() : { } 
+void Data() : { }
 {
     "Disassembly of section .data:"
-    Address() Label()
-    Address() ":" Address() Address() <DOT_IDENTIFIER> <INTEGER_LITERAL>
+   (Statement())*
 }
 
 void Header() : {}
 {
-   ProgramName() ":" "file format" "elf32-avr"
+   NastyName() ":" "file format" NastyName()
 }
 
-void ProgramName() : {}
+void NastyName() : {}
 {
    <IDENTIFIER> (<IDENTIFIER> | "." | "-" | <INTEGER_LITERAL> | <DOT_IDENTIFIER>) *
 }
 
 void Sections() : {Token name; Token size; Token vma; Token  lma; Token fileOff;}
 {
-  "Sections:" (<IDENTIFIER>)*  
-  (<INTEGER_LITERAL> 
-  name = <DOT_IDENTIFIER> 
-  size = Address() 
-  vma=Address()
-  lma=Address()
-  fileOff=Address()
+  "Sections:" (<IDENTIFIER>)*
+  (<INTEGER_LITERAL>
+  name    = <DOT_IDENTIFIER>
+  size    = HexSequence()
+  vma     = HexSequence()
+  lma     = HexSequence()
+  fileOff = HexSequence()
   <INTEGER_LITERAL> "**" <INTEGER_LITERAL>
   (<IDENTIFIER> | ",")*
   )*
 }
 
 void Statement() : {}
-{    
-    LOOKAHEAD(2) Instruction() 
+{
+    LOOKAHEAD(2) Instruction()
 |
-    Address() Label()
+    HexSequence() Label()
 }
 
 void Instruction() : {}
 {
-  Address()  ":"  InstructionChoice()
+  HexSequence()  ":"  InstructionChoice()
 }
 
-Token Address() : { Token ret;}
+Token HexSequence() : { Token ret;}
 {
     (ret = <ADDRESS> | ret =<ADD> | ret=<DEC> | ret=<ADC> | ret=<INTEGER_LITERAL> | ret=<IDENTIFIER>)
     {return ret;}
@@ -359,31 +358,40 @@ Token Address() : { Token ret;}
 
 void InstructionChoice() : {}
 {
-  LOOKAHEAD(5)
-  TwoByteInstruction()
-|
-  TwoOrMoreByteInstruction()
+  LOOKAHEAD(5) TwoByteInstruction()
+| LOOKAHEAD(5) DataItem()
+| TwoOrMoreByteInstruction()
 }
 
-void TwoByteInstruction() : {}
+void DataItem() : { Token b1, b2; }
 {
-  Address() Address() 
+    b1 = HexSequence() b2 = HexSequence() [InvalidAddress()] ".word" <INTEGER_LITERAL>
+}
+
+void InvalidAddress() : {}
+{
+    <IDENTIFIER> <INTEGER_LITERAL> "is out of bounds."
+}
+
+void TwoByteInstruction() : { Token b1, b2; }
+{
+  HexSequence() HexSequence()
     (  InstrGPRGPR() |
        InstrGPR() |
        InstrGPRIMM()|
        InstrInput() |
-       InstrOutput() 
+       InstrOutput()
        )
 }
 
-void   TwoOrMoreByteInstruction() :{} {  
-  Address() Address() (Address() Address())?
-    (  
+void   TwoOrMoreByteInstruction() : { Token b1, b2, b3 = null, b4 = null; } {
+  b1 = HexSequence() b2 = HexSequence() (b3 = HexSequence() b4 = HexSequence())?
+    (
      InstrIMM() |
      InstrIMMIMM() |
      InstrBARE() |
      InstrLoad() |
-     InstrStore() 
+     InstrStore()
      )
 }
 
