@@ -93,28 +93,28 @@ public class ClassMap {
      * The <code>addClass()</code> method adds a short name (alias) for the specified class to the set of
      * default class names.
      *
-     * @param shortName the string representation of the alias of the class
+     * @param alias the string representation of the alias of the class
      * @param clz       the class to which the alias maps
      */
-    public void addClass(String shortName, Class clz) {
-        classMap.put(shortName, clz);
+    public void addClass(String alias, Class clz) {
+        classMap.put(alias, clz);
     }
 
     /**
      * The <code>addInstance()</code> method adds a mapping between a short name (alias) and an object that is
      * the instance of the class represented by that short name.
      *
-     * @param shortName the alias for the instance
+     * @param alias the alias for the instance
      * @param o         the actual object that will be returned from <code>getObjectOfClass()</code> when the
      *                  parameters is equal to the alias.
      */
-    public void addInstance(String shortName, Object o) {
+    public void addInstance(String alias, Object o) {
         Class cz = o.getClass();
         if (!(clazz.isAssignableFrom(cz)))
             throw Avrora.failure("Object of class "+StringUtil.quote(cz)+" is not an instance of " + clazz.getName());
 
-        objMap.put(shortName, o);
-        classMap.put(shortName, cz);
+        objMap.put(alias, o);
+        classMap.put(alias, cz);
     }
 
     /**
@@ -184,6 +184,10 @@ public class ClassMap {
         List list = Collections.list(Collections.enumeration(classMap.keySet()));
         Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
         return list;
+    }
+
+    public Iterator getIterator() {
+        return classMap.keySet().iterator();
     }
 
     /**

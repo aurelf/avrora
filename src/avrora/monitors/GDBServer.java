@@ -554,7 +554,7 @@ public class GDBServer extends MonitorFactory {
      * is capable of creating monitors for simulators.
      */
     public GDBServer() {
-        super("gdb", HELP);
+        super(HELP);
     }
 
     /**

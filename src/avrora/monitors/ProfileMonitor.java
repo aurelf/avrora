@@ -342,7 +342,7 @@ public class ProfileMonitor extends MonitorFactory {
     }
 
     public ProfileMonitor() {
-        super("profile", "The \"profile\" monitor profiles the execution history " +
+        super("The \"profile\" monitor profiles the execution history " +
                 "of every instruction in the program and generates a textual report " +
                 "of the execution frequency for all instructions.");
     }

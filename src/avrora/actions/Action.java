@@ -49,13 +49,6 @@ public abstract class Action {
     public final String help;
 
     /**
-     * The <code>shortName</code> field stores a reference to the string that represents the short
-     * (abbreviated) name of this action.
-     */
-    // TODO: this is no longer needed
-    public final String shortName;
-
-    /**
      * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
      * encapsulates the command line options available to this action.
      */
@@ -68,8 +61,7 @@ public abstract class Action {
      * @param sn the short name of the action as a string
      * @param h  the (unformatted) help string
      */
-    protected Action(String sn, String h) {
-        shortName = sn;
+    protected Action(String h) {
         help = h;
         options = new Options();
     }
@@ -91,17 +83,6 @@ public abstract class Action {
      */
     public String getHelp() {
         return help;
-    }
-
-    /**
-     * The <code>getShortName()</code> method returns the name of this action as a short string. This short
-     * string is the name that it can be referred to as from the command line. For example, to execute the
-     * BenchmarkAction, the -action=benchmark option must be supplied.
-     *
-     * @return the name of this action as a short string
-     */
-    public String getShortName() {
-        return shortName;
     }
 
     /**

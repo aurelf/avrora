@@ -62,7 +62,7 @@ public class TripTimeMonitor extends MonitorFactory {
     final Option.Bool DISTRIBUTION = options.newOption("distribution", false, "");
 
     public TripTimeMonitor() {
-        super("trip-time", "The \"trip-time\" monitor records profiling " +
+        super("The \"trip-time\" monitor records profiling " +
                 "information about the program that consists of the time it takes " +
                 "(on average) to reach one point from another point in the program.");
     }

@@ -89,7 +89,7 @@ public class CFGAction extends Action {
      * appropriate name and help string.
      */
     public CFGAction() {
-        super("cfg", HELP);
+        super(HELP);
     }
 
     protected ProcedureMap pmap;

@@ -121,7 +121,7 @@ public class SimPerfMonitor extends MonitorFactory {
      * producing profile monitors for each simulator passed.
      */
     public SimPerfMonitor() {
-        super("simperf", "The \"simperf\" monitor profiles the performance of the " +
+        super("The \"simperf\" monitor profiles the performance of the " +
                 "simulator itself by periodically recording the cycles executed and total " +
                 "time consumed by simulation and generates a report.");
     }

@@ -54,7 +54,7 @@ public class DBBCAction extends Action {
             "(DBBC) in Avrora, which dynamically compiles AVR code to Java source code.";
 
     public DBBCAction() {
-        super("dbbc", HELP);
+        super(HELP);
     }
 
     /**

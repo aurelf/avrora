@@ -212,7 +212,7 @@ public class TraceMonitor extends MonitorFactory {
      * producing profile monitors for each simulator passed.
      */
     public TraceMonitor() {
-        super("trace", "The \"trace\" monitor traces the execution of the entire program " +
+        super("The \"trace\" monitor traces the execution of the entire program " +
                 "by printing every instruction as it executes. ");
     }
 

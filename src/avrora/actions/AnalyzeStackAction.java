@@ -79,7 +79,7 @@ public class AnalyzeStackAction extends Action {
      * with the appropriate name and help string.
      */
     public AnalyzeStackAction() {
-        super("analyze-stack", HELP);
+        super(HELP);
     }
 
     public static final int MEGABYTES = 1024 * 1024;

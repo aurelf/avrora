@@ -124,7 +124,7 @@ public class StackMonitor extends MonitorFactory {
      * <code>newMonitor()</code> method.
      */
     public StackMonitor() {
-        super("stack", "The \"stack\" monitor tracks the height of the stack while " +
+        super("The \"stack\" monitor tracks the height of the stack while " +
                 "the program executes, reporting the maximum stack height seen.");
     }
 

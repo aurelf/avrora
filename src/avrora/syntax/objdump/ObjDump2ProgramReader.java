@@ -77,7 +77,7 @@ public class ObjDump2ProgramReader extends ProgramReader {
     }
 
     public String getHelp() {
-        return "The \"objdump2\" input format reads programs that are the " +
+        return "The \"odpp\" input format reads programs that are the " +
                 "output of the \"avr-objdump\" utility provided with avr-binutils " +
                 "and that have been preprocessed with Avrora's preprocessor utility. ";
     }

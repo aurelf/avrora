@@ -76,7 +76,7 @@ public class SleepMonitor extends MonitorFactory {
     }
 
     public SleepMonitor() {
-        super("sleep", "The \"sleep\" is a monitor that tracks statistics " +
+        super("The \"sleep\" is a monitor that tracks statistics " +
                 "about the sleeping patterns of programs, including the total number of " +
                 "cycles awake and the total number of cycles asleep during the simulation.");
     }

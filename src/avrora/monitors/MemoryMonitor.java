@@ -192,7 +192,7 @@ public class MemoryMonitor extends MonitorFactory {
     }
 
     public MemoryMonitor() {
-        super("memory", "The \"memory\" monitor collects information about the " +
+        super("The \"memory\" monitor collects information about the " +
                 "memory usage statistics of the program, which includes the number " +
                 "of reads and writes to every byte of data memory.");
     }

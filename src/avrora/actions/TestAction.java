@@ -50,7 +50,7 @@ public class TestAction extends Action {
             "the automated testing framework will report detailed information for failed test cases.");
 
     public TestAction() {
-        super("test", HELP);
+        super(HELP);
     }
 
     /**

@@ -124,7 +124,7 @@ public class Main {
                 return new GASProgramReader().read(args);
             if (".od".equals(extension))
                 return new ObjDumpProgramReader().read(args);
-            if (".od2".equals(extension))
+            if (".odpp".equals(extension))
                 return new ObjDump2ProgramReader().read(args);
 
             Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
@@ -300,7 +300,7 @@ public class Main {
         if (action == null)
             Avrora.userError("no help available for unknown action " + StringUtil.quote(a));
 
-        String actname = StringUtil.quote(action.getShortName());
+        String actname = StringUtil.quote(a);
         printSection("HELP FOR THE " + actname + " ACTION", action.getHelp());
 
         if (action.options.size() > 0) {

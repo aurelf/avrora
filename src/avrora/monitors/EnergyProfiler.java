@@ -300,7 +300,7 @@ public class EnergyProfiler extends MonitorFactory {
      * <code>newMonitor()</code> method.
      */
     public EnergyProfiler() {
-        super("energyProfiler", "The \"energy profile\" monitor tracks the power consumption of procedures");
+        super("The \"energy profile\" monitor tracks the power consumption of procedures");
     }
 
     /**

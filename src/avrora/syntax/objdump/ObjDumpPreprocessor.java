@@ -59,10 +59,9 @@ public class ObjDumpPreprocessor extends Action {
     protected final Verbose.Printer printer = Verbose.getVerbosePrinter("reader.objdump");
 
     public ObjDumpPreprocessor() {
-        super("odpp",
-                "The \"odpp\" action tests the functionality of the objdump preprocessor that " +
-                "cleans up the format output by objdump into something more suitable for automated " +
-                "parsing.");
+        super("The \"odpp\" action tests the functionality of the objdump preprocessor that " +
+              "cleans up the format output by objdump into something more suitable for automated " +
+              "parsing.");
     }
 
     public StringBuffer cleanCode(String inFile) {

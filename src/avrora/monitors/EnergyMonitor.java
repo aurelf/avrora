@@ -181,11 +181,11 @@ public class EnergyMonitor extends MonitorFactory {
      * create a new monitor
      */
     public EnergyMonitor() {
-        super("energy", "The \"energy\" is a monitor to trace energy consumption");
+        super("The \"energy\" is a monitor to trace energy consumption");
     }
 
     public EnergyMonitor(String s1, String s2) {
-        super(s1,s2);
+        super(s2);
     }
 
     /**

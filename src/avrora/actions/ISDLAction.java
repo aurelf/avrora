@@ -74,7 +74,7 @@ public class ISDLAction extends Action {
             "\"inline\" in their declaration.");
 
     public ISDLAction() {
-        super("isdl", HELP);
+        super(HELP);
     }
 
     public void run(String[] args) throws Exception {

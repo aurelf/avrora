@@ -45,7 +45,7 @@ public class ListAction extends Action {
     public static final String HELP = "The \"list\" action prints a digest of the program.";
 
     public ListAction() {
-        super("list", HELP);
+        super(HELP);
     }
 
     /**

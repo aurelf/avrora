@@ -49,4 +49,6 @@ public interface HelpItem {
      * formatted appropriately according to the terminal size.
      */
     public void printHelp();
+
+    public HelpCategory getHelpCategory();
 }

@@ -96,7 +96,7 @@ public abstract class SimAction extends Action {
     protected HashMap monitorListMap;
 
     protected SimAction(String sn, String h) {
-        super(sn, h);
+        super(h);
         monitorFactoryList = new LinkedList();
         monitorListMap = new HashMap();
     }

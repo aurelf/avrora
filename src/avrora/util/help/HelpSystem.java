@@ -32,6 +32,8 @@
 
 package avrora.util.help;
 
+import avrora.util.ClassMap;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Collections;
@@ -45,19 +47,21 @@ import java.util.ArrayList;
  */
 public class HelpSystem {
 
-    static final HashMap categories = new HashMap();
+    static final ClassMap categoryMap = new ClassMap("HelpCategory", HelpCategory.class);
 
     public static HelpCategory getCategory(String name) {
-        return (HelpCategory)categories.get(name);
+        return (HelpCategory)categoryMap.getObjectOfClass(name);
     }
 
     public static void addCategory(String name, HelpCategory cat) {
-        categories.put(name, cat);
+        categoryMap.addInstance(name, cat);
     }
 
-    public static List getCategories() {
-        ArrayList list = Collections.list(Collections.enumeration(categories.keySet()));
-        Collections.sort(list);
-        return list;
+    public static void addCategory(String name, Class cz) {
+        categoryMap.addClass(name, cz);
+    }
+
+    public static List getSortedList() {
+        return categoryMap.getSortedList();
     }
 }

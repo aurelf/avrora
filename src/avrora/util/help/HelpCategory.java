@@ -164,4 +164,8 @@ public class HelpCategory implements HelpItem {
             s.printHelp();
         }
     }
+
+    public HelpCategory getHelpCategory() {
+        return this;
+    }
 }

@@ -52,11 +52,6 @@ public abstract class MonitorFactory {
     public final String help;
 
     /**
-     * The <code>shortName</code> field stores a reference to the short name of the monitor.
-     */
-    public final String shortName;
-
-    /**
      * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
      * stores the command line options to the monitor.
      */
@@ -66,11 +61,9 @@ public abstract class MonitorFactory {
      * The constructor for the <code>MonitorFactory</code> class initializes the <code>options</code> field,
      * as well as the references to the help string and the short name of the monitor.
      *
-     * @param sn the short name of the monitor as a string
      * @param h  the help item for the monitor as a string
      */
-    protected MonitorFactory(String sn, String h) {
-        shortName = sn;
+    protected MonitorFactory(String h) {
         help = h;
         options = new Options();
     }
@@ -96,16 +89,6 @@ public abstract class MonitorFactory {
      */
     public void processOptions(Options o) {
         options.process(o);
-    }
-
-    /**
-     * The <code>getShortName()</code> method returns a shortened version of the name of this monitor for more
-     * quick access at the command line.
-     *
-     * @return a string representation of an abbreviated name for this monitor
-     */
-    public String getShortName() {
-        return shortName;
     }
 
 }
