@@ -219,6 +219,12 @@ public class DeltaQueue {
                 else
                     prev.next = pos.next;
 
+
+                // fixes up the delta of the next item in the queue
+                if(pos.next != null) {
+                    pos.next.delta += pos.delta;
+                }
+
                 free(pos);
             } else {
                 prev = pos;
