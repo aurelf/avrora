@@ -44,6 +44,30 @@ import java.util.*;
  */
 public class ControlFlowGraph {
 
+    public class Edge {
+        private final String type;
+        private final Block source;
+        private final Block target;
+
+        Edge(String t, Block s, Block b) {
+            type = t;
+            source = s;
+            target = b;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public Block getSource() {
+            return source;
+        }
+
+        public Block getTarget() {
+            return target;
+        }
+    }
+
     /**
      * The <code>Block</code> class represents a basic block of code within
      * the program. A basic block contains a straight-line piece of code that
@@ -78,14 +102,13 @@ public class ControlFlowGraph {
         private int size;
         private int length;
 
-        private List list;
-
-        private Block next;
-        private Block other;
+        private List instructions;
+        private List edges;
 
         Block(int addr) {
             address = addr;
-            list = new LinkedList();
+            instructions = new LinkedList();
+            edges = new LinkedList();
         }
 
 
@@ -99,7 +122,7 @@ public class ControlFlowGraph {
          * @param i the instruction to add to this basic block
          */
         public void addInstr(Instr i) {
-            list.add(i);
+            instructions.add(i);
 
             size += i.getSize();
             length++;
@@ -126,30 +149,6 @@ public class ControlFlowGraph {
             if ( this == o ) return true;
             if ( !(o instanceof Block) ) return false;
             return ((Block)o).address == this.address;
-        }
-
-        /**
-         * The <code>getNextBlock()</code> method allows access to the next block following
-         * this basic block. The next block is defined as the block to which this block
-         * falls through when a branch is not taken (or when a call returns). Therefore,
-         * for jump, return, and break instructions that end a basic block, the next block
-         * is null.
-         * @return a reference to the next basic block
-         */
-        public Block getNextBlock() {
-            return next;
-        }
-
-        /**
-         * The <code>getOtherBlock()</code> method allows access to the block which could
-         * be entered as a result of a call, a jump, a branch, or a skip at the end of this
-         * block. For example, the other block for a jump is basic block which the
-         * instruction jumps to. For branches, this is the block where control will go
-         * when the branch is taken. For calls, this is the address being called.
-         * @return a reference to the other basic block
-         */
-        public Block getOtherBlock() {
-            return other;
         }
 
         /**
@@ -180,33 +179,17 @@ public class ControlFlowGraph {
         }
 
         /**
-         * The <code>setNext()</code> method sets the reference to the next block.
-         * This is not recommended for general use: it is used by the <code>CFGBuilder</code>
-         * class during construction of a control flow graph.
-         * @param n the new next block
-         */
-        public void setNext(Block n) {
-            next = n;
-        }
-
-        /**
-         * The <code>setOther()</code> method sets the reference to the other block.
-         * This is not recommended for general use: it is used by the <code>CFGBuilder</code>
-         * class during construction of a control flow graph.
-         * @param o the new other block
-         */
-        public void setOther(Block o) {
-            other = o;
-        }
-
-        /**
          * The <code>getInstrIterator()</code> method returns an iterator over the
          * instructions in this basic block. The resulting iterator can be used to
          * iterate over the instructions in the basic block in order.
          * @return an iterator over the instructions in this block.
          */
         public Iterator getInstrIterator() {
-            return list.iterator();
+            return instructions.iterator();
+        }
+
+        public Iterator getEdgeIterator() {
+            return edges.iterator();
         }
     }
 
@@ -243,6 +226,14 @@ public class ControlFlowGraph {
         Block b = new Block(address);
         blocks.put(new Integer(address), b);
         return b;
+    }
+
+    public void addEdge(Block s, Block t, String type) {
+        s.edges.add(new Edge(type, s, t));
+    }
+
+    public void addEdge(Block s, Block t) {
+        s.edges.add(new Edge(null, s, t));
     }
 
     /**

@@ -38,6 +38,7 @@ import avrora.core.CFGBuilder;
 import avrora.core.Instr;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.Printer;
 import avrora.Main;
 
 import java.util.Iterator;
@@ -63,6 +64,13 @@ public class CFGAction extends Action {
         Main.ProgramReader r = Main.getProgramReader();
         Program p = r.read(args);
         ControlFlowGraph cfg = new CFGBuilder(p).buildCFG();
+
+        if ( Main.OUTPUT.get().equals("dot") ) dumpDotCFG(cfg);
+        else dumpCFG(cfg);
+
+    }
+
+    private void dumpCFG(ControlFlowGraph cfg) {
         Iterator biter = cfg.getSortedBlockIterator();
 
         while ( biter.hasNext() ) {
@@ -77,12 +85,76 @@ public class CFGAction extends Action {
                 Terminal.println(" "+instr.getOperands());
             }
             Terminal.print("    [");
-            printPair("next", block.getNextBlock());
-            Terminal.print(", ");
-            printPair("other", block.getOtherBlock());
+            dumpEdges(block.getEdgeIterator());
             Terminal.println("]");
         }
+    }
 
+    private void dumpDotCFG(ControlFlowGraph cfg) {
+        Iterator biter = cfg.getSortedBlockIterator();
+
+        Printer p = Printer.STDOUT;
+        p.startblock("digraph G");
+        while ( biter.hasNext() ) {
+            ControlFlowGraph.Block block = (ControlFlowGraph.Block)biter.next();
+            String bName = blockName(block);
+            int addr = block.getAddress();
+            String shape = getShape(addr, block.getEdgeIterator());
+            p.println(bName+" [shape="+shape+"];");
+
+            dumpDotEdges(block.getEdgeIterator(), p);
+        }
+        p.endblock();
+    }
+
+    private String getShape(int addr, Iterator edges) {
+        if ( addr % 4 == 0 && addr < 35 * 4 ) // interrupt handler
+            return "box";
+
+        while (edges.hasNext()) {
+            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
+            String type = e.getType();
+            if ( isReturnEdge(type) ) return "hexagon";
+        }
+        return "ellipse";
+    }
+
+    private boolean isReturnEdge(String type) {
+        return type != null && (type.equals("RET") || type.equals("RETI"));
+    }
+
+    private void dumpEdges(Iterator edges) {
+        while (edges.hasNext()) {
+            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
+            Terminal.print(StringUtil.addrToString(e.getTarget().getAddress()));
+        }
+    }
+
+    private void dumpDotEdges(Iterator edges, Printer p) {
+        while (edges.hasNext()) {
+            ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
+            String sName = blockName(e.getSource());
+            ControlFlowGraph.Block target = e.getTarget();
+            String t = e.getType();
+
+            if ( isReturnEdge(t) ) continue;
+
+            if ( target != null ) {
+                String tName = blockName(target);
+                p.print(sName+" -> "+tName);
+            } else {
+                p.print(sName +" -> UNKNOWN ");
+            }
+
+            if ( t != null ) {
+                if ( t != null ) p.print("[label="+t+"]");
+                p.println(";");
+            }
+        }
+    }
+
+    private String blockName(ControlFlowGraph.Block block) {
+        return StringUtil.quote(StringUtil.addrToString(block.getAddress()));
     }
 
     private void printPair(String t, ControlFlowGraph.Block b) {

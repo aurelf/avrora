@@ -75,6 +75,10 @@ public class CFGBuilder implements InstrVisitor {
     static class InstrInfo {
         boolean start;
         boolean fallthrough;
+        boolean ret;
+        boolean reti;
+        boolean call;
+        boolean indirect;
         Instr instr;
         int branchTo;
 
@@ -139,7 +143,8 @@ public class CFGBuilder implements InstrVisitor {
                 // check if next instruction starts a new basic block
                 if ( in.start ) {
                     nextblock = cfg.newBlock(pc + size);
-                    if ( ii.fallthrough ) block.setNext(nextblock);
+                    if ( ii.fallthrough )
+                        cfg.addEdge(block, nextblock);
                 }
             }
 
@@ -147,7 +152,26 @@ public class CFGBuilder implements InstrVisitor {
             if ( ii.branchTo >= 0 ) {
                 ControlFlowGraph.Block tblock = cfg.getBlockStartingAt(ii.branchTo);
                 if ( tblock == null ) tblock = cfg.newBlock(ii.branchTo);
-                block.setOther(tblock);
+
+                if ( ii.call )
+                    cfg.addEdge(block, tblock, "CALL");
+                else
+                    cfg.addEdge(block, tblock);
+            }
+
+            // check if this instruction is an indirect branch
+            if ( ii.indirect ) {
+                cfg.addEdge(block, null, "INDIRECT");
+            }
+
+            // check if the instruction is a return
+            if ( ii.ret ) {
+                cfg.addEdge(block, null, "RET");
+            }
+
+            // check if the instruction is a return from an interrupt
+            if ( ii.reti ) {
+                cfg.addEdge(block, null, "RETI");
             }
 
             // add instruction to the current block
@@ -242,7 +266,9 @@ public class CFGBuilder implements InstrVisitor {
     }
 
     private void skip(Instr i) {
-        branch(i, pc + program.readInstr(pc + i.getSize()).getSize());
+        int npc = pc + i.getSize();
+        Instr next = program.readInstr(npc);
+        branch(i, npc + next.getSize());
     }
 
 
@@ -341,6 +367,7 @@ public class CFGBuilder implements InstrVisitor {
         add(i);
     }
     public void visit(Instr.CALL i) { // call absolute address
+        info[pc].call = true;
         branch(i, absolute(i.imm1));
     }
     public void visit(Instr.CBI i) { // clear bit in IO register
@@ -395,9 +422,12 @@ public class CFGBuilder implements InstrVisitor {
         add(i);
     }
     public void visit(Instr.EICALL i) { // extended indirect call
+        info[pc].indirect = true;
+        info[pc].call = true;
         end(i);
     }
     public void visit(Instr.EIJMP i) { // extended indirect jump
+        info[pc].indirect = true;
         end(i);
     }
     public void visit(Instr.ELPM i) { // extended load program memory to r0
@@ -422,9 +452,12 @@ public class CFGBuilder implements InstrVisitor {
         add(i);
     }
     public void visit(Instr.ICALL i) { // indirect call through Z register
+        info[pc].call = true;
+        info[pc].indirect = true;
         end(i);
     }
     public void visit(Instr.IJMP i) { // indirect jump through Z register
+        info[pc].indirect = true;
         end(i);
     }
     public void visit(Instr.IN i) { // read from IO register into register
@@ -509,9 +542,11 @@ public class CFGBuilder implements InstrVisitor {
         branch(i, relative(i.imm1));
     }
     public void visit(Instr.RET i) { // return to caller
+        info[pc].ret = true;
         end(i);
     }
     public void visit(Instr.RETI i) { // return from interrupt
+        info[pc].reti = true;
         end(i);
     }
     public void visit(Instr.RJMP i) { // relative jump

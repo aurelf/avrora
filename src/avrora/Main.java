@@ -278,7 +278,7 @@ public class Main {
         }
 
         public String getHelp() {
-            return "The \"auto\" input format inspects the extensions of the given " +
+            return "The \"auto\" input format inspects the extension of the given " +
                     "filename and chooses the best format based on that extension. For " +
                     "example, it assumes that the best format for the .asm extenstion is " +
                     "the Atmel syntax.";
