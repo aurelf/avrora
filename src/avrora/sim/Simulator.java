@@ -91,6 +91,12 @@ public abstract class Simulator implements IORegisterConstants {
     public static boolean LEGACY_INTERPRETER = true;
 
     /**
+     * The <code>LEGACY_INTERPRETER</code> field is used to turn on and off
+     * the legacy interpreter. By default, the legacy interpreter is used.
+     */
+    public static boolean FIF_INTERPRETER = false;
+
+    /**
      * The <code>interpreter</code> field stores a reference to the instruction
      * set interpreter.
      */
@@ -443,7 +449,12 @@ public abstract class Simulator implements IORegisterConstants {
      */
     public void reset() {
         eventQueue = new DeltaQueue();
-        if (LEGACY_INTERPRETER) {
+        if (FIF_INTERPRETER) {
+            interpreter = new FIFInterpreter(this, program,
+                    microcontroller.getFlashSize(),
+                    microcontroller.getIORegSize(),
+                    microcontroller.getRamSize());
+        } else if (LEGACY_INTERPRETER) {
             interpreter = new LegacyInterpreter(this, program,
                     microcontroller.getFlashSize(),
                     microcontroller.getIORegSize(),

@@ -64,6 +64,8 @@ public class InstrDecl extends CodeRegion {
 
     public final String className;
 
+    public final String innerClassName;
+
     public final int cycles;
 
     /**
@@ -78,7 +80,8 @@ public class InstrDecl extends CodeRegion {
         variant = v;
         cycles = Expr.tokenToInt(c);
         encoding = e;
-        className = "Instr." + StringUtil.trimquotes(name.image).toUpperCase();
+        innerClassName = StringUtil.trimquotes(name.image).toUpperCase();
+        className = "Instr." + innerClassName;
     }
 
     public int getEncodingSize() {
@@ -87,6 +90,10 @@ public class InstrDecl extends CodeRegion {
 
     public String getClassName() {
         return className;
+    }
+
+    public String getInnerClassName() {
+        return innerClassName;
     }
 
 }

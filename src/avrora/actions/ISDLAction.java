@@ -37,6 +37,7 @@ import avrora.core.isdl.Architecture;
 import avrora.core.isdl.parser.ISDLParser;
 import avrora.core.isdl.gen.InterpreterGenerator;
 import avrora.core.isdl.gen.ClassGenerator;
+import avrora.core.isdl.gen.FIFInterpreterGenerator;
 import avrora.util.Printer;
 import avrora.util.SectionFile;
 import avrora.util.Option;
@@ -68,18 +69,26 @@ public class ISDLAction extends Action {
     }
 
     public void run(String[] args) throws Exception {
-        if (args.length != 3)
-            Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl> <interpreter.java> <instr.java>");
+        if (args.length != 4)
+            Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl> <interpreter.java> <fif_interpreter.java> <instr.java>");
 
         File archfile = new File(args[0]);
         FileInputStream fis = new FileInputStream(archfile);
         ISDLParser parser = new ISDLParser(fis);
         Architecture a = parser.Architecture();
 
+        // generate vanilla interpreter
         SectionFile f = new SectionFile(args[1], "INTERPRETER GENERATOR");
         new InterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
         f.close();
-        f = new SectionFile(args[2], "INSTR GENERATOR");
+
+        // generate FIF interpreter
+        f = new SectionFile(args[2], "FIF GENERATOR");
+        new FIFInterpreterGenerator(a, new Printer(new PrintStream(f))).generateCode();
+        f.close();
+
+        // generate instruction classes
+        f = new SectionFile(args[3], "INSTR GENERATOR");
         new ClassGenerator(a, new Printer(new PrintStream(f))).generate();
         f.close();
     }

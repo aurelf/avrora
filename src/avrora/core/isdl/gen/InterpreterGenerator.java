@@ -175,7 +175,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         initializeMaps();
     }
 
-    private void initializeMaps() {
+    protected void initializeMaps() {
         mapMap.put("regs", new GetterSetterMap("getRegisterByte", "setRegisterByte"));
         mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "setRegisterByte"));
         mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "setRegisterWord"));
@@ -213,20 +213,22 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         printer.endblock();
     }
 
-    private void initializeOperandMap(CodeRegion cr) {
+    protected void initializeOperandMap(CodeRegion cr) {
         operandMap = new HashMap();
         Iterator i = cr.getOperandIterator();
         while (i.hasNext()) {
             CodeRegion.Operand o = (CodeRegion.Operand) i.next();
 
-            String name = "i."+o.name.image;
+            String image = o.name.image;
+            if ( cr instanceof InstrDecl )
+                image = "i."+image;
 
-            operandMap.put(o.name.image, name);
+            operandMap.put(o.name.image, image);
         }
     }
 
     public void visit(SubroutineDecl d) {
-//        if ( d.inline ) return;
+        if ( d.inline || !d.hasBody() ) return;
         printer.print("public " + d.ret.image + " " + d.name.image + "(");
         Iterator i = d.getOperandIterator();
         while (i.hasNext()) {
@@ -282,7 +284,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         mr.generateBitRangeWrite(s.index, s.low_bit, s.high_bit, s.expr);
     }
 
-    private MapRep getMapRep(String n) {
+    protected MapRep getMapRep(String n) {
         MapRep mr = (MapRep) mapMap.get(n);
         if (mr == null)
             throw Avrora.failure("unknown map " + StringUtil.quote(n));
@@ -321,35 +323,35 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         printer.println(");");
     }
 
-    private String getVariable(Token variable) {
+    protected String getVariable(Token variable) {
         String var = (String) operandMap.get(variable.image);
         if (var == null) var = variable.image;
         return var;
     }
 
-    private void emitBinOp(Expr e, String op, int p, int val) {
+    protected void emitBinOp(Expr e, String op, int p, int val) {
         printer.print("(");
         codeGen.inner(e, p);
         printer.print(" " + op + " " + val + ")");
     }
 
-    private String andString(int mask) {
+    protected String andString(int mask) {
         return " & 0x" + StringUtil.toHex(mask, 8);
     }
 
-    private void emitAnd(Expr e, int val) {
+    protected void emitAnd(Expr e, int val) {
         printer.print("(");
         codeGen.inner(e, Expr.PREC_A_AND);
         printer.print(andString(val) + ")");
     }
 
-    private void emitCall(String s, Expr e) {
+    protected void emitCall(String s, Expr e) {
         printer.print(s + "(");
         e.accept(codeGen);
         printer.print(")");
     }
 
-    private void emitCall(String s, Expr e1, Expr e2) {
+    protected void emitCall(String s, Expr e1, Expr e2) {
         printer.print(s + "(");
         e1.accept(codeGen);
         printer.print(", ");
@@ -357,7 +359,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
         printer.print(")");
     }
 
-    private void emitCall(String s, String e1, Expr e2, Expr e3) {
+    protected void emitCall(String s, String e1, Expr e2, Expr e3) {
         printer.print(s + "(" + e1 + ", ");
         e2.accept(codeGen);
         printer.print(", ");
@@ -372,7 +374,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
      */
     public class CodeGenerator implements CodeVisitor {
 
-        private void inner(Expr e, int outerPrecedence) {
+        protected void inner(Expr e, int outerPrecedence) {
             if (e.getPrecedence() < outerPrecedence) {
                 printer.print("(");
                 e.accept(this);
@@ -382,7 +384,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
             }
         }
 
-        private void binop(String op, Expr left, Expr right, int p) {
+        protected void binop(String op, Expr left, Expr right, int p) {
             inner(left, p);
             printer.print(" " + op + " ");
             inner(right, p);
@@ -471,7 +473,7 @@ public class InterpreterGenerator extends StmtVisitor.DepthFirst implements Arch
             printer.print(")");
         }
 
-        private void visitExprList(List l) {
+        protected void visitExprList(List l) {
             Iterator i = l.iterator();
             while (i.hasNext()) {
                 Expr a = (Expr) i.next();

@@ -65,16 +65,17 @@ architecture avr {
         x = 0, y = 1, z = 2
     };
 
-    operand IMM3  : int.3 = [0, 7];
-    operand IMM5  : int.5 = [0, 31];
-    operand IMM6  : int.6 = [0, 63];
-    operand IMM7  : int.7 = [0, 127];
-    operand IMM8  : int.8 = [0, 255];
-    operand SREL  : int.7 = [-64, 63];
-    operand LREL  : int.11 = [-1024, 1023];
-    operand PADDR : int.16 = [0, 65536];
-    operand DADDR : int.12 = [0, 4096];
+    operand IMM3[3]: immediate = [0, 7];
+    operand IMM5[5]: immediate = [0, 31];
+    operand IMM6[6]: immediate = [0, 63];
+    operand IMM7[7]: immediate = [0, 127];
+    operand IMM8[8]: immediate = [0, 255];
+    operand SREL[7]: immediate = [-64, 63];
+    operand LREL[11]: immediate = [-1024, 1023];
+    operand PADDR[16]: immediate = [0, 65536];
+    operand DADDR[12]: immediate = [0, 4096];
 
+/*
     state SRAM: int.8[...];
     state FLASH: int.8[...];
 
@@ -128,7 +129,7 @@ architecture avr {
     register X: uint.16 <=> { REGS[27], REGS[26] };
     register Y: uint.16 <=> { REGS[29], REGS[28] };
     register Z: uint.16 <=> { REGS[31], REGS[30] };
-
+*/
 
 //---------------------------------------------------------------------------
 //  SUBROUTINES

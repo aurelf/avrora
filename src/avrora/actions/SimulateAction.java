@@ -129,6 +129,10 @@ public class SimulateAction extends SimAction {
             "to use the legacy (hand-written) interpreter rather than the interpreter " +
             "generated from the architecture description language. It is used for " +
             "benchmarking and regression purposes.");
+    public final Option.Bool FAST_INTERPRETER = newOption("fast-interpreter", false,
+            "This option is used in the \"simulate\" action. It causes the simulator " +
+            "to use the fast (but space inefficient) interpreter rather than the " +
+            "default interpreter. It is used for benchmarking and regression purposes.");
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -192,6 +196,7 @@ public class SimulateAction extends SimAction {
         program = Main.readProgram(args);
 
         Simulator.LEGACY_INTERPRETER = LEGACY_INTERPRETER.get();
+        Simulator.FIF_INTERPRETER = FAST_INTERPRETER.get();
 
         PlatformFactory pf = getPlatform();
         if (pf != null) {
