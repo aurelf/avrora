@@ -9,6 +9,25 @@ import avrora.sir.Register;
  * the general purpose registers and a couple of IO registers that
  * control the interrupt behavior.
  *
+ * The abstract values (e.g. register values) are represented as
+ * characters. Thus, an 8 bit register is modelled using a 16-bit
+ * character. The upper 8 bits represent the "mask", those bits
+ * which are known. The lower 8 bits represent the known bits
+ * of the value. Thus, if bit(regs[R], i+8) is set, then bit(R, i)
+ * is known and its value is bit(regs[R], i). If bit(regs[R], i+8)
+ * is clear, then the value of bit(regs[R], i) is unknown in
+ * this abstract value.
+ *
+ * Since there are 3 possible states (on, off, unknown) for each
+ * bit in the abstract state and there are two bits reserved for
+ * representing each of these states, there are 4 bit states
+ * and 3 abstract states. We canonicalize the values when the
+ * bit value is unknown, i.e. when the known mask bit is clear,
+ * then the value bit is clear as well. This makes comparison
+ * of canonical abstract values the same as character equality.
+ * All abstract values stored within <code>AbstractState</code>
+ * are canonical for efficiency and clarity.
+ *
  * @author Ben L. Titzer
  */
 public class AbstractState {
@@ -24,6 +43,9 @@ public class AbstractState {
     private int pc;
     private char SREG;   // canonical status register value
     private char regs[]; // canonical register values
+
+    private boolean hashed;
+    private int hashCode;
 
     public static final int primes[] = {
         3,     5,   7,  11,  13,  17,  19,  23,  29,  31,
@@ -41,12 +63,29 @@ public class AbstractState {
         }
     }
 
+    private AbstractState(int npc, char nSREG, char[] nregs) {
+        regs = new char[NUM_REGS];
+        System.arraycopy(nregs, 0, regs, 0, NUM_REGS);
+        pc = npc;
+        SREG = nSREG;
+    }
+
+    public AbstractState fork() {
+        return new AbstractState(pc, SREG, regs);
+    }
+
     public int hashCode() {
-        int cumul = pc;
-        cumul += SREG;
+        if ( !hashed ) computeHashCode();
+
+        return hashCode;
+    }
+
+    private void computeHashCode() {
+        hashCode = pc;
+        hashCode += SREG;
         for ( int cntr = 0; cntr < NUM_REGS; cntr++ )
-            cumul += regs[cntr] * primes[cntr];
-        return cumul;
+            hashCode += regs[cntr] * primes[cntr];
+        hashed = true;
     }
 
     public boolean equals(Object o) {
@@ -69,6 +108,7 @@ public class AbstractState {
     }
 
     public void setPC(int npc) {
+        hashedCheck();
         pc = npc;
     }
 
@@ -77,6 +117,7 @@ public class AbstractState {
     }
 
     public void writeSREG(char val) {
+        hashedCheck();
         SREG = canon(val);
     }
 
@@ -85,8 +126,23 @@ public class AbstractState {
     }
 
     public void writeRegister(Register r, char val) {
+        hashedCheck();
         regs[r.getNumber()] = canon(val);
     }
+
+    private void hashedCheck() {
+        if ( hashed ) throw new Error("attempt to change AbstractState after .hashCode() has been called.");
+    }
+
+    /**
+     *  O P E R A T I O N S   O N   A B S T R A C T   V A L U E S
+     * -----------------------------------------------------------------
+     *
+     *    Abstract values are represented as characters. These utility
+     * functions allow operations on abstract values to be expressed
+     * more clearly.
+     *
+     */
 
     public static char merge(char val1, char val2) {
         if ( val1 == val2 ) return val1;
@@ -95,7 +151,7 @@ public class AbstractState {
         char v2k = maskOf(val2); // known mask of val2
 
         int mm = ~(bitsOf(val1) ^ bitsOf(val2)); // matched bits
-        int rk = v1k & v2k & mm; // known bits of result
+        int rk = v1k & v2k & mm & 0xff; // known bits of result
 
         return canon((char)rk, val1);
     }
@@ -116,11 +172,11 @@ public class AbstractState {
     }
 
     public static char canon(char vk, char val) {
-        return (char)(vk | (val & (vk >> SHIFT)));
+        return (char)((vk << SHIFT) | (val & vk));
     }
 
     public static char knownVal(byte val) {
-        return canon((char)(KNOWN_MASK >> SHIFT), (char)(val & 0xff));
+        return (char)(KNOWN_MASK | (val & 0xff));
     }
 
     public static byte knownBitsOf(char c) {
