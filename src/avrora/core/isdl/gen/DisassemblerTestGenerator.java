@@ -38,12 +38,30 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     }
 
     public void visit(InstrDecl d) {
-        if ( !d.pseudo ) {
-            if ( d.syntax != null ) {
-                new SyntaxGenerator(d).generate();
-            } else {
-                new SimpleGenerator(d).generate();
-            }
+        if ( d.syntax != null ) {
+            new SyntaxGenerator(d).generate();
+        } else {
+            new SimpleGenerator(d).generate();
+        }
+    }
+
+    abstract class SourceRep {
+        abstract int sourceRep(int pc, int bits);
+    }
+
+    class IntegerRep extends SourceRep {
+        int sourceRep(int pc, int bits) { return bits; }
+    }
+
+    class WordRep extends SourceRep {
+        int sourceRep(int pc, int bits) { return bits * 2; }
+    }
+
+    class RelativeRep extends SourceRep {
+        int sourceRep(int pc, int bits) {
+            int address = pc+2 + bits*2;
+            if ( address < 0 ) address = 0;
+            return address;
         }
     }
 
@@ -88,20 +106,21 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
                     HashSet hs = new HashSet();
                     outputImm(imm.high,  imm, hs, name, cntr,rep);
                     outputImm(imm.low,  imm, hs, name, cntr,rep);
-                    outputImmediate(0xffffffff, hs, imm, name, cntr, rep);
-                    outputImmediate(0xff00ff00, hs, imm, name, cntr, rep);
-                    outputImmediate(0xf0f0f0f0, hs, imm, name, cntr, rep);
-                    outputImmediate(0xcccccccc, hs, imm, name, cntr, rep);
-                    outputImmediate(0xaaaaaaaa, hs, imm, name, cntr, rep);
+                    boolean word = imm.kind.image.equals("word");
+                    outputImmediate(0xffffffff, hs, imm, name, cntr, rep, word);
+                    outputImmediate(0xff00ff00, hs, imm, name, cntr, rep, word);
+                    outputImmediate(0xf0f0f0f0, hs, imm, name, cntr, rep, word);
+                    outputImmediate(0xcccccccc, hs, imm, name, cntr, rep, word);
+                    outputImmediate(0xaaaaaaaa, hs, imm, name, cntr, rep, word);
                 }
             }
         }
 
-        private void outputImmediate(int value_l, HashSet hs, OperandDecl.Immediate imm, String name, int cntr, String[] rep) {
+        private void outputImmediate(int value_l, HashSet hs, OperandDecl.Immediate imm, String name, int cntr, String[] rep, boolean word) {
             int value_h = value_l;
             for ( int bit = 0; bit < 32; bit++) {
-                outputImm(value_l, imm, hs, name, cntr, rep);
-                outputImm(value_h, imm, hs, name, cntr, rep);
+                outputImm(word ? value_l * 2 : value_l, imm, hs, name, cntr, rep);
+                outputImm(word ? value_h * 2 : value_h, imm, hs, name, cntr, rep);
                 value_l = value_l >>> 1;
                 value_h = value_h << 1;
             }
@@ -168,7 +187,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     }
 
     private Printer createPrinter(String name) {
-        String fname = dname + File.separatorChar +name+".tst";
+        String fname = dname + File.separatorChar +name+".instr";
         Printer p = null;
         try {
             File file = new File(fname);

@@ -274,18 +274,18 @@ public class Program {
     public final int eeprom_end;
 
     /**
-     * The <code>data</code> field stores a reference to the array that contains the raw data (bytes) of the
+     * The <code>flash_data</code> field stores a reference to the array that contains the raw data (bytes) of the
      * program segment. NO EFFORT IS MADE IN THIS CLASS TO KEEP THIS CONSISTENT WITH THE INSTRUCTION
      * REPRESENTATIONS.
      */
-    protected final byte[] data;
+    protected final byte[] flash_data;
 
     /**
-     * The <code>instrs</code> field stores a reference to the array that contains the instruction
+     * The <code>flash_instrs</code> field stores a reference to the array that contains the instruction
      * representations of the program segment. NO EFFORT IS MADE IN THIS CLASS TO KEEP THIS CONSISTENT WITH
      * THE RAW DATA OF THE PROGRAM SEGMENT.
      */
-    protected final Instr[] instrs;
+    protected final Instr[] flash_instrs;
 
     /**
      * The <code>caseSensitive</code> field controls whether label searching is case sensitive or not. Some
@@ -314,8 +314,8 @@ public class Program {
         eeprom_start = estart;
         eeprom_end = eend;
 
-        data = new byte[program_end - program_start];
-        instrs = new Instr[program_end - program_start];
+        flash_data = new byte[program_end - program_start];
+        flash_instrs = new Instr[program_end - program_start];
 
         labels = new HashMap();
         indirectEdges = new HashMap();
@@ -336,9 +336,9 @@ public class Program {
         checkAddress(address);
         checkAddress(address + size - 1);
 
-        instrs[address - program_start] = i;
+        flash_instrs[address - program_start] = i;
         for (int cntr = 1; cntr < size; cntr++) {
-            instrs[address - program_start + cntr] = null;
+            flash_instrs[address - program_start + cntr] = null;
         }
     }
 
@@ -356,7 +356,7 @@ public class Program {
      */
     public Instr readInstr(int address) {
         checkAddress(address);
-        return instrs[address - program_start];
+        return flash_instrs[address - program_start];
     }
 
     /**
@@ -369,7 +369,7 @@ public class Program {
      */
     public byte readProgramByte(int address) {
         checkAddress(address);
-        return data[address - program_start];
+        return flash_data[address - program_start];
     }
 
     /**
@@ -387,7 +387,7 @@ public class Program {
     }
 
     private void writeByteInto(byte val, int offset) {
-        data[offset] = val;
+        flash_data[offset] = val;
     }
 
     /**
@@ -591,7 +591,7 @@ public class Program {
     private int outputRow(Printer p, int cursor) {
         p.print("program_" + StringUtil.toHex(cursor + program_start, 4) + ": ");
 
-        Instr i = instrs[cursor];
+        Instr i = flash_instrs[cursor];
 
         if (i != null) {
             p.println(i.getVariant() + ' ' + i.getOperands());
@@ -602,12 +602,12 @@ public class Program {
             int count;
 
             for (count = 1; count < 16 && cursor + count < program_length; count++) {
-                if (instrs[cursor + count] != null) break;
+                if (flash_instrs[cursor + count] != null) break;
             }
 
             for (int cntr = 0; cntr < count; cntr++) {
                 int address = cursor + cntr + program_start;
-                byte v = data[cursor + cntr];
+                byte v = flash_data[cursor + cntr];
                 p.print("0x" + StringUtil.toHex(v, 2));
                 if (cntr != count - 1) p.print(", ");
             }

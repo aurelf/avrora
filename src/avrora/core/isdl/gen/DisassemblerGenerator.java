@@ -420,7 +420,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 }
             }
 
-            printer.startblock("private Instr "+methodname+"(int word1)");
+            printer.startblock("private Instr "+methodname+"(int word1) throws InvalidInstruction");
 
             if ( children.size() > 0 ) {
                 // if there are any children, we need to generate a switch statement over
@@ -612,7 +612,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
     }
 
     private void invalidInstr() {
-        printer.println("throw Avrora.failure(\"INVALID INSTRUCTION\");");
+        printer.println("throw new InvalidInstruction(word1, pc);");
     }
 
     private void generateDecodeTables() {

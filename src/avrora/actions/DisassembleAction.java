@@ -30,7 +30,7 @@ public class DisassembleAction extends Action {
 
         Disassembler da = new Disassembler();
         for ( int index = 0; index < buf.length-1; ) {
-            Instr i = da.disassemble(buf, index);
+            Instr i = da.disassemble(0, buf, index);
             Terminal.println(StringUtil.addrToString(index)+": "+hb(buf, index)+" "+hb(buf, index+1)+"        "+i.toString());
             index += i.getSize();
         }

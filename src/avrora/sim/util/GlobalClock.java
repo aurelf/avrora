@@ -216,13 +216,12 @@ public class GlobalClock {
      */
     public static class Ticker extends LocalMeet {
 
-        // TODO: this field hides out class field
-        public final long period;
+        public final long tickerPeriod;
         protected final DeltaQueue eventQueue;
 
         protected Ticker(long p) {
             super("GLOBAL CLOCK");
-            period = p;
+            tickerPeriod = p;
             eventQueue = new DeltaQueue();
         }
 
@@ -235,7 +234,7 @@ public class GlobalClock {
         }
 
         public void parallelAction(SimulatorThread s) {
-            s.getSimulator().insertEvent(this, period);
+            s.getSimulator().insertEvent(this, tickerPeriod);
         }
 
     }

@@ -370,7 +370,7 @@ public class FreeSpaceAir implements RadioAir {
          */
         public void parallelAction(SimulatorThread t) {
             Simulator simulator = t.getSimulator();
-            simulator.insertEvent(this, period);
+            simulator.insertEvent(this, tickerPeriod);
             //LocalAir ps = simulator.getMicrocontroller().getRadio().getLocalAir();
             //ps.scheduleDelivery(radioClock.globalTime(), simulator);
         }

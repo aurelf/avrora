@@ -47,6 +47,13 @@ public class Arithmetic {
         return (char)((b1 & 0xff) | ((b2 & 0xff) << 8));
     }
 
+    public static int signExtend(int value, int signbit) {
+        if (getBit(value, signbit) ) {
+            return value | 0xffffffff << signbit;
+        }
+        return value;
+    }
+
     public static char ubyte(byte b1) {
         return (char)(b1 & 0xff);
     }

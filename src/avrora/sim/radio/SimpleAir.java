@@ -331,7 +331,7 @@ public class SimpleAir implements RadioAir {
 
         public void parallelAction(SimulatorThread t) {
             Simulator simulator = t.getSimulator();
-            simulator.insertEvent(this, period);
+            simulator.insertEvent(this, tickerPeriod);
             if (deliveryDelta > 0)
                 simulator.insertEvent(deliveryMeet, deliveryDelta);
 

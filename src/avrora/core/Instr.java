@@ -387,6 +387,19 @@ public abstract class Instr implements InstrPrototype {
             return allocate(pc, REG(ops[0]), REG(ops[1]));
         }
 
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof REGREG_class) ) return false;
+            REGREG_class i = (REGREG_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.r1 != this.r1 ) return false;
+            if ( i.r2 != this.r2 ) return false;
+            return true;
+        }
+
         abstract Instr allocate(int pc, Register r1, Register r2);
     }
 
@@ -407,6 +420,19 @@ public abstract class Instr implements InstrPrototype {
         public Instr build(int pc, Operand[] ops) {
             need(2, ops);
             return allocate(pc, REG(ops[0]), IMM(ops[1]));
+        }
+
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof REGIMM_class) ) return false;
+            REGIMM_class i = (REGIMM_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.r1 != this.r1 ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
         }
 
         abstract Instr allocate(int pc, Register r1, int imm1);
@@ -431,6 +457,19 @@ public abstract class Instr implements InstrPrototype {
             return allocate(pc, IMM(ops[0]), REG(ops[1]));
         }
 
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof IMMREG_class) ) return false;
+            IMMREG_class i = (IMMREG_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.r1 != this.r1 ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
+        }
+
         abstract Instr allocate(int pc, int imm1, Register r1);
     }
 
@@ -449,6 +488,18 @@ public abstract class Instr implements InstrPrototype {
         public Instr build(int pc, Operand[] ops) {
             need(1, ops);
             return allocate(pc, REG(ops[0]));
+        }
+
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof REG_class) ) return false;
+            REG_class i = (REG_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.r1 != this.r1 ) return false;
+            return true;
         }
 
         abstract Instr allocate(int pc, Register r1);
@@ -473,6 +524,19 @@ public abstract class Instr implements InstrPrototype {
             return allocate(pc, IMM(ops[0]), IMM(ops[1]));
         }
 
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof IMMIMM_class) ) return false;
+            IMMIMM_class i = (IMMIMM_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            if ( i.imm2 != this.imm2 ) return false;
+            return true;
+        }
+
         abstract Instr allocate(int pc, int imm1, int imm2);
     }
 
@@ -488,6 +552,19 @@ public abstract class Instr implements InstrPrototype {
 
         public String getOperands() {
             return imm1 + ", " + imm2;
+        }
+
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof IMMWORD_class) ) return false;
+            IMMWORD_class i = (IMMWORD_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            if ( i.imm2 != this.imm2 ) return false;
+            return true;
         }
 
         public Instr build(int pc, Operand[] ops) {
@@ -515,6 +592,18 @@ public abstract class Instr implements InstrPrototype {
             return allocate(pc, IMM(ops[0]));
         }
 
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof IMM_class) ) return false;
+            IMM_class i = (IMM_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
+        }
+
         abstract Instr allocate(int pc, int imm1);
     }
 
@@ -533,6 +622,18 @@ public abstract class Instr implements InstrPrototype {
         public Instr build(int pc, Operand[] ops) {
             need(1, ops);
             return allocate(pc, WORD(ops[0]));
+        }
+
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof WORD_class) ) return false;
+            WORD_class i = (WORD_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
         }
 
         abstract Instr allocate(int pc, int imm1);
@@ -560,6 +661,20 @@ public abstract class Instr implements InstrPrototype {
             return allocate(pc, REG(ops[0]), REG(ops[1]), IMM(ops[2]));
         }
 
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof REGREGIMM_class) ) return false;
+            REGREGIMM_class i = (REGREGIMM_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.r1 != this.r1 ) return false;
+            if ( i.r2 != this.r2 ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
+        }
+
         abstract Instr allocate(int pc, Register r1, Register r2, int imm1);
     }
 
@@ -584,6 +699,20 @@ public abstract class Instr implements InstrPrototype {
             return allocate(pc, REG(ops[0]), IMM(ops[1]), REG(ops[2]));
         }
 
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof REGIMMREG_class) ) return false;
+            REGIMMREG_class i = (REGIMMREG_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            if ( i.r1 != this.r1 ) return false;
+            if ( i.r2 != this.r2 ) return false;
+            if ( i.imm1 != this.imm1 ) return false;
+            return true;
+        }
+
         abstract Instr allocate(int pc, Register r1, int imm1, Register r2);
     }
 
@@ -600,6 +729,17 @@ public abstract class Instr implements InstrPrototype {
         public Instr build(int pc, Operand[] ops) {
             need(0, ops);
             return allocate(pc);
+        }
+
+        public boolean equals(Object o) {
+            // is the other object the same as this one?
+            if ( o == this ) return true;
+             // is the other object an instruction?
+            if ( !(o instanceof NONE_class) ) return false;
+            NONE_class i = (NONE_class)o;
+             // is the other instruction of the same class?
+            if ( i.properties != this.properties ) return false;
+            return true;
         }
 
         abstract Instr allocate(int pc);

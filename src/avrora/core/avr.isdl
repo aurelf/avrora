@@ -6,7 +6,7 @@ architecture avr {
 
     format GPRGPR = { opcode[5:0], r2[4:4], r1[4:4], r1[3:0], r2[3:0] };
     format GPR = { opcode[6:0], r1[4:4], r1[3:0], 0b0101 };
-    format HGPRIMM8 = { opcode[3:0], imm1[7:4], r1[4:1], imm1[3:0] };
+    format HGPRIMM8 = { opcode[3:0], imm1[7:4], r1[3:0], imm1[3:0] };
     format BRSET = { 0b111100, target[6:0], bit[2:0] };
     format BRCLR = { 0b111101, target[6:0], bit[2:0] };
     format SET = { 0b10010100, 0b0, bit[2:0], 0b1000 };
@@ -72,8 +72,8 @@ architecture avr {
     operand IMM8[8]: immediate = [0, 255];
     operand SREL[7]: relative = [-64, 63];
     operand LREL[11]: relative = [-1024, 1023];
-    operand PADDR[16]: address = [0, 65536]; // this is encoded as a word address
-    operand DADDR[12]: address = [0, 4096];
+    operand PADDR[16]: word = [0, 65536]; // this is encoded as a word address
+    operand DADDR[16]: address = [0, 65536];
 
 //---------------------------------------------------------------------------
 //  SUBROUTINES
@@ -273,7 +273,7 @@ architecture avr {
     };
 
     instruction "adiw" rd: RDL, imm: IMM6 { // add immediate to word register
-        encoding = { 0b10010110, imm[5:4], rd[2:1], imm[3:0] };
+        encoding = { 0b10010110, imm[5:4], rd[1:0], imm[3:0] };
         cycles = 2;
         execute = {
             local r1: int       = $wregs(rd);
@@ -975,7 +975,7 @@ architecture avr {
     };
 
     instruction "mul" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b100111, r1 = rr, r2 = rd };
+        encoding = GPRGPR where { opcode = 0b100111, r1 = rd, r2 = rr };
         cycles = 2;
         execute = {
             local result: int = $uregs(rd) * $uregs(rr);
@@ -1158,7 +1158,7 @@ architecture avr {
     };
 
     instruction "sbiw" rd: RDL, imm: IMM6 {
-        encoding = { 0b10010111, imm[5:4], rd[2:1], imm[3:0] };
+        encoding = { 0b10010111, imm[5:4], rd[1:0], imm[3:0] };
         cycles = 2;
         execute = {
             local val: int = $wregs(rd);
@@ -1310,9 +1310,9 @@ architecture avr {
     };
 
     instruction "stpd" ar: XYZ, rr: GPR {
-        encoding = { 0b1001001, rr[4:0], 0b1101 } when ar == X;
-        encoding = { 0b1001001, rr[4:0], 0b1001 } when ar == Y;
-        encoding = { 0b1001001, rr[4:0], 0b0001 } when ar == Z;
+        encoding = { 0b1001001, rr[4:0], 0b1110 } when ar == X;
+        encoding = { 0b1001001, rr[4:0], 0b1010 } when ar == Y;
+        encoding = { 0b1001001, rr[4:0], 0b0010 } when ar == Z;
         syntax = "st -%ar, %rr";
         cycles = 2;
         execute = {
@@ -1323,9 +1323,9 @@ architecture avr {
     };
 
     instruction "stpi" ar: XYZ, rr: GPR {
-        encoding = { 0b1001001, rr[4:0], 0b1110 } when ar == X;
-        encoding = { 0b1001001, rr[4:0], 0b1010 } when ar == Y;
-        encoding = { 0b1001001, rr[4:0], 0b0010 } when ar == Z;
+        encoding = { 0b1001001, rr[4:0], 0b1101 } when ar == X;
+        encoding = { 0b1001001, rr[4:0], 0b1001 } when ar == Y;
+        encoding = { 0b1001001, rr[4:0], 0b0001 } when ar == Z;
         syntax = "st %ar+, %rr";
         cycles = 2;
         execute = {

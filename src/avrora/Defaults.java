@@ -51,10 +51,7 @@ import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.objdump.ObjDumpPreprocessor;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
-import avrora.test.TestHarness;
-import avrora.test.SimulatorTestHarness;
-import avrora.test.SimplifierTestHarness;
-import avrora.test.ProbeTestHarness;
+import avrora.test.*;
 import avrora.monitors.*;
 
 import java.util.*;
@@ -122,6 +119,7 @@ public class Defaults {
             harnessMap.addClass("simulator", SimulatorTestHarness.class);
             harnessMap.addClass("simplifier", SimplifierTestHarness.class);
             harnessMap.addClass("probes", ProbeTestHarness.class);
+            harnessMap.addClass("disassembler", DisassemblerTestHarness.class);
         }
     }
 
