@@ -45,7 +45,9 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * This is the main entrypoint to Avrora.
+ * This is the main entrypoint to Avrora. It is responsible for parsing the
+ * options to the main program and selecting the appropriate action. Currently,
+ * it also implements the help system.
  *
  * @author Ben L. Titzer
  */
