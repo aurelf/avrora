@@ -45,8 +45,13 @@ import avrora.util.Terminal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.io.PrintStream;
+import java.io.FileOutputStream;
 
 /**
+ * The <code>CFGAction</code> is an Avrora action that allows a control flow graph to
+ * be generated and output to the terminal or to a file.
+ *
  * @author Ben L. Titzer
  */
 public class CFGAction extends Action {
@@ -70,6 +75,14 @@ public class CFGAction extends Action {
             "\"dot\" output format. When this option is true, the control flow graph " +
             "utility will attempt to discover procedures within the control flow graph " +
             "and collapse whole procedures to a single node in the output.");
+    public final Option.Str OUTPUT = newOption("output", "",
+            "This option selects the output format for the control flow graph. When this " +
+            "option is set to \"dot\", then the control flow graph will be outputted in " +
+            "a format suitable for parsing by the dot graph rendering tool.");
+    public final Option.Str FILE = newOption("file", "",
+            "This option specifies the output file for the result of generating a" +
+            "\"dot\" format control flow graph. When this option is not set, a textual " +
+            "representation of the graph will be printed to the terminal.");
 
     /**
      * The default constructor of the <code>CFGAction</code> class simply
@@ -87,7 +100,7 @@ public class CFGAction extends Action {
         program = Main.readProgram(args);
         cfg = program.getCFG();
 
-        if (Main.OUTPUT.get().equals("dot"))
+        if (OUTPUT.get().equals("dot"))
             dumpDotCFG(cfg);
         else
             dumpCFG(cfg);
@@ -114,8 +127,14 @@ public class CFGAction extends Action {
         }
     }
 
-    private void dumpDotCFG(ControlFlowGraph cfg) {
-        Printer p = Printer.STDOUT;
+    private void dumpDotCFG(ControlFlowGraph cfg) throws java.io.IOException {
+        String fname;
+        Printer p;
+        if ( (fname = FILE.get()).equals(""))
+            p = Printer.STDOUT;
+        else
+            p = new Printer(new PrintStream(new FileOutputStream(fname)));
+
         p.startblock("digraph G");
 
         if (COLOR_PROCEDURES.get() ||

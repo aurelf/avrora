@@ -63,14 +63,23 @@ public class SimpleAir implements RadioAir {
     }
 
     /** GlobalClock used by the air environment. Essential for synchronization. */
-    protected final RadioClock globalQueue;
+    protected final RadioClock radioClock;
 
     protected Radio.RadioPacket firstPacket;
     protected LinkedList packetsThisPeriod;
     protected LinkedList packetsLeftOver;
 
     protected final HashSet radios;
+    protected boolean utilization;
 
+    // state for recording channel utilization
+    public long firstPacketTime;
+    public long bytesDelivered;
+    public long bytesAttempted;
+    public long bitsDiscarded;
+    public long bytesCorrupted;
+
+    // state for maintaining meeting of threads for delivery
     private long lastDeliveryTime;
     private long nextDeliveryTime;
 
@@ -85,20 +94,25 @@ public class SimpleAir implements RadioAir {
     public final int bytePeriod = Radio.TRANSFER_TIME;
     public final int bitPeriod = Radio.TRANSFER_TIME / 8;
     public final int bitPeriod2 = Radio.TRANSFER_TIME / 16;
+    public final int sampleTime = 13 * 64;
 
     public SimpleAir() {
         radios = new HashSet();
         packetsThisPeriod = new LinkedList();
         packetsLeftOver = new LinkedList();
-        globalQueue = new RadioClock(bytePeriod);
+        radioClock = new RadioClock(bytePeriod);
         deliveryMeet = new DeliveryMeet();
         rssi_waiters = new TreeSet();
     }
 
+    public void recordUtilization(boolean v) {
+        utilization = v;
+    }
+
     public synchronized void addRadio(Radio r) {
         radios.add(r);
-        globalQueue.add(r.getSimulatorThread());
-        deliveryMeet.setGoal(globalQueue.getNumberOfThreads());
+        radioClock.add(r.getSimulatorThread());
+        deliveryMeet.setGoal(radioClock.getNumberOfThreads());
     }
 
     public synchronized void removeRadio(Radio r) {
@@ -106,6 +120,13 @@ public class SimpleAir implements RadioAir {
     }
 
     public synchronized void transmit(Radio r, Radio.RadioPacket f) {
+        // UTILIZATION MEASUREMENT: record the time of the first transmitted packet
+        if ( utilization ) {
+            if ( firstPacketTime == 0 )
+                firstPacketTime = r.getSimulator().getState().getCycles();
+            bytesAttempted++;
+        }
+
         packetsThisPeriod.addLast(f);
 
         if ( firstPacket == null ) {
@@ -180,12 +201,12 @@ public class SimpleAir implements RadioAir {
             Iterator i = packetsLeftOver.iterator();
             while ( i.hasNext() ) {
                 Radio.RadioPacket p = (Radio.RadioPacket)i.next();
-                if ( p.deliveryTime > t && p.originTime < t ) strength = 0;
+                if ( p.deliveryTime > (t - sampleTime) && p.originTime < t ) strength = 0;
             }
             i = packetsThisPeriod.iterator();
             while ( i.hasNext() ) {
                 Radio.RadioPacket p = (Radio.RadioPacket)i.next();
-                if ( p.deliveryTime > t && p.originTime < t ) strength = 0;
+                if ( p.deliveryTime > (t - sampleTime) && p.originTime < t ) strength = 0;
             }
         }
 
@@ -211,7 +232,7 @@ public class SimpleAir implements RadioAir {
     private RSSIWait checkRSSIWaiters(RSSIWait curWait) {
         if ( rssiPrinter.enabled )  rssiPrinter.print("RSSI check("+curWait+"): met "+meet_count+", sampling "+rssi_count+": ");
 
-        if ( meet_count + rssi_count == globalQueue.getNumberOfThreads() ) {
+        if ( meet_count + rssi_count == radioClock.getNumberOfThreads() ) {
 
             // are there any waiters?
             if ( rssi_waiters.isEmpty() ) {
@@ -258,17 +279,22 @@ public class SimpleAir implements RadioAir {
 
         public void serialAction() {
             eventQueue.advance(1);
+
+            scheduleDelivery();
+            meet_count = 0;
+        }
+
+        private void scheduleDelivery() {
             if ( firstPacket != null ) {
                 deliveryDelta = computeNextDelivery();
                 firstPacket = null;
             } else {
                 deliveryDelta = 0;
             }
-            meet_count = 0;
         }
 
         protected long computeNextDelivery() {
-            long globalTime = globalQueue.globalTime();
+            long globalTime = radioClock.globalTime();
             long deliveryGoal;
 
             deliveryGoal = firstPacket.deliveryTime;
@@ -282,7 +308,7 @@ public class SimpleAir implements RadioAir {
             }
 
             // add any packets from the previous period that have a delivery
-            // point after the last delivery
+            // point after the last delivery (i.e. they have bits left over at the end)
             Iterator i = packetsLeftOver.iterator();
             while ( i.hasNext() ) {
                 Radio.RadioPacket p = (Radio.RadioPacket)i.next();
@@ -329,6 +355,7 @@ public class SimpleAir implements RadioAir {
 
             int data = 0;
             int bitsFront = 0, bitsEnd = 0;
+            LinkedList fullpackets = utilization ? new LinkedList() : null;
 
             // iterate over all of the packets in the past two intervals
             Iterator pastIterator = packetsLeftOver.iterator();
@@ -347,6 +374,11 @@ public class SimpleAir implements RadioAir {
                     data |= packet.data;
                     bitsFront = 8;
                     bitsEnd = 8;
+
+                    // UTILIZATION MEASUREMENT
+                    if ( utilization ) {
+                        fullpackets.add(packet);
+                    }
                 } else if ( currentTime < packet.deliveryTime ) {
                     // end of the packet is sliced off
                     int bitdiffx2 = ((int)(packet.deliveryTime - currentTime)) / bitPeriod2;
@@ -354,6 +386,12 @@ public class SimpleAir implements RadioAir {
                     int bitsE = 8 - bitdiff;
                     if ( bitsE > bitsEnd ) bitsEnd = bitsE;
                     data |= packet.data >>> bitdiff;
+
+                    // UTILIZATION MEASUREMENT
+                    if ( utilization && bitdiffx2 < 2 ) {
+                        fullpackets.add(packet);
+                    }
+
                 } else {
                     // front of packet is sliced off
                     int bitdiffx2 = ((int)(currentTime - packet.deliveryTime)) / bitPeriod2;
@@ -361,6 +399,11 @@ public class SimpleAir implements RadioAir {
                     int bitsF = 8 - bitdiff;
                     if ( bitsF > bitsFront ) bitsFront = bitsF;
                     data |= packet.data << bitdiff;
+
+                    // UTILIZATION MEASUREMENT
+                    if ( utilization && bitdiffx2 < 2 ) {
+                        fullpackets.add(packet);
+                    }
                 }
             }
 
@@ -370,9 +413,28 @@ public class SimpleAir implements RadioAir {
                 // enough bits were collected to deliver a packet
                 computedPacket = new Radio.RadioPacket((byte)data, 0, nextDeliveryTime - bytePeriod);
                 lastDeliveryTime = nextDeliveryTime;
+
+                // UTILIZATION MEASUREMENT: check to see if any packet got delivered correctly
+                if ( utilization ) {
+                    bytesDelivered++;
+
+                    boolean success = false;
+                    Iterator i = fullpackets.iterator();
+                    while ( i.hasNext() ) {
+                        Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                        if ( data == p.data ) success = true;
+                    }
+                    if ( !success )
+                        bytesCorrupted++;
+                }
             } else {
                 // not enough bits were collected to deliver a packet
                 computedPacket = null;
+                // UTILIZATION MEASUREMENT: record bits thrown away
+                if ( utilization ) {
+                    bitsDiscarded += (8-bitsFront);
+                    bitsDiscarded += (8-bitsEnd);
+                }
             }
 
 

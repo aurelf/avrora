@@ -47,6 +47,10 @@ import avrora.util.Verbose;
  * for the AVR instruction set. It is the base class of specific implementations
  * that implement processor-specific behavior.
  *
+ * @see Program
+ * @see Instr
+ * @see BaseInterpreter
+ *
  * @author Ben L. Titzer
  */
 public abstract class Simulator implements IORegisterConstants {
@@ -146,12 +150,13 @@ public abstract class Simulator implements IORegisterConstants {
 
     /**
      * The <code>Simulator.Probe</code> interface represents a
-     * programmer-defined probe that can be inserted at particular instructions
-     * or at every instruction. This probe allows execution of client code
-     * for profiling, analysis, or program understanding. A method that
-     * is invoked before an instruction is executed and a method that is
-     * invoked after the instruction is executed are provided, although
-     * most probes will use only one of these methods.
+     * programmer-defined probe that can be inserted at a particular instruction
+     * in the program. or at every instruction. Probes can be usedfor profiling,
+     * analysis, or program understanding. The <code>fireBefore()</code> and
+     * <code>fireAfter()</code> methods are called before and after the target
+     * instruction executes in simulation. Probes can also be inserted in the
+     * "main loop" of the interpreter, so that the probe fires before and after
+     * every instruction executed.
      *
      * @author Ben L. Titzer
      */

@@ -51,6 +51,8 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  * @see Instr
+ * @see ControlFlowGraph
+ * @see ProcedureMap
  */
 public class Program {
 

@@ -55,6 +55,9 @@ import java.util.HashSet;
  * Interrupt handlers are not considered the entrypoints of procedures.
  *
  * @author Ben L. Titzer
+ *
+ * @see Program
+ * @see ControlFlowGraph
  */
 public class ProcedureMap {
 

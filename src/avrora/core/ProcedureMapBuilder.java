@@ -41,6 +41,8 @@ import java.util.*;
  * blocks and procedures.
  *
  * @author Ben L. Titzer
+ *
+ * @see ProcedureMap
  */
 class ProcedureMapBuilder {
 

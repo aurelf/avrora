@@ -48,7 +48,9 @@ import avrora.util.StringUtil;
 import java.util.*;
 
 /**
- * TODO: Doc this
+ * The <code>MultiSimulateAction</code> class represents an action available
+ * to the simulator where multiple nodes are run in simulation.
+ * 
  * @author Daniel Lee, Simon Han
  */
 public class MultiSimulateAction extends SimAction {
@@ -68,12 +70,11 @@ public class MultiSimulateAction extends SimAction {
             "This option is used in the multi-node simulation to specify the name of " +
             "a file that contains information about the topology of the network.");
     public final Option.Bool LEGACY_INTERPRETER = newOption("legacy-interpreter", false,
-            "This option is used in the \"simulate\" action. It causes the simulator " +
-            "to use the legacy (hand-written) interpreter rather than the interpreter " +
-            "generated from the architecture description language. It is used for " +
-            "benchmarking and regression purposes.");
+            "This option selects the legacy (hand-written) interpreter rather than the " +
+            "interpreter generated from the architecture description language. It is used for " +
+            "benchmarking and regression purposes only.");
     public final Option.Bool TIME = newOption("time", false,
-            "This option is used in the simulate action. It will cause the simulator " +
+            "This option will cause the simulator " +
             "to report the time used in executing the simulation. When combined with " +
             "the \"cycles\" and \"total\" options, it will report performance " +
             "information about the simulation.");
@@ -91,16 +92,15 @@ public class MultiSimulateAction extends SimAction {
             "of clock cycles given as a value. For example, if this option is given the" +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
+    public final Option.Bool CHANNEL_UTIL = newOption("channel-utilization", false,
+            "This option causes the simulator to record statistics about the amount of radio " +
+            "traffic in the network and report it after the simulation is complete.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
     }
 
     Program program;
-
-    double startms;
-    double endms;
-
 
     public void run(String[] args) throws Exception {
 
@@ -150,7 +150,12 @@ public class MultiSimulateAction extends SimAction {
             }
         }
 
-        startms = System.currentTimeMillis();
+        // enable channel utilization accounting
+        if ( CHANNEL_UTIL.get() ) {
+            SimpleAir.simpleAir.recordUtilization(true);
+        }
+
+        long startms = System.currentTimeMillis();
         try {
             startSimulationThreads(simulatorThreadList);
 
@@ -158,9 +163,24 @@ public class MultiSimulateAction extends SimAction {
             joinSimulationThreads(simulatorThreadList);
 
             // compute simulation time
-            endms = System.currentTimeMillis();
-            Terminal.printBrightGreen("Time for simulation: ");
-            Terminal.println(StringUtil.milliToSecs((long)(endms - startms)));
+            long endms = System.currentTimeMillis();
+            reportTime(startms, endms);
+            reportUtilization();
+        }
+    }
+
+    private void reportTime(long startms, long endms) {
+        Terminal.printGreen("Time for simulation");
+        Terminal.println(": "+StringUtil.milliToSecs((endms - startms)));
+    }
+
+    private void reportUtilization() {
+        if ( CHANNEL_UTIL.get() ) {
+            reportQuantity("First transmit time", SimpleAir.simpleAir.firstPacketTime, "cycles");
+            reportQuantity("Bytes attempted", SimpleAir.simpleAir.bytesAttempted, "");
+            reportQuantity("Bytes delivered", SimpleAir.simpleAir.bytesDelivered, "");
+            reportQuantity("Bytes corrupted", SimpleAir.simpleAir.bytesCorrupted, "");
+            reportQuantity("Bits discarded", SimpleAir.simpleAir.bitsDiscarded, "");
         }
     }
 

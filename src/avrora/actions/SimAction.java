@@ -39,6 +39,7 @@ import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platforms;
 import avrora.util.Option;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * @author Ben L. Titzer
@@ -97,5 +98,20 @@ public abstract class SimAction extends Action {
         if (pff == null)
             Avrora.userError("Unknown platform", StringUtil.quote(pf));
         return pff;
+    }
+
+    protected void reportQuantity(String name, long val, String units) {
+        reportQuantity(name, Long.toString(val), units);
+    }
+
+    protected void reportQuantity(String name, float val, String units) {
+        reportQuantity(name, Float.toString(val), units);
+    }
+
+    protected void reportQuantity(String name, String val, String units) {
+        Terminal.printGreen(name);
+        Terminal.print(": ");
+        Terminal.printBrightCyan(val);
+        Terminal.println(" " + units);
     }
 }

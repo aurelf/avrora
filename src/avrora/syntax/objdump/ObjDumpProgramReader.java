@@ -81,8 +81,8 @@ public class ObjDumpProgramReader extends Main.ProgramReader {
         return "The \"objdump\" input format reads programs that are the " +
                 "output of the \"avr-objdump\" utility provided with avr-binutils. " +
                 "For example, an ELF file must first be disassembled with " +
-                "\"avr-objdump -hD\" to create a text file readable by this input " +
-                "format. The \"-hD\" options are very important: the output will " +
+                "\"avr-objdump -zhD\" to create a text file readable by this input " +
+                "format. The \"-zhD\" options are very important: the output will " +
                 "not be parseable otherwise.";
     }
 }

@@ -41,6 +41,9 @@ import java.util.*;
  * for an entire program, including all basic blocks and all procedures.
  *
  * @author Ben L. Titzer
+ *
+ * @see Program
+ * @see ProcedureMap
  */
 public class ControlFlowGraph {
 

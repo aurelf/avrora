@@ -142,11 +142,21 @@ public class Arithmetic {
         return (value == 0) ? -1 : low;
     }
 
+    // bit patterns for reversing the order of bits of a 4 bit quantity.
     private static final int reverseKey[] = {
         0, 4, 8, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15
     };
 
     public static byte reverseBits(byte value) {
         return (byte) (reverseKey[value & 0x0f] << 4 | reverseKey[(value >> 4) & 0x0f]);
+    }
+
+    // key for the number of bits set to one in a 4 bit quantity
+    private static final int bitcountKey[] = {
+        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
+    };
+
+    public static int bitCount(byte value) {
+        return bitcountKey[value & 0x0f] + bitcountKey[(value >> 4) & 0x0f];
     }
 }

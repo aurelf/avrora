@@ -81,8 +81,7 @@ public class SimulateAction extends SimAction {
 
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
             "for the specified microcontroller and begins executing the program. There " +
-            "are several options provided to the simulator for profiling and analysis, " +
-            "so for more information, see the Options section.";
+            "are several options provided by the simulator for profiling and analysis.";
     public int memStart;
 
     public final Option.List BREAKS = newOptionList("breakpoint", "",
@@ -328,19 +327,21 @@ public class SimulateAction extends SimAction {
                 total += icount[cntr];
             }
 
-            for (int cntr = 0; cntr < imax; cntr += 2) {
+            // report the profile for each instruction in the program
+            for (int cntr = 0; cntr < imax; cntr = program.getNextPC(cntr)) {
                 int start = cntr;
                 int runlength = 1;
                 long c = icount[cntr];
 
-                if (program.readInstr(cntr) == null) continue;
-
-                for (; cntr < imax - 2; cntr += 2) {
-                    if (program.readInstr(cntr + 2) == null) continue;
-                    if (icount[cntr + 2] != c) break;
+                // collapse long runs of equivalent counts (e.g. basic blocks)
+                int nextpc;
+                for (; cntr < imax - 2; cntr = nextpc) {
+                    nextpc = program.getNextPC(cntr);
+                    if (icount[nextpc] != c) break;
                     runlength++;
                 }
 
+                // format the results appropriately (columnar)
                 String cnt = StringUtil.rightJustify(c, 8);
                 float pcnt = (float) (100 * c / total);
                 String percent = toFixedFloat(pcnt, 4) + " %";
@@ -507,21 +508,6 @@ public class SimulateAction extends SimAction {
 
     String addrToString(int address) {
         return StringUtil.toHex(address, 4);
-    }
-
-    void reportQuantity(String name, long val, String units) {
-        reportQuantity(name, Long.toString(val), units);
-    }
-
-    void reportQuantity(String name, float val, String units) {
-        reportQuantity(name, Float.toString(val), units);
-    }
-
-    void reportQuantity(String name, String val, String units) {
-        Terminal.printGreen(name);
-        Terminal.print(": ");
-        Terminal.printBrightCyan(val);
-        Terminal.println(" " + units);
     }
 
     // warning! only works on numbers < 100!!!!

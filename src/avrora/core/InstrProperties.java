@@ -38,6 +38,8 @@ package avrora.core;
  * the interpreter.
  *
  * @author Ben L. Titzer
+ *
+ * @see Instr
  */
 public class InstrProperties {
 

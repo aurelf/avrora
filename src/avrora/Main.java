@@ -105,7 +105,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.21";
+    static final String VERSION = "Beta 1.1.22";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -119,9 +119,6 @@ public class Main {
             "This option selects the action to perform. For example, an action might " +
             "be to load a program into the simulator and run it. For more information, " +
             "see the section on actions.");
-    public static final Option.Str OUTPUT = mainOptions.newOption("output", "",
-            "This option selects an output format for the type of actions that output " +
-            "a new program, like an assembler, disassembler or optimizer.");
     public static final Option.Bool COLORS = mainOptions.newOption("colors", true,
             "This option is used to enable or disable the terminal colors.");
     public static final Option.Bool BANNER = mainOptions.newOption("banner", true,
@@ -145,6 +142,15 @@ public class Main {
             "label or a hexadecimal number preceded by a \"$\". The first program address " +
             "is the address of the indirect call or jump instruction and the second program " +
             "address is a possible target.");
+    public static final Option.Bool LIGHT_BACKGROUND = mainOptions.newOption("light-background", false,
+            "This option can be used to adjust the color palette used for text output " +
+            "by Avrora. For terminals that have a light background, setting this option to " +
+            "true will allow more readable output.");
+    public static final Option.Str FOREGROUND = mainOptions.newOption("foreground-color", "lightgray",
+            "This option can be used to specify the default foreground color of " +
+            "text outputted from Avrora. For terminals with a light-colored background, " +
+            "the default choice may be hard or impossible to read. In that case, set this " +
+            "option to a darker color such as \"black\" for readable output.");
 
 
     public static final Verbose.Printer configPrinter = Verbose.getVerbosePrinter("config");
@@ -220,6 +226,8 @@ public class Main {
             loadUserDefaults();
 
             parseOptions(args);
+
+            Terminal.setForegroundColor(FOREGROUND.get());
 
             if (args.length == 0 || HELP.get()) {
                 args = mainOptions.getArguments();
