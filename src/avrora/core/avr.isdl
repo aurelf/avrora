@@ -1,0 +1,45 @@
+architecture avr {
+
+//---------------------------------------------------------------------------
+//  ENCODING FORMATS OF INSTRUCTIONS
+//---------------------------------------------------------------------------
+
+    format GPRGPR = { opcode[6:0], r2[4:4], r1[4:4], r1[3:0], r2[3:0] };
+    format GPR = { opcode[7:0], r1[4:4], r1[3:0], 0b0101 };
+
+//---------------------------------------------------------------------------
+//  OPERANDS ALLOWED TO INSTRUCTIONS
+//---------------------------------------------------------------------------
+
+    operand GPR: register = {
+         r0,  r1,  r2,  r3,  r4,  r5,  r6,  r7,
+         r8,  r9, r10, r11, r12, r13, r14, r15,
+        r16, r17, r18, r19, r20, r21, r22, r23,
+        r24, r25, r26, r27, r28, r29, r30, r31
+    };
+
+//---------------------------------------------------------------------------
+//  BEGIN INSTRUCTION SET DESCRIPTION
+//---------------------------------------------------------------------------
+
+    instruction adc(rd: GPR, rr: GPR) {
+        encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr };
+        execute = {
+            local r1: byte = regs[rd];
+            local r2: byte = regs[rr];
+            local result: int = performAddition(r1, r2, C);
+            regs[rd] = low(result);
+        };
+    };
+
+    instruction asr(rd: GPR) {
+        encoding = GPR where { opcode = 0b1001010, r1 = rd };
+        execute = {
+            local r1: byte = regs[rd];
+            local result: int = performRightShift(r1, r1[7:7]);
+            regs[rd] = low(result);
+        };
+    };
+
+
+}

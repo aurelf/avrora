@@ -20,16 +20,23 @@ public interface ISDLParserConstants {
   int OPERAND = 23;
   int WHERE = 24;
   int REGISTER = 25;
-  int LBRACKET = 26;
-  int RBRACKET = 27;
-  int EQUALS = 28;
-  int COMMA = 29;
-  int LPAREN = 30;
-  int RPAREN = 31;
-  int SEMI = 32;
-  int IDENTIFIER = 33;
-  int LETTER = 34;
-  int DIGIT = 35;
+  int IMMEDIATE = 26;
+  int ADDRESS = 27;
+  int ENCODING = 28;
+  int EXECUTE = 29;
+  int LOCAL = 30;
+  int IF = 31;
+  int ELSE = 32;
+  int LBRACKET = 33;
+  int RBRACKET = 34;
+  int EQUALS = 35;
+  int COMMA = 36;
+  int LPAREN = 37;
+  int RPAREN = 38;
+  int SEMI = 39;
+  int IDENTIFIER = 40;
+  int LETTER = 41;
+  int DIGIT = 42;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -63,6 +70,13 @@ public interface ISDLParserConstants {
     "\"operand\"",
     "\"where\"",
     "\"register\"",
+    "\"immediate\"",
+    "\"address\"",
+    "\"encoding\"",
+    "\"execute\"",
+    "\"local\"",
+    "\"if\"",
+    "\"else\"",
     "\"{\"",
     "\"}\"",
     "\"=\"",

@@ -52,7 +52,49 @@ public class ISDLParser implements ISDLParserConstants {
     jj_consume_token(IDENTIFIER);
     Operands();
     jj_consume_token(LBRACKET);
+    label_2:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case ENCODING:
+      case EXECUTE:
+        ;
+        break;
+      default:
+        jj_la1[2] = jj_gen;
+        break label_2;
+      }
+      InstrItem();
+    }
     jj_consume_token(RBRACKET);
+    jj_consume_token(SEMI);
+  }
+
+  final public void InstrItem() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case ENCODING:
+      Encoding();
+      break;
+    case EXECUTE:
+      Execute();
+      break;
+    default:
+      jj_la1[3] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void Encoding() throws ParseException {
+    jj_consume_token(ENCODING);
+    jj_consume_token(EQUALS);
+    Format();
+    jj_consume_token(SEMI);
+  }
+
+  final public void Execute() throws ParseException {
+    jj_consume_token(EXECUTE);
+    jj_consume_token(EQUALS);
+    Block();
     jj_consume_token(SEMI);
   }
 
@@ -67,25 +109,43 @@ public class ISDLParser implements ISDLParserConstants {
   final public void OperandDecl() throws ParseException {
     jj_consume_token(OPERAND);
     jj_consume_token(IDENTIFIER);
-    jj_consume_token(36);
-    jj_consume_token(IDENTIFIER);
+    jj_consume_token(43);
+    Kind();
     jj_consume_token(EQUALS);
     OperandSet();
     jj_consume_token(SEMI);
   }
 
+  final public void Kind() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case REGISTER:
+      jj_consume_token(REGISTER);
+      break;
+    case IMMEDIATE:
+      jj_consume_token(IMMEDIATE);
+      break;
+    case ADDRESS:
+      jj_consume_token(ADDRESS);
+      break;
+    default:
+      jj_la1[4] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
   final public void OperandSet() throws ParseException {
     jj_consume_token(LBRACKET);
     jj_consume_token(IDENTIFIER);
-    label_2:
+    label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
         ;
         break;
       default:
-        jj_la1[2] = jj_gen;
-        break label_2;
+        jj_la1[5] = jj_gen;
+        break label_3;
       }
       jj_consume_token(COMMA);
       jj_consume_token(IDENTIFIER);
@@ -110,7 +170,7 @@ public class ISDLParser implements ISDLParserConstants {
       NewFormat();
       break;
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[6] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -124,7 +184,7 @@ public class ISDLParser implements ISDLParserConstants {
       SubstitutionList();
       break;
     default:
-      jj_la1[4] = jj_gen;
+      jj_la1[7] = jj_gen;
       ;
     }
   }
@@ -138,15 +198,15 @@ public class ISDLParser implements ISDLParserConstants {
   final public void SubstitutionList() throws ParseException {
     jj_consume_token(LBRACKET);
     Substitution();
-    label_3:
+    label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
         ;
         break;
       default:
-        jj_la1[5] = jj_gen;
-        break label_3;
+        jj_la1[8] = jj_gen;
+        break label_4;
       }
       jj_consume_token(COMMA);
       Substitution();
@@ -163,15 +223,15 @@ public class ISDLParser implements ISDLParserConstants {
   final public void Operands() throws ParseException {
     jj_consume_token(LPAREN);
     Operand();
-    label_4:
+    label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
         ;
         break;
       default:
-        jj_la1[6] = jj_gen;
-        break label_4;
+        jj_la1[9] = jj_gen;
+        break label_5;
       }
       jj_consume_token(COMMA);
       Operand();
@@ -181,37 +241,38 @@ public class ISDLParser implements ISDLParserConstants {
 
   final public void Operand() throws ParseException {
     jj_consume_token(IDENTIFIER);
-    jj_consume_token(36);
+    jj_consume_token(43);
     jj_consume_token(IDENTIFIER);
   }
 
   final public void Expr() throws ParseException {
     Term();
-    label_5:
+    label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 37:
+      case LPAREN:
+      case 44:
         ;
         break;
       default:
-        jj_la1[7] = jj_gen;
-        break label_5;
+        jj_la1[10] = jj_gen;
+        break label_6;
       }
-      Suffix();
+      ExprSuffix();
     }
   }
 
   final public void ExprList() throws ParseException {
     Expr();
-    label_6:
+    label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
         ;
         break;
       default:
-        jj_la1[8] = jj_gen;
-        break label_6;
+        jj_la1[11] = jj_gen;
+        break label_7;
       }
       jj_consume_token(COMMA);
       Expr();
@@ -227,40 +288,160 @@ public class ISDLParser implements ISDLParserConstants {
       jj_consume_token(INTEGER_LITERAL);
       break;
     default:
-      jj_la1[9] = jj_gen;
+      jj_la1[12] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
   }
 
-  final public void Suffix() throws ParseException {
+  final public void ExprSuffix() throws ParseException {
     if (jj_2_1(2147483647)) {
       BitPattern();
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 37:
+      case 44:
         MapAccess();
         break;
+      case LPAREN:
+        Parameters();
+        break;
       default:
-        jj_la1[10] = jj_gen;
+        jj_la1[13] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
     }
   }
 
-  final public void MapAccess() throws ParseException {
-    jj_consume_token(37);
+  final public void Parameters() throws ParseException {
+    jj_consume_token(LPAREN);
     Expr();
-    jj_consume_token(38);
+    label_8:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case COMMA:
+        ;
+        break;
+      default:
+        jj_la1[14] = jj_gen;
+        break label_8;
+      }
+      jj_consume_token(COMMA);
+      Expr();
+    }
+    jj_consume_token(RPAREN);
+  }
+
+  final public void LvalSuffix() throws ParseException {
+    if (jj_2_2(2147483647)) {
+      BitPattern();
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 44:
+        MapAccess();
+        break;
+      default:
+        jj_la1[15] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+  }
+
+  final public void Statement() throws ParseException {
+    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+    case LOCAL:
+      LocalDecl();
+      break;
+    case IF:
+      IfStatement();
+      break;
+    case INTEGER_LITERAL:
+    case IDENTIFIER:
+      Assignment();
+      break;
+    default:
+      jj_la1[16] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+  }
+
+  final public void LocalDecl() throws ParseException {
+    jj_consume_token(LOCAL);
+    jj_consume_token(IDENTIFIER);
+    jj_consume_token(43);
+    jj_consume_token(IDENTIFIER);
+    jj_consume_token(EQUALS);
+    Expr();
+    jj_consume_token(SEMI);
+  }
+
+  final public void IfStatement() throws ParseException {
+    jj_consume_token(IF);
+    jj_consume_token(LPAREN);
+    Expr();
+    jj_consume_token(RPAREN);
+    Block();
+    jj_consume_token(ELSE);
+    Block();
+  }
+
+  final public void Assignment() throws ParseException {
+    Lvalue();
+    jj_consume_token(EQUALS);
+    Expr();
+    jj_consume_token(SEMI);
+  }
+
+  final public void Lvalue() throws ParseException {
+    Term();
+    label_9:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 44:
+        ;
+        break;
+      default:
+        jj_la1[17] = jj_gen;
+        break label_9;
+      }
+      LvalSuffix();
+    }
+  }
+
+  final public void Block() throws ParseException {
+    jj_consume_token(LBRACKET);
+    label_10:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case INTEGER_LITERAL:
+      case LOCAL:
+      case IF:
+      case IDENTIFIER:
+        ;
+        break;
+      default:
+        jj_la1[18] = jj_gen;
+        break label_10;
+      }
+      Statement();
+    }
+    jj_consume_token(RBRACKET);
+  }
+
+  final public void MapAccess() throws ParseException {
+    jj_consume_token(44);
+    Expr();
+    jj_consume_token(45);
   }
 
   final public void BitPattern() throws ParseException {
-    jj_consume_token(37);
+    jj_consume_token(44);
     Term();
-    jj_consume_token(36);
+    jj_consume_token(43);
     Term();
-    jj_consume_token(38);
+    jj_consume_token(45);
   }
 
   final private boolean jj_2_1(int xla) {
@@ -270,36 +451,53 @@ public class ISDLParser implements ISDLParserConstants {
     return retval;
   }
 
-  final private boolean jj_3R_9() {
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
+  final private boolean jj_2_2(int xla) {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    boolean retval = !jj_3_2();
+    jj_save(1, xla);
+    return retval;
   }
 
-  final private boolean jj_3_1() {
-    if (jj_scan_token(37)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_3R_7()) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    if (jj_scan_token(36)) return true;
-    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
-    return false;
-  }
-
-  final private boolean jj_3R_8() {
+  final private boolean jj_3R_12() {
     if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
 
-  final private boolean jj_3R_7() {
+  final private boolean jj_3R_11() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_8()) {
+    if (jj_3R_12()) {
     jj_scanpos = xsp;
-    if (jj_3R_9()) return true;
+    if (jj_3R_13()) return true;
     if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     } else if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3R_13() {
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3_2() {
+    if (jj_scan_token(44)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_3R_11()) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(43)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    return false;
+  }
+
+  final private boolean jj_3_1() {
+    if (jj_scan_token(44)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_3R_11()) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
+    if (jj_scan_token(43)) return true;
+    if (jj_la == 0 && jj_scanpos == jj_lastpos) return false;
     return false;
   }
 
@@ -312,7 +510,7 @@ public class ISDLParser implements ISDLParserConstants {
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[11];
+  final private int[] jj_la1 = new int[19];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -320,12 +518,12 @@ public class ISDLParser implements ISDLParserConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x2d00000,0x2d00000,0x20000000,0x4000000,0x1000000,0x20000000,0x20000000,0x0,0x20000000,0x2000,0x0,};
+      jj_la1_0 = new int[] {0x2d00000,0x2d00000,0x30000000,0x30000000,0xe000000,0x0,0x0,0x1000000,0x0,0x0,0x0,0x0,0x2000,0x0,0x0,0x0,0xc0002000,0x0,0xc0002000,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x20,0x0,0x2,0x20,};
+      jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x10,0x102,0x0,0x10,0x10,0x1020,0x10,0x100,0x1020,0x10,0x1000,0x100,0x1000,0x100,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[1];
+  final private JJCalls[] jj_2_rtns = new JJCalls[2];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -335,7 +533,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -345,7 +543,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -355,7 +553,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -365,7 +563,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -374,7 +572,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -383,7 +581,7 @@ public class ISDLParser implements ISDLParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 11; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 19; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -490,15 +688,15 @@ public class ISDLParser implements ISDLParserConstants {
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[39];
-    for (int i = 0; i < 39; i++) {
+    boolean[] la1tokens = new boolean[46];
+    for (int i = 0; i < 46; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 19; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -510,7 +708,7 @@ public class ISDLParser implements ISDLParserConstants {
         }
       }
     }
-    for (int i = 0; i < 39; i++) {
+    for (int i = 0; i < 46; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
@@ -535,13 +733,14 @@ public class ISDLParser implements ISDLParserConstants {
 
   final private void jj_rescan_token() {
     jj_rescan = true;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 2; i++) {
       JJCalls p = jj_2_rtns[i];
       do {
         if (p.gen > jj_gen) {
           jj_la = p.arg; jj_lastpos = jj_scanpos = p.first;
           switch (i) {
             case 0: jj_3_1(); break;
+            case 1: jj_3_2(); break;
           }
         }
         p = p.next;

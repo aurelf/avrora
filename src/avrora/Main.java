@@ -36,6 +36,7 @@ import avrora.core.Program;
 import avrora.core.CFGBuilder;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
+import avrora.core.isdl.*;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.SimulateAction;
 import avrora.sim.MultiSimulateAction;
@@ -47,12 +48,15 @@ import avrora.stack.AnalyzeStackAction;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.syntax.gas.GASProgramReader;
+import avrora.syntax.Module;
 import avrora.util.*;
 import avrora.test.AutomatedTester;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * This is the main entrypoint to Avrora.
@@ -136,7 +140,7 @@ public class Main {
 
     }
 
-    static final String VERSION = "Beta 1.1.3";
+    static final String VERSION = "Beta 1.1.4";
 
     static final HashMap actions = new HashMap();
     static final HashMap inputs = new HashMap();
@@ -242,6 +246,7 @@ public class Main {
         newAction("test", new TestAction());
         newAction("list", new ListAction());
         newAction("cfg", new CFGAction());
+        newAction("isdl", new ISDLAction());
         newAction("custom", new CustomAction());
         newInput("gas", new GASProgramReader());
         newInput("atmel", new AtmelProgramReader());
@@ -254,6 +259,27 @@ public class Main {
 
     static void newInput(String name, ProgramReader r) {
         inputs.put(name, r);
+    }
+
+    static class ISDLAction extends Action {
+
+        public void run(String[] args) throws Exception {
+            if (args.length == 0)
+                Avrora.userError("no input files");
+            if (args.length != 1)
+                Avrora.userError("isdl tool accepts only one file at a time.");
+
+            File f = new File(args[0]);
+            FileInputStream fis = new FileInputStream(f);
+            ISDLParser parser = new ISDLParser(fis);
+            parser.Architecture();
+        }
+
+        public String getHelp() {
+            return "The \"isdl\" action invokes the instruction set description language " +
+                    "(ISDL) tool, which is used internally in Avrora to describe the AVR " +
+                    "instruction set.";
+        }
     }
 
 

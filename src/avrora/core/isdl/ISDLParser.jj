@@ -167,6 +167,13 @@ TOKEN :
   | < OPERAND : "operand" >
   | < WHERE : "where" >
   | < REGISTER : "register" >
+  | < IMMEDIATE : "immediate" >
+  | < ADDRESS : "address" >
+  | < ENCODING : "encoding" >
+  | < EXECUTE : "execute" >
+  | < LOCAL : "local" >
+  | < IF : "if" >
+  | < ELSE : "else" >
 }
 
 TOKEN :
@@ -219,7 +226,24 @@ void Item() : {}
 void Instruction() : {}
 {
     "instruction" <IDENTIFIER> Operands() "{"
+        (InstrItem())*
     "}" ";"
+}
+
+void InstrItem() : {}
+{
+    Encoding()
+  | Execute()
+}
+
+void Encoding() : {}
+{
+    "encoding" "=" Format() ";"
+}
+
+void Execute() : {}
+{
+    "execute" "=" Block() ";"
 }
 
 void FormatDecl() : {}
@@ -229,7 +253,12 @@ void FormatDecl() : {}
 
 void OperandDecl() : {}
 {
-    "operand" <IDENTIFIER> ":" <IDENTIFIER> "=" OperandSet() ";"
+    "operand" <IDENTIFIER> ":" Kind() "=" OperandSet() ";"
+}
+
+void Kind() : {}
+{
+    "register" | "immediate" | "address"
 }
 
 void OperandSet() : {}
@@ -280,7 +309,7 @@ void Operand() : {}
 
 void Expr() : {}
 {
-    Term() (Suffix())*
+    Term() (ExprSuffix())*
 }
 
 void ExprList() : {}
@@ -293,10 +322,54 @@ void Term() : {}
     <IDENTIFIER> | <INTEGER_LITERAL>
 }
 
-void Suffix() : {}
+void ExprSuffix() : {}
+{
+  (LOOKAHEAD("[" Term() ":") BitPattern()
+  | MapAccess()
+  | Parameters() )
+}
+
+void Parameters() : {}
+{
+    "(" Expr() ("," Expr())* ")"
+}
+
+void LvalSuffix() : {}
 {
   (LOOKAHEAD("[" Term() ":") BitPattern()
   | MapAccess() )
+}
+
+void Statement() : {}
+{
+    LocalDecl()
+  | IfStatement()
+  | Assignment()
+}
+
+void LocalDecl() : {}
+{
+    "local" <IDENTIFIER> ":" <IDENTIFIER> "=" Expr() ";"
+}
+
+void IfStatement() : {}
+{
+    "if" "(" Expr() ")" Block() "else" Block()
+}
+
+void Assignment() : {}
+{
+    Lvalue() "=" Expr() ";"
+}
+
+void Lvalue() : {}
+{
+    Term() (LvalSuffix())*
+}
+
+void Block() : {}
+{
+    "{" (Statement())* "}"
 }
 
 void MapAccess() : {}
