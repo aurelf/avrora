@@ -27,7 +27,7 @@ public class State implements IORegisterConstants {
     private final IOReg[] ioregs;
     private byte[] sram;
 
-    private final Elem[] program;
+    private final Program.Impression impression;
     private long postedInterrupts;
 
     private final int sram_start;
@@ -365,7 +365,7 @@ public class State implements IORegisterConstants {
         sram = new byte[sram_size > SRAM_MINSIZE ? SRAM_MINSIZE : sram_size];
 
         // make a local copy of the program's instructions
-        program = p.makeImpression();
+        impression = p.makeNewImpression(flash_size);
 
         flag_delta = new boolean[8];
         reg_delta = new boolean[NUM_REGS];
@@ -788,7 +788,7 @@ public class State implements IORegisterConstants {
      *         at the current program counter
      */
     public Instr getCurrentInstr() {
-        return program[pc].asInstr(pc);
+        return impression.readInstr(pc);
     }
 
     /**
@@ -804,7 +804,7 @@ public class State implements IORegisterConstants {
      *         at that address in the program
      */
     public Instr getInstr(int address) {
-        return program[address].asInstr(address);
+        return impression.readInstr(address);
     }
 
     /**
@@ -818,9 +818,7 @@ public class State implements IORegisterConstants {
      * @param address the byte address in the program to write the instruction to
      */
     public void setInstr(Instr i, int address) {
-        program[address] = i;
-        for (int cntr = 1; cntr < i.getSize(); cntr++)
-            program[address + cntr] = Elem.INSTR_MIDDLE;
+        impression.writeInstr(i, address);
     }
 
     /**
@@ -879,7 +877,7 @@ public class State implements IORegisterConstants {
      *                                        program memory range
      */
     public byte getProgramByte(int address) {
-        return program[address].asData(address).value;
+        return impression.readProgramByte(address);
     }
 
     /**

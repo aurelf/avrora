@@ -86,6 +86,81 @@ public class Program {
         }
     }
 
+    private static final Instr NOP = new Instr.NOP(0);
+
+    public class Impression {
+
+        private Instr[] imp_instrs;
+        private byte[] imp_data;
+
+        private int imp_start;
+        private int imp_max;
+
+        Impression(int max) {
+            imp_start = program_start;
+            imp_max = max;
+
+            realloc(data, instrs, imp_start, program_end);
+        }
+
+        public byte readProgramByte(int address) {
+            try {
+                return imp_data[address - imp_start];
+            } catch (ArrayIndexOutOfBoundsException e ) {
+                return 0;
+            }
+        }
+
+        public void writeProgramByte(byte val, int address) {
+            try {
+                imp_data[address - imp_start] = val;
+            } catch ( ArrayIndexOutOfBoundsException e ) {
+                // writing beyond the end of flash is ignored
+                if ( address < 0 || address >= imp_max ) return;
+                resize(address);
+                imp_data[address - imp_start] = val;
+            }
+        }
+
+        private void resize(int address) {
+            if ( address < imp_start )
+                realloc(imp_data, imp_instrs, address, imp_start + imp_data.length);
+            else {
+                // allocate 256 more bytes at the end
+                address += 256;
+                if ( address > imp_max ) address = imp_max;
+                realloc(imp_data, imp_instrs, imp_start, address);
+
+            }
+        }
+
+        public Instr readInstr(int address) {
+            try {
+                return imp_instrs[address - imp_start];
+            } catch (ArrayIndexOutOfBoundsException e ) {
+                return NOP;
+            }
+        }
+
+        public void writeInstr(Instr i, int address) {
+            try {
+                imp_instrs[address - imp_start] = i;
+            } catch ( ArrayIndexOutOfBoundsException e ) {
+                // writing beyond the end of flash is ignored
+                if ( address < 0 || address >= imp_max ) return;
+                resize(address);
+                imp_instrs[address - imp_start] = i;
+            }
+        }
+
+        private void realloc(byte[] orig_data, Instr[] orig_instrs, int new_start, int new_end) {
+            imp_instrs = new Instr[new_end - new_start];
+            System.arraycopy(orig_instrs, 0, imp_instrs, imp_start - new_start, orig_instrs.length);
+            imp_data = new byte[new_end - new_start];
+            System.arraycopy(orig_data, 0, imp_data, imp_start - new_start, orig_data.length);
+        }
+    }
+
     private final HashMap labels;
 
     public final int program_start;
@@ -96,7 +171,8 @@ public class Program {
     public final int eeprom_start;
     public final int eeprom_end;
 
-    protected final Elem[] program;
+    protected final byte[]  data;
+    protected final Instr[] instrs;
 
     public boolean caseSensitive;
 
@@ -109,10 +185,8 @@ public class Program {
         eeprom_start = estart;
         eeprom_end = eend;
 
-        program = new Elem[program_end - program_start];
-
-        for (int cntr = 0; cntr < program_length; cntr++)
-            program[cntr] = Elem.UNINIT;
+        data = new byte[program_end - program_start];
+        instrs = new Instr[program_end - program_start];
 
         labels = new HashMap();
     }
@@ -122,15 +196,16 @@ public class Program {
         checkAddress(address);
         checkAddress(address + size - 1);
 
-        program[address - program_start] = i;
+        instrs[address - program_start] = i;
+        // TODO: fixme, misaligned instructions!
         for (int cntr = 1; cntr < size; cntr++) {
-            program[address - program_start + cntr] = Elem.INSTR_MIDDLE;
+            instrs[address - program_start + cntr] = null;
         }
     }
 
     public Instr readInstr(int address) {
         checkAddress(address);
-        return program[address - program_start].asInstr(address);
+        return instrs[address - program_start];
     }
 
     public void writeProgramByte(byte val, int byteAddress) {
@@ -140,17 +215,7 @@ public class Program {
     }
 
     private void writeByteInto(byte val, int offset) {
-        Elem e = program[offset];
-        if (e == Elem.UNINIT) {
-            Data d = new Data(val);
-            program[offset] = d;
-        } else if (e.isInstr()) {
-            // TODO: throw correct error
-            throw Avrora.failure("cannot overwrite instruction");
-        } else {
-            Data d = (Data) e;
-            d.value = val;
-        }
+        data[offset] = val;
     }
 
     public void writeProgramBytes(byte[] val, int byteAddress) {
@@ -190,30 +255,8 @@ public class Program {
             return n.toLowerCase();
     }
 
-    public Elem[] makeImpression(int size) {
-        if (size < program_end)
-            throw Avrora.failure("program will not fit into " + size + " bytes, requires " + program_end);
-
-        Elem[] elems = new Elem[size];
-
-        int cntr = 0;
-
-        for (; cntr < program_start; cntr++)
-            elems[cntr] = Elem.UNINIT;
-        for (; cntr < program_end; cntr++) {
-            Elem e = program[cntr - program_start];
-            // make a copy of initialized data.
-            Elem d = e.isData() ? new Data(e.asData(cntr).value) : e;
-            elems[cntr] = d;
-        }
-        for (; cntr < size; cntr++)
-            elems[cntr] = Elem.UNINIT;
-
-        return elems;
-    }
-
-    public Elem[] makeImpression() {
-        return makeImpression(program_end);
+    public Impression makeNewImpression(int program_max) {
+        return new Impression(program_max);
     }
 
     protected void checkAddress(int addr) {
@@ -248,11 +291,9 @@ public class Program {
     private int outputRow(Printer p, int cursor) {
         p.print("program_" + StringUtil.toHex(cursor + program_start, 4) + ": ");
 
-        Elem e = program[cursor];
+        Instr i = instrs[cursor];
 
-        if (e.isInstr()) {
-            Instr i = (Instr) e;
-
+        if ( i != null ) {
             p.println(i.getVariant() + " " + i.getOperands());
 
             return i.getSize();
@@ -261,13 +302,13 @@ public class Program {
             int count;
 
             for (count = 1; count < 16 && cursor + count < program_length; count++) {
-                if (program[cursor + count].isInstr()) break;
+                if (instrs[cursor + count] != null) break;
             }
 
             for (int cntr = 0; cntr < count; cntr++) {
                 int address = cursor + cntr + program_start;
-                Elem d = program[cursor + cntr];
-                p.print("0x" + StringUtil.toHex(d.asData(address).value, 2));
+                byte v = data[cursor + cntr];
+                p.print("0x" + StringUtil.toHex(v, 2));
                 if (cntr != count - 1) p.print(", ");
             }
 
