@@ -62,7 +62,7 @@ PARSER_BEGIN(ISDLParser)
 
 package avrora.core.isdl;
 
-public class ISDLParser extends AbstractParser {
+public class ISDLParser {
 
 }
 
@@ -83,7 +83,7 @@ SKIP :
 
 MORE :
 {
-  ";" : IN_SINGLE_LINE_COMMENT
+  "//" : IN_SINGLE_LINE_COMMENT
 |
   <"/**" ~["/"]> { input_stream.backup(1); } : IN_FORMAL_COMMENT
 |
@@ -162,7 +162,22 @@ TOKEN :
 TOKEN :
 {
     < INSTRUCTION : "instruction" >
-    < ARCHITECTURE : "architecture" >
+  | < ARCHITECTURE : "architecture" >
+  | < FORMAT : "format" >
+  | < OPERAND : "operand" >
+  | < WHERE : "where" >
+  | < REGISTER : "register" >
+}
+
+TOKEN :
+{
+    < LBRACKET: "{" >
+  | < RBRACKET: "}" >
+  | < EQUALS: "=" >
+  | < COMMA: "," >
+  | < LPAREN: "(" >
+  | < RPAREN: ")" >
+  | < SEMI: ";" >
 }
 
 /* Instruction MNEMONICS */
@@ -188,9 +203,108 @@ TOKEN :
 
 void Architecture() : {}
 {
+    "architecture" <IDENTIFIER> "{"
+        (Item())*
+    "}"
+}
+
+void Item() : {}
+{
+    Instruction()
+  | FormatDecl()
+  | OperandDecl()
+  | RegisterDecl()
 }
 
 void Instruction() : {}
 {
-    "instruction" <IDENTIFIER> "{" "}"
+    "instruction" <IDENTIFIER> Operands() "{"
+    "}" ";"
+}
+
+void FormatDecl() : {}
+{
+    "format" <IDENTIFIER> "=" Format() ";"
+}
+
+void OperandDecl() : {}
+{
+    "operand" <IDENTIFIER> ":" <IDENTIFIER> "=" OperandSet() ";"
+}
+
+void OperandSet() : {}
+{
+    "{" <IDENTIFIER> ("," <IDENTIFIER>)* "}"
+}
+
+void RegisterDecl() : {}
+{
+    "register" <IDENTIFIER> "=" <INTEGER_LITERAL> ";"
+}
+
+void Format() : {}
+{
+    DerivedFormat()
+  | NewFormat()
+}
+
+void DerivedFormat() : {}
+{
+    <IDENTIFIER> ["where" SubstitutionList()]
+}
+
+void NewFormat() : {}
+{
+    "{" ExprList() "}"
+}
+
+void SubstitutionList() : {}
+{
+    "{" Substitution() ("," Substitution())* "}"
+}
+
+void Substitution() : {}
+{
+    <IDENTIFIER> "=" Expr()
+}
+
+void Operands() : {}
+{
+    "(" Operand() ("," Operand())* ")"
+}
+
+void Operand() : {}
+{
+    <IDENTIFIER> ":" <IDENTIFIER>
+}
+
+void Expr() : {}
+{
+    Term() (Suffix())*
+}
+
+void ExprList() : {}
+{
+    Expr() ("," Expr())*
+}
+
+void Term() : {}
+{
+    <IDENTIFIER> | <INTEGER_LITERAL>
+}
+
+void Suffix() : {}
+{
+  (LOOKAHEAD("[" Term() ":") BitPattern()
+  | MapAccess() )
+}
+
+void MapAccess() : {}
+{
+    "[" Expr() "]"
+}
+
+void BitPattern() : {}
+{
+    "[" Term() ":" Term() "]"
 }
