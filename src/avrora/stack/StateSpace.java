@@ -23,6 +23,12 @@ public class StateSpace {
         return states.contains(s);
     }
 
+    public boolean addState(AbstractState s) {
+        if ( states.contains(s) ) return false;
+        states.add(s);
+        return true;
+    }
+
     public void addEdge(AbstractState s, AbstractState t) {
         throw VPCBase.unimplemented();
     }
