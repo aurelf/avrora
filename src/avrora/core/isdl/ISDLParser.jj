@@ -182,6 +182,7 @@ TOKEN :
   | < XOR: "xor" >
   | < SUBROUTINE: "subroutine" >
   | < EXTERNAL: "external" >
+  | < RETURN: "return" >
   | < BOOLEAN_LITERAL: "true" | "false" >
 }
 
@@ -398,6 +399,7 @@ Stmt Statement() : { Stmt s; }
   | s = IfStatement()
   | LOOKAHEAD(2) s = Assignment()
   | s = CallStmt()
+  | s = ReturnStmt()
   ) { return s; }
 }
 
@@ -412,6 +414,11 @@ IfStmt IfStatement() : { Expr c; List t = new LinkedList(), f = new LinkedList()
     "if" "(" c = Expr() ")" SingleStatement(t)
         [ LOOKAHEAD(1) "else" SingleStatement(f) ]
     { return new IfStmt(c, t, f); }
+}
+
+ReturnStmt ReturnStmt() : { Expr e; }
+{
+    "return" e = Expr() ";" { return new ReturnStmt(e); }
 }
 
 void SingleStatement(List l) : { Stmt s; }

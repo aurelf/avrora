@@ -36,6 +36,139 @@ architecture avr {
     };
 
 //---------------------------------------------------------------------------
+//  SUBROUTINES
+//---------------------------------------------------------------------------
+    subroutine performAddition(r1: int, r2: int, carry: int): int {
+        local result: int = r1 + r2 + carry;
+        local ral: int = r1[3:0];
+        local rbl: int = r2[3:0];
+
+        local Rd7: boolean = r1[7];
+        local Rr7: boolean = r2[7];
+        local R7: boolean = result[7];
+
+        // set the flags as per instruction set documentation.
+        H = (ral + rbl + carry)[4];
+        C = result[8];
+        N = result[7];
+        Z = low(result) == 0;
+        V = (Rd7 and Rr7 and !R7) or (!Rd7 and !Rr7 and R7);
+        S = N xor V;
+
+        return result;
+    };
+
+    subroutine performSubtraction(r1: int, r2: int, carry: int): int {
+        local result: int = r1 - r2 - carry;
+
+        local Rd7: boolean = r1[7];
+        local Rr7: boolean = r2[7];
+        local R7:  boolean = result[7];
+        local Rd3: boolean = r1[3];
+        local Rr3: boolean = r2[3];
+        local R3:  boolean = result[3];
+
+        // set the flags as per instruction set documentation.
+        H = (!Rd3 and Rr3) or (Rr3 and R3) or (R3 and !Rd3);
+        C = (!Rd7 and Rr7) or (Rr7 and R7) or (R7 and !Rd7);
+        N = R7;
+        Z = low(result) == 0;
+        V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
+        S = N xor V;
+
+        return result;
+    };
+
+    // perform subtraction, but preserve zero flag if result is zero
+    subroutine performSubtractionPZ(r1: int, r2: int, carry: int): int {
+        local result: int = r1 - r2 - carry;
+
+        local Rd7: boolean = r1[7];
+        local Rr7: boolean = r2[7];
+        local R7:  boolean = result[7];
+        local Rd3: boolean = r1[3];
+        local Rr3: boolean = r2[3];
+        local R3:  boolean = result[3];
+
+        // set the flags as per instruction set documentation.
+        H = (!Rd3 and Rr3) or (Rr3 and R3) or (R3 and !Rd3);
+        C = (!Rd7 and Rr7) or (Rr7 and R7) or (R7 and !Rd7);
+        N = R7;
+        Z = (low(result) == 0) and Z;
+        V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
+        S = N xor V;
+    };
+
+    subroutine performLeftShift(r1: int, lowbit: boolean): int {
+        local result: int = r1 << 1;
+        result[0] = lowbit;
+
+        H = result[4];
+        C = result[8];
+        N = result[7];
+        Z = low(result) == 0;
+        V = N xor C;
+        S = N xor V;
+
+        return result;
+    };
+
+    subroutine performRightShift(r1: int, highbit: boolean): int {
+        local result: int = ((r1 & 0xff) >> 1);
+        if ( highbit ) result[7] = true;
+
+        C = r1[0];
+        N = highbit;
+        Z = low(result) == 0;
+        V = N xor C;
+        S = N xor V;
+
+        return result;
+    };
+
+    subroutine performOr(r1: int, r2: int): int {
+        local result: int = r1 | r2;
+
+        N = result[7];
+        Z = low(result) == 0;
+        V = false;
+        S = N xor V;
+
+        return result;
+    };
+
+    subroutine performAnd(r1: int, r2: int): int {
+        local result: int = r1 & r2;
+
+        N = result[7];
+        Z = low(result) == 0;
+        V = false;
+        S = N xor V;
+
+        return result;
+    };
+
+    subroutine relativeBranch(target: int): void {
+        nextPC = relative(target);
+        cycles = cycles + 1;
+    };
+
+    subroutine relative(target: int): int {
+        return (target * 2) + nextPC;
+    };
+
+    subroutine absolute(target: int): int {
+        return target * 2;
+    };
+
+    subroutine skip(): void {
+        local dist: int = $isize(nextPC);
+        nextPC = nextPC + dist;
+        if ( dist == 4 ) cycles = cycles + 1;
+        cycles = cycles + 1;
+    };
+
+//---------------------------------------------------------------------------
 //  BEGIN INSTRUCTION SET DESCRIPTION
 //---------------------------------------------------------------------------
 
@@ -62,7 +195,7 @@ architecture avr {
     instruction "adiw" rd: RDL, imm: IMM6 { // add immediate to word register
         encoding = { 0b10010110, imm[5:4], rd[1:0], imm[3:0] };
         execute = {
-            local r1: int       = word($regs(rd), $regs(rd + 1));
+            local r1: int       = $wregs(rd);
             local result: int   = r1 + imm;
             local R15: boolean  = result[15];
             local Rdh7: boolean = r1[7];
@@ -73,8 +206,7 @@ architecture avr {
             Z = (result[15:0] == 0);
             S = (N xor V);
 
-            $regs(rd) = low(result);
-            $regs(rd + 1) = high(result);
+            $wregs(rd) = result;
         };
     };
 
@@ -258,7 +390,6 @@ architecture avr {
 
     instruction "call" target: PADDR {
         execute = {
-            // TODO: fixme
             pushPC(nextPC);
             nextPC = absolute(target);
         };
@@ -405,18 +536,28 @@ architecture avr {
 
     instruction "elpm" {
         execute = {
+            local addr: int = $wregs(Z);
+            addr[23:16] = $ioregs(RAMPZ);
+            $regs(0) = $program(addr);
         };
     };
 
     instruction "elpmd" rd: GPR, rr: Z {
         // TODO: this is a variant of the ELPM instruction
         execute = {
+            local addr: int = $wregs(Z);
+            addr[23:16] = $ioregs(RAMPZ);
+            $regs(rd) = $program(addr);
         };
     };
 
     instruction "elpmpi" rd: GPR, rr: Z {
         // TODO: this is a variant of the ELPM instruction
         execute = {
+            local addr: int = $wregs(Z);
+            addr[23:16] = $ioregs(RAMPZ);
+            $regs(rd) = $program(addr);
+            $wregs(Z) = addr + 1;
         };
     };
 
@@ -466,15 +607,13 @@ architecture avr {
     instruction "icall" {
         execute = {
             pushPC(nextPC);
-            local target: int = absolute(word($regs(0), $regs(1));
-            nextPC = target;
+            nextPC = absolute($wregs(0));
         };
     };
 
     instruction "ijmp" {
         execute = {
-            local target: int = absolute(word($regs(0), $regs(1));
-            nextPC = target;
+            nextPC = absolute($wregs(0));
         };
     };
 
@@ -500,139 +639,184 @@ architecture avr {
 
     instruction "jmp" target: PADDR {
         execute = {
+            nextPC = absolute(target);
         };
     };
 
     instruction "ld" rd: GPR, ar: ADR {
         execute = {
+            $regs(rd) = $sram($wregs(ar));
         };
     };
 
     instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
         execute = {
+            $regs(rd) = $sram($wregs(ar) + imm);
         };
     };
 
     instruction "ldi" rd: HGPR, imm: IMM8 {
         execute = {
+            $regs(rd) = low(imm);
         };
     };
 
     instruction "ldpd" rd: GPR, ar: ADR {
         // TODO: this is a variant of the LD instruction
         execute = {
+            local addr: int = $wregs(ar) - 1;
+            $regs(rd) = $sram(addr);
+            $wregs(ar) = addr;
         };
     };
 
     instruction "ldpi" rd: GPR, ar: ADR {
         execute = {
+            local addr: int = $wregs(ar);
+            $regs(rd) = $sram(addr);
+            $wregs(ar) = addr + 1;
         };
     };
 
     instruction "lds" rd: GPR, addr: DADDR {
         execute = {
+            $regs(rd) = $sram(addr);
         };
     };
 
     instruction "lpm" {
         execute = {
+            $regs(0) = $program($wregs(Z));
         };
     };
 
     instruction "lpmd" rd: GPR, z: Z {
         // TODO: this is a variant of LPM
         execute = {
+            $regs(rd) = $program($wregs(Z));
         };
     };
 
     instruction "lpmpi" rd: GPR, z: Z {
         // TODO: this is a variant of LPM
         execute = {
+            local addr: int = $wregs(Z);
+            $regs(rd) = $program(addr);
+            $wregs(Z) = addr + 1;
         };
     };
 
     instruction "lsl" rd: GPR {
         execute = {
+            $regs(rd) = performLeftShift($regs(rd), false);
         };
     };
 
     instruction "lsr" rd: GPR {
         execute = {
+            $regs(rd) = performRightShift($regs(rd), false);
         };
     };
 
     instruction "mov" rd: GPR, rr: GPR {
         execute = {
+            $regs(rd) = $regs(rr);
         };
     };
 
     instruction "movw" rd: EGPR, rr: EGPR {
         execute = {
+            $wregs(rd) = $wregs(rr);
         };
     };
 
     instruction "mul" rd: GPR, rr: GPR {
         execute = {
+            local result: int = $uregs(rd) * $uregs(rr);
+            C = result[15];
+            Z = (result[15:0] == 0);
+            $wregs(0) = result;
         };
     };
 
     instruction "muls" rd: HGPR, rr: HGPR {
         execute = {
+            local result: int = $regs(rd) * $regs(rr);
+            C = result[15];
+            Z = (result[15:0] == 0);
+            $wregs(0) = result;
         };
     };
 
     instruction "mulsu" rd: MGPR, rr: MGPR {
         execute = {
+            local result: int = $regs(rd) * $uregs(rr);
+            C = result[15];
+            Z = (result[15:0] == 0);
+            $wregs(0) = result;
         };
     };
 
     instruction "neg" rd: GPR {
         execute = {
+            $regs(rd) = performSubtraction(0, $regs(rd), false);
         };
     };
 
     instruction "nop" {
         execute = {
+            // do nothing.
         };
     };
 
     instruction "or" rd: GPR, rr: GPR {
         execute = {
+            $regs(rd) = performOr($regs(rd), $regs(rr));
         };
     };
 
     instruction "ori" rd: HGPR, imm: IMM8 {
         execute = {
+            $regs(rd) = performOr($regs(rd), imm);
         };
     };
 
     instruction "out" imm: IMM6, rr: GPR {
         execute = {
+            $ioreg(imm) = $regs(rr);
         };
     };
 
     instruction "pop" rd: GPR {
         execute = {
+            $regs(rd) = popByte();
         };
     };
 
     instruction "push" rr: GPR {
         execute = {
+            pushByte($regs(rr));
         };
     };
 
     instruction "rcall" target: LREL {
         execute = {
+            pushPC(nextPC);
+            nextPC = relative(target);
         };
     };
 
     instruction "ret" {
         execute = {
+            nextPC = popPC();
         };
     };
 
     instruction "reti" {
         execute = {
+            nextPC = popPC();
+            I = true;
+            justReturnedFromInterrupt = true;
         };
     };
 
@@ -643,175 +827,218 @@ architecture avr {
 
     instruction "rol" rd: GPR {
         execute = {
+            $regs(rd) = performLeftShift($regs(rd), C);
         };
     };
 
     instruction "ror" rd: GPR {
         execute = {
+            $regs(rd) = performRightShift($regs(rd), C);
         };
     };
 
     instruction "sbc" rd: GPR, rr: GPR {
         execute = {
+            $regs(rd) = performSubtractionPZ($regs(rd), $regs(rr), C);
         };
     };
 
     instruction "sbci" rd: HGPR, imm: IMM8 {
         execute = {
+            $regs(rd) = performSubtractionPZ($regs(rd), imm, C);
         };
     };
 
-    instruction "sbi" imm1: IMM5, bit: IMM3 {
+    instruction "sbi" ior: IMM5, bit: IMM3 {
         execute = {
+            $ioregs(ior)[bit] = true;
         };
     };
 
-    instruction "sbic" imm1: IMM5, bit: IMM3 {
+    instruction "sbic" ior: IMM5, bit: IMM3 {
         execute = {
+            if (!($ioregs(ior)[bit])) skip();
         };
     };
 
     instruction "sbis" imm1: IMM5, bit: IMM3 {
         execute = {
+            if ( $ioregs(ior)[bit] ) skip();
         };
     };
 
     instruction "sbiw" rd: RDL, imm: IMM6 {
         execute = {
+            local val: int = $wregs(rd);
+            local result: int = val - imm;
+
+            local Rdh7: boolean = val[15];
+            local R15: boolean = result[15];
+
+            V = Rdh7 and !R15;
+            N = R15;
+            Z = result[15:0] == 0;
+            C = R15 and !Rdh7;
+            S = N xor V;
+
+            $wregs(rd) = result;
         };
     };
 
     instruction "sbr" rd: HGPR, imm: IMM8 {
         execute = {
+            $regs(rd) = performOr($regs(rd), imm);
         };
     };
 
     instruction "sbrc" rr: GPR, bit: IMM3 {
         execute = {
+            if (!($regs(rr)[bit])) skip();
         };
     };
 
     instruction "sbrs" rr: GPR, bit: IMM3 {
         execute = {
+            if ( $regs(rr)[bit] ) skip();
         };
     };
 
     instruction "sec" {
         execute = {
+            C = true;
         };
     };
 
     instruction "seh" {
         execute = {
+            H = true;
         };
     };
 
     instruction "sei" {
         execute = {
+            I = true;
         };
     };
 
     instruction "sen" {
         execute = {
+            N = true;
         };
     };
 
     instruction "ser" rd: GPR {
         execute = {
+            $regs(rd) = low(0xff);
         };
     };
 
     instruction "ses" {
         execute = {
+            S = true;
         };
     };
 
     instruction "set" {
         execute = {
+            T = true;
         };
     };
 
     instruction "sev" {
         execute = {
+            V = true;
         };
     };
 
     instruction "sez" {
         execute = {
+            Z = true;
         };
     };
 
     instruction "sleep" {
         execute = {
+            enterSleepMode();
         };
     };
 
     instruction "spm" {
         execute = {
+            // TODO: don't know how this instruction behaves
         };
     };
 
     instruction "st" ar: ADR, rr: GPR {
         execute = {
+            $sram($wregs(ar)) = $regs(rr);
         };
     };
 
     instruction "std" ar: YZ, imm: IMM6, rr: GPR {
         execute = {
+            $sram($wregs(ar) + imm) = $regs(rr);
         };
     };
 
     instruction "stpd" ar: ADR, rr: GPR {
         execute = {
+            local addr: int = $wregs(ar) - 1;
+            $sram(addr) = $regs(rr);
+            $wregs(ar) = addr;
         };
     };
 
     instruction "stpi" ar: ADR, rr: GPR {
         execute = {
+            local addr: int = $wregs(ar);
+            $sram(addr) = $regs(rr);
+            $wregs(ar) = addr + 1;
         };
     };
 
     instruction "sts" addr: DADDR, rr: GPR {
         execute = {
+            $sram(addr) = $regs(rr);
         };
     };
 
     instruction "sub" rd: GPR, rr: GPR {
         execute = {
+            $regs(rd) = performSubtraction($regs(rd), $regs(rr), false);
         };
     };
 
     instruction "subi" rd: HGPR, imm: IMM8 {
         execute = {
+            $regs(rd) = performSubtraction($regs(rd), imm, false);
         };
     };
 
     instruction "swap" rd: GPR {
         execute = {
+            local val: byte = $regs(rd);
+            local result: byte = 0;
+            result[3:0] = val[7:4];
+            result[7:4] = val[3:0];
+            $regs(rd) = result;
         };
     };
 
     instruction "tst" rd: GPR {
         execute = {
+            local r1: int = $regs(rd);
+            V = false;
+            Z = low(r1) == 0;
+            N = r1[7];
+            S = N xor V;
         };
     };
 
     instruction "wdr" {
         execute = {
+            // do nothing.
         };
     };
-
-
-
-
-    // empty instruction template
-    /*
-    instruction "" {
-        encoding = where { };
-        execute = {
-        };
-    };
-    */
-
 
 }
