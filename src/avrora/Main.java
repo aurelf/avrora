@@ -82,14 +82,6 @@ public class Main {
     public static final Option.Bool HTML = mainOptions.newOption("html", false,
             "For terminal colors. Display terminal colors as HTML tags for " +
             "easier inclusion in webpages.");
-    public static final Option.List INDIRECT_EDGES = mainOptions.newOptionList("indirect-edges", "",
-            "This option can be used to specify the possible targets of indirect calls and " +
-            "jumps within a program, which may be needed in performing stack analysis or " +
-            "building a control flow graph. Each element of the list is a pair of " +
-            "program addresses separated by a colon, where a program address can be a " +
-            "label or a hexadecimal number preceded by \"0x\". The first program address " +
-            "is the address of the indirect call or jump instruction and the second program " +
-            "address is a possible target.");
     public static final Option.Str FOREGROUND = mainOptions.newOption("foreground-color", "lightgray",
             "This option can be used to specify the default foreground color of " +
             "text outputted from Avrora. For terminals with a light-colored background, " +
@@ -103,41 +95,6 @@ public class Main {
             "order: \n   1) The .avrora file in your home directory \n   2) A configuration " +
             "file specified on the command line \n   3) Command line options to Avrora");
 
-
-    public static class AutoProgramReader extends ProgramReader {
-        public Program read(String[] args) throws Exception {
-            if (args.length == 0)
-                Avrora.userError("no input files");
-            if (args.length != 1)
-                Avrora.userError("input type \"auto\" accepts only one file at a time.");
-
-            String n = args[0];
-            int offset = n.lastIndexOf(".");
-            if (offset < 0)
-                Avrora.userError("file " + StringUtil.quote(n) + " does not have an extension");
-
-            String extension = n.substring(offset).toLowerCase();
-
-            if (".asm".equals(extension))
-                return new AtmelProgramReader().read(args);
-            if (".s".equals(extension))
-                return new GASProgramReader().read(args);
-            if (".od".equals(extension))
-                return new ObjDumpProgramReader().read(args);
-            if (".odpp".equals(extension))
-                return new ObjDump2ProgramReader().read(args);
-
-            Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
-            return null;
-        }
-
-        public String getHelp() {
-            return "The \"auto\" input format inspects the extension of the given " +
-                    "filename and chooses the best format based on that extension. For " +
-                    "example, it assumes that the best format for the .asm extension is " +
-                    "the Atmel syntax.";
-        }
-    }
 
     public static ProgramReader getProgramReader() {
         return Defaults.getProgramReader(INPUT.get());
@@ -241,7 +198,7 @@ public class Main {
     static void printHelp(String[] args) {
         printUsage();
 
-        buildAllCategory();
+        buildAllCategories();
 
         if (args.length == 0) {
             buildHelpCategory().printHelp();
@@ -254,7 +211,7 @@ public class Main {
         printFooter();
     }
 
-    private static void buildAllCategory() {
+    private static void buildAllCategories() {
         HelpCategory hc = new HelpCategory("all", "Print a list of all categories for which help is available.");
         hc.addSection("OVERVIEW", "Avrora provides help in many categories that are all accessible from the command " +
                 "line.");
@@ -388,20 +345,7 @@ public class Main {
      */
     public static Program readProgram(String[] args) throws Exception {
         ProgramReader reader = Defaults.getProgramReader(INPUT.get());
-        Program p = reader.read(args);
 
-        Iterator i = INDIRECT_EDGES.get().iterator();
-        while (i.hasNext()) {
-            String s = (String)i.next();
-            int ind = s.indexOf(":");
-            if (ind <= 0)
-                throw Avrora.failure("invalid indirect edge format: " + StringUtil.quote(s));
-            Program.Location loc = p.getProgramLocation(s.substring(0, ind));
-            Program.Location tar = p.getProgramLocation(s.substring(ind + 1));
-            p.addIndirectEdge(loc.address, tar.address);
-        }
-
-        return p;
+        return reader.read(args);
     }
-
 }

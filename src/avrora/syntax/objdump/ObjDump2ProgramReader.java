@@ -71,12 +71,15 @@ public class ObjDump2ProgramReader extends ProgramReader {
 
         ObjDumpParser parser = new ObjDumpParser(new FileReader(f), module, f.getName());
         parser.Module();
-        return module.build();
+        Program p = module.build();
+        addIndirectEdges(p);
+        return p;
     }
 
-    public String getHelp() {
-        return "The \"odpp\" input format reads programs that are the " +
+    public ObjDump2ProgramReader() {
+        super("The \"odpp\" input format reads programs that are the " +
                 "output of the \"avr-objdump\" utility provided with avr-binutils " +
-                "and that have been preprocessed with Avrora's preprocessor utility. ";
+                "and that have been preprocessed with Avrora's preprocessor utility. ");
     }
+
 }

@@ -33,6 +33,7 @@
 package avrora;
 
 import avrora.util.ClassMap;
+import avrora.util.StringUtil;
 import avrora.util.help.HelpSystem;
 import avrora.util.help.HelpCategory;
 import avrora.util.help.ClassMapValueItem;
@@ -126,7 +127,7 @@ public class Defaults {
         if (inputs == null) {
             inputs = new ClassMap("Input Format", ProgramReader.class);
             //-- DEFAULT INPUT FORMATS
-            inputs.addClass("auto", Main.AutoProgramReader.class);
+            inputs.addClass("auto", AutoProgramReader.class);
             inputs.addClass("gas", GASProgramReader.class);
             inputs.addClass("atmel", AtmelProgramReader.class);
             inputs.addClass("objdump", ObjDumpProgramReader.class);
@@ -354,11 +355,46 @@ public class Defaults {
     }
 
     public static Simulator newSimulator(int id, String mcu, long hz, long exthz, InterpreterFactory factory, Program p) {
-        // TODO: this has to be configurable somehow
         MicrocontrollerFactory f = getMicrocontroller(mcu);
         ClockDomain cd = new ClockDomain(hz);
         cd.newClock("external", exthz);
 
         return f.newMicrocontroller(id, cd, factory, p).getSimulator();
+    }
+
+    public static class AutoProgramReader extends ProgramReader {
+        public AutoProgramReader() {
+            super("The \"auto\" input format reads a program from a single file at a time. " +
+                    "It uses the extension of the filename as a clue to decide what input " +
+                    "reader to use for that file. For example, an extension of \".asm\" is " +
+                    "considered to be a program in Atmel assembly syntax.");
+        }
+
+        public Program read(String[] args) throws Exception {
+            if (args.length == 0)
+                Avrora.userError("no input files");
+            if (args.length != 1)
+                Avrora.userError("input type \"auto\" accepts only one file at a time.");
+
+            String n = args[0];
+            int offset = n.lastIndexOf(".");
+            if (offset < 0)
+                Avrora.userError("file " + StringUtil.quote(n) + " does not have an extension");
+
+            String extension = n.substring(offset).toLowerCase();
+
+            if (".asm".equals(extension))
+                return new AtmelProgramReader().read(args);
+            if (".s".equals(extension))
+                return new GASProgramReader().read(args);
+            if (".od".equals(extension))
+                return new ObjDumpProgramReader().read(args);
+            if (".odpp".equals(extension))
+                return new ObjDump2ProgramReader().read(args);
+
+            Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
+            return null;
+        }
+
     }
 }

@@ -64,12 +64,15 @@ public class ObjDumpPreprocessor extends Action {
               "parsing.");
     }
 
-    public StringBuffer cleanCode(String inFile) {
+    public StringBuffer cleanCode(String inFile) throws IOException {
         try {
             StringBuffer out = new StringBuffer(10000);
             BufferedReader in = new BufferedReader(new FileReader(inFile));
             cleanFile(in, out);
             return out;
+        } catch (IOException e) {
+            // rethrow IO exceptions (e.g. file not found)
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             throw Avrora.failure("Failure reading objdump format: "+e);

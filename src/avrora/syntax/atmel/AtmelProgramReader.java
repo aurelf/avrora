@@ -70,12 +70,15 @@ public class AtmelProgramReader extends ProgramReader {
         FileInputStream fis = new FileInputStream(f);
         AtmelParser parser = new AtmelParser(fis, module, f.getName());
         parser.Module();
-        return module.build();
+        Program p = module.build();
+        addIndirectEdges(p);
+        return p;
     }
 
-    public String getHelp() {
-        return "The \"atmel\" input format reads programs that are written in " +
+    public AtmelProgramReader() {
+        super("The \"atmel\" input format reads programs that are written in " +
                 "assembly language in the format supported by the Atmel assembler. " +
-                "Nearly all of the directives are supported, except macros.";
+                "Nearly all of the directives are supported, except macros.");
     }
+
 }

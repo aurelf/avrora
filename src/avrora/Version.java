@@ -56,12 +56,21 @@ public class Version {
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public final int commit = 37;
+    public final int commit = 38;
 
+    /**
+     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
+     * that represents the version of the code base.
+     * @return a <code>Version</code> object representing the current version
+     */
     public static Version getVersion() {
         return new Version();
     }
 
+    /**
+     * The <code>toString()</code> method converts this version to a string.
+     * @return a string representation of this version
+     */
     public String toString() {
         return prefix + major + '.' + commit;
     }

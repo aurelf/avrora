@@ -70,13 +70,16 @@ public class GASProgramReader extends ProgramReader {
         FileInputStream fis = new FileInputStream(f);
         GASParser parser = new GASParser(fis, module, f.getName());
         parser.Module();
-        return module.build();
+        Program p = module.build();
+        addIndirectEdges(p);
+        return p;
     }
 
-    public String getHelp() {
-        return "The \"gas\" input format reads programs that are written in " +
+    public GASProgramReader() {
+        super("The \"gas\" input format reads programs that are written in " +
                 "GAS format assembly language. A subset of the directives and " +
                 "syntax is supported. No linking functionality is currently " +
-                "implemented; all symbol references must be defined in one file. ";
+                "implemented; all symbol references must be defined in one file. ");
     }
+
 }

@@ -32,11 +32,34 @@
 
 package avrora.core;
 
+import avrora.util.Options;
+import avrora.util.Option;
+import avrora.util.StringUtil;
+import avrora.util.help.HelpCategory;
+import avrora.Avrora;
+
+import java.util.Iterator;
+
 /**
  * The <code>ProgramReader</code> class represents an object capable of reading a program given the special
  * command line arguments. It may for example read source assembly and produce a simplified program.
  */
-public abstract class ProgramReader {
+public abstract class ProgramReader extends HelpCategory {
+
+    /**
+     * The <code>options</code> field stores a reference to an instance of the <code>Options</code> class that
+     * encapsulates the command line options available to this reader.
+     */
+    public final Options options = new Options();
+
+    public final Option.List INDIRECT_EDGES = options.newOptionList("indirect-edges", "",
+            "This option can be used to specify the possible targets of indirect calls and " +
+            "jumps within a program, which may be needed in performing stack analysis or " +
+            "building a control flow graph. Each element of the list is a pair of " +
+            "program addresses separated by a colon, where a program address can be a " +
+            "label or a hexadecimal number preceded by \"0x\". The first program address " +
+            "is the address of the indirect call or jump instruction and the second program " +
+            "address is a possible target.");
     /**
      * The <code>read()</code> method will read a program in and produce a simplified format.
      *
@@ -46,10 +69,24 @@ public abstract class ProgramReader {
      */
     public abstract Program read(String[] args) throws Exception;
 
-    /**
-     * The <code>getHelp()</code> method returns a long string that represents a simple description
-     * of the program reader and how to use it.
-     * @return a string representation of the help for this program reader
-     */ 
-    public abstract String getHelp();
+    protected ProgramReader(String h) {
+        super("reader", h);
+
+        addSection("OVERVIEW", help);
+        addOptionSection("Help for specific options is below.", options);
+    }
+
+    protected void addIndirectEdges(Program p) {
+        Iterator i = INDIRECT_EDGES.get().iterator();
+        while (i.hasNext()) {
+            String s = (String)i.next();
+            int ind = s.indexOf(":");
+            if (ind <= 0)
+                throw Avrora.failure("invalid indirect edge format: " + StringUtil.quote(s));
+            Program.Location loc = p.getProgramLocation(s.substring(0, ind));
+            Program.Location tar = p.getProgramLocation(s.substring(ind + 1));
+            p.addIndirectEdge(loc.address, tar.address);
+        }
+    }
+
 }

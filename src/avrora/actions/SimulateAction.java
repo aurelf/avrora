@@ -35,7 +35,9 @@ package avrora.actions;
 import avrora.Main;
 import avrora.Avrora;
 import avrora.core.Program;
+import avrora.core.Instr;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.*;
 
@@ -216,8 +218,17 @@ public class SimulateAction extends SimAction {
         Iterator i = getLocationList(program, BREAKS.get()).iterator();
         while (i.hasNext()) {
             Program.Location l = (Program.Location)i.next();
-            // TODO: implement breakpoints--AGAIN
-            // simulator.insertBreakPoint(l.address);
+            simulator.insertProbe(new BreakPointProbe(), l.address);
+        }
+    }
+    
+    class BreakPointProbe implements Simulator.Probe {
+        public void fireBefore(Instr i, int address, State s) {
+            throw new Simulator.BreakPointException(i, address, s);
+        }
+
+        public void fireAfter(Instr i, int address, State s) {
+
         }
     }
 

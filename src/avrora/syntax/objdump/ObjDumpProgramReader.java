@@ -72,15 +72,18 @@ public class ObjDumpProgramReader extends ProgramReader {
 
         ObjDumpParser parser = new ObjDumpParser(r, module, f.getName());
         parser.Module();
-        return module.build();
+        Program p = module.build();
+        addIndirectEdges(p);
+        return p;
     }
 
-    public String getHelp() {
-        return "The \"objdump\" input format reads programs that are the " +
+    public ObjDumpProgramReader() {
+        super("The \"objdump\" input format reads programs that are the " +
                 "output of the \"avr-objdump\" utility provided with avr-binutils. " +
                 "For example, an ELF file must first be disassembled with " +
                 "\"avr-objdump -zhD\" to create a text file readable by this input " +
                 "format. The \"-zhD\" options are very important: the output will " +
-                "not be parseable otherwise.";
+                "not be parseable otherwise.");
     }
+
 }
