@@ -58,6 +58,13 @@ public class ProfileMonitor extends MonitorFactory {
             "cycles consumed by each basic block, rather than each instruction " +
             "or instruction range.");
 
+    public final Option.Bool CYCLES = options.newOption("record-cycles", true,
+            "This option is used by the profiling and controls whether it records " +
+            "the cycles consumed by each instruction or basic block. ");
+    public final Option.Bool EMPTY = options.newOption("empty-probe", false,
+            "This option is used to test the overhead of adding an empty probe to every" +
+            "instruction. ");
+
     /**
      * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
      * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
@@ -68,21 +75,38 @@ public class ProfileMonitor extends MonitorFactory {
         public final Program program;
 //        public final ProgramProfiler profile;
 //        public final ProgramTimeProfiler timeprofile;
-        public final ProfProbe probe;
+        public final CCProbe ccprobe;
+        public final CProbe cprobe;
 
         Monitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
 //            profile = new ProgramProfiler(program);
 //            timeprofile = new ProgramTimeProfiler(program);
-            probe = new ProfProbe(program);
+            ccprobe = new CCProbe(program);
+            cprobe = new CProbe(program);
             // insert the global probe
 //            s.insertProbe(profile);
 //            s.insertProbe(timeprofile);
-            s.insertProbe(probe);
+            if ( EMPTY.get() ) {
+                s.insertProbe(new EmptyProbe());
+            } else {
+                if ( CYCLES.get() )
+                    s.insertProbe(ccprobe);
+                else
+                    s.insertProbe(cprobe);
+            }
         }
 
-        public class ProfProbe implements Simulator.Probe {
+        public class EmptyProbe implements Simulator.Probe {
+            public void fireBefore(Instr i, int address, State state) {
+            }
+
+            public void fireAfter(Instr i, int address, State state) {
+            }
+        }
+
+        public class CCProbe implements Simulator.Probe {
             /**
              * The <code>program</code> field stores a reference to the program being profiled.
              */
@@ -105,7 +129,7 @@ public class ProfileMonitor extends MonitorFactory {
              *
              * @param p the program to profile
              */
-            public ProfProbe(Program p) {
+            public CCProbe(Program p) {
                 int size = p.program_end;
                 icount = new long[size];
                 itime = new long[size];
@@ -139,6 +163,58 @@ public class ProfileMonitor extends MonitorFactory {
             }
         }
 
+        public class CProbe implements Simulator.Probe {
+            /**
+             * The <code>program</code> field stores a reference to the program being profiled.
+             */
+            public final Program program;
+
+            /**
+             * The <code>itime</code> field stores the invocation count for each instruction in the program. It is
+             * indexed by byte addresses. Thus <code>itime[addr]</code> corresponds to the invocation for the
+             * instruction at <code>program.getInstr(addr)</code>.
+             */
+            public final long icount[];
+
+
+            /**
+             * The constructor for the program profiler constructs the required internal state to store the invocation
+             * counts of each instruction.
+             *
+             * @param p the program to profile
+             */
+            public CProbe(Program p) {
+                int size = p.program_end;
+                icount = new long[size];
+                program = p;
+            }
+
+            /**
+             * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
+             * implementation of the program profiler, it simply increments the count of the instruction at the
+             * specified address.
+             *
+             * @param i       the instruction being probed
+             * @param address the address at which this instruction resides
+             * @param state   the state of the simulation
+             */
+            public void fireBefore(Instr i, int address, State state) {
+                icount[address]++;
+            }
+
+            /**
+             * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
+             * implementation of the profiler, it does nothing.
+             *
+             * @param i       the instruction being probed
+             * @param address the address at which this instruction resides
+             * @param state   the state of the simulation
+             */
+            public void fireAfter(Instr i, int address, State state) {
+                // do nothing
+            }
+        }
+
         /**
          * The <code>report()</code> method generates a textual report for the profiling information gathered
          * from the execution of the program. The result is a table of performance information giving the
@@ -149,8 +225,21 @@ public class ProfileMonitor extends MonitorFactory {
             Terminal.printGreen("       Address     Count  Run     Cycles     Cumulative");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
-            long[] icount = probe.icount;
-            long[] itime = probe.itime;
+            long[] icount;
+            long[] itime;
+
+            if ( CYCLES.get() ) {
+                icount = ccprobe.icount;
+                itime = ccprobe.itime;
+            } else {
+                icount = cprobe.icount;
+                itime = new long[icount.length];
+            }
+            reportProfile(icount, itime);
+
+        }
+
+        private void reportProfile(long[] icount, long[] itime) {
             int imax = icount.length;
             float totalcycles = 0;
 
