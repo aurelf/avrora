@@ -6,8 +6,7 @@ import avrora.syntax.Module;
 import avrora.syntax.Module;
 import avrora.core.Program;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 
 /**
  * The <code>AtmelProgramReader</code> is an implementation of the <code>ProgramReader</code>
@@ -38,8 +37,10 @@ public class ObjDumpProgramReader extends Main.ProgramReader {
 
         File f = new File(args[0]);
         Module module = new Module(true, true);
-        FileInputStream fis = new FileInputStream(f);
-        ObjDumpParser parser = new ObjDumpParser(fis, module, f.getName());
+        StringBuffer buf = new ObjDumpPreprocessor(args[0]).getCleanObjDumpCode();
+        Reader r = new StringReader(buf.toString());
+
+        ObjDumpParser parser = new ObjDumpParser(r, module, f.getName());
         parser.Module();
         return module.build();
     }
