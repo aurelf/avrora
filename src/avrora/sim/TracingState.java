@@ -17,18 +17,18 @@ public class TracingState extends State {
         super(p, fsize, isize, ssize);
     }
 
-    public void writeRegister(Register r1, byte val) {
-        super.writeRegister(r1, val);
+    public void setRegisterByte(Register r1, byte val) {
+        super.setRegisterByte(r1, val);
         reg_delta[r1.getNumber()] = true;
     }
 
-    public void writeSP(int address) {
-        super.writeSP(address);
+    public void setSP(int address) {
+        super.setSP(address);
         sp_delta = true;
     }
 
-    public void writePC(int address) {
-        super.writePC(address);
+    public void setPC(int address) {
+        super.setPC(address);
         pc_delta = true;
     }
 
@@ -43,8 +43,8 @@ public class TracingState extends State {
         sp_delta = true;
     }
 
-    public void writeSREG(byte val) {
-        super.writeSREG(val);
+    public void setSREG(byte val) {
+        super.setSREG(val);
     }
 
     public void setSREG_bit(int bit, boolean val) {

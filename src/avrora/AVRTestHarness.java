@@ -101,12 +101,12 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         });
         map.put("sp", new ProcessorState("sp") {
             public int evaluate(Program p, State s) {
-                return s.readSP();
+                return s.getSP();
             }
         });
         map.put("sreg", new ProcessorState("sreg") {
             public int evaluate(Program p, State s) {
-                return s.readSREG();
+                return s.getSREG();
             }
         });
         map.put("x", new ReadRegisterWord("x"));
@@ -150,7 +150,7 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         }
 
         public int evaluate(Program p, State s) {
-            return s.readRegister(register);
+            return s.getRegisterByte(register);
         }
     }
 
@@ -163,7 +163,7 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         }
 
         public int evaluate(Program p, State s) {
-            return Arithmetic.getBit(s.readSREG(), flag) ? 1 : 0;
+            return Arithmetic.getBit(s.getSREG(), flag) ? 1 : 0;
         }
     }
 
@@ -176,7 +176,7 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         }
 
         public int evaluate(Program p, State s) {
-            return s.readRegisterWord(register);
+            return s.getRegisterWord(register);
         }
     }
 
@@ -223,7 +223,7 @@ public class AVRTestHarness extends VPCBase implements TestHarness {
         }
 
         public int evaluate(Program p, State s) {
-            return s.readDataByte(expr.evaluate(p, s));
+            return s.getDataByte(expr.evaluate(p, s));
         }
 
         public String toString() {

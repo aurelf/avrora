@@ -22,21 +22,21 @@ public interface AnalyzerPolicy {
      * @param s the current abstract state
      * @param target_address the concrete target address of the call
      */
-    public void call(AbstractState s, int target_address);
+    public void call(MutableState s, int target_address);
 
     /**
      * The <code>ret()</code> method is called by the abstract interpreter when it
      * encounters a return within the program.
      * @param s the current abstract state
      */
-    public void ret(AbstractState s);
+    public void ret(MutableState s);
 
     /**
      * The <code>reti()</code> method is called by the abstract interpreter when it
      * encounters a return from an interrupt within the program.
      * @param s the current abstract state
      */
-    public void reti(AbstractState s);
+    public void reti(MutableState s);
 
     /**
      * The <code>indirectCall()</code> method is called by the abstract interpreter
@@ -47,7 +47,7 @@ public interface AnalyzerPolicy {
      * @param addr_low the (abstract) low byte of the address
      * @param addr_hi the (abstract) high byte of the address
      */
-    public void indirectCall(AbstractState s, char addr_low, char addr_hi);
+    public void indirectCall(MutableState s, char addr_low, char addr_hi);
 
     /**
      * The <code>indirectJump()</code> method is called by the abstract interpreter
@@ -58,7 +58,7 @@ public interface AnalyzerPolicy {
      * @param addr_low the (abstract) low byte of the address
      * @param addr_hi the (abstract) high byte of the address
      */
-    public void indirectJump(AbstractState s, char addr_low, char addr_hi);
+    public void indirectJump(MutableState s, char addr_low, char addr_hi);
 
     /**
      * The <code>indirectCall()</code> method is called by the abstract interpreter
@@ -70,7 +70,7 @@ public interface AnalyzerPolicy {
      * @param addr_hi the (abstract) high byte of the address
      * @param ext the (abstract) extended part of the address
      */
-    public void indirectCall(AbstractState s, char addr_low, char addr_hi, char ext);
+    public void indirectCall(MutableState s, char addr_low, char addr_hi, char ext);
 
     /**
      * The <code>indirectJump()</code> method is called by the abstract interpreter
@@ -82,7 +82,7 @@ public interface AnalyzerPolicy {
      * @param addr_hi the (abstract) high byte of the address
      * @param ext the (abstract) extended part of the address
      */
-    public void indirectJump(AbstractState s, char addr_low, char addr_hi, char ext);
+    public void indirectJump(MutableState s, char addr_low, char addr_hi, char ext);
 
     /**
      * The <code>pushState</code> method is called by the abstract interpreter when
@@ -91,7 +91,7 @@ public interface AnalyzerPolicy {
      * @param oldState the old state
      * @param newState the new state created
      */
-    public void pushState(AbstractState oldState, AbstractState newState);
+    public void pushState(Analyzer.FrontierState oldState, MutableState newState);
 
     /**
      * The <code>push()</code> method is called by the abstract interpreter when
@@ -100,7 +100,7 @@ public interface AnalyzerPolicy {
      * @param s the current abstract state
      * @param val the abstract value to push onto the stack
      */
-    public void push(AbstractState s, char val);
+    public void push(MutableState s, char val);
 
     /**
      * The <code>pop()</code> method is called by the abstract interpreter when
@@ -110,5 +110,5 @@ public interface AnalyzerPolicy {
      * @param s the current abstract state
      * @return the abstract value popped from the stack
      */
-    public char pop(AbstractState s);
+    public char pop(MutableState s);
 }

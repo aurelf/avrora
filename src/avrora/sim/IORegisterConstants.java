@@ -130,4 +130,6 @@ public interface IORegisterConstants {
     public final int SREG_N = 2;
     public final int SREG_Z = 1;
     public final int SREG_C = 0;
+
+    public final int NUM_REGS = 32;
 }

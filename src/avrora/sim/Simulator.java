@@ -572,17 +572,17 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
         public void post() {
             int flag = 1 << bit;
-            int nfr = state.readIORegister(flagRegister) | flag;
-            state.writeIORegister((byte)nfr, flagRegister);
-            int mask = state.readIORegister(maskRegister);
+            int nfr = state.getIORegisterByte(flagRegister) | flag;
+            state.setIORegisterByte((byte)nfr, flagRegister);
+            int mask = state.getIORegisterByte(maskRegister);
             if ( (mask & flag) != 0 )
                 state.postInterrupt(interruptNumber);
         }
 
         public void fire() {
             if ( !sticky ) {
-                int nfr = state.readIORegister(flagRegister) & ~(1 << bit);
-                state.writeIORegister((byte)nfr, flagRegister);
+                int nfr = state.getIORegisterByte(flagRegister) & ~(1 << bit);
+                state.setIORegisterByte((byte)nfr, flagRegister);
                 state.unpostInterrupt(interruptNumber);
             }
         }
@@ -679,7 +679,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
                     // set PC to interrupt handler
                     nextPC = lowestbit * 4;
-                    state.writePC(nextPC);
+                    state.setPC(nextPC);
 
                     // disable interrupts
                     state.setFlag_I(false);
@@ -693,7 +693,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
             // get the current instruction
             int curPC = nextPC;
-            Instr i = state.readInstr(nextPC);
+            Instr i = state.getInstr(nextPC);
             nextPC = nextPC + i.getSize();
 
             // visit the actual instruction (or probe)
@@ -710,7 +710,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     private void execute(Instr i) {
         i.accept(this);
-        state.writePC(nextPC);
+        state.setPC(nextPC);
         state.consumeCycles(i.getCycles());
 
     }
@@ -737,8 +737,8 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         ProbedInstr pi = getProbedInstr(addr);
         if ( pi != null ) pi.add(p);
         else {
-            pi = new ProbedInstr(state.readInstr(addr), addr, p);
-            state.writeInstr(pi, addr);
+            pi = new ProbedInstr(state.getInstr(addr), addr, p);
+            state.setInstr(pi, addr);
         }
     }
 
@@ -764,12 +764,12 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         if ( pi != null ) {
             pi.remove(p);
             if ( pi.isEmpty() )
-                state.writeInstr(pi.instr, pi.address);
+                state.setInstr(pi.instr, pi.address);
         }
     }
 
     private ProbedInstr getProbedInstr(int addr) {
-        Instr i = state.readInstr(addr);
+        Instr i = state.getInstr(addr);
         if ( i instanceof ProbedInstr )
             return ((ProbedInstr)i);
         else return null;
@@ -786,8 +786,8 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         ProbedInstr pi = getProbedInstr(addr);
         if ( pi != null ) pi.setBreakPoint();
         else {
-            pi = new ProbedInstr(state.readInstr(addr), addr, null);
-            state.writeInstr(pi, addr);
+            pi = new ProbedInstr(state.getInstr(addr), addr, null);
+            state.setInstr(pi, addr);
             pi.setBreakPoint();
         }
     }
@@ -872,17 +872,17 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     //
 
     public void visit(Instr.ADC i) { // add two registers and carry flag
-        int r1 = state.readRegisterUnsigned(i.r1);
-        int r2 = state.readRegisterUnsigned(i.r2);
+        int r1 = state.getRegisterUnsigned(i.r1);
+        int r2 = state.getRegisterUnsigned(i.r2);
         int result = performAddition(r1, r2, state.getFlag_C() ? 1 : 0);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.ADD i) { // add second register to first
-        int r1 = state.readRegisterUnsigned(i.r1);
-        int r2 = state.readRegisterUnsigned(i.r2);
+        int r1 = state.getRegisterUnsigned(i.r1);
+        int r2 = state.getRegisterUnsigned(i.r2);
         int result = performAddition(r1, r2, 0);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.ADIW i) { // add immediate to word register
@@ -902,23 +902,23 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.AND i) { // and first register with second
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         int result = performAnd(r1, r2);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.ANDI i) { // and register with immediate
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
         int result = performAnd(r1, r2);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.ASR i) { // arithmetic shift right by one bit
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int result = performRightShift(r1, (r1 & 0x80) != 0);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.BCLR i) { // clear bit in SREG
@@ -927,23 +927,23 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public void visit(Instr.BLD i) { // load bit from T flag into register
         boolean T = state.getFlag_T();
-        byte val = state.readRegister(i.r1);
+        byte val = state.getRegisterByte(i.r1);
         if (T)
             val = Arithmetic.setBit(val, i.imm1);
         else
             val = Arithmetic.clearBit(val, i.imm1);
-        state.writeRegister(i.r1, val);
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.BRBC i) { // branch if bit in SREG is clear
-        byte val = state.readSREG();
+        byte val = state.getSREG();
         boolean f = Arithmetic.getBit(val, i.imm1);
         if (!f)
             relativeBranch(i.imm2);
     }
 
     public void visit(Instr.BRBS i) { // branch if bit in SREG is set
-        byte val = state.readSREG();
+        byte val = state.getSREG();
         boolean f = Arithmetic.getBit(val, i.imm1);
         if (f)
             relativeBranch(i.imm2);
@@ -1048,7 +1048,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.BST i) { // store bit in register to T flag
-        byte val = state.readRegister(i.r1);
+        byte val = state.getRegisterByte(i.r1);
         boolean T = Arithmetic.getBit(val, i.imm1);
         state.setFlag_T(T);
     }
@@ -1059,14 +1059,14 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.CBI i) { // clear bit in IO register
-        state.getIORegister(i.imm1).clearBit(i.imm2);
+        state.getIOReg(i.imm1).clearBit(i.imm2);
     }
 
     public void visit(Instr.CBR i) { // clear bits in register
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
         int result = performAnd(r1, ~r2);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.CLC i) { // clear C flag
@@ -1090,7 +1090,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         state.setFlag_V(false);
         state.setFlag_N(false);
         state.setFlag_Z(true);
-        state.writeRegister(i.r1, (byte) 0);
+        state.setRegisterByte(i.r1, (byte) 0);
     }
 
     public void visit(Instr.CLS i) { // clear S flag
@@ -1110,7 +1110,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.COM i) { // one's complement register
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int result = 0xff - r1;
 
         boolean C = true;
@@ -1120,40 +1120,40 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         boolean S = xor(N, V);
         setFlag_CNZVS(C, N, Z, V, S);
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.CP i) { // compare registers
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         // perform subtraction for flag side effects.
         performSubtraction(r1, r2, 0);
     }
 
     public void visit(Instr.CPC i) { // compare registers with carry
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         // perform subtraction for flag side effects.
         performSubtraction(r1, r2, (state.getFlag_C() ? 1 : 0));
     }
 
     public void visit(Instr.CPI i) { // compare register with immediate
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
         // perform subtraction for flag side effects.
         performSubtraction(r1, r2, 0);
     }
 
     public void visit(Instr.CPSE i) { // compare and skip next instruction if equal
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         // TODO: test this instruction more thoroughly!!!!
         performSubtraction(r1, r2, 0);
         if (r1 == r2) skip();
     }
 
     public void visit(Instr.DEC i) { // decrement register
-        int r1 = state.readRegisterUnsigned(i.r1);
+        int r1 = state.getRegisterUnsigned(i.r1);
         int result = r1 - 1;
 
         boolean N = (result & 0x080) != 0;
@@ -1162,7 +1162,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         boolean S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.EICALL i) { // extended indirect call
@@ -1177,29 +1177,29 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public void visit(Instr.ELPM i) { // extended load program memory
         int address = readRegisterWord(Register.Z);
-        int extra = state.readIORegister(RAMPZ);
-        byte val = state.readProgramByte(address + (extra << 16));
-        state.writeRegister(Register.R0, val);
+        int extra = state.getIORegisterByte(RAMPZ);
+        byte val = state.getProgramByte(address + (extra << 16));
+        state.setRegisterByte(Register.R0, val);
     }
 
     public void visit(Instr.ELPMD i) { // extended load program memory with destination
         int address = readRegisterWord(Register.Z);
-        int extra = state.readIORegister(RAMPZ);
-        byte val = state.readProgramByte(address + (extra << 16));
-        state.writeRegister(i.r1, val);
+        int extra = state.getIORegisterByte(RAMPZ);
+        byte val = state.getProgramByte(address + (extra << 16));
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.ELPMPI i) { // extends load program memory with post decrement
         int address = readRegisterWord(Register.Z);
-        int extra = state.readIORegister(RAMPZ);
-        byte val = state.readProgramByte(address + (extra << 16));
-        state.writeRegister(i.r1, val);
+        int extra = state.getIORegisterByte(RAMPZ);
+        byte val = state.getProgramByte(address + (extra << 16));
+        state.setRegisterByte(i.r1, val);
         writeRegisterWord(Register.Z, address + 1);
     }
 
     public void visit(Instr.EOR i) { // exclusive or first register with second
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         int result = r1 ^ r2;
 
         boolean N = (result & 0x080) != 0;
@@ -1208,34 +1208,34 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         boolean S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.FMUL i) { // fractional multiply
-        int r1 = state.readRegisterUnsigned(i.r1);
-        int r2 = state.readRegisterUnsigned(i.r2);
+        int r1 = state.getRegisterUnsigned(i.r1);
+        int r2 = state.getRegisterUnsigned(i.r2);
         int result = (r1 * r2) << 1;
         state.setFlag_Z((result & 0xffff) == 0);
         state.setFlag_C(Arithmetic.getBit(result, 16));
-        state.writeRegisterWord(Register.R0, result);
+        state.setRegisterWord(Register.R0, result);
     }
 
     public void visit(Instr.FMULS i) { // fractional multiply, signed
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         int result = (r1 * r2) << 1;
         state.setFlag_Z((result & 0xffff) == 0);
         state.setFlag_C(Arithmetic.getBit(result, 16));
-        state.writeRegisterWord(Register.R0, result);
+        state.setRegisterWord(Register.R0, result);
     }
 
     public void visit(Instr.FMULSU i) { // fractional multiply signed with unsigned
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegisterUnsigned(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterUnsigned(i.r2);
         int result = (r1 * r2) << 1;
         state.setFlag_Z((result & 0xffff) == 0);
         state.setFlag_C(Arithmetic.getBit(result, 16));
-        state.writeRegisterWord(Register.R0, result);
+        state.setRegisterWord(Register.R0, result);
     }
 
     public void visit(Instr.ICALL i) { // indirect call through Z register
@@ -1250,12 +1250,12 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.IN i) { // read byte from IO register
-        byte val = state.readIORegister(i.imm1);
-        state.writeRegister(i.r1, val);
+        byte val = state.getIORegisterByte(i.imm1);
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.INC i) { // increment register
-        int r1 = state.readRegisterUnsigned(i.r1);
+        int r1 = state.getRegisterUnsigned(i.r1);
         int result = r1 + 1;
 
         boolean N = (result & 0x080) != 0;
@@ -1264,7 +1264,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
         boolean S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.JMP i) { // unconditional jump to absolute address
@@ -1273,73 +1273,73 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public void visit(Instr.LD i) { // load from SRAM
         int address = readRegisterWord(i.r2);
-        byte val = state.readDataByte(address);
-        state.writeRegister(i.r1, val);
+        byte val = state.getDataByte(address);
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.LDD i) { // load with displacement from register Y or Z
         int address = readRegisterWord(i.r2) + i.imm1;
-        byte val = state.readDataByte(address);
-        state.writeRegister(i.r1, val);
+        byte val = state.getDataByte(address);
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.LDI i) { // load immediate
-        state.writeRegister(i.r1, (byte) i.imm1);
+        state.setRegisterByte(i.r1, (byte) i.imm1);
     }
 
     public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
         int address = readRegisterWord(i.r2) - 1;
-        byte val = state.readDataByte(address);
-        state.writeRegister(i.r1, val);
+        byte val = state.getDataByte(address);
+        state.setRegisterByte(i.r1, val);
         writeRegisterWord(i.r2, address);
     }
 
     public void visit(Instr.LDPI i) { // load from SRAM with post-increment
         int address = readRegisterWord(i.r2);
-        byte val = state.readDataByte(address);
-        state.writeRegister(i.r1, val);
+        byte val = state.getDataByte(address);
+        state.setRegisterByte(i.r1, val);
         writeRegisterWord(i.r2, address + 1);
     }
 
     public void visit(Instr.LDS i) { // load from SRAM at absolute address
-        byte val = state.readDataByte(i.imm1);
-        state.writeRegister(i.r1, val);
+        byte val = state.getDataByte(i.imm1);
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.LPM i) { // load from program memory
         int address = readRegisterWord(Register.Z);
-        byte val = state.readProgramByte(address);
-        state.writeRegister(Register.R0, val);
+        byte val = state.getProgramByte(address);
+        state.setRegisterByte(Register.R0, val);
     }
 
     public void visit(Instr.LPMD i) { // load from program memory with destination
         int address = readRegisterWord(Register.Z);
-        byte val = state.readProgramByte(address);
-        state.writeRegister(i.r1, val);
+        byte val = state.getProgramByte(address);
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.LPMPI i) { // load from program memory with post-increment
         int address = readRegisterWord(Register.Z);
-        byte val = state.readProgramByte(address);
-        state.writeRegister(i.r1, val);
+        byte val = state.getProgramByte(address);
+        state.setRegisterByte(i.r1, val);
         writeRegisterWord(Register.Z, address + 1);
     }
 
     public void visit(Instr.LSL i) { // logical shift register left by one
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int result = performLeftShift(r1, 0);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.LSR i) { // logical shift register right by one
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int result = performRightShift(r1, false);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.MOV i) { // copy second register into first
-        byte result = state.readRegister(i.r2);
-        state.writeRegister(i.r1, result);
+        byte result = state.getRegisterByte(i.r2);
+        state.setRegisterByte(i.r1, result);
     }
 
     public void visit(Instr.MOVW i) { // copy second register pair into first
@@ -1348,8 +1348,8 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.MUL i) { // multiply first register with second
-        int r1 = state.readRegisterUnsigned(i.r1);
-        int r2 = state.readRegisterUnsigned(i.r2);
+        int r1 = state.getRegisterUnsigned(i.r1);
+        int r2 = state.getRegisterUnsigned(i.r2);
         int result = r1 * r2;
         state.setFlag_C(Arithmetic.getBit(result, 15));
         state.setFlag_Z((result & 0xffff) == 0);
@@ -1357,8 +1357,8 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.MULS i) { // multiply first register with second, signed
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         int result = r1 * r2;
         state.setFlag_C(Arithmetic.getBit(result, 15));
         state.setFlag_Z((result & 0xffff) == 0);
@@ -1366,8 +1366,8 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.MULSU i) { // multiply first register with second, signed and unsigned
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegisterUnsigned(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterUnsigned(i.r2);
         int result = r1 * r2;
         state.setFlag_C(Arithmetic.getBit(result, 15));
         state.setFlag_Z((result & 0xffff) == 0);
@@ -1375,9 +1375,9 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.NEG i) { // negate register
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int result = performSubtraction(0, r1, 0);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.NOP i) { // no-op operation
@@ -1385,33 +1385,33 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.OR i) { // or first register with second
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         int result = performOr(r1, r2);
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.ORI i) { // or register with immediate
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
         int result = performOr(r1, r2);
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.OUT i) { // write byte to IO register
-        byte r1 = state.readRegister(i.r1);
-        state.writeIORegister(r1, i.imm1);
+        byte r1 = state.getRegisterByte(i.r1);
+        state.setIORegisterByte(r1, i.imm1);
     }
 
     public void visit(Instr.POP i) { // pop a byte from the stack (SPL:SPH IO registers)
         byte val = state.popByte();
-        state.writeRegister(i.r1, val);
+        state.setRegisterByte(i.r1, val);
     }
 
     public void visit(Instr.PUSH i) { // push a byte to the stack
-        byte val = state.readRegister(i.r1);
+        byte val = state.getRegisterByte(i.r1);
         state.pushByte(val);
     }
 
@@ -1435,44 +1435,44 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.ROL i) { // rotate register left through carry flag
-        int r1 = state.readRegisterUnsigned(i.r1);
+        int r1 = state.getRegisterUnsigned(i.r1);
         int result = performLeftShift(r1, (state.getFlag_C() ? 1 : 0));
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.ROR i) { // rotate register right through carry flag
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int result = performRightShift(r1, state.getFlag_C());
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.SBC i) { // subtract second register from first with carry
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         int result = performSubtraction(r1, r2, (state.getFlag_C() ? 1 : 0));
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.SBCI i) { // subtract immediate from register with carry
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
         int result = performSubtraction(r1, r2, (state.getFlag_C() ? 1 : 0));
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.SBI i) { // set bit in IO register
-        state.getIORegister(i.imm1).setBit(i.imm2);
+        state.getIOReg(i.imm1).setBit(i.imm2);
     }
 
     public void visit(Instr.SBIC i) { // skip if bit in IO register is clear
-        byte val = state.readIORegister(i.imm1);
+        byte val = state.getIORegisterByte(i.imm1);
         boolean f = Arithmetic.getBit(val, i.imm2);
         if (!f) skip();
     }
 
     public void visit(Instr.SBIS i) { // skip if bit in IO register is set
-        byte val = state.readIORegister(i.imm1);
+        byte val = state.getIORegisterByte(i.imm1);
         boolean f = Arithmetic.getBit(val, i.imm2);
         if (f) skip();
     }
@@ -1495,21 +1495,21 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.SBR i) { // set bits in register
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
         int result = performOr(r1, r2);
 
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.SBRC i) { // skip if bit in register cleared
-        byte r1 = state.readRegister(i.r1);
+        byte r1 = state.getRegisterByte(i.r1);
         boolean f = Arithmetic.getBit(r1, i.imm1);
         if (!f) skip();
     }
 
     public void visit(Instr.SBRS i) { // skip if bit in register set
-        byte r1 = state.readRegister(i.r1);
+        byte r1 = state.getRegisterByte(i.r1);
         boolean f = Arithmetic.getBit(r1, i.imm1);
         if (f) skip();
     }
@@ -1531,7 +1531,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     public void visit(Instr.SER i) { // set register to 0xFF
-        state.writeRegister(i.r1, (byte)0xff);
+        state.setRegisterByte(i.r1, (byte)0xff);
     }
 
     public void visit(Instr.SES i) { // set S (signed) flag
@@ -1561,57 +1561,57 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     public void visit(Instr.ST i) { // store register to data-seg[r1]
         int address = readRegisterWord(i.r1);
-        byte val = state.readRegister(i.r2);
-        state.writeDataByte(val, address);
+        byte val = state.getRegisterByte(i.r2);
+        state.setDataByte(val, address);
     }
 
     public void visit(Instr.STD i) { // store to data space with displacement from Y or Z
         int address = readRegisterWord(i.r1) + i.imm1;
-        byte val = state.readRegister(i.r2);
-        state.writeDataByte(val, address);
+        byte val = state.getRegisterByte(i.r2);
+        state.setDataByte(val, address);
     }
 
     public void visit(Instr.STPD i) { // decrement r2 and store register to data-seg(r2)
         int address = readRegisterWord(i.r1) - 1;
-        byte val = state.readRegister(i.r2);
-        state.writeDataByte(val, address);
+        byte val = state.getRegisterByte(i.r2);
+        state.setDataByte(val, address);
         writeRegisterWord(i.r1, address);
     }
 
     public void visit(Instr.STPI i) { // store register to data-seg(r2) and post-inc
         int address = readRegisterWord(i.r1);
-        byte val = state.readRegister(i.r2);
-        state.writeDataByte(val, address);
+        byte val = state.getRegisterByte(i.r2);
+        state.setDataByte(val, address);
         writeRegisterWord(i.r1, address + 1);
     }
 
     public void visit(Instr.STS i) { // store direct to data-seg(imm1)
-        byte val = state.readRegister(i.r1);
-        state.writeDataByte(val, i.imm1);
+        byte val = state.getRegisterByte(i.r1);
+        state.setDataByte(val, i.imm1);
     }
 
     public void visit(Instr.SUB i) { // subtract second register from first
-        int r1 = state.readRegister(i.r1);
-        int r2 = state.readRegister(i.r2);
+        int r1 = state.getRegisterByte(i.r1);
+        int r2 = state.getRegisterByte(i.r2);
         int result = performSubtraction(r1, r2, 0);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.SUBI i) { // subtract immediate from register
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         int r2 = i.imm1;
         int result = performSubtraction(r1, r2, 0);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.SWAP i) { // swap nibbles in register
-        int result = state.readRegisterUnsigned(i.r1);
+        int result = state.getRegisterUnsigned(i.r1);
         result = (result >> 4) | (result << 4);
-        state.writeRegister(i.r1, (byte) result);
+        state.setRegisterByte(i.r1, (byte) result);
     }
 
     public void visit(Instr.TST i) { // test for zero or minus
-        int r1 = state.readRegister(i.r1);
+        int r1 = state.getRegisterByte(i.r1);
         state.setFlag_V(false);
         state.setFlag_Z((r1 & 0xff) == 0);
         state.setFlag_N(Arithmetic.getBit(r1, 7));
@@ -1639,7 +1639,7 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
 
     private void skip() {
         // skip over next instruction
-        int dist = state.readInstr(nextPC).getSize();
+        int dist = state.getInstr(nextPC).getSize();
         if (dist == 2)
             state.consumeCycle();
         else
@@ -1668,11 +1668,11 @@ public abstract class Simulator extends VPCBase implements InstrVisitor, IORegis
     }
 
     private int readRegisterWord(Register r1) {
-        return state.readRegisterWord(r1);
+        return state.getRegisterWord(r1);
     }
 
     private void writeRegisterWord(Register r1, int val) {
-        state.writeRegisterWord(r1, val);
+        state.setRegisterWord(r1, val);
     }
 
     private void unimplemented(Instr i) {

@@ -20,23 +20,32 @@ import avrora.sim.IORegisterConstants;
  * that represent the state of the processor.
  *
  * @see AbstractArithmetic
- * @see AbstractState
+ * @see MutableState
  * @author Ben L. Titzer
  */
 public class AbstractInterpreter extends AbstractArithmetic implements InstrVisitor {
 
     protected final AnalyzerPolicy policy;
     protected final Program program;
-    protected AbstractState oldState;
-    protected AbstractState state;
+    protected Analyzer.FrontierState oldState;
+    protected MutableState state;
 
     AbstractInterpreter(Program pr, AnalyzerPolicy p) {
         policy = p;
         program = pr;
     }
 
-    public void nextState(AbstractState oldState) {
-        state = oldState.copy();
+    /**
+     * The <code>nextState()</code> method computes the possible next
+     * states that follows the given immutable old state and then will
+     * push them to the <code>AnalyzerPolicy</code> instance that
+     * was passed in the constructor to this interpreter instance.
+     * @param os the immutable old state to compute the next state
+     * from
+     */
+    public void nextState(Analyzer.FrontierState os) {
+        oldState = os;
+        state = oldState.state.copy();
 
         int pc = state.getPC();
         Instr i = program.readInstr(pc);
@@ -45,44 +54,45 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         policy.pushState(oldState, state);
     }
 
-    /**
-     *  V I S I T O R   M E T H O D S
-     * ------------------------------------------------------------
-     *
-     *  These visit methods implement the analysis of individual
-     *  instructions for building the reachable state space of the
-     *  program.
-     *
-     */
+    //-----------------------------------------------------------------------
+    //  V I S I T O R   M E T H O D S
+    //-----------------------------------------------------------------------
+    //
+    //  These visit methods implement the analysis of individual
+    //  instructions for building the reachable state space of the
+    //  program.
+    //
+    //-----------------------------------------------------------------------
 
     public void visit(Instr.ADC i) { // add register to register with carry
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         char result = performAddition(r1, r2, state.getFlag_C());
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.ADD i) { // add register to register
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         char result = performAddition(r1, r2, FALSE);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.ADIW i) {// add immediate to word register
-        char rh = state.readRegister(i.r1.nextRegister());
+        char rh = state.getRegisterAV(i.r1.nextRegister());
 
-        // compute partial results
+        // add the immediate value into the actual register
         addImmediateToRegister(i.r1, i.imm1);
 
-        // compute upper and lower parts of result from partial results
-        char RL = state.readRegister(i.r1);
-        char RH = state.readRegister(i.r1.nextRegister());
+        // read the upper and lower parts of result from register
+        char RL = state.getRegisterAV(i.r1);
+        char RH = state.getRegisterAV(i.r1.nextRegister());
 
+        // extract some bits of interest
         char R15 = getBit(RH, 7);
         char Rdh7 = getBit(rh, 7);
 
-        // flags computations
+        // flag computations
         state.setFlag_C(and(not(R15), Rdh7));
         state.setFlag_N(R15);
         state.setFlag_V(and(not(Rdh7), R15));
@@ -91,23 +101,23 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.AND i) {// and register with register
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         char result = performAnd(r1, r2);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.ANDI i) {// and register with immediate
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char r2 = knownVal((byte) i.imm1);
         char result = performAnd(r1, r2);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.ASR i) {// arithmetic shift right
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         char result = performRightShift(val, getBit(val, 7));
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.BCLR i) {// clear bit in status register
@@ -116,19 +126,19 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     public void visit(Instr.BLD i) {// load bit from T flag into register
         char T = state.getFlag_T();
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         char result = setBit(val, i.imm1, T);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.BRBC i) {// branch if bit in status register is clear
-        char val = state.readSREG();
+        char val = state.getSREG();
         char bit = getBit(val, i.imm1);
         branchOnCondition(not(bit), i.imm2);
     }
 
     public void visit(Instr.BRBS i) {// branch if bit in status register is set
-        char val = state.readSREG();
+        char val = state.getSREG();
         char bit = getBit(val, i.imm1);
         branchOnCondition(bit, i.imm2);
     }
@@ -215,7 +225,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.BST i) { // store bit in register into T flag
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         char T = getBit(val, i.imm1);
         state.setFlag_T(T);
     }
@@ -225,16 +235,16 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.CBI i) { // clear bit in IO register
-        char val = state.readIORegister(i.imm1);
+        char val = state.getIORegisterAV(i.imm1);
         char result = setBit(val, i.imm2, FALSE);
-        state.writeIORegister(i.imm1, result);
+        state.setIORegisterAV(i.imm1, result);
     }
 
     public void visit(Instr.CBR i) { // clear bits in register
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char r2 = knownVal((byte) ~i.imm1);
         char result = performAnd(r1, r2);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.CLC i) { // clear C flag
@@ -258,7 +268,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         state.setFlag_V(FALSE);
         state.setFlag_N(FALSE);
         state.setFlag_Z(TRUE);
-        state.writeRegister(i.r1, ZERO);
+        state.setRegisterAV(i.r1, ZERO);
     }
 
     public void visit(Instr.CLS i) { // clear S flag
@@ -278,7 +288,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.COM i) { // one's compliment register
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char mask = maskOf(r1);
         char result = canon(mask, (char)~r1);
 
@@ -289,39 +299,39 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         char S = xor(N, V);
         setFlag_CNZVS(C, N, Z, V, S);
 
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.CP i) { // compare registers
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         // perform subtraction for flag side effects.
         performSubtraction(r1, r2, FALSE);
     }
 
     public void visit(Instr.CPC i) { // compare registers with carry
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         // perform subtraction for flag side effects.
         performSubtraction(r1, r2, state.getFlag_C());
     }
 
     public void visit(Instr.CPI i) { // compare register with immediate
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char r2 = knownVal((byte)i.imm1);
         // perform subtraction for flag side effects.
         performSubtraction(r1, r2, FALSE);
     }
 
     public void visit(Instr.CPSE i) { // compare registers and skip if equal
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         performSubtraction(r1, r2, FALSE);
         skipOnCondition(state.getFlag_Z());
     }
 
     public void visit(Instr.DEC i) { // decrement register by one
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char result = decrement(r1);
 
         char N = getBit(result, 7);
@@ -330,33 +340,33 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         char S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.EICALL i) { // extended indirect call
-        char rl = state.readRegister(Register.Z);
-        char rh = state.readRegister(Register.Z.nextRegister());
-        char ext = state.readIORegister(IORegisterConstants.RAMPZ);
+        char rl = state.getRegisterAV(Register.Z);
+        char rh = state.getRegisterAV(Register.Z.nextRegister());
+        char ext = state.getIORegisterAV(IORegisterConstants.RAMPZ);
         policy.indirectCall(state, rl, rh, ext);
     }
 
     public void visit(Instr.EIJMP i) { // extended indirect jump
-        char rl = state.readRegister(Register.Z);
-        char rh = state.readRegister(Register.Z.nextRegister());
-        char ext = state.readIORegister(IORegisterConstants.RAMPZ);
+        char rl = state.getRegisterAV(Register.Z);
+        char rh = state.getRegisterAV(Register.Z.nextRegister());
+        char ext = state.getIORegisterAV(IORegisterConstants.RAMPZ);
         policy.indirectJump(state, rl, rh, ext);
     }
 
     public void visit(Instr.ELPM i) { // extended load program memory to r0
-        state.writeRegister(Register.R0, UNKNOWN);
+        state.setRegisterAV(Register.R0, UNKNOWN);
     }
 
     public void visit(Instr.ELPMD i) { // extended load program memory to register
-        state.writeRegister(i.r1, UNKNOWN);
+        state.setRegisterAV(i.r1, UNKNOWN);
     }
 
     public void visit(Instr.ELPMPI i) { // extended load program memory to register and post-increment
-        state.writeRegister(i.r1, UNKNOWN);
+        state.setRegisterAV(i.r1, UNKNOWN);
         addImmediateToRegister(i.r2, 1);
     }
 
@@ -366,8 +376,8 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         if (i.r1 == i.r2) { // recognize A ^ A = A
             result = ZERO;
         } else {
-            char r1 = state.readRegister(i.r1);
-            char r2 = state.readRegister(i.r2);
+            char r1 = state.getRegisterAV(i.r1);
+            char r2 = state.getRegisterAV(i.r2);
             result = xor(r1, r2);
         }
 
@@ -377,27 +387,27 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         char S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.FMUL i) { // fractional multiply register with register to r0
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         int result = mul8(r1, false, r2, false);
         finishFMUL(result);
 
     }
 
     public void visit(Instr.FMULS i) { // signed fractional multiply register with register to r0
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         int result = mul8(r1, true, r2, true);
         finishFMUL(result);
     }
 
     public void visit(Instr.FMULSU i) { // signed/unsigned fractional multiply register with register to r0
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         int result = mul8(r1, true, r2, false);
         finishFMUL(result);
     }
@@ -418,24 +428,24 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
 
     public void visit(Instr.ICALL i) { // indirect call through Z register
-        char rl = state.readRegister(Register.Z);
-        char rh = state.readRegister(Register.Z.nextRegister());
+        char rl = state.getRegisterAV(Register.Z);
+        char rh = state.getRegisterAV(Register.Z.nextRegister());
         policy.indirectCall(state, rl, rh);
     }
 
     public void visit(Instr.IJMP i) { // indirect jump through Z register
-        char rl = state.readRegister(Register.Z);
-        char rh = state.readRegister(Register.Z.nextRegister());
+        char rl = state.getRegisterAV(Register.Z);
+        char rh = state.getRegisterAV(Register.Z.nextRegister());
         policy.indirectJump(state, rl, rh);
     }
 
     public void visit(Instr.IN i) { // read from IO register into register
-        char val = state.readIORegister(i.imm1);
-        state.writeRegister(i.r1, val);
+        char val = state.getIORegisterAV(i.imm1);
+        state.setRegisterAV(i.r1, val);
     }
 
     public void visit(Instr.INC i) { // increment register by one
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char result = increment(r1);
 
         char N = getBit(result, 7);
@@ -444,7 +454,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         char S = xor(N, V);
         setFlag_NZVS(N, Z, V, S);
 
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.JMP i) { // absolute jump
@@ -452,86 +462,86 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.LD i) { // load from SRAM
-        state.writeRegister(i.r1, UNKNOWN);
+        state.setRegisterAV(i.r1, UNKNOWN);
     }
 
     public void visit(Instr.LDD i) { // load from SRAM with displacement
-        state.writeRegister(i.r1, UNKNOWN);
+        state.setRegisterAV(i.r1, UNKNOWN);
     }
 
     public void visit(Instr.LDI i) { // load immediate into register
-        state.writeRegister(i.r1, knownVal((byte) i.imm1));
+        state.setRegisterAV(i.r1, knownVal((byte) i.imm1));
     }
 
     public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
-        state.writeRegister(i.r1,  UNKNOWN);
+        state.setRegisterAV(i.r1,  UNKNOWN);
         addImmediateToRegister(i.r2, -1);
     }
 
     public void visit(Instr.LDPI i) { // load from SRAM with post-increment
-        state.writeRegister(i.r1,  UNKNOWN);
+        state.setRegisterAV(i.r1,  UNKNOWN);
         addImmediateToRegister(i.r2, 1);
     }
 
     public void visit(Instr.LDS i) { // load direct from SRAM
-        state.writeRegister(i.r1,  UNKNOWN);
+        state.setRegisterAV(i.r1,  UNKNOWN);
     }
 
     public void visit(Instr.LPM i) { // load program memory into r0
-        state.writeRegister(Register.R0, UNKNOWN);
+        state.setRegisterAV(Register.R0, UNKNOWN);
     }
 
     public void visit(Instr.LPMD i) { // load program memory into register
-        state.writeRegister(i.r1, UNKNOWN);
+        state.setRegisterAV(i.r1, UNKNOWN);
     }
 
     public void visit(Instr.LPMPI i) { // load program memory into register and post-increment
-        state.writeRegister(i.r1, UNKNOWN);
+        state.setRegisterAV(i.r1, UNKNOWN);
         addImmediateToRegister(i.r2, 1);
     }
 
     public void visit(Instr.LSL i) { // logical shift left
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         char result = performLeftShift(val, FALSE);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.LSR i) { // logical shift right
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         char result = performRightShift(val, FALSE);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.MOV i) { // copy register to register
-        char result = state.readRegister(i.r2);
-        state.writeRegister(i.r1, result);
+        char result = state.getRegisterAV(i.r2);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.MOVW i) { // copy two registers to two registers
-        char vall = state.readRegister(i.r2);
-        char valh = state.readRegister(i.r2.nextRegister());
+        char vall = state.getRegisterAV(i.r2);
+        char valh = state.getRegisterAV(i.r2.nextRegister());
 
-        state.writeRegister(i.r1, vall);
-        state.writeRegister(i.r1.nextRegister(), valh);
+        state.setRegisterAV(i.r1, vall);
+        state.setRegisterAV(i.r1.nextRegister(), valh);
     }
 
     public void visit(Instr.MUL i) { // multiply register with register to r0
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         int result = mul8(r1, false, r2, false);
         finishMultiply(result);
     }
 
     public void visit(Instr.MULS i) { // signed multiply register with register to r0
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         int result = mul8(r1, true, r2, true);
         finishMultiply(result);
     }
 
     public void visit(Instr.MULSU i) { // signed/unsigned multiply register with register to r0
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         int result = mul8(r1, true, r2, false);
         finishMultiply(result);
     }
@@ -546,9 +556,9 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
 
     public void visit(Instr.NEG i) { // two's complement register
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char result = performSubtraction(ZERO, r1, FALSE);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.NOP i) { // do nothing operation
@@ -556,31 +566,31 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.OR i) { // or register with register
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         char result = performOr(r1, r2);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.ORI i) { // or register with immediate
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char r2 = knownVal((byte) i.imm1);
         char result = performOr(r1, r2);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.OUT i) { // write from register to IO register
-        char val = state.readRegister(i.r1);
-        state.writeIORegister(i.imm1, val);
+        char val = state.getRegisterAV(i.r1);
+        state.setIORegisterAV(i.imm1, val);
     }
 
     public void visit(Instr.POP i) { // pop from the stack to register
         char val = policy.pop(state);
-        state.writeRegister(i.r1, val);
+        state.setRegisterAV(i.r1, val);
     }
 
     public void visit(Instr.PUSH i) { // push register to the stack
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         policy.push(state, val);
     }
 
@@ -601,58 +611,58 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.ROL i) { // rotate left through carry flag
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         char result = performLeftShift(val, state.getFlag_C());
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.ROR i) { // rotate right through carry flag
-        char val = state.readRegister(i.r1);
+        char val = state.getRegisterAV(i.r1);
         char result = performRightShift(val, state.getFlag_C());
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.SBC i) { // subtract register from register with carry
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         char result = performSubtraction(r1, r2, state.getFlag_C());
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.SBCI i) { // subtract immediate from register with carry
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char imm = knownVal((byte)i.imm1);
         char result = performSubtraction(r1, imm, state.getFlag_C());
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.SBI i) { // set bit in IO register
-        char val = state.readIORegister(i.imm1);
+        char val = state.getIORegisterAV(i.imm1);
         char result = setBit(val, i.imm2, TRUE);
-        state.writeIORegister(i.imm1, result);
+        state.setIORegisterAV(i.imm1, result);
     }
 
     public void visit(Instr.SBIC i) { // skip if bit in IO register is clear
-        char reg = state.readIORegister(i.imm1);
+        char reg = state.getIORegisterAV(i.imm1);
         char bit = getBit(reg, i.imm2);
         skipOnCondition(not(bit));
     }
 
     public void visit(Instr.SBIS i) { // skip if bit in IO register is set
-        char reg = state.readIORegister(i.imm1);
+        char reg = state.getIORegisterAV(i.imm1);
         char bit = getBit(reg, i.imm2);
         skipOnCondition(bit);
     }
 
     public void visit(Instr.SBIW i) { // subtract immediate from word
-        char rh = state.readRegister(i.r1.nextRegister());
+        char rh = state.getRegisterAV(i.r1.nextRegister());
 
         // compute partial results
         addImmediateToRegister(i.r1, -i.imm1);
 
         // compute upper and lower parts of result from partial results
-        char RL = state.readRegister(i.r1);
-        char RH = state.readRegister(i.r1.nextRegister());
+        char RL = state.getRegisterAV(i.r1);
+        char RH = state.getRegisterAV(i.r1.nextRegister());
 
         char Rdh7 = getBit(rh, 7);
         char R15 = getBit(RH, 7);
@@ -667,19 +677,19 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.SBR i) { // set bits in register
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char r2 = knownVal((byte) i.imm1);
         char result = performOr(r1, r2);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.SBRC i) { // skip if bit in register cleared
-        char bit = getBit(state.readRegister(i.r1), i.imm1);
+        char bit = getBit(state.getRegisterAV(i.r1), i.imm1);
         skipOnCondition(not(bit));
     }
 
     public void visit(Instr.SBRS i) { // skip if bit in register set
-        char bit = getBit(state.readRegister(i.r1), i.imm1);
+        char bit = getBit(state.getRegisterAV(i.r1), i.imm1);
         skipOnCondition(bit);
     }
 
@@ -700,7 +710,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.SER i) { // set bits in register
-        state.writeRegister(i.r1, knownVal((byte) 0xff));
+        state.setRegisterAV(i.r1, knownVal((byte) 0xff));
     }
 
     public void visit(Instr.SES i) { // set S (signed) flag
@@ -749,29 +759,29 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     public void visit(Instr.SUB i) { // subtract register from register
-        char r1 = state.readRegister(i.r1);
-        char r2 = state.readRegister(i.r2);
+        char r1 = state.getRegisterAV(i.r1);
+        char r2 = state.getRegisterAV(i.r2);
         char result = performSubtraction(r1, r2, FALSE);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.SUBI i) { // subtract immediate from register
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         char imm = knownVal((byte)i.imm1);
         char result = performSubtraction(r1, imm, FALSE);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.SWAP i) { // swap nibbles in register
-        char result = state.readRegister(i.r1);
+        char result = state.getRegisterAV(i.r1);
         int high = ((result & 0xF0F0) >> 4);
         int low = ((result & 0x0F0F) << 4);
         result = (char) (low | high);
-        state.writeRegister(i.r1, result);
+        state.setRegisterAV(i.r1, result);
     }
 
     public void visit(Instr.TST i) { // test for zero or minus
-        char r1 = state.readRegister(i.r1);
+        char r1 = state.getRegisterAV(i.r1);
         state.setFlag_V(FALSE);
         state.setFlag_Z(couldBeZero(r1));
         state.setFlag_N(getBit(r1, 7));
@@ -782,15 +792,14 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         // do nothing.
     }
 
-    /**
-     *
-     *  U T I L I T I E S
-     * ----------------------------------------------------------------------
-     *
-     *  These are some utility functions to help with implementing the
-     * transfer functions.
-     *
-     */
+    //-----------------------------------------------------------------------
+    //  U T I L I T I E S
+    //-----------------------------------------------------------------------
+    //
+    //  These are some utility functions to help with implementing the
+    // transfer functions.
+    //
+    //-----------------------------------------------------------------------
 
     private void branchOnCondition(char cond, int offset) {
         if (cond == TRUE) // branch is taken
@@ -798,7 +807,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         else if (cond == FALSE)
             ; // branch is not taken
         else { // branch could go either way
-            AbstractState taken = state.copy();
+            MutableState taken = state.copy();
             relativeBranch(taken, offset);
             policy.pushState(oldState, taken);
         }
@@ -808,7 +817,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         branchOnCondition(cond, program.readInstr(state.getPC()).getSize());
     }
 
-    private void relativeBranch(AbstractState s, int offset) {
+    private void relativeBranch(MutableState s, int offset) {
         s.setPC(relative(offset));
     }
 
@@ -946,8 +955,8 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     private void addImmediateToRegister(Register r, int imm) {
-        char v1 = state.readRegister(r);
-        char v2 = state.readRegister(r.nextRegister());
+        char v1 = state.getRegisterAV(r);
+        char v2 = state.getRegisterAV(r.nextRegister());
 
         int resultA = ceiling(v1, v2) + imm;
         int resultB = floor(v1, v2) + imm;
@@ -955,8 +964,8 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
         char RL = mergeMask(maskOf(v1), merge((byte)resultA, (byte)resultB));
         char RH = mergeMask(maskOf(v2), merge((byte)(resultA >> 8), (byte)(resultB >> 8)));
 
-        state.writeRegister(r, RL);
-        state.writeRegister(r.nextRegister(), RH);
+        state.setRegisterAV(r, RL);
+        state.setRegisterAV(r.nextRegister(), RH);
     }
 
     private int mul8(char v1, boolean s1, char v2, boolean s2) {
@@ -980,8 +989,8 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
     }
 
     private void writeRegisterWord(Register r, char vl, char vh) {
-        state.writeRegister(r, vl);
-        state.writeRegister(r.nextRegister(), vh);
+        state.setRegisterAV(r, vl);
+        state.setRegisterAV(r.nextRegister(), vh);
     }
 
     private int ceiling(char v1, boolean s1) {

@@ -26,7 +26,7 @@ public class ProgramProfiler implements Simulator.Probe {
      * The <code>icount</code> field stores the invocation count
      * for each instruction in the program. It is indexed by byte addresses.
      * Thus <code>icount[addr]</code> corresponds to the invocation for the instruction
-     * at <code>program.readInstr(addr)</code>.
+     * at <code>program.getInstr(addr)</code>.
      */
     public final long icount[];
 

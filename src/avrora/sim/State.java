@@ -162,7 +162,7 @@ public class State implements IORegisterConstants {
      * structures needed to store the complete state of the machine, including registers,
      * IO registers, the SRAM, and the flash. All IO registers are initialized to be
      * instances of <code>RWIOReg</code>. Reserved and special IO registers must be
-     * inserted by the <code>getIORegister()</code> and <code>setIORegister()</code>
+     * inserted by the <code>getIOReg()</code> and <code>setIOReg()</code>
      * methods.
      *
      * @param p the program to construct the state for
@@ -257,7 +257,7 @@ public class State implements IORegisterConstants {
      * @param reg the register to read
      * @return the current value of the register
      */
-    public byte readRegister(Register reg) {
+    public byte getRegisterByte(Register reg) {
         return regs[reg.getNumber()];
     }
 
@@ -268,7 +268,7 @@ public class State implements IORegisterConstants {
      * @param reg the register to read
      * @return the current unsigned value of the register
      */
-    public int readRegisterUnsigned(Register reg) {
+    public int getRegisterUnsigned(Register reg) {
         return regs[reg.getNumber()] & 0xff;
     }
 
@@ -282,25 +282,25 @@ public class State implements IORegisterConstants {
      * @param reg the low register of the pair to read
      * @return the current unsigned word value of the register pair
      */
-    public int readRegisterWord(Register reg) {
-        byte low = readRegister(reg);
-        byte high = readRegister(reg.nextRegister());
+    public int getRegisterWord(Register reg) {
+        byte low = getRegisterByte(reg);
+        byte high = getRegisterByte(reg.nextRegister());
         return Arithmetic.uword(low, high);
     }
 
     /**
-     * The <code>writeRegister()</code> method writes a value to a general purpose
+     * The <code>setRegisterByte()</code> method writes a value to a general purpose
      * register. This is a destructive update and should only be called from the
      * appropriate places in the simulator.
      * @param reg the register to write the value to
      * @param val the value to write to the register
      */
-    public void writeRegister(Register reg, byte val) {
+    public void setRegisterByte(Register reg, byte val) {
         regs[reg.getNumber()] = val;
     }
 
     /**
-     * The <code>writeRegisterWord</code> method writes a word value to a general
+     * The <code>setRegisterWord</code> method writes a word value to a general
      * purpose register pair. This is a destructive update and should only be
      * called from the appropriate places in the simulator. The specified register
      * and the next register in numerical order are updated with the low-order and
@@ -309,29 +309,29 @@ public class State implements IORegisterConstants {
      * @param reg the low register of the pair to write
      * @param val the word value to write to the register pair
      */
-    public void writeRegisterWord(Register reg, int val) {
+    public void setRegisterWord(Register reg, int val) {
         byte low = Arithmetic.low(val);
         byte high = Arithmetic.high(val);
-        writeRegister(reg, low);
-        writeRegister(reg.nextRegister(), high);
+        setRegisterByte(reg, low);
+        setRegisterByte(reg.nextRegister(), high);
     }
 
     /**
-     * The <code>readSREG()</code> method reads the value of the status register.
+     * The <code>getSREG()</code> method reads the value of the status register.
      * The status register contains the I, T, H, S, V, N, Z, and C flags, in order
      * from highest-order to lowest-order.
      * @return the value of the status register as a byte.
      */
-    public byte readSREG() {
+    public byte getSREG() {
         return ioregs[SREG].read();
     }
 
     /**
-     * The <code>writeSREG()</code> method writes the value of the status register.
+     * The <code>setSREG()</code> method writes the value of the status register.
      * This method should only be called from the appropriate places in the simulator.
      * @param val
      */
-    public void writeSREG(byte val) {
+    public void setSREG(byte val) {
         ioregs[SREG].write(val);
     }
 
@@ -460,16 +460,16 @@ public class State implements IORegisterConstants {
     public boolean getFlag_C() { return ioregs[SREG].readBit(SREG_C); }
 
     /**
-     * The <code>readStackByte()</code> method reads a byte from the address
+     * The <code>getStackByte()</code> method reads a byte from the address
      * specified by SP+1. This method should not be called with an empty stack,
      * as it will cause an exception consistent with trying to read non-existent
      * memory.
      *
      * @return the value on the top of the stack
      */
-    public byte readStackByte() {
-        int address = readSP() + 1;
-        return readDataByte(address);
+    public byte getStackByte() {
+        int address = getSP() + 1;
+        return getDataByte(address);
     }
 
     /**
@@ -483,9 +483,9 @@ public class State implements IORegisterConstants {
      * @return the value on the top of the stack
      */
     public byte popByte() {
-        int address = readSP() + 1;
-        writeSP(address);
-        return readDataByte(address);
+        int address = getSP() + 1;
+        setSP(address);
+        return getDataByte(address);
     }
 
     /**
@@ -497,31 +497,31 @@ public class State implements IORegisterConstants {
      * @param val the value to push onto the stack
      */
     public void pushByte(byte val) {
-        int address = readSP();
-        writeSP(address - 1);
-        writeDataByte(val, address);
+        int address = getSP();
+        setSP(address - 1);
+        setDataByte(val, address);
     }
 
     /**
-     * The <code>readSP()</code> method reads the current value of the stack pointer.
+     * The <code>getSP()</code> method reads the current value of the stack pointer.
      * Since the stack pointer is stored in two IO registers, this method will cause the
      * invocation of the <code>.read()</code> method on each of the <code>IOReg</code>
      * objects that store these values.
      * @return the value of the stack pointer as a byte address
      */
-    public int readSP() {
+    public int getSP() {
         return Arithmetic.uword(ioregs[SPL].read(), ioregs[SPH].read());
     }
 
     /**
-     * The <code>writeSP()</code> method updates the value of the stack pointer. Generally
+     * The <code>setSP()</code> method updates the value of the stack pointer. Generally
      * the stack pointer is stored in two IO registers <code>SPL</code> and <code>SPH</code>.
      * This method should generally only be used within the simulator.
      *
      * @see IORegisterConstants
      * @param val
      */
-    public void writeSP(int val) {
+    public void setSP(int val) {
         ioregs[SPL].write(Arithmetic.low(val));
         ioregs[SPH].write(Arithmetic.high(val));
     }
@@ -535,13 +535,13 @@ public class State implements IORegisterConstants {
     }
 
     /**
-     * The <code>writePC()</code> method updates the value of the program counter. It is
+     * The <code>setPC()</code> method updates the value of the program counter. It is
      * generally used only by the simulator. In general it is a good idea to keep the
      * program counter aligned on a 2-byte boundary. Clients of the <code>State</code> interface
      * should generally not use this method.
      * @param pc the new program counter as a byte address
      */
-    public void writePC(int pc) {
+    public void setPC(int pc) {
         this.pc = pc;
     }
 
@@ -557,7 +557,7 @@ public class State implements IORegisterConstants {
     }
 
     /**
-     * The <code>readInstr()</code> can be used to retrieve a reference to the
+     * The <code>getInstr()</code> can be used to retrieve a reference to the
      * <code>Instr</code> object representing the instruction at the specified program
      * address. Care should be taken that the address in program memory specified does
      * not contain data. This is because Avrora does have a functioning disassembler
@@ -567,12 +567,12 @@ public class State implements IORegisterConstants {
      * @return a reference to the <code>Instr</code> object representing the instruction
      * at that address in the program
      */
-    public Instr readInstr(int address) {
+    public Instr getInstr(int address) {
         return program[address].asInstr(address);
     }
 
     /**
-     * The <code>writeInstr()</code> method is used internally to update the instructions
+     * The <code>setInstr()</code> method is used internally to update the instructions
      * of the program by the simulator. This is generally for the purpose of replacing
      * an instruction with a <code>Simulator.ProbedInstr</code> instance that will fire
      * probes when it is visited. It is generally not recommended for clients of the
@@ -581,21 +581,21 @@ public class State implements IORegisterConstants {
      * @param i the instruction to write
      * @param address the byte address in the program to write the instruction to
      */
-    public void writeInstr(Instr i, int address) {
+    public void setInstr(Instr i, int address) {
         program[address] = i;
         for (int cntr = 1; cntr < i.getSize(); cntr++)
             program[address + cntr] = Elem.INSTR_MIDDLE;
     }
 
     /**
-     * The <code>readDataByte()</code> method reads a byte value from the data memory
+     * The <code>getDataByte()</code> method reads a byte value from the data memory
      * (SRAM) at the specified address.
      * @param address the byte address to read
      * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid
      * memory range
      * @return the value of the data memory at the specified address
      */
-    public byte readDataByte(int address) {
+    public byte getDataByte(int address) {
         if ( address < NUM_REGS ) return regs[address];
         if ( address < sram_start) return ioregs[address - NUM_REGS].read();
         try {
@@ -628,7 +628,7 @@ public class State implements IORegisterConstants {
     }
 
     /**
-     * The <code>readProgramByte()</code> method reads a byte value from
+     * The <code>getProgramByte()</code> method reads a byte value from
      * the program (Flash) memory. The flash memory generally stores read-only
      * values and the instructions of the program. Care should be taken that
      * the program memory at the specified address does not contain an instruction.
@@ -641,19 +641,19 @@ public class State implements IORegisterConstants {
      * program memory range
      * @return the byte value of the program memory at the specified address
      */
-    public byte readProgramByte(int address) {
+    public byte getProgramByte(int address) {
         return program[address].asData(address).value;
     }
 
     /**
-     * The <code>writeDataByte()</code> method writes a value to the data
+     * The <code>setDataByte()</code> method writes a value to the data
      * memory (SRAM) of the state. This is generally meant for the simulator, related
      * classes, and device implementations to use, but could also be used by
      * debuggers and other tools.
      * @param val the value to write
      * @param address the byte address at which to write the value
      */
-    public void writeDataByte(byte val, int address) {
+    public void setDataByte(byte val, int address) {
         if ( address < NUM_REGS ) regs[address] = val;
         else if ( address < sram_start) ioregs[address - NUM_REGS].write(val);
         else try {
@@ -665,31 +665,31 @@ public class State implements IORegisterConstants {
     }
 
     /**
-     * The <code>readIORegister()</code> method reads the value of an IO register.
+     * The <code>getIORegisterByte()</code> method reads the value of an IO register.
      * Invocation of this method causes an invocatiobn of the <code>.read()</code>
      * method on the corresponding internal <code>IOReg</code> object, and its value
      * returned.
      * @param ioreg the IO register number
      * @return the value of the IO register
      */
-    public byte readIORegister(int ioreg) {
+    public byte getIORegisterByte(int ioreg) {
         return ioregs[ioreg].read();
     }
 
     /**
-     * The <code>setIORegister</code> method installs the specified <code>IOReg</code>
+     * The <code>setIOReg</code> method installs the specified <code>IOReg</code>
      * object to the specified IO register number. This method is generally only used
      * in the simulator and in device implementations to set up the state correctly
      * during initialization.
      * @param ioreg the IO register number
      * @param reg the <code>IOReg<code> object to install
      */
-    public void setIORegister(int ioreg, IOReg reg) {
+    public void setIOReg(int ioreg, IOReg reg) {
         ioregs[ioreg] = reg;
     }
 
     /**
-     * The <code>getIORegister()</code> method is used to retrieve a reference to
+     * The <code>getIOReg()</code> method is used to retrieve a reference to
      * the actual <code>IOReg</code> instance stored internally in the state. This is
      * generally only used in the simulator and device implementations, and clients
      * should probably not call this memory directly.
@@ -697,12 +697,12 @@ public class State implements IORegisterConstants {
      * @param ioreg the IO register number to retrieve
      * @return a reference to the <code>IOReg</code> instance of the specified IO register
      */
-    public IOReg getIORegister(int ioreg) {
+    public IOReg getIOReg(int ioreg) {
         return ioregs[ioreg];
     }
 
     /**
-     * The <code>writeIORegister()</code> method writes a value to the specified
+     * The <code>setIORegisterByte()</code> method writes a value to the specified
      * IO register. This is generally only used internally to the simulator and
      * device implementations, and client interfaces should probably not call
      * this method.
@@ -710,7 +710,7 @@ public class State implements IORegisterConstants {
      * @param val the value to write to the IO register
      * @param ioreg the IO register number to which to write the value
      */
-    public void writeIORegister(byte val, int ioreg) {
+    public void setIORegisterByte(byte val, int ioreg) {
         ioregs[ioreg].write(val);
     }
 
@@ -766,8 +766,8 @@ public class State implements IORegisterConstants {
     protected boolean pc_delta;
 
     public void dump() {
-        int sp = readSP();
-        byte sreg = readSREG();
+        int sp = getSP();
+        byte sreg = getSREG();
 
         ColorTerminal.print("    ");
         printPair("PC", pc, pc_delta);
@@ -799,7 +799,7 @@ public class State implements IORegisterConstants {
         if ( max > sram.length + sram_start ) max = sram.length + sram_start;
 
         for (int cntr = sp; cntr < max; cntr++) {
-            ColorTerminal.print(VPCBase.toPaddedUpperHex(readDataByte(cntr), 2) + " ");
+            ColorTerminal.print(VPCBase.toPaddedUpperHex(getDataByte(cntr), 2) + " ");
         }
 
         ColorTerminal.nextln();
@@ -811,7 +811,7 @@ public class State implements IORegisterConstants {
             ColorTerminal.printBrightGreen("    " + VPCBase.toPaddedUpperHex(row >> 4, 3) + "x");
             ColorTerminal.print(": ");
             for (int cntr = 0; cntr < 16; cntr++)
-                ColorTerminal.print(VPCBase.toPaddedUpperHex(readDataByte(row + cntr), 2) + " ");
+                ColorTerminal.print(VPCBase.toPaddedUpperHex(getDataByte(row + cntr), 2) + " ");
             ColorTerminal.nextln();
         }
     }
@@ -823,8 +823,8 @@ public class State implements IORegisterConstants {
     private void printWordRegister(Register r) {
         Register Ra = r;
         Register Rb = r.nextRegister();
-        byte low = readRegister(Ra);
-        byte high = readRegister(Rb);
+        byte low = getRegisterByte(Ra);
+        byte high = getRegisterByte(Rb);
         boolean modified = reg_delta[Ra.getNumber()] || reg_delta[Rb.getNumber()];
         printPair(r.getName().toUpperCase(), Arithmetic.uword(low, high), modified);
     }

@@ -23,53 +23,67 @@ public class Analyzer {
     AbstractInterpreter interpreter;
     Frontier frontier;
 
+    public static class CallSiteList {
+        public final ImmutableState state;
+        public final CallSiteList next;
+
+        CallSiteList(ImmutableState s, CallSiteList n) {
+            state = s;
+            next = n;
+        }
+    }
 
     public static class FrontierState {
-        public AbstractState state;
+        public ImmutableState state;
+        public CallSiteList callsites;
         protected FrontierState next;
     }
 
+    /**
+     * The <code>Frontier</code> class is a collection of states that
+     * are on the edge of the explored state space. They are immutable and
+     * have had their incoming edges computed thus far, but their outgoing
+     * edges have not yet been computed. This is a worklist which the
+     * algorithm continually pulls states off of.
+     */
     protected static class Frontier {
 
         FrontierState head;
-        FrontierState free;
 
-        protected void add(AbstractState s) {
-            FrontierState link;
-
-            if (free != null) {
-                link = free;
-                free = free.next;
-            } else {
-                link = new FrontierState();
-            }
+        protected void add(ImmutableState s) {
+            FrontierState link = new FrontierState();
 
             link.state = s;
+            link.callsites = null;
             link.next = head;
             head = link;
+        }
+
+        protected void add(FrontierState s) {
+            s.next = head;
+            head = s;
         }
 
         protected boolean isEmpty() {
             return head != null;
         }
 
-        protected AbstractState choose() {
+        protected FrontierState choose() {
             if (head == null) return null;
-            FrontierState newhead = head.next;
-            head.next = free;
-            free = head;
-            head = newhead;
-            return free.state;
+            FrontierState res = head;
+            head = head.next;
+            res.next = null;
+            return res;
         }
 
-        protected FrontierState getFrontierState(AbstractState s) {
+        protected FrontierState getFrontierState(MutableState s) {
             for ( FrontierState pos = head; pos != null; pos = pos.next ) {
                 if ( pos.state.equals(s) ) return pos;
             }
             return null;
         }
 
-        protected boolean contains(AbstractState s) {
+        protected boolean contains(MutableState s) {
             return getFrontierState(s) != null;
         }
     }
@@ -86,10 +100,11 @@ public class Analyzer {
      * with an initial default state serves as the first state to start exploring.
      */
     public void run() {
-        frontier.add(new AbstractState());
+        MutableState s = new MutableState();
+        frontier.add(space.getImmutableStateFor(s));
 
         while (!frontier.isEmpty()) {
-            AbstractState state = frontier.choose();
+            FrontierState state = frontier.choose();
             interpreter.nextState(state);
         }
     }
@@ -116,7 +131,7 @@ public class Analyzer {
          * @param s the current abstract state
          * @param target_address the concrete target address of the call
          */
-        public void call(AbstractState s, int target_address) {
+        public void call(MutableState s, int target_address) {
         }
 
         /**
@@ -128,7 +143,7 @@ public class Analyzer {
          *
          * @param s the current abstract state
          */
-        public void ret(AbstractState s) {
+        public void ret(MutableState s) {
         }
 
         /**
@@ -136,7 +151,7 @@ public class Analyzer {
          * encounters a return from an interrupt within the program.
          * @param s the current abstract state
          */
-        public void reti(AbstractState s) {
+        public void reti(MutableState s) {
         }
 
         /**
@@ -148,7 +163,7 @@ public class Analyzer {
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi the (abstract) high byte of the address
          */
-        public void indirectCall(AbstractState s, char addr_low, char addr_hi) {
+        public void indirectCall(MutableState s, char addr_low, char addr_hi) {
         }
 
         /**
@@ -160,7 +175,7 @@ public class Analyzer {
          * @param addr_low the (abstract) low byte of the address
          * @param addr_hi the (abstract) high byte of the address
          */
-        public void indirectJump(AbstractState s, char addr_low, char addr_hi) {
+        public void indirectJump(MutableState s, char addr_low, char addr_hi) {
         }
 
         /**
@@ -173,7 +188,7 @@ public class Analyzer {
          * @param addr_hi the (abstract) high byte of the address
          * @param ext the (abstract) extended part of the address
          */
-        public void indirectCall(AbstractState s, char addr_low, char addr_hi, char ext) {
+        public void indirectCall(MutableState s, char addr_low, char addr_hi, char ext) {
         }
 
         /**
@@ -186,7 +201,7 @@ public class Analyzer {
          * @param addr_hi the (abstract) high byte of the address
          * @param ext the (abstract) extended part of the address
          */
-        public void indirectJump(AbstractState s, char addr_low, char addr_hi, char ext) {
+        public void indirectJump(MutableState s, char addr_low, char addr_hi, char ext) {
         }
 
         /**
@@ -196,7 +211,7 @@ public class Analyzer {
          * @param oldState the old state
          * @param newState the new state created
          */
-        public void pushState(AbstractState oldState, AbstractState newState) {
+        public void pushState(FrontierState oldState, MutableState newState) {
         }
 
         /**
@@ -206,7 +221,7 @@ public class Analyzer {
          * @param s the current abstract state
          * @param val the abstract value to push onto the stack
          */
-        public void push(AbstractState s, char val) {
+        public void push(MutableState s, char val) {
         }
 
         /**
@@ -217,7 +232,7 @@ public class Analyzer {
          * @param s the current abstract state
          * @return the abstract value popped from the stack
          */
-        public char pop(AbstractState s) {
+        public char pop(MutableState s) {
             return AbstractArithmetic.UNKNOWN;
         }
 

@@ -155,8 +155,8 @@ public class ATMega128L implements AbstractProcessor {
             interrupts[8] = new MaskableInterrupt(8, EIMSK, EIFR, 6, true);
             interrupts[9] = new MaskableInterrupt(9, EIMSK, EIFR, 7, true);
 
-            ns.setIORegister(EIMSK, EIMSK_reg = new EIMSK_class());
-            ns.setIORegister(EIFR, EIFR_reg = new EIFR_class());
+            ns.setIOReg(EIMSK, EIMSK_reg = new EIMSK_class());
+            ns.setIOReg(EIFR, EIFR_reg = new EIFR_class());
         }
 
     }

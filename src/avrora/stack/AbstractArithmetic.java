@@ -253,8 +253,7 @@ public class AbstractArithmetic {
      *         <code>AbstractArithmetic.UNKNOWN</code> otherwise
      */
     public static char getBit(char av1, int bit) {
-        int mask = TRUE << bit;
-        return (char)((av1 & mask) >> bit);
+        return (char)((av1 >> bit) & TRUE);
     }
 
     /**
