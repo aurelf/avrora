@@ -72,7 +72,7 @@ public class SimulateAction extends SimAction {
             "This option is used in the simulate action. It allows the user to " +
             "insert a series of breakpoints in the program from the command line. " +
             "The address of the breakpoint can be given in hexadecimal or as a label " +
-            "within the program. Hexadecimal constants are denoted by a leading '$'.");
+            "within the program. Hexadecimal constants are denoted by a leading \"0x\".");
     public final Option.Bool TIME = newOption("time", true,
             "This option is used in the simulate action. It will cause the simulator " +
             "to report the time used in executing the simulation. When combined with " +

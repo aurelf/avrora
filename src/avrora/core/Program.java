@@ -431,7 +431,7 @@ public class Program {
     }
 
     public Location getProgramLocation(String s) {
-        if (s.startsWith("$"))
+        if (s.startsWith("0x") | s.startsWith("0X"))
             return new ProgramLabel(null, StringUtil.evaluateIntegerLiteral(s));
         Location l = getLabel(s);
         if (l != null && !l.isProgramSegment()) return null;
