@@ -34,6 +34,7 @@ package avrora.core.isdl;
 
 import avrora.core.isdl.ast.Expr;
 import avrora.core.isdl.parser.Token;
+import avrora.util.StringUtil;
 
 import java.util.Iterator;
 import java.util.List;
@@ -48,15 +49,22 @@ public class EncodingDecl {
 
     public final Token name;
 
+    protected final int prio;
+
     public final List fields;
 
     protected int bitWidth = -1;
 
     protected Cond condition;
 
-    public EncodingDecl(Token n, List f) {
+    public EncodingDecl(Token n, Token pr, List f) {
         name = n;
         fields = f;
+        if ( pr == null ) {
+            prio = 0;
+        } else {
+            prio = StringUtil.evaluateIntegerLiteral(pr.image);
+        }
     }
 
     public static class Cond {
@@ -84,8 +92,8 @@ public class EncodingDecl {
         public final List subst;
         public EncodingDecl parent;
 
-        public Derived(Token n, Token p, List s) {
-            super(n, null);
+        public Derived(Token n, Token pr, Token p, List s) {
+            super(n, pr, null);
             pname = p;
             subst = s;
         }
@@ -128,5 +136,9 @@ public class EncodingDecl {
 
     public boolean isConditional() {
         return condition != null;
+    }
+
+    public int getPriority() {
+        return prio;
     }
 }

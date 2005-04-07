@@ -20,51 +20,52 @@ public interface ISDLParserConstants {
   int OPERAND = 23;
   int WHERE = 24;
   int REGISTER = 25;
-  int ENCODING = 26;
-  int EXECUTE = 27;
-  int LOCAL = 28;
-  int IF = 29;
-  int ELSE = 30;
-  int AND = 31;
-  int OR = 32;
-  int XOR = 33;
-  int SUBROUTINE = 34;
-  int INLINE = 35;
-  int EXTERNAL = 36;
-  int RETURN = 37;
-  int BOOLEAN_LITERAL = 38;
-  int CYCLES = 39;
-  int PSEUDO = 40;
-  int WHEN = 41;
-  int SYNTAX = 42;
-  int LBRACKET = 43;
-  int RBRACKET = 44;
-  int EQUALS = 45;
-  int COMMA = 46;
-  int LPAREN = 47;
-  int RPAREN = 48;
-  int SEMI = 49;
-  int SHIFTLEFT = 50;
-  int SHIFTRIGHT = 51;
-  int ADD = 52;
-  int SUB = 53;
-  int MUL = 54;
-  int DIV = 55;
-  int B_AND = 56;
-  int B_OR = 57;
-  int B_XOR = 58;
-  int NOT = 59;
-  int B_COMP = 60;
-  int EQUAL = 61;
-  int NOTEQUAL = 62;
-  int LESS = 63;
-  int LESSEQ = 64;
-  int GREATER = 65;
-  int GREATEREQ = 66;
-  int DOLLAR = 67;
-  int IDENTIFIER = 68;
-  int LETTER = 69;
-  int DIGIT = 70;
+  int PRIORITY = 26;
+  int ENCODING = 27;
+  int EXECUTE = 28;
+  int LOCAL = 29;
+  int IF = 30;
+  int ELSE = 31;
+  int AND = 32;
+  int OR = 33;
+  int XOR = 34;
+  int SUBROUTINE = 35;
+  int INLINE = 36;
+  int EXTERNAL = 37;
+  int RETURN = 38;
+  int BOOLEAN_LITERAL = 39;
+  int CYCLES = 40;
+  int PSEUDO = 41;
+  int WHEN = 42;
+  int SYNTAX = 43;
+  int LBRACKET = 44;
+  int RBRACKET = 45;
+  int EQUALS = 46;
+  int COMMA = 47;
+  int LPAREN = 48;
+  int RPAREN = 49;
+  int SEMI = 50;
+  int SHIFTLEFT = 51;
+  int SHIFTRIGHT = 52;
+  int ADD = 53;
+  int SUB = 54;
+  int MUL = 55;
+  int DIV = 56;
+  int B_AND = 57;
+  int B_OR = 58;
+  int B_XOR = 59;
+  int NOT = 60;
+  int B_COMP = 61;
+  int EQUAL = 62;
+  int NOTEQUAL = 63;
+  int LESS = 64;
+  int LESSEQ = 65;
+  int GREATER = 66;
+  int GREATEREQ = 67;
+  int DOLLAR = 68;
+  int IDENTIFIER = 69;
+  int LETTER = 70;
+  int DIGIT = 71;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -98,6 +99,7 @@ public interface ISDLParserConstants {
     "\"operand\"",
     "\"where\"",
     "\"register\"",
+    "\"priority\"",
     "\"encoding\"",
     "\"execute\"",
     "\"local\"",

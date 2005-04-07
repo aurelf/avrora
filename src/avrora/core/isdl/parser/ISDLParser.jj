@@ -171,6 +171,7 @@ TOKEN :
   | < OPERAND : "operand" >
   | < WHERE : "where" >
   | < REGISTER : "register" >
+  | < PRIORITY : "priority" >
   | < ENCODING : "encoding" >
   | < EXECUTE : "execute" >
   | < LOCAL : "local" >
@@ -354,20 +355,20 @@ void RegisterDecl(Architecture a) : {}
     "register" <IDENTIFIER> "=" <INTEGER_LITERAL> ";"
 }
 
-EncodingDecl Format(Token n) : { EncodingDecl d; }
+EncodingDecl Format(Token n) : { Token pr = null; EncodingDecl d; }
 {
-   (d = DerivedFormat(n) | d = NewFormat(n)) { return d; }
+   ["priority" pr = <INTEGER_LITERAL>] (d = DerivedFormat(pr, n) | d = NewFormat(pr, n)) { return d; }
 }
 
-EncodingDecl DerivedFormat(Token n) : { Token p; EncodingDecl d; List l = new LinkedList(); }
+EncodingDecl DerivedFormat(Token pr, Token n) : { Token p; EncodingDecl d; List l = new LinkedList(); }
 {
     p = <IDENTIFIER> ["where" l = SubstitutionList()]
-    { return new EncodingDecl.Derived(n, p, l); }
+    { return new EncodingDecl.Derived(n, pr, p, l); }
 }
 
-EncodingDecl NewFormat(Token n) : { List l; }
+EncodingDecl NewFormat(Token pr, Token n) : { List l; }
 {
-    "{" l = ExprList() "}" { return new EncodingDecl(n, l); }
+    "{" l = ExprList() "}" { return new EncodingDecl(n, pr, l); }
 }
 
 List SubstitutionList() : { List l = new LinkedList(); EncodingDecl.Substitution s; }

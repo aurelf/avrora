@@ -84,6 +84,7 @@ public class DisassemblerTestHarness implements TestHarness {
         }
 
         public TestResult match(Throwable t) {
+            
             for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) ) {
                 Instr i = program.readInstr(cntr);
                 if ( i == null ) continue;

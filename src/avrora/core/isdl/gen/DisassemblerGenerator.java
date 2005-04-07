@@ -271,7 +271,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
     }
 
-    class EncodingSet {
+    class DecodingTree {
         HashSet encodings = new HashSet();
         String methodname;
         int left_bit;
@@ -376,9 +376,9 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 // add the instruction to the encoding set corresponding to the value of
                 // the bits in this range
                 Integer iv = new Integer(value);
-                EncodingSet es = (EncodingSet)children.get(iv);
+                DecodingTree es = (DecodingTree)children.get(iv);
                 if ( es == null ) {
-                    es = new EncodingSet();
+                    es = new DecodingTree();
                     es.depth = depth+1;
                     children.put(iv, es);
                 }
@@ -398,7 +398,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         void recurse() {
             Iterator i = children.values().iterator();
             while ( i.hasNext() ) {
-                EncodingSet es = (EncodingSet)i.next();
+                DecodingTree es = (DecodingTree)i.next();
                 es.compute();
             }
         }
@@ -407,7 +407,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             // recursively generate code for each of the children
             Iterator i = children.values().iterator();
             while ( i.hasNext() ) {
-                EncodingSet es = (EncodingSet)i.next();
+                DecodingTree es = (DecodingTree)i.next();
                 es.generateCode();
             }
 
@@ -448,12 +448,12 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 Integer value = (Integer)i.next();
                 int val = value.intValue();
                 printer.print("case 0x"+StringUtil.toHex(val, 5)+": ");
-                EncodingSet child = (EncodingSet)children.get(value);
+                DecodingTree child = (DecodingTree)children.get(value);
                 printer.println("return "+child.methodname+"(word1);");
             }
 
             printer.println("default:");
-            invalidInstr();
+            returnNull();
             printer.endblock();
         }
 
@@ -491,7 +491,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             if ( check ) {
                 // generate a check on the left over bits to verify they match this encoding.
                 printer.startblock("if ( (word1 & 0x"+StringUtil.toHex(mask, 5)+") != 0x"+StringUtil.toHex(value, 5)+" )");
-                invalidInstr();
+                returnNull();
                 printer.endblock();
             }
 
@@ -575,26 +575,43 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     int methods;
 
-    EncodingSet rootSet;
+    DecodingTree[] rootSets = new DecodingTree[0];
+
     HashSet pseudo;
 
     Architecture architecture;
 
     public DisassemblerGenerator(Architecture a, Printer p) {
-        rootSet = new EncodingSet();
         pseudo = new HashSet();
-        rootSet.methodname = "decode_root";
         architecture = a;
         printer = p;
     }
 
     public void generate() {
         architecture.accept(this);
-        rootSet.compute();
         printer.indent();
         generateDecodeTables();
-        rootSet.generateCode();
+        for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
+            DecodingTree es = rootSets[cntr];
+            if ( es == null ) continue;
+            es.compute();
+            es.generateCode();
+        }
+        generateRoot();
         printer.unindent();
+    }
+
+    private void generateRoot() {
+        printer.startblock("Instr decode_root(int word1) throws InvalidInstruction ");
+        printer.println("Instr i = null;");
+        for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
+            DecodingTree es = rootSets[cntr];
+            if ( es == null ) continue;
+            printer.println("i = decode_root"+cntr+"(word1);");
+            printer.println("if ( i != null ) return i;");
+        }
+        printer.println("throw new InvalidInstruction(word1, pc);");
+        printer.endblock();
     }
 
     public void visit(InstrDecl d) {
@@ -602,17 +619,40 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         Iterator i = d.encodingList.iterator();
         for ( int cntr = 0; i.hasNext(); cntr++) {
             EncodingDecl ed = (EncodingDecl)i.next();
+            int priority = ed.getPriority();
             EncodingInfo ei = new EncodingInfo(d, cntr, ed);
             if ( d.pseudo ) {
                 pseudo.add(ei);
             } else {
-                rootSet.encodings.add(ei);
+                // grow the root set array if necessary
+                if ( priority >= rootSets.length ) {
+                    DecodingTree[] nroots = new DecodingTree[priority+1];
+                    System.arraycopy(rootSets, 0, nroots, 0, rootSets.length);
+                    rootSets = nroots;
+                }
+
+                DecodingTree dt = getRoot(priority);
+                dt.encodings.add(ei);
             }
         }
     }
 
+    private DecodingTree getRoot(int priority) {
+        DecodingTree nset = rootSets[priority];
+        if ( nset == null ) {
+            nset = new DecodingTree();
+            nset.methodname = "decode_root"+priority;
+            rootSets[priority] = nset;
+        }
+        return nset;
+    }
+
     private void invalidInstr() {
         printer.println("throw new InvalidInstruction(word1, pc);");
+    }
+
+    private void returnNull() {
+        printer.println("return null;");
     }
 
     private void generateDecodeTables() {
