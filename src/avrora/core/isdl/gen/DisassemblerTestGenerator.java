@@ -10,6 +10,7 @@ import avrora.Avrora;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     File directory;
     String dname;
     Printer printer;
+    HashMap operandGenerators;
 
     public DisassemblerTestGenerator(Architecture a, File dir) {
         architecture = a;
@@ -31,6 +33,12 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             Avrora.userError("must specify directory for testcases");
         dname = dir.getAbsolutePath();
         directory = dir;
+        operandGenerators = new HashMap();
+        operandGenerators.put("immediate", new ImmediateGenerator());
+        operandGenerators.put("address", new ImmediateGenerator());
+        operandGenerators.put("symbol", new SymbolGenerator());
+        operandGenerators.put("relative", new RelativeGenerator());
+        operandGenerators.put("word", new WordGenerator());
     }
 
     public void generate() {
@@ -45,23 +53,103 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
         }
     }
 
-    abstract class SourceRep {
-        abstract int sourceRep(int pc, int bits);
+    abstract class OperandGenerator {
+        abstract void generate(Generator g, InstrDecl decl, OperandDecl od, int op, String[] rep);
+        abstract String getSomeMember(OperandDecl decl);
     }
 
-    class IntegerRep extends SourceRep {
-        int sourceRep(int pc, int bits) { return bits; }
+    class SymbolGenerator extends OperandGenerator {
+        void generate(Generator g, InstrDecl decl, OperandDecl od, int op, String[] rep) {
+            // generate a test case for each possible register value of this operand,
+            // substituting representative members for the rest of the operands
+            OperandDecl.RegisterSet r = (OperandDecl.RegisterSet)od;
+            Iterator ri = r.members.iterator();
+            while ( ri.hasNext() ) {
+                OperandDecl.RegisterEncoding re = (OperandDecl.RegisterEncoding)ri.next();
+                g.output(op, re.name.toString(), rep);
+            }
+        }
+        String getSomeMember(OperandDecl decl) {
+            OperandDecl.RegisterSet r = (OperandDecl.RegisterSet)decl;
+            OperandDecl.RegisterEncoding enc = (OperandDecl.RegisterEncoding)r.members.get(0);
+            return enc.name.toString();
+        }
     }
 
-    class WordRep extends SourceRep {
-        int sourceRep(int pc, int bits) { return bits * 2; }
+    class ImmediateGenerator extends OperandGenerator {
+        void generate(Generator g, InstrDecl decl, OperandDecl od, int op, String[] rep) {
+            OperandDecl.Immediate imm = (OperandDecl.Immediate)od;
+            HashSet hs = new HashSet();
+            outputImm(g, imm.high,  imm, hs, op,rep);
+            outputImm(g, imm.low,  imm, hs, op,rep);
+            outputImmediate(g, 0xffffffff, hs, imm, op, rep);
+            outputImmediate(g, 0xff00ff00, hs, imm, op, rep);
+            outputImmediate(g, 0xf0f0f0f0, hs, imm, op, rep);
+            outputImmediate(g, 0xcccccccc, hs, imm, op, rep);
+            outputImmediate(g, 0xaaaaaaaa, hs, imm, op, rep);
+        }
+
+        protected void outputImmediate(Generator g, int value_l, HashSet hs, OperandDecl.Immediate imm, int cntr, String[] rep) {
+            int value_h = value_l;
+            for ( int bit = 0; bit < 32; bit++) {
+                outputImm(g, value_l, imm, hs, cntr, rep);
+                outputImm(g, value_h, imm, hs, cntr, rep);
+                value_l = value_l >>> 1;
+                value_h = value_h << 1;
+            }
+        }
+
+        protected void outputImm(Generator g, int val, OperandDecl.Immediate imm, HashSet hs, int cntr, String[] rep) {
+            if ( val <= imm.high && val >= imm.low ) {
+                String value = "0x"+StringUtil.toHex(val,2);
+                if ( !hs.contains(value)) {
+                    g.output(cntr, value, rep);
+                    hs.add(value);
+                }
+            }
+        }
+
+        String getSomeMember(OperandDecl decl) {
+            OperandDecl.Immediate imm = (OperandDecl.Immediate)decl;
+            // return the average value
+            return "0x"+StringUtil.toHex((imm.low+((imm.high-imm.low)/2)), 2);
+        }
     }
 
-    class RelativeRep extends SourceRep {
-        int sourceRep(int pc, int bits) {
-            int address = pc+2 + bits*2;
-            if ( address < 0 ) address = 0;
-            return address;
+    class RelativeGenerator extends OperandGenerator {
+        void generate(Generator g, InstrDecl decl, OperandDecl od, int op, String[] rep) {
+            OperandDecl.Immediate imm = (OperandDecl.Immediate)od;
+            int pc = 0;
+            // for relative, we will dumbly generate all possibilities.
+            for ( int cntr = imm.high; cntr >= imm.low; cntr-- ) {
+                g.output(op, ".+"+cntr*2, rep);
+                pc += decl.getEncodingSize() / 8;
+            }
+//            throw Avrora.unimplemented();
+        }
+
+        String getSomeMember(OperandDecl decl) {
+            return "0x00";
+        }
+    }
+
+    class WordGenerator extends ImmediateGenerator {
+        protected void outputImm(Generator g, int val, OperandDecl.Immediate imm, HashSet hs, int cntr, String[] rep) {
+            if ( val <= imm.high && val >= imm.low ) {
+                val = val * 2;
+                String value = "0x"+StringUtil.toHex(val,2);
+                if ( !hs.contains(value)) {
+                    g.output(cntr, value, rep);
+                    hs.add(value);
+                }
+            }
+        }
+
+        String getSomeMember(OperandDecl decl) {
+            OperandDecl.Immediate imm = (OperandDecl.Immediate)decl;
+            // return the average value
+            int avg = (imm.low+((imm.high-imm.low)/2));
+            return "0x"+StringUtil.toHex(avg * 2, 2);
         }
     }
 
@@ -88,51 +176,8 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             for ( int cntr = 0; i.hasNext(); cntr++ ) {
                 CodeRegion.Operand op = (CodeRegion.Operand)i.next();
                 OperandDecl decl = op.getOperandDecl();
-                if ( decl.isRegister() ) {
-                    // generate a test case for each possible register value of this operand,
-                    // substituting representative members for the rest of the operands
-                    OperandDecl.RegisterSet r = (OperandDecl.RegisterSet)decl;
-                    Iterator ri = r.members.iterator();
-                    while ( ri.hasNext() ) {
-                        OperandDecl.RegisterEncoding re = (OperandDecl.RegisterEncoding)ri.next();
-                        output(cntr, re.name.toString(), rep);
-                    }
-                } else {
-                    // generate a test case for several different values of the immediate of this operand,
-                    // substituting representative members for the rest of the operands
-                    // this is done by trying several bit patterns shifted left and right, in an attempt
-                    // to cover all bits of the operand on and off (while detecting bit reversals)
-                    OperandDecl.Immediate imm = (OperandDecl.Immediate)decl;
-                    HashSet hs = new HashSet();
-                    outputImm(imm.high,  imm, hs, name, cntr,rep);
-                    outputImm(imm.low,  imm, hs, name, cntr,rep);
-                    boolean word = imm.kind.image.equals("word");
-                    outputImmediate(0xffffffff, hs, imm, name, cntr, rep, word);
-                    outputImmediate(0xff00ff00, hs, imm, name, cntr, rep, word);
-                    outputImmediate(0xf0f0f0f0, hs, imm, name, cntr, rep, word);
-                    outputImmediate(0xcccccccc, hs, imm, name, cntr, rep, word);
-                    outputImmediate(0xaaaaaaaa, hs, imm, name, cntr, rep, word);
-                }
-            }
-        }
-
-        private void outputImmediate(int value_l, HashSet hs, OperandDecl.Immediate imm, String name, int cntr, String[] rep, boolean word) {
-            int value_h = value_l;
-            for ( int bit = 0; bit < 32; bit++) {
-                outputImm(word ? value_l * 2 : value_l, imm, hs, name, cntr, rep);
-                outputImm(word ? value_h * 2 : value_h, imm, hs, name, cntr, rep);
-                value_l = value_l >>> 1;
-                value_h = value_h << 1;
-            }
-        }
-
-        private void outputImm(int value_l, OperandDecl.Immediate imm, HashSet hs, String name, int cntr, String[] rep) {
-            if ( value_l <= imm.high && value_l >= imm.low ) {
-                String value = "0x"+StringUtil.toHex(value_l,2);
-                if ( !hs.contains(value)) {
-                    output(cntr, value, rep);
-                    hs.add(value);
-                }
+                OperandGenerator g = getOperandGenerator(decl);
+                g.generate(this, this.decl, decl, cntr, rep);
             }
         }
 
@@ -205,8 +250,17 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
         while ( i.hasNext() ) {
             CodeRegion.Operand op = (CodeRegion.Operand)i.next();
             OperandDecl decl = op.getOperandDecl();
-            rep[cntr++] = decl.getSomeMember();
+            OperandGenerator g = getOperandGenerator(decl);
+            rep[cntr++] = g.getSomeMember(decl);
         }
         return rep;
     }
+
+    private OperandGenerator getOperandGenerator(OperandDecl decl) {
+        OperandGenerator g = (OperandGenerator)operandGenerators.get(decl.kind.image);
+        if ( g == null )
+            throw Avrora.failure("cannot generate representative values for operand of type "+decl.kind.image);
+        return g;
+    }
+
 }

@@ -19,6 +19,8 @@
     2  radio  Delivery over SPI + transmission timing validation
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
 
+    2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
+    1   isdl  Fix negative branch offsets in disassembler           (1.5.53)
     1   main  Fixed default foreground color                        (1.5.45)
     1  probe  NullPointerException inserting probe on invalid instr (1.5.43)
     1  probe  Probes inserted from within watches                   (1.5.43)
@@ -29,7 +31,7 @@
  Comp Module Item                                      Completion (Version)
 -----------------------------------------------------------------------------
   2-3  input  ELF format reader
-    4   isdl  Generate assembler and disassembler
+    3   isdl  Generate assembler
     4   isdl  Generate Atmel parser
     2   isdl  Generate CFG builder
     2  probe  Introduce device instrumentation points
@@ -44,6 +46,8 @@
     1   util  Implement Columnifier class
     1  probe  Interrupt monitor
 
+    4   isdl  Generate Disassembler                                 (1.5.51)
+    2   isdl  Generate tests for Disassembler                       (1.5.50)
     1  probe  implemented simple call / return monitor              (1.5.42)
     1  probe  implemented simple command line probing of IORegs     (1.5.40)
     2  probe  Implement probing for IO registers                    (1.5.40)

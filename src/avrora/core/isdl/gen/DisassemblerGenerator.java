@@ -565,8 +565,10 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             else {
                 // this operand is not a register
                 OperandDecl od = o.getOperandDecl();
-                if ( od.kind.image.equals("relative") )
-                    return "relative("+o.name.image+")"; // this operand is relative to the PC address (and word aligned)
+                if ( od.kind.image.equals("relative") ) {
+                    int size = od.bitSize - 1;
+                    return "relative("+o.name.image+", "+size+")"; // this operand is relative to the PC address (and word aligned)
+                }
                 else
                     return o.name.image;
             }

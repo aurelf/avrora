@@ -363,7 +363,7 @@ architecture avr {
     };
 
     // BRCS is equivalen to the BRLO instruction, thus this one is a pseudo instruction
-    pseudo instruction "brcs" target: SREL {
+    instruction "brcs" target: SREL {
         encoding = BRSET where { bit = 0b000 };
         cycles = 1;
         execute = {
@@ -427,7 +427,7 @@ architecture avr {
         };
     };
 
-    instruction "brlo" target: SREL {
+    pseudo instruction "brlo" target: SREL {
         encoding = BRSET where { bit = 0b000 };
         cycles = 1;
         execute = {

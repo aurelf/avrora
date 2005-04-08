@@ -92,8 +92,9 @@ public class Disassembler {
         return code[word*2] & 0xff;
     }
 
-    private int relative(int address) {
-        return address*2 + pc + 2;
+    private int relative(int address, int signbit) {
+        address = Arithmetic.signExtend(address, signbit);
+        return address + pc + 1;
     }
 
 //--BEGIN DISASSEM GENERATOR--
@@ -240,7 +241,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRPL(pc, relative(target));
+        return new Instr.BRPL(pc, relative(target, 6));
     }
     private Instr decode_BRGE_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -248,7 +249,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRGE(pc, relative(target));
+        return new Instr.BRGE(pc, relative(target, 6));
     }
     private Instr decode_BRTC_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -256,7 +257,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRTC(pc, relative(target));
+        return new Instr.BRTC(pc, relative(target, 6));
     }
     private Instr decode_BRNE_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -264,7 +265,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRNE(pc, relative(target));
+        return new Instr.BRNE(pc, relative(target, 6));
     }
     private Instr decode_BRVC_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -272,7 +273,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRVC(pc, relative(target));
+        return new Instr.BRVC(pc, relative(target, 6));
     }
     private Instr decode_BRID_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -280,7 +281,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRID(pc, relative(target));
+        return new Instr.BRID(pc, relative(target, 6));
     }
     private Instr decode_BRHC_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -288,7 +289,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRHC(pc, relative(target));
+        return new Instr.BRHC(pc, relative(target, 6));
     }
     private Instr decode_BRCC_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -296,7 +297,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRCC(pc, relative(target));
+        return new Instr.BRCC(pc, relative(target, 6));
     }
     private Instr decode_1(int word1) throws InvalidInstruction {
         // get value of bits logical[13:15]
@@ -358,7 +359,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRMI(pc, relative(target));
+        return new Instr.BRMI(pc, relative(target, 6));
     }
     private Instr decode_BRLT_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -366,7 +367,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRLT(pc, relative(target));
+        return new Instr.BRLT(pc, relative(target, 6));
     }
     private Instr decode_BRTS_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -374,7 +375,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRTS(pc, relative(target));
+        return new Instr.BRTS(pc, relative(target, 6));
     }
     private Instr decode_BREQ_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -382,7 +383,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BREQ(pc, relative(target));
+        return new Instr.BREQ(pc, relative(target, 6));
     }
     private Instr decode_BRVS_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -390,7 +391,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRVS(pc, relative(target));
+        return new Instr.BRVS(pc, relative(target, 6));
     }
     private Instr decode_BRIE_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -398,7 +399,7 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRIE(pc, relative(target));
+        return new Instr.BRIE(pc, relative(target, 6));
     }
     private Instr decode_BRHS_0(int word1) throws InvalidInstruction {
         int target = 0;
@@ -406,15 +407,15 @@ public class Disassembler {
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRHS(pc, relative(target));
+        return new Instr.BRHS(pc, relative(target, 6));
     }
-    private Instr decode_BRLO_0(int word1) throws InvalidInstruction {
+    private Instr decode_BRCS_0(int word1) throws InvalidInstruction {
         int target = 0;
         // logical[0:5] -> 
         // logical[6:12] -> target[6:0]
         target |= ((word1 >> 3) & 0x0007F);
         // logical[13:15] -> 
-        return new Instr.BRLO(pc, relative(target));
+        return new Instr.BRCS(pc, relative(target, 6));
     }
     private Instr decode_3(int word1) throws InvalidInstruction {
         // get value of bits logical[13:15]
@@ -427,7 +428,7 @@ public class Disassembler {
             case 0x00003: return decode_BRVS_0(word1);
             case 0x00007: return decode_BRIE_0(word1);
             case 0x00005: return decode_BRHS_0(word1);
-            case 0x00000: return decode_BRLO_0(word1);
+            case 0x00000: return decode_BRCS_0(word1);
             default:
             return null;
         }
@@ -585,7 +586,7 @@ public class Disassembler {
         // logical[0:3] -> 
         // logical[4:15] -> target[11:0]
         target |= (word1 & 0x00FFF);
-        return new Instr.RJMP(pc, relative(target));
+        return new Instr.RJMP(pc, relative(target, 10));
     }
     private Instr decode_OR_0(int word1) throws InvalidInstruction {
         int rd = 0;
@@ -660,7 +661,7 @@ public class Disassembler {
         // logical[0:3] -> 
         // logical[4:15] -> target[11:0]
         target |= (word1 & 0x00FFF);
-        return new Instr.RCALL(pc, relative(target));
+        return new Instr.RCALL(pc, relative(target, 10));
     }
     private Instr decode_SBI_0(int word1) throws InvalidInstruction {
         int ior = 0;
@@ -1220,14 +1221,6 @@ public class Disassembler {
         rr |= (word1 & 0x0000F);
         return new Instr.MUL(pc, getReg(GPR_table, rd), getReg(GPR_table, rr));
     }
-    private Instr decode_PUSH_0(int word1) throws InvalidInstruction {
-        int rr = 0;
-        // logical[0:6] -> 
-        // logical[7:11] -> rr[4:0]
-        rr |= ((word1 >> 4) & 0x0001F);
-        // logical[12:15] -> 
-        return new Instr.PUSH(pc, getReg(GPR_table, rr));
-    }
     private Instr decode_STPD_2(int word1) throws InvalidInstruction {
         // this method decodes STPD when ar == Z
         int rr = 0;
@@ -1236,6 +1229,14 @@ public class Disassembler {
         rr |= ((word1 >> 4) & 0x0001F);
         // logical[12:15] -> 
         return new Instr.STPD(pc, Register.Z, getReg(GPR_table, rr));
+    }
+    private Instr decode_PUSH_0(int word1) throws InvalidInstruction {
+        int rr = 0;
+        // logical[0:6] -> 
+        // logical[7:11] -> rr[4:0]
+        rr |= ((word1 >> 4) & 0x0001F);
+        // logical[12:15] -> 
+        return new Instr.PUSH(pc, getReg(GPR_table, rr));
     }
     private Instr decode_STPI_0(int word1) throws InvalidInstruction {
         // this method decodes STPI when ar == X
@@ -1307,8 +1308,8 @@ public class Disassembler {
         // get value of bits logical[12:15]
         int value = (word1 >> 0) & 0x0000F;
         switch ( value ) {
-            case 0x0000F: return decode_PUSH_0(word1);
             case 0x00002: return decode_STPD_2(word1);
+            case 0x0000F: return decode_PUSH_0(word1);
             case 0x0000D: return decode_STPI_0(word1);
             case 0x00009: return decode_STPI_1(word1);
             case 0x00001: return decode_STPI_2(word1);
