@@ -663,20 +663,6 @@ public class Simulator {
     }
 
     /**
-     * The <code>getInterruptVectorAddress()</code> method computes the location in memory to jump to for the
-     * given interrupt number. On the Atmega128, the starting point is the beginning of memory and each
-     * interrupt vector slot is 4 bytes. On older architectures, this is not the case, therefore this method
-     * has to be implemented according to the specific device being simulated.
-     *
-     * @param inum the interrupt number
-     * @return the byte address that represents the address in the program to jump to when this interrupt is
-     *         fired
-     */
-    protected int getInterruptVectorAddress(int inum) {
-        return (inum - 1) * 4;
-    }
-
-    /**
      * The <code>insertProbe()</code> method allows a probe to be inserted that is executed before and after
      * every instruction that is executed by the simulator
      *

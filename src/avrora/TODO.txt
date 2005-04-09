@@ -44,15 +44,16 @@
     2   devs  Implement watchdog timer
     2  radio  Implement all radio frequency registers
     1   util  Implement Columnifier class
-    1  probe  Interrupt monitor
+    2  probe  Implement probing of interrupts
 
+    2    sim  Ability to boot from locations other than 0x0000      (1.5.54)
     4   isdl  Generate Disassembler                                 (1.5.51)
     2   isdl  Generate tests for Disassembler                       (1.5.50)
     1  probe  implemented simple call / return monitor              (1.5.42)
     1  probe  implemented simple command line probing of IORegs     (1.5.40)
     2  probe  Implement probing for IO registers                    (1.5.40)
     1   sim   new: ClockDomain, refactored MCU construction         (1.5.32)
-    1  probe  FiniteStateMachine, probing                         2005-02-20
+    1  probe  FiniteStateMachine, probing                            (1.5.x)
     4  probe  Implement GDB server backend                           (1.4.0)
   2-3   isdl  Constant/copy propagation optimizations                (1.4.0)
     4    sim  Dynamic Basic Block Compiler                           (1.3.x)
@@ -84,12 +85,12 @@
   3-4   devs  Extract ATMega128L devices                            (1.5.37)
     2   help  global migrate to HelpSystem, HelpCategories          (1.5.30)
     1   main  Remove shortName from Action, MonitorFactory          (1.5.28)
-  2-3    sim  Clean up event / verbose printing                      (1.4.0)
     1   main  Move class maps and defaults to Defaults               (1.5.x)
     1    sim  Refactor microcontroller instantiation                 (1.5.x)
+    1  input  Check for invalid register names                       (1.5.x)
+  2-3    sim  Clean up event / verbose printing                      (1.4.0)
     2   isdl  Canonicalize isdl code generated                       (1.4.0)
     1    sim  Display seconds from Simulator.Printer                 (1.4.0)
-    1  input  Check for invalid register names                       (1.5.x)
     1    sim  Synchronize simulator output                           (1.4.0)
 
 ======================== O P T I M I Z A T I O N S ==========================

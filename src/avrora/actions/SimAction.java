@@ -39,10 +39,7 @@ import avrora.core.Instr;
 import avrora.core.LabelMapping;
 import avrora.core.SourceMapping;
 import avrora.monitors.*;
-import avrora.sim.GenInterpreter;
-import avrora.sim.InterpreterFactory;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.sim.dbbc.DBBC;
 import avrora.sim.dbbc.DBBCInterpreter;
 import avrora.sim.mcu.MicrocontrollerFactory;
@@ -104,6 +101,14 @@ public abstract class SimAction extends Action {
             "topology, packet transmission, packet reception, energy " +
             "information and more. Syntax is ip address or host name and " +
             "port: 127.0.0.1:2379 \n(Status: experimental)");
+    public final Option.Str BOOT = newOption("boot-address", "0x0000",
+            "This option selects the address at which the microcontroller will begin executing " +
+            "the program. This is used for bootloaders and applications that do not begin " +
+            "execution at the beginning of the flash.");
+    public final Option.Str IBASE = newOption("interrupt-base", "0x0000",
+            "This option selects the address that is the base of the interrupt vector table. " +
+            "This is used for bootloaders and applications that do not begin " +
+            "execution at the beginning of the flash.");
 
     protected LinkedList monitorFactoryList;
     protected HashMap monitorListMap;
@@ -203,9 +208,12 @@ public abstract class SimAction extends Action {
                 Avrora.userError("External clock is greater than main clock speed", exthz+"hz");
             simulator = Defaults.newSimulator(simcount++, MCU.get(), hz, exthz, factory, p);
         }
-        processTimeout(simulator);
 
+        processBootPC(simulator, p);
+        processInterruptBase(simulator, p);
+        processTimeout(simulator);
         processMonitorList();
+
         LinkedList ml = new LinkedList();
         Iterator i = monitorFactoryList.iterator();
         while (i.hasNext()) {
@@ -216,6 +224,30 @@ public abstract class SimAction extends Action {
         }
         monitorListMap.put(simulator, ml);
         return simulator;
+    }
+
+    private void processBootPC(Simulator simulator, Program program) {
+        BaseInterpreter interpreter = simulator.getInterpreter();
+        String src = BOOT.get();
+        SourceMapping lm = program.getSourceMapping();
+        SourceMapping.Location loc = lm.getLocation(src);
+        if ( loc == null )
+            Avrora.userError("Invalid program address: ", src);
+        if ( program.readInstr(loc.address) == null )
+            Avrora.userError("Invalid program address: ", src);
+        interpreter.setBootPC(loc.address);
+    }
+
+    private void processInterruptBase(Simulator simulator, Program program) {
+        BaseInterpreter interpreter = simulator.getInterpreter();
+        String src = IBASE.get();
+        SourceMapping lm = program.getSourceMapping();
+        SourceMapping.Location loc = lm.getLocation(src);
+        if ( loc == null )
+            Avrora.userError("Invalid program address: ", src);
+        if ( program.readInstr(loc.address) == null )
+            Avrora.userError("Invalid program address: ", src);
+        interpreter.setInterruptBase(loc.address);
     }
 
     /**

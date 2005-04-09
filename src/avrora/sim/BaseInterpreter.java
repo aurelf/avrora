@@ -49,6 +49,8 @@ import avrora.util.Terminal;
  * @author Ben L. Titzer
  */
 public abstract class BaseInterpreter implements State, InstrVisitor {
+    protected int bootPC;
+    protected int interruptBase;
     protected int pc;
     protected final ActiveRegister[] ioregs;
     public byte[] sram;
@@ -67,6 +69,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public boolean Z;
     public boolean C;
     protected ActiveRegister SREG_reg;
+    protected ActiveRegister SPMCSR_reg;
     protected RWRegister SPL_reg;
     protected RWRegister SPH_reg;
 
@@ -83,6 +86,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * to false, and the execution loop (e.g. an interpretation or sleep loop) is broken out of.
      */
     protected boolean innerLoop;
+
+    protected void storeProgramMemory() {
+        throw Avrora.unimplemented();
+    }
 
 
     /**
@@ -373,6 +380,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     public final int SREG;
     public final int RAMPZ;
+    public final int SPMCSR;
 
     public static final int NUM_REGS = 32;
 
@@ -412,6 +420,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
         SREG = props.getIOReg("SREG");
         RAMPZ = props.getIOReg("RAMPZ");
+        SPMCSR = props.getIOReg("SPMCSR");
 
         // if program will not fit onto hardware, error
         if (p.program_end > pr.flash_size)
@@ -474,6 +483,21 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     protected abstract void runLoop();
+
+    /**
+     * The <code>getInterruptVectorAddress()</code> method computes the location in memory to jump to for the
+     * given interrupt number. On the Atmega128, the starting point is the beginning of memory and each
+     * interrupt vector slot is 4 bytes. On older architectures, this is not the case, therefore this method
+     * has to be implemented according to the specific device being simulated.
+     *
+     * @param inum the interrupt number
+     * @return the byte address that represents the address in the program to jump to when this interrupt is
+     *         fired
+     */
+    protected int getInterruptVectorAddress(int inum) {
+        return interruptBase + (inum - 1) * 4;
+    }
+
 
     protected void insertProbe(Simulator.Probe p, int addr) {
         ProbedInstr pi = getProbedInstr(addr);
@@ -563,6 +587,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         for (int cntr = 0; cntr < ioregs.length; cntr++)
             ioregs[cntr] = new RWRegister();
         SREG_reg = ioregs[SREG] = new SREG_reg();
+        SPMCSR_reg = ioregs[SPMCSR] = new SPMCSR_reg();
     }
 
     protected void advanceCycles(long delta) {
@@ -916,6 +941,18 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
+     * This method sets the booting address of the interpreter. It should only be used before execution begins.
+     * @param npc the new PC to boot this interpreter from
+     */
+    public void setBootPC(int npc) {
+        bootPC = npc;
+    }
+
+    public void setInterruptBase(int npc) {
+        interruptBase = npc;
+    }
+
+    /**
      * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the simulation.
      *
      * @return the number of clock cycles elapsed in the simulation
@@ -1136,6 +1173,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected void commit() {
         pc = nextPC;
         advanceCycles(cyclesConsumed);
+    }
+
+    private class SPMCSR_reg extends RWRegister {
+        // TODO: implement SPMCSR register
     }
 
     private class SREG_reg implements ActiveRegister {

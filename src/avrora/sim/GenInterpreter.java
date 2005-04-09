@@ -38,6 +38,7 @@ import avrora.core.Program;
 import avrora.core.Register;
 import avrora.util.Arithmetic;
 import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.Avrora;
 
 /**
  * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The
@@ -110,6 +111,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     protected void runLoop() {
 
+        pc = bootPC;
         nextPC = pc;
         cyclesConsumed = 0;
 
@@ -142,7 +144,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
                     pushPC(nextPC);
 
                     // set PC to interrupt handler
-                    nextPC = simulator.getInterruptVectorAddress(lowestbit);
+                    nextPC = getInterruptVectorAddress(lowestbit);
                     pc = nextPC;
 
                     // disable interrupts
@@ -204,7 +206,6 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             globalProbe.fireAfter(i, curPC, this);
         }
     }
-
 
 //--BEGIN INTERPRETER GENERATOR--
     public void visit(Instr.ADC i) {
@@ -1419,6 +1420,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public void visit(Instr.SPM i) {
         nextPC = pc + 2;
+        storeProgramMemory();
         cyclesConsumed += 1;
     }
 

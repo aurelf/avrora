@@ -1,0 +1,17 @@
+
+
+IMPORTANT!!!
+To set up the mote using serial programming board
+%uisp -dpart=atmega128 -dprog=mib510 -dserial=/dev/ttyS0 --rd_fuses
+%uisp -dpart=atmega128 -dprog=mib510 -dserial=/dev/ttyS0 --wr_fuse_h=0x98
+%uisp -dpart=atmega128 -dprog=mib510 -dserial=/dev/ttyS0 --wr_fuse_e=0xff
+%uisp -dpart=atmega128 -dprog=mib510 -dserial=/dev/ttyS0 --rd_fuses
+
+
+To make program 
+% make
+
+To install program use serial programming board
+% make install PROG=mib510 PORT=/dev/ttyS1
+
+
