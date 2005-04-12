@@ -69,9 +69,27 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public boolean Z;
     public boolean C;
     protected ActiveRegister SREG_reg;
-    protected ActiveRegister SPMCSR_reg;
     protected RWRegister SPL_reg;
     protected RWRegister SPH_reg;
+
+    protected FlashUpdater updater;
+
+    /**
+     * The <code>FlashUpdater</code> class implements flash updates in the interpreter. Flash updates are caused
+     * by the execution of the SPM instruction and may behave slightly differently on different devices.
+     */
+    public interface FlashUpdater {
+        /**
+         * The <code>update()</code> method is executed when the program executes the SPM instruction.
+         */
+        public void update();
+    }
+
+    protected static final FlashUpdater UNSUPPORTED_SPM = new FlashUpdater() {
+        public void update() {
+            throw Avrora.unimplemented();
+        }
+    };
 
     /**
      * The <code>activeProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
@@ -88,7 +106,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected boolean innerLoop;
 
     protected void storeProgramMemory() {
-        throw Avrora.unimplemented();
+        updater.update();
     }
 
 
@@ -380,7 +398,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     public final int SREG;
     public final int RAMPZ;
-    public final int SPMCSR;
 
     public static final int NUM_REGS = 32;
 
@@ -416,11 +433,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
         this.clock = simulator.clock;
 
+        this.updater = UNSUPPORTED_SPM;
+
         MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
 
         SREG = props.getIOReg("SREG");
         RAMPZ = props.getIOReg("RAMPZ");
-        SPMCSR = props.getIOReg("SPMCSR");
 
         // if program will not fit onto hardware, error
         if (p.program_end > pr.flash_size)
@@ -587,7 +605,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         for (int cntr = 0; cntr < ioregs.length; cntr++)
             ioregs[cntr] = new RWRegister();
         SREG_reg = ioregs[SREG] = new SREG_reg();
-        SPMCSR_reg = ioregs[SPMCSR] = new SPMCSR_reg();
     }
 
     protected void advanceCycles(long delta) {
@@ -1173,10 +1190,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected void commit() {
         pc = nextPC;
         advanceCycles(cyclesConsumed);
-    }
-
-    private class SPMCSR_reg extends RWRegister {
-        // TODO: implement SPMCSR register
     }
 
     private class SREG_reg implements ActiveRegister {
