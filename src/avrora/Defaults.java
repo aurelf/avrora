@@ -42,6 +42,7 @@ import avrora.sim.mcu.ATMega128;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.platform.Seres;
 import avrora.sim.*;
 import avrora.actions.*;
 import avrora.core.ProgramReader;
@@ -182,6 +183,7 @@ public class Defaults {
             platforms = new ClassMap("Platform", Platform.class);
             //-- DEFAULT PLATFORMS
             platforms.addClass("mica2", Mica2.class);
+            platforms.addClass("seres", Seres.class);
         }
     }
 

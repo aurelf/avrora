@@ -497,4 +497,12 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     protected FlagRegister ETIFR_reg;
     protected MaskRegister ETIMSK_reg;
 
+    /**
+     * The getEIFR_reg() method is used to access the external interrupt flag register.
+     * @return the <code>ActiveRegister</code> object corresponding to the EIFR IO register
+     */
+    public FlagRegister getEIFR_reg() {
+        return EIFR_reg;
+    }
+
 }

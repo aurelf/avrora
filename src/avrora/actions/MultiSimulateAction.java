@@ -36,6 +36,7 @@ import avrora.Main;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.platform.PinConnect;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.SimpleAir;
@@ -146,6 +147,9 @@ public class MultiSimulateAction extends SimAction {
                 simulatorThreadList.addLast(st);
                 Radio radio = microcontroller.getRadio();
 
+                // register the simulatorThread with the PinConnect manager
+                PinConnect.pinConnect.addSimulatorThread(st);
+
                 //OL: check for radio
                 if (radio != null) {
                     radio.setSimulatorThread(st);
@@ -165,6 +169,9 @@ public class MultiSimulateAction extends SimAction {
                 processStagger(simulator);
             }
         }
+
+        // connect nodes together that have PinWire connections
+        PinConnect.pinConnect.initializeConnections();
 
         // enable channel utilization accounting
         SimpleAir.simpleAir.recordUtilization(CHANNEL_UTIL.get());
