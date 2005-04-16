@@ -36,6 +36,7 @@ import avrora.sim.Simulator;
 import avrora.sim.Clock;
 import avrora.sim.mcu.USART;
 import avrora.Avrora;
+import avrora.util.Terminal;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -61,18 +62,22 @@ public class SerialForwarder implements USART.USARTDevice {
     private USART usart;
     private SFTicker ticker;
     private byte[] data;
-    private Clock clock;
+    protected int portNumber;
 
-    public SerialForwarder(USART usart) {
-        // TODO: what should be done about the ticker?
+    public SerialForwarder(USART usart, int pn) {
+        usart.connect(this);
 
         this.usart = usart;
-        clock = usart.getClock();
-        ticker = new SFTicker();
+        this.portNumber = pn;
+        ticker = new SFTicker(usart.getClock(), BPS);
+        ticker.start();
         data = new byte[1];
         try{
-            serverSocket = new ServerSocket(2390);
+            serverSocket = new ServerSocket(portNumber);
+            Terminal.print("Waiting for serial connection on port "+portNumber+"...");
+            Terminal.flush();
             socket = serverSocket.accept();
+            Terminal.println("connected to "+socket.getRemoteSocketAddress());
             out = socket.getOutputStream();
             in = socket.getInputStream();
         } catch( IOException e ){
@@ -82,7 +87,7 @@ public class SerialForwarder implements USART.USARTDevice {
 
     public USART.Frame transmitFrame() {
         try{
-            in.read( data, 0, 1);
+            in.read(data, 0, 1);
             return new USART.Frame(data[0], false, 8);
         } catch( IOException e){
             throw Avrora.failure("cannot read from socket");
@@ -100,10 +105,11 @@ public class SerialForwarder implements USART.USARTDevice {
 
     private class SFTicker implements Simulator.Event {
         private final long delta;
+        private final Clock clock;
 
-        public SFTicker(){
-            delta = clock.getHZ() / BPS;
-            clock.insertEvent(this, delta);
+        SFTicker(Clock c, int bps) {
+            delta = c.getHZ() / bps;
+            clock = c;
         }
 
         public void fire() {
@@ -114,6 +120,10 @@ public class SerialForwarder implements USART.USARTDevice {
             } catch( IOException e){
                 throw Avrora.failure("cannot read from socket");
             }
+            clock.insertEvent(this, delta);
+        }
+
+        void start() {
             clock.insertEvent(this, delta);
         }
     }

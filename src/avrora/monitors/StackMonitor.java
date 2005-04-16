@@ -55,7 +55,6 @@ public class StackMonitor extends MonitorFactory {
     public class Monitor extends Simulator.Probe.Empty implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
-        public final ProgramProfiler profile;
 
         int minStack1 = Integer.MAX_VALUE;
         int minStack2 = Integer.MAX_VALUE;
@@ -90,10 +89,9 @@ public class StackMonitor extends MonitorFactory {
         Monitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
-            profile = new ProgramProfiler(program);
             printer = simulator.getPrinter("monitor.stack");
             // insert the global probe
-            s.insertProbe(profile);
+            s.insertProbe(this);
         }
 
         /**

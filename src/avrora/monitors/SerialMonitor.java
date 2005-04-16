@@ -36,21 +36,31 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
+import avrora.sim.platform.SerialForwarder;
+import avrora.sim.mcu.USART;
+import avrora.sim.mcu.AtmelMicrocontroller;
 import avrora.Avrora;
+import avrora.util.Option;
 
 
 /**
- * The <code>Pc</code> class is a monitor that that is capable
+ * The <code>SerialMonitor</code> class is a monitor that that is capable
  * of setting up a virtual usart connection to the pc. You can
  * connect the TinyOS serial forwarder to the port 2390.
  *
  * @author Olaf Landsiedel
  */
-public class Pc extends MonitorFactory {
+public class SerialMonitor extends MonitorFactory {
+
+    protected final Option.Long PORT = options.newOption("port", 2390,
+            "The \"port\" option specifies the server port on which the serial forwarder will listen to " +
+            "accept a connection for the serial port.");
+    protected final Option.Long NODE = options.newOption("node", 0,
+            "The \"node\" option specifies which node's serial port the socket will be connected to.");
 
     /**
-     * The <code>Pc</code> class is a monitor that connects the USART
-     * of Node 0 to the TinyOS serial forwarder. Hack!!
+     * The <code>SerialMonitor</code> class is a monitor that connects the USART
+     * of a node to a socket that allows data to be read and written from the simulation.
      */
     public class Monitor implements avrora.monitors.Monitor{
  
@@ -58,8 +68,10 @@ public class Pc extends MonitorFactory {
          * @param s Simulator
          */
         Monitor(Simulator s) {
-            if( s.getID() == 0) {
-                throw Avrora.unimplemented();
+            if( s.getID() == NODE.get()) {
+                AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
+                USART usart = (USART)mcu.getDevice("usart0");
+                new SerialForwarder(usart, (int)PORT.get());
             }
         }
                 
@@ -70,13 +82,15 @@ public class Pc extends MonitorFactory {
     }
 
     /**
-     * The constructor for the <code>Pc</code> class builds a
+     * The constructor for the <code>SerialMonitor</code> class builds a
      * new <code>MonitorFactory</code> capable of creating monitors for
      * each <code>Simulator</code> instance passed to the <code>newMonitor()</code>
      * method.
      */
-    public Pc() {
-        super("The \"pc\" monitor connects the USART0 of node 0 to the PC using port 2390 as the default.");
+    public SerialMonitor() {
+        super("The \"serial\" monitor allows the serial port (USART) of a node in the simulation to be connected " +
+                "to a socket so that data from the program running in the simulation can be outputted, and " +
+                "external data can be fed into the serial port of the simulated node.");
     }
 
     /**

@@ -98,7 +98,7 @@ public class Defaults {
             monitorMap.addClass("packet", PacketMonitor.class);
             monitorMap.addClass("gdb", GDBServer.class);
             monitorMap.addClass("simperf", SimPerfMonitor.class);
-            monitorMap.addClass("pc", Pc.class);
+            monitorMap.addClass("serial", SerialMonitor.class);
             monitorMap.addClass("trip-time", TripTimeMonitor.class);
             monitorMap.addClass("ioregs", IORegMonitor.class);
 

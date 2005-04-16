@@ -236,9 +236,6 @@ public abstract class USART extends AtmelInternalDevice {
         transmitter = new Transmitter();
         receiver = new Receiver();
 
-        connectedDevice = new SerialPrinter();
-        //connectedDevice = new LCDScreen();
-
         installIOReg("UDR"+n, UDRn_reg);
         installIOReg("UCSR"+n+"A", UCSRnA_reg);
         installIOReg("UCSR"+n+"B", UCSRnB_reg);
@@ -255,7 +252,10 @@ public abstract class USART extends AtmelInternalDevice {
         // USART Transmit Complete
         installInterrupt("USART transmit", USARTnTX,
                 new ATMegaFamily.MaskableInterrupt(USARTnTX, UCSRnB_reg, UCSRnA_reg, TXCn, false));
+    }
 
+    public void connect(USARTDevice d) {
+        connectedDevice = d;
     }
 
     void updatePeriod() {

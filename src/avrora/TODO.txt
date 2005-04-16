@@ -5,8 +5,8 @@
 ================================ F I X E S ==================================
  Comp Module Item                                      Completion (Version)
 -----------------------------------------------------------------------------
-    3   isdl  Encodings for load / store instructions
     2   util  StringUtil floating point conversion
+    2  probe  Fix BatteryMonitor hang problems
     1  input  Catch recursive include errors
     1  input  Implement fill with value .db directive
     1   devs  EEPROM read/write delays
@@ -19,8 +19,11 @@
     2  radio  Delivery over SPI + transmission timing validation
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
 
+    1  probe  Fix SerialMonitor                                     (1.5.58)
+    1  probe  Fix StackMonitor                                      (1.5.58)
     2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
     1   isdl  Fix negative branch offsets in disassembler           (1.5.53)
+    3   isdl  Encodings for load / store instructions               (1.5.51)
     1   main  Fixed default foreground color                        (1.5.45)
     1  probe  NullPointerException inserting probe on invalid instr (1.5.43)
     1  probe  Probes inserted from within watches                   (1.5.43)
@@ -46,6 +49,7 @@
     1   util  Implement Columnifier class
     2  probe  Implement probing of interrupts
 
+    2    sim  PinWire and PinConnection code from Jacob Everist     (1.5.57)
     2    sim  Ability to boot from locations other than 0x0000      (1.5.54)
     4   isdl  Generate Disassembler                                 (1.5.51)
     2   isdl  Generate tests for Disassembler                       (1.5.50)
