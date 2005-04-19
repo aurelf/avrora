@@ -10,18 +10,16 @@
     1  input  Catch recursive include errors
     1  input  Implement fill with value .db directive
     1   devs  EEPROM read/write delays
-    1   devs  IVSEL fuse support for bootloaders
     1  probe  Counters, branchcounters
     1   devs  PDATA broken (?)
     2  probe  getDataByte() calls from within watches
     3  radio  Partial preamble loss
     1   devs  Frame sizes in USART implementation
-    2  radio  Delivery over SPI + transmission timing validation
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
+    1    sim  SimpleAir.removeRadio() does not wake remaining nodes
 
     1  probe  Fix SerialMonitor                                     (1.5.58)
     1  probe  Fix StackMonitor                                      (1.5.58)
-    2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
     1   isdl  Fix negative branch offsets in disassembler           (1.5.53)
     3   isdl  Encodings for load / store instructions               (1.5.51)
     1   main  Fixed default foreground color                        (1.5.45)
@@ -48,6 +46,10 @@
     2  radio  Implement all radio frequency registers
     1   util  Implement Columnifier class
     2  probe  Implement probing of interrupts
+    1   devs  IVSEL fuse support for bootloaders
+    2   isdl  Better ISDL error checking
+    2    sim  Unified warning system for program errors
+    1  probe  Indirect call / jump monitor
 
     2    sim  PinWire and PinConnection code from Jacob Everist     (1.5.57)
     2    sim  Ability to boot from locations other than 0x0000      (1.5.54)
@@ -97,6 +99,30 @@
     1    sim  Display seconds from Simulator.Printer                 (1.4.0)
     1    sim  Synchronize simulator output                           (1.4.0)
 
+================================ T E S T S  =================================
+ Comp Module Item                                      Completion (Version)
+-----------------------------------------------------------------------------
+    1    sim  Event queue insert / remove / advance
+    2    sim  Interrupt functionality
+    1    sim  Execution timing for nontrivial programs
+    3   devs  Timer0, Timer1, Timer2, Timer3 functionality
+    3   devs  SPI device
+    2   devs  USART devices
+    2   devs  EEPROM device
+    3   devs  flash update and dynamic code
+    3  radio  Radio transmission timing validation
+    2    sim  Probing functionality for IO registers and lower memory
+    2 energy  Automated energy count tests
+    2  input  Program loader and layout tests
+    3   isdl  ISDL errors
+    3   isdl  ISDL code manipulation and optimizations
+    3   dbbc  test that simulation under DBBC is exactly as without
+    2    cfg  Control flow graph construction and usage
+    3  stack  Abstract value computations
+    2    sim  Sleep modes
+
+    2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
+
 ======================== O P T I M I Z A T I O N S ==========================
  Comp Module Item                                      Completion (Version)
 -----------------------------------------------------------------------------
@@ -110,6 +136,13 @@
   1-2    sim  Optimize FiniteStateMachine transitions
     2    sim  Word-aligned PC optimization
     1    sim  BCLR instruction should use SREG_reg directly
+    2   dbbc  Register caching
+    2   dbbc  Constant propagation through registers and memory
+    2   dbbc  Idiom reductions
+    2   dbbc  Block splitting
+    3   dbbc  Register (temporary) allocation
+    3   dbbc  Superblock construction
+    2   dbbc  Intrablock probes and watches
 
     1    sim  Allocate all SPI.Frame's statically                   (1.5.35)
     1    sim  Optimize getSP() and setSP() methods                  (1.5.31)

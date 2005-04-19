@@ -243,6 +243,8 @@ public abstract class USART extends AtmelInternalDevice {
         installIOReg("UBRR"+n+"L", UBRRnL_reg);
         installIOReg("UBRR"+n+"H", UBRRnH_reg);
 
+        connect(new SerialPrinter());
+
         // USART Receive Complete
         installInterrupt("USART: receive", USARTnRX,
                 new ATMegaFamily.MaskableInterrupt(USARTnRX, UCSRnB_reg, UCSRnA_reg, RXCn, false));
