@@ -50,14 +50,12 @@ public class MulticastIORWatch extends TransactionalList implements Simulator.IO
      * the implementation of the multicast probe, it simply calls the <code>fireBeforeRead()</code> method on
      * each of the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      */
-    public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+    public void fireBeforeRead(State state, int data_addr) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireBeforeRead(i, address, state, data_addr);
+            ((Simulator.IORWatch)pos.object).fireBeforeRead(state, data_addr);
     }
 
     /**
@@ -65,14 +63,12 @@ public class MulticastIORWatch extends TransactionalList implements Simulator.IO
      * the implementation of the multicast probe, it simply calls the <code>fireAfterRead()</code> method on
      * each of the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      * @param val     the value of the memory location being read
      */
-    public void fireAfterRead(Instr i, int address, State state, int data_addr, byte val) {
+    public void fireAfterRead(State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireAfterRead(i, address, state, data_addr, val);
+            ((Simulator.IORWatch)pos.object).fireAfterRead(state, data_addr, val);
         endTransaction();
     }
 
@@ -82,15 +78,13 @@ public class MulticastIORWatch extends TransactionalList implements Simulator.IO
      * <code>fireBeforeWrite()</code> method on each of the probes in the multicast set in the order in which
      * they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      * @param val     the value being written to the memory location
      */
-    public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte val) {
+    public void fireBeforeWrite(State state, int data_addr, byte val) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireBeforeWrite(i, address, state, data_addr, val);
+            ((Simulator.IORWatch)pos.object).fireBeforeWrite(state, data_addr, val);
     }
 
     /**
@@ -98,14 +92,12 @@ public class MulticastIORWatch extends TransactionalList implements Simulator.IO
      * In the implementation of the multicast probe, it simply calls the <code>fireAfterWrite()</code> method
      * on each of the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      * @param val     the value being written to the memory location
      */
-    public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte val) {
+    public void fireAfterWrite(State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireAfterWrite(i, address, state, data_addr, val);
+            ((Simulator.IORWatch)pos.object).fireAfterWrite(state, data_addr, val);
         endTransaction();
     }
 
@@ -113,15 +105,13 @@ public class MulticastIORWatch extends TransactionalList implements Simulator.IO
      * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
      * In the implementation of the Empty watch, this method does nothing.
      *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
      * @param state     the state of the simulation
      * @param ioreg_num the number of the IO register being read
      */
-    public void fireBeforeBitRead(Instr i, int address, State state, int ioreg_num, int bit) {
+    public void fireBeforeBitRead(State state, int ioreg_num, int bit) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireBeforeBitRead(i, address, state, ioreg_num, bit);
+            ((Simulator.IORWatch)pos.object).fireBeforeBitRead(state, ioreg_num, bit);
     }
 
     /**
@@ -129,31 +119,27 @@ public class MulticastIORWatch extends TransactionalList implements Simulator.IO
      * program.
      * In the implementation of the Empty watch, this method does nothing.
      *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
      * @param state     the state of the simulation
      * @param ioreg_num the number of the IO register being read
      * @param value     the value being written to the memory location
      */
-    public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+    public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireBeforeBitWrite(i, address, state, ioreg_num, bit, value);
+            ((Simulator.IORWatch)pos.object).fireBeforeBitWrite(state, ioreg_num, bit, value);
     }
 
     /**
      * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
      * In the implementation of the Empty watch, this method does nothing.
      *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
      * @param state     the state of the simulation
      * @param ioreg_num the number of the IO register being read
      * @param value     the value of the memory location being read
      */
-    public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+    public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value) {
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireAfterBitRead(i, address, state, ioreg_num, bit, value);
+            ((Simulator.IORWatch)pos.object).fireAfterBitRead(state, ioreg_num, bit, value);
         endTransaction();
     }
 
@@ -162,15 +148,13 @@ public class MulticastIORWatch extends TransactionalList implements Simulator.IO
      * program.
      * In the implementation of the Empty watch, this method does nothing.
      *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
      * @param state     the state of the simulation
      * @param ioreg_num the number of the IO register being read
      * @param value     the value being written to the memory location
      */
-    public void fireAfterBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+    public void fireAfterBitWrite(State state, int ioreg_num, int bit, boolean value) {
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.IORWatch)pos.object).fireAfterBitWrite(i, address, state, ioreg_num, bit, value);
+            ((Simulator.IORWatch)pos.object).fireAfterBitWrite(state, ioreg_num, bit, value);
         endTransaction();
     }
 

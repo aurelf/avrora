@@ -37,6 +37,10 @@ import avrora.sim.RWRegister;
 import avrora.sim.Simulator;
 import avrora.util.Arithmetic;
 import avrora.core.Register;
+import avrora.core.Instr;
+import avrora.core.Operand;
+import avrora.core.InstrVisitor;
+import avrora.Avrora;
 
 /**
  * @author Ben L. Titzer
@@ -154,13 +158,13 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
 
     private void pageErase(int pagenum, int pageoffset) {
         mainClock.removeEvent(SPMCSR.reset);
-        mainClock.insertEvent(new EraseEvent(pagenum, buffer), ERASE_CYCLES);
+        mainClock.insertEvent(new EraseEvent(pagenum), ERASE_CYCLES);
         resetBuffer();
     }
 
     private void pageWrite(int pagenum, int pageoffset) {
         mainClock.removeEvent(SPMCSR.reset);
-        mainClock.insertEvent(new WriteEvent(pagenum, buffer), ERASE_CYCLES);
+        mainClock.insertEvent(new WriteEvent(pagenum, buffer), WRITE_CYCLES);
         resetBuffer();
     }
 
@@ -176,15 +180,21 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
 
     class EraseEvent implements Simulator.Event {
         int pagenum;
-        byte[] buffer;
 
-        EraseEvent(int pagenum, byte[] buf) {
+        EraseEvent(int pagenum) {
             this.pagenum = pagenum;
-            this.buffer = buf;
         }
 
         public void fire() {
             // erase the page
+            int size = bufferSize();
+            int addr = pagenum * size;
+            for ( int offset = 0; offset < size; offset++) {
+                int baddr = addr + offset;
+                interpreter.writeProgramByte(baddr, buffer[offset]);
+                if ( (offset & 1) == 0)
+                    interpreter.writeInstr(new DisassembleInstr(baddr), baddr);
+            }
             SPMCSR.reset();
         }
     }
@@ -200,14 +210,49 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
 
         public void fire() {
             // write the page
+            int size = bufferSize();
+            int addr = pagenum * size;
+            for ( int offset = 0; offset < size; offset++) {
+                int baddr = addr + offset;
+                interpreter.writeProgramByte(baddr, DEFAULT_VALUE);
+                if ( (offset & 1) == 0)
+                    interpreter.writeInstr(new DisassembleInstr(baddr), baddr);
+            }
             SPMCSR.reset();
         }
     }
 
     void resetBuffer() {
-        buffer = new byte[2 << pagesize];
+        buffer = new byte[bufferSize()];
         for ( int cntr = 0; cntr < buffer.length; cntr++) {
             buffer[cntr] = DEFAULT_VALUE;
+        }
+    }
+
+    private int bufferSize() {
+        // pagesize stores the number of bits representing the word offset in an address
+        return 2 << pagesize;
+    }
+
+    public class DisassembleInstr extends Instr {
+
+        protected final int address;
+
+        DisassembleInstr(int addr) {
+            super(null);
+            address = addr;
+        }
+
+        public void accept(InstrVisitor v) {
+            throw Avrora.unimplemented();
+        }
+
+        public Instr build(int address, Operand[] ops) {
+            throw Avrora.failure("DisassembleInstr should be confined to BaseInterpreter");
+        }
+
+        public String getOperands() {
+            throw Avrora.failure("DisassembleInstr has no operands");
         }
     }
 }

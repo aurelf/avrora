@@ -62,12 +62,10 @@ public class MemoryCounter extends Simulator.Watch.Empty {
      * The <code>fireBeforeRead()</code> method is called before the data address is read by the program. In
      * the implementation of <code>MemoryCounter</code>, it simply increments the count of reads by one.
      *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
      * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
      */
-    public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+    public void fireBeforeRead(State state, int data_addr) {
         rcount++;
     }
 
@@ -75,13 +73,11 @@ public class MemoryCounter extends Simulator.Watch.Empty {
      * The <code>fireBeforeWrite()</code> method is called before the data address is written by the program.
      * In the implementation of <code>MemoryCounter</code>, it simply increments the count of writes by one.
      *
-     * @param i         the instruction being probed
-     * @param address   the address at which this instruction resides
      * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
      * @param value     the value being written to the memory location
      */
-    public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+    public void fireBeforeWrite(State state, int data_addr, byte value) {
         wcount++;
     }
 

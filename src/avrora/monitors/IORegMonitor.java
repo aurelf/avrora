@@ -112,12 +112,10 @@ public class IORegMonitor extends MonitorFactory {
              * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              */
-            public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+            public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value) {
                 printer.println(name+"["+bit+"]   -> "+value);
             }
 
@@ -126,13 +124,11 @@ public class IORegMonitor extends MonitorFactory {
              * program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+            public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value) {
                 printer.println(name+"["+bit+"] <=   "+value);
             }
 
@@ -141,13 +137,11 @@ public class IORegMonitor extends MonitorFactory {
              * program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+            public void fireBeforeWrite(State state, int data_addr, byte value) {
                 printer.println(name+"    <=   "+render(value));
             }
 
@@ -159,13 +153,11 @@ public class IORegMonitor extends MonitorFactory {
              * The <code>fireAfterRead()</code> method is called after the data address is read by the program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
              * @param value     the value of the memory location being read
              */
-            public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
+            public void fireAfterRead(State state, int data_addr, byte value) {
                 printer.println(name+"      -> "+render(value));
             }
 

@@ -51,14 +51,12 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      * the implementation of the multicast probe, it simply calls the <code>fireBeforeRead()</code> method on
      * each of the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      */
-    public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+    public void fireBeforeRead(State state, int data_addr) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.Watch)pos.object).fireBeforeRead(i, address, state, data_addr);
+            ((Simulator.Watch)pos.object).fireBeforeRead(state, data_addr);
     }
 
     /**
@@ -66,14 +64,12 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      * the implementation of the multicast probe, it simply calls the <code>fireAfterRead()</code> method on
      * each of the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      * @param val     the value of the memory location being read
      */
-    public void fireAfterRead(Instr i, int address, State state, int data_addr, byte val) {
+    public void fireAfterRead(State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.Watch)pos.object).fireAfterRead(i, address, state, data_addr, val);
+            ((Simulator.Watch)pos.object).fireAfterRead(state, data_addr, val);
         endTransaction();
     }
 
@@ -83,15 +79,13 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      * <code>fireBeforeWrite()</code> method on each of the probes in the multicast set in the order in which
      * they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      * @param val     the value being written to the memory location
      */
-    public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte val) {
+    public void fireBeforeWrite(State state, int data_addr, byte val) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.Watch)pos.object).fireBeforeWrite(i, address, state, data_addr, val);
+            ((Simulator.Watch)pos.object).fireBeforeWrite(state, data_addr, val);
     }
 
     /**
@@ -99,14 +93,12 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      * In the implementation of the multicast probe, it simply calls the <code>fireAfterWrite()</code> method
      * on each of the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
      * @param val     the value being written to the memory location
      */
-    public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte val) {
+    public void fireAfterWrite(State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.Watch)pos.object).fireAfterWrite(i, address, state, data_addr, val);
+            ((Simulator.Watch)pos.object).fireAfterWrite(state, data_addr, val);
         endTransaction();
     }
 

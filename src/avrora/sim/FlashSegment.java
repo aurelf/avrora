@@ -30,48 +30,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim;
+
+import avrora.core.Instr;
+import avrora.core.Program;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
- *
  * @author Ben L. Titzer
  */
-public class Version {
+public abstract class FlashSegment extends Segment {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    public static final byte DEFAULT_VALUE = (byte)0xff;
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
+    protected Instr[] segment_instr;
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 60;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
+    public interface FlashSharer {
+        public void update(Instr[] segment);
     }
 
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public FlashSegment(String name, int size, BaseInterpreter bi, ErrorReporter er) {
+        super(name, size, DEFAULT_VALUE, bi, er);
+        segment_instr = new Instr[size];
     }
+
+    public abstract void load(Program p);
+
+    public Instr readInstr(int address) {
+        try {
+            return segment_instr[address].asInstr();
+        } catch ( ArrayIndexOutOfBoundsException e) {
+            throw new AddressOutOfBoundsException(address);
+        }
+    }
+
+    public Instr getInstr(int address) {
+        try {
+            return segment_instr[address];
+        } catch ( ArrayIndexOutOfBoundsException e) {
+            throw new AddressOutOfBoundsException(address);
+        }
+    }
+
+    public abstract void insertProbe(int address, Simulator.Probe p);
+    public abstract void removeProbe(int address, Simulator.Probe p);
 }

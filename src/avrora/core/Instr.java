@@ -125,6 +125,17 @@ public abstract class Instr implements InstrPrototype {
     }
 
     /**
+     * The <code>asInstr()</code> method converts an instruction into an AVR instruction. This is used
+     * internally for special types of instructions (that are used in the interpreter, for example)
+     * so that they behave correctly when reading them from an executing program.
+     * @return an object representing this instruction that is one of the valid AVR instructions; null
+     * if this instruction is a "special" type of instruction such as those used internally in the
+     * interpreter
+     */
+    public Instr asInstr() {
+        return this;
+    }
+    /**
      * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor pattern
      * uses two virtual dispatches combined with memory overloading to achieve dispatching on multiple types.
      * The result is clean and modular code.

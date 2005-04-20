@@ -127,22 +127,22 @@ public class ProbeTest {
             afterWriteStmts = a2;
         }
 
-        public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+        public void fireBeforeRead(State state, int data_addr) {
             recordEvent(name+".beforeRead");
             execute(beforeReadStmts);
         }
 
-        public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+        public void fireBeforeWrite(State state, int data_addr, byte value) {
             recordEvent(name+".beforeWrite");
             execute(beforeWriteStmts);
         }
 
-        public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
+        public void fireAfterRead(State state, int data_addr, byte value) {
             recordEvent(name+".afterRead");
             execute(afterReadStmts);
         }
 
-        public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
+        public void fireAfterWrite(State state, int data_addr, byte value) {
             recordEvent(name+".afterWrite");
             execute(afterWriteStmts);
         }

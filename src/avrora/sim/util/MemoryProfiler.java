@@ -49,12 +49,12 @@ public class MemoryProfiler extends Simulator.Watch.Empty {
         wcount = new long[size];
     }
 
-    public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+    public void fireBeforeRead(State state, int data_addr) {
         if (data_addr < rcount.length)
             rcount[data_addr]++;
     }
 
-    public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+    public void fireBeforeWrite(State state, int data_addr, byte value) {
         if (data_addr < wcount.length)
             wcount[data_addr]++;
     }

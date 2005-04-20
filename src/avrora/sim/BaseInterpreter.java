@@ -189,34 +189,34 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         public void write(byte value) {
             int pc_ = pc;
             Instr i = getCurrentInstr();
-            watches.fireBeforeWrite(i, pc_, BaseInterpreter.this, ioreg_num, value);
+            watches.fireBeforeWrite(BaseInterpreter.this, ioreg_num, value);
             ioreg.write(value);
-            watches.fireAfterWrite(i, pc_, BaseInterpreter.this, ioreg_num, value);
+            watches.fireAfterWrite(BaseInterpreter.this, ioreg_num, value);
         }
 
         public void writeBit(int bit, boolean val) {
             int pc_ = pc;
             Instr i = getCurrentInstr();
-            watches.fireBeforeBitWrite(i, pc_, BaseInterpreter.this, ioreg_num, bit, val);
+            watches.fireBeforeBitWrite(BaseInterpreter.this, ioreg_num, bit, val);
             ioreg.writeBit(bit, val);
-            watches.fireAfterBitWrite(i, pc_, BaseInterpreter.this, ioreg_num, bit, val);
+            watches.fireAfterBitWrite(BaseInterpreter.this, ioreg_num, bit, val);
         }
 
         public byte read() {
             int pc_ = pc;
             Instr i = getCurrentInstr();
-            watches.fireBeforeRead(i, pc_, BaseInterpreter.this, ioreg_num);
+            watches.fireBeforeRead(BaseInterpreter.this, ioreg_num);
             byte value = ioreg.read();
-            watches.fireAfterRead(i, pc_, BaseInterpreter.this, ioreg_num, value);
+            watches.fireAfterRead(BaseInterpreter.this, ioreg_num, value);
             return value;
         }
 
         public boolean readBit(int bit) {
             int pc_ = pc;
             Instr i = getCurrentInstr();
-            watches.fireBeforeBitRead(i, pc_, BaseInterpreter.this, ioreg_num, bit);
+            watches.fireBeforeBitRead(BaseInterpreter.this, ioreg_num, bit);
             boolean value = ioreg.readBit(bit);
-            watches.fireAfterBitRead(i, pc_, BaseInterpreter.this, ioreg_num, bit, value);
+            watches.fireAfterBitRead(BaseInterpreter.this, ioreg_num, bit, value);
             return value;
         }
     }
@@ -704,9 +704,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
         // SLOW PATH: consult with memory watches
         Instr i = getCurrentInstr();
-        p.fireBeforeRead(i, pc, this, address);
+        p.fireBeforeRead(this, address);
         byte val = getSRAM(address);
-        p.fireAfterRead(i, pc, this, address, val);
+        p.fireAfterRead(this, address, val);
 
         return val;
     }
@@ -789,6 +789,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
     }
 
+    public void writeProgramByte(int address, byte val) {
+        try {
+            flash_data[address] = val;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new AddressOutOfBoundsException("program", address);
+        }
+    }
+
     /**
      * The <code>getIOReg()</code> method is used to retrieve a reference to the actual <code>IOReg</code>
      * instance stored internally in the state. This is generally only used in the simulator and device
@@ -859,7 +867,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @param val     the value to write
      */
     public void writeDataByte(int address, byte val) {
-        Simulator.Watch p;
+        MulticastWatch p;
 
         try {
             // FAST PATH 1: no watches
@@ -881,9 +889,9 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
         // SLOW PATH: consult with memory watches
         Instr i = getCurrentInstr();
-        p.fireBeforeWrite(i, pc, this, address, val);
+        p.fireBeforeWrite(this, address, val);
         setSRAM(address, val);
-        p.fireAfterWrite(i, pc, this, address, val);
+        p.fireAfterWrite(this, address, val);
     }
 
     private void setSRAM(int address, byte val) {
@@ -1096,7 +1104,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
     }
 
-    protected void writeInstr(Instr i, int address) {
+    public void writeInstr(Instr i, int address) {
         flash_instr[address] = i;
     }
 

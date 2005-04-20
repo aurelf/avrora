@@ -315,47 +315,39 @@ public class Simulator {
         /**
          * The <code>fireBeforeRead()</code> method is called before the data address is read by the program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param data_addr the address of the data being referenced
          */
-        public void fireBeforeRead(Instr i, int address, State state, int data_addr);
+        public void fireBeforeRead(State state, int data_addr);
 
         /**
          * The <code>fireBeforeWrite()</code> method is called before the data address is written by the
          * program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param data_addr the address of the data being referenced
          * @param value     the value being written to the memory location
          */
-        public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value);
+        public void fireBeforeWrite(State state, int data_addr, byte value);
 
         /**
          * The <code>fireAfterRead()</code> method is called after the data address is read by the program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param data_addr the address of the data being referenced
          * @param value     the value of the memory location being read
          */
-        public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value);
+        public void fireAfterRead(State state, int data_addr, byte value);
 
         /**
          * The <code>fireAfterWrite()</code> method is called after the data address is written by the
          * program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param data_addr the address of the data being referenced
          * @param value     the value being written to the memory location
          */
-        public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value);
+        public void fireAfterWrite(State state, int data_addr, byte value);
 
         /**
          * The <code>Simulator.Watch.Empty</code> class acts as a base class with empty methods for
@@ -368,12 +360,10 @@ public class Simulator {
              * The <code>fireBeforeRead()</code> method is called before the data address is read by the program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
              */
-            public void fireBeforeRead(Instr i, int address, State state, int data_addr) {
+            public void fireBeforeRead(State state, int data_addr) {
                 // do nothing.
             }
 
@@ -382,13 +372,11 @@ public class Simulator {
              * program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeWrite(Instr i, int address, State state, int data_addr, byte value) {
+            public void fireBeforeWrite(State state, int data_addr, byte value) {
                 // do nothing.
             }
 
@@ -396,13 +384,11 @@ public class Simulator {
              * The <code>fireAfterRead()</code> method is called after the data address is read by the program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
              * @param value     the value of the memory location being read
              */
-            public void fireAfterRead(Instr i, int address, State state, int data_addr, byte value) {
+            public void fireAfterRead(State state, int data_addr, byte value) {
                 // do nothing.
             }
 
@@ -411,13 +397,11 @@ public class Simulator {
              * program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
              * @param value     the value being written to the memory location
              */
-            public void fireAfterWrite(Instr i, int address, State state, int data_addr, byte value) {
+            public void fireAfterWrite(State state, int data_addr, byte value) {
                 // do nothing.
             }
         }
@@ -438,47 +422,39 @@ public class Simulator {
         /**
          * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param ioreg_num the number of the IO register being read
          */
-        public void fireBeforeBitRead(Instr i, int address, State state, int ioreg_num, int bit);
+        public void fireBeforeBitRead(State state, int ioreg_num, int bit);
 
         /**
          * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
          * program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param ioreg_num the number of the IO register being read
          * @param value     the value being written to the memory location
          */
-        public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value);
+        public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value);
 
         /**
          * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param ioreg_num the number of the IO register being read
          * @param value     the value of the memory location being read
          */
-        public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value);
+        public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value);
 
         /**
          * The <code>fireAfterBitWrite()</code> method is called after the data address is written by the
          * program.
          *
-         * @param i         the instruction being probed
-         * @param address   the address at which this instruction resides
          * @param state     the state of the simulation
          * @param ioreg_num the number of the IO register being read
          * @param value     the value being written to the memory location
          */
-        public void fireAfterBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value);
+        public void fireAfterBitWrite(State state, int ioreg_num, int bit, boolean value);
 
         /**
          * The <code>Simulator.IORWatch.Empty</code> class acts as a base class with empty methods for
@@ -490,12 +466,10 @@ public class Simulator {
              * The <code>fireBeforeBitRead()</code> method is called before the data address is read by the program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              */
-            public void fireBeforeBitRead(Instr i, int address, State state, int ioreg_num, int bit) {
+            public void fireBeforeBitRead(State state, int ioreg_num, int bit) {
                 // do nothing.
             }
 
@@ -504,13 +478,11 @@ public class Simulator {
              * program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+            public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value) {
                 // do nothing.
             }
 
@@ -518,13 +490,11 @@ public class Simulator {
              * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              * @param value     the value of the memory location being read
              */
-            public void fireAfterBitRead(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+            public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value) {
                 // do nothing.
             }
 
@@ -533,13 +503,11 @@ public class Simulator {
              * program.
              * In the implementation of the Empty watch, this method does nothing.
              *
-             * @param i         the instruction being probed
-             * @param address   the address at which this instruction resides
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              * @param value     the value being written to the memory location
              */
-            public void fireAfterBitWrite(Instr i, int address, State state, int ioreg_num, int bit, boolean value) {
+            public void fireAfterBitWrite(State state, int ioreg_num, int bit, boolean value) {
                 // do nothing.
             }
         }
