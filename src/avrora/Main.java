@@ -245,8 +245,16 @@ public class Main {
     }
 
     private static void printFooter() {
-        Terminal.println("For more information, see the online documentation: ");
+        Terminal.println("For more information, see the online documentation at ");
         Terminal.printCyan("http://compilers.cs.ucla.edu/avrora");
+        Terminal.nextln();
+        Terminal.println("To report bugs or seek help, consult the Avrora mailing list: ");
+        Terminal.printCyan("http://lists.ucla.edu/cgi-bin/mailman/listinfo/avrora");
+        Terminal.nextln();
+        String version = Version.getVersion().toString();
+        Terminal.print("Please include the version number [");
+        Terminal.printBrightBlue(version);
+        Terminal.print("] when posting to the list.");
         Terminal.nextln();
     }
 
