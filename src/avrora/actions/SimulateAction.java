@@ -195,8 +195,8 @@ public class SimulateAction extends SimAction {
     }
     
     class BreakPointProbe extends Simulator.Probe.Empty {
-        public void fireBefore(Instr i, int address, State s) {
-            throw new BreakPointException(i, address, s);
+        public void fireBefore(State s, int pc) {
+            throw new BreakPointException(pc, s);
         }
     }
 

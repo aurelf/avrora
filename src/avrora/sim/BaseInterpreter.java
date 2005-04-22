@@ -76,11 +76,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     /**
      * The <code>FlashUpdater</code> class implements flash updates in the interpreter. Flash updates are caused
-     * by the execution of the SPM instruction and may behave slightly differently on different devices.
+     * by the execution of the ReprogrammableFlashSegment instruction and may behave slightly differently on different devices.
      */
     public interface FlashUpdater {
         /**
-         * The <code>update()</code> method is executed when the program executes the SPM instruction.
+         * The <code>update()</code> method is executed when the program executes the ReprogrammableFlashSegment instruction.
          */
         public void update();
     }
@@ -142,10 +142,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         public void accept(InstrVisitor v) {
-            probe.fireBefore(instr, address, BaseInterpreter.this);
+            probe.fireBefore(BaseInterpreter.this, address);
             instr.accept(interpreter);
             commit();
-            probe.fireAfter(instr, address, BaseInterpreter.this);
+            probe.fireAfter(BaseInterpreter.this, address);
 
             if ( probe.isEmpty() ) {
                 // if the probed instruction has no more probes, remove it altogether
@@ -754,7 +754,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @return the size in bytes of the instruction at the specified program address
      */
     public int getInstrSize(int npc) {
-        return simulator.program.readInstr(npc).getSize();
+        return getInstr(npc).getSize();
     }
 
     /**

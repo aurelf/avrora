@@ -63,7 +63,7 @@ public class StackMonitor extends MonitorFactory {
 
         final Simulator.Printer printer;
 
-        public void fireAfter(Instr i, int address, State s) {
+        public void fireAfter(State s, int pc) {
             int newStack = s.getSP();
             if (newStack == minStack1) return;
 

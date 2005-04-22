@@ -211,15 +211,15 @@ public class TripTimeMonitor extends MonitorFactory {
         }
 
         protected class PTPProbe extends Simulator.Probe.Empty {
-            public void fireBefore(Instr i, int address, State state) {
+            public void fireBefore(State state, int pc) {
                 long time = state.getCycles();
 
-                for ( Pair p = endArray[address]; p != null; p = p.startLink ) {
+                for ( Pair p = endArray[pc]; p != null; p = p.startLink ) {
                     if ( lastEnter[p.start] < 0 ) continue;
                     p.record(time - lastEnter[p.start]);
                 }
 
-                lastEnter[address] = time;
+                lastEnter[pc] = time;
             }
         }
 

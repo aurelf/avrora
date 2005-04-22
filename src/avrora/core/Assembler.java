@@ -35,10 +35,24 @@ package avrora.core;
 import avrora.Avrora;
 
 /**
+ * The <code>Assembler</code> class represents an assembler that is capable of
+ * encoding AVR assembly instructions into binary machine code.
+ *
  * @author Ben L. Titzer
  */
 public class Assembler {
 
+    /**
+     * The <code>encode()</code> method translates an assembly instruction into
+     * a sequence of bytes and writes them into an array. This method returns the
+     * number of bytes written into the array, which depends on the size of the
+     * instruction.
+     * @param i the instruction to encode into the array
+     * @param buffer an array of bytes into which to encode the instruction
+     * @param offset the offset in the buffer to which to write the bytes
+     * @return the number of bytes written into the array, which is equal to the
+     * size of the instruction
+     */
     public int encode(Instr i, byte[] buffer, int offset) {
         throw Avrora.unimplemented();
     }

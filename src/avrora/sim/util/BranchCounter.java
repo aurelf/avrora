@@ -66,12 +66,11 @@ public class BranchCounter extends Simulator.Probe.Empty {
      * the program counter of the new state. If the program counter is not equal to the instruction following
      * the branch, then the branch was taken.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireAfter(Instr i, int address, State state) {
-        int nextaddr = address + i.getSize();
+    public void fireAfter(State state, int pc) {
+        int nextaddr = pc + state.getInstr(pc).getSize();
         if (state.getPC() == nextaddr)
             nottakenCount++;
         else

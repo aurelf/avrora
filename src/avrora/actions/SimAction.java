@@ -354,11 +354,6 @@ public abstract class SimAction extends Action {
      */
     public static class BreakPointException extends RuntimeException {
         /**
-         * The <code>instr</code> field stores the instruction that caused the breakpoint.
-         */
-        public final Instr instr;
-
-        /**
          * The <code>address</code> field stores the address of the instruction that caused the breakpoint.
          */
         public final int address;
@@ -369,9 +364,8 @@ public abstract class SimAction extends Action {
          */
         public final State state;
 
-        public BreakPointException(Instr i, int a, State s) {
+        public BreakPointException(int a, State s) {
             super("breakpoint @ " + StringUtil.addrToString(a) + " reached");
-            instr = i;
             address = a;
             state = s;
         }
@@ -390,11 +384,6 @@ public abstract class SimAction extends Action {
     public static class TimeoutException extends RuntimeException {
 
         /**
-         * The <code>instr</code> field stores the next instruction to be executed after the timeout.
-         */
-        public final Instr instr;
-
-        /**
          * The <code>address</code> field stores the address of the next instruction to be executed after the
          * timeout.
          */
@@ -411,9 +400,8 @@ public abstract class SimAction extends Action {
          */
         public final long timeout;
 
-        public TimeoutException(Instr i, int a, State s, long t, String l) {
+        public TimeoutException(int a, State s, long t, String l) {
             super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + ' ' + l);
-            instr = i;
             address = a;
             state = s;
             timeout = t;
@@ -447,13 +435,12 @@ public abstract class SimAction extends Action {
          * implementation of the timeout, it simply decrements the timeout and and throws a TimeoutException
          * when the count reaches zero.
          *
-         * @param i       the instruction being probed
-         * @param address the address at which this instruction resides
          * @param state   the state of the simulation
+         * @param pc the address at which this instruction resides
          */
-        public void fireAfter(Instr i, int address, State state) {
+        public void fireAfter(State state, int pc) {
             if (--left <= 0)
-                throw new TimeoutException(i, address, state, timeout, "instructions");
+                throw new TimeoutException(pc, state, timeout, "instructions");
         }
     }
 }

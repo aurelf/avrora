@@ -246,20 +246,18 @@ public class Simulator {
         /**
          * The <code>fireBefore()</code> method is called before the probed instruction executes.
          *
-         * @param i       the instruction being probed
-         * @param address the address at which this instruction resides
          * @param state   the state of the simulation
+         * @param pc the address at which this instruction resides
          */
-        public void fireBefore(Instr i, int address, State state);
+        public void fireBefore(State state, int pc);
 
         /**
          * The <code>fireAfter()</code> method is called after the probed instruction executes.
          *
-         * @param i       the instruction being probed
-         * @param address the address at which this instruction resides
          * @param state   the state of the simulation
+         * @param pc the address at which this instruction resides
          */
-        public void fireAfter(Instr i, int address, State state);
+        public void fireAfter(State state, int pc);
 
         /**
          * The <code>Simulator.Probe.Empty</code> class is a simple base class for probes that do
@@ -271,11 +269,10 @@ public class Simulator {
              * The <code>fireBefore()</code> method is called before the probed instruction executes.
              * In the implementation of the <code>Empty</code> probe, this method is empty.
              *
-             * @param i       the instruction being probed
-             * @param address the address at which this instruction resides
              * @param state   the state of the simulation
+             * @param pc the address at which this instruction resides
              */
-            public void fireBefore(Instr i, int address, State state) {
+            public void fireBefore(State state, int pc) {
                 // do nothing
             }
 
@@ -283,11 +280,10 @@ public class Simulator {
              * The <code>fireAfter()</code> method is called after the probed instruction executes.
              * In the implementation of the <code>Empty</code> probe, this method is empty.
              *
-             * @param i       the instruction being probed
-             * @param address the address at which this instruction resides
              * @param state   the state of the simulation
+             * @param pc the address at which this instruction resides
              */
-            public void fireAfter(Instr i, int address, State state) {
+            public void fireAfter(State state, int pc) {
                 // do nothing
             }
         }
@@ -834,7 +830,7 @@ public class Simulator {
          */
         public void fire() {
             int pc = interpreter.getPC();
-            throw new SimAction.TimeoutException(interpreter.getInstr(pc), pc, interpreter, timeout, "clock cycles");
+            throw new SimAction.TimeoutException(pc, interpreter, timeout, "clock cycles");
         }
 
     }

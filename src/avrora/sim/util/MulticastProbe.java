@@ -51,14 +51,13 @@ public class MulticastProbe extends TransactionalList implements Simulator.Probe
      * implementation of the multicast probe, it simply calls the <code>fireBefore()</code> method on each of
      * the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireBefore(Instr i, int address, State state) {
+    public void fireBefore(State state, int pc) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.Probe)pos.object).fireBefore(i, address, state);
+            ((Simulator.Probe)pos.object).fireBefore(state, pc);
     }
 
     /**
@@ -66,13 +65,12 @@ public class MulticastProbe extends TransactionalList implements Simulator.Probe
      * implementation of the multicast probe, it simply calls the <code>fireAfter()</code> method on each of
      * the probes in the multicast set in the order in which they were inserted.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireAfter(Instr i, int address, State state) {
+    public void fireAfter(State state, int pc) {
         for (Link pos = head; pos != null; pos = pos.next)
-            ((Simulator.Probe)pos.object).fireAfter(i, address, state);
+            ((Simulator.Probe)pos.object).fireAfter(state, pc);
         endTransaction();
     }
 }

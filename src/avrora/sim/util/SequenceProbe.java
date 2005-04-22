@@ -95,13 +95,12 @@ public class SequenceProbe implements Simulator.Probe {
      * is incremented. When the nesting level is greater than one, then the sequence probe will delegate the
      * <code>fireBefore()</code> call to the user probe.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireBefore(Instr i, int address, State state) {
-        if (address == entry_addr) nesting++;
-        if (nesting > 0) probe.fireBefore(i, address, state);
+    public void fireBefore(State state, int pc) {
+        if (pc == entry_addr) nesting++;
+        if (nesting > 0) probe.fireBefore(state, pc);
     }
 
     /**
@@ -110,13 +109,12 @@ public class SequenceProbe implements Simulator.Probe {
      * the user probe.  If the address is the exit point, then the nesting level is decremented after the call
      * to <code>fireAfter()</code> of the user probe.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireAfter(Instr i, int address, State state) {
-        if (nesting > 0) probe.fireAfter(i, address, state);
-        if (address == exit_addr)
+    public void fireAfter(State state, int pc) {
+        if (nesting > 0) probe.fireAfter(state, pc);
+        if (pc == exit_addr)
             nesting = (nesting - 1) <= 0 ? 0 : nesting - 1;
     }
 

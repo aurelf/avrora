@@ -485,9 +485,9 @@ public class GDBServer extends MonitorFactory {
          * will stop the simulation in order to wait for GDB to connect to Avrora.
          */
         protected class StartupProbe implements Simulator.Probe {
-            public void fireBefore(Instr i, int address, State s) {
+            public void fireBefore(State s, int pc) {
                 if ( printer.enabled ) {
-                    printer.println("--IN STARTUP PROBE @ "+StringUtil.addrToString(address)+"--");
+                    printer.println("--IN STARTUP PROBE @ "+StringUtil.addrToString(pc)+"--");
                 }
                 Terminal.println("GDBServer listening on port "+port+"...");
                 Terminal.flush();
@@ -505,9 +505,9 @@ public class GDBServer extends MonitorFactory {
                 commandLoop(null);
             }
 
-            public void fireAfter(Instr i, int address, State s) {
+            public void fireAfter(State s, int pc) {
                 // remove ourselves from the beginning of the program after it has started
-                simulator.removeProbe(this, address);
+                simulator.removeProbe(this, pc);
             }
         }
 
@@ -517,9 +517,9 @@ public class GDBServer extends MonitorFactory {
          * implementing a breakpoint.
          */
         protected class BreakpointProbe extends Simulator.Probe.Empty {
-            public void fireBefore(Instr i, int address, State s) {
+            public void fireBefore(State s, int pc) {
                 if ( printer.enabled )
-                    printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(address)+"--");
+                    printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(pc)+"--");
                 commandLoop("T05");
             }
         }
@@ -530,16 +530,16 @@ public class GDBServer extends MonitorFactory {
          * executes, thus stepping by only a single instruction.
          */
         protected class StepProbe implements Simulator.Probe {
-            public void fireBefore(Instr i, int address, State s) {
+            public void fireBefore(State s, int pc) {
                 if ( printer.enabled )
-                    printer.println("--IN STEP PROBE @ "+StringUtil.addrToString(address)+"--");
+                    printer.println("--IN STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
             }
 
-            public void fireAfter(Instr i, int address, State s) {
+            public void fireAfter(State s, int pc) {
                 if ( printer.enabled )
-                    printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(address)+"--");
+                    printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
                 commandLoop("T05");
-                simulator.removeProbe(this, address);
+                simulator.removeProbe(this, pc);
             }
         }
 

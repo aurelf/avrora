@@ -200,10 +200,10 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             Instr i = getInstr(nextPC);
 
             // visit the actual instruction (or probe)
-            globalProbe.fireBefore(i, curPC, this);
+            globalProbe.fireBefore(this, curPC);
             i.accept(this);
             commit();
-            globalProbe.fireAfter(i, curPC, this);
+            globalProbe.fireAfter(this, curPC);
         }
     }
 

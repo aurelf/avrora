@@ -18,6 +18,7 @@
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
     1    sim  SimpleAir.removeRadio() does not wake remaining nodes
 
+    1  build  Fixed errors when building with javac in 1.5          (1.5.62)
     1  probe  Fix SerialMonitor                                     (1.5.58)
     1  probe  Fix StackMonitor                                      (1.5.58)
     1   isdl  Fix negative branch offsets in disassembler           (1.5.53)
@@ -82,6 +83,8 @@
     1   util  migrate to StringUtil.*
     1  probe  migrate to SourceMapping, remove Program.Location
 
+    2  probe  Changed fireXXX() to accept only state and PC         (1.5.62)
+    1    sim  Introduced Segment class for SRAM, flash, EEPROM      (1.5.62)
     2    sim  Introduce SourceMapping class                         (1.5.42)
     1    sim  Rename and move IOReg interface out of State          (1.5.39)
     1    sim  Move timeouts out of Simulator                        (1.5.39)
@@ -120,6 +123,7 @@
     2    cfg  Control flow graph construction and usage
     3  stack  Abstract value computations
     2    sim  Sleep modes
+    1    sim  Probes for skip instructions (instr. size calculation)
 
     2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
 

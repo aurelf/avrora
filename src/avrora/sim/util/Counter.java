@@ -55,11 +55,10 @@ public class Counter extends Simulator.Probe.Empty {
      * The <code>fireBefore()</code> method is called before the probed instruction executes. In the
      * implementation of the counter, it simply updates the internal counter.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireBefore(Instr i, int address, State state) {
+    public void fireBefore(State state, int pc) {
         count++;
     }
 

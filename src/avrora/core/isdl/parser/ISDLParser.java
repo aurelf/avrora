@@ -1580,8 +1580,8 @@ public class ISDLParser implements ISDLParserConstants {
         jj_expentry[i] = jj_lasttokens[i];
       }
       boolean exists = false;
-      for (java.util.Enumeration enum = jj_expentries.elements(); enum.hasMoreElements();) {
-        int[] oldentry = (int[])(enum.nextElement());
+      for (java.util.Enumeration enm = jj_expentries.elements(); enm.hasMoreElements();) {
+        int[] oldentry = (int[])(enm.nextElement());
         if (oldentry.length == jj_expentry.length) {
           exists = true;
           for (int i = 0; i < jj_expentry.length; i++) {

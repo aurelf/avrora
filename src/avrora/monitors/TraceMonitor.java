@@ -73,11 +73,11 @@ public class TraceMonitor extends MonitorFactory {
         int nesting;
 
         public class GlobalProbe implements Simulator.Probe {
-            public void fireBefore(Instr i, int addr, State s) {
-                print(s, i);
+            public void fireBefore(State s, int addr) {
+                print(s, s.getInstr(addr));
             }
 
-            public void fireAfter(Instr i, int addr, State s) {
+            public void fireAfter(State s, int addr) {
                 count++;
             }
         }
@@ -95,11 +95,11 @@ public class TraceMonitor extends MonitorFactory {
             // TODO: is this field hiding correct?
             int count;
 
-            public void fireBefore(Instr i, int addr, State s) {
+            public void fireBefore(State s, int addr) {
                 count++;
                 if ( nesting == 0 ) {
                     print("trace ("+pair+") begin: "+count+" --------------------------");
-                    print(s, i);
+                    print(s, s.getInstr(addr));
                     simulator.insertProbe(PROBE);
                 } else {
                     print("nested ("+pair+") begin: "+count+" --------------------------");
@@ -118,7 +118,7 @@ public class TraceMonitor extends MonitorFactory {
                 pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
             }
 
-            public void fireAfter(Instr i, int addr, State s) {
+            public void fireAfter(State s, int addr) {
                 nesting--;
                 if ( nesting == 0 ) {
                     print("trace ("+pair+") end --------------------------");

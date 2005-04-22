@@ -76,12 +76,11 @@ public class ProgramProfiler extends Simulator.Probe.Empty {
      * implementation of the program profiler, it simply increments the count of the instruction at the
      * specified address.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireBefore(Instr i, int address, State state) {
-        icount[address]++;
+    public void fireBefore(State state, int pc) {
+        icount[pc]++;
     }
 
 }

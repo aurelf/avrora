@@ -108,7 +108,7 @@ public class CallMonitor extends MonitorFactory {
                 this.itype = itype;
             }
 
-            public void fireAfter(Instr i, int addr, State s) {
+            public void fireAfter(State s, int addr) {
                 int npc = s.getPC();
                 String caddr = StringUtil.addrToString(addr);
                 String daddr = sm.getName(npc);
@@ -158,7 +158,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         class InterruptProbe extends Simulator.Probe.Empty {
-            public void fireBefore(Instr i, int addr, State s) {
+            public void fireBefore(State s, int addr) {
                 int inum = (addr / 4) + 1;
                 String istr;
                 if ( inum == 1) {
@@ -180,7 +180,7 @@ public class CallMonitor extends MonitorFactory {
                 this.itype = itype;
             }
 
-            public void fireAfter(Instr i, int addr, State s) {
+            public void fireAfter(State s, int addr) {
                 int npc = s.getPC();
                 String daddr = StringUtil.addrToString(npc);
                 pop(daddr, itype);

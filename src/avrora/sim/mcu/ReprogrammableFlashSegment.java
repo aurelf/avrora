@@ -32,20 +32,17 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.BaseInterpreter;
-import avrora.sim.RWRegister;
-import avrora.sim.Simulator;
+import avrora.sim.*;
+import avrora.sim.util.MulticastProbe;
 import avrora.util.Arithmetic;
-import avrora.core.Register;
-import avrora.core.Instr;
-import avrora.core.Operand;
-import avrora.core.InstrVisitor;
+import avrora.util.StringUtil;
+import avrora.core.*;
 import avrora.Avrora;
 
 /**
  * @author Ben L. Titzer
  */
-public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpdater {
+public abstract class ReprogrammableFlashSegment extends FlashSegment {
 
     private static final int ERASE_CYCLES = 27280; // from hardware manual
     private static final int WRITE_CYCLES = 27280; // from hardware manual
@@ -62,6 +59,8 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
     private static final int SPMCSR_LOWERBITS = 0x1f;
 
     private static final byte DEFAULT_VALUE = (byte)0xff;
+
+    Disassembler disassembler = new Disassembler();
 
     private class SPMCSR_reg extends RWRegister {
         ResetEvent reset = new ResetEvent();
@@ -119,10 +118,12 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
     final SPMCSR_reg SPMCSR;
     final int pagesize;
     final int addressMask;
+    final MainClock mainClock;
 
-    public SPM(AtmelMicrocontroller mcu, int pagesize) {
-        super("spm", mcu);
+    public ReprogrammableFlashSegment(String name, int size, AtmelMicrocontroller mcu, ErrorReporter er, int pagesize) {
+        super(name, size, mcu.getSimulator().getInterpreter(), er);
         SPMCSR = new SPMCSR_reg();
+        mainClock = mcu.getClockDomain().getMainClock();
         this.pagesize = pagesize;
         this.addressMask = Arithmetic.getBitRangeMask(0, pagesize);
         resetBuffer();
@@ -134,7 +135,7 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
         int Z = interpreter.getRegisterWord(Register.Z);
         int pageoffset = 2 * (Z & addressMask);
         int pagenum = Z >> pagesize;
-        // do not update the SPM register yet
+        // do not update the ReprogrammableFlashSegment register yet
         int state = SPMCSR.getState();
         switch ( state ) {
             case STATE_PGERASE:
@@ -191,9 +192,9 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
             int addr = pagenum * size;
             for ( int offset = 0; offset < size; offset++) {
                 int baddr = addr + offset;
-                interpreter.writeProgramByte(baddr, buffer[offset]);
+                write(baddr, buffer[offset]);
                 if ( (offset & 1) == 0)
-                    interpreter.writeInstr(new DisassembleInstr(baddr), baddr);
+                    replaceInstr(baddr, new DisassembleInstr(baddr));
             }
             SPMCSR.reset();
         }
@@ -214,15 +215,23 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
             int addr = pagenum * size;
             for ( int offset = 0; offset < size; offset++) {
                 int baddr = addr + offset;
-                interpreter.writeProgramByte(baddr, DEFAULT_VALUE);
+                write(baddr, DEFAULT_VALUE);
                 if ( (offset & 1) == 0)
-                    interpreter.writeInstr(new DisassembleInstr(baddr), baddr);
+                    replaceInstr(baddr, new DisassembleInstr(baddr));
             }
             SPMCSR.reset();
         }
     }
 
-    void resetBuffer() {
+    void replaceInstr(int address, Instr i) {
+        throw Avrora.unimplemented();
+    }
+
+    /**
+     * The <code>resetBuffer()</code> method resets the temporary buffer used for the SPM instruction
+     * to its default value.
+     */
+    protected void resetBuffer() {
         buffer = new byte[bufferSize()];
         for ( int cntr = 0; cntr < buffer.length; cntr++) {
             buffer[cntr] = DEFAULT_VALUE;
@@ -234,6 +243,13 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
         return 2 << pagesize;
     }
 
+    /**
+     * The <code>DisasssembleInstr</code> class represents an instruction that is used by the
+     * interpreter to support dynamic code update. Whenever machine code is altered, this
+     * instruction will replace the instruction(s) at that location so that when the program
+     * attempts to execute the instruction, it will first be disassembled and then it will
+     * be executed.
+     */
     public class DisassembleInstr extends Instr {
 
         protected final int address;
@@ -244,7 +260,13 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
         }
 
         public void accept(InstrVisitor v) {
-            throw Avrora.unimplemented();
+            try {
+                Instr i = disassembler.disassemble(0, segment_data, address);
+                replaceInstr(address, i);
+                i.accept(v);
+            } catch (Disassembler.InvalidInstruction e) {
+                throw Avrora.failure("invalid instruction at "+StringUtil.addrToString(address));
+            }
         }
 
         public Instr build(int address, Operand[] ops) {
@@ -254,5 +276,16 @@ public class SPM extends AtmelInternalDevice implements BaseInterpreter.FlashUpd
         public String getOperands() {
             throw Avrora.failure("DisassembleInstr has no operands");
         }
+
+        public Instr asInstr() {
+            try {
+                Instr i = disassembler.disassemble(0, segment_data, address);
+                replaceInstr(address, i);
+                return i;
+            } catch (Disassembler.InvalidInstruction e) {
+                return null;
+            }
+        }
     }
+
 }

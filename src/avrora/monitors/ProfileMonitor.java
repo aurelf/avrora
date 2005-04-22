@@ -150,13 +150,13 @@ public class ProfileMonitor extends MonitorFactory {
                 time = it;
             }
 
-            public void fireBefore(Instr i, int address, State state) {
-                count[address]++;
+            public void fireBefore(State state, int pc) {
+                count[pc]++;
                 timeBegan = state.getCycles();
             }
 
-            public void fireAfter(Instr i, int address, State state) {
-                time[address] += state.getCycles() - timeBegan;
+            public void fireAfter(State state, int pc) {
+                time[pc] += state.getCycles() - timeBegan;
             }
         }
 
@@ -172,8 +172,8 @@ public class ProfileMonitor extends MonitorFactory {
                 count = ic;
             }
 
-            public void fireBefore(Instr i, int address, State state) {
-                count[address]++;
+            public void fireBefore(State state, int pc) {
+                count[pc]++;
             }
         }
 

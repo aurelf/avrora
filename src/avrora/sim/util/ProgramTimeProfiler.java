@@ -78,11 +78,10 @@ public class ProgramTimeProfiler implements Simulator.Probe {
      * implementation of the program profiler, it simply remembers the timestamp at the beginning of the
      * instruction.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireBefore(Instr i, int address, State state) {
+    public void fireBefore(State state, int pc) {
         timeBegan = state.getCycles();
     }
 
@@ -91,11 +90,10 @@ public class ProgramTimeProfiler implements Simulator.Probe {
      * implementation of the profiler, it counts the number of cycles consumed in executing this instruction
      * and adds it to the count for this instruction.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param pc the address at which this instruction resides
      */
-    public void fireAfter(Instr i, int address, State state) {
-        itime[address] += state.getCycles() - timeBegan;
+    public void fireAfter(State state, int pc) {
+        itime[pc] += state.getCycles() - timeBegan;
     }
 }

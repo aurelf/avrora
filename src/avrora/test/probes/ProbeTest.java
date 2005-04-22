@@ -94,12 +94,12 @@ public class ProbeTest {
             afterStmts = a;
         }
 
-        public void fireBefore(Instr i, int addr, State s) {
+        public void fireBefore(State s, int addr) {
             recordEvent(name+".before");
             execute(beforeStmts);
         }
 
-        public void fireAfter(Instr i, int addr, State s) {
+        public void fireAfter(State s, int addr) {
             recordEvent(name+".after");
             execute(afterStmts);
         }
