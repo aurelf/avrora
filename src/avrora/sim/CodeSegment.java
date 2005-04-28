@@ -44,6 +44,23 @@ import avrora.sim.mcu.AtmelMicrocontroller;
  * @author Ben L. Titzer
  */
 public class CodeSegment extends Segment {
+    /**
+     * The <code>replaceInstr()</code> method is used internally to update an instruction in the flash segment
+     * without losing all of its attached instrumentation (i.e. probes and watches).
+     * @param address the address in the code segment of the instruction
+     * @param i the new instruction to place at this location in the flash
+     */
+    protected void replaceInstr(int address, Instr i) {
+        Instr instr = getInstr(address);
+        if ( instr == null )
+            writeInstr(address, i);
+        else {
+            if ( instr instanceof ProbedInstr ) {
+                ProbedInstr pi = new ProbedInstr(i, (ProbedInstr)instr);
+                writeInstr(address, pi);
+            }
+        }
+    }
 
     /**
      * The <code>CodeSegment.Factory</code> class is used to create a new code segment for a new interpreter.
@@ -190,7 +207,15 @@ public class CodeSegment extends Segment {
      * @param p the probe to insert on this instruction
      */
     public void insertProbe(int address, Simulator.Probe p) {
-        throw Avrora.unimplemented();
+        Instr instr = getInstr(address);
+        if ( instr instanceof ProbedInstr ) {
+            ProbedInstr pri = (ProbedInstr)instr;
+            pri.add(p);
+        } else {
+            ProbedInstr pri = new ProbedInstr(instr, address);
+            pri.add(p);
+            writeInstr(address, pri);
+        }
     }
 
     /**
@@ -202,7 +227,11 @@ public class CodeSegment extends Segment {
      * @param p the probe to isnert on this instruction
      */
     public void removeProbe(int address, Simulator.Probe p) {
-        throw Avrora.unimplemented();
+        Instr instr = getInstr(address);
+        if ( instr instanceof ProbedInstr ) {
+            ProbedInstr pri = (ProbedInstr)instr;
+            pri.remove(p);
+        }
     }
 
     protected void writeInstr(int address, Instr i) {

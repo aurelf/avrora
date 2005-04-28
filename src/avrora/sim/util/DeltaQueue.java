@@ -252,6 +252,23 @@ public class DeltaQueue {
 
     }
 
+    /**
+     * The <code>skipAhead()</code> method skips ahead to the next event in the queue and fires it.
+     */
+    public void skipAhead() {
+        if ( head == null ) {
+            // fast path 1: nothing in the queue
+            count++;
+            return;
+        }
+
+        Link h = head;
+        count += h.delta;
+        head = h.next;
+        h.fire();
+        free(h);
+    }
+
     private void advanceSlow(long cycles) {
         // slow path: head (and maybe more) fires
         while (head != null && cycles > 0) {

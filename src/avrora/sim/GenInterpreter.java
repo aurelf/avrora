@@ -174,20 +174,18 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     private void sleepLoop() {
         innerLoop = true;
         while (innerLoop) {
-            long delta = clock.getFirstEventDelta();
-            if (delta <= 0) delta = 1;
-            advanceCycles(delta);
+            clock.skipAhead();
         }
     }
 
     private void fastLoop() {
         innerLoop = true;
         while (innerLoop) {
-            Instr i = getInstr(nextPC);
+            Instr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
             i.accept(this);
-            // NOTE: commit() might be called twice
+            // NOTE: commit() might be called twice, but this is ok
             commit();
         }
     }
@@ -197,7 +195,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         while (innerLoop) {
             // get the current instruction
             int curPC = nextPC; // at this point pc == nextPC
-            Instr i = getInstr(nextPC);
+            Instr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
             globalProbe.fireBefore(this, curPC);

@@ -318,24 +318,6 @@ public class ReprogrammableCodeSegment extends CodeSegment {
     }
 
     /**
-     * The <code>replaceInstr()</code> method is used internally to update an instruction in the flash segment
-     * without losing all of its attached instrumentation (i.e. probes and watches).
-     * @param address the address in the code segment of the instruction
-     * @param i the new instruction to place at this location in the flash
-     */
-    void replaceInstr(int address, Instr i) {
-        Instr instr = getInstr(address);
-        if ( instr == null )
-            writeInstr(address, i);
-        else {
-            if ( instr instanceof ProbedInstr ) {
-                ProbedInstr pi = new ProbedInstr(i, (ProbedInstr)instr);
-                writeInstr(address, pi);
-            }
-        }
-    }
-
-    /**
      * The <code>resetBuffer()</code> method resets the temporary buffer used for the SPM instruction
      * to its default value.
      */

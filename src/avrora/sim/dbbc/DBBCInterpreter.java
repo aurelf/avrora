@@ -128,7 +128,8 @@ public class DBBCInterpreter extends GenInterpreter {
             int addr = b.getAddress();
             DBBC.CompiledBlock cb = compiler.getCompiledBlock(addr);
             if (cb != null) {
-                flash_instr[addr] = new CompiledBlockBeginInstr(flash_instr[addr], addr, cb, this);
+                throw Avrora.unimplemented();
+                //flash_instr[addr] = new CompiledBlockBeginInstr(flash_instr[addr], addr, cb, this);
             }
         }
     }

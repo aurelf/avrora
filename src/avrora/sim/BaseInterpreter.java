@@ -55,8 +55,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected final ActiveRegister[] ioregs;
     public byte[] sram;
     protected MulticastWatch[] sram_watches;
-    protected Instr[] flash_instr;
-    protected byte[] flash_data;
     protected long postedInterrupts;
     protected final int sram_start;
     protected final int sram_max;
@@ -72,27 +70,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected RWRegister SPL_reg;
     protected RWRegister SPH_reg;
 
-    protected FlashUpdater updater;
+    protected final CodeSegment flash;
+    protected Instr[] shared_instr; // shared for performance reasons only
 
     /**
-     * The <code>FlashUpdater</code> class implements flash updates in the interpreter. Flash updates are caused
-     * by the execution of the ReprogrammableCodeSegment instruction and may behave slightly differently on different devices.
-     */
-    public interface FlashUpdater {
-        /**
-         * The <code>update()</code> method is executed when the program executes the ReprogrammableCodeSegment instruction.
-         */
-        public void update();
-    }
-
-    protected static final FlashUpdater UNSUPPORTED_SPM = new FlashUpdater() {
-        public void update() {
-            throw Avrora.unimplemented();
-        }
-    };
-
-    /**
-     * The <code>activeProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
+     * The <code>globalProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
      * all of the probes to be fired before and after the main execution runLoop--i.e. before and after every
      * instruction.
      */
@@ -106,61 +88,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected boolean innerLoop;
 
     protected void storeProgramMemory() {
-        updater.update();
-    }
-
-
-    /**
-     * The ProbedInstr class represents a wrapper around an instruction in the program that executes the
-     * probes before executing the instruction and after the instruction. For most methods on the
-     * <code>Instr</code> class, it simply forwards the call to the original instruction.
-     */
-    class ProbedInstr extends Instr {
-        protected final int address;
-        protected final Instr instr;
-        protected final MulticastProbe probe;
-        protected final InstrVisitor interpreter;
-
-        protected ProbedInstr(Instr i, int a) {
-            super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
-            instr = i;
-            address = a;
-            probe = new MulticastProbe();
-            interpreter = BaseInterpreter.this;
-        }
-
-        void add(Simulator.Probe p) {
-            probe.add(p);
-        }
-
-        void remove(Simulator.Probe p) {
-            probe.remove(p);
-        }
-
-        boolean isEmpty() {
-            return probe.isEmpty();
-        }
-
-        public void accept(InstrVisitor v) {
-            probe.fireBefore(BaseInterpreter.this, address);
-            instr.accept(interpreter);
-            commit();
-            probe.fireAfter(BaseInterpreter.this, address);
-
-            if (probe.isEmpty()) {
-                // if the probed instruction has no more probes, remove it altogether
-                writeInstr(instr, address);
-            }
-        }
-
-        public Instr build(int address, Operand[] ops) {
-            throw Avrora.failure("ProbedInstr should be confined to BaseInterpreter");
-        }
-
-        public String getOperands() {
-            return instr.getOperands();
-        }
-
+        flash.update();
     }
 
     class ProbedActiveRegister implements ActiveRegister {
@@ -187,24 +115,18 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         public void write(byte value) {
-            int pc_ = pc;
-            Instr i = getCurrentInstr();
             watches.fireBeforeWrite(BaseInterpreter.this, ioreg_num, value);
             ioreg.write(value);
             watches.fireAfterWrite(BaseInterpreter.this, ioreg_num, value);
         }
 
         public void writeBit(int bit, boolean val) {
-            int pc_ = pc;
-            Instr i = getCurrentInstr();
             watches.fireBeforeBitWrite(BaseInterpreter.this, ioreg_num, bit, val);
             ioreg.writeBit(bit, val);
             watches.fireAfterBitWrite(BaseInterpreter.this, ioreg_num, bit, val);
         }
 
         public byte read() {
-            int pc_ = pc;
-            Instr i = getCurrentInstr();
             watches.fireBeforeRead(BaseInterpreter.this, ioreg_num);
             byte value = ioreg.read();
             watches.fireAfterRead(BaseInterpreter.this, ioreg_num, value);
@@ -212,8 +134,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         public boolean readBit(int bit) {
-            int pc_ = pc;
-            Instr i = getCurrentInstr();
             watches.fireBeforeBitRead(BaseInterpreter.this, ioreg_num, bit);
             boolean value = ioreg.readBit(bit);
             watches.fireAfterBitRead(BaseInterpreter.this, ioreg_num, bit, value);
@@ -313,93 +233,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
     }
 
-    private class NoInstr extends Instr {
-
-        NoInstr() {
-            super(null);
-        }
-
-        /**
-         * The <code>getOperands()</code> method returns a string representation of the operands of the
-         * instruction. This is useful for printing and tracing of instructions as well as generating
-         * listings.
-         *
-         * @return a string representing the operands of the instruction
-         */
-        public String getOperands() {
-            throw Avrora.failure("no instruction here");
-        }
-
-        /**
-         * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor
-         * pattern uses two virtual dispatches combined with memory overloading to achieve dispatching on
-         * multiple types. The result is clean and modular code.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(InstrVisitor v) {
-            throw new NoSuchInstructionException(getPC());
-        }
-
-        /**
-         * The <code>build()</code> method constructs a new <code>Instr</code> instance with the given
-         * operands, checking the operands against the constraints that are specific to each instruction.
-         *
-         * @param pc  the address at which the instruction will be located
-         * @param ops the operands to the instruction
-         * @return a new <code>Instr</code> instance representing the instruction with the given operands
-         */
-        public Instr build(int pc, Operand[] ops) {
-            throw Avrora.failure("no instruction here");
-        }
-
-    }
-
-    private class MisalignedInstr extends Instr {
-
-        MisalignedInstr() {
-            super(null);
-        }
-
-        /**
-         * The <code>getOperands()</code> method returns a string representation of the operands of the
-         * instruction. This is useful for printing and tracing of instructions as well as generating
-         * listings.
-         *
-         * @return a string representing the operands of the instruction
-         */
-        public String getOperands() {
-            throw Avrora.failure("no instruction here");
-        }
-
-        /**
-         * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor
-         * pattern uses two virtual dispatches combined with memory overloading to achieve dispatching on
-         * multiple types. The result is clean and modular code.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(InstrVisitor v) {
-            throw new PCAlignmentException(getPC());
-        }
-
-        /**
-         * The <code>build()</code> method constructs a new <code>Instr</code> instance with the given
-         * operands, checking the operands against the constraints that are specific to each instruction.
-         *
-         * @param pc  the address at which the instruction will be located
-         * @param ops the operands to the instruction
-         * @return a new <code>Instr</code> instance representing the instruction with the given operands
-         */
-        public Instr build(int pc, Operand[] ops) {
-            throw Avrora.failure("no instruction here");
-        }
-
-    }
-
-    private final NoInstr NO_INSTR = new NoInstr();
-    private final MisalignedInstr MISALIGNED_INSTR = new MisalignedInstr();
-
     public final int SREG;
     public final int RAMPZ;
 
@@ -437,8 +270,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
         this.clock = simulator.clock;
 
-        this.updater = UNSUPPORTED_SPM;
-
         MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
 
         SREG = props.getIOReg("SREG");
@@ -460,37 +291,18 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         // allocate SRAM
         sram = new byte[sram_max];
 
-        // make a local copy of the program's instructions
-        makeImpression(p);
+        // allocate FLASH
+        ErrorReporter reporter = new ErrorReporter();
+        flash = props.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
+        reporter.segment = flash;
+        // TODO: implement share() method
+        shared_instr = flash.shareCode(null);
 
         // initialize IO registers to default values
         initializeIORegs();
 
         SPL_reg = (RWRegister) ioregs[props.getIOReg("SPL")];
         SPH_reg = (RWRegister) ioregs[props.getIOReg("SPH")];
-    }
-
-    protected final void makeImpression(Program p) {
-        flash_instr = new Instr[p.program_end];
-        flash_data = new byte[p.program_end];
-
-        for (int cntr = 0; cntr < p.program_end;) {
-            Instr i = p.readInstr(cntr);
-            if (i != null) {
-                flash_instr[cntr] = i;
-                for (int s = 1; s < i.getSize(); s++)
-                    flash_instr[cntr + s] = NO_INSTR;
-                cntr += i.getSize();
-            } else {
-                flash_instr[cntr] = NO_INSTR;
-                flash_instr[cntr + 1] = MISALIGNED_INSTR;
-                cntr += 2;
-            }
-        }
-
-        // now initialize the flash data
-        for (int cntr = 0; cntr < p.program_end; cntr++)
-            flash_data[cntr] = p.readProgramByte(cntr);
     }
 
     protected void start() {
@@ -521,14 +333,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
 
     protected void insertProbe(Simulator.Probe p, int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if (pi == null) {
-            Instr instr = getInstr(addr);
-            if (instr == null || instr.properties == null) return; // do not insert probes on non-existant instructions
-            pi = new ProbedInstr(instr, addr);
-            writeInstr(pi, addr);
-        }
-        pi.add(p);
+        flash.insertProbe(addr, p);
     }
 
     /**
@@ -543,10 +348,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     protected void removeProbe(Simulator.Probe p, int addr) {
-        ProbedInstr pi = getProbedInstr(addr);
-        if (pi != null) {
-            pi.remove(p);
-        }
+        flash.removeProbe(addr, p);
     }
 
     /**
@@ -714,6 +516,25 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         return val;
     }
 
+    protected class ErrorReporter implements Segment.ErrorReporter {
+        Segment segment;
+
+        public byte readError(int address) {
+            String idstr = simulator.getIDTimeString();
+            Terminal.print(idstr);
+            Terminal.printYellow(StringUtil.toHex(pc, 4));
+            Terminal.println(": illegal read from " + segment.name + " at address " + StringUtil.addrToString(address));
+            return segment.value;
+        }
+
+        public void writeError(int address, byte value) {
+            String idstr = simulator.getIDTimeString();
+            Terminal.print(idstr);
+            Terminal.printYellow(StringUtil.toHex(pc, 4));
+            Terminal.println(": illegal write to " + segment.name + " at address " + StringUtil.addrToString(address));
+        }
+    }
+
     private void readError(String segment, int address) {
         String idstr = simulator.getIDTimeString();
         Terminal.print(idstr);
@@ -784,19 +605,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * @throws AddressOutOfBoundsException if the specified address is not the valid program memory range
      */
     public byte getProgramByte(int address) {
-        try {
-            return flash_data[address];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new AddressOutOfBoundsException("program", address);
-        }
+        return flash.read(address);
     }
 
     public void writeProgramByte(int address, byte val) {
-        try {
-            flash_data[address] = val;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new AddressOutOfBoundsException("program", address);
-        }
+        flash.write(address, val);
     }
 
     /**
@@ -1098,18 +911,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @param address the byte address from which to read the instruction
      * @return a reference to the <code>Instr</code> object representing the instruction at that address in
-     *         the program
+     *         the program; null if there is no instruction at the specified address
      */
     public Instr getInstr(int address) {
-        try {
-            return flash_instr[address];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new PCOutOfBoundsException(address);
-        }
-    }
-
-    public void writeInstr(Instr i, int address) {
-        flash_instr[address] = i;
+        return flash.readInstr(address);
     }
 
     /**
@@ -1157,12 +962,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     public void unpostInterrupt(int num) {
         if (num > 0) {
             postedInterrupts &= ~(1 << num);
-            innerLoop = false;
         }
     }
 
     public void setPostedInterrupts(long posted) {
-        innerLoop = false;
+        if ( posted != 0 )
+            innerLoop = false;
         postedInterrupts = posted;
     }
 
@@ -1188,20 +993,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     public void disableInterrupts() {
         I = false;
-        innerLoop = false;
-    }
-
-    protected ProbedInstr getProbedInstr(int addr) {
-        Instr i = getInstr(addr);
-        if (i instanceof ProbedInstr)
-            return ((ProbedInstr) i);
-        else
-            return null;
     }
 
     protected void commit() {
         pc = nextPC;
-        advanceCycles(cyclesConsumed);
+        clock.advance(cyclesConsumed);
+        cyclesConsumed = 0;
     }
 
     private class SREG_reg implements ActiveRegister {

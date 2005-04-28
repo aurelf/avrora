@@ -37,10 +37,7 @@ import avrora.Avrora;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.core.LabelMapping;
-import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.Clock;
-import avrora.sim.MainClock;
+import avrora.sim.*;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.*;
 

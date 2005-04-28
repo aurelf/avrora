@@ -110,4 +110,11 @@ public class MainClock extends Clock {
     public long getFirstEventDelta() {
         return eventQueue.getFirstEventTime();
     }
+
+    /**
+     * The <code>skipAhead()</code> method skips ahead to the next event in the queue and fires it.
+     */
+    public void skipAhead() {
+        eventQueue.skipAhead();
+    }
 }

@@ -37,6 +37,8 @@ import avrora.util.StringUtil;
 import avrora.Avrora;
 import avrora.core.Instr;
 
+import java.util.Arrays;
+
 /**
  * The <code>Segment</code> class represents a segment of byte-addressable memory that
  * supports probing. It is used to represent the SRAM, the flash, and the EEPROM. For
@@ -75,8 +77,7 @@ public class Segment {
 
         // if the default value is something other than zero, initialize the array
         if ( defvalue != 0 ) {
-            for ( int cntr = 0; cntr < size; cntr++ )
-                segment_data[cntr] = defvalue;
+            Arrays.fill(segment_data, defvalue);
         }
     }
 
