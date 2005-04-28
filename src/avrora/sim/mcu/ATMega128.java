@@ -302,6 +302,7 @@ public class ATMega128 extends ATMegaFamily {
                 ATMEGA128_FLASH_SIZE, // size of flash in bytes
                 ATMEGA128_EEPROM_SIZE, // size of eeprom in bytes
                 ATMEGA128_NUM_PINS, // number of pins
+                new ReprogrammableCodeSegment.Factory(ATMEGA128_FLASH_SIZE, 7),
                 pinAssignments, // the assignment of names to physical pins
                 ioregAssignments); // the assignment of names to IO registers
 

@@ -76,11 +76,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     /**
      * The <code>FlashUpdater</code> class implements flash updates in the interpreter. Flash updates are caused
-     * by the execution of the ReprogrammableFlashSegment instruction and may behave slightly differently on different devices.
+     * by the execution of the ReprogrammableCodeSegment instruction and may behave slightly differently on different devices.
      */
     public interface FlashUpdater {
         /**
-         * The <code>update()</code> method is executed when the program executes the ReprogrammableFlashSegment instruction.
+         * The <code>update()</code> method is executed when the program executes the ReprogrammableCodeSegment instruction.
          */
         public void update();
     }
@@ -147,7 +147,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             commit();
             probe.fireAfter(BaseInterpreter.this, address);
 
-            if ( probe.isEmpty() ) {
+            if (probe.isEmpty()) {
                 // if the probed instruction has no more probes, remove it altogether
                 writeInstr(instr, address);
             }
@@ -269,7 +269,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected final MainClock clock;
 
-    public class NoSuchInstructionException extends Avrora.Error {
+    public MainClock getMainClock() {
+        return clock;
+    }
+
+    public static class NoSuchInstructionException extends Avrora.Error {
         public final int badPc;
 
         protected NoSuchInstructionException(int pc) {
@@ -278,7 +282,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
     }
 
-    public class PCOutOfBoundsException extends Avrora.Error {
+    public static class PCOutOfBoundsException extends Avrora.Error {
         public final int badPc;
 
         protected PCOutOfBoundsException(int pc) {
@@ -287,7 +291,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
     }
 
-    public class PCAlignmentException extends Avrora.Error {
+    public static class PCAlignmentException extends Avrora.Error {
         public final int badPc;
 
         protected PCAlignmentException(int pc) {
@@ -302,7 +306,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         public final int badPc;
 
         protected AddressOutOfBoundsException(String s, int da) {
-            super("Program error", "at pc = "+StringUtil.addrToString(pc)+", illegal access of "+ StringUtil.quote(s) + " at " + StringUtil.addrToString(da));
+            super("Program error", "at pc = " + StringUtil.addrToString(pc) + ", illegal access of " + StringUtil.quote(s) + " at " + StringUtil.addrToString(da));
             this.data_addr = da;
             this.segment = s;
             this.badPc = pc;
@@ -456,15 +460,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         // allocate SRAM
         sram = new byte[sram_max];
 
-
         // make a local copy of the program's instructions
         makeImpression(p);
 
         // initialize IO registers to default values
         initializeIORegs();
 
-        SPL_reg = (RWRegister)ioregs[props.getIOReg("SPL")];
-        SPH_reg = (RWRegister)ioregs[props.getIOReg("SPH")];
+        SPL_reg = (RWRegister) ioregs[props.getIOReg("SPL")];
+        SPH_reg = (RWRegister) ioregs[props.getIOReg("SPH")];
     }
 
     protected final void makeImpression(Program p) {
@@ -521,7 +524,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         ProbedInstr pi = getProbedInstr(addr);
         if (pi == null) {
             Instr instr = getInstr(addr);
-            if ( instr == null || instr.properties == null ) return; // do not insert probes on non-existant instructions
+            if (instr == null || instr.properties == null) return; // do not insert probes on non-existant instructions
             pi = new ProbedInstr(instr, addr);
             writeInstr(pi, addr);
         }
@@ -581,8 +584,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
         ActiveRegister ar = ioregs[ioreg_num];
         ProbedActiveRegister par;
-        if ( ar instanceof ProbedActiveRegister ) {
-            par = (ProbedActiveRegister)ar;
+        if (ar instanceof ProbedActiveRegister) {
+            par = (ProbedActiveRegister) ar;
         } else {
             par = new ProbedActiveRegister(ar, ioreg_num);
             ioregs[ioreg_num] = par;
@@ -593,12 +596,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
         ActiveRegister ar = ioregs[ioreg_num];
         ProbedActiveRegister par;
-        if ( ar instanceof ProbedActiveRegister ) {
-            par = (ProbedActiveRegister)ar;
+        if (ar instanceof ProbedActiveRegister) {
+            par = (ProbedActiveRegister) ar;
             par.remove(p);
-            if ( par.isEmpty() )
+            if (par.isEmpty())
                 ioregs[ioreg_num] = par.ioreg;
-        } 
+        }
     }
 
     protected final void initializeIORegs() {
@@ -689,14 +692,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         Simulator.Watch p;
         try {
             // FAST PATH 1: no watches
-            if ( sram_watches == null )
+            if (sram_watches == null)
                 return getSRAM(address);
 
             // FAST PATH 2: no watches for this address
             p = sram_watches[address];
-            if ( p == null)
+            if (p == null)
                 return getSRAM(address);
-        } catch ( ArrayIndexOutOfBoundsException e ) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             // ERROR: program tried to read memory that is not present
             readError("sram", address);
             return 0;
@@ -715,14 +718,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         String idstr = simulator.getIDTimeString();
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
-        Terminal.println(": illegal read from "+segment+" at address "+StringUtil.addrToString(address));
+        Terminal.println(": illegal read from " + segment + " at address " + StringUtil.addrToString(address));
     }
 
     private void writeError(String segment, int address) {
         String idstr = simulator.getIDTimeString();
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
-        Terminal.println(": illegal write to "+segment+" at address "+StringUtil.addrToString(address));
+        Terminal.println(": illegal write to " + segment + " at address " + StringUtil.addrToString(address));
     }
 
     private byte getSRAM(int address) {
@@ -778,8 +781,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @param address the byte address at which to read
      * @return the byte value of the program memory at the specified address
-     * @throws AddressOutOfBoundsException
-     *          if the specified address is not the valid program memory range
+     * @throws AddressOutOfBoundsException if the specified address is not the valid program memory range
      */
     public byte getProgramByte(int address) {
         try {
@@ -871,18 +873,18 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
         try {
             // FAST PATH 1: no watches
-            if ( sram_watches == null ) {
+            if (sram_watches == null) {
                 setSRAM(address, val);
                 return;
             }
 
             // FAST PATH 2: no watches for this address
             p = sram_watches[address];
-            if ( p == null) {
+            if (p == null) {
                 setSRAM(address, val);
                 return;
             }
-        } catch ( ArrayIndexOutOfBoundsException e ) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             writeError("sram", address);
             return;
         }
@@ -899,7 +901,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             sram[address] = val;
         else if (address >= NUM_REGS)
             ioregs[address - NUM_REGS].write(val);
-        else sram[address] = val;
+        else
+            sram[address] = val;
     }
 
     /**
@@ -967,6 +970,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     /**
      * This method sets the booting address of the interpreter. It should only be used before execution begins.
+     *
      * @param npc the new PC to boot this interpreter from
      */
     public void setBootPC(int npc) {
@@ -1190,7 +1194,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected ProbedInstr getProbedInstr(int addr) {
         Instr i = getInstr(addr);
         if (i instanceof ProbedInstr)
-            return ((ProbedInstr)i);
+            return ((ProbedInstr) i);
         else
             return null;
     }
@@ -1218,7 +1222,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             if (N) value |= BaseInterpreter.SREG_N_MASK;
             if (Z) value |= BaseInterpreter.SREG_Z_MASK;
             if (C) value |= BaseInterpreter.SREG_C_MASK;
-            return (byte)value;
+            return (byte) value;
         }
 
         /**

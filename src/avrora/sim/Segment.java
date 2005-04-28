@@ -44,7 +44,7 @@ import avrora.core.Instr;
  *
  * @author Ben L. Titzer
  */
-public abstract class Segment {
+public class Segment {
 
     protected final BaseInterpreter interpreter;
     protected final String name;
@@ -53,6 +53,8 @@ public abstract class Segment {
     protected byte[] segment_data;
     protected final ErrorReporter errorReporter;
     protected MulticastWatch[] segment_watches;
+
+    protected Sharer sharer;
 
     /**
      * The constructor for the <code>Segment</code> class creates an object that represents this segment.
@@ -119,7 +121,10 @@ public abstract class Segment {
     }
 
 
-    public abstract byte[] share(Sharer s);
+    public byte[] share(Sharer s) {
+        sharer = s;
+        return segment_data;
+    }
 
     /**
      * The <code>read()</code> method of the segment reads a byte from a location in the segment,

@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.util.StringUtil;
+import avrora.sim.CodeSegment;
 
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -74,6 +75,8 @@ public class MicrocontrollerProperties {
      */
     public final int num_pins;
 
+    public final CodeSegment.Factory codeSegmentFactory;
+
     protected final HashMap pinAssignments;
     protected final HashMap ioregAssignments;
     protected final String[] ioreg_name;
@@ -93,12 +96,14 @@ public class MicrocontrollerProperties {
      * @param ia a <code>HashMap</code> instance mapping string names to <code>Integer</code>
      * indexes for the IO registers
      */
-    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, HashMap pa, HashMap ia) {
+    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, CodeSegment.Factory csf, HashMap pa, HashMap ia) {
         ioreg_size = is;
         sram_size = ss;
         flash_size = fs;
         eeprom_size = es;
         num_pins = np;
+
+        codeSegmentFactory = csf;
 
         ioreg_name = new String[is];
 

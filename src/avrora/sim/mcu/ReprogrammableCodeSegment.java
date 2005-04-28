@@ -42,10 +42,12 @@ import avrora.Avrora;
 /**
  * @author Ben L. Titzer
  */
-public abstract class ReprogrammableFlashSegment extends FlashSegment {
+public class ReprogrammableCodeSegment extends CodeSegment {
 
-    private static final int ERASE_CYCLES = 27280; // from hardware manual
-    private static final int WRITE_CYCLES = 27280; // from hardware manual
+    private static final double ERASE_MS_MIN = 3.7;
+    private static final double WRITE_MS_MIN = 3.7;
+    private static final double ERASE_MS_MAX = 4.5;
+    private static final double WRITE_MS_MAX = 4.5;
     private static final int SPM_TIMEOUT = 4;
 
     private static final int STATE_NONE = 0;
@@ -60,8 +62,36 @@ public abstract class ReprogrammableFlashSegment extends FlashSegment {
 
     private static final byte DEFAULT_VALUE = (byte)0xff;
 
-    Disassembler disassembler = new Disassembler();
+    /**
+     * The <code>ReprogrammableCodeSegment.Factory</code> class represents a class capable of creating a new
+     * code segment for a new interpreter.
+     */
+    public static class Factory implements CodeSegment.Factory {
+        final int pagesize;
+        final int size;
 
+        Factory(int size, int pagesize) {
+            this.size = size;
+            this.pagesize = pagesize;
+        }
+
+        public CodeSegment newCodeSegment(String name, BaseInterpreter bi, ErrorReporter er, Program p) {
+            CodeSegment cs;
+            if ( p != null ) {
+                cs = new ReprogrammableCodeSegment(name, p.program_end, bi, er, pagesize);
+                cs.load(p);
+            } else {
+                cs = new ReprogrammableCodeSegment(name, size, bi, er, pagesize);
+            }
+            return cs;
+        }
+    }
+
+    /**
+     * The <code>SPMCSR_reg</code> class represents an instanceof the <code>ActiveRegister</code> interface
+     * that is used to represent the SPMCSR register on the ATMega family microcontrollers. This register
+     * is used in reprogramming the flash memory from within the program.
+     */
     private class SPMCSR_reg extends RWRegister {
         ResetEvent reset = new ResetEvent();
 
@@ -113,29 +143,82 @@ public abstract class ReprogrammableFlashSegment extends FlashSegment {
         }
     }
 
+    /**
+     * The <code>disassembler</code> field stores a reference to a disassembler for this segment.
+     * This is needed because disassemblers are currently not re-entrant.
+     */
+    Disassembler disassembler = new Disassembler();
+
+    /**
+     * The <code>buffer</code> field stores a reference to the bytes in the temporary page buffer
+     * which is used to rewrite the flash memory.
+     */
     byte[] buffer;
 
+    /**
+     * The <code>SPMCSR</code> field stores a reference to the SPMCSR register which is an IO register
+     * that the program uses to select which flash operations to perform.
+     */
     final SPMCSR_reg SPMCSR;
+
+    /**
+     * The <code>ERASE_CYCLES</code> field stores the number of cycles needed to complete an erase operation.
+     */
+    final int ERASE_CYCLES; // from hardware manual
+
+    /**
+     * The <code>WRITE_CYCLES</code> field stores the number of cycles needed to complete a write operation.
+     */
+    final int WRITE_CYCLES; // from hardware manual
+
+    /**
+     * The <code>pagesize</code> field stores the number of bits in the page offset field of an address; i.e.
+     * it is the log of the size of a page in words.
+     */
     final int pagesize;
+
+    /**
+     * The <code>addressMask</code> field stores an integer used to mask out the page offset of an address.
+     */
     final int addressMask;
+
+    /**
+     * The <code>mainClock</code> method stores a reference to the main clock signal of the chip.
+     */
     final MainClock mainClock;
 
-    public ReprogrammableFlashSegment(String name, int size, AtmelMicrocontroller mcu, ErrorReporter er, int pagesize) {
-        super(name, size, mcu.getSimulator().getInterpreter(), er);
+    /**
+     * The constructor for the <code>ReprogrammableCodeSegment</code> creates a new instance with the specified
+     * name, with the specified size, connected to the specified microcontroller, with the given page size.
+     * @param name the name of the segment as a string
+     * @param size the size of the segment in bytes
+     * @param bi the the interpreter the code segment is attached to
+     * @param er the error reporter consulted for out of bounds accesses
+     * @param pagesize the size of the page offset field of an address into the flash
+     */
+    public ReprogrammableCodeSegment(String name, int size, BaseInterpreter bi, ErrorReporter er, int pagesize) {
+        super(name, size, bi, er);
         SPMCSR = new SPMCSR_reg();
-        mainClock = mcu.getClockDomain().getMainClock();
+        mainClock = bi.getMainClock();
         this.pagesize = pagesize;
         this.addressMask = Arithmetic.getBitRangeMask(0, pagesize);
         resetBuffer();
+
+        ERASE_CYCLES = (int)((1000*mainClock.getHZ()) / ERASE_MS_MAX);
+        WRITE_CYCLES = (int)((1000*mainClock.getHZ()) / WRITE_MS_MAX);
     }
 
+    /**
+     * The <code>update()</code> method is called by the interpreter when the program executes an instruction
+     * that updates the program memory. For example, the SPM instruction.
+     */
     public void update() {
         // TODO: check that PC is in the bootloader section
         int pc = interpreter.getPC();
         int Z = interpreter.getRegisterWord(Register.Z);
         int pageoffset = 2 * (Z & addressMask);
         int pagenum = Z >> pagesize;
-        // do not update the ReprogrammableFlashSegment register yet
+        // do not update the ReprogrammableCodeSegment register yet
         int state = SPMCSR.getState();
         switch ( state ) {
             case STATE_PGERASE:
@@ -179,6 +262,11 @@ public abstract class ReprogrammableFlashSegment extends FlashSegment {
         mainClock.removeEvent(SPMCSR.reset);
     }
 
+    /**
+     * The <code>EraseEvent</code> class is used as an event to schedule the timing of erasing a page.
+     * When a page erase operation is begun, this event is inserted into the queue of the simulator
+     * so that when it fires, the page in the code segment is erased.
+     */
     class EraseEvent implements Simulator.Event {
         int pagenum;
 
@@ -200,6 +288,12 @@ public abstract class ReprogrammableFlashSegment extends FlashSegment {
         }
     }
 
+    /**
+     * The <code>WriteEvent</code> class is used as an event to schedule the timing of writing a page.
+     * When a page write operation is begun, this event is inserted into the queue of the simulator so
+     * that when it fires, the page in the code segment is written with the contents of the temporary
+     * buffer.
+      */
     class WriteEvent implements Simulator.Event {
         int pagenum;
         byte[] buffer;
@@ -223,8 +317,22 @@ public abstract class ReprogrammableFlashSegment extends FlashSegment {
         }
     }
 
+    /**
+     * The <code>replaceInstr()</code> method is used internally to update an instruction in the flash segment
+     * without losing all of its attached instrumentation (i.e. probes and watches).
+     * @param address the address in the code segment of the instruction
+     * @param i the new instruction to place at this location in the flash
+     */
     void replaceInstr(int address, Instr i) {
-        throw Avrora.unimplemented();
+        Instr instr = getInstr(address);
+        if ( instr == null )
+            writeInstr(address, i);
+        else {
+            if ( instr instanceof ProbedInstr ) {
+                ProbedInstr pi = new ProbedInstr(i, (ProbedInstr)instr);
+                writeInstr(address, pi);
+            }
+        }
     }
 
     /**

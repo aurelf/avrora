@@ -50,7 +50,7 @@ import java.util.Iterator;
  */
 public class IORegMonitor extends MonitorFactory {
 
-    final Option.List IOREGS = options.newOptionList("ioregs", "",
+    final Option.List IOREGS = options.newOptionList("ioregs", "all",
             "This option accepts a list of IO register names which will be monitored during the " +
             "simulation. For example, specifying \"PORTA,DDR\" as this option's value will enable monitoring " +
             "of reads and writes to the PORTA and DDRA IO registers. " +
