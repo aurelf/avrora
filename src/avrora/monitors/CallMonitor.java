@@ -66,7 +66,7 @@ public class CallMonitor extends MonitorFactory {
 
             iprobe = new InterruptProbe();
 
-            for ( int pc = 0; pc < Simulator.MAX_INTERRUPTS; pc++ ) {
+            for ( int pc = s.getInterpreter().getInterruptBase(); pc < Simulator.MAX_INTERRUPTS; pc++ ) {
                 s.insertProbe(iprobe, pc*4);
             }
 
@@ -155,6 +155,7 @@ public class CallMonitor extends MonitorFactory {
             }
             stack[depth] = null;
             depth--;
+            if ( depth < 0 ) depth = 0;
         }
 
         class InterruptProbe extends Simulator.Probe.Empty {

@@ -187,6 +187,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      */
     protected final Simulator simulator;
 
+    public Simulator getSimulator() {
+        return simulator;
+    }
+
     protected final MainClock clock;
 
     public MainClock getMainClock() {
@@ -291,15 +295,15 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         // allocate SRAM
         sram = new byte[sram_max];
 
+        // initialize IO registers to default values
+        initializeIORegs();
+
         // allocate FLASH
         ErrorReporter reporter = new ErrorReporter();
         flash = props.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
         reporter.segment = flash;
         // TODO: implement share() method
         shared_instr = flash.shareCode(null);
-
-        // initialize IO registers to default values
-        initializeIORegs();
 
         SPL_reg = (RWRegister) ioregs[props.getIOReg("SPL")];
         SPH_reg = (RWRegister) ioregs[props.getIOReg("SPH")];
@@ -730,6 +734,11 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         ioregs[ioreg] = reg;
     }
 
+    public void installIOReg(String name, ActiveRegister reg) {
+        MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
+        installIOReg(props.getIOReg(name), reg);
+    }
+
     /**
      * The <code>writeIORegisterByte()</code> method writes a value to the specified IO register. This is
      * generally only used internally to the simulator and device implementations, and client interfaces
@@ -788,6 +797,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      */
     public void setBootPC(int npc) {
         bootPC = npc;
+    }
+
+    public int getInterruptBase() {
+        return interruptBase;
     }
 
     public void setInterruptBase(int npc) {

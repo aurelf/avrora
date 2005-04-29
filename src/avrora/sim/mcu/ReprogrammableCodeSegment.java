@@ -62,6 +62,8 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
     private static final byte DEFAULT_VALUE = (byte)0xff;
 
+    final Simulator.Printer flashPrinter;
+
     /**
      * The <code>ReprogrammableCodeSegment.Factory</code> class represents a class capable of creating a new
      * code segment for a new interpreter.
@@ -129,6 +131,8 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
         class ResetEvent implements Simulator.Event {
             public void fire() {
+                if ( flashPrinter.enabled )
+                    flashPrinter.println("FLASH: write to SPMCSR timed out after 4 cycles");
                 reset();
             }
 
@@ -140,6 +144,18 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
         void reset() {
             write((byte)(value & (~ SPMCSR_LOWERBITS)));
+        }
+
+        boolean isBusy() {
+            return Arithmetic.getBit(value, 6);
+        }
+
+        void setBusy() {
+            value = Arithmetic.setBit(value, 6);
+        }
+
+        void clearBusy() {
+            value = Arithmetic.clearBit(value, 6);
         }
     }
 
@@ -201,11 +217,14 @@ public class ReprogrammableCodeSegment extends CodeSegment {
         SPMCSR = new SPMCSR_reg();
         mainClock = bi.getMainClock();
         this.pagesize = pagesize;
-        this.addressMask = Arithmetic.getBitRangeMask(0, pagesize);
+        this.addressMask = Arithmetic.getBitRangeMask(0, pagesize) << 1;
         resetBuffer();
+        bi.installIOReg("SPMCSR", SPMCSR);
 
-        ERASE_CYCLES = (int)((1000*mainClock.getHZ()) / ERASE_MS_MAX);
-        WRITE_CYCLES = (int)((1000*mainClock.getHZ()) / WRITE_MS_MAX);
+        ERASE_CYCLES = (int)((mainClock.getHZ() * ERASE_MS_MAX / 1000));
+        WRITE_CYCLES = (int)((mainClock.getHZ() * WRITE_MS_MAX / 1000));
+
+        flashPrinter = bi.getSimulator().getPrinter("atmega.flash");
     }
 
     /**
@@ -216,24 +235,34 @@ public class ReprogrammableCodeSegment extends CodeSegment {
         // TODO: check that PC is in the bootloader section
         int pc = interpreter.getPC();
         int Z = interpreter.getRegisterWord(Register.Z);
-        int pageoffset = 2 * (Z & addressMask);
-        int pagenum = Z >> pagesize;
+        int pageoffset = (Z & addressMask);
+        int pagenum = Z >> (pagesize + 1);
         // do not update the ReprogrammableCodeSegment register yet
         int state = SPMCSR.getState();
         switch ( state ) {
             case STATE_PGERASE:
+                if ( flashPrinter.enabled )
+                    flashPrinter.println("FLASH: page erase of page "+pagenum);
                 pageErase(pagenum, pageoffset);
                 break;
             case STATE_RWWSRE:
-                mainClock.removeEvent(SPMCSR.reset);
+                if ( flashPrinter.enabled )
+                    flashPrinter.println("FLASH: reset RWW section ");
+                resetRWW();
                 break;
             case STATE_BLBSET:
+                if ( flashPrinter.enabled )
+                    flashPrinter.println("FLASH: boot lock bits set");
                 mainClock.removeEvent(SPMCSR.reset);
                 break;
             case STATE_FILL:
+                if ( flashPrinter.enabled )
+                    flashPrinter.println("FLASH: fill buffer @ "+pageoffset);
                 fillBuffer(pagenum, pageoffset);
                 break;
             case STATE_PGWRITE:
+                if ( flashPrinter.enabled )
+                    flashPrinter.println("FLASH: page write to page "+pagenum);
                 pageWrite(pagenum, pageoffset);
                 break;
             default:
@@ -242,14 +271,24 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
     private void pageErase(int pagenum, int pageoffset) {
         mainClock.removeEvent(SPMCSR.reset);
+        SPMCSR.setBusy();
         mainClock.insertEvent(new EraseEvent(pagenum), ERASE_CYCLES);
         resetBuffer();
     }
 
     private void pageWrite(int pagenum, int pageoffset) {
         mainClock.removeEvent(SPMCSR.reset);
+        SPMCSR.setBusy();
         mainClock.insertEvent(new WriteEvent(pagenum, buffer), WRITE_CYCLES);
         resetBuffer();
+    }
+
+    private void resetRWW() {
+        mainClock.removeEvent(SPMCSR.reset);
+        if ( !SPMCSR.isBusy() ) {
+            SPMCSR.clearBusy();
+            SPMCSR.reset();
+        }
     }
 
     private void fillBuffer(int pagenum, int pageoffset) {
@@ -276,11 +315,13 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
         public void fire() {
             // erase the page
+            if ( flashPrinter.enabled )
+                flashPrinter.println("FLASH: page erase completed for page "+pagenum);
             int size = bufferSize();
             int addr = pagenum * size;
             for ( int offset = 0; offset < size; offset++) {
                 int baddr = addr + offset;
-                write(baddr, buffer[offset]);
+                write(baddr, DEFAULT_VALUE);
                 if ( (offset & 1) == 0)
                     replaceInstr(baddr, new DisassembleInstr(baddr));
             }
@@ -305,11 +346,13 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
         public void fire() {
             // write the page
+            if ( flashPrinter.enabled )
+                flashPrinter.println("FLASH: page write completed for page "+pagenum);
             int size = bufferSize();
             int addr = pagenum * size;
             for ( int offset = 0; offset < size; offset++) {
                 int baddr = addr + offset;
-                write(baddr, DEFAULT_VALUE);
+                write(baddr, buffer[offset]);
                 if ( (offset & 1) == 0)
                     replaceInstr(baddr, new DisassembleInstr(baddr));
             }

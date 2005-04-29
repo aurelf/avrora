@@ -299,10 +299,12 @@ public class CodeSegment extends Segment {
         }
     }
 
+    static InstrProperties NO_INSTR_PROPS = new InstrProperties("<none>", "<none>", 2, 1);
+
     private class NoInstr extends Instr {
 
         NoInstr() {
-            super(null);
+            super(NO_INSTR_PROPS);
         }
 
         /**
@@ -351,7 +353,7 @@ public class CodeSegment extends Segment {
     private class MisalignedInstr extends Instr {
 
         MisalignedInstr() {
-            super(null);
+            super(NO_INSTR_PROPS);
         }
 
         /**
