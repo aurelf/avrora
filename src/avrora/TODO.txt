@@ -17,6 +17,7 @@
     1   devs  Frame sizes in USART implementation
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
     1    sim  SimpleAir.removeRadio() does not wake remaining nodes
+    1   devs  USART baud rates
 
     1  build  Fixed errors when building with javac in 1.5          (1.5.62)
     1  probe  Fix SerialMonitor                                     (1.5.58)
@@ -37,7 +38,6 @@
     4   isdl  Generate Atmel parser
     2   isdl  Generate CFG builder
     2  probe  Introduce device instrumentation points
-    3    sim  Support dynamic code update with SPM
     2  trace  Trace monitor (state, compress output, r/w vals)
     2    gdb  Support state update in gdb monitor
     2   prof  Profile monitor (diagnos, CFG, funcs, labels)
@@ -52,6 +52,7 @@
     2    sim  Unified warning system for program errors
     1  probe  Indirect call / jump monitor
 
+    3    sim  Support dynamic code update with SPM                  (1.5.66)
     2    sim  PinWire and PinConnection code from Jacob Everist     (1.5.57)
     2    sim  Ability to boot from locations other than 0x0000      (1.5.54)
     4   isdl  Generate Disassembler                                 (1.5.51)
@@ -140,6 +141,7 @@
   1-2    sim  Optimize FiniteStateMachine transitions
     2    sim  Word-aligned PC optimization
     1    sim  BCLR instruction should use SREG_reg directly
+    1    sim  ints instead of Register objects in Instr
     2   dbbc  Register caching
     2   dbbc  Constant propagation through registers and memory
     2   dbbc  Idiom reductions
@@ -148,6 +150,8 @@
     3   dbbc  Superblock construction
     2   dbbc  Intrablock probes and watches
 
+    1    sim  Disabling interrupts does not terminate fast loop     (1.5.65)
+    1    sim  Use flash_instr[] array directly in fast loop         (1.5.64)
     1    sim  Allocate all SPI.Frame's statically                   (1.5.35)
     1    sim  Optimize getSP() and setSP() methods                  (1.5.31)
   1-2    sim  Consolidate regs and sram in interpreter               (1.5.x)

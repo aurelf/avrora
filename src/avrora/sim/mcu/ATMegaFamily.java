@@ -132,6 +132,11 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             update(bit, maskRegister);
         }
 
+        public void unflagBit(int bit) {
+            value = Arithmetic.clearBit(value, bit);
+            update(bit, maskRegister);
+        }
+
         public void writeBit(int bit, boolean val) {
             if (val) {
                 value = Arithmetic.clearBit(value, bit);

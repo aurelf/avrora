@@ -56,7 +56,7 @@ public abstract class USART extends AtmelInternalDevice {
       delayed transmission, as opposed to sending single bits
       at a time.  Parity errors are not searched for.
       Presumably, parity errors will not occur. Similarly,
-      frame errors are should not occur.
+      frame errors also should not occur.
      */
 
 
@@ -192,11 +192,42 @@ public abstract class USART extends AtmelInternalDevice {
         }
 
         public String toString() {
-            if (size == 9) {
-                return "" + value();
-            } else {
-                return "" + (char)value() + " (" + value() + ')';
+            StringBuffer buf = new StringBuffer();
+            buf.append("[");
+            int val = value();
+            // append each of the bits
+            for ( int bit = size - 1; bit >= 0; bit-- )
+                buf.append(Arithmetic.getBit(low, bit) ? '1' : '0');
+
+            buf.append("] (");
+            buf.append(val);
+            buf.append(") ");
+            if ( size < 9 ) {
+                buf.append("'");
+                appendChar(buf, (char)val);
+                buf.append("'");
             }
+            return buf.toString();
+        }
+
+        private void appendChar(StringBuffer buf, char c) {
+            switch ( c ) {
+                case '\n':
+                    buf.append("\\n");
+                    break;
+                case '\r':
+                    buf.append("\\r");
+                    break;
+                case '\b':
+                    buf.append("\\b");
+                    break;
+                case '\t':
+                    buf.append("\\t");
+                    break;
+               default:
+                    buf.append(c);
+            }
+
         }
     }
 
@@ -262,6 +293,8 @@ public abstract class USART extends AtmelInternalDevice {
 
     void updatePeriod() {
         period = read16(UBRRnH_reg, UBRRnL_reg) + 1;
+        if ( devicePrinter.enabled )
+            devicePrinter.println("USART"+n+": period set to "+period);
         period *= UBRRMultiplier;
     }
 
@@ -271,7 +304,9 @@ public abstract class USART extends AtmelInternalDevice {
 
         protected void enableTransmit() {
             if (!transmitting) {
-                transmit.frame = transmitFrame();
+                // grab the frame from the UDR register
+                transmit.frame = new Frame(UDRn_reg.transmitRegister.read(), UCSRnB_reg.readBit(TXB8n), frameSize);
+                // now the shift register has the data, the UDR is free
                 UCSRnA_reg.flagBit(UDREn);
                 transmitting = true;
                 mainClock.insertEvent(transmit, (1 + frameSize + stopBits) * period);
@@ -284,9 +319,8 @@ public abstract class USART extends AtmelInternalDevice {
             public void fire() {
                 connectedDevice.receiveFrame(frame);
 
-
                 if (devicePrinter.enabled)
-                    devicePrinter.println("USART: Transmitted frame " + frame /*+ " " + simulator.getState().getCycles()*/);
+                    devicePrinter.println("USART"+n+": Transmitted frame " + frame);
                 transmitting = false;
                 UCSRnA_reg.flagBit(TXCn);
                 if (!UCSRnA_reg.readBit(UDREn)) {
@@ -324,7 +358,7 @@ public abstract class USART extends AtmelInternalDevice {
                 receiveFrame(frame);
 
                 if (devicePrinter.enabled)
-                    devicePrinter.println("USART: Received frame " + frame + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
+                    devicePrinter.println("USART"+n+": Received frame " + frame + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
 
                 UCSRnA_reg.flagBit(RXCn);
 
@@ -353,7 +387,8 @@ public abstract class USART extends AtmelInternalDevice {
 
             if (UCSRnA_reg.readBit(UDREn)) {
                 transmitRegister.write(val);
-                UCSRnA_reg.writeBit(UDREn, false);
+                // we now have data in UDRE, so the user data register is not ready yet
+                UCSRnA_reg.unflagBit(UDREn);
                 if (UCSRnB_reg.readBit(TXENn)) {
                     transmitter.enableTransmit();
                 }
@@ -364,7 +399,7 @@ public abstract class USART extends AtmelInternalDevice {
             // check UDREn flag
             if (UCSRnA_reg.readBit(UDREn)) {
                 transmitRegister.writeBit(bit, val);
-                UCSRnA_reg.writeBit(UDREn, false);
+                UCSRnA_reg.unflagBit(UDREn);
                 if (UCSRnB_reg.readBit(TXENn)) transmitter.enableTransmit();
 
             }
@@ -412,7 +447,7 @@ public abstract class USART extends AtmelInternalDevice {
                 }
                 DataRegister.TwoLevelFIFO.USARTFrameWrapper current = (DataRegister.TwoLevelFIFO.USARTFrameWrapper)readyQueue.removeLast();
                 if (readyQueue.isEmpty()) {
-                    UCSRnA_reg.writeBit(RXCn, false);
+                    UCSRnA_reg.unflagBit(RXCn);
                 }
                 UCSRnB_reg.writeBit(RXB8n, current.frame.high);
                 waitQueue.add(current);
@@ -500,6 +535,8 @@ public abstract class USART extends AtmelInternalDevice {
                     UBRRMultiplier = 2;
                     break;
             }
+            if ( devicePrinter.enabled )
+                devicePrinter.println("USART"+n+": multiplier set to "+UBRRMultiplier);
         }
 
     }
