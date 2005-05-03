@@ -57,9 +57,6 @@ import java.util.Iterator;
  */
 public class MemoryMonitor extends MonitorFactory {
 
-    public final Option.Bool EMPTY = options.newOption("empty-watch", false,
-            "This option is used to test the overhead of adding an empty watch to every" +
-            "memory location. ");
     public final Option.List LOCATIONS = options.newOptionList("locations", "",
             "This option is used to test the overhead of adding an empty watch to every" +
             "memory location. ");
@@ -78,7 +75,6 @@ public class MemoryMonitor extends MonitorFactory {
         public final avrora.sim.util.MemoryProfiler memprofile;
 
         Monitor(Simulator s) {
-            boolean empty = EMPTY.get();
             simulator = s;
             microcontroller = simulator.getMicrocontroller();
             program = simulator.getProgram();
@@ -92,15 +88,11 @@ public class MemoryMonitor extends MonitorFactory {
             }
             memprofile = new avrora.sim.util.MemoryProfiler(ramsize);
 
-            insertWatches(empty);
+            insertWatches();
 
         }
 
-        private void insertWatches(boolean empty) {
-
-            Simulator.Watch w;
-            if (  empty ) w = new Simulator.Watch.Empty();
-            else w = memprofile;
+        private void insertWatches() {
 
             if ( LOCATIONS.get().size() > 0 ) {
                 // instrument only the locations specified
@@ -110,12 +102,12 @@ public class MemoryMonitor extends MonitorFactory {
                 while ( i.hasNext() ) {
                     // TODO: this should not be program locations, but memory locations!!!
                     Program.Location location = (Program.Location)i.next();
-                    simulator.insertWatch(w, location.address);
+                    simulator.insertWatch(memprofile, location.address);
                 }
             } else {
                 // instrument the entire memory
                 for (int cntr = memstart; cntr < ramsize; cntr++) {
-                    simulator.insertWatch(w, cntr);
+                    simulator.insertWatch(memprofile, cntr);
                 }
             }
         }

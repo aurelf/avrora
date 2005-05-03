@@ -80,8 +80,6 @@ public abstract class USART extends AtmelInternalDevice {
 
     int[] INTERRUPT_MAPPING;
 
-    //boolean UDREnFlagged;
-
     static final int RXCn = 7;
     static final int TXCn = 6;
     static final int UDREn = 5;

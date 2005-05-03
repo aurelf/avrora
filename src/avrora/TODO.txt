@@ -11,13 +11,12 @@
     1  input  Implement fill with value .db directive
     1   devs  EEPROM read/write delays
     1  probe  Counters, branchcounters
-    1   devs  PDATA broken (?)
     2  probe  getDataByte() calls from within watches
-    3  radio  Partial preamble loss
     1   devs  Frame sizes in USART implementation
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
     1    sim  SimpleAir.removeRadio() does not wake remaining nodes
     1   devs  USART baud rates
+    1   devs  USART frame sizes
 
     1  build  Fixed errors when building with javac in 1.5          (1.5.62)
     1  probe  Fix SerialMonitor                                     (1.5.58)
@@ -51,6 +50,7 @@
     2   isdl  Better ISDL error checking
     2    sim  Unified warning system for program errors
     1  probe  Indirect call / jump monitor
+    3  radio  Partial preamble loss
 
     3    sim  Support dynamic code update with SPM                  (1.5.66)
     2    sim  PinWire and PinConnection code from Jacob Everist     (1.5.57)
@@ -83,6 +83,7 @@
     3    sim  Implement one thread per processor model
     1   util  migrate to StringUtil.*
     1  probe  migrate to SourceMapping, remove Program.Location
+  2-3  radio  Separate synch mechanism from Radio implementation
 
     2  probe  Changed fireXXX() to accept only state and PC         (1.5.62)
     1    sim  Introduced Segment class for SRAM, flash, EEPROM      (1.5.62)
@@ -132,7 +133,7 @@
  Comp Module Item                                      Completion (Version)
 -----------------------------------------------------------------------------
   1-2    sim  Interpreter inner loop optimization
-  2-3    sim  Reduce interp. flags computations with xor's
+  2-3    sim  Reduce interp. flags computations with xor's and ==
     1    sim  Optimize DerivedClock for integer multiples
   2-3   isdl  Regeneration of Instr.* classes
     1    sim  Use sram[] array directly for interp. register ops
@@ -142,6 +143,10 @@
     2    sim  Word-aligned PC optimization
     1    sim  BCLR instruction should use SREG_reg directly
     1    sim  ints instead of Register objects in Instr
+    1    sim  byte-sized and short-sized immediates in Instr
+    1    sim  use signed arithmetic to avoid unnecessary &'s
+    1    sim  move nextPC calculation (instr body to inner loop)
+    1    sim  cache relative branch targets in instr instances
     2   dbbc  Register caching
     2   dbbc  Constant propagation through registers and memory
     2   dbbc  Idiom reductions
@@ -151,7 +156,7 @@
     2   dbbc  Intrablock probes and watches
 
     1    sim  Disabling interrupts does not terminate fast loop     (1.5.65)
-    1    sim  Use flash_instr[] array directly in fast loop         (1.5.64)
+    1    sim  Use shared_instr[] array directly in fast loop        (1.5.64)
     1    sim  Allocate all SPI.Frame's statically                   (1.5.35)
     1    sim  Optimize getSP() and setSP() methods                  (1.5.31)
   1-2    sim  Consolidate regs and sram in interpreter               (1.5.x)
