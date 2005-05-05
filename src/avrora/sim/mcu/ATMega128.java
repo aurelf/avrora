@@ -111,6 +111,7 @@ public class ATMega128 extends ATMegaFamily {
         // statically initialize the pin assignments for this microcontroller
         HashMap pinAssignments = new HashMap(150);
         HashMap ioregAssignments = new HashMap(120);
+        HashMap interruptAssignments = new HashMap(50);
 
         addPin(pinAssignments, 1, "PEN");
         addPin(pinAssignments, 2, "PE0", "RXD0", "PDI");
@@ -297,6 +298,42 @@ public class ATMega128 extends ATMegaFamily {
         addIOReg(ioregAssignments, "PINE", 0x01);
         addIOReg(ioregAssignments, "PINF", 0x00);
 
+        addInterrupt(interruptAssignments, "RESET", 1);
+        addInterrupt(interruptAssignments, "INT0", 2);
+        addInterrupt(interruptAssignments, "INT1", 3);
+        addInterrupt(interruptAssignments, "INT2", 4);
+        addInterrupt(interruptAssignments, "INT3", 5);
+        addInterrupt(interruptAssignments, "INT4", 6);
+        addInterrupt(interruptAssignments, "INT5", 7);
+        addInterrupt(interruptAssignments, "INT6", 8);
+        addInterrupt(interruptAssignments, "INT7", 9);
+        addInterrupt(interruptAssignments, "TIMER2 COMP", 10);
+        addInterrupt(interruptAssignments, "TIMER2 OVF", 11);
+        addInterrupt(interruptAssignments, "TIMER1 CAPT", 12);
+        addInterrupt(interruptAssignments, "TIMER1 COMPA", 13);
+        addInterrupt(interruptAssignments, "TIMER1 COMPB", 14);
+        addInterrupt(interruptAssignments, "TIMER1 OVF", 15);
+        addInterrupt(interruptAssignments, "TIMER0 COMP", 16);
+        addInterrupt(interruptAssignments, "TIMER0 OVF", 17);
+        addInterrupt(interruptAssignments, "SPI, STC", 18);
+        addInterrupt(interruptAssignments, "USART0, RX", 19);
+        addInterrupt(interruptAssignments, "USART0, UDRE", 20);
+        addInterrupt(interruptAssignments, "USART0, TX", 21);
+        addInterrupt(interruptAssignments, "ADC", 22);
+        addInterrupt(interruptAssignments, "EE READY", 23);
+        addInterrupt(interruptAssignments, "ANALOG COMP", 24);
+        addInterrupt(interruptAssignments, "TIMER1 COMPC", 25);
+        addInterrupt(interruptAssignments, "TIMER3 CAPT", 26);
+        addInterrupt(interruptAssignments, "TIMER3 COMPA", 27);
+        addInterrupt(interruptAssignments, "TIMER3 COMPB", 28);
+        addInterrupt(interruptAssignments, "TIMER3 COMPC", 29);
+        addInterrupt(interruptAssignments, "TIMER3 OVF", 30);
+        addInterrupt(interruptAssignments, "USART1, RX", 31);
+        addInterrupt(interruptAssignments, "USART1, UDRE", 32);
+        addInterrupt(interruptAssignments, "USART1, TX", 33);
+        addInterrupt(interruptAssignments, "TWI", 34);
+        addInterrupt(interruptAssignments, "SPM READY", 35);
+
         props = new MicrocontrollerProperties(ATMEGA128_IOREG_SIZE, // number of io registers
                 ATMEGA128_SRAM_SIZE, // size of sram in bytes
                 ATMEGA128_FLASH_SIZE, // size of flash in bytes
@@ -304,7 +341,8 @@ public class ATMega128 extends ATMegaFamily {
                 ATMEGA128_NUM_PINS, // number of pins
                 new ReprogrammableCodeSegment.Factory(ATMEGA128_FLASH_SIZE, 7),
                 pinAssignments, // the assignment of names to physical pins
-                ioregAssignments); // the assignment of names to IO registers
+                ioregAssignments, // the assignment of names to IO registers
+                interruptAssignments);
 
     }
 
@@ -397,7 +435,7 @@ public class ATMega128 extends ATMegaFamily {
         addDevice(new USART1());
 
         addDevice(new SPI(this));
-        addDevice(new ADC(this));
+        addDevice(new ADC(this, 8));
         //pm = new PowerManagement(interpreter);
 
     }

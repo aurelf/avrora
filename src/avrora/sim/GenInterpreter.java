@@ -826,24 +826,21 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public void visit(Instr.ELPM i) {
         nextPC = pc + 2;
-        int tmp_0 = getRegisterWord(RZ);
-        tmp_0 = (tmp_0 & 0xFF00FFFF) | ((getIORegisterByte(RAMPZ) & 0x000000FF) << 16);
+        int tmp_0 = extended(getRegisterWord(RZ));
         writeRegisterByte(R0, getProgramByte(tmp_0));
         cyclesConsumed += 3;
     }
 
     public void visit(Instr.ELPMD i) {
         nextPC = pc + 2;
-        int tmp_0 = getRegisterWord(RZ);
-        tmp_0 = (tmp_0 & 0xFF00FFFF) | ((getIORegisterByte(RAMPZ) & 0x000000FF) << 16);
+        int tmp_0 = extended(getRegisterWord(RZ));
         writeRegisterByte(i.r1, getProgramByte(tmp_0));
         cyclesConsumed += 3;
     }
 
     public void visit(Instr.ELPMPI i) {
         nextPC = pc + 2;
-        int tmp_0 = getRegisterWord(RZ);
-        tmp_0 = (tmp_0 & 0xFF00FFFF) | ((getIORegisterByte(RAMPZ) & 0x000000FF) << 16);
+        int tmp_0 = extended(getRegisterWord(RZ));
         writeRegisterByte(i.r1, getProgramByte(tmp_0));
         writeRegisterWord(RZ, tmp_0 + 1);
         cyclesConsumed += 3;
@@ -1565,6 +1562,12 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public static int uword(byte low, byte high) {
         return Arithmetic.uword(low, high);
+    }
+
+    public int extended(int addr) {
+        if ( RAMPZ > 0 )
+            return getIORegisterByte(RAMPZ) << 16 | addr;
+        else return addr;
     }
 
     /**

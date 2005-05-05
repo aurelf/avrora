@@ -51,11 +51,25 @@ public class ADC extends AtmelInternalDevice {
     public static final int ADCH = 0x05;
     public static final int ADCL = 0x04;
 
+    private static final ADCInput VBG_INPUT = new ADCInput() {
+        public int getLevel() {
+            return 0x3ff; // figure out correct value for this eventually
+        }
+    };
+
+    private static final ADCInput GND_INPUT = new ADCInput() {
+        public int getLevel() {
+            return 0x000; // figure out correct value for this eventually
+        }
+    };
+
     final MUXRegister ADMUX_reg = new MUXRegister();
     final DataRegister ADC_reg = new DataRegister();
     final ControlRegister ADCSRA_reg = new ControlRegister();
 
-    final ADCInput[] connectedDevices = new ADCInput[10];
+    final int channels;
+
+    final ADCInput[] connectedDevices;
 
     /**
      * The <code>ADCInput</code> interface is used by inputs into the analog to digital converter.
@@ -70,30 +84,22 @@ public class ADC extends AtmelInternalDevice {
     }
 
 
-    public ADC(AtmelMicrocontroller m) {
+    public ADC(AtmelMicrocontroller m, int channels) {
         super("adc", m);
 
-        connectedDevices[8] = new VBG();
-        connectedDevices[9] = new GND();
+        this.channels = channels;
+
+        connectedDevices = new ADCInput[channels + 2];
+
+        // the last two channels correspond to VBG and GND
+        connectedDevices[channels] = VBG_INPUT;
+        connectedDevices[channels + 1] = GND_INPUT;
 
         installIOReg("ADMUX", ADMUX_reg);
         installIOReg("ADCH", ADC_reg.high);
         installIOReg("ADCL", ADC_reg.low);
         installIOReg("ADCSRA", ADCSRA_reg);
 
-    }
-
-    // TODO: make these classes singletons
-    private class VBG implements ADCInput {
-        public int getLevel() {
-            return 0x3ff; // figure out correct value for this eventually
-        }
-    }
-
-    private static class GND implements ADCInput {
-        public int getLevel() {
-            return 0;
-        }
     }
 
     private int calculateADC() {

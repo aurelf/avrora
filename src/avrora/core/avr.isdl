@@ -722,8 +722,7 @@ architecture avr {
         encoding = { 0b10010101, 0b11011000 };
         cycles = 3;
         execute = {
-            local addr: int = $wregs(RZ);
-            addr[23:16] = $ioregs(RAMPZ);
+            local addr: int = extended($wregs(RZ));
             $regs(R0) = $program(addr);
         };
     };
@@ -733,8 +732,7 @@ architecture avr {
         syntax = "elpm %rd, Z";
         cycles = 3;
         execute = {
-            local addr: int = $wregs(RZ);
-            addr[23:16] = $ioregs(RAMPZ);
+            local addr: int = extended($wregs(RZ));
             $regs(rd) = $program(addr);
         };
     };
@@ -744,8 +742,7 @@ architecture avr {
         syntax = "elpm %rd, Z+";
         cycles = 3;
         execute = {
-            local addr: int = $wregs(RZ);
-            addr[23:16] = $ioregs(RAMPZ);
+            local addr: int = extended($wregs(RZ));
             $regs(rd) = $program(addr);
             $wregs(RZ) = addr + 1;
         };

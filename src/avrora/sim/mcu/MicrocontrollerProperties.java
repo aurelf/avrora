@@ -79,6 +79,7 @@ public class MicrocontrollerProperties {
 
     protected final HashMap pinAssignments;
     protected final HashMap ioregAssignments;
+    protected final HashMap interruptAssignments;
     protected final String[] ioreg_name;
 
     /**
@@ -95,8 +96,10 @@ public class MicrocontrollerProperties {
      * indexes for the pins
      * @param ia a <code>HashMap</code> instance mapping string names to <code>Integer</code>
      * indexes for the IO registers
+     * @param inta a <code>HashMap</code> instance mapping string names to <code>Integer</code>
+     * indexes for each type of interrupt
      */
-    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, CodeSegment.Factory csf, HashMap pa, HashMap ia) {
+    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, CodeSegment.Factory csf, HashMap pa, HashMap ia, HashMap inta) {
         ioreg_size = is;
         sram_size = ss;
         flash_size = fs;
@@ -109,6 +112,7 @@ public class MicrocontrollerProperties {
 
         pinAssignments = pa;
         ioregAssignments = ia;
+        interruptAssignments = inta;
 
         Iterator i = ioregAssignments.keySet().iterator();
         while ( i.hasNext() ) {
@@ -143,6 +147,20 @@ public class MicrocontrollerProperties {
         Integer i = (Integer)ioregAssignments.get(n);
         if ( i == null )
             throw new NoSuchElementException(StringUtil.quote(n)+" IO register not found");
+        return i.intValue();
+    }
+
+    /**
+     * The <code>getInterrupt()</code> method retrieves the interrupt number for the given interrupt
+     * name for this microcontroller
+     * @param n the name of the interrupt such as "RESET"
+     * @return an integer representing the interrupt number if it exists
+     * @throws NoSuchElementException if the specified interrupt name does not have an assignment
+     */
+    public int getInterrupt(String n) {
+        Integer i = (Integer)interruptAssignments.get(n);
+        if ( i == null )
+            throw new NoSuchElementException(StringUtil.quote(n)+" interrupt not found");
         return i.intValue();
     }
 

@@ -70,6 +70,70 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     public static final int MAX = 0xffff;
     public static final int BOTTOM = 0x0000;
 
+
+    /**
+     * The <code>OutputCompareUnit</code> class represents an output compare unit that is
+     * connected to the timer. The output compare unit functions by continually comparing the
+     * count of the timer to a particular value, and signalling a match when complete.
+     */
+    class OutputCompareUnit {
+        final BufferedRegister OCRnXH_reg;
+        final BufferedRegister OCRnXL_reg;
+        final OCRnxPairedRegister OCRnX_reg;
+        final AtmelMicrocontroller.Pin outputComparePin;
+        final char unit;
+        final int modeBit;
+
+        OutputCompareUnit(Microcontroller m, char c, int mb) {
+            unit = c;
+            OCRnXH_reg = new BufferedRegister();
+            OCRnXL_reg = new BufferedRegister();
+            OCRnX_reg = new OCRnxPairedRegister(OCRnBH_reg, OCRnBL_reg);
+            outputComparePin = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+unit);
+            modeBit = mb;
+
+            installIOReg("OCR"+n+unit+"H", new OCRnxTempHighRegister(OCRnXH_reg));
+            installIOReg("OCR"+n+unit+"L", OCRnX_reg);
+        }
+
+        void forceCompare(int count) {
+            if ( count == read() ) {
+                output();
+                // note: interrupts are not posted when the compare is forced
+            }
+        }
+
+        int getCompareMode() {
+            // read the bits in the control register for compare mode
+            return (TCCRnA_reg.read() >> modeBit) & 0x3;
+        }
+
+        void compare(int count) {
+            if ( count == read() ) {
+                output();
+                // TODO: flag the correct interrupt for this compare unit
+            }
+        }
+
+        private void output() {
+            switch (getCompareMode()) {
+                case 1:
+                    outputComparePin.write(!outputComparePin.read()); // clear
+                    break;
+                case 2:
+                    outputComparePin.write(false);
+                    break;
+                case 3:
+                    outputComparePin.write(true);
+                    break;
+            }
+        }
+
+        int read() {
+            return read16(OCRnXH_reg, OCRnXL_reg);
+        }
+    }
+
     final ControlRegisterA TCCRnA_reg;
     final ControlRegisterB TCCRnB_reg;
     final ControlRegisterC TCCRnC_reg;
@@ -401,7 +465,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     }
 
     /**
-     * <code>ControlRegisterA</code> describes the TCCRnB control register associated with a 160bit
+     * <code>ControlRegisterA</code> describes the TCCRnB control register associated with a 16 bit
      * timer. Changing the values of this register generally alter the mode of operation of the timer.
      * The low three bits also set the prescalar of the timer.
      */

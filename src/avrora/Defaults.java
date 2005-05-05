@@ -39,6 +39,7 @@ import avrora.util.help.HelpCategory;
 import avrora.util.help.ClassMapValueItem;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.ATMega128;
+import avrora.sim.mcu.ATMega32;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
@@ -192,6 +193,7 @@ public class Defaults {
             microcontrollers = new ClassMap("Microcontroller", MicrocontrollerFactory.class);
             //-- DEFAULT MICROCONTROLLERS
             microcontrollers.addInstance("atmega128", new ATMega128.Factory());
+            microcontrollers.addInstance("atmega32", new ATMega32.Factory());
         }
     }
 

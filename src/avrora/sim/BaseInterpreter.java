@@ -277,7 +277,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
 
         SREG = props.getIOReg("SREG");
-        RAMPZ = props.getIOReg("RAMPZ");
+
+        // only look for the RAMPZ register if the flash is more than 64kb
+        if ( props.flash_size > 64 * 1024 )
+            RAMPZ = props.getIOReg("RAMPZ");
+        else
+            RAMPZ = -1;
 
         // if program will not fit onto hardware, error
         if (p.program_end > pr.flash_size)

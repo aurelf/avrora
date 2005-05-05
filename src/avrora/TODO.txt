@@ -17,6 +17,8 @@
     1    sim  SimpleAir.removeRadio() does not wake remaining nodes
     1   devs  USART baud rates
     1   devs  USART frame sizes
+    1    sim  Remove RAMPZ accesses for ATMega32
+    2   devs  Fix interrupt mappings for devices on ATMega32
 
     1  build  Fixed errors when building with javac in 1.5          (1.5.62)
     1  probe  Fix SerialMonitor                                     (1.5.58)
@@ -52,6 +54,7 @@
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+    1    sim  Started work on ATMega32 device                       (1.5.69)
     3    sim  Support dynamic code update with SPM                  (1.5.66)
     2    sim  PinWire and PinConnection code from Jacob Everist     (1.5.57)
     2    sim  Ability to boot from locations other than 0x0000      (1.5.54)

@@ -299,6 +299,10 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         ioregMap.put(n, new Integer(i));
     }
 
+    public static void addInterrupt(HashMap iMap, String n, int i) {
+        iMap.put(n, new Integer(i));
+    }
+
     /**
      * The <code>getPin()</code> method looks up the named pin and returns a reference to that pin. Names of
      * pins should be UPPERCASE. The intended users of this method are external device implementors which
