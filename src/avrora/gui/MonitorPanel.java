@@ -30,48 +30,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.gui;
+
+import javax.swing.*;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The MonitorPanel represents a pair of panels for a monitor, where one panel
+ * is the display panel (selectable through the main tab) and one is the options
+ * panel which is displayed when the user accesses the options for this monitor.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class MonitorPanel {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    final String name;
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
+    final JPanel displayPanel;
+    final JPanel optionsPanel;
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 70;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
-    }
-
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
+    MonitorPanel(String n, JPanel dp, JPanel op) {
+        name = n;
+        displayPanel = dp;
+        optionsPanel = op;
     }
 }

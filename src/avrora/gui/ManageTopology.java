@@ -37,6 +37,7 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.Iterator;
 
 public class ManageTopology {
     JPanel topologyVisual; //high level visual
@@ -68,9 +69,9 @@ public class ManageTopology {
         Vector columnNames = new Vector();
         
         //Here are the column ID's
-        columnNames.add("NID");
-        columnNames.add("File Name");
-        columnNames.add("Attached Monitors");
+        columnNames.add("Node ID");
+        columnNames.add("Program");
+        columnNames.add("Monitors");
                 
         //Create emtpy table
         theModel = new DefaultTableModel(columnNames, 0);
@@ -78,19 +79,19 @@ public class ManageTopology {
         
         //fill the table with all the data from vAction
         for (Enumeration e = app.vAction.getNodes().elements(); e.hasMoreElements();) {
-            SimNode currentNode = (SimNode) e.nextElement();
+            VisualSimulation.Node currentNode = (VisualSimulation.Node) e.nextElement();
             Vector tempVector = new Vector();
-            tempVector.add(new Integer(currentNode.NID));
-            tempVector.add(currentNode.fileName);
-            Vector monitorVector = currentNode.monitors;
-            String monitorlist = new String();
-            for (Enumeration e2 = monitorVector.elements(); e2.hasMoreElements();) {
-                monitorlist = monitorlist + e2.nextElement();
-                if (e2.hasMoreElements()) {
-                    monitorlist = monitorlist + ",";
+            tempVector.add(new Integer(currentNode.id));
+            tempVector.add(currentNode.getProgram().getName());
+            Iterator i = currentNode.getMonitors().iterator();
+            StringBuffer mstrBuffer = new StringBuffer(100);
+            while ( i.hasNext() ) {
+                mstrBuffer.append(i.next());
+                if ( i.hasNext() ) {
+                    mstrBuffer.append(",");
                 }
             }
-            tempVector.add(monitorlist);
+            tempVector.add(mstrBuffer.toString());
             theModel.addRow(tempVector);
         }
 

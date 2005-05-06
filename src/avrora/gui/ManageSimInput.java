@@ -42,6 +42,9 @@ import java.io.*;
 import java.util.*;
 
 import avrora.util.Option;
+import avrora.Avrora;
+import avrora.Defaults;
+import avrora.sim.platform.PlatformFactory;
 
 
 public class ManageSimInput {
@@ -385,76 +388,108 @@ public class ManageSimInput {
     public boolean checkAndDispatch(ActionEvent e) {
         //if open file button was pushed...load file chooser
         if (e.getSource() == openFile) {
-            int returnVal = fc.showOpenDialog(null); //will center with screen, not window
-
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                currentFileAllInfo = fc.getSelectedFile();
-                currentFile.setText(currentFileAllInfo.getPath());
-            } else {
-                //User cancelled the open file request, really we just do nothing
-            }
-            return true;
+            return openFileUpdate();
         } else if (e.getSource() == setOptions) {
-
-            createSetOptionsDialog();
-            setOptionsDialog.setLocationRelativeTo(null); //center on screen
-            setOptionsDialog.setVisible(true);
-            return true;
+            return setOptionsUpdate();
         } else if (e.getSource() == optionsDialogUpdate) {
-            ListIterator optionIter = app.vAction.visualOptions.listIterator(0);
-            Option currentOption;
-            ListIterator componentIter = optionsDialogValues.listIterator(0);
-
-            while (optionIter.hasNext()) {
-                currentOption = (Option) optionIter.next();
-                //NOTE: YOU COULD DETECT SPECIAL CASE HERE (e.g. if(option.getName().equals("MY SPECIAL OPTION"));
-
-                updateOption(currentOption, componentIter.next());
-            }
-            //Destroy window
-            setOptionsDialog.setVisible(false); //so really, this doesn't destroy it, but when the button is pushed
-            //again, it will just re-create the dialog using the VisualAction values
-            //This is slightly messy...the dialog stays around and then
-            //get regenerated upon another button push
-
-
-            return true;
+            return optionsUpdate();
         } else if (e.getSource() == fileSelectionDialogUpdate) {
-
-            //We don't want to add nodes if the user never
-            //actually selected a file
-            if (currentFileAllInfo == null) {
-                return true;
-            }
-
-            for (int i = 0; i < ((Integer) numOfNodesSpinner.getValue()).intValue(); i++) {
-                //add the stuff to the sim
-                SimNode aNode = new SimNode();
-                aNode.path = currentFileAllInfo.getPath();
-                aNode.fileName = currentFileAllInfo.getName();
-                app.vAction.addNode(aNode);
-            }
-
-            //We should redraw the table
-            app.topologyBox.createSimpleAirTable();
-
-            //And get rid of dialog box
-            fileSelectionDialog.setVisible(false);
-            return true;
+            return fileSelectionUpdate();
         } else if (e.getSource() == nextButton) {
-            if (currentFileAllInfo == null) {
-                return true;
-            }
-
-            stageForFileSelection = 1;
-            updateFileSelectionDialog();
-            return true;
+            return nextButtonUpdate();
         } else if (e.getSource() == backButton) {
-            stageForFileSelection = 0;
-            updateFileSelectionDialog();
-            return true;
+            return backButtonUpdate();
         } else {
             return false; //this module did not cause the action;
         }
+    }
+
+    private boolean openFileUpdate() {
+        int returnVal = fc.showOpenDialog(null); //will center with screen, not window
+
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            currentFileAllInfo = fc.getSelectedFile();
+            currentFile.setText(currentFileAllInfo.getPath());
+        } else {
+            //User cancelled the open file request, really we just do nothing
+        }
+        return true;
+    }
+
+    private boolean setOptionsUpdate() {
+        createSetOptionsDialog();
+        setOptionsDialog.setLocationRelativeTo(null); //center on screen
+        setOptionsDialog.setVisible(true);
+        return true;
+    }
+
+    private boolean optionsUpdate() {
+        ListIterator optionIter = app.vAction.visualOptions.listIterator(0);
+        Option currentOption;
+        ListIterator componentIter = optionsDialogValues.listIterator(0);
+
+        while (optionIter.hasNext()) {
+            currentOption = (Option) optionIter.next();
+            //NOTE: YOU COULD DETECT SPECIAL CASE HERE (e.g. if(option.getName().equals("MY SPECIAL OPTION"));
+
+            updateOption(currentOption, componentIter.next());
+        }
+        //Destroy window
+        setOptionsDialog.setVisible(false); //so really, this doesn't destroy it, but when the button is pushed
+        //again, it will just re-create the dialog using the VisualAction values
+        //This is slightly messy...the dialog stays around and then
+        //get regenerated upon another button push
+
+
+        return true;
+    }
+
+    private boolean backButtonUpdate() {
+        stageForFileSelection = 0;
+        updateFileSelectionDialog();
+        return true;
+    }
+
+    private boolean nextButtonUpdate() {
+        if (currentFileAllInfo == null) {
+            return true;
+        }
+
+        stageForFileSelection = 1;
+        updateFileSelectionDialog();
+        return true;
+    }
+
+    private boolean fileSelectionUpdate() {
+        //We don't want to add nodes if the user never
+        //actually selected a file
+        if (currentFileAllInfo == null) {
+            return true;
+        }
+
+        LoadableProgram pp = new LoadableProgram(currentFileAllInfo);
+        try {
+            pp.load();
+        } catch ( Exception e ) {
+            // TODO: display exception loading file
+            throw Avrora.failure(e.toString());
+        }
+        // TODO: get the platform factory from the dialog
+        PlatformFactory pf = Defaults.getPlatform(app.vAction.PLATFORM.get());
+        VisualSimulation s = app.getSimulation();
+
+        int max = ((Integer) numOfNodesSpinner.getValue()).intValue();
+        for (int i = 0; i < max; i++) {
+            //add the stuff to the sim
+            VisualSimulation.Node n = s.createNode(pf, pp);
+            app.vAction.addNode(n);
+        }
+
+        //We should redraw the table
+        app.topologyBox.createSimpleAirTable();
+
+        //And get rid of dialog box
+        fileSelectionDialog.setVisible(false);
+        return true;
     }
 }

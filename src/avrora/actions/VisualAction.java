@@ -55,13 +55,8 @@ import java.util.*;
 public class VisualAction extends SimAction {
 
 
-    public static Hashtable nodeTable; //everyone can access the hashtable of nodes
     //corresponding to the data about all the nodes
     //in the sim
-
-    static {
-        nodeTable = new Hashtable();
-    }
 
     Program program;  //just reuse program each time we start a sim
 
@@ -85,14 +80,6 @@ public class VisualAction extends SimAction {
     SimTimeEvents theEvents; //all the events for controlling sim time (e.g. pausing)
 
     long startms, endms;
-
-    //Here are our events for controlling the sim time
-    /*
-private PauseEvent thePauseEvent;
-private SpeedChangeEventAndProbe theSpeedChangeEventAndProbe;
-private RealtimeEvent theRealtimeEvent;
-private SingleStepProbe theSingleStepProbe;
-     */
 
     public static final String HELP = "The \"visual\" action launches a GUI from which you can start simulations.";
 
@@ -125,20 +112,11 @@ private SingleStepProbe theSingleStepProbe;
         visualOptions = new LinkedList();
         visualOptions.add(SECONDS);
         visualOptions.add(PLATFORM);
-        //visualOptions.add(REALTIME);  //deprecated - added into ManageSimTime toolbar now
         /*INSERT NEW OPTIONS HERE*/
 
         //Init the list of sim nodes
         theNodes = new Vector();
         currentNID = 0;
-
-        //init the sim timing events/probes
-        /*
-                thePauseEvent = new PauseEvent();
-                theSpeedChangeEventAndProbe = new SpeedChangeEventAndProbe();
-                theRealtimeEvent = new RealtimeEvent();
-                theSingleStepProbe = new SingleStepProbe();
-        */
 
     }
 
@@ -159,26 +137,19 @@ private SingleStepProbe theSingleStepProbe;
     //The following functions allow the GUI to interact with
     //the vector of SimNodes
 
-    public void addNode(SimNode theNode) {
-        theNode.NID = currentNID;
-        currentNID++;
-        theNodes.add(theNode);  //add to our internal vector, maybe if I have time
-        //I'd replace everything with the hashtable and remove this
-        nodeTable.put(new Integer(theNode.NID), theNode);
+    public void addNode(VisualSimulation.Node node) {
+        theNodes.add(node);  //add to our internal vector, maybe if I have time
     }
 
     //remove node with NID
     public void removeNode(int NID) {
         //Find the node with that NID
         for (int i = 0; i < theNodes.size(); i++) {
-            if (((SimNode) theNodes.elementAt(i)).NID == NID) {
+            if (((VisualSimulation.Node) theNodes.elementAt(i)).id == NID) {
                 theNodes.removeElementAt(i);
                 return;
             }
-
         }
-
-        nodeTable.remove(new Integer(NID)); //remove it from our hash table
     }
 
     public Vector getNodes() {
@@ -188,35 +159,20 @@ private SingleStepProbe theSingleStepProbe;
     //This function returns true if was able to add the monitor
     //it returns false if it was unable to add the node because it was already there
     public boolean addMonitorToNode(String monitorName, int NID) {
-        //Find the node with that NID
-        for (int i = 0; i < theNodes.size(); i++) {
-            if (((SimNode) theNodes.elementAt(i)).NID == NID) {
-                SimNode currentNode = ((SimNode) theNodes.elementAt(i));
-                //Found the node, now let's see if the monitor was already
-                //there
-                for (int j = 0; j < currentNode.monitors.size(); j++) {
-                    if (currentNode.monitors.elementAt(j).equals(monitorName)) {
-                        return false; //monitor already existed
-                    }
-                }
-                //it did not find the monitor, therefore we add it
-                currentNode.monitors.add(monitorName);
-                return true;
-            }
-        }
+        // TODO: reimplement adding a monitor to a node
         return false;
     }
 
-    public void registerMonitorPanelsWithNode(JPanel monitorPanel, JPanel optionPanel, String monitorName, int NID) {
-        //Find the node with that NID
+    public VisualSimulation.Node getNode(int id) {
         for (int i = 0; i < theNodes.size(); i++) {
-            if (((SimNode) theNodes.elementAt(i)).NID == NID) {
-                SimNode currentNode = ((SimNode) theNodes.elementAt(i));
-                //Found the node, now let's register the panel
-                currentNode.monitorPanels.put(monitorName, monitorPanel);
-                currentNode.monitorOptionsPanels.put(monitorName, optionPanel);
-            }
+            VisualSimulation.Node n = (VisualSimulation.Node)theNodes.elementAt(i);
+            if ( n.id == id) return n;
         }
+        return null;
+    }
+
+    public void registerMonitorPanelsWithNode(JPanel monitorPanel, JPanel optionPanel, String monitorName, int NID) {
+        // TODO: reimplement registering panels
     }
 
     //This function will take a monitor chalkboard and return it's corresponding
@@ -316,33 +272,10 @@ private SingleStepProbe theSingleStepProbe;
             args[0] = "";
         }
 
-        //Need a pointer to the visual action to give to the GUI
-        //but once we are in the new thread the this pointer dissappears
-        //so we save it here
-        VisualAction tempthis = this;
-
         //For now, we don't run it in a seperate thread.
         //We'll wait until we have problems until we try the whole seperate thread thing
-        AvroraGui app = new AvroraGui();
-        JFrame frame = AvroraGui.createGUI(app, tempthis, args);
-        AvroraGui.showGui(frame);
-
-        //If we needed to, code to run the GUI in a seperate thread is here
-        /*
-        javax.swing.SwingUtilities.invokeLater(new Runnable()
-        {
-                public void run()
-                {
-                        AvroraGui app = new AvroraGui();
-                        JFrame frame = AvroraGui.createGUI(app,tempthis,args);
-                        //PrintStream tempstream = new PrintStream(app.getDebugOutputStream());
-                        //Terminal.setOutput(tempstream);
-                        AvroraGui.showGui(frame);
-                        //app.debugAppend("HELLO");
-                }
-        });
-        */
-
+        AvroraGui app = new AvroraGui(options, args, this);
+        app.showGui();
     }
 
 
@@ -400,19 +333,6 @@ private SingleStepProbe theSingleStepProbe;
             }
         }
 
-
-        /*This doesn't work!!!
-        //We should remove all radios from SimpleAir as well
-        for (Enumeration e = theNodes.elements() ; e.hasMoreElements() ;)
-        {
-        SimNode currentNode = ((SimNode)e.nextElement());
-        if(currentNode.theRadio!=null)
-        {
-        SimpleAir.simpleAir.removeRadio(currentNode.theRadio);
-        }
-        }
-        */
-
         simisrunning = false;
         //update the AvroraGUI
         app.topMenu.updateMenuBar();
@@ -433,40 +353,6 @@ private SingleStepProbe theSingleStepProbe;
     //			eventChoice: 0=> run in realtime, 1=> run at fullspeed, 2=> run with the specified delay/cycles
     //						3=> singlestep through
     public void setSimChangeSpeed(int delay, long inbetweenperiod, boolean instrOrCycles, int eventChoice) {
-
-        //can use for debug
-        //System.out.println("setSimChangeSpeed " + Integer.toString(delay) + " " + Long.toString(inbetweenperiod) + " " + Boolean.toString(instrOrCycles) + " " + Integer.toString(eventChoice));
-
-        /*
-        switch (eventChoice)
-                {
-                    //realtime
-                    case 0:
-                        theRealtimeEvent.insert();
-                        theSpeedChangeEventAndProbe.remove();
-                        theSingleStepProbe.remove();
-                        break;
-                    //fullspeed
-                    case 1:
-                        theRealtimeEvent.remove();
-                        theSpeedChangeEventAndProbe.remove();
-                        theSingleStepProbe.remove();
-                        break;
-                    //run with specified delay
-                    case 2:
-                        theSpeedChangeEventAndProbe.setOptions(delay, inbetweenperiod, instrOrCycles);
-                        theSpeedChangeEventAndProbe.insert();
-                        theSingleStepProbe.remove();
-                        theRealtimeEvent.remove();
-                        break;
-                    //single step through
-                    case 3:
-                        theRealtimeEvent.remove();
-                        theSpeedChangeEventAndProbe.remove();
-                        theSingleStepProbe.insert();
-                        break;
-                }
-        **/
     }
 
     //This starts a simulation
@@ -527,9 +413,6 @@ private SingleStepProbe theSingleStepProbe;
             processRandom(currentNode.theSimulator);
             processStagger(currentNode.theSimulator);
         }
-
-        // enable channel utilization accounting
-        //simpleAir.recordUtilization(CHANNEL_UTIL.get());
 
         long startms = System.currentTimeMillis();
         try {

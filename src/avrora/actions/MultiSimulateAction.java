@@ -148,7 +148,7 @@ public class MultiSimulateAction extends SimAction {
                 Radio radio = microcontroller.getRadio();
 
                 // register the simulatorThread with the PinConnect manager
-                PinConnect.pinConnect.addSimulatorThread(st);
+                //PinConnect.pinConnect.addSimulatorThread(st);
 
                 //OL: check for radio
                 if (radio != null) {

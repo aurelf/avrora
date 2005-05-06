@@ -35,10 +35,14 @@
 
 package avrora.gui;
 
+import avrora.Avrora;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.event.ActionEvent;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Vector;
 
 public class ManageMonitors {
     public JButton monitorsButton;
@@ -95,6 +99,30 @@ public class ManageMonitors {
 
         JPanel belowBannerPanel = new JPanel();
 
+        addMonitorsFromClassMap(belowBannerPanel);
+
+        //Border of 30 on the outside
+        belowBannerPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+
+        internalPanel.add(belowBannerPanel, BorderLayout.CENTER);
+
+        //Add the "Update" button
+        monitorsDialogUpdate = new JButton();
+        monitorsDialogUpdate.setText("Update");
+        monitorsDialogUpdate.setToolTipText("Click to update the monitors list");
+        monitorsDialogUpdate.addActionListener(app);
+        internalPanel.add(monitorsDialogUpdate, BorderLayout.SOUTH);
+        internalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        //Add the panel to the dialog
+        chooseMonitorsDialog.setContentPane(internalPanel);
+
+        //Sizes things appropiatly
+        chooseMonitorsDialog.pack();
+
+    }
+
+    private void addMonitorsFromClassMap(JPanel belowBannerPanel) {
         //Let's get a storted list of monitor names registered with the VisualAction
         java.util.List monitorList = app.vAction.getMonitorMap().getSortedList();
         Iterator monitorIter = monitorList.iterator();
@@ -120,26 +148,6 @@ public class ManageMonitors {
             //add the check box to a container so we can examine the values at a later date
             checkBoxContainer.add(theCheckBox);
         }
-
-        //Border of 30 on the outside
-        belowBannerPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
-
-        internalPanel.add(belowBannerPanel, BorderLayout.CENTER);
-
-        //Add the "Update" button
-        monitorsDialogUpdate = new JButton();
-        monitorsDialogUpdate.setText("Update");
-        monitorsDialogUpdate.setToolTipText("Click to update the monitors list");
-        monitorsDialogUpdate.addActionListener(app);
-        internalPanel.add(monitorsDialogUpdate, BorderLayout.SOUTH);
-        internalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
-        //Add the panel to the dialog
-        chooseMonitorsDialog.setContentPane(internalPanel);
-
-        //Sizes things appropiatly
-        chooseMonitorsDialog.pack();
-
     }
 
     //This function sees if an event was caused by
@@ -171,96 +179,23 @@ public class ManageMonitors {
                 }
             }
 
-            //Now that we have a list of the monitors we need to
-            //add, we get a list of the NID's of the nodes
-            //we want to add these monitors to
-            Vector NIDS = new Vector();
-            int[] selectedRows = app.topologyBox.table.getSelectedRows();
-            for (int i = 0; i < selectedRows.length; i++) {
-                //let's get the NID of that row
-                NIDS.add(app.topologyBox.theModel.getValueAt(selectedRows[i], 0));
-            }
+            // for each selected monitor, give it a chance to attach to the nodes
+            LinkedList nodes = getNodeList();
+            for (int j = 0; j < toMONITORS.size(); j++) {
+                String currentMonitor = ((String) toMONITORS.elementAt(j));
+                VisualSimulation.MonitorFactory mf = getMonitorFactory(currentMonitor);
+                mf.attach(nodes);
+                int currentNID = 0;
 
-            //Great, now we have a list of the monitors we need to add
-            //and the nodes that we need to add them to
-            //let's do exactly that.
-            for (int i = 0; i < NIDS.size(); i++) {
-                for (int j = 0; j < toMONITORS.size(); j++) {
-                    String currentMonitor = ((String) toMONITORS.elementAt(j));
-                    int currentNID = ((Integer) NIDS.elementAt(i)).intValue();
+                //In order to get this thing rolling, we'll add a special
+                //case for RadioMonitor....although in the future we are
+                //going to try to make this more modular
+                if ("RadioMonitor".equals(currentMonitor)) {
+                    createRadioPanel(currentMonitor, currentNID);
 
-                    //In order to get this thing rolling, we'll add a special
-                    //case for RadioMonitor....although in the future we are
-                    //going to try to make this more modular
-                    if ("RadioMonitor".equals(currentMonitor)) {
-                        //if it's not already there, we add
-                        //the static Radio Monitor Panel to
-                        //the tab
-                        if (!VisualRadioMonitor.isDisplayed) {
-                            String nameOfPanel = "Global - Radio Monitor";
+                } else if (app.vAction.addMonitorToNode(currentMonitor, currentNID)) {
+                    createDefaultPanel(currentNID, currentMonitor);
 
-                            //Actually display the panel...add it to the tab
-                            app.monitorResults.addTab(nameOfPanel, VisualRadioMonitor.masterPanel);
-                        }
-
-                        //Now we add this NID to our list of nodes
-                        //associated with this global monitor
-                        if (app.vAction.addMonitorToNode(currentMonitor, currentNID)) {
-                            //if the above returned true, then we have to
-                            //actually create a monitor panel and
-                            //register that panel the visual action
-                            //If it returned false, then that node already had
-                            //that monitor
-                            JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
-                            JLabel filler = new JLabel("This panel will update once the simulator is run.");
-                            filler.setHorizontalAlignment(JLabel.CENTER);
-                            panel.setLayout(new GridLayout(1, 1));
-                            panel.add(filler);
-
-
-                            GridLayout theLayout = (GridLayout) VisualRadioMonitor.masterPanel.getLayout();
-                            if (VisualRadioMonitor.masterPanel.getComponentCount() == theLayout.getRows())
-                                theLayout.setRows(theLayout.getRows() + 1);
-
-                            VisualRadioMonitor.masterPanel.add(panel);
-
-                            //Now let's create the options panel
-                            JPanel optionsPanel = VisualRadioMonitor.optionsPanel;
-
-                            //Let's keep track of our panels...add them to hash tables
-                            //for this particular node
-                            app.vAction.registerMonitorPanelsWithNode(panel, optionsPanel, currentMonitor, currentNID);
-
-                        }
-
-                    } else if (app.vAction.addMonitorToNode(currentMonitor, currentNID)) {
-                        //if the above returned true, then we have to
-                        //actually create a monitor panel and
-                        //register that panel the visual action
-                        //If it returned false, then that node already had
-                        //that monitor
-                        JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
-                        JLabel filler = new JLabel("This panel will update once the simulator is run.");
-                        filler.setHorizontalAlignment(JLabel.CENTER);
-                        panel.setLayout(new GridLayout(1, 1));
-                        panel.add(filler);
-
-                        String nameOfPanel = "NID: " + Integer.toString(currentNID) + " - " + currentMonitor;
-
-                        //Actually display the panel...add it to the tab
-                        app.monitorResults.addTab(nameOfPanel, panel);
-
-                        //Now let's create the options panel
-                        JPanel optionsPanel = new JPanel(false);
-                        JLabel optionsFiller = new JLabel("Options for the monitor can be set here. ");
-                        optionsPanel.setLayout(new GridLayout(1, 1));
-                        optionsPanel.add(optionsFiller);
-
-                        //Let's keep track of our panels...add them to hash tables
-                        //for this particular node
-                        app.vAction.registerMonitorPanelsWithNode(panel, optionsPanel, currentMonitor, currentNID);
-
-                    }
                 }
             }
 
@@ -274,5 +209,93 @@ public class ManageMonitors {
             return false; //this module did not cause the action;
         }
 
+    }
+
+    private void createRadioPanel(String currentMonitor, int currentNID) {
+        //if it's not already there, we add
+        //the static Radio Monitor Panel to
+        //the tab
+        if (!VisualRadioMonitor.isDisplayed) {
+            String nameOfPanel = "Global - Radio Monitor";
+
+            //Actually display the panel...add it to the tab
+            app.monitorResults.addTab(nameOfPanel, VisualRadioMonitor.masterPanel);
+        }
+
+        //Now we add this NID to our list of nodes
+        //associated with this global monitor
+        if (app.vAction.addMonitorToNode(currentMonitor, currentNID)) {
+            //if the above returned true, then we have to
+            //actually create a monitor panel and
+            //register that panel the visual action
+            //If it returned false, then that node already had
+            //that monitor
+            JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
+            JLabel filler = new JLabel("This panel will update once the simulator is run.");
+            filler.setHorizontalAlignment(JLabel.CENTER);
+            panel.setLayout(new GridLayout(1, 1));
+            panel.add(filler);
+
+
+            GridLayout theLayout = (GridLayout) VisualRadioMonitor.masterPanel.getLayout();
+            if (VisualRadioMonitor.masterPanel.getComponentCount() == theLayout.getRows())
+                theLayout.setRows(theLayout.getRows() + 1);
+
+            VisualRadioMonitor.masterPanel.add(panel);
+
+            //Now let's create the options panel
+            JPanel optionsPanel = VisualRadioMonitor.optionsPanel;
+
+            //Let's keep track of our panels...add them to hash tables
+            //for this particular node
+            app.vAction.registerMonitorPanelsWithNode(panel, optionsPanel, currentMonitor, currentNID);
+
+        }
+    }
+
+    private void createDefaultPanel(int currentNID, String currentMonitor) {
+        //if the above returned true, then we have to
+        //actually create a monitor panel and
+        //register that panel the visual action
+        //If it returned false, then that node already had
+        //that monitor
+        JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
+        JLabel filler = new JLabel("This panel will update once the simulator is run.");
+        filler.setHorizontalAlignment(JLabel.CENTER);
+        panel.setLayout(new GridLayout(1, 1));
+        panel.add(filler);
+
+        String nameOfPanel = "NID: " + Integer.toString(currentNID) + " - " + currentMonitor;
+
+        //Actually display the panel...add it to the tab
+        app.monitorResults.addTab(nameOfPanel, panel);
+
+        //Now let's create the options panel
+        JPanel optionsPanel = new JPanel(false);
+        JLabel optionsFiller = new JLabel("Options for the monitor can be set here. ");
+        optionsPanel.setLayout(new GridLayout(1, 1));
+        optionsPanel.add(optionsFiller);
+
+        //Let's keep track of our panels...add them to hash tables
+        //for this particular node
+        app.vAction.registerMonitorPanelsWithNode(panel, optionsPanel, currentMonitor, currentNID);
+    }
+
+    private VisualSimulation.MonitorFactory getMonitorFactory(String n) {
+        throw Avrora.unimplemented();
+    }
+
+    private LinkedList getNodeList() {
+        VisualSimulation sim = app.getSimulation();
+        LinkedList nodes = new LinkedList();
+        int[] selectedRows = app.topologyBox.table.getSelectedRows();
+        for (int i = 0; i < selectedRows.length; i++) {
+            //let's get the NID of that row
+            Object v = app.topologyBox.theModel.getValueAt(selectedRows[i], 0);
+            int nid = ((Integer) v).intValue();
+            VisualSimulation.Node node = sim.getNode(nid);
+            nodes.add(node);
+        }
+        return nodes;
     }
 }

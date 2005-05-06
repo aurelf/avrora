@@ -354,8 +354,14 @@ public class Defaults {
         return nl;
     }
 
+    private static final InterpreterFactory DEFAULT_IF = new GenInterpreter.Factory();
+
     public static Simulator newSimulator(int id, Program p) {
-        return newSimulator(id, "atmega128", 8000000, 8000000, new GenInterpreter.Factory(), p);
+        return newSimulator(id, "atmega128", 8000000, 8000000, DEFAULT_IF, p);
+    }
+
+    public static InterpreterFactory getInterpreterFactory() {
+        return DEFAULT_IF;
     }
 
     public static Simulator newSimulator(int id, String mcu, long hz, long exthz, InterpreterFactory factory, Program p) {

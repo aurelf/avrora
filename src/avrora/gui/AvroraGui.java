@@ -30,14 +30,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//This file defines the Avrora GUI
-//It is adapted from the Swing Tutorials on java.sun.com
-
 package avrora.gui;
 
 import avrora.actions.VisualAction;
 import avrora.Version;
 import avrora.Avrora;
+import avrora.util.Options;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -86,6 +84,82 @@ public class AvroraGui implements ActionListener, ChangeListener {
     //A thread that will repaint the monitor window
     PaintThread newPaintThread;
 
+    private VisualSimulation simulation;
+
+    public AvroraGui(Options opts, String[] a, VisualAction va) {
+
+        //Set the look and feel.
+        initLookAndFeel();
+
+        //Make sure we have nice window decorations.
+        JFrame.setDefaultLookAndFeelDecorated(true);
+
+        //Create and set up the window.
+        masterFrame = new JFrame("Avrora GUI");
+        masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        vAction = va;
+        vAction.app = this;
+        args = a;
+
+        //First create the north quadrant, which contains
+        //the banner and the sim toolbar
+
+        this.simTimeBox = ManageSimTime.createManageSimTime(this);
+
+        this.topMenu = SimMenuBar.createSimMenuBar(this.args, this);
+        masterFrame.setJMenuBar(this.topMenu.menuBar);
+
+        //Let's create a subpanel for displaying simtoolbar and file selection
+        JPanel toolAndFile = new JPanel();
+        toolAndFile.setLayout(new BorderLayout());
+        toolAndFile.add(this.simTimeBox.simTimeEverything, BorderLayout.WEST);
+
+        //The tool bar goes in the north quandrant
+        masterFrame.getContentPane().add(toolAndFile, BorderLayout.NORTH);
+
+        //In the center is the tabs with all the monitor results
+        this.createDebugOutput();
+        this.createMonitorResults(); //Created the tabbed panes for monitor results
+
+        masterFrame.getContentPane().add(this.monitorResults, BorderLayout.CENTER);
+
+        //The west quadrant contains the topology visual
+        this.createTopologyVisual();
+        JPanel westPanel = new JPanel();
+        westPanel.setLayout(new GridLayout(2, 1));
+
+        //westPanel.add(this.topologyVisual);
+        this.topologyBox = ManageTopology.createManageTopology(this);
+        westPanel.add(this.topologyBox.topologyVisual);
+
+
+        //init monitor options to blank panel, with the typical border
+        this.monitorOptions = new JPanel();
+        this.monitorOptions.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Monitor Options"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        westPanel.add(this.monitorOptions);
+        masterFrame.getContentPane().add(westPanel, BorderLayout.WEST);
+
+        //The south quadrant holds the manage monitors button and the version info
+        this.manageMonitorsBox = ManageMonitors.createManageMonitors(this);
+        this.createVersioningInfo();
+        JPanel southPanel = new JPanel();
+        southPanel.setLayout(new BorderLayout());
+        //Add blank JPanel so our button is right size
+        JPanel blankPanel = new JPanel();
+        southPanel.add(blankPanel, BorderLayout.CENTER);
+        //We no longer add Manage monitors -> it's been moved to the top level menu
+        //southPanel.add(this.manageMonitorsBox.monitorsButton, BorderLayout.EAST);
+        southPanel.add(this.versioningInfo, BorderLayout.SOUTH);
+        masterFrame.getContentPane().add(southPanel, BorderLayout.SOUTH);
+
+        simulation = new VisualSimulation();
+    }
+
+    public VisualSimulation getSimulation() {
+        return simulation;
+    }
+
     //Called when an event occurs on the GUI
     //Really just dispatchs to the modules of the GUI and allows them
     //to handle the event
@@ -114,9 +188,9 @@ public class AvroraGui implements ActionListener, ChangeListener {
 
             //So now we have the actualy panel...we can feed that to our VisualAction
             //and it will return the corresponding options panel
-            JPanel thePanel = vAction.getOptionsFromMonitor(monitorPanel);
-            titleOfPanel = vAction.getMonitorNameFromChalkboard(monitorPanel);
-            currentMonitorDisplayed = vAction.getMonitorClassFromChalkboard(monitorPanel);
+            JPanel thePanel = getOptionsFromMonitor(monitorPanel);
+            titleOfPanel = getMonitorName(monitorPanel);
+            currentMonitorDisplayed = getMonitorClass(monitorPanel);
 
             if (thePanel == null) {
                 //then it must be the debug panel...let's set
@@ -134,6 +208,21 @@ public class AvroraGui implements ActionListener, ChangeListener {
 
         }
         return;
+    }
+
+    private VisualMonitor getMonitorClass(JPanel monitorPanel) {
+        //throw Avrora.unimplemented();
+        return vAction.getMonitorClassFromChalkboard(monitorPanel);
+    }
+
+    private String getMonitorName(JPanel monitorPanel) {
+        //throw Avrora.unimplemented();
+        return vAction.getMonitorNameFromChalkboard(monitorPanel);
+    }
+
+    private JPanel getOptionsFromMonitor(JPanel monitorPanel) {
+        //throw Avrora.unimplemented();
+        return vAction.getOptionsFromMonitor(monitorPanel);
     }
 
     //This creates the "console window" inside the GUI
@@ -159,12 +248,8 @@ public class AvroraGui implements ActionListener, ChangeListener {
     //This function creates the monitor results tab window, with the
     //debug tab as the default tab displayed
     //Should be called after createDebugOutput()
-    private void createMonitorResults(AvroraGui papp) {
+    private void createMonitorResults() {
         monitorResults = new JTabbedPane(JTabbedPane.BOTTOM);
-
-        //Let's not set a preferred size
-        //Dimension monitorDimensions = new Dimension(830, 680);
-        //monitorResults.setPreferredSize(monitorDimensions);
 
         //By default, only the debug tab is displayed
         //We should set it so that it takes up the full panel
@@ -173,7 +258,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
 
         monitorResults.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("View Monitors"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
-        monitorResults.addChangeListener(papp);
+        monitorResults.addChangeListener(this);
     }
 
 
@@ -197,99 +282,12 @@ public class AvroraGui implements ActionListener, ChangeListener {
         debugOutput.append(b);
     }
 
-    //This is called during createGUI...it provides the links
-    //to the VisualAction
-    public void createVisualLink(VisualAction pvAction, String[] pargs) {
-        vAction = pvAction;
-        vAction.app = this;
-        args = pargs;
-    }
-
-    //This actually "creates" the GUI...and calling this, one should call showGUI
-    public static JFrame createGUI(AvroraGui app, VisualAction pvAction, String[] pargs) {
-
-        //Set the look and feel.
-        initLookAndFeel();
-
-        //Make sure we have nice window decorations.
-        JFrame.setDefaultLookAndFeelDecorated(true);
-
-        app = new AvroraGui();
-
-        //Create and set up the window.
-        JFrame frame = new JFrame("Avrora GUI");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        app.createVisualLink(pvAction, pargs);  //creates links back to VisualAction
-
-        //First create the north quadrant, which contains
-        //the banner and the sim toolbar
-
-        //We no longer want the banner
-
-        app.simTimeBox = ManageSimTime.createManageSimTime(app);
-
-        //app.simInputBox = ManageSimInput.createManageSimInput(app.args, app);
-
-        app.topMenu = SimMenuBar.createSimMenuBar(app.args, app);
-        frame.setJMenuBar(app.topMenu.menuBar);
-
-        //Let's create a subpanel for displaying simtoolbar and file selection
-        JPanel toolAndFile = new JPanel();
-        toolAndFile.setLayout(new BorderLayout());
-        toolAndFile.add(app.simTimeBox.simTimeEverything, BorderLayout.WEST);
-        //toolAndFile.add(app.simInputBox.fileSelection, BorderLayout.EAST);
-
-        //The tool bar goes in the north quandrant
-        frame.getContentPane().add(toolAndFile, BorderLayout.NORTH);
-
-        //In the center is the tabs with all the monitor results
-        app.createDebugOutput();
-        app.createMonitorResults(app); //Created the tabbed panes for monitor results
-
-        frame.getContentPane().add(app.monitorResults, BorderLayout.CENTER);
-
-        //The west quadrant contains the topology visual
-        app.createTopologyVisual();
-        JPanel westPanel = new JPanel();
-        westPanel.setLayout(new GridLayout(2, 1));
-
-        //westPanel.add(app.topologyVisual);
-        app.topologyBox = ManageTopology.createManageTopology(app);
-        westPanel.add(app.topologyBox.topologyVisual);
-
-
-        //init monitor options to blank panel, with the typical border
-        app.monitorOptions = new JPanel();
-        app.monitorOptions.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Monitor Options"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        westPanel.add(app.monitorOptions);
-        frame.getContentPane().add(westPanel, BorderLayout.WEST);
-
-        //The south quadrant holds the manage monitors button and the version info
-        app.manageMonitorsBox = ManageMonitors.createManageMonitors(app);
-        app.createVersioningInfo();
-        JPanel southPanel = new JPanel();
-        southPanel.setLayout(new BorderLayout());
-        //Add blank JPanel so our button is right size
-        JPanel blankPanel = new JPanel();
-        southPanel.add(blankPanel, BorderLayout.CENTER);
-        //We no longer add Manage monitors -> it's been moved to the top level menu
-        //southPanel.add(app.manageMonitorsBox.monitorsButton, BorderLayout.EAST);
-        southPanel.add(app.versioningInfo, BorderLayout.SOUTH);
-        frame.getContentPane().add(southPanel, BorderLayout.SOUTH);
-
-        //The avrora gui needs access to the frame
-        app.masterFrame = frame;
-
-        return frame;
-    }
-
-    public static void showGui(JFrame frame) {
+    public void showGui() {
         //Display the window.
 
-        frame.pack();  //set to min size the components allow if its not maxed
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); //will max window
-        frame.setVisible(true);
+        masterFrame.pack();  //set to min size the components allow if its not maxed
+        masterFrame.setExtendedState(JFrame.MAXIMIZED_BOTH); //will max window
+        masterFrame.setVisible(true);
     }
 
     //The swing tutorial had this code, to allow it to set up
@@ -352,6 +350,14 @@ public class AvroraGui implements ActionListener, ChangeListener {
         newPaintThread.start();
     }
 
+    public MonitorPanel createMonitorPanel(String name) {
+        throw Avrora.unimplemented();
+    }
+
+    public void destroyMonitorPanel(MonitorPanel p) {
+        throw Avrora.unimplemented();
+    }
+
     //This class is actually a new thread that will run
     //once every while to repaint the the monitor window
     public class PaintThread extends Thread {
@@ -362,7 +368,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
                 //a monitor result is currently
                 //being display...if so, repaint it
                 //and sleep for the specified amount of time
-                while (vAction.aSimIsRunning()) {
+                while (aSimIsRunning()) {
                     if (monitorResults.getSelectedIndex() != 0) {
                         if (currentMonitorDisplayed == null) {
                             //we need to get all the nodes that are of type visualradio monitor
@@ -380,6 +386,11 @@ public class AvroraGui implements ActionListener, ChangeListener {
             } catch (InterruptedException except) {
                 //If interrupted, do nothing
             }
+        }
+
+        private boolean aSimIsRunning() {
+            //throw Avrora.unimplemented();
+            return vAction.aSimIsRunning();
         }
     }
 }

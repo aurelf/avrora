@@ -33,10 +33,6 @@
 package avrora.gui;
 
 
-//The current options classes don't allow us to get a handle
-//on the help descriptions..it can only print them out
-//So we fix that!
-
 public class ThreadStart extends Thread {
     AvroraGui app;
 
