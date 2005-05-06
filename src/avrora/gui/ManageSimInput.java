@@ -143,12 +143,12 @@ public class ManageSimInput {
         internalPanel.add(dialogBanner, BorderLayout.NORTH);
 
         JPanel belowBannerPanel = new JPanel();
-        belowBannerPanel.setLayout(new GridLayout(app.vAction.visualOptions.size(), 1));
+        belowBannerPanel.setLayout(new GridLayout(app.getOptionList().size(), 1));
 
         //Now we go to VisualAction and grab a list of the options
         //that we can set
         optionsDialogValues = new LinkedList();
-        ListIterator optionIter = app.vAction.visualOptions.listIterator(0);
+        Iterator optionIter = app.getOptionList().iterator();
         Option currentOption;
         while (optionIter.hasNext()) {
             currentOption = (Option) optionIter.next();
@@ -228,7 +228,7 @@ public class ManageSimInput {
         //Make sure we have nice window decorations.
         //initLookAndFeel();
         JDialog.setDefaultLookAndFeelDecorated(true);
-        fileSelectionDialog = new JDialog(app.masterFrame, "Add nodes to simulator");
+        fileSelectionDialog = new JDialog(app.masterFrame, "Add Nodes to Simulation");
 
         updateFileSelectionDialog();
     }
@@ -424,7 +424,7 @@ public class ManageSimInput {
     }
 
     private boolean optionsUpdate() {
-        ListIterator optionIter = app.vAction.visualOptions.listIterator(0);
+        Iterator optionIter = app.getOptionList().iterator();
         Option currentOption;
         ListIterator componentIter = optionsDialogValues.listIterator(0);
 
@@ -475,14 +475,13 @@ public class ManageSimInput {
             throw Avrora.failure(e.toString());
         }
         // TODO: get the platform factory from the dialog
-        PlatformFactory pf = Defaults.getPlatform(app.vAction.PLATFORM.get());
+        PlatformFactory pf = null;
         VisualSimulation s = app.getSimulation();
 
         int max = ((Integer) numOfNodesSpinner.getValue()).intValue();
         for (int i = 0; i < max; i++) {
             //add the stuff to the sim
             VisualSimulation.Node n = s.createNode(pf, pp);
-            app.vAction.addNode(n);
         }
 
         //We should redraw the table

@@ -33,6 +33,7 @@
 package avrora.gui;
 
 import avrora.sim.Simulator;
+import avrora.sim.SimulatorThread;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platform;
 import avrora.core.Program;
@@ -42,6 +43,7 @@ import avrora.Defaults;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * The <code>VisualSimulation</code> class represents a simulation in the GUI. It contains nodes and
@@ -64,7 +66,7 @@ public class VisualSimulation {
     public interface MonitorFactory {
         public void attach(List nodes);
         public void instantiate(Node n, Simulator s);
-        public void remove(Node n);
+        public void remove(List nodes);
     }
 
     /**
@@ -80,6 +82,7 @@ public class VisualSimulation {
         protected final LinkedList monitors;
 
         protected Simulator simulator;
+        protected SimulatorThread thread;
 
         Node(int id, PlatformFactory pf, LoadableProgram p) {
             this.id = id;
@@ -88,7 +91,7 @@ public class VisualSimulation {
             this.monitors = new LinkedList();
         }
 
-        Simulator instantiate() {
+        void instantiate() {
             // create the simulator object
             Platform p = platform.newPlatform(id, Defaults.getInterpreterFactory(), path.getProgram());
             simulator = p.getMicrocontroller().getSimulator();
@@ -98,11 +101,16 @@ public class VisualSimulation {
                 MonitorFactory f = (MonitorFactory)i.next();
                 f.instantiate(this, simulator);
             }
-            return simulator;
+
+            thread = new SimulatorThread(simulator);
         }
 
         public Simulator getSimulator() {
             return simulator;
+        }
+
+        public SimulatorThread getThread() {
+            return thread;
         }
 
         public void addMonitor(MonitorFactory f) {
@@ -111,7 +119,6 @@ public class VisualSimulation {
 
         public void removeMonitor(MonitorFactory f) {
             monitors.remove(f);
-            f.remove(this);
         }
 
         public List getMonitors() {
@@ -127,6 +134,9 @@ public class VisualSimulation {
     protected int num_nodes;
     protected Node[] nodes;
 
+    boolean running;
+    boolean paused;
+
     public VisualSimulation() {
         nodes = new Node[16];
     }
@@ -138,7 +148,8 @@ public class VisualSimulation {
      * @param pp the program for the node
      * @return a new instance of the <code>Node</code> class representing the node
      */
-    public Node createNode(PlatformFactory pf, LoadableProgram pp) {
+    public synchronized Node createNode(PlatformFactory pf, LoadableProgram pp) {
+        if ( running ) return null;
         int id = num_nodes++;
         Node n = new Node(id, pf, pp);
         if ( id > nodes.length ) grow();
@@ -152,31 +163,96 @@ public class VisualSimulation {
         nodes = nnodes;
     }
 
-    public Node getNode(int node_id) {
+    public synchronized Node getNode(int node_id) {
         return nodes[node_id];
     }
 
-    public void removeNode(int node_id) {
+    public synchronized void removeNode(int node_id) {
+        if ( running ) return;
         throw Avrora.unimplemented();
     }
 
-    public void start() {
+    public synchronized void start() {
+        // if we are already running, do nothing
+        if ( running ) return;
+
+        // instantiate all of the nodes (and create threads)
+        for ( int cntr = 0; cntr < nodes.length; cntr++ ) {
+            Node n = nodes[cntr];
+            if ( n == null ) continue;
+
+            n.instantiate(); // create the simulator and simulator thread
+        }
+
+        // start all of the threads
+        for ( int cntr = 0; cntr < nodes.length; cntr++ ) {
+            Node n = nodes[cntr];
+            if ( n == null ) continue;
+            running = true; // we are running after the first node starts
+            n.getThread().start(); // begin execution
+        }
+    }
+
+    public synchronized void pause() {
+        if ( !running ) return;
         throw Avrora.unimplemented();
     }
 
-    public void pause() {
+    public synchronized void resume() {
+        if ( !running ) return;
         throw Avrora.unimplemented();
     }
 
-    public void resume() {
+    public synchronized void stop() {
+        if ( !running ) return;
         throw Avrora.unimplemented();
     }
 
-    public void stop() {
+    public synchronized void stopNode(int id) {
+        if ( !running ) return;
         throw Avrora.unimplemented();
+    }
+
+    public boolean isPaused() {
+        return paused;
     }
 
     public boolean isRunning() {
-        throw Avrora.unimplemented();
+        return running;
+    }
+
+    class Iter implements Iterator {
+        int cursor;
+
+        Iter() {
+            scan();
+        }
+
+        public boolean hasNext() {
+            return cursor < nodes.length;
+        }
+
+        public Object next() {
+            if ( cursor >= nodes.length ) throw new NoSuchElementException();
+            Object o = nodes[cursor];
+            cursor++;
+            scan();
+            return o;
+        }
+
+        private void scan() {
+            while ( cursor < nodes.length ) {
+                if ( nodes[cursor] != null ) return;
+                cursor++;
+            }
+        }
+
+        public void remove() {
+            throw Avrora.unimplemented();
+        }
+    }
+
+    public Iterator getNodeIterator() {
+        return new Iter();
     }
 }

@@ -39,19 +39,21 @@ import avrora.sim.util.ProgramProfiler;
 import avrora.gui.*;
 import avrora.actions.VisualAction;
 import avrora.monitors.MonitorFactory;
+import avrora.Avrora;
 
 import java.awt.*;
+import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 /**
  * The <code>PCMonitor</code> class is a monitor that tracks the current value of the PC
  */
-public class VisualPCMonitor extends MonitorFactory {
+public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulation.MonitorFactory {
 
-    public class VisualMonitor implements avrora.gui.VisualMonitor, Simulator.Probe {
+    public class PCMonitor extends Monitor implements avrora.gui.VisualMonitor, Simulator.Probe {
         public final Simulator simulator;
         public final Program program;
-        public final ProgramProfiler profile;
         public JPanel visualPanel;
         public JPanel visualOptionsPanel;
         public GraphNumbers theGraph;
@@ -113,10 +115,9 @@ public class VisualPCMonitor extends MonitorFactory {
             theGraph.addToVector(address);
         }
 
-        VisualMonitor(Simulator s) {
+        PCMonitor(Simulator s) {
             simulator = s;
             program = s.getProgram();
-            profile = new ProgramProfiler(program);
             // insert the global probe
             s.insertProbe(this);
         }
@@ -130,6 +131,12 @@ public class VisualPCMonitor extends MonitorFactory {
             //we better take it out
         }
 
+        protected void remove() {
+            // TODO: is report necessary when we remove?
+            report();
+            simulator.removeProbe(this);
+        }
+
     }
 
     /**
@@ -138,17 +145,10 @@ public class VisualPCMonitor extends MonitorFactory {
      * <code>newMonitor()</code> method.
      */
     public VisualPCMonitor() {
-        super("The \"pc\" monitor tracks the current value of the pc");
+        super();
     }
 
-    /**
-     * The <code>newMonitor()</code> method creates a new monitor that is capable of monitoring the stack
-     * height of the program over its execution.
-     *
-     * @param s the simulator to create a monitor for
-     * @return an instance of the <code>Monitor</code> interface for the specified simulator
-     */
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return new VisualMonitor(s);
+    protected Monitor newMonitor(VisualSimulation.Node n) {
+        return new PCMonitor(n.getSimulator());
     }
 }

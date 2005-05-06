@@ -32,35 +32,67 @@
 
 package avrora.gui;
 
+import avrora.sim.Simulator;
 import avrora.Avrora;
 
-import javax.swing.*;
+import java.util.List;
+import java.util.Iterator;
+import java.util.HashMap;
 
 /**
- * The MonitorPanel represents a pair of panels for a monitor, where one panel
- * is the display panel (selectable through the main tab) and one is the options
- * panel which is displayed when the user accesses the options for this monitor.
- *
  * @author Ben L. Titzer
  */
-public class MonitorPanel {
+public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFactory {
 
-    final String name;
+    final HashMap panelMap; // maps VisualSimulation.Node -> MonitorPanel
+    final HashMap monitorMap; // maps MonitorPanel -> PCMonitor
 
-    final JPanel displayPanel;
-    final JPanel optionsPanel;
-
-    MonitorPanel(String n, JPanel dp, JPanel op) {
-        name = n;
-        displayPanel = dp;
-        optionsPanel = op;
+    public SingleNodeMonitor() {
+        panelMap = new HashMap();
+        monitorMap = new HashMap();
     }
 
-    public void clear() {
+    public void attach(List nodes) {
+        Iterator i = nodes.iterator();
+        while ( i.hasNext()) {
+            VisualSimulation.Node n = (VisualSimulation.Node)i.next();
+            if ( panelMap.containsKey(n) ) continue;
+            MonitorPanel p = AvroraGui.instance.createMonitorPanel("PC - "+n.id);
+            panelMap.put(n, p);
+            n.addMonitor(this);
+        }
+    }
+
+    public void instantiate(VisualSimulation.Node n, Simulator s) {
         throw Avrora.unimplemented();
     }
 
-    public void paint() {
-        // TODO: allow the monitor factory to install a painter object that is called here
+    public void remove(List nodes) {
+        Iterator i = nodes.iterator();
+        while ( i.hasNext()) {
+            VisualSimulation.Node n = (VisualSimulation.Node)i.next();
+            removeOne(n);
+        }
     }
+
+    private void removeOne(VisualSimulation.Node n) {
+        MonitorPanel p = (MonitorPanel)panelMap.get(n);
+        if ( p == null ) return;
+
+        Monitor pc = (Monitor)monitorMap.get(p);
+        if ( pc != null ) {
+            pc.remove();
+            monitorMap.remove(p);
+        }
+
+        AvroraGui.instance.removeMonitorPanel(p);
+        panelMap.remove(n);
+        n.removeMonitor(this);
+    }
+
+    protected abstract class Monitor {
+        protected abstract void remove();
+    }
+
+    protected abstract Monitor newMonitor(VisualSimulation.Node n);
 }

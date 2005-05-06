@@ -78,8 +78,9 @@ public class ManageTopology {
         table = new JTable(theModel);
         
         //fill the table with all the data from vAction
-        for (Enumeration e = app.vAction.getNodes().elements(); e.hasMoreElements();) {
-            VisualSimulation.Node currentNode = (VisualSimulation.Node) e.nextElement();
+        Iterator ni = app.getSimulation().getNodeIterator();
+        while ( ni.hasNext() ) {
+            VisualSimulation.Node currentNode = (VisualSimulation.Node)ni.next();
             Vector tempVector = new Vector();
             tempVector.add(new Integer(currentNode.id));
             tempVector.add(currentNode.getProgram().getName());
@@ -113,7 +114,8 @@ public class ManageTopology {
         for (int i = 0; i < selectedRows.length; i++) {
             //let's get the NID of that row, and tell the 
             //visual action to remove it
-            app.vAction.removeNode(((Integer) (theModel.getValueAt(selectedRows[i], 0))).intValue());
+            Integer integer = ((Integer) (theModel.getValueAt(selectedRows[i], 0)));
+            app.getSimulation().removeNode(integer.intValue());
         }
         
         //We should redraw the table

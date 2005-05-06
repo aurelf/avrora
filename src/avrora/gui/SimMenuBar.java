@@ -47,13 +47,14 @@ public class SimMenuBar {
     AvroraGui app;
 
 
-    private static final String OPTIONS = "Options";
-    private static final String SIMOPTIONS = "Set Simulator Options";
-    private static final String ADDFILE = "Add Node(s)";
-    private static final String REMOVENODES = "Remove Selected Node(s)";
+    private static final String FILE = "File";
+    private static final String SIMOPTIONS = "Options...";
+    private static final String LOADPROGRAM = "Load Program...";
+    private static final String ADDFILE = "Add Nodes...";
+    private static final String REMOVENODES = "Remove Nodes...";
 
     private static final String MONITORS = "Monitors";
-    private static final String ADDMONITORS = "Add Monitors to Selected Node(s)";
+    private static final String ADDMONITORS = "Add Monitors...";
 
     //Returns an object of ManageSimInput which represents the file selection panel
     //Passed the filename given to avrora by command line (so it can setup default)
@@ -71,15 +72,19 @@ public class SimMenuBar {
 
     public void updateMenuBar() {
 
-        if (!app.vAction.aSimIsRunning()) {
+        if (!app.getSimulation().isRunning()) {
             menuBar.removeAll();
             JMenu newMenu;
-            newMenu = new JMenu(OPTIONS);
+            newMenu = new JMenu(FILE);
             menuBar.add(newMenu);
 
             JMenuItem newItem;
 
             newItem = new JMenuItem(SIMOPTIONS);
+            newItem.addActionListener(app);
+            newMenu.add(newItem);
+
+            newItem = new JMenuItem(LOADPROGRAM);
             newItem.addActionListener(app);
             newMenu.add(newItem);
 

@@ -124,9 +124,8 @@ public class ManageMonitors {
 
     private void addMonitorsFromClassMap(JPanel belowBannerPanel) {
         //Let's get a storted list of monitor names registered with the VisualAction
-        java.util.List monitorList = app.vAction.getMonitorMap().getSortedList();
+        java.util.List monitorList = app.getMonitorList();
         Iterator monitorIter = monitorList.iterator();
-        java.util.List optionMonitorsList = app.vAction.MONITORS.get();
 
         belowBannerPanel.setLayout(new GridLayout(monitorList.size(), 1));
 
@@ -137,12 +136,6 @@ public class ManageMonitors {
             //Add a checkbox representing this list
             JCheckBox theCheckBox = new JCheckBox(currentMonitor);
 
-            //Now we have to check to see if this monitor is already in the "monitor list"
-            if (optionMonitorsList.contains(currentMonitor)) {
-                theCheckBox.setSelected(true);
-            } else {
-                theCheckBox.setSelected(false);
-            }
             theCheckBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             belowBannerPanel.add(theCheckBox);
             //add the check box to a container so we can examine the values at a later date
@@ -185,18 +178,6 @@ public class ManageMonitors {
                 String currentMonitor = ((String) toMONITORS.elementAt(j));
                 VisualSimulation.MonitorFactory mf = getMonitorFactory(currentMonitor);
                 mf.attach(nodes);
-                int currentNID = 0;
-
-                //In order to get this thing rolling, we'll add a special
-                //case for RadioMonitor....although in the future we are
-                //going to try to make this more modular
-                if ("RadioMonitor".equals(currentMonitor)) {
-                    createRadioPanel(currentMonitor, currentNID);
-
-                } else if (app.vAction.addMonitorToNode(currentMonitor, currentNID)) {
-                    createDefaultPanel(currentNID, currentMonitor);
-
-                }
             }
 
             //We are done with the dialog...get rid of it
@@ -224,7 +205,8 @@ public class ManageMonitors {
 
         //Now we add this NID to our list of nodes
         //associated with this global monitor
-        if (app.vAction.addMonitorToNode(currentMonitor, currentNID)) {
+        // TODO: reimplement adding a monitor to a node
+        if (false) {
             //if the above returned true, then we have to
             //actually create a monitor panel and
             //register that panel the visual action
@@ -248,7 +230,7 @@ public class ManageMonitors {
 
             //Let's keep track of our panels...add them to hash tables
             //for this particular node
-            app.vAction.registerMonitorPanelsWithNode(panel, optionsPanel, currentMonitor, currentNID);
+            // TODO: reimplement registering panels
 
         }
     }
@@ -278,11 +260,11 @@ public class ManageMonitors {
 
         //Let's keep track of our panels...add them to hash tables
         //for this particular node
-        app.vAction.registerMonitorPanelsWithNode(panel, optionsPanel, currentMonitor, currentNID);
+        // TODO: reimplement registering panels
     }
 
     private VisualSimulation.MonitorFactory getMonitorFactory(String n) {
-        throw Avrora.unimplemented();
+        return GUIDefaults.getMonitor(n);
     }
 
     private LinkedList getNodeList() {

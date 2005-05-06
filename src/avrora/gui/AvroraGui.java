@@ -43,12 +43,17 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 
 public class AvroraGui implements ActionListener, ChangeListener {
 
-    //Links to the visual action which started this GUI
-    public VisualAction vAction;
+    public static AvroraGui instance;
+
+    public static void init(Options opt, String[] args) {
+        instance = new AvroraGui(opt, args);
+    }
+
     public String[] args;
 
     //High level elements of the GUI
@@ -62,17 +67,15 @@ public class AvroraGui implements ActionListener, ChangeListener {
     private JLabel versioningInfo; //holds the text that displays at the bottom of the GUI
     private JPanel monitorOptions; //holds the options for the current monitor
 
-    //This stuff should be moved to it's own class/file once
-    //I get around to it
-    private JPanel topologyVisual; //Holds the topology visual
-
     //This is the debug panel
     private JTextArea debugOutput; //This holds basic debug information
     private JPanel debugPanel; //this is init in createDebugOutput
 
+    private HashMap monitorTabMap;
+
     //For convuluted reasons it's important to store the
     //current monitor being displayed (see paint thread)
-    private VisualMonitor currentMonitorDisplayed;
+    private MonitorPanel currentMonitorDisplayed;
 
     //we no longer create the banner
     //private JPanel avroraBanner;  //holds the title banner
@@ -86,7 +89,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
 
     private VisualSimulation simulation;
 
-    public AvroraGui(Options opts, String[] a, VisualAction va) {
+    private AvroraGui(Options opts, String[] a) {
 
         //Set the look and feel.
         initLookAndFeel();
@@ -94,12 +97,14 @@ public class AvroraGui implements ActionListener, ChangeListener {
         //Make sure we have nice window decorations.
         JFrame.setDefaultLookAndFeelDecorated(true);
 
+        monitorTabMap = new HashMap();
+
         //Create and set up the window.
         masterFrame = new JFrame("Avrora GUI");
         masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        vAction = va;
-        vAction.app = this;
+        simulation = new VisualSimulation();
+
         args = a;
 
         //First create the north quadrant, which contains
@@ -115,7 +120,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
         toolAndFile.setLayout(new BorderLayout());
         toolAndFile.add(this.simTimeBox.simTimeEverything, BorderLayout.WEST);
 
-        //The tool bar goes in the north quandrant
+        //The tool bar goes in the north quadrant
         masterFrame.getContentPane().add(toolAndFile, BorderLayout.NORTH);
 
         //In the center is the tabs with all the monitor results
@@ -125,7 +130,6 @@ public class AvroraGui implements ActionListener, ChangeListener {
         masterFrame.getContentPane().add(this.monitorResults, BorderLayout.CENTER);
 
         //The west quadrant contains the topology visual
-        this.createTopologyVisual();
         JPanel westPanel = new JPanel();
         westPanel.setLayout(new GridLayout(2, 1));
 
@@ -152,12 +156,18 @@ public class AvroraGui implements ActionListener, ChangeListener {
         //southPanel.add(this.manageMonitorsBox.monitorsButton, BorderLayout.EAST);
         southPanel.add(this.versioningInfo, BorderLayout.SOUTH);
         masterFrame.getContentPane().add(southPanel, BorderLayout.SOUTH);
-
-        simulation = new VisualSimulation();
     }
 
     public VisualSimulation getSimulation() {
         return simulation;
+    }
+
+    public java.util.List getMonitorList() {
+        return GUIDefaults.getMonitorList();
+    }
+
+    public java.util.List getOptionList() {
+        return GUIDefaults.getOptionList();
     }
 
     //Called when an event occurs on the GUI
@@ -190,7 +200,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
             //and it will return the corresponding options panel
             JPanel thePanel = getOptionsFromMonitor(monitorPanel);
             titleOfPanel = getMonitorName(monitorPanel);
-            currentMonitorDisplayed = getMonitorClass(monitorPanel);
+            currentMonitorDisplayed = getMonitorPanel(monitorPanel);
 
             if (thePanel == null) {
                 //then it must be the debug panel...let's set
@@ -210,24 +220,24 @@ public class AvroraGui implements ActionListener, ChangeListener {
         return;
     }
 
-    private VisualMonitor getMonitorClass(JPanel monitorPanel) {
-        //throw Avrora.unimplemented();
-        return vAction.getMonitorClassFromChalkboard(monitorPanel);
+    private MonitorPanel getMonitorPanel(JPanel monitorPanel) {
+        MonitorPanel p = (MonitorPanel)monitorTabMap.get(monitorPanel);
+        return p;
     }
 
     private String getMonitorName(JPanel monitorPanel) {
-        //throw Avrora.unimplemented();
-        return vAction.getMonitorNameFromChalkboard(monitorPanel);
+        MonitorPanel p = (MonitorPanel)monitorTabMap.get(monitorPanel);
+        return p.name;
     }
 
     private JPanel getOptionsFromMonitor(JPanel monitorPanel) {
-        //throw Avrora.unimplemented();
-        return vAction.getOptionsFromMonitor(monitorPanel);
+        MonitorPanel p = (MonitorPanel)monitorTabMap.get(monitorPanel);
+        return p.optionsPanel;
     }
 
     //This creates the "console window" inside the GUI
     private void createDebugOutput() {
-        debugOutput = new JTextArea("This is the console. " + "Debug output will be printed here as well as text output from Avrora\n");
+        debugOutput = new JTextArea("Console initialized. " + "Textual output from Avrora will be displayed here.\n");
         debugOutput.setFont(new Font("Courier", Font.PLAIN, 14));
         debugOutput.setBackground(Color.BLACK);
         debugOutput.setForeground(Color.WHITE);
@@ -261,17 +271,6 @@ public class AvroraGui implements ActionListener, ChangeListener {
         monitorResults.addChangeListener(this);
     }
 
-
-    private void createTopologyVisual() {
-        //Right now, we just display a static picture for eyecandy
-        ImageIcon topologyVisualIcon = createImageIcon("images/dummypic_topology.jpg");
-        JLabel topologyVisualLabel = new JLabel();
-        topologyVisualLabel.setIcon(topologyVisualIcon);
-        topologyVisual = new JPanel();
-        topologyVisual.add(topologyVisualLabel);
-        topologyVisual.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Manage Topology"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-
-    }
 
     private void createVersioningInfo() {
         versioningInfo = new JLabel(AVRORA_VERSION + "; " + AVRORA_GUI_VERSION, SwingConstants.RIGHT);
@@ -351,11 +350,35 @@ public class AvroraGui implements ActionListener, ChangeListener {
     }
 
     public MonitorPanel createMonitorPanel(String name) {
-        throw Avrora.unimplemented();
+        //if the above returned true, then we have to
+        //actually create a monitor panel and
+        //register that panel the visual action
+        //If it returned false, then that node already had
+        //that monitor
+        JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
+        JLabel filler = new JLabel("This panel will update once the simulator is run.");
+        filler.setHorizontalAlignment(JLabel.CENTER);
+        panel.setLayout(new GridLayout(1, 1));
+        panel.add(filler);
+
+        //Actually display the panel...add it to the tab
+        monitorResults.addTab(name, panel);
+
+        //Now let's create the options panel
+        JPanel optionsPanel = new JPanel(false);
+        JLabel optionsFiller = new JLabel("Options for the monitor can be set here. ");
+        optionsPanel.setLayout(new GridLayout(1, 1));
+        optionsPanel.add(optionsFiller);
+
+        MonitorPanel p = new MonitorPanel(name, panel, optionsPanel);
+        monitorTabMap.put(panel, p);
+        return p;
     }
 
-    public void destroyMonitorPanel(MonitorPanel p) {
-        throw Avrora.unimplemented();
+    public void removeMonitorPanel(MonitorPanel p) {
+        int i = monitorResults.indexOfTab(p.name);
+        monitorResults.removeTabAt(i);
+        monitorTabMap.remove(p.displayPanel);
     }
 
     //This class is actually a new thread that will run
@@ -368,7 +391,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
                 //a monitor result is currently
                 //being display...if so, repaint it
                 //and sleep for the specified amount of time
-                while (aSimIsRunning()) {
+                while (getSimulation().isRunning()) {
                     if (monitorResults.getSelectedIndex() != 0) {
                         if (currentMonitorDisplayed == null) {
                             //we need to get all the nodes that are of type visualradio monitor
@@ -378,7 +401,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
                                 tempMon.updateDataAndPaint();
                             }
                         } else {
-                            currentMonitorDisplayed.updateDataAndPaint();
+                            currentMonitorDisplayed.paint();
                         }
                     }
                     Thread.currentThread().sleep(PAINT_THREAD_SLEEP_TIME);
@@ -388,10 +411,6 @@ public class AvroraGui implements ActionListener, ChangeListener {
             }
         }
 
-        private boolean aSimIsRunning() {
-            //throw Avrora.unimplemented();
-            return vAction.aSimIsRunning();
-        }
     }
 }
 

@@ -32,42 +32,40 @@
 
 package avrora.gui;
 
-import avrora.sim.Simulator;
+import avrora.util.ClassMap;
+import avrora.monitors.MonitorFactory;
 
-import java.util.Vector;
-import java.util.Hashtable;
+import java.util.List;
+import java.util.LinkedList;
 
-import avrora.sim.radio.Radio;
-import avrora.sim.mcu.Microcontroller;
-import avrora.sim.SimulatorThread;
+/**
+ * @author Ben L. Titzer
+ */
+public class GUIDefaults {
 
-public class SimNode {
-    public String path; //full path
-    public String fileName; //just filename
-    public int NID;
+    final static ClassMap monitorMap; // map of default MonitorFactory's for GUI
+    final static List options;
 
-    public Vector monitors; //a vector all of strings representing all the monitors
-    //attached to this node
-    public Hashtable monitorInstances; //during runtime, the actual monitor classes
-    //for this node are stored in this hashtable
-    public Hashtable monitorPanels; //holds the panels that visual monitors need access to
-    //the key is the name of the monitor
-    public Hashtable monitorOptionsPanels; //holds the options panels that the visual monitors need access to
-    //the key is the name of the monitor
-    
-    
-    public Simulator theSimulator;
-    public Radio theRadio;
-    public Microcontroller theMicrocontroller;
-    public SimulatorThread theThread;
+    static {
+        monitorMap = new ClassMap("Monitor", VisualSimulation.MonitorFactory.class);  //for regular monitors
+        options = new LinkedList();
 
-    public SimNode() {
-        monitors = new Vector();
-        monitorPanels = new Hashtable();
-        monitorOptionsPanels = new Hashtable();
-        monitorInstances = new Hashtable();
+        addNewMonitorType("PC Monitor", new VisualPCMonitor());
     }
 
+    protected static void addNewMonitorType(String n, Object o) {
+        monitorMap.addInstance(n, o);
+    }
 
+    public static List getMonitorList() {
+        return monitorMap.getSortedList();
+    }
+
+    public static List getOptionList() {
+        return options;
+    }
+
+    public static VisualSimulation.MonitorFactory getMonitor(String name) {
+        return (VisualSimulation.MonitorFactory)monitorMap.getObjectOfClass(name);
+    }
 }
-

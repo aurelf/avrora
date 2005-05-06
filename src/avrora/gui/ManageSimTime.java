@@ -198,41 +198,28 @@ public class ManageSimTime {
     public boolean checkAndDispatch(ActionEvent e) {
         String cmd = e.getActionCommand();
 
+        VisualSimulation sim = app.getSimulation();
         if (STOP.equals(cmd)) {
-            //Let's call the whole thing off
-            app.vAction.stopSim();
+            sim.stop();
             return true;
 
         } else if (RESUME.equals(cmd)) {
             //If a sim is paused, resume it...if a sim is single stepped paused, go to next instruction
             //otherwise, start the sim
-            if (app.vAction.getPauseStatus()) {
-                app.vAction.changePauseStatus();
-            } else if (simTimeSlider.getValue() == 5 && app.vAction.aSimIsRunning()) //single step
-            {
-                app.vAction.singleStepProceedToNext();
-            } else if (!app.vAction.aSimIsRunning()) {
-                //So if no sim is running, we should start one!
+            if (sim.isPaused()) {
+                sim.resume();
+            } else if (simTimeSlider.getValue() == 5 && sim.isRunning())  {
+                // TODO: implement stepping of simulation
+                //sim.step();
+            } else if (!sim.isRunning()) {
 
                 //Set the correct terminal (that is, the debug terminal)
                 PrintStream tempstream = new PrintStream(new DebugStream(app));
                 Terminal.setOutput(tempstream);
 
-                //If we haven't specified any nodes, we shouldn't
-                //try to start the sim.
-                if (app.vAction.getNodes().size() == 0) {
-                    //we haven't specified a path, let's error
-                    tempstream.println("ERROR: You haven't specified a file yet.");
-                } else {
-
-                    try {
-                        ThreadStart p = new ThreadStart(app);
-                        p.start();
-                    } catch (Exception except) {
-                        //any exception should just be thrown to our internal console
-                        tempstream.print(except.toString());
-                    }
-                }
+                // TODO: reset monitor panels
+                //clearMonitorPanels();
+                sim.start();
             } else {
                 //this would most probably be run if we
                 //hit play and a sim is already running unpaused...in which
@@ -240,7 +227,7 @@ public class ManageSimTime {
             }
             return true;
         } else if (PAUSE.equals(cmd)) {
-            app.vAction.changePauseStatus();
+            sim.pause();
             return true;
         } else if (REWIND.equals(cmd)) {
             //move slider to the left
@@ -358,7 +345,7 @@ public class ManageSimTime {
         if (newdelay == olddelay && newinbetweenperiod == oldinbetweenperiod && oldiorc == newiorc && oldeventtype == neweventtype) {
             //do nothing, because there has been no change
         } else {
-            app.vAction.setSimChangeSpeed(newdelay, newinbetweenperiod, newiorc, neweventtype);
+            // TODO: change the actual simulation speed
             olddelay = newdelay;
             oldinbetweenperiod = newinbetweenperiod;
             oldiorc = newiorc;
