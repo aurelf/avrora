@@ -619,6 +619,13 @@ public class Simulator {
     }
 
     /**
+     * The <code>step()</code> method steps the simulation one instruction or cycle.
+     */
+    public void step() {
+        interpreter.step();
+    }
+
+    /**
      * The <code>stop()</code> method stops the simulation if it is running. This method can be called from
      * within a probe or event or from another thread.
      */

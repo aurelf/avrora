@@ -218,9 +218,9 @@ public class MultiSimulateAction extends SimAction {
             aggCycles += thread.getSimulator().getClock().getCount();
             numthreads++;
         }
-        float thru = ((float)aggCycles) / (diff * 1000);
-        TermUtil.reportQuantity("Total throughput", thru, "mhz");
-        TermUtil.reportQuantity("Throughput per node", thru / numthreads, "mhz");
+        double thru = ((double)aggCycles) / (diff * 1000);
+        TermUtil.reportQuantity("Total throughput", (float)thru, "mhz");
+        TermUtil.reportQuantity("Throughput per node", (float)(thru / numthreads), "mhz");
     }
 
     private void reportUtilization() {

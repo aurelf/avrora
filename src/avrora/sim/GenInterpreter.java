@@ -134,29 +134,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
                 // check if there are any pending (posted) interrupts
                 if (postedInterrupts != 0) {
-                    // the lowest set bit is the highest priority posted interrupt
-                    int lowestbit = Arithmetic.lowestBit(postedInterrupts);
-
-                    // fire the interrupt (update flag register(s) state)
-                    simulator.triggerInterrupt(lowestbit);
-
-                    // store the return address
-                    pushPC(nextPC);
-
-                    // set PC to interrupt handler
-                    nextPC = getInterruptVectorAddress(lowestbit);
-                    pc = nextPC;
-
-                    // disable interrupts
-                    I = false;
-
-                    // process any timed events
-                    advanceCycles(4);
-
-                    //time to wake up
-                    if (sleeping)
-                        leaveSleepMode();
-
+                    handleInterrupt();
                 }
             }
 
@@ -169,6 +147,84 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
                     instrumentedLoop();
             }
         }
+    }
+
+    public void step() {
+        nextPC = pc;
+
+        // process any delays
+        if (delayCycles > 0) {
+            advanceCycles(1);
+            delayCycles--;
+            return;
+        }
+
+        // handle any interrupts
+        if (justReturnedFromInterrupt) {
+            // don't process the interrupt if we just returned from
+            // an interrupt handler, because the hardware manual says
+            // that at least one instruction is executed after
+            // returning from an interrupt.
+            justReturnedFromInterrupt = false;
+        } else if (I) {
+
+            // check if there are any pending (posted) interrupts
+            if (postedInterrupts != 0) {
+                handleInterrupt();
+                return;
+            }
+        }
+
+        // are we sleeping?
+        if ( sleeping ) {
+            advanceCycles(1);
+            return;
+        }
+
+        // global probes?
+        if ( globalProbe.isEmpty() ) {
+            Instr i = shared_instr[nextPC];
+
+            // visit the actual instruction (or probe)
+            i.accept(this);
+            // NOTE: commit() might be called twice, but this is ok
+            commit();
+        } else {
+            // get the current instruction
+            int curPC = nextPC; // at this point pc == nextPC
+            Instr i = shared_instr[nextPC];
+
+            // visit the actual instruction (or probe)
+            globalProbe.fireBefore(this, curPC);
+            i.accept(this);
+            commit();
+            globalProbe.fireAfter(this, curPC);
+        }
+    }
+
+    private void handleInterrupt() {
+        // the lowest set bit is the highest priority posted interrupt
+        int lowestbit = Arithmetic.lowestBit(postedInterrupts);
+
+        // fire the interrupt (update flag register(s) state)
+        simulator.triggerInterrupt(lowestbit);
+
+        // store the return address
+        pushPC(nextPC);
+
+        // set PC to interrupt handler
+        nextPC = getInterruptVectorAddress(lowestbit);
+        pc = nextPC;
+
+        // disable interrupts
+        I = false;
+
+        // process any timed events
+        advanceCycles(4);
+
+        //time to wake up
+        if (sleeping)
+            leaveSleepMode();
     }
 
     private void sleepLoop() {
