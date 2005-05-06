@@ -319,7 +319,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         runLoop();
     }
 
-    public abstract void step();
+    public abstract int step();
 
     public void stop() {
         shouldRun = false;

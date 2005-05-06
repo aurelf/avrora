@@ -149,14 +149,14 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         }
     }
 
-    public void step() {
+    public int step() {
         nextPC = pc;
 
         // process any delays
         if (delayCycles > 0) {
             advanceCycles(1);
             delayCycles--;
-            return;
+            return 1;
         }
 
         // handle any interrupts
@@ -170,17 +170,21 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
             // check if there are any pending (posted) interrupts
             if (postedInterrupts != 0) {
-                handleInterrupt();
-                return;
+                return stepInterrupt();
             }
         }
 
         // are we sleeping?
         if ( sleeping ) {
             advanceCycles(1);
-            return;
+            return 1;
         }
 
+        return stepInstruction();
+    }
+
+    private int stepInstruction() {
+        int cycles;
         // global probes?
         if ( globalProbe.isEmpty() ) {
             Instr i = shared_instr[nextPC];
@@ -188,6 +192,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             // visit the actual instruction (or probe)
             i.accept(this);
             // NOTE: commit() might be called twice, but this is ok
+            cycles = cyclesConsumed;
             commit();
         } else {
             // get the current instruction
@@ -197,9 +202,43 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             // visit the actual instruction (or probe)
             globalProbe.fireBefore(this, curPC);
             i.accept(this);
+            cycles = cyclesConsumed;
             commit();
             globalProbe.fireAfter(this, curPC);
         }
+        return cycles;
+    }
+
+    private int stepInterrupt() {
+        // the lowest set bit is the highest priority posted interrupt
+        int lowestbit = Arithmetic.lowestBit(postedInterrupts);
+
+        // fire the interrupt (update flag register(s) state)
+        simulator.triggerInterrupt(lowestbit);
+
+        // store the return address
+        pushPC(nextPC);
+
+        // set PC to interrupt handler
+        nextPC = getInterruptVectorAddress(lowestbit);
+        pc = nextPC;
+
+        // disable interrupts
+        I = false;
+
+        // advance by just one cycle
+        advanceCycles(1);
+
+        int cycles = 3; // there are some cycles left-over to delay by
+        //time to wake up
+        if (sleeping) {
+            cycles += simulator.getMicrocontroller().wakeup();
+            sleeping = false;
+            innerLoop = false;
+        }
+
+        delay(cycles);
+        return 1;
     }
 
     private void handleInterrupt() {

@@ -620,9 +620,12 @@ public class Simulator {
 
     /**
      * The <code>step()</code> method steps the simulation one instruction or cycle.
+     * @return the number of cycles advanced; 1 in the case of sleeping, delaying,
+     * 1 in the case of handling an interrupt, and for all other multi-cycle instructions, the
+     * number of cycles consumed by executing the instruction 
      */
-    public void step() {
-        interpreter.step();
+    public int step() {
+        return interpreter.step();
     }
 
     /**
