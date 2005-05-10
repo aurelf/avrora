@@ -155,7 +155,6 @@ public class Defaults {
             actions.addClass("simulate", SimulateAction.class);
             actions.addClass("analyze-stack", AnalyzeStackAction.class);
             actions.addClass("test", TestAction.class);
-            actions.addClass("list", ListAction.class);
             actions.addClass("cfg", CFGAction.class);
             actions.addClass("benchmark", BenchmarkAction.class);
             //--BEGIN EXPERIMENTAL: isdl
