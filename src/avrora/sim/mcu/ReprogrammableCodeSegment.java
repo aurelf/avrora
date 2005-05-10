@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.clock.MainClock;
 import avrora.sim.util.MulticastProbe;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;

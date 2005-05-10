@@ -35,6 +35,7 @@ package avrora.sim.mcu;
 import avrora.util.Arithmetic;
 import avrora.sim.radio.Radio;
 import avrora.sim.*;
+import avrora.sim.clock.ClockDomain;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
 

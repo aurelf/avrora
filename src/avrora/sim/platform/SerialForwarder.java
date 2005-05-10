@@ -33,7 +33,7 @@
 package avrora.sim.platform;
 
 import avrora.sim.Simulator;
-import avrora.sim.Clock;
+import avrora.sim.clock.Clock;
 import avrora.sim.mcu.USART;
 import avrora.Avrora;
 import avrora.util.Terminal;

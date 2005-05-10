@@ -30,11 +30,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim.util;
+package avrora.sim.clock;
 
 import avrora.Avrora;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.clock.DeltaQueue;
 import avrora.util.Verbose;
 
 import java.util.HashMap;

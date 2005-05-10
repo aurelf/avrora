@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.clock.Clock;
 import avrora.Avrora;
 
 import java.util.Iterator;

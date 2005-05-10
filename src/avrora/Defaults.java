@@ -45,6 +45,7 @@ import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Seres;
 import avrora.sim.*;
+import avrora.sim.clock.ClockDomain;
 import avrora.actions.*;
 import avrora.core.ProgramReader;
 import avrora.core.Program;

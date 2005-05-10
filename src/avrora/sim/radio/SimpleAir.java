@@ -34,7 +34,7 @@ package avrora.sim.radio;
 
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.util.GlobalClock;
+import avrora.sim.clock.GlobalClock;
 import avrora.util.Verbose;
 
 import java.util.HashSet;

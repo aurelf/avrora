@@ -34,7 +34,7 @@ package avrora.sim.platform;
 
 import avrora.sim.Simulator;
 import avrora.sim.FiniteStateMachine;
-import avrora.sim.Clock;
+import avrora.sim.clock.Clock;
 import avrora.sim.mcu.*;
 import avrora.sim.platform.LED.LEDProbe;
 import avrora.sim.*;

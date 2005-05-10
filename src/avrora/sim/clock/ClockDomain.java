@@ -30,9 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.sim.clock;
 
 import avrora.util.StringUtil;
+import avrora.sim.clock.Clock;
 
 import java.util.HashMap;
 import java.util.NoSuchElementException;

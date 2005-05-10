@@ -1,3 +1,5 @@
+package avrora.sim.clock;
+
 /**
  * Copyright (c) 2004-2005, Regents of the University of California
  * All rights reserved.
@@ -30,32 +32,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
-
-import avrora.sim.util.DeltaQueue;
+import avrora.sim.clock.Clock;
+import avrora.sim.Simulator;
+import avrora.sim.clock.Clock;
+import avrora.Avrora;
 
 /**
- * The <code>MainClock</code> class represents a clock that has an associated delta queue. This clock is
- * meant as the main, or driving clock. Clocks that are derived from this class are kept in synch
- * through the event queue. The <code>MainClock</code> is advanced by the interpreter for a node.
+ * The <code>SystemClock</code> class represents a wrapper around the system clock that
+ * measures actual wall clock time passed in simulation. This implementation encapsulates
+ * the <code>System.currentTimeMillis()</code> method, and thus provides a precision
+ * of approximately 1000 cycles per second.
  *
  * @author Ben L. Titzer
  */
-public class MainClock extends Clock {
+public class SystemClock extends Clock {
+
+    private static final SystemClock instance = new SystemClock();
+
+    private SystemClock() {
+        super("system", 1000);
+    }
 
     /**
-     * The <code>eventQueue</code> field stores a reference to the event queue for this node.
+     * The <code>get()</code> method retrieves the singleton instance of the system clock.
+     * @return an instance of the <code>SystemClock</code> class
      */
-    protected final DeltaQueue eventQueue;
-
-    /**
-     * The <code>MainClock()</code> method creates a main clock with the specified name and frequency.
-     * @param n the name of this clock
-     * @param hz the number of cycles per second for this clock
-     */
-    public MainClock(String n, long hz) {
-        super(n, hz);
-        eventQueue = new DeltaQueue();
+    public static SystemClock get() {
+        return instance;
     }
 
     /**
@@ -65,7 +68,7 @@ public class MainClock extends Clock {
      * @return the number of elapsed time ticks in clock cycles
      */
     public long getCount() {
-        return eventQueue.getCount();
+        return System.currentTimeMillis();
     }
 
     /**
@@ -76,7 +79,7 @@ public class MainClock extends Clock {
      * @param cycles the number of cycles in the future at which to fire
      */
     public void insertEvent(Simulator.Event e, long cycles) {
-        eventQueue.insertEvent(e, cycles);
+        throw Avrora.unimplemented();
     }
 
     /**
@@ -86,18 +89,7 @@ public class MainClock extends Clock {
      * @param e the event to remove
      */
     public void removeEvent(Simulator.Event e) {
-        eventQueue.removeEvent(e);
-    }
-
-    /**
-     * The <code>advance()</code> method advances the time of the clock by the number of cycles. This may
-     * happen as the result of executing an instruction, sleeping for a time, delaying, etc. This method is
-     * only intended for use by the agent driving the clock; e.g. the simulator, and not a monitor or probe.
-     *
-     * @param cycles the number of cycles to advance the clock
-     */
-    public void advance(long cycles) {
-        eventQueue.advance(cycles);
+        throw Avrora.unimplemented();
     }
 
     /**
@@ -108,13 +100,6 @@ public class MainClock extends Clock {
      * events in the queue
      */
     public long getFirstEventDelta() {
-        return eventQueue.getFirstEventTime();
-    }
-
-    /**
-     * The <code>skipAhead()</code> method skips ahead to the next event in the queue and fires it.
-     */
-    public void skipAhead() {
-        eventQueue.skipAhead();
+        throw Avrora.unimplemented();
     }
 }

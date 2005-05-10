@@ -33,7 +33,8 @@ package avrora.test.probes;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.util.DeltaQueue;
+import avrora.sim.clock.DeltaQueue;
+import avrora.sim.clock.DeltaQueue;
 import avrora.core.Instr;
 import avrora.util.StringUtil;
 

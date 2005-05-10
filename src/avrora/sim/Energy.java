@@ -37,6 +37,8 @@
 
 package avrora.sim;
 
+import avrora.sim.clock.Clock;
+
 /**
  * Class for energy modeling. All consumers create an instance of this class and keep it updated with all
  * state changes concerning power consumption. This class keeps track of all these state changes and cycles

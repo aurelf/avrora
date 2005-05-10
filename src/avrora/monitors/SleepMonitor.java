@@ -35,7 +35,7 @@ package avrora.monitors;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.FiniteStateMachine;
-import avrora.sim.Clock;
+import avrora.sim.clock.Clock;
 import avrora.sim.mcu.AtmelMicrocontroller;
 import avrora.util.TermUtil;
 import avrora.util.StringUtil;

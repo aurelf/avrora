@@ -38,9 +38,10 @@ package avrora.sim.radio.freespace;
 
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.clock.GlobalClock;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
-import avrora.sim.util.GlobalClock;
+import avrora.sim.clock.GlobalClock;
 import avrora.util.Verbose;
 import avrora.util.Visual;
 
@@ -334,7 +335,7 @@ public class FreeSpaceAir implements RadioAir {
         /**
          * do the work needed before the synched action
          *
-         * @see avrora.sim.util.GlobalClock.LocalMeet#preSynchAction()
+         * @see avrora.sim.clock.GlobalClock.LocalMeet#preSynchAction()
          */
         public void preSynchAction() {
             incrementMeets();
@@ -343,7 +344,7 @@ public class FreeSpaceAir implements RadioAir {
         /**
          * do the action, which needs to be done in serialized
          *
-         * @see avrora.sim.util.GlobalClock.LocalMeet#serialAction()
+         * @see avrora.sim.clock.GlobalClock.LocalMeet#serialAction()
          */
         public void serialAction() {
             eventQueue.advance(1);
@@ -366,7 +367,7 @@ public class FreeSpaceAir implements RadioAir {
         /**
          * the actions, that can be done in parallel
          *
-         * @see avrora.sim.util.GlobalClock.LocalMeet#parallelAction(avrora.sim.SimulatorThread)
+         * @see avrora.sim.clock.GlobalClock.LocalMeet#parallelAction(avrora.sim.SimulatorThread)
          */
         public void parallelAction(SimulatorThread t) {
             Simulator simulator = t.getSimulator();

@@ -30,7 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.sim.clock;
+
+import avrora.sim.clock.Clock;
+import avrora.sim.Simulator;
 
 /**
  * The <code>ClockPrescaler</code> class represents a clock that is another clock scaled appropriately; e.g.

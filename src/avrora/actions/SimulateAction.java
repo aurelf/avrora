@@ -38,6 +38,7 @@ import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.core.LabelMapping;
 import avrora.sim.*;
+import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.*;
 

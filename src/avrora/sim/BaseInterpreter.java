@@ -38,6 +38,7 @@ import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.MulticastWatch;
 import avrora.sim.util.MulticastIORWatch;
 import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.clock.MainClock;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;

@@ -30,9 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.sim.clock;
 
 import avrora.Avrora;
+import avrora.sim.clock.Clock;
+import avrora.sim.Simulator;
 
 /**
  * The <code>DerivedClock</code> class represents a clock that is derived from another clock; i.e. the derived

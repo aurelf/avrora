@@ -33,6 +33,7 @@
 package avrora.sim;
 
 import avrora.Avrora;
+import avrora.sim.clock.Synchronizer;
 import avrora.actions.SimAction;
 
 
@@ -50,6 +51,14 @@ public class SimulatorThread extends Thread {
      * The <code>simulator</code> field stores a reference to the simulator that this thread encapsulates.
      */
     protected final Simulator simulator;
+
+    /**
+     * The <code>synchronizer</code> field stores a reference to the synchronizer that this thread
+     * is a part of; this is needed so that when the thread finishes execution (either through
+     * a timeout or error, etc), it can be removed from the simulation and the rest of the simulation
+     * can continue.
+     */
+    protected Synchronizer synchronizer;
 
     /**
      * The constructor for the simulator thread accepts an instance of <code>Simulator</code> as a parameter
@@ -82,6 +91,17 @@ public class SimulatorThread extends Thread {
             // suppress timeout exceptions.
         } catch (Avrora.Error e) {
             e.report();
+        } finally {
+            if ( synchronizer != null )
+                synchronizer.removeNode(this);
         }
+    }
+
+    /**
+     * The <code>setSynchronizer()</code> method sets the synchronizer for this thread.
+     * @param s the synchronizer for this node
+     */
+    public void setSynchronizer(Synchronizer s) {
+        synchronizer = s;
     }
 }

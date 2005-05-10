@@ -33,6 +33,9 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.clock.Clock;
+import avrora.sim.clock.ClockDomain;
+import avrora.sim.clock.MainClock;
 import avrora.util.StringUtil;
 
 import java.util.HashMap;

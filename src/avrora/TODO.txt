@@ -88,6 +88,7 @@
     1  probe  migrate to SourceMapping, remove Program.Location
   2-3  radio  Separate synch mechanism from Radio implementation
 
+    2    sim  Introduced Synchronizer abstract                      (1.5.75)
     2  probe  Changed fireXXX() to accept only state and PC         (1.5.62)
     1    sim  Introduced Segment class for SRAM, flash, EEPROM      (1.5.62)
     2    sim  Introduce SourceMapping class                         (1.5.42)

@@ -38,6 +38,8 @@ import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.clock.Clock;
+import avrora.sim.clock.MainClock;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -575,7 +577,7 @@ public class Simulator {
      * simulator is driving.
      * @return a reference to the clock for this simulator
      */
-    public Clock getClock() {
+    public MainClock getClock() {
         return clock;
     }
 

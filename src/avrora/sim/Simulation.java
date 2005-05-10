@@ -33,6 +33,7 @@
 package avrora.sim;
 
 import avrora.util.Options;
+import avrora.sim.clock.Clock;
 
 import java.util.Iterator;
 
