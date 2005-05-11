@@ -43,11 +43,12 @@ import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
 import avrora.sim.clock.GlobalClock;
 import avrora.util.Verbose;
-import avrora.util.Visual;
+import avrora.Avrora;
 
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.HashMap;
 
 /**
  * Implementation of the free space radio propagation model
@@ -63,6 +64,8 @@ public class FreeSpaceAir implements RadioAir {
 
     //one global air for everybody
     public static final FreeSpaceAir freeSpaceAir;
+
+    HashMap airMap;
 
     private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("radio.rssi");
 
@@ -105,6 +108,11 @@ public class FreeSpaceAir implements RadioAir {
         radios = new HashSet();
         radioClock = new RadioClock(bytePeriod);
         rssi_waiters = new TreeSet();
+        airMap = new HashMap();
+    }
+
+    public synchronized void addRadio(Radio r) {
+        throw Avrora.unimplemented();
     }
 
     /**
@@ -112,19 +120,26 @@ public class FreeSpaceAir implements RadioAir {
      *
      * @see avrora.sim.radio.RadioAir#addRadio(avrora.sim.radio.Radio)
      */
-    public synchronized void addRadio(Radio r) {
+    public synchronized void addRadio(Radio r, Position p) {
+        LocalAir la = new LocalAirImpl(r, p);
+        airMap.put(r, la);
+
         //add this radio to the other radio's neighbor list
         Iterator it = radios.iterator();
         while (it.hasNext()) {
-            LocalAir localAir = ((Radio)it.next()).getLocalAir();
+            LocalAir localAir = getLocalAir(((Radio)it.next()));
             //add the new radio to the other radio's neighbor list
-            localAir.addNeighbor(r.getLocalAir());
+            localAir.addNeighbor(getLocalAir(r));
             //add the other radios to this radio's neighbor list
-            r.getLocalAir().addNeighbor(localAir);
+            getLocalAir(r).addNeighbor(localAir);
         }
         radios.add(r);
         radioClock.add(r.getSimulatorThread());
         //deliveryMeet.setGoal(radioClock.getNumberOfThreads());
+    }
+
+    private LocalAir getLocalAir(Radio r) {
+        return (LocalAir)airMap.get(r);
     }
 
     /**
@@ -137,18 +152,18 @@ public class FreeSpaceAir implements RadioAir {
         radios.remove(r);
         Iterator it = radios.iterator();
         while (it.hasNext()) {
-            LocalAir localAir = ((Radio)it.next()).getLocalAir();
+            LocalAir localAir = getLocalAir(((Radio)it.next()));
             //remove the radio from the other radio's neighbor list
-            localAir.removeNeighbor(r.getLocalAir());
+            localAir.removeNeighbor(getLocalAir(r));
         }
     }
 
     /**
      * transmit packet
      *
-     * @see avrora.sim.radio.RadioAir#transmit(avrora.sim.radio.Radio, avrora.sim.radio.Radio.RadioPacket)
+     * @see avrora.sim.radio.RadioAir#transmit(avrora.sim.radio.Radio, avrora.sim.radio.Radio.Transmission)
      */
-    public synchronized void transmit(Radio r, Radio.RadioPacket f) {
+    public synchronized void transmit(Radio r, Radio.Transmission f) {
         //compute transmission range, incl. noise
         //first compute tranmission power in Watt
         double powerSet = (double)r.getPower();
@@ -168,19 +183,12 @@ public class FreeSpaceAir implements RadioAir {
         double freq = r.getFrequency();
         double temp = power * lightConst * (1 / (freq * freq));
         // send packet to devices in ranges
-        Iterator it = r.getLocalAir().getNeighbors();
-        Visual.send(r.getSimulator().getID(),
-                "packetTx",
-                f.data);
+        Iterator it = getLocalAir(r).getNeighbors();
         while (it.hasNext()) {
             Distance dis = (Distance)it.next();
             double powerRec = temp / (dis.distance * dis.distance);
             //check if device is in range
             if (powerRec > noiseCutOff) {
-                Visual.send(r.getSimulator().getID(),
-                        "packetTxInRange",
-                        dis.radio.getRadio().getSimulator().getID(),
-                        f.data);
                 dis.radio.addPacket(f, powerRec, r);
             }
         }
@@ -257,7 +265,7 @@ public class FreeSpaceAir implements RadioAir {
         // we just got woken up (or returned immediately from checkRSSIWaiters
         // this means we are now ready to proceed and compute our RSSI value.
         synchronized (this) {
-            strength = r.getLocalAir().sampleRSSI(t);
+            strength = getLocalAir(r).sampleRSSI(t);
         }
 
         return strength;
@@ -359,7 +367,7 @@ public class FreeSpaceAir implements RadioAir {
             Iterator it = radios.iterator();
             while (it.hasNext()) {
                 Radio r = (Radio)it.next();
-                LocalAir pr = r.getLocalAir();
+                LocalAir pr = getLocalAir(r);
                 pr.scheduleDelivery(radioClock.globalTime(), r.getSimulator());
             }
         }

@@ -82,7 +82,7 @@
     1  radio  Radio transfer time calculation
     2  radio  Neighbor lists
     2  radio  RadioAir, distance calculations
-  2-3  radio  RadioPacket refactoring, optimization
+  2-3  radio  Transmission refactoring, optimization
     3    sim  Implement one thread per processor model
     1   util  migrate to StringUtil.*
     1  probe  migrate to SourceMapping, remove Program.Location

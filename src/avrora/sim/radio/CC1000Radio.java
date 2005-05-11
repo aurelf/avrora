@@ -35,12 +35,8 @@ package avrora.sim.radio;
 import avrora.sim.*;
 import avrora.sim.mcu.*;
 import avrora.sim.radio.freespace.FreeSpaceAir;
-import avrora.sim.radio.freespace.LocalAir;
-import avrora.sim.radio.freespace.LocalAirImpl;
-import avrora.sim.radio.freespace.Position;
 import avrora.util.Arithmetic;
 import avrora.util.Terminal;
-import avrora.util.Visual;
 import avrora.util.StringUtil;
 import avrora.Avrora;
 
@@ -132,8 +128,6 @@ public class CC1000Radio implements Radio {
 
     private final LinkedList receivedBuffer = new LinkedList();
 
-    //the local air, it stores all packets that where heard by this node
-    private LocalAir localAir;
     //the energy recording for this node
     private Energy energy;
 
@@ -160,14 +154,14 @@ public class CC1000Radio implements Radio {
      * Part of the <code>Radio</code> interface. It should be called by the <code>RadioAir</code> that this
      * radio is transmitting over when data is to be received.
      */
-    public void receive(Radio.RadioPacket packet) {
+    public void receive(Radio.Transmission packet) {
         receivedBuffer.addLast(packet);
     }
 
     /**
      * Transmit a packet of data into the <code>RadioAir</code>.
      */
-    public void transmit(Radio.RadioPacket packet) {
+    public void transmit(Radio.Transmission packet) {
         // send packet into air...
         air.transmit(this, packet);
         packetsTx++;
@@ -1031,7 +1025,7 @@ public class CC1000Radio implements Radio {
                     printer.println("CC1000: beginning transmit of "+renderChar(frame.data));
                 }
                 long currentTime = sim.getState().getCycles();
-                new Transmit(new RadioPacket(frame.data, 0, currentTime));
+                new Transmit(new Transmission(frame.data, 0, currentTime));
             }
 
         }
@@ -1040,9 +1034,9 @@ public class CC1000Radio implements Radio {
          * <code>Transmit</code> is an event that transmits a packet of data after a one bit period delay.
          */
         protected class Transmit implements Simulator.Event {
-            final Radio.RadioPacket packet;
+            final Radio.Transmission packet;
 
-            Transmit(Radio.RadioPacket packet) {
+            Transmit(Radio.Transmission packet) {
                 this.packet = packet;
                 sim.insertEvent(this, Radio.TRANSFER_TIME / 8);
             }
@@ -1062,9 +1056,8 @@ public class CC1000Radio implements Radio {
             if (MAIN_reg.rxtx && MAIN_reg.txPd) {
                 frame = SPI.ZERO_FRAME;
             } else if (!receivedBuffer.isEmpty()) {
-                Radio.RadioPacket receivedPacket = (Radio.RadioPacket)receivedBuffer.removeFirst();
+                Radio.Transmission receivedPacket = (Radio.Transmission)receivedBuffer.removeFirst();
                 packetsRx++;
-                Visual.send(sim.getID(), "packetRx", receivedPacket.data);
                 // Apparently TinyOS expects received data to be inverted
                 byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte)~receivedPacket.data;
                 frame = SPI.newFrame(data);
@@ -1407,25 +1400,6 @@ public class CC1000Radio implements Radio {
             freq = FREQ_B_reg.frequency;
         ret *= ((freq + 8192) / 16384);
         return ret;
-    }
-
-    /**
-     * get local air
-     *
-     * @see avrora.sim.radio.Radio#getLocalAir()
-     */
-    public LocalAir getLocalAir() {
-        return localAir;
-    }
-
-    /**
-     * activate positions
-     *
-     * @see avrora.sim.radio.Radio#activateLocalAir(avrora.sim.radio.freespace.Position)
-     */
-    public void activateLocalAir(Position pos) {
-        air = FreeSpaceAir.freeSpaceAir;
-        localAir = new LocalAirImpl(this, pos);
     }
 
     public RadioAir getAir() {

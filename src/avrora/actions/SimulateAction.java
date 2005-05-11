@@ -149,12 +149,6 @@ public class SimulateAction extends SimAction {
         if (REALTIME.get())
             simulator.insertEvent(new ThrottleEvent(), 1);
 
-        String visual = VISUAL.get();
-        if (!"".equals(visual)) {
-            //visualisation is turned on
-            Visual.connect(visual);
-        }
-
         startms = System.currentTimeMillis();
         try {
             printSimHeader();

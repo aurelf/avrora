@@ -106,4 +106,11 @@ public class Mica2 implements Platform, PlatformFactory {
         sensorboard = new SensorBoard(sim);
     }
 
+    /**
+     * The <code>getRadio()</code> method returns a reference to the radio for this node.
+     * @return the radio on this sensor node
+     */
+    public Radio getRadio() {
+        return radio;
+    }
 }

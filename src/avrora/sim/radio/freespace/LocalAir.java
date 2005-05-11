@@ -94,7 +94,7 @@ public interface LocalAir {
      * @param p   packet
      * @param pow transission power
      */
-    public void addPacket(Radio.RadioPacket p, double pow, Radio sender);
+    public void addPacket(Radio.Transmission p, double pow, Radio sender);
 
     /**
      * schedule deivery of packets
@@ -114,7 +114,7 @@ public interface LocalAir {
     public class PowerRadioPacket {
 
         //radio packet
-        protected Radio.RadioPacket packet;
+        protected Radio.Transmission packet;
         //transmission power
         protected double power;
 
@@ -126,7 +126,7 @@ public interface LocalAir {
          * @param p   packet
          * @param pow transmission power
          */
-        public PowerRadioPacket(Radio.RadioPacket p, double pow, Radio s) {
+        public PowerRadioPacket(Radio.Transmission p, double pow, Radio s) {
             this.packet = p;
             this.power = pow;
             this.sender = s;
@@ -138,7 +138,7 @@ public interface LocalAir {
          *
          * @return radio packet
          */
-        public Radio.RadioPacket getRadioPacket() {
+        public Radio.Transmission getRadioPacket() {
             return packet;
         }
 

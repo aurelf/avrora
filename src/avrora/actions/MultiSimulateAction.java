@@ -119,11 +119,6 @@ public class MultiSimulateAction extends SimAction {
 
         // create the specified number of each type of node
         Iterator i = NODECOUNT.get().iterator();
-        String visual = VISUAL.get();
-        if (!"".equals(visual)) {
-            //visualisation is turned on
-            Visual.connect(visual);
-        }
         Topology top = null;
         boolean topologyOn = false;
         if (!"(null)".equals(TOPOLOGY.get())) {
@@ -159,8 +154,7 @@ public class MultiSimulateAction extends SimAction {
                     } else {
                         //wonderful, there is a toplogy definded, use the free space air model
                         //activate free space and local air at this radio
-                        radio.activateLocalAir(top.getPosition(nodes));
-                        FreeSpaceAir.freeSpaceAir.addRadio(microcontroller.getRadio());
+                        FreeSpaceAir.freeSpaceAir.addRadio(microcontroller.getRadio(),top.getPosition(nodes));
                     }
                 }
                 nodes++;

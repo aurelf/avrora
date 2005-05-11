@@ -35,9 +35,8 @@ package avrora.sim.radio;
 import avrora.monitors.Monitor;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.FiniteStateMachine;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.radio.freespace.LocalAir;
-import avrora.sim.radio.freespace.Position;
 
 /**
  * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and
@@ -73,10 +72,10 @@ public interface Radio extends Monitor {
     
         
     /**
-     * A <code>RadioPacket</code> is an object describing the data transmitted over <code>RadioAir</code> over
+     * A <code>Transmission</code> is an object describing the data transmitted over <code>RadioAir</code> over
      * some period of time.
      */
-    public class RadioPacket implements Comparable {
+    public class Transmission implements Comparable {
 
         public final byte data;
         public final long frequency;
@@ -84,10 +83,9 @@ public interface Radio extends Monitor {
         public final long originTime;
         public final long deliveryTime;
 
-
         public int strength = 0x3ff;
 
-        public RadioPacket(byte data, long frequency, long originTime) {
+        public Transmission(byte data, long frequency, long originTime) {
             this.data = data;
             this.frequency = frequency;
             this.originTime = originTime;
@@ -95,7 +93,7 @@ public interface Radio extends Monitor {
         }
 
         public int compareTo(Object o) {
-            RadioPacket p = (RadioPacket)o;
+            Transmission p = (Transmission)o;
             if (p.originTime > originTime) return -1;
             if (p.originTime < originTime) return 1;
             return 0;
@@ -133,14 +131,14 @@ public interface Radio extends Monitor {
      * Receive a frame from the air. Should be called by the <code>RadioAir</code> and pass data into the
      * <code>RadioController</code>.
      */
-    public void receive(RadioPacket f);
+    public void receive(Transmission f);
 
 
     /**
      * Transmit a frame from the controller. Should be called by the <code>RadioController</code> and
      * transmitted into the <code>RadioAir</code>.
      */
-    public void transmit(RadioPacket f);
+    public void transmit(Transmission f);
 
     /**
      * Get the <code>Simulator</code> on which this radio is running.
@@ -171,19 +169,16 @@ public interface Radio extends Monitor {
      */
     public double getFrequency();
 
-    /**
-     * get local air implementation
-     *
-     * @return local air
-     */
-    public LocalAir getLocalAir();
-
-    /**
-     * activate local air, by setting params
-     *
-     * @param pos node position
-     */
-    public void activateLocalAir(Position pos);
-
     public RadioAir getAir();
+
+    /**
+     * The <code>RadioProbe</code> interface encapsulates the idea of a probe inserted on a radio
+     * that is notified when changes in the state of the radio occur and when packets are sent and received
+     * from this radio.
+     */
+    public interface RadioProbe extends FiniteStateMachine.Probe {
+        public void fireAtTransmit(Radio r, Radio.Transmission p);
+        public void fireAtReceive(Radio r, Radio.Transmission p);
+        public void fireAtPowerChange(Radio r, double newPower);
+    }
 }

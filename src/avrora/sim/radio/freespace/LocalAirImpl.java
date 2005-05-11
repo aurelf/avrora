@@ -38,7 +38,6 @@ package avrora.sim.radio.freespace;
 
 import avrora.sim.Simulator;
 import avrora.sim.radio.Radio;
-import avrora.util.Visual;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -60,7 +59,7 @@ public class LocalAirImpl implements LocalAir {
     //received packet list
     private LinkedList packets;
     //first received packet -> earliest packet
-    private Radio.RadioPacket firstPacket;
+    private Radio.Transmission firstPacket;
     //the strongest packet -> highest signal strength
     private PowerRadioPacket finalPacket;
     //the radio sending and receiving from this air
@@ -166,7 +165,7 @@ public class LocalAirImpl implements LocalAir {
      *
      * @see avrora.sim.radio.freespace.LocalAir#addPacket
      */
-    public synchronized void addPacket(Radio.RadioPacket p, double pow, Radio sender) {
+    public synchronized void addPacket(Radio.Transmission p, double pow, Radio sender) {
         packets.addLast(new PowerRadioPacket(p, pow, sender));
         //find the earliest packet
         if (firstPacket == null) {
@@ -189,13 +188,13 @@ public class LocalAirImpl implements LocalAir {
         //see whether there are packets around
         //if so, set strength to 0 (it works inverted)
         while (i.hasNext()) {
-            Radio.RadioPacket p = ((PowerRadioPacket)i.next()).packet;
+            Radio.Transmission p = ((PowerRadioPacket)i.next()).packet;
             if (p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles) strength = 0;
         }
         //TODO: hmm... do I really need the lines
         //this packet shall be included in the while loop
         if (finalPacket != null && finalPacket.packet != null) {
-            Radio.RadioPacket p = finalPacket.packet;
+            Radio.Transmission p = finalPacket.packet;
             if (p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles) strength = 0;
         }
         return strength;
@@ -275,11 +274,6 @@ public class LocalAirImpl implements LocalAir {
             //long currentTime = nextDeliveryTime;
             if (finalPacket != null) {
                 lastDeliveryTime = finalPacket.packet.deliveryTime;
-                //Radio radio = s.getSimulator().getMicrocontroller().getRadio();
-                Visual.send(radio.getSimulator().getID(),
-                        "packetRxInRange",
-                        finalPacket.sender.getSimulator().getID(),
-                        finalPacket.packet.data);
                 radio.receive(finalPacket.packet);
             }
 

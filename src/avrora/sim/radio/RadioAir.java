@@ -39,23 +39,39 @@ package avrora.sim.radio;
  * deliver packets to the radio through the receive() method in the <code>Radio</code> interface.
  *
  * @author Daniel Lee
+ * @author Ben L. Titzer
  */
 public interface RadioAir {
 
     /**
-     * Add a radio to the environment.
+     * The <code>addRadio()</code> method adds a new radio to this radio model.
+     * @param r the radio to add to this air implementation
      */
     public void addRadio(Radio r);
 
     /**
-     * Remove a radio from the environment.
+     * The <code>removeRadio()</code> method removes a radio from this radio model.
+     * @param r the radio to remove from this air implementation
      */
     public void removeRadio(Radio r);
 
     /**
-     * Transmits frame <code>f</code> into the radio environment.
+     * The <code>transmit()</code> method is called by a radio when it begins to transmit
+     * a packet over the air. The radio packet should be delivered to those radios in
+     * range which are listening, according to the radio model.
+     * @param r the radio transmitting this packet
+     * @param f the radio packet transmitted into the air
      */
-    public void transmit(Radio r, Radio.RadioPacket f);
+    public void transmit(Radio r, Radio.Transmission f);
 
+    /**
+     * The <code>sampleRSSI()</code> method is called by a radio when it wants to
+     * sample the RSSI value of the air around it at the current time. The air may
+     * need to block (i.e. wait for neighbors) because this thread may be ahead
+     * of other threads in global time. The underlying air implementation should use
+     * a <code>Synchronizer</code> for this purpose.
+     * @param r the radio sampling the RSSI value
+     * @return an integer value representing the received signal strength indicator
+     */
     public int sampleRSSI(Radio r);
 }

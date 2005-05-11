@@ -96,11 +96,6 @@ public abstract class SimAction extends Action {
     public final Option.Long SECONDS_PRECISION = newOption("seconds-precision", 6,
             "This option sets the precision (number of decimal places) reported for " +
             "event times in the simulation.");
-    public final Option.Str VISUAL = newOption("visual", "",
-            "This option enables visual representation of the network. For example " +
-            "topology, packet transmission, packet reception, energy " +
-            "information and more. Syntax is ip address or host name and " +
-            "port: 127.0.0.1:2379 \n(Status: experimental)");
     public final Option.Str BOOT = newOption("boot-address", "0x0000",
             "This option selects the address at which the microcontroller will begin executing " +
             "the program. This is used for bootloaders and applications that do not begin " +

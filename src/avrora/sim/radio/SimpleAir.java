@@ -68,7 +68,7 @@ public class SimpleAir implements RadioAir {
      */
     protected final RadioClock radioClock;
 
-    protected Radio.RadioPacket firstPacket;
+    protected Radio.Transmission firstPacket;
     protected LinkedList packetsThisPeriod;
     protected LinkedList packetsLeftOver;
 
@@ -126,7 +126,7 @@ public class SimpleAir implements RadioAir {
         radios.remove(r);
     }
 
-    public synchronized void transmit(Radio r, Radio.RadioPacket f) {
+    public synchronized void transmit(Radio r, Radio.Transmission f) {
         // UTILIZATION MEASUREMENT: record the time of the first transmitted packet
         if (utilization) {
             if (firstPacketTime == 0)
@@ -207,12 +207,12 @@ public class SimpleAir implements RadioAir {
         synchronized (this) {
             Iterator i = packetsLeftOver.iterator();
             while (i.hasNext()) {
-                Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                Radio.Transmission p = (Radio.Transmission)i.next();
                 if (p.deliveryTime > (t - sampleTime) && p.originTime < t) strength = 0;
             }
             i = packetsThisPeriod.iterator();
             while (i.hasNext()) {
-                Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                Radio.Transmission p = (Radio.Transmission)i.next();
                 if (p.deliveryTime > (t - sampleTime) && p.originTime < t) strength = 0;
             }
         }
@@ -317,7 +317,7 @@ public class SimpleAir implements RadioAir {
             // point after the last delivery (i.e. they have bits left over at the end)
             Iterator i = packetsLeftOver.iterator();
             while (i.hasNext()) {
-                Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                Radio.Transmission p = (Radio.Transmission)i.next();
                 if (p.deliveryTime > lastDeliveryTime)
                     packetsThisPeriod.addLast(p);
             }
@@ -340,7 +340,7 @@ public class SimpleAir implements RadioAir {
 
     protected class DeliveryMeet extends GlobalClock.LocalMeet {
 
-        protected Radio.RadioPacket computedPacket;
+        protected Radio.Transmission computedPacket;
 
         DeliveryMeet() {
             super("DELIVERY");
@@ -367,11 +367,11 @@ public class SimpleAir implements RadioAir {
             Iterator pastIterator = packetsLeftOver.iterator();
             Iterator curIterator = packetsThisPeriod.iterator();
             while (true) {
-                Radio.RadioPacket packet;
+                Radio.Transmission packet;
                 if (pastIterator.hasNext())
-                    packet = (Radio.RadioPacket)pastIterator.next();
+                    packet = (Radio.Transmission)pastIterator.next();
                 else if (curIterator.hasNext())
-                    packet = (Radio.RadioPacket)curIterator.next();
+                    packet = (Radio.Transmission)curIterator.next();
                 else
                     break;
 
@@ -418,7 +418,7 @@ public class SimpleAir implements RadioAir {
             // finish building the radio packet
             if (bitsFront + bitsEnd >= 8) {
                 // enough bits were collected to deliver a packet
-                computedPacket = new Radio.RadioPacket((byte)data, 0, nextDeliveryTime - bytePeriod);
+                computedPacket = new Radio.Transmission((byte)data, 0, nextDeliveryTime - bytePeriod);
                 lastDeliveryTime = nextDeliveryTime;
 
                 // UTILIZATION MEASUREMENT: check to see if any packet got delivered correctly
@@ -428,7 +428,7 @@ public class SimpleAir implements RadioAir {
                     boolean success = false;
                     Iterator i = fullpackets.iterator();
                     while (i.hasNext()) {
-                        Radio.RadioPacket p = (Radio.RadioPacket)i.next();
+                        Radio.Transmission p = (Radio.Transmission)i.next();
                         if (data == p.data) success = true;
                     }
                     if (!success)
