@@ -68,9 +68,7 @@ public class ProbeTestHarness implements TestHarness {
         }
 
         public void run() throws Exception {
-            // TODO: better error checking: file not found, not specified, etc
-            ProgramReader pr = Main.getProgramReader();
-            Program p = pr.read(new String[] { progName });
+            Program p = Main.readProgram(new String[] { progName });
             Simulator s = Defaults.newSimulator(0, p);
             probeTest.run(s);
         }

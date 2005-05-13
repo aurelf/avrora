@@ -381,26 +381,18 @@ public abstract class USART extends AtmelInternalDevice {
         }
 
         public void write(byte val) {
-            // check UDREn flag
-
-            if (UCSRnA_reg.readBit(UDREn)) {
-                transmitRegister.write(val);
-                // we now have data in UDRE, so the user data register is not ready yet
-                UCSRnA_reg.unflagBit(UDREn);
-                if (UCSRnB_reg.readBit(TXENn)) {
-                    transmitter.enableTransmit();
-                }
+            transmitRegister.write(val);
+            // we now have data in UDRE, so the user data register is not ready yet
+            UCSRnA_reg.unflagBit(UDREn);
+            if (UCSRnB_reg.readBit(TXENn)) {
+                transmitter.enableTransmit();
             }
         }
 
         public void writeBit(int bit, boolean val) {
-            // check UDREn flag
-            if (UCSRnA_reg.readBit(UDREn)) {
-                transmitRegister.writeBit(bit, val);
-                UCSRnA_reg.unflagBit(UDREn);
-                if (UCSRnB_reg.readBit(TXENn)) transmitter.enableTransmit();
-
-            }
+            transmitRegister.writeBit(bit, val);
+            UCSRnA_reg.unflagBit(UDREn);
+            if (UCSRnB_reg.readBit(TXENn)) transmitter.enableTransmit();
         }
 
         public byte read() {

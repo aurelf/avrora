@@ -30,38 +30,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 package avrora.syntax.objdump;
 
-import avrora.util.StringUtil;
-import avrora.util.Verbose;
 import avrora.util.Option;
+import avrora.util.StringUtil;
 import avrora.Avrora;
-import avrora.actions.Action;
 
 import java.io.*;
+import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.List;
+import java.util.HashSet;
 
 /**
- * The <code>ObjDumpPreprocessor</code> class is a utility class that takes the output from the
- * <code>avr-objdump</code> utility and produces a cleaned up version that is more suitable for parsing into
- * the internal format of Avrora.
- *
  * @author Ben L. Titzer
- * @author Vids Samanta
  */
-public class ObjDumpPreprocessor extends Action {
+public class ObjDumpReformatter {
 
-    protected final Option.Str FILE = options.newOption("file", "", 
-            "The \"file\" option, when set, indicates the file to which to output the " +
-            "preprocessed objdump output.");
-    
-    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("reader.objdump");
+    HashSet sections;
+    List sectlist;
 
-    public ObjDumpPreprocessor() {
-        super("The \"odpp\" action tests the functionality of the objdump preprocessor that " +
-              "cleans up the format output by objdump into something more suitable for automated " +
-              "parsing.");
+    public ObjDumpReformatter(List slist) {
+        sections = new HashSet();
+        Iterator i = slist.iterator();
+        while ( i.hasNext() ) {
+            sections.add(i.next());
+        }
+        sectlist = slist;
     }
 
     public StringBuffer cleanCode(String inFile) throws IOException {
@@ -114,37 +109,35 @@ public class ObjDumpPreprocessor extends Action {
             }
             if (line.indexOf("main.exe") != -1)
                 out.append("program \"main.exe\":\n\n");
-            else if (line.indexOf(".text") != -1) {
-                out.append("  section .text ");
-                StringTokenizer st = new StringTokenizer(line);
-                st.nextToken(); // 0
-                st.nextToken(); //.text
-                out.append(" size=0x" + st.nextToken());
-                out.append(" vma=0x" + st.nextToken());
-                out.append(" lma=0x" + st.nextToken());
-                out.append(" offset=0x" + st.nextToken());
-                out.append(" ;" + st.nextToken());
-                out.append(" \n");
-            } else if (line.indexOf(".data") != -1) {
-                out.append("  section .data ");
-                StringTokenizer st = new StringTokenizer(line);
-                st.nextToken(); // 0
-                st.nextToken(); //.text
-                out.append(" size=0x" + st.nextToken());
-                out.append(" vma=0x" + st.nextToken());
-                out.append(" lma=0x" + st.nextToken());
-                out.append(" offset=0x" + st.nextToken());
-                out.append(" ;" + st.nextToken());
-                out.append(" \n");
+
+            Iterator i = sectlist.iterator();
+            while ( i.hasNext() ) {
+                String s = (String)i.next();
+                if (line.indexOf(s) != -1)
+                    printSectionHeader(s, out, line);
             }
+
             line = nextLine(in);
         }
         return line;
     }
 
+    private void printSectionHeader(String section, StringBuffer out, String line) {
+        out.append("  section "+section+" ");
+        StringTokenizer st = new StringTokenizer(line);
+        st.nextToken(); // 0
+        st.nextToken(); //.text
+        out.append(" size=0x" + st.nextToken());
+        out.append(" vma=0x" + st.nextToken());
+        out.append(" lma=0x" + st.nextToken());
+        out.append(" offset=0x" + st.nextToken());
+        out.append(" ;" + st.nextToken());
+        out.append(" \n");
+    }
+
     private String readSection(BufferedReader in, StringBuffer out, String section) throws IOException {
 
-        if ( ".data".equals(section) || ".text".equals(section) )
+        if ( sections.contains(section) )
             return convertSection(in, out, section);
         else
             return ignoreSection(in, out, section);
@@ -221,8 +214,6 @@ public class ObjDumpPreprocessor extends Action {
     private String nextLine(BufferedReader in) throws IOException {
         line_count++;
         String line = in.readLine();
-        if ( printer.enabled )
-            printer.println(StringUtil.leftJustify(line_count,5)+": "+line);
         return line;
     }
 
@@ -236,17 +227,5 @@ public class ObjDumpPreprocessor extends Action {
         if (s.indexOf(">:") == -1)
             return false;
         return true;
-    }
-
-    public void run(String[] args) throws Exception {
-        String fname = FILE.get();
-        if ( !"".equals(fname) ) {
-            FileOutputStream outf = new FileOutputStream(fname);
-            PrintWriter p = new PrintWriter(outf);
-            p.write(cleanCode(args[0]).toString());
-            p.close();
-        } else {
-            System.out.println(cleanCode(args[0]));
-        }
     }
 }

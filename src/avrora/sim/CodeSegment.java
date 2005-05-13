@@ -58,6 +58,8 @@ public class CodeSegment extends Segment {
             if ( instr instanceof ProbedInstr ) {
                 ProbedInstr pi = new ProbedInstr(i, (ProbedInstr)instr);
                 writeInstr(address, pi);
+            } else {
+                writeInstr(address, i);
             }
         }
     }

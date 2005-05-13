@@ -52,7 +52,7 @@ import avrora.core.Program;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.objdump.ObjDumpProgramReader;
-import avrora.syntax.objdump.ObjDumpPreprocessor;
+import avrora.syntax.objdump.ODPPAction;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.test.*;
 import avrora.monitors.*;
@@ -164,7 +164,7 @@ public class Defaults {
             //--BEGIN EXPERIMENTAL: dbbc
             actions.addClass("dbbc", DBBCAction.class);
             //--END EXPERIMENTAL: dbbc
-            actions.addClass("odpp", ObjDumpPreprocessor.class);
+            actions.addClass("odpp", ODPPAction.class);
 
             // plug in a new help category for actions accesible with "-help actions"
             HelpCategory hc = new HelpCategory("actions", "Help for Avrora actions.");

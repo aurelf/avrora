@@ -90,11 +90,6 @@ public class Main {
             "order: \n   1) The .avrora file in your home directory \n   2) A configuration " +
             "file specified on the command line \n   3) Command line options to Avrora");
 
-
-    public static ProgramReader getProgramReader() {
-        return Defaults.getProgramReader(INPUT.get());
-    }
-
     /**
      * The <code>main()</code> method is the entrypoint into Avrora. It processes the command line options,
      * looks up the action, and prints help (if there are no arguments or the <code>-help</code> option is
@@ -104,37 +99,45 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
+            // try to load from ~/.avrora if it exists
             loadUserDefaults();
 
+            // parse the command line options
             parseOptions(args);
 
             if ( !"".equals(CONFIGFILE.get()) ) {
+                // if the config-file option is specified, load config file and then re-parse
+                // the arguments specified on the command line
                 loadFile(CONFIGFILE.get());
                 parseOptions(args);
             }
 
             if (args.length == 0 || HELP.get()) {
-                args = mainOptions.getArguments();
-                title();
-                printHelp(args);
+                // print the help if there are no arguments or -help is specified
+                printHelp(mainOptions.getArguments());
             } else {
-                args = mainOptions.getArguments();
-
-                if (BANNER.get()) banner();
-
-                Action a = Defaults.getAction(ACTION.get());
-                if (a == null)
-                    Avrora.userError("Unknown Action", StringUtil.quote(ACTION.get()));
-
-                a.options.process(mainOptions);
-                a.run(args);
+                // otherwise run the specified action
+                runAction();
             }
 
         } catch (Avrora.Error e) {
+            // report any internal Avrora errors
             e.report();
         } catch (Exception e) {
+            // report any other exceptions
             e.printStackTrace();
         }
+    }
+
+    private static void runAction() throws Exception {
+        banner();
+
+        Action a = Defaults.getAction(ACTION.get());
+        if (a == null)
+            Avrora.userError("Unknown Action", StringUtil.quote(ACTION.get()));
+
+        a.options.process(mainOptions);
+        a.run(mainOptions.getArguments());
     }
 
     private static void loadUserDefaults() throws IOException {
@@ -190,6 +193,7 @@ public class Main {
     }
 
     static void printHelp(String[] args) {
+        title();
         printUsage();
 
         buildAllCategories();
@@ -264,6 +268,8 @@ public class Main {
     }
 
     static void banner() {
+        if (! BANNER.get() ) return;
+
         title();
         String notice;
         if (!LICENSE.get())
@@ -347,7 +353,7 @@ public class Main {
      */
     public static Program readProgram(String[] args) throws Exception {
         ProgramReader reader = Defaults.getProgramReader(INPUT.get());
-
+        reader.options.process(mainOptions);
         return reader.read(args);
     }
 }

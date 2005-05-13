@@ -33,6 +33,7 @@
 package avrora.syntax.objdump;
 
 import avrora.Avrora;
+import avrora.util.Option;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 
@@ -47,6 +48,10 @@ import java.io.StringReader;
  * @author Ben L. Titzer
  */
 public class ObjDumpProgramReader extends ProgramReader {
+
+    protected final Option.List SECTIONS = options.newOptionList("sections",".text,.data",
+            "This option specifies a list of sections that the loader should load from " +
+            "the output.");
 
     /**
      * The <code>read()</code> method takes the command line arguments passed to main and interprets it as a
@@ -67,7 +72,7 @@ public class ObjDumpProgramReader extends ProgramReader {
 
         File f = new File(args[0]);
         RawModule module = new RawModule(true, true);
-        StringBuffer buf = new ObjDumpPreprocessor().cleanCode(args[0]);
+        StringBuffer buf = new ObjDumpReformatter(SECTIONS.get()).cleanCode(args[0]);
         Reader r = new StringReader(buf.toString());
 
         ObjDumpParser parser = new ObjDumpParser(r, module, f.getName());

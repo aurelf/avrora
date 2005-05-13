@@ -130,7 +130,7 @@ public class MultiSimulateAction extends SimAction {
             if (args.length <= cntr) break;
 
             String[] singleArg = {args[cntr++]};
-            Program program = Main.getProgramReader().read(singleArg);
+            Program program = Main.readProgram(singleArg);
 
             // create a number of nodes with the same program
             int max = StringUtil.evaluateIntegerLiteral((String)i.next());
