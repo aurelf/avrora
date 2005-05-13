@@ -85,7 +85,7 @@ public class Main {
     public static final Option.Str CONFIGFILE = mainOptions.newOption("config-file", "",
             "This option can be used to specify a file that contains additional command " +
             "line options to Avrora. Any command-line option can be specified in this " +
-            "file. For repeated runs with similar options, the common options can be stored" +
+            "file. For repeated runs with similar options, the common options can be stored " +
             "in this file for use over multiple runs. Options are processed in the following " +
             "order: \n   1) The .avrora file in your home directory \n   2) A configuration " +
             "file specified on the command line \n   3) Command line options to Avrora");

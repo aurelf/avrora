@@ -349,7 +349,10 @@ public class ADC extends AtmelInternalDevice {
 
         protected class ADCInterrupt implements Simulator.Interrupt {
             public void force() {
-                //fire();
+                if ( adie ) {
+                    writeBit(ADIF, true);
+                    interpreter.postInterrupt(22);
+                }
             }
 
             public void fire() {

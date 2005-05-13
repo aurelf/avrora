@@ -112,6 +112,17 @@ public class Avrora {
     }
 
     /**
+     * The <code>unexpected()</code> method is a utility method that wraps an unexpected exception
+     * so that it can be throw again and reported later. This is useful for code that does IO but does
+     * not want to handle IO exceptions, for example.
+     * @param t the throwable that was encountered
+     * @return a new instance of the <code>InternalError</code> class that wraps up the thrown exception
+     */
+    public static InternalError unexpected(Throwable t) {
+        return new InternalError(t.toString());
+    }
+
+    /**
      * The <code>userError()</code> method constructs and throws an error in situations that are likely
      * due to user error. This is useful for files that are not found, an incorrect option value, etc.
      * @param s the message for the user

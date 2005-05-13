@@ -38,6 +38,7 @@ import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.core.LabelMapping;
 import avrora.sim.*;
+import avrora.sim.util.InterruptScheduler;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.*;
@@ -45,6 +46,8 @@ import avrora.util.*;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * The <code>SimulateAction</code> implements the bridge between the functionality in the
@@ -91,6 +94,11 @@ public class SimulateAction extends SimAction {
             "By default, the simulator will attempt to execute the program as fast as possible. " +
             "This option will cause the simulation to pause periodically for a few milliseconds in " +
             "order that it does not run faster than real-time.");
+    public final Option.Str SCHEDULE = newOption("interrupt-schedule", "", "This option is used to specify " +
+            "the text file from which Avrora should load an interrupt schedule.  The file should contain " +
+            "a sequence of whitespace delineated pairs of integers.  In each pair the first is an " +
+            "interrupt vector number (see the AVR manuals, NOT the gcc header files, which are off by one) " +
+            "and the second is a cycle time at which the interrupt should fire.");
 
     public SimulateAction() {
         super("simulate", HELP);
@@ -148,6 +156,11 @@ public class SimulateAction extends SimAction {
 
         if (REALTIME.get())
             simulator.insertEvent(new ThrottleEvent(), 1);
+
+        // interrupt scheduling code begins
+        String fname = SCHEDULE.get();
+        if ( !"".equals(fname) ) new InterruptScheduler(fname, simulator);
+        // interrupt scheduling code ends
 
         startms = System.currentTimeMillis();
         try {
@@ -223,4 +236,6 @@ public class SimulateAction extends SimAction {
             }
         }
     }
+
+
 }
