@@ -30,48 +30,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.stack.isea;
+
+import avrora.core.Program;
+import avrora.core.ProcedureMap;
+import avrora.core.ControlFlowGraph;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>ISEAnalyzer</code> class is a static analyzer for machine code. This class
+ * implements intra-procedural side-effect analysis. This determines the set of registers
+ * read and modified by this procedure locally; this information can be used to reduce
+ * the amount of work that other static analyzers must do when they analyze code, because
+ * they can use the results of this analysis to know which registers' values are used, and
+ * which registers are unmodified by a procedure.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class ISEAnalyzer {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    protected final Program program;
+    protected final ControlFlowGraph cfg;
+    protected final ProcedureMap pmap;
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 79;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
-    }
-
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public ISEAnalyzer(Program p) {
+        program = p;
+        cfg = program.getCFG();
+        pmap = cfg.getProcedureMap();
     }
 }

@@ -33,10 +33,7 @@
 package avrora.actions;
 
 import avrora.Main;
-import avrora.core.ControlFlowGraph;
-import avrora.core.Instr;
-import avrora.core.ProcedureMap;
-import avrora.core.Program;
+import avrora.core.*;
 import avrora.util.Option;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
@@ -118,11 +115,14 @@ public class CFGAction extends Action {
 
     private void dumpCFG(ControlFlowGraph cfg) {
         Iterator biter = cfg.getSortedBlockIterator();
+        SourceMapping sm = program.getSourceMapping();
 
         while (biter.hasNext()) {
             ControlFlowGraph.Block block = (ControlFlowGraph.Block)biter.next();
             Terminal.print("[");
-            Terminal.printBrightCyan(StringUtil.addrToString(block.getAddress()));
+            int address = block.getAddress();
+            String s = sm.getName(address);
+            Terminal.printBrightCyan(s);
             Terminal.println(":" + block.getSize() + ']');
             Iterator iiter = block.getInstrIterator();
             while (iiter.hasNext()) {
@@ -282,6 +282,8 @@ public class CFGAction extends Action {
     }
 
     private void dumpEdges(Iterator edges) {
+        SourceMapping sm = program.getSourceMapping();
+
         while (edges.hasNext()) {
             ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)edges.next();
             ControlFlowGraph.Block t = e.getTarget();
@@ -291,9 +293,10 @@ public class CFGAction extends Action {
             else
                 Terminal.print("--(" + e.getType() + ")--> ");
 
-            if (t != null)
-                Terminal.printBrightGreen(StringUtil.addrToString(e.getTarget().getAddress()));
-            else
+            if (t != null) {
+                String str = sm.getName(e.getTarget().getAddress());
+                Terminal.printBrightGreen(str);
+            } else
                 Terminal.printRed("UNKNOWN");
 
             if (edges.hasNext()) Terminal.print(", ");
@@ -310,7 +313,7 @@ public class CFGAction extends Action {
             ControlFlowGraph.Block es, et;
             String type = e.getType();
 
-            // don'type print out the return edges which point to null
+            // don't print out the return edges which point to null
             if (isReturnEdge(type)) continue;
 
             // remember only inter-procedural edges
