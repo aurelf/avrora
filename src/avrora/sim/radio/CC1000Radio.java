@@ -1406,6 +1406,10 @@ public class CC1000Radio implements Radio {
         return air;
     }
 
+    public void setAir(RadioAir nair) {
+        air = nair;
+    }
+
     public void report() {
         Terminal.printCyan("\nPacket Monitor:\n\n");
         Terminal.println("Bytes Tx: " + packetsTx);

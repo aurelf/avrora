@@ -123,6 +123,7 @@ public class FreeSpaceAir implements RadioAir {
     public synchronized void addRadio(Radio r, Position p) {
         LocalAir la = new LocalAirImpl(r, p);
         airMap.put(r, la);
+        r.setAir(this);
 
         //add this radio to the other radio's neighbor list
         Iterator it = radios.iterator();
@@ -135,7 +136,6 @@ public class FreeSpaceAir implements RadioAir {
         }
         radios.add(r);
         radioClock.add(r.getSimulatorThread());
-        //deliveryMeet.setGoal(radioClock.getNumberOfThreads());
     }
 
     private LocalAir getLocalAir(Radio r) {
@@ -289,9 +289,11 @@ public class FreeSpaceAir implements RadioAir {
      * @return the waiter at the head of the line if all threads have joined, null otherwise
      */
     private RSSIWait checkRSSIWaiters(RSSIWait curWait) {
-        if (rssiPrinter.enabled) rssiPrinter.print("RSSI check(" + curWait + "): met " + meet_count + ", sampling " + rssi_count + ": ");
+        int numberOfThreads = radioClock.getNumberOfThreads();
 
-        if (meet_count + rssi_count == radioClock.getNumberOfThreads()) {
+        if (rssiPrinter.enabled) rssiPrinter.print("RSSI check(" + curWait + ") M: " + meet_count + ", R: " + rssi_count + " G: "+numberOfThreads+" -> ");
+
+        if (meet_count + rssi_count == numberOfThreads) {
 
             // are there any waiters?
             if (rssi_waiters.isEmpty()) {

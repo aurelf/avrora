@@ -237,9 +237,12 @@ public class SimpleAir implements RadioAir {
      * @return the waiter at the head of the line if all threads have joined, null otherwise
      */
     private RSSIWait checkRSSIWaiters(RSSIWait curWait) {
-        if (rssiPrinter.enabled) rssiPrinter.print("RSSI check(" + curWait + "): met " + meet_count + ", sampling " + rssi_count + ": ");
 
-        if (meet_count + rssi_count == radioClock.getNumberOfThreads()) {
+        int numberOfThreads = radioClock.getNumberOfThreads();
+        if (rssiPrinter.enabled) {
+            rssiPrinter.print("RSSI check(" + curWait + ") M: " + meet_count + ", R: " + rssi_count + " G: "+numberOfThreads+" -> ");
+        }
+        if (meet_count + rssi_count == numberOfThreads) {
 
             // are there any waiters?
             if (rssi_waiters.isEmpty()) {
