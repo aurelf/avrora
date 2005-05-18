@@ -69,7 +69,7 @@ public class IntervalSynchronizer extends Synchronizer {
     /**
      * The constructor for the <code>IntervalSynchronizer</code> class creates a new synchronizer
      * with the specified period, that will fire the specified event each time all threads meet at
-     * a synchronization poibnt.
+     * a synchronization point.
      * @param p the period in clock cycles which to synchronize the threads
      * @param a the event to fire each time all threads meet at a synchronization point
      */

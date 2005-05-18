@@ -45,10 +45,10 @@ package avrora.sim.radio.freespace;
 public class Distance {
 
     //distance between a node and the node who owns radio
-    public double distance;
+    public final double distance;
 
     //the other radio
-    public LocalAir radio;
+    public final LocalAirImpl radio;
 
     /**
      * new Disance
@@ -56,7 +56,7 @@ public class Distance {
      * @param r   local radio
      * @param dis distance
      */
-    public Distance(LocalAir r, double dis) {
+    public Distance(LocalAirImpl r, double dis) {
         radio = r;
         distance = dis;
     }

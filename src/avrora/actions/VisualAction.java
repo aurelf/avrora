@@ -43,7 +43,6 @@ import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.platform.PlatformFactory;
-import avrora.sim.radio.SimpleAir;
 import avrora.util.*;
 
 import javax.swing.*;

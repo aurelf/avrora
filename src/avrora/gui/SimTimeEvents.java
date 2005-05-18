@@ -33,19 +33,14 @@
 package avrora.gui;
 
 import avrora.sim.Simulator;
-import avrora.sim.radio.SimpleAir;
 import avrora.Avrora;
 
 public class SimTimeEvents {
 
-    SimpleAir simpleAir;
-
     //Pausing
     public PauseEvent pause;
 
-    public SimTimeEvents(SimpleAir psA) {
-        simpleAir = psA;
-
+    public SimTimeEvents() {
         pause = new PauseEvent();
     }
 

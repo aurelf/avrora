@@ -43,10 +43,10 @@ package avrora.sim.radio.freespace;
  */
 public class Position {
 
-    private int x;
-    private int y;
-    private int z;
-    private String nodeName;
+    public final int x;
+    public final int y;
+    public final int z;
+    public final String nodeName;
 
     /**
      * new position
@@ -75,33 +75,6 @@ public class Position {
         this.x = x;
         this.y = y;
         this.z = z;
-    }
-
-    /**
-     * get x coordinate
-     *
-     * @return x
-     */
-    public int getX() {
-        return x;
-    }
-
-    /**
-     * get y coordinate
-     *
-     * @return y
-     */
-    public int getY() {
-        return y;
-    }
-
-    /**
-     * get z coordinate
-     *
-     * @return z
-     */
-    public int getZ() {
-        return z;
     }
 
     /**

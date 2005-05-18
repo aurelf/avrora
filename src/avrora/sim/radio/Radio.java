@@ -181,8 +181,9 @@ public interface Radio extends Monitor {
      * from this radio.
      */
     public interface RadioProbe extends FiniteStateMachine.Probe {
+        public void fireAtPowerChange(Radio r, double newPower);
+        public void fireAtFrequencyChange(Radio r, double freq);
         public void fireAtTransmit(Radio r, Radio.Transmission p);
         public void fireAtReceive(Radio r, Radio.Transmission p);
-        public void fireAtPowerChange(Radio r, double newPower);
     }
 }

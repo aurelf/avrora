@@ -90,8 +90,8 @@
     3    sim  Implement one thread per processor model
     1   util  migrate to StringUtil.*
     1  probe  migrate to SourceMapping, remove Program.Location
-  2-3  radio  Separate synch mechanism from Radio implementation
 
+  2-3  radio  Separate synch mechanism from Radio implementation    (1.5.83)
     1    sim  Renamed Radio.RadioPacket to Radio.Transmission       (1.5.76)
     2    sim  Introduced Synchronizer abstract                      (1.5.75)
     2  probe  Changed fireXXX() to accept only state and PC         (1.5.62)

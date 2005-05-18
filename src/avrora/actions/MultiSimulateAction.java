@@ -39,9 +39,8 @@ import avrora.sim.SimulatorThread;
 import avrora.sim.platform.PinConnect;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.radio.Radio;
-import avrora.sim.radio.SimpleAir;
 import avrora.sim.radio.RadioAir;
-import avrora.sim.radio.BroadcastAir;
+import avrora.sim.radio.SimpleAir;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.sim.radio.freespace.Topology;
 import avrora.util.*;
@@ -103,8 +102,6 @@ public class MultiSimulateAction extends SimAction {
             "of clock cycles. For example, if this option is given the " +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
-    public final Option.Bool NEWRADIO = newOption("new-radio", false, 
-            "This option controls whether the new radio model is used for simulation.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
@@ -180,10 +177,6 @@ public class MultiSimulateAction extends SimAction {
     }
 
     private RadioAir getRadioAir() throws IOException {
-        if ( NEWRADIO.get() ) {
-            return new BroadcastAir();
-        }
-
         Topology topology = getTopology();
         if ( topology == null ) {
             return new SimpleAir();
