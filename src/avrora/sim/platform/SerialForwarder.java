@@ -81,7 +81,7 @@ public class SerialForwarder implements USART.USARTDevice {
             out = socket.getOutputStream();
             in = socket.getInputStream();
         } catch( IOException e ){
-            throw Avrora.failure("cannot connect to serial forwarder");
+            throw Avrora.unexpected(e);
         }
     }
 
@@ -90,7 +90,7 @@ public class SerialForwarder implements USART.USARTDevice {
             in.read(data, 0, 1);
             return new USART.Frame(data[0], false, 8);
         } catch( IOException e){
-            throw Avrora.failure("cannot read from socket");
+            throw Avrora.unexpected(e);
         }
     }
 
@@ -99,7 +99,7 @@ public class SerialForwarder implements USART.USARTDevice {
         try{
             out.write(frame.low);
         } catch( IOException e){
-            throw Avrora.failure("cannot write to socket");
+            throw Avrora.unexpected(e);
         }
     }
 
@@ -118,7 +118,7 @@ public class SerialForwarder implements USART.USARTDevice {
                     usart.startReceive();
                 }
             } catch( IOException e){
-                throw Avrora.failure("cannot read from socket");
+                throw Avrora.unexpected(e);
             }
             clock.insertEvent(this, delta);
         }

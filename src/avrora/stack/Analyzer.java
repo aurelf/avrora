@@ -195,7 +195,7 @@ public class Analyzer {
                     cntr++;
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw Avrora.unexpected(e);
             }
         }
 

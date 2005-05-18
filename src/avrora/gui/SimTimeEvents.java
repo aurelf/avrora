@@ -34,6 +34,7 @@ package avrora.gui;
 
 import avrora.sim.Simulator;
 import avrora.sim.radio.SimpleAir;
+import avrora.Avrora;
 
 public class SimTimeEvents {
 
@@ -62,7 +63,7 @@ public class SimTimeEvents {
                 try {
                     syncObj.wait();
                 } catch (InterruptedException e) {
-                    //do nothing
+                    throw Avrora.unexpected(e);
                 }
             }
         }

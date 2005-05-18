@@ -87,8 +87,10 @@ public class Main {
             "line options to Avrora. Any command-line option can be specified in this " +
             "file. For repeated runs with similar options, the common options can be stored " +
             "in this file for use over multiple runs. Options are processed in the following " +
-            "order: \n   1) The .avrora file in your home directory \n   2) A configuration " +
-            "file specified on the command line \n   3) Command line options to Avrora");
+            "order: " +
+            "\n   1) The .avrora file in your home directory " +
+            "\n   2) A configuration file specified on the command line " +
+            "\n   3) Command line options to Avrora");
 
     /**
      * The <code>main()</code> method is the entrypoint into Avrora. It processes the command line options,

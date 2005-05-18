@@ -14,12 +14,14 @@
     2  probe  getDataByte() calls from within watches
     1   devs  Frame sizes in USART implementation
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
-    1    sim  SimpleAir.removeRadio() does not wake remaining nodes
     1   devs  USART baud rates
     1   devs  USART frame sizes
-    1    sim  Remove RAMPZ accesses for ATMega32
     2   devs  Fix interrupt mappings for devices on ATMega32
 
+    1  radio  SimpleAir.removeRadio() does not wake remaining nodes (1.5.81)
+    1    sim  Fixed RSSI livelock problem in Freespace radio        (1.5.80)
+    1    sim  Fixed dynamic code update problem                     (1.5.78)
+    1    sim  Remove RAMPZ accesses for ATMega32                    (1.5.70)
     1  build  Fixed errors when building with javac in 1.5          (1.5.62)
     1  probe  Fix SerialMonitor                                     (1.5.58)
     1  probe  Fix StackMonitor                                      (1.5.58)
@@ -54,6 +56,8 @@
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+    2  stack  Added first version of ISE abstract interpreter       (1.5.79)
+    2    sim  Added interrupt scheduling patch from John Regehr     (1.5.77)
     1    sim  Started work on ATMega32 device                       (1.5.69)
     3    sim  Support dynamic code update with SPM                  (1.5.66)
     2    sim  PinWire and PinConnection code from Jacob Everist     (1.5.57)
@@ -82,12 +86,13 @@
     1  radio  Radio transfer time calculation
     2  radio  Neighbor lists
     2  radio  RadioAir, distance calculations
-  2-3  radio  Transmission refactoring, optimization
+  2-3  radio  RadioPacket refactoring, optimization
     3    sim  Implement one thread per processor model
     1   util  migrate to StringUtil.*
     1  probe  migrate to SourceMapping, remove Program.Location
   2-3  radio  Separate synch mechanism from Radio implementation
 
+    1    sim  Renamed Radio.RadioPacket to Radio.Transmission       (1.5.76)
     2    sim  Introduced Synchronizer abstract                      (1.5.75)
     2  probe  Changed fireXXX() to accept only state and PC         (1.5.62)
     1    sim  Introduced Segment class for SRAM, flash, EEPROM      (1.5.62)

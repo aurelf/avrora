@@ -755,4 +755,47 @@ public class StringUtil {
         return buf.toString();
     }
 
+    public static String toMultirepString(int value, int bits) {
+        StringBuffer buf = new StringBuffer(bits * 3 + 8);
+
+        buf.append("0x");
+        int hexdigs = (bits + 3) / 4;
+        toHex(buf, value, hexdigs);
+
+        buf.append(" [");
+        // append each of the bits
+        for ( int bit = bits - 1; bit >= 0; bit-- )
+            buf.append(Arithmetic.getBit(value, bit) ? '1' : '0');
+
+        buf.append("] (");
+        buf.append(value);
+        buf.append(") ");
+        if ( bits < 9 ) {
+            appendChar(value, buf);
+        }
+        return buf.toString();
+    }
+
+    private static void appendChar(int value, StringBuffer buf) {
+        switch ( value ) {
+            case '\n':
+                buf.append("'\\n'");
+                break;
+            case '\r':
+                buf.append("'\\r'");
+                break;
+            case '\b':
+                buf.append("'\\b'");
+                break;
+            case '\t':
+                buf.append("'\\t'");
+                break;
+           default:
+                if ( value >= 32 ) {
+                    buf.append(SQUOTE);
+                    buf.append((char)value);
+                    buf.append(SQUOTE);
+                }
+        }
+    }
 }

@@ -151,7 +151,7 @@ public class GlobalClock {
                     parallelAction((SimulatorThread)Thread.currentThread());
                 }
             } catch (java.lang.InterruptedException e) {
-                throw new InterruptedException(e);
+                throw Avrora.unexpected(e);
             }
         }
 
@@ -240,19 +240,5 @@ public class GlobalClock {
 
     }
 
-
-    /**
-     * How sad. The <code>InterruptedException</code> wraps an interrupted exception with an unchecked
-     * exception so that it doesn't break the interface of the <code>Simulator.Event</code> class. It's not
-     * clear what useful purpose interrupted exceptions could serve in the implementation of the global
-     * clock.
-     */
-    public static class InterruptedException extends RuntimeException {
-        public final java.lang.InterruptedException exception;
-
-        public InterruptedException(java.lang.InterruptedException e) {
-            exception = e;
-        }
-    }
 
 }

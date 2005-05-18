@@ -122,7 +122,7 @@ public class CC1000Radio implements Radio {
     /**
      * Radio environment into which this radio broadcasts.
      */
-    protected RadioAir air = SimpleAir.simpleAir;
+    protected RadioAir air;
 
     FrequencyRegister currentFrequencyRegister;
 
@@ -163,7 +163,8 @@ public class CC1000Radio implements Radio {
      */
     public void transmit(Radio.Transmission packet) {
         // send packet into air...
-        air.transmit(this, packet);
+        if ( air != null )
+            air.transmit(this, packet);
         packetsTx++;
     }
 
@@ -1016,13 +1017,13 @@ public class CC1000Radio implements Radio {
          */
         public void receiveFrame(SPI.Frame frame) {
             if (printer.enabled) {
-                printer.println("CC1000: received "+renderChar(frame.data)+" from SPI");
+                printer.println("CC1000: received "+StringUtil.toMultirepString(frame.data, 8)+" from SPI");
             }
 
             // data, frequency, origination
             if (!MAIN_reg.txPd && MAIN_reg.rxtx) {
                 if (printer.enabled) {
-                    printer.println("CC1000: beginning transmit of "+renderChar(frame.data));
+                    printer.println("CC1000: beginning transmit of "+StringUtil.toMultirepString(frame.data, 8));
                 }
                 long currentTime = sim.getState().getCycles();
                 new Transmit(new Transmission(frame.data, 0, currentTime));
@@ -1062,7 +1063,7 @@ public class CC1000Radio implements Radio {
                 byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte)~receivedPacket.data;
                 frame = SPI.newFrame(data);
                 if (printer.enabled) {
-                    printer.println("CC1000: received " + renderChar(frame.data)+", sending back to SPI");
+                    printer.println("CC1000: received " + StringUtil.toMultirepString(frame.data, 8)+", sending back to SPI");
                 }
             } else {
                 frame = SPI.ZERO_FRAME;
@@ -1078,7 +1079,9 @@ public class CC1000Radio implements Radio {
 
         public int getLevel() {
             // ask the air for the current RSSI value
-            return air.sampleRSSI(CC1000Radio.this);
+            if ( air != null )
+                return air.sampleRSSI(CC1000Radio.this);
+            else return 0x3ff; // return a default value of some sort
         }
 
         //////////////////////////
@@ -1158,6 +1161,14 @@ public class CC1000Radio implements Radio {
             }
 
         }
+
+        public boolean isListening() {
+            return activated && receiving;
+        }
+    }
+
+    public boolean isListening() {
+        return receiver.isListening();
     }
 
     /**
@@ -1356,21 +1367,6 @@ public class CC1000Radio implements Radio {
      */
     public Simulator getSimulator() {
         return sim;
-    }
-
-    /**
-     * renderChar() is a helper method to convert a byte value to a character.
-     * @param val
-     * @return
-     */
-    private static String renderChar(byte val) {
-        StringBuffer buf = new StringBuffer(16);
-        buf.append("{'");
-        buf.append((char)val);
-        buf.append("' 0x");
-        StringUtil.toHex(buf, val, 2);
-        buf.append('}');
-        return buf.toString();
     }
 
     /**

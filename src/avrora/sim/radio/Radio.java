@@ -169,10 +169,12 @@ public interface Radio extends Monitor {
      */
     public double getFrequency();
 
+    public boolean isListening();
+
     public RadioAir getAir();
 
     public void setAir(RadioAir air);
-    
+
     /**
      * The <code>RadioProbe</code> interface encapsulates the idea of a probe inserted on a radio
      * that is notified when changes in the state of the radio occur and when packets are sent and received

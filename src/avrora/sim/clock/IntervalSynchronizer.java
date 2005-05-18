@@ -64,8 +64,15 @@ public class IntervalSynchronizer extends Synchronizer {
     protected int meet_count;
     protected int wait_count;
 
-    WaitSlot waitSlotList;
+    protected WaitSlot waitSlotList;
 
+    /**
+     * The constructor for the <code>IntervalSynchronizer</code> class creates a new synchronizer
+     * with the specified period, that will fire the specified event each time all threads meet at
+     * a synchronization poibnt.
+     * @param p the period in clock cycles which to synchronize the threads
+     * @param a the event to fire each time all threads meet at a synchronization point
+     */
     public IntervalSynchronizer(long p, Simulator.Event a) {
         period = p;
         action = a;
@@ -80,15 +87,15 @@ public class IntervalSynchronizer extends Synchronizer {
      * condition variable. The last thread to fire the event will then notify the condition variable
      * which frees the other threads to run again in parallel.
      */
-    public class SynchEvent implements Simulator.Event {
+    protected class SynchEvent implements Simulator.Event {
 
-        final SimulatorThread thread;
-        final MainClock clock;
-        boolean removed;
-        boolean met;
-        WaitSlot waitSlot;
+        protected final SimulatorThread thread;
+        protected final MainClock clock;
+        protected boolean removed;
+        protected boolean met;
+        protected WaitSlot waitSlot;
 
-        SynchEvent(SimulatorThread t) {
+        protected SynchEvent(SimulatorThread t) {
             thread = t;
             clock = t.getSimulator().getClock();
         }
@@ -122,13 +129,13 @@ public class IntervalSynchronizer extends Synchronizer {
                 // we have not been removed, we can reinsert the synch event
                 clock.insertEvent(this, period);
             } catch (java.lang.InterruptedException e) {
-                throw new InterruptedException(e);
+                throw Avrora.unexpected(e);
             }
         }
 
     }
 
-    private boolean signalOthers() {
+    protected boolean signalOthers() {
 
         // check for any waiters that need to be woken
         checkWaiters();
@@ -145,20 +152,6 @@ public class IntervalSynchronizer extends Synchronizer {
             // release threads
             condition.notifyAll();
             return true;
-        }
-    }
-
-    /**
-     * How sad. The <code>InterruptedException</code> wraps an interrupted exception with an unchecked
-     * exception so that it doesn't break the interface of the <code>Simulator.Event</code> class. It's not
-     * clear what useful purpose interrupted exceptions could serve in the implementation of the global
-     * clock.
-     */
-    public static class InterruptedException extends RuntimeException {
-        public final java.lang.InterruptedException exception;
-
-        public InterruptedException(java.lang.InterruptedException e) {
-            exception = e;
         }
     }
 
@@ -280,7 +273,7 @@ public class IntervalSynchronizer extends Synchronizer {
         WaitSlot w;
         synchronized ( condition ) {
             // allocate a wait slot for this thread
-            w = insertWaiter(thread, event, time);
+            w = insertWaiter(event, time);
             // check for other waiters and wake them if necessary
             WaitSlot h = checkWaiters();
             // if we were at the head and just woken up, we can just return
@@ -290,51 +283,36 @@ public class IntervalSynchronizer extends Synchronizer {
         // falling through means that we are either not at the head
         // or that not all threads have performed a meet or a wait
         try {
-            // we must grab the lock for this waiter
+            // we must grab the lock for this wait slot
             synchronized ( w ) {
                  // check for intervening wakeup between dropping global lock and taking local lock
                 if ( w.shouldWait )
                     w.wait();
             }
         } catch ( java.lang.InterruptedException e) {
-            throw new InterruptedException(e);
+            throw Avrora.unexpected(e);
         }
     }
-
 
     /**
      * The <code>WaitSlot</code> class represents a slot in time where multiple threads are waiting
      * for others to catch up.
      */
     static class WaitSlot {
-        long time;
+        final long time;
         int numWaiters;
         WaitSlot next;
         boolean shouldWait;
 
-        WaitSlot() {
+        WaitSlot(long t) {
             shouldWait = true;
+            time = t;
         }
     }
 
-    protected WaitSlot insertWaiter(SimulatorThread thread, SynchEvent event, long time) {
-        WaitSlot prev = waitSlotList;
-        WaitSlot w;
-        // search through the wait list from front to back
-        for ( WaitSlot slot = waitSlotList; ; slot = slot.next ) {
-            // if we are at the end of the list, or in-between links, create a new link
-            if ( slot == null || slot.time > time ) {
-                w = insertAfter(prev, new WaitSlot());
-                break;
-            }
-            // if we matched the time of some other waiter exactly
-            if ( slot.time == time ) {
-                w = slot;
-                break;
-            }
-            // keep track of previous link
-            prev = slot;
-        }
+    protected WaitSlot insertWaiter(SynchEvent event, long time) {
+        // get a wait slot for this waiter
+        WaitSlot w = getWaitSlot(time);
 
         // now this thread is officially waiting
         wait_count++;
@@ -342,7 +320,25 @@ public class IntervalSynchronizer extends Synchronizer {
         event.waitSlot = w;
         // increment the number of waiters in this slot
         w.numWaiters++;
+
         return w;
+    }
+
+    private WaitSlot getWaitSlot(long time) {
+        WaitSlot prev = waitSlotList;
+        // search through the wait list from front to back
+        for ( WaitSlot slot = waitSlotList; ; slot = slot.next ) {
+            // if we are at the end of the list, or in-between links, create a new link
+            if ( slot == null || slot.time > time ) {
+                return insertAfter(prev, new WaitSlot(time));
+            }
+            // if we matched the time of some other waiter exactly
+            if ( slot.time == time ) {
+                return slot;
+            }
+            // keep track of previous link
+            prev = slot;
+        }
     }
 
     private WaitSlot insertAfter(WaitSlot prev, WaitSlot w) {

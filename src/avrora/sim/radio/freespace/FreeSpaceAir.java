@@ -62,17 +62,9 @@ import java.util.HashMap;
  */
 public class FreeSpaceAir implements RadioAir {
 
-    //one global air for everybody
-    public static final FreeSpaceAir freeSpaceAir;
-
-    HashMap airMap;
+    final HashMap airMap;
 
     private final Verbose.Printer rssiPrinter = Verbose.getVerbosePrinter("radio.rssi");
-
-    //one global air for everybody
-    static {
-        freeSpaceAir = new FreeSpaceAir();
-    }
 
     /**
      * GlobalClock used by the air environment. Essential for synchronization.
@@ -81,6 +73,8 @@ public class FreeSpaceAir implements RadioAir {
 
     // all radios
     protected final HashSet radios;
+
+    final Topology topology;
 
     /**
      * State for maintaining RSSI wait for neighbors
@@ -104,7 +98,8 @@ public class FreeSpaceAir implements RadioAir {
     /**
      * new free space air
      */
-    public FreeSpaceAir() {
+    public FreeSpaceAir(Topology top) {
+        topology = top;
         radios = new HashSet();
         radioClock = new RadioClock(bytePeriod);
         rssi_waiters = new TreeSet();
@@ -112,15 +107,7 @@ public class FreeSpaceAir implements RadioAir {
     }
 
     public synchronized void addRadio(Radio r) {
-        throw Avrora.unimplemented();
-    }
-
-    /**
-     * add radio
-     *
-     * @see avrora.sim.radio.RadioAir#addRadio(avrora.sim.radio.Radio)
-     */
-    public synchronized void addRadio(Radio r, Position p) {
+        Position p = topology.getPosition(r.getSimulator().getID());
         LocalAir la = new LocalAirImpl(r, p);
         airMap.put(r, la);
         r.setAir(this);
@@ -256,7 +243,7 @@ public class FreeSpaceAir implements RadioAir {
                     if (w.shouldWait) w.wait();
                 }
             } catch (InterruptedException e) {
-                throw new GlobalClock.InterruptedException(e);
+                throw Avrora.unexpected(e);
             }
         }
 

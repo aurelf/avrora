@@ -40,13 +40,16 @@ import avrora.sim.platform.PinConnect;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.SimpleAir;
+import avrora.sim.radio.RadioAir;
+import avrora.sim.radio.BroadcastAir;
 import avrora.sim.radio.freespace.FreeSpaceAir;
-import avrora.topology.Topology;
+import avrora.sim.radio.freespace.Topology;
 import avrora.util.*;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
+import java.io.IOException;
 
 /**
  * The <code>MultiSimulateAction</code> class represents an action available to the simulator where multiple
@@ -72,7 +75,7 @@ public class MultiSimulateAction extends SimAction {
             "the seed for reproducible simulation results. If this option is not set, " +
             "those parts of simulation that rely on random numbers will have seeds " +
             "chosen based on system parameters that vary from run to run.");
-    public final Option.Str TOPOLOGY = newOption("topology", "(null)",
+    public final Option.Str TOPOLOGY = newOption("topology", "",
             "This option can be used to specify the name of " +
             "a file that contains information about the topology of the network. " +
             "When this option is specified the free space radio model will be used " +
@@ -84,6 +87,15 @@ public class MultiSimulateAction extends SimAction {
             "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
             "option is set to a non-zero value, then its value is used as the seed to the " +
             "pseudo-random number generator.");
+    public final Option.Interval PREAMBLE_LOSS = newOption("preamble-loss", 0, 0,
+            "This option controls the maximum and minimum number of bits of the preamble " +
+            "that are lost at the beginning of a radio transmission. When a node begins " +
+            "transmitting a series of bytes, a pseudo-randomly generated number (uniformly " +
+            "distributed over this interval) is chosen, " +
+            "and that number of bits are dropped from the beginning of the transmission. " +
+            "If the \"random-seed\" " +
+            "option is set to a non-zero value, then its value is used as the seed to the " +
+            "pseudo-random number generator.");
     public final Option.Long STAGGER_START = newOption("stagger-start", 0,
             "This option causes the simulator to insert a progressively longer delay " +
             "before starting each node in order to avoid artificial cycle-level " +
@@ -91,9 +103,8 @@ public class MultiSimulateAction extends SimAction {
             "of clock cycles. For example, if this option is given the " +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
-    public final Option.Bool CHANNEL_UTIL = newOption("channel-utilization", false,
-            "This option causes the simulator to record statistics about the amount of radio " +
-            "traffic in the network and report it after the simulation is complete.");
+    public final Option.Bool NEWRADIO = newOption("new-radio", false, 
+            "This option controls whether the new radio model is used for simulation.");
 
     public MultiSimulateAction() {
         super("multi-simulate", HELP);
@@ -115,16 +126,10 @@ public class MultiSimulateAction extends SimAction {
         initializeSimulatorStatics();
 
         int cntr = 0;
-        int nodes = 0;
 
         // create the specified number of each type of node
         Iterator i = NODECOUNT.get().iterator();
-        Topology top = null;
-        boolean topologyOn = false;
-        if (!"(null)".equals(TOPOLOGY.get())) {
-            topologyOn = true;
-            top = new Topology(TOPOLOGY.get());
-        }
+        RadioAir air = getRadioAir();
         while (i.hasNext()) {
 
             if (args.length <= cntr) break;
@@ -135,56 +140,63 @@ public class MultiSimulateAction extends SimAction {
             // create a number of nodes with the same program
             int max = StringUtil.evaluateIntegerLiteral((String)i.next());
             for (int node = 0; node < max; node++) {
+                // create the simulator for the program
                 Simulator simulator = newSimulator(program);
+                // get the microcontroller
                 Microcontroller microcontroller = simulator.getMicrocontroller();
+                // create a new thread for this simulator and add it to the list
                 SimulatorThread st = new SimulatorThread(simulator);
-
                 simulatorThreadList.addLast(st);
+
+                // if the radio exists, add it to the air
                 Radio radio = microcontroller.getRadio();
-
-                // register the simulatorThread with the PinConnect manager
-                //PinConnect.pinConnect.addSimulatorThread(st);
-
-                //OL: check for radio
                 if (radio != null) {
                     radio.setSimulatorThread(st);
-                    //no topology defined, use simple air
-                    if (!topologyOn) {
-                        SimpleAir.simpleAir.addRadio(microcontroller.getRadio());
-                    } else {
-                        //wonderful, there is a toplogy definded, use the free space air model
-                        //activate free space and local air at this radio
-                        FreeSpaceAir.freeSpaceAir.addRadio(microcontroller.getRadio(),top.getPosition(nodes));
-                    }
+                    air.addRadio(radio);
                 }
-                nodes++;
 
+                // add any random start delay
                 processRandom(simulator);
+                // add any stagger start delay
                 processStagger(simulator);
             }
         }
 
-        // connect nodes together that have PinWire connections
-        PinConnect.pinConnect.initializeConnections();
-
-        // enable channel utilization accounting
-        SimpleAir.simpleAir.recordUtilization(CHANNEL_UTIL.get());
-
+        printSimHeader();
         long startms = System.currentTimeMillis();
         try {
-            printSimHeader();
+            // start all the simulation threads running
             startSimulationThreads(simulatorThreadList);
 
         } finally {
             joinSimulationThreads(simulatorThreadList);
+            long endms = System.currentTimeMillis();
             printSeparator();
 
             // compute simulation time
-            long endms = System.currentTimeMillis();
             reportTime(startms, endms);
-            reportUtilization();
             reportAllMonitors();
         }
+    }
+
+    private RadioAir getRadioAir() throws IOException {
+        if ( NEWRADIO.get() ) {
+            return new BroadcastAir();
+        }
+
+        Topology topology = getTopology();
+        if ( topology == null ) {
+            return new SimpleAir();
+        } else {
+            return new FreeSpaceAir(topology);
+        }
+    }
+
+    private Topology getTopology() throws IOException {
+        if (!"".equals(TOPOLOGY.get())) {
+            return new Topology(TOPOLOGY.get());
+        }
+        return null;
     }
 
     private void reportAllMonitors() {
@@ -215,17 +227,6 @@ public class MultiSimulateAction extends SimAction {
         double thru = ((double)aggCycles) / (diff * 1000);
         TermUtil.reportQuantity("Total throughput", (float)thru, "mhz");
         TermUtil.reportQuantity("Throughput per node", (float)(thru / numthreads), "mhz");
-    }
-
-    private void reportUtilization() {
-        if (CHANNEL_UTIL.get()) {
-            TermUtil.reportQuantity("First transmit time", SimpleAir.simpleAir.firstPacketTime, "cycles");
-            long total = SimpleAir.simpleAir.bytesAttempted;
-            TermUtil.reportQuantity("Bytes attempted", total, "");
-            TermUtil.reportProportion("Bytes delivered", SimpleAir.simpleAir.bytesDelivered, total, "");
-            TermUtil.reportProportion("Bytes corrupted", SimpleAir.simpleAir.bytesCorrupted, total, "");
-            TermUtil.reportQuantity("Bits discarded", SimpleAir.simpleAir.bitsDiscarded, "");
-        }
     }
 
     private void joinSimulationThreads(LinkedList simulatorThreadList) throws InterruptedException {

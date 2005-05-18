@@ -407,7 +407,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
                     Thread.currentThread().sleep(PAINT_THREAD_SLEEP_TIME);
                 }
             } catch (InterruptedException except) {
-                //If interrupted, do nothing
+                throw Avrora.unexpected(except);
             }
         }
 

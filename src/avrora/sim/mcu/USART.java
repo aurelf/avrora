@@ -36,6 +36,7 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
+import avrora.util.StringUtil;
 
 import java.util.LinkedList;
 
@@ -167,6 +168,7 @@ public abstract class USART extends AtmelInternalDevice {
          * @return intended value of this data frame
          */
         public int value() {
+            // TODO: calculate this value in the constructor
             int value = 0;
             switch (size) {
                 case 9:
@@ -190,42 +192,7 @@ public abstract class USART extends AtmelInternalDevice {
         }
 
         public String toString() {
-            StringBuffer buf = new StringBuffer();
-            buf.append("[");
-            int val = value();
-            // append each of the bits
-            for ( int bit = size - 1; bit >= 0; bit-- )
-                buf.append(Arithmetic.getBit(low, bit) ? '1' : '0');
-
-            buf.append("] (");
-            buf.append(val);
-            buf.append(") ");
-            if ( size < 9 ) {
-                buf.append("'");
-                appendChar(buf, (char)val);
-                buf.append("'");
-            }
-            return buf.toString();
-        }
-
-        private void appendChar(StringBuffer buf, char c) {
-            switch ( c ) {
-                case '\n':
-                    buf.append("\\n");
-                    break;
-                case '\r':
-                    buf.append("\\r");
-                    break;
-                case '\b':
-                    buf.append("\\b");
-                    break;
-                case '\t':
-                    buf.append("\\t");
-                    break;
-               default:
-                    buf.append(c);
-            }
-
+            return StringUtil.toMultirepString(value(), size);
         }
     }
 

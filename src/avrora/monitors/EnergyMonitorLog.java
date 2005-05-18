@@ -96,7 +96,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             try {
                 this.file = new BufferedWriter(new FileWriter(fileName));
             } catch (IOException e) {
-                Avrora.userError("Cannot create log file", fileName);
+                throw Avrora.unexpected(e);
             }
             
             //write headlines 
@@ -125,7 +125,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             try {
                 file.write(text);
             } catch (IOException e) {
-                throw Avrora.failure("cannot write to log file");
+                throw Avrora.unexpected(e);
             }
         }
 
@@ -136,7 +136,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             try {
                 file.newLine();
             } catch (IOException e) {
-                throw Avrora.failure("cannot write to log file");
+                throw Avrora.unexpected(e);
             }
         }
 
@@ -158,7 +158,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
                 file.flush();
                 file.close();
             } catch (IOException e) {
-                throw Avrora.failure("could not flush and / or close log file");
+                throw Avrora.unexpected(e);
             }
         }
 
