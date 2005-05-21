@@ -36,6 +36,7 @@ import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.clock.IntervalSynchronizer;
 import avrora.util.Verbose;
+import avrora.util.Arithmetic;
 import avrora.Avrora;
 
 import java.util.HashSet;
@@ -56,36 +57,19 @@ import java.util.TreeSet;
  */
 public class SimpleAir implements RadioAir {
 
-    protected Radio.Transmission firstTransmission;
-    protected Radio.Transmission computedTransmission;
-
-    protected LinkedList packetsThisPeriod;
-    protected LinkedList packetsLeftOver;
-
     protected final HashSet radios;
 
-    // state for maintaining meeting of threads for delivery
-    private long lastDeliveryTime;
-    private long nextDeliveryTime;
+    protected final Channel radioChannel;
 
     protected final IntervalSynchronizer synchronizer;
-    DeliveryEvent deliveryEvent;
 
-    /**
-     * The amount of cycles it takes for one byte to be sent.
-     */
-    public static final int bytePeriod = Radio.TRANSFER_TIME;
-    public static final int bitPeriod = Radio.TRANSFER_TIME / 8;
-    public static final int bitPeriod2 = Radio.TRANSFER_TIME / 16;
     public static final int sampleTime = 13 * 64;
     private static final int TRANSFER_TIME = Radio.TRANSFER_TIME;
 
     public SimpleAir() {
         radios = new HashSet();
-        packetsThisPeriod = new LinkedList();
-        packetsLeftOver = new LinkedList();
+        radioChannel = new Channel(8, TRANSFER_TIME, true);
         synchronizer = new IntervalSynchronizer(TRANSFER_TIME, new MeetEvent());
-        deliveryEvent = new DeliveryEvent();
     }
 
     /**
@@ -115,62 +99,14 @@ public class SimpleAir implements RadioAir {
      * @param f the radio packet transmitted into the air
      */
     public synchronized void transmit(Radio r, Radio.Transmission f) {
-        packetsThisPeriod.addLast(f);
-
-        if (firstTransmission == null) {
-            firstTransmission = f;
-        } else if (f.originTime < firstTransmission.originTime) {
-            firstTransmission = f;
-        }
+        radioChannel.write(f.data, 8, r.getSimulator().getClock().getCount());
     }
 
     protected class MeetEvent implements Simulator.Event {
         long meets;
 
         public void fire() {
-            meets++;
-            if (firstTransmission != null) {
-                long globalTime = meets * TRANSFER_TIME;
-                long deliveryGoal;
-
-                deliveryGoal = firstTransmission.deliveryTime;
-
-                if (lastDeliveryTime > globalTime - bytePeriod) {
-                    // there was a byte delivered in the period just finished
-                    if (firstTransmission.deliveryTime <= lastDeliveryTime + bytePeriod) {
-                        // the firstPacket packet in this interval overlapped a bit with the last delivery
-                        deliveryGoal = lastDeliveryTime + bytePeriod;
-                    }
-                }
-
-                // add any packets from the previous period that have a delivery
-                // point after the last delivery (i.e. they have bits left over at the end)
-                Iterator i = packetsLeftOver.iterator();
-                while (i.hasNext()) {
-                    Radio.Transmission p = (Radio.Transmission)i.next();
-                    if (p.deliveryTime > lastDeliveryTime)
-                        packetsThisPeriod.addLast(p);
-                }
-
-                // just finished this period, so create a new set for the next period
-                packetsLeftOver = packetsThisPeriod;
-                packetsThisPeriod = new LinkedList();
-                nextDeliveryTime = deliveryGoal;
-                long deliveryDelta = deliveryGoal - globalTime;
-
-                scheduleDeliveries(deliveryDelta);
-            }
-            firstTransmission = null;
-            computedTransmission = null;
-        }
-
-        private void scheduleDeliveries(long deliveryDelta) {
-            Iterator ri = radios.iterator();
-            while ( ri.hasNext() ) {
-                Radio r = (Radio)ri.next();
-                if ( r.isListening() )
-                    r.getSimulator().insertEvent(deliveryEvent, deliveryDelta);
-            }
+            radioChannel.advance();
         }
     }
 
@@ -186,102 +122,13 @@ public class SimpleAir implements RadioAir {
     public int sampleRSSI(Radio r) {
         long t = r.getSimulator().getClock().getCount();
         synchronizer.waitForNeighbors(t);
-
-        // simple and imprecise RSSI computation: if there are any packets
-        // that overlap with this sampling time, simply set the RSSI to maximum (0)
-        // otherwise, set the RSSI to the minimum (0x3ff)
-        int strength = 0x3ff;
-        synchronized (this) {
-            Iterator i = packetsLeftOver.iterator();
-            while (i.hasNext()) {
-                Radio.Transmission p = (Radio.Transmission)i.next();
-                if (intersect(p, t - sampleTime, t)) strength = 0;
-            }
-            i = packetsThisPeriod.iterator();
-            while (i.hasNext()) {
-                Radio.Transmission p = (Radio.Transmission)i.next();
-                if (intersect(p, t - sampleTime, t)) strength = 0;
-            }
-        }
-
-        return strength;
+        return radioChannel.occupied(t - sampleTime, t) ? 0x0 : 0x3ff;
     }
 
-    private boolean intersect(Radio.Transmission p, long begin, long end) {
-        return p.deliveryTime > begin && p.originTime < end;
+    public byte readChannel(Radio r) {
+        Simulator sim = r.getSimulator();
+        long time = sim.getClock().getCount();
+        synchronizer.waitForNeighbors(time);
+        return (byte)radioChannel.read(time, 8);
     }
-
-    protected synchronized void computeTransmission() {
-
-        // only need to compute the transmission once (per interval)
-        if ( computedTransmission != null ) return;
-
-        long currentTime = nextDeliveryTime;
-
-        int data = 0;
-        int bitsFront = 0, bitsEnd = 0;
-
-        // iterate over all of the packets in the past two intervals
-        Iterator pastIterator = packetsLeftOver.iterator();
-        Iterator curIterator = packetsThisPeriod.iterator();
-        while (true) {
-            Radio.Transmission packet;
-            if (pastIterator.hasNext())
-                packet = (Radio.Transmission)pastIterator.next();
-            else if (curIterator.hasNext())
-                packet = (Radio.Transmission)curIterator.next();
-            else
-                break;
-
-            // NOTE: this calculation assumes MSB first
-            if (currentTime == packet.deliveryTime) {
-                // exact match!
-                data |= packet.data;
-                bitsFront = 8;
-                bitsEnd = 8;
-            } else if (currentTime < packet.deliveryTime) {
-                // end of the packet is sliced off
-                int bitdiffx2 = ((int)(packet.deliveryTime - currentTime)) / bitPeriod2;
-                int bitdiff = (bitdiffx2 + 1) / 2;
-                int bitsE = 8 - bitdiff;
-                if (bitsE > bitsEnd) bitsEnd = bitsE;
-                data |= packet.data >>> bitdiff;
-            } else {
-                // front of packet is sliced off
-                int bitdiffx2 = ((int)(currentTime - packet.deliveryTime)) / bitPeriod2;
-                int bitdiff = (bitdiffx2 + 1) / 2;
-                int bitsF = 8 - bitdiff;
-                if (bitsF > bitsFront) bitsFront = bitsF;
-                data |= packet.data << bitdiff;
-            }
-        }
-
-
-        // finish building the radio packet
-        if (bitsFront + bitsEnd >= 8) {
-            // enough bits were collected to deliver a packet
-            computedTransmission = new Radio.Transmission((byte)data, 0, nextDeliveryTime - bytePeriod);
-            lastDeliveryTime = nextDeliveryTime;
-        } else {
-            // not enough bits were collected to deliver a packet
-            computedTransmission = null;
-        }
-
-
-    }
-
-    protected class DeliveryEvent implements Simulator.Event {
-        public void fire() {
-            SimulatorThread thread = (SimulatorThread)Thread.currentThread();
-            Simulator sim = thread.getSimulator();
-            synchronizer.waitForNeighbors(sim.getClock().getCount());
-            computeTransmission();
-            if ( computedTransmission != null ) {
-                Radio radio = sim.getMicrocontroller().getRadio();
-                radio.receive(computedTransmission);
-                // deliver the transmission to the radio
-            }
-        }
-    }
-
 }

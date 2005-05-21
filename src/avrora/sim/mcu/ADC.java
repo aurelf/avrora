@@ -36,6 +36,7 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
+import avrora.util.StringUtil;
 
 /**
  * The <code>ADC</code> class represents an on-chip device on the ATMega series of microcontroller
@@ -102,12 +103,12 @@ public class ADC extends AtmelInternalDevice {
 
     }
 
-    private int calculateADC() {
+    private int calculateADC(int channel) {
 
         if (ADMUX_reg.singleEndedInput) {
             //return 1;// VIN * 102/ VREG
-            if (connectedDevices[ADMUX_reg.singleInputIndex] != null)
-                return connectedDevices[ADMUX_reg.singleInputIndex].getLevel();
+            if (connectedDevices[channel] != null)
+                return connectedDevices[channel].getLevel();
             else
                 return 0;
         } else {
@@ -208,59 +209,17 @@ public class ADC extends AtmelInternalDevice {
         }
 
         protected void printStatus() {
-            devicePrinter.println("ADC (ADMUX): refs: " + refs + ", adlar: " + adlar + ", mux: " + mux);
+            devicePrinter.println("ADC: refs " + refs + ", adlar " + StringUtil.toBit(adlar) + ", mux: " + mux);
         }
     }
+
 
     /**
      * <code>DataRegister</code> defines the behavior of the ADC's 10-bit data register.
      */
-    // TODO: is this class even necessary?
     protected class DataRegister {
-        public final DataRegister.High high = new DataRegister.High();
-        public final DataRegister.Low low = new DataRegister.Low();
-
-        private class High extends RWRegister {
-            public void write(byte val) {
-                super.write(((byte)(val & 0x3)));
-                if (devicePrinter.enabled) {
-                    devicePrinter.println("ADC (ADCH): " + hex(val));
-                }
-            }
-
-            public void writeBit(int bit, boolean val) {
-                if (bit < 2) super.writeBit(bit, val);
-                if (devicePrinter.enabled) {
-                    devicePrinter.println("ADC (ADCH): " + hex(value));
-                }
-            }
-
-            public byte read() {
-                if (devicePrinter.enabled) {
-                    devicePrinter.println("ADC (ADCH): read " + hex(super.read()));
-                }
-                return super.read();
-            }
-        }
-
-        private class Low extends RWRegister {
-            // TODO: there should be no need for a special class to print out debugging information
-            public byte read() {
-                if (devicePrinter.enabled) {
-                    devicePrinter.println("ADC (ADCL): read " + hex(super.read()));
-                }
-                return super.read();
-            }
-
-            public void write(byte val) {
-                super.write(val);
-                if (devicePrinter.enabled) {
-                    devicePrinter.println("ADC (ADCL): " + hex(value));
-                }
-
-            }
-        }
-
+        public final RWRegister high = new RWRegister();
+        public final RWRegister low = new RWRegister();
     }
 
     static final int[] PRESCALER = {2, 2, 4, 8, 16, 32, 64, 128};
@@ -317,9 +276,20 @@ public class ADC extends AtmelInternalDevice {
         }
 
         protected void printStatus() {
-            devicePrinter.println("ADC (ADCSRA): enable: " + aden + ", start conversion: " + adsc +
-                    ", free running: " + adfr + ", interrupt flag: " + adif + ", interrupt enable: " + adie +
-                    ", prescaler divider: " + prescalerDivider);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("ADC: enabled ");
+            buf.append(StringUtil.toBit(aden));
+            buf.append(", start ");
+            buf.append(StringUtil.toBit(adsc));
+            buf.append(", freerun ");
+            buf.append(StringUtil.toBit(adfr));
+            buf.append(", iflag ");
+            buf.append(StringUtil.toBit(adif));
+            buf.append(", ienable ");
+            buf.append(StringUtil.toBit(adie));
+            buf.append(", divider ");
+            buf.append(prescalerDivider);
+            devicePrinter.println(buf.toString());
         }
 
         boolean firing;
@@ -331,17 +301,22 @@ public class ADC extends AtmelInternalDevice {
         private class Conversion implements Simulator.Event {
             public void fire() {
 
-                if (devicePrinter.enabled) {
-                    devicePrinter.println("ADC: Conversion complete.");
-                }
-
                 writeBit(ADSC, false);
 
                 if (aden) {
-                    write16(calculateADC(), ADC_reg.high, ADC_reg.low);
+                    int channel = ADMUX_reg.singleInputIndex;
+                    int val = calculateADC(channel);
+                    if (devicePrinter.enabled) {
+                        devicePrinter.println("ADC: Conversion completed on channel "+channel+": "+StringUtil.to0xHex(val, 3));
+                    }
+                    write16(val, ADC_reg.high, ADC_reg.low);
                     if (adie) {
                         writeBit(ADIF, true);
                         interpreter.postInterrupt(22);
+                    }
+                } else {
+                    if (devicePrinter.enabled) {
+                        devicePrinter.println("ADC: Conversion completed, ADEN = false");
                     }
                 }
             }

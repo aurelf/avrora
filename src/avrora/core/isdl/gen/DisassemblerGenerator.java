@@ -439,7 +439,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             int low_bit = nativeBitOrder(right_bit);
             int mask = Arithmetic.getBitRangeMask(low_bit, high_bit);
             printer.println("// get value of bits logical["+left_bit+":"+right_bit+"]");
-            printer.println("int value = (word1 >> "+low_bit+") & 0x"+StringUtil.toHex(mask, 5)+";");
+            printer.println("int value = (word1 >> "+low_bit+") & "+StringUtil.to0xHex(mask, 5)+";");
             printer.startblock("switch ( value )");
 
             Iterator i = children.keySet().iterator();
@@ -447,7 +447,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             while ( i.hasNext() ) {
                 Integer value = (Integer)i.next();
                 int val = value.intValue();
-                printer.print("case 0x"+StringUtil.toHex(val, 5)+": ");
+                printer.print("case "+StringUtil.to0xHex(val, 5)+": ");
                 DecodingTree child = (DecodingTree)children.get(value);
                 printer.println("return "+child.methodname+"(word1);");
             }
@@ -490,7 +490,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
             if ( check ) {
                 // generate a check on the left over bits to verify they match this encoding.
-                printer.startblock("if ( (word1 & 0x"+StringUtil.toHex(mask, 5)+") != 0x"+StringUtil.toHex(value, 5)+" )");
+                printer.startblock("if ( (word1 & "+StringUtil.to0xHex(mask, 5)+") != "+StringUtil.to0xHex(value, 5)+" )");
                 returnNull();
                 printer.endblock();
             }
@@ -706,9 +706,9 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         int word = 1 + (left_bit / WORD_SIZE);
 
         if ( low_bit > 0 )
-            printer.print("((word"+word+" >> "+low_bit+") & 0x"+StringUtil.toHex(mask, 5)+")");
+            printer.print("((word"+word+" >> "+low_bit+") & "+StringUtil.to0xHex(mask, 5)+")");
         else
-            printer.print("(word"+word+" & 0x"+StringUtil.toHex(mask, 5)+")");
+            printer.print("(word"+word+" & "+StringUtil.to0xHex(mask, 5)+")");
     }
 
     private int nativeBitOrder(int bit) {

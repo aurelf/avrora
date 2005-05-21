@@ -74,4 +74,6 @@ public interface RadioAir {
      * @return an integer value representing the received signal strength indicator
      */
     public int sampleRSSI(Radio r);
+
+    public byte readChannel(Radio r);
 }

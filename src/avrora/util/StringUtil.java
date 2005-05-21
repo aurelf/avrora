@@ -64,7 +64,7 @@ public class StringUtil {
      * @return a standard string representation of the address
      */
     public static String addrToString(int address) {
-        return "0x" + toHex(address, 4);
+        return to0xHex(address, 4);
     }
 
     public static String readIdentifier(CharacterIterator i) {
@@ -441,13 +441,25 @@ public class StringUtil {
      */
     public static String toHex(long value, int width) {
         char result[] = new char[width];
+        return convertToHex(value, width, 0, result);
+    }
 
+    private static String convertToHex(long value, int width, int start, char[] result) {
         if (value > (long)1 << width * 4) return Long.toHexString(value).toUpperCase();
 
-        for (int cntr = 0; cntr < width; cntr++)
-            result[width - cntr - 1] = HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf];
+        int i = start + width - 1;
+        for (int cntr = 0; cntr < width; cntr++) {
+            result[i - cntr] = HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf];
+        }
 
         return new String(result);
+    }
+
+    public static String to0xHex(long value, int width) {
+        char result[] = new char[width+2];
+        result[0] = '0';
+        result[1] = 'x';
+        return convertToHex(value, width, 2, result);
     }
 
     public static String toBin(long value, int width) {
@@ -465,7 +477,7 @@ public class StringUtil {
             return;
         }
 
-        for (int cntr = 0; cntr < width; cntr++)
+        for (int cntr = width - 1; cntr >= 0; cntr--)
             buf.append(HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf]);
     }
 
@@ -797,5 +809,9 @@ public class StringUtil {
                     buf.append(SQUOTE);
                 }
         }
+    }
+
+    public static char toBit(boolean f) {
+        return f ? '1' : '0';
     }
 }

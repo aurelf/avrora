@@ -37,7 +37,8 @@ import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.State;
 import avrora.sim.radio.Radio;
-import avrora.sim.clock.GlobalClock;
+import avrora.sim.clock.Synchronizer;
+import avrora.sim.clock.StepSynchronizer;
 import avrora.sim.mcu.Microcontroller;
 
 import java.util.Iterator;
@@ -57,9 +58,8 @@ public class PinConnect {
         pinConnect = new PinConnect();
     }
 
-
-    private final PinMeet pinMeet;
-    protected final PinClock pinClock;
+    private final PinEvent pinEvent;
+    private final Synchronizer synchronizer;
 
     // List of all the pin relationships
     protected LinkedList pinNodes;
@@ -69,8 +69,8 @@ public class PinConnect {
         // period = 1
         pinNodes = new LinkedList();
         pinConnections = new LinkedList();
-        pinMeet = new PinMeet(1);
-        pinClock = new PinClock(1);
+        pinEvent = new PinEvent();
+        synchronizer = new StepSynchronizer(pinEvent);
     }
 
     public void addSeresNode(Microcontroller mcu, PinWire northTx, PinWire eastTx,
@@ -103,9 +103,7 @@ public class PinConnect {
                 p.addSimulatorThread(simThread);
 
                 // add simulator thread to PinClock and PinMeet
-                pinClock.add(simThread);
-                pinMeet.setGoal(pinClock.getNumberOfThreads());
-
+                synchronizer.addNode(simThread);
             }
         }
     }
@@ -301,23 +299,8 @@ public class PinConnect {
         }
     }
 
-
-    protected class PinMeet extends GlobalClock.Ticker {
-
-        PinMeet(long p) {
-            super(p);
-        }
-
-        public void serialAction() {
-            // the last thread is responsible for propagating the signals between pins
-            propagateSignals();
-        }
-
-        protected void setGoal(int goal) {
-            this.goal = goal;
-        }
-
-        private void propagateSignals() {
+    protected class PinEvent implements Simulator.Event {
+        public void fire() {
             // iterator over PinLinks
             Iterator i = pinConnections.iterator();
 
@@ -328,17 +311,4 @@ public class PinConnect {
             }
         }
     }
-
-    /**
-     * An extended version of <code>GlobalClock</code> that implements a version of <code>LocalMeet</code>
-     * that is appropriate for propagation of electrical signals.
-     */
-    protected class PinClock extends GlobalClock {
-        protected PinClock(long p) {
-            super(p, pinMeet);
-        }
-
-    }
-
-
 }

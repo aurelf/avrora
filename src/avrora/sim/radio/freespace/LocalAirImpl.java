@@ -40,6 +40,7 @@ import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.radio.Radio;
+import avrora.sim.radio.Channel;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -56,20 +57,11 @@ public class LocalAirImpl {
     private final LinkedList neighbors;
     //position of this node
     private final Position position;
-    //delivery of the packets
-    private final Deliver deliver;
-    //received packet list
-    private LinkedList packets;
-    //first received packet -> earliest packet
-    private Radio.Transmission firstPacket;
-    //the strongest packet -> highest signal strength
-    private PowerRadioPacket finalPacket;
     //the radio sending and receiving from this air
     private final Radio radio;
 
-    // state for maintaining meeting of threads for delivery
-    private long lastDeliveryTime;
-    private long nextDeliveryTime;
+    private final Channel radioChannel;
+
     //some radio const
     public static final int sampleTime = 13 * 64;
     public static final int bytePeriod = Radio.TRANSFER_TIME;
@@ -85,9 +77,8 @@ public class LocalAirImpl {
     public LocalAirImpl(Radio r, Position pos, Synchronizer synch) {
         position = pos;
         neighbors = new LinkedList();
-        packets = new LinkedList();
-        deliver = new Deliver();
         radio = r;
+        radioChannel = new Channel(8, bytePeriod, true);
         synchronizer = synch;
     }
 
@@ -170,14 +161,7 @@ public class LocalAirImpl {
      *
      */
     public synchronized void addPacket(Radio.Transmission p, double pow, Radio sender) {
-        packets.addLast(new PowerRadioPacket(p, pow, sender));
-        //find the earliest packet
-        if (firstPacket == null) {
-            firstPacket = p;
-        } else if (p.originTime < firstPacket.originTime) {
-            firstPacket = p;
-        }
-
+        radioChannel.write(p.data, 8, p.originTime);
     }
 
 
@@ -185,148 +169,18 @@ public class LocalAirImpl {
      * compute signal strength bases on @see avrora.sim.radio.SimpleAir#sampleRSSI(long) by Daniel Lee
      *
      */
-    public int sampleRSSI(long cycles) {
-        int strength = 0x3ff;
-        Iterator i = packets.iterator();
-        //see whether there are packets around
-        //if so, set strength to 0 (it works inverted)
-        while (i.hasNext()) {
-            Radio.Transmission p = ((PowerRadioPacket)i.next()).packet;
-            if (p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles) strength = 0;
-        }
-        //TODO: hmm... do I really need the lines
-        //this packet shall be included in the while loop
-        if (finalPacket != null && finalPacket.packet != null) {
-            Radio.Transmission p = finalPacket.packet;
-            if (p.deliveryTime > (cycles - sampleTime) && p.originTime < cycles) strength = 0;
-        }
-        return strength;
+    public int sampleRSSI(long gtime) {
+        synchronizer.waitForNeighbors(gtime);
+        return radioChannel.occupied(gtime - sampleTime, gtime) ? 0x0 : 0x3ff;
     }
 
-    /**
-     * schedule a packet for delivery
-     *
-     */
-    public void scheduleDelivery(long globalTime) {
-        long deliveryDelta;
-        //when there is at least one packet to deliver, find the right one 
-        //and the delivery time
-        if (firstPacket != null) {
-            deliveryDelta = computeNextDelivery(globalTime);
-            firstPacket = null;
-        } else {
-            deliveryDelta = 0;
-        }
-        //when there is a packet to deliver, do so...
-        if (deliveryDelta > 0) {
-            radio.getSimulator().insertEvent(deliver, deliveryDelta);
-        }
+    public void advanceChannel() {
+        radioChannel.advance();
     }
 
-    /**
-     * find the right packet to deliver
-     *
-     * @param globalTime current time
-     * @return time to deliver
-     */
-    protected long computeNextDelivery(long globalTime) {
-
-        long limit = lastDeliveryTime;
-
-        if (lastDeliveryTime > globalTime - bytePeriod) {
-            // there was a byte delivered in the period just finished
-            limit += bytePeriod;
-        }
-
-        finalPacket = null;
-
-        //iterate over all of the packets
-        Iterator it = packets.iterator();
-        packets = new LinkedList();
-        while (it.hasNext()) {
-            PowerRadioPacket packet = (PowerRadioPacket)it.next();            
-            //check, whether packet maybe delivered
-            if (packet.packet.deliveryTime >= limit) {
-                if (finalPacket == null)
-                    finalPacket = packet;
-                // find the strongest packet
-                else if (packet.power > finalPacket.power)
-                    finalPacket = packet;
-            }
-        }
-        if (finalPacket == null)
-            return 0;
-        nextDeliveryTime = finalPacket.packet.deliveryTime;
-        return nextDeliveryTime - globalTime;
-    }
-
-    /**
-     * handles the final delivery to the radio
-     *
-     * @author Olaf Landsiedel
-     */
-    protected class Deliver implements Simulator.Event {
-
-        /**
-         * it is time for a delivery
-         *
-         * @see avrora.sim.Simulator.Event#fire()
-         */
-        public void fire() {
-            SimulatorThread thread = (SimulatorThread)Thread.currentThread();
-            Simulator sim = thread.getSimulator();
-            synchronizer.waitForNeighbors(sim.getClock().getCount());
-            if (finalPacket != null) {
-                lastDeliveryTime = finalPacket.packet.deliveryTime;
-                radio.receive(finalPacket.packet);
-            }
-
-        }
-    }
-
-    /**
-     * class to model a packet and transmission power
-     *
-     * @author Olaf Landsiedel
-     */
-    public static class PowerRadioPacket {
-
-        //radio packet
-        protected final Radio.Transmission packet;
-        //transmission power
-        protected final double power;
-
-        protected final Radio sender;
-
-        /**
-         * new packet
-         *
-         * @param p   packet
-         * @param pow transmission power
-         */
-        public PowerRadioPacket(Radio.Transmission p, double pow, Radio s) {
-            this.packet = p;
-            this.power = pow;
-            this.sender = s;
-        }
-
-
-        /**
-         * get the radio packet
-         *
-         * @return radio packet
-         */
-        public Radio.Transmission getRadioPacket() {
-            return packet;
-        }
-
-        /**
-         * get the transmission power
-         *
-         * @return power
-         */
-        public double getPower() {
-            return power;
-        }
+    public byte readChannel() {
+        long ltime = radio.getSimulator().getClock().getCount();
+        synchronizer.waitForNeighbors(ltime);
+        return (byte)radioChannel.read(ltime, 8);
     }
 }

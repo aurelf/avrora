@@ -84,6 +84,7 @@ public class TraceMonitor extends MonitorFactory {
 
         public class StartProbe extends Simulator.Probe.Empty {
             int start, end;
+            int traceNum;
             String pair;
 
             StartProbe(int s, int e) {
@@ -92,17 +93,15 @@ public class TraceMonitor extends MonitorFactory {
                 pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
             }
 
-            // TODO: is this field hiding correct?
-            int count;
 
             public void fireBefore(State s, int addr) {
-                count++;
+                traceNum++;
                 if ( nesting == 0 ) {
-                    print("trace ("+pair+") begin: "+count+" --------------------------");
+                    print("trace ("+pair+") begin: "+traceNum+" --------------------------");
                     print(s, s.getInstr(addr));
                     simulator.insertProbe(PROBE);
                 } else {
-                    print("nested ("+pair+") begin: "+count+" --------------------------");
+                    print("nested ("+pair+") begin: "+traceNum+" --------------------------");
                 }
                 nesting++;
             }
@@ -130,13 +129,18 @@ public class TraceMonitor extends MonitorFactory {
             }
         }
 
+        int nextPc;
+
         private void print(State s, Instr i) {
             String idstr = simulator.getIDTimeString();
             Terminal.print(idstr);
-            Terminal.printBrightCyan(StringUtil.toHex(s.getPC(), 4) + ": ");
-            Terminal.printBrightBlue(i.getVariant() + ' ');
+            int pc = s.getPC();
+            int color = pc == nextPc ? Terminal.COLOR_BLUE : Terminal.COLOR_RED;
+            Terminal.printBrightCyan(StringUtil.toHex(pc, 4) + ": ");
+            Terminal.print(color, i.getVariant() + ' ');
             Terminal.print(i.getOperands());
             Terminal.nextln();
+            nextPc = pc + i.getSize();
         }
 
         private void print(String s) {

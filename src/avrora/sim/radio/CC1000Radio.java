@@ -126,8 +126,6 @@ public class CC1000Radio implements Radio {
 
     FrequencyRegister currentFrequencyRegister;
 
-    private final LinkedList receivedBuffer = new LinkedList();
-
     //the energy recording for this node
     private Energy energy;
 
@@ -155,7 +153,7 @@ public class CC1000Radio implements Radio {
      * radio is transmitting over when data is to be received.
      */
     public void receive(Radio.Transmission packet) {
-        receivedBuffer.addLast(packet);
+        throw Avrora.unimplemented();
     }
 
     /**
@@ -310,9 +308,8 @@ public class CC1000Radio implements Radio {
 
         protected abstract void decode(byte val);
 
-
         protected void printStatus() {
-            radioPrinter.println("CC1000[" + id + "]: ...");
+            // default: do nothing
         }
 
         protected void reset() {
@@ -442,10 +439,25 @@ public class CC1000Radio implements Radio {
         protected void printStatus() {
             String rxtxS = rxtx ? "TX" : "RX";
             String fRegS = fReg ? "B" : "A";
+            StringBuffer buf = new StringBuffer(100);
 
-            radioPrinter.println("CC1000[MAIN]: " + rxtxS + ", frequency register: " + fRegS + ", rx powerdown: "
-                    + rxPd + ", tx powerdown: " + txPd + ", fs powerdown: " + fsPd + ", core powerdown: "
-                    + corePd + ", bias powerdown: " + biasPd + ", reset: " + resetN);
+            buf.append("CC1000[MAIN]: ");
+            buf.append(rxtxS);
+            buf.append(", freg: ");
+            buf.append(fRegS);
+            buf.append(", rx pd: ");
+            buf.append(StringUtil.toBit(rxPd));
+            buf.append(", tx pd: ");
+            buf.append(StringUtil.toBit(txPd));
+            buf.append(", fs pd: ");
+            buf.append(StringUtil.toBit(fsPd));
+            buf.append(", core pd: ");
+            buf.append(StringUtil.toBit(corePd));
+            buf.append(", bias pd: ");
+            buf.append(StringUtil.toBit(biasPd));
+            buf.append(", reset: ");
+            buf.append(StringUtil.toBit(resetN));
+            radioPrinter.println(buf.toString());
         }
 
     }
@@ -565,7 +577,7 @@ public class CC1000Radio implements Radio {
 
         protected void printStatus() {
             radioPrinter.println("CC1000[CURRENT]: vco current: " + vcoCurrent + ", LO drive: " + loDrive
-                    + ", PA drive:" + paDrive);
+                    + ", PA drive: " + paDrive);
         }
     }
 
@@ -704,9 +716,18 @@ public class CC1000Radio implements Radio {
 
 
         protected void printStatus() {
-            radioPrinter.println("CC1000[LOCK]: lock select: " + LOCK_SELECT[lockSelect] + ", sets lock threshold: "
-                    + setsLockThreshold + ", reset lock threshold: " + resetLockThreshold +
-                    ", lock instant: " + lockInstant + ", lockContinuous: " + lockContinuous);
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("CC1000[LOCK]: lock select: ");
+            buf.append(LOCK_SELECT[lockSelect]);
+            buf.append(", set thr: ");
+            buf.append(setsLockThreshold);
+            buf.append(", reset thr: ");
+            buf.append(resetLockThreshold);
+            buf.append(", inst: ");
+            buf.append(StringUtil.toBit(lockInstant));
+            buf.append(", contin: ");
+            buf.append(StringUtil.toBit(lockContinuous));
+            radioPrinter.println(buf.toString());
         }
 
         public byte read() {
@@ -768,9 +789,20 @@ public class CC1000Radio implements Radio {
         }
 
         protected void printStatus() {
-            radioPrinter.println("CC1000[CAL]: cal start: " + calStart + ", cal dual: " + calDual +
-                    ", cal wait: " + calWait + ", cal current: " + calCurrent + ", calComplete: " + calComplete +
-                    ", cal iterate: " + calIterate + " ... " + sim.getState().getCycles());
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("CC1000[CAL]: cal start: ");
+            buf.append(StringUtil.toBit(calStart));
+            buf.append(", dual: ");
+            buf.append(StringUtil.toBit(calDual));
+            buf.append(", wait: ");
+            buf.append(StringUtil.toBit(calWait));
+            buf.append(", current: ");
+            buf.append(StringUtil.toBit(calCurrent));
+            buf.append(", complete: ");
+            buf.append(StringUtil.toBit(calComplete));
+            buf.append(", iterate: ");
+            buf.append(calIterate);
+            radioPrinter.println(buf.toString());
         }
 
         /** */
@@ -1016,17 +1048,15 @@ public class CC1000Radio implements Radio {
          * is in a transmission state, this should be the next frame sent into the air.
          */
         public void receiveFrame(SPI.Frame frame) {
-            if (printer.enabled) {
-                printer.println("CC1000: received "+StringUtil.toMultirepString(frame.data, 8)+" from SPI");
-            }
 
             // data, frequency, origination
             if (!MAIN_reg.txPd && MAIN_reg.rxtx) {
-                if (printer.enabled) {
-                    printer.println("CC1000: beginning transmit of "+StringUtil.toMultirepString(frame.data, 8));
-                }
                 long currentTime = sim.getState().getCycles();
                 new Transmit(new Transmission(frame.data, 0, currentTime));
+            } else {
+                if (printer.enabled) {
+                    printer.println("CC1000: discarding "+StringUtil.toMultirepString(frame.data, 8)+" from SPI");
+                }
             }
 
         }
@@ -1043,6 +1073,9 @@ public class CC1000Radio implements Radio {
             }
 
             public void fire() {
+                if (printer.enabled) {
+                    printer.println("CC1000: transmitting "+StringUtil.toMultirepString(packet.data, 8));
+                }
                 transmit(packet);
             }
         }
@@ -1056,17 +1089,12 @@ public class CC1000Radio implements Radio {
 
             if (MAIN_reg.rxtx && MAIN_reg.txPd) {
                 frame = SPI.ZERO_FRAME;
-            } else if (!receivedBuffer.isEmpty()) {
-                Radio.Transmission receivedPacket = (Radio.Transmission)receivedBuffer.removeFirst();
-                packetsRx++;
-                // Apparently TinyOS expects received data to be inverted
-                byte data = MAIN_reg.rxtx ? receivedPacket.data : (byte)~receivedPacket.data;
+            } else {
+                byte data = air != null ? air.readChannel(CC1000Radio.this) : 0;
                 frame = SPI.newFrame(data);
                 if (printer.enabled) {
-                    printer.println("CC1000: received " + StringUtil.toMultirepString(frame.data, 8)+", sending back to SPI");
+                    printer.println("CC1000: received " + StringUtil.toMultirepString(frame.data, 8));
                 }
-            } else {
-                frame = SPI.ZERO_FRAME;
             }
 
             return frame;
@@ -1163,7 +1191,11 @@ public class CC1000Radio implements Radio {
         }
 
         public boolean isListening() {
-            return activated && receiving;
+            boolean listening = activated && receiving;
+            if (radioPrinter.enabled) {
+                radioPrinter.println("CC1000: Listening? "+listening);
+            }
+            return listening;
         }
     }
 

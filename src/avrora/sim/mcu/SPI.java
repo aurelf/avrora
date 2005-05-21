@@ -37,6 +37,7 @@ import avrora.sim.State;
 import avrora.sim.ActiveRegister;
 import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
+import avrora.util.StringUtil;
 
 /**
  * Serial Peripheral Interface. Used on the <code>Mica2</code> platform for radio communication.
@@ -224,7 +225,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
             public byte read() {
                 byte val = super.read();
                 if (devicePrinter.enabled)
-                    devicePrinter.println("SPI: read " + hex(val) + " from SPDR ");
+                    devicePrinter.println("SPI: read " + StringUtil.toMultirepString(val, 8) + " from SPDR ");
                 return val;
 
             }
@@ -242,7 +243,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
 
             public void write(byte val) {
                 if (devicePrinter.enabled && oldData != val)
-                    devicePrinter.println("SPI: wrote " + Integer.toHexString(0xff & val) + " to SPDR");
+                    devicePrinter.println("SPI: wrote " + StringUtil.toMultirepString(val, 8) + " to SPDR");
                 super.write(val);
                 oldData = val;
 
@@ -325,7 +326,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
 
         public void write(byte val) {
             if (devicePrinter.enabled)
-                devicePrinter.println("SPI: wrote " + hex(val) + " to SPCR");
+                devicePrinter.println("SPI: wrote " + StringUtil.toMultirepString(val, 8) + " to SPCR");
             super.write(val);
             decode(val);
 
@@ -400,7 +401,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
             if (!Arithmetic.getBit(oldVal, SPI) && Arithmetic.getBit(val, SPI) && SPCR_reg.readBit(SPI)) {
                 postSPIInterrupt();
             }
-            // TODO: write COLlision
+            // TODO: handle write collisions
 
             SPI2x = Arithmetic.getBit(value, 0);
             oldVal = val;

@@ -101,7 +101,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
 
         protected void outputImm(Generator g, int val, OperandDecl.Immediate imm, HashSet hs, int cntr, String[] rep) {
             if ( val <= imm.high && val >= imm.low ) {
-                String value = "0x"+StringUtil.toHex(val,2);
+                String value = StringUtil.to0xHex(val,2);
                 if ( !hs.contains(value)) {
                     g.output(cntr, value, rep);
                     hs.add(value);
@@ -112,7 +112,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
         String getSomeMember(OperandDecl decl) {
             OperandDecl.Immediate imm = (OperandDecl.Immediate)decl;
             // return the average value
-            return "0x"+StringUtil.toHex((imm.low+((imm.high-imm.low)/2)), 2);
+            return StringUtil.to0xHex((imm.low+((imm.high-imm.low)/2)), 2);
         }
     }
 
@@ -137,7 +137,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
         protected void outputImm(Generator g, int val, OperandDecl.Immediate imm, HashSet hs, int cntr, String[] rep) {
             if ( val <= imm.high && val >= imm.low ) {
                 val = val * 2;
-                String value = "0x"+StringUtil.toHex(val,2);
+                String value = StringUtil.to0xHex(val,2);
                 if ( !hs.contains(value)) {
                     g.output(cntr, value, rep);
                     hs.add(value);
@@ -149,7 +149,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             OperandDecl.Immediate imm = (OperandDecl.Immediate)decl;
             // return the average value
             int avg = (imm.low+((imm.high-imm.low)/2));
-            return "0x"+StringUtil.toHex(avg * 2, 2);
+            return StringUtil.to0xHex(avg * 2, 2);
         }
     }
 

@@ -110,7 +110,7 @@ public class FreeSpaceAir implements RadioAir {
             while (it.hasNext()) {
                 Radio r = (Radio)it.next();
                 LocalAirImpl pr = getLocalAir(r);
-                pr.scheduleDelivery(globalTime);
+                pr.advanceChannel();
             }
         }
     }
@@ -206,5 +206,8 @@ public class FreeSpaceAir implements RadioAir {
         }
     }
 
-
+    public byte readChannel(Radio r) {
+        LocalAirImpl lair = getLocalAir(r);
+        return lair.readChannel();
+    }
 }

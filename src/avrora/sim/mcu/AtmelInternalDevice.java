@@ -91,13 +91,6 @@ public abstract class AtmelInternalDevice {
         low.write((byte)(val & 0x00ff));
     }
 
-    /**
-     * Helper function to get a hex string representation of a byte.
-     */
-    protected static String hex(byte val) {
-        return Integer.toHexString(0xff & val);
-    }
-
     public Clock getClock() {
         return mainClock;
     }

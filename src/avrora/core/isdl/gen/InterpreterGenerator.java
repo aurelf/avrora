@@ -338,7 +338,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     }
 
     protected String andString(int mask) {
-        return " & 0x" + StringUtil.toHex(mask, 8);
+        return " & " + StringUtil.to0xHex(mask, 8);
     }
 
     protected void emitAnd(Expr e, int val) {
@@ -393,7 +393,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         if (low != 0) {
             printer.print("(");
             emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
-            printer.print(" & 0x" + StringUtil.toHex(mask, 8) + ')');
+            printer.print(" & " + StringUtil.to0xHex(mask, 8) + ')');
         } else {
             emitAnd(e.operand, mask);
         }

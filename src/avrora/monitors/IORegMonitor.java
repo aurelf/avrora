@@ -79,7 +79,7 @@ public class IORegMonitor extends MonitorFactory {
             int size = props.ioreg_size;
             for ( int cntr = 0; cntr < size; cntr++ ) {
                 String name = props.getIORegName(cntr);
-                if ( name == null ) name = "0x"+StringUtil.toHex(cntr,2);
+                if ( name == null ) name = StringUtil.to0xHex(cntr,2);
                 s.insertIORWatch(new Watch(name), cntr);
             }
         }
