@@ -18,4 +18,5 @@ result {
   104 B.before;
   104 C.beforeWrite;
   104 C.afterWrite;
+  106 B.after;
 }

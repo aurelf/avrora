@@ -102,6 +102,9 @@ public class GDBServer extends MonitorFactory {
             }
             // insert the startup probe at the beginning of the program
             simulator.insertProbe(new StartupProbe(), 0);
+
+            // install the ExceptionWatch
+            simulator.insertExceptionWatch(new ExceptionWatch());
         }
 
         public void report() {
@@ -208,7 +211,7 @@ public class GDBServer extends MonitorFactory {
                 case 'p':
                     // READ SELECTED REGISTERS
                     readOneRegister(i);
-                    break;
+                    return false;
                 case 'P':
                     // WRITE SELECTED REGISTERS
                     // TODO: implement writes to selected registers
@@ -331,10 +334,10 @@ public class GDBServer extends MonitorFactory {
 
         private void appendPC(State s, StringBuffer buf) {
             int pc = s.getPC();
-            buf.append(StringUtil.toHex(pc, 2));
-            buf.append(StringUtil.toHex(pc >> 8, 2));
-            buf.append(StringUtil.toHex(pc >> 16, 2));
-            buf.append(StringUtil.toHex(pc >> 24, 2));
+            buf.append(StringUtil.toHex(pc & 0xff, 2));
+            buf.append(StringUtil.toHex((pc >> 8) & 0xff, 2));
+            buf.append(StringUtil.toHex((pc >> 16) & 0xff, 2));
+            buf.append(StringUtil.toHex((pc >> 24) & 0xff, 2));
         }
 
         private void appendSP(State s, StringBuffer buf) {
@@ -478,6 +481,31 @@ public class GDBServer extends MonitorFactory {
                         return buf.toString();
                     }
                 }
+        }
+
+        /**
+         * The <code>ExceptionWatch</code> halts execution and signals GDB when an exceptional event occurs.
+         *
+         * @author Jey Kottalam (kottalam@cs.ucdavis.edu)
+         */
+        protected class ExceptionWatch implements Simulator.ExceptionWatch {
+            public void invalidRead(String segment, int address) {
+                if(printer.enabled) {
+                    printer.println("GDB caught invalid read of " + segment + " at " + address);
+                }
+
+                // send a SIGSEGV and halt execution
+                commandLoop("T11");
+            }
+
+            public void invalidWrite(String segment, int address, byte value) {
+                if(printer.enabled) {
+                    printer.println("GDB caught invalid write of " + segment + " at " + address + " value " + value);
+                }
+
+                // send a SIGSEGV and halt execution
+                commandLoop("T11");
+            }
         }
 
         /**

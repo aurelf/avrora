@@ -234,6 +234,34 @@ public class Simulator {
     }
 
     /**
+     * The <code>Simulator.ExceptionWatch</code> interface allows for monitoring of exceptional conditions
+     * in the machine state. Events such as memory access violations, (insert other exception types here), may
+     * be caught and handled.
+     *
+     * @author Jey Kottalam (kottalam@cs.ucdavis.edu)
+     */
+    public interface ExceptionWatch {
+        /**
+         * The <code>invalidRead()</code> method is invoked when an instruction attempts to read from
+         * an out-of-bounds memory location.
+         *
+         * @param segment The segment the instruction attempted to read from.
+         * @param address The address within the segment of the attempted read.
+         */
+        public void invalidRead(String segment, int address);
+
+        /**
+         * The <code>invalidWrite()</code> method is invoked when an instruction attempts to write to
+         * a read-only or out-of-bounds memory location.
+         *
+         * @param segment The segment the instruction attempted to write into.
+         * @param address The address within the segment of the disallowed write.
+         * @param value   The value the instruction attempted to write.
+         */
+        public void invalidWrite(String segment, int address, byte value);
+    }
+
+    /**
      * The <code>Simulator.Probe</code> interface represents a programmer-defined probe that can be inserted
      * at a particular instruction in the program. or at every instruction. Probes can be usedfor profiling,
      * analysis, or program understanding. The <code>fireBefore()</code> and <code>fireAfter()</code> methods
@@ -798,6 +826,14 @@ public class Simulator {
     }
 
 
+    /**
+     * The <code>insertExceptionWatch()</code> method registers an <code>ExceptionWatch</code> instance.
+     *
+     * @param watch The <code>ExceptionWatch</code> instance.
+     */
+    public void insertExceptionWatch(ExceptionWatch watch) {
+        interpreter.insertExceptionWatch(watch);
+    }
 
     /**
      * The <code>delay()</code> method introduces a delay in the execution of the instructions of the program.

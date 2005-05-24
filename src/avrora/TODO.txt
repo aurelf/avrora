@@ -18,6 +18,8 @@
     1   devs  USART frame sizes
     2   devs  Fix interrupt mappings for devices on ATMega32
 
+    1  probe  Fixed TransactionalList and related probe tests       (1.5.85)
+    1  probe  Various bugfixes to GDB server by Jey Kottalam        (1.5.85)
     1  radio  SimpleAir.removeRadio() does not wake remaining nodes (1.5.81)
     1    sim  Fixed RSSI livelock problem in Freespace radio        (1.5.80)
     1    sim  Fixed dynamic code update problem                     (1.5.78)
@@ -56,6 +58,7 @@
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+    2  probe  Jey Kottalam added probing for invalid mem accesses   (1.5.85)
     2  stack  Added first version of ISE abstract interpreter       (1.5.79)
     2    sim  Added interrupt scheduling patch from John Regehr     (1.5.77)
     1    sim  Started work on ATMega32 device                       (1.5.69)
@@ -90,6 +93,8 @@
     3    sim  Implement one thread per processor model
     1   util  migrate to StringUtil.*
     1  probe  migrate to SourceMapping, remove Program.Location
+    2    sim  Move sram representation to use a Segment
+    2  probe  Collapse ExceptionWatch with Watch for all segments  
 
   2-3  radio  Separate synch mechanism from Radio implementation    (1.5.83)
     1    sim  Renamed Radio.RadioPacket to Radio.Transmission       (1.5.76)
@@ -136,6 +141,7 @@
     2    sim  Sleep modes
     1    sim  Probes for skip instructions (instr. size calculation)
 
+    1  probe  Fixed probe testcases to reflect transactional list   (1.5.85)
     2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
 
 ======================== O P T I M I Z A T I O N S ==========================

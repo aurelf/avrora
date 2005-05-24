@@ -35,6 +35,7 @@ package avrora.sim;
 import avrora.Avrora;
 import avrora.core.*;
 import avrora.sim.util.MulticastProbe;
+import avrora.sim.util.MulticastExceptionWatch;
 import avrora.sim.util.MulticastWatch;
 import avrora.sim.util.MulticastIORWatch;
 import avrora.sim.mcu.MicrocontrollerProperties;
@@ -80,6 +81,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * instruction.
      */
     protected final MulticastProbe globalProbe;
+
+    /**
+     * The <code>exceptionWatch</code> stores a reference to a <code>MulticastExceptionWatch</code>
+     * that contains all of the exception watches currently registered.
+     */
+    protected MulticastExceptionWatch exceptionWatch;
 
     /**
      * The <code>innerLoop</code> field is a boolean that is used internally in the implementation of the
@@ -269,6 +276,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         Compiler.compileClass(this.getClass());
 
         globalProbe = new MulticastProbe();
+        exceptionWatch = new MulticastExceptionWatch();
 
         // set up the reference to the simulator
         this.simulator = simulator;
@@ -346,6 +354,16 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected void insertProbe(Simulator.Probe p, int addr) {
         flash.insertProbe(addr, p);
+    }
+
+    /**
+     * The <code>insertExceptionWatch()</code> method registers an </code>ExceptionWatch</code> to listen for
+     * exceptional conditions in the machine.
+     *
+     * @param watch The <code>ExceptionWatch</code> instance to add.
+     */
+    public void insertExceptionWatch(Simulator.ExceptionWatch watch) {
+        exceptionWatch.add(watch);
     }
 
     /**
@@ -536,6 +554,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             Terminal.print(idstr);
             Terminal.printYellow(StringUtil.toHex(pc, 4));
             Terminal.println(": illegal read from " + segment.name + " at address " + StringUtil.addrToString(address));
+            exceptionWatch.invalidRead(segment.name, address);
             return segment.value;
         }
 
@@ -544,6 +563,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
             Terminal.print(idstr);
             Terminal.printYellow(StringUtil.toHex(pc, 4));
             Terminal.println(": illegal write to " + segment.name + " at address " + StringUtil.addrToString(address));
+            exceptionWatch.invalidWrite(segment.name, address, value);
         }
     }
 
@@ -552,13 +572,15 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
         Terminal.println(": illegal read from " + segment + " at address " + StringUtil.addrToString(address));
+        exceptionWatch.invalidRead(segment, address);
     }
 
-    private void writeError(String segment, int address) {
+    private void writeError(String segment, int address, byte value) {
         String idstr = simulator.getIDTimeString();
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
         Terminal.println(": illegal write to " + segment + " at address " + StringUtil.addrToString(address));
+        exceptionWatch.invalidWrite(segment, address, value);
     }
 
     private byte getSRAM(int address) {
@@ -710,7 +732,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
                 return;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            writeError("sram", address);
+            writeError("sram", address, val);
             return;
         }
 

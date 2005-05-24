@@ -11,4 +11,5 @@ main {
 
 result {
   0 A.before;
+  1 A.after;
 }

@@ -13,6 +13,7 @@ main {
 
 result {
   0 A.before;
+  0 B.before;
   1 A.after;
   1 B.after;
 }

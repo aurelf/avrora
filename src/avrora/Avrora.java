@@ -33,6 +33,7 @@
 package avrora;
 
 import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 /**
  * The <code>Avrora</code> class contains several utilities relating to exceptions and errors within Avrora.
@@ -91,6 +92,31 @@ public class Avrora {
     }
 
     /**
+     * The <code>Unexpected</code> class wraps an unexpected exception that may happen during
+     * execution. This is useful for a "catch all" type of clause to handle all the possible
+     * exceptions that could happen during execution without having to write explicit handlers
+     * for each.
+     */
+    public static class Unexpected extends Error {
+        public final Throwable thrown;
+
+        public Unexpected(Throwable t) {
+            super(StringUtil.quote(t.getClass()));
+            thrown = t;
+        }
+
+        public void report() {
+            Terminal.print(Terminal.ERROR_COLOR, "Unexpected exception");
+            Terminal.print(": " + param + '\n');
+            thrown.printStackTrace();
+        }
+
+        public void rethrow() throws Throwable {
+            throw thrown;
+        }
+    }
+
+    /**
      * The <code>unimplemented()</code> method is a utility that constructs a
      * <code>InternalError</code> instance. This is called from methods or classes with unimplemented
      * functionality for documentation and fail-fast purposes.
@@ -116,10 +142,10 @@ public class Avrora {
      * so that it can be throw again and reported later. This is useful for code that does IO but does
      * not want to handle IO exceptions, for example.
      * @param t the throwable that was encountered
-     * @return a new instance of the <code>InternalError</code> class that wraps up the thrown exception
+     * @return a new instance of the <code>Unexpected</code> class that wraps up the thrown exception
      */
-    public static InternalError unexpected(Throwable t) {
-        return new InternalError(t.toString());
+    public static Unexpected unexpected(Throwable t) {
+        return new Unexpected(t);
     }
 
     /**

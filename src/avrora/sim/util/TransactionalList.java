@@ -78,7 +78,10 @@ public class TransactionalList {
      * @param b the probe to insert
      */
     public void add(Object b) {
-        if (inTransaction) addTransaction(b, true);
+        if (inTransaction) {
+            addTransaction(b, true);
+            return;
+        }
 
         if (head == null) {
             head = tail = new Link(b);
@@ -96,7 +99,10 @@ public class TransactionalList {
      * @param o the probe to remove
      */
     public void remove(Object o) {
-        if (inTransaction) addTransaction(o, false);
+        if (inTransaction) {
+            addTransaction(o, false);
+            return;
+        }
 
         Link prev = null;
         Link pos = head;
@@ -156,6 +162,7 @@ public class TransactionalList {
      */
     public void endTransaction() {
         if ( !inTransaction ) throw Avrora.failure("double endTransaction() call!");
+        inTransaction = false;
         Link thead = transHead;
         transHead = null;
         transTail = null;
@@ -163,7 +170,6 @@ public class TransactionalList {
             if ( pos.addTransaction ) add(pos.object);
             else remove(pos.object);
         }
-        inTransaction = false;
     }
 
 }

@@ -30,48 +30,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim.util;
+
+import avrora.sim.Simulator;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * An <code>ExceptionWatch</code> implementation which rebroadcasts the events to multiple
+ * <code>ExceptionWatch</code> instances.
  *
- * @author Ben L. Titzer
+ * @author Jey Kottalam (kottalam@cs.ucdavis.edu)
  */
-public class Version {
-
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 85;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
+public class MulticastExceptionWatch extends TransactionalList implements Simulator.ExceptionWatch {
+    public void invalidRead(String segment, int address) {
+        for(Link pos = head; pos != null; pos = pos.next)
+            ((Simulator.ExceptionWatch)pos.object).invalidRead(segment, address);
     }
 
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public void invalidWrite(String segment, int address, byte value) {
+        for(Link pos = head; pos != null; pos = pos.next)
+            ((Simulator.ExceptionWatch)pos.object).invalidWrite(segment, address, value);
     }
 }
+
