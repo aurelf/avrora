@@ -63,7 +63,7 @@ public class SimpleAir implements RadioAir {
 
     protected final IntervalSynchronizer synchronizer;
 
-    private static final int INTERVALS = 10;
+    private static final int INTERVALS = 1;
     private static final int sampleTime = 13 * 64;
     private static final int TRANSFER_TIME = Radio.TRANSFER_TIME;
     private static final int INTERVAL_TIME = TRANSFER_TIME * INTERVALS;
