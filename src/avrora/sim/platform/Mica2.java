@@ -60,6 +60,7 @@ public class Mica2 implements Platform, PlatformFactory {
 
     protected Radio radio;
     protected SensorBoard sensorboard;
+    protected ExternalFlash externalFlash;
 
     public Mica2() {
         mcu = null;
@@ -102,8 +103,10 @@ public class Mica2 implements Platform, PlatformFactory {
 
         // radio
         radio = new CC1000Radio(mcu);
-        //sensor board
+        // sensor board
         sensorboard = new SensorBoard(sim);
+        // external flash
+        // externalFlash = new ExternalFlash(mcu);
     }
 
     /**
