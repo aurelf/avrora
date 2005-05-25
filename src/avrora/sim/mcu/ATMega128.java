@@ -35,6 +35,7 @@ package avrora.sim.mcu;
 import avrora.util.Arithmetic;
 import avrora.sim.radio.Radio;
 import avrora.sim.*;
+import avrora.sim.energy.Energy;
 import avrora.sim.clock.ClockDomain;
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
@@ -371,6 +372,8 @@ public class ATMega128 extends ATMegaFamily {
         MCUCR_reg = getIOReg("MCUCR");
         installPins();
         installDevices();
+        new Energy("CPU", modeAmpere, sleepState, 
+                   this.getSimulator().getEnergyControl());
     }
 
     public boolean isSupported(InstrPrototype i) {

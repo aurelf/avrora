@@ -63,13 +63,15 @@ public class SimpleAir implements RadioAir {
 
     protected final IntervalSynchronizer synchronizer;
 
-    public static final int sampleTime = 13 * 64;
+    private static final int INTERVALS = 10;
+    private static final int sampleTime = 13 * 64;
     private static final int TRANSFER_TIME = Radio.TRANSFER_TIME;
+    private static final int INTERVAL_TIME = TRANSFER_TIME * INTERVALS;
 
     public SimpleAir() {
         radios = new HashSet();
-        radioChannel = new Channel(8, TRANSFER_TIME, true);
-        synchronizer = new IntervalSynchronizer(TRANSFER_TIME, new MeetEvent());
+        radioChannel = new Channel(8 * INTERVALS, INTERVAL_TIME, true);
+        synchronizer = new IntervalSynchronizer(INTERVAL_TIME, new MeetEvent());
     }
 
     /**

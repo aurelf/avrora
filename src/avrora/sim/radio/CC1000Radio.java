@@ -33,6 +33,7 @@
 package avrora.sim.radio;
 
 import avrora.sim.*;
+import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.util.Arithmetic;
@@ -118,6 +119,8 @@ public class CC1000Radio implements Radio {
     protected final Microcontroller mcu;
     protected final Simulator sim;
     protected SimulatorThread simThread;
+    protected final FiniteStateMachine stateMachine;
+
 
     /**
      * Radio environment into which this radio broadcasts.
@@ -126,12 +129,10 @@ public class CC1000Radio implements Radio {
 
     FrequencyRegister currentFrequencyRegister;
 
-    //the energy recording for this node
-    private Energy energy;
-
     private long packetsTx;
     private long packetsRx;
     protected static final String[] allModeNames = allModeNames();
+    protected static final int[][] ttm = FiniteStateMachine.buildSparseTTM(allModeNames.length, 0);
 
     /**
      * Sets the <code>SimulatorThread</code> of this radio. Should be done BEFORE adding this radio to a
@@ -240,11 +241,10 @@ public class CC1000Radio implements Radio {
 
         //setup energy recording
         Simulator simulator = mcu.getSimulator();
-        energy = new Energy("Radio",
-                simulator.getClock(),
-                RadioEnergy.modeAmpere,
-                allModeNames,
-                RadioEnergy.startMode,
+ 
+        stateMachine = new FiniteStateMachine(simulator.getClock(), RadioEnergy.startMode, allModeNames, ttm);
+        
+        new Energy("Radio", RadioEnergy.modeAmpere, stateMachine,
                 simulator.getEnergyControl());
 
         packetsTx = 0;
@@ -427,7 +427,8 @@ public class CC1000Radio implements Radio {
                     state = 5; // receive state
                 if (!corePd && !biasPd && !fsPd && rxtx && !txPd)
                     state = PA_POW_reg.getPower() + 6;
-                energy.setMode(state);
+                stateMachine.transition(state);
+                //energy.setMode(state);
             }
             //end energy tracking
             
@@ -628,7 +629,7 @@ public class CC1000Radio implements Radio {
             //start energy tracking
             //check for transmission mode enabled
             if (!MAIN_reg.corePd && !MAIN_reg.biasPd && !MAIN_reg.fsPd && MAIN_reg.rxtx && !MAIN_reg.txPd)
-                energy.setMode(getPower() + 6);
+                stateMachine.transition(getPower() + 6);
         }
 
         protected int getPower() {

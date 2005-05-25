@@ -34,8 +34,9 @@
  */
 package avrora.sim.platform;
 
-import avrora.sim.Energy;
+import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
+import avrora.sim.energy.Energy;
 
 /**
  * This class is a placeholder for tracking the energ consumption of the sensor board. Currently
@@ -46,8 +47,6 @@ import avrora.sim.Simulator;
 public class SensorBoard {
 
     protected Simulator sim;
-    //energy profile of this device
-    private Energy energy;
     // names of the states of this device
     private final String[] modeName = {"on:  "};
     // power consumption of the device states
@@ -60,6 +59,7 @@ public class SensorBoard {
         //setup energy recording
         //note: the name sensorBoard was choosen on purpose as it is used in the log files
         //if you use sensor board, you may have trouble with importing the data as it is separated by white spaces
-        energy = new Energy("sensorBoard", s.getClock(), modeAmpere, modeName, startMode, sim.getEnergyControl());
+        FiniteStateMachine fsm = new FiniteStateMachine(s.getClock(), startMode, modeName, 0);
+        new Energy("SensorBoard", modeAmpere, fsm, sim.getEnergyControl());
     }
 }

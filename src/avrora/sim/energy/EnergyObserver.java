@@ -1,5 +1,5 @@
 /**
- * Created on 19. September 2004, 00:19
+ * Created on 18. September 2004, 22:41
  * 
  * Copyright (c) 2004-2005, Olaf Landsiedel, Protocol Engineering and
  * Distributed Systems, University of Tuebingen
@@ -34,70 +34,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.sim.energy;
 
-import avrora.monitors.EnergyMonitorBase;
-
-import java.util.LinkedList;
+import avrora.sim.energy.Energy;
+import avrora.sim.energy.Energy;
 
 /**
- * implementation of energy control handles subsrciption of monitors and consumers
+ * energy monitor interface
  *
  * @author Olaf Landsiedel
  */
-public class EnergyControlImpl implements EnergyControl {
-
-    //consumer list
-    // e.g. list of devices which consume energy
-    private LinkedList consumer;
-
-    //list of monitors which want to be informed about
-    //energy consumption
-    private LinkedList subscriber;
-
+public interface EnergyObserver {
     /**
-     * create a new instance of energy control
-     */
-    public EnergyControlImpl() {
-        consumer = new LinkedList();
-        subscriber = new LinkedList();
-    }
-
-    /**
-     * add energy monitor
+     * called when the state of the device changes this component logs these state changes
      *
-     * @param energyMonitor monitor
+     * @param energy
      */
-    public void subscribe(EnergyMonitorBase energyMonitor) {
-        subscriber.add(energyMonitor);
-    }
-
-    /**
-     * add consumer
-     *
-     * @param energy consumer
-     */
-    public void addConsumer(Energy energy) {
-        consumer.add(energy);
-    }
-
-    /**
-     * get list of consumers
-     *
-     * @return conumer list
-     */
-    public LinkedList getConsumers() {
-        return consumer;
-    }
-
-    /**
-     * update the state of a device
-     *
-     * @param energy the energy model of the device
-     */
-    public void stateChange(Energy energy) {
-        for (int i = 0; i < subscriber.size(); ++i) {
-            ((EnergyMonitorBase)subscriber.get(i)).fire(energy);
-        }
-    }
+    public void stateChange(Energy energy);
 }

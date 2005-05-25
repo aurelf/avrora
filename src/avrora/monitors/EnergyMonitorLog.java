@@ -38,8 +38,10 @@
 package avrora.monitors;
 
 import avrora.Avrora;
-import avrora.sim.Energy;
+import avrora.sim.energy.Energy;
 import avrora.sim.Simulator;
+import avrora.sim.energy.Energy;
+import avrora.sim.energy.EnergyObserver;
 import avrora.util.Options;
 
 import java.io.BufferedWriter;
@@ -73,7 +75,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
      * Furthermore the monitor shutsdown the node, when an energy limit is exceeded.
      * 
      */    
-    public class Monitor extends EnergyMonitor.Monitor implements EnergyMonitorBase {
+    public class Monitor extends EnergyMonitor.Monitor implements EnergyObserver {
 
         // file for data logging
         private BufferedWriter file;
@@ -87,9 +89,9 @@ public class EnergyMonitorLog extends EnergyMonitor {
          * @param s the simulator
          */
         Monitor(Simulator s, Options options) {
-            super(s, options);
+            super(s);
             // subscribe the monitor to the energy  control
-            energyControl.subscribe((EnergyMonitorBase)this);
+            energyControl.subscribe(this);
 
             //open file for logging, currently with fixed path and file name
             String fileName = "energy" + simulator.getID() + ".log";
@@ -164,11 +166,11 @@ public class EnergyMonitorLog extends EnergyMonitor {
 
 
         /**
-         * called when the state of the device changes this compoent logs these state changes
+         * called when the state of the device changes this component logs these state changes
          *
-         * @see avrora.monitors.EnergyMonitorBase#fire(avrora.sim.Energy)
+         * @see avrora.sim.energy.EnergyObserver#stateChange(avrora.sim.energy.Energy)
          */
-        public void fire(Energy energy) {
+        public void stateChange(Energy energy) {
             logOldState(energy);
             logCurrentState();
             return;

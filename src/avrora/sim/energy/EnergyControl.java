@@ -34,46 +34,70 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package avrora.sim.energy;
 
-package avrora.sim;
-
-import avrora.monitors.EnergyMonitorBase;
+import avrora.sim.energy.Energy;
 
 import java.util.LinkedList;
 
 /**
- * interface for energy control handles subsrciption of monitors and consumers
+ * implementation of energy control handles subsrciption of monitors and consumers
  *
  * @author Olaf Landsiedel
  */
+public class EnergyControl {
 
-public interface EnergyControl {
+    //consumer list
+    // e.g. list of devices which consume energy
+    private LinkedList consumer;
+
+    //list of monitors which want to be informed about
+    //energy consumption
+    private LinkedList subscriber;
+
+    /**
+     * create a new instance of energy control
+     */
+    public EnergyControl() {
+        consumer = new LinkedList();
+        subscriber = new LinkedList();
+    }
 
     /**
      * add energy monitor
      *
      * @param energyMonitor monitor
      */
-    public void subscribe(EnergyMonitorBase energyMonitor);
+    public void subscribe(EnergyObserver energyMonitor) {
+        subscriber.add(energyMonitor);
+    }
 
     /**
      * add consumer
      *
      * @param energy consumer
      */
-    public void addConsumer(Energy energy);
+    public void addConsumer(Energy energy) {
+        consumer.add(energy);
+    }
 
     /**
      * get list of consumers
      *
-     * @return conumer list
+     * @return consumer list
      */
-    public LinkedList getConsumers();
+    public LinkedList getConsumers() {
+        return consumer;
+    }
 
     /**
      * update the state of a device
      *
      * @param energy the energy model of the device
      */
-    public void stateChange(Energy energy);
+    public void stateChange(Energy energy) {
+        for (int i = 0; i < subscriber.size(); ++i) {
+            ((EnergyObserver)subscriber.get(i)).stateChange(energy);
+        }
+    }
 }

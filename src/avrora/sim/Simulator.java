@@ -40,6 +40,7 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.MainClock;
+import avrora.sim.energy.EnergyControl;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -225,7 +226,7 @@ public class Simulator {
         factory = f;
 
         // enable the energy modelling
-        energyControl = new EnergyControlImpl();
+        energyControl = new EnergyControl();
 
         // reset the state of the simulation
         clock = mcu.getClockDomain().getMainClock();

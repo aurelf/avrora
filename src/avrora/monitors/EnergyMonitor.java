@@ -37,14 +37,15 @@
 
 package avrora.monitors;
 
-import avrora.sim.Energy;
-import avrora.sim.EnergyControl;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.energy.Energy;
+import avrora.sim.energy.*;
 import avrora.sim.radio.Radio;
 import avrora.util.Options;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Option;
 
 import java.util.*;
 
@@ -57,6 +58,12 @@ import java.util.*;
  * @author Olaf Landsiedel
  */
 public class EnergyMonitor extends MonitorFactory {
+
+    protected final Option.Double BATTERY = options.newOption("battery", 0.0,
+            "This option specifies the number of joules in each node's battery. During " +
+            "simulation, the energy consumption of each node is tracked, and if the node " +
+            "runs out of battery, it will be shut down and removed from the " +
+            "simulation.");
 
     /**
      * @author Olaf Landsiedel
@@ -88,16 +95,14 @@ public class EnergyMonitor extends MonitorFactory {
          *
          * @param s the simulator
          */
-        Monitor(Simulator s, Options options) {
+        Monitor(Simulator s) {
             this.simulator = s;
             this.energyControl = simulator.getEnergyControl();
             this.consumer = energyControl.getConsumers();
             this.state = simulator.getState();
 
-            //setup energy limit
-            // TODO: fix this usage of options
-            if( options.hasOption("battery") ){
-                energy = Double.parseDouble(options.getOptionValue("battery"));
+            energy = BATTERY.get();
+            if ( energy > 0 ) {
                 new BatteryCheck();
             }
 
@@ -161,6 +166,7 @@ public class EnergyMonitor extends MonitorFactory {
                     Terminal.println("consumed " + totalEnergy + " Joule");
 
                     //remove radio
+                    // TODO: simulator.stop() should be enough to remove the node
                     Radio radio = simulator.getMicrocontroller().getRadio();
                     radio.getAir().removeRadio(radio);
                     //stop loop
@@ -189,7 +195,7 @@ public class EnergyMonitor extends MonitorFactory {
      * @see avrora.monitors.MonitorFactory#newMonitor(avrora.sim.Simulator)
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return new Monitor(s,options);
+        return new Monitor(s);
     }
 }
 

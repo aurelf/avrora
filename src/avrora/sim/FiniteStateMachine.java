@@ -334,10 +334,35 @@ public class FiniteStateMachine {
      */
     public static int[][] buildUniformTTM(int size, int tt) {
         int[][] ttm = new int[size][size];
-        for ( int cntr = 0; cntr < size; cntr++ ) {
-            for ( int loop = 0; loop < size; loop++ ) {
-                ttm[cntr][loop] = tt;
+        if ( tt != 0 ) {
+            for ( int cntr = 0; cntr < size; cntr++ ) {
+                for ( int loop = 0; loop < size; loop++ ) {
+                    ttm[cntr][loop] = tt;
+                }
             }
+        }
+        return ttm;
+    }
+
+    /**
+     * The <code>buildSparseTTM()</code> method builds a transition time matrix
+     * that is uniform but sparse; the machine can transition from any state to any
+     * other state with the given transition time. However, the internal representation
+     * shares the underlying integer arrays, avoiding large space overhead. Due to this
+     * storage sharing, DO NOT ATTEMPT TO UPDATE THE SPARSE TTM AFTER CONSTRUCTING IT
+     * UNLESS YOU UNDERSTAND THAT ALL ROWS WILL BE THE SAME.
+     * @param size the size of the matrix
+     * @param tt the transition time for each edge.
+     * @return a new transition time matrix where each entry is the given transition time
+     * and the representation is space efficient.
+     */
+    public static int[][] buildSparseTTM(int size, int tt) {
+        int[][] ttm = new int[size][];
+        int[] row = new int[size];
+        // initialize the matrix with one loop
+        for ( int cntr = 0; cntr < size; cntr++ ) {
+            ttm[cntr] = row;
+            row[cntr] = tt;
         }
         return ttm;
     }

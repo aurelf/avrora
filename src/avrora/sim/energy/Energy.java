@@ -35,9 +35,10 @@
  */
 
 
-package avrora.sim;
+package avrora.sim.energy;
 
 import avrora.sim.clock.Clock;
+import avrora.sim.FiniteStateMachine;
 
 /**
  * Class for energy modeling. All consumers create an instance of this class and keep it updated with all
@@ -47,16 +48,14 @@ import avrora.sim.clock.Clock;
  *
  * @author Olaf Landsiedel
  */
-public class Energy {
+public class Energy implements FiniteStateMachine.Probe {
 
     //name of the device, which energy consumption is traced by
     //this class instance
     private String deviceName;
     //current draw for each state
     private double[] ampere;
-    // name of each state
-    private String[] name;
-    //cycles spend in each state
+    //cycles spent in each state
     private long[] cycles;
     // current state, e.g. mode
     private int currentMode;
@@ -70,7 +69,9 @@ public class Energy {
     private int freq;
     // time one mcu cycle takes
     private double cycleTime;
-
+    //the state machine handles the sate of the device
+    private FiniteStateMachine stateMachine;
+    //the clock -> it knwos the time ;-)
     private Clock clock;
     // there is one energyControl in the simulation
     // it handles the notification of monitrs
@@ -80,42 +81,58 @@ public class Energy {
      * create new energy class, to enable energy modelling
      *
      * @param deviceName  name of the device to model
-     * @param c           the clock of the device
      * @param modeAmpere  array of current draw for each device state (in Ampere)
-     * @param modeName    array of the names of each device state
-     * @param startMode   mode or state of the device at startup and reset
+     * @param fsm         finite state machine of this device
      * @param ec          the simulator energy control
      */
-    public Energy(String deviceName, Clock c, double[] modeAmpere, String[] modeName, int startMode, EnergyControl ec) {
+    //public Energy(String deviceName, Clock c, double[] modeAmpere, String[] modeName, int startMode, EnergyControl ec) {
+    public Energy(String deviceName, double[] modeAmpere, FiniteStateMachine fsm, EnergyControl ec) {
         // remember all params
         this.deviceName = deviceName;
-        this.clock = c;
+        this.clock = fsm.getClock();
         this.ampere = modeAmpere;
-        this.name = modeName;
-        this.currentMode = startMode;
+        this.stateMachine = fsm;
+        this.currentMode = fsm.getStartState();
         this.freq = (int)clock.getHZ();
         this.cycleTime = 1.0d / freq;
         this.energyControl = ec;
 
+        //insert probe into finite state machine
+        stateMachine.insertProbe(this);
         // subscribe this consumer to the energy control
         energyControl.addConsumer(this);
         // setup cycle array to store the cycles of each state
         cycles = new long[ampere.length];
         for (int i = 0; i < cycles.length; i++)
             cycles[i] = 0;
+        
     }
 
     /**
-     * set the current mode or state of the device
-     *
-     * @param mode mode numer to set
+     * The <code>fireBeforeTransition()</code> method allows the probe to gain control
+     * before the state machine transitions between two states. The before state and the
+     * after state are passed as parameters.
+     * @param beforeState the before state represented as an integer
+     * @param afterState the after state represented as an integer
      */
-    public void setMode(int mode) {
-        if (mode != currentMode) {
+    public void fireBeforeTransition(int beforeState, int afterState){        
+        //we use fireAfterTransition
+    }
+
+    /**
+     * The <code>fireAfterTransition()</code> method allows the probe to gain control
+     * after the state machine transitions between two states. The before state and the
+     * after state are passed as parameters.
+     * @param beforeState the before state represented as an integer
+     * @param afterState the after state represented as an integer
+     */
+    public void fireAfterTransition(int beforeState, int afterState){
+        if (afterState != currentMode) {
             cycles[currentMode] += clock.getCount() - lastChange;
             oldMode = currentMode;
-            currentMode = mode;
+            currentMode = afterState;
             lastChange = clock.getCount();
+            //notify the energy control that I am now in a new state
             energyControl.stateChange(this);
         }
     }
@@ -167,7 +184,7 @@ public class Energy {
      * @return mode name
      */
     public String getModeName(int mode) {
-        return name[mode];
+        return stateMachine.getStateName(mode);
     }
 
     /**
@@ -203,15 +220,6 @@ public class Energy {
     }
 
     /**
-     * get the names of all modes
-     *
-     * @return array with all mode names
-     */
-    public String[] getModeNames() {
-        return name;
-    }
-
-    /**
      * get old mode
      *
      * @return old mode
@@ -237,5 +245,7 @@ public class Energy {
     public double getOldAmpere() {
         return ampere[oldMode];
     }
+
+
 
 }

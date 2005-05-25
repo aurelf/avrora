@@ -32,7 +32,7 @@
 
 package avrora.sim.platform;
 
-import avrora.sim.Energy;
+import avrora.sim.energy.Energy;
 import avrora.sim.Simulator;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.clock.Clock;
@@ -57,7 +57,7 @@ public class LED implements Microcontroller.Pin.Output {
     protected final LEDProbe probe;
 
     //energy profile of this device
-    private Energy energy;
+    //private Energy energy;
     // names of the states of this device
     private static final String[] modeName = {"off", "on"};
     // power consumption of the device states
@@ -93,15 +93,15 @@ public class LED implements Microcontroller.Pin.Output {
         color = c;
         //setup energy recording
         Clock clk = sim.getClock();
-        energy = new Energy(color, clk, modeAmpere, modeName, startMode, sim.getEnergyControl());
+        
         state = new FiniteStateMachine(clk, startMode, modeName, 0);
         probe = new LEDProbe();
+        new Energy(c, modeAmpere, state, sim.getEnergyControl());
     }
 
     public void write(boolean level) {
         // NOTE: there is an inverter between the port and the LED, we reverse the level
         int snum = level ? 0 : 1;
-        energy.setMode(snum);
         state.transition(snum);
     }
 
