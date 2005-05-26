@@ -48,9 +48,9 @@ public class TransactionalList {
      * updates.
      */
     protected static class Link {
-        boolean addTransaction; // used for transactions; true if the transaction was an add, false if it was a remove
-        final Object object;
-        Link next;
+        public boolean addTransaction; // used for transactions; true if the transaction was an add, false if it was a remove
+        public final Object object;
+        public Link next;
 
         Link(Object o) {
             object = o;

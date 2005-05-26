@@ -102,7 +102,7 @@ public class Mica2 implements Platform, PlatformFactory {
         mcu.getPin("PA2").connect(red);
 
         // radio
-        radio = new CC1000Radio(mcu);
+        radio = new CC1000Radio(mcu, 7372800 * 2);
         // sensor board
         sensorboard = new SensorBoard(sim);
         // external flash

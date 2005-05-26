@@ -33,6 +33,7 @@
 package avrora.sim.radio;
 
 import avrora.sim.*;
+import avrora.sim.util.TransactionalList;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.radio.freespace.FreeSpaceAir;
@@ -51,10 +52,6 @@ import java.util.LinkedList;
  * @author Daniel Lee
  */
 public class CC1000Radio implements Radio {
-
-    Radio.RadioController controller;
-
-    protected RadioRegister[] registers  = new RadioRegister[0x47];
 
     /**
      * Register addresses.
@@ -88,6 +85,12 @@ public class CC1000Radio implements Radio {
     public static final int TEST1 = 0x45;
     public static final int TEST0 = 0x46;
 
+    protected static final String[] allModeNames = RadioEnergy.allModeNames();
+    protected static final int[][] ttm = FiniteStateMachine.buildSparseTTM(allModeNames.length, 0);
+
+
+    protected RadioRegister[] registers  = new RadioRegister[0x47];
+
     /**
      * Registers
      */
@@ -113,6 +116,11 @@ public class CC1000Radio implements Radio {
     protected final Receiver receiver = new Receiver();
     protected final Transmitter transmitter = new Transmitter();
 
+    protected final ProbeList probes;
+    protected final long xoscFrequency;
+
+    protected FrequencyRegister currentFrequencyRegister;
+
     /**
      * Connected Microcontroller, Simulator and SimulatorThread should all correspond.
      */
@@ -121,18 +129,12 @@ public class CC1000Radio implements Radio {
     protected SimulatorThread simThread;
     protected final FiniteStateMachine stateMachine;
 
+    protected Radio.RadioController controller;
 
     /**
      * Radio environment into which this radio broadcasts.
      */
     protected RadioAir air;
-
-    FrequencyRegister currentFrequencyRegister;
-
-    private long packetsTx;
-    private long packetsRx;
-    protected static final String[] allModeNames = allModeNames();
-    protected static final int[][] ttm = FiniteStateMachine.buildSparseTTM(allModeNames.length, 0);
 
     /**
      * Sets the <code>SimulatorThread</code> of this radio. Should be done BEFORE adding this radio to a
@@ -150,26 +152,51 @@ public class CC1000Radio implements Radio {
     }
 
     /**
-     * Part of the <code>Radio</code> interface. It should be called by the <code>RadioAir</code> that this
-     * radio is transmitting over when data is to be received.
+     * The <code>ProbeList</code> class just keeps track of a list of probes.
      */
-    public void receive(Radio.Transmission packet) {
-        throw Avrora.unimplemented();
+    class ProbeList extends TransactionalList implements Radio.RadioProbe {
+        public void fireAtPowerChange(Radio r, int newPower) {
+            beginTransaction();
+            for (Link pos = head; pos != null; pos = pos.next)
+                ((RadioProbe)pos.object).fireAtPowerChange(r, newPower);
+            endTransaction();
+        }
+
+        public void fireAtFrequencyChange(Radio r, double freq)  {
+            beginTransaction();
+            for (Link pos = head; pos != null; pos = pos.next)
+                ((RadioProbe)pos.object).fireAtFrequencyChange(r, freq);
+            endTransaction();
+        }
+
+        public void fireAtBitRateChange(Radio r, int newbitrate)  {
+            beginTransaction();
+            for (Link pos = head; pos != null; pos = pos.next)
+                ((RadioProbe)pos.object).fireAtBitRateChange(r, newbitrate);
+            endTransaction();
+        }
+
+        public void fireAtTransmit(Radio r, Radio.Transmission p)  {
+            beginTransaction();
+            for (Link pos = head; pos != null; pos = pos.next)
+                ((RadioProbe)pos.object).fireAtTransmit(r, p);
+            endTransaction();
+        }
+
+        public void fireAtReceive(Radio r, Radio.Transmission p) {
+            beginTransaction();
+            for (Link pos = head; pos != null; pos = pos.next)
+                ((RadioProbe)pos.object).fireAtReceive(r, p);
+            endTransaction();
+        }
     }
 
-    /**
-     * Transmit a packet of data into the <code>RadioAir</code>.
-     */
-    public void transmit(Radio.Transmission packet) {
-        // send packet into air...
-        if ( air != null )
-            air.transmit(this, packet);
-        packetsTx++;
-    }
-
-    public CC1000Radio(Microcontroller mcu) {
+    public CC1000Radio(Microcontroller mcu, long xfreq) {
         mcu.setRadio(this);
 
+        xoscFrequency = xfreq;
+
+        probes = new ProbeList();
 
         this.mcu = mcu;
         this.sim = mcu.getSimulator();
@@ -247,26 +274,36 @@ public class CC1000Radio implements Radio {
         new Energy("Radio", RadioEnergy.modeAmpere, stateMachine,
                 simulator.getEnergyControl());
 
-        packetsTx = 0;
-        packetsRx = 0;
     }
 
-    private static String[] allModeNames() {
-        String[] modeName = new String[262];
+    /**
+     * The <code>getFiniteStateMachine()</code> method gets a reference to the finite state
+     * machine that represents this radio's state. For example, there are states corresponding
+     * to "on", "off", "transmitting", and "receiving". The state names and numbers will vary
+     * by radio implementation. The <code>FiniteStateMachine</code> instance allows the user
+     * to instrument the state transitions in order to gather information during simulation.
+     * @return a reference to the finite state machine for this radio
+     */
+    public FiniteStateMachine getFiniteStateMachine() {
+        return stateMachine;
+    }
 
-        for (int i = 0; i < 6; i++)
-            modeName[i] = RadioEnergy.modeName[i];
-        String space = "";
-        for (int i = 0; i < 256; i++) {
-            if (i < 10)
-                space = ":      ";
-            if (i >= 10 && i < 100)
-                space = ":     ";
-            if (i >= 100)
-                space = ":    ";
-            modeName[i + 6] = RadioEnergy.modeName[6] + i + space;
-        }
-        return modeName;
+    /**
+     * The <code>insertProbe()</code> method inserts a probe into a radio. The probe is then
+     * notified when the radio changes power, frequency, baud rate, or transmits or receives
+     * a byte.
+     * @param p the probe to insert on this radio
+     */
+    public void insertProbe(RadioProbe p) {
+        probes.add(p);
+    }
+
+    /**
+     * The <code>removeProbe()</code> method removes a probe on this radio.
+     * @param p the probe to remove from this radio instance
+     */
+    public void removeProbe(RadioProbe p) {
+        probes.remove(p);
     }
 
     /**
@@ -291,7 +328,6 @@ public class CC1000Radio implements Radio {
             if (radioPrinter.enabled) {
                 printStatus();
             }
-
         }
 
         public void writeBit(int bit, boolean val) {
@@ -300,10 +336,6 @@ public class CC1000Radio implements Radio {
             if (radioPrinter.enabled) {
                 printStatus();
             }
-        }
-
-        public byte read() {
-            return value;
         }
 
         protected abstract void decode(byte val);
@@ -407,34 +439,32 @@ public class CC1000Radio implements Radio {
                 return;
             }
             
-            //OL: start energy tracking
             if (val != oldVal) {
-                int state;
-                //check for power down state
-                // this row of "if" statements can probably be
-                // optimized a little bit
-                // however, in the current way it is easy to understand
-                // and these changes do not happen too often
-                if (corePd)
-                    state = 1; //power down state
-                else
-                    state = 2; // core, e.g. crystal on state
-                if (!corePd && !biasPd)
-                    state = 3; // crystal and bias on state
-                if (!corePd && !biasPd && !fsPd)
-                    state = 4; // crystal, bias and synth. on
-                if (!corePd && !biasPd && !fsPd && !rxtx && !rxPd)
-                    state = 5; // receive state
-                if (!corePd && !biasPd && !fsPd && rxtx && !txPd)
-                    state = PA_POW_reg.getPower() + 6;
+                int state = computeState();
                 stateMachine.transition(state);
-                //energy.setMode(state);
             }
-            //end energy tracking
-            
+
             oldVal = val;
 
 
+        }
+
+        private int computeState() {
+            // TODO: reduce this code to compute state more easily
+            int state;
+            if (corePd)
+                state = 1; //power down state
+            else
+                state = 2; // core, e.g. crystal on state
+            if (!corePd && !biasPd)
+                state = 3; // crystal and bias on state
+            if (!corePd && !biasPd && !fsPd)
+                state = 4; // crystal, bias and synth. on
+            if (!corePd && !biasPd && !fsPd && !rxtx && !rxPd)
+                state = 5; // receive state
+            if (!corePd && !biasPd && !fsPd && rxtx && !txPd)
+                state = PA_POW_reg.getPower() + 6;
+            return state;
         }
 
         protected void printStatus() {
@@ -484,9 +514,9 @@ public class CC1000Radio implements Radio {
         }
 
         protected void updateFrequency() {
-            frequency = 0x00ff0000 & (reg2.read() << 16);
-            frequency |= 0x0000ff00 & (reg1.read() << 8);
-            frequency |= 0x000000ff & reg0.read();
+            frequency = 0x00ff0000 & (reg2.value << 16);
+            frequency |= 0x0000ff00 & (reg1.value << 8);
+            frequency |= 0x000000ff & reg0.value;
         }
 
         protected void setFrequency(int frequency) {
@@ -525,8 +555,8 @@ public class CC1000Radio implements Radio {
         int frequencySeparation;
 
         protected void updateFrequencySeparation() {
-            frequencySeparation = (reg1.read() & 0x0f) << 8;
-            frequencySeparation |= reg0.read();
+            frequencySeparation = (reg1.value & 0x0f) << 8;
+            frequencySeparation |= reg0.value;
         }
 
         protected void setFrequencySeparation(int val) {
@@ -625,7 +655,9 @@ public class CC1000Radio implements Radio {
         protected void decode(byte val) {
             paHighPower = (value & 0xf0) >> 4;
             paLowPower = (value & 0x0f);
-            
+
+            probes.fireAtPowerChange(CC1000Radio.this, getPower());
+
             //start energy tracking
             //check for transmission mode enabled
             if (!MAIN_reg.corePd && !MAIN_reg.biasPd && !MAIN_reg.fsPd && MAIN_reg.rxtx && !MAIN_reg.txPd)
@@ -732,7 +764,7 @@ public class CC1000Radio implements Radio {
         }
 
         public byte read() {
-            return (byte)(super.read() & 0x03);
+            return (byte)(value & 0x03);
         }
     }
 
@@ -784,7 +816,8 @@ public class CC1000Radio implements Radio {
                 //in the current TinyOS version (1.1.7) REFDIV seems to be 14
                 //resulting in a delay of a little more than 32ms 
                 //Reference: CC1000 datasheet (rev 2.1) pages 20 and 22
-                sim.insertEvent(calibrate, mcu.millisToCycles((34.0 * 1000000.0 / 14745600.0) * PLL_reg.refDiv));
+                double calMs = (34.0 * 1000000.0 / 14745600.0) * PLL_reg.refDiv;
+                sim.insertEvent(calibrate, mcu.millisToCycles(calMs));
             }
 
         }
@@ -879,15 +912,14 @@ public class CC1000Radio implements Radio {
      */
     protected class Modem0Register extends RadioRegister {
         int baudrate = 2400;
+        int bitrate = 1200;
 
         static final int DATA_FORMAT_NRZ = 0;
         static final int DATA_FORMAT_MANCHESTER = 1;
         static final int DATA_FORMAT_UART = 2;
         int dataFormat = DATA_FORMAT_MANCHESTER;
 
-        int xoscFreq = 3686400;
-
-        long byteTimeCycles;
+        int xoscFreqRange = XOSC_FREQ[0];
 
         Modem0Register() {
             super("MODEM0", (byte)0x24);
@@ -897,21 +929,29 @@ public class CC1000Radio implements Radio {
 
         protected void decode(byte val) {
 
-            baudrate = BAUDRATE[(val & 0x70) >> 4];
+            int baudIndex = (val & 0x70) >> 4;
+            int xoscIndex = (val & 0x3);
             dataFormat = (val & 0x0c) >> 2;
-            xoscFreq = XOSC_FREQ[(val & 0x2)];
-
+            xoscFreqRange = XOSC_FREQ[xoscIndex];
+            calculateBaudRate(baudIndex, xoscIndex);
             boolean manchester = dataFormat == DATA_FORMAT_MANCHESTER;
-            int bitsPerSecond = baudrate / (manchester ? 2 : 1);
-            int bytesPerSecond = bitsPerSecond / 8;
-            double byteTimeSeconds = 1.0 / bytesPerSecond;
-            double byteTimeMillis = byteTimeSeconds * 1000.0;
+            bitrate = baudrate / (manchester ? 2 : 1);
+            probes.fireAtBitRateChange(CC1000Radio.this, bitrate);
+        }
 
-            byteTimeCycles = mcu.millisToCycles(byteTimeMillis);
+        private void calculateBaudRate(int baudIndex, int xoscIndex) {
+            if ( baudIndex == 5 && xoscFrequency > XOSC_FREQ[2]) {
+                if ( xoscIndex == 0 ) baudrate = 76800;
+                else if ( xoscIndex == 1 ) baudrate = 38400;
+                else baudrate = BAUDRATE[baudIndex];
+            } else {
+                baudrate = BAUDRATE[baudIndex];
+            }
         }
 
         protected void printStatus() {
-            radioPrinter.println("CC1000[MODEM0]: ...");
+            radioPrinter.println("CC1000[MODEM0]: "+baudrate+" baud, "+bitrate+" bit rate, manchester: "+
+                    (dataFormat == DATA_FORMAT_MANCHESTER));
         }
     }
 
@@ -1077,7 +1117,10 @@ public class CC1000Radio implements Radio {
                 if (printer.enabled) {
                     printer.println("CC1000: transmitting "+StringUtil.toMultirepString(packet.data, 8));
                 }
-                transmit(packet);
+                // send packet into air...
+                if ( air != null )
+                    air.transmit(CC1000Radio.this, packet);
+                probes.fireAtTransmit(CC1000Radio.this, packet);
             }
         }
 
@@ -1296,7 +1339,7 @@ public class CC1000Radio implements Radio {
          * Clocking the PCLK pin is what drives the action of the configuration interface. One bit of data on
          * PDATA per clock.
          */
-        protected class PCLKOutput implements Microcontroller.Pin.Output {
+        protected class PCLKOutput extends Microcontroller.OutputPin {
 
             public void write(boolean level) {
                 if (!level) { // clr
@@ -1305,56 +1348,31 @@ public class CC1000Radio implements Radio {
 
                 }
             }
-
-            public void enableOutput() {
-            }
-
-            public void disableOutput() {
-            }
-
         }
 
-        protected class PDATAInput implements Microcontroller.Pin.Input {
+        protected class PDATAInput extends Microcontroller.InputPin {
             public boolean read() {
                 return readValue;
             }
-
-            public void enableInput() {
-            }
-
-            public void disableInput() {
-            }
         }
 
-        protected class PDATAOutput implements Microcontroller.Pin.Output {
+        protected class PDATAOutput extends Microcontroller.OutputPin {
 
             public void write(boolean level) {
                 value = level;
-            }
-
-            public void enableOutput() {
-            }
-
-            public void disableOutput() {
             }
         }
 
         // PALE is the address latch. It really isn't necessary, if you assume
         // that software will respect the packet formatting.
         // If you don't, then PALE should be implemented.
-        protected class PALEOutput implements Microcontroller.Pin.Output {
+        protected class PALEOutput extends Microcontroller.OutputPin {
             public void write(boolean level) {
                 if (!level) {
                     bitsRead = 0;
                 } else {
                     bitsRead = 8;
                 }
-            }
-
-            public void enableOutput() {
-            }
-
-            public void disableOutput() {
             }
         }
 
@@ -1365,7 +1383,7 @@ public class CC1000Radio implements Radio {
             } else if (bitsRead == 7) {
                 write = value;
                 if (!write) {
-                    readData = registers[0x7f & address].read();
+                    readData = registers[0x7f & address].value;
                     readValue = Arithmetic.getBit(readData, 7);
 
                 }
@@ -1381,7 +1399,7 @@ public class CC1000Radio implements Radio {
             bitsRead++;
             if (bitsRead == 16) {
                 String rw = write ? " write " : " read ";
-                byte printData = write ? data : registers[(0x7f & address)].read();
+                byte printData = write ? data : registers[(0x7f & address)].value;
                 if (readerPrinter.enabled)
                     readerPrinter.println("Address " + Integer.toHexString(0x7f & address) + rw + " data " + Integer.toBinaryString(0xff & printData));
                 bitsRead = 0;
@@ -1439,10 +1457,4 @@ public class CC1000Radio implements Radio {
         air = nair;
     }
 
-    public void report() {
-        Terminal.printCyan("\nPacket Monitor:\n\n");
-        Terminal.println("Bytes Tx: " + packetsTx);
-        Terminal.println("Bytes Rx: " + packetsRx);
-        Terminal.println("");
-    }
 }

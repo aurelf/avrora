@@ -47,7 +47,7 @@ import avrora.util.Terminal;
  *
  * @author Ben L. Titzer
  */
-public class LED implements Microcontroller.Pin.Output {
+public class LED extends Microcontroller.OutputPin {
     protected Simulator sim;
 
     protected final int colornum;
@@ -103,14 +103,6 @@ public class LED implements Microcontroller.Pin.Output {
         // NOTE: there is an inverter between the port and the LED, we reverse the level
         int snum = level ? 0 : 1;
         state.transition(snum);
-    }
-
-    public void enableOutput() {
-        // do nothing
-    }
-
-    public void disableOutput() {
-        // do nothing
     }
 
     public void enablePrinting() {

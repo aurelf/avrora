@@ -126,6 +126,16 @@ public interface Microcontroller {
         public void connect(Output o);
     }
 
+    public abstract class InputPin implements Pin.Input {
+        public void enableInput() {}
+        public void disableInput() {}
+    }
+
+    public abstract class OutputPin implements Pin.Output {
+        public void enableOutput() {}
+        public void disableOutput() {}
+    }
+
     /**
      * The <code>getSimulator()</code> method gets a simulator instance that is capable of emulating this
      * hardware device.

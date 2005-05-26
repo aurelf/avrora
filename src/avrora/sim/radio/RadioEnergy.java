@@ -33,6 +33,8 @@
  */
 package avrora.sim.radio;
 
+import avrora.util.StringUtil;
+
 /**
  * Constants for CC1000 radio energy consumption
  *
@@ -53,9 +55,9 @@ public abstract class RadioEnergy {
         "Power Down:           ",
         "Crystal:              ",
         "Crystal + Bias:       ",
-        "Crytsal + Bias + Syn: ",
+        "Crystal + Bias + Syn: ",
         "Receive (Rx):         ",
-        "Transmit (Tx) "
+        "Transmit (Tx):        "
     };
 
 
@@ -326,4 +328,15 @@ public abstract class RadioEnergy {
         0.02656,
         0.02692
     };
+
+    public static String[] allModeNames() {
+        String[] modeName = new String[262];
+
+        for (int i = 0; i < 6; i++)
+            modeName[i] = RadioEnergy.modeName[i];
+        for (int i = 0; i < 256; i++) {
+            modeName[i + 6] = RadioEnergy.modeName[6] + StringUtil.leftJustify(i+":   ", 3);
+        }
+        return modeName;
+    }
 }

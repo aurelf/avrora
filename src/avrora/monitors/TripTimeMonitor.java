@@ -76,7 +76,10 @@ public class TripTimeMonitor extends MonitorFactory {
             final int start;
             final int end;
             long cumul;
+			long cumul_sqr;
             int count;
+			long max;
+			long min;
 
             Pair startLink;
             Pair endLink;
@@ -88,6 +91,10 @@ public class TripTimeMonitor extends MonitorFactory {
                 this.start = start;
                 this.end = end;
 
+				this.cumul = 0;
+				this.cumul_sqr = 0;
+				this.max = 0;
+				this.min = Long.MAX_VALUE;
                 if ( DISTRIBUTION.get() )
                     distrib = new Distribution("trip time "
                             +StringUtil.addrToString(start)+" -to- "
@@ -99,6 +106,9 @@ public class TripTimeMonitor extends MonitorFactory {
                     distrib.record((int)time);
                 } else {
                     cumul += time;
+					cumul_sqr += (time * time);
+					max = Math.max(max, time);
+					min = Math.min(min, time);
                 }
                 count++;
             }
@@ -106,10 +116,16 @@ public class TripTimeMonitor extends MonitorFactory {
             void report() {
                 if ( distrib == null ) {
                 float avg = (float)cumul / count;
+				double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
+				Terminal.println("  start   end      count  avg         std         max        min");
                 Terminal.println("  "+StringUtil.addrToString(start)+"  "
                         +StringUtil.addrToString(end)+"  "
                         +StringUtil.rightJustify(count, 6)+"  "
-                        +StringUtil.rightJustify(avg, 6));
+                        +StringUtil.rightJustify(avg, 6)+"  "
+						+StringUtil.rightJustify((float)std, 6)+"  "
+						+StringUtil.rightJustify((float)max, 6)+"  "
+						+StringUtil.rightJustify((float)min, 6)
+						);
                 } else {
                     distrib.processData();
                     distrib.textReport();

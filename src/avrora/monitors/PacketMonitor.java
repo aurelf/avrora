@@ -38,6 +38,14 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
+import avrora.sim.radio.Radio;
+import avrora.Avrora;
+import avrora.util.TermUtil;
+import avrora.util.Option;
+import avrora.util.StringUtil;
+
+import java.util.LinkedList;
+import java.util.Iterator;
 
 
 /**
@@ -46,6 +54,79 @@ import avrora.sim.Simulator;
  * @author Olaf Landsiedel
  */
 public class PacketMonitor extends MonitorFactory {
+
+    public static final int INTER_PACKET_TIME = 2 * Radio.TRANSFER_TIME;
+
+    protected Option.Bool PACKETS = options.newOption("show-packets", true, 
+            "This option enables the printing of packets as they are transmitted.");
+    protected Option.Bool PREAMBLE = options.newOption("show-preamble", true,
+            "This option will show the preamble of a packet when it is printed out.");
+    protected Option.Bool DISCARD = options.newOption("discard-first-byte", false,
+            "This option will discard the first byte of a packet, since it is often jibberish.");
+
+    class Mon extends Radio.RadioProbe.Empty implements Monitor {
+        LinkedList bytes;
+        final Simulator simulator;
+        int bytesTransmitted;
+        int packetsTransmitted;
+        PacketEndEvent packetEnd;
+        Simulator.Printer printer;
+        boolean showPackets;
+        boolean discardFirst;
+        boolean showPreamble;
+
+        Mon(Simulator s) {
+            simulator = s;
+            simulator.getMicrocontroller().getRadio().insertProbe(this);
+            packetEnd = new PacketEndEvent();
+            printer = simulator.getPrinter("monitor.packet");
+            printer.enabled = true;
+            showPackets = PACKETS.get();
+            discardFirst = DISCARD.get();
+            showPreamble = PREAMBLE.get();
+            bytes = new LinkedList();
+        }
+
+        public void fireAtTransmit(Radio r, Radio.Transmission t) {
+            simulator.removeEvent(packetEnd);
+            simulator.insertEvent(packetEnd, INTER_PACKET_TIME);
+            bytes.addLast(t);
+            bytesTransmitted++;
+        }
+
+        void endPacket() {
+            packetsTransmitted++;
+            if ( showPackets ) {
+                StringBuffer buf = new StringBuffer(2 * bytes.size() + 10);
+                buf.append("Packet complete: ");
+                Iterator i = bytes.iterator();
+                int cntr = 0;
+                boolean inPreamble = true;
+                while ( i.hasNext() ) {
+                    cntr++;
+                    Radio.Transmission t = (Radio.Transmission)i.next();
+                    if ( cntr == 1 && discardFirst ) continue;
+                    if ( inPreamble && !showPreamble && t.data == (byte)0xAA ) continue;
+                    inPreamble = false;
+                    StringUtil.toHex(buf, t.data, 2);
+                    buf.append(":");
+                }
+                printer.println(buf.toString());
+            }
+            bytes = new LinkedList();
+        }
+
+        public void report() {
+            TermUtil.reportQuantity("Bytes sent", bytesTransmitted, "");
+            TermUtil.reportQuantity("Packets sent", packetsTransmitted, "");
+        }
+
+        class PacketEndEvent implements Simulator.Event {
+            public void fire() {
+                endPacket();
+            }
+        }
+    }
 
     /**
      * create a new monitor
@@ -61,7 +142,7 @@ public class PacketMonitor extends MonitorFactory {
      * @see avrora.monitors.MonitorFactory#newMonitor(avrora.sim.Simulator)
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return s.getMicrocontroller().getRadio();
+        return new Mon(s);
     }
 }
 

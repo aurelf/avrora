@@ -213,7 +213,7 @@ public class ExternalFlash {
     }
 
     // Flash_CS as output pin
-    protected class PA3Output implements Microcontroller.Pin.Output {
+    protected class PA3Output extends Microcontroller.OutputPin {
         // Flash_CS is connected inverted
         public void write(boolean level) {
             if (!level && !isSelected) {
@@ -348,30 +348,18 @@ public class ExternalFlash {
                 i = 0;
             }
         }
-
-        public void enableOutput() {
-        }
-
-        public void disableOutput() {
-        }
     }
 
     // USART1_TXD as output pin connected to SI
-    protected class PD3Output implements Microcontroller.Pin.Output {
+    protected class PD3Output extends Microcontroller.OutputPin {
 
         public void write(boolean level) {
             si = level;
         }
-
-        public void enableOutput() {
-        }
-
-        public void disableOutput() {
-        }
     }
 
     // USART1_CLK as output pin connected to SCK
-    protected class PD5Output implements Microcontroller.Pin.Output {
+    protected class PD5Output extends Microcontroller.OutputPin {
         private short temp;
 
         public void write(boolean level) {
@@ -622,25 +610,13 @@ public class ExternalFlash {
                     break;
             }
         }
-
-        public void enableOutput() {
-        }
-
-        public void disableOutput() {
-        }
     }
 
     // Flash_RXD as input pin from SO
-    protected class PD2Input implements Microcontroller.Pin.Input {
+    protected class PD2Input extends Microcontroller.InputPin {
         // connected to serial output of dataflash
         public boolean read() {
             return so;
-        }
-
-        public void enableInput() {
-        }
-
-        public void disableInput() {
         }
     }
 
