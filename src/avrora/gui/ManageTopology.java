@@ -39,17 +39,48 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.Iterator;
 
+/**
+ * This manages the topology window within the GUI.  Currently,
+ * since only the SimpleAir topology is valid for the GUI, it 
+ * lists a table of added nodes.  All nodes are equidistant to each
+ * other.  
+ * <p>
+ * The class will have to be expanded to include more advanced topologies
+ * and corresponding visuals
+ *
+ * @author UCLA Compilers Group
+ */
 public class ManageTopology {
-    JPanel topologyVisual; //high level visual
-    JTable table;
-    DefaultTableModel theModel;
+    
+    /**
+     * This is a containter panel - it can be directly
+     * displayed and the internals of this class will ensure
+     * it displays the correct topology information
+     */
+    public JPanel topologyVisual; //high level visual
+    
+    /**
+     * You can directly access this table 
+     * in order to get the values of nodes currently selected
+     */
+    public  JTable table;
+    
+    /**
+     * the model holds the underlying data for the table
+     * If you add nodes to the sim, you should also add
+     * them to this model
+     */
+    public DefaultTableModel theModel;
 
-    AvroraGui app;
-
-    public static ManageTopology createManageTopology(AvroraGui papp) {
+    /**
+     * This is the "constructor" for this class.  It inits all appropiate
+     * visual elements so they can be displayed by the GUI
+     *
+     * @return An instance of this class, whose caller can display it's topologyVisual field
+     */
+    public static ManageTopology createManageTopology() {
         ManageTopology theSetup = new ManageTopology();
-        theSetup.app = papp;
-
+        
         theSetup.topologyVisual = new JPanel();
         
         //So we can display one of two screens here....the topology
@@ -63,8 +94,13 @@ public class ManageTopology {
         return theSetup;
     }
 
-    //This function will create a table of all the nodes
-    //currently registered with the VisualAction class
+    /**
+     * This function will create a table of all the nodes
+     * currently registered.
+     * <p>
+     * It can also be called in order to "redraw" the table after
+     * a change has been made.
+     */
     public void createSimpleAirTable() {
         Vector columnNames = new Vector();
         
@@ -77,8 +113,8 @@ public class ManageTopology {
         theModel = new DefaultTableModel(columnNames, 0);
         table = new JTable(theModel);
         
-        //fill the table with all the data from vAction
-        Iterator ni = app.getSimulation().getNodeIterator();
+        //fill the table with all the data from AvroraGui
+        Iterator ni = AvroraGui.instance.getSimulation().getNodeIterator();
         while ( ni.hasNext() ) {
             VisualSimulation.Node currentNode = (VisualSimulation.Node)ni.next();
             Vector tempVector = new Vector();
@@ -105,17 +141,19 @@ public class ManageTopology {
         topologyVisual.revalidate();
     }
 
-    //Ostensibly the user has selected nodes in the table
-    //for the Simple Air Module.  We want to remove any of those selected
-    //nodes from our visualAction Vector
+    /**
+     * Ostensibly the user has selected nodes in the table
+     * for the Simple Air Module.  We want to remove any of those selected
+     * nodes from our internal storage of node elements
+     */
     public void removeSelectedNodes() {
         //Let's find out which nodes are selected
         int[] selectedRows = table.getSelectedRows();
         for (int i = 0; i < selectedRows.length; i++) {
             //let's get the NID of that row, and tell the 
-            //visual action to remove it
+            //GUI to remove it
             Integer integer = ((Integer) (theModel.getValueAt(selectedRows[i], 0)));
-            app.getSimulation().removeNode(integer.intValue());
+            AvroraGui.instance.getSimulation().removeNode(integer.intValue());
         }
         
         //We should redraw the table

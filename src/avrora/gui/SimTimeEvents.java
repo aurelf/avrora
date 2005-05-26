@@ -33,17 +33,41 @@
 package avrora.gui;
 
 import avrora.sim.Simulator;
-import avrora.Avrora;
+import avrora.sim.radio.SimpleAir;
 
+/**
+ * In order to speed up and slow down the simulator, we insert events
+ * into the simulator queue which trigger the time changes.  These
+ * events are declared here and used by <code> Avrora Gui </code> and
+ * <code> ManageSimTime </code>
+ * <p>
+ * I believe everything about how the GUI interacts with the sim is
+ * changing in the new version.  Thus, this class may just go away.
+ *
+ * @author UCLA Compilers Group
+ */
 public class SimTimeEvents {
 
-    //Pausing
+    private SimpleAir simpleAir;
+
+    /**
+     * This PauseEvent can be inserted in the sim directly
+     */
     public PauseEvent pause;
 
-    public SimTimeEvents() {
+    /**
+     * @param psA The class needs to know about the Toplogy used in the sim
+     */
+    public SimTimeEvents(SimpleAir psA) {
+        simpleAir = psA;
+
         pause = new PauseEvent();
     }
 
+    /**
+     * An instance of this class can be inserted into the sim
+     * it will pause the sim until <code> unpause() </code> is called.
+     */
     public class PauseEvent implements Simulator.Event {
         Object syncObj;
         public boolean ispaused;
@@ -58,7 +82,7 @@ public class SimTimeEvents {
                 try {
                     syncObj.wait();
                 } catch (InterruptedException e) {
-                    throw Avrora.unexpected(e);
+                    //do nothing
                 }
             }
         }

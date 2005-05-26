@@ -40,47 +40,64 @@ import java.awt.event.*;
 import avrora.util.Terminal;
 import avrora.actions.VisualAction;
 
-//This class will graph events.  The numbers added to its vector
-//represent times that events occur.  A colored dot will
-//appear at the time that event occurs.
-//We assume things are added in temporal order
-
+/**
+ * This is a generic helper class for visual monitors.  It's purpose is to help
+ * graph events that occur in the simulator (constant this with <code> 
+ * GraphNumbers </code>, which graph data values as time goes by.
+ * For each event that occurs, a colored dot will appear.  The x-axis maps
+ * time gone by.
+ * <p>
+ * Events must be inserted into this class in temporal order
+ * <p>
+ * This class is not yet done.  It needs to be more generic - right now it's
+ * hacked to specifically allow LED output to be graphed.
+ *
+ * @author UCLA Compilers Group
+ */
 public class GraphEvents extends JPanel implements ChangeListener, AdjustmentListener {
     private MyVector[] publicNumbers; //access by monitors to add stuff
     private MyVector[] privateNumbers; //only accessed by paint
     private static final int VECSIZE = 5;
     private JPanel parentPanel;
-    private VisualAction vAction;
-
+    
     private Object vSync; //just a private sync variable
 
-    //This is the bar that determines what part of
-    //the graph is displayed
+    /**
+    * This is the bar that determines what part of
+    * the graph is displayed
+    */
     public JScrollBar horzBar;
 
     //All these fields can be set by options
-    public double stepsize;
-    public SpinnerNumberModel stepsizeVisual;
-    public int maxvalue;
-    public SpinnerNumberModel maxvalueVisual;
 
+    /**
+     * number of pixels per x-axis value
+     */
+    public double stepsize;
+    
+    /** 
+     * The visual component for setting <code> stepsize </code>
+     */
+    public SpinnerNumberModel stepsizeVisual;
+        
     //options not done yet
     private Color lineColor; //color of line that is drawn
     private Color backColor; //color of background
     private Color tickColor; //color of tick marks/graph lines
     private int xAxisMajorTickMark; //number of plot points before drawing major tick mark
     private int minvalue;
+    private int maxvalue;
 
-    //Other features to add:
-    //ability to user this class "on top of" another GraphNumbers class => multiple lines on one graph
-    //ability to see/get the value of the line based upon a mouse over/mouse click event
-    //double check to see if scroll bar is sizing correctly
-
+    
     //The min and max values of the data in question: for VERTICAL sizing
     //the step size is the HORZ step size (there is no notion of vertical step size)
-    public GraphEvents(int pminvalue, int pmaxvalue, double pstepsize, VisualAction pvAction) {
-        vAction = pvAction;
-
+    /* Called by a monitor who wants to use this class
+     * @param pminvalue For vertical sizing
+     * @param pmaxvalue For vertical sizing
+     * @param pstepsize For horz sizing - number of pixels per unit of x-axis
+     */
+    public GraphEvents(int pminvalue, int pmaxvalue, double pstepsize) {
+        
         vSync = new Object();
 
         publicNumbers = new MyVector[VECSIZE];
@@ -100,9 +117,12 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
         stepsize = pstepsize; //x-axis step size
     }
 
-    //returns a panel which can be displayed that contains the graph numbers
-    //panel and a horz scrollbar at the bottom that makes changes viewing area easy
-    //Basically, what you want to display to the screen
+    /**
+     * Returns a panel which can be displayed that contains the graph numbers
+     * panel and a horz scrollbar at the bottom that makes changes viewing area easy
+     *
+     * @return What you should directly display to the screen
+     */
     public JPanel chalkboardAndBar() {
         JPanel temppanel = new JPanel();
         temppanel.setLayout(new BorderLayout());
@@ -129,12 +149,14 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
         return temppanel;
     }
 
-    //This function updates the scroll bar as new
-    //numbers are added to the vector or if we decided to
-    //jump to a certian value
-    //if the paramter is true, it will set the scroll bar to be the new
-    //max value...otherwise it just keeps value to whatver it used to be
-    //Synchronized because GUI thread and paintthread will access the horz bar
+    /**
+    * This function updates the scroll bar as new
+    * numbers are added to the vector or if we decided to
+    * jump to a certian value
+    * if the paramter is true, it will set the scroll bar to be the new
+    * max value...otherwise it just keeps value to whatver it used to be
+    * Synchronized because GUI thread and paintthread will access the horz bar
+    */
     public synchronized void updateHorzBar() {
         int newExtent = ((int) (((double) this.getSize().width) / stepsize));
 
@@ -169,7 +191,9 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
 
     }
 
-    //used by paint so it knows what value to start painting with
+    /**
+     * used by paint so it knows what value to start painting with
+     */
     public int getHorzBarValue() {
         //Note: does this need to be synched?
         //Right now, no.
@@ -182,15 +206,26 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
     //c) a visualSet method which returns a component that can be used to adjust/view its value
     //   (listeners are already set up and handeled by this class)
 
-    //Step Size set of functions
+    /**
+     * @return stepsize value
+     */
     public double getStepSize() {
         return stepsize;
     }
 
+    /**
+     * @param pstepsize The value that step size should be set to
+     */
     public void setStepSize(double pstepsize) {
         stepsize = pstepsize;
     }
 
+    /**
+     * This creates a visual object that the user
+     * can interact with to set step size
+     *
+     * @return A panel that contains a spinner for setting step size
+     */
     public JPanel visualSetStepSize() {
         if (stepsizeVisual == null) {
             createstepsizeVisual();
@@ -213,58 +248,41 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
         stepsizeVisual.addChangeListener(this);
     }
 
-    //YAxis max value
-    public int getMaxValue() {
-        return maxvalue;
-    }
-
-    public void setMaxValue(int pmaxvalue) {
-        maxvalue = pmaxvalue;
-    }
-
-    public JPanel visualSetMaxValue() {
-        if (maxvalueVisual == null) {
-            createmaxvalueVisual();
-        }
-        JPanel returnthis = new JPanel();
-        returnthis.setLayout(new BorderLayout());
-        JLabel maxvalueLabel = new JLabel("Y-Axis max value");
-        returnthis.add(maxvalueLabel, BorderLayout.WEST);
-        JSpinner spinit = new JSpinner(maxvalueVisual);
-        spinit.setPreferredSize(new Dimension(80, 20));
-        returnthis.add(spinit, BorderLayout.EAST);
-        returnthis.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        return returnthis;
-    }
-
-    private void createmaxvalueVisual() {
-        maxvalueVisual = new SpinnerNumberModel();
-        maxvalueVisual.setValue(new Integer(maxvalue));
-        maxvalueVisual.addChangeListener(this);
-    }
-
-    //This function returns a panel that has all
-    //the visual options aligned in a column
+    /**
+     * This function creates the actual options panel
+     * that can be displayed.  This allows the user to
+     * set monitor options
+     *
+     * @return A panel (can be directly displayed) of all monitor options
+     */
     public JPanel getOptionsPanel() {
         JPanel allOptions = new JPanel();
         allOptions.setLayout(new GridLayout(10, 1));
         //allOptions.setLayout(new BorderLayout());
         allOptions.add(visualSetStepSize());
-        allOptions.add(visualSetMaxValue());
         allOptions.add(new JPanel()); //filler so there is blank space
         return allOptions;
     }
 
 
-    //Used in order to size thing correctly.  Should be called
-    //right after the constructor is called
+    /**
+     * Used in order to size thing correctly.  Should be called
+     * right after the constructor is called
+     */
     public void setParentPanel(JPanel pparentPanel) {
         parentPanel = pparentPanel;
     }
 
-    //Add stuff using this function
-    //On next repaint, it will be added to the graph
+    /**
+     * A monitor can add data using this function
+     * On next repaint, it will be added to the graph
+     *
+     * @param vecnum an index that specified "which" event occured
+     * @param anAddress the time that the event occured
+     */
     public void addToVector(int vecnum, int anAddress) {
+        //This is currently a hack - it should be changed to make it
+        //more generic
         //0 -> transmit
         //1 -> receive
         //2 -> red
@@ -276,9 +294,11 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
         }
     }
 
-    //This function is called by paint and it does what is necessary
-    //to update the privateNumbers vector
-    //returns true if it actually got some numbers, otherwise returns false
+    /**
+    * This function is called by paint and it does what is necessary
+    * to update the privateNumbers vector
+    * @return true if it actually got some numbers, otherwise returns false
+    */
     public boolean internalUpdate() {
         boolean somethingchanged;
         somethingchanged = false;
@@ -298,7 +318,6 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
                         //elsewhere, but "most probably" it will be here
                         Terminal.println("RAN OUT OF HEAP SPACE FOR MONITOR");
                         Terminal.println("SIZE OF MONITORS VECTOR AT THE TIME: " + Integer.toString(privateNumbers[i].size()));
-                        vAction.stopSim();
                     }
 
                     publicNumbers[i].removeAllElements();
@@ -310,10 +329,12 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
         return somethingchanged;
     }
 
-    //This actually paints the graph...note that it repaints the whole graph
-    //everytime its called (to improve performance, we could make use of an update function)
-    //The code here is actually faily ugly
-    //but eh..
+    /**
+     * This actually paints the graph...note that it repaints the whole graph
+     * everytime its called (to improve performance, we could make use of an update function)
+     * The code here is actually faily ugly
+     * but eh..
+     */
     public void paint(Graphics g) {
 
         Dimension panelDimen = this.getSize();
@@ -443,23 +464,30 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
 
     }
 
-    //this function processes the monitor options and re-sets the internal variables appropiatly
+    /**
+     * this function processes the monitor options and re-sets the internal variables appropiatly
+     *
+     *@param e Information about what event occured
+     */
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == stepsizeVisual) {
             stepsize = ((Double) stepsizeVisual.getValue()).doubleValue();
             repaint();
-        } else if (e.getSource() == maxvalueVisual) {
-            maxvalue = ((Integer) maxvalueVisual.getValue()).intValue();
-            repaint();
-        }
+        } 
     }
 
+    /**
+     * If the scroll bar was adjusted, we should repaint.  This method
+     * takes care of that
+     */
     public void adjustmentValueChanged(AdjustmentEvent e) {
         repaint();
     }
 
-    //We don't want to store millions of Integer, but we still want
-    //an array that grows...so we define a MyVector class just for that
+    /**
+     * We don't want to store millions of Integer, but we still want
+     * an array that grows...so we define a MyVector class just for that
+     */
     public class MyVector {
         int[] vec;
         int current;

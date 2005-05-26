@@ -43,6 +43,19 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.Vector;
 
+/**
+ * This is a prototype for a "global monitor."  Several
+ * different nodes are all displayed on the same one panel.
+ * Basically, this monitor will display radio packet transmissions
+ * as dots on the screen.  You can see transmission delays across
+ * nodes.
+ * <p>
+ * The internal code here is not well documented and will soon be entirely 
+ * rewritten to a) accomodate a new way of handeling global monitors and 
+ * b) a new way of accessing data inside the simulator.
+ *
+ * @author UCLA Compilers Group
+ */
 public class VisualRadioMonitor extends MonitorFactory {
 
     //Helps it be global
@@ -106,7 +119,7 @@ public class VisualRadioMonitor extends MonitorFactory {
         //allows vAction to link the GUI and our monitor via the passed panels..
         //it is also where we init our graph and start the paint thread
         //Think of it as the constructor for the visual elements of this monitor
-        public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel, VisualAction pvAction) {
+        public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel) {
 
             allCurrentMonitors.add(this);  //for global access
 
@@ -116,7 +129,7 @@ public class VisualRadioMonitor extends MonitorFactory {
             visualPanel.removeAll();
             visualPanel.setLayout(new BorderLayout());
 
-            theGraph = new GraphEvents(0, 500, 3, pvAction);
+            theGraph = new GraphEvents(0, 500, 3);
 
             allCurrentGraphEvents.add(theGraph);
 

@@ -40,6 +40,22 @@ import java.util.Iterator;
 import java.util.HashMap;
 
 /**
+ * There are two types of visual monitors for the GUI.  First, there are single
+ * node monitors.  Each time a monitor is added to a node, a new panel is created
+ * and each "instance" of this monitor gets its chalkboard/panel to draw on.
+ * Second, there are global monitors.  Every time a global monitor is attached 
+ * to a new node, one one total chalkboard/diplay panel is created.  (e.g. a
+ * global monitor might have five nodes attached to it, but each node only 
+ * writes to one central chalkboard).
+ * <p>
+ * This class is for the first type: single node monitors.  It is a physical
+ * implementation of a monitor factory -> thus once inited, it can create
+ * nodes on command.
+ * <p>
+ * Since many of the single node monitors are very similar is data collection 
+ * and display (just a few lines are different in the actual data collection),
+ * most single node monitors can just use this class as a factory.
+ *
  * @author Ben L. Titzer
  */
 public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFactory {
@@ -47,11 +63,23 @@ public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFacto
     final HashMap panelMap; // maps VisualSimulation.Node -> MonitorPanel
     final HashMap monitorMap; // maps MonitorPanel -> PCMonitor
 
+    /**
+     * Default constuctor, will init the hash maps that store information
+     * about the monitors in this node
+     */
     public SingleNodeMonitor() {
         panelMap = new HashMap();
         monitorMap = new HashMap();
     }
 
+    /**
+     * This actually informs our data structure that the list of
+     * nodes passed to this function want this monitor.  A display 
+     * panel is created.   Note that the monitors are NOT created
+     * by attach - you need to call init
+     *
+     * @param nodes A list of the nodes that should be attached to the monitor
+     */
     public void attach(List nodes) {
         Iterator i = nodes.iterator();
         while ( i.hasNext()) {
@@ -63,10 +91,24 @@ public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFacto
         }
     }
 
+    /**
+     * This is called at the beginning of the simulation to physically
+     * create the nodes
+     *
+     * @param n The node the monitor is attached to
+     * @param s The simulator that the monitor can be inserted into
+     */
     public void instantiate(VisualSimulation.Node n, Simulator s) {
         throw Avrora.unimplemented();
     }
 
+    /**
+     * You can multiple remove nodes from a monitor using this function
+     *
+     * @param nodes A <code> List </code> of nodes that should be removed.  If an 
+     * element of the list is not already attached to the node, it will just
+     * skip that element.
+     */
     public void remove(List nodes) {
         Iterator i = nodes.iterator();
         while ( i.hasNext()) {

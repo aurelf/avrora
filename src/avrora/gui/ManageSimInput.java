@@ -30,9 +30,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//This manages a file chooser box for choosing the simulator file
-//also manages a dialog box for setting simulator options
-
 package avrora.gui;
 
 import javax.swing.*;
@@ -47,13 +44,21 @@ import avrora.Defaults;
 import avrora.sim.platform.PlatformFactory;
 
 
+/**
+ * From a high level view, this class handles "input to the simulator," 
+ * which entails entering files that can be loaded as program as well as 
+ * specifiying options.  Node locations and monitor selection are NOT
+ * handeled by this class.  This class is now only utilized by the
+ * menu bar and there are no visual elements besides dialog boxes that this 
+ * class owns.
+ */
 public class ManageSimInput {
-    JPanel fileSelection;  //this is the high level panel that should be displayed
-
-    JLabel currentFile;
+    
     File currentFileAllInfo;
+    JLabel currentFile;
+    
     JButton openFile;
-    JButton setOptions;
+    
     JFileChooser fc;
     int stageForFileSelection; //we display different screens depending on where the user is
     JButton nextButton;
@@ -67,70 +72,31 @@ public class ManageSimInput {
     JButton fileSelectionDialogUpdate;
     SpinnerNumberModel numOfNodesSpinner;
 
-    AvroraGui app;
-
-    //Returns an object of ManageSimInput which represents the file selection panel
-    //Passed the filename given to avrora by command line (so it can setup default)
-    public static ManageSimInput createManageSimInput(String[] args, AvroraGui papp) {
+    
+    /**
+     * This is the "constructor" for this class.  It inits all the dialog boxes where 
+     * appropiate
+     * @return An object of ManageSimInput which can then be used to input to sim
+     */
+    public static ManageSimInput createManageSimInput() {
         ManageSimInput thesetup = new ManageSimInput();
-
-        thesetup.app = papp;
-
-        //button that holds "Open File"
-        thesetup.openFile = new JButton();
-
-        //Button that pops up dialog to set options
-        thesetup.setOptions = new JButton();
-
-        thesetup.openFile.setToolTipText("Open a simulation file");
-        thesetup.openFile.setMaximumSize(new Dimension(75, 40));
-        thesetup.openFile.addActionListener(papp);
-        thesetup.openFile.setText("Open File");
-
-        thesetup.setOptions.setToolTipText("Set simulator options");
-        thesetup.setOptions.addActionListener(papp);
-        thesetup.setOptions.setText("Set simulator options");
-
-        //The label that displays/stores the file name
-        thesetup.currentFile = new JLabel();
-        thesetup.currentFile.setText(args[0]); //set it to default to whatever the command line gave it
-        thesetup.currentFile.setHorizontalAlignment(JLabel.RIGHT);
-        //Set border so its not too close to the button
-        thesetup.currentFile.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
         //Set up file chooser box...so if user clicks open file it opens a filechooser
         thesetup.fc = new JFileChooser();
-
-        //We have to wrap the above in a panel so it doesn't grow too big
-        JPanel openFilePanel = new JPanel();
-        openFilePanel.setLayout(new BorderLayout());
-        openFilePanel.add(thesetup.currentFile, BorderLayout.WEST);
-        openFilePanel.add(thesetup.openFile, BorderLayout.EAST);
-        openFilePanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-
-        //Now create the Panel
-        thesetup.fileSelection = new JPanel();
-        thesetup.fileSelection.setLayout(new BorderLayout());
-        thesetup.fileSelection.add(openFilePanel, BorderLayout.NORTH);
-        //gotta create a sub-panel or the ste options button will grow too big
-        JPanel southpanel = new JPanel();
-        southpanel.setLayout(new BorderLayout());
-        southpanel.add(new JPanel(), BorderLayout.WEST);
-        southpanel.add(thesetup.setOptions, BorderLayout.EAST);
-        thesetup.fileSelection.add(southpanel, BorderLayout.SOUTH);
-
-        thesetup.fileSelection.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Manage Simulation Input"), BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        
         return thesetup;
     }
 
-    //This creates the dialog box that asks for sim options
-    //Called by the button press
+    /**
+     * This creates the dialog box that asks for sim options
+     * Called by SimMenuBar
+     */
     public void createSetOptionsDialog() {
         //Make sure we have nice window decorations.
         //initLookAndFeel();
         JDialog.setDefaultLookAndFeelDecorated(true);
 
-        setOptionsDialog = new JDialog(app.masterFrame, "Set Simulator Options");
+        setOptionsDialog = new JDialog(AvroraGui.instance.masterFrame, "Set Simulator Options");
 
         //Now we create a JPanel that will be linked to the dialog
         JPanel internalPanel = new JPanel();
@@ -143,18 +109,17 @@ public class ManageSimInput {
         internalPanel.add(dialogBanner, BorderLayout.NORTH);
 
         JPanel belowBannerPanel = new JPanel();
-        belowBannerPanel.setLayout(new GridLayout(app.getOptionList().size(), 1));
+        belowBannerPanel.setLayout(new GridLayout(AvroraGui.instance.getOptionList().size(), 1));
 
         //Now we go to VisualAction and grab a list of the options
         //that we can set
         optionsDialogValues = new LinkedList();
-        Iterator optionIter = app.getOptionList().iterator();
+        Iterator optionIter = AvroraGui.instance.getOptionList().iterator();
         Option currentOption;
         while (optionIter.hasNext()) {
             currentOption = (Option) optionIter.next();
             //NOTE: YOU COULD DETECT SPECIAL CASE HERE (e.g. if(option.getName().equals("MY SPECIAL OPTION"));
             belowBannerPanel.add(addOption(currentOption));
-
         }
 
         //Border of 30 on the outside
@@ -166,7 +131,7 @@ public class ManageSimInput {
         optionsDialogUpdate = new JButton();
         optionsDialogUpdate.setText("Update");
         optionsDialogUpdate.setToolTipText("Click to update the simulator options");
-        optionsDialogUpdate.addActionListener(app);
+        optionsDialogUpdate.addActionListener(AvroraGui.instance);
         internalPanel.add(optionsDialogUpdate, BorderLayout.SOUTH);
         internalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -178,17 +143,22 @@ public class ManageSimInput {
 
     }
 
-    //This creates the dialog box that adds files ("nodes") to the simulator
+    /**
+     * This creates the dialog box that adds files ("nodes") to the simulator
+     */
     public void createFileSelectionDialog() {
 
         stageForFileSelection = 0; //so we start on the first page.
-        //We should init all the stuff:
-
+        
+        
+        //We should init all the stuff here
+        //The stuff that is init below is NOT necessarily displayed
+        //at this time
         //button that holds "Open File"
         openFile = new JButton();
         openFile.setToolTipText("Get a simulation file");
         openFile.setMaximumSize(new Dimension(75, 40));
-        openFile.addActionListener(app);
+        openFile.addActionListener(AvroraGui.instance);
         openFile.setText("Select File");
 
         //The label that displays/stores the file name
@@ -204,23 +174,23 @@ public class ManageSimInput {
         numOfNodesSpinner.setValue(new Integer(1));
         numOfNodesSpinner.setMinimum(new Integer(1));
         numOfNodesSpinner.setStepSize(new Integer(1));
-        numOfNodesSpinner.addChangeListener(app);
+        numOfNodesSpinner.addChangeListener(AvroraGui.instance);
 
         //Add the Update Button
         fileSelectionDialogUpdate = new JButton();
         fileSelectionDialogUpdate.setText("Update");
         fileSelectionDialogUpdate.setToolTipText("Click to add the node(s) to the sim");
-        fileSelectionDialogUpdate.addActionListener(app);
+        fileSelectionDialogUpdate.addActionListener(AvroraGui.instance);
 
         //Add the next button
         nextButton = new JButton();
         nextButton.setText("NEXT>>");
-        nextButton.addActionListener(app);
+        nextButton.addActionListener(AvroraGui.instance);
 
         //Add the back button
         backButton = new JButton();
         backButton.setText("<<BACK");
-        backButton.addActionListener(app);
+        backButton.addActionListener(AvroraGui.instance);
 
         //We should reset the "currentFile" data
         currentFileAllInfo = null;
@@ -228,12 +198,12 @@ public class ManageSimInput {
         //Make sure we have nice window decorations.
         //initLookAndFeel();
         JDialog.setDefaultLookAndFeelDecorated(true);
-        fileSelectionDialog = new JDialog(app.masterFrame, "Add Nodes to Simulation");
+        fileSelectionDialog = new JDialog(AvroraGui.instance.masterFrame, "Add Nodes to Simulation");
 
         updateFileSelectionDialog();
     }
 
-    public void updateFileSelectionDialog() {
+    private void updateFileSelectionDialog() {
 
         //Now we create a JPanel that will be linked to the dialog
         JPanel internalPanel = new JPanel();
@@ -304,10 +274,16 @@ public class ManageSimInput {
     }
 
 
-    //Called when first init the dialog box..it actually adds the look
-    //of the option to the box
-    //Each "type" of option has a special case here: that is, if it's a boolean option
-    //we provide it with a checkbox; if it's a numeric option we provide it with a numeric spinner
+    /**
+     * Called when first init the dialog box..it actually adds the look
+     * of the option to the box
+     * Each "type" of option has a special case here: that is, if it's a boolean option
+     * we provide it with a checkbox; if it's a numeric option we provide it with a numeric spinner
+     *
+     * @param theOption The Option that we need to create a visual widget for
+     *
+     * @return A visual widget that can be displayed (it will vary depending on option type)
+     */
     private Component addOption(Option theOption) {
         if (theOption instanceof Option.Bool) {
             JCheckBox theCheckBox = new JCheckBox(theOption.getName());
@@ -359,8 +335,13 @@ public class ManageSimInput {
         return null;
     }
 
-    //This actually is called once Update is pressed - it updates the
-    //option's values within VisualAction
+    /**
+     * This actually is called once Update is pressed - it updates the
+     * option's value
+     *
+     * @param theOption The option that will physically be changed
+     * @param theComponent The visual widget, passed so we know the new option value
+     */
     private void updateOption(Option theOption, Object theComponent) {
         if (theOption instanceof Option.Bool) {
             //If bool, then it's a checkbox
@@ -378,21 +359,19 @@ public class ManageSimInput {
 
     }
 
-    //Get path to our sim file - used by PLAY
-    public String getPath() {
-        return currentFile.getText();
-    }
-
-    //This function sees if an event was caused by
-    //this panel.  If so, it reacts to it and return true, if not, it returns false
+    /**
+     * This function sees if an event was caused by
+     * this panel.  If so, it reacts to it by calling other methods.
+     *
+     * @return true if indeed this class caused the event
+     */
     public boolean checkAndDispatch(ActionEvent e) {
         //if open file button was pushed...load file chooser
-        if (e.getSource() == openFile) {
-            return openFileUpdate();
-        } else if (e.getSource() == setOptions) {
-            return setOptionsUpdate();
-        } else if (e.getSource() == optionsDialogUpdate) {
+        
+        if (e.getSource() == optionsDialogUpdate) {
             return optionsUpdate();
+        } else if (e.getSource() == openFile) {
+            return openFileUpdate();
         } else if (e.getSource() == fileSelectionDialogUpdate) {
             return fileSelectionUpdate();
         } else if (e.getSource() == nextButton) {
@@ -409,7 +388,6 @@ public class ManageSimInput {
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             currentFileAllInfo = fc.getSelectedFile();
-            currentFile.setText(currentFileAllInfo.getPath());
         } else {
             //User cancelled the open file request, really we just do nothing
         }
@@ -424,7 +402,7 @@ public class ManageSimInput {
     }
 
     private boolean optionsUpdate() {
-        Iterator optionIter = app.getOptionList().iterator();
+        Iterator optionIter = AvroraGui.instance.getOptionList().iterator();
         Option currentOption;
         ListIterator componentIter = optionsDialogValues.listIterator(0);
 
@@ -476,7 +454,7 @@ public class ManageSimInput {
         }
         // TODO: get the platform factory from the dialog
         PlatformFactory pf = null;
-        VisualSimulation s = app.getSimulation();
+        VisualSimulation s = AvroraGui.instance.getSimulation();
 
         int max = ((Integer) numOfNodesSpinner.getValue()).intValue();
         for (int i = 0; i < max; i++) {
@@ -485,7 +463,7 @@ public class ManageSimInput {
         }
 
         //We should redraw the table
-        app.topologyBox.createSimpleAirTable();
+        AvroraGui.instance.topologyBox.createSimpleAirTable();
 
         //And get rid of dialog box
         fileSelectionDialog.setVisible(false);

@@ -86,12 +86,12 @@ public class VisualRegMonitor extends MonitorFactory {
 
         //allows vAction to link the GUI and our monitor via the passed panels..
         //it is also where we init our graph and start the paint thread
-        public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel, VisualAction pvAction) {
+        public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel) {
             visualPanel = thePanel;
             //This is where we should set up the graph panel itself
             visualPanel.removeAll();
             visualPanel.setLayout(new BorderLayout());
-            theGraph = new GraphNumbers(0, 100, 5, pvAction);
+            theGraph = new GraphNumbers(0, 100, 5);
             theGraph.setParentPanel(visualPanel);
             visualPanel.add(theGraph, BorderLayout.CENTER);
             visualPanel.validate();

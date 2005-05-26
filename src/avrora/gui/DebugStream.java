@@ -34,6 +34,15 @@ package avrora.gui;
 
 import java.io.*;
 
+/**
+ * This class acts as a bridge that remaps
+ * console output to the debug window of the GUI.
+ * The class is on the chopping block - Ben was going
+ * to change it soon because this isn't a very efficient way 
+ * of doing things
+ *
+ * @author UCLA Compilers Group
+ */
 public class DebugStream extends OutputStream {
     AvroraGui theGui;
 

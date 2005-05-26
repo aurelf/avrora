@@ -50,20 +50,37 @@ public class LoadableProgram {
     public final File file;
     protected Program program;
 
+    /**
+     * This inits a program with a file from disk.
+     * @param f This is a file, generally received from a FileChooser
+     */
     public LoadableProgram(File f) {
         file = f;
     }
 
+    /**
+     * This should generally be called when starting a sim.  It returns
+     * a program which can be passed as an arg to the sim
+     * @return A program representing a "compiled" version of the file
+     */
     public Program getProgram() {
         if ( program == null )
             throw Avrora.failure("Program "+file+" must be loaded before use");
         return program;
     }
 
+    /**
+     * Call load before called getProgram() to physically load the file
+     * from disk.
+     */
     public void load() throws Exception {
         program = Defaults.getProgramReader("auto").read(new String[] { file.getAbsolutePath() } );
     }
 
+    /**
+     * Calls file.getName();
+     * @return the name of the file (sans path)
+     */
     public String getName() {
         return file.getName();
     }

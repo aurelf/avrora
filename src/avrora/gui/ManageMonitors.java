@@ -44,48 +44,52 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
 
+/**
+ * This class manages the dialog boxes for adding a monitor to the simulator.
+ * It uses <code> GUIDefaults </code> to get a list of the monitors and several
+ * functions inside <code> AvroraGUI </code> for actually adding visual panels
+ * when necessary.  
+ * <p>
+ * There is depracated code here for a "Manage Monitor" button.  Currently,
+ * we instead manage monitors using the top menu bar instead of a special button.
+ *
+ * @author UCLA Compilers Group
+ */
 public class ManageMonitors {
-    public JButton monitorsButton;
-
+    
     JDialog chooseMonitorsDialog;
     JButton monitorsDialogUpdate;
     LinkedList checkBoxContainer;
-
-    AvroraGui app;
-
-
-    //Returns an object of ManageSimInput which represents the file selection panel
-    //Passed the filename given to avrora by command line (so it can setup default)
-    //This is the "constructor" for this class
-    public static ManageMonitors createManageMonitors(AvroraGui papp) {
+    
+    /**
+     * This should be called during the GUI init in order
+     * to have "slots" for the various dialog boxes.  This function
+     * use to be more useful back before monitor management was handled
+     * by the menu bar (we use to have to declare visual components here
+     *
+     * Really, this is only here to be consistent with the other
+     * Manage* class files - all are inited in the same way
+     *
+     * @return An instance of this class (used to create dialogs)
+     */
+    public static ManageMonitors createManageMonitors() {
         ManageMonitors thesetup = new ManageMonitors();
-
-        thesetup.app = papp;
-
-        //button that holds "Manage Monitors"
-        thesetup.monitorsButton = new JButton();
-        thesetup.monitorsButton.setText("Manage Monitors");
-        thesetup.monitorsButton.setToolTipText("Opens a dialog so you can place monitors on the simulator");
-        thesetup.monitorsButton.setHorizontalAlignment(JLabel.RIGHT);
-        thesetup.monitorsButton.setMaximumSize(new Dimension(100, 40));
-        thesetup.monitorsButton.addActionListener(papp);
-
         //Note: the dialog box is created upon the button push
-
         return thesetup;
     }
 
-    //This creates the dialog box that asks for which monitors we want
-    //to add
+    /**
+     * This creates a dialog box that displays a choice of monitors
+     * to add.  It is assumed that the user has already used the topology
+     * window to select specific nodes that the monitors will be added to
+     */
     public void createMonitorsDialog() {
-
         //Make sure we have nice window decorations.
-        //initLookAndFeel();
         JDialog.setDefaultLookAndFeelDecorated(true);
 
         checkBoxContainer = new LinkedList();
 
-        chooseMonitorsDialog = new JDialog(app.masterFrame, "Add Monitors to Selected Nodes");
+        chooseMonitorsDialog = new JDialog(AvroraGui.instance.masterFrame, "Add Monitors to Selected Nodes");
 
         //Now we create a JPanel that will be linked to the dialog
         JPanel internalPanel = new JPanel();
@@ -99,6 +103,7 @@ public class ManageMonitors {
 
         JPanel belowBannerPanel = new JPanel();
 
+        //This gets monitors from GUIDefaults
         addMonitorsFromClassMap(belowBannerPanel);
 
         //Border of 30 on the outside
@@ -110,7 +115,7 @@ public class ManageMonitors {
         monitorsDialogUpdate = new JButton();
         monitorsDialogUpdate.setText("Update");
         monitorsDialogUpdate.setToolTipText("Click to update the monitors list");
-        monitorsDialogUpdate.addActionListener(app);
+        monitorsDialogUpdate.addActionListener(AvroraGui.instance);
         internalPanel.add(monitorsDialogUpdate, BorderLayout.SOUTH);
         internalPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -119,18 +124,20 @@ public class ManageMonitors {
 
         //Sizes things appropiatly
         chooseMonitorsDialog.pack();
-
     }
 
+    /** 
+     * This function gets the monitor list from AvroraGui, which in turn
+     * gets it from GUIDefaults.  
+     */
     private void addMonitorsFromClassMap(JPanel belowBannerPanel) {
         //Let's get a storted list of monitor names registered with the VisualAction
-        java.util.List monitorList = app.getMonitorList();
+        java.util.List monitorList = AvroraGui.instance.getMonitorList();
         Iterator monitorIter = monitorList.iterator();
 
         belowBannerPanel.setLayout(new GridLayout(monitorList.size(), 1));
 
-        //Scroll through, adding all monitors...if the monitor is already
-        //part of our VisualAction MONITORS Option, then we check it.
+        //Scroll through, adding all monitors...
         while (monitorIter.hasNext()) {
             String currentMonitor = (String) monitorIter.next();
             //Add a checkbox representing this list
@@ -143,17 +150,25 @@ public class ManageMonitors {
         }
     }
 
-    //This function sees if an event was caused by
-    //this panel.  If so, it reacts to it and return true, if not, it returns false
+    /**
+     * This function checks if an event was caused by
+     * this panel.  If so, it reacts to it.
+     * This will be called by AvroraGui, the global listener for all events
+     *
+     * @return true if this panel was the cause of the event, false otherwise
+     */
     public boolean checkAndDispatch(ActionEvent e) {
         //if the manage monitors button was pushed...we have to load our dialog
+        
+        /* Monitor button no longer exists
         if (e.getSource() == monitorsButton) {
             createMonitorsDialog();
             chooseMonitorsDialog.setLocationRelativeTo(null); //center on screen
             chooseMonitorsDialog.setVisible(true);
 
             return true;
-        } else if (e.getSource() == monitorsDialogUpdate) {
+         */
+        if (e.getSource() == monitorsDialogUpdate) {
             //Our goal is to find all the selected
             //nodes.  For each node, if the monitor
             //has not already been added, then we
@@ -184,7 +199,7 @@ public class ManageMonitors {
             chooseMonitorsDialog.setVisible(false);
 
             //we should also redraw the node table
-            app.topologyBox.createSimpleAirTable();
+            AvroraGui.instance.topologyBox.createSimpleAirTable();
             return true;
         } else {
             return false; //this module did not cause the action;
@@ -192,88 +207,20 @@ public class ManageMonitors {
 
     }
 
-    private void createRadioPanel(String currentMonitor, int currentNID) {
-        //if it's not already there, we add
-        //the static Radio Monitor Panel to
-        //the tab
-        if (!VisualRadioMonitor.isDisplayed) {
-            String nameOfPanel = "Global - Radio Monitor";
-
-            //Actually display the panel...add it to the tab
-            app.monitorResults.addTab(nameOfPanel, VisualRadioMonitor.masterPanel);
-        }
-
-        //Now we add this NID to our list of nodes
-        //associated with this global monitor
-        // TODO: reimplement adding a monitor to a node
-        if (false) {
-            //if the above returned true, then we have to
-            //actually create a monitor panel and
-            //register that panel the visual action
-            //If it returned false, then that node already had
-            //that monitor
-            JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
-            JLabel filler = new JLabel("This panel will update once the simulator is run.");
-            filler.setHorizontalAlignment(JLabel.CENTER);
-            panel.setLayout(new GridLayout(1, 1));
-            panel.add(filler);
-
-
-            GridLayout theLayout = (GridLayout) VisualRadioMonitor.masterPanel.getLayout();
-            if (VisualRadioMonitor.masterPanel.getComponentCount() == theLayout.getRows())
-                theLayout.setRows(theLayout.getRows() + 1);
-
-            VisualRadioMonitor.masterPanel.add(panel);
-
-            //Now let's create the options panel
-            JPanel optionsPanel = VisualRadioMonitor.optionsPanel;
-
-            //Let's keep track of our panels...add them to hash tables
-            //for this particular node
-            // TODO: reimplement registering panels
-
-        }
-    }
-
-    private void createDefaultPanel(int currentNID, String currentMonitor) {
-        //if the above returned true, then we have to
-        //actually create a monitor panel and
-        //register that panel the visual action
-        //If it returned false, then that node already had
-        //that monitor
-        JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
-        JLabel filler = new JLabel("This panel will update once the simulator is run.");
-        filler.setHorizontalAlignment(JLabel.CENTER);
-        panel.setLayout(new GridLayout(1, 1));
-        panel.add(filler);
-
-        String nameOfPanel = "NID: " + Integer.toString(currentNID) + " - " + currentMonitor;
-
-        //Actually display the panel...add it to the tab
-        app.monitorResults.addTab(nameOfPanel, panel);
-
-        //Now let's create the options panel
-        JPanel optionsPanel = new JPanel(false);
-        JLabel optionsFiller = new JLabel("Options for the monitor can be set here. ");
-        optionsPanel.setLayout(new GridLayout(1, 1));
-        optionsPanel.add(optionsFiller);
-
-        //Let's keep track of our panels...add them to hash tables
-        //for this particular node
-        // TODO: reimplement registering panels
-    }
-
     private VisualSimulation.MonitorFactory getMonitorFactory(String n) {
         return GUIDefaults.getMonitor(n);
     }
 
+    /**
+     * This gets a list of currently selected nodes from the topology window
+     */
     private LinkedList getNodeList() {
-        VisualSimulation sim = app.getSimulation();
+        VisualSimulation sim = AvroraGui.instance.getSimulation();
         LinkedList nodes = new LinkedList();
-        int[] selectedRows = app.topologyBox.table.getSelectedRows();
+        int[] selectedRows = AvroraGui.instance.topologyBox.table.getSelectedRows();
         for (int i = 0; i < selectedRows.length; i++) {
             //let's get the NID of that row
-            Object v = app.topologyBox.theModel.getValueAt(selectedRows[i], 0);
+            Object v = AvroraGui.instance.topologyBox.theModel.getValueAt(selectedRows[i], 0);
             int nid = ((Integer) v).intValue();
             VisualSimulation.Node node = sim.getNode(nid);
             nodes.add(node);

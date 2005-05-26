@@ -44,19 +44,33 @@ import java.util.*;
 
 import avrora.util.Terminal;
 
+/**
+ * From a high level view, the controls what the simulation is doing.
+ * It can start, top, pause, speed up, and slow down the simulator.  It also
+ * contains within it the visual component necessary to make this happen (the
+ * start, stop buttons, the slider for controlling time.  AvroraGui accesses
+ * these visual elements and displays them
+ *
+ * @author UCLA Compilers Group
+ */
 public class ManageSimTime {
-    public JToolBar simTimeToolbar;
-    public JSlider simTimeSlider;
-    public SpinnerNumberModel simTimeDelaySpinner;
-    public SpinnerNumberModel simTimeCycleSpinner;
-    public JComboBox simTimeIorCSelect;
-    public JPanel simTimeEverything;
 
+    /**
+     * This is a panel that contains all the visual elements of
+     * this class.  It can be displayed by AvroraGui and the user
+     * can then interact with it
+     */
+    public JPanel simTimeEverything;
+    
+    private JToolBar simTimeToolbar;
+    private JSlider simTimeSlider;
+    private SpinnerNumberModel simTimeDelaySpinner;
+    private SpinnerNumberModel simTimeCycleSpinner;
+    private JComboBox simTimeIorCSelect;
+    
     private static int[] simTimeDelayDefaults;
     private static int[] simTimeCycleDefaults;
     private static int numofdefaults;
-
-    private AvroraGui app;
 
     private static final String REWIND = "rewind";
     private static final String STOP = "stop";
@@ -64,11 +78,15 @@ public class ManageSimTime {
     private static final String RESUME = "resume";
     private static final String FASTFORWARD = "fastforward";
 
-    //Returns an object of ManagaSimTime...called by AvroraGUI.createGUI
-    public static ManageSimTime createManageSimTime(AvroraGui papp) {
+    /**
+     * This is a "constructor" - it inits all internal fields
+     * It is generally called by AvroraGui when the GUI is
+     * being created
+     *
+     * @return An instance of ManageSimTime
+     */
+    public static ManageSimTime createManageSimTime() {
         ManageSimTime thesetup = new ManageSimTime();
-
-        thesetup.app = papp;
 
         numofdefaults = 6;
         simTimeDelayDefaults = new int[numofdefaults];
@@ -120,42 +138,42 @@ public class ManageSimTime {
         thesetup.simTimeSlider.setPaintTicks(true);
         thesetup.simTimeSlider.setSnapToTicks(true);
         thesetup.simTimeSlider.setLabelTable(temptable);
-        thesetup.simTimeSlider.addChangeListener(papp);
+        thesetup.simTimeSlider.addChangeListener(AvroraGui.instance);
 
         //Delay spinner
         thesetup.simTimeDelaySpinner = new SpinnerNumberModel();
         thesetup.simTimeDelaySpinner.setValue(new Integer(0));
         thesetup.simTimeDelaySpinner.setMinimum(new Integer(0));
         thesetup.simTimeDelaySpinner.setStepSize(new Integer(1));
-        thesetup.simTimeDelaySpinner.addChangeListener(papp);
+        thesetup.simTimeDelaySpinner.addChangeListener(AvroraGui.instance);
 
         //Cycle/Instruction spinner
         thesetup.simTimeCycleSpinner = new SpinnerNumberModel();
         thesetup.simTimeCycleSpinner.setValue(new Integer(0));
         thesetup.simTimeCycleSpinner.setMinimum(new Integer(0));
         thesetup.simTimeCycleSpinner.setStepSize(new Integer(1));
-        thesetup.simTimeCycleSpinner.addChangeListener(papp);
+        thesetup.simTimeCycleSpinner.addChangeListener(AvroraGui.instance);
 
         //Cycle/Instruction selector
         Vector iorcvector = new Vector();
         iorcvector.add("cycles");
         iorcvector.add("instructions");
         thesetup.simTimeIorCSelect = new JComboBox(iorcvector);
-        thesetup.simTimeIorCSelect.addActionListener(papp);
+        thesetup.simTimeIorCSelect.addActionListener(AvroraGui.instance);
 
         //Toolbar
         thesetup.simTimeToolbar = new JToolBar("Avrora Simulation Toolbar");
         thesetup.simTimeToolbar.setFloatable(false);
         JButton newbutton;
-        newbutton = makeSimButton("Rewind24", REWIND, "Slow down simulation", "Slower", papp);
+        newbutton = makeSimButton("Rewind24", REWIND, "Slow down simulation", "Slower", AvroraGui.instance);
         thesetup.simTimeToolbar.add(newbutton);
-        newbutton = makeSimButton("Stop24", STOP, "Stop the simulation", "Stop", papp);
+        newbutton = makeSimButton("Stop24", STOP, "Stop the simulation", "Stop", AvroraGui.instance);
         thesetup.simTimeToolbar.add(newbutton);
-        newbutton = makeSimButton("Pause24", PAUSE, "Pause the simulation", "Pause", papp);
+        newbutton = makeSimButton("Pause24", PAUSE, "Pause the simulation", "Pause", AvroraGui.instance);
         thesetup.simTimeToolbar.add(newbutton);
-        newbutton = makeSimButton("Play24", RESUME, "Resume a paused/single stepped simulation or start sim", "Play", papp);
+        newbutton = makeSimButton("Play24", RESUME, "Resume a paused/single stepped simulation or start sim", "Play", AvroraGui.instance);
         thesetup.simTimeToolbar.add(newbutton);
-        newbutton = makeSimButton("FastForward24", FASTFORWARD, "Increase simulation speed", "Faster", papp);
+        newbutton = makeSimButton("FastForward24", FASTFORWARD, "Increase simulation speed", "Faster", AvroraGui.instance);
         thesetup.simTimeToolbar.add(newbutton);
         thesetup.simTimeToolbar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -193,12 +211,16 @@ public class ManageSimTime {
         return thesetup;
     }
 
-    //This function sees if an event was caused by
-    //this panel.  If so, it reacts to it and return true, if not, it returns false
+    /**
+     * This function checks to see if an event was caused by
+     * this panel.  If so, it reacts to it.
+     *
+     * @return true if this panel caused the event, otherwise false
+     */
     public boolean checkAndDispatch(ActionEvent e) {
         String cmd = e.getActionCommand();
 
-        VisualSimulation sim = app.getSimulation();
+        VisualSimulation sim = AvroraGui.instance.getSimulation();
         if (STOP.equals(cmd)) {
             sim.stop();
             return true;
@@ -214,7 +236,7 @@ public class ManageSimTime {
             } else if (!sim.isRunning()) {
 
                 //Set the correct terminal (that is, the debug terminal)
-                PrintStream tempstream = new PrintStream(new DebugStream(app));
+                PrintStream tempstream = new PrintStream(new DebugStream(AvroraGui.instance));
                 Terminal.setOutput(tempstream);
 
                 // TODO: reset monitor panels
@@ -258,8 +280,13 @@ public class ManageSimTime {
         }
     }
 
-    //The spinner and slider listen for changes, not action
-    //so they have to be in a seperate function
+    /**
+     * This function checks to see if an event was caused by
+     * this panel.  If so, it reacts to it.  Instead of looking
+     * for action events, it looks for ChangeEvents.
+     *
+     * @return true if this panel caused the event, otherwise false
+     */
     public boolean sliderAndSpinnerDispatch(ChangeEvent e) {
         if (e.getSource() == simTimeSlider) {
             changeSpinnerBasedOnSlider();  //will call updateSimChangeSpeedValues()
@@ -294,7 +321,9 @@ public class ManageSimTime {
         }
     }
 
-    //this is called upon a change in the slider...it updates the spinner if necessary
+    /**
+     * this is called upon a change in the slider...it updates the spinner if necessary
+     */
     private void changeSpinnerBasedOnSlider() {
         if (simTimeSlider.getValue() >= 0) //so it's not custom
         {

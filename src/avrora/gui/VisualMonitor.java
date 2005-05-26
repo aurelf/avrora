@@ -39,25 +39,48 @@ import avrora.gui.GraphEvents;
 import avrora.monitors.Monitor;
 
 /**
- * The <code>Monitor</code> class represents a monitor attached to a <code>Simulator</code> instance. Created
+ * The <code>VisualMonitor</code> class represents a monitor attached to a <code>Simulator</code> instance. Created
  * by the <code>MonitorFactory</code> class, a monitor collects statistics about a program as it runs, and
  * then when the simulation is complete, generates a report.
+ * <p>
+ * All visual monitors are expected to "draw" some graphical output (e.g. a graph, a table) to a displayable
+ * Swing panel.
  *
  * @author Ben L. Titzer
  */
 public interface VisualMonitor extends Monitor {
 
-    public void updateDataAndPaint(); //to be called by the thread that is periodically
-    //repainting this monitor's chalkboard
+    /**
+     * This function should be called by the thread that periodically repaints the
+     * monitors chalkaboard.  It is assumed that this function will also handle any 
+     * internal data maniuplations that are necessary
+     */
+    public void updateDataAndPaint(); 
 
+    /**
+     * This is a temporary hack...once Global Monitors is rewritten to be more robust, this
+     * will be deleted
+     */
     public GraphEvents getGraph();
 
-    public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel, VisualAction vAction);
+    /**
+     * This is called right after a monitor is actually init (when the sim is just beginning
+     * It physically let's the new monitor "know" about it's painting surfaces
+     * <p>
+     * Note that it's possible with the new implementation that this function will be unnecessary
+     *
+     * @param thePanel The main display panel for the monitor
+     * @param theOptionsPanel The panel that the monitor can display options to
+     */
+    public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel);
 
     /**
      * The <code>report()</code> method is called after the simulation is complete. The monitor generates a
      * textual or other format representation of the information collected during the execution of the
      * program.
+     * <p>
+     * For visual monitors, typically is would do a "last check" to make sure it got all it's
+     * data from temporary storage onto the display.
      */
     public void report();
 }

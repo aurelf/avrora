@@ -45,25 +45,68 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.HashMap;
 
-
+/**
+ * The <code> AvroraGUI </code> is the top level GUI component.  It should
+ * be inited by VisualAction.  It stores the physical, visible components
+ * of the GUI and also starts the various threads
+ *
+ * @author UCLA Compilers Group
+ */
 public class AvroraGui implements ActionListener, ChangeListener {
 
+    /**
+     * This is the actual instance of AvroraGui that is used.  Since it's
+     * static, it can be called by anything that adds the current package
+     */
     public static AvroraGui instance;
 
+    /**
+     * This function should be called by VisualAction to actually
+     * init the static reference to a physical AvroraGUI object
+     *
+     * @param opt Options specified from the command line
+     * @param args file names specified from the command line
+     */
     public static void init(Options opt, String[] args) {
         instance = new AvroraGui(opt, args);
     }
 
+    /**
+     * This is a list of arguments passed by the command line that
+     * <code> avrora.Main </code> did not process.  Most likely
+     * it's a list of filenames.
+     */
     public String[] args;
 
     //High level elements of the GUI
+    
+    /**
+     * This is GUI - everything fits inside the master frame 
+     */
     public JFrame masterFrame;
+    
+    /**
+     * This menu bar now contols most of the options specified by the GUI
+     * (this is the file, edit, options menus)
+     */
     public SimMenuBar topMenu;
-    public ManageSimInput simInputBox;
-    public ManageMonitors manageMonitorsBox;
+    
+    /**
+     * This handles the speed up/slow down, pause, stop, and start of a sim
+     */
     public ManageSimTime simTimeBox;
+    
+    /**
+     * All information on node topology is displayed and set via this class 
+     */
     public ManageTopology topologyBox;
+    
+    /**
+     * This holds all our monitor "chalkboards" for displaying the data they collect
+     */
     public JTabbedPane monitorResults; //Holds all the different monitor results, as tabbed windows
+    
+    
     private JLabel versioningInfo; //holds the text that displays at the bottom of the GUI
     private JPanel monitorOptions; //holds the options for the current monitor
 
@@ -76,9 +119,6 @@ public class AvroraGui implements ActionListener, ChangeListener {
     //For convuluted reasons it's important to store the
     //current monitor being displayed (see paint thread)
     private MonitorPanel currentMonitorDisplayed;
-
-    //we no longer create the banner
-    //private JPanel avroraBanner;  //holds the title banner
 
     private static final String AVRORA_VERSION = "Avrora "+Version.getVersion();
     private static final String AVRORA_GUI_VERSION = "Avrora Gui v.0.3.2";
@@ -110,9 +150,9 @@ public class AvroraGui implements ActionListener, ChangeListener {
         //First create the north quadrant, which contains
         //the banner and the sim toolbar
 
-        this.simTimeBox = ManageSimTime.createManageSimTime(this);
+        this.simTimeBox = ManageSimTime.createManageSimTime();
 
-        this.topMenu = SimMenuBar.createSimMenuBar(this.args, this);
+        this.topMenu = SimMenuBar.createSimMenuBar();
         masterFrame.setJMenuBar(this.topMenu.menuBar);
 
         //Let's create a subpanel for displaying simtoolbar and file selection
@@ -134,7 +174,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
         westPanel.setLayout(new GridLayout(2, 1));
 
         //westPanel.add(this.topologyVisual);
-        this.topologyBox = ManageTopology.createManageTopology(this);
+        this.topologyBox = ManageTopology.createManageTopology();
         westPanel.add(this.topologyBox.topologyVisual);
 
 
@@ -144,46 +184,68 @@ public class AvroraGui implements ActionListener, ChangeListener {
         westPanel.add(this.monitorOptions);
         masterFrame.getContentPane().add(westPanel, BorderLayout.WEST);
 
-        //The south quadrant holds the manage monitors button and the version info
-        this.manageMonitorsBox = ManageMonitors.createManageMonitors(this);
+        //South holds versioning info
         this.createVersioningInfo();
         JPanel southPanel = new JPanel();
         southPanel.setLayout(new BorderLayout());
         //Add blank JPanel so our button is right size
         JPanel blankPanel = new JPanel();
         southPanel.add(blankPanel, BorderLayout.CENTER);
-        //We no longer add Manage monitors -> it's been moved to the top level menu
-        //southPanel.add(this.manageMonitorsBox.monitorsButton, BorderLayout.EAST);
+                
         southPanel.add(this.versioningInfo, BorderLayout.SOUTH);
         masterFrame.getContentPane().add(southPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * A {@link VisualSimulation} object holds data about the current sim running
+     *
+     * @return Information about the current simulation running
+     */
     public VisualSimulation getSimulation() {
         return simulation;
     }
 
+    /**
+     * Gets all monitors attached to the simulator.  Uses {@link GUIDefaults}
+     *
+     * @return List of all monitors
+     */
     public java.util.List getMonitorList() {
         return GUIDefaults.getMonitorList();
     }
 
+    /**
+     * Gets all options for the GUI and simulator.  Uses {@link GUIDefaults}
+     *
+     * @return List of all monitors
+     */
     public java.util.List getOptionList() {
         return GUIDefaults.getOptionList();
     }
 
-    //Called when an event occurs on the GUI
-    //Really just dispatchs to the modules of the GUI and allows them
-    //to handle the event
+    /**
+     * This allows the GUI to respond to mouse clicks or other events.
+     * It calls the various methods in subclasses that are responsible 
+     * for modules on the screen
+     *
+     * @param e Holds information about what event happened
+     */
     public void actionPerformed(ActionEvent e) {
-        if (manageMonitorsBox.checkAndDispatch(e)) {
-            return;
-        } else if (simTimeBox.checkAndDispatch(e)) {
+        if (simTimeBox.checkAndDispatch(e)) {
             return;
         } else if (topMenu.checkAndDispatch(e)) {
             return;
         }
     }
 
-    //some modules detect state changes, not actions
+     /**
+     * Some modules (like a spinner) detect a state change and not an action.
+     * Thus, visual action can handle both.  A specific hack here is that this
+     * function changes the visual monitor options panel if the stat change
+     * that occured as a change to visual monitor display panel.
+     *
+     * @param e Holds information about what event happened
+     */
     public void stateChanged(ChangeEvent e) {
         if (simTimeBox.sliderAndSpinnerDispatch(e)) {
             return;
@@ -276,11 +338,19 @@ public class AvroraGui implements ActionListener, ChangeListener {
         versioningInfo = new JLabel(AVRORA_VERSION + "; " + AVRORA_GUI_VERSION, SwingConstants.RIGHT);
     }
 
-    //Used by DebugStream to allow writing to the debug window
+    /**
+    * Used by DebugStream to allow writing to the debug window.  This might
+    * be changed soon - Ben didn't like the way this was done (not efficient).
+    * @param b generally just one letter that needs to be output
+    */
     public void debugAppend(String b) {
         debugOutput.append(b);
     }
 
+    /**
+     * Once the GUI has been "created" we call this function
+     * to physically display it to the screen
+     */
     public void showGui() {
         //Display the window.
 
@@ -344,17 +414,27 @@ public class AvroraGui implements ActionListener, ChangeListener {
         }
     }
 
+    /**
+     * This function will dispatch a new thread
+     * that will repaint our dynamic monitor window if new
+     * data has been collected
+     */
     public void startPaintThread() {
         newPaintThread = new PaintThread();
         newPaintThread.start();
     }
 
+    /**
+     * This function creates an options panel and a display panel
+     * for a non-global visual monitor.  It the displays the default
+     * simple look for the panels until the simulator is actually run.
+     * It also registers the monitor panel pair in the <code> monitorTabMap
+     * </code>
+     *
+     * @param name Name of the monitor
+     * @return The pair of panels wrapped together in one class
+     */
     public MonitorPanel createMonitorPanel(String name) {
-        //if the above returned true, then we have to
-        //actually create a monitor panel and
-        //register that panel the visual action
-        //If it returned false, then that node already had
-        //that monitor
         JPanel panel = new JPanel(false);  //This is the panel passed to the monitor
         JLabel filler = new JLabel("This panel will update once the simulator is run.");
         filler.setHorizontalAlignment(JLabel.CENTER);
@@ -375,14 +455,28 @@ public class AvroraGui implements ActionListener, ChangeListener {
         return p;
     }
 
+    /**
+     * This will remove a visual monitor panel
+     * from the tabbed pane.  It will also remove the <code>
+     * MonitorPanel </code> instance from our global list of monitor
+     * panels.  It will NOT destory the monitor options panel, but so
+     * long as the panel is never displayed again this isn't an issue.
+     *
+     * @param p The MonitorPanel that needs to be removed
+     */
     public void removeMonitorPanel(MonitorPanel p) {
         int i = monitorResults.indexOfTab(p.name);
         monitorResults.removeTabAt(i);
         monitorTabMap.remove(p.displayPanel);
     }
 
-    //This class is actually a new thread that will run
-    //once every while to repaint the the monitor window
+    //TODO: Change to make it actually work with global monitors
+    //TODO: Add a method that kills this thread
+    /**
+     * This thread will call the various monitor
+     * update and repaint methods for whatever monitor
+     * is currently being display in real time.
+     */
     public class PaintThread extends Thread {
         public void run() {
             try {
@@ -407,7 +501,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
                     Thread.currentThread().sleep(PAINT_THREAD_SLEEP_TIME);
                 }
             } catch (InterruptedException except) {
-                throw Avrora.unexpected(except);
+                //If interrupted, do nothing
             }
         }
 

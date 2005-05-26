@@ -39,6 +39,10 @@ import java.util.List;
 import java.util.LinkedList;
 
 /**
+ * Any and all "random" data that needs to be stored about the GUI
+ * or sim is stored here.  A list of all options that can be specified
+ * and a list of all monitors is stored here.  
+ *
  * @author Ben L. Titzer
  */
 public class GUIDefaults {

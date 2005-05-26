@@ -40,27 +40,44 @@ import java.awt.event.*;
 import avrora.util.Terminal;
 import avrora.actions.VisualAction;
 
-//The class will graph the numbers added with its AddToVector function
-//You set options via a group of set/get methods.  The class can 
-//also return visual components that can be used to change the graphing options
-
+/**
+ * The class assists visual monitors with graphing time-series data
+ * values.  It visually displays them using a line graph
+ */
 public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentListener {
 
     private MyVector publicNumbers; //access by monitors to add stuff
     private MyVector privateNumbers; //only accessed by paint
     private JPanel parentPanel;
-    private VisualAction vAction;
-
+    
     private Object vSync; //just a private sync variable
 
-    //This is the bar that determines what part of
-    //the graph is displayed
+    /**
+    * This is the bar that determines what part of
+    * the graph is displayed
+    */
     public JScrollBar horzBar;
 
-    //All these fields can be set by options
+    //All these fields can be set by the options panel
+    
+    /**
+     * The number of pixels per x-axis value
+     */
     public int stepsize;
+    
+    /**
+     * The visual widget that sets the step size
+     */
     public SpinnerNumberModel stepsizeVisual;
+    
+    /**
+     * The max value of the y-axis
+     */
     public int maxvalue;
+    
+    /**
+     * The visual wdiget that sets the max value for the y-axis
+     */
     public SpinnerNumberModel maxvalueVisual;
 
     //options not done yet
@@ -75,11 +92,14 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     //ability to see/get the value of the line based upon a mouse over/mouse click event
     //double check to see if scroll bar is sizing correctly
 
-    //The min and max values of the data in question: for VERTICAL sizing
-    //the step size is the HORZ step size (there is no notion of vertical step size)
-    public GraphNumbers(int pminvalue, int pmaxvalue, int pstepsize, VisualAction pvAction) {
-        vAction = pvAction;
-
+    /**
+     * Called by a visual action that wants this class to help with displaying time series data
+     * @param pminvalue The min value for the y-axis
+     * @param pmaxvalue The max value for the y-axis
+     * @param pstepsize The step size for the x-axis
+     */
+    public GraphNumbers(int pminvalue, int pmaxvalue, int pstepsize) {
+        
         vSync = new Object();
 
         publicNumbers = new MyVector();
@@ -95,9 +115,11 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         stepsize = pstepsize; //x-axis step size
     }
 
-    //returns a panel which can be displayed that contains the graph numbers
-    //panel and a horz scrollbar at the bottom that makes changes viewing area easy
-    //Basically, what you want to display to the screen
+    /**
+     * Returns a panel which can be displayed that contains the graph numbers
+     * panel and a horz scrollbar at the bottom that makes changes viewing area easy
+     * @return Basically, what you want to display to the screen
+     */
     public JPanel chalkboardAndBar() {
         JPanel temppanel = new JPanel();
         temppanel.setLayout(new BorderLayout());
@@ -124,12 +146,12 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         return temppanel;
     }
 
-    //This function updates the scroll bar as new
-    //numbers are added to the vector or if we decided to
-    //jump to a certian value
-    //if the paramter is true, it will set the scroll bar to be the new
-    //max value...otherwise it just keeps value to whatver it used to be
-    //Synchronized because GUI thread and paintthread will access the horz bar
+    /**
+     * This function updates the scroll bar as new
+     * numbers are added to the vector or if we decided to
+     * jump to a certian value
+     * Synchronized because GUI thread and paintthread will access the horz bar
+     */
     public synchronized void updateHorzBar() {
         int newExtent = this.getSize().width / stepsize;
 
@@ -149,8 +171,10 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         horzBar.setValues(newValue, newExtent, 0, privateNumbers.size());
     }
 
-    //used by paint so it knows what value to start painting with
-    public int getHorzBarValue() {
+    /**
+     * used by paint so it knows what value to start painting with
+     */
+    private int getHorzBarValue() {
         //Note: does this need to be synched?
         //Right now, no.
         return horzBar.getValue();
@@ -162,15 +186,25 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     //c) a visualSet method which returns a component that can be used to adjust/view its value
     //   (listeners are already set up and handeled by this class)
 
-    //Step Size set of functions
+     /**
+     * @return stepsize value
+     */
     public int getStepSize() {
         return stepsize;
     }
 
+    /**
+     * @param pstepsize The value that stepsize should be set to
+     */
     public void setStepSize(int pstepsize) {
         stepsize = pstepsize;
     }
 
+    /**
+     * This is called to get the visual widget that the user can set step 
+     * size with.
+     * @return A panel containing a spinner that controls stepsize value
+     */
     public JPanel visualSetStepSize() {
         if (stepsizeVisual == null) {
             createstepsizeVisual();
@@ -193,15 +227,25 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         stepsizeVisual.addChangeListener(this);
     }
 
-    //YAxis max value
+     /**
+     * @return y-axis max value
+     */
     public int getMaxValue() {
         return maxvalue;
     }
 
+    /**
+     * @param pmaxvalue The value that maxvalue should be set to
+     */
     public void setMaxValue(int pmaxvalue) {
         maxvalue = pmaxvalue;
     }
 
+   /**
+    * This is called to get the visual widget that the user can set y-axis
+    * max value with.
+    * @return A panel containing a spinner that controls maxvalue value
+   */
     public JPanel visualSetMaxValue() {
         if (maxvalueVisual == null) {
             createmaxvalueVisual();
@@ -224,8 +268,11 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         maxvalueVisual.addChangeListener(this);
     }
 
-    //This function returns a panel that has all
-    //the visual options aligned in a column
+    /**
+     * This function returns a panel that has all
+     * the visual options aligned in a column
+     * @return a panel that can be directly displayed to the screen
+     */
     public JPanel getOptionsPanel() {
         JPanel allOptions = new JPanel();
         allOptions.setLayout(new GridLayout(10, 1));
@@ -236,23 +283,32 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         return allOptions;
     }
 
-    //Used in order to size thing correctly.  Should be called
-    //right after the constructor is called
+    /**
+     * Used in order to size thing correctly.  Should be called
+     * right after the constructor is called
+     */
     public void setParentPanel(JPanel pparentPanel) {
         parentPanel = pparentPanel;
     }
 
-    //Add stuff using this function
-    //On next repaint, it will be added to the graph
+    /**
+     * This function is called by fire methods inside a monitor.  It
+     * physically adds data values that will be displayed upon
+     * next update/repaint
+     * @param anAddress the value for the time series data in question
+     */
     public void addToVector(int anAddress) {
         synchronized (vSync) {
             publicNumbers.add(anAddress);
         }
     }
 
-    //This function is called by paint and it does what is necessary
-    //to update the privateNumbers vector
-    //returns true if it actually got some numbers, otherwise returns false
+    /**
+     * This function is called by paint and it does what is necessary
+     * to update the privateNumbers vector
+     * returns true if it actually got some numbers, otherwise returns false
+     * It might also be called by paint thread
+     */
     public boolean internalUpdate() {
         synchronized (vSync) {
             if (publicNumbers.size() == 0) {
@@ -268,7 +324,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
                 //elsewhere, but "most probably" it will be here
                 Terminal.println("RAN OUT OF HEAP SPACE FOR MONITOR");
                 Terminal.println("SIZE OF MONITORS VECTOR AT THE TIME: " + Integer.toString(privateNumbers.size()));
-                vAction.stopSim();
+                //TODO: Find a stop sim function and use it here
+                //vAction.stopSim();
             }
 
             publicNumbers.removeAllElements();
@@ -279,10 +336,13 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         return true;
     }
 
-    //This actually paints the graph...note that it repaints the whole graph
-    //everytime its called (to improve performance, we could make use of an update function)
-    //The code here is actually faily ugly
-    //but eh..
+    /**
+     * This actually paints the graph...note that it repaints the whole graph
+     * everytime its called (to improve performance, we could make use of an update function)
+     * The code here is actually faily ugly
+     * but eh..
+     * @param g The graphic that represents the panel to be painted
+     */
     public void paint(Graphics g) {
 
         Dimension panelDimen = this.getSize();
@@ -337,7 +397,10 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         }
     }
 
-    //this function processes the monitor options and re-sets the internal variables appropiatly
+    /**
+     * this function processes the monitor options and re-sets the internal variables appropiatly
+     ** @param e Info about the event that happened
+     */
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == stepsizeVisual) {
             stepsize = ((Integer) stepsizeVisual.getValue()).intValue();
@@ -348,12 +411,18 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         }
     }
 
+    /**
+     * This function handles a user change to the scroll bar
+     * @param e Info about the event that happened
+     */
     public void adjustmentValueChanged(AdjustmentEvent e) {
         repaint();
     }
 
-    //We don't want to store millions of Integer, but we still want
-    //an array that grows...so we define a MyVector class just for that
+    /**
+     * We don't want to store millions of Integer, but we still want
+     * an array that grows...so we define a MyVector class just for that
+     */
     public class MyVector {
         int[] vec;
         int current;

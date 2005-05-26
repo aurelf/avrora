@@ -37,7 +37,7 @@ import avrora.Avrora;
 import javax.swing.*;
 
 /**
- * The MonitorPanel represents a pair of panels for a monitor, where one panel
+ * The <code> MonitorPanel </code> represents a pair of panels for a monitor, where one panel
  * is the display panel (selectable through the main tab) and one is the options
  * panel which is displayed when the user accesses the options for this monitor.
  *
@@ -56,10 +56,18 @@ public class MonitorPanel {
         optionsPanel = op;
     }
 
+    /**
+     * This function should be called between different simulations in order
+     * to clear all the old data 
+     */
     public void clear() {
         throw Avrora.unimplemented();
     }
 
+    /**
+     * This function will be called by PaintThread if it detects that this
+     * monitor is the currently displayed monitor
+     */
     public void paint() {
         // TODO: allow the monitor factory to install a painter object that is called here
     }

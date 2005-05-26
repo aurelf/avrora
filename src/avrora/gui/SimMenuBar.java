@@ -37,15 +37,28 @@ package avrora.gui;
 import javax.swing.*;
 import java.awt.event.*;
 
+/**
+ * This simple class handles the top level menu bar.  The top level
+ * bar contols inputs to the simulator and monitor additions, so the
+ * ManageMonitor and ManageSimInput instances are contianed within this 
+ * class
+ * <p>
+ * If you are looking to add to the top level menu of the GUI, you edit
+ * this file.
+ *
+ * @author UCLA Compilers Group
+ */
 public class SimMenuBar {
-    public JMenuBar menuBar; //this is the high level menu that should be displayed
+    /**
+     * This is the high level menu "object" that should be displayed
+     */
+    public JMenuBar menuBar;
 
-    ManageSimInput theSimInput; //this is all the code for getting sim files
-    //and changing options....it's done this way because
-    //there was a time when there was no menu bar
-
-    AvroraGui app;
-
+    private ManageSimInput theSimInput; //this is all the code for getting sim files
+                                //and changing options
+    
+    private ManageMonitors theManageMonitors; //All code for monitor changes
+                                            //happen here
 
     private static final String FILE = "File";
     private static final String SIMOPTIONS = "Options...";
@@ -56,13 +69,17 @@ public class SimMenuBar {
     private static final String MONITORS = "Monitors";
     private static final String ADDMONITORS = "Add Monitors...";
 
-    //Returns an object of ManageSimInput which represents the file selection panel
-    //Passed the filename given to avrora by command line (so it can setup default)
-    public static SimMenuBar createSimMenuBar(String[] args, AvroraGui papp) {
+    /**
+     * This functions as the constructor for this class.  It inits all internal
+     * values and "creates" the visual objects necessary for displaying the 
+     * menu bar
+     *
+     * @return An instance of this class
+     */
+    public static SimMenuBar createSimMenuBar() {
         SimMenuBar thesetup = new SimMenuBar();
-        thesetup.theSimInput = ManageSimInput.createManageSimInput(args, papp);
-
-        thesetup.app = papp;
+        thesetup.theSimInput = ManageSimInput.createManageSimInput();
+        thesetup.theManageMonitors = ManageMonitors.createManageMonitors();
 
         thesetup.menuBar = new JMenuBar();
         thesetup.updateMenuBar();
@@ -70,9 +87,14 @@ public class SimMenuBar {
         return thesetup;
     }
 
+    /**
+     * This physically creates the look of the menu bar.
+     * It should be called upon start up and when any change to a sim setting
+     * would cause a change in the menu bar.  (e.g. when the sim starts)
+     */
     public void updateMenuBar() {
 
-        if (!app.getSimulation().isRunning()) {
+        if (!AvroraGui.instance.getSimulation().isRunning()) {
             menuBar.removeAll();
             JMenu newMenu;
             newMenu = new JMenu(FILE);
@@ -81,26 +103,26 @@ public class SimMenuBar {
             JMenuItem newItem;
 
             newItem = new JMenuItem(SIMOPTIONS);
-            newItem.addActionListener(app);
+            newItem.addActionListener(AvroraGui.instance);
             newMenu.add(newItem);
 
             newItem = new JMenuItem(LOADPROGRAM);
-            newItem.addActionListener(app);
+            newItem.addActionListener(AvroraGui.instance);
             newMenu.add(newItem);
 
             newItem = new JMenuItem(ADDFILE);
-            newItem.addActionListener(app);
+            newItem.addActionListener(AvroraGui.instance);
             newMenu.add(newItem);
 
             newItem = new JMenuItem(REMOVENODES);
-            newItem.addActionListener(app);
+            newItem.addActionListener(AvroraGui.instance);
             newMenu.add(newItem);
 
             newMenu = new JMenu(MONITORS);
             menuBar.add(newMenu);
 
             newItem = new JMenuItem(ADDMONITORS);
-            newItem.addActionListener(app);
+            newItem.addActionListener(AvroraGui.instance);
             newMenu.add(newItem);
         } else {
             menuBar.removeAll();
@@ -109,6 +131,13 @@ public class SimMenuBar {
         }
     }
 
+    /**
+     * This checks to see if the event was caused by
+     * a widget in this class.
+     *
+     * @return true, if a widget inside this class was the cause of the event
+     * otherwise false
+     */
     public boolean checkAndDispatch(ActionEvent e) {
         Object source = (e.getSource());
         if (source instanceof JMenuItem) {
@@ -125,17 +154,26 @@ public class SimMenuBar {
                 return true;
             }
             if (((JMenuItem) source).getText().equals(REMOVENODES)) {
-                app.topologyBox.removeSelectedNodes();
+                AvroraGui.instance.topologyBox.removeSelectedNodes();
+                return true;
             }
             if (((JMenuItem) source).getText().equals(ADDMONITORS)) {
-                app.manageMonitorsBox.createMonitorsDialog();
-                app.manageMonitorsBox.chooseMonitorsDialog.setLocationRelativeTo(null); //center on screen
-                app.manageMonitorsBox.chooseMonitorsDialog.setVisible(true);
+                theManageMonitors.createMonitorsDialog();
+                theManageMonitors.chooseMonitorsDialog.setLocationRelativeTo(null); //center on screen
+                theManageMonitors.chooseMonitorsDialog.setVisible(true);
+                return true;
             }
         }
 
-        //We should check to see if something in theSimInput caused the action
-        return theSimInput.checkAndDispatch(e);
+        //We should check to see if something in theSimInput or ManageMonitors caused the action
+        if (theManageMonitors.checkAndDispatch(e))
+        {
+            return true;
+        }
+        else 
+        {
+            return theSimInput.checkAndDispatch(e);
+        }
     }
 
 

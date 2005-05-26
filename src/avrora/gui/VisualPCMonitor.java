@@ -48,6 +48,9 @@ import javax.swing.*;
 
 /**
  * The <code>PCMonitor</code> class is a monitor that tracks the current value of the PC
+ * and displays it visually
+ *
+ * @author UCLA Compilers Group
  */
 public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulation.MonitorFactory {
 
@@ -59,7 +62,8 @@ public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulati
         public GraphNumbers theGraph;
         public Object vSync;
 
-        //ugly temp hack
+        //ugly temp hack - delete once you figure out permanent solution for
+        //global monitors
         GraphEvents tempEvent;
 
         public GraphEvents getGraph() {
@@ -67,6 +71,10 @@ public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulati
         }
 
 
+        /**
+         * This will defer to the GraphNumbers internal methods
+         * to handle the update of the data and the repaint
+         */
         public void updateDataAndPaint() {
             //So if there are new numbers that we added,
             //we repaint the thing.
@@ -84,16 +92,18 @@ public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulati
         }
 
 
-        //allows vAction to link the GUI and our monitor via the passed panels..
-        //it is also where we init our graph and start the paint thread
-        //Think of it as the constructor for the visual elements of this monitor
-        public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel, VisualAction pvAction) {
+        /**
+         * allows vAction to link the GUI and our monitor via the passed panels..
+         * it is also where we init our graph and start the paint thread
+         * Think of it as the constructor for the visual elements of this monitor
+         */
+        public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel) {
             visualPanel = thePanel;
 
             //This is where we should set up the graph panel itself (aka the chalkbord)
             visualPanel.removeAll();
             visualPanel.setLayout(new BorderLayout());
-            theGraph = new GraphNumbers(0, 500, 3, pvAction);
+            theGraph = new GraphNumbers(0, 500, 3);
             theGraph.setParentPanel(visualPanel);
             visualPanel.add(theGraph.chalkboardAndBar(), BorderLayout.CENTER);
             visualPanel.validate();
@@ -110,6 +120,10 @@ public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulati
             // do nothing
         }
 
+        /**
+         * After each instruction, we add the PC value to a Graph Numbers
+         * database
+         */
         public void fireAfter(State s, int address) {
             //add address to our vector
             theGraph.addToVector(address);
