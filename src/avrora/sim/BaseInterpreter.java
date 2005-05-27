@@ -550,7 +550,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         Segment segment;
 
         public byte readError(int address) {
-            String idstr = simulator.getIDTimeString();
+            String idstr = StringUtil.getIDTimeString(simulator);
             Terminal.print(idstr);
             Terminal.printYellow(StringUtil.toHex(pc, 4));
             Terminal.println(": illegal read from " + segment.name + " at address " + StringUtil.addrToString(address));
@@ -559,7 +559,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         }
 
         public void writeError(int address, byte value) {
-            String idstr = simulator.getIDTimeString();
+            String idstr = StringUtil.getIDTimeString(simulator);
             Terminal.print(idstr);
             Terminal.printYellow(StringUtil.toHex(pc, 4));
             Terminal.println(": illegal write to " + segment.name + " at address " + StringUtil.addrToString(address));
@@ -568,7 +568,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     private void readError(String segment, int address) {
-        String idstr = simulator.getIDTimeString();
+        String idstr = StringUtil.getIDTimeString(simulator);
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
         Terminal.println(": illegal read from " + segment + " at address " + StringUtil.addrToString(address));
@@ -576,7 +576,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     private void writeError(String segment, int address, byte value) {
-        String idstr = simulator.getIDTimeString();
+        String idstr = StringUtil.getIDTimeString(simulator);
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
         Terminal.println(": illegal write to " + segment + " at address " + StringUtil.addrToString(address));

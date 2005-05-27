@@ -85,7 +85,7 @@ public class BenchmarkAction extends SimAction {
      *                             simulation
      */
     public void run(String[] args) throws Exception {
-        program = Main.readProgram(args);
+        program = Main.loadProgram(args);
 
         String config = "Generated Interpreter";
 

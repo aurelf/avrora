@@ -45,14 +45,19 @@ import java.util.Stack;
 public class Status {
 
     static class Item {
+        String title;
         long starttime;
 
-        Item() {
+        Item(String t) {
+            title = t;
             starttime = System.currentTimeMillis();
         }
     }
 
     static Stack stack = new Stack();
+    static boolean inside = false;
+
+    public static boolean ENABLED = true;
 
     /**
      * The <code>begin()</code> method prints a new line with the new status. For example,
@@ -63,10 +68,17 @@ public class Status {
      * @param s the current operation being performed, as a string
      */
     public static void begin(String s) {
-        Terminal.printGreen(s);
+        if ( !ENABLED ) return;
+
+        if ( inside ) {
+            Terminal.nextln();
+        }
+        Terminal.print(StringUtil.dup(' ', stack.size()*4));
+        Terminal.print(Terminal.COLOR_BROWN, s);
         Terminal.print("...");
         Terminal.flush();
-        stack.push(new Item());
+        stack.push(new Item(s));
+        inside = true;
     }
 
     /**
@@ -74,6 +86,7 @@ public class Status {
      * the last <code>begin()</code> call.
      */
     public static void success() {
+        if ( !ENABLED ) return;
         print(Terminal.COLOR_GREEN, "OK");
     }
 
@@ -87,10 +100,11 @@ public class Status {
         Terminal.print(color, s);
         if ( time >= 0 ) {
             Terminal.print(": ");
-            Terminal.printBrightCyan(StringUtil.milliAsString(time)+" seconds");
+            Terminal.print(StringUtil.milliToSecs(time)+" seconds");
         }
         Terminal.print("]");
         Terminal.nextln();
+        inside = false;
     }
 
     /**
@@ -99,6 +113,7 @@ public class Status {
      * @param s the success string to print out (instead of the default, "OK")
      */
     public static void success(String s) {
+        if ( !ENABLED ) return;
         print(Terminal.COLOR_GREEN, s);
     }
 
@@ -107,6 +122,7 @@ public class Status {
      * the last <code>begin()</code> call.
      */
     public static void error() {
+        if ( !ENABLED ) return;
         print(Terminal.COLOR_RED, "ERROR");
     }
 
@@ -116,6 +132,7 @@ public class Status {
      * @param s the string to report as an error instead of "ERROR", which is the default
      */
     public static void error(String s) {
+        if ( !ENABLED ) return;
         print(Terminal.COLOR_RED, s);
     }
 
@@ -125,8 +142,8 @@ public class Status {
      * @param t a throwable that was caught since the last begin()
      */
     public static void error(Throwable t) {
+        if ( !ENABLED ) return;
         print(Terminal.COLOR_RED, "UNEXPECTED EXCEPTION");
-        t.printStackTrace();
     }
 
     /**
@@ -135,7 +152,7 @@ public class Status {
      * @param e an Avrora error that was caught since the last begin()
      */
     public static void error(Avrora.Error e) {
+        if ( !ENABLED ) return;
         print(Terminal.COLOR_RED, "ERROR");
-        e.report();
     }
 }

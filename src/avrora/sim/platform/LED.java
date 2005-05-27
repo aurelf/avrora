@@ -39,6 +39,7 @@ import avrora.sim.clock.Clock;
 import avrora.sim.clock.Clock;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 /**
  * The <code>LED</code> class implements an LED (light emitting diode) that can be hooked up
@@ -80,7 +81,7 @@ public class LED extends Microcontroller.OutputPin {
             // print the status of the LED
             synchronized ( Terminal.class ) {
                 // synchronize on the terminal to prevent interleaved output
-                Terminal.print(sim.getIDTimeString());
+                Terminal.print(StringUtil.getIDTimeString(sim));
                 Terminal.print(colornum, color);
                 Terminal.println(": " + modeName[afterState]);
             }

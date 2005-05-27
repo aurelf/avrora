@@ -111,7 +111,6 @@ public final class Terminal {
         CTRL_DEFAULT
     };
 
-    // TODO: tune colors correctly for HTML
     private static final String[] HTML_COLORS = {
         "black", /* black */
         "red",
@@ -131,6 +130,13 @@ public final class Terminal {
         "white"
     };
 
+    private static final String[] HTML_STRINGS;
+
+    static {
+        HTML_STRINGS = new String[HTML_COLORS.length];
+        for ( int cntr = 0; cntr < HTML_STRINGS.length; cntr++ )
+            HTML_STRINGS[cntr] = "<font color="+HTML_COLORS[cntr]+">";
+    }
 
     public static final int ERROR_COLOR = COLOR_RED;
 
@@ -152,6 +158,19 @@ public final class Terminal {
         if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
         outputColor(color, s);
         out.print('\n');
+    }
+
+    public static void append(int color, StringBuffer buf, String s) {
+        if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
+        if (htmlColors) {
+            buf.append(HTML_STRINGS[color]);
+            buf.append(s);
+            buf.append("</font>");
+        } else if (color != COLOR_DEFAULT) {
+            buf.append(COLORS[color]);
+            buf.append(s);
+            buf.append(COLORS[COLOR_DEFAULT]);
+        }
     }
 
     public static void print(String s) {
@@ -230,9 +249,7 @@ public final class Terminal {
 
         if (useColors) {
             if (htmlColors) {
-                out.print("<font color=");
-                out.print(HTML_COLORS[color]);
-                out.print(">");
+                out.print(HTML_STRINGS[color]);
                 out.print(s);
                 out.print("</font>");
                 return;

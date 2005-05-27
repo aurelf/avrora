@@ -66,7 +66,7 @@ public class DBBCAction extends Action {
     public void run(String[] args) throws Exception {
         Printer printer = Printer.STDOUT;
         PrettyPrinter pp = new PrettyPrinter(printer);
-        Program p = Main.readProgram(args);
+        Program p = Main.loadProgram(args);
         DBBC dbbc = new DBBC(p, options);
 
         ControlFlowGraph cfg = p.getCFG();

@@ -132,7 +132,7 @@ public class TraceMonitor extends MonitorFactory {
         int nextPc;
 
         private void print(State s, Instr i) {
-            String idstr = simulator.getIDTimeString();
+            String idstr = StringUtil.getIDTimeString(simulator);
             Terminal.print(idstr);
             int pc = s.getPC();
             int color = pc == nextPc ? Terminal.COLOR_BLUE : Terminal.COLOR_RED;
@@ -144,7 +144,7 @@ public class TraceMonitor extends MonitorFactory {
         }
 
         private void print(String s) {
-            String idstr = simulator.getIDTimeString();
+            String idstr = StringUtil.getIDTimeString(simulator);
             Terminal.println(idstr+s);
         }
 

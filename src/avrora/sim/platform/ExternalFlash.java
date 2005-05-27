@@ -42,6 +42,7 @@ import avrora.sim.clock.Clock;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 /**
  * The <code>ExternalFlash</code> class implements the necessary functionality of the
@@ -637,7 +638,7 @@ public class ExternalFlash {
             // print the status of the LED
             synchronized (Terminal.class) {
                 // synchronize on the terminal to prevent interleaved output
-                Terminal.print(sim.getIDTimeString());
+                Terminal.print(StringUtil.getIDTimeString(sim));
                 Terminal.print(Terminal.COLOR_BLUE, "Dataflash");
                 Terminal.println(": " + str);
             }

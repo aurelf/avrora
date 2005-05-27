@@ -67,10 +67,11 @@ public class Channel {
      */
     public void write(int value, int bits, long time) {
         int off = channelOffset(time);
+        if ( invert ) value = ~value;
         for ( int cntr = 0; cntr < 8; cntr++ ) {
             int ind = cntr+off;
             boolean bit = Arithmetic.getBit(value, (bits-1)-cntr);
-            channelValues[ind] |= bit != invert;
+            channelValues[ind] |= bit;
             channelWritten[ind] = true;
         }
     }

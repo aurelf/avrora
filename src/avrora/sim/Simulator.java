@@ -57,54 +57,6 @@ import avrora.util.Verbose;
 public class Simulator {
 
     /**
-     * The <code>REPORT_SECONDS</code> field controls whether times in the <code>Simulator.Printer</code>
-     * output will be reported in clock cycles or in seconds.
-     */
-    public static boolean REPORT_SECONDS;
-
-    /**
-     * The <code>SECONDS_PRECISION</code> field controls the number of decimal places of precision
-     * reported for times in seconds when outputting events from the simulator.
-     */
-    public static int SECONDS_PRECISION = 6;
-    public static final int[] PRECISION_TABLE = { 0, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
-
-    /**
-     * The <code>getIDTimeString()</code> is a public helper method that gets the node ID and the
-     * time (in clock cycles) and converts them into a string appropriately justified for printing
-     * as the first part of an event reported in simulation. This method helps to align all the
-     * events in a columnar fashion.
-     * @return a string representation of the node ID and time appropriately formatted
-     */
-    public String getIDTimeString() {
-        String idstr = StringUtil.rightJustify(id, 4);
-
-        String cycstr;
-
-        if ( REPORT_SECONDS ) {
-            long hz = clock.getHZ();
-            long count = clock.getCount();
-            long seconds = count / hz;
-            long fract = count % hz;
-            StringBuffer buf = new StringBuffer(10);
-            double f = (double)fract / hz;
-            buf.append(seconds);
-            if ( SECONDS_PRECISION > 0 ) {
-                buf.append('.');
-                int max = PRECISION_TABLE[SECONDS_PRECISION];
-                for ( int radix = 10; radix < max; radix = radix*10 ) {
-                    int digit = (int)(f*radix) % 10;
-                    buf.append((char)(digit + '0'));
-                }
-            }
-            cycstr = StringUtil.rightJustify(buf.toString(), 10);
-        }
-        else cycstr = StringUtil.rightJustify(clock.getCount(), 10);
-
-        return idstr + ' ' + cycstr+"   ";
-    }
-
-    /**
      * The <code>Simulator.Printer</code> class is a printer that is tied to a specific <code>Simulator</code>
      * instance. Being tied to this instance, it will always report the node ID and time before printing
      * anything. This simple mechanism allows the output to be much cleaner to track the output
@@ -134,7 +86,10 @@ public class Simulator {
             if (enabled) {
                 synchronized ( Terminal.class ) {
                     // synchronize on the terminal to prevent interleaved output
-                    Terminal.println(getIDTimeString() + s);
+                    StringBuffer buf = new StringBuffer(s.length()+30);
+                    StringUtil.getIDTimeString(buf, Simulator.this);
+                    buf.append(s);
+                    Terminal.println(buf.toString());
                 }
             } else {
                 throw Avrora.failure("Disabled printer: performance bug!");

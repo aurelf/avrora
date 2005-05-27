@@ -118,7 +118,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void push(String caller, String dest, String edge) {
-            String idstr = s.getIDTimeString();
+            String idstr = StringUtil.getIDTimeString(s);
             stack[depth+1] = dest;
             synchronized (Terminal.class ) {
                 Terminal.print(idstr);
@@ -143,7 +143,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void pop(String caller, String edge) {
-            String idstr = s.getIDTimeString();
+            String idstr = StringUtil.getIDTimeString(s);
             synchronized (Terminal.class ) {
                 Terminal.print(idstr);
                 printStack(depth-1);

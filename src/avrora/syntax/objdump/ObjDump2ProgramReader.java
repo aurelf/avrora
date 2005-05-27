@@ -33,6 +33,7 @@
 package avrora.syntax.objdump;
 
 import avrora.Avrora;
+import avrora.util.Status;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 
@@ -66,12 +67,14 @@ public class ObjDump2ProgramReader extends ProgramReader {
 
         File f = new File(args[0]);
         RawModule module = new RawModule(true, true);
-//        StringBuffer buf = new ObjDumpPreprocessor().cleanCode(args[0]);
- //       Reader r = new StringReader(buf.toString());
 
+        Status.begin("Parsing");
         ObjDumpParser parser = new ObjDumpParser(new FileReader(f), module, f.getName());
         parser.Module();
+        Status.success();
+        Status.begin("Building");
         Program p = module.build();
+        Status.success();
         addIndirectEdges(p);
         return p;
     }

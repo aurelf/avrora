@@ -40,6 +40,7 @@ import avrora.sim.platform.LED.LEDProbe;
 import avrora.sim.*;
 import avrora.util.Arithmetic;
 import avrora.util.Terminal;
+import avrora.util.StringUtil;
 
 /**
  * The <code>PinWire</code> class is the interface for making wire connections
@@ -157,7 +158,7 @@ public class PinWire {
             // print the status of the PinWire
             synchronized (Terminal.class) {
                 // synchronize on the terminal to prevent interleaved output
-                Terminal.print(sim.getIDTimeString());
+                Terminal.print(StringUtil.getIDTimeString(sim));
                 Terminal.print(colorNum, pinName);
                 Terminal.println(": " + modeName[afterState]);
             }

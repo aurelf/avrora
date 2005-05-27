@@ -166,6 +166,7 @@
     1    sim  use signed arithmetic to avoid unnecessary &'s
     1    sim  move nextPC calculation (instr body to inner loop)
     1    sim  cache relative branch targets in instr instances
+    1    sim  SRAM access: subtract ioreg_end, catch AIOB exception
     2   dbbc  Register caching
     2   dbbc  Constant propagation through registers and memory
     2   dbbc  Idiom reductions

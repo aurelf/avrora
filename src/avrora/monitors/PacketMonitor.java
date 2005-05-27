@@ -43,6 +43,7 @@ import avrora.Avrora;
 import avrora.util.TermUtil;
 import avrora.util.Option;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -97,23 +98,32 @@ public class PacketMonitor extends MonitorFactory {
         void endPacket() {
             packetsTransmitted++;
             if ( showPackets ) {
-                StringBuffer buf = new StringBuffer(2 * bytes.size() + 10);
-                buf.append("Packet complete: ");
-                Iterator i = bytes.iterator();
-                int cntr = 0;
-                boolean inPreamble = true;
-                while ( i.hasNext() ) {
-                    cntr++;
-                    Radio.Transmission t = (Radio.Transmission)i.next();
-                    if ( cntr == 1 && discardFirst ) continue;
-                    if ( inPreamble && !showPreamble && t.data == (byte)0xAA ) continue;
-                    inPreamble = false;
-                    StringUtil.toHex(buf, t.data, 2);
-                    buf.append(":");
+                StringBuffer buf = buildPacket();
+                synchronized ( Terminal.class) {
+                    Terminal.println(buf.toString());
                 }
-                printer.println(buf.toString());
             }
             bytes = new LinkedList();
+        }
+
+        private StringBuffer buildPacket() {
+            StringBuffer buf = new StringBuffer(2 * bytes.size() + 45);
+            StringUtil.getIDTimeString(buf, simulator);
+            Terminal.append(Terminal.COLOR_BRIGHT_CYAN, buf, "Packet sent");
+            buf.append(": ");
+            Iterator i = bytes.iterator();
+            int cntr = 0;
+            boolean inPreamble = true;
+            while ( i.hasNext() ) {
+                cntr++;
+                Radio.Transmission t = (Radio.Transmission)i.next();
+                if ( cntr == 1 && discardFirst ) continue;
+                if ( inPreamble && !showPreamble && t.data == (byte)0xAA ) continue;
+                inPreamble = false;
+                StringUtil.toHex(buf, t.data, 2);
+                buf.append(":");
+            }
+            return buf;
         }
 
         public void report() {

@@ -32,6 +32,9 @@
 
 package avrora.util;
 
+import avrora.sim.clock.Clock;
+import avrora.sim.Simulator;
+
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Iterator;
@@ -53,6 +56,8 @@ public class StringUtil {
     public static final String COMMA = ",".intern();
     public static final String COMMA_SPACE = ", ".intern();
     public static final String[] EMPTY_STRING_ARRAY = {};
+    public static final int[] DENOM = { 24, 60, 60, 1000 };
+    public static final int[] DAYSECS = { 60, 60 };
 
     /**
      * The <code>addToString()</code> method converts a numerical address (represented as a signed 32-bit
@@ -358,34 +363,6 @@ public class StringUtil {
     public static final long MILLISECS_PER_MIN = 60 * 1000;
     public static final long MILLISECS_PER_SEC = 1000;
 
-    /**
-     * The <code>millisAsString()</code> method converts a number of milliseconds into a more suitable format
-     * for printing. The format is 'Ad Bh Cm D.EFGs', corresponding to the breakdown of days, hours, minutes,
-     * and seconds. The most significant nonzero digit of { A, B, C, } begins the string (e.g. if the value
-     * corresponds to 0 days, days will not be reported).
-     *
-     * @param millis the number of milliseconds to convert
-     * @return a string representation of the time useful for printing
-     */
-    public static String milliAsString(long millis) {
-        StringBuffer buf = new StringBuffer(10);
-        long[] result = millisToDays(millis);
-
-        if (result[DAYS] > 0) buf.append(result[DAYS] + "d ");
-        if (result[HOURS] > 0) buf.append(result[HOURS] + "h ");
-        if (result[MINS] > 0) buf.append(result[MINS] + "m ");
-        if (result[SECS] > 0)
-            buf.append(result[SECS] + ".");
-        else
-            buf.append("0.");
-
-        millis = result[MILLIS];
-        if (millis < 100) buf.append('0');
-        if (millis < 10) buf.append('0');
-        buf.append(millis);
-        return buf.toString();
-    }
-
     public static String milliToSecs(long millis) {
         long secs = millis / 1000;
         millis = millis % 1000;
@@ -415,8 +392,7 @@ public class StringUtil {
      *         with most significant units first
      */
     public static long[] millisToDays(long millis) {
-        int denom[] = {24, 60, 60, 1000};
-        return modulus(millis, denom);
+        return modulus(millis, DENOM);
     }
 
     public static long[] modulus(long val, int[] denom) {
@@ -746,23 +722,15 @@ public class StringUtil {
         return buf.toString();
     }
 
-    // warning! only works on numbers < 100!!!!
-    public static String toFixedFloat(float f, int places) {
-        if (f > 100) return Float.toString(f);
-        // TODO: fix this routine or find an alternative
-        StringBuffer buf = new StringBuffer(12);
-        float radix = 100;
-        boolean nonzero = false;
-        for (int cntr = 0; cntr < places + 3; cntr++) {
-            int digit = ((int)(f / radix)) % 10;
-            if (digit != 0) nonzero = true;
-
-            char dchar = (char)(digit + '0');
-
-            if ( nonzero | cntr >= 2) buf.append(dchar);
-            if (cntr == 2) buf.append('.');
-            radix = radix / 10;
-        }
+    // TODO: test this routine with negative numbers!
+    public static String toFixedFloat(float fval, int places) {
+        StringBuffer buf = new StringBuffer(places+5);
+        // append the whole part
+        long val = (long)fval;
+        buf.append(val);
+        // append the fractional part
+        float fract = fval >= 0 ? fval - val : val - fval;
+        appendFract(buf, fract, places);
 
         return buf.toString();
     }
@@ -813,5 +781,65 @@ public class StringUtil {
 
     public static char toBit(boolean f) {
         return f ? '1' : '0';
+    }
+
+    public static int ID_LENGTH = 4;
+    public static int TIME_LENGTH = 12;
+    public static boolean REPORT_SECONDS = false;
+    public static int SECONDS_PRECISION = 6;
+
+    public static void toIDTimeString(StringBuffer buf, int id, Clock clk) {
+        buf.append(StringUtil.rightJustify(id, ID_LENGTH));
+        buf.append("  ");
+
+        if ( REPORT_SECONDS ) {
+            StringBuffer buf2 = new StringBuffer(TIME_LENGTH+1);
+            long hz = clk.getHZ();
+            long count = clk.getCount();
+            long seconds = count / hz;
+            long fract = count % hz;
+            double f = (double)fract / hz;
+            appendSecs(buf2, seconds);
+            appendFract(buf2, f, SECONDS_PRECISION);
+            buf.append(rightJustify(buf2.toString(), TIME_LENGTH));
+        } else {
+            buf.append(rightJustify(clk.getCount(), TIME_LENGTH));
+        }
+        buf.append("  ");
+    }
+
+    private static void appendSecs(StringBuffer buf2, long seconds) {
+        long[] res = modulus(seconds, DAYSECS);
+        for ( int cntr = 0; cntr < res.length; cntr++ ) {
+            if ( cntr > 0 ) {
+                buf2.append(':');
+                if ( res[cntr] < 10 )
+                    buf2.append('0');
+            }
+            buf2.append(res[cntr]);
+        }
+    }
+
+    private static void appendFract(StringBuffer buf, double val, int digits) {
+        int cntr = 0;
+        for ( int radix = 10; cntr < digits; radix = radix*10, cntr++ ) {
+            if ( cntr == 0 ) buf.append('.');
+            int digit = (int)(val*radix) % 10;
+            buf.append((char)(digit + '0'));
+        }
+    }
+
+    public static String toIDTimeString(int id, Clock clk) {
+        StringBuffer buf = new StringBuffer(40);
+        toIDTimeString(buf, id, clk);
+        return buf.toString();
+    }
+
+    public static String getIDTimeString(Simulator s) {
+        return toIDTimeString(s.getID(), s.getClock());
+    }
+
+    public static void getIDTimeString(StringBuffer buf, Simulator s) {
+        toIDTimeString(buf, s.getID(), s.getClock());
     }
 }

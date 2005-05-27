@@ -68,7 +68,7 @@ public class ProbeTestHarness implements TestHarness {
         }
 
         public void run() throws Exception {
-            Program p = Main.readProgram(new String[] { progName });
+            Program p = Main.loadProgram(new String[] { progName });
             Simulator s = Defaults.newSimulator(0, p);
             probeTest.run(s);
         }

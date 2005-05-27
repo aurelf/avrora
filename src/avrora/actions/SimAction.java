@@ -173,12 +173,17 @@ public abstract class SimAction extends Action {
      *         and has monitors attached to as specified on the command line
      */
     protected Simulator newSimulator(Program p) {
+        Status.begin("Instantiating node "+simcount);
         //--BEGIN EXPERIMENTAL: dbbc
         if (DBBC.get()) {
-            return newSimulator(new DBBCInterpreter.Factory(new DBBC(p, options)), p);
+            Simulator simulator = newSimulator(new DBBCInterpreter.Factory(new DBBC(p, options)), p);
+            Status.success();
+            return simulator;
         }
         //--END EXPERIMENTAL: dbbc
-        return newSimulator(new GenInterpreter.Factory(), p);
+        Simulator simulator = newSimulator(new GenInterpreter.Factory(), p);
+        Status.success();
+        return simulator;
     }
 
     /**
@@ -332,10 +337,8 @@ public abstract class SimAction extends Action {
      * to reporting time, etc.
      */
     protected void initializeSimulatorStatics() {
-        Simulator.REPORT_SECONDS = REPORT_SECONDS.get();
-        Simulator.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
-        if ( Simulator.SECONDS_PRECISION >= Simulator.PRECISION_TABLE.length)
-            Simulator.SECONDS_PRECISION = Simulator.PRECISION_TABLE.length - 1;
+        StringUtil.REPORT_SECONDS = REPORT_SECONDS.get();
+        StringUtil.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
     }
 
     /**

@@ -103,7 +103,7 @@ public class CFGAction extends Action {
      * @throws Exception
      */
     public void run(String[] args) throws Exception {
-        program = Main.readProgram(args);
+        program = Main.loadProgram(args);
         cfg = program.getCFG();
 
         if ("dot".equals(OUTPUT.get()))

@@ -144,7 +144,7 @@ public class SimulateAction extends SimAction {
     }
 
     private void runSimulation(String[] args) throws Exception {
-        program = Main.readProgram(args);
+        program = Main.loadProgram(args);
 
         simulator = newSimulator(program);
         microcontroller = simulator.getMicrocontroller();

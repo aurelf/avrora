@@ -71,6 +71,9 @@ public class Main {
             "This option is used to enable or disable the terminal colors.");
     public static final Option.Bool BANNER = mainOptions.newOption("banner", true,
             "This option is used to enable or disable the printing of the banner.");
+    public static final Option.Bool STATUS = mainOptions.newOption("status", true,
+            "This option enables and disables printing of status information, for example " +
+            "when the simulator is loading a program.");
     public static final Option.List VERBOSE = mainOptions.newOptionList("verbose", "",
             "This option allows users to enable verbose printing of individual " +
             "subsystems within Avrora. A list can be given with individual items separated " +
@@ -335,7 +338,7 @@ public class Main {
         mainOptions.parseCommandLine(args);
         Terminal.useColors = COLORS.get();
         Terminal.htmlColors = HTML.get();
-
+        Status.ENABLED = STATUS.get();
         List verbose = VERBOSE.get();
         Iterator i = verbose.iterator();
         while (i.hasNext())
@@ -353,9 +356,12 @@ public class Main {
      * @throws Exception if there is an error loading the program, such as a file not found exception, parse
      *                   error, etc
      */
-    public static Program readProgram(String[] args) throws Exception {
+    public static Program loadProgram(String[] args) throws Exception {
+        Status.begin("Loading "+args[0]);
         ProgramReader reader = Defaults.getProgramReader(INPUT.get());
         reader.options.process(mainOptions);
-        return reader.read(args);
+        Program program = reader.read(args);
+        Status.success();
+        return program;
     }
 }

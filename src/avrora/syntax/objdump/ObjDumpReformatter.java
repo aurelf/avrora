@@ -34,6 +34,7 @@ package avrora.syntax.objdump;
 
 import avrora.util.Option;
 import avrora.util.StringUtil;
+import avrora.util.Status;
 import avrora.Avrora;
 
 import java.io.*;
@@ -61,16 +62,19 @@ public class ObjDumpReformatter {
 
     public StringBuffer cleanCode(String inFile) throws IOException {
         try {
-            StringBuffer out = new StringBuffer(10000);
+            Status.begin("Preprocessing");
+            StringBuffer out = new StringBuffer(200000);
             BufferedReader in = new BufferedReader(new FileReader(inFile));
             cleanFile(in, out);
+            Status.success();
             return out;
         } catch (IOException e) {
             // rethrow IO exceptions (e.g. file not found)
+            Status.error(e);
             throw e;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw Avrora.failure("Failure reading objdump format: "+e);
+        } catch (Throwable e) {
+            Status.error(e);
+            throw Avrora.unexpected(e);
         }
     }
 
