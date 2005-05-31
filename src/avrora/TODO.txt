@@ -17,6 +17,7 @@
     1   devs  USART frame sizes
     2   devs  Fix interrupt mappings for devices on ATMega32
 
+    1  radio  Fixed deadlock problems in Freespace radio            (1.5.91)
     2  probe  Fix BatteryMonitor hang problems                      (1.5.88)
     1  probe  Fixed TransactionalList and related probe tests       (1.5.85)
     1  probe  Various bugfixes to GDB server by Jey Kottalam        (1.5.85)

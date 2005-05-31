@@ -201,9 +201,7 @@ public class FreeSpaceAir implements RadioAir {
         synchronizer.waitForNeighbors(t);
         // we just got woken up (or returned immediately from checkRSSIWaiters
         // this means we are now ready to proceed and compute our RSSI value.
-        synchronized (this) {
-            return getLocalAir(r).sampleRSSI(t);
-        }
+        return getLocalAir(r).sampleRSSI(t);
     }
 
     public byte readChannel(Radio r) {
