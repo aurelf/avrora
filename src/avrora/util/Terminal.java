@@ -162,15 +162,21 @@ public final class Terminal {
 
     public static void append(int color, StringBuffer buf, String s) {
         if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
-        if (htmlColors) {
-            buf.append(HTML_STRINGS[color]);
-            buf.append(s);
-            buf.append("</font>");
-        } else if (color != COLOR_DEFAULT) {
-            buf.append(COLORS[color]);
-            buf.append(s);
-            buf.append(COLORS[COLOR_DEFAULT]);
+        if ( useColors ) {
+            if (htmlColors) {
+                buf.append(HTML_STRINGS[color]);
+                buf.append(s);
+                buf.append("</font>");
+                return;
+            } else if (color != COLOR_DEFAULT) {
+                buf.append(COLORS[color]);
+                buf.append(s);
+                buf.append(COLORS[COLOR_DEFAULT]);
+                return;
+            }
         }
+        buf.append(s);
+
     }
 
     public static void print(String s) {
