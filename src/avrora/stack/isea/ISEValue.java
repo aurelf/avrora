@@ -80,4 +80,11 @@ public class ISEValue {
         if ( b1 == b2 ) return b1;
         return UNKNOWN;
     }
+
+    public static String toString(byte b1) {
+        if ( b1 == UNKNOWN ) return "---";
+        if ( b1 == SREG ) return "SREG";
+        if ( b1 < 32 && b1 >= 0) return "R"+b1;
+        return "???";
+    }
 }

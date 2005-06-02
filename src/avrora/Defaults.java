@@ -158,6 +158,7 @@ public class Defaults {
             actions.addClass("test", TestAction.class);
             actions.addClass("cfg", CFGAction.class);
             actions.addClass("benchmark", BenchmarkAction.class);
+            actions.addClass("isea", ISEAAction.class);
             //--BEGIN EXPERIMENTAL: isdl
             actions.addClass("isdl", ISDLAction.class);
             //--END EXPERIMENTAL: isdl

@@ -35,7 +35,15 @@ package avrora.stack.isea;
 import avrora.core.InstrVisitor;
 import avrora.core.Instr;
 import avrora.core.Register;
+import avrora.core.Program;
 import avrora.util.Arithmetic;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
+import avrora.util.TermUtil;
+import avrora.Avrora;
+
+import java.util.Iterator;
+import java.util.HashMap;
 
 /**
  * The <code>ISEInterpreter</code> class implements an abstract interpreter for intraprocedural
@@ -44,24 +52,171 @@ import avrora.util.Arithmetic;
  *
  * @author Ben L. Titzer
  */
-public abstract class ISEInterpreter implements InstrVisitor {
+public class ISEInterpreter implements InstrVisitor {
 
-    abstract byte readRegister(Register r);
-    abstract void writeRegister(Register r, byte val);
-    abstract byte getSREG();
-    abstract void setSREG(byte val);
-    abstract byte readIORegister(int ioreg);
-    abstract void writeIORegister(int ioreg, byte val);
+    protected final Program program;
 
-    abstract int relative(int addr);
-    abstract void branch(int addr);
-    abstract byte popByte();
-    abstract void pushByte(byte val);
+    protected byte readRegister(Register r) {
+        return state.readRegister(r);
+    }
+
+    protected void writeRegister(Register r, byte val) {
+        state.writeRegister(r, val);
+    }
+
+    protected byte getSREG() {
+        return state.getSREG();
+    }
+
+    protected void writeSREG(byte val) {
+        state.writeSREG(val);
+    }
+
+    protected byte readIORegister(int ioreg) {
+        return state.readIORegister(ioreg);
+    }
+
+    protected void writeIORegister(int ioreg, byte val) {
+        state.writeIORegister(ioreg, val);
+    }
+
+    protected int relative(int offset) {
+        return nextPC + 2 + 2 * offset;
+    }
+
+    protected void branch(int addr) {
+        addToWorkList("BRANCH", addr, state.copy());
+    }
+
+    protected void jump(int addr) {
+        nextPC = addr;
+    }
+
+    protected void postReturn(ISEState state) {
+        if ( returnState == null )
+            returnState = state.copy();
+        else returnState.merge(state);
+    }
+    protected void postReturnFromInterrupt(ISEState state) {
+        // TODO: deal with interrupts
+        if ( returnState == null )
+            returnState = state.copy();
+        else returnState.merge(state);
+    }
+
+    protected void skip() {
+        branch(program.getNextPC(nextPC));
+    }
+
+    protected byte popByte() {
+        return state.pop();
+    }
+
+    void pushByte(byte val) {
+        state.push(val);
+    }
+
+    class Item {
+        final int pc;
+        final ISEState state;
+        Item next;
+
+        Item(int pc, ISEState s) {
+            this.pc = pc;
+            this.state = s;
+        }
+    }
+
+    protected int pc;
+    protected int nextPC;
+    protected ISEState state;
+    protected ISEState returnState;
+    Item head;
+    Item tail;
+
+    protected HashMap states;
+
+    protected void addToWorkList(String str, int pc, ISEState s) {
+        Terminal.printBrightGreen(str);
+        Terminal.println(":");
+        s.print(pc);
+        s = mergeState(pc, s);
+
+        if ( s == null ) return;
+
+        Item i = new Item(pc, s);
+        if ( head == null ) {
+            head = tail = i;
+        } else {
+            tail.next = i;
+            tail = i;
+        }
+    }
+
+    private ISEState mergeState(int pc, ISEState s) {
+        ISEState es = (ISEState)states.get(new Integer(pc));
+        if ( es != null ) {
+            if ( es.equals(s) ) {
+                Terminal.printRed("SEEN");
+                Terminal.nextln();
+                return null;
+            } else {
+                Terminal.printRed("MERGE WITH");
+                Terminal.nextln();
+                es.print(pc);
+                Terminal.printRed("RESULT");
+                Terminal.nextln();
+                es.merge(s);
+                s = es;
+                s.print(pc);
+            }
+        } else {
+            s = s.copy();
+            states.put(new Integer(pc), s);
+        }
+        return s;
+    }
+
+    public ISEInterpreter(Program p) {
+        program = p;
+        states = new HashMap();
+    }
+
+    public ISEState analyze(int begin_addr) {
+        addToWorkList("START", begin_addr, new ISEState());
+        run();
+        return returnState;
+    }
+
+    protected void run() {
+        // run the worklist to completion.
+        while ( head != null ) {
+            Item i = head;
+            head = head.next;
+
+            pc = i.pc;
+            state = i.state;
+            TermUtil.printSeparator(Terminal.MAXLINE);
+            state.print(pc);
+            Instr instr = program.readInstr(i.pc);
+            Terminal.printBrightBlue(instr.getVariant());
+            Terminal.println(" "+instr.getOperands());
+            TermUtil.printThinSeparator(Terminal.MAXLINE);
+            int npc = program.getNextPC(i.pc);
+            nextPC = npc;
+            instr.accept(this);
+            if ( nextPC >= 0 ) {
+                String str = npc == nextPC ? "FALLTHROUGH" : "JUMP";
+                addToWorkList(str, nextPC, state);
+
+            }
+        }
+    }
 
     private void mult(Register r1, Register r2) {
-        int tmp_0 = readRegister(r1);
-        int tmp_1 = readRegister(r2);
-        setSREG(ISEValue.UNKNOWN);
+        readRegister(r1);
+        readRegister(r2);
+        writeSREG(ISEValue.UNKNOWN);
         writeRegister(Register.R0, ISEValue.UNKNOWN);
         writeRegister(Register.R1, ISEValue.UNKNOWN);
     }
@@ -70,13 +225,13 @@ public abstract class ISEInterpreter implements InstrVisitor {
     void binop(Register r1, Register r2) {
         readRegister(r1);
         readRegister(r2);
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         writeRegister(r1, ISEValue.UNKNOWN);
     }
 
     void unop(Register r1) {
         readRegister(r1);
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         writeRegister(r1, ISEValue.UNKNOWN);
     }
 
@@ -91,7 +246,7 @@ public abstract class ISEInterpreter implements InstrVisitor {
     public void visit(Instr.ADIW i) {
         readRegister(i.r1);
         readRegister(i.r1.nextRegister());
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         writeRegister(i.r1, ISEValue.UNKNOWN);
         writeRegister(i.r1.nextRegister(), ISEValue.UNKNOWN);
     }
@@ -136,6 +291,7 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.BREAK i) {
+        nextPC = -1;
     }
 
     public void visit(Instr.BREQ i) {
@@ -209,12 +365,12 @@ public abstract class ISEInterpreter implements InstrVisitor {
 
     public void visit(Instr.BST i) {
         byte tmp0 = readRegister(i.r1);
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         //T = Arithmetic.getBit(tmp0, i.imm1);
     }
 
     public void visit(Instr.CALL i) {
-        // TODO: implement calls
+        throw Avrora.unimplemented();
     }
 
     public void visit(Instr.CBI i) {
@@ -227,22 +383,22 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.CLC i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // C = false;
     }
 
     public void visit(Instr.CLH i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // H = false;
     }
 
     public void visit(Instr.CLI i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // disableInterrupts();
     }
 
     public void visit(Instr.CLN i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // N = false;
     }
 
@@ -251,22 +407,22 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.CLS i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // S = false;
     }
 
     public void visit(Instr.CLT i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // T = false;
     }
 
     public void visit(Instr.CLV i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // V = false;
     }
 
     public void visit(Instr.CLZ i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // Z = false;
     }
 
@@ -277,25 +433,25 @@ public abstract class ISEInterpreter implements InstrVisitor {
     public void visit(Instr.CP i) {
         readRegister(i.r1);
         readRegister(i.r2);
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
     }
 
     public void visit(Instr.CPC i) {
         readRegister(i.r1);
         readRegister(i.r2);
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
     }
 
     public void visit(Instr.CPI i) {
         readRegister(i.r1);
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
     }
 
     public void visit(Instr.CPSE i) {
         readRegister(i.r1);
         readRegister(i.r2);
-        setSREG(ISEValue.UNKNOWN);
-        // TODO: implement skip
+        writeSREG(ISEValue.UNKNOWN);
+        skip();
     }
 
     public void visit(Instr.DEC i) {
@@ -303,11 +459,11 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.EICALL i) {
-        // TODO: implement calls
+        throw Avrora.unimplemented();
     }
 
     public void visit(Instr.EIJMP i) {
-        // TODO: implement jmps
+        throw Avrora.unimplemented();
     }
 
     public void visit(Instr.ELPM i) {
@@ -347,11 +503,19 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.ICALL i) {
-        // TODO: implement calls
+        throw Avrora.unimplemented();
     }
 
     public void visit(Instr.IJMP i) {
-        // TODO: implement jumps
+        java.util.List iedges = program.getIndirectEdges(pc);
+        if (iedges == null)
+            throw Avrora.failure("No control flow information for indirect call at: " +
+                    StringUtil.addrToString(pc));
+        Iterator it = iedges.iterator();
+        while (it.hasNext()) {
+            int target_address = ((Integer)it.next()).intValue();
+            jump(target_address);
+        }
     }
 
     public void visit(Instr.IN i) {
@@ -363,7 +527,7 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.JMP i) {
-        // TODO: implement jumps
+        jump(i.imm1);
     }
 
     public void visit(Instr.LD i) {
@@ -464,29 +628,27 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.POP i) {
-        // TODO: implement pop
         writeRegister(i.r1, popByte());
     }
 
     public void visit(Instr.PUSH i) {
-        // TODO: implement push
         pushByte(readRegister(i.r1));
     }
 
     public void visit(Instr.RCALL i) {
-        // TODO: implement calls
+        throw Avrora.unimplemented();
     }
 
     public void visit(Instr.RET i) {
-        // TODO: implement returns
+        postReturn(state);
     }
 
     public void visit(Instr.RETI i) {
-        // TODO: implement returns
+        postReturnFromInterrupt(state);
     }
 
     public void visit(Instr.RJMP i) {
-        // TODO: implement jumps
+        jump(relative(i.imm1));
     }
 
     public void visit(Instr.ROL i) {
@@ -511,17 +673,19 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.SBIC i) {
-        // TODO: implement skips
+        readIORegister(i.imm1);
+        skip();
     }
 
     public void visit(Instr.SBIS i) {
-        // TODO: implement skips
+        readIORegister(i.imm1);
+        skip();
     }
 
     public void visit(Instr.SBIW i) {
         readRegister(i.r1);
         readRegister(i.r1.nextRegister());
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         writeRegister(i.r1, ISEValue.UNKNOWN);
         writeRegister(i.r1.nextRegister(), ISEValue.UNKNOWN);
     }
@@ -531,30 +695,32 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.SBRC i) {
-        // TODO: implement skips
+        readRegister(i.r1);
+        skip();
     }
 
     public void visit(Instr.SBRS i) {
-        // TODO: implement skips
+        readRegister(i.r1);
+        skip();
     }
 
     public void visit(Instr.SEC i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // C = true;
     }
 
     public void visit(Instr.SEH i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // H = true;
     }
 
     public void visit(Instr.SEI i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // enableInterrupts();
     }
 
     public void visit(Instr.SEN i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // N = true;
     }
 
@@ -563,22 +729,22 @@ public abstract class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.SES i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // S = true;
     }
 
     public void visit(Instr.SET i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // T = true;
     }
 
     public void visit(Instr.SEV i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // V = true;
     }
 
     public void visit(Instr.SEZ i) {
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
         // Z = true;
     }
 
@@ -639,7 +805,7 @@ public abstract class ISEInterpreter implements InstrVisitor {
 
     public void visit(Instr.TST i) {
         readRegister(i.r1);
-        setSREG(ISEValue.UNKNOWN);
+        writeSREG(ISEValue.UNKNOWN);
     }
 
     public void visit(Instr.WDR i) {

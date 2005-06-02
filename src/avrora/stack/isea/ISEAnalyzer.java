@@ -35,6 +35,9 @@ package avrora.stack.isea;
 import avrora.core.Program;
 import avrora.core.ProcedureMap;
 import avrora.core.ControlFlowGraph;
+import avrora.util.Option;
+import avrora.util.Terminal;
+import avrora.util.TermUtil;
 
 /**
  * The <code>ISEAnalyzer</code> class is a static analyzer for machine code. This class
@@ -56,5 +59,17 @@ public class ISEAnalyzer {
         program = p;
         cfg = program.getCFG();
         pmap = cfg.getProcedureMap();
+    }
+
+    public void analyze(int loc) {
+        ISEState s = new ISEInterpreter(program).analyze(loc);
+        TermUtil.printSeparator(Terminal.MAXLINE);
+        if ( s != null ) {
+            Terminal.printRed("RETURN STATE");
+            Terminal.nextln();
+            s.print(loc);
+        } else {
+            Terminal.printRed("PROCEDURE DOES NOT RETURN");
+        }
     }
 }
