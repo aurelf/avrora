@@ -103,8 +103,8 @@ public class IntervalSynchronizer extends Synchronizer {
         /**
          * The <code>fire()</code> method of this event is called by the individual event queues of each
          * simulator as they reach this point in time. The implementation of this method waits for all threads
-         * to join. It will then execute the <code>serialAction()</code> method in the last thread to join the
-         * clock, and execute the <code>parallelAction</code> in each of the threads, in parallel, and then
+         * to join. It will then invoke the <code>serialAction()</code> method in the last thread to join the
+         * clock, and invoke the <code>parallelAction</code> in each of the threads, in parallel, and then
          * release the threads by returning back to the Simulator.
          */
         public void fire() {

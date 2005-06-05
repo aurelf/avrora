@@ -57,6 +57,7 @@ public class ATMega32 extends ATMegaFamily {
     public static final int ATMEGA32_FLASH_SIZE = 32 * _1kb;
     public static final int ATMEGA32_EEPROM_SIZE = 1 * _1kb;
     public static final int ATMEGA32_NUM_PINS = 45;
+    public static final int ATMEGA32_NUM_INTS = 20;
 
     public static final int MODE_IDLE       = 1;
     public static final int MODE_RESERVED1  = 2;
@@ -248,6 +249,7 @@ public class ATMega32 extends ATMegaFamily {
                 ATMEGA32_FLASH_SIZE, // size of flash in bytes
                 ATMEGA32_EEPROM_SIZE, // size of eeprom in bytes
                 ATMEGA32_NUM_PINS, // number of pins
+                ATMEGA32_NUM_INTS, // number of interrupts
                 new ReprogrammableCodeSegment.Factory(ATMEGA32_FLASH_SIZE, 6),
                 pinAssignments, // the assignment of names to physical pins
                 ioregAssignments, // the assignment of names to IO registers
@@ -295,11 +297,10 @@ public class ATMega32 extends ATMegaFamily {
 
         // set up the external interrupt mask and flag registers and interrupt range
         EIFR_reg = buildInterruptRange(true, "GICR", "GIFR", 2, 8);
-        EIMSK_reg = EIFR_reg.maskRegister;
 
         // set up the timer mask and flag registers and interrupt range
         TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 12, 8);
-        TIMSK_reg = TIFR_reg.maskRegister;
+        TIMSK_reg = (MaskRegister)interpreter.getIOReg(props.getIOReg("TIMSK"));
 
 
         addDevice(new Timer0());

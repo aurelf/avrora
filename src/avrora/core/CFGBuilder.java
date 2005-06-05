@@ -731,7 +731,7 @@ class CFGBuilder implements InstrVisitor {
         add(i);
     }
 
-    public void visit(Instr.SLEEP i) { // enter sleep mode
+    public void visit(Instr.SLEEP i) { // invoke sleep mode
         add(i);
     }
 

@@ -140,7 +140,7 @@ public class GDBServer extends MonitorFactory {
                     }
                     if ( printer.enabled )
                         printer.println(" --> "+command);
-                    // execute the command: continue the program if the return value is true
+                    // invoke the command: continue the program if the return value is true
                     if ( executeCommand(command) )
                         break;
                 }

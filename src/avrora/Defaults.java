@@ -95,6 +95,7 @@ public class Defaults {
             monitorMap.addClass("stack", StackMonitor.class);
             monitorMap.addClass("energy", EnergyMonitor.class);
             monitorMap.addClass("energy-log", EnergyMonitorLog.class);
+            monitorMap.addClass("interrupts", InterruptMonitor.class);
             monitorMap.addClass("trace", TraceMonitor.class);
             monitorMap.addClass("energy-profile", EnergyProfiler.class);
             monitorMap.addClass("packet", PacketMonitor.class);
@@ -394,17 +395,25 @@ public class Defaults {
 
             String extension = n.substring(offset).toLowerCase();
 
+            ProgramReader reader = null;
             if (".asm".equals(extension))
-                return new AtmelProgramReader().read(args);
-            if (".s".equals(extension))
-                return new GASProgramReader().read(args);
-            if (".od".equals(extension))
-                return new ObjDumpProgramReader().read(args);
-            if (".odpp".equals(extension))
-                return new ObjDump2ProgramReader().read(args);
+                reader = new AtmelProgramReader();
+            else if (".s".equals(extension))
+                reader = new GASProgramReader();
+            else if (".od".equals(extension))
+                reader = new ObjDumpProgramReader();
+            else if (".odpp".equals(extension))
+                reader = new ObjDump2ProgramReader();
 
-            Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
-            return null;
+            if ( reader == null ) {
+                Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
+                return null;
+            }
+
+            // TODO: this is a hack; all inherited options should be available
+            reader.INDIRECT_EDGES.set(INDIRECT_EDGES.stringValue());
+            reader.options.process(options);
+            return reader.read(args);
         }
 
     }

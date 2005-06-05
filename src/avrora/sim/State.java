@@ -44,39 +44,13 @@ import avrora.util.Arithmetic;
  */
 public interface State {
 
-
     /**
-     * The <code>RESERVED</code> field of the state class represents an instance of the <code>IOReg</code>
-     * interface that will not allow any writes to this register to occur. These reserved IO registers are
-     * specified in the hardware manuals.
+     * The <code>getInterruptTable()</code> method gets a reference to the interrupt table,
+     * which contains information about each interrupt, such as whether it is enabled, posted,
+     * pending, etc.
+     * @return a reference to the <code>InterruptTable</code> instance
      */
-    public static final ActiveRegister RESERVED = new ActiveRegister() {
-        public byte read() {
-            return 0;
-        }
-
-        public void write(byte val) {
-            throw new Error("cannot write to reserved register");
-        }
-
-        public boolean readBit(int num) {
-            return false;
-        }
-
-        public void writeBit(int bit, boolean val) {
-            throw new Error("cannot write bit in reserved register");
-        }
-    };
-
-
-    /**
-     * The <code>getPostedInterrupts()</code> method returns a mask that represents all interrupts that are
-     * currently pending (meaning they are ready to be fired in priority order as long as the I flag is on).
-     *
-     * @return a mask representing the interrupts which are posted for processing
-     */
-    public long getPostedInterrupts();
-
+    public InterruptTable getInterruptTable();
 
     /**
      * Read a general purpose register's current value as a byte.

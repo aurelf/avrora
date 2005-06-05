@@ -133,16 +133,8 @@ public class EEPROM extends AtmelInternalDevice {
             }
             masterWriteEnable = readBit(EEMWE);
             interruptEnable = readBit(EERIE);
-            if (!interruptEnable) {
-                interpreter.unpostInterrupt(EEPROM_INTERRUPT);
-            }
-
-
-            if ((interruptEnable && !writeEnable)) {
-                // post interrupt
-                if (devicePrinter.enabled) devicePrinter.println("EEPROM: posting interrupt.");
-                interpreter.postInterrupt(EEPROM_INTERRUPT);
-            }
+            interpreter.setEnabled(EEPROM_INTERRUPT, interruptEnable);
+            interpreter.setPosted(EEPROM_INTERRUPT, !writeEnable);
             mainClock.insertEvent(ticker, 1);
         }
 

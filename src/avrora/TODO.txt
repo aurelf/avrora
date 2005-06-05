@@ -17,6 +17,7 @@
     1   devs  USART frame sizes
     2   devs  Fix interrupt mappings for devices on ATMega32
 
+    1  probe  Fixed memory monitor not reporting all of memory      (1.5.94)
     1  radio  Fixed deadlock problems in Freespace radio            (1.5.91)
     2  probe  Fix BatteryMonitor hang problems                      (1.5.88)
     1  probe  Fixed TransactionalList and related probe tests       (1.5.85)
@@ -52,13 +53,14 @@
     2   devs  Implement watchdog timer
     2  radio  Implement all radio frequency registers
     1   util  Implement Columnifier class
-    2  probe  Implement probing of interrupts
     1   devs  IVSEL fuse support for bootloaders
     2   isdl  Better ISDL error checking
     2    sim  Unified warning system for program errors
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+    1  input  Fixed sections option to allow loading user sections  (1.5.94)
+    2  probe  Implemented probing of interrupts                     (1.5.94)
     2  radio  Implemented probing interface for radio               (1.5.89)
     1  probe  [Simon Han] improved TripTimeMonitor                  (1.5.89)
     1 energy  [Olaf Landsiedel] ported Energy to use FSM.Probe      (1.5.88)
@@ -101,6 +103,7 @@
     2    sim  Move sram representation to use a Segment
     2  probe  Collapse ExceptionWatch with Watch for all segments
 
+    2    sim  Simplified and streamlined interrupt handling         (1.5.94)
   2-3  radio  Separate synch mechanism from Radio implementation    (1.5.83)
     1    sim  Renamed Radio.RadioPacket to Radio.Transmission       (1.5.76)
     2    sim  Introduced Synchronizer abstract                      (1.5.75)

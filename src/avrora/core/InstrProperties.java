@@ -58,7 +58,7 @@ public class InstrProperties {
     public final int size;
 
     /**
-     * The <code>cycles</code> field stores the minimum number of cycles required to execute this
+     * The <code>cycles</code> field stores the minimum number of cycles required to invoke this
      * instruction.
      */
     public final int cycles;
@@ -70,7 +70,7 @@ public class InstrProperties {
      * @param n the name of the instruction as a string
      * @param v the variant of the instruction as a string
      * @param s the size of the instruction in bytes
-     * @param c the minimum number of cycles required to execute this instruction
+     * @param c the minimum number of cycles required to invoke this instruction
      */
     public InstrProperties(String n, String v, int s, int c) {
         name = n;

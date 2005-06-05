@@ -34,10 +34,7 @@ package avrora.sim;
 
 import avrora.Avrora;
 import avrora.core.*;
-import avrora.sim.util.MulticastProbe;
-import avrora.sim.util.MulticastExceptionWatch;
-import avrora.sim.util.MulticastWatch;
-import avrora.sim.util.MulticastIORWatch;
+import avrora.sim.util.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.clock.MainClock;
 import avrora.util.Arithmetic;
@@ -51,13 +48,36 @@ import avrora.util.Terminal;
  * @author Ben L. Titzer
  */
 public abstract class BaseInterpreter implements State, InstrVisitor {
-    protected int bootPC;
-    protected int interruptBase;
+
+    public static final int NUM_REGS = 32; // number of general purpose registers
+
+    public static final int SREG_I = 7;
+    public static final int SREG_T = 6;
+    public static final int SREG_H = 5;
+    public static final int SREG_S = 4;
+    public static final int SREG_V = 3;
+    public static final int SREG_N = 2;
+    public static final int SREG_Z = 1;
+    public static final int SREG_C = 0;
+
+    private static final int SREG_I_MASK = 1 << SREG_I;
+    private static final int SREG_T_MASK = 1 << SREG_T;
+    private static final int SREG_H_MASK = 1 << SREG_H;
+    private static final int SREG_S_MASK = 1 << SREG_S;
+    private static final int SREG_V_MASK = 1 << SREG_V;
+    private static final int SREG_N_MASK = 1 << SREG_N;
+    private static final int SREG_Z_MASK = 1 << SREG_Z;
+    private static final int SREG_C_MASK = 1 << SREG_C;
+
+    protected final int SREG; // location of the SREG IO register
+    protected final int RAMPZ; // location of the RAMPZ IO register
+    protected int bootPC; // start up address
+    protected int interruptBase; // base of interrupt vector table
+
     protected int pc;
     protected final ActiveRegister[] ioregs;
     public byte[] sram;
     protected MulticastWatch[] sram_watches;
-    protected long postedInterrupts;
     protected final int sram_start;
     protected final int sram_max;
     public boolean I;
@@ -74,6 +94,8 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
 
     protected final CodeSegment flash;
     protected Instr[] shared_instr; // shared for performance reasons only
+
+    protected final InterruptTable interrupts;
 
     /**
      * The <code>globalProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
@@ -94,60 +116,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      * to false, and the execution loop (e.g. an interpretation or sleep loop) is broken out of.
      */
     protected boolean innerLoop;
-
-    protected void storeProgramMemory() {
-        flash.update();
-    }
-
-    class ProbedActiveRegister implements ActiveRegister {
-        protected final int ioreg_num;
-        protected final ActiveRegister ioreg;
-        protected final MulticastIORWatch watches;
-
-        protected ProbedActiveRegister(ActiveRegister ar, int inum) {
-            ioreg_num = inum;
-            ioreg = ar;
-            watches = new MulticastIORWatch();
-        }
-
-        void add(Simulator.IORWatch w) {
-            watches.add(w);
-        }
-
-        void remove(Simulator.IORWatch p) {
-            watches.remove(p);
-        }
-
-        boolean isEmpty() {
-            return watches.isEmpty();
-        }
-
-        public void write(byte value) {
-            watches.fireBeforeWrite(BaseInterpreter.this, ioreg_num, value);
-            ioreg.write(value);
-            watches.fireAfterWrite(BaseInterpreter.this, ioreg_num, value);
-        }
-
-        public void writeBit(int bit, boolean val) {
-            watches.fireBeforeBitWrite(BaseInterpreter.this, ioreg_num, bit, val);
-            ioreg.writeBit(bit, val);
-            watches.fireAfterBitWrite(BaseInterpreter.this, ioreg_num, bit, val);
-        }
-
-        public byte read() {
-            watches.fireBeforeRead(BaseInterpreter.this, ioreg_num);
-            byte value = ioreg.read();
-            watches.fireAfterRead(BaseInterpreter.this, ioreg_num, value);
-            return value;
-        }
-
-        public boolean readBit(int bit) {
-            watches.fireBeforeBitRead(BaseInterpreter.this, ioreg_num, bit);
-            boolean value = ioreg.readBit(bit);
-            watches.fireAfterBitRead(BaseInterpreter.this, ioreg_num, bit, value);
-            return value;
-        }
-    }
 
     /**
      * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the
@@ -195,80 +163,34 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      */
     protected final Simulator simulator;
 
+    /**
+     * The <code>clock</code> field stores a reference to the main clock of the simulator. This is
+     * the same instance shared between the <code>Simulator</code>, <code>Microcontroller</code>, and
+     * any devices that are attached directly to the main clock or to a derived clock.
+     */
+    protected final MainClock clock;
+
     public Simulator getSimulator() {
         return simulator;
     }
-
-    protected final MainClock clock;
 
     public MainClock getMainClock() {
         return clock;
     }
 
-    public static class NoSuchInstructionException extends Avrora.Error {
-        public final int badPc;
-
-        protected NoSuchInstructionException(int pc) {
-            super("Program error", "attempt to execute non-existant instruction at " + StringUtil.addrToString(pc));
-            this.badPc = pc;
-        }
+    public InterruptTable getInterruptTable() {
+        return interrupts;
     }
 
-    public static class PCOutOfBoundsException extends Avrora.Error {
-        public final int badPc;
-
-        protected PCOutOfBoundsException(int pc) {
-            super("Program error", "PC out of bounds at " + StringUtil.addrToString(pc));
-            this.badPc = pc;
-        }
-    }
-
-    public static class PCAlignmentException extends Avrora.Error {
-        public final int badPc;
-
-        protected PCAlignmentException(int pc) {
-            super("Program error", "PC misaligned at " + StringUtil.addrToString(pc));
-            this.badPc = pc;
-        }
-    }
-
-    public class AddressOutOfBoundsException extends Avrora.Error {
-        public final String segment;
-        public final int data_addr;
-        public final int badPc;
-
-        protected AddressOutOfBoundsException(String s, int da) {
-            super("Program error", "at pc = " + StringUtil.addrToString(pc) + ", illegal access of " + StringUtil.quote(s) + " at " + StringUtil.addrToString(da));
-            this.data_addr = da;
-            this.segment = s;
-            this.badPc = pc;
-        }
-    }
-
-    public final int SREG;
-    public final int RAMPZ;
-
-    public static final int NUM_REGS = 32;
-
-    public static final int SREG_I = 7;
-    public static final int SREG_T = 6;
-    public static final int SREG_H = 5;
-    public static final int SREG_S = 4;
-    public static final int SREG_V = 3;
-    public static final int SREG_N = 2;
-    public static final int SREG_Z = 1;
-    public static final int SREG_C = 0;
-
-    private static final int SREG_I_MASK = 1 << SREG_I;
-    private static final int SREG_T_MASK = 1 << SREG_T;
-    private static final int SREG_H_MASK = 1 << SREG_H;
-    private static final int SREG_S_MASK = 1 << SREG_S;
-    private static final int SREG_V_MASK = 1 << SREG_V;
-    private static final int SREG_N_MASK = 1 << SREG_N;
-    private static final int SREG_Z_MASK = 1 << SREG_Z;
-    private static final int SREG_C_MASK = 1 << SREG_C;
-
-
+    /**
+     * The constructor for the <code>BaseInterpreter</code> class initializes the node's flash,
+     * SRAM, general purpose registers, IO registers, and loads the program onto the flash. It
+     * uses the <code>MicrocontrollerProperties</code> instance to configure the interpreter
+     * such as the size of flash, SRAM, and location of IO registers.
+     * @param simulator the simulator instance for this interpreter
+     * @param p the program to load onto this interpreter instance
+     * @param pr the properties of the microcontroller being simulated
+     */
     public BaseInterpreter(Simulator simulator, Program p, MicrocontrollerProperties pr) {
 
         // this class and its methods are performance critical
@@ -288,7 +210,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         SREG = props.getIOReg("SREG");
 
         // only look for the RAMPZ register if the flash is more than 64kb
-        if ( props.flash_size > 64 * 1024 )
+        if ( props.hasIOReg("RAMPZ") )
             RAMPZ = props.getIOReg("RAMPZ");
         else
             RAMPZ = -1;
@@ -316,8 +238,12 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         ErrorReporter reporter = new ErrorReporter();
         flash = props.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
         reporter.segment = flash;
+        // for performance, we share a reference to the Instr[] array representing flash
         // TODO: implement share() method
         shared_instr = flash.shareCode(null);
+
+        // initialize the interrupt table
+        interrupts = new InterruptTable(this, props.num_interrupts);
 
         SPL_reg = (RWRegister) ioregs[props.getIOReg("SPL")];
         SPH_reg = (RWRegister) ioregs[props.getIOReg("SPH")];
@@ -351,6 +277,15 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         return interruptBase + (inum - 1) * 4;
     }
 
+    public void setPosted(int inum, boolean post) {
+        if ( post ) interrupts.post(inum);
+        else interrupts.unpost(inum);
+    }
+
+    public void setEnabled(int inum, boolean enabled) {
+        if ( enabled ) interrupts.enable(inum);
+        else interrupts.disable(inum);
+    }
 
     protected void insertProbe(Simulator.Probe p, int addr) {
         flash.insertProbe(addr, p);
@@ -362,7 +297,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @param watch The <code>ExceptionWatch</code> instance to add.
      */
-    public void insertExceptionWatch(Simulator.ExceptionWatch watch) {
+    protected void insertExceptionWatch(Simulator.ExceptionWatch watch) {
         exceptionWatch.add(watch);
     }
 
@@ -372,7 +307,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @param p the probe to insert
      */
-    public void insertProbe(Simulator.Probe p) {
+    protected void insertProbe(Simulator.Probe p) {
         innerLoop = false;
         globalProbe.add(p);
     }
@@ -419,7 +354,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         if (ar instanceof ProbedActiveRegister) {
             par = (ProbedActiveRegister) ar;
         } else {
-            par = new ProbedActiveRegister(ar, ioreg_num);
+            par = new ProbedActiveRegister(this, ar, ioreg_num);
             ioregs[ioreg_num] = par;
         }
         par.add(p);
@@ -450,6 +385,10 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     protected void delay(long cycles) {
         innerLoop = false;
         delayCycles += cycles;
+    }
+
+    protected void storeProgramMemory() {
+        flash.update();
     }
 
     /**
@@ -636,7 +575,7 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
      *
      * @param address the byte address at which to read
      * @return the byte value of the program memory at the specified address
-     * @throws AddressOutOfBoundsException if the specified address is not the valid program memory range
+     * @throws avrora.sim.InterpreterError.AddressOutOfBoundsException if the specified address is not the valid program memory range
      */
     public byte getProgramByte(int address) {
         return flash.read(address);
@@ -847,16 +786,6 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
     }
 
     /**
-     * The <code>getPostedInterrupts()</code> method returns a mask that represents all interrupts that are
-     * currently pending (meaning they are ready to be fired in priority order as long as the I flag is on).
-     *
-     * @return a mask representing the interrupts which are posted for processing
-     */
-    public long getPostedInterrupts() {
-        return postedInterrupts;
-    }
-
-    /**
      * The <code>getPC()</code> retrieves the current program counter.
      *
      * @return the program counter as a byte address
@@ -994,48 +923,14 @@ public abstract class BaseInterpreter implements State, InstrVisitor {
         throw Avrora.unimplemented();
     }
 
-    /**
-     * The <code>unpostInterrupt()</code> method is generally only used within the simulator which does
-     * pre-processing of interrupts before it posts them into the internal <code>State</code> instance. This
-     * method causes the specified interrupt number to be removed from the pending list of interrupts Clients
-     * should not use this method directly.
-     *
-     * @param num the interrupt number to post
-     */
-    public void unpostInterrupt(int num) {
-        if (num > 0) {
-            postedInterrupts &= ~(1 << num);
-        }
-    }
-
-    public void setPostedInterrupts(long posted) {
-        if ( posted != 0 )
-            innerLoop = false;
-        postedInterrupts = posted;
-    }
-
-    /**
-     * The <code>postInterrupt()</code> method is generally only used within the simulator which does
-     * pre-processing of interrupts before it posts them into the internal <code>State</code> instance. This
-     * method causes the specified interrupt number to be added to the pending list of interrupts Clients
-     * should not use this method directly.
-     *
-     * @param num the interrupt number to post
-     */
-    public void postInterrupt(int num) {
-        if (num > 0) {
-            postedInterrupts |= 1 << num;
-            innerLoop = false;
-        }
-    }
-
     public void enableInterrupts() {
         I = true;
-        innerLoop = false;
+        interrupts.enableAll();
     }
 
     public void disableInterrupts() {
         I = false;
+        interrupts.disableAll();
     }
 
     protected void commit() {

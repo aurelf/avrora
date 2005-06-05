@@ -32,10 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.ActiveRegister;
-import avrora.sim.RWRegister;
+import avrora.sim.*;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 
@@ -44,11 +41,13 @@ import avrora.util.StringUtil;
  *
  * @author Daniel Lee, Simon Han
  */
-public class SPI extends AtmelInternalDevice implements SPIDevice {
+public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTable.Notification {
+
+    // TODO: unpost SPI interrupt when fired
+
     final SPDReg SPDR_reg;
     final SPCRReg SPCR_reg;
     final SPSReg SPSR_reg;
-    final SPIInterrupt SPI_int;
 
     SPIDevice connectedDevice;
 
@@ -58,6 +57,8 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
     boolean SPI2x;
     boolean master;
     boolean SPIenabled;
+
+    final int interruptNum = 18;
 
     protected int period;
 
@@ -106,28 +107,23 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
         SPDR_reg = new SPDReg();
         SPCR_reg = new SPCRReg();
         SPSR_reg = new SPSReg();
-        SPI_int = new SPIInterrupt();
-
-        // add SPI interrupt to simulator
-        installInterrupt("SPI", 18, SPI_int);
 
         installIOReg("SPDR", SPDR_reg);
         installIOReg("SPSR", SPSR_reg);
         installIOReg("SPCR", SPCR_reg);
+
+        interpreter.getInterruptTable().registerInternalNotification(this, interruptNum);
     }
 
     /**
      * Post SPI interrupt
      */
     private void postSPIInterrupt() {
-        if (SPCR_reg.readBit(7)) {
-            interpreter.postInterrupt(18);
-        }
+        interpreter.setPosted(interruptNum, true);
     }
 
     private void unpostSPIInterrupt() {
-        interpreter.unpostInterrupt(18);
-
+        interpreter.setPosted(interruptNum, false);
     }
 
     private void calculatePeriod() {
@@ -195,20 +191,14 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
         }
     }
 
-
-    class SPIInterrupt implements Simulator.Interrupt {
-        public void force() {
-            postSPIInterrupt();
-        }
-
-        public void fire() {
-            SPSR_reg.clearSPIF();
-
-            // should this also unpost the interrupt?
-            unpostSPIInterrupt();
-        }
+    public void force(int inum) {
+        // TODO: set SPIF
     }
 
+    public void invoke(int inum) {
+        unpostSPIInterrupt();
+        SPSR_reg.clearSPIF();
+    }
 
     /**
      * SPI data register. Writes to this register are transmitted to the connected device and reads
@@ -347,11 +337,13 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
             //this is not described in the Atmega128 handbook
             //however, the chip seems to work like this, as S-Mac
             //does not work without it
-            if (Arithmetic.getBit(val, SPIE) && !SPIEnable) {
+            boolean spie = Arithmetic.getBit(val, SPIE);
+            interpreter.setEnabled(interruptNum, spie);
+            if (spie && !SPIEnable) {
                 SPIEnable = true;
-                SPSR_reg.writeBit(SPSR_reg.SPI, false);
+                SPSR_reg.writeBit(SPSR_reg.SPIF, false);
             }
-            if (!Arithmetic.getBit(val, SPIE) && SPIEnable)
+            if (!spie && SPIEnable)
                 SPIEnable = false;
             //end OL
 
@@ -377,7 +369,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
         // TODO: implement write collision
         // TODO: finish implementing interrupt
 
-        static final int SPI = 7;
+        static final int SPIF = 7;
         static final int WCOL = 6;
 
         public void write(byte val) {
@@ -398,7 +390,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
 
         protected void decode(byte val) {
 
-            if (!Arithmetic.getBit(oldVal, SPI) && Arithmetic.getBit(val, SPI) && SPCR_reg.readBit(SPI)) {
+            if (!Arithmetic.getBit(oldVal, SPIF) && Arithmetic.getBit(val, SPIF)) {
                 postSPIInterrupt();
             }
             // TODO: handle write collisions
@@ -408,15 +400,15 @@ public class SPI extends AtmelInternalDevice implements SPIDevice {
         }
 
         public void setSPIF() {
-            writeBit(SPI, true);
+            writeBit(SPIF, true);
         }
 
         public void clearSPIF() {
-            writeBit(SPI, false);
+            writeBit(SPIF, false);
         }
 
         public boolean getSPIF() {
-            return readBit(SPI);
+            return readBit(SPIF);
         }
 
     }

@@ -2654,7 +2654,7 @@ public abstract class Instr implements InstrPrototype {
         }
     }
 
-    public static class SLEEP extends NONE_class { // enter sleep mode
+    public static class SLEEP extends NONE_class { // invoke sleep mode
         static final InstrProperties props = new InstrProperties("sleep", "sleep", 2, 1);
         static final InstrPrototype prototype = new SLEEP(0);
 

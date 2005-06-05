@@ -68,7 +68,7 @@ public class TransactionalList {
     protected Link transHead;
     protected Link transTail;
 
-    protected boolean inTransaction;
+    protected int nesting;
 
     /**
      * The <code>add()</code> method allows another probe to be inserted into the multicast set. It will be
@@ -78,7 +78,7 @@ public class TransactionalList {
      * @param b the probe to insert
      */
     public void add(Object b) {
-        if (inTransaction) {
+        if (nesting > 0) {
             addTransaction(b, true);
             return;
         }
@@ -99,7 +99,7 @@ public class TransactionalList {
      * @param o the probe to remove
      */
     public void remove(Object o) {
-        if (inTransaction) {
+        if (nesting > 0) {
             addTransaction(o, false);
             return;
         }
@@ -152,8 +152,7 @@ public class TransactionalList {
      * add or remove objects are processed in order.
      */
     public void beginTransaction() {
-        if ( inTransaction ) throw Avrora.failure("recursive entry of transaction!");
-        inTransaction = true;
+        nesting++;
     }
 
     /**
@@ -161,14 +160,15 @@ public class TransactionalList {
      * any queued adds or removes in order from the time the <code>beginTransaction()</code> method was called.
      */
     public void endTransaction() {
-        if ( !inTransaction ) throw Avrora.failure("double endTransaction() call!");
-        inTransaction = false;
-        Link thead = transHead;
-        transHead = null;
-        transTail = null;
-        for (Link pos = thead; pos != null; pos = pos.next) {
-            if ( pos.addTransaction ) add(pos.object);
-            else remove(pos.object);
+        nesting--;
+        if ( nesting == 0 ) {
+            Link thead = transHead;
+            transHead = null;
+            transTail = null;
+            for (Link pos = thead; pos != null; pos = pos.next) {
+                if ( pos.addTransaction ) add(pos.object);
+                else remove(pos.object);
+            }
         }
     }
 

@@ -257,7 +257,7 @@ public interface InstrVisitor {
 
     public void visit(Instr.SEZ i); // set Z (zero) flag
 
-    public void visit(Instr.SLEEP i); // enter sleep mode
+    public void visit(Instr.SLEEP i); // invoke sleep mode
 
     public void visit(Instr.SPM i); // store to program memory from r0
 

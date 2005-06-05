@@ -58,118 +58,102 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         return radio;
     }
 
-    /**
-     * The <code>IMRReg</code> class is the base class of IO registers that corresponds to interrupt masks
-     * and flags. This class contains much of the functionality necessary to implement the interrupt registers
-     * and is specialized for the mask register and flag register cases.
-     */
-    abstract static class IMRReg extends RWRegister {
+    public static class FlagRegister extends RWRegister {
+
+        class Notification implements InterruptTable.Notification {
+            final int bit;
+
+            Notification(int bit) {
+                this.bit = bit;
+            }
+
+            public void force(int inum) {
+                value = Arithmetic.setBit(value, bit, true);
+            }
+
+            public void invoke(int inum) {
+                value = Arithmetic.setBit(value, bit, false);
+                interpreter.setPosted(inum, false);
+            }
+        }
 
         /**
          * The <code>mapping</code> array maps a bit number (0-7) to an interrupt number (0-35). This is used
          * for calculating the posted interrupts.
          */
         protected final int[] mapping;
-        protected final long interruptMask;
         protected final BaseInterpreter interpreter;
 
-        IMRReg(BaseInterpreter interp, int[] map) {
-            long mask = 0;
-            mapping = new int[8];
-            for (int cntr = 0; cntr < 8; cntr++) {
-                mapping[cntr] = map[cntr];
-                if (mapping[cntr] >= 0)
-                    mask |= 1 << mapping[cntr];
-            }
-            interpreter = interp;
-            interruptMask = mask;
-        }
-
-        public void update(IMRReg other) {
-            int posts = this.value & other.value & 0xff;
-            long posted = 0;
-
-            // calculate all posted interrupts at correct bit positions
-            for (int count = 0; count < 8; count++) {
-                if (Arithmetic.getBit(posts, count)) {
-                    int vnum = getVectorNum(count);
-                    if (vnum >= 0) posted |= (0x1 << vnum);
-                }
-            }
-
-            long previousPosted = interpreter.getPostedInterrupts() & ~(interruptMask);
-            long newPosted = previousPosted | posted;
-            interpreter.setPostedInterrupts(newPosted);
-        }
-
-        public void update(int bit, IMRReg other) {
-            if (Arithmetic.getBit((byte)(this.value & other.value), bit))
-                interpreter.postInterrupt(getVectorNum(bit));
-            else
-                interpreter.unpostInterrupt(getVectorNum(bit));
-        }
-
-        protected int getVectorNum(int bit) {
-            return mapping[bit];
-        }
-    }
-
-    public static class FlagRegister extends IMRReg {
-
-        public MaskRegister maskRegister;
-
         public FlagRegister(BaseInterpreter interp, int[] map) {
-            super(interp, map);
-            maskRegister = new MaskRegister(interp, map, this);
+            mapping = map;
+            interpreter = interp;
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
+                if ( mapping[cntr] > 0 )
+                    interpreter.getInterruptTable().registerInternalNotification(new Notification(cntr), mapping[cntr]);
+            }
         }
 
         public void write(byte val) {
             value = (byte)(value & ~val);
-            update(maskRegister);
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
+                // do nothing for zero bits
+                if ( !Arithmetic.getBit(val, cntr) ) continue;
+                setPosted(cntr, false);
+            }
+        }
+
+        private void setPosted(int inum, boolean p) {
+            if ( mapping[inum] > 0 ) interpreter.setPosted(mapping[inum], p);
         }
 
         public void flagBit(int bit) {
             value = Arithmetic.setBit(value, bit);
-            update(bit, maskRegister);
+            setPosted(bit, true);
         }
 
         public void unflagBit(int bit) {
             value = Arithmetic.clearBit(value, bit);
-            update(bit, maskRegister);
+            setPosted(bit, false);
         }
 
         public void writeBit(int bit, boolean val) {
             if (val) {
                 value = Arithmetic.clearBit(value, bit);
-                interpreter.unpostInterrupt(getVectorNum(bit));
+                setPosted(bit, false);
             }
         }
-
     }
 
-    public static class MaskRegister extends IMRReg {
+    public static class MaskRegister extends RWRegister {
 
-        public final FlagRegister flagRegister;
+        /**
+         * The <code>mapping</code> array maps a bit number (0-7) to an interrupt number (0-35). This is used
+         * for calculating the posted interrupts.
+         */
+        protected final int[] mapping;
+        protected final BaseInterpreter interpreter;
 
-        public MaskRegister(BaseInterpreter interp, int[] map, FlagRegister fr) {
-            super(interp, map);
-            flagRegister = fr;
+        public MaskRegister(BaseInterpreter interp, int[] map) {
+            mapping = map;
+            interpreter = interp;
         }
 
         public void write(byte val) {
             value = val;
-            update(flagRegister);
+            for ( int cntr = 0; cntr < 8; cntr++ ) {
+                setEnabled(cntr, Arithmetic.getBit(val, cntr));
+            }
+        }
+
+        void setEnabled(int cntr, boolean e) {
+            if ( mapping[cntr] > 0 ) interpreter.setEnabled(mapping[cntr], e);
         }
 
         public void writeBit(int bit, boolean val) {
-            if (val) {
-                value = Arithmetic.setBit(value, bit);
-                update(bit, flagRegister);
-            } else {
-                value = Arithmetic.clearBit(value, bit);
-                interpreter.unpostInterrupt(getVectorNum(bit));
-            }
+            value = Arithmetic.setBit(value, bit, val);
+            setEnabled(bit, val);
         }
+
     }
 
     /**
@@ -484,10 +468,11 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
 
         FlagRegister fr = new FlagRegister(interpreter, mapping);
+        MaskRegister mr = new MaskRegister(interpreter, mapping);
         for (int cntr = 0; cntr < numVects; cntr++) {
             int inum = increasing ? baseVect + cntr : baseVect - cntr;
-            installInterrupt("", inum, new MaskableInterrupt(inum, fr.maskRegister, fr, cntr, false));
-            installIOReg(maskRegNum, fr.maskRegister);
+            installInterrupt("", inum, new MaskableInterrupt(inum, mr, fr, cntr, false));
+            installIOReg(maskRegNum, mr);
             installIOReg(flagRegNum, fr);
         }
         return fr;
@@ -495,7 +480,6 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
 
     protected FlagRegister EIFR_reg;
-    protected MaskRegister EIMSK_reg;
 
     protected FlagRegister TIFR_reg;
     protected MaskRegister TIMSK_reg;

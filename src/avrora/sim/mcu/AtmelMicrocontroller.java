@@ -254,8 +254,6 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     }
 
     protected void installInterrupt(String name, int num, Simulator.Interrupt interrupt) {
-        // TODO: put the interrupt in the hashmap by its name
-        simulator.installInterrupt(num, interrupt);
     }
 
     protected ActiveRegister getIOReg(String name) {

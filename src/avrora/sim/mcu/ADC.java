@@ -35,6 +35,7 @@ package avrora.sim.mcu;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.RWRegister;
+import avrora.sim.InterruptTable;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 
@@ -69,6 +70,7 @@ public class ADC extends AtmelInternalDevice {
     final ControlRegister ADCSRA_reg = new ControlRegister();
 
     final int channels;
+    final int interruptNum = 22;
 
     final ADCInput[] connectedDevices;
 
@@ -101,6 +103,7 @@ public class ADC extends AtmelInternalDevice {
         installIOReg("ADCL", ADC_reg.low);
         installIOReg("ADCSRA", ADCSRA_reg);
 
+        interpreter.getInterruptTable().registerInternalNotification(ADCSRA_reg, interruptNum);
     }
 
     private int calculateADC(int channel) {
@@ -227,7 +230,7 @@ public class ADC extends AtmelInternalDevice {
     /**
      * <code>ControlRegister</code> defines the behavior of the ADC control register,
      */
-    protected class ControlRegister extends ADCRegister {
+    protected class ControlRegister extends RWRegister implements InterruptTable.Notification {
 
         static final int ADEN = 7;
         static final int ADSC = 6;
@@ -252,18 +255,15 @@ public class ADC extends AtmelInternalDevice {
 
         ControlRegister() {
             conversion = new ControlRegister.Conversion();
-            installInterrupt("ADC", 22, new ControlRegister.ADCInterrupt());
         }
 
-        protected void decode(byte val) {
+        public void write(byte nval) {
 
-            aden = Arithmetic.getBit(val, ADEN);
-            adsc = Arithmetic.getBit(val, ADSC);
-            adfr = Arithmetic.getBit(val, ADFR);
-            adif = Arithmetic.getBit(val, ADIF);
-            adie = Arithmetic.getBit(val, ADIE);
-
-            prescalerDivider = PRESCALER[(val & 0x7)];
+            aden = Arithmetic.getBit(nval, ADEN);
+            adsc = Arithmetic.getBit(nval, ADSC);
+            adfr = Arithmetic.getBit(nval, ADFR);
+            adie = Arithmetic.getBit(nval, ADIE);
+            prescalerDivider = PRESCALER[(nval & 0x7)];
 
             if (aden && adsc && !Arithmetic.getBit(oldVal, ADSC) && !firing) {
                 // queue event for converting
@@ -271,8 +271,23 @@ public class ADC extends AtmelInternalDevice {
                 mainClock.insertEvent(conversion, prescalerDivider * 13);
             }
 
-            oldVal = val;
+            oldVal = nval;
 
+            // if the ADIF bit is set, we need to unpost the interrupt
+            if ( Arithmetic.getBit(nval, ADIF)) {
+                adif = false;
+                value = Arithmetic.setBit(nval, ADIF, false);
+                interpreter.setPosted(interruptNum, false);
+            } else {
+                value = Arithmetic.setBit(nval, ADIF, Arithmetic.getBit(value, ADIF));
+            }
+
+            interpreter.setEnabled(interruptNum, adie);
+
+        }
+
+        public void writeBit(int bit, boolean val) {
+            write(Arithmetic.setBit(value, bit, val));
         }
 
         protected void printStatus() {
@@ -285,8 +300,6 @@ public class ADC extends AtmelInternalDevice {
             buf.append(StringUtil.toBit(adfr));
             buf.append(", iflag ");
             buf.append(StringUtil.toBit(adif));
-            buf.append(", ienable ");
-            buf.append(StringUtil.toBit(adie));
             buf.append(", divider ");
             buf.append(prescalerDivider);
             devicePrinter.println(buf.toString());
@@ -301,7 +314,7 @@ public class ADC extends AtmelInternalDevice {
         private class Conversion implements Simulator.Event {
             public void fire() {
 
-                writeBit(ADSC, false);
+                value = Arithmetic.setBit(value, ADSC, false);
 
                 if (aden) {
                     int channel = ADMUX_reg.singleInputIndex;
@@ -310,10 +323,8 @@ public class ADC extends AtmelInternalDevice {
                         devicePrinter.println("ADC: Conversion completed on channel "+channel+": "+StringUtil.to0xHex(val, 3));
                     }
                     write16(val, ADC_reg.high, ADC_reg.low);
-                    if (adie) {
-                        writeBit(ADIF, true);
-                        interpreter.postInterrupt(22);
-                    }
+                    value = Arithmetic.setBit(value, ADIF, true);
+                    interpreter.setPosted(interruptNum, true);
                 } else {
                     if (devicePrinter.enabled) {
                         devicePrinter.println("ADC: Conversion completed, ADEN = false");
@@ -322,20 +333,14 @@ public class ADC extends AtmelInternalDevice {
             }
         }
 
-        protected class ADCInterrupt implements Simulator.Interrupt {
-            public void force() {
-                if ( adie ) {
-                    writeBit(ADIF, true);
-                    interpreter.postInterrupt(22);
-                }
-            }
-
-            public void fire() {
-                interpreter.unpostInterrupt(22);
-                writeBit(ADIF, false);
-                firing = false;
-            }
-
+        public void force(int inum) {
+            // set the interrupt flag accordingly
+            value = Arithmetic.setBit(value, ADIF, true);
         }
+
+        public void invoke(int inum) {
+            firing = false;
+        }
+
     }
 }

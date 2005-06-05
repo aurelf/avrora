@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * The <code>InstrDecl</code> class represents the declaration of an instruction in an instruction set
  * description language file. It include a description of the encoding format of the instruction as well as a
- * block of IR code that describe how to execute the instruction.
+ * block of IR code that describe how to invoke the instruction.
  *
  * @author Ben L. Titzer
  */

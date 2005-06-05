@@ -79,11 +79,10 @@ public class MemoryMonitor extends MonitorFactory {
             microcontroller = simulator.getMicrocontroller();
             program = simulator.getProgram();
             MicrocontrollerProperties p = microcontroller.getProperties();
+            ramsize = p.sram_size + p.ioreg_size + BaseInterpreter.NUM_REGS;
             if ( LOWER_ADDRESS.get() ) {
-                ramsize = p.sram_size + p.ioreg_size + BaseInterpreter.NUM_REGS;
                 memstart = 0;
             } else {
-                ramsize = p.sram_size;
                 memstart = BaseInterpreter.NUM_REGS + p.ioreg_size;
             }
             memprofile = new avrora.sim.util.MemoryProfiler(ramsize);

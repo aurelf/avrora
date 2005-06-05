@@ -75,12 +75,19 @@ public class MicrocontrollerProperties {
      */
     public final int num_pins;
 
+    /**
+     * The <code>num_interrupts</code> field stores the number of interrupts supported on this
+     * microcontroller.
+     */
+    public final int num_interrupts;
+
     public final CodeSegment.Factory codeSegmentFactory;
 
     protected final HashMap pinAssignments;
     protected final HashMap ioregAssignments;
     protected final HashMap interruptAssignments;
     protected final String[] ioreg_name;
+    protected final String[] interrupt_name;
 
     /**
      * The constructor for the <code>MicrocontrollerProperties</code> class creates a new
@@ -92,6 +99,7 @@ public class MicrocontrollerProperties {
      * @param fs the size of the flash in bytes
      * @param es the size of the EEPROM in bytes
      * @param np the number of physical pins on the microcontroller
+     * @param ni the number of interrupts on the microcontroller
      * @param pa a <code>HashMap</code> instance mapping string names to <code>Integer</code>
      * indexes for the pins
      * @param ia a <code>HashMap</code> instance mapping string names to <code>Integer</code>
@@ -99,21 +107,37 @@ public class MicrocontrollerProperties {
      * @param inta a <code>HashMap</code> instance mapping string names to <code>Integer</code>
      * indexes for each type of interrupt
      */
-    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, CodeSegment.Factory csf, HashMap pa, HashMap ia, HashMap inta) {
+    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, int ni, CodeSegment.Factory csf, HashMap pa, HashMap ia, HashMap inta) {
         ioreg_size = is;
         sram_size = ss;
         flash_size = fs;
         eeprom_size = es;
         num_pins = np;
+        num_interrupts = ni;
 
         codeSegmentFactory = csf;
 
         ioreg_name = new String[is];
+        interrupt_name = new String[ni];
 
         pinAssignments = pa;
         ioregAssignments = ia;
         interruptAssignments = inta;
 
+        initIORNames();
+        initInterruptNames();
+    }
+
+    private void initInterruptNames() {
+        Iterator i = interruptAssignments.keySet().iterator();
+        while ( i.hasNext() ) {
+            String s = (String)i.next();
+            Integer iv = (Integer)interruptAssignments.get(s);
+            interrupt_name[iv.intValue()] = s;
+        }
+    }
+
+    private void initIORNames() {
         Iterator i = ioregAssignments.keySet().iterator();
         while ( i.hasNext() ) {
             String s = (String)i.next();
@@ -151,6 +175,15 @@ public class MicrocontrollerProperties {
     }
 
     /**
+     * The <code>hasIOReg()</code> method queries whether the IO register exists on this device.
+     * @param n the name of the IO register
+     * @return true if the IO register exists on this device; false otherwise
+     */
+    public boolean hasIOReg(String n) {
+        return ioregAssignments.containsKey(n);
+    }
+
+    /**
      * The <code>getInterrupt()</code> method retrieves the interrupt number for the given interrupt
      * name for this microcontroller
      * @param n the name of the interrupt such as "RESET"
@@ -164,7 +197,23 @@ public class MicrocontrollerProperties {
         return i.intValue();
     }
 
+    /**
+     * The <code>getIORegName()</code> method returns the name of the IO register specified by
+     * the given number.
+     * @param ioreg the io register number for which to get a string name
+     * @return the string name of the IO register if there is such a name
+     */
     public String getIORegName(int ioreg) {
         return ioreg_name[ioreg];
+    }
+
+    /**
+     * The <code>getInterruptName()</code> method returns the name of an interrupt specified by
+     * the given number.
+     * @param inum the interrupt number for which to get a string name
+     * @return the string name of the interrupt if there is such a name
+     */
+    public String getInterruptName(int inum) {
+        return interrupt_name[inum];
     }
 }

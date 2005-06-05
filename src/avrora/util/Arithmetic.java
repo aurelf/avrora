@@ -94,6 +94,10 @@ public class Arithmetic {
         return (val & (1 << bit)) != 0;
     }
 
+    public static boolean getBit(long val, int bit) {
+        return (val & (((long)1) << bit)) != 0;
+    }
+
     public static boolean getBit(int val, int bit) {
         return (val & (1 << bit)) != 0;
     }
@@ -110,7 +114,13 @@ public class Arithmetic {
     }
 
     public static int setBit(int val, int bit, boolean on) {
-        return on ? (val | (1 << bit)) : (val & ~(1 << bit));
+        int mask = (1 << bit);
+        return on ? (val | mask) : (val & ~mask);
+    }
+
+    public static long setBit(long val, int bit, boolean on) {
+        long mask = (((long)1) << bit);
+        return on ? (val | mask) : (val & ~mask);
     }
 
     public static byte clearBit(byte val, int bit) {

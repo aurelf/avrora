@@ -136,7 +136,7 @@ public class DBBC {
         }
 
         public void execute(GenInterpreter interp) {
-            throw Avrora.failure("cannot execute abstract basic block");
+            throw Avrora.failure("cannot invoke abstract basic block");
         }
     }
 
@@ -260,13 +260,13 @@ public class DBBC {
         // generate constructor
         p.println("public " + classname + "() { super(" + addr + ", " + wcet + "); }");
 
-        // generate the execute method
-        p.startblock("public void execute(avrora.sim.GenInterpreter interpreter)");
+        // generate the invoke method
+        p.startblock("public void invoke(avrora.sim.GenInterpreter interpreter)");
 
         CodeGenerator gen = new CodeGenerator(p);
         gen.visitStmtList(stmts);
 
-        // end execute method
+        // end invoke method
         p.endblock();
 
         // end class

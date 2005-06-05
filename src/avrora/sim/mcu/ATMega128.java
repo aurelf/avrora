@@ -58,6 +58,7 @@ public class ATMega128 extends ATMegaFamily {
     public static final int ATMEGA128_FLASH_SIZE = 128 * _1kb;
     public static final int ATMEGA128_EEPROM_SIZE = 4 * _1kb;
     public static final int ATMEGA128_NUM_PINS = 65;
+    public static final int ATMEGA128_NUM_INTS = 36;
 
     public static final int MODE_IDLE       = 1;
     public static final int MODE_RESERVED1  = 2;
@@ -341,6 +342,7 @@ public class ATMega128 extends ATMegaFamily {
                 ATMEGA128_FLASH_SIZE, // size of flash in bytes
                 ATMEGA128_EEPROM_SIZE, // size of eeprom in bytes
                 ATMEGA128_NUM_PINS, // number of pins
+                ATMEGA128_NUM_INTS, // number of interrupts
                 new ReprogrammableCodeSegment.Factory(ATMEGA128_FLASH_SIZE, 7),
                 pinAssignments, // the assignment of names to physical pins
                 ioregAssignments, // the assignment of names to IO registers
@@ -388,11 +390,10 @@ public class ATMega128 extends ATMegaFamily {
     protected void installDevices() {
         // set up the external interrupt mask and flag registers and interrupt range
         EIFR_reg = buildInterruptRange(true, "EIMSK", "EIFR", 2, 8);
-        EIMSK_reg = EIFR_reg.maskRegister;
 
         // set up the timer mask and flag registers and interrupt range
         TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 17, 8);
-        TIMSK_reg = TIFR_reg.maskRegister;
+        TIMSK_reg = (MaskRegister)interpreter.getIOReg(props.getIOReg("TIMSK"));
 
 
         /* For whatever reason, the ATMega128 engineers decided
@@ -404,7 +405,8 @@ public class ATMega128 extends ATMegaFamily {
 
         int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
         ETIFR_reg = new FlagRegister(interpreter, ETIFR_mapping); // false, 0 are just placeholder falues
-        ETIMSK_reg = ETIFR_reg.maskRegister;
+        ETIMSK_reg = new MaskRegister(interpreter, ETIFR_mapping);
+
         installIOReg("ETIMSK", ETIMSK_reg);
         installIOReg("ETIFR", ETIFR_reg);
 

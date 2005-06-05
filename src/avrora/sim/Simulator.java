@@ -109,7 +109,6 @@ public class Simulator {
     }
 
     Simulator.Printer eventPrinter = getPrinter("sim.event");
-    Simulator.Printer interruptPrinter = getPrinter("sim.interrupt");
 
     /**
      * The <code>program</code> field allows descendants of the <code>Simulator</code> class to access the
@@ -126,12 +125,6 @@ public class Simulator {
      * The <code>interpreter</code> field stores a reference to the instruction set interpreter.
      */
     protected BaseInterpreter interpreter;
-
-    /**
-     * The <code>interrupts</code> array stores a reference to an <code>Interrupt</code> instance for each of
-     * the interrupt vectors supported in the simulator.
-     */
-    protected Interrupt[] interrupts;
 
     /**
      * The <code>clock</code> field stores a reference to the <code>MainClock</code> instance that tracks the
@@ -172,11 +165,6 @@ public class Simulator {
         id = i;
         microcontroller = mcu;
         program = p;
-        interrupts = new Interrupt[MAX_INTERRUPTS];
-
-        // set all interrupts to ignore
-        for (int cntr = 0; cntr < MAX_INTERRUPTS; cntr++)
-            interrupts[cntr] = IGNORE;
 
         factory = f;
 
@@ -272,6 +260,144 @@ public class Simulator {
             public void fireAfter(State state, int pc) {
                 // do nothing
             }
+        }
+    }
+
+    /**
+     * The <code>InterruptProbe</code> interface represents a programmer-defined probe that can
+     * be inserted on an interrupt. During simulation, when the interrupt is masked, posted, or
+     * executed, the probe will be notified.
+     */
+    public interface InterruptProbe {
+
+        /**
+         * The <code>fireBeforeInvoke()</code> method of an interrupt probe will be called by the
+         * simulator before control is transferred to this interrupt, before the microcontroller
+         * has been woken from its current sleep mode.
+         * @param s the state of the simulator
+         * @param inum the number of the interrupt being entered
+         */
+        public void fireBeforeInvoke(State s, int inum);
+
+        /**
+         * The <code>fireAfterInvoke()</code> method of an interrupt probe will be called by the
+         * simulator after control is transferred to this interrupt handler, i.e. after the current
+         * PC is pushed onto the stack, interrupts are disabled, and the current PC is set to
+         * the start of the interrupt handler.
+         * @param s the state of the simulator
+         * @param inum the number of the interrupt being entered
+         */
+        public void fireAfterInvoke(State s, int inum);
+
+        /**
+         * The <code>fireWhenDisabled()</code> method of an interrupt probe will be called by the
+         * simulator when the interrupt is masked out (disabled) by the program.
+         * @param s the state of the simulator
+         * @param inum the number of the interrupt being masked out
+         */
+        public void fireWhenDisabled(State s, int inum);
+
+        /**
+         * The <code>fireWhenEnabled()</code> method of an interrupt probe will be called by the
+         * simulator when the interrupt is unmasked (enabled) by the program.
+         * @param s the state of the simulator
+         * @param inum the number of the interrupt being unmasked
+         */
+        public void fireWhenEnabled(State s, int inum);
+
+        /**
+         * The <code>fireWhenPosted()</code> method of an interrupt probe will be called by the
+         * simulator when the interrupt is posted. When an interrupt is posted to the simulator,
+         * it will be coming pending if it is enabled (unmasked) and eventually be handled.
+         * @param s the state of the simulator
+         * @param inum the number of the interrupt being posted
+         */
+        public void fireWhenPosted(State s, int inum);
+
+        /**
+         * The <code>fireWhenUnposted()</code> method of an interrupt probe will be called by the
+         * simulator when the interrupt is unposted. This can happen if the software resets the
+         * flag bit of the corresponding IO register or, for most interrupts, when the pending
+         * interrupt is handled.
+         * @param s the state of the simulator
+         * @param inum the number of the interrupt being unposted
+         */
+        public void fireWhenUnposted(State s, int inum);
+
+        /**
+         * The <code>Empty</code> class represents a default implementation of the
+         * <code>InterruptProbe</code> interface where each fireXXX() method does nothing.
+         */
+        public static class Empty implements InterruptProbe {
+            /**
+             * The <code>fireBeforeInvoke()</code> method of an interrupt probe will be called by the
+             * simulator before control is transferred to this interrupt, before the microcontroller
+             * has been woken from its current sleep mode. In this implementation, the method does nothing.
+             * @param s the state of the simulator
+             * @param inum the number of the interrupt being entered
+             */
+            public void fireBeforeInvoke(State s, int inum) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireAfterInvoke()</code> method of an interrupt probe will be called by the
+             * simulator after control is transferred to this interrupt handler, i.e. after the current
+             * PC is pushed onto the stack, interrupts are disabled, and the current PC is set to
+             * the start of the interrupt handler. In this implementation, the method does nothing.
+             * @param s the state of the simulator
+             * @param inum the number of the interrupt being entered
+             */
+            public void fireAfterInvoke(State s, int inum) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireWhenDisabled()</code> method of an interrupt probe will be called by the
+             * simulator when the interrupt is masked out (disabled) by the program.  In this implementation,
+             * the method does nothing.
+             * @param s the state of the simulator
+             * @param inum the number of the interrupt being masked out
+             */
+            public void fireWhenDisabled(State s, int inum) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireWhenEnabled()</code> method of an interrupt probe will be called by the
+             * simulator when the interrupt is unmasked (enabled) by the program. In this implementation, the
+             * method does nothing.
+             * @param s the state of the simulator
+             * @param inum the number of the interrupt being unmasked
+             */
+            public void fireWhenEnabled(State s, int inum) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireWhenPosted()</code> method of an interrupt probe will be called by the
+             * simulator when the interrupt is posted. When an interrupt is posted to the simulator,
+             * it will be coming pending if it is enabled (unmasked) and eventually be handled. In this
+             * implementation, the method does nothing.
+             * @param s the state of the simulator
+             * @param inum the number of the interrupt being posted
+             */
+            public void fireWhenPosted(State s, int inum) {
+                // do nothing.
+            }
+
+            /**
+             * The <code>fireWhenUnposted()</code> method of an interrupt probe will be called by the
+             * simulator when the interrupt is unposted. This can happen if the software resets the
+             * flag bit of the corresponding IO register or, for most interrupts, when the pending
+             * interrupt is handled. In this implementation, the method does nothing.
+             * @param s the state of the simulator
+             * @param inum the number of the interrupt being unposted
+             */
+            public void fireWhenUnposted(State s, int inum) {
+                // do nothing.
+            }
+
         }
     }
 
@@ -524,19 +650,6 @@ public class Simulator {
 
 
     /**
-     * The <code>IGNORE</code> field stores a reference to a singleton anonymous class that ignores posting
-     * and firing of an interrupt. This is the default value for interrupts in a freshly initialized
-     * <code>Simulator</code> instance.
-     */
-    public static final Interrupt IGNORE = new Interrupt() {
-        public void force() {
-        }
-
-        public void fire() {
-        }
-    };
-
-    /**
      * The <code>getMicrocontroller()</code> method gets a reference to the microcontroller being simulated.
      *
      * @return a reference to the microcontroller being simulated
@@ -594,7 +707,7 @@ public class Simulator {
     }
 
     /**
-     * The <code>start()</code> method begins the simulation. It causes the simulator to enter a runLoop that
+     * The <code>start()</code> method begins the simulation. It causes the simulator to invoke a runLoop that
      * executes instructions, firing probes and events as it executes. The <code>start()</code> method returns
      * normally when the </code>break</code> AVR instruction is executed, when a
      * <code>BreakPointException</code> is thrown, when a <code> TimeoutException</code> is thrown, or when
@@ -667,6 +780,26 @@ public class Simulator {
     }
 
     /**
+     * The <code>insertInterruptProbe()</code> method inserts an interrupt probe on an interrupt.
+     * The probe will then be notified when the interrupt is executed, masked, or posted.
+     * @param p the interrupt probe to insert
+     * @param inum the interrupt number to insert the probe on
+     */
+    public void insertInterruptProbe(InterruptProbe p, int inum) {
+
+    }
+
+    /**
+     * The <code>removeInterruptProbe()</code> method removes an interrupt probe from an interrupt.
+     * The probe will then no longer be notified when the interrupt is executed, masked, or posted.
+     * @param p the interrupt probe to remove
+     * @param inum the interrupt number to remove the probe from
+     */
+    public void removeInterruptProbe(InterruptProbe p, int inum) {
+
+    }
+
+    /**
      * The <code>insertWatch()</code> method allows a watch to be inserted at a memory location. The probe
      * will be executed before every read or write to that memory location.
      *
@@ -723,22 +856,7 @@ public class Simulator {
      * @param num the interrupt number to force
      */
     public void forceInterrupt(int num) {
-        if (interruptPrinter.enabled)
-            interruptPrinter.println("FORCE INTERRUPT: " + num);
-        interrupts[num].force();
-    }
-
-    /**
-     * The <code>triggerInterrupt()</code> method is used by device implementations when they detect that an
-     * interrupt should be triggered. This method will check whether this interrupt is enabled by consulting
-     * its own internal table of interrupts that is kept consistent during writes to IO registers.
-     *
-     * @param num the number of the interrupt to trigger
-     */
-    protected void triggerInterrupt(int num) {
-        if (interruptPrinter.enabled)
-            interruptPrinter.println("FIRE INTERRUPT: " + num);
-        interrupts[num].fire();
+        interpreter.getInterruptTable().force(num);
     }
 
     /**
@@ -775,10 +893,6 @@ public class Simulator {
         if (eventPrinter.enabled)
             eventPrinter.println("REMOVE EVENT: " + e);
         clock.removeEvent(e);
-    }
-
-    public void installInterrupt(int num, Simulator.Interrupt i) {
-        interrupts[num] = i;
     }
 
 

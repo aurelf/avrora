@@ -218,7 +218,6 @@ public abstract class USART extends AtmelInternalDevice {
     protected USART(int n, AtmelMicrocontroller m) {
         super("usart"+n, m);
         this.n = n;
-
         initValues();
 
         UDRn_reg = new DataRegister();
@@ -462,7 +461,7 @@ public abstract class USART extends AtmelInternalDevice {
             if( bit == 7){
                 //OL: just unpost the int, do not clear RCXn
                 //thus, we cannot use the super call
-                interpreter.unpostInterrupt(INTERRUPT_MAPPING[bit]);
+                interpreter.setPosted(INTERRUPT_MAPPING[bit], false);
             } else if (bit < 1 || bit > 4) {
                 super.writeBit(bit, val);
             }
@@ -506,8 +505,7 @@ public abstract class USART extends AtmelInternalDevice {
         int count = 0;
 
         ControlRegisterB() {
-            super(USART.this.interpreter, INTERRUPT_MAPPING, UCSRnA_reg);
-            UCSRnA_reg.maskRegister = this;
+            super(USART.this.interpreter, INTERRUPT_MAPPING);
         }
 
         public void write(byte val) {

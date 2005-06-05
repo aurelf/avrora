@@ -133,8 +133,9 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             } else if (I) {
 
                 // check if there are any pending (posted) interrupts
-                if (postedInterrupts != 0) {
-                    handleInterrupt();
+                long pendingInterrupts = interrupts.getPendingInterrupts();
+                if (pendingInterrupts != 0) {
+                    invokeInterrupt(pendingInterrupts);
                 }
             }
 
@@ -169,8 +170,9 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         } else if (I) {
 
             // check if there are any pending (posted) interrupts
-            if (postedInterrupts != 0) {
-                return stepInterrupt();
+            long pendingInterrupts = interrupts.getPendingInterrupts();
+            if (pendingInterrupts != 0) {
+                return stepInterrupt(pendingInterrupts);
             }
         }
 
@@ -209,18 +211,18 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         return cycles;
     }
 
-    private int stepInterrupt() {
+    private int stepInterrupt(long pendingInterrupts) {
         // the lowest set bit is the highest priority posted interrupt
-        int lowestbit = Arithmetic.lowestBit(postedInterrupts);
+        int inum = Arithmetic.lowestBit(pendingInterrupts);
 
         // fire the interrupt (update flag register(s) state)
-        simulator.triggerInterrupt(lowestbit);
+        interrupts.beforeInvoke(inum);
 
         // store the return address
         pushPC(nextPC);
 
         // set PC to interrupt handler
-        nextPC = getInterruptVectorAddress(lowestbit);
+        nextPC = getInterruptVectorAddress(inum);
         pc = nextPC;
 
         // disable interrupts
@@ -238,15 +240,21 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         }
 
         delay(cycles);
+        // TODO: what about interrupts.afterInvoke(inum)?
+
         return 1;
     }
 
-    private void handleInterrupt() {
+    private void invokeInterrupt(long pendingInterrupts) {
         // the lowest set bit is the highest priority posted interrupt
-        int lowestbit = Arithmetic.lowestBit(postedInterrupts);
+        int lowestbit = Arithmetic.lowestBit(pendingInterrupts);
 
         // fire the interrupt (update flag register(s) state)
-        simulator.triggerInterrupt(lowestbit);
+        interrupts.beforeInvoke(lowestbit);
+
+        //time to wake up
+        if (sleeping)
+            leaveSleepMode();
 
         // store the return address
         pushPC(nextPC);
@@ -261,9 +269,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         // process any timed events
         advanceCycles(4);
 
-        //time to wake up
-        if (sleeping)
-            leaveSleepMode();
+        interrupts.afterInvoke(lowestbit);
     }
 
     private void sleepLoop() {

@@ -66,8 +66,8 @@ public class IfStmt extends Stmt {
      * parameters.
      *
      * @param c a reference to the expression representing the condition
-     * @param t a reference to the list of statements to execute if the condition evaluates to true
-     * @param f a reference to the list of statements to execute if the condition evaluates to false
+     * @param t a reference to the list of statements to invoke if the condition evaluates to true
+     * @param f a reference to the list of statements to invoke if the condition evaluates to false
      */
     public IfStmt(Expr c, List t, List f) {
         cond = c;

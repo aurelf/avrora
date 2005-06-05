@@ -328,7 +328,7 @@ public class CodeSegment extends Segment {
          * @param v the visitor to accept
          */
         public void accept(InstrVisitor v) {
-            throw new BaseInterpreter.NoSuchInstructionException(interpreter.getPC());
+            throw new InterpreterError.NoSuchInstructionException(interpreter.getPC());
         }
 
         /**
@@ -377,7 +377,7 @@ public class CodeSegment extends Segment {
          * @param v the visitor to accept
          */
         public void accept(InstrVisitor v) {
-            throw new BaseInterpreter.PCAlignmentException(interpreter.getPC());
+            throw new InterpreterError.PCAlignmentException(interpreter.getPC());
         }
 
         /**
