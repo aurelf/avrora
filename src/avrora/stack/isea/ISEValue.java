@@ -43,6 +43,7 @@ public class ISEValue {
     public static final byte UNKNOWN = -1;
     public static final byte SREG = 33;
     public static final byte EIMSK = 34;
+    public static final byte TIMSK = 35;
     public static final byte R0 = 0;
     public static final byte R1 = 1;
     public static final byte R2 = 2;
@@ -83,7 +84,9 @@ public class ISEValue {
 
     public static String toString(byte b1) {
         if ( b1 == UNKNOWN ) return "---";
-        if ( b1 == SREG ) return "SREG";
+        if ( b1 == SREG ) return "SR";
+        if ( b1 == TIMSK ) return "TM";
+        if ( b1 == EIMSK ) return "EM";
         if ( b1 < 32 && b1 >= 0) return "R"+b1;
         return "???";
     }

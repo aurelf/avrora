@@ -54,10 +54,18 @@ import java.util.HashMap;
  */
 public class ISEInterpreter implements InstrVisitor {
 
+    public interface SummaryCache {
+        public ISEState getProcedureSummary(int start);
+    }
+
     protected final Program program;
 
     protected byte readRegister(Register r) {
         return state.readRegister(r);
+    }
+
+    protected byte getRegister(Register r) {
+        return state.getRegister(r);
     }
 
     protected void writeRegister(Register r, byte val) {
@@ -81,26 +89,36 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     protected int relative(int offset) {
-        return nextPC + 2 + 2 * offset;
+        return pc + 2 + 2 * offset;
     }
 
+    protected int absolute(int offset) {
+        return 2 * offset;
+    }
     protected void branch(int addr) {
-        addToWorkList("BRANCH", addr, state.copy());
+        addToWorkList("BRANCH", addr, state.dup());
     }
 
     protected void jump(int addr) {
         nextPC = addr;
     }
 
+    protected ISEState processReturnState(ISEState caller, ISEState ret) {
+        ISEState fs = ret.dup();
+        fs.mergeWithCaller(caller);
+        return fs;
+    }
+
     protected void postReturn(ISEState state) {
         if ( returnState == null )
-            returnState = state.copy();
+            returnState = state.dup();
         else returnState.merge(state);
     }
+
     protected void postReturnFromInterrupt(ISEState state) {
         // TODO: deal with interrupts
         if ( returnState == null )
-            returnState = state.copy();
+            returnState = state.dup();
         else returnState.merge(state);
     }
 
@@ -135,6 +153,7 @@ public class ISEInterpreter implements InstrVisitor {
     Item tail;
 
     protected HashMap states;
+    protected final SummaryCache cache;
 
     protected void addToWorkList(String str, int pc, ISEState s) {
         Terminal.printBrightGreen(str);
@@ -171,15 +190,15 @@ public class ISEInterpreter implements InstrVisitor {
                 s.print(pc);
             }
         } else {
-            s = s.copy();
             states.put(new Integer(pc), s);
         }
         return s;
     }
 
-    public ISEInterpreter(Program p) {
+    public ISEInterpreter(Program p, SummaryCache cs) {
         program = p;
         states = new HashMap();
+        cache = cs;
     }
 
     public ISEState analyze(int begin_addr) {
@@ -195,7 +214,7 @@ public class ISEInterpreter implements InstrVisitor {
             head = head.next;
 
             pc = i.pc;
-            state = i.state;
+            state = i.state.dup();
             TermUtil.printSeparator(Terminal.MAXLINE);
             state.print(pc);
             Instr instr = program.readInstr(i.pc);
@@ -291,7 +310,7 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.BREAK i) {
-        nextPC = -1;
+        end();
     }
 
     public void visit(Instr.BREQ i) {
@@ -370,7 +389,11 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.CALL i) {
-        throw Avrora.unimplemented();
+        int target = absolute(i.imm1);
+        ISEState rs = cache.getProcedureSummary(target);
+        ISEState fs = processReturnState(state, rs);
+        addToWorkList("RET", nextPC, fs);
+        end();
     }
 
     public void visit(Instr.CBI i) {
@@ -403,7 +426,8 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.CLR i) {
-        unop(i.r1);
+        writeSREG(ISEValue.UNKNOWN);
+        writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
     public void visit(Instr.CLS i) {
@@ -487,7 +511,13 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.EOR i) {
-        binop(i.r1, i.r2);
+        if ( i.r1 == i.r2 ) {
+            // special case: clear the register
+            writeSREG(ISEValue.UNKNOWN);
+            writeRegister(i.r1, ISEValue.UNKNOWN);
+        } else {
+            binop(i.r1, i.r2);
+        }
     }
 
     public void visit(Instr.FMUL i) {
@@ -503,7 +533,18 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.ICALL i) {
-        throw Avrora.unimplemented();
+        java.util.List iedges = program.getIndirectEdges(pc);
+        if (iedges == null)
+            throw Avrora.failure("No control flow information for indirect call at: " +
+                    StringUtil.addrToString(pc));
+        Iterator it = iedges.iterator();
+        while (it.hasNext()) {
+            int target_address = ((Integer)it.next()).intValue();
+            ISEState rs = cache.getProcedureSummary(target_address);
+            ISEState fs = processReturnState(state, rs);
+            addToWorkList("RET", nextPC, fs);
+        }
+        end();
     }
 
     public void visit(Instr.IJMP i) {
@@ -587,12 +628,12 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.MOV i) {
-        writeRegister(i.r1, readRegister(i.r2));
+        writeRegister(i.r1, getRegister(i.r2));
     }
 
     public void visit(Instr.MOVW i) {
-        writeRegister(i.r1, readRegister(i.r2));
-        writeRegister(i.r1.nextRegister(), readRegister(i.r2.nextRegister()));
+        writeRegister(i.r1, getRegister(i.r2));
+        writeRegister(i.r1.nextRegister(), getRegister(i.r2.nextRegister()));
     }
 
     public void visit(Instr.MUL i) {
@@ -632,19 +673,29 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.PUSH i) {
-        pushByte(readRegister(i.r1));
+        pushByte(getRegister(i.r1));
     }
 
     public void visit(Instr.RCALL i) {
-        throw Avrora.unimplemented();
+        int target = relative(i.imm1);
+        ISEState rs = cache.getProcedureSummary(target);
+        ISEState fs = processReturnState(state, rs);
+        addToWorkList("RET", nextPC, fs);
+        end();
+    }
+
+    private void end() {
+        nextPC = -1;
     }
 
     public void visit(Instr.RET i) {
         postReturn(state);
+        end();
     }
 
     public void visit(Instr.RETI i) {
         postReturnFromInterrupt(state);
+        end();
     }
 
     public void visit(Instr.RJMP i) {

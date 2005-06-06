@@ -35,9 +35,11 @@ package avrora.stack.isea;
 import avrora.core.Program;
 import avrora.core.ProcedureMap;
 import avrora.core.ControlFlowGraph;
-import avrora.util.Option;
-import avrora.util.Terminal;
-import avrora.util.TermUtil;
+import avrora.core.SourceMapping;
+import avrora.util.*;
+import avrora.Avrora;
+
+import java.util.*;
 
 /**
  * The <code>ISEAnalyzer</code> class is a static analyzer for machine code. This class
@@ -49,20 +51,125 @@ import avrora.util.TermUtil;
  *
  * @author Ben L. Titzer
  */
-public class ISEAnalyzer {
+public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
 
     protected final Program program;
+    protected final SourceMapping smap;
     protected final ControlFlowGraph cfg;
     protected final ProcedureMap pmap;
+    protected final HashMap procedureSummaries;
+    protected final Stack stack;
+
+    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("analysis.isea");
 
     public ISEAnalyzer(Program p) {
         program = p;
+        smap = p.getSourceMapping();
         cfg = program.getCFG();
         pmap = cfg.getProcedureMap();
+        procedureSummaries = new HashMap();
+        stack = new Stack();
+    }
+
+    class Item {
+        ControlFlowGraph.Block block;
+        Item next;
+
+        Item(ControlFlowGraph.Block b) {
+            block = b;
+        }
+    }
+
+    public ISEState getProcedureSummary(int start) {
+        ControlFlowGraph.Block block = cfg.getBlockStartingAt(start);
+        if ( block == null ) {
+            throw Avrora.failure("cannot get procedure summary for address: "+StringUtil.addrToString(start));
+        }
+        analyzeProcedure(block);
+        return (ISEState)procedureSummaries.get(block);
+    }
+
+    public void analyze() {
+        HashSet seen = new HashSet();
+        Item head;
+        Item tail = head = new Item(cfg.getBlockStartingAt(0x0000));
+
+        while ( head != null ) {
+            ControlFlowGraph.Block block = head.block;
+            if ( printer.enabled ) {
+                Terminal.println("looking at block "+getBlockName(block));
+            }
+            seen.add(block);
+            if ( pmap.getProcedureEntrypoints().contains(block) ) {
+                // this is a procedure entrypoint
+                analyzeProcedure(block);
+            } else {
+                // otherwise, look for successor blocks
+                Iterator i = block.getEdgeIterator();
+                while ( i.hasNext() ) {
+                    ControlFlowGraph.Edge e = (ControlFlowGraph.Edge)i.next();
+                    ControlFlowGraph.Block target = e.getTarget();
+                    tail = addToWorkList(seen, target, tail);
+                }
+
+                // are there any indirect edges that we should know about?
+                int lastAddr = block.getLastAddress();
+                List list = program.getIndirectEdges(lastAddr);
+                if ( list != null ) {
+                    Iterator iei = list.iterator();
+                    while ( iei.hasNext() ) {
+                        // add the indirect target to the work list
+                        int taddr = ((Integer)i.next()).intValue();
+                        tail = addToWorkList(seen, cfg.getBlockStartingAt(taddr), tail);
+                    }
+                }
+            }
+
+            head = head.next;
+        }
+    }
+
+    private Item addToWorkList(HashSet seen, ControlFlowGraph.Block target, Item tail) {
+        if ( target == null ) return tail;
+        if ( !seen.contains(target) ) {
+            // if we haven't seen this block before, add to worklist
+            tail.next = new Item(target);
+            tail = tail.next;
+        }
+        return tail;
+    }
+
+    public void analyzeProcedure(ControlFlowGraph.Block start) {
+        if ( printer.enabled ) {
+            printStart(start);
+        }
+        // first check the procedure summary cache
+        if ( procedureSummaries.containsKey(start) ) return;
+        if ( stack.contains(start) ) {
+            throw Avrora.failure("program contains recursion");
+        }
+        stack.push(start);
+        ISEState rs = new ISEInterpreter(program, this).analyze(start.getAddress());
+        procedureSummaries.put(start, rs);
+        stack.pop();
+    }
+
+    private void printStart(ControlFlowGraph.Block start) {
+        int size = stack.size();
+        String indent = StringUtil.dup('=', 4*size+3);
+        Terminal.print(Terminal.COLOR_MAGENTA, indent+">");
+        Terminal.print(Terminal.COLOR_PURPLE, " Analyzing procedure ");
+        Terminal.printBrightCyan(getBlockName(start));
+        Terminal.nextln();
+    }
+
+    private String getBlockName(ControlFlowGraph.Block start) {
+        int address = start.getAddress();
+        return "("+smap.getName(address)+": "+StringUtil.addrToString(address)+")";
     }
 
     public void analyze(int loc) {
-        ISEState s = new ISEInterpreter(program).analyze(loc);
+        ISEState s = new ISEInterpreter(program, this).analyze(loc);
         TermUtil.printSeparator(Terminal.MAXLINE);
         if ( s != null ) {
             Terminal.printRed("RETURN STATE");

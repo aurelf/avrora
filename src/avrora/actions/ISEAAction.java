@@ -13,7 +13,8 @@ import avrora.util.Option;
 public class ISEAAction extends Action {
 
     protected final Option.Str START = options.newOption("procedure", "0x0000",
-            "This option specifies the location of the procedure for which to compute the ISEA information.");
+            "When this option is specified, the ISE analyzer will analyze only the specified procedure, rather " +
+            "than the entire program.");
 
     public ISEAAction() {
         super("This action invokes the inter-procedural side-effect analysis tool.");
@@ -22,9 +23,13 @@ public class ISEAAction extends Action {
     public void run(String[] args) throws Exception {
         Program p = Main.loadProgram(args);
         ISEAnalyzer a = new ISEAnalyzer(p);
-        SourceMapping.Location location = p.getSourceMapping().getLocation(START.get());
-        if ( location == null )
-            Avrora.userError("Cannot find program location "+START.get());
-        a.analyze(location.address);
+        if ( !"".equals(START.get())) {
+            SourceMapping.Location location = p.getSourceMapping().getLocation(START.get());
+            if ( location == null )
+                Avrora.userError("Cannot find program location "+START.get());
+            a.analyze(location.address);
+        } else {
+            a.analyze();
+        }
     }
 }

@@ -44,6 +44,7 @@ import avrora.core.SourceMapping;
 import avrora.util.StringUtil;
 import avrora.util.Option;
 import avrora.util.Terminal;
+import avrora.util.TermUtil;
 
 /**
  * The <code>CallMonitor</code> class implements a monitor that is capable of tracing the call/return behavior
@@ -60,6 +61,8 @@ public class CallMonitor extends MonitorFactory {
         SourceMapping sm;
         int depth = 0;
         String[] stack;
+        public static final int MAX_STACK_DEPTH = 1024;
+        int maxdepth = 0;
 
         Mon(Simulator s) {
             this.s = s;
@@ -70,7 +73,7 @@ public class CallMonitor extends MonitorFactory {
                 s.insertProbe(iprobe, pc*4);
             }
 
-            stack = new String[256];
+            stack = new String[MAX_STACK_DEPTH];
             stack[0] = "";
 
             Program p = s.getProgram();
@@ -98,6 +101,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         public void report() {
+            TermUtil.reportQuantity("Maximum stack depth", maxdepth, "frames");
             // do nothing
         }
 
@@ -132,7 +136,7 @@ public class CallMonitor extends MonitorFactory {
                 Terminal.nextln();
             }
             depth++;
-
+            if ( depth > maxdepth ) maxdepth = depth;
         }
 
         private void printStack(int depth) {

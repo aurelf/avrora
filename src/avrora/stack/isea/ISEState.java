@@ -40,39 +40,60 @@ import avrora.util.StringUtil;
 /**
  * @author Ben L. Titzer
  */
-public class ISEState {
+public class ISEState extends ISEAbstractState {
 
     public static final int NUM_REGISTERS = 32;
-    public static final int SREG_NUM = 63;
+    public static final int SREG_NUM = 0x3f;
+    public static final int EIMSK_NUM = 0x39;
+    public static final int TIMSK_NUM = 0x37;
+    public static final int SREG_OFF = NUM_REGISTERS;
+    public static final int EIMSK_OFF = NUM_REGISTERS + 1;
+    public static final int TIMSK_OFF = NUM_REGISTERS + 2;
+    public static final int MAX_STACK = 40;
 
-    protected final byte[] registers;
-    protected byte SREG;
+    protected static final ISEAbstractState.Element[] defaultElements;
+    protected static final byte[] defaultStack;
 
-    public ISEState() {
-        registers = new byte[NUM_REGISTERS];
-        for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ )
-            registers[cntr] = (byte)(ISEValue.R0 + cntr);
-        SREG = ISEValue.SREG;
+    static {
+        defaultElements = new ISEAbstractState.Element[NUM_REGISTERS+3];
+        int cntr = 0;
+        for ( ; cntr < NUM_REGISTERS; cntr++ ) {
+            defaultElements[cntr] = new ISEAbstractState.Element("R"+cntr, (byte)(ISEValue.R0+cntr), false);
+        }
+        defaultElements[SREG_OFF] = new ISEAbstractState.Element("SR", (byte)(ISEValue.SREG), false);
+        defaultElements[EIMSK_OFF] = new ISEAbstractState.Element("EM", (byte)(ISEValue.EIMSK), false);
+        defaultElements[TIMSK_OFF] = new ISEAbstractState.Element("TM", (byte)(ISEValue.TIMSK), false);
+        defaultStack = new byte[MAX_STACK];
     }
 
-    protected ISEState(ISEState s) {
-        registers = new byte[NUM_REGISTERS];
-        for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ )
-            registers[cntr] = s.registers[cntr];
-        SREG = s.SREG;
+    public ISEState() {
+        super(defaultElements, defaultStack, 0);
+    }
+
+    public ISEState(ISEState r) {
+        super(r.elements, r.stack, r.depth);
     }
 
     public byte readRegister(Register r) {
-        return registers[r.getNumber()];
+        byte value = getElement(r.getNumber());
+        int off = getElemOffset(value);
+        if ( off != -1 ) elements[off].read = true;
+        return value;
+    }
+
+    public byte getRegister(Register r) {
+        return getElement(r.getNumber());
     }
 
     public void writeRegister(Register r, byte val) {
-        registers[r.getNumber()] = val;
+        writeElement(r.getNumber(), val);
     }
 
     public byte readIORegister(int reg) {
         switch ( reg ) {
-            case SREG_NUM: return SREG;
+            case SREG_NUM: return readElement(SREG_OFF);
+            case EIMSK_NUM: return readElement(EIMSK_OFF);
+            case TIMSK_NUM: return readElement(TIMSK_OFF);
         }
         return ISEValue.UNKNOWN;
     }
@@ -80,63 +101,78 @@ public class ISEState {
     public void writeIORegister(int reg, byte val) {
         switch ( reg ) {
             case SREG_NUM:
-                SREG = val;
+                writeElement(SREG_OFF, val);
+                break;
+            case EIMSK_NUM:
+                writeElement(EIMSK_OFF, val);
+                break;
+            case TIMSK_NUM:
+                writeElement(TIMSK_OFF, val);
                 break;
         }
     }
 
     public byte getSREG() {
-        return SREG;
+        return readElement(SREG_OFF);
     }
 
     public void writeSREG(byte val) {
-        SREG = val;
+        writeElement(SREG_OFF, val);
     }
 
-    public void merge(ISEState s) {
-        // merge all registers
-        for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ ) {
-            registers[cntr] = ISEValue.merge(registers[cntr], s.registers[cntr]);
+    public void mergeWithCaller(ISEState caller) {
+        for ( int cntr = 0; cntr < elements.length; cntr++ ) {
+            elements[cntr].value = computeValue(cntr, caller);
         }
-        // merge the status register
-        SREG = ISEValue.merge(SREG, s.SREG);
-    }
 
-    public boolean equals(Object o) {
-        if ( !(o instanceof ISEState) ) return false;
-        ISEState s = (ISEState)o;
-        // check each register
-        for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ ) {
-            if ( registers[cntr] != s.registers[cntr] ) return false;
+        for ( int cntr = 0; cntr < elements.length; cntr++ ) {
+            if ( !elements[cntr].read )
+                elements[cntr].read = computeNewRead(cntr, caller);
         }
-        // check status register
-        if ( SREG != s.SREG ) return false;
 
-        return true;
+        if ( depth != 0)
+            throw Avrora.failure("return with nonzero stack height");
     }
 
-    public ISEState copy() {
+    private byte computeValue(int elem, ISEState caller) {
+        Element relem = elements[elem];
+        int origElem = getElemOffset(relem.value);
+
+        if ( origElem >= 0 ) {
+            Element oelem = caller.elements[origElem];
+            return oelem.value;
+        }
+        return relem.value;
+    }
+
+    private boolean computeNewRead(int elem, ISEState caller) {
+        Element relem = elements[elem];
+        int origElem = getElemOffset(relem.value);
+
+        if ( origElem >= 0 ) {
+            Element oelem = caller.elements[origElem];
+            return oelem.read;
+        }
+        return false;
+    }
+
+
+    private int getElemOffset(byte value) {
+        int off = -1;
+        if ( value >= ISEValue.R0 && value <= ISEValue.R31 ) {
+            off = value - ISEValue.R0;
+        } else {
+            switch ( value ) {
+                case ISEValue.SREG: off = SREG_OFF; break;
+                case ISEValue.EIMSK: off = EIMSK_OFF; break;
+                case ISEValue.TIMSK: off = TIMSK_OFF; break;
+            }
+        }
+        return off;
+    }
+
+    public ISEState dup() {
         return new ISEState(this);
     }
 
-    public void push(byte val) {
-        // TODO: implement a stack in the state
-    }
-
-    public byte pop() {
-        return ISEValue.UNKNOWN;
-    }
-
-    public void print(int pc) {
-        Terminal.print(StringUtil.to0xHex(pc, 4)+": ");
-        for ( int cntr = 0; cntr < NUM_REGISTERS; cntr++ ) {
-            String str = ISEValue.toString(registers[cntr]);
-            Terminal.print(StringUtil.rightJustify(str, 4));
-            if ( cntr == 15 ) Terminal.print("\n        ");
-        }
-        Terminal.nextln();
-        String str = ISEValue.toString(SREG);
-        Terminal.print("        "+str);
-        Terminal.nextln();
-    }
 }

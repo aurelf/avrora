@@ -495,7 +495,7 @@ public class Program {
     protected void checkAddress(int addr) {
         // TODO: throw correct error type
         if (addr < program_start || addr >= program_end)
-            throw Avrora.failure("address out of range: " + addr);
+            throw Avrora.failure("address out of range: " + StringUtil.addrToString(addr));
     }
 
     /**
