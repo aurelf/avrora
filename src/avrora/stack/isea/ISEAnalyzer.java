@@ -58,6 +58,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
     protected final ControlFlowGraph cfg;
     protected final ProcedureMap pmap;
     protected final HashMap procedureSummaries;
+    protected final HashMap returnSummaries;
     protected final Stack stack;
 
     protected final Verbose.Printer printer = Verbose.getVerbosePrinter("analysis.isea");
@@ -68,6 +69,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
         cfg = program.getCFG();
         pmap = cfg.getProcedureMap();
         procedureSummaries = new HashMap();
+        returnSummaries = new HashMap();
         stack = new Stack();
     }
 
@@ -87,6 +89,20 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
         }
         analyzeProcedure(block);
         return (ISEState)procedureSummaries.get(block);
+    }
+
+    public void recordReturnSummary(int retaddr, ISEState rs) {
+        ISEState ors = getReturnSummary(retaddr);
+        if ( ors == null ) {
+            ors = rs.dup();
+            returnSummaries.put(new Integer(retaddr), ors);
+        } else {
+            ors.merge(rs);
+        }
+    }
+
+    public ISEState getReturnSummary(int retaddr) {
+        return (ISEState)returnSummaries.get(new Integer(retaddr));
     }
 
     public void analyze() {
@@ -119,7 +135,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
                     Iterator iei = list.iterator();
                     while ( iei.hasNext() ) {
                         // add the indirect target to the work list
-                        int taddr = ((Integer)i.next()).intValue();
+                        int taddr = ((Integer)iei.next()).intValue();
                         tail = addToWorkList(seen, cfg.getBlockStartingAt(taddr), tail);
                     }
                 }
@@ -140,11 +156,11 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
     }
 
     public void analyzeProcedure(ControlFlowGraph.Block start) {
+        // first check the procedure summary cache
+        if ( procedureSummaries.containsKey(start) ) return;
         if ( printer.enabled ) {
             printStart(start);
         }
-        // first check the procedure summary cache
-        if ( procedureSummaries.containsKey(start) ) return;
         if ( stack.contains(start) ) {
             throw Avrora.failure("program contains recursion");
         }
@@ -158,7 +174,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
         int size = stack.size();
         String indent = StringUtil.dup('=', 4*size+3);
         Terminal.print(Terminal.COLOR_MAGENTA, indent+">");
-        Terminal.print(Terminal.COLOR_PURPLE, " Analyzing procedure ");
+        Terminal.print(Terminal.COLOR_PURPLE, " ISE: Analyzing procedure ");
         Terminal.printBrightCyan(getBlockName(start));
         Terminal.nextln();
     }

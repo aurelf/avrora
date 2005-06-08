@@ -89,6 +89,10 @@ public class ISEState extends ISEAbstractState {
         writeElement(r.getNumber(), val);
     }
 
+    public boolean isRegisterRead(Register reg) {
+        return elements[reg.getNumber()].read;
+    }
+
     public byte readIORegister(int reg) {
         switch ( reg ) {
             case SREG_NUM: return readElement(SREG_OFF);
@@ -96,6 +100,15 @@ public class ISEState extends ISEAbstractState {
             case TIMSK_NUM: return readElement(TIMSK_OFF);
         }
         return ISEValue.UNKNOWN;
+    }
+
+    public boolean isIORegisterRead(int ior) {
+        switch ( ior ) {
+            case SREG_NUM: return elements[SREG_OFF].read;
+            case EIMSK_NUM: return elements[EIMSK_OFF].read;
+            case TIMSK_NUM: return elements[TIMSK_OFF].read;
+        }
+        return true;
     }
 
     public void writeIORegister(int reg, byte val) {
@@ -132,6 +145,9 @@ public class ISEState extends ISEAbstractState {
 
         if ( depth != 0)
             throw Avrora.failure("return with nonzero stack height");
+
+        System.arraycopy(caller.stack, 0, stack, 0, caller.depth);
+        depth = caller.depth;
     }
 
     private byte computeValue(int elem, ISEState caller) {

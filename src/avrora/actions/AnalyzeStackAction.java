@@ -54,6 +54,11 @@ public class AnalyzeStackAction extends Action {
             "This option is used to monitor the progress of a long-running stack analysis problem. " +
             "The analyzer will report the count of states, edges, and propagation information " +
             "produced every 5 seconds. ");
+    public final Option.Bool USE_ISEA = newOption("use-isea", false,
+            "This option enables the use of information from inter-procedural side effect analysis " +
+            "that may help in reducing the memory usage during state exploration, without affecting " +
+            "stack analysis precision. When this option is enabled, the stack analyzer will consult the " +
+            "ISEA analysis subsystem for each procedure call that it encounters in the program.");
     public final Option.Bool TRACE_SUMMARY = newOption("trace-summary", true,
             "This option is used to reduce the amount of output by summarizing the error trace" +
             "that yields the maximal stack depth. When true, the analysis will shorten the error " +
@@ -67,6 +72,9 @@ public class AnalyzeStackAction extends Action {
             "This option causes the stack analyzer to print a dump of all " +
             "the reachable abstract states in the state space, as well as all " +
             "edges between states. This can be used for a post-mortem analysis.");
+    public final Option.Bool SHOW_PATH = newOption("show-path", false,
+            "This option causes the stack analyzer to print out the execution path corresponding " +
+            "to the maximal stack depth.");
     public final Option.Long RESERVE = newOption("reserve", 0,
             "This option is used for reserving a small portion of memory before the " +
             "analysis begins, in case the Java heap space is exhausted. This can happen " +
@@ -93,12 +101,14 @@ public class AnalyzeStackAction extends Action {
      */
     public void run(String[] args) throws Exception {
         Program p = Main.loadProgram(args);
-        Analyzer a = new Analyzer(p);
 
         Analyzer.TRACE_SUMMARY = TRACE_SUMMARY.get();
         Analyzer.MONITOR_STATES = MONITOR_STATES.get();
         Analyzer.TRACE = TRACE.get();
+        Analyzer.USE_ISEA = USE_ISEA.get();
+        Analyzer.SHOW_PATH = SHOW_PATH.get();
         Analyzer.reserve = new byte[(int)(RESERVE.get() * MEGABYTES)];
+        Analyzer a = new Analyzer(p);
 
         a.run();
         a.report();

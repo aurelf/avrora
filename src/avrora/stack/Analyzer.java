@@ -33,8 +33,12 @@
 package avrora.stack;
 
 import avrora.Avrora;
+import avrora.stack.isea.ISEAnalyzer;
+import avrora.stack.isea.ISEState;
+import avrora.stack.isea.ISEValue;
 import avrora.core.Instr;
 import avrora.core.Program;
+import avrora.core.Register;
 import avrora.util.*;
 import avrora.util.profiling.Distribution;
 
@@ -53,8 +57,10 @@ public class Analyzer {
 
     public static boolean MONITOR_STATES;
     public static boolean TRACE_SUMMARY;
+    public static boolean USE_ISEA;
+    public static boolean SHOW_PATH;
 
-    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("stack.phases");
+    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("analyzer.stack");
 
     protected final Program program;
     protected final StateTransitionGraph graph;
@@ -72,6 +78,7 @@ public class Analyzer {
     long traverseTime;
     boolean unbounded;
     Path maximalPath;
+    ISEAnalyzer isea;
 
     public static final int NORMAL_EDGE = 0;
     public static final int PUSH_EDGE = 1;
@@ -99,6 +106,10 @@ public class Analyzer {
         graph = new StateTransitionGraph(p);
         policy = new ContextSensitivePolicy();
         interpreter = new AbstractInterpreter(program, policy);
+        if ( USE_ISEA ) {
+            isea = new ISEAnalyzer(program);
+            isea.analyze();
+        }
     }
 
     /**
@@ -107,8 +118,11 @@ public class Analyzer {
      */
     public void run() {
         running = true;
-        if (MONITOR_STATES)
-            new MonitorThread().start();
+        MonitorThread t = null;
+        if (MONITOR_STATES) {
+            t = new MonitorThread();
+            t.start();
+        }
 
         long start = System.currentTimeMillis();
         try {
@@ -117,7 +131,6 @@ public class Analyzer {
             buildTime = check - start;
             findMaximalPath();
             traverseTime = System.currentTimeMillis() - check;
-            running = false;
         } catch (OutOfMemoryError ome) {
             // free the reserved memory
             reserve = null;
@@ -125,6 +138,8 @@ public class Analyzer {
             buildTime = check - start;
             outOfMemory();
             graph.deleteStateSets();
+        } finally {
+            running = false;
         }
 
     }
@@ -356,6 +371,13 @@ public class Analyzer {
         int cpc = caller.getPC();
         int npc;
 
+        if ( isea != null ) {
+            ISEState rs = isea.getReturnSummary(rstate.getPC());
+            if ( rs != null ) {
+                mergeReturnStateIntoCaller(caller, rstate, rs);
+            }
+        }
+
         if (reti) {
             npc = cpc;
             rstate.setFlag_I(AbstractArithmetic.TRUE);
@@ -367,6 +389,38 @@ public class Analyzer {
 
         int type = reti ? RETI_EDGE : RET_EDGE;
         policy.addEdge(caller, type, rstate);
+    }
+
+    private void mergeReturnStateIntoCaller(StateCache.State caller, MutableState rstate, ISEState rs) {
+        for ( int cntr = 0; cntr < MutableState.NUM_REGS; cntr++ ) {
+            Register reg = Register.getRegisterByNumber(cntr);
+            // get the value that is in the return state
+            char retval = rstate.getRegisterAV(reg);
+            // interpret the ISE abstract value: is it a new value or an old value?
+            char av = interpret(caller, rs.getRegister(reg), retval);
+            rstate.setRegisterAV(reg, av);
+        }
+
+        mergeReturnIORegister(IORegisterConstants.SREG, caller, rstate, rs);
+        mergeReturnIORegister(IORegisterConstants.EIMSK, caller, rstate, rs);
+        mergeReturnIORegister(IORegisterConstants.TIMSK, caller, rstate, rs);
+    }
+
+    private void mergeReturnIORegister(int ior, StateCache.State caller, MutableState rstate, ISEState rs) {
+        char retval = rstate.getIORegisterAV(ior);
+        char av = interpret(caller, rs.readIORegister(ior), retval);
+        rstate.setIORegisterAV(ior, av);
+    }
+
+    private char interpret(StateCache.State caller, byte rsval, char defval) {
+        // if the ISE value refers to the value of a register before the call, return it from the caller state
+        Register reg = ISEValue.asRegister(rsval);
+        if ( reg != null ) return caller.getRegisterAV(reg);
+        // if the ISE value refers to the value of an IO register before the call, return it from the caller state
+        int ior = ISEValue.asIORegister(rsval);
+        if ( ior > 0 ) return caller.getIORegisterAV(ior);
+        // otherwise, return the default (value in the return state)
+        return defval;
     }
 
     private void postNewEdge(StateTransitionGraph.Edge edge) {
@@ -522,7 +576,10 @@ public class Analyzer {
             printQuantity("Maximum stack depth   ", "unbounded");
         else
             printQuantity("Maximum stack depth   ", "" + maximalPath.depth + " bytes");
-        printPath(maximalPath);
+
+        if ( SHOW_PATH ) {
+            printPath(maximalPath);
+        }
     }
 
     public void dump() {
@@ -562,6 +619,23 @@ public class Analyzer {
         newRetCount++;
     }
 
+    private void maskIrrelevantState(MutableState s, ISEState rs) {
+        for ( int cntr = 0; cntr < MutableState.NUM_REGS; cntr++ ) {
+            Register reg = Register.getRegisterByNumber(cntr);
+            if ( !rs.isRegisterRead(reg) )
+                s.setRegisterAV(reg, AbstractArithmetic.UNKNOWN);
+        }
+        // TODO: these interrupt flags do matter!
+        //maskIORegister(IORegisterConstants.SREG, s, rs);
+        //maskIORegister(IORegisterConstants.EIMSK, s, rs);
+        //maskIORegister(IORegisterConstants.TIMSK, s, rs);
+    }
+
+    private void maskIORegister(int ior, MutableState s, ISEState rs) {
+        if ( !rs.isIORegisterRead(ior) )
+            s.setIORegisterAV(ior, AbstractArithmetic.UNKNOWN);
+    }
+
     /**
      * The <code>ContextSensitive</code> class implements the context-sensitive analysis similar to 1-CFA. It
      * is an implementation of the <code>Analyzer.Policy</code> interface that determines what should be done
@@ -588,6 +662,12 @@ public class Analyzer {
          *         interpreter should not be concerned.
          */
         public MutableState call(MutableState s, int target_address) {
+            if ( isea != null ) {
+                ISEState rs = isea.getProcedureSummary(target_address);
+                if ( rs != null )
+                maskIrrelevantState(s, rs);
+            }
+
             s.setPC(target_address);
             addEdge(frontierState, CALL_EDGE, s);
 

@@ -36,10 +36,7 @@ import avrora.core.InstrVisitor;
 import avrora.core.Instr;
 import avrora.core.Register;
 import avrora.core.Program;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.TermUtil;
+import avrora.util.*;
 import avrora.Avrora;
 
 import java.util.Iterator;
@@ -54,8 +51,11 @@ import java.util.HashMap;
  */
 public class ISEInterpreter implements InstrVisitor {
 
+    protected final Verbose.Printer printer = Verbose.getVerbosePrinter("analysis.isea.interpreter");
+
     public interface SummaryCache {
         public ISEState getProcedureSummary(int start);
+        public void recordReturnSummary(int retaddr, ISEState rs);
     }
 
     protected final Program program;
@@ -113,6 +113,7 @@ public class ISEInterpreter implements InstrVisitor {
         if ( returnState == null )
             returnState = state.dup();
         else returnState.merge(state);
+        cache.recordReturnSummary(nextPC, state);
     }
 
     protected void postReturnFromInterrupt(ISEState state) {
@@ -120,6 +121,7 @@ public class ISEInterpreter implements InstrVisitor {
         if ( returnState == null )
             returnState = state.dup();
         else returnState.merge(state);
+        cache.recordReturnSummary(nextPC, state);
     }
 
     protected void skip() {
@@ -156,9 +158,7 @@ public class ISEInterpreter implements InstrVisitor {
     protected final SummaryCache cache;
 
     protected void addToWorkList(String str, int pc, ISEState s) {
-        Terminal.printBrightGreen(str);
-        Terminal.println(":");
-        s.print(pc);
+        printAdd(str, s, pc);
         s = mergeState(pc, s);
 
         if ( s == null ) return;
@@ -172,27 +172,49 @@ public class ISEInterpreter implements InstrVisitor {
         }
     }
 
+    private void printAdd(String str, ISEState s, int pc) {
+        if ( !printer.enabled ) return;
+        Terminal.printBrightGreen(str);
+        Terminal.println(":");
+        printState(s, pc);
+    }
+
+    private void printState(ISEState s, int pc) {
+        if ( !printer.enabled ) return;
+        s.print(pc);
+    }
+
     private ISEState mergeState(int pc, ISEState s) {
         ISEState es = (ISEState)states.get(new Integer(pc));
         if ( es != null ) {
             if ( es.equals(s) ) {
-                Terminal.printRed("SEEN");
-                Terminal.nextln();
+                printSeen();
                 return null;
             } else {
-                Terminal.printRed("MERGE WITH");
-                Terminal.nextln();
-                es.print(pc);
-                Terminal.printRed("RESULT");
-                Terminal.nextln();
+                printMerge(es, pc);
                 es.merge(s);
                 s = es;
-                s.print(pc);
+                printState(s, pc);
             }
         } else {
             states.put(new Integer(pc), s);
         }
         return s;
+    }
+
+    private void printMerge(ISEState es, int pc) {
+        if ( !printer.enabled ) return;
+        Terminal.printRed("MERGE WITH");
+        Terminal.nextln();
+        printState(es, pc);
+        Terminal.printRed("RESULT");
+        Terminal.nextln();
+    }
+
+    private void printSeen() {
+        if ( !printer.enabled ) return;
+        Terminal.printRed("SEEN");
+        Terminal.nextln();
     }
 
     public ISEInterpreter(Program p, SummaryCache cs) {
@@ -215,12 +237,8 @@ public class ISEInterpreter implements InstrVisitor {
 
             pc = i.pc;
             state = i.state.dup();
-            TermUtil.printSeparator(Terminal.MAXLINE);
-            state.print(pc);
             Instr instr = program.readInstr(i.pc);
-            Terminal.printBrightBlue(instr.getVariant());
-            Terminal.println(" "+instr.getOperands());
-            TermUtil.printThinSeparator(Terminal.MAXLINE);
+            printItem(instr);
             int npc = program.getNextPC(i.pc);
             nextPC = npc;
             instr.accept(this);
@@ -230,6 +248,15 @@ public class ISEInterpreter implements InstrVisitor {
 
             }
         }
+    }
+
+    private void printItem(Instr instr) {
+        if ( !printer.enabled ) return;
+        TermUtil.printSeparator(Terminal.MAXLINE);
+        printState(state, pc);
+        Terminal.printBrightBlue(instr.getVariant());
+        Terminal.println(" "+instr.getOperands());
+        TermUtil.printThinSeparator(Terminal.MAXLINE);
     }
 
     private void mult(Register r1, Register r2) {
@@ -568,7 +595,7 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.JMP i) {
-        jump(i.imm1);
+        jump(absolute(i.imm1));
     }
 
     public void visit(Instr.LD i) {

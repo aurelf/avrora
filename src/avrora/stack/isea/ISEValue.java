@@ -32,6 +32,8 @@
 
 package avrora.stack.isea;
 
+import avrora.core.Register;
+
 /**
  * The <code>ISEValue</code> class contains a collection of constants and methods relating to
  * the abstract values used in intraprocedural side effect analysis.
@@ -89,5 +91,23 @@ public class ISEValue {
         if ( b1 == EIMSK ) return "EM";
         if ( b1 < 32 && b1 >= 0) return "R"+b1;
         return "???";
+    }
+
+    public static Register asRegister(byte val) {
+        if ( val >= R0 && val <= R31 )
+            return Register.getRegisterByNumber(val - R0);
+        return null;
+    }
+
+    public static int asIORegister(byte val) {
+        switch ( val ) {
+            case SREG:
+                return ISEState.SREG_NUM;
+                case EIMSK:
+                return ISEState.EIMSK_NUM;
+                case TIMSK:
+                return ISEState.TIMSK_NUM;
+        }
+        return -1;
     }
 }
