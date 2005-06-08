@@ -101,7 +101,7 @@ public interface ISDLParserConstants {
     "\"register\"",
     "\"priority\"",
     "\"encoding\"",
-    "\"invoke\"",
+    "\"execute\"",
     "\"local\"",
     "\"if\"",
     "\"else\"",

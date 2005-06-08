@@ -40,9 +40,11 @@ package avrora.monitors;
 import avrora.Avrora;
 import avrora.sim.energy.Energy;
 import avrora.sim.Simulator;
-import avrora.sim.energy.Energy;
+import avrora.sim.energy.EnergyControl;
 import avrora.sim.energy.EnergyObserver;
 import avrora.util.Options;
+import avrora.sim.State;
+
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -58,8 +60,6 @@ import java.util.*;
  * @author Olaf Landsiedel
  */
 public class EnergyMonitorLog extends EnergyMonitor {
-
-    // TODO: merge this class with EnergyMonitor and introduce options for logging
 
     /**
      * @author Olaf Landsiedel
@@ -79,6 +79,8 @@ public class EnergyMonitorLog extends EnergyMonitor {
 
         // file for data logging
         private BufferedWriter file;
+        // the simulator state
+        protected State state;
 
         
         /**
@@ -90,8 +92,9 @@ public class EnergyMonitorLog extends EnergyMonitor {
          */
         Monitor(Simulator s, Options options) {
             super(s);
+            this.state = simulator.getState();
             // subscribe the monitor to the energy  control
-            energyControl.subscribe(this);
+            EnergyControl.subscribe(this);
 
             //open file for logging, currently with fixed path and file name
             String fileName = "energy" + simulator.getID() + ".log";

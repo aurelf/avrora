@@ -1,4 +1,4 @@
-/**
+	/**
  * Created on 18. September 2004, 20:41
  * 
  * Copyright (c) 2004-2005, Olaf Landsiedel, Protocol Engineering and
@@ -73,20 +73,15 @@ public class Energy implements FiniteStateMachine.Probe {
     private FiniteStateMachine stateMachine;
     //the clock -> it knwos the time ;-)
     private Clock clock;
-    // there is one energyControl in the simulation
-    // it handles the notification of monitrs
-    private EnergyControl energyControl;
-
+ 
     /**
      * create new energy class, to enable energy modelling
      *
      * @param deviceName  name of the device to model
      * @param modeAmpere  array of current draw for each device state (in Ampere)
      * @param fsm         finite state machine of this device
-     * @param ec          the simulator energy control
      */
-    //public Energy(String deviceName, Clock c, double[] modeAmpere, String[] modeName, int startMode, EnergyControl ec) {
-    public Energy(String deviceName, double[] modeAmpere, FiniteStateMachine fsm, EnergyControl ec) {
+    public Energy(String deviceName, double[] modeAmpere, FiniteStateMachine fsm ) {
         // remember all params
         this.deviceName = deviceName;
         this.clock = fsm.getClock();
@@ -95,17 +90,9 @@ public class Energy implements FiniteStateMachine.Probe {
         this.currentMode = fsm.getStartState();
         this.freq = (int)clock.getHZ();
         this.cycleTime = 1.0d / freq;
-        this.energyControl = ec;
 
-        //insert probe into finite state machine
-        stateMachine.insertProbe(this);
         // subscribe this consumer to the energy control
-        energyControl.addConsumer(this);
-        // setup cycle array to store the cycles of each state
-        cycles = new long[ampere.length];
-        for (int i = 0; i < cycles.length; i++)
-            cycles[i] = 0;
-        
+        EnergyControl.addConsumer(this);
     }
 
     /**
@@ -133,7 +120,7 @@ public class Energy implements FiniteStateMachine.Probe {
             currentMode = afterState;
             lastChange = clock.getCount();
             //notify the energy control that I am now in a new state
-            energyControl.stateChange(this);
+            EnergyControl.stateChange(this);
         }
     }
 
@@ -246,6 +233,17 @@ public class Energy implements FiniteStateMachine.Probe {
         return ampere[oldMode];
     }
 
-
+    /**
+     * active energy modeling, e.g. insert the probe into to 
+     * component state machine
+     */
+    public void activate(){
+        //insert probe into finite state machine
+        stateMachine.insertProbe(this);
+        // setup cycle array to store the cycles of each state
+        cycles = new long[ampere.length];
+        for (int i = 0; i < cycles.length; i++)
+            cycles[i] = 0;
+    }
 
 }

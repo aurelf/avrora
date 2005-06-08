@@ -87,7 +87,7 @@ public class DBBCInterpreter extends GenInterpreter {
                     // there is no event that could happen in the middle of this block
                     block.execute(DBBCInterpreter.this);
                 } else {
-                    // an event will happen during this block's execution--simply invoke one instruction
+                    // an event will happen during this block's execution--simply execute one instruction
                     instr.accept(interpreter);
                 }
             } else {

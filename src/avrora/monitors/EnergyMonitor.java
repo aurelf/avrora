@@ -38,11 +38,9 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.energy.Energy;
 import avrora.sim.energy.*;
 import avrora.sim.radio.Radio;
-import avrora.util.Options;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Option;
@@ -79,12 +77,8 @@ public class EnergyMonitor extends MonitorFactory {
 
         // the simulator
         protected Simulator simulator;
-        // energy control, propagates energy updates
-        protected EnergyControl energyControl;
         // list of consumers
         protected LinkedList consumer;
-        // the simulator state
-        protected State state;
         //energy a node is allowed to consume (in joule)
         private double energy;
 
@@ -97,9 +91,10 @@ public class EnergyMonitor extends MonitorFactory {
          */
         Monitor(Simulator s) {
             this.simulator = s;
-            this.energyControl = simulator.getEnergyControl();
-            this.consumer = energyControl.getConsumers();
-            this.state = simulator.getState();
+            //activate energy monitoring....
+            //so the state machine is set up for energy monitoring when needed
+            EnergyControl.activate();
+            this.consumer = EnergyControl.getConsumers();
 
             energy = BATTERY.get();
             if ( energy > 0 ) {
@@ -132,7 +127,7 @@ public class EnergyMonitor extends MonitorFactory {
                 for (int j = 0; j < modes; j++)
                     //when there are more than 10 modes, only print the ones the system was in
                     if (modes <= 10 || en.getCycles(j) > 0)
-                        Terminal.println("   " + en.getModeName(j) + en.getConsumedEnergy(j) + " Joule, " + en.getCycles(j) + " cycles");
+                        Terminal.println("   " + en.getModeName(j) + ": " + en.getConsumedEnergy(j) + " Joule, " + en.getCycles(j) + " cycles");
                 Terminal.nextln();
             }
         }
@@ -141,7 +136,7 @@ public class EnergyMonitor extends MonitorFactory {
         public class BatteryCheck implements Simulator.Event{
             //check 10 times per second
             private static final int interval = 737280;
-
+            
             public BatteryCheck(){
                 simulator.insertEvent(this, interval);
             }

@@ -183,19 +183,19 @@ public class Module implements Context {
 
     // .dseg directive
     public void enterDataSegment() {
-        modulePrinter.println("invoke segment: data");
+        modulePrinter.println("enter segment: data");
         segment = dataSegment;
     }
 
     // .cseg directive
     public void enterProgramSegment() {
-        modulePrinter.println("invoke segment: program");
+        modulePrinter.println("enter segment: program");
         segment = programSegment;
     }
 
     // .eseg directive
     public void enterEEPROMSegment() {
-        modulePrinter.println("invoke segment: eeprom");
+        modulePrinter.println("enter segment: eeprom");
         segment = eepromSegment;
     }
 

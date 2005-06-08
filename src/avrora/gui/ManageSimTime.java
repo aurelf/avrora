@@ -93,7 +93,7 @@ public class ManageSimTime {
         simTimeCycleDefaults = new int[numofdefaults];
 
         //These are "standard" delays we can insert into the sim
-        //using the slider...users can also invoke custom values using
+        //using the slider...users can also enter custom values using
         //the spinners
 
         //Fullspeed

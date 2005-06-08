@@ -38,6 +38,7 @@ package avrora.sim.energy;
 
 import avrora.sim.energy.Energy;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -49,16 +50,21 @@ public class EnergyControl {
 
     //consumer list
     // e.g. list of devices which consume energy
-    private LinkedList consumer;
+    private static LinkedList consumer;
 
     //list of monitors which want to be informed about
     //energy consumption
-    private LinkedList subscriber;
+    private static LinkedList subscriber;
+    
+    //indicates whether someone is interested in energy 
+    //data
+    private static boolean active; 
 
     /**
      * create a new instance of energy control
      */
-    public EnergyControl() {
+    static {
+        active = false;
         consumer = new LinkedList();
         subscriber = new LinkedList();
     }
@@ -68,7 +74,7 @@ public class EnergyControl {
      *
      * @param energyMonitor monitor
      */
-    public void subscribe(EnergyObserver energyMonitor) {
+    public static void subscribe(EnergyObserver energyMonitor) {
         subscriber.add(energyMonitor);
     }
 
@@ -77,7 +83,7 @@ public class EnergyControl {
      *
      * @param energy consumer
      */
-    public void addConsumer(Energy energy) {
+    public static void addConsumer(Energy energy) {
         consumer.add(energy);
     }
 
@@ -86,7 +92,7 @@ public class EnergyControl {
      *
      * @return consumer list
      */
-    public LinkedList getConsumers() {
+    public static LinkedList getConsumers() {
         return consumer;
     }
 
@@ -95,9 +101,27 @@ public class EnergyControl {
      *
      * @param energy the energy model of the device
      */
-    public void stateChange(Energy energy) {
-        for (int i = 0; i < subscriber.size(); ++i) {
+    public static void stateChange(Energy energy) {
+        Iterator it = subscriber.iterator();
+        while( it.hasNext() ){
+            ((EnergyObserver)it.next()).stateChange(energy);
+        }
+        /*for (int i = 0; i < subscriber.size(); ++i) {
             ((EnergyObserver)subscriber.get(i)).stateChange(energy);
+        }*/
+    }
+
+    /**
+     * activate the energy model, called by monitors who are interested
+     * in energy information
+     */
+    public static void activate(){
+        if( !active ){
+            active = true;
+            Iterator it = consumer.iterator();
+            while( it.hasNext() ){
+                ((Energy)it.next()).activate();
+            }
         }
     }
 }

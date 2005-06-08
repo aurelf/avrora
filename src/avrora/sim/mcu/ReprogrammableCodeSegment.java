@@ -376,7 +376,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
      * The <code>DisasssembleInstr</code> class represents an instruction that is used by the
      * interpreter to support dynamic code update. Whenever machine code is altered, this
      * instruction will replace the instruction(s) at that location so that when the program
-     * attempts to invoke the instruction, it will first be disassembled and then it will
+     * attempts to execute the instruction, it will first be disassembled and then it will
      * be executed.
      */
     public class DisassembleInstr extends Instr {

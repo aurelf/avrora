@@ -91,7 +91,7 @@ public class SimulateAction extends SimAction {
             "with the \"time\" option, it will report performance information.");
     public final Option.Bool REALTIME = newOption("real-time", false,
             "This option is used in the simulate action to slow the simulation if it is too fast. " +
-            "By default, the simulator will attempt to invoke the program as fast as possible. " +
+            "By default, the simulator will attempt to execute the program as fast as possible. " +
             "This option will cause the simulation to pause periodically for a few milliseconds in " +
             "order that it does not run faster than real-time.");
     public final Option.Str SCHEDULE = newOption("interrupt-schedule", "", "This option is used to specify " +

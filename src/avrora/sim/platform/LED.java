@@ -97,7 +97,7 @@ public class LED extends Microcontroller.OutputPin {
         
         state = new FiniteStateMachine(clk, startMode, modeName, 0);
         probe = new LEDProbe();
-        new Energy(c, modeAmpere, state, sim.getEnergyControl());
+        new Energy(c, modeAmpere, state);
     }
 
     public void write(boolean level) {

@@ -46,7 +46,7 @@ public class InterpreterError {
         public final int badPc;
 
         protected NoSuchInstructionException(int pc) {
-            super("Program error", "attempt to invoke non-existant instruction at " + StringUtil.addrToString(pc));
+            super("Program error", "attempt to execute non-existant instruction at " + StringUtil.addrToString(pc));
             this.badPc = pc;
         }
     }

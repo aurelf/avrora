@@ -1,7 +1,7 @@
 /**
  * Created on 15. Mai 2005, 15:00
  *
- * Copyright (c) 2005, Thomas Gärtner, Protocol Engineering and
+ * Copyright (c) 2005, Olaf Landsiedel, Thomas Gärtner, Protocol Engineering and
  * Distributed Systems, University of Tuebingen
  * All rights reserved.
  *
@@ -150,7 +150,7 @@ public class ExternalFlash {
         mcu.getPin("PD2").connect(new PD2Input());
 
         //setup energy recording
-        energy = new Energy("blue", modeAmpere, stateMachine, sim.getEnergyControl());
+        energy = new Energy("flash", modeAmpere, stateMachine);
     }
 
     private Page getMemoryPage(int num) {

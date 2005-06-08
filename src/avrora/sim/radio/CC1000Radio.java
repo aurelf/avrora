@@ -271,8 +271,7 @@ public class CC1000Radio implements Radio {
  
         stateMachine = new FiniteStateMachine(simulator.getClock(), RadioEnergy.startMode, allModeNames, ttm);
         
-        new Energy("Radio", RadioEnergy.modeAmpere, stateMachine,
-                simulator.getEnergyControl());
+        new Energy("Radio", RadioEnergy.modeAmpere, stateMachine);
 
     }
 

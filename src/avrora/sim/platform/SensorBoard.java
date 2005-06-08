@@ -60,6 +60,6 @@ public class SensorBoard {
         //note: the name sensorBoard was choosen on purpose as it is used in the log files
         //if you use sensor board, you may have trouble with importing the data as it is separated by white spaces
         FiniteStateMachine fsm = new FiniteStateMachine(s.getClock(), startMode, modeName, 0);
-        new Energy("SensorBoard", modeAmpere, fsm, sim.getEnergyControl());
+        new Energy("SensorBoard", modeAmpere, fsm);
     }
 }
