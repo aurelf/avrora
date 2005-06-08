@@ -53,10 +53,12 @@ public class InterruptScheduler {
     final java.io.StreamTokenizer tokens;
 
     private int currentLine;
+    private final int maxInt;
 
 
     public InterruptScheduler(String fname, Simulator s) {
         simulator = s;
+        maxInt = s.getInterpreter().getInterruptTable().getNumberOfInterrupts();
         schedFile = new File(fname);
         currentLine = 1;
 
@@ -74,13 +76,17 @@ public class InterruptScheduler {
         try {
             if (tokens.nextToken() != tokens.TT_EOF) {
                 if (tokens.ttype != tokens.TT_NUMBER) {
-                    throw Avrora.failure("interrupt schedule format expected integer in field 1, line " + currentLine + " of " +
-                            schedFile);
+                    throw Avrora.failure("interrupt schedule format expected integer in field 1, line " +
+                            currentLine + " of " + schedFile);
                 }
                 int vec = (int) tokens.nval;
+                if (vec >= maxInt) {
+                    throw Avrora.failure("interrupt schedule contains out-of-bounds interrupt vector " +
+                            vec + " in line " + currentLine + " of " + schedFile);
+                }
                 if (tokens.nextToken() != tokens.TT_NUMBER) {
-                    throw Avrora.failure("interrupt schedule format expected integer in field 2, line " + currentLine + " of " +
-                            schedFile);
+                    throw Avrora.failure("interrupt schedule format expected integer in field 2, line " +
+                            currentLine + " of " + schedFile);
                 }
                 long time = (int) tokens.nval;
                 scheduleInterrupt(vec, time);
@@ -118,8 +124,12 @@ public class InterruptScheduler {
     }
 
     private void scheduleInterrupt(int vector, long cycles) {
+        long future = cycles - simulator.getClock().getCount();
+        if (future < 0) {
+            throw Avrora.failure("tried to schedule an interrupt in the past; schedule not sorted?");
+        }
         ScheduledInterrupt e = new ScheduledInterrupt(vector);
-        simulator.insertEvent(e, cycles);
+        simulator.insertEvent(e, future);
     }
 
 }
