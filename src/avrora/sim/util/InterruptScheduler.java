@@ -38,6 +38,7 @@ import avrora.Avrora;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StreamTokenizer;
 
 /**
  * The <code>InterruptScheduler</code> class is a testing utility that reads an interrupt schedule
@@ -74,8 +75,8 @@ public class InterruptScheduler {
 
     private void scheduleNextInterrupt() {
         try {
-            if (tokens.nextToken() != tokens.TT_EOF) {
-                if (tokens.ttype != tokens.TT_NUMBER) {
+            if (tokens.nextToken() != StreamTokenizer.TT_EOF) {
+                if (tokens.ttype != StreamTokenizer.TT_NUMBER) {
                     throw Avrora.failure("interrupt schedule format expected integer in field 1, line " +
                             currentLine + " of " + schedFile);
                 }

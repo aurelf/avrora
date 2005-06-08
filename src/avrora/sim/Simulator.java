@@ -40,7 +40,6 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.MainClock;
-import avrora.sim.energy.EnergyControl;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Verbose;
@@ -146,14 +145,6 @@ public class Simulator {
     protected final InterpreterFactory factory;
 
     /**
-     * The <code>MAX_INTERRUPTS</code> fields stores the maximum number of interrupt vectors supported by the
-     * simulator.
-     */
-    public static int MAX_INTERRUPTS = 35;
-
-    private EnergyControl energyControl;
-
-    /**
      * The constructor creates the internal data structures and initial state of the processor. It constructs
      * an instance of the simulator that is ready to have devices attached, IO registers probed, and probes
      * and events inserted. Users should not create <code>Simulator</code> instances directly, but instead
@@ -167,9 +158,6 @@ public class Simulator {
         program = p;
 
         factory = f;
-
-        // enable the energy modelling
-        energyControl = new EnergyControl();
 
         // reset the state of the simulation
         clock = mcu.getClockDomain().getMainClock();
@@ -914,10 +902,6 @@ public class Simulator {
      */
     public void delay(long cycles) {
         interpreter.delay(cycles);
-    }
-
-    public EnergyControl getEnergyControl() {
-        return energyControl;
     }
 
     /**

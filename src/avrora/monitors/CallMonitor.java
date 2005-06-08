@@ -38,6 +38,9 @@ package avrora.monitors;
 
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.BaseInterpreter;
+import avrora.sim.InterruptTable;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
@@ -45,6 +48,7 @@ import avrora.util.StringUtil;
 import avrora.util.Option;
 import avrora.util.Terminal;
 import avrora.util.TermUtil;
+import avrora.Avrora;
 
 /**
  * The <code>CallMonitor</code> class implements a monitor that is capable of tracing the call/return behavior
@@ -56,22 +60,23 @@ public class CallMonitor extends MonitorFactory {
 
     class Mon implements Monitor {
 
-        Simulator s;
-        InterruptProbe iprobe;
+        Simulator simulator;
+        BaseInterpreter interpreter;
+        MicrocontrollerProperties props;
         SourceMapping sm;
         int depth = 0;
         String[] stack;
-        public static final int MAX_STACK_DEPTH = 1024;
+        public static final int MAX_STACK_DEPTH = 256;
         int maxdepth = 0;
+        protected int interruptBase;
 
         Mon(Simulator s) {
-            this.s = s;
-
-            iprobe = new InterruptProbe();
-
-            for ( int pc = s.getInterpreter().getInterruptBase(); pc < Simulator.MAX_INTERRUPTS; pc++ ) {
-                s.insertProbe(iprobe, pc*4);
-            }
+            this.simulator = s;
+            props = simulator.getMicrocontroller().getProperties();
+            interpreter = s.getInterpreter();
+            interruptBase = interpreter.getInterruptBase();
+            InterruptTable itable = interpreter.getInterruptTable();
+            itable.insertProbe(new InterruptProbe());
 
             stack = new String[MAX_STACK_DEPTH];
             stack[0] = "";
@@ -122,7 +127,9 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void push(String caller, String dest, String edge) {
-            String idstr = StringUtil.getIDTimeString(s);
+            String idstr = StringUtil.getIDTimeString(simulator);
+            if ( depth >= stack.length )
+                throw Avrora.failure("Stack overflow: more than "+MAX_STACK_DEPTH+" calls nested");
             stack[depth+1] = dest;
             synchronized (Terminal.class ) {
                 Terminal.print(idstr);
@@ -147,7 +154,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void pop(String caller, String edge) {
-            String idstr = StringUtil.getIDTimeString(s);
+            String idstr = StringUtil.getIDTimeString(simulator);
             synchronized (Terminal.class ) {
                 Terminal.print(idstr);
                 printStack(depth-1);
@@ -162,18 +169,16 @@ public class CallMonitor extends MonitorFactory {
             if ( depth < 0 ) depth = 0;
         }
 
-        class InterruptProbe extends Simulator.Probe.Empty {
-            public void fireBefore(State s, int addr) {
-                int inum = (addr / 4) + 1;
+        class InterruptProbe extends Simulator.InterruptProbe.Empty {
+            public void fireBeforeInvoke(State s, int inum) {
                 String istr;
                 if ( inum == 1) {
                     istr = "RESET";
                     depth = 0;
                 }
-                else istr = "INT #"+inum;
-
-                String caddr = StringUtil.addrToString(addr);
-                push(caddr, caddr, istr);
+                else istr = "INT #"+inum+"("+props.getInterruptName(inum)+")";
+                String caddr = StringUtil.addrToString(s.getPC());
+                push(caddr, istr, istr);
             }
 
         }
