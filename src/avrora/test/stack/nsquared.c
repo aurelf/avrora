@@ -1,4 +1,4 @@
-int array[100];
+volatile int array[100];
 
 int main() {
   int i = 0;
