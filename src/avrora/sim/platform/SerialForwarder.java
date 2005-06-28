@@ -97,7 +97,7 @@ public class SerialForwarder implements USART.USARTDevice {
 
     public void receiveFrame(USART.Frame frame) {
         try{
-            out.write(frame.low);
+            out.write((byte)frame.value);
         } catch( IOException e){
             throw Avrora.unexpected(e);
         }

@@ -70,10 +70,6 @@ public abstract class AtmelInternalDevice {
         microcontroller.installIOReg(name, reg);
     }
 
-    protected void installInterrupt(String name, int addr, Simulator.Interrupt intr) {
-        microcontroller.installInterrupt(name, addr, intr);
-    }
-
     /**
      * Helper function to get a 16 bit value from a pair of registers.
      */

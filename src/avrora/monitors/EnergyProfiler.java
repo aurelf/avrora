@@ -147,7 +147,7 @@ public class EnergyProfiler extends MonitorFactory {
             Iterator it = program.getLabels().entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry)it.next();
-                SourceMapping.Location tempLoc = (SourceMapping.Location)entry.getValue();
+                Program.Location tempLoc = (Program.Location)entry.getValue();
                 profiles.add(new EnergyProfile(tempLoc));
             }
         }
@@ -313,14 +313,14 @@ public class EnergyProfiler extends MonitorFactory {
         /**
          * <code>location</code>: name and address of this procedure
          */
-        public SourceMapping.Location location;
+        public Program.Location location;
 
         /**
          * construct a new energy profile
          *
          * @param loc Location, e.g. name and address, of the profile
          */
-        public EnergyProfile(SourceMapping.Location loc) {
+        public EnergyProfile(Program.Location loc) {
             cycles = 0;
             location = loc;
         }

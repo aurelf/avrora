@@ -129,7 +129,7 @@ public class LCDScreen implements USART.USARTDevice {
      * @param frame the USART frame to receive
      */
     public void receiveFrame(USART.Frame frame) {
-        byte data = frame.low;
+        int data = frame.value;
 
         if (mode) { // Instruction mode
             switch (data) {
@@ -158,14 +158,14 @@ public class LCDScreen implements USART.USARTDevice {
             mode = MODE_INSTRUCTION;
             return;
         } else {
-            setCursor(frame.low);
+            setCursor(frame.value);
             cursor = (cursor + 1) % 80;
 
         }
         // TODO: display actual LCD contents
     }
 
-    private void setCursor(byte b) {
+    private void setCursor(int b) {
         if (cursor < 40) {
             line1[cursor] = (char) b;
         } else if (cursor < 80) {

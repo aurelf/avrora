@@ -32,9 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.RWRegister;
+import avrora.sim.*;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 
@@ -42,44 +40,17 @@ import java.util.LinkedList;
 
 /**
  * The USART class implements a Universal Synchronous Asynchronous Receiver/Transmitter, which is a
- * serial device on the ATMega128. The ATMega128 has two USARTs, USART0 and USART1.
+ * serial device on the Atmel microcontrollers. The ATMega128, for example, has two USARTs, USART0 and
+ * USART1.
+ *
+ * This implementation of the USART does not yet support "Synchronous Mode" or "Multi-processor Communication
+ * Mode". Also, this implementation does not search for parity errors or framing errors. Presumably, these
+ * errors will not occur.
  *
  * @author Daniel Lee
+ * @author Ben L. Titzer
  */
-public abstract class USART extends AtmelInternalDevice {
-
-    // UNIMPLEMENTED:
-    // Synchronous Mode
-    // Multi-processor communication mode
-
-    /*
-      Ways in which this USART is not accurate: Whole frame
-      delayed transmission, as opposed to sending single bits
-      at a time.  Parity errors are not searched for.
-      Presumably, parity errors will not occur. Similarly,
-      frame errors also should not occur.
-     */
-
-
-    final DataRegister UDRn_reg;
-    final ControlRegisterA UCSRnA_reg;
-    final ControlRegisterB UCSRnB_reg;
-    final ControlRegisterC UCSRnC_reg;
-    final UBRRnLReg UBRRnL_reg;
-    final UBRRnHReg UBRRnH_reg;
-
-    final Transmitter transmitter;
-    final Receiver receiver;
-
-    public USARTDevice connectedDevice;
-
-    final int n;
-
-    int USARTnRX;
-    int USARTnUDRE;
-    int USARTnTX;
-
-    int[] INTERRUPT_MAPPING;
+public class USART extends AtmelInternalDevice {
 
     static final int RXCn = 7;
     static final int TXCn = 6;
@@ -117,9 +88,58 @@ public abstract class USART extends AtmelInternalDevice {
     // TODO: Frame sizes are not used!!
     static final int[] SIZE = {5, 6, 7, 8, 8, 8, 8, 9};
 
+    static class USARTProperties {
+        String subID;
+
+        int USART_RX_inum;
+        int USART_UDRE_inum;
+        int USART_TX_inum;
+
+        int[] interruptMapping;
+
+        String USART_name;
+        String UDR_name;
+        String UCSR_name;
+        String UBRR_name;
+    }
+
+    static USARTProperties getUSARTProperties(String subID, Microcontroller m) {
+        MicrocontrollerProperties mp = m.getProperties();
+        USARTProperties props = new USARTProperties();
+
+        props.subID = subID;
+        props.USART_name = "USART"+subID;
+        props.UDR_name = "UDR"+subID;
+        props.UCSR_name = "UCSR"+subID;
+        props.UBRR_name = "UBRR"+subID;
+        props.USART_RX_inum = mp.getInterrupt(props.USART_name+", RX");
+        props.USART_UDRE_inum = mp.getInterrupt(props.USART_name+", UDRE");
+        props.USART_TX_inum = mp.getInterrupt(props.USART_name+", TX");
+
+        props.interruptMapping = new int[] { -1, -1, -1, -1, -1, props.USART_UDRE_inum, props.USART_TX_inum, props.USART_RX_inum };
+
+        // TODO: cache the properties for each (subID, microcontroller) pair
+        return props;
+    }
+
+    final DataRegister UDRn_reg;
+    final ControlRegisterA UCSRnA_reg;
+    final ControlRegisterB UCSRnB_reg;
+    final ControlRegisterC UCSRnC_reg;
+    final UBRRnLReg UBRRnL_reg;
+    final UBRRnHReg UBRRnH_reg;
+
+    final Transmitter transmitter;
+    final Receiver receiver;
+
+    final USARTProperties properties;
+
+    public USARTDevice connectedDevice;
+
     int period = 0;
     int UBRRMultiplier = 16;
     int frameSize = 8; // does this default to 5?
+
 
     /**
      * The <code>USARTDevice</code> interface describes USARTs and other serial devices which can be connected
@@ -149,50 +169,21 @@ public abstract class USART extends AtmelInternalDevice {
      * and a connected device.
      */
     public static class Frame {
-        public final byte low;
-        public final boolean high;
-        final int size;
+        public final int value;
+        public final int size;
 
         /**
          * Constructor for a USARTFrame. The <code>high</code> bit is used for 9 bit frame sizes.
          */
         public Frame(byte low, boolean high, int size) {
-            this.low = low;
-            this.high = high;
+            int val = low;
+            if ( size > 8 ) val = Arithmetic.setBit(val, 8, high);
+            this.value = val;
             this.size = size;
         }
 
-        /**
-         * Returns the integer value of this data frame.
-         *
-         * @return intended value of this data frame
-         */
-        public int value() {
-            // TODO: calculate this value in the constructor
-            int value = 0;
-            switch (size) {
-                case 9:
-                    value = high ? 0x100 : 0x0;
-                    value |= 0xff & low;
-                    break;
-                case 8:
-                    value = 0xff & low;
-                    break;
-                case 7:
-                    value = 0x7f & low;
-                    break;
-                case 6:
-                    value = 0x3f & low;
-                    break;
-                case 5:
-                    value = 0x1f & low;
-                    break;
-            }
-            return value;
-        }
-
         public String toString() {
-            return StringUtil.toMultirepString(value(), size);
+            return StringUtil.toMultirepString(value, size);
         }
     }
 
@@ -207,18 +198,9 @@ public abstract class USART extends AtmelInternalDevice {
         UDRn_reg.receiveRegister.writeFrame(frame);
     }
 
-    /* *********************************************** */
-
-    /**
-     * Initialize the parameters such as interrupt numbers and I/O register numbers that make this
-     * USART unique.
-     */
-    protected abstract void initValues();
-
-    protected USART(int n, AtmelMicrocontroller m) {
-        super("usart"+n, m);
-        this.n = n;
-        initValues();
+    public USART(String subID, AtmelMicrocontroller m) {
+        super("usart"+subID, m);
+        properties = getUSARTProperties(subID, m);
 
         UDRn_reg = new DataRegister();
 
@@ -231,24 +213,14 @@ public abstract class USART extends AtmelInternalDevice {
         transmitter = new Transmitter();
         receiver = new Receiver();
 
-        installIOReg("UDR"+n, UDRn_reg);
-        installIOReg("UCSR"+n+"A", UCSRnA_reg);
-        installIOReg("UCSR"+n+"B", UCSRnB_reg);
-        installIOReg("UCSR"+n+"C", UCSRnC_reg);
-        installIOReg("UBRR"+n+"L", UBRRnL_reg);
-        installIOReg("UBRR"+n+"H", UBRRnH_reg);
+        installIOReg(properties.UDR_name, UDRn_reg);
+        installIOReg(properties.UCSR_name+"A", UCSRnA_reg);
+        installIOReg(properties.UCSR_name+"B", UCSRnB_reg);
+        installIOReg(properties.UCSR_name+"C", UCSRnC_reg);
+        installIOReg(properties.UBRR_name+"L", UBRRnL_reg);
+        installIOReg(properties.UBRR_name+"H", UBRRnH_reg);
 
         connect(new SerialPrinter());
-
-        // USART Receive Complete
-        installInterrupt("USART: receive", USARTnRX,
-                new ATMegaFamily.MaskableInterrupt(USARTnRX, UCSRnB_reg, UCSRnA_reg, RXCn, false));
-        // USART Data Register Empty
-        installInterrupt("USART: empty", USARTnUDRE,
-                new ATMegaFamily.MaskableInterrupt(USARTnUDRE, UCSRnB_reg, UCSRnA_reg, UDREn, false));
-        // USART Transmit Complete
-        installInterrupt("USART transmit", USARTnTX,
-                new ATMegaFamily.MaskableInterrupt(USARTnTX, UCSRnB_reg, UCSRnA_reg, TXCn, false));
     }
 
     public void connect(USARTDevice d) {
@@ -258,7 +230,7 @@ public abstract class USART extends AtmelInternalDevice {
     void updatePeriod() {
         period = read16(UBRRnH_reg, UBRRnL_reg) + 1;
         if ( devicePrinter.enabled )
-            devicePrinter.println("USART"+n+": period set to "+period);
+            devicePrinter.println(properties.USART_name+": period set to "+period);
         period *= UBRRMultiplier;
     }
 
@@ -271,7 +243,7 @@ public abstract class USART extends AtmelInternalDevice {
                 // grab the frame from the UDR register
                 transmit.frame = new Frame(UDRn_reg.transmitRegister.read(), UCSRnB_reg.readBit(TXB8n), frameSize);
                 // now the shift register has the data, the UDR is free
-                UCSRnA_reg.flagBit(UDREn);
+                UCSRnA_reg.UDRE_flag.flag();
                 transmitting = true;
                 mainClock.insertEvent(transmit, (1 + frameSize + stopBits) * period);
             }
@@ -284,9 +256,9 @@ public abstract class USART extends AtmelInternalDevice {
                 connectedDevice.receiveFrame(frame);
 
                 if (devicePrinter.enabled)
-                    devicePrinter.println("USART"+n+": Transmitted frame " + frame);
+                    devicePrinter.println(properties.USART_name+": Transmitted frame " + frame);
                 transmitting = false;
-                UCSRnA_reg.flagBit(TXCn);
+                UCSRnA_reg.TXC_flag.flag();
                 if (!UCSRnA_reg.readBit(UDREn)) {
                     transmitter.enableTransmit();
                 }
@@ -322,9 +294,9 @@ public abstract class USART extends AtmelInternalDevice {
                 receiveFrame(frame);
 
                 if (devicePrinter.enabled)
-                    devicePrinter.println("USART"+n+": Received frame " + frame + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
+                    devicePrinter.println(properties.USART_name+": Received frame " + frame + ' ' + UBRRnH_reg.read() + ' ' + UBRRnL_reg.read() + ' ' + UBRRMultiplier + ' ');
 
-                UCSRnA_reg.flagBit(RXCn);
+                UCSRnA_reg.RXC_flag.flag();
 
                 receiving = false;
             }
@@ -349,7 +321,7 @@ public abstract class USART extends AtmelInternalDevice {
         public void write(byte val) {
             transmitRegister.write(val);
             // we now have data in UDRE, so the user data register is not ready yet
-            UCSRnA_reg.unflagBit(UDREn);
+            UCSRnA_reg.UDRE_flag.unflag();
             if (UCSRnB_reg.readBit(TXENn)) {
                 transmitter.enableTransmit();
             }
@@ -357,7 +329,7 @@ public abstract class USART extends AtmelInternalDevice {
 
         public void writeBit(int bit, boolean val) {
             transmitRegister.writeBit(bit, val);
-            UCSRnA_reg.unflagBit(UDREn);
+            UCSRnA_reg.UDRE_flag.unflag();
             if (UCSRnB_reg.readBit(TXENn)) transmitter.enableTransmit();
         }
 
@@ -403,11 +375,11 @@ public abstract class USART extends AtmelInternalDevice {
                 }
                 DataRegister.TwoLevelFIFO.USARTFrameWrapper current = (DataRegister.TwoLevelFIFO.USARTFrameWrapper)readyQueue.removeLast();
                 if (readyQueue.isEmpty()) {
-                    UCSRnA_reg.unflagBit(RXCn);
+                    UCSRnA_reg.RXC_flag.unflag();
                 }
-                UCSRnB_reg.writeBit(RXB8n, current.frame.high);
+                UCSRnB_reg.writeBit(RXB8n, Arithmetic.getBit(current.frame.value, 8));
                 waitQueue.add(current);
-                return current.frame.low;
+                return (byte)current.frame.value;
             }
 
             public void writeFrame(Frame frame) {
@@ -428,7 +400,6 @@ public abstract class USART extends AtmelInternalDevice {
                 }
             }
 
-            // TODO: why does this class exist??
             private class USARTFrameWrapper {
                 Frame frame;
             }
@@ -442,38 +413,67 @@ public abstract class USART extends AtmelInternalDevice {
      * UCSRnA (<code>ControlRegisterA</code>) is one of three control/status registers for the USART.
      * The high three bits are actually interrupt flag bits.
      */
-    protected class ControlRegisterA extends ATMegaFamily.FlagRegister  {
+    protected class ControlRegisterA implements ActiveRegister  {
+
+        final ATMegaFamily.FlagBit UDRE_flag;
+        final ATMegaFamily.FlagBit TXC_flag;
+        final ATMegaFamily.FlagBit RXC_flag;
+
+        byte value;
 
         public ControlRegisterA() {
-            super(USART.this.interpreter, INTERRUPT_MAPPING);
-            value = 0x20; // init UDREn to true
-
+            InterruptTable it = USART.this.interpreter.getInterruptTable();
+            UDRE_flag = new ATMegaFamily.FlagBit(it, false, properties.USART_UDRE_inum);
+            TXC_flag = new ATMegaFamily.FlagBit(it, true, properties.USART_TX_inum);
+            RXC_flag = new ATMegaFamily.FlagBit(it, false, properties.USART_RX_inum);
+            // user data register is empty initially
+            UDRE_flag.flag();
         }
 
         public void write(byte val) {
-            super.write((byte)(0xe3 & val));
-            decode(val);
-
+            value = (byte)(val & 0x3);
+            unflag(RXC_flag, Arithmetic.getBit(val, 7));
+            unflag(TXC_flag, Arithmetic.getBit(val, 6));
+            unflag(UDRE_flag, Arithmetic.getBit(val, 5));
+            setMultiplier();
         }
 
         public void writeBit(int bit, boolean val) {
 
-            if( bit == 7){
-                //OL: just unpost the int, do not clear RCXn
-                //thus, we cannot use the super call
-                interpreter.setPosted(INTERRUPT_MAPPING[bit], false);
-            } else if (bit < 1 || bit > 4) {
-                super.writeBit(bit, val);
+            switch ( bit ) {
+                case 7:
+                    unflag(RXC_flag, val);
+                    break;
+                case 6:
+                    unflag(TXC_flag, val);
+                    break;
+                case 5:
+                    unflag(UDRE_flag, val);
+                    break;
+                case 4:
+                case 3:
+                case 2:
+                    // ignore writes to error bits
+                    return;
+                case 1:
+                    value = Arithmetic.setBit(value, bit, val);
+                    setMultiplier();
+                    break;
+                case 0:
+                    value = Arithmetic.setBit(value, bit, val);
+                    break;
             }
-            decode(value);
-
         }
 
-        protected void decode(byte val) {
-            boolean U2XnVal = readBit(U2Xn);
+        private void unflag(ATMegaFamily.FlagBit fb, boolean val) {
+            if ( !val ) fb.unflag();
+        }
+
+        private void setMultiplier() {
+            boolean u2XnVal = Arithmetic.getBit(value, 1);
             boolean MPCMnVal = UCSRnC_reg.readBit(UMSELn);
 
-            int multiplierState = U2XnVal ? 0x1 : 0;
+            int multiplierState = u2XnVal ? 0x1 : 0;
             multiplierState |= MPCMnVal ? 0x2 : 0;
 
 
@@ -492,9 +492,29 @@ public abstract class USART extends AtmelInternalDevice {
                     break;
             }
             if ( devicePrinter.enabled )
-                devicePrinter.println("USART"+n+": multiplier set to "+UBRRMultiplier);
+                devicePrinter.println(properties.USART_name+": multiplier set to "+UBRRMultiplier);
         }
 
+        public byte read() {
+            int val = value;
+            val = Arithmetic.setBit(val, 7, RXC_flag.get());
+            val = Arithmetic.setBit(val, 6, TXC_flag.get());
+            val = Arithmetic.setBit(val, 5, UDRE_flag.get());
+            return (byte)val;
+        }
+
+        public boolean readBit(int bit) {
+            switch ( bit ) {
+                case 7:
+                    return RXC_flag.get();
+                case 6:
+                    return TXC_flag.get();
+                case 5:
+                    return UDRE_flag.get();
+                default:
+                    return Arithmetic.getBit(value, bit);
+            }
+        }
     }
 
     /**
@@ -505,7 +525,7 @@ public abstract class USART extends AtmelInternalDevice {
         int count = 0;
 
         ControlRegisterB() {
-            super(USART.this.interpreter, INTERRUPT_MAPPING);
+            super(USART.this.interpreter, properties.interruptMapping);
         }
 
         public void write(byte val) {

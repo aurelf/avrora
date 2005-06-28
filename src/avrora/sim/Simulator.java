@@ -610,34 +610,6 @@ public class Simulator {
     }
 
     /**
-     * The <code>Interrupt</code> interface represents the behavior of an interrupt (how it manipulates the
-     * state of the processor) when it is posted and when it is triggered (handler is executed by the
-     * processor). For example, an external interrupt, when posted, sets a bit in an IO register, and if the
-     * interrupt is not masked, will add it to the pending interrupts on the processor. When the interrupt
-     * head, it remains flagged (the bit in the IO register remains on). Some interrupts clear bits in IO
-     * registers on triggered (e.g. timer interrupts). This interface allows both of these behaviors to be
-     * implemented.
-     *
-     * @author Ben L. Titzer
-     */
-    public interface Interrupt {
-        /**
-         * The <code>force()</code> method is called by the simulator when an interrupt is being forced by an
-         * outside source (i.e. not of the simulation). For example, when stress testing a program by
-         * bombarding it with interrupts, this method would be used.
-         */
-        public void force();
-
-        /**
-         * The <code>fire()</code> method is called by the simulator when the interrupt is about to be
-         * processed (i.e. it has been posted, and is not masked). This method is called just before control
-         * is transferred to the interrupt handler.
-         */
-        public void fire();
-    }
-
-
-    /**
      * The <code>getMicrocontroller()</code> method gets a reference to the microcontroller being simulated.
      *
      * @return a reference to the microcontroller being simulated

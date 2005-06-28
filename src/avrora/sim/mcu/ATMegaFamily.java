@@ -58,6 +58,47 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         return radio;
     }
 
+    public static class FlagBit implements InterruptTable.Notification {
+        final InterruptTable it;
+        final boolean autoclear;
+        final int inum;
+        boolean val;
+
+        public FlagBit(InterruptTable i, boolean auto, int in) {
+            it = i;
+            autoclear = auto;
+            inum = in;
+            it.registerInternalNotification(this, inum);
+        }
+
+        public void flag() {
+            val = true;
+            it.post(inum);
+        }
+
+        public void unflag() {
+            val = false;
+            it.unpost(inum);
+        }
+
+        public boolean get() {
+            return val;
+        }
+
+        public void force(int inum) {
+            val = true;
+            it.post(inum);
+        }
+
+        public void invoke(int inum) {
+            if ( autoclear ) {
+                val = false;
+                it.unpost(inum);
+            }
+        }
+    }
+
+    // TODO: migrate flag register to use FlagBit
     public static class FlagRegister extends RWRegister {
 
         class Notification implements InterruptTable.Notification {
@@ -87,9 +128,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         public FlagRegister(BaseInterpreter interp, int[] map) {
             mapping = map;
             interpreter = interp;
+            InterruptTable it = interpreter.getInterruptTable();
             for ( int cntr = 0; cntr < 8; cntr++ ) {
                 if ( mapping[cntr] > 0 )
-                    interpreter.getInterruptTable().registerInternalNotification(new Notification(cntr), mapping[cntr]);
+                    it.registerInternalNotification(new Notification(cntr), mapping[cntr]);
             }
         }
 
@@ -157,41 +199,9 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
     }
 
     /**
-     * The <code>MaskableInterrupt</code> class represents an interrupt that is controlled by
-     * two bits in two registers: a mask bit in a mask register and a flag bit in a flag register,
-     * at the same offset. When this interrupt fires, it automatically clears the flag bit in
-     * the flag register.
+     * The <code>DirectionRegister</code> class implements an active register that sets the output
+     * direction of the general purpose IO pins which are present on the ATMega series.
      */
-    public static class MaskableInterrupt implements Simulator.Interrupt {
-        protected final int interruptNumber;
-
-        protected final MaskRegister maskRegister;
-        protected final FlagRegister flagRegister;
-        protected final int bit;
-
-        protected final boolean sticky;
-
-        public MaskableInterrupt(int num, MaskRegister mr, FlagRegister fr, int b, boolean e) {
-            interruptNumber = num;
-            maskRegister = mr;
-            flagRegister = fr;
-            bit = b;
-            sticky = e;
-        }
-
-        public void force() {
-            // flagging the bit will cause the interrupt to be posted if it is not masked
-            flagRegister.flagBit(bit);
-        }
-
-        public void fire() {
-            if (!sticky) {
-                // setting the flag register bit will actually clear and unpost the interrupt
-                flagRegister.writeBit(bit, true);
-            }
-        }
-    }
-
     public static class DirectionRegister extends RWRegister {
 
         protected ATMegaFamily.Pin[] pins;
@@ -212,6 +222,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
+    /**
+     * The <code>PortRegister</code> class implements an active register that acts as the
+     * write register (output register) for the general purpose IO pins.
+     */
     public static class PortRegister extends RWRegister {
         protected ATMegaFamily.Pin[] pins;
 
@@ -231,6 +245,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
+    /**
+     * The <code>PinRegister</code> class implements an active register that acts as the
+     * read register (input register) for the general purpose IO pins.
+     */
     public static class PinRegister implements ActiveRegister {
         protected ATMegaFamily.Pin[] pins;
 
@@ -391,47 +409,6 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     }
 
-    protected static final int[] UCSR0A_mapping = {-1, -1, -1, -1, -1, 20, 21, 19};
-    // TODO: test these interrupt mappings--not sure if they are correct!
-    protected static final int[] UCSR1A_mapping = {-1, -1, -1, -1, -1, 32, 33, 31};
-
-    /**
-     * Emulates the behavior of USART0 on the ATMega128 microcontroller.
-     */
-    protected class USART0 extends USART {
-
-        USART0() {
-            super(0, ATMegaFamily.this);
-        }
-
-        protected void initValues() {
-            USARTnRX = 19;
-            USARTnUDRE = 20;
-            USARTnTX = 21;
-
-            INTERRUPT_MAPPING = UCSR0A_mapping;
-
-        }
-    }
-
-    /**
-     * Emulates the behavior of USART1 on the ATMega128 microcontroller.
-     */
-    protected class USART1 extends USART {
-
-        USART1() {
-            super(1, ATMegaFamily.this);
-        }
-
-        protected void initValues() {
-            USARTnRX = 31;
-            USARTnUDRE = 32;
-            USARTnTX = 33;
-
-            INTERRUPT_MAPPING = UCSR1A_mapping;
-        }
-    }
-
     /**
      * The <code>buildPort()</code> method builds the IO registers corresponding to a general purpose IO port.
      * These ports are named A-G, and each consist of a PORT register (for writing), a PIN register (for reading),
@@ -469,12 +446,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
         FlagRegister fr = new FlagRegister(interpreter, mapping);
         MaskRegister mr = new MaskRegister(interpreter, mapping);
-        for (int cntr = 0; cntr < numVects; cntr++) {
-            int inum = increasing ? baseVect + cntr : baseVect - cntr;
-            installInterrupt("", inum, new MaskableInterrupt(inum, mr, fr, cntr, false));
-            installIOReg(maskRegNum, mr);
-            installIOReg(flagRegNum, fr);
-        }
+        installIOReg(maskRegNum, mr);
+        installIOReg(flagRegNum, fr);
         return fr;
     }
 

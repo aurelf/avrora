@@ -124,6 +124,7 @@ public class Defaults {
             harnessMap.addClass("simplifier", SimplifierTestHarness.class);
             harnessMap.addClass("probes", ProbeTestHarness.class);
             harnessMap.addClass("disassembler", DisassemblerTestHarness.class);
+            harnessMap.addClass("interrupt", InterruptTestHarness.class);
         }
     }
 

@@ -253,9 +253,6 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         interpreter.installIOReg(properties.getIOReg(name), reg);
     }
 
-    protected void installInterrupt(String name, int num, Simulator.Interrupt interrupt) {
-    }
-
     protected ActiveRegister getIOReg(String name) {
         return interpreter.getIOReg(properties.getIOReg(name));
     }

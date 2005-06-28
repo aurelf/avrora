@@ -103,6 +103,7 @@
     2    sim  Move sram representation to use a Segment
     2  probe  Collapse ExceptionWatch with Watch for all segments
 
+    2   devs  USART abstracted to work on multiple devices         (1.5.101)
     2    sim  Simplified and streamlined interrupt handling         (1.5.94)
   2-3  radio  Separate synch mechanism from Radio implementation    (1.5.83)
     1    sim  Renamed Radio.RadioPacket to Radio.Transmission       (1.5.76)
@@ -149,6 +150,7 @@
     2    sim  Sleep modes
     1    sim  Probes for skip instructions (instr. size calculation)
 
+    1    sim  First interrupt schedule testcases added             (1.5.101)
     1  probe  Fixed probe testcases to reflect transactional list   (1.5.85)
     2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
 

@@ -102,7 +102,6 @@ public class ATMega128 extends ATMegaFamily {
 
     private static final int[][] transitionTimeMatrix  = FiniteStateMachine.buildBimodalTTM(idleModeNames.length, 0, wakeupTimes, new int[wakeupTimes.length]);
 
-
     /**
      * The <code>props</code> field stores a static reference to a properties
      * object shared by all of the instances of this microcontroller. This object
@@ -378,6 +377,7 @@ public class ATMega128 extends ATMegaFamily {
     }
 
     public boolean isSupported(InstrPrototype i) {
+        // ATMega128 supports all instructions (AFAIK)
         return true;
     }
 
@@ -394,34 +394,12 @@ public class ATMega128 extends ATMegaFamily {
         TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 17, 8);
         TIMSK_reg = (MaskRegister)interpreter.getIOReg(props.getIOReg("TIMSK"));
 
-
-        /* For whatever reason, the ATMega128 engineers decided
-           against having the bitorder for the ETIFR/ETIMSK
-           registers line up with the corresponding block of the
-           interrupt vector. Therefore, we have to line this up by
-           hand.
-        */
-
         int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
-        ETIFR_reg = new FlagRegister(interpreter, ETIFR_mapping); // false, 0 are just placeholder falues
+        ETIFR_reg = new FlagRegister(interpreter, ETIFR_mapping);
         ETIMSK_reg = new MaskRegister(interpreter, ETIFR_mapping);
 
         installIOReg("ETIMSK", ETIMSK_reg);
         installIOReg("ETIFR", ETIFR_reg);
-
-
-        // Timer1 COMPC
-        installInterrupt("Timer1 COMPC", 25, new MaskableInterrupt(25, ETIMSK_reg, ETIFR_reg, 0, false));
-        // Timer3 CAPT
-        installInterrupt("Timer3 CAPT", 26, new MaskableInterrupt(26, ETIMSK_reg, ETIFR_reg, 5, false));
-        // Timer3 COMPA
-        installInterrupt("Timer3 COMPA", 27, new MaskableInterrupt(27, ETIMSK_reg, ETIFR_reg, 4, false));
-        // Timer3 COMPB
-        installInterrupt("Timer3 COMPB", 28, new MaskableInterrupt(28, ETIMSK_reg, ETIFR_reg, 3, false));
-        // Timer3 COMPC
-        installInterrupt("Timer3 COMPC", 29, new MaskableInterrupt(29, ETIMSK_reg, ETIFR_reg, 1, false));
-        // Timer3 OVF
-        installInterrupt("Timer3 OVF", 30, new MaskableInterrupt(30, ETIMSK_reg, ETIFR_reg, 2, false));
 
         addDevice(new Timer0());
         addDevice(new Timer1());
@@ -436,13 +414,11 @@ public class ATMega128 extends ATMegaFamily {
         buildPort('F');
 
         addDevice(new EEPROM(properties.eeprom_size, this));
-        addDevice(new USART0());
-        addDevice(new USART1());
+        addDevice(new USART("0", this));
+        addDevice(new USART("1", this));
 
         addDevice(new SPI(this));
         addDevice(new ADC(this, 8));
-        //pm = new PowerManagement(interpreter);
-
     }
 
 

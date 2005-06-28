@@ -313,7 +313,7 @@ public class ATMega32 extends ATMegaFamily {
         buildPort('D');
 
         addDevice(new EEPROM(properties.eeprom_size, this));
-        addDevice(new USART0());
+        addDevice(new USART("", this));
 
         addDevice(new SPI(this));
         addDevice(new ADC(this, 8));

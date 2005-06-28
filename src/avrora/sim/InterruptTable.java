@@ -78,7 +78,7 @@ public class InterruptTable {
         this.numInterrupts = numInterrupts;
     }
 
-    void post(int inum) {
+    public void post(int inum) {
         interpreter.innerLoop = false;
         posted = Arithmetic.setBit(posted, inum, true);
         pending = posted & enabled;
@@ -93,7 +93,7 @@ public class InterruptTable {
         if ( n != null ) n.force(inum);
     }
 
-    void unpost(int inum) {
+    public void unpost(int inum) {
         posted = Arithmetic.setBit(posted, inum, false);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
