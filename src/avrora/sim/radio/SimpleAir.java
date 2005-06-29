@@ -34,6 +34,7 @@ package avrora.sim.radio;
 
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.mcu.ADC;
 import avrora.sim.clock.IntervalSynchronizer;
 import avrora.util.Verbose;
 import avrora.util.Arithmetic;
@@ -124,7 +125,7 @@ public class SimpleAir implements RadioAir {
     public int sampleRSSI(Radio r) {
         long t = r.getSimulator().getClock().getCount();
         synchronizer.waitForNeighbors(t);
-        return radioChannel.occupied(t - sampleTime, t) ? 0x0 : 0x3ff;
+        return radioChannel.occupied(t - sampleTime, t) ? 0x0 : ADC.VBG_LEVEL;
     }
 
     public byte readChannel(Radio r) {

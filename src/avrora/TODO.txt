@@ -15,12 +15,13 @@
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
     1   devs  USART baud rates
     1   devs  USART frame sizes
-    2   devs  Fix interrupt mappings for devices on ATMega32
 
-    1  probe  Fixed memory monitor not reporting all of memory      (1.5.94)
-    1  radio  Fixed deadlock problems in Freespace radio            (1.5.91)
-    2  probe  Fix BatteryMonitor hang problems                      (1.5.88)
-    1  probe  Fixed TransactionalList and related probe tests       (1.5.85)
+    1  probe  Recursion in State.getDataByte() from within watch   (1.5.102)
+    2   devs  Interrupt mappings for devices on ATMega32           (1.5.102)
+    1  probe  Memory monitor not reporting all of memory            (1.5.94)
+    1  radio  Deadlock problems in Freespace radio                  (1.5.91)
+    2  probe  BatteryMonitor hang problems                          (1.5.88)
+    1  probe  TransactionalList and related probe tests             (1.5.85)
     1  probe  Various bugfixes to GDB server by Jey Kottalam        (1.5.85)
     1  radio  SimpleAir.removeRadio() does not wake remaining nodes (1.5.81)
     1    sim  Fixed RSSI livelock problem in Freespace radio        (1.5.80)
@@ -59,6 +60,8 @@
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+    1   devs  Added lightsensor, RandomSensorData                  (1.5.103)
+    1   devs  First version of RegisterSet for bitfields           (1.5.102)
     1  input  Fixed sections option to allow loading user sections  (1.5.94)
     2  probe  Implemented probing of interrupts                     (1.5.94)
     2  radio  Implemented probing interface for radio               (1.5.89)

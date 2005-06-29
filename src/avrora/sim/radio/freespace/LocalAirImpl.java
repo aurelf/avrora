@@ -38,6 +38,7 @@ package avrora.sim.radio.freespace;
 
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.mcu.ADC;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.Channel;
@@ -171,7 +172,7 @@ public class LocalAirImpl {
      */
     public int sampleRSSI(long gtime) {
         synchronizer.waitForNeighbors(gtime);
-        return radioChannel.occupied(gtime - sampleTime, gtime) ? 0x0 : 0x3ff;
+        return radioChannel.occupied(gtime - sampleTime, gtime) ? 0x0 : ADC.VBG_LEVEL;
     }
 
     public void advanceChannel() {

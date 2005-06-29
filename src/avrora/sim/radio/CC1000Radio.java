@@ -1152,7 +1152,7 @@ public class CC1000Radio implements Radio {
             // ask the air for the current RSSI value
             if ( air != null )
                 return air.sampleRSSI(CC1000Radio.this);
-            else return 0x3ff; // return a default value of some sort
+            else return ADC.VBG_LEVEL; // return a default value of some sort
         }
 
         //////////////////////////

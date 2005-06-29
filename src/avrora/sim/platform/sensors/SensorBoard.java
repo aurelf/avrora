@@ -1,5 +1,8 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Created on 15.11.2004
+ *
+ * Copyright (c) 2004-2005, Olaf Landsiedel, Protocol Engineering and
+ * Distributed Systems, University of Tuebingen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,49 +32,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package avrora.sim.platform.sensors;
 
-package avrora;
+import avrora.sim.FiniteStateMachine;
+import avrora.sim.Simulator;
+import avrora.sim.energy.Energy;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * This class is a placeholder for tracking the energ consumption of the sensor board. Currently
+ * there are no sensors implemented for simulation.
  *
- * @author Ben L. Titzer
+ * @author Olaf Landsiedel
  */
-public class Version {
+public class SensorBoard {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    protected Simulator sim;
+    // names of the states of this device
+    private final String[] modeName = {"on:  "};
+    // power consumption of the device states
+    private final double[] modeAmpere = {0.0007};
+    // default mode of the device is on
+    private static final int startMode = 0;
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 103;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
-    }
-
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public SensorBoard(Simulator s) {
+        sim = s;        
+        //setup energy recording
+        //note: the name sensorBoard was choosen on purpose as it is used in the log files
+        //if you use sensor board, you may have trouble with importing the data as it is separated by white spaces
+        FiniteStateMachine fsm = new FiniteStateMachine(s.getClock(), startMode, modeName, 0);
+        new Energy("SensorBoard", modeAmpere, fsm);
     }
 }

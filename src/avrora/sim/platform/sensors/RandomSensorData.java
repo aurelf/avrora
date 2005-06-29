@@ -1,8 +1,5 @@
 /**
- * Created on 15.11.2004
- *
- * Copyright (c) 2004-2005, Olaf Landsiedel, Protocol Engineering and
- * Distributed Systems, University of Tuebingen
+ * Copyright (c) 2004-2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,34 +29,23 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package avrora.sim.platform;
 
-import avrora.sim.FiniteStateMachine;
-import avrora.sim.Simulator;
-import avrora.sim.energy.Energy;
+package avrora.sim.platform.sensors;
+
+import java.util.Random;
 
 /**
- * This class is a placeholder for tracking the energ consumption of the sensor board. Currently
- * there are no sensors implemented for simulation.
- *
- * @author Olaf Landsiedel
+ * @author Ben L. Titzer
  */
-public class SensorBoard {
+public class RandomSensorData implements SensorData {
 
-    protected Simulator sim;
-    // names of the states of this device
-    private final String[] modeName = {"on:  "};
-    // power consumption of the device states
-    private final double[] modeAmpere = {0.0007};
-    // default mode of the device is on
-    private static final int startMode = 0;
+    protected final Random random;
 
-    protected SensorBoard(Simulator s) {
-        sim = s;        
-        //setup energy recording
-        //note: the name sensorBoard was choosen on purpose as it is used in the log files
-        //if you use sensor board, you may have trouble with importing the data as it is separated by white spaces
-        FiniteStateMachine fsm = new FiniteStateMachine(s.getClock(), startMode, modeName, 0);
-        new Energy("SensorBoard", modeAmpere, fsm);
+    public RandomSensorData(Random r) {
+        random = r;
+    }
+
+    public int reading() {
+        return random.nextInt() & 0x3ff;
     }
 }

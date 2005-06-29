@@ -47,6 +47,9 @@ import avrora.util.StringUtil;
  */
 public class ADC extends AtmelInternalDevice {
 
+    public static final int VBG_LEVEL = 0x3ff;
+    public static final int GND_LEVEL = 0x000;
+
     public static final int ACSR = 0x08;
     public static final int ADMUX = 0x07;
     public static final int ADCSRA = 0x06;
@@ -55,13 +58,13 @@ public class ADC extends AtmelInternalDevice {
 
     private static final ADCInput VBG_INPUT = new ADCInput() {
         public int getLevel() {
-            return 0x3ff; // figure out correct value for this eventually
+            return VBG_LEVEL; // figure out correct value for this eventually
         }
     };
 
     private static final ADCInput GND_INPUT = new ADCInput() {
         public int getLevel() {
-            return 0x000; // figure out correct value for this eventually
+            return GND_LEVEL; // figure out correct value for this eventually
         }
     };
 

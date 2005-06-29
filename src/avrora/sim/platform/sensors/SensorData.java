@@ -30,48 +30,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.sim.platform.sensors;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>SensorData</code> interface represents a source of sensor data
+ * for the simulation. It could be randomly generated, played back from a file,
+ * or computed dynamically from the simulation.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public interface SensorData {
 
     /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
+     * The <code>reading()</code> method is called by the simulation when a new
+     * reading of the sensor is requested or needed.
+     * @return a raw ADC reading which should be returned to the software
      */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 103;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
-    }
-
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
-    }
+    public int reading();
 }

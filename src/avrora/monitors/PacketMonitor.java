@@ -60,9 +60,9 @@ public class PacketMonitor extends MonitorFactory {
 
     protected Option.Bool PACKETS = options.newOption("show-packets", true, 
             "This option enables the printing of packets as they are transmitted.");
-    protected Option.Bool PREAMBLE = options.newOption("show-preamble", true,
+    protected Option.Bool PREAMBLE = options.newOption("show-preamble", false,
             "This option will show the preamble of a packet when it is printed out.");
-    protected Option.Bool DISCARD = options.newOption("discard-first-byte", false,
+    protected Option.Bool DISCARD = options.newOption("discard-first-byte", true,
             "This option will discard the first byte of a packet, since it is often jibberish.");
 
     class Mon extends Radio.RadioProbe.Empty implements Monitor {

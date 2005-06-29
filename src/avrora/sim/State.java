@@ -249,4 +249,10 @@ public interface State {
      */
     public int getSleepMode();
 
+    /**
+     * The <code>getSimulator()</code> method returns the simulator associated with this state
+     * instance.
+     * @return a reference to the simulator associated with this state instance.
+     */
+    Simulator getSimulator();
 }

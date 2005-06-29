@@ -37,6 +37,7 @@ import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.ADC;
 
 /**
  * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and
@@ -67,7 +68,7 @@ public interface Radio {
         public final long originTime;
         public final long deliveryTime;
 
-        public int strength = 0x3ff;
+        public int strength = ADC.VBG_LEVEL;
 
         public Transmission(byte data, long frequency, long originTime) {
             this.data = data;
