@@ -83,8 +83,8 @@ public class InterruptTable {
         posted = Arithmetic.setBit(posted, inum, true);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenPosted(interpreter, inum);
-        if ( probe != null ) probe.fireWhenPosted(interpreter, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenPosted(interpreter.state, inum);
+        if ( probe != null ) probe.fireWhenPosted(interpreter.state, inum);
     }
 
     void force(int inum) {
@@ -97,8 +97,8 @@ public class InterruptTable {
         posted = Arithmetic.setBit(posted, inum, false);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenUnposted(interpreter, inum);
-        if ( probe != null ) probe.fireWhenUnposted(interpreter, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenUnposted(interpreter.state, inum);
+        if ( probe != null ) probe.fireWhenUnposted(interpreter.state, inum);
     }
 
     void enable(int inum) {
@@ -106,39 +106,39 @@ public class InterruptTable {
         enabled = Arithmetic.setBit(enabled, inum, true);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter, inum);
-        if ( probe != null ) probe.fireWhenEnabled(interpreter, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter.state, inum);
+        if ( probe != null ) probe.fireWhenEnabled(interpreter.state, inum);
     }
 
     void disable(int inum) {
         enabled = Arithmetic.setBit(enabled, inum, false);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter, inum);
-        if ( probe != null ) probe.fireWhenDisabled(interpreter, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter.state, inum);
+        if ( probe != null ) probe.fireWhenDisabled(interpreter.state, inum);
     }
 
     void enableAll() {
         interpreter.innerLoop = false;
-        if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter, 0);
+        if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter.state, 0);
     }
 
     void disableAll() {
-        if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter, 0);
+        if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter.state, 0);
     }
 
     void beforeInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireBeforeInvoke(interpreter, inum);
-        if ( probe != null ) probe.fireBeforeInvoke(interpreter, inum);
+        if ( globalProbe != null ) globalProbe.fireBeforeInvoke(interpreter.state, inum);
+        if ( probe != null ) probe.fireBeforeInvoke(interpreter.state, inum);
         Notification n = notify[inum];
         if ( n != null ) n.invoke(inum);
     }
 
     void afterInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireAfterInvoke(interpreter, inum);
-        if ( probe != null ) probe.fireAfterInvoke(interpreter, inum);
+        if ( globalProbe != null ) globalProbe.fireAfterInvoke(interpreter.state, inum);
+        if ( probe != null ) probe.fireAfterInvoke(interpreter.state, inum);
     }
 
     public void registerInternalNotification(Notification n, int inum) {

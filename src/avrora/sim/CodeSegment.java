@@ -277,10 +277,10 @@ public class CodeSegment extends Segment {
         }
 
         public void accept(InstrVisitor v) {
-            probe.fireBefore(interpreter, address);
+            probe.fireBefore(interpreter.state, address);
             instr.accept(interpreter);
             interpreter.commit();
-            probe.fireAfter(interpreter, address);
+            probe.fireAfter(interpreter.state, address);
 
             if ( probe.isEmpty() ) {
                 // if the probed instruction has no more probes, remove it altogether

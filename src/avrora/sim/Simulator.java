@@ -663,7 +663,7 @@ public class Simulator {
      * @return a reference to the current state of the simulation
      */
     public State getState() {
-        return interpreter;
+        return interpreter.state;
     }
 
     /**
@@ -904,7 +904,7 @@ public class Simulator {
          */
         public void fire() {
             int pc = interpreter.getPC();
-            throw new SimAction.TimeoutException(pc, interpreter, timeout, "clock cycles");
+            throw new SimAction.TimeoutException(pc, interpreter.state, timeout, "clock cycles");
         }
 
     }

@@ -293,10 +293,8 @@ public class ATMega32 extends ATMegaFamily {
     }
 
     protected void installDevices() {
-        // TODO: the interrupt mappings of this processor are incorrect!!!
-
         // set up the external interrupt mask and flag registers and interrupt range
-        EIFR_reg = buildInterruptRange(true, "GICR", "GIFR", 2, 8);
+        EIFR_reg = buildInterruptRange(true, "GICR", "GIFR", 2, 3);
 
         // set up the timer mask and flag registers and interrupt range
         TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 12, 8);

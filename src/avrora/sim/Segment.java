@@ -151,9 +151,9 @@ public class Segment {
         }
 
         // SLOW PATH: consult with memory watches
-        p.fireBeforeRead(interpreter, address);
+        p.fireBeforeRead(interpreter.state, address);
         byte val = checked_read(address);
-        p.fireAfterRead(interpreter, address, val);
+        p.fireAfterRead(interpreter.state, address, val);
         return val;
     }
 
@@ -217,9 +217,9 @@ public class Segment {
         }
 
         // SLOW PATH: consult with memory watches
-        p.fireBeforeWrite(interpreter, address, val);
+        p.fireBeforeWrite(interpreter.state, address, val);
         checked_write(address, val);
-        p.fireAfterWrite(interpreter, address, val);
+        p.fireAfterWrite(interpreter.state, address, val);
     }
 
     /**

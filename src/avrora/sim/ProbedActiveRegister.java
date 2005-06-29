@@ -66,28 +66,28 @@ public class ProbedActiveRegister implements ActiveRegister {
     }
 
     public void write(byte value) {
-        watches.fireBeforeWrite(interpreter, ioreg_num, value);
+        watches.fireBeforeWrite(interpreter.state, ioreg_num, value);
         ioreg.write(value);
-        watches.fireAfterWrite(interpreter, ioreg_num, value);
+        watches.fireAfterWrite(interpreter.state, ioreg_num, value);
     }
 
     public void writeBit(int bit, boolean val) {
-        watches.fireBeforeBitWrite(interpreter, ioreg_num, bit, val);
+        watches.fireBeforeBitWrite(interpreter.state, ioreg_num, bit, val);
         ioreg.writeBit(bit, val);
-        watches.fireAfterBitWrite(interpreter, ioreg_num, bit, val);
+        watches.fireAfterBitWrite(interpreter.state, ioreg_num, bit, val);
     }
 
     public byte read() {
-        watches.fireBeforeRead(interpreter, ioreg_num);
+        watches.fireBeforeRead(interpreter.state, ioreg_num);
         byte value = ioreg.read();
-        watches.fireAfterRead(interpreter, ioreg_num, value);
+        watches.fireAfterRead(interpreter.state, ioreg_num, value);
         return value;
     }
 
     public boolean readBit(int bit) {
-        watches.fireBeforeBitRead(interpreter, ioreg_num, bit);
+        watches.fireBeforeBitRead(interpreter.state, ioreg_num, bit);
         boolean value = ioreg.readBit(bit);
-        watches.fireAfterBitRead(interpreter, ioreg_num, bit, value);
+        watches.fireAfterBitRead(interpreter.state, ioreg_num, bit, value);
         return value;
     }
 }

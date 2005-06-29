@@ -202,11 +202,11 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             Instr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
-            globalProbe.fireBefore(this, curPC);
+            globalProbe.fireBefore(state, curPC);
             i.accept(this);
             cycles = cyclesConsumed;
             commit();
-            globalProbe.fireAfter(this, curPC);
+            globalProbe.fireAfter(state, curPC);
         }
         return cycles;
     }
@@ -299,10 +299,10 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
             Instr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
-            globalProbe.fireBefore(this, curPC);
+            globalProbe.fireBefore(state, curPC);
             i.accept(this);
             commit();
-            globalProbe.fireAfter(this, curPC);
+            globalProbe.fireAfter(state, curPC);
         }
     }
 
