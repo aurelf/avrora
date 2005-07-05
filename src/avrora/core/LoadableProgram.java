@@ -30,48 +30,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.core;
+
+import avrora.core.Program;
+import avrora.Defaults;
+import avrora.Avrora;
+
+import java.io.File;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>LoadableProgram</code> class represents a reference to a program on the disk.
+ * Since the user may want to reload the program (after recompiling it, for example),
+ * this class supports the ability to reload the program from disk.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class LoadableProgram {
+
+    public final File file;
+    protected Program program;
 
     /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
+     * This inits a program with a file from disk.
+     * @param f This is a file, generally received from a FileChooser
      */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.5";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 104;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
+    public LoadableProgram(File f) {
+        file = f;
     }
 
     /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
+     * This should generally be called when starting a sim.  It returns
+     * a program which can be passed as an arg to the sim
+     * @return A program representing a "compiled" version of the file
      */
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public Program getProgram() {
+        if ( program == null )
+            throw Avrora.failure("Program "+file+" must be loaded before use");
+        return program;
+    }
+
+    /**
+     * Call load before called getProgram() to physically load the file
+     * from disk.
+     */
+    public void load() throws Exception {
+        program = Defaults.getProgramReader("auto").read(new String[] { file.getAbsolutePath() } );
+    }
+
+    /**
+     * Calls file.getName();
+     * @return the name of the file (sans path)
+     */
+    public String getName() {
+        return file.getName();
     }
 }

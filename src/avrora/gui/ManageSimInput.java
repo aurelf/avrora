@@ -41,7 +41,9 @@ import java.util.*;
 import avrora.util.Option;
 import avrora.Avrora;
 import avrora.Defaults;
+import avrora.core.LoadableProgram;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.Simulation;
 
 
 /**
@@ -454,12 +456,12 @@ public class ManageSimInput {
         }
         // TODO: get the platform factory from the dialog
         PlatformFactory pf = null;
-        VisualSimulation s = AvroraGui.instance.getSimulation();
+        Simulation s = AvroraGui.instance.getSimulation();
 
         int max = ((Integer) numOfNodesSpinner.getValue()).intValue();
         for (int i = 0; i < max; i++) {
             //add the stuff to the sim
-            VisualSimulation.Node n = s.createNode(pf, pp);
+            Simulation.Node n = s.createNode(pf, pp);
         }
 
         //We should redraw the table

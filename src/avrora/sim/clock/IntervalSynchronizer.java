@@ -35,6 +35,7 @@ package avrora.sim.clock;
 import avrora.Avrora;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.Simulation;
 import avrora.sim.clock.DeltaQueue;
 import avrora.util.Verbose;
 
@@ -213,19 +214,19 @@ public class IntervalSynchronizer extends Synchronizer {
      * called.
      * @param t the simulator representing the node to add to this group
      */
-    public synchronized void addNode(SimulatorThread t) {
+    public synchronized void addNode(Simulation.Node t) {
         // if we already have this thread, do nothing
-        if (threadMap.containsKey(t)) return;
+        SimulatorThread st = t.getThread();
+        if (threadMap.containsKey(st)) return;
+
+        st.setSynchronizer(this);
 
         // create a new synchronization event for this thread's queue
-        SynchEvent event = new SynchEvent(t);
-        threadMap.put(t, event);
+        SynchEvent event = new SynchEvent(st);
+        threadMap.put(st, event);
         // insert the synch event in the thread's queue
         event.clock.insertEvent(event, period);
         goal++;
-
-        // make sure that we get notified when the thread finishes execution
-        t.setSynchronizer(this);
     }
 
     /**
@@ -233,7 +234,7 @@ public class IntervalSynchronizer extends Synchronizer {
      * group, and wakes any nodes that might be waiting on it.
      * @param t the simulator thread to remove from this synchronization group
      */
-    public synchronized void removeNode(SimulatorThread t) {
+    public synchronized void removeNode(Simulation.Node t) {
         // don't try to remove a thread that's not here!
         if ( !threadMap.containsKey(t) ) return;
         synchronized ( condition ) {

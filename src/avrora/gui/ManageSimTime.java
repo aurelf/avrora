@@ -43,6 +43,7 @@ import java.io.*;
 import java.util.*;
 
 import avrora.util.Terminal;
+import avrora.sim.Simulation;
 
 /**
  * From a high level view, the controls what the simulation is doing.
@@ -220,7 +221,7 @@ public class ManageSimTime {
     public boolean checkAndDispatch(ActionEvent e) {
         String cmd = e.getActionCommand();
 
-        VisualSimulation sim = AvroraGui.instance.getSimulation();
+        Simulation sim = AvroraGui.instance.getSimulation();
         if (STOP.equals(cmd)) {
             sim.stop();
             return true;

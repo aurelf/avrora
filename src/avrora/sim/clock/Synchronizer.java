@@ -34,6 +34,7 @@ package avrora.sim.clock;
 
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.Simulation;
 
 /**
  * The <code>Synchronizer</code> class represents an object that controls the progress
@@ -50,16 +51,16 @@ public abstract class Synchronizer {
      * The <code>addNode()</code> method adds a node to this synchronization group.
      * This method should only be called before the <code>start()</code> method is
      * called.
-     * @param s the simulator representing the node to add to this group
+     * @param n the simulator representing the node to add to this group
      */
-    public abstract void addNode(SimulatorThread s);
+    public abstract void addNode(Simulation.Node n);
 
     /**
      * The <code>removeNode()</code> method removes a node from this synchronization
      * group, and wakes any nodes that might be waiting on it.
-     * @param s the simulator thread to remove from this synchronization group
+     * @param n the simulator thread to remove from this synchronization group
      */
-    public abstract void removeNode(SimulatorThread s);
+    public abstract void removeNode(Simulation.Node n);
 
     /**
      * The <code>waitForNeighbors()</code> method is called from within the execution

@@ -47,10 +47,7 @@ import avrora.actions.SimAction;
  */
 public class SimulatorThread extends Thread {
 
-    /**
-     * The <code>simulator</code> field stores a reference to the simulator that this thread encapsulates.
-     */
-    protected final Simulator simulator;
+    protected final Simulation.Node node;
 
     /**
      * The <code>synchronizer</code> field stores a reference to the synchronizer that this thread
@@ -64,10 +61,14 @@ public class SimulatorThread extends Thread {
      * The constructor for the simulator thread accepts an instance of <code>Simulator</code> as a parameter
      * and stores it internally.
      *
-     * @param s the simulator this thread is intended to run.
+     * @param n the node
      */
-    public SimulatorThread(Simulator s) {
-        simulator = s;
+    public SimulatorThread(Simulation.Node n) {
+        node = n;
+    }
+
+    public Simulation.Node getNode() {
+        return node;
     }
 
     /**
@@ -77,7 +78,7 @@ public class SimulatorThread extends Thread {
      * @return the instance of <code>Simulator</code> this thread is intended to run.
      */
     public Simulator getSimulator() {
-        return simulator;
+        return node.getSimulator();
     }
 
     /**
@@ -86,6 +87,7 @@ public class SimulatorThread extends Thread {
      */
     public void run() {
         try {
+            Simulator simulator = node.getSimulator();
             simulator.start();
         } catch (SimAction.TimeoutException te) {
             // suppress timeout exceptions.
@@ -93,7 +95,7 @@ public class SimulatorThread extends Thread {
             e.report();
         } finally {
             if ( synchronizer != null )
-                synchronizer.removeNode(this);
+                synchronizer.removeNode(node);
         }
     }
 

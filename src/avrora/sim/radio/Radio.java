@@ -118,16 +118,6 @@ public interface Radio {
     public Simulator getSimulator();
 
     /**
-     * Get the <code>SimulatorThread</code> thread on which this radio is running.
-     */
-    public SimulatorThread getSimulatorThread();
-
-    /**
-     * Set the <code>SimulatorThread</code> of this radio.
-     */
-    public void setSimulatorThread(SimulatorThread thread);
-
-    /**
      * get the transmission power
      *
      * @return transmission power

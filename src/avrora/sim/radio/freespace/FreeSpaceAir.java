@@ -41,6 +41,7 @@ import avrora.sim.SimulatorThread;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
 import avrora.sim.clock.IntervalSynchronizer;
+import avrora.sim.clock.Synchronizer;
 import avrora.util.Verbose;
 import avrora.Avrora;
 
@@ -131,7 +132,7 @@ public class FreeSpaceAir implements RadioAir {
             getLocalAir(r).addNeighbor(localAir);
         }
         radios.add(r);
-        synchronizer.addNode(r.getSimulatorThread());
+//        synchronizer.addNode(r.getSimulatorThread().getNode());
     }
 
     private LocalAirImpl getLocalAir(Radio r) {
@@ -208,4 +209,9 @@ public class FreeSpaceAir implements RadioAir {
         LocalAirImpl lair = getLocalAir(r);
         return lair.readChannel();
     }
+
+    public Synchronizer getSynchronizer() {
+        return synchronizer;
+    }
+
 }

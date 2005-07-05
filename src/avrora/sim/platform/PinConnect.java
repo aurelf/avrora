@@ -103,7 +103,7 @@ public class PinConnect {
                 p.addSimulatorThread(simThread);
 
                 // add simulator thread to PinClock and PinMeet
-                synchronizer.addNode(simThread);
+                synchronizer.addNode(simThread.getNode());
             }
         }
     }

@@ -89,10 +89,8 @@
 ========================= R E F A C T O R I N G S ===========================
  Comp Module Item                                      Completion (Version)
 -----------------------------------------------------------------------------
-    2    sim  Introduce Simulation class
     1    sim  global migrate to Clock, DerivedClock
     2   isdl  Declare state of processor explicitly
-    2    sim  read/write vs get/set for State
     2   isdl  AlphaRenamer class for code processing
     2   test  Dependencies for test cases
     2   devs  ADC interface improvements
@@ -106,6 +104,8 @@
     2    sim  Move sram representation to use a Segment
     2  probe  Collapse ExceptionWatch with Watch for all segments
 
+    2    sim  Introduce Simulation class                           (1.5.104)
+    2    sim  read/write vs get/set for State                      (1.5.102)
     2   devs  USART abstracted to work on multiple devices         (1.5.101)
     2    sim  Simplified and streamlined interrupt handling         (1.5.94)
   2-3  radio  Separate synch mechanism from Radio implementation    (1.5.83)

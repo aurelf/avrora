@@ -126,7 +126,6 @@ public class CC1000Radio implements Radio {
      */
     protected final Microcontroller mcu;
     protected final Simulator sim;
-    protected SimulatorThread simThread;
     protected final FiniteStateMachine stateMachine;
 
     protected Radio.RadioController controller;
@@ -135,21 +134,6 @@ public class CC1000Radio implements Radio {
      * Radio environment into which this radio broadcasts.
      */
     protected RadioAir air;
-
-    /**
-     * Sets the <code>SimulatorThread</code> of this radio. Should be done BEFORE adding this radio to a
-     * <code>RadioAir</code> environment.
-     */
-    public void setSimulatorThread(SimulatorThread thread) {
-        simThread = thread;
-    }
-
-    /**
-     * Gets the <code>SimulatorThread</code> of this radio.
-     */
-    public SimulatorThread getSimulatorThread() {
-        return simThread;
-    }
 
     /**
      * The <code>ProbeList</code> class just keeps track of a list of probes.

@@ -32,6 +32,8 @@
 
 package avrora.sim.radio;
 
+import avrora.sim.clock.Synchronizer;
+
 
 /**
  * Interface for the <code>RadioAir</code>. An implementation of this interface should provide the policies
@@ -76,4 +78,6 @@ public interface RadioAir {
     public int sampleRSSI(Radio r);
 
     public byte readChannel(Radio r);
+    
+    public Synchronizer getSynchronizer();
 }

@@ -71,7 +71,7 @@ public class BenchmarkAction extends SimAction {
      * the appropriate name and help string.
      */
     public BenchmarkAction() {
-        super("benchmark", HELP);
+        super(HELP);
     }
 
 
@@ -91,12 +91,14 @@ public class BenchmarkAction extends SimAction {
 
         long repeat = REPEAT.get();
 
+/*
         //--BEGIN EXPERIMENTAL: dbbc
         if (DBBC.get()) {
             factory = new DBBCInterpreter.Factory(new DBBC(program, options));
             config = "Dynamic Basic Block Compiler";
         } else
         //--END EXPERIMENTAL: dbbc
+*/
             factory = new GenInterpreter.Factory();
 
 

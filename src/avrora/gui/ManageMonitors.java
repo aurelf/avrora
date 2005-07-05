@@ -36,6 +36,7 @@
 package avrora.gui;
 
 import avrora.Avrora;
+import avrora.sim.Simulation;
 
 import javax.swing.*;
 import java.awt.*;
@@ -191,8 +192,8 @@ public class ManageMonitors {
             LinkedList nodes = getNodeList();
             for (int j = 0; j < toMONITORS.size(); j++) {
                 String currentMonitor = ((String) toMONITORS.elementAt(j));
-                VisualSimulation.MonitorFactory mf = getMonitorFactory(currentMonitor);
-                mf.attach(nodes);
+                Simulation.Monitor mf = getMonitorFactory(currentMonitor);
+                mf.attach(AvroraGui.instance.getSimulation(), nodes);
             }
 
             //We are done with the dialog...get rid of it
@@ -207,7 +208,7 @@ public class ManageMonitors {
 
     }
 
-    private VisualSimulation.MonitorFactory getMonitorFactory(String n) {
+    private Simulation.Monitor getMonitorFactory(String n) {
         return GUIDefaults.getMonitor(n);
     }
 
@@ -215,14 +216,14 @@ public class ManageMonitors {
      * This gets a list of currently selected nodes from the topology window
      */
     private LinkedList getNodeList() {
-        VisualSimulation sim = AvroraGui.instance.getSimulation();
+        Simulation sim = AvroraGui.instance.getSimulation();
         LinkedList nodes = new LinkedList();
         int[] selectedRows = AvroraGui.instance.topologyBox.table.getSelectedRows();
         for (int i = 0; i < selectedRows.length; i++) {
             //let's get the NID of that row
             Object v = AvroraGui.instance.topologyBox.theModel.getValueAt(selectedRows[i], 0);
             int nid = ((Integer) v).intValue();
-            VisualSimulation.Node node = sim.getNode(nid);
+            Simulation.Node node = sim.getNode(nid);
             nodes.add(node);
         }
         return nodes;

@@ -34,6 +34,7 @@ package avrora.gui;
 
 import avrora.util.ClassMap;
 import avrora.monitors.MonitorFactory;
+import avrora.sim.Simulation;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -51,7 +52,7 @@ public class GUIDefaults {
     final static List options;
 
     static {
-        monitorMap = new ClassMap("Monitor", VisualSimulation.MonitorFactory.class);  //for regular monitors
+        monitorMap = new ClassMap("Monitor", Simulation.Monitor.class);  //for regular monitors
         options = new LinkedList();
 
         addNewMonitorType("PC Monitor", new VisualPCMonitor());
@@ -69,7 +70,7 @@ public class GUIDefaults {
         return options;
     }
 
-    public static VisualSimulation.MonitorFactory getMonitor(String name) {
-        return (VisualSimulation.MonitorFactory)monitorMap.getObjectOfClass(name);
+    public static Simulation.Monitor getMonitor(String name) {
+        return (Simulation.Monitor)monitorMap.getObjectOfClass(name);
     }
 }

@@ -57,7 +57,7 @@ public class ATMega32 extends ATMegaFamily {
     public static final int ATMEGA32_FLASH_SIZE = 32 * _1kb;
     public static final int ATMEGA32_EEPROM_SIZE = 1 * _1kb;
     public static final int ATMEGA32_NUM_PINS = 45;
-    public static final int ATMEGA32_NUM_INTS = 20;
+    public static final int ATMEGA32_NUM_INTS = 22;
 
     public static final int MODE_IDLE       = 1;
     public static final int MODE_RESERVED1  = 2;
@@ -294,7 +294,12 @@ public class ATMega32 extends ATMegaFamily {
 
     protected void installDevices() {
         // set up the external interrupt mask and flag registers and interrupt range
-        EIFR_reg = buildInterruptRange(true, "GICR", "GIFR", 2, 3);
+        int[] mapping = new int[] { -1, -1, -1, -1, -1, 4, 2, 3 };
+        FlagRegister fr = new FlagRegister(interpreter, mapping);
+        MaskRegister mr = new MaskRegister(interpreter, mapping);
+        installIOReg("GICR", mr);
+        installIOReg("GIFR", fr);
+        EIFR_reg = fr;
 
         // set up the timer mask and flag registers and interrupt range
         TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 12, 8);

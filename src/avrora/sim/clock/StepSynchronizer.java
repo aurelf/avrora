@@ -34,6 +34,7 @@ package avrora.sim.clock;
 
 import avrora.sim.SimulatorThread;
 import avrora.sim.Simulator;
+import avrora.sim.Simulation;
 import avrora.Avrora;
 
 /**
@@ -67,25 +68,25 @@ public class StepSynchronizer extends Synchronizer {
      * The <code>addNode()</code> method adds a node to this synchronization group.
      * This method should only be called before the <code>start()</code> method is
      * called.
-     * @param s the simulator representing the node to add to this group
+     * @param n the simulator representing the node to add to this group
      */
-    public void addNode(SimulatorThread s) {
+    public void addNode(Simulation.Node n) {
         int nn = numThreads++;
         if ( nn >= threads.length ) {
             Simulator[] nthreads = new Simulator[threads.length * 2];
             System.arraycopy(threads, 0, nthreads, 0, threads.length);
             threads = nthreads;
         }
-        threads[nn] = s.getSimulator();
+        threads[nn] = n.getSimulator();
     }
 
     /**
      * The <code>removeNode()</code> method removes a node from this synchronization
      * group, and wakes any nodes that might be waiting on it.
-     * @param s the simulator thread to remove from this synchronization group
+     * @param n the simulator thread to remove from this synchronization group
      */
-    public void removeNode(SimulatorThread s) {
-        removeSimulator(s.getSimulator());
+    public void removeNode(Simulation.Node n) {
+        removeSimulator(n.getSimulator());
     }
 
     /**

@@ -34,6 +34,8 @@ package avrora.actions;
 
 import avrora.Main;
 import avrora.Avrora;
+import avrora.Defaults;
+import avrora.monitors.Monitor;
 import avrora.core.Program;
 import avrora.core.Instr;
 import avrora.core.LabelMapping;
@@ -59,41 +61,12 @@ import java.io.IOException;
  * @author Ben L. Titzer
  */
 public class SimulateAction extends SimAction {
-    Program program;
     Simulator simulator;
-    Microcontroller microcontroller;
-    avrora.sim.util.Counter total;
     long startms, endms;
-
-    List counters;
-    List branchcounters;
 
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
             "for the specified microcontroller and begins executing the program. There " +
             "are several options provided by the simulator for profiling and analysis.";
-    public final Option.List BREAKS = newOptionList("breakpoint", "",
-            "This option is used in the simulate action. It allows the user to " +
-            "insert a series of breakpoints in the program from the command line. " +
-            "The address of the breakpoint can be given in hexadecimal or as a label " +
-            "within the program. Hexadecimal constants are denoted by a leading \"0x\".");
-    public final Option.Bool TIME = newOption("time", true,
-            "This option is used in the simulate action. It will cause the simulator " +
-            "to report the time used in executing the simulation. When combined with " +
-            "the \"cycles\" and \"total\" options, it will report performance " +
-            "information about the simulation.");
-    public final Option.Bool TOTAL = newOption("total", false,
-            "This option is used in the simulate action. It will cause the simulator " +
-            "to report the total instructions executed in the simulation. When combined " +
-            "with the \"time\" option, it will report performance information.");
-    public final Option.Bool CYCLES = newOption("cycles", true,
-            "This option is used in the simulate action. It will cause the simulator " +
-            "to report the total cycles executed in the simulation. When combined " +
-            "with the \"time\" option, it will report performance information.");
-    public final Option.Bool REALTIME = newOption("real-time", false,
-            "This option is used in the simulate action to slow the simulation if it is too fast. " +
-            "By default, the simulator will attempt to execute the program as fast as possible. " +
-            "This option will cause the simulation to pause periodically for a few milliseconds in " +
-            "order that it does not run faster than real-time.");
     public final Option.Str SCHEDULE = newOption("interrupt-schedule", "", "This option is used to specify " +
             "the text file from which Avrora should load an interrupt schedule.  The file should contain " +
             "a sequence of whitespace delineated pairs of integers.  In each pair the first is an " +
@@ -101,34 +74,7 @@ public class SimulateAction extends SimAction {
             "and the second is a cycle time at which the interrupt should fire.");
 
     public SimulateAction() {
-        super("simulate", HELP);
-    }
-
-    private class ThrottleEvent implements Simulator.Event {
-        boolean initialized;
-        long beginMs;
-        final long period;
-        final MainClock clock;
-
-        public ThrottleEvent() {
-            clock = microcontroller.getClockDomain().getMainClock();
-            period = clock.getHZ() / 100;
-        }
-
-        public void fire() {
-            if ( !initialized ) {
-                initialized = true;
-                beginMs = System.currentTimeMillis();
-                clock.insertEvent(this, period);
-                return;
-            }
-
-            long cycles = clock.getCount();
-            long msGoal = (1000*cycles) / clock.getHZ();
-            while ( (System.currentTimeMillis() - beginMs) < msGoal ) ;
-
-            clock.insertEvent(this, period);
-        }
+        super(HELP);
     }
 
     /**
@@ -139,33 +85,17 @@ public class SimulateAction extends SimAction {
      *                             simulation
      */
     public void run(String[] args) throws Exception {
-        initializeSimulatorStatics();
-        runSimulation(args);
-    }
+        StringUtil.REPORT_SECONDS = REPORT_SECONDS.get();
+        StringUtil.SECONDS_PRECISION = (int)SECONDS_PRECISION.get();
 
-    private void runSimulation(String[] args) throws Exception {
-        program = Main.loadProgram(args);
+        Simulation sim = Defaults.getSimulation(SIMULATION.get());
+        sim.process(options, args);
 
-        simulator = newSimulator(program);
-        microcontroller = simulator.getMicrocontroller();
-        counters = new LinkedList();
-        branchcounters = new LinkedList();
-
-        processBreakPoints();
-        processTotal();
-
-        if (REALTIME.get())
-            simulator.insertEvent(new ThrottleEvent(), 1);
-
-        // interrupt scheduling code begins
-        String fname = SCHEDULE.get();
-        if ( !"".equals(fname) ) new InterruptScheduler(fname, simulator);
-        // interrupt scheduling code ends
-
+        printSimHeader();
         startms = System.currentTimeMillis();
         try {
-            printSimHeader();
-            simulator.start();
+            sim.start();
+            sim.join();
         } catch (BreakPointException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
@@ -184,58 +114,49 @@ public class SimulateAction extends SimAction {
             printSeparator();
             endms = System.currentTimeMillis();
 
-            reportTotal();
-            reportCycles();
-            reportTime();
-            reportMonitors(simulator);
+            reportTime(sim, startms, endms);
+            reportMonitors(sim);
         }
     }
 
-    void processBreakPoints() {
-        Iterator i = getLocationList(program, BREAKS.get()).iterator();
-        while (i.hasNext()) {
-            LabelMapping.Location l = (LabelMapping.Location)i.next();
-            simulator.insertProbe(new BreakPointProbe(), l.address);
-        }
-    }
-    
     class BreakPointProbe extends Simulator.Probe.Empty {
         public void fireBefore(State s, int pc) {
             throw new BreakPointException(pc, s);
         }
     }
 
-    void processTotal() {
-        if (TOTAL.get()) {
-            simulator.insertProbe(total = new avrora.sim.util.Counter());
+    protected void reportMonitors(Simulation sim) {
+        Iterator i = sim.getNodeIterator();
+        while (i.hasNext()) {
+            Simulation.Node n = (Simulation.Node)i.next();
+            Iterator im = n.getMonitors().iterator();
+            if ( im.hasNext() )
+                TermUtil.printSeparator(Terminal.MAXLINE, "Monitors for node "+n.id);
+            while ( im.hasNext() ) {
+                Monitor m = (Monitor)im.next();
+                m.report();
+            }
         }
     }
 
-    void reportTotal() {
-        if (total != null)
-            TermUtil.reportQuantity("Instructions executed", total.count, "");
-    }
-
-    void reportCycles() {
-        if (CYCLES.get()) {
-            TermUtil.reportQuantity("Simulated time", simulator.getState().getCycles(), "cycles");
+    protected void reportTime(Simulation sim, long startms, long endms) {
+        // calculate total throughput over all threads
+        Iterator i = sim.getNodeIterator();
+        long aggCycles = 0;
+        long maxCycles = 0;
+        while ( i.hasNext() ) {
+            Simulation.Node n = (Simulation.Node)i.next();
+            long count = n.getSimulator().getClock().getCount();
+            aggCycles += count;
+            if ( count > maxCycles ) maxCycles = count;
         }
-    }
-
-    void reportTime() {
         long diff = endms - startms;
-        if (TIME.get()) {
-            TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
-            if (total != null) {
-                float thru = ((float)total.count) / (diff * 1000);
-                TermUtil.reportQuantity("Simulator throughput", thru, "mips");
-            }
-            if (CYCLES.get()) {
-                float thru = ((float)simulator.getState().getCycles()) / (diff * 1000);
-                TermUtil.reportQuantity("Simulator throughput", thru, "mhz");
-            }
-        }
+        TermUtil.reportQuantity("Simulated time", maxCycles, "cycles");
+        TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
+        int nn = sim.getNumberOfNodes();
+        double thru = ((double)aggCycles) / (diff * 1000);
+        TermUtil.reportQuantity("Total throughput", (float)thru, "mhz");
+        if ( nn > 1 )
+            TermUtil.reportQuantity("Throughput per node", (float)(thru / nn), "mhz");
     }
-
-
 }

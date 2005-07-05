@@ -36,6 +36,7 @@ import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
 import avrora.sim.mcu.ADC;
 import avrora.sim.clock.IntervalSynchronizer;
+import avrora.sim.clock.Synchronizer;
 import avrora.util.Verbose;
 import avrora.util.Arithmetic;
 import avrora.Avrora;
@@ -82,7 +83,7 @@ public class SimpleAir implements RadioAir {
     public synchronized void addRadio(Radio r) {
         radios.add(r);
         r.setAir(this);
-        synchronizer.addNode(r.getSimulatorThread());
+//        synchronizer.addNode(r.getSimulatorThread().getNode());
     }
 
     /**
@@ -91,7 +92,7 @@ public class SimpleAir implements RadioAir {
      */
     public synchronized void removeRadio(Radio r) {
         radios.remove(r);
-        synchronizer.removeNode(r.getSimulatorThread());
+//        synchronizer.removeNode(r.getSimulatorThread().getNode());
     }
 
     /**
@@ -134,4 +135,9 @@ public class SimpleAir implements RadioAir {
         synchronizer.waitForNeighbors(time);
         return (byte)radioChannel.read(time, 8);
     }
+
+    public Synchronizer getSynchronizer() {
+        return synchronizer;
+    }
+
 }

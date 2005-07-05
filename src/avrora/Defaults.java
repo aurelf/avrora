@@ -45,6 +45,8 @@ import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Seres;
 import avrora.sim.*;
+import avrora.sim.types.SingleSimulation;
+import avrora.sim.types.SensorSimulation;
 import avrora.sim.clock.ClockDomain;
 import avrora.actions.*;
 import avrora.core.ProgramReader;
@@ -74,6 +76,7 @@ public class Defaults {
     private static ClassMap inputs;
     private static ClassMap harnessMap;
     private static ClassMap monitorMap;
+    private static ClassMap simMap;
 
     private static void addAll() {
         addMicrocontrollers();
@@ -82,6 +85,7 @@ public class Defaults {
         addInputFormats();
         addTestHarnesses();
         addMonitors();
+        addSimulations();
     }
 
     private static void addMonitors() {
@@ -104,6 +108,7 @@ public class Defaults {
             monitorMap.addClass("serial", SerialMonitor.class);
             monitorMap.addClass("trip-time", TripTimeMonitor.class);
             monitorMap.addClass("ioregs", IORegMonitor.class);
+            monitorMap.addClass("real-time", RealTimeMonitor.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
             addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
@@ -179,6 +184,24 @@ public class Defaults {
                     "tools. The currently supported actions are given below.", "-action", actions);
             addMainCategory(hc);
             addSubCategories(actions);
+        }
+    }
+
+    private static void addSimulations() {
+        if (simMap == null) {
+            simMap = new ClassMap("Simulation", Simulation.class);
+            //-- DEFAULT ACTIONS
+            simMap.addClass("single", SingleSimulation.class);
+            simMap.addClass("sensor-network", SensorSimulation.class);
+
+            // plug in a new help category for simulations accesible with "-help simulations"
+            HelpCategory hc = new HelpCategory("simulations", "Help for Simulation types");
+            addOptionSection(hc, "SIMULATION TYPES", "Avrora accepts the \"-simulation\" command line option " +
+                    "that you can use to select from the available simulation types that Avrora " +
+                    "provides. This simulation might be for a sensor network application, " +
+                    "a single node simulation, or a robotics simulation. ", "-simulation", simMap);
+            addMainCategory(hc);
+            addSubCategories(simMap);
         }
     }
 
@@ -268,6 +291,12 @@ public class Defaults {
     public static MonitorFactory getMonitor(String s) {
         addMonitors();
         return (MonitorFactory) monitorMap.getObjectOfClass(s);
+    }
+
+    public static Simulation getSimulation(String s) {
+        addSimulations();
+        // TODO: add a simulation factory
+        return (Simulation)simMap.getObjectOfClass(s);
     }
 
     /**

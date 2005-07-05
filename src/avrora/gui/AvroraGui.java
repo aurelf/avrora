@@ -35,6 +35,8 @@ package avrora.gui;
 import avrora.actions.VisualAction;
 import avrora.Version;
 import avrora.Avrora;
+import avrora.sim.Simulation;
+import avrora.sim.types.SingleSimulation;
 import avrora.util.Options;
 
 import javax.swing.*;
@@ -127,7 +129,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
     //A thread that will repaint the monitor window
     PaintThread newPaintThread;
 
-    private VisualSimulation simulation;
+    private Simulation simulation;
 
     private AvroraGui(Options opts, String[] a) {
 
@@ -143,7 +145,8 @@ public class AvroraGui implements ActionListener, ChangeListener {
         masterFrame = new JFrame("Avrora GUI");
         masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        simulation = new VisualSimulation();
+        // TODO: replace this simulation with Sensor simulation
+        simulation = new SingleSimulation();
 
         args = a;
 
@@ -197,11 +200,11 @@ public class AvroraGui implements ActionListener, ChangeListener {
     }
 
     /**
-     * A {@link VisualSimulation} object holds data about the current sim running
+     * A {@link Simulation} object holds data about the current sim running
      *
      * @return Information about the current simulation running
      */
-    public VisualSimulation getSimulation() {
+    public Simulation getSimulation() {
         return simulation;
     }
 

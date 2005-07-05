@@ -35,6 +35,7 @@ package avrora.gui;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.Simulation;
 import avrora.sim.util.ProgramProfiler;
 import avrora.gui.*;
 import avrora.actions.VisualAction;
@@ -52,7 +53,7 @@ import javax.swing.*;
  *
  * @author UCLA Compilers Group
  */
-public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulation.MonitorFactory {
+public class VisualPCMonitor extends SingleNodeMonitor implements Simulation.Monitor {
 
     public class PCMonitor extends Monitor implements avrora.gui.VisualMonitor, Simulator.Probe {
         public final Simulator simulator;
@@ -162,7 +163,7 @@ public class VisualPCMonitor extends SingleNodeMonitor implements VisualSimulati
         super();
     }
 
-    protected Monitor newMonitor(VisualSimulation.Node n) {
+    protected Monitor newMonitor(Simulation.Node n) {
         return new PCMonitor(n.getSimulator());
     }
 }

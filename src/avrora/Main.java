@@ -45,6 +45,7 @@ import avrora.util.help.HelpCategory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
@@ -363,5 +364,15 @@ public class Main {
         Program program = reader.read(args);
         Status.success();
         return program;
+    }
+
+    public static void checkFilesExist(String[] files) {
+        for ( int cntr = 0; cntr < files.length; cntr++ ) {
+            File f = new File(files[cntr]);
+            if ( !f.exists() ) {
+                Avrora.userError("File not found", files[cntr]);
+                return;
+            }
+        }
     }
 }

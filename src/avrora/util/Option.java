@@ -403,7 +403,7 @@ public abstract class Option {
          * The <code>defvalue</code> field stores the default (initial) value for this option. It is used in
          * reporting the help item.
          */
-        protected final String defvalue;
+        protected String defvalue;
         protected String value;
 
         /**
@@ -426,6 +426,17 @@ public abstract class Option {
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
+            value = val;
+        }
+
+        /**
+         * The <code>setNewDefault()</code> method sets a new default value for this option. This is useful
+         * for inherited options that might have a different default value for different actions or different
+         * simulations.
+         * @param val the new default value for this option
+         */
+        public void setNewDefault(String val) {
+            defvalue = val;
             value = val;
         }
 

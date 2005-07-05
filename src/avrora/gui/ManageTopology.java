@@ -32,6 +32,8 @@
 
 package avrora.gui;
 
+import avrora.sim.Simulation;
+
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
@@ -116,7 +118,7 @@ public class ManageTopology {
         //fill the table with all the data from AvroraGui
         Iterator ni = AvroraGui.instance.getSimulation().getNodeIterator();
         while ( ni.hasNext() ) {
-            VisualSimulation.Node currentNode = (VisualSimulation.Node)ni.next();
+            Simulation.Node currentNode = (Simulation.Node)ni.next();
             Vector tempVector = new Vector();
             tempVector.add(new Integer(currentNode.id));
             tempVector.add(currentNode.getProgram().getName());

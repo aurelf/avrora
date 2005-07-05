@@ -33,6 +33,7 @@
 package avrora.gui;
 
 import avrora.sim.Simulator;
+import avrora.sim.Simulation;
 import avrora.Avrora;
 
 import java.util.List;
@@ -58,7 +59,7 @@ import java.util.HashMap;
  *
  * @author Ben L. Titzer
  */
-public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFactory {
+public abstract class SingleNodeMonitor implements Simulation.Monitor {
 
     final HashMap panelMap; // maps VisualSimulation.Node -> MonitorPanel
     final HashMap monitorMap; // maps MonitorPanel -> PCMonitor
@@ -80,10 +81,10 @@ public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFacto
      *
      * @param nodes A list of the nodes that should be attached to the monitor
      */
-    public void attach(List nodes) {
+    public void attach(Simulation sim, List nodes) {
         Iterator i = nodes.iterator();
         while ( i.hasNext()) {
-            VisualSimulation.Node n = (VisualSimulation.Node)i.next();
+            Simulation.Node n = (Simulation.Node)i.next();
             if ( panelMap.containsKey(n) ) continue;
             MonitorPanel p = AvroraGui.instance.createMonitorPanel("PC - "+n.id);
             panelMap.put(n, p);
@@ -98,7 +99,18 @@ public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFacto
      * @param n The node the monitor is attached to
      * @param s The simulator that the monitor can be inserted into
      */
-    public void instantiate(VisualSimulation.Node n, Simulator s) {
+    public void construct(Simulation sim, Simulation.Node n, Simulator s) {
+        throw Avrora.unimplemented();
+    }
+
+    /**
+     * This is called at the end of the simulation to remove any data structures
+     * associated with the nodes.
+     *
+     * @param n The node the monitor is attached to
+     * @param s The simulator that the monitor can be inserted into
+     */
+    public void destruct(Simulation sim, Simulation.Node n, Simulator s) {
         throw Avrora.unimplemented();
     }
 
@@ -109,15 +121,15 @@ public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFacto
      * element of the list is not already attached to the node, it will just
      * skip that element.
      */
-    public void remove(List nodes) {
+    public void remove(Simulation sim, List nodes) {
         Iterator i = nodes.iterator();
         while ( i.hasNext()) {
-            VisualSimulation.Node n = (VisualSimulation.Node)i.next();
+            Simulation.Node n = (Simulation.Node)i.next();
             removeOne(n);
         }
     }
 
-    private void removeOne(VisualSimulation.Node n) {
+    private void removeOne(Simulation.Node n) {
         MonitorPanel p = (MonitorPanel)panelMap.get(n);
         if ( p == null ) return;
 
@@ -136,5 +148,5 @@ public abstract class SingleNodeMonitor implements VisualSimulation.MonitorFacto
         protected abstract void remove();
     }
 
-    protected abstract Monitor newMonitor(VisualSimulation.Node n);
+    protected abstract Monitor newMonitor(Simulation.Node n);
 }

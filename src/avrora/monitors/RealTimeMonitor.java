@@ -30,58 +30,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.gui;
+package avrora.monitors;
 
-import avrora.core.Program;
-import avrora.Defaults;
-import avrora.Avrora;
-
-import java.io.File;
+import avrora.sim.Simulator;
+import avrora.sim.clock.MainClock;
 
 /**
- * The <code>LoadableProgram</code> class represents a reference to a program on the disk.
- * Since the user may want to reload the program (after recompiling it, for example),
- * this class supports the ability to reload the program from disk.
+ * The <code>RealTimeMonitor</code> class slows down the simulation to real-time. This is
+ * useful for simulations that run much faster than real time and for simulations that may
+ * be connected to external device inputs.
  *
  * @author Ben L. Titzer
  */
-public class LoadableProgram {
+public class RealTimeMonitor extends MonitorFactory {
 
-    public final File file;
-    protected Program program;
+    private class ThrottleEvent implements Simulator.Event {
+        boolean initialized;
+        long beginMs;
+        final long period;
+        final MainClock clock;
 
-    /**
-     * This inits a program with a file from disk.
-     * @param f This is a file, generally received from a FileChooser
-     */
-    public LoadableProgram(File f) {
-        file = f;
+        public ThrottleEvent(Simulator s) {
+            clock = s.getClock();
+            period = clock.getHZ() / 100;
+        }
+
+        public void fire() {
+            if ( !initialized ) {
+                initialized = true;
+                beginMs = System.currentTimeMillis();
+                clock.insertEvent(this, period);
+                return;
+            }
+
+            long cycles = clock.getCount();
+            long msGoal = (1000*cycles) / clock.getHZ();
+            while ( (System.currentTimeMillis() - beginMs) < msGoal ) ;
+
+            clock.insertEvent(this, period);
+        }
     }
 
-    /**
-     * This should generally be called when starting a sim.  It returns
-     * a program which can be passed as an arg to the sim
-     * @return A program representing a "compiled" version of the file
-     */
-    public Program getProgram() {
-        if ( program == null )
-            throw Avrora.failure("Program "+file+" must be loaded before use");
-        return program;
+    public RealTimeMonitor() {
+        super("The \"real-time\" monitor slows down the simulation so that it runs as close as possible " +
+                "to real-time.");
     }
 
-    /**
-     * Call load before called getProgram() to physically load the file
-     * from disk.
-     */
-    public void load() throws Exception {
-        program = Defaults.getProgramReader("auto").read(new String[] { file.getAbsolutePath() } );
-    }
-
-    /**
-     * Calls file.getName();
-     * @return the name of the file (sans path)
-     */
-    public String getName() {
-        return file.getName();
+    public Monitor newMonitor(Simulator s) {
+        s.insertEvent(new ThrottleEvent(s), 1);
+        return null;
     }
 }
