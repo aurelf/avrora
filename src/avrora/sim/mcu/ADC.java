@@ -73,7 +73,7 @@ public class ADC extends AtmelInternalDevice {
     final ControlRegister ADCSRA_reg = new ControlRegister();
 
     final int channels;
-    final int interruptNum = 22;
+    final int interruptNum;
 
     final ADCInput[] connectedDevices;
 
@@ -100,6 +100,8 @@ public class ADC extends AtmelInternalDevice {
         // the last two channels correspond to VBG and GND
         connectedDevices[channels] = VBG_INPUT;
         connectedDevices[channels + 1] = GND_INPUT;
+
+        interruptNum = m.getProperties().getInterrupt("ADC");
 
         installIOReg("ADMUX", ADMUX_reg);
         installIOReg("ADCH", ADC_reg.high);

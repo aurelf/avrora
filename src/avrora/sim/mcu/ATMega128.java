@@ -112,7 +112,6 @@ public class ATMega128 extends ATMegaFamily {
     static {
         // statically initialize the pin assignments for this microcontroller
         HashMap pinAssignments = new HashMap(150);
-        HashMap ioregAssignments = new HashMap(120);
         HashMap interruptAssignments = new HashMap(50);
 
         addPin(pinAssignments, 1, "PEN");
@@ -180,125 +179,126 @@ public class ATMega128 extends ATMegaFamily {
         addPin(pinAssignments, 63, "GND.c");
         addPin(pinAssignments, 64, "AVCC");
 
+        RegisterLayout rl = new RegisterLayout(ATMEGA128_IOREG_SIZE);
+
         // extended IO registers
-        // TODO: verify addresses of extended IO registers
-        addIOReg(ioregAssignments, "UCSR1C", 0x7D);
-        addIOReg(ioregAssignments, "UDR1", 0x7C);
-        addIOReg(ioregAssignments, "UCSR1A", 0x7B);
-        addIOReg(ioregAssignments, "UCSR1B", 0x7A);
-        addIOReg(ioregAssignments, "UBRR1L", 0x79);
-        addIOReg(ioregAssignments, "UBRR1H", 0x78);
+        rl.addIOReg("UCSR1C", 0x7D);
+        rl.addIOReg("UDR1", 0x7C);
+        rl.addIOReg("UCSR1A", 0x7B);
+        rl.addIOReg("UCSR1B", 0x7A);
+        rl.addIOReg("UBRR1L", 0x79);
+        rl.addIOReg("UBRR1H", 0x78);
 
-        addIOReg(ioregAssignments, "UCSR0C", 0x75);
+        rl.addIOReg("UCSR0C", 0x75);
 
-        addIOReg(ioregAssignments, "UBRR0H", 0x70);
+        rl.addIOReg("UBRR0H", 0x70);
 
-        addIOReg(ioregAssignments, "TCCR3C", 0x6C);
-        addIOReg(ioregAssignments, "TCCR3A", 0x6B);
-        addIOReg(ioregAssignments, "TCCR3B", 0x6A);
-        addIOReg(ioregAssignments, "TCNT3H", 0x69);
-        addIOReg(ioregAssignments, "TCNT3L", 0x68);
-        addIOReg(ioregAssignments, "OCR3AH", 0x67);
-        addIOReg(ioregAssignments, "OCR3AL", 0x66);
-        addIOReg(ioregAssignments, "OCR3BH", 0x65);
-        addIOReg(ioregAssignments, "OCR3BL", 0x64);
-        addIOReg(ioregAssignments, "OCR3CH", 0x63);
-        addIOReg(ioregAssignments, "OCR3CL", 0x62);
-        addIOReg(ioregAssignments, "ICR3H", 0x61);
-        addIOReg(ioregAssignments, "ICR3L", 0x60);
+        rl.addIOReg("TCCR3C", 0x6C, "FOC3A,FOC3B,FOC3C,.....");
+        rl.addIOReg("TCCR3A", 0x6B, "COM3A[1:0],COM3B[1:0],COM3C[1:0],WGM3[1:0]");
+        rl.addIOReg("TCCR3B", 0x6A, "...,WGM3[3:2],CS3[2:0]");
+        rl.addIOReg("TCNT3H", 0x69);
+        rl.addIOReg("TCNT3L", 0x68);
+        rl.addIOReg("OCR3AH", 0x67);
+        rl.addIOReg("OCR3AL", 0x66);
+        rl.addIOReg("OCR3BH", 0x65);
+        rl.addIOReg("OCR3BL", 0x64);
+        rl.addIOReg("OCR3CH", 0x63);
+        rl.addIOReg("OCR3CL", 0x62);
+        rl.addIOReg("ICR3H", 0x61);
+        rl.addIOReg("ICR3L", 0x60);
 
-        addIOReg(ioregAssignments, "ETIMSK", 0x5D);
-        addIOReg(ioregAssignments, "ETIFR", 0x5C);
+        rl.addIOReg("ETIMSK", 0x5D);
+        rl.addIOReg("ETIFR", 0x5C);
 
-        addIOReg(ioregAssignments, "TCCR1C", 0x5A);
-        addIOReg(ioregAssignments, "OCR1CH", 0x59);
-        addIOReg(ioregAssignments, "OCR1CL", 0x58);
+        rl.addIOReg("TCCR1C", 0x5A, "FOC1A,FOC1B,FOC1C,.....");
+        rl.addIOReg("OCR1CH", 0x59);
+        rl.addIOReg("OCR1CL", 0x58);
 
-        addIOReg(ioregAssignments, "TWCR", 0x54);
-        addIOReg(ioregAssignments, "TWDR", 0x53);
-        addIOReg(ioregAssignments, "TWAR", 0x52);
-        addIOReg(ioregAssignments, "TWSR", 0x51);
-        addIOReg(ioregAssignments, "TWBR", 0x50);
-        addIOReg(ioregAssignments, "OSCCAL", 0x4F);
+        rl.addIOReg("TWCR", 0x54);
+        rl.addIOReg("TWDR", 0x53);
+        rl.addIOReg("TWAR", 0x52);
+        rl.addIOReg("TWSR", 0x51);
+        rl.addIOReg("TWBR", 0x50);
+        rl.addIOReg("OSCCAL", 0x4F);
 
-        addIOReg(ioregAssignments, "XMCRA", 0x4D);
-        addIOReg(ioregAssignments, "XMCRB", 0x4C);
+        rl.addIOReg("XMCRA", 0x4D);
+        rl.addIOReg("XMCRB", 0x4C);
 
-        addIOReg(ioregAssignments, "EICRA", 0x4A);
+        rl.addIOReg("EICRA", 0x4A);
 
-        addIOReg(ioregAssignments, "SPMCSR", 0x48);
+        rl.addIOReg("SPMCSR", 0x48);
 
-        addIOReg(ioregAssignments, "PORTG", 0x45);
-        addIOReg(ioregAssignments, "DDRG", 0x44);
-        addIOReg(ioregAssignments, "PING", 0x43);
-        addIOReg(ioregAssignments, "PORTF", 0x42);
-        addIOReg(ioregAssignments, "DDRF", 0x41);
+        rl.addIOReg("PORTG", 0x45);
+        rl.addIOReg("DDRG", 0x44);
+        rl.addIOReg("PING", 0x43);
+        rl.addIOReg("PORTF", 0x42);
+        rl.addIOReg("DDRF", 0x41);
 
         // lower 64 IO registers
-        addIOReg(ioregAssignments, "SREG", 0x3F);
-        addIOReg(ioregAssignments, "SPH", 0x3E);
-        addIOReg(ioregAssignments, "SPL", 0x3D);
-        addIOReg(ioregAssignments, "XDIV", 0x3C);
-        addIOReg(ioregAssignments, "RAMPZ", 0x3B);
-        addIOReg(ioregAssignments, "EICRB", 0x3A);
-        addIOReg(ioregAssignments, "EIMSK", 0x39);
-        addIOReg(ioregAssignments, "EIFR", 0x38);
-        addIOReg(ioregAssignments, "TIMSK", 0x37);
-        addIOReg(ioregAssignments, "TIFR", 0x36);
-        addIOReg(ioregAssignments, "MCUCR", 0x35);
-        addIOReg(ioregAssignments, "MCUCSR", 0x34);
-        addIOReg(ioregAssignments, "TCCR0", 0x33);
-        addIOReg(ioregAssignments, "TCNT0", 0x32);
-        addIOReg(ioregAssignments, "OCR0", 0x31);
-        addIOReg(ioregAssignments, "ASSR", 0x30);
-        addIOReg(ioregAssignments, "TCCR1A", 0x2F);
-        addIOReg(ioregAssignments, "TCCR1B", 0x2E);
-        addIOReg(ioregAssignments, "TCNT1H", 0x2D);
-        addIOReg(ioregAssignments, "TCNT1L", 0x2C);
-        addIOReg(ioregAssignments, "OCR1AH", 0x2B);
-        addIOReg(ioregAssignments, "OCR1AL", 0x2A);
-        addIOReg(ioregAssignments, "OCR1BH", 0x29);
-        addIOReg(ioregAssignments, "OCR1BL", 0x28);
-        addIOReg(ioregAssignments, "ICR1H", 0x27);
-        addIOReg(ioregAssignments, "ICR1L", 0x26);
-        addIOReg(ioregAssignments, "TCCR2", 0x25);
-        addIOReg(ioregAssignments, "TCNT2", 0x24);
-        addIOReg(ioregAssignments, "OCR2", 0x23);
-        addIOReg(ioregAssignments, "OCDR", 0x22);
-        addIOReg(ioregAssignments, "WDTCR", 0x21);
-        addIOReg(ioregAssignments, "SFIOR", 0x20);
-        addIOReg(ioregAssignments, "EEARH", 0x1F);
-        addIOReg(ioregAssignments, "EEARL", 0x1E);
-        addIOReg(ioregAssignments, "EEDR", 0x1D);
-        addIOReg(ioregAssignments, "EECR", 0x1C);
-        addIOReg(ioregAssignments, "PORTA", 0x1B);
-        addIOReg(ioregAssignments, "DDRA", 0x1A);
-        addIOReg(ioregAssignments, "PINA", 0x19);
-        addIOReg(ioregAssignments, "PORTB", 0x18);
-        addIOReg(ioregAssignments, "DDRB", 0x17);
-        addIOReg(ioregAssignments, "PINB", 0x16);
-        addIOReg(ioregAssignments, "PORTC", 0x15);
-        addIOReg(ioregAssignments, "DDRC", 0x14);
-        addIOReg(ioregAssignments, "PINC", 0x13);
-        addIOReg(ioregAssignments, "PORTD", 0x12);
-        addIOReg(ioregAssignments, "DDRD", 0x11);
-        addIOReg(ioregAssignments, "PIND", 0x10);
-        addIOReg(ioregAssignments, "SPDR", 0x0F);
-        addIOReg(ioregAssignments, "SPSR", 0x0E);
-        addIOReg(ioregAssignments, "SPCR", 0x0D);
-        addIOReg(ioregAssignments, "UDR0", 0x0C);
-        addIOReg(ioregAssignments, "UCSR0A", 0x0B);
-        addIOReg(ioregAssignments, "UCSR0B", 0x0A);
-        addIOReg(ioregAssignments, "UBRR0L", 0x09);
-        addIOReg(ioregAssignments, "ACSR", 0x08);
-        addIOReg(ioregAssignments, "ADMUX", 0x07);
-        addIOReg(ioregAssignments, "ADCSRA", 0x06);
-        addIOReg(ioregAssignments, "ADCH", 0x05);
-        addIOReg(ioregAssignments, "ADCL", 0x04);
-        addIOReg(ioregAssignments, "PORTE", 0x03);
-        addIOReg(ioregAssignments, "DDRE", 0x02);
-        addIOReg(ioregAssignments, "PINE", 0x01);
-        addIOReg(ioregAssignments, "PINF", 0x00);
+        rl.addIOReg("SREG", 0x3F);
+        rl.addIOReg("SPH", 0x3E);
+        rl.addIOReg("SPL", 0x3D);
+        rl.addIOReg("XDIV", 0x3C);
+        rl.addIOReg("RAMPZ", 0x3B);
+        rl.addIOReg("EICRB", 0x3A);
+        rl.addIOReg("EIMSK", 0x39);
+        rl.addIOReg("EIFR", 0x38);
+        rl.addIOReg("TIMSK", 0x37);
+        rl.addIOReg("TIFR", 0x36);
+        rl.addIOReg("MCUCR", 0x35);
+        rl.addIOReg("MCUCSR", 0x34);
+        rl.addIOReg("TCCR0", 0x33);
+        rl.addIOReg("TCNT0", 0x32);
+        rl.addIOReg("OCR0", 0x31);
+        rl.addIOReg("ASSR", 0x30);
+        rl.addIOReg("TCCR1A", 0x2F, "COM1A[1:0],COM1B[1:0],COM1C[1:0],WGM1[1:0]");
+        rl.addIOReg("TCCR1B", 0x2E, "...,WGM1[3:2],CS1[2:0]");
+        rl.addIOReg("TCNT1H", 0x2D);
+        rl.addIOReg("TCNT1L", 0x2C);
+        rl.addIOReg("OCR1AH", 0x2B);
+        rl.addIOReg("OCR1AL", 0x2A);
+        rl.addIOReg("OCR1BH", 0x29);
+        rl.addIOReg("OCR1BL", 0x28);
+        rl.addIOReg("ICR1H", 0x27);
+        rl.addIOReg("ICR1L", 0x26);
+        rl.addIOReg("TCCR2", 0x25);
+        rl.addIOReg("TCNT2", 0x24);
+        rl.addIOReg("OCR2", 0x23);
+        rl.addIOReg("OCDR", 0x22);
+        rl.addIOReg("WDTCR", 0x21);
+        rl.addIOReg("SFIOR", 0x20);
+        rl.addIOReg("EEARH", 0x1F);
+        rl.addIOReg("EEARL", 0x1E);
+        rl.addIOReg("EEDR", 0x1D);
+        rl.addIOReg("EECR", 0x1C);
+        rl.addIOReg("PORTA", 0x1B);
+        rl.addIOReg("DDRA", 0x1A);
+        rl.addIOReg("PINA", 0x19);
+        rl.addIOReg("PORTB", 0x18);
+        rl.addIOReg("DDRB", 0x17);
+        rl.addIOReg("PINB", 0x16);
+        rl.addIOReg("PORTC", 0x15);
+        rl.addIOReg("DDRC", 0x14);
+        rl.addIOReg("PINC", 0x13);
+        rl.addIOReg("PORTD", 0x12);
+        rl.addIOReg("DDRD", 0x11);
+        rl.addIOReg("PIND", 0x10);
+        rl.addIOReg("SPDR", 0x0F);
+        rl.addIOReg("SPSR", 0x0E);
+        rl.addIOReg("SPCR", 0x0D);
+        rl.addIOReg("UDR0", 0x0C);
+        rl.addIOReg("UCSR0A", 0x0B);
+        rl.addIOReg("UCSR0B", 0x0A);
+        rl.addIOReg("UBRR0L", 0x09);
+        rl.addIOReg("ACSR", 0x08);
+        rl.addIOReg("ADMUX", 0x07);
+        rl.addIOReg("ADCSRA", 0x06);
+        rl.addIOReg("ADCH", 0x05);
+        rl.addIOReg("ADCL", 0x04);
+        rl.addIOReg("PORTE", 0x03);
+        rl.addIOReg("DDRE", 0x02);
+        rl.addIOReg("PINE", 0x01);
+        rl.addIOReg("PINF", 0x00);
 
         addInterrupt(interruptAssignments, "RESET", 1);
         addInterrupt(interruptAssignments, "INT0", 2);
@@ -344,7 +344,7 @@ public class ATMega128 extends ATMegaFamily {
                 ATMEGA128_NUM_INTS, // number of interrupts
                 new ReprogrammableCodeSegment.Factory(ATMEGA128_FLASH_SIZE, 7),
                 pinAssignments, // the assignment of names to physical pins
-                ioregAssignments, // the assignment of names to IO registers
+                rl, // the assignment of names to IO registers
                 interruptAssignments);
 
     }
@@ -402,9 +402,9 @@ public class ATMega128 extends ATMegaFamily {
         installIOReg("ETIFR", ETIFR_reg);
 
         addDevice(new Timer0());
-        addDevice(new Timer1());
+        addDevice(new Timer1(3));
         addDevice(new Timer2());
-        addDevice(new Timer3());
+        addDevice(new Timer3(3));
 
         buildPort('A');
         buildPort('B');

@@ -251,6 +251,8 @@ public interface Microcontroller {
      */
     double cyclesToMillis(long cycles);
 
+    public RegisterSet getRegisterSet();
+
     /**
      * The <code>isSupported()</code> method allows a client to query whether a particular instruction is
      * implemented on this hardware device. Older implementations of the AVR instruction set preceded the

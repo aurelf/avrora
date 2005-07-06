@@ -36,6 +36,7 @@ import avrora.Avrora;
 import avrora.core.*;
 import avrora.sim.util.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.mcu.RegisterSet;
 import avrora.sim.clock.MainClock;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
@@ -96,6 +97,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
     protected Instr[] shared_instr; // shared for performance reasons only
 
     protected final InterruptTable interrupts;
+    protected final RegisterSet registers;
 
     protected final StateImpl state;
 
@@ -509,14 +511,16 @@ public abstract class BaseInterpreter implements InstrVisitor {
         // maximum data address
         sram_max = NUM_REGS + pr.ioreg_size + pr.sram_size;
 
-        // make array of IO registers
-        ioregs = new ActiveRegister[pr.ioreg_size];
 
         // allocate SRAM
         sram = new byte[sram_max];
 
         // initialize IO registers to default values
-        initializeIORegs();
+        registers = simulator.getMicrocontroller().getRegisterSet();
+
+        // for performance, we share a refernce to the ActiveRegister[] array
+        ioregs = registers.share();
+        SREG_reg = ioregs[SREG] = new SREG_reg();
 
         // allocate FLASH
         ErrorReporter reporter = new ErrorReporter();
@@ -653,12 +657,6 @@ public abstract class BaseInterpreter implements InstrVisitor {
             if (par.isEmpty())
                 ioregs[ioreg_num] = par.ioreg;
         }
-    }
-
-    protected final void initializeIORegs() {
-        for (int cntr = 0; cntr < ioregs.length; cntr++)
-            ioregs[cntr] = new RWRegister();
-        SREG_reg = ioregs[SREG] = new SREG_reg();
     }
 
     protected void advanceCycles(long delta) {

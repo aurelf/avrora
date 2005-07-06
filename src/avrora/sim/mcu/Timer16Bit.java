@@ -81,19 +81,34 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         final BufferedRegister OCRnXL_reg;
         final OCRnxPairedRegister OCRnX_reg;
         final AtmelMicrocontroller.Pin outputComparePin;
+        final RegisterSet.Field mode;
+        final RegisterSet.Field force;
         final char unit;
-        final int modeBit;
+        final int flagBit;
 
-        OutputCompareUnit(Microcontroller m, char c, int mb) {
+        OutputCompareUnit(Microcontroller m, RegisterSet rset, char c, int fb) {
             unit = c;
             OCRnXH_reg = new BufferedRegister();
             OCRnXL_reg = new BufferedRegister();
-            OCRnX_reg = new OCRnxPairedRegister(OCRnBH_reg, OCRnBL_reg);
+            OCRnX_reg = new OCRnxPairedRegister(OCRnXH_reg, OCRnXL_reg);
             outputComparePin = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+unit);
-            modeBit = mb;
+            mode = rset.getField("COM"+n+c);
+            force = rset.installField("FOC"+n+c, new FOC_Field());
+            flagBit = fb;
 
             installIOReg("OCR"+n+unit+"H", new OCRnxTempHighRegister(OCRnXH_reg));
             installIOReg("OCR"+n+unit+"L", OCRnX_reg);
+        }
+
+        class FOC_Field extends RegisterSet.Field {
+            public void update() {
+                if ( value == 1 ) {
+                    if ( read16(TCNTnH_reg, TCNTnL_reg) == read() ) {
+                        output();
+                    }
+                }
+                set(0);
+            }
         }
 
         void forceCompare(int count) {
@@ -103,20 +118,21 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             }
         }
 
-        int getCompareMode() {
-            // read the bits in the control register for compare mode
-            return (TCCRnA_reg.read() >> modeBit) & 0x3;
-        }
-
         void compare(int count) {
             if ( count == read() ) {
                 output();
-                // TODO: flag the correct interrupt for this compare unit
+                xTIFR_reg.flagBit(flagBit);
             }
         }
 
+        void flush() {
+            OCRnXH_reg.flush();
+            OCRnXL_reg.flush();
+        }
+
         private void output() {
-            switch (getCompareMode()) {
+            // read the bits in the control register for compare mode
+            switch (mode.value) {
                 case 1:
                     outputComparePin.write(!outputComparePin.read()); // clear
                     break;
@@ -134,25 +150,11 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         }
     }
 
-    final ControlRegisterA TCCRnA_reg;
-    final ControlRegisterB TCCRnB_reg;
-    final ControlRegisterC TCCRnC_reg;
-
     final RWRegister TCNTnH_reg; // timer counter registers
     final TCNTnRegister TCNTnL_reg;
     final PairedRegister TCNTn_reg;
 
-    final BufferedRegister OCRnAH_reg; // output compare registers
-    final BufferedRegister OCRnAL_reg;
-    final PairedRegister OCRnA_reg;
-
-    final BufferedRegister OCRnBH_reg;
-    final BufferedRegister OCRnBL_reg;
-    final PairedRegister OCRnB_reg;
-
-    final BufferedRegister OCRnCH_reg;
-    final BufferedRegister OCRnCL_reg;
-    final PairedRegister OCRnC_reg;
+    final OutputCompareUnit[] compareUnits;
 
     final RWRegister highTempReg;
 
@@ -160,20 +162,13 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     final RWRegister ICRnL_reg;
     final PairedRegister ICRn_reg;
 
-    final AtmelMicrocontroller.Pin outputComparePinA;
-    final AtmelMicrocontroller.Pin outputComparePinB;
-    final AtmelMicrocontroller.Pin outputComparePinC;
-
-    final ATMegaFamily.MaskRegister ETIMSK_reg;
-    final ATMegaFamily.FlagRegister ETIFR_reg;
-
     final Ticker ticker;
+
+    final RegisterSet.Field WGMn;
+    final RegisterSet.Field CSn;
 
     boolean timerEnabled;
     boolean countUp;
-    int timerModeA;
-    int timerModeB;
-    int timerMode;
     long period;
 
     boolean blockCompareMatch;
@@ -207,35 +202,33 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     // This method should be overloaded to initialize the above values.
     protected abstract void initValues();
 
-    protected Timer16Bit(int n, AtmelMicrocontroller m) {
+    protected Timer16Bit(int n, int numUnits, AtmelMicrocontroller m) {
         super("timer"+n, m);
         this.n = n;
 
+        RegisterSet rset = m.getRegisterSet();
+
         initValues();
+
+        WGMn = rset.getField("WGM"+n);
+        CSn = rset.installField("CS"+n, new RegisterSet.Field() {
+            public void update() {
+                resetPeriod(periods[value]);
+            }
+        });
 
         ticker = new Ticker();
 
         highTempReg = new RWRegister();
 
-        TCCRnA_reg = new ControlRegisterA();
-        TCCRnB_reg = new ControlRegisterB();
-        TCCRnC_reg = new ControlRegisterC();
+        compareUnits = new OutputCompareUnit[numUnits];
+        newOCU(0, numUnits, m, rset, 'A', OCFnA);
+        newOCU(1, numUnits, m, rset, 'B', OCFnB);
+        newOCU(2, numUnits, m, rset, 'C', OCFnC);
 
         TCNTnH_reg = new RWRegister();
         TCNTnL_reg = new TCNTnRegister();
         TCNTn_reg = new PairedRegister(TCNTnH_reg, TCNTnL_reg);
-
-        OCRnAH_reg = new BufferedRegister();
-        OCRnAL_reg = new BufferedRegister();
-        OCRnA_reg = new OCRnxPairedRegister(OCRnAH_reg, OCRnAL_reg);
-
-        OCRnBH_reg = new BufferedRegister();
-        OCRnBL_reg = new BufferedRegister();
-        OCRnB_reg = new OCRnxPairedRegister(OCRnBH_reg, OCRnBL_reg);
-
-        OCRnCH_reg = new BufferedRegister();
-        OCRnCL_reg = new BufferedRegister();
-        OCRnC_reg = new OCRnxPairedRegister(OCRnCH_reg, OCRnCL_reg);
 
         ICRnH_reg = new RWRegister();
         ICRnL_reg = new RWRegister();
@@ -244,28 +237,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         externalClock = m.getClock("external");
         timerClock = mainClock;
 
-        outputComparePinA = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+"A");
-        outputComparePinB = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+"B");
-        outputComparePinC = (AtmelMicrocontroller.Pin)m.getPin("OC"+n+"C");
-
-        ETIMSK_reg = (ATMegaFamily.MaskRegister)m.getIOReg("ETIMSK");
-        ETIFR_reg = (ATMegaFamily.FlagRegister)m.getIOReg("ETIFR");
-
-        installIOReg("TCCR"+n+"A", TCCRnA_reg);
-        installIOReg("TCCR"+n+"B", TCCRnB_reg);
-        installIOReg("TCCR"+n+"C", TCCRnC_reg);
-
         installIOReg("TCNT"+n+"H", highTempReg);
         installIOReg("TCNT"+n+"L", TCNTn_reg);
-
-        installIOReg("OCR"+n+"AH", new OCRnxTempHighRegister(OCRnAH_reg));
-        installIOReg("OCR"+n+"AL", OCRnA_reg);
-
-        installIOReg("OCR"+n+"BH", new OCRnxTempHighRegister(OCRnBH_reg));
-        installIOReg("OCR"+n+"BL", OCRnB_reg);
-
-        installIOReg("OCR"+n+"CH", new OCRnxTempHighRegister(OCRnCH_reg));
-        installIOReg("OCR"+n+"CL", OCRnC_reg);
 
         installIOReg("ICR"+n+"H", highTempReg);
         installIOReg("ICR"+n+"L", ICRn_reg);
@@ -273,34 +246,12 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         timerPrinter = m.getSimulator().getPrinter("atmega.timer" + n);
     }
 
-    protected void compareMatchA() {
-        if (timerPrinter.enabled) {
-            boolean enabled = xTIMSK_reg.readBit(OCIEnA);
-            timerPrinter.println("Timer" + n + ".compareMatchA (enabled: " + enabled + ')');
+    void newOCU(int unit, int numUnits, Microcontroller m, RegisterSet rset, char uname, int fb) {
+        if ( unit < numUnits-1 ) {
+            compareUnits[unit] = new OutputCompareUnit(m, rset, uname, fb);
         }
-        // set the compare flag for this timer
-        xTIFR_reg.flagBit(OCFnA);
     }
 
-    protected void compareMatchB() {
-        if (timerPrinter.enabled) {
-            boolean enabled = xTIMSK_reg.readBit(OCIEnB);
-            timerPrinter.println("Timer" + n + ".compareMatchB (enabled: " + enabled + ')');
-        }
-        // set the compare flag for this timer
-        xTIFR_reg.flagBit(OCFnB);
-    }
-
-    protected void compareMatchC() {
-        if (timerPrinter.enabled) {
-            // the OCIEnC flag is on ETIMSK for both Timer1 and Timer3
-            boolean enabled = ETIMSK_reg.readBit(OCIEnC);
-            timerPrinter.println("Timer" + n + ".compareMatchC (enabled: " + enabled + ')');
-        }
-        // the OCFnC flag is on ETIFR for both Timer1 and Timer3
-        // set the compare flag for this timer
-        ETIFR_reg.flagBit(OCFnC);
-    }
 
     /**
      * Flags the overflow interrupt for this timer.
@@ -312,26 +263,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         }
         // set the overflow flag for this timer
         xTIFR_reg.flagBit(TOVn);
-    }
-
-    /**
-     * <code>ControlRegister</code> is an abstract class describing the control registers of a 16-bit
-     * timer.
-     */
-    protected abstract class ControlRegister extends RWRegister {
-
-        protected abstract void decode(byte val);
-
-
-        public void write(byte val) {
-            value = val;
-            decode(val);
-        }
-
-        public void writeBit(int bit, boolean val) {
-            value = Arithmetic.setBit(value, bit, val);
-            decode(value);
-        }
     }
 
     /**
@@ -437,185 +368,24 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         }
     }
 
-    /**
-     * <code>ControlRegisterA</code> describes the TCCRnA control register associated with a 160bit
-     * timer. Changing the values of this register generally alter the mode of operation of the
-     * timer.
-     */
-    protected class ControlRegisterA extends ControlRegister {
-        public static final int COMnA1 = 7;
-        public static final int COMnA0 = 6;
-        public static final int COMnB1 = 5;
-        public static final int COMnB0 = 4;
-        public static final int COMnC1 = 3;
-        public static final int COMnC0 = 2;
-        public static final int WGMn1 = 1;
-        public static final int WGMn0 = 0;
-
-
-        protected void decode(byte val) {
-            // get the mode of operation
-            timerModeA = Arithmetic.getBit(val, WGMn1) ? 2 : 0;
-            timerModeA |= Arithmetic.getBit(val, WGMn0) ? 1 : 0;
-
-            timerMode = timerModeA | timerModeB;
-
-        }
-
-    }
-
-    /**
-     * <code>ControlRegisterA</code> describes the TCCRnB control register associated with a 16 bit
-     * timer. Changing the values of this register generally alter the mode of operation of the timer.
-     * The low three bits also set the prescalar of the timer.
-     */
-    protected class ControlRegisterB extends ControlRegister {
-        public static final int ICNCn = 7;
-        public static final int ICESn = 6;
-        // bit 5 here has no meaning
-        public static final int WGMn3 = 4;
-        public static final int WGMn2 = 3;
-        public static final int CSn2 = 2;
-        public static final int CSn1 = 1;
-        public static final int CSn0 = 0;
-
-        public void write(byte val) {
-
-            value = (byte)(val & 0xdf);
-            decode(val);
-        }
-
-        public void writeBit(int bit, boolean val) {
-            if (bit != 5)
-                value = Arithmetic.setBit(value, bit, val);
-            decode(value);
-        }
-
-
-        protected void decode(byte val) {
-            // get the mode of operation
-            timerModeB = Arithmetic.getBit(val, WGMn3) ? 8 : 0;
-            timerModeB |= Arithmetic.getBit(val, WGMn2) ? 4 : 0;
-
-            timerMode = timerModeA | timerModeB;
-
-            // The low 3 bits of this register determine the prescaler
-            int prescaler = val & 0x7;
-
-            if (prescaler < periods.length)
-                resetPeriod(periods[prescaler]);
-
-            // not positive what to do with the high two bits
-            // TODO: determine behavior of ICNCn and ICESn
-        }
-
-        private void resetPeriod(int m) {
-            if (m == 0) {
-                if (timerEnabled) {
-                    if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " disabled");
-                    timerClock.removeEvent(ticker);
-                }
-                return;
-            }
+    private void resetPeriod(int nPeriod) {
+        if (nPeriod == 0) {
             if (timerEnabled) {
+                if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " disabled");
                 timerClock.removeEvent(ticker);
+                timerEnabled = false;
             }
-            if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " enabled: period = " + m + " mode = " + timerMode);
-            period = m;
-            timerEnabled = true;
-            timerClock.insertEvent(ticker, period);
-
+            return;
         }
+        if (timerEnabled) {
+            timerClock.removeEvent(ticker);
+        }
+        if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " enabled: period = " + nPeriod + " mode = " + WGMn.value);
+        period = nPeriod;
+        timerEnabled = true;
+        timerClock.insertEvent(ticker, period);
 
     }
-
-    /**
-     * <code>ControlRegisterA</code> describes the TCCRnA control register associated with a 16-bit
-     * timer. Writing to the three high bits of this register will cause a forced output compare on at
-     * least one of the three output compare units.
-     */
-    protected class ControlRegisterC extends ControlRegister {
-        public static final int FOCnA = 7;
-        public static final int FOCnB = 6;
-        public static final int FOCnC = 5;
-        //bits 4-0 are unspecified in the manual
-
-        protected void decode(byte val) {
-        }
-
-        public void write(byte val) {
-            if (Arithmetic.getBit(val,FOCnC)) {
-                // force output compareC
-                forcedOutputCompareC();
-            }
-            if (Arithmetic.getBit(val,FOCnB)) {
-                // force output compareB
-                forcedOutputCompareB();
-            }
-            if (Arithmetic.getBit(val,FOCnA)) {
-                // force output compareA
-                forcedOutputCompareA();
-            }
-        }
-
-        public void writeBit(int bit, boolean val) {
-            switch (bit) {
-                case FOCnC:
-                    forcedOutputCompareC();
-                    break;
-                case FOCnB:
-                    forcedOutputCompareB();
-                    break;
-                case FOCnA:
-                    forcedOutputCompareA();
-                    break;
-            }
-
-        }
-
-        private void forcedCompare(AtmelMicrocontroller.Pin ocPin, int val, int compare, int COMnx1, int COMnx0) {
-            /*
-            // the non-PWM modes are NORMAL and CTC
-            // under NORMAL, there is no pin action for a compare match
-            // under CTC, the action is to clear the pin.
-            */
-
-            int count = read16(TCNTnH_reg, TCNTnL_reg);
-            int compareMode = Arithmetic.getBit(val, COMnx1) ? 2 : 0;
-            compareMode |= Arithmetic.getBit(val, COMnx0) ? 1 : 0;
-            if (count == compare) {
-
-                switch (compareMode) {
-                    case 1:
-                        ocPin.write(!ocPin.read()); // clear
-                        break;
-                    case 2:
-                        ocPin.write(false);
-                        break;
-                    case 3:
-                        ocPin.write(true);
-                        break;
-                }
-
-            }
-        }
-
-        private void forcedOutputCompareA() {
-            int compare = read16(OCRnAH_reg, OCRnAL_reg);
-            forcedCompare(outputComparePinA, TCCRnA_reg.read(), compare, 7, 6);
-        }
-
-        private void forcedOutputCompareB() {
-            int compare = read16(OCRnBH_reg, OCRnBL_reg);
-            forcedCompare(outputComparePinB, TCCRnB_reg.read(), compare, 5, 4);
-        }
-
-        private void forcedOutputCompareC() {
-            int compare = read16(OCRnCH_reg, OCRnCL_reg);
-            forcedCompare(outputComparePinC, TCCRnC_reg.read(), compare, 3, 2);
-        }
-    }
-
 
     /**
      * In PWN modes, writes to the OCRnx registers are buffered. Specifically, the actual write is
@@ -633,16 +403,18 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         public void write(byte val) {
             super.write(val);
-            if (timerMode == MODE_NORMAL || timerMode == MODE_CTC_OCRnA
-                    || timerMode == MODE_CTC_ICRn) {
+            int mode = WGMn.value;
+            if (mode == MODE_NORMAL || mode == MODE_CTC_OCRnA
+                    || mode == MODE_CTC_ICRn) {
                 flush();
             }
         }
 
         public void writeBit(int bit, boolean val) {
             super.writeBit(bit, val);
-            if (timerMode == MODE_NORMAL || timerMode == MODE_CTC_OCRnA
-                    || timerMode == MODE_CTC_ICRn) {
+            int mode = WGMn.value;
+            if (mode == MODE_NORMAL || mode == MODE_CTC_OCRnA
+                    || mode == MODE_CTC_ICRn) {
                 flush();
             }
         }
@@ -672,12 +444,16 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     protected class Ticker implements Simulator.Event {
 
         private void flushOCRnx() {
+            for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
+                compareUnits[cntr].flush();
+            /*
             OCRnAL_reg.flush();
             OCRnAH_reg.flush();
             OCRnBL_reg.flush();
             OCRnBH_reg.flush();
             OCRnCL_reg.flush();
             OCRnCH_reg.flush();
+            */
         }
 
         private final int[] TOP = {0xffff, 0x00ff, 0x01ff, 0x03ff, 0, 0x0ff, 0x01ff, 0x03ff};
@@ -687,20 +463,23 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
             int count = read16(TCNTnH_reg, TCNTnL_reg);
             int countSave = count;
-            int compareA = read16(OCRnAH_reg, OCRnAL_reg);
+            int compareA = compareUnits[0].read();
+            /*
             int compareB = read16(OCRnBH_reg, OCRnBL_reg);
             int compareC = read16(OCRnCH_reg, OCRnCL_reg);
+            */
             int compareI = read16(ICRnH_reg, ICRnL_reg);
 
             if (timerPrinter.enabled) {
-                timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "],  OCR" + n + "B = " + compareB + "], OCR" + n + "C = " + compareC + ']');
+                timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "]");
             }
 
             // What exactly should I do when I phase/frequency current?
             // registers.
             // Make sure these cases are doing what they are supposed to
             // do.
-            switch (timerMode) {
+            int mode = WGMn.value;
+            switch (mode) {
                 case MODE_NORMAL:
                     count++;
                     countSave = count;
@@ -718,9 +497,9 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
                         count--;
 
                     countSave = count;
-                    if (count >= TOP[timerMode]) {
+                    if (count >= TOP[mode]) {
                         countUp = false;
-                        count = TOP[timerMode];
+                        count = TOP[mode];
                         flushOCRnx();
                     }
                     if (count <= 0) {
@@ -747,7 +526,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
                     count++;
 
                     countSave = count;
-                    if (count == TOP[timerMode]) {
+                    if (count == TOP[mode]) {
                         count = 0;
                         overflow();
                         flushOCRnx();
@@ -861,6 +640,9 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
             // the compare match should be performed in any case.
             if (!blockCompareMatch) {
+                for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
+                    compareUnits[cntr].compare(countSave);
+                /*
                 if (countSave == compareA) {
                     compareMatchA();
                 }
@@ -870,6 +652,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
                 if (countSave == compareC) {
                     compareMatchC();
                 }
+                */
             }
             write16(count, TCNTnH_reg, TCNTnL_reg);
             // make sure timings on this are correct

@@ -370,8 +370,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             periods = periods1;
         }
 
-        protected Timer1() {
-            super(1, ATMegaFamily.this);
+        protected Timer1(int compareUnits) {
+            super(1, compareUnits, ATMegaFamily.this);
             xTIFR_reg = TIFR_reg;
             xTIMSK_reg = TIMSK_reg;
         }
@@ -401,10 +401,10 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
             periods = periods3;
         }
 
-        protected Timer3() {
-            super(3, ATMegaFamily.this);
-            xTIFR_reg = ETIFR_reg;
-            xTIMSK_reg = ETIMSK_reg;
+        protected Timer3(int compareUnits) {
+            super(3, compareUnits, ATMegaFamily.this);
+            xTIMSK_reg = (ATMegaFamily.MaskRegister)microcontroller.getIOReg("ETIMSK");
+            xTIFR_reg = (ATMegaFamily.FlagRegister)microcontroller.getIOReg("ETIFR");
         }
 
     }

@@ -177,6 +177,10 @@ public class Arithmetic {
         return result;
     }
 
+    public static int getBitField(int value, int lowbit, int length) {
+        return value >> lowbit & (0xffffffff >>> (32-length));
+    }
+
     // bit patterns for reversing the order of bits of a 4 bit quantity.
     private static final int reverseKey[] = {
         0, 4, 8, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15

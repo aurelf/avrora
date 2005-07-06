@@ -54,9 +54,11 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
 
     protected final Microcontroller.Pin[] pins;
     protected final MainClock mainClock;
+    protected final RegisterSet registers;
     protected Simulator simulator;
     protected BaseInterpreter interpreter;
     protected Simulator.Printer pinPrinter;
+
 
     public final MicrocontrollerProperties properties;
 
@@ -207,7 +209,12 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         mainClock = cd.getMainClock();
         properties = p;
         pins = new Pin[properties.num_pins];
+        registers = p.getRegisterLayout().instantiate();
         devices = new HashMap();
+    }
+
+    public RegisterSet getRegisterSet() {
+        return registers;
     }
 
     /**

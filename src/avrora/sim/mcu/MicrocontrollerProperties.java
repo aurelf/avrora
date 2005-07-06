@@ -84,7 +84,7 @@ public class MicrocontrollerProperties {
     public final CodeSegment.Factory codeSegmentFactory;
 
     protected final HashMap pinAssignments;
-    protected final HashMap ioregAssignments;
+    protected final RegisterLayout layout;
     protected final HashMap interruptAssignments;
     protected final String[] ioreg_name;
     protected final String[] interrupt_name;
@@ -102,12 +102,11 @@ public class MicrocontrollerProperties {
      * @param ni the number of interrupts on the microcontroller
      * @param pa a <code>HashMap</code> instance mapping string names to <code>Integer</code>
      * indexes for the pins
-     * @param ia a <code>HashMap</code> instance mapping string names to <code>Integer</code>
-     * indexes for the IO registers
+     * @param rl a <code>RegisterLayout</code> instance mapping string names to IO register addresses
      * @param inta a <code>HashMap</code> instance mapping string names to <code>Integer</code>
      * indexes for each type of interrupt
      */
-    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, int ni, CodeSegment.Factory csf, HashMap pa, HashMap ia, HashMap inta) {
+    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, int ni, CodeSegment.Factory csf, HashMap pa, RegisterLayout rl, HashMap inta) {
         ioreg_size = is;
         sram_size = ss;
         flash_size = fs;
@@ -121,11 +120,15 @@ public class MicrocontrollerProperties {
         interrupt_name = new String[ni];
 
         pinAssignments = pa;
-        ioregAssignments = ia;
+        layout = rl;
         interruptAssignments = inta;
 
         initIORNames();
         initInterruptNames();
+    }
+
+    public RegisterLayout getRegisterLayout() {
+        return layout;
     }
 
     private void initInterruptNames() {
@@ -138,11 +141,10 @@ public class MicrocontrollerProperties {
     }
 
     private void initIORNames() {
-        Iterator i = ioregAssignments.keySet().iterator();
-        while ( i.hasNext() ) {
-            String s = (String)i.next();
-            Integer iv = (Integer)ioregAssignments.get(s);
-            ioreg_name[iv.intValue()] = s;
+        for ( int cntr = 0; cntr < layout.ioreg_size; cntr++ ) {
+            RegisterLayout.RegisterInfo registerInfo = layout.info[cntr];
+            if ( registerInfo != null )
+                ioreg_name[cntr] = registerInfo.name;
         }
     }
 
@@ -168,10 +170,7 @@ public class MicrocontrollerProperties {
      * @throws NoSuchElementException if the specified IO register name does not have an assignment
      */
     public int getIOReg(String n) {
-        Integer i = (Integer)ioregAssignments.get(n);
-        if ( i == null )
-            throw new NoSuchElementException(StringUtil.quote(n)+" IO register not found");
-        return i.intValue();
+        return layout.getIOReg(n);
     }
 
     /**
@@ -180,7 +179,7 @@ public class MicrocontrollerProperties {
      * @return true if the IO register exists on this device; false otherwise
      */
     public boolean hasIOReg(String n) {
-        return ioregAssignments.containsKey(n);
+        return layout.hasIOReg(n);
     }
 
     /**

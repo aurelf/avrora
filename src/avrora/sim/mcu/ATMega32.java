@@ -99,7 +99,7 @@ public class ATMega32 extends ATMegaFamily {
     static {
         // statically initialize the pin assignments for this microcontroller
         HashMap pinAssignments = new HashMap(150);
-        HashMap ioregAssignments = new HashMap(120);
+        RegisterLayout rl = new RegisterLayout(ATMEGA32_IOREG_SIZE);
         HashMap interruptAssignments = new HashMap(30);
 
         addPin(pinAssignments, 1, "MOSI", "PB5");
@@ -148,79 +148,83 @@ public class ATMega32 extends ATMegaFamily {
         addPin(pinAssignments, 44, "SS", "PB4");
 
         // lower 64 IO registers
-        addIOReg(ioregAssignments, "SREG", 0x3F);
-        addIOReg(ioregAssignments, "SPH", 0x3E);
-        addIOReg(ioregAssignments, "SPL", 0x3D);
-        addIOReg(ioregAssignments, "OCR0", 0x3C);
-        addIOReg(ioregAssignments, "GICR", 0x3B);
-        addIOReg(ioregAssignments, "GIFR", 0x3A);
-        addIOReg(ioregAssignments, "TIMSK", 0x39);
-        addIOReg(ioregAssignments, "TIFR", 0x38);
-        addIOReg(ioregAssignments, "SPMCR", 0x37);
+        rl.addIOReg("SREG", 0x3F);
+        rl.addIOReg("SPH", 0x3E);
+        rl.addIOReg("SPL", 0x3D);
+        rl.addIOReg("OCR0", 0x3C);
+        rl.addIOReg("GICR", 0x3B);
+        rl.addIOReg("GIFR", 0x3A);
+        rl.addIOReg("TIMSK", 0x39);
+        rl.addIOReg("TIFR", 0x38);
+        rl.addIOReg("SPMCR", 0x37);
         // TODO: this this register is called different names on different models
-        addIOReg(ioregAssignments, "SPMCSR", 0x37);
-        addIOReg(ioregAssignments, "TWCR", 0x36);
-        addIOReg(ioregAssignments, "MCUCR", 0x35);
-        addIOReg(ioregAssignments, "MCUCSR", 0x34);
-        addIOReg(ioregAssignments, "TCCR0", 0x33);
-        addIOReg(ioregAssignments, "TCNT0", 0x32);
-        addIOReg(ioregAssignments, "OSCCAL", 0x31);
-        addIOReg(ioregAssignments, "SFIOR", 0x30);
-        addIOReg(ioregAssignments, "TCCR1A", 0x2F);
-        addIOReg(ioregAssignments, "TCCR1B", 0x2E);
-        addIOReg(ioregAssignments, "TCNT1H", 0x2D);
-        addIOReg(ioregAssignments, "TCNT1L", 0x2C);
-        addIOReg(ioregAssignments, "OCR1AH", 0x2B);
-        addIOReg(ioregAssignments, "OCR1AL", 0x2A);
-        addIOReg(ioregAssignments, "OCR1BH", 0x29);
-        addIOReg(ioregAssignments, "OCR1BL", 0x28);
-        addIOReg(ioregAssignments, "ICR1H", 0x27);
-        addIOReg(ioregAssignments, "ICR1L", 0x26);
-        addIOReg(ioregAssignments, "TCCR2", 0x25);
-        addIOReg(ioregAssignments, "TCNT2", 0x24);
-        addIOReg(ioregAssignments, "OCR2", 0x23);
-        addIOReg(ioregAssignments, "ASSR", 0x22);
-        addIOReg(ioregAssignments, "WDTCR", 0x21);
-        addIOReg(ioregAssignments, "UBRRH", 0x20);
-        addIOReg(ioregAssignments, "EEARH", 0x1F);
-        addIOReg(ioregAssignments, "EEARL", 0x1E);
-        addIOReg(ioregAssignments, "EEDR", 0x1D);
-        addIOReg(ioregAssignments, "EECR", 0x1C);
-        addIOReg(ioregAssignments, "PORTA", 0x1B);
-        addIOReg(ioregAssignments, "DDRA", 0x1A);
-        addIOReg(ioregAssignments, "PINA", 0x19);
-        addIOReg(ioregAssignments, "PORTB", 0x18);
-        addIOReg(ioregAssignments, "DDRB", 0x17);
-        addIOReg(ioregAssignments, "PINB", 0x16);
-        addIOReg(ioregAssignments, "PORTC", 0x15);
-        addIOReg(ioregAssignments, "DDRC", 0x14);
-        addIOReg(ioregAssignments, "PINC", 0x13);
-        addIOReg(ioregAssignments, "PORTD", 0x12);
-        addIOReg(ioregAssignments, "DDRD", 0x11);
-        addIOReg(ioregAssignments, "PIND", 0x10);
-        addIOReg(ioregAssignments, "SPDR", 0x0F);
-        addIOReg(ioregAssignments, "SPSR", 0x0E);
-        addIOReg(ioregAssignments, "SPCR", 0x0D);
-        addIOReg(ioregAssignments, "UDR", 0x0C);
-        addIOReg(ioregAssignments, "UCSRA", 0x0B);
-        addIOReg(ioregAssignments, "UCSRB", 0x0A);
-        addIOReg(ioregAssignments, "UBRRL", 0x09);
-        addIOReg(ioregAssignments, "ACSR", 0x08);
-        addIOReg(ioregAssignments, "ADMUX", 0x07);
-        addIOReg(ioregAssignments, "ADCSRA", 0x06);
-        addIOReg(ioregAssignments, "ADCH", 0x05);
-        addIOReg(ioregAssignments, "ADCL", 0x04);
-        addIOReg(ioregAssignments, "TWDR", 0x03);
-        addIOReg(ioregAssignments, "TWAR", 0x02);
-        addIOReg(ioregAssignments, "TWSR", 0x01);
-        addIOReg(ioregAssignments, "TWBR", 0x00);
+        rl.addIOReg("SPMCSR", 0x37);
+        rl.addIOReg("TWCR", 0x36);
+        rl.addIOReg("MCUCR", 0x35);
+        rl.addIOReg("MCUCSR", 0x34);
+        rl.addIOReg("TCCR0", 0x33);
+        rl.addIOReg("TCNT0", 0x32);
+        rl.addIOReg("OSCCAL", 0x31);
+        rl.addIOReg("SFIOR", 0x30);
+        rl.addIOReg("TCCR1A", 0x2F, "COM1A[1:0],COM1B[1:0],FOC1A,FOC1B,WGM1[1:0]");
+        rl.addIOReg("TCCR1B", 0x2E, "...,WGM1[3:2],CS1[2:0]");
+        rl.addIOReg("TCNT1H", 0x2D);
+        rl.addIOReg("TCNT1L", 0x2C);
+        rl.addIOReg("OCR1AH", 0x2B);
+        rl.addIOReg("OCR1AL", 0x2A);
+        rl.addIOReg("OCR1BH", 0x29);
+        rl.addIOReg("OCR1BL", 0x28);
+        rl.addIOReg("ICR1H", 0x27);
+        rl.addIOReg("ICR1L", 0x26);
+        rl.addIOReg("TCCR2", 0x25);
+        rl.addIOReg("TCNT2", 0x24);
+        rl.addIOReg("OCR2", 0x23);
+        rl.addIOReg("ASSR", 0x22);
+        rl.addIOReg("WDTCR", 0x21);
+        rl.addIOReg("UBRRH", 0x20);
+        // TODO: the UCSRC register is shared!
+        rl.addIOReg("UCSRC", 0x20);
+        rl.addIOReg("EEARH", 0x1F);
+        rl.addIOReg("EEARL", 0x1E);
+        rl.addIOReg("EEDR", 0x1D);
+        rl.addIOReg("EECR", 0x1C);
+        rl.addIOReg("PORTA", 0x1B);
+        rl.addIOReg("DDRA", 0x1A);
+        rl.addIOReg("PINA", 0x19);
+        rl.addIOReg("PORTB", 0x18);
+        rl.addIOReg("DDRB", 0x17);
+        rl.addIOReg("PINB", 0x16);
+        rl.addIOReg("PORTC", 0x15);
+        rl.addIOReg("DDRC", 0x14);
+        rl.addIOReg("PINC", 0x13);
+        rl.addIOReg("PORTD", 0x12);
+        rl.addIOReg("DDRD", 0x11);
+        rl.addIOReg("PIND", 0x10);
+        rl.addIOReg("SPDR", 0x0F);
+        rl.addIOReg("SPSR", 0x0E);
+        rl.addIOReg("SPCR", 0x0D);
+        rl.addIOReg("UDR", 0x0C);
+        rl.addIOReg("UCSRA", 0x0B);
+        rl.addIOReg("UCSRB", 0x0A);
+        rl.addIOReg("UBRRL", 0x09);
+        rl.addIOReg("ACSR", 0x08);
+        rl.addIOReg("ADMUX", 0x07);
+        rl.addIOReg("ADCSRA", 0x06);
+        rl.addIOReg("ADCH", 0x05);
+        rl.addIOReg("ADCL", 0x04);
+        rl.addIOReg("TWDR", 0x03);
+        rl.addIOReg("TWAR", 0x02);
+        rl.addIOReg("TWSR", 0x01);
+        rl.addIOReg("TWBR", 0x00);
 
         // note: the UART implementation assumes the names are UDRn, etc.
-        addIOReg(ioregAssignments, "UBRR0H", 0x20);
-        addIOReg(ioregAssignments, "UDR0", 0x0C);
-        addIOReg(ioregAssignments, "UCSR0A", 0x0B);
-        addIOReg(ioregAssignments, "UCSR0B", 0x0A);
-        addIOReg(ioregAssignments, "UBRR0L", 0x09);
+/*
+        rl.addIOReg("UBRR0H", 0x20);
+        rl.addIOReg("UDR0", 0x0C);
+        rl.addIOReg("UCSR0A", 0x0B);
+        rl.addIOReg("UCSR0B", 0x0A);
+        rl.addIOReg("UBRR0L", 0x09);
+*/
 
         addInterrupt(interruptAssignments, "RESET", 1);
         addInterrupt(interruptAssignments, "INT0", 2);
@@ -235,9 +239,9 @@ public class ATMega32 extends ATMegaFamily {
         addInterrupt(interruptAssignments, "TIMER0 COMP", 11);
         addInterrupt(interruptAssignments, "TIMER0 OVF", 12);
         addInterrupt(interruptAssignments, "SPI, STC", 13);
-        addInterrupt(interruptAssignments, "USART, RXC", 14);
+        addInterrupt(interruptAssignments, "USART, RX", 14);
         addInterrupt(interruptAssignments, "USART, UDRE", 15);
-        addInterrupt(interruptAssignments, "USART, TXC", 16);
+        addInterrupt(interruptAssignments, "USART, TX", 16);
         addInterrupt(interruptAssignments, "ADC", 17);
         addInterrupt(interruptAssignments, "EE READY", 18);
         addInterrupt(interruptAssignments, "ANALOG COMP", 19);
@@ -252,7 +256,7 @@ public class ATMega32 extends ATMegaFamily {
                 ATMEGA32_NUM_INTS, // number of interrupts
                 new ReprogrammableCodeSegment.Factory(ATMEGA32_FLASH_SIZE, 6),
                 pinAssignments, // the assignment of names to physical pins
-                ioregAssignments, // the assignment of names to IO registers
+                rl, // the assignment of names to IO registers
                 interruptAssignments);
 
     }
@@ -307,7 +311,7 @@ public class ATMega32 extends ATMegaFamily {
 
 
         addDevice(new Timer0());
-        addDevice(new Timer1());
+        addDevice(new Timer1(2));
         addDevice(new Timer2());
 
         buildPort('A');

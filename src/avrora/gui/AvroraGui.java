@@ -37,6 +37,7 @@ import avrora.Version;
 import avrora.Avrora;
 import avrora.sim.Simulation;
 import avrora.sim.types.SingleSimulation;
+import avrora.sim.types.SensorSimulation;
 import avrora.util.Options;
 
 import javax.swing.*;
@@ -70,7 +71,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
      * @param args file names specified from the command line
      */
     public static void init(Options opt, String[] args) {
-        instance = new AvroraGui(opt, args);
+        new AvroraGui(opt, args);
     }
 
     /**
@@ -133,6 +134,8 @@ public class AvroraGui implements ActionListener, ChangeListener {
 
     private AvroraGui(Options opts, String[] a) {
 
+        instance = this;
+
         //Set the look and feel.
         initLookAndFeel();
 
@@ -145,8 +148,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
         masterFrame = new JFrame("Avrora GUI");
         masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // TODO: replace this simulation with Sensor simulation
-        simulation = new SingleSimulation();
+        simulation = new SensorSimulation();
 
         args = a;
 
