@@ -56,12 +56,15 @@ import java.io.IOException;
 import java.io.File;
 
 /**
- * The <code>MultiSimulateAction</code> class represents an action available to the simulator where multiple
- * nodes are run in simulation.
+ * The <code>MultiSimulateAction</code> class has been deprecated. It was originally used to
+ * start a multiple-node simulation, but that functionality has been subsumed by the <code>SimulateAction</code>
+ * and the <code>Simulation</code> extension point.
  *
  * @author Simon Han
  * @author Daniel Lee
  * @author Ben L. Titzer
+ * @see avrora.actions.SimulateAction
+ * @see avrora.sim.Simulation
  */
 public class MultiSimulateAction extends SimAction {
 

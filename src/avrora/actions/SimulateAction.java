@@ -61,8 +61,6 @@ import java.io.IOException;
  * @author Ben L. Titzer
  */
 public class SimulateAction extends SimAction {
-    Simulator simulator;
-    long startms, endms;
 
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
             "for the specified microcontroller and begins executing the program. There " +
@@ -92,7 +90,7 @@ public class SimulateAction extends SimAction {
         sim.process(options, args);
 
         printSimHeader();
-        startms = System.currentTimeMillis();
+        long startms = System.currentTimeMillis();
         try {
             sim.start();
             sim.join();
@@ -101,7 +99,7 @@ public class SimulateAction extends SimAction {
             Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
         } catch (TimeoutException e) {
             Terminal.printYellow("Simulation terminated");
-            Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + simulator.getClock().getCount());
+            Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + e.state.getCycles());
         } catch (Avrora.Error e) {
             Terminal.printRed("Simulation terminated");
             Terminal.print(": ");
@@ -112,9 +110,9 @@ public class SimulateAction extends SimAction {
             t.printStackTrace();
         } finally {
             printSeparator();
-            endms = System.currentTimeMillis();
+            long endms = System.currentTimeMillis();
 
-            reportTime(sim, startms, endms);
+            reportTime(sim, endms - startms);
             reportMonitors(sim);
         }
     }
@@ -139,7 +137,7 @@ public class SimulateAction extends SimAction {
         }
     }
 
-    protected void reportTime(Simulation sim, long startms, long endms) {
+    protected void reportTime(Simulation sim, long diff) {
         // calculate total throughput over all threads
         Iterator i = sim.getNodeIterator();
         long aggCycles = 0;
@@ -150,7 +148,6 @@ public class SimulateAction extends SimAction {
             aggCycles += count;
             if ( count > maxCycles ) maxCycles = count;
         }
-        long diff = endms - startms;
         TermUtil.reportQuantity("Simulated time", maxCycles, "cycles");
         TermUtil.reportQuantity("Time for simulation", StringUtil.milliToSecs(diff), "seconds");
         int nn = sim.getNumberOfNodes();

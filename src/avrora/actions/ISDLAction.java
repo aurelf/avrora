@@ -77,6 +77,13 @@ public class ISDLAction extends Action {
         super(HELP);
     }
 
+    /**
+     * The <code>run()</code> method executes the ISDL processor action. The command line arguments are
+     * passed. The ISDL processor expects the first argument to be the name of a file that contains
+     * the description of an instruction set.
+     * @param args the arguments on the command line
+     * @throws Exception if there is a problem loading the file or reading or verifying the ISDL
+     */
     public void run(String[] args) throws Exception {
         if (args.length < 1)
             Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl>");

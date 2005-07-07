@@ -84,10 +84,23 @@ public class Mica2 implements Platform, PlatformFactory {
         addDevices();
     }
 
+    /**
+     * The <code>getMicrocontroller()</code> method gets a reference to the microcontroller for
+     * this platform instance.
+     * @return
+     */
     public Microcontroller getMicrocontroller() {
         return mcu;
     }
 
+    /**
+     * The <code>newPlatform()</code> method is a factory method used to create new instances of the
+     * <code>Mica2</code> class.
+     * @param id the integer ID of the node
+     * @param f the interpreter factory for the node
+     * @param p the program to load onto the node
+     * @return a new instance of the <code>Mica2</code> platform
+     */
     public Platform newPlatform(int id, InterpreterFactory f, Program p) {
         ClockDomain cd = new ClockDomain(7372800);
         cd.newClock("external", 32768);

@@ -66,11 +66,9 @@ public class EnergyMonitor extends MonitorFactory {
     /**
      * @author Olaf Landsiedel
      *
-     * The <code>EnergyMonitor</code>
-     * energy monitor implementation
-     * This class provides detailed feedback of the power consumption
-     *
-     * Furthermore the monitor shutsdown the node, when an energy limit is exceeded.
+     * The <code>EnergyMonitor</code> class implements an energy monitor that provides detailed
+     * feedback of the power consumption of nodes as they execute. Furthermore, the monitor shuts down
+     * the node when an energy limit is exceeded.
      *
      */
     public class Monitor implements avrora.monitors.Monitor{

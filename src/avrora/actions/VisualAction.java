@@ -48,25 +48,25 @@ import avrora.util.*;
 import javax.swing.*;
 import java.util.*;
 
-//The VisualAction provides a link between the GUI and the simulator.
-//It physically starts the GUI and also dispatchs simulator threads
-
+/**
+ * The <code>VisualAction</code> class serves as an action that creates an initializes a GUI
+ * for Avrora.
+ */
 public class VisualAction extends Action {
-
 
     public AvroraGui app; //allows us to access GUI
 
-    public static final String HELP = "The \"visual\" action launches a GUI from which you can start simulations.";
+    public static final String HELP = "The \"visual\" action launches a GUI allowing the user to interactively " +
+            "create simulations, complete with graphical monitors.";
 
     public VisualAction() {
         super(HELP);
     }
 
     /**
-     * The <code>run()</code> method is called by the main class.
-     * This just starts the GUI
-     * If a file was specified by the command line, it'll be passed
-     * to args
+     * The <code>run()</code> method is called by the main classand starts the GUI.
+     * If a file was specified by the command line, it will be passed to the GUI as
+     * part of the arguments.
      */
     public void run(String[] args) throws Exception {
 

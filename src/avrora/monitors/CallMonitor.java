@@ -198,11 +198,22 @@ public class CallMonitor extends MonitorFactory {
         }
     }
 
+    /**
+     * The constructor for the <code>CallMonitor</code> class simply initializes the help for this
+     * class. Monitors are also help categories, so they will have an options section in their help
+     * that explains each option and its use.
+     */
     public CallMonitor() {
         super("The \"call\" monitor tracks the call/return behavior of the program as it executes, " +
                 "displaying the stacking up of function calls and interrupt handlers.");
     }
 
+    /**
+     * The <code>newMonitor()</code> method simply creates a new call monitor for each simulator. The
+     * call monitor will print out each call, interrupt, and return during the execution of the program.
+     * @param s the simulator to create a new monitor for
+     * @return a new monitor that tracks the call and return behavior of the simulator as it executes
+     */
     public Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }

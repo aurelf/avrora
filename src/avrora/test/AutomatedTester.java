@@ -63,13 +63,6 @@ public class AutomatedTester {
 
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
 
-    /**
-     * The constructor for the <code>AutomatedTester</code> class accepts an instance of
-     * <code>TestHarness</code> that is used to create the specific test cases for each file name.
-     */
-    public AutomatedTester() {
-    }
-
     private class TestPair {
         final TestCase testcase;
         final TestResult result;

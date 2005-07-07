@@ -42,6 +42,11 @@ import avrora.Avrora;
  * an index, will produce an instance of the <code>Instr</code> class that corresponds to that machine code
  * instruction. In the case that the machine code does not represent a valid instruction, the method will
  *
+ * <p>
+ * The decision tree(s) for disassembling machine code into <code>Instr</code> instances is derived automatically
+ * from the ISDL description of the binary encodings of instructions. This decision tree is then translated into
+ * Java code in this class. Therefore, most of the code in this class is generated automatically.
+ *
  * @author Ben L. Titzer
  */
 public class Disassembler {
@@ -65,6 +70,17 @@ public class Disassembler {
         }
     }
 
+    /**
+     * The <code>disassemble()</code> method disassembles a single instruction from binary code. It accepts
+     * a byte array containing the machine code, an index into the array, and the base PC (which is needed
+     * for disassembling PC-relative operands).
+     * @param base the base PC address of the beginning of the binary code array
+     * @param buffer the binary code
+     * @param index an index into the binary code array from which to disassemble an instruction
+     * @return a new <code>Instr</code> instance representing the instruction at that address, if the machine
+     * code is a valid instruction
+     * @throws InvalidInstruction if the machine code at that address is not a valid instruction
+     */
     public Instr disassemble(int base, byte[] buffer, int index) throws InvalidInstruction {
         int word1 = Arithmetic.word(buffer[index+0], buffer[index+1]);
         this.index = index;

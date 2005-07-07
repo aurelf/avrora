@@ -68,7 +68,9 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     protected final FiniteStateMachine sleepState;
 
     /**
-     * send to mcu to sleep
+     * The <code>sleep()</code> method is called by the interpreter when the program executes a SLEEP
+     * instruction. This method transitions the microcontroller into a sleep mode, including turning
+     * off any devices, shutting down clocks, and transitioning the sleep FSM into a sleep mode.
      *
      * @see Microcontroller#sleep()
      */
@@ -80,7 +82,10 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     protected abstract int getSleepMode();
 
     /**
-     * wake the mcu up
+     * The <code>wakeup()</code> method is called by the interpreter when the microcontroller is
+     * woken from a sleep mode by an interrupt or other event. This method transitions the
+     * microcontroller back into active mode, turning back on devices. This method returns
+     * the number of clock cycles necessary to wake the MCU from sleep.
      *
      * @return cycles it takes to wake up
      * @see Microcontroller#wakeup()
@@ -93,7 +98,7 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     }
 
     /**
-     * get the current mode of the mcu
+     * The <code>getMode()</code> method returns the current sleep mode of the MCU.
      *
      * @return current mode
      * @see Microcontroller#getMode()
@@ -111,6 +116,11 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return sleepState.getCurrentStateName();
     }
 
+    /**
+     * The <code>getFSM()</code> method gets a reference to the finite state machine that represents
+     * the sleep modes of the MCU. The finite state machine allows probing of the sleep mode transitions.
+     * @return a reference to the finite state machine representing the sleep mode of the MCU
+     */
     public FiniteStateMachine getFSM() {
         return sleepState;
     }
@@ -213,6 +223,12 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         devices = new HashMap();
     }
 
+    /**
+     * The <code>getRegisterSet()</code> method gets a reference to the register set of the microcontroller.
+     * The register set contains all of the IO registers for this microcontroller.
+     *
+     * @return a reference to the register set of this microcontroller instance
+     */
     public RegisterSet getRegisterSet() {
         return registers;
     }
@@ -256,18 +272,45 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return pins[num];
     }
 
+    /**
+     * The <code>installIOReg()</code> method installs an IO register with the specified name. The register
+     * layout for this microcontroller is used to get the address of the register (if it exists) and
+     * install the <code>ActiveRegister</code> object into the correct place.
+     * @param name the name of the IO register as a string
+     * @param reg the register to install
+     */
     protected void installIOReg(String name, ActiveRegister reg) {
         interpreter.installIOReg(properties.getIOReg(name), reg);
     }
 
+    /**
+     * The <code>getIOReg()</code> method gets a reference to the active register currently installed for
+     * the specified name. The register layout for this microcontroller is used to get the correct address.
+     * @param name the name of the IO register as a string
+     * @return a reference to the active register object if it exists
+     */
     protected ActiveRegister getIOReg(String name) {
         return interpreter.getIOReg(properties.getIOReg(name));
     }
 
+    /**
+     * The <code>addDevice()</code> method adds a new internal device to this microcontroller so that it can
+     * be retrieved later with <code>getDevice()</code>
+     * @param d the device to add to this microcontroller
+     */
     protected void addDevice(AtmelInternalDevice d) {
         devices.put(d.name, d);
     }
 
+    /**
+     * The <code>getDevice()</code> method is used to get a reference to an internal device with the given name.
+     * For example, the ADC device will be under the name "adc" and Timer0 will be under the name "timer0". This
+     * is useful for external devices that need to connect to the input of internal devices.
+     *
+     * @param name the name of the internal device as a string
+     * @return a reference to the internal device if it exists
+     * @throws NoSuchElementException if no device with that name exists
+     */
     public AtmelInternalDevice getDevice(String name) {
         AtmelInternalDevice device = (AtmelInternalDevice)devices.get(name);
         if ( device == null )
@@ -275,10 +318,20 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return device;
     }
 
+    /**
+     * The <code>getClock()</code> method gets a reference to a specific clock on this device. For example,
+     * the external clock, or a specific device's clock can be accessed by specifying its name.
+     * @param name the name of the clock to get
+     * @return a reference to the <code>Clock</code> instance for the specified clock if it exists
+     */
     public Clock getClock(String name) {
         return clockDomain.getClock(name);
     }
 
+    /**
+     * The <code>getSimulator()</code> method gets a reference to the simulator for this microcontroller instance.
+     * @return a reference to the simulator instance for this microcontroller
+     */
     public Simulator getSimulator() {
         return simulator;
     }
@@ -300,10 +353,6 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         pinMap.put(n3, i);
     }
 
-    public static void addIOReg(HashMap ioregMap, String n, int i) {
-        ioregMap.put(n, new Integer(i));
-    }
-
     public static void addInterrupt(HashMap iMap, String n, int i) {
         iMap.put(n, new Integer(i));
     }
@@ -321,14 +370,30 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
         return pins[properties.getPin(n)];
     }
 
+    /**
+     * The <code>getPinNumber()</code> method gets the pin number (according to the pin assignments) for the
+     * pin with the specified name.
+     * @param n the name of the pin as a string
+     * @return the number of the pin if it exists
+     */
     public int getPinNumber(String n) {
         return properties.getPin(n);
     }
 
+    /**
+     * The <code>getProperties()</code> method gets a reference to the microcontroller properties for this
+     * microcontroller instance.
+     * @return a reference to the microcontroller properties for this instance
+     */
     public MicrocontrollerProperties getProperties() {
         return properties;
     }
 
+    /**
+     * The <code>getClockDomain()</code> method gets a reference to the <code>ClockDomain</code> instance for
+     * this node that contains the main clock and any derived clocks for this microcontroller.
+     * @return a reference to the clock domain for this microcontroller
+     */
     public ClockDomain getClockDomain() {
         return clockDomain;
     }

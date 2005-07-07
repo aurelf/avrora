@@ -8,6 +8,10 @@ import avrora.Avrora;
 import avrora.util.Option;
 
 /**
+ * The <code>ISEAAction</code> class implements interprocedural side-effect analysis. This class
+ * implements an action that allows the user to invoke the analysis on a program from the command
+ * line.
+ *
  * @author Ben L. Titzer
  */
 public class ISEAAction extends Action {

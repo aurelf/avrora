@@ -55,6 +55,11 @@ import java.util.Iterator;
 import java.util.Random;
 
 /**
+ * The <code>SensorSimulation</code> class represents a simulaion type where multiple sensor nodes,
+ * each with a microcontroller, sensors, and a radio, are run in parallel. It supports options from
+ * the command line that allow a simulation to be constructed with multiple nodes with multiple different
+ * programs.
+ *
  * @author Ben L. Titzer
  */
 public class SensorSimulation extends Simulation {
@@ -126,10 +131,28 @@ public class SensorSimulation extends Simulation {
         PLATFORM.setNewDefault("mica2");
     }
 
+    /**
+     * The <code>newNode()</code> method creates a new node in the simulation. In this implementation,
+     * a <code>SensorNode</code> is created that contains, in addition to the simulator, ID, program, etc,
+     * a reference to the <code>Radio</code> instance for the node and a <code>SimulatorThread</code> for
+     * the node.
+     * @param id the integer identifier for the node
+     * @param pf the platform factory to use to instantiate the node
+     * @param p the program to load onto the node
+     * @return a new instance of the <code>SensorNode</code> class for the node
+     */
     public Node newNode(int id, PlatformFactory pf, LoadableProgram p) {
         return new SensorNode(id, pf, p);
     }
 
+    /**
+     * The <code>process()</code> method processes options and arguments from the command line. In this
+     * implementation, this method accepts multiple programs from the command line as arguments as well
+     * as options that describe how many of each type of node to instantiate.
+     * @param o the options from the command line
+     * @param args the arguments from the command line
+     * @throws Exception if there is a problem loading any of the files or instantiating the simulation
+     */
     public void process(Options o, String[] args) throws Exception {
         options.process(o);
         processMonitorList();

@@ -42,6 +42,11 @@ import avrora.util.StringUtil;
  * @author Ben L. Titzer
  */
 public class InterpreterError {
+
+    /**
+     * The <code>NoSuchInstructionException()</code> is thrown when the program attempts to execute
+     * an instruction that does not exist (i.e. a section of the flash that is not initialized).
+     */
     public static class NoSuchInstructionException extends Avrora.Error {
         public final int badPc;
 
@@ -51,6 +56,10 @@ public class InterpreterError {
         }
     }
 
+    /**
+     * The <code>PCOutOfBoundsException</code> is thrown when the progrma attempts to execute
+     * an instruction outside the bounds of the flash.
+     */
     public static class PCOutOfBoundsException extends Avrora.Error {
         public final int badPc;
 
@@ -60,6 +69,11 @@ public class InterpreterError {
         }
     }
 
+    /**
+     * The <code>PCAlignmentException</code> is thrown if the program counter somehow becomes misaligned.
+     * This should not happen during normal execution, but is included to guard against interpreter
+     * bugs.
+     */
     public static class PCAlignmentException extends Avrora.Error {
         public final int badPc;
 
@@ -69,6 +83,10 @@ public class InterpreterError {
         }
     }
 
+    /**
+     * The <code>AddressOutOfBoundsException</code> is thrown when the user attempts to access out of
+     * bounds memory through the state interface.
+     */
     public static class AddressOutOfBoundsException extends Avrora.Error {
         public final String segment;
         public final int data_addr;

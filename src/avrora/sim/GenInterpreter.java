@@ -49,6 +49,10 @@ import avrora.Avrora;
  */
 public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
+    /**
+     * The <code>Factory()</code> class implements an interpreter factory that can create
+     * a new interpreter for a new simulator instance with the given program.
+     */
     public static final class Factory extends InterpreterFactory {
         public BaseInterpreter newInterpreter(Simulator s, Program p, MicrocontrollerProperties pr) {
             return new GenInterpreter(s, p, pr);
@@ -119,7 +123,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
             // TODO: would a "mode" and switch be faster than several branches?
             if (delayCycles > 0) {
-                advanceCycles(delayCycles);
+                advanceClock(delayCycles);
                 delayCycles = 0;
             }
 
@@ -155,7 +159,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
         // process any delays
         if (delayCycles > 0) {
-            advanceCycles(1);
+            advanceClock(1);
             delayCycles--;
             return 1;
         }
@@ -178,7 +182,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
         // are we sleeping?
         if ( sleeping ) {
-            advanceCycles(1);
+            advanceClock(1);
             return 1;
         }
 
@@ -229,7 +233,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         I = false;
 
         // advance by just one cycle
-        advanceCycles(1);
+        advanceClock(1);
 
         int cycles = 3; // there are some cycles left-over to delay by
         //time to wake up
@@ -267,7 +271,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         I = false;
 
         // process any timed events
-        advanceCycles(4);
+        advanceClock(4);
 
         interrupts.afterInvoke(lowestbit);
     }
@@ -1667,7 +1671,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
 
     public int extended(int addr) {
         // TODO: RAMPZ will have more than one bit on models with more flash
-        if ( RAMPZ > 0 ) 
+        if ( RAMPZ > 0 )
             return (getIORegisterByte(RAMPZ) & 1) << 16 | addr;
         else return addr;
     }
@@ -1687,6 +1691,6 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     public void leaveSleepMode() {
         sleeping = false;
         innerLoop = false;
-        advanceCycles(simulator.getMicrocontroller().wakeup());
+        advanceClock(simulator.getMicrocontroller().wakeup());
     }
 }

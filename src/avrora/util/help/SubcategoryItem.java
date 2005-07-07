@@ -38,6 +38,10 @@ import avrora.util.ClassMap;
 import avrora.Defaults;
 
 /**
+ * The <code>SubcategoryItem</code> class implements a help item that represents a subcategory in
+ * a help category. This class is used to add a list of other related help categories at the end
+ * of a section within another help category.
+ *
  * @author Ben L. Titzer
  */
 public class SubcategoryItem implements HelpItem {
@@ -46,15 +50,29 @@ public class SubcategoryItem implements HelpItem {
     public final HelpCategory helpCat;
     protected String help;
 
+    /**
+     * The constructor for the <code>SubcategoryItem</code> method creates a new instance that represents
+     * a help item that can be added to the end of a section in another help category.
+     * @param indent the number of spaces to indent when printing to the terminal
+     * @param hc the help category that this item refers to
+     */
     public SubcategoryItem(int indent, HelpCategory hc) {
         this.helpCat = hc;
         this.indent = indent;
     }
 
+    /**
+     * The <code>getHelp()</code> method returns the help string of the underlying help category.
+     * @return a help string for this item.
+     */
     public String getHelp() {
         return helpCat.getHelp();
     }
 
+    /**
+     * The <code>printHelp()</code> method prints out a well-formatted paragraph containing the help
+     * for this subcategory.
+     */
     public void printHelp() {
         String h = getHelp();
         Terminal.print(StringUtil.dup(' ', indent));

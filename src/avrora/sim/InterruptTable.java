@@ -78,6 +78,12 @@ public class InterruptTable {
         this.numInterrupts = numInterrupts;
     }
 
+    /**
+     * The <code>post()</code> method is called by the interpreter when an interrupt is posted.
+     * The interrupt table will adjust the posted and pending masks appropriately and notify
+     * any probes for the interrupt.
+     * @param inum the interrupt number to post
+     */
     public void post(int inum) {
         interpreter.innerLoop = false;
         posted = Arithmetic.setBit(posted, inum, true);
@@ -87,12 +93,24 @@ public class InterruptTable {
         if ( probe != null ) probe.fireWhenPosted(interpreter.state, inum);
     }
 
+    /**
+     * The <code>force()</code> method is called by the interpreter when the user attempts to
+     * force an interrupt to become posted. The interrupt table will adjust the posted and pending
+     * masks appropriately and notify any probes for the interrupt.
+     * @param inum the interrupt number to force
+     */
     void force(int inum) {
         post(inum);
         Notification n = notify[inum];
         if ( n != null ) n.force(inum);
     }
 
+    /**
+     * The <code>unpost()</code> method is called by the interpreter when an interrupt is unposted.
+     * The interrupt table will adjust the posted and pending masks appropriately and notify
+     * any probes for the interrupt.
+     * @param inum the interrupt number to unpost
+     */
     public void unpost(int inum) {
         posted = Arithmetic.setBit(posted, inum, false);
         pending = posted & enabled;
@@ -101,6 +119,12 @@ public class InterruptTable {
         if ( probe != null ) probe.fireWhenUnposted(interpreter.state, inum);
     }
 
+    /**
+     * The <code>enable()</code> method is called by the interpreter when an interrupt is enabled.
+     * The interrupt table will adjust the posted and pending masks appropriately and notify
+     * any probes for the interrupt.
+     * @param inum the interrupt number to enable
+     */
     void enable(int inum) {
         interpreter.innerLoop = false;
         enabled = Arithmetic.setBit(enabled, inum, true);
@@ -110,6 +134,12 @@ public class InterruptTable {
         if ( probe != null ) probe.fireWhenEnabled(interpreter.state, inum);
     }
 
+    /**
+     * The <code>disable()</code> method is called by the interpreter when an interrupt is disabled.
+     * The interrupt table will adjust the posted and pending masks appropriately and notify
+     * any probes for the interrupt.
+     * @param inum the interrupt number to disable
+     */
     void disable(int inum) {
         enabled = Arithmetic.setBit(enabled, inum, false);
         pending = posted & enabled;
@@ -118,15 +148,28 @@ public class InterruptTable {
         if ( probe != null ) probe.fireWhenDisabled(interpreter.state, inum);
     }
 
+    /**
+     * The <code>enableAll()</code> method is called by the interpreter when the all of
+     * the interrupts are enabled by setting the global interrupt enable bit.
+     */
     void enableAll() {
         interpreter.innerLoop = false;
         if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter.state, 0);
     }
 
+    /**
+     * The <code>disableAll()</code> method is called by the interpreter when the all of
+     * the interrupts are disabled by clearing the global interrupt enable bit.
+     */
     void disableAll() {
         if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter.state, 0);
     }
 
+    /**
+     * The <code>beforeInvoke()</code> method is called by the interpreter before it
+     * invokes an interrupt handler.
+     * @param inum the interrupt number about to be invoked
+     */
     void beforeInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
         if ( globalProbe != null ) globalProbe.fireBeforeInvoke(interpreter.state, inum);
@@ -135,12 +178,23 @@ public class InterruptTable {
         if ( n != null ) n.invoke(inum);
     }
 
+    /**
+     * The <code>afterInvoke()</code> method is called by the interpreter after it
+     * invokes an interrupt handler.
+     * @param inum the interrupt number that was just invoked
+     */
     void afterInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
         if ( globalProbe != null ) globalProbe.fireAfterInvoke(interpreter.state, inum);
         if ( probe != null ) probe.fireAfterInvoke(interpreter.state, inum);
     }
 
+    /**
+     * The <code>registerInternalNotification()</code> method is used by devices that
+     * require notifications when their interrupt numbers are either forced or invoked.
+     * @param n the notification to register for this interrupt
+     * @param inum the interrupt number for which to register the notification
+     */
     public void registerInternalNotification(Notification n, int inum) {
         notify[inum] = n;
     }

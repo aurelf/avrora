@@ -129,6 +129,13 @@ public class SimpleAir implements RadioAir {
         return radioChannel.occupied(t - sampleTime, t) ? 0x0 : ADC.VBG_LEVEL;
     }
 
+    /**
+     * The <code>readChannel()</code> method reads the value of the channel at the current
+     * time so that the last 8 bits transmitted (where the bits are 0 if there are no
+     * transmissions) are returned.
+     * @param r the radio sampling the channel
+     * @return the last 8 bits transmitted in the channel
+     */
     public byte readChannel(Radio r) {
         Simulator sim = r.getSimulator();
         long time = sim.getClock().getCount();
@@ -136,6 +143,11 @@ public class SimpleAir implements RadioAir {
         return (byte)radioChannel.read(time, 8);
     }
 
+    /**
+     * The <code>getSynchronizer()</code> method gets the synchronizer for this air
+     * implementation.
+     * @return a reference to the synchronizer for this radio model.
+     */
     public Synchronizer getSynchronizer() {
         return synchronizer;
     }

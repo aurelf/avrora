@@ -57,6 +57,20 @@ import java.text.CharacterIterator;
  */
 public class RegisterSet {
 
+    /**
+     * The <code>Field</code> class represents a collection of bits that represent
+     * a quantity used by a device. The bits that make up this quantity might be spread
+     * over multiple IO registers or mixed up among one IO register. Also, a field might
+     * be in different IO registers depending on the microcontroller model. For this reason,
+     * the <code>Field</code> class offers convenience to the device implementer by collecting
+     * all of the individual bit updates in different registers into one coherent, contiguous
+     * value.
+     *
+     * <p>
+     * Device implementations can simply get a reference to the <code>Field</code> object
+     * (such as a timer mode, prescaler value, etc) by calling <code>getField()</code>
+     * in <code>RegisterSet</code>.
+     */
     public static class Field {
         boolean consistent;
         public int value;
@@ -86,7 +100,7 @@ public class RegisterSet {
         }
     }
 
-    public class FieldWriter {
+    static class FieldWriter {
         int value;
         int writtenMask;
         Field fobject;
@@ -294,6 +308,14 @@ public class RegisterSet {
         return fwriter;
     }
 
+    /**
+     * The <code>installField()</code> method allows device implementations to substitute a new field
+     * implementation for the named field. The field implementation can then override the appropriate
+     * methods of the <code>RegisterSet.Field</code> class to be notified upon writes.
+     * @param fname the name of the field
+     * @param fo the field object to install for this field
+     * @return the new field installed
+     */
     public Field installField(String fname, Field fo) {
         FieldWriter fwriter = getFieldWriter(fname);
         fwriter.fobject = fo;

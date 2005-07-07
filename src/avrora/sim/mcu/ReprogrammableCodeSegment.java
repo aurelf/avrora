@@ -41,6 +41,11 @@ import avrora.core.*;
 import avrora.Avrora;
 
 /**
+ * The <code>ReprogrammableCodeSegment</code> class represents a flash segment that stores code. This segment
+ * can be updated during execution. It supports probing instructions in the flash segment and updating them.
+ * This implementation uses special instructions that automatically disassemble themselves from the machine
+ * code representation when they are accessed, allowing dynamic update and execution of machine code.
+ *
  * @author Ben L. Titzer
  */
 public class ReprogrammableCodeSegment extends CodeSegment {
@@ -215,7 +220,8 @@ public class ReprogrammableCodeSegment extends CodeSegment {
         this.pagesize = pagesize;
         this.addressMask = Arithmetic.getBitRangeMask(0, pagesize) << 1;
         resetBuffer();
-        bi.installIOReg("SPMCSR", SPMCSR);
+        MicrocontrollerProperties props = bi.getSimulator().getMicrocontroller().getProperties();
+        bi.installIOReg(props.getIOReg("SPMCSR"), SPMCSR);
 
         ERASE_CYCLES = (int)((mainClock.getHZ() * ERASE_MS_MAX / 1000));
         WRITE_CYCLES = (int)((mainClock.getHZ() * WRITE_MS_MAX / 1000));

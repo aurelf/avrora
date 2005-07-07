@@ -121,7 +121,12 @@ public class Segment {
         }
     }
 
-
+    /**
+     * The <code>share()</code> method allows sharing of the underlying array representing the values of
+     * memory. This is used for performance.
+     * @param s the sharer to allow access to this segment's internal data
+     * @return the byte array that is the underlying representation of the memory
+     */
     public byte[] share(Sharer s) {
         sharer = s;
         return segment_data;

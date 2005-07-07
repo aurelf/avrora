@@ -251,6 +251,12 @@ public interface Microcontroller {
      */
     double cyclesToMillis(long cycles);
 
+    /**
+     * The <code>getRegisterSet()</code> method returns the register set containing all of the IO registers
+     * for this microcontroller.
+     * @return a reference to the <code>RegisterSet</code> instance which stores all of the IO registers
+     * for this microcontroller.
+     */
     public RegisterSet getRegisterSet();
 
     /**

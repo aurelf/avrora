@@ -135,6 +135,12 @@ public class RegisterLayout {
         info = new RegisterInfo[is];
     }
 
+    /**
+     * The <code>addIOReg()</code> method adds a new IO register with the specified name and address to this
+     * register layout.
+     * @param n the name of the IO register
+     * @param ior_num the address of the IO register
+     */
     public void addIOReg(String n, int ior_num) {
         if ( ior_num >= ioreg_size )
             throw Avrora.failure("Invalid IORegister address "+ior_num+" for register "+ StringUtil.quote(n));
@@ -143,6 +149,17 @@ public class RegisterLayout {
         ioregAssignments.put(n, i);
     }
 
+    /**
+     * The <code>addIOReg()</code> method adds a new IO register with the specified name and address to this
+     * register layout. This variant of the method also accepts a format string describing which fields are
+     * in this IO register. The format description is used to automatically generate an instance of the IO
+     * register that puts the right bits of the right fields in the right places when the register is
+     * written to.
+     * @param n the name of the IO register
+     * @param ior_num the address of the IO register
+     * @param format the format of the IO register as a string describing which fields and which bits of
+     * which fields are present in this IO register
+     */
     public void addIOReg(String n, int ior_num, String format) {
         if ( ior_num >= ioreg_size )
             throw Avrora.failure("Invalid IORegister address "+ior_num+" for register "+ StringUtil.quote(n));
@@ -166,6 +183,12 @@ public class RegisterLayout {
         return i.ior_num;
     }
 
+    /**
+     * The <code>hasIOReg()</code> method simply checks whether this register layout has a register with
+     * the specified name.
+     * @param n the name of the IO register
+     * @return true if this layout has a register with the specified name; false otherwise
+     */
     public boolean hasIOReg(String n) {
         return ioregAssignments.containsKey(n);
     }
@@ -280,7 +303,7 @@ public class RegisterLayout {
         return ior_hbit;
     }
 
-    Field getField(String name) {
+    private Field getField(String name) {
         Field f = (Field)fields.get(name);
         if ( f == null ) {
             f = new Field(name);

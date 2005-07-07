@@ -143,36 +143,82 @@ public class HelpCategory implements HelpItem {
         }
     }
 
+    /**
+     * The constructor for the <code>HelpCategory</code> class creates a new help category with the specified
+     * short name and the specified default help.
+     * @param name the short name of this category (where it is accessible from the command line)
+     * @param help the help description for this category
+     */
     public HelpCategory(String name, String help) {
         this.name = name;
         this.help = help;
         this.sections = new LinkedList();
     }
 
+    /**
+     * The <code>getHelp()</code> method returns a string representing help for this help item.
+     * @return a help string for this item
+     */
     public String getHelp() {
         return help;
     }
 
+    /**
+     * The <code>getName()</code> method returns the short name for this help category. This short name
+     * is used to add this help category to the global help category database.
+     * @return the short name of this help category
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * The <code>setName()</code> method is used to set the short name for this help category.
+     * @param nm the new short name for this category
+     */
     public void setName(String nm) {
         name = nm;
     }
 
+    /**
+     * The <code>addSection()</code> method adds a new section to this help category with the specified title
+     * and a paragraph that is automatically formatted when printed out.
+     * @param title the title of the new section
+     * @param paragraph a long string representing the text for this section
+     */
     public void addSection(String title, String paragraph) {
         sections.addLast(new ParagraphSection(title, paragraph));
     }
 
+    /**
+     * The <code>addOptionSection()</code> method adds a new section to this help category with the specified
+     * options. The new section will contain a paragraph description of the options and list the options in
+     * alphabetical order.
+     * @param para a summary of the options
+     * @param opts the options for this help category
+     */
     public void addOptionSection(String para, Options opts) {
         sections.addLast(new OptionsSection(para, opts));
     }
 
+    /**
+     * The <code>addListSection()</code> method adds a new section to this help category with the specified
+     * list of help items.
+     * @param title the title of the new sectiobn
+     * @param para a paragraph description of the section
+     * @param l a list of <code>HelpItem</code> instances that will be added to the end of the section
+     */
     public void addListSection(String title, String para, List l) {
         sections.addLast(new ListSection(title, para, l));
     }
 
+    /**
+     * The <code>addSubcategorySection</code> method adds a new section that is a list of subcategories
+     * under this main category.
+     * @param title the title of the section
+     * @param para a paragraph description of this section
+     * @param l a list of subcategories
+     */
     public void addSubcategorySection(String title, String para, List l) {
         Iterator i = l.iterator();
         LinkedList sl = new LinkedList();
@@ -183,10 +229,19 @@ public class HelpCategory implements HelpItem {
         addListSection(title, para, sl);
     }
 
+    /**
+     * The <code>addCommandExample()</code> method adds a command example, properly formatted, to
+     * this section.
+     * @param prefix  a string that is the prefix to the command line
+     * @param command the command line example to add
+     */
     public void addCommandExample(String prefix, String command) {
         throw Avrora.unimplemented();
     }
 
+    /**
+     * The <code>printHelp()</code> method prints out all of the help sections in order for this category.
+     */
     public void printHelp() {
         Iterator i = sections.iterator();
         while ( i.hasNext() ) {

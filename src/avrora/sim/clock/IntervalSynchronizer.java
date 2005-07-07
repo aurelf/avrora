@@ -134,6 +134,12 @@ public class IntervalSynchronizer extends Synchronizer {
 
     }
 
+    /**
+     * The <code>signalOthers()</code> method is used to check whether the thread that has just arrived
+     * should signal other threads to continue.
+     * @return true if this thread signalled the others to continue; false if this thread should stop
+     * and wait for the other threads before continuing
+     */
     protected boolean signalOthers() {
 
         // check for any waiters that need to be woken

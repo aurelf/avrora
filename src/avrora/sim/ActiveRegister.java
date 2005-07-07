@@ -42,28 +42,6 @@ package avrora.sim;
  * @author Ben L. Titzer
  */
 public interface ActiveRegister {
-    /**
-     * The <code>RESERVED</code> field of the state class represents an instance of the <code>IOReg</code>
-     * interface that will not allow any writes to this register to occur. These reserved IO registers are
-     * specified in the hardware manuals.
-     */
-    ActiveRegister RESERVED = new ActiveRegister() {
-        public byte read() {
-            return 0;
-        }
-
-        public void write(byte val) {
-            throw new Error("cannot write to reserved register");
-        }
-
-        public boolean readBit(int num) {
-            return false;
-        }
-
-        public void writeBit(int bit, boolean val) {
-            throw new Error("cannot write bit in reserved register");
-        }
-    };
 
     /**
      * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For special IO

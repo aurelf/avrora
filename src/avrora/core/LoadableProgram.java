@@ -51,16 +51,17 @@ public class LoadableProgram {
     protected Program program;
 
     /**
-     * This inits a program with a file from disk.
-     * @param f This is a file, generally received from a FileChooser
+     * The constructor for the <code>LoadableProgram</code> class creates a new instance with
+     * a reference to the file on the disk. The program is NOT automatically loaded.
+     * @param f the file containing the program
      */
     public LoadableProgram(File f) {
         file = f;
     }
 
     /**
-     * This should generally be called when starting a sim.  It returns
-     * a program which can be passed as an arg to the sim
+     * The <code>getProgram()</code> method gets the current representation of the program stored
+     * in this object. It will NOT load the program if it has not been loaded yet.
      * @return A program representing a "compiled" version of the file
      */
     public Program getProgram() {
@@ -70,16 +71,16 @@ public class LoadableProgram {
     }
 
     /**
-     * Call load before called getProgram() to physically load the file
-     * from disk.
+     * The <code>load()</code> method loads (or reloads) the program from the disk.
      */
     public void load() throws Exception {
         program = Defaults.getProgramReader("auto").read(new String[] { file.getAbsolutePath() } );
     }
 
     /**
-     * Calls file.getName();
-     * @return the name of the file (sans path)
+     * The <code>getName()</code> method returns the name of the program, i.e. the name of the file
+     * containing the program.
+     * @return the name of the file without its absolute path
      */
     public String getName() {
         return file.getName();

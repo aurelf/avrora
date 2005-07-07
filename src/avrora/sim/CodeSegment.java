@@ -104,6 +104,12 @@ public class CodeSegment extends Segment {
 
     protected CodeSharer codeSharer;
 
+    /**
+     * The <code>CodeSharer</code> interface is used to allow sharing of the underlying array
+     * representing the code. Only the interpreter should share this representation. If there
+     * is an update to this array (e.g. it must be grown), the sharer will be notified to
+     * update its reference.
+     */
     public interface CodeSharer {
         public void update(Instr[] segment);
     }

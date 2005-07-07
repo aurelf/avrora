@@ -74,6 +74,13 @@ public class RWRegister implements ActiveRegister {
         return Arithmetic.getBit(value, num);
     }
 
+    /**
+     * The <code>writeBit()</code> method writes a single bit value into the IO register at the specified
+     * bit offset. For simple <code>RWRegister</code> instances, this simply updates the bit in the internally stored value
+     *
+     * @param num the number of the bit to write
+     * @param val the value of the bit to write
+     */
     public void writeBit(int num, boolean val) {
         value = Arithmetic.setBit(value, num, val);
     }

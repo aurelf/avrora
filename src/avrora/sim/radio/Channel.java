@@ -35,6 +35,15 @@ package avrora.sim.radio;
 import avrora.util.Arithmetic;
 
 /**
+ * The <code>Channel</code> class implements a serial channel that represents a communication
+ * channel where bits are sent one by one. The channel allows bits to be written into the channel
+ * at a particular time and represents their serial transmission over time by an array.
+ *
+ * <p>
+ * The channel is used in simulating radio transmissions; all transmissions write into the channel,
+ * and all samples read from the channel.
+ *
+ * 
  * @author Ben L. Titzer
  */
 public class Channel {

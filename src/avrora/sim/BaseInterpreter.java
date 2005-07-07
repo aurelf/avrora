@@ -101,6 +101,79 @@ public abstract class BaseInterpreter implements InstrVisitor {
 
     protected final StateImpl state;
 
+    /**
+     * The <code>globalProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
+     * all of the probes to be fired before and after the main execution runLoop--i.e. before and after every
+     * instruction.
+     */
+    protected final MulticastProbe globalProbe;
+
+    /**
+     * The <code>exceptionWatch</code> stores a reference to a <code>MulticastExceptionWatch</code>
+     * that contains all of the exception watches currently registered.
+     */
+    protected MulticastExceptionWatch exceptionWatch;
+
+    /**
+     * The <code>innerLoop</code> field is a boolean that is used internally in the implementation of the
+     * interpreter. When something in the simulation changes (e.g. an interrupt is posted), this field is set
+     * to false, and the execution loop (e.g. an interpretation or sleep loop) is broken out of.
+     */
+    protected boolean innerLoop;
+
+    /**
+     * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the
+     * instructions.
+     */
+    public int nextPC;
+
+    /**
+     * The <code>cyclesConsumed</code> field stores the number of cycles consumed in doing a part of the
+     * simulation (e.g. executing an instruction or processing an interrupt).
+     */
+    public int cyclesConsumed;
+
+    /**
+     * The <code>delayCycles</code> field tracks the number of cycles that the microcontroller is delayed.
+     * Delay is needed because some devices pause execution of the program for some number of cycles, and also
+     * to implement random delay at the beginning of startup in multiple node scenarios to prevent artificial
+     * cycle-level synchronization.
+     */
+    protected long delayCycles;
+
+    /**
+     * The <code>shouldRun</code> flag is used internally in the main execution runLoop to implement the
+     * correct semantics of <code>start()</code> and <code>stop()</code> to the clients.
+     */
+    protected boolean shouldRun;
+
+    /**
+     * The <code>sleeping</code> flag is used internally in the simulator when the microcontroller enters the
+     * sleep mode.
+     */
+    protected boolean sleeping;
+
+    /**
+     * The <code>justReturnedFromInterrupt</code> field is used internally in maintaining the invariant stated
+     * in the hardware manual that at least one instruction following a return from an interrupt is executed
+     * before another interrupt can be processed.
+     */
+    public boolean justReturnedFromInterrupt;
+
+    /**
+     * The <code>simulator</code> field stores a reference to the simulator that this interpreter instance
+     * corresponds to. There should be a one-to-one mapping between instances of the <code>Simulator</code>
+     * class and instances of the <code>BaseInterpreter</code> class.
+     */
+    protected final Simulator simulator;
+
+    /**
+     * The <code>clock</code> field stores a reference to the main clock of the simulator. This is
+     * the same instance shared between the <code>Simulator</code>, <code>Microcontroller</code>, and
+     * any devices that are attached directly to the main clock or to a derived clock.
+     */
+    protected final MainClock clock;
+
     public class StateImpl implements State {
 
         /**
@@ -382,86 +455,30 @@ public abstract class BaseInterpreter implements InstrVisitor {
     }
 
     /**
-     * The <code>globalProbe</code> field stores a reference to a <code>MulticastProbe</code> that contains
-     * all of the probes to be fired before and after the main execution runLoop--i.e. before and after every
-     * instruction.
+     * The <code>getSimulator()</code> method gets a reference to the simulator which encapsulates this
+     * interpreter.
+     * @return a reference to the simulator containing to this interpreter
      */
-    protected final MulticastProbe globalProbe;
-
-    /**
-     * The <code>exceptionWatch</code> stores a reference to a <code>MulticastExceptionWatch</code>
-     * that contains all of the exception watches currently registered.
-     */
-    protected MulticastExceptionWatch exceptionWatch;
-
-    /**
-     * The <code>innerLoop</code> field is a boolean that is used internally in the implementation of the
-     * interpreter. When something in the simulation changes (e.g. an interrupt is posted), this field is set
-     * to false, and the execution loop (e.g. an interpretation or sleep loop) is broken out of.
-     */
-    protected boolean innerLoop;
-
-    /**
-     * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the
-     * instructions.
-     */
-    public int nextPC;
-
-    /**
-     * The <code>cyclesConsumed</code> field stores the number of cycles consumed in doing a part of the
-     * simulation (e.g. executing an instruction or processing an interrupt).
-     */
-    public int cyclesConsumed;
-
-    /**
-     * The <code>delayCycles</code> field tracks the number of cycles that the microcontroller is delayed.
-     * Delay is needed because some devices pause execution of the program for some number of cycles, and also
-     * to implement random delay at the beginning of startup in multiple node scenarios to prevent artificial
-     * cycle-level synchronization.
-     */
-    protected long delayCycles;
-
-    /**
-     * The <code>shouldRun</code> flag is used internally in the main execution runLoop to implement the
-     * correct semantics of <code>start()</code> and <code>stop()</code> to the clients.
-     */
-    protected boolean shouldRun;
-
-    /**
-     * The <code>sleeping</code> flag is used internally in the simulator when the microcontroller enters the
-     * sleep mode.
-     */
-    protected boolean sleeping;
-
-    /**
-     * The <code>justReturnedFromInterrupt</code> field is used internally in maintaining the invariant stated
-     * in the hardware manual that at least one instruction following a return from an interrupt is executed
-     * before another interrupt can be processed.
-     */
-    public boolean justReturnedFromInterrupt;
-
-    /**
-     * The <code>simulator</code> field stores a reference to the simulator that this interpreter instance
-     * corresponds to. There should be a one-to-one mapping between instances of the <code>Simulator</code>
-     * class and instances of the <code>BaseInterpreter</code> class.
-     */
-    protected final Simulator simulator;
-
-    /**
-     * The <code>clock</code> field stores a reference to the main clock of the simulator. This is
-     * the same instance shared between the <code>Simulator</code>, <code>Microcontroller</code>, and
-     * any devices that are attached directly to the main clock or to a derived clock.
-     */
-    protected final MainClock clock;
-
     public Simulator getSimulator() {
         return simulator;
     }
 
+    /**
+     * The <code>getMainClock()</code> method returns a reference to the main clock for this interpreter.
+     * The main clock keeps track of time for this microcontroller and contains an event queue that allows
+     * events to be inserted to be executed in the future.
+     * @return a reference to the main clock for this interpreter.
+     */
     public MainClock getMainClock() {
         return clock;
     }
 
+    /**
+     * The <code>getInterruptTable()</code> method returns a reference to the interrupt table for this
+     * interpreter. The interrupt table contains the status information about what interrupts are posted,
+     * enabled, disabled, etc.
+     * @return a reference to the interrupt table for this interpreter
+     */
     public InterruptTable getInterruptTable() {
         return interrupts;
     }
@@ -542,8 +559,18 @@ public abstract class BaseInterpreter implements InstrVisitor {
         runLoop();
     }
 
+    /**
+     * The <code>step()</code> method steps this node forward one instruction or one clock cycle. The node may
+     * execute an instruction, execute events, wake from sleep, take an interrupt, etc. In the case of multi-cycle
+     * instructions, the node will execute until the end of the instruction. The number of cycles consumed is
+     * returned by this method.
+     * @return the number of cycles consumed in executing one instruction or waking from an interrupt, etc
+     */
     public abstract int step();
 
+    /**
+     * The <code>stop()</code> method terminates the execution of the simulation.
+     */
     public void stop() {
         shouldRun = false;
         innerLoop = false;
@@ -565,16 +592,32 @@ public abstract class BaseInterpreter implements InstrVisitor {
         return interruptBase + (inum - 1) * 4;
     }
 
+    /**
+     * The <code>setPosted()<code> method is used by external devices to post and unpost interrupts.
+     * @param inum the interrupt number to post or unpost
+     * @param post true if the interrupt should be posted; false if the interrupt should be unposted
+     */
     public void setPosted(int inum, boolean post) {
         if ( post ) interrupts.post(inum);
         else interrupts.unpost(inum);
     }
 
+    /**
+     * The <code>setEnabled()</code> method is used by external devices (and mask registers) to enable
+     * and disable interrupts.
+     * @param inum the interrupt number to enable or disable
+     * @param enabled true if the interrupt should be enabled; false if the interrupt should be disabled
+     */
     public void setEnabled(int inum, boolean enabled) {
         if ( enabled ) interrupts.enable(inum);
         else interrupts.disable(inum);
     }
 
+    /**
+     * The <code>insertProbe()</code> method is used internally to insert a probe on a particular instruction.
+     * @param p the probe to insert on an instruction
+     * @param addr the address of the instruction on which to insert the probe
+     */
     protected void insertProbe(Simulator.Probe p, int addr) {
         flash.insertProbe(addr, p);
     }
@@ -600,6 +643,11 @@ public abstract class BaseInterpreter implements InstrVisitor {
         globalProbe.add(p);
     }
 
+    /**
+     * The <code>removeProbe()</code> method is used internally to remove a probe from a particular instruction.
+     * @param p the probe to remove from an instruction
+     * @param addr the address of the instruction from which to remove the probe
+     */
     protected void removeProbe(Simulator.Probe p, int addr) {
         flash.removeProbe(addr, p);
     }
@@ -616,6 +664,11 @@ public abstract class BaseInterpreter implements InstrVisitor {
         globalProbe.remove(b);
     }
 
+    /**
+     * The <code>insertWatch()</code> method is used internally to insert a watch on a particular memory location.
+     * @param p the watch to insert on a memory location
+     * @param data_addr the address of the memory location on which to insert the watch
+     */
     protected void insertWatch(Simulator.Watch p, int data_addr) {
         if (sram_watches == null)
             sram_watches = new MulticastWatch[sram.length];
@@ -626,6 +679,11 @@ public abstract class BaseInterpreter implements InstrVisitor {
         w.add(p);
     }
 
+    /**
+     * The <code>removeWatch()</code> method is used internally to remove a watch from a particular memory location.
+     * @param p the watch to remove from the memory location
+     * @param data_addr the address of the memory location from which to remove the watch
+     */
     protected void removeWatch(Simulator.Watch p, int data_addr) {
         if (sram_watches == null)
             return;
@@ -636,6 +694,11 @@ public abstract class BaseInterpreter implements InstrVisitor {
         w.remove(p);
     }
 
+    /**
+     * The <code>insertIORWatch()</code> method is used internally to insert a watch on an IO register.
+     * @param p the watch to add to the IO register
+     * @param ioreg_num the number of the IO register for which to insert the watch
+     */
     protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
         ActiveRegister ar = ioregs[ioreg_num];
         ProbedActiveRegister par;
@@ -648,6 +711,11 @@ public abstract class BaseInterpreter implements InstrVisitor {
         par.add(p);
     }
 
+    /**
+     * The <code>removeIORWatch()</code> method is used internally to remove a watch on an IO register.
+     * @param p the watch to remove from the IO register
+     * @param ioreg_num the number of the IO register for which to remove the watch
+     */
     protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
         ActiveRegister ar = ioregs[ioreg_num];
         ProbedActiveRegister par;
@@ -659,16 +727,32 @@ public abstract class BaseInterpreter implements InstrVisitor {
         }
     }
 
-    protected void advanceCycles(long delta) {
+    /**
+     * The <code>advanceClock()</code> method advances the clock by the specified number of cycles. It SHOULD NOT
+     * be used externally. It also clears the <code>cyclesConsumed</code> variable that is used to track the
+     * number of cycles consumed by a single instruction.
+     * @param delta the number of cycles to advance the clock
+     */
+    protected void advanceClock(long delta) {
         clock.advance(delta);
         cyclesConsumed = 0;
     }
 
+    /**
+     * The <code>delay()</code> method is used to add some delay cycles before the next instruction is executed.
+     * This is necessary because some devices such as the EEPROM actually delay execution of instructions while
+     * they are working
+     * @param cycles the number of cycles to delay the execution
+     */
     protected void delay(long cycles) {
         innerLoop = false;
         delayCycles += cycles;
     }
 
+    /**
+     * The <code>storeProgramMemory()</code> method is called when the program executes the SPM instruction
+     * which stores to the program memory.
+     */
     protected void storeProgramMemory() {
         flash.update();
     }
@@ -697,6 +781,11 @@ public abstract class BaseInterpreter implements InstrVisitor {
         return sram[reg.getNumber()] & 0xff;
     }
 
+    /**
+     * The <code>getRegisterUnsigned()</code> method reads a register's value (without sign extension)
+     * @param reg the index into the register file
+     * @return the value of the register as an unsigned integer
+     */
     public int getRegisterUnsigned(int reg) {
         return sram[reg] & 0xff;
     }
@@ -716,6 +805,15 @@ public abstract class BaseInterpreter implements InstrVisitor {
         return Arithmetic.uword(low, high);
     }
 
+    /**
+     * Read a general purpose register pair as an unsigned word. This method will read the value of the
+     * specified register and the value of the next register in numerical order and return the two values
+     * combined as an unsigned integer The specified register should be less than r31, because r32 (the next
+     * register) does not exist.
+     *
+     * @param reg the low register of the pair to read
+     * @return the current unsigned word value of the register pair
+     */
     public int getRegisterWord(int reg) {
         byte low = getRegisterByte(reg);
         byte high = getRegisterByte(reg + 1);
@@ -766,6 +864,10 @@ public abstract class BaseInterpreter implements InstrVisitor {
         return val;
     }
 
+    /**
+     * The <code>ErrorReporter</code> class is used to report errors accessing segments.
+     * @see Segment.ErrorReporter
+     */
     protected class ErrorReporter implements Segment.ErrorReporter {
         Segment segment;
 
@@ -851,10 +953,6 @@ public abstract class BaseInterpreter implements InstrVisitor {
         return flash.read(address);
     }
 
-    public void writeProgramByte(int address, byte val) {
-        flash.write(address, val);
-    }
-
     /**
      * The <code>getIOReg()</code> method is used to retrieve a reference to the actual <code>IOReg</code>
      * instance stored internally in the state. This is generally only used in the simulator and device
@@ -895,10 +993,27 @@ public abstract class BaseInterpreter implements InstrVisitor {
         writeRegisterByte(reg.nextRegister(), high);
     }
 
+    /**
+     * The <code>writeRegisterByte()</code> method writes a value to a general purpose register. This is a
+     * destructive update and should only be called from the appropriate places in the simulator.
+     *
+     * @param reg the register to write the value to
+     * @param val the value to write to the register
+     */
     public void writeRegisterByte(int reg, byte val) {
         sram[reg] = val;
     }
 
+    /**
+     * The <code>writeRegisterWord</code> method writes a word value to a general purpose register pair. This is
+     * a destructive update and should only be called from the appropriate places in the simulator. The
+     * specified register and the next register in numerical order are updated with the low-order and
+     * high-order byte of the value passed, respectively. The specified register should be less than r31,
+     * since r32 (the next register) does not exist.
+     *
+     * @param reg the low register of the pair to write
+     * @param val the word value to write to the register pair
+     */
     public void writeRegisterWord(int reg, int val) {
         byte low = Arithmetic.low(val);
         byte high = Arithmetic.high(val);
@@ -972,11 +1087,6 @@ public abstract class BaseInterpreter implements InstrVisitor {
         ioregs[ioreg] = reg;
     }
 
-    public void installIOReg(String name, ActiveRegister reg) {
-        MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
-        installIOReg(props.getIOReg(name), reg);
-    }
-
     /**
      * The <code>writeIORegisterByte()</code> method writes a value to the specified IO register. This is
      * generally only used internally to the simulator and device implementations, and client interfaces
@@ -1037,10 +1147,18 @@ public abstract class BaseInterpreter implements InstrVisitor {
         bootPC = npc;
     }
 
+    /**
+     * The <code>getInterruptBase()</code> method returns the base address of the interrupt table.
+     * @return the base address of the interrupt table
+     */
     public int getInterruptBase() {
         return interruptBase;
     }
 
+    /**
+     * The <code>setInterruptBase()</code> method sets the base of the interrupt table.
+     * @param npc the new base of the interrupt table
+     */
     public void setInterruptBase(int npc) {
         interruptBase = npc;
     }
@@ -1082,16 +1200,26 @@ public abstract class BaseInterpreter implements InstrVisitor {
         return Arithmetic.uword(low, high);
     }
 
+    /**
+     * The <code>enableInterrupts()</code> method enables all of the interrupts.
+     */
     public void enableInterrupts() {
         I = true;
         interrupts.enableAll();
     }
 
+    /**
+     * The <code>disableInterrupts()</code> method disables all of the interrupts.
+     */
     public void disableInterrupts() {
         I = false;
         interrupts.disableAll();
     }
 
+    /**
+     * The <code>commit()</code> method is used internally to commit the results of the instructiobn just executed.
+     * This should only be used internally.
+     */
     protected void commit() {
         pc = nextPC;
         clock.advance(cyclesConsumed);

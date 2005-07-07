@@ -199,3 +199,5 @@
     3    all  Javadoc all classes more thoroughly
     3    all  Build more complex diagrams for website
     2    all  Create TODO list available on website
+
+    1    all  Javadoc'd most classes new since 1.4.0               (1.5.106)

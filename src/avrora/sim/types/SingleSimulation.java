@@ -46,6 +46,10 @@ import avrora.util.Options;
 import java.io.File;
 
 /**
+ * The <code>SingleSimulation</code> class implements a simulation for a single node. This class
+ * has its own built-in synchronizer that is designed to accept only one node. It processes command
+ * line options to configure monitors and load one program onto one microcontroller and simulate it.
+ *
  * @author Ben L. Titzer
  */
 public class SingleSimulation extends Simulation {
@@ -149,6 +153,14 @@ public class SingleSimulation extends Simulation {
                 "relating to simulating a single node is below.", options);
     }
 
+    /**
+     * The <code>process()</code> method processes options and arguments from the command line. This
+     * implementation accepts only a single command line argument that specifies the name of the program
+     * to load onto the microcontroller to simulate.
+     * @param o the options extracted from the command line
+     * @param args the arguments from the command line
+     * @throws Exception if there was a problem loading the file or creating the simulation
+     */
     public void process(Options o, String[] args) throws Exception {
         options.process(o);
         processMonitorList();

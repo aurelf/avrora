@@ -67,6 +67,11 @@ public class SimulatorThread extends Thread {
         node = n;
     }
 
+    /**
+     * The <code>getNode()</code> method gets a reference to the <code>Simulation.Node</code> that this
+     * simulator thread is simulating.
+     * @return a reference to the node which this thread is simulating
+     */
     public Simulation.Node getNode() {
         return node;
     }

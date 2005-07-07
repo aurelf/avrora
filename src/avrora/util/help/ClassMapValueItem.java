@@ -38,6 +38,13 @@ import avrora.util.ClassMap;
 import avrora.Defaults;
 
 /**
+ * The <code>ClassMapValueItem</code> is a help item representing one possible value
+ * for an option, where the value of the option is used to access a class map. For
+ * example, the "-action" option accepts a value where the user specifies what
+ * action the main program should perform. In this case, for each of the possible
+ * values of this option, a <code>ClassMapValueItem</code> instance will be created
+ * that is used in constructing the help text for the actions help category.
+ *
  * @author Ben L. Titzer
  */
 public class ClassMapValueItem implements HelpItem {
@@ -48,6 +55,16 @@ public class ClassMapValueItem implements HelpItem {
     public final ClassMap map;
     protected String help;
 
+    /**
+     * The constructor for the <code>ClassMapValueItem</code> class creates a new instance of
+     * a help item for the specified option and value. The classmap passed is used to
+     * get an instance of the object corresponding to that value so that any help that it has
+     * can be added underneath the option.
+     * @param indent the number of spaces to indent when printing the help
+     * @param optname the name of the option
+     * @param optvalue the string value of the option
+     * @param map the classmap which is used to get instances for this value
+     */
     public ClassMapValueItem(int indent, String optname, String optvalue, ClassMap map) {
         this.optname = optname;
         this.optvalue = optvalue;
@@ -55,12 +72,21 @@ public class ClassMapValueItem implements HelpItem {
         this.indent = indent;
     }
 
+    /**
+     * The <code>getHelp()</code> method returns a help string for this help item.
+     * @return a string representing the help for this item
+     */
     public String getHelp() {
         if ( help != null )
             return help;
         else return computeHelp();
     }
 
+    /**
+     * The <code>printHelp()</code> method prints out a well-formatted paragraph for this option
+     * and the value specified. If there is help for the value associated with this option, it
+     * will format it as part of the help for this item.
+     */
     public void printHelp() {
         String h = getHelp();
         Terminal.print(StringUtil.dup(' ', indent));
@@ -69,6 +95,12 @@ public class ClassMapValueItem implements HelpItem {
         Terminal.println(StringUtil.makeParagraphs(h, indent+4, 0, Terminal.MAXLINE));
     }
 
+    /**
+     * The <code>computeHelp()</code> method looks up this value in the specified class map,
+     * and if the object is a help item itself, will return its help. If it is not a help item,
+     * then it will return a default string.
+     * @return help for this item
+     */
     private String computeHelp() {
         try {
             help = ((HelpItem)map.getObjectOfClass(optvalue)).getHelp();

@@ -186,6 +186,11 @@ public class ClassMap {
         return list;
     }
 
+    /**
+     * The <code>getIterator()</code> method returns an interator over all of the key values (short
+     * names or aliases) of this class map.
+     * @return an iterator over all the short names in this map
+     */
     public Iterator getIterator() {
         return classMap.keySet().iterator();
     }

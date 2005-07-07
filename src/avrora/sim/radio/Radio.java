@@ -44,6 +44,7 @@ import avrora.sim.mcu.ADC;
  * access an instance of the <code>RadioAir</code> interface.
  *
  * @author Daniel Lee
+ * @author Ben L. Titzer
  */
 public interface Radio {
 

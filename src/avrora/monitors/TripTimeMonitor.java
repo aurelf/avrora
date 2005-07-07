@@ -46,6 +46,13 @@ import avrora.Avrora;
 import java.util.Iterator;
 
 /**
+ * The <code>TripTimeMonitor</code> class implements a monitor that tracks the time from
+ * executing instruction A in the program until the program reaches instruction B. For
+ * example, if A is the beginning of an interrupt handler and B is the end of an interrupt
+ * handler, then the monitor will record the time it takes to execute the entire interrupt
+ * handler. For each pair of points A and B, it collects statistics about each "trip"
+ * between the two points, reporting the results at the end of execution. 
+ *
  * @author Ben L. Titzer
  */
 public class TripTimeMonitor extends MonitorFactory {

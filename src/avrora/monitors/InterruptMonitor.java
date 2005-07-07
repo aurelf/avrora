@@ -45,6 +45,11 @@ import avrora.util.profiling.MinMaxMean;
 import java.util.Arrays;
 
 /**
+ * The <code>InterruptMonitor</code> class implements a monitor that tracks the interrupts
+ * that happen during a simulation. It collects statistics about which interrupts occur, how often,
+ * and the latency between the interrupt being posted and being handled. After execution terminates,
+ * it generates a textual report to the user.
+ *
  * @author Ben L. Titzer
  */
 public class InterruptMonitor extends MonitorFactory {
@@ -250,6 +255,12 @@ public class InterruptMonitor extends MonitorFactory {
                 "posting, enabling, and invoking of interrupts.");
     }
 
+    /**
+     * The <code>newMonitor()</code> method creates a new interrupt monitor for the specified simulator that
+     * will collect statistics about the interrupts executed during simulation.
+     * @param s the simulator to create the monitor for
+     * @return a new monitor instance for the specified simulator
+     */
     public Monitor newMonitor(Simulator s) {
         return new Mon(s);
     }
