@@ -42,6 +42,7 @@ import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.DefaultPlatform;
 import avrora.sim.mcu.MicrocontrollerFactory;
+import avrora.sim.util.InterruptScheduler;
 import avrora.core.LoadableProgram;
 import avrora.Defaults;
 import avrora.Avrora;
@@ -92,6 +93,11 @@ public abstract class Simulation extends HelpCategory {
             "This option specifies a list of monitors to be attached to the program. " +
             "Monitors collect information about the execution of the program while it " +
             "is running such as profiling data or timing information.");
+    public final Option.Str SCHEDULE = options.newOption("interrupt-schedule", "",
+            "This option, when specified, contains the name of a file that contains an interrupt " +
+            "schedule that describes when to post interrupts (especially external interrupts) to the " +
+            "program. This is useful for testing programs under different interrupt loads. For " +
+            "multi-node simulations, the interrupt schedule is only applied to node 0.");
 
     /**
      * The <code>Monitor</code> interface represents a monitor for a simulation. A monitor
@@ -150,6 +156,7 @@ public abstract class Simulation extends HelpCategory {
             Platform p = platform.newPlatform(id, Defaults.getInterpreterFactory(), path.getProgram());
             simulator = p.getMicrocontroller().getSimulator();
             processTimeout();
+            processInterruptSched();
             synchronizer.addNode(this);
             // for each of the monitors in the list, allow them to create their data structures
             Iterator i = monitorFactoryList.iterator();
@@ -165,6 +172,14 @@ public abstract class Simulation extends HelpCategory {
             if ( secs > 0 ) {
                 long cycles = (long)(secs * simulator.getClock().getHZ());
                 simulator.insertTimeout(cycles);
+            }
+        }
+
+        private void processInterruptSched() {
+            if ( id != 0 ) return;
+            String isched = SCHEDULE.get();
+            if ( !"".equals(isched) ) {
+                InterruptScheduler s = new InterruptScheduler(isched, simulator);
             }
         }
 

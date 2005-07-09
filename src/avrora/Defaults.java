@@ -195,7 +195,7 @@ public class Defaults {
             simMap.addClass("sensor-network", SensorSimulation.class);
 
             // plug in a new help category for simulations accesible with "-help simulations"
-            HelpCategory hc = new HelpCategory("simulations", "Help for Simulation types");
+            HelpCategory hc = new HelpCategory("simulations", "Help for Simulation types.");
             addOptionSection(hc, "SIMULATION TYPES", "Avrora accepts the \"-simulation\" command line option " +
                     "that you can use to select from the available simulation types that Avrora " +
                     "provides. This simulation might be for a sensor network application, " +

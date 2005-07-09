@@ -65,11 +65,6 @@ public class SimulateAction extends SimAction {
     public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
             "for the specified microcontroller and begins executing the program. There " +
             "are several options provided by the simulator for profiling and analysis.";
-    public final Option.Str SCHEDULE = newOption("interrupt-schedule", "", "This option is used to specify " +
-            "the text file from which Avrora should load an interrupt schedule.  The file should contain " +
-            "a sequence of whitespace delineated pairs of integers.  In each pair the first is an " +
-            "interrupt vector number (see the AVR manuals, NOT the gcc header files, which are off by one) " +
-            "and the second is a cycle time at which the interrupt should fire.");
 
     public SimulateAction() {
         super(HELP);

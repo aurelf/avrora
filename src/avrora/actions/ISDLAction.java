@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.Avrora;
+import avrora.Main;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.gen.*;
 import avrora.core.isdl.parser.ISDLParser;
@@ -90,10 +91,12 @@ public class ISDLAction extends Action {
 
         Architecture.INLINE = INLINE.get();
 
-        File archfile = new File(args[0]);
+        String fname = args[0];
+        Main.checkFileExists(fname);
+        File archfile = new File(fname);
         FileInputStream fis = new FileInputStream(archfile);
         ISDLParser parser = new ISDLParser(fis);
-        Status.begin("Parsing "+args[0]);
+        Status.begin("Parsing "+fname);
         try {
             Architecture a = parser.Architecture();
             Status.success();

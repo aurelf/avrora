@@ -35,6 +35,7 @@ package avrora.sim.util;
 import avrora.sim.Simulator;
 import avrora.util.Terminal;
 import avrora.Avrora;
+import avrora.Main;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +61,7 @@ public class InterruptScheduler {
     public InterruptScheduler(String fname, Simulator s) {
         simulator = s;
         maxInt = s.getInterpreter().getInterruptTable().getNumberOfInterrupts();
+        Main.checkFileExists(fname);
         schedFile = new File(fname);
         currentLine = 1;
 

@@ -281,7 +281,7 @@ public class RegisterSet {
      * The <code>share()</code> method is NOT meant for general use. It is used ONLY by the interpreter to
      * share the underlying array representation that maps from register address to an actual register
      * object.
-     * @return
+     * @return a reference to the array containing references to the actual register objects
      */
     public ActiveRegister[] share() {
         return registers;

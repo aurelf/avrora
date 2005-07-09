@@ -159,14 +159,11 @@ public class Main {
     }
 
     private static void loadFile(String fname) throws IOException {
+        Main.checkFileExists(fname);
         File f = new File(fname);
-        if (f.exists()) {
-            Properties defs = new Properties();
-            defs.load(new FileInputStream(f));
-            mainOptions.process(defs);
-        } else {
-            Avrora.userError("Configuration file does not exist", fname);
-        }
+        Properties defs = new Properties();
+        defs.load(new FileInputStream(f));
+        mainOptions.process(defs);
     }
 
     static HelpCategory buildHelpCategory() {
@@ -368,11 +365,15 @@ public class Main {
 
     public static void checkFilesExist(String[] files) {
         for ( int cntr = 0; cntr < files.length; cntr++ ) {
-            File f = new File(files[cntr]);
-            if ( !f.exists() ) {
-                Avrora.userError("File not found", files[cntr]);
-                return;
-            }
+            checkFileExists(files[cntr]);
+        }
+    }
+
+    public static void checkFileExists(String fstr) {
+        File f = new File(fstr);
+        if ( !f.exists() ) {
+            Avrora.userError("File not found", fstr);
+            return;
         }
     }
 }

@@ -1,6 +1,7 @@
 package avrora.actions;
 
 import avrora.Avrora;
+import avrora.Main;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
 import avrora.core.Disassembler;
@@ -34,8 +35,9 @@ public class DisassembleAction extends Action {
         if ( args.length < 1 )
             Avrora.userError("no input files");
 
-        File f = new File(args[0]);
-        FileInputStream fis = new FileInputStream(f);
+        String fname = args[0];
+        Main.checkFileExists(fname);
+        FileInputStream fis = new FileInputStream(new File(fname));
 
         byte[] buf = new byte[fis.available()];
         int len = fis.read(buf);

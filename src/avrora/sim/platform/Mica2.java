@@ -87,7 +87,7 @@ public class Mica2 implements Platform, PlatformFactory {
     /**
      * The <code>getMicrocontroller()</code> method gets a reference to the microcontroller for
      * this platform instance.
-     * @return
+     * @return a new instance of this microcontroller
      */
     public Microcontroller getMicrocontroller() {
         return mcu;

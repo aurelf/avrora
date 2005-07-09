@@ -36,6 +36,7 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.clock.Clock;
 import avrora.sim.Simulator;
 import avrora.Avrora;
+import avrora.Main;
 
 import java.io.*;
 
@@ -56,6 +57,7 @@ public class ReplaySensorData implements SensorData {
 
     public ReplaySensorData(Microcontroller m, String fn) throws IOException {
         clock = m.getClockDomain().getMainClock();
+        Main.checkFileExists(fn);
         file = new File (fn);
         fr = new FileReader(file);
         st = new StreamTokenizer(fr);

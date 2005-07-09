@@ -34,6 +34,7 @@ package avrora.sim.types;
 
 import avrora.sim.Simulation;
 import avrora.sim.SimulatorThread;
+import avrora.sim.util.InterruptScheduler;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.clock.Synchronizer;
 import avrora.Avrora;
