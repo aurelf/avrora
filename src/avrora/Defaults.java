@@ -207,10 +207,10 @@ public class Defaults {
 
     private static void addPlatforms() {
         if (platforms == null) {
-            platforms = new ClassMap("Platform", Platform.class);
+            platforms = new ClassMap("Platform", PlatformFactory.class);
             //-- DEFAULT PLATFORMS
-            platforms.addClass("mica2", Mica2.class);
-            platforms.addClass("seres", Seres.class);
+            platforms.addClass("mica2", Mica2.Factory.class);
+            platforms.addClass("seres", Seres.Factory.class);
         }
     }
 

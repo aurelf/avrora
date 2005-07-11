@@ -39,13 +39,14 @@ import avrora.sim.FiniteStateMachine;
 import avrora.sim.platform.sensors.SensorData;
 
 /**
+ * The <code>LightSensor</code> class implements a light sensor like that present on the Mica2.
+ *
  * @author Ben L. Titzer
  */
-public class LightSensor {
+public class LightSensor extends Sensor {
 
     protected final AtmelMicrocontroller mcu;
     protected final int channel;
-    protected final SensorData data;
 
     protected final FiniteStateMachine fsm;
 
@@ -53,10 +54,9 @@ public class LightSensor {
     protected boolean power;
     protected boolean on;
 
-    public LightSensor(AtmelMicrocontroller m, int adcChannel, String onPin, String powPin, SensorData sd) {
+    public LightSensor(AtmelMicrocontroller m, int adcChannel, String onPin, String powPin) {
         mcu = m;
         channel = adcChannel;
-        data = sd;
         mcu.getPin(onPin).connect(new OnPin());
         mcu.getPin(powPin).connect(new PowerPin());
         fsm = new FiniteStateMachine(mcu.getClockDomain().getMainClock(), 0, names, 0);
@@ -87,11 +87,9 @@ public class LightSensor {
 
     class ADCInput implements ADC.ADCInput {
         public int getLevel() {
-            if ( power && on ) {
-                return data.reading();
-            } else {
-                return ADC.GND_LEVEL;
-            }
+            if ( data == null ) return ADC.GND_LEVEL;
+            if ( !power || !on ) return ADC.GND_LEVEL;
+            return data.reading();
         }
     }
 }

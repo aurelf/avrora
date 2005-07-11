@@ -30,54 +30,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim.platform;
-
-import avrora.sim.mcu.Microcontroller;
-
-import java.util.HashMap;
+package avrora.sim.platform.sensors;
 
 /**
- * The <code>Platform</code> interface represents both a microcontroller instance and the devices connected to
- * it. These two things together describe a node and its capabilities.
+ * The <code>Sensor</code> class represents a sensor device that contains a reference
+ * to the <code>SensorData</code> instance feeding data to the device.
  *
  * @author Ben L. Titzer
  */
-public abstract class Platform {
+public class Sensor {
 
-    protected final Microcontroller mcu;
-    protected final HashMap devices;
-
-    protected Platform(Microcontroller m) {
-        mcu = m;
-        devices = new HashMap();
-    }
+    protected SensorData data;
 
     /**
-     * The <code>getMicrocontroller()</code> method returns a reference to the microcontroller that is driving
-     * this platform.
-     * @return a reference to the microcontroller in this platform
+     * The <code>setSensorData()</code> method sets the reference to the sensor data
+     * for this sensor device.
+     * @param d the new sensor data source
      */
-    public Microcontroller getMicrocontroller() {
-        return mcu;
-    }
-
-    /**
-     * The <code>addDevice()</code> method is used by subclasses of <code>Platform</code> to add external
-     * devices that are connected to the microcontroller.
-     * @param name the name of the device as a string
-     * @param o the object representing the device
-     */
-    protected void addDevice(String name, Object o) {
-        devices.put(name, o);
-    }
-
-    /**
-     * The <code>getDevice()</code> method looks up a device attached to this platform. This device might
-     * be a radio, a sensor, etc.
-     * @param name the name of the device as a string
-     * @return an object representing the device if it exists; null otherwise
-     */
-    public Object getDevice(String name) {
-        return devices.get(name);
+    public void setSensorData(SensorData d) {
+        data = d;
     }
 }

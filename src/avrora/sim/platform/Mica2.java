@@ -63,9 +63,28 @@ import java.io.IOException;
  *
  * @author Ben L. Titzer, Daniel Lee
  */
-public class Mica2 implements Platform, PlatformFactory {
+public class Mica2 extends Platform {
 
-    protected final Microcontroller mcu;
+    protected static final int MAIN_HZ = 7372800;
+
+    public static class Factory implements PlatformFactory {
+
+        /**
+         * The <code>newPlatform()</code> method is a factory method used to create new instances of the
+         * <code>Mica2</code> class.
+         * @param id the integer ID of the node
+         * @param f the interpreter factory for the node
+         * @param p the program to load onto the node
+         * @return a new instance of the <code>Mica2</code> platform
+         */
+        public Platform newPlatform(int id, InterpreterFactory f, Program p) {
+            ClockDomain cd = new ClockDomain(MAIN_HZ);
+            cd.newClock("external", 32768);
+
+            return new Mica2(new ATMega128(id, cd, f, p));
+        }
+    }
+
     protected final Simulator sim;
 
     protected Radio radio;
@@ -73,39 +92,10 @@ public class Mica2 implements Platform, PlatformFactory {
     protected ExternalFlash externalFlash;
     protected LightSensor lightSensor;
 
-    public Mica2() {
-        mcu = null;
-        sim = null;
-    }
-
     private Mica2(Microcontroller m) {
-        mcu = m;
+        super(m);
         sim = m.getSimulator();
         addDevices();
-    }
-
-    /**
-     * The <code>getMicrocontroller()</code> method gets a reference to the microcontroller for
-     * this platform instance.
-     * @return a new instance of this microcontroller
-     */
-    public Microcontroller getMicrocontroller() {
-        return mcu;
-    }
-
-    /**
-     * The <code>newPlatform()</code> method is a factory method used to create new instances of the
-     * <code>Mica2</code> class.
-     * @param id the integer ID of the node
-     * @param f the interpreter factory for the node
-     * @param p the program to load onto the node
-     * @return a new instance of the <code>Mica2</code> platform
-     */
-    public Platform newPlatform(int id, InterpreterFactory f, Program p) {
-        ClockDomain cd = new ClockDomain(7372800);
-        cd.newClock("external", 32768);
-
-        return new Mica2(new ATMega128(id, cd, f, p));
     }
 
     /**
@@ -126,21 +116,16 @@ public class Mica2 implements Platform, PlatformFactory {
         mcu.getPin("PA2").connect(red);
 
         // radio
-        radio = new CC1000Radio(mcu, 7372800 * 2);
+        radio = new CC1000Radio(mcu, MAIN_HZ * 2);
+        addDevice("radio", radio);
         // sensor board
         sensorboard = new SensorBoard(sim);
         // external flash
         // externalFlash = new ExternalFlash(mcu);
         // light sensor
         AtmelMicrocontroller amcu = (AtmelMicrocontroller)mcu;
-        lightSensor = new LightSensor(amcu, 1, "PC2", "PE5", new RandomSensorData(new Random()));
+        lightSensor = new LightSensor(amcu, 1, "PC2", "PE5");
+        addDevice("light-sensor", lightSensor);
     }
 
-    /**
-     * The <code>getRadio()</code> method returns a reference to the radio for this node.
-     * @return the radio on this sensor node
-     */
-    public Radio getRadio() {
-        return radio;
-    }
 }

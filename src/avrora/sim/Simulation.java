@@ -122,9 +122,10 @@ public abstract class Simulation extends HelpCategory {
         public final int id;
         protected final LoadableProgram path;
 
-        protected final PlatformFactory platform;
+        protected final PlatformFactory platformFactory;
         protected final LinkedList monitors;
 
+        protected Platform platform;
         protected Simulator simulator;
         protected SimulatorThread thread;
 
@@ -140,7 +141,7 @@ public abstract class Simulation extends HelpCategory {
          */
         protected Node(int id, PlatformFactory pf, LoadableProgram p) {
             this.id = id;
-            this.platform = pf;
+            this.platformFactory = pf;
             this.path = p;
             this.monitors = new LinkedList();
         }
@@ -153,8 +154,8 @@ public abstract class Simulation extends HelpCategory {
          */
         protected void instantiate() {
             // create the simulator object
-            Platform p = platform.newPlatform(id, Defaults.getInterpreterFactory(), path.getProgram());
-            simulator = p.getMicrocontroller().getSimulator();
+            platform = platformFactory.newPlatform(id, Defaults.getInterpreterFactory(), path.getProgram());
+            simulator = platform.getMicrocontroller().getSimulator();
             processTimeout();
             processInterruptSched();
             synchronizer.addNode(this);

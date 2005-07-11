@@ -35,8 +35,14 @@ package avrora.sim.types;
 import avrora.sim.Simulation;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.mcu.Microcontroller;
 import avrora.sim.clock.IntervalSynchronizer;
 import avrora.sim.platform.PlatformFactory;
+import avrora.sim.platform.Platform;
+import avrora.sim.platform.sensors.SensorData;
+import avrora.sim.platform.sensors.RandomSensorData;
+import avrora.sim.platform.sensors.ReplaySensorData;
+import avrora.sim.platform.sensors.Sensor;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
 import avrora.sim.radio.SimpleAir;
@@ -53,6 +59,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>SensorSimulation</code> class represents a simulaion type where multiple sensor nodes,
@@ -94,23 +102,76 @@ public class SensorSimulation extends Simulation {
             "of clock cycles. For example, if this option is given the " +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
+    public final Option.List SENSOR_DATA = options.newOptionList("sensor-data", "", 
+            "This option accepts a list describing the input data for each sensor node. The format " +
+            "for each entry in this list is <sensor>:<id>:<data>, where <sensor> is the name of " +
+            "the sensor device such as \"light\", <id> is the integer ID of the node, and <data> is " +
+            "the name of a file or the special '.' character, indicating random data. A sensor data " +
+            "input file consists of an initial sensor reading which is interpreted as a 10-bit ADC " +
+            "result, then a list of time value pairs separated by whitespace; the sensor will continue " +
+            "returning the current value until the next (relative) time in seconds, and then the sensor " +
+            "will change to the new value. ");
 
+    class SensorDataInput {
+        String sensor;
+        String fname;
+
+        void instantiate(Platform p) {
+            try {
+                Sensor s = (Sensor)p.getDevice(sensor+"-sensor");
+                if ( s == null )
+                    Avrora.userError("Sensor device does not exist", sensor);
+                if ( ".".equals(fname) ) s.setSensorData(new RandomSensorData(getRandom()));
+                else s.setSensorData(new ReplaySensorData(p.getMicrocontroller(), fname));
+            } catch ( IOException e) {
+                throw Avrora.unexpected(e);
+            }
+        }
+    }
+
+    /**
+     * The <code>SensorNode</code> class extends the <code>Node</code> class of a simulation
+     * by adding a reference to the radio device as well as sensor data input. It extends the
+     * <code>instantiate()</code> method to create a new thread for the node and to attach the
+     * sensor data input.
+     */
     protected class SensorNode extends Node {
         Radio radio;
         long startup;
+        List sensorInput;
 
         SensorNode(int id, PlatformFactory pf, LoadableProgram p) {
             super(id, pf, p);
+            sensorInput = new LinkedList();
         }
 
+        /**
+         * The <code>instantiate()</code> method of the sensor node extends the default simulation node
+         * by creating a new thread to execute the node as well as getting references to the radio and
+         * adding it to the radio model, adding
+         * an optional start up delay for each node, and connecting the node's sensor input to
+         * replay or random data as specified on the command line.
+         */
         protected void instantiate() {
+            // create a new thread for this node
             thread = new SimulatorThread(this);
             super.instantiate();
-            radio = simulator.getMicrocontroller().getRadio();
+            radio = (Radio)platform.getDevice("radio");
             air.addRadio(radio);
             simulator.delay(startup);
+
+            // process sensor data inputs
+            Iterator i = sensorInput.iterator();
+            while ( i.hasNext() ) {
+                SensorDataInput sdi = (SensorDataInput)i.next();
+                sdi.instantiate(platform);
+            }
         }
 
+        /**
+         * The <code>remove()</code> method removes this node from the simulation. This method extends the
+         * default simulation remove method by removing the node from the radio air implementation.
+         */
         protected void remove() {
             air.removeRadio(radio);
         }
@@ -126,7 +187,8 @@ public class SensorSimulation extends Simulation {
         addOptionSection("This simulation type supports simulating multiple sensor network nodes that communicate " +
                 "with each other over radios. There are options to specify how many of each type of sensor node to " +
                 "instantiate, as well as the program to be loaded onto each node, and an optional topology file " +
-                "that describes the physical layout of the sensor network.", options);
+                "that describes the physical layout of the sensor network. Also, each node's sensors can be " +
+                "supplied with random or replay sensor data through the \"sensor-data\" option.", options);
 
         PLATFORM.setNewDefault("mica2");
     }
@@ -166,7 +228,14 @@ public class SensorSimulation extends Simulation {
         air = getRadioAir();
         synchronizer = air.getSynchronizer();
 
-        // instantiate the nodes
+        // create the nodes based on arguments
+        createNodes(args, pf);
+        
+        // process the sensor data input option
+        processSensorInput();
+    }
+
+    private void createNodes(String[] args, PlatformFactory pf) throws Exception {
         int cntr = 0;
         Iterator i = NODECOUNT.get().iterator();
         while (i.hasNext()) {
@@ -185,7 +254,38 @@ public class SensorSimulation extends Simulation {
                 n.startup = r + s;
             }
         }
+    }
+    
+    private void processSensorInput() {
+        Iterator i = SENSOR_DATA.get().iterator();
+        while ( i.hasNext() ) {
+            String str = (String)i.next();
+            int ind = str.indexOf(':');
+            if ( ind <= 0 )
+                Avrora.userError("Sensor data format error", str);
+            String sensor = str.substring(0, ind);
+            String rest = str.substring(ind+1);
+            int ind2 = rest.indexOf(':');
+            if ( ind2 <= 0 )
+                Avrora.userError("Sensor data format error", str);
+            String id = rest.substring(0, ind2);
+            String file = rest.substring(ind2+1);
 
+            addSensorData(id, file, sensor);
+        }
+    }
+
+    private void addSensorData(String id, String file, String sensor) {
+        int num = StringUtil.evaluateIntegerLiteral(id);
+        SensorNode node = (SensorNode)getNode(num);
+        if ( node != null ) {
+            SensorDataInput sdi = new SensorDataInput();
+            sdi.fname = file;
+            sdi.sensor = sensor;
+            node.sensorInput.add(sdi);
+            if (! ".".equals(file) )
+                Main.checkFileExists(file);
+        }
     }
 
     private RadioAir getRadioAir() throws IOException {
@@ -197,23 +297,17 @@ public class SensorSimulation extends Simulation {
     }
 
     long processRandom() {
-        long size = RANDOM_START.getHigh() - RANDOM_START.getLow();
+        long low = RANDOM_START.getLow();
+        long size = RANDOM_START.getHigh() - low;
         long delay = 0;
         if (size > 0) {
-            if (random == null) {
-                long seed;
-                if ((seed = RANDOMSEED.get()) != 0)
-                    random = new Random(seed);
-                else
-                    random = new Random();
-            }
-
-            delay = random.nextLong();
+            Random r = getRandom();
+            delay = r.nextLong();
             if (delay < 0) delay = -delay;
             delay = delay % size;
         }
 
-        return (RANDOM_START.getLow() + delay);
+        return (low + delay);
     }
 
     long processStagger() {

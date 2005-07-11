@@ -45,23 +45,13 @@ import avrora.core.Program;
  *
  * @author Ben L. Titzer
  */
-public class DefaultPlatform implements Platform {
+public class DefaultPlatform extends Platform {
 
     public final int id;
-    public final Microcontroller mcu;
-
-    /**
-     * The <code>getMicrocontroller()</code> method returns a reference to the microcontroller that is driving
-     * this platform.
-     * @return a reference to the microcontroller in this platform
-     */
-    public Microcontroller getMicrocontroller() {
-        return mcu;
-    }
 
     DefaultPlatform(int id, Microcontroller mcu) {
+        super(mcu);
         this.id = id;
-        this.mcu = mcu;
     }
 
     /**

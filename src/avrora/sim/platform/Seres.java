@@ -52,32 +52,24 @@ import avrora.util.Terminal;
  *
  * @author Jacob Everist
  */
-public class Seres implements Platform, PlatformFactory {
+public class Seres extends Platform {
 
-    protected final Microcontroller mcu;
     protected final Simulator sim;
     protected PinConnect pinConnect;
 
-    public Seres() {
-        mcu = null;
-        sim = null;
-    }
-
     private Seres(Microcontroller m) {
-        mcu = m;
+        super(m);
         sim = m.getSimulator();
         addDevices();
     }
 
-    public Microcontroller getMicrocontroller() {
-        return mcu;
-    }
-
-    public Platform newPlatform(int id, InterpreterFactory f, Program p) {
-        ClockDomain cd = new ClockDomain(7372800);
-        cd.newClock("external", 32768);
-
-        return new Seres(new ATMega128(id, cd, f, p));
+    public static class Factory implements PlatformFactory {
+        public Platform newPlatform(int id, InterpreterFactory f, Program p) {
+            ClockDomain cd = new ClockDomain(7372800);
+            cd.newClock("external", 32768);
+    
+            return new Seres(new ATMega128(id, cd, f, p));
+        }
     }
 
     /**
