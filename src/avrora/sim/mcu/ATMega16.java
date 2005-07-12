@@ -48,7 +48,7 @@ import java.util.HashMap;
  *
  * @author Ben L. Titzer
  * @author Bastian Schlich
- * @author John F. Schommer 
+ * @author John F. Schommer
  * 
  */
 public class ATMega16 extends ATMegaFamily {
@@ -60,7 +60,7 @@ public class ATMega16 extends ATMegaFamily {
     public static final int ATMEGA16_SRAM_SIZE = 1 * _1kb;
     public static final int ATMEGA16_FLASH_SIZE = 16 * _1kb;
     public static final int ATMEGA16_EEPROM_SIZE = 1 * _512b;
-    public static final int ATMEGA16_NUM_PINS = 40;
+    public static final int ATMEGA16_NUM_PINS = 41;
     public static final int ATMEGA16_NUM_INTS = 22;
 
     public static final int MODE_IDLE       = 1;
@@ -218,15 +218,6 @@ public class ATMega16 extends ATMegaFamily {
         rl.addIOReg("TWSR", 0x01);
         rl.addIOReg("TWBR", 0x00);
 
-        // note: the UART implementation assumes the names are UDRn, etc.
-/*
-        rl.addIOReg("UBRR0H", 0x20);
-        rl.addIOReg("UDR0", 0x0C);
-        rl.addIOReg("UCSR0A", 0x0B);
-        rl.addIOReg("UCSR0B", 0x0A);
-        rl.addIOReg("UBRR0L", 0x09);
-*/
-
         addInterrupt(interruptAssignments, "RESET", 1);
         addInterrupt(interruptAssignments, "INT0", 2);
         addInterrupt(interruptAssignments, "INT1", 3);
@@ -240,7 +231,7 @@ public class ATMega16 extends ATMegaFamily {
         addInterrupt(interruptAssignments, "TIMER0 COMP", 20);
         addInterrupt(interruptAssignments, "TIMER0 OVF", 10);
         addInterrupt(interruptAssignments, "SPI, ST", 11);
-        addInterrupt(interruptAssignments, "USART, RXC", 12);
+        addInterrupt(interruptAssignments, "USART, RX", 12);
         addInterrupt(interruptAssignments, "USART, UDRE", 13);
         addInterrupt(interruptAssignments, "USART, TX", 14);
         addInterrupt(interruptAssignments, "ADC", 15);
