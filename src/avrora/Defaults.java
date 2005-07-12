@@ -40,6 +40,7 @@ import avrora.util.help.ClassMapValueItem;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.ATMega128;
 import avrora.sim.mcu.ATMega32;
+import avrora.sim.mcu.ATMega16;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
@@ -196,10 +197,12 @@ public class Defaults {
 
             // plug in a new help category for simulations accesible with "-help simulations"
             HelpCategory hc = new HelpCategory("simulations", "Help for Simulation types.");
-            addOptionSection(hc, "SIMULATION TYPES", "Avrora accepts the \"-simulation\" command line option " +
-                    "that you can use to select from the available simulation types that Avrora " +
-                    "provides. This simulation might be for a sensor network application, " +
-                    "a single node simulation, or a robotics simulation. ", "-simulation", simMap);
+            addOptionSection(hc, "SIMULATION TYPES",
+                    "When running a simulation, Avrora accepts the \"-simulation\" command line option " +
+                    "that selects the simulation type from multiple different types provided, or a " +
+                    "user-supplied Java class of your own. For example, a simulation might be for a " +
+                    "sensor network application, a single node simulation, or a robotics simulation. ",
+                    "-simulation", simMap);
             addMainCategory(hc);
             addSubCategories(simMap);
         }
@@ -220,6 +223,7 @@ public class Defaults {
             //-- DEFAULT MICROCONTROLLERS
             microcontrollers.addInstance("atmega128", new ATMega128.Factory());
             microcontrollers.addInstance("atmega32", new ATMega32.Factory());
+            microcontrollers.addInstance("atmega16", new ATMega16.Factory());
         }
     }
 

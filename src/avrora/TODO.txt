@@ -60,6 +60,7 @@
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+    1    sim  [Bastian Schlich] ATMega16 device added              (1.5.109)
   2-3    sim  Full support for ATMega32 device                     (1.5.105)
     1   devs  Added lightsensor, RandomSensorData                  (1.5.103)
     1   devs  First version of RegisterSet for bitfields           (1.5.102)
