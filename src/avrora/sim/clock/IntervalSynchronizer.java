@@ -191,7 +191,11 @@ public class IntervalSynchronizer extends Synchronizer {
      * not guaranteed to stop all the simulation threads at the same global time.
      */
     public synchronized void stop() {
-        throw Avrora.unimplemented();
+        Iterator threadIterator = threadMap.keySet().iterator();
+        while (threadIterator.hasNext()) {
+            SimulatorThread thread = (SimulatorThread)threadIterator.next();
+            thread.getSimulator().stop();
+        }
     }
 
     /**

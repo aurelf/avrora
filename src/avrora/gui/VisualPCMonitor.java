@@ -55,67 +55,12 @@ import javax.swing.*;
  */
 public class VisualPCMonitor extends SingleNodeMonitor implements Simulation.Monitor {
 
-    public class PCMonitor extends Monitor implements avrora.gui.VisualMonitor, Simulator.Probe {
-        public final Simulator simulator;
-        public final Program program;
-        public JPanel visualPanel;
+    public class PCMonitor extends SingleNodePanel implements Simulator.Probe, MonitorPanel.Updater {
+        public Simulator simulator;
         public JPanel visualOptionsPanel;
-        public GraphNumbers theGraph;
+        public GraphNumbers graph;
         public Object vSync;
 
-        //ugly temp hack - delete once you figure out permanent solution for
-        //global monitors
-        GraphEvents tempEvent;
-
-        public GraphEvents getGraph() {
-            return tempEvent;
-        }
-
-
-        /**
-         * This will defer to the GraphNumbers internal methods
-         * to handle the update of the data and the repaint
-         */
-        public void updateDataAndPaint() {
-            //So if there are new numbers that we added,
-            //we repaint the thing.
-            if (theGraph.internalUpdate()) {
-                //So I know, I know - I'm suppose to call repaint()
-                //But it doesn't work in this case...Java batches
-                //the repaint request and gets to it when it feels like
-                //it....destroying the illusion of seeing the graph
-                //update in real time.
-                //I guess my point is, you can change this this to repaint,
-                //but we REALLY want paint ot be called and not have the AWT
-                //mess anything up or decide to do something else.
-                theGraph.paint(theGraph.getGraphics());
-            }
-        }
-
-
-        /**
-         * allows vAction to link the GUI and our monitor via the passed panels..
-         * it is also where we init our graph and start the paint thread
-         * Think of it as the constructor for the visual elements of this monitor
-         */
-        public void setVisualPanel(JPanel thePanel, JPanel theOptionsPanel) {
-            visualPanel = thePanel;
-
-            //This is where we should set up the graph panel itself (aka the chalkbord)
-            visualPanel.removeAll();
-            visualPanel.setLayout(new BorderLayout());
-            theGraph = new GraphNumbers(0, 500, 3);
-            theGraph.setParentPanel(visualPanel);
-            visualPanel.add(theGraph.chalkboardAndBar(), BorderLayout.CENTER);
-            visualPanel.validate();
-
-            //And we should set up the options panel
-            visualOptionsPanel = theOptionsPanel;
-            visualOptionsPanel.removeAll();
-            visualOptionsPanel.setLayout(new BorderLayout());
-            visualOptionsPanel.add(theGraph.getOptionsPanel(), BorderLayout.CENTER);
-            visualOptionsPanel.validate();
-        }
 
         public void fireBefore(State s, int address) {
             // do nothing
@@ -127,29 +72,38 @@ public class VisualPCMonitor extends SingleNodeMonitor implements Simulation.Mon
          */
         public void fireAfter(State s, int address) {
             //add address to our vector
-            theGraph.addToVector(address);
+            graph.addToVector(address);
         }
 
-        PCMonitor(Simulator s) {
+        PCMonitor(Simulation.Node n, MonitorPanel p) {
+            super(n, p);
+        }
+
+        public void construct(Simulator s) {
+            //This is where we should set up the graph panel itself (aka the chalkbord)
+            JPanel displayPanel = panel.displayPanel;
+            displayPanel.removeAll();
+            displayPanel.setLayout(new BorderLayout());
+            graph = new GraphNumbers(displayPanel, 0, 500, 3);
+            displayPanel.add(graph.chalkboardAndBar(), BorderLayout.CENTER);
+            displayPanel.validate();
+            panel.setUpdater(this);
             simulator = s;
-            program = s.getProgram();
-            // insert the global probe
-            s.insertProbe(this);
+            simulator.insertProbe(this);
         }
 
-        /**
-         * The <code>report()</code> method generates a textual report after the simulation is complete.
-         * The report does nothing in this case, because this is a visual monitor
-         */
-        public void report() {
-            updateDataAndPaint();  //in case there is still stuff in the queue...
-            //we better take it out
-        }
-
-        protected void remove() {
-            // TODO: is report necessary when we remove?
-            report();
+        public void destruct() {
             simulator.removeProbe(this);
+        }
+
+        public void remove() {
+            simulator.removeProbe(this);
+        }
+
+        public void update() {
+            if ( graph.internalUpdate() ) {
+                graph.paint(graph.getGraphics());
+            }
         }
 
     }
@@ -160,10 +114,10 @@ public class VisualPCMonitor extends SingleNodeMonitor implements Simulation.Mon
      * <code>newMonitor()</code> method.
      */
     public VisualPCMonitor() {
-        super();
+        super("pc");
     }
 
-    protected Monitor newMonitor(Simulation.Node n) {
-        return new PCMonitor(n.getSimulator());
+    protected SingleNodePanel newPanel(Simulation.Node n, MonitorPanel p) {
+        return new PCMonitor(n, p);
     }
 }

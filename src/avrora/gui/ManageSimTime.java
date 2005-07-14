@@ -224,6 +224,7 @@ public class ManageSimTime {
         Simulation sim = AvroraGui.instance.getSimulation();
         if (STOP.equals(cmd)) {
             sim.stop();
+            AvroraGui.instance.stopPaintThread();
             return true;
 
         } else if (RESUME.equals(cmd)) {
@@ -243,6 +244,7 @@ public class ManageSimTime {
                 // TODO: reset monitor panels
                 //clearMonitorPanels();
                 sim.start();
+                AvroraGui.instance.startPaintThread();
             } else {
                 //this would most probably be run if we
                 //hit play and a sim is already running unpaused...in which

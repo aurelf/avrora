@@ -454,8 +454,7 @@ public class ManageSimInput {
             // TODO: display exception loading file
             throw Avrora.failure(e.toString());
         }
-        // TODO: get the platform factory from the dialog
-        PlatformFactory pf = null;
+        PlatformFactory pf = Defaults.getPlatform("mica2");
         Simulation s = AvroraGui.instance.getSimulation();
 
         int max = ((Integer) numOfNodesSpinner.getValue()).intValue();

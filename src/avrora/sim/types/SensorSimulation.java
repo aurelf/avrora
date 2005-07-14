@@ -235,6 +235,21 @@ public class SensorSimulation extends Simulation {
         processSensorInput();
     }
 
+    public void setAir(RadioAir nair) {
+        air = nair;
+        synchronizer = air.getSynchronizer();
+    }
+
+    protected void instantiateNodes() {
+        try {
+            // we need to build a new air model
+            setAir(getRadioAir());
+        } catch ( IOException e ) {
+            throw Avrora.unexpected(e);
+        }
+        super.instantiateNodes();
+    }
+
     private void createNodes(String[] args, PlatformFactory pf) throws Exception {
         int cntr = 0;
         Iterator i = NODECOUNT.get().iterator();

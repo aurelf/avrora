@@ -38,6 +38,7 @@ import javax.swing.event.*;
 import java.awt.event.*;
 
 import avrora.util.Terminal;
+import avrora.util.profiling.Measurements;
 import avrora.actions.VisualAction;
 
 /**
@@ -46,9 +47,9 @@ import avrora.actions.VisualAction;
  */
 public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentListener {
 
-    private MyVector publicNumbers; //access by monitors to add stuff
-    private MyVector privateNumbers; //only accessed by paint
-    private JPanel parentPanel;
+    private Measurements publicNumbers; //access by monitors to add stuff
+    private Measurements privateNumbers; //only accessed by paint
+    private final JPanel parentPanel;
     
     private Object vSync; //just a private sync variable
 
@@ -98,12 +99,14 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * @param pmaxvalue The max value for the y-axis
      * @param pstepsize The step size for the x-axis
      */
-    public GraphNumbers(int pminvalue, int pmaxvalue, int pstepsize) {
-        
+    public GraphNumbers(JPanel parent, int pminvalue, int pmaxvalue, int pstepsize) {
+
+        parentPanel = parent;
+
         vSync = new Object();
 
-        publicNumbers = new MyVector();
-        privateNumbers = new MyVector();
+        publicNumbers = new Measurements();
+        privateNumbers = new Measurements();
 
         //Set option defaults
         lineColor = Color.GREEN; //default line color is green
@@ -284,14 +287,6 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     }
 
     /**
-     * Used in order to size thing correctly.  Should be called
-     * right after the constructor is called
-     */
-    public void setParentPanel(JPanel pparentPanel) {
-        parentPanel = pparentPanel;
-    }
-
-    /**
      * This function is called by fire methods inside a monitor.  It
      * physically adds data values that will be displayed upon
      * next update/repaint
@@ -314,21 +309,9 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
             if (publicNumbers.size() == 0) {
                 return false;
             }
-            //so we need to take anything in private and move it to public
 
-            //do the move
-            try {
-                privateNumbers.addAll(publicNumbers);
-            } catch (OutOfMemoryError e) {
-                //Note that it's possible to get an out of memory exception
-                //elsewhere, but "most probably" it will be here
-                Terminal.println("RAN OUT OF HEAP SPACE FOR MONITOR");
-                Terminal.println("SIZE OF MONITORS VECTOR AT THE TIME: " + Integer.toString(privateNumbers.size()));
-                //TODO: Find a stop sim function and use it here
-                //vAction.stopSim();
-            }
-
-            publicNumbers.removeAllElements();
+            privateNumbers.addAll(publicNumbers);
+            publicNumbers = new Measurements();
         }
 
         //and update the horz scroll bar to reflect the new values
@@ -362,16 +345,14 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
         //we have to look up the starting value for the x-axis
         int startingvalue = getHorzBarValue();
-        for (int i = startingvalue; i < startingvalue + panelDimen.width / stepsize && i < privateNumbers.size(); i++)
-                //for (Enumeration e = privateNumbers.elements(); e.hasMoreElements(); )
+        Measurements.Iterator mi = privateNumbers.iterator(startingvalue);
+        int max = startingvalue + panelDimen.width / stepsize;
+        for (int i = startingvalue; mi.hasNext() && i < max ; i++)
         {
-            //Integer currentYPoint = (Integer)e.nextElement();
-            Integer currentYPoint = new Integer(privateNumbers.get(i));
-            double currentYPointdb = currentYPoint.doubleValue();
+            double currentYPointdb = mi.next();
             if (firstone) {
                 //the we don't draw the vertical line, we just draw the horzintal
-                Double temploc = new Double(currentYPointdb * scalingfactor);
-                eofpy = temploc.intValue();
+                eofpy = (int)(currentYPointdb * scalingfactor);
                 eofpx = 0;
                 g.setColor(lineColor);
                 g.drawLine(eofpx, eofpy, stepsize, eofpy);
@@ -379,14 +360,14 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
                 firstone = false;
             } else {
                 //two lines (one horzintal and one vertical), using the previous point as a starting location
-                Double temploc = new Double(currentYPointdb * scalingfactor);
+                int temploc = (int)(currentYPointdb * scalingfactor);
                 //vertical
                 g.setColor(lineColor);
-                g.drawLine(eofpx, eofpy, eofpx, temploc.intValue());
+                g.drawLine(eofpx, eofpy, eofpx, temploc);
                 //horz
                 g.setColor(lineColor);
-                g.drawLine(eofpx, temploc.intValue(), eofpx + stepsize, temploc.intValue());
-                eofpy = temploc.intValue();
+                g.drawLine(eofpx, temploc, eofpx + stepsize, temploc);
+                eofpy = temploc;
                 eofpx = eofpx + stepsize;
             }
             //Let's draw some horzintal markers to make things snazzy
@@ -419,50 +400,4 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         repaint();
     }
 
-    /**
-     * We don't want to store millions of Integer, but we still want
-     * an array that grows...so we define a MyVector class just for that
-     */
-    public class MyVector {
-        int[] vec;
-        int current;
-
-        public MyVector() {
-            vec = new int[100];
-            current = 0;
-        }
-
-        public void add(int a) {
-            if (current == vec.length) {
-                //create a new array of double the size
-                int[] vec2 = new int[vec.length * 2];
-                System.arraycopy(vec, 0, vec2, 0, vec.length);
-                vec = vec2;
-            }
-            vec[current] = a;
-            current++;
-        }
-
-        public int get(int i) {
-            if (i < current)
-                return vec[i];
-            else
-                return 0; //this is sorta stupid, but we'll be careful
-        }
-
-        public void addAll(MyVector a) {
-            for (int i = 0; i < a.size(); i++) {
-                add(a.get(i));
-            }
-        }
-
-        public int size() {
-            return current;
-        }
-
-        public void removeAllElements() {
-            vec = new int[100];
-            current = 0;
-        }
-    }
 }

@@ -159,12 +159,20 @@ public abstract class Simulation extends HelpCategory {
             processTimeout();
             processInterruptSched();
             synchronizer.addNode(this);
-            // for each of the monitors in the list, allow them to create their data structures
+            // OLD MONITOR API SUPPORT:
+            // for each of the monitors in the factory list, create a new monitor
             Iterator i = monitorFactoryList.iterator();
             while ( i.hasNext() ) {
                 MonitorFactory f = (MonitorFactory)i.next();
                 avrora.monitors.Monitor m = f.newMonitor(simulator);
                 if ( m != null ) monitors.add(m);
+            }
+            // NEW MONITOR API SUPPORT:
+            // for each monitor attached to this node, allow them to construct data structures
+            Iterator mi = monitors.iterator();
+            while ( mi.hasNext() ) {
+                Monitor mon = (Monitor)mi.next();
+                mon.construct(Simulation.this, this, simulator);
             }
         }
 
@@ -384,6 +392,12 @@ public abstract class Simulation extends HelpCategory {
         // if we are already running, do nothing
         if ( running ) return;
 
+        instantiateNodes();
+        synchronizer.start();
+        running = true;
+    }
+
+    protected void instantiateNodes() {
         // instantiate all of the nodes (and create threads)
         for ( int cntr = 0; cntr < nodes.length; cntr++ ) {
             Node n = nodes[cntr];
@@ -391,8 +405,6 @@ public abstract class Simulation extends HelpCategory {
 
             n.instantiate(); // create the simulator and simulator thread
         }
-
-        synchronizer.start();
     }
 
     /**

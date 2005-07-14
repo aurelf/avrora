@@ -36,6 +36,7 @@ import avrora.actions.VisualAction;
 import avrora.Version;
 import avrora.Avrora;
 import avrora.sim.Simulation;
+import avrora.sim.radio.SimpleAir;
 import avrora.sim.types.SingleSimulation;
 import avrora.sim.types.SensorSimulation;
 import avrora.util.Options;
@@ -130,7 +131,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
     //A thread that will repaint the monitor window
     PaintThread newPaintThread;
 
-    private Simulation simulation;
+    private SensorSimulation simulation;
 
     private AvroraGui(Options opts, String[] a) {
 
@@ -149,6 +150,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
         masterFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         simulation = new SensorSimulation();
+        simulation.setAir(new SimpleAir());
 
         args = a;
 
@@ -289,16 +291,19 @@ public class AvroraGui implements ActionListener, ChangeListener {
 
     private MonitorPanel getMonitorPanel(JPanel monitorPanel) {
         MonitorPanel p = (MonitorPanel)monitorTabMap.get(monitorPanel);
+        if ( p == null ) return null;
         return p;
     }
 
     private String getMonitorName(JPanel monitorPanel) {
         MonitorPanel p = (MonitorPanel)monitorTabMap.get(monitorPanel);
+        if ( p == null ) return null;
         return p.name;
     }
 
     private JPanel getOptionsFromMonitor(JPanel monitorPanel) {
         MonitorPanel p = (MonitorPanel)monitorTabMap.get(monitorPanel);
+        if ( p == null ) return null;
         return p.optionsPanel;
     }
 
@@ -427,6 +432,14 @@ public class AvroraGui implements ActionListener, ChangeListener {
     public void startPaintThread() {
         newPaintThread = new PaintThread();
         newPaintThread.start();
+    }
+
+    /**
+     * This function will dispatch a new thread
+     * that will repaint our dynamic monitor window if new
+     * data has been collected
+     */
+    public void stopPaintThread() {
     }
 
     /**

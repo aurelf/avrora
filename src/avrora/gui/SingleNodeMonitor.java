@@ -61,16 +61,18 @@ import java.util.HashMap;
  */
 public abstract class SingleNodeMonitor implements Simulation.Monitor {
 
-    final HashMap panelMap; // maps VisualSimulation.Node -> MonitorPanel
+    final HashMap panelMap; // maps VisualSimulation.Node -> SingleNodePanel
     final HashMap monitorMap; // maps MonitorPanel -> PCMonitor
+    final String monitorName;
 
     /**
      * Default constuctor, will init the hash maps that store information
      * about the monitors in this node
      */
-    public SingleNodeMonitor() {
+    public SingleNodeMonitor(String n) {
         panelMap = new HashMap();
         monitorMap = new HashMap();
+        monitorName = n;
     }
 
     /**
@@ -86,8 +88,9 @@ public abstract class SingleNodeMonitor implements Simulation.Monitor {
         while ( i.hasNext()) {
             Simulation.Node n = (Simulation.Node)i.next();
             if ( panelMap.containsKey(n) ) continue;
-            MonitorPanel p = AvroraGui.instance.createMonitorPanel("PC - "+n.id);
-            panelMap.put(n, p);
+            MonitorPanel p = AvroraGui.instance.createMonitorPanel(monitorName+n.id);
+            SingleNodePanel snp = newPanel(n, p);
+            panelMap.put(n, snp);
             n.addMonitor(this);
         }
     }
@@ -100,7 +103,8 @@ public abstract class SingleNodeMonitor implements Simulation.Monitor {
      * @param s The simulator that the monitor can be inserted into
      */
     public void construct(Simulation sim, Simulation.Node n, Simulator s) {
-        throw Avrora.unimplemented();
+        SingleNodePanel snp = (SingleNodePanel)panelMap.get(n);
+        snp.construct(s);
     }
 
     /**
@@ -111,7 +115,8 @@ public abstract class SingleNodeMonitor implements Simulation.Monitor {
      * @param s The simulator that the monitor can be inserted into
      */
     public void destruct(Simulation sim, Simulation.Node n, Simulator s) {
-        throw Avrora.unimplemented();
+        SingleNodePanel snp = (SingleNodePanel)panelMap.get(n);
+        snp.destruct();
     }
 
     /**
@@ -130,23 +135,28 @@ public abstract class SingleNodeMonitor implements Simulation.Monitor {
     }
 
     private void removeOne(Simulation.Node n) {
-        MonitorPanel p = (MonitorPanel)panelMap.get(n);
-        if ( p == null ) return;
+        SingleNodePanel snp = (SingleNodePanel)panelMap.get(n);
+        if ( snp == null ) return;
 
-        Monitor pc = (Monitor)monitorMap.get(p);
-        if ( pc != null ) {
-            pc.remove();
-            monitorMap.remove(p);
-        }
-
-        AvroraGui.instance.removeMonitorPanel(p);
+        snp.remove();
+        AvroraGui.instance.removeMonitorPanel(snp.panel);
         panelMap.remove(n);
         n.removeMonitor(this);
     }
 
-    protected abstract class Monitor {
+    protected abstract class SingleNodePanel {
+        protected final Simulation.Node node;
+        protected final MonitorPanel panel;
+
+        SingleNodePanel(Simulation.Node n, MonitorPanel p) {
+            node = n;
+            panel = p;
+        }
+
+        protected abstract void construct(Simulator s);
+        protected abstract void destruct();
         protected abstract void remove();
     }
 
-    protected abstract Monitor newMonitor(Simulation.Node n);
+    protected abstract SingleNodePanel newPanel(Simulation.Node n, MonitorPanel p);
 }

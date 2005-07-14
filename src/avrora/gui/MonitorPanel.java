@@ -50,6 +50,13 @@ public class MonitorPanel {
     final JPanel displayPanel;
     final JPanel optionsPanel;
 
+    Updater updater;
+
+    interface Updater {
+        public void update();
+    }
+
+
     MonitorPanel(String n, JPanel dp, JPanel op) {
         name = n;
         displayPanel = dp;
@@ -69,6 +76,10 @@ public class MonitorPanel {
      * monitor is the currently displayed monitor
      */
     public void paint() {
-        // TODO: allow the monitor factory to install a painter object that is called here
+        if ( updater != null ) updater.update();
+    }
+
+    public void setUpdater(Updater u) {
+        this.updater = u;
     }
 }
