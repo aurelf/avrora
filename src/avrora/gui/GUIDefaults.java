@@ -55,7 +55,7 @@ public class GUIDefaults {
         monitorMap = new ClassMap("Monitor", Simulation.Monitor.class);  //for regular monitors
         options = new LinkedList();
 
-        addNewMonitorType("PC Monitor", new VisualPCMonitor());
+        addNewMonitorType("Stack monitor", new VisualStackMonitor());
     }
 
     protected static void addNewMonitorType(String n, Object o) {

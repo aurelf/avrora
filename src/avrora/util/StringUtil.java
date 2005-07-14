@@ -392,18 +392,7 @@ public class StringUtil {
      *         with most significant units first
      */
     public static long[] millisToDays(long millis) {
-        return modulus(millis, DENOM);
-    }
-
-    public static long[] modulus(long val, int[] denom) {
-        long[] result = new long[denom.length + 1];
-        for (int cntr = denom.length - 1; cntr >= 0; cntr--) {
-            int radix = denom[cntr];
-            result[cntr + 1] = (val % radix);
-            val = val / radix;
-        }
-        result[0] = val;
-        return result;
+        return Arithmetic.modulus(millis, DENOM);
     }
 
     /**
@@ -809,7 +798,7 @@ public class StringUtil {
     }
 
     private static void appendSecs(StringBuffer buf2, long seconds) {
-        long[] res = modulus(seconds, DAYSECS);
+        long[] res = Arithmetic.modulus(seconds, DAYSECS);
         for ( int cntr = 0; cntr < res.length; cntr++ ) {
             if ( cntr > 0 ) {
                 buf2.append(':');

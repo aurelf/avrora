@@ -33,6 +33,7 @@
 package avrora.util.profiling;
 
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 
 /**
  * The <code>Measurements</code> class implements a simple array-like data structure that collects
@@ -64,9 +65,17 @@ public class Measurements {
         }
 
         public int next() {
-            if ( cursor >= offset ) {
-                frag = (int[])fiter.next();
-                cursor = 0;
+            if ( frag != currentFrag ) {
+                // we are in an old (complete) fragment
+                if ( cursor >= fragSize ) {
+                    frag = (int[])fiter.next();
+                    cursor = 0;
+                }
+            } else {
+                // we are in the last fragment, did we run off the end?
+                if ( cursor >= offset ) {
+                    throw new NoSuchElementException();
+                }
             }
             return frag[cursor++];
         }
@@ -78,6 +87,9 @@ public class Measurements {
     int[] currentFrag;
     int offset;
     int total;
+
+    int min;
+    int max;
 
     /**
      * The default constructor for the <code>Measurements</code> class creates a new instance where the
@@ -103,12 +115,22 @@ public class Measurements {
      * @param nm the new measurement to add
      */
     public void add(int nm) {
+        recordMinMax(nm);
         currentFrag[offset++] = nm;
         if ( offset >= fragSize ) {
             newFragment();
             offset = 0;
         }
         total++;
+    }
+
+    private void recordMinMax(int nm) {
+        if ( total == 0 ) {
+            min = max = nm;
+        } else {
+            max = max > nm ? max : nm;
+            min = min < nm ? min : nm;
+        }
     }
 
     void newFragment() {
@@ -144,5 +166,13 @@ public class Measurements {
         while ( i.hasNext() ) {
             add(i.next());
         }
+    }
+
+    public int min() {
+        return min;
+    }
+
+    public int max() {
+        return max;
     }
 }

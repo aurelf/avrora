@@ -171,8 +171,11 @@ public abstract class Simulation extends HelpCategory {
             // for each monitor attached to this node, allow them to construct data structures
             Iterator mi = monitors.iterator();
             while ( mi.hasNext() ) {
-                Monitor mon = (Monitor)mi.next();
-                mon.construct(Simulation.this, this, simulator);
+                Object o = mi.next();
+                if ( o instanceof Monitor ) {
+                    Monitor mon = (Monitor)o;
+                    mon.construct(Simulation.this, this, simulator);
+                }
             }
         }
 

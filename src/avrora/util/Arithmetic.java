@@ -32,6 +32,8 @@
 
 package avrora.util;
 
+import avrora.Avrora;
+
 /**
  * The <code>Arithmetic</code> class implements a set of useful methods that are used by the simulator and
  * assembler for converting java types to various data types used by the machine.
@@ -213,5 +215,42 @@ public class Arithmetic {
 
     public static int getInverseBitRangeMask(int low, int high) {
         return ~getBitRangeMask(low, high);
+    }
+
+    public static long[] modulus(long val, int[] denom) {
+        long[] result = new long[denom.length + 1];
+        for (int cntr = denom.length - 1; cntr >= 0; cntr--) {
+            int radix = denom[cntr];
+            result[cntr + 1] = (val % radix);
+            val = val / radix;
+        }
+        result[0] = val;
+        return result;
+    }
+
+    public static long mult(long[] vals, int[] denom) {
+        long accum = 0;
+        int radix = 1;
+        if ( vals.length -1 != denom.length ) {
+            throw Avrora.failure("Expected value array of length 1 greater than denom");
+        }
+        for ( int cntr = 0; cntr < vals.length-1; cntr++ ) {
+            accum += vals[cntr] * radix;
+            radix = radix * denom[cntr];
+        }
+        accum += vals[vals.length-1] * radix;
+        return accum;
+    }
+
+    public static void inc(long[] vals, int[] denom, int pos) {
+        if ( vals.length -1 != denom.length ) {
+            throw Avrora.failure("Expected value array of length 1 greater than denom");
+        }
+
+        for ( int cntr = pos; cntr < vals.length; cntr++ ) {
+            vals[cntr]++;
+            // is there a carry out?
+            if ( vals[cntr] < denom[cntr] ) break;
+        }
     }
 }

@@ -53,29 +53,22 @@ import javax.swing.*;
  *
  * @author UCLA Compilers Group
  */
-public class VisualPCMonitor extends SingleNodeMonitor implements Simulation.Monitor {
+public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.Monitor {
 
-    public class PCMonitor extends SingleNodePanel implements Simulator.Probe, MonitorPanel.Updater {
+    public class SPMon extends SingleNodePanel implements Simulator.Event, MonitorPanel.Updater {
         public Simulator simulator;
         public JPanel visualOptionsPanel;
         public GraphNumbers graph;
         public Object vSync;
 
-
-        public void fireBefore(State s, int address) {
-            // do nothing
+        public void fire() {
+            int sp = simulator.getState().getSP();
+            if ( sp < 4000 ) sp = 4000;
+            graph.recordNumber(352 + sp - 4352);
+            simulator.insertEvent(this, 1);
         }
 
-        /**
-         * After each instruction, we add the PC value to a Graph Numbers
-         * database
-         */
-        public void fireAfter(State s, int address) {
-            //add address to our vector
-            graph.addToVector(address);
-        }
-
-        PCMonitor(Simulation.Node n, MonitorPanel p) {
+        SPMon(Simulation.Node n, MonitorPanel p) {
             super(n, p);
         }
 
@@ -84,20 +77,28 @@ public class VisualPCMonitor extends SingleNodeMonitor implements Simulation.Mon
             JPanel displayPanel = panel.displayPanel;
             displayPanel.removeAll();
             displayPanel.setLayout(new BorderLayout());
-            graph = new GraphNumbers(displayPanel, 0, 500, 3);
+            graph = new GraphNumbers(displayPanel, 0, 500);
             displayPanel.add(graph.chalkboardAndBar(), BorderLayout.CENTER);
             displayPanel.validate();
+
+            //And we should set up the options panel
+            visualOptionsPanel = panel.optionsPanel;
+            visualOptionsPanel.removeAll();
+            visualOptionsPanel.setLayout(new BorderLayout());
+            visualOptionsPanel.add(graph.getOptionsPanel(), BorderLayout.CENTER);
+            visualOptionsPanel.validate();
+
             panel.setUpdater(this);
             simulator = s;
-            simulator.insertProbe(this);
+            simulator.insertEvent(this, 1);
         }
 
         public void destruct() {
-            simulator.removeProbe(this);
+            simulator.removeEvent(this);
         }
 
         public void remove() {
-            simulator.removeProbe(this);
+            simulator.removeEvent(this);
         }
 
         public void update() {
@@ -113,11 +114,11 @@ public class VisualPCMonitor extends SingleNodeMonitor implements Simulation.Mon
      * capable of creating monitors for each <code>Simulator</code> instance passed to the
      * <code>newMonitor()</code> method.
      */
-    public VisualPCMonitor() {
+    public VisualStackMonitor() {
         super("pc");
     }
 
     protected SingleNodePanel newPanel(Simulation.Node n, MonitorPanel p) {
-        return new PCMonitor(n, p);
+        return new SPMon(n, p);
     }
 }

@@ -33,8 +33,6 @@
 package avrora.util.profiling;
 
 import avrora.Avrora;
-
-import java.util.LinkedList;
 import java.util.Arrays;
 
 /**
@@ -47,8 +45,8 @@ import java.util.Arrays;
 public class TimedMeasurements {
 
     public static class Measurement {
-        long time;
-        int value;
+        public long time;
+        public int value;
     }
 
     static class TreeNode {
@@ -105,6 +103,7 @@ public class TimedMeasurements {
         Fragment(long bt, int fragSize) {
             super(null, bt);
             times = new long[fragSize];
+            Arrays.fill(times, Long.MAX_VALUE);
             values = new int[fragSize];
         }
     }
@@ -139,6 +138,9 @@ public class TimedMeasurements {
     long currentTime;
     int total;
 
+    int min;
+    int max;
+
     /**
      * The default constructor for the <code>Measurements</code> class creates a new instance where the
      * fragment size is 500.
@@ -167,22 +169,38 @@ public class TimedMeasurements {
             throw Avrora.failure("Timed measurements must be inserted in order");
         }
 
+        recordMinMax(nm);
         int off = current.offset;
         current.values[off] = nm;
         current.times[off] = time;
         total++;
         currentTime = time;
-        if ( current.offset++ >= fragSize ) {
+        current.offset++;
+        if ( current.offset >= fragSize ) {
             newFragment();
         }
     }
 
+    private void recordMinMax(int nm) {
+        if ( total == 0 ) {
+            min = max = nm;
+        } else {
+            max = max > nm ? max : nm;
+            min = min < nm ? min : nm;
+        }
+    }
+
+
     void newFragment() {
         Fragment nf = new Fragment(currentTime, fragSize);
-        if ( prev != null ) prev.next = nf;
+        if ( current != null ) {
+            current.next = nf;
+            addNode(nf, current.parent);
+        } else {
+            addNode(nf, null);
+        }
         prev = current;
         current = nf;
-        addNode(nf, null);
     }
 
     /**
@@ -193,9 +211,12 @@ public class TimedMeasurements {
      */
     public Iterator iterator(long startTime) {
         Fragment f = root.find(startTime);
+        if ( startTime <= f.beginTime ) {
+            return new Iterator(f, 0);
+        }
         int ind = Arrays.binarySearch(f.times, startTime);
-        if ( ind < 0 ) return new Iterator(f, fragSize);
-        return new Iterator(f, ind);
+        if ( ind < 0 ) return new Iterator(f, f.offset-1);
+        else return new Iterator(f, ind);
     }
 
     /**
@@ -218,5 +239,21 @@ public class TimedMeasurements {
             i.next(nm);
             add(nm.time, nm.value);
         }
+    }
+
+    /**
+     * The <code>getLastTime()</code> method returns the time when the last measurement was recorded.
+     * @return the time in clock cycles that the last measurement was recorded
+     */
+    public long getLastTime() {
+        return currentTime;
+    }
+
+    public int min() {
+        return min;
+    }
+
+    public int max() {
+        return max;
     }
 }

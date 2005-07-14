@@ -40,6 +40,7 @@ import java.awt.event.*;
 import avrora.util.Terminal;
 import avrora.util.profiling.Measurements;
 import avrora.actions.VisualAction;
+import avrora.Avrora;
 
 /**
  * The class assists visual monitors with graphing time-series data
@@ -59,12 +60,14 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     */
     public JScrollBar horzBar;
 
+    TimeScale timeScale;
+
     //All these fields can be set by the options panel
     
     /**
      * The number of pixels per x-axis value
      */
-    public int stepsize;
+    public int lastzoom = 1;
     
     /**
      * The visual widget that sets the step size
@@ -84,8 +87,6 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     //options not done yet
     private Color lineColor; //color of line that is drawn
     private Color backColor; //color of background
-    private Color tickColor; //color of tick marks/graph lines
-    private int xAxisMajorTickMark; //number of plot points before drawing major tick mark
     private int minvalue;
 
     //Other features to add:
@@ -97,9 +98,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * Called by a visual action that wants this class to help with displaying time series data
      * @param pminvalue The min value for the y-axis
      * @param pmaxvalue The max value for the y-axis
-     * @param pstepsize The step size for the x-axis
      */
-    public GraphNumbers(JPanel parent, int pminvalue, int pmaxvalue, int pstepsize) {
+    public GraphNumbers(JPanel parent, int pminvalue, int pmaxvalue) {
 
         parentPanel = parent;
 
@@ -111,11 +111,9 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         //Set option defaults
         lineColor = Color.GREEN; //default line color is green
         backColor = Color.BLACK; //default background color is black
-        tickColor = Color.LIGHT_GRAY; //default tick mark color is gray
-        xAxisMajorTickMark = 20; //go 20 plot points before drawing x-axis tick mark
         minvalue = pminvalue; //min and max values for the y-axis
         maxvalue = pmaxvalue;
-        stepsize = pstepsize; //x-axis step size
+        timeScale = new TimeScale();
     }
 
     /**
@@ -156,10 +154,13 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * Synchronized because GUI thread and paintthread will access the horz bar
      */
     public synchronized void updateHorzBar() {
-        int newExtent = this.getSize().width / stepsize;
 
+        int width = this.getSize().width;
+        long maxtime = privateNumbers.size();
+        int newExtent = timeScale.getExtent(width, maxtime);
+        int size = timeScale.getScrollBarSize(maxtime);
         //to handle the case where we really don't need the bar
-        if (privateNumbers.size() < newExtent) {
+        if (size < newExtent) {
             //then we just have a scroll bar that does nothing
             horzBar.setValues(0, 0, 0, 0);
             return;
@@ -168,39 +169,11 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         int newValue = horzBar.getValue();
         //we check to see if the bar is current at it's maximum...if so
         //then keep it that way despite adding new values
-        if (horzBar.getValue() + horzBar.getModel().getExtent() == horzBar.getMaximum()) {
-            newValue = privateNumbers.size() - newExtent;
+        if (newValue + horzBar.getModel().getExtent() == horzBar.getMaximum()) {
+            newValue = size - newExtent;
         }
-        horzBar.setValues(newValue, newExtent, 0, privateNumbers.size());
-    }
 
-    /**
-     * used by paint so it knows what value to start painting with
-     */
-    private int getHorzBarValue() {
-        //Note: does this need to be synched?
-        //Right now, no.
-        return horzBar.getValue();
-    }
-
-    //Every option you can set has:
-    //a) a getmethod which returns it's value
-    //b) a setmethod which sets it's value
-    //c) a visualSet method which returns a component that can be used to adjust/view its value
-    //   (listeners are already set up and handeled by this class)
-
-     /**
-     * @return stepsize value
-     */
-    public int getStepSize() {
-        return stepsize;
-    }
-
-    /**
-     * @param pstepsize The value that stepsize should be set to
-     */
-    public void setStepSize(int pstepsize) {
-        stepsize = pstepsize;
+        horzBar.setValues(newValue, newExtent, 0, size);
     }
 
     /**
@@ -214,7 +187,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         }
         JPanel returnthis = new JPanel();
         returnthis.setLayout(new BorderLayout());
-        JLabel stepSizeLabel = new JLabel("X-Axis Step Size: ");
+        JLabel stepSizeLabel = new JLabel("Zoom Level: ");
         returnthis.add(stepSizeLabel, BorderLayout.WEST);
         JSpinner spinit = new JSpinner(stepsizeVisual);
         spinit.setPreferredSize(new Dimension(80, 20));
@@ -225,26 +198,13 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
     private void createstepsizeVisual() {
         stepsizeVisual = new SpinnerNumberModel();
-        stepsizeVisual.setValue(new Integer(stepsize));
-        stepsizeVisual.setMinimum(new Integer(1));
+        stepsizeVisual.setValue(new Integer(1));
+        stepsizeVisual.setMinimum(new Integer(0));
+        stepsizeVisual.setMaximum(new Integer(2));
         stepsizeVisual.addChangeListener(this);
     }
 
-     /**
-     * @return y-axis max value
-     */
-    public int getMaxValue() {
-        return maxvalue;
-    }
-
     /**
-     * @param pmaxvalue The value that maxvalue should be set to
-     */
-    public void setMaxValue(int pmaxvalue) {
-        maxvalue = pmaxvalue;
-    }
-
-   /**
     * This is called to get the visual widget that the user can set y-axis
     * max value with.
     * @return A panel containing a spinner that controls maxvalue value
@@ -290,11 +250,11 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * This function is called by fire methods inside a monitor.  It
      * physically adds data values that will be displayed upon
      * next update/repaint
-     * @param anAddress the value for the time series data in question
+     * @param number the value for the time series data in question
      */
-    public void addToVector(int anAddress) {
+    public void recordNumber(int number) {
         synchronized (vSync) {
-            publicNumbers.add(anAddress);
+            publicNumbers.add(number);
         }
     }
 
@@ -311,6 +271,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
             }
 
             privateNumbers.addAll(publicNumbers);
+            int max = privateNumbers.max();
+            if ( max > maxvalue ) maxvalue = max;
             publicNumbers = new Measurements();
         }
 
@@ -334,19 +296,24 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         g.setColor(backColor);
         g.fillRect(0, 0, panelDimen.width, panelDimen.height);
 
+        //Note: does this need to be synched?
+        //Right now, no.
+        int startingvalue = horzBar.getValue();
+        timeScale.setPosition(startingvalue);
+        timeScale.drawScale(panelDimen, g);
 
         //Let's draw all the lines
 
         //the y coordinate will be multiplied by the following scaling factor
-        double scalingfactor = ((double) panelDimen.height) / ((double) (maxvalue - minvalue));
+        double scalingfactor = ((double) panelDimen.height - timeScale.height) / ((double) (maxvalue - minvalue));
         int eofpx = 0; //holds coorinates of last line we drew
         int eofpy = 0;
         boolean firstone = true;  //the first line is a special case
 
         //we have to look up the starting value for the x-axis
-        int startingvalue = getHorzBarValue();
         Measurements.Iterator mi = privateNumbers.iterator(startingvalue);
-        int max = startingvalue + panelDimen.width / stepsize;
+        int max = startingvalue + panelDimen.width;
+        g.setColor(lineColor);
         for (int i = startingvalue; mi.hasNext() && i < max ; i++)
         {
             double currentYPointdb = mi.next();
@@ -354,26 +321,18 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
                 //the we don't draw the vertical line, we just draw the horzintal
                 eofpy = (int)(currentYPointdb * scalingfactor);
                 eofpx = 0;
-                g.setColor(lineColor);
-                g.drawLine(eofpx, eofpy, stepsize, eofpy);
-                eofpx = stepsize;
+                g.drawLine(eofpx, eofpy, 1, eofpy);
+                eofpx = 1;
                 firstone = false;
             } else {
                 //two lines (one horzintal and one vertical), using the previous point as a starting location
                 int temploc = (int)(currentYPointdb * scalingfactor);
                 //vertical
-                g.setColor(lineColor);
                 g.drawLine(eofpx, eofpy, eofpx, temploc);
                 //horz
-                g.setColor(lineColor);
-                g.drawLine(eofpx, temploc, eofpx + stepsize, temploc);
+                g.drawLine(eofpx, temploc, eofpx + 1, temploc);
                 eofpy = temploc;
-                eofpx = eofpx + stepsize;
-            }
-            //Let's draw some horzintal markers to make things snazzy
-            if (eofpx / stepsize % xAxisMajorTickMark == 0) {
-                g.setColor(tickColor);
-                g.drawLine(eofpx, 0, eofpx, panelDimen.height);
+                eofpx = eofpx + 1;
             }
         }
     }
@@ -384,11 +343,23 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      */
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == stepsizeVisual) {
-            stepsize = ((Integer) stepsizeVisual.getValue()).intValue();
+            adjustZoom();
             repaint();
         } else if (e.getSource() == maxvalueVisual) {
             maxvalue = ((Integer) maxvalueVisual.getValue()).intValue();
             repaint();
+        }
+    }
+
+    private void adjustZoom() {
+        int zoomlevel = ((Integer) stepsizeVisual.getValue()).intValue();
+        while ( zoomlevel > lastzoom ) {
+            timeScale.zoomin();
+            lastzoom++;
+        }
+        while ( zoomlevel < lastzoom ) {
+            timeScale.zoomout();
+            lastzoom--;
         }
     }
 

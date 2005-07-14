@@ -37,6 +37,7 @@ import avrora.util.Option;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
 import avrora.util.TermUtil;
+import avrora.util.profiling.TimedMeasurements;
 
 /**
  * This monitor measures the instantaneous performance of the simulator by inserting
@@ -48,26 +49,19 @@ import avrora.util.TermUtil;
  */
 public class SimPerfMonitor extends MonitorFactory {
 
-    public final Option.Long SAMPLES = options.newOption("samples", 1000,
-            "This option is used in the simulator profiling monitor to determine how many " +
-            "samples to collect over the execution of the program.");
     public final Option.Double FREQUENCY = options.newOption("frequency", 100.0,
             "This option is used in the simulator profiling monitor to determine how many " +
             "times per simulated second to sample the simulator's performance.");
 
     public class Monitor implements avrora.monitors.Monitor {
         final Simulator simulator;
-        final long[] cycles;
-        final long[] millis;
+        final TimedMeasurements data;
         long start;
-        int collected;
         long interval;
 
         Monitor(Simulator s) {
             simulator = s;
-            int len = (int)SAMPLES.get();
-            cycles = new long[len];
-            millis = new long[len];
+            data = new TimedMeasurements();
             start = System.currentTimeMillis();
             interval = (long)(simulator.getMicrocontroller().getHZ() / FREQUENCY.get());
             simulator.insertEvent(new Event(), interval);
@@ -80,37 +74,45 @@ public class SimPerfMonitor extends MonitorFactory {
             Terminal.nextln();
             TermUtil.printSeparator(Terminal.MAXLINE);
 
-            for ( int cntr = 0; cntr < collected; cntr++ ) {
-                long cycle = cycles[cntr];
-                long milli = millis[cntr];
+            TimedMeasurements.Measurement m = new TimedMeasurements.Measurement();
+            TimedMeasurements.Iterator i = data.iterator(0);
+            int cntr = 0;
+            long pcycles = 0;
+            long pmillis = 0;
+            while ( i.hasNext() ) {
+                i.next(m);
                 long icycle; // cycles for this interval
                 long imilli; // milliseconds for this interval
+                long cycles = m.time;
+                int millis = m.value;
 
                 if ( cntr == 0 ) {
-                    icycle = cycle;
-                    imilli = milli;
+                    icycle = cycles;
+                    imilli = millis;
                 }
                 else {
-                    icycle = cycle-cycles[cntr-1];
-                    imilli = milli-millis[cntr-1];
+                    icycle = cycles-pcycles;
+                    imilli = millis-pmillis;
                 }
 
-                float cumul = (float)cycle / milli / 1000;
+                float cumul = (float)cycles / millis / 1000;
                 float inst = (float)icycle / imilli / 1000;
-                String mstr = StringUtil.leftJustify((float)milli / 1000, 6);
+                String mstr = StringUtil.leftJustify((float)millis / 1000, 6);
                 String ccstr = StringUtil.leftJustify(imilli, 6);
                 String cstr = StringUtil.leftJustify(cumul, 12);
                 String istr = StringUtil.leftJustify(inst, 12);
                 Terminal.println("  "+mstr+"  "+ccstr+"  "+istr+""+cstr);
+                cntr++;
+                pmillis = millis;
+                pcycles = cycles;
             }
         }
 
         class Event implements Simulator.Event {
             public void fire() {
-                if ( collected >= cycles.length ) return;
-                cycles[collected] = simulator.getState().getCycles();
-                millis[collected] = System.currentTimeMillis() - start;
-                collected++;
+                long time = simulator.getState().getCycles();
+                long millis = System.currentTimeMillis() - start;
+                data.add(time, (int)millis);
                 simulator.insertEvent(this, interval);
             }
         }

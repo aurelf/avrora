@@ -91,7 +91,7 @@ public class VisualRegMonitor extends MonitorFactory {
             //This is where we should set up the graph panel itself
             visualPanel.removeAll();
             visualPanel.setLayout(new BorderLayout());
-            theGraph = new GraphNumbers(visualPanel, 0, 100, 5);
+            theGraph = new GraphNumbers(visualPanel, 0, 100);
             visualPanel.add(theGraph, BorderLayout.CENTER);
             visualPanel.validate();
 
@@ -110,7 +110,7 @@ public class VisualRegMonitor extends MonitorFactory {
         public void fireAfter(State s, int address) {
             int regvalue = s.getRegisterUnsigned(Register.R26);
             //add regvalue to our vector
-            theGraph.addToVector(regvalue);
+            theGraph.recordNumber(regvalue);
         }
 
         VisualMonitor(Simulator s) {
