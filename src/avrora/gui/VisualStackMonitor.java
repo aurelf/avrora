@@ -48,7 +48,7 @@ import java.util.List;
 import javax.swing.*;
 
 /**
- * The <code>PCMonitor</code> class is a monitor that tracks the current value of the PC
+ * The <code>VisualStackMonitor</code> class is a monitor that tracks the current value of the PC
  * and displays it visually
  *
  * @author UCLA Compilers Group
@@ -115,7 +115,7 @@ public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.
      * <code>newMonitor()</code> method.
      */
     public VisualStackMonitor() {
-        super("pc");
+        super("stack");
     }
 
     protected SingleNodePanel newPanel(Simulation.Node n, MonitorPanel p) {

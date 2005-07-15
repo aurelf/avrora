@@ -36,6 +36,7 @@ import avrora.Avrora;
 import avrora.util.StringUtil;
 
 import java.awt.*;
+import java.util.LinkedList;
 
 /**
  * The <code>TimeScale</code> class handles the conversion of time scales in displaying timing windows
@@ -48,10 +49,14 @@ import java.awt.*;
 public class TimeScale {
     final int height;
     long startTime;
-    long hz;
+    final long hz;
+    final double nsPerCycle;
     final Color backgroundColor;
     final Color borderColor;
     final Color tickColor;
+    static final int SCROLL_SIZE = 35;
+
+    static final int MIN_TICK_WIDTH = 40;
 
     ZoomLevel[] zooms;
     int zoom;
@@ -63,38 +68,75 @@ public class TimeScale {
         borderColor = Color.WHITE;
         tickColor = Color.RED;
         hz = 7372800;
+        nsPerCycle = ONE_BILLION / hz;
         zoom = 0;
         buildZooms();
     }
 
     private void buildZooms() {
-        zooms = new ZoomLevel[3];
-        zooms[0] = new ZoomLevel();
-        zooms[0].scale = 2;
-        zooms[0].pos = 7;
-        zooms[0].dec = 2;
-        zooms[0].nsecs = 10000;
-        zooms[0].units = "msec";
-        zooms[1] = new ZoomLevel();
-        zooms[1].scale = 1;
-        zooms[1].pos = 7;
-        zooms[1].dec = 2;
-        zooms[1].nsecs = 10000;
-        zooms[1].units = "msec";
-        zooms[2] = new ZoomLevel();
-        zooms[2].scale = 0.5;
-        zooms[2].pos = 7;
-        zooms[2].dec = 2;
-        zooms[2].nsecs = 10000;
-        zooms[2].units = "msec";
+        double scaleup = 1.25895;
+        double s100 = (double)hz / 100;
+        zooms = new ZoomLevel[0];
+
+        LinkedList lout = new LinkedList();
+        for ( double scale = s100; scale > 1; scale /= scaleup ) {
+            lout.add(newZoomLevel(scale));
+        }
+        ZoomLevel[] zout = (ZoomLevel[])lout.toArray(zooms);
+
+        LinkedList lin = new LinkedList();
+        for ( double scale = 1; scale > 0.02; scale /= scaleup ) {
+            lin.add(newZoomLevel(scale));
+        }
+        ZoomLevel[] zin = (ZoomLevel[])lin.toArray(zooms);
+
+        zooms = new ZoomLevel[lout.size()+lin.size()];
+        System.arraycopy(zout, 0, zooms, 0, zout.length);
+        System.arraycopy(zin, 0, zooms, zout.length, zin.length);
+
+        zoom = zout.length;
+    }
+
+    String[] units = { "ns", "us", "ms", "s" };
+
+    ZoomLevel newZoomLevel(double scale) {
+        long nsecs = 1;
+        double cycles = getCycles(1);
+        double max = 2*hz;
+        for ( int cntr = 0; cycles < max; cntr++ ) {
+            double tickWidth = cycles / scale;
+            if ( tickWidth > MIN_TICK_WIDTH ) {
+                int dec = (300 - cntr) % 3;
+                return new ZoomLevel(scale, dec, nsecs, units[(cntr+2)/3]);
+            }
+            cycles *= 10;
+            nsecs *= 10;
+        }
+        throw Avrora.failure("Zoom level not supported: "+scale);
+    }
+
+    public int getMaxZoom() {
+        return zooms.length - 1;
     }
 
     class ZoomLevel {
-        double scale; // scales in cycles per pixel
-        int dec;      // decimal positions within the unit
-        int pos;      // decimal position in seconds (e.g. milliseconds)
-        long nsecs;    // 10^pos
-        String units; // string unit name (e.g. "ms")
+        final double scale; // scales in cycles per pixel
+        final int dec;      // decimal positions within the unit
+        final long nsecs;    // 10^pos
+        final String units; // string unit name (e.g. "ms")
+
+        final double majorTickWidth;
+        final double minorTickWidth;
+
+        ZoomLevel(double s, int d, long ns, String un) {
+            scale = s;
+            dec = d;
+            nsecs = ns;
+            units = un;
+
+            majorTickWidth = getCycles(nsecs) / scale;
+            minorTickWidth = majorTickWidth / 10;
+        }
     }
 
     public void drawScale(Dimension dim, Graphics g) {
@@ -108,14 +150,17 @@ public class TimeScale {
 
         g.setColor(tickColor);
 
-        double majorTickWidth = getMajorTickWidth();
-        double minorTickWidth = majorTickWidth / 10;
-        int tick = 1;
-        double max = dim.width + majorTickWidth;
-        for ( double pos = getFirstTick(majorTickWidth); pos < max; pos += majorTickWidth ) {
+        ZoomLevel zl = getZoomLevel();
+        long startNsecs = (long)getNS(startTime);
+        long ns = startNsecs - (startNsecs % zl.nsecs);
+        double startPos = (getCycles(ns) - startTime) / zl.scale;
+        int count = (int)((ns / zl.nsecs) % 1000);
+
+        double max = dim.width + zl.majorTickWidth;
+        for ( double pos = startPos; pos < max; pos += zl.majorTickWidth ) {
             // draw the sub-ticks for this label
             for ( int mt = 1; mt < 10; mt++ ) {
-                int mx = (int)(pos + minorTickWidth*mt);
+                int mx = (int)(pos + zl.minorTickWidth*mt);
                 if ( mt == 5 )
                     g.drawLine(mx, medy, mx, dim.height);
                 else
@@ -123,40 +168,47 @@ public class TimeScale {
             }
             // draw the string label for this tick
             int xpos = (int)pos;
-            drawTickLabel(tick, g, xpos, y);
+            drawTickLabel(zl, count, g, xpos, y);
             // draw the line from top to bottom
             g.drawLine(xpos, 0, xpos, dim.height);
-            tick++;
+            count++;
+            if ( count == 1000 ) count = 0;
         }
     }
 
-    private int getFirstTick(double majWidth) {
-        ZoomLevel zl = getZoomLevel();
-        double startPix = startTime / zl.scale;
-        return (int)(-(startPix % majWidth));
+    private double getNS(long cycles) {
+        return (cycles * nsPerCycle);
     }
 
-    private double getMajorTickWidth() {
-        ZoomLevel zl = getZoomLevel();
-        return (hz * zl.nsecs / ONE_BILLION) / zl.scale;
+    private double getCycles(long nsecs) {
+        return (nsecs / nsPerCycle);
     }
 
-    private void drawTickLabel(int tick, Graphics g, int cntr, int y) {
+    private void drawTickLabel(ZoomLevel zl, int tick, Graphics g, int cntr, int y) {
+        String str = StringUtil.toDecimal(tick, zl.dec);
         FontMetrics m = g.getFontMetrics();
-        String str = tick+" "+getZoomLevel().units;
-        int width = m.stringWidth(str);
-        g.drawString(str, cntr - width - 3, y + 12);
+        String stru = str+" "+getZoomLevel().units;
+        int width = m.stringWidth(stru);
+        g.drawString(stru, cntr - width - 3, y + 12);
+    }
+
+    public int getZoom() {
+        return zoom;
     }
 
     private ZoomLevel getZoomLevel() {
         return zooms[zoom];
     }
 
-    int divs[] = { 10, 10, 10, 10, 10, 10, 10, 10, 10 };
-
     public int getX(long time) {
         if ( time < startTime ) return -1;
         return (int)((time - startTime) / getZoomLevel().scale);
+    }
+
+    public void setZoom(int nzoom) {
+        if ( nzoom >= zooms.length ) nzoom = zooms.length-1;
+        if ( nzoom < 0 ) nzoom = 0;
+        zoom = nzoom;
     }
 
     public void zoomin() {
@@ -168,14 +220,30 @@ public class TimeScale {
     }
 
     public int getExtent(int width, long maxtime) {
-        return width;
+        return width / SCROLL_SIZE;
     }
 
     public int getScrollBarSize(long maxtime) {
-        return (int)(maxtime / getZoomLevel().scale);
+        return size(maxtime);
     }
 
     public void setPosition(int np) {
-        startTime = (long)(np * getZoomLevel().scale);
+        startTime = (long)(np * SCROLL_SIZE * getZoomLevel().scale);
+    }
+
+    public int getPosition() {
+        return size(startTime);
+    }
+
+    private int size(long cycles) {
+        return (int)(cycles / getZoomLevel().scale / SCROLL_SIZE);
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public double getScale() {
+        return getZoomLevel().scale;
     }
 }

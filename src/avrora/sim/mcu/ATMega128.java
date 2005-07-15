@@ -179,7 +179,7 @@ public class ATMega128 extends ATMegaFamily {
         addPin(pinAssignments, 63, "GND.c");
         addPin(pinAssignments, 64, "AVCC");
 
-        RegisterLayout rl = new RegisterLayout(ATMEGA128_IOREG_SIZE);
+        RegisterLayout rl = new RegisterLayout(ATMEGA128_IOREG_SIZE, 8);
 
         // extended IO registers
         rl.addIOReg("UCSR1C", 0x7D);

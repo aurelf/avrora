@@ -724,6 +724,19 @@ public class StringUtil {
         return buf.toString();
     }
 
+    public static String toDecimal(long val, int places) {
+        StringBuffer buf = new StringBuffer(10+places);
+        while ( places > 0 ) {
+            buf.append(val % 10);
+            places--;
+            val = val / 10;
+            if ( places == 0 ) buf.append('.');
+        }
+        buf.reverse();
+        return val+buf.toString();
+
+    }
+
     public static String toMultirepString(int value, int bits) {
         StringBuffer buf = new StringBuffer(bits * 3 + 8);
 

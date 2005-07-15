@@ -88,7 +88,7 @@ public abstract class SingleNodeMonitor implements Simulation.Monitor {
         while ( i.hasNext()) {
             Simulation.Node n = (Simulation.Node)i.next();
             if ( panelMap.containsKey(n) ) continue;
-            MonitorPanel p = AvroraGui.instance.createMonitorPanel(monitorName+n.id);
+            MonitorPanel p = AvroraGui.instance.createMonitorPanel(monitorName+" - "+n.id);
             SingleNodePanel snp = newPanel(n, p);
             panelMap.put(n, snp);
             n.addMonitor(this);

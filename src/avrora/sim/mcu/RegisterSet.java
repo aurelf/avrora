@@ -91,10 +91,6 @@ public class RegisterSet {
             throw Avrora.unimplemented();
         }
 
-        public int read() {
-            throw Avrora.unimplemented();
-        }
-
         public void update() {
             // do nothing.
         }
@@ -113,24 +109,45 @@ public class RegisterSet {
     }
 
     static abstract class SubRegWriter {
+        final int ior_low_bit;
+        final int mask;
+        final int length;
+
+        SubRegWriter(RegisterLayout.SubField sf) {
+            ior_low_bit = sf.ior_low_bit;
+            mask = sf.mask;
+            length = sf.length;
+        }
+
         abstract void write(byte val);
     }
 
     static class SubFieldWriter extends SubRegWriter {
-        FieldWriter fieldWriter;
-        RegisterLayout.SubField subField;
+        final FieldWriter fieldWriter;
+        final RegisterLayout.SubField subField;
+
+        SubFieldWriter(RegisterLayout.SubField sf, FieldWriter fw) {
+            super(sf);
+            subField = sf;
+            fieldWriter = fw;
+        }
 
         void write(byte val) {
-            int wval = (val >> subField.ior_low_bit) & subField.mask;
+            int wval = (val >> ior_low_bit) & mask;
             fieldWriter.value |= wval << subField.field_low_bit;
+            fieldWriter.writtenMask |= mask << subField.field_low_bit;
             if ( subField.commit ) fieldWriter.commit();
         }
     }
 
     static class TotalFieldWriter extends SubRegWriter {
-        FieldWriter fieldWriter;
-        int ior_low_bit;
-        int mask;
+        final FieldWriter fieldWriter;
+
+        TotalFieldWriter(RegisterLayout.SubField sf, FieldWriter fw) {
+            super(sf);
+            fieldWriter = fw;
+        }
+
         void write(byte val) {
             int value = (val >> ior_low_bit) & mask;
             fieldWriter.fobject.write(value);
@@ -138,16 +155,40 @@ public class RegisterSet {
     }
 
     static class ReservedWriter extends SubRegWriter {
-        int ior_low_bit;
-        int mask;
+
+        ReservedWriter(RegisterLayout.SubField sf) {
+            super(sf);
+        }
+
         void write(byte val) {
             // TODO: check that all writes are zeroes
         }
     }
 
     static class UnusedWriter extends SubRegWriter {
+
+        UnusedWriter(RegisterLayout.SubField sf) {
+            super(sf);
+        }
+
         void write(byte val) {
             // do nothing.
+        }
+    }
+
+    class BitWriter {
+        final int fval;
+        final FieldWriter fwriter;
+
+        BitWriter(int fval, FieldWriter fw) {
+            this.fval = fval;
+            fwriter = fw;
+        }
+
+        void write(boolean val) {
+            if ( val ) fwriter.value |= fval;
+            fwriter.writtenMask |= fval;
+            fwriter.commit();
         }
     }
 
@@ -159,7 +200,13 @@ public class RegisterSet {
     public class MultiFieldRegister implements ActiveRegister {
 
         byte value;
-        SubRegWriter[] subFields;
+        final SubRegWriter[] subFields;
+        final BitWriter[] bits;
+
+        MultiFieldRegister(SubRegWriter[] srw, BitWriter[] b) {
+            subFields = srw;
+            bits = b;
+        }
 
         public byte read() {
             return value;
@@ -178,7 +225,7 @@ public class RegisterSet {
         }
 
         public void writeBit(int bit, boolean val) {
-            throw Avrora.unimplemented();
+            bits[bit].write(val);
         }
 
     }
@@ -211,18 +258,46 @@ public class RegisterSet {
             RegisterLayout.RegisterInfo ri = rl.info[ior];
             if ( ri == null || ri.subfields == null ) {
                 // no subfields; no special register is necessary
-                ActiveRegister ar = new RWRegister();
-                registers[ior] = ar;
+                registers[ior] = new RWRegister();
             } else {
-                // there are subfields in this register; create a special ActiveRegister
-                MultiFieldRegister mfr = new MultiFieldRegister();
-                SubRegWriter[] srw = new SubRegWriter[ri.subfields.length];
-                for ( int cntr = 0; cntr < srw.length; cntr++ ) {
-                    createSubRegWriter(ri, cntr, srw);
-                }
-                registers[ior] = mfr;
+                registers[ior] = createMultiFieldRegister(ri);
             }
         }
+    }
+
+    private MultiFieldRegister createMultiFieldRegister(RegisterLayout.RegisterInfo ri) {
+        // there are subfields in this register; create a special ActiveRegister
+        SubRegWriter[] srw = new SubRegWriter[ri.subfields.length];
+        for ( int cntr = 0; cntr < srw.length; cntr++ ) {
+            createSubRegWriter(ri, cntr, srw);
+        }
+        BitWriter[] bw = createBitWriters(ri.subfields);
+        return new MultiFieldRegister(srw, bw);
+    }
+
+    private BitWriter[] createBitWriters(RegisterLayout.SubField[] sfs) {
+        BitWriter[] bw = new BitWriter[8];
+        int bwcount = 0;
+        for ( int cntr = 0; cntr < sfs.length; cntr++ ) {
+            RegisterLayout.SubField sf = sfs[cntr];
+            for ( int bit = 0; bit < sf.length; bit++ ) {
+                bw[bwcount++] = new BitWriter(sf.field_low_bit+bit, getFieldWriter(sf));
+            }
+        }
+        // check that there are exactly 8 bits
+        if ( bwcount != 8 ) {
+            throw new Avrora.Error("RegisterSet Error", "expected 8 bits, found: "+bwcount);
+        }
+        return bw;
+    }
+
+    private FieldWriter getFieldWriter(RegisterLayout.SubField sf) {
+        if ( sf.field == RegisterLayout.RESERVED || sf.field == RegisterLayout.UNUSED ) {
+            FieldWriter fw = new FieldWriter();
+            fw.fobject = new Field();
+            return fw;
+        }
+        return (FieldWriter)fields.get(sf.field.name);
     }
 
     private void createSubRegWriter(RegisterLayout.RegisterInfo ri, int cntr, SubRegWriter[] srw) {
@@ -230,22 +305,18 @@ public class RegisterSet {
         RegisterLayout.Field field = sf.field;
 
         if ( sf.field == RegisterLayout.RESERVED ) {
-            ReservedWriter rw = new ReservedWriter();
-            rw.ior_low_bit = sf.ior_low_bit;
-            rw.mask = sf.mask;
+            ReservedWriter rw = new ReservedWriter(sf);
             srw[cntr] = rw;
         } else if ( sf.field == RegisterLayout.UNUSED ) {
-            srw[cntr] = new UnusedWriter();
+            UnusedWriter uw = new UnusedWriter(sf);
+            srw[cntr] = uw;
         } else if ( sf.field.subfields.length == 1) {
-            TotalFieldWriter tfw = new TotalFieldWriter();
-            tfw.fieldWriter = (FieldWriter)fields.get(field.name);
-            tfw.mask = sf.mask;
-            tfw.ior_low_bit = sf.ior_low_bit;
+            // if the field has only one subfield, write the whole field value at once
+            TotalFieldWriter tfw = new TotalFieldWriter(sf, (FieldWriter)fields.get(field.name));
             srw[cntr] = tfw;
         } else {
-            SubFieldWriter sfw = new SubFieldWriter();
-            sfw.fieldWriter = (FieldWriter)fields.get(field.name);
-            sfw.subField = sf;
+            // otherwise, this subfield is for a field that is fragmented
+            SubFieldWriter sfw = new SubFieldWriter(sf, (FieldWriter)fields.get(field.name));
             srw[cntr] = sfw;
         }
     }

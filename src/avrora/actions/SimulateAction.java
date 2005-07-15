@@ -139,7 +139,9 @@ public class SimulateAction extends SimAction {
         long maxCycles = 0;
         while ( i.hasNext() ) {
             Simulation.Node n = (Simulation.Node)i.next();
-            long count = n.getSimulator().getClock().getCount();
+            Simulator simulator = n.getSimulator();
+            if ( simulator == null ) continue;
+            long count = simulator.getClock().getCount();
             aggCycles += count;
             if ( count > maxCycles ) maxCycles = count;
         }

@@ -62,13 +62,6 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
     TimeScale timeScale;
 
-    //All these fields can be set by the options panel
-    
-    /**
-     * The number of pixels per x-axis value
-     */
-    public int lastzoom = 1;
-    
     /**
      * The visual widget that sets the step size
      */
@@ -87,6 +80,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     //options not done yet
     private Color lineColor; //color of line that is drawn
     private Color backColor; //color of background
+    private Color cursorColor;
     private int minvalue;
 
     //Other features to add:
@@ -111,6 +105,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         //Set option defaults
         lineColor = Color.GREEN; //default line color is green
         backColor = Color.BLACK; //default background color is black
+        cursorColor = Color.CYAN;
         minvalue = pminvalue; //min and max values for the y-axis
         maxvalue = pmaxvalue;
         timeScale = new TimeScale();
@@ -181,9 +176,9 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * size with.
      * @return A panel containing a spinner that controls stepsize value
      */
-    public JPanel visualSetStepSize() {
+    public JPanel getZoomLevelOption() {
         if (stepsizeVisual == null) {
-            createstepsizeVisual();
+            makeZoomLevelOption();
         }
         JPanel returnthis = new JPanel();
         returnthis.setLayout(new BorderLayout());
@@ -196,11 +191,11 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         return returnthis;
     }
 
-    private void createstepsizeVisual() {
+    private void makeZoomLevelOption() {
         stepsizeVisual = new SpinnerNumberModel();
-        stepsizeVisual.setValue(new Integer(1));
-        stepsizeVisual.setMinimum(new Integer(0));
-        stepsizeVisual.setMaximum(new Integer(2));
+        stepsizeVisual.setValue(new Integer(timeScale.getZoom()+1));
+        stepsizeVisual.setMinimum(new Integer(1));
+        stepsizeVisual.setMaximum(new Integer(timeScale.getMaxZoom()+1));
         stepsizeVisual.addChangeListener(this);
     }
 
@@ -240,7 +235,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         JPanel allOptions = new JPanel();
         allOptions.setLayout(new GridLayout(10, 1));
         //allOptions.setLayout(new BorderLayout());
-        allOptions.add(visualSetStepSize());
+        allOptions.add(getZoomLevelOption());
         allOptions.add(visualSetMaxValue());
         allOptions.add(new JPanel()); //filler so there is blank space
         return allOptions;
@@ -298,41 +293,48 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
         //Note: does this need to be synched?
         //Right now, no.
-        int startingvalue = horzBar.getValue();
-        timeScale.setPosition(startingvalue);
+        timeScale.setPosition(horzBar.getValue());
         timeScale.drawScale(panelDimen, g);
+        long startTime = timeScale.getStartTime();
 
         //Let's draw all the lines
 
         //the y coordinate will be multiplied by the following scaling factor
-        double scalingfactor = ((double) panelDimen.height - timeScale.height) / ((double) (maxvalue - minvalue));
+        int maxheight = panelDimen.height - timeScale.height;
+        double scalingfactor = maxheight / ((double) (maxvalue - minvalue));
         int eofpx = 0; //holds coorinates of last line we drew
         int eofpy = 0;
         boolean firstone = true;  //the first line is a special case
 
         //we have to look up the starting value for the x-axis
-        Measurements.Iterator mi = privateNumbers.iterator(startingvalue);
-        int max = startingvalue + panelDimen.width;
+        Measurements.Iterator mi = privateNumbers.iterator((int)startTime);
+        int max = (int)(startTime + panelDimen.width * timeScale.getScale());
         g.setColor(lineColor);
-        for (int i = startingvalue; mi.hasNext() && i < max ; i++)
+        for (long i = startTime; mi.hasNext() && i < max ; i++)
         {
             double currentYPointdb = mi.next();
             if (firstone) {
                 //the we don't draw the vertical line, we just draw the horzintal
                 eofpy = (int)(currentYPointdb * scalingfactor);
-                eofpx = 0;
-                g.drawLine(eofpx, eofpy, 1, eofpy);
-                eofpx = 1;
+                eofpx = timeScale.getX(i);
+                g.drawLine(0, eofpy, eofpx, eofpy);
                 firstone = false;
             } else {
                 //two lines (one horzintal and one vertical), using the previous point as a starting location
                 int temploc = (int)(currentYPointdb * scalingfactor);
                 //vertical
+                int npx = timeScale.getX(i);
                 g.drawLine(eofpx, eofpy, eofpx, temploc);
                 //horz
-                g.drawLine(eofpx, temploc, eofpx + 1, temploc);
+                g.drawLine(eofpx, temploc, npx, temploc);
                 eofpy = temploc;
-                eofpx = eofpx + 1;
+                eofpx = npx;
+            }
+            if (!mi.hasNext() ) {
+                g.setColor(Color.DARK_GRAY);
+                g.fillRect(eofpx, 0, panelDimen.width, panelDimen.height);
+                g.setColor(cursorColor);
+                g.drawLine(eofpx, 0, eofpx, maxheight);
             }
         }
     }
@@ -352,15 +354,10 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     }
 
     private void adjustZoom() {
-        int zoomlevel = ((Integer) stepsizeVisual.getValue()).intValue();
-        while ( zoomlevel > lastzoom ) {
-            timeScale.zoomin();
-            lastzoom++;
-        }
-        while ( zoomlevel < lastzoom ) {
-            timeScale.zoomout();
-            lastzoom--;
-        }
+        int zoomlevel = ((Integer) stepsizeVisual.getValue()).intValue() - 1;
+        timeScale.setZoom(zoomlevel);
+        this.horzBar.setValue(timeScale.getPosition());
+        this.updateHorzBar();
     }
 
     /**

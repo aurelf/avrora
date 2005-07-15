@@ -110,6 +110,11 @@ public class RegisterLayout {
     public final int ioreg_size;
 
     /**
+     * The <code>ioreg_length</code> field stores the length of each register in bits.
+     */
+    public final int ioreg_length;
+
+    /**
      * The <code>ioregAssignments</code> field stores a reference to a hashmap from IO register names to their
      * addresses.
      */
@@ -128,11 +133,12 @@ public class RegisterLayout {
      * size.
      * @param is the number of registers in this register layout
      */
-    public RegisterLayout(int is) {
+    public RegisterLayout(int is, int rlength) {
         ioreg_size = is;
         ioregAssignments = new HashMap();
         fields = new HashMap();
         info = new RegisterInfo[is];
+        ioreg_length = rlength;
     }
 
     /**
@@ -143,7 +149,7 @@ public class RegisterLayout {
      */
     public void addIOReg(String n, int ior_num) {
         if ( ior_num >= ioreg_size )
-            throw Avrora.failure("Invalid IORegister address "+ior_num+" for register "+ StringUtil.quote(n));
+            throw new Avrora.Error("Layout Error", "invalid register address "+ior_num+" for register "+ StringUtil.quote(n));
         RegisterInfo i = new RegisterInfo(n, ior_num);
         info[ior_num] = i;
         ioregAssignments.put(n, i);
@@ -162,9 +168,9 @@ public class RegisterLayout {
      */
     public void addIOReg(String n, int ior_num, String format) {
         if ( ior_num >= ioreg_size )
-            throw Avrora.failure("Invalid IORegister address "+ior_num+" for register "+ StringUtil.quote(n));
+            throw new Avrora.Error("Layout Error", "invalid register address "+ior_num+" for register "+ StringUtil.quote(n));
         RegisterInfo i = new RegisterInfo(n, ior_num);
-        i.subfields = parseSubFields(ior_num, format);
+        i.subfields = parseSubFields(n, ior_num, format);
         info[ior_num] = i;
         ioregAssignments.put(n, i);
     }
@@ -202,7 +208,8 @@ public class RegisterLayout {
         return new RegisterSet(this);
     }
 
-    private SubField[] parseSubFields(int ior, String desc) {
+    private SubField[] parseSubFields(String name, int ior, String desc) {
+        int totalbits = 0;
         int count = 0;
         SubField[] sfs = new SubField[8];
         StringCharacterIterator i = new StringCharacterIterator(desc);
@@ -210,15 +217,24 @@ public class RegisterLayout {
         while ( ior_hbit >= 0 && i.current() != CharacterIterator.DONE ) {
             if ( i.current() == '.') {
                 ior_hbit = readUnusedField(i, sfs, count, ior_hbit);
+                totalbits += sfs[count].length;
             } else if ( i.current() == 'x') {
                 ior_hbit = readReservedField(i, sfs, count, ior_hbit);
+                totalbits += sfs[count].length;
             } else {
                 ior_hbit = readNamedField(i, ior, sfs, count, ior_hbit);
+                totalbits += sfs[count].length;
             }
             count++;
             StringUtil.peekAndEat(i, ',');
             StringUtil.skipWhiteSpace(i);
         }
+
+        // check that there are exactly 8 bits
+        if ( totalbits != ioreg_length ) {
+            throw new Avrora.Error("Layout Error", "expected "+ioreg_length+" bits, found: "+totalbits+" in "+StringUtil.quote(name));
+        }
+
         // resize the array to be smaller
         SubField[] subFields = new SubField[count];
         System.arraycopy(sfs, 0, subFields, 0, count);
