@@ -91,7 +91,7 @@ public class VisualRegMonitor extends MonitorFactory {
             //This is where we should set up the graph panel itself
             visualPanel.removeAll();
             visualPanel.setLayout(new BorderLayout());
-            theGraph = new GraphNumbers(visualPanel, 0, 100);
+            theGraph = new GraphNumbers(visualPanel);
             visualPanel.add(theGraph, BorderLayout.CENTER);
             visualPanel.validate();
 

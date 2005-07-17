@@ -49,31 +49,35 @@ import java.util.LinkedList;
 public class TimeScale {
     final int height;
     long startTime;
-    final long hz;
-    final double nsPerCycle;
     final Color backgroundColor;
     final Color borderColor;
     final Color tickColor;
+    final Color fontColor;
+
+    static final long hz;
+    static final double nsPerCycle;
     static final int SCROLL_SIZE = 35;
-
     static final int MIN_TICK_WIDTH = 40;
+    static ZoomLevel[] zooms;
+    static int startZoom;
+    static final double ONE_BILLION = 1000000000;
+    static final String[] units = { "ns", "us", "ms", "s" };
 
-    ZoomLevel[] zooms;
     int zoom;
-    protected static final double ONE_BILLION = 1000000000;
 
     TimeScale() {
-        height = 30;
+        height = 20;
         backgroundColor = Color.GRAY;
         borderColor = Color.WHITE;
-        tickColor = Color.RED;
-        hz = 7372800;
-        nsPerCycle = ONE_BILLION / hz;
-        zoom = 0;
-        buildZooms();
+        tickColor = Color.DARK_GRAY;
+        fontColor = Color.RED;
+        zoom = startZoom;
     }
 
-    private void buildZooms() {
+    static {
+        hz = 7372800;
+        nsPerCycle = ONE_BILLION / hz;
+
         double scaleup = 1.25895;
         double s100 = (double)hz / 100;
         zooms = new ZoomLevel[0];
@@ -94,12 +98,10 @@ public class TimeScale {
         System.arraycopy(zout, 0, zooms, 0, zout.length);
         System.arraycopy(zin, 0, zooms, zout.length, zin.length);
 
-        zoom = zout.length;
+        startZoom = zout.length;
     }
 
-    String[] units = { "ns", "us", "ms", "s" };
-
-    ZoomLevel newZoomLevel(double scale) {
+    static ZoomLevel newZoomLevel(double scale) {
         long nsecs = 1;
         double cycles = getCycles(1);
         double max = 2*hz;
@@ -119,7 +121,7 @@ public class TimeScale {
         return zooms.length - 1;
     }
 
-    class ZoomLevel {
+    static class ZoomLevel {
         final double scale; // scales in cycles per pixel
         final int dec;      // decimal positions within the unit
         final long nsecs;    // 10^pos
@@ -145,10 +147,8 @@ public class TimeScale {
         int my = (int)(y + height * 0.6);
         int medy = (int)(y + height * 0.4);
         g.fillRect(0, y, dim.width, dim.height);
-        g.setColor(borderColor);
-        g.drawLine(0, y, dim.width, y);
 
-        g.setColor(tickColor);
+        g.setFont(g.getFont().deriveFont((float)9));
 
         ZoomLevel zl = getZoomLevel();
         long startNsecs = (long)getNS(startTime);
@@ -156,6 +156,18 @@ public class TimeScale {
         double startPos = (getCycles(ns) - startTime) / zl.scale;
         int count = (int)((ns / zl.nsecs) % 1000);
 
+        // show the actual clock ticks
+        double cycWidth = 1 / zl.scale;
+        if ( cycWidth >= 2 ) {
+            g.setColor(this.borderColor);
+            for ( double pos = 0; pos < dim.width; pos += cycWidth ) {
+                int xpos = (int)pos;
+                g.drawLine(xpos, y, xpos, y+4);
+            }
+        }
+
+        // show the timing scale
+        g.setColor(tickColor);
         double max = dim.width + zl.majorTickWidth;
         for ( double pos = startPos; pos < max; pos += zl.majorTickWidth ) {
             // draw the sub-ticks for this label
@@ -168,19 +180,25 @@ public class TimeScale {
             }
             // draw the string label for this tick
             int xpos = (int)pos;
-            drawTickLabel(zl, count, g, xpos, y);
             // draw the line from top to bottom
             g.drawLine(xpos, 0, xpos, dim.height);
+            // draw the font label
+            drawTickLabel(zl, count, g, xpos, y);
             count++;
             if ( count == 1000 ) count = 0;
         }
+
+        // draw the border
+        g.setColor(borderColor);
+        g.drawLine(0, y, dim.width, y);
+
     }
 
     private double getNS(long cycles) {
         return (cycles * nsPerCycle);
     }
 
-    private double getCycles(long nsecs) {
+    private static double getCycles(long nsecs) {
         return (nsecs / nsPerCycle);
     }
 
@@ -189,7 +207,9 @@ public class TimeScale {
         FontMetrics m = g.getFontMetrics();
         String stru = str+" "+getZoomLevel().units;
         int width = m.stringWidth(stru);
-        g.drawString(stru, cntr - width - 3, y + 12);
+        g.setColor(fontColor);
+        g.drawString(stru, cntr - width + 5, y - 2);
+        g.setColor(tickColor);
     }
 
     public int getZoom() {

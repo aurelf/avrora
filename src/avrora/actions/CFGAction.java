@@ -363,7 +363,7 @@ public class CFGAction extends Action {
         String tName = blockName(target);
         // print the edge
         p.print(sName + " -> " + tName);
-        p.print(" [headport=s,tailport=n");
+        p.print(" [headport=n,tailport=s");
 
         if (!direct)
             p.print(",style=dotted");

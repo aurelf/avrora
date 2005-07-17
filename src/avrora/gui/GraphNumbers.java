@@ -51,8 +51,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     private Measurements publicNumbers; //access by monitors to add stuff
     private Measurements privateNumbers; //only accessed by paint
     private final JPanel parentPanel;
-    
-    private Object vSync; //just a private sync variable
+
+    private static final int valueMargin = 5;
 
     /**
     * This is the bar that determines what part of
@@ -82,6 +82,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
     private Color backColor; //color of background
     private Color cursorColor;
     private int minvalue;
+    protected static final int VALUE_SCALE_WIDTH = 15;
+    protected static final int MIN__VALUE__TICK = 3;
 
     //Other features to add:
     //ability to user this class "on top of" another GraphNumbers class => multiple lines on one graph
@@ -90,14 +92,10 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
 
     /**
      * Called by a visual action that wants this class to help with displaying time series data
-     * @param pminvalue The min value for the y-axis
-     * @param pmaxvalue The max value for the y-axis
      */
-    public GraphNumbers(JPanel parent, int pminvalue, int pmaxvalue) {
+    public GraphNumbers(JPanel parent) {
 
         parentPanel = parent;
-
-        vSync = new Object();
 
         publicNumbers = new Measurements();
         privateNumbers = new Measurements();
@@ -106,8 +104,8 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         lineColor = Color.GREEN; //default line color is green
         backColor = Color.BLACK; //default background color is black
         cursorColor = Color.CYAN;
-        minvalue = pminvalue; //min and max values for the y-axis
-        maxvalue = pmaxvalue;
+        minvalue = 0; //min and max values for the y-axis
+        maxvalue = 0;
         timeScale = new TimeScale();
     }
 
@@ -248,7 +246,7 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * @param number the value for the time series data in question
      */
     public void recordNumber(int number) {
-        synchronized (vSync) {
+        synchronized (this) {
             publicNumbers.add(number);
         }
     }
@@ -260,16 +258,18 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * It might also be called by paint thread
      */
     public boolean internalUpdate() {
-        synchronized (vSync) {
-            if (publicNumbers.size() == 0) {
+        Measurements newNumbers = publicNumbers;
+        synchronized ( this ) {
+            if ( newNumbers.size() == 0 ) {
                 return false;
             }
-
-            privateNumbers.addAll(publicNumbers);
-            int max = privateNumbers.max();
-            if ( max > maxvalue ) maxvalue = max;
             publicNumbers = new Measurements();
         }
+
+        // add all the new numbers
+        privateNumbers.addAll(newNumbers);
+        int max = privateNumbers.max();
+        if ( max > maxvalue ) maxvalue = max;
 
         //and update the horz scroll bar to reflect the new values
         updateHorzBar();
@@ -291,56 +291,98 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
         g.setColor(backColor);
         g.fillRect(0, 0, panelDimen.width, panelDimen.height);
 
-        //Note: does this need to be synched?
-        //Right now, no.
+        // draw the time scale (horizontal axis)
         timeScale.setPosition(horzBar.getValue());
         timeScale.drawScale(panelDimen, g);
         long startTime = timeScale.getStartTime();
 
-        //Let's draw all the lines
+        // draw the value scale (vertical axis)
+        drawValueScale(panelDimen, g);
 
-        //the y coordinate will be multiplied by the following scaling factor
-        int maxheight = panelDimen.height - timeScale.height;
-        double scalingfactor = maxheight / ((double) (maxvalue - minvalue));
+        int height = panelDimen.height - timeScale.height;
+        int maxY = height - valueMargin;
+        double scalingfactor = (maxY - valueMargin) / ((double) (maxvalue - minvalue));
         int eofpx = 0; //holds coorinates of last line we drew
         int eofpy = 0;
         boolean firstone = true;  //the first line is a special case
 
         //we have to look up the starting value for the x-axis
         Measurements.Iterator mi = privateNumbers.iterator((int)startTime);
-        int max = (int)(startTime + panelDimen.width * timeScale.getScale());
         g.setColor(lineColor);
-        for (long i = startTime; mi.hasNext() && i < max ; i++)
-        {
-            double currentYPointdb = mi.next();
+        for (long i = startTime; mi.hasNext() ; i++) {
+            double currentValue = mi.next();
             if (firstone) {
-                //the we don't draw the vertical line, we just draw the horzintal
-                eofpy = (int)(currentYPointdb * scalingfactor);
+                //don't draw the vertical line, just the horzintal
+                eofpy = maxY - (int)(currentValue * scalingfactor);
                 eofpx = timeScale.getX(i);
                 g.drawLine(0, eofpy, eofpx, eofpy);
                 firstone = false;
             } else {
-                //two lines (one horzintal and one vertical), using the previous point as a starting location
-                int temploc = (int)(currentYPointdb * scalingfactor);
+                //two lines (one horizontal and one vertical), using the previous point as a starting location
+                int npy = maxY - (int)(currentValue * scalingfactor);
                 //vertical
                 int npx = timeScale.getX(i);
-                g.drawLine(eofpx, eofpy, eofpx, temploc);
+                g.drawLine(eofpx, eofpy, eofpx, npy);
                 //horz
-                g.drawLine(eofpx, temploc, npx, temploc);
-                eofpy = temploc;
+                g.drawLine(eofpx, npy, npx, npy);
+                eofpy = npy;
                 eofpx = npx;
             }
+
+            // are there any measurements left?
             if (!mi.hasNext() ) {
                 g.setColor(Color.DARK_GRAY);
-                g.fillRect(eofpx, 0, panelDimen.width, panelDimen.height);
+                g.fillRect(eofpx, 0, panelDimen.width, height);
                 g.setColor(cursorColor);
-                g.drawLine(eofpx, 0, eofpx, maxheight);
+                g.drawLine(eofpx, 0, eofpx, height);
             }
+
+            // did we go off the end to the right?
+            if ( eofpx > panelDimen.width ) break;
         }
     }
 
+    private void drawValueScale(Dimension dim, Graphics g) {
+        int height = dim.height - timeScale.height;
+        g.setColor(Color.GRAY);
+        g.fillRect(0, 0, VALUE_SCALE_WIDTH, height);
+        int startY = height - valueMargin;
+        double scale = (startY - valueMargin) / ((double) (maxvalue - minvalue));
+        int vtick = 1;
+        for ( ; vtick < 1000000000; vtick *= 10 ) {
+            if ( scale * vtick > MIN__VALUE__TICK ) break;
+        }
+        int majorTick = vtick * 10;
+        int value = (minvalue / majorTick) * majorTick;
+        if ( minvalue < 0 ) value -= majorTick;
+
+        g.setColor(Color.DARK_GRAY);
+        g.setFont(g.getFont().deriveFont((float)9));
+
+        for ( ; ; value += vtick) {
+            int y = (int)(startY - (value - minvalue) * scale);
+            if ( y <= 0 ) break;
+            int modulus = value % majorTick;
+            if ( modulus == 0 ) {
+                // draw line across whole screen
+                g.drawLine(0, y, dim.width, y);
+                g.setColor(Color.RED);
+                g.drawString(Integer.toString(value), VALUE_SCALE_WIDTH+3, y+3);
+                g.setColor(Color.DARK_GRAY);
+            } else {
+                if ( modulus == 5 )
+                    g.drawLine(5, y, VALUE_SCALE_WIDTH-1, y);
+                else
+                    g.drawLine(8, y, VALUE_SCALE_WIDTH-1, y);
+            }
+        }
+        // draw the border line
+        g.setColor(Color.WHITE);
+        g.drawLine(VALUE_SCALE_WIDTH, 0, VALUE_SCALE_WIDTH, height);
+    }
+
     /**
-     * this function processes the monitor options and re-sets the internal variables appropiatly
+     * this function processes the monitor options and resets the internal variables appropriately
      ** @param e Info about the event that happened
      */
     public void stateChanged(ChangeEvent e) {

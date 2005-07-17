@@ -36,6 +36,7 @@ import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.Simulation;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.util.ProgramProfiler;
 import avrora.gui.*;
 import avrora.actions.VisualAction;
@@ -57,14 +58,32 @@ public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.
 
     public class SPMon extends SingleNodePanel implements Simulator.Event, MonitorPanel.Updater {
         public Simulator simulator;
-        public JPanel visualOptionsPanel;
         public GraphNumbers graph;
-        public Object vSync;
+        boolean spinit;
+        int stacktop;
+        int SPL_REG;
+        int SPH_REG;
+
+        InitWatch spl;
+        InitWatch sph;
+
+        class InitWatch extends Simulator.IORWatch.Empty {
+            boolean init;
+            public void fireAfterWrite(State s, int addr, byte val) {
+                init = true;
+                if ( spl.init && sph.init ) {
+                    spinit = true;
+                    stacktop = s.getSP();
+                    simulator.removeIORWatch(spl, SPL_REG);
+                    simulator.removeIORWatch(sph, SPH_REG);
+                }
+            }
+        }
 
         public void fire() {
-            int sp = simulator.getState().getSP();
-            if ( sp < 4000 ) sp = 4000;
-            graph.recordNumber(352 + sp - 4352);
+            // this method is fired every cycle and records the stack pointer
+            int height = spinit ? stacktop - simulator.getState().getSP() : 0;
+            graph.recordNumber(height);
             simulator.insertEvent(this, 1);
         }
 
@@ -77,20 +96,30 @@ public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.
             JPanel displayPanel = panel.displayPanel;
             displayPanel.removeAll();
             displayPanel.setLayout(new BorderLayout());
-            graph = new GraphNumbers(displayPanel, 0, 500);
+            graph = new GraphNumbers(displayPanel);
             displayPanel.add(graph.chalkboardAndBar(), BorderLayout.CENTER);
             displayPanel.validate();
 
             //And we should set up the options panel
-            visualOptionsPanel = panel.optionsPanel;
-            visualOptionsPanel.removeAll();
-            visualOptionsPanel.setLayout(new BorderLayout());
-            visualOptionsPanel.add(graph.getOptionsPanel(), BorderLayout.CENTER);
-            visualOptionsPanel.validate();
+            JPanel optionsPanel = panel.optionsPanel;
+            optionsPanel.removeAll();
+            optionsPanel.setLayout(new BorderLayout());
+            optionsPanel.add(graph.getOptionsPanel(), BorderLayout.CENTER);
+            optionsPanel.validate();
 
             panel.setUpdater(this);
             simulator = s;
             simulator.insertEvent(this, 1);
+
+            spl = new InitWatch();
+            sph = new InitWatch();
+
+            MicrocontrollerProperties mp = simulator.getMicrocontroller().getProperties();
+            SPL_REG = mp.getIOReg("SPL");
+            SPH_REG = mp.getIOReg("SPH");
+
+            simulator.insertIORWatch(spl, SPL_REG);
+            simulator.insertIORWatch(sph, SPH_REG);
         }
 
         public void destruct() {
