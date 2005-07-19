@@ -59,7 +59,6 @@ public class RawModule extends Module {
     }
 
     protected Section section;
-    protected int currentAddress;
     protected HashMap sectionMap;
 
     public RawModule(boolean cs, boolean ba) {
@@ -74,6 +73,7 @@ public class RawModule extends Module {
 
     public void enterSection(AbstractToken sect) {
         section = (Section)sectionMap.get(sect.image);
+        segment.setOrigin(section.lma_start);
     }
 
     public void addBytes(AbstractToken b1, AbstractToken b2) {

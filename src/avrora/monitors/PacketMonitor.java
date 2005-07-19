@@ -38,6 +38,7 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
+import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
 import avrora.Avrora;
 import avrora.util.TermUtil;
@@ -68,6 +69,7 @@ public class PacketMonitor extends MonitorFactory {
     class Mon extends Radio.RadioProbe.Empty implements Monitor {
         LinkedList bytes;
         final Simulator simulator;
+        final Platform platform;
         int bytesTransmitted;
         int packetsTransmitted;
         PacketEndEvent packetEnd;
@@ -78,7 +80,9 @@ public class PacketMonitor extends MonitorFactory {
 
         Mon(Simulator s) {
             simulator = s;
-            simulator.getMicrocontroller().getRadio().insertProbe(this);
+            platform = simulator.getMicrocontroller().getPlatform();
+            Radio radio = (Radio)platform.getDevice("radio");
+            radio.insertProbe(this);
             packetEnd = new PacketEndEvent();
             printer = simulator.getPrinter("monitor.packet");
             printer.enabled = true;

@@ -50,6 +50,7 @@ public abstract class Platform {
     protected Platform(Microcontroller m) {
         mcu = m;
         devices = new HashMap();
+        mcu.setPlatform(this);
     }
 
     /**

@@ -38,6 +38,7 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
+import avrora.sim.platform.Platform;
 import avrora.sim.energy.Energy;
 import avrora.sim.energy.*;
 import avrora.sim.radio.Radio;
@@ -75,6 +76,7 @@ public class EnergyMonitor extends MonitorFactory {
 
         // the simulator
         protected Simulator simulator;
+        protected Platform platform;
         // list of consumers
         protected LinkedList consumer;
         //energy a node is allowed to consume (in joule)
@@ -89,6 +91,7 @@ public class EnergyMonitor extends MonitorFactory {
          */
         Monitor(Simulator s) {
             this.simulator = s;
+            this.platform = s.getMicrocontroller().getPlatform();
             //activate energy monitoring....
             //so the state machine is set up for energy monitoring when needed
             EnergyControl.activate();
@@ -159,8 +162,7 @@ public class EnergyMonitor extends MonitorFactory {
                     Terminal.println("consumed " + totalEnergy + " Joule");
 
                     //remove radio
-                    // TODO: simulator.stop() should be enough to remove the node
-                    Radio radio = simulator.getMicrocontroller().getRadio();
+                    Radio radio = (Radio)platform.getDevice("radio");
                     radio.getAir().removeRadio(radio);
                     //stop loop
                     simulator.stop();

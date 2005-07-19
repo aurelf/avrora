@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.platform.Platform;
 import avrora.sim.clock.Clock;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.clock.MainClock;
@@ -55,6 +56,7 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
     protected final Microcontroller.Pin[] pins;
     protected final MainClock mainClock;
     protected final RegisterSet registers;
+    protected Platform platform;
     protected Simulator simulator;
     protected BaseInterpreter interpreter;
     protected Simulator.Printer pinPrinter;
@@ -334,6 +336,22 @@ public abstract class AtmelMicrocontroller implements Microcontroller {
      */
     public Simulator getSimulator() {
         return simulator;
+    }
+
+    /**
+     * The <code>getPlatform()</code> method returns the platform for this microcontroller.
+     * @return the platform instance containing this microcontroller
+     */
+    public Platform getPlatform() {
+        return platform;
+    }
+
+    /**
+     * The <code>setPlatform()</code> method sets the platform instance for this microcontroller
+     * @param p the platform instance associated with this microcontroller
+     */
+    public void setPlatform(Platform p) {
+        platform = p;
     }
 
     public static void addPin(HashMap pinMap, int p, String n) {

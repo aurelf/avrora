@@ -1066,6 +1066,19 @@ public abstract class BaseInterpreter implements InstrVisitor {
         p.fireAfterWrite(state, address, val);
     }
 
+    /**
+     * The <code>writeFlashByte()</code> method updates the flash memory one byte at a time.
+     * WARNING: this method should NOT BE CALLED UNLESS EXTREME CARE IS TAKEN. The program
+     * cannot alter its own flash data except through the flash writing procedure supported
+     * in <code>ReprogrammableCodeSegment</code>. This method is only meant for updating
+     * node ID's that are stored in flash. DO NOT USE during execution!
+     * @param address the address of the byte in flash
+     * @param val the new value to write into the flash
+     */
+    public void writeFlashByte(int address, byte val) {
+        flash.set(address, val);
+    }
+
     private void setSRAM(int address, byte val) {
         if (address >= sram_start)
             sram[address] = val;

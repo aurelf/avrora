@@ -176,8 +176,6 @@ public class CC1000Radio implements Radio {
     }
 
     public CC1000Radio(Microcontroller mcu, long xfreq) {
-        mcu.setRadio(this);
-
         xoscFrequency = xfreq;
 
         probes = new ProbeList();

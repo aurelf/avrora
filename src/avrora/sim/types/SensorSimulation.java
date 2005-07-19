@@ -35,6 +35,7 @@ package avrora.sim.types;
 import avrora.sim.Simulation;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
+import avrora.sim.BaseInterpreter;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.clock.IntervalSynchronizer;
 import avrora.sim.platform.PlatformFactory;
@@ -49,9 +50,12 @@ import avrora.sim.radio.SimpleAir;
 import avrora.sim.radio.freespace.Topology;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.core.LoadableProgram;
+import avrora.core.Program;
+import avrora.core.SourceMapping;
 import avrora.util.Options;
 import avrora.util.Option;
 import avrora.util.StringUtil;
+import avrora.util.Arithmetic;
 import avrora.Avrora;
 import avrora.Main;
 
@@ -111,7 +115,14 @@ public class SensorSimulation extends Simulation {
             "result, then a list of time value pairs separated by whitespace; the sensor will continue " +
             "returning the current value until the next (relative) time in seconds, and then the sensor " +
             "will change to the new value. ");
-
+    public final Option.Bool UPDATE_NODE_ID = options.newOption("update-node-id", false, 
+            "When this option is set, the sensor network simulator will attempt to update " +
+            "the node identifiers stored in the flash memory of the program. For TinyOS programs, " +
+            "this identifier is labelled \"TOS_LOCAL_ADDRESS\". For SOS programs, this identifier is " +
+            "called \"node_address\". When loading a program onto " +
+            "a node, the simulator will search for these labels, and if found, will update the word " +
+            "in flash with the node's ID number.");
+    
     class SensorDataInput {
         String sensor;
         String fname;
@@ -153,18 +164,39 @@ public class SensorSimulation extends Simulation {
          * replay or random data as specified on the command line.
          */
         protected void instantiate() {
-            // create a new thread for this node
-            thread = new SimulatorThread(this);
-            super.instantiate();
-            radio = (Radio)platform.getDevice("radio");
-            air.addRadio(radio);
-            simulator.delay(startup);
+            createNode();
+            updateNodeID();
+            addSensorData();
+        }
 
+        private void addSensorData() {
             // process sensor data inputs
             Iterator i = sensorInput.iterator();
             while ( i.hasNext() ) {
                 SensorDataInput sdi = (SensorDataInput)i.next();
                 sdi.instantiate(platform);
+            }
+        }
+
+        private void createNode() {
+            thread = new SimulatorThread(this);
+            super.instantiate();
+            radio = (Radio)platform.getDevice("radio");
+            air.addRadio(radio);
+            simulator.delay(startup);
+        }
+
+        private void updateNodeID() {
+            if ( UPDATE_NODE_ID.get() ) {
+                Program p = path.getProgram();
+                SourceMapping smap = p.getSourceMapping();
+                SourceMapping.Location location = smap.getLocation("TOS_LOCAL_ADDRESS");
+                if ( location == null ) location = smap.getLocation("node_address");
+                if ( location != null ) {
+                    BaseInterpreter bi = simulator.getInterpreter();
+                    bi.writeFlashByte(location.address, Arithmetic.low(id));
+                    bi.writeFlashByte(location.address+1, Arithmetic.high(id));
+                }
             }
         }
 

@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.Simulator;
+import avrora.sim.platform.Platform;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.radio.Radio;
 import avrora.core.InstrPrototype;
@@ -145,6 +146,18 @@ public interface Microcontroller {
     public Simulator getSimulator();
 
     /**
+     * The <code>getPlatform()</code> method gets a platform instance that contains this microcontroller.
+     *
+     * @return the platform instance containing this microcontroller, if it exists; null otherwise
+     */
+    public Platform getPlatform();
+
+    /**
+     * The <code>setPlatform()</code> method sets the platform instance that contains this microcontroller.
+     */
+    public void setPlatform(Platform p);
+
+    /**
      * The <code>getPin()</code> method looks up the named pin and returns a reference to that pin. Names of
      * pins should be UPPERCASE. The intended users of this method are external device implementors which
      * connect their devices to the microcontroller through the pins.
@@ -165,20 +178,6 @@ public interface Microcontroller {
      *         otherwise
      */
     public Pin getPin(int num);
-
-    /**
-     * The <code>setRadio()</code> method associates this microcontroller with the specified radio.
-     * @param r the radio to store with this microcontroller
-     * @deprecated
-     */
-    public void setRadio(Radio r);
-
-    /**
-     * The <code>getRadio()</code> method gets the radio associated with this microcontroller.
-     * @return the radio associated with this microcontroller if there is one; null otherwise
-     * @deprecated
-     */
-    public Radio getRadio();
 
     /**
      * The <code>sleep()</code> method puts the microcontroller into the sleep mode defined by its

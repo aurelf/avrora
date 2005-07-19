@@ -45,19 +45,6 @@ import avrora.util.Arithmetic;
  */
 public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
-    /**
-     * The Radio connected to this microcontroller.
-     */
-    protected Radio radio;
-
-    public void setRadio(Radio radio) {
-        this.radio = radio;
-    }
-
-    public Radio getRadio() {
-        return radio;
-    }
-
     public static class FlagBit implements InterruptTable.Notification {
         final InterruptTable it;
         final boolean autoclear;
