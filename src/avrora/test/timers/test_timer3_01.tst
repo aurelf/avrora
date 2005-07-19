@@ -1,12 +1,14 @@
-; @Target: avr-sim
-; @Purpose: "Test the functionality of timer0 in generating interrupts"
+; @Harness: simulator
+; @Purpose: "Test the functionality of timer3 in generating interrupts"
 ; @Result: "r16 = 42, r17 = 42"
 
 ;  this tests the overflow functionality in normal mode
 	
 .equ FAILURE = 1
 .equ SUCCESS = 42
-	
+.equ INTERRUPTED = 12
+
+	;;  I need to figure out the interrupt number for TIMER2 overflow
 ; Interrupt Jump Table
 L000:	jmp    MAIN             ; reset #1
 
@@ -25,8 +27,8 @@ L030:	jmp    INT_FAILURE           ; interrupt #13
 L034:	jmp    INT_FAILURE           ; interrupt #14
 L038:	jmp    INT_FAILURE           ; interrupt #15
 L03C:	jmp    INT_FAILURE           ; interrupt #16
+L040:	jmp    INT_FAILURE           ; interrupt #17
 
-L040:    jmp    TIMER_OVF        ; timer 0 overflow
 
 L044:	jmp    INT_FAILURE           ; interrupt #18
 L048:	jmp    INT_FAILURE           ; interrupt #19
@@ -40,7 +42,7 @@ L064:	jmp    INT_FAILURE           ; interrupt #26
 L068:	jmp    INT_FAILURE           ; interrupt #27
 L06C:	jmp    INT_FAILURE           ; interrupt #28
 L070:	jmp    INT_FAILURE           ; interrupt #29
-L074:	jmp    INT_FAILURE           ; interrupt #30
+L074:	jmp    TIMER_OVF           ; interrupt #30
 L078:	jmp    INT_FAILURE           ; interrupt #31
 L07C:	jmp    INT_FAILURE           ; interrupt #32
 L080:	jmp    INT_FAILURE           ; interrupt #33
@@ -48,7 +50,7 @@ L084:	jmp    INT_FAILURE           ; interrupt #34
 L088:	jmp    INT_FAILURE           ; interrupt #35
 
 INT_FAILURE:
-	ldi r16, FAILURE 		; indicate failure
+	ldi r16, INTERRUPTED 		; indicate failure
 	break
 
 
@@ -61,18 +63,26 @@ MAIN:
 	sei
 	ldi r18, 255
 	out SPL, r18		;  initialize stack pointer
-	ldi r18, 0b00000001
-	out TIMSK, r18	;  turn on all bits in mask
-	ldi r18, 0b11111111
-	out OCR0, r18	;  set output compare register
-	ldi r18, 0b00000001
-	out TCCR0, r18	;  turn on timer
 
+	ldi r18, 0b00000100
+	sts 0x7d, r18		; initialize ETIMSK
+
+	ldi r18, 0b11111111
+	;; initialize TCNT3
+	sts 0x89, r18		; initialize TCNT3H
+	ldi r18, 0b11111000
+	sts 0x88, r18		; initialize TCNT3L
+	;; turn on timer
+	ldi r18, 0b0000001
+	sts 0x8A, r18		; initialize TCCR3B
+	
 CHECK:
 	nop
 	nop
 	nop
 	nop
+
+	
 	cpi r16, SUCCESS
 	breq OK
 	inc r0

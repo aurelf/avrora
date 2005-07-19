@@ -1,14 +1,12 @@
-; @Target: avr-sim
-; @Purpose: "Test the functionality of timer1 in generating interrupts"
+; @Harness: simulator
+; @Purpose: "Test the functionality of timer0 in generating interrupts"
 ; @Result: "r16 = 42, r17 = 42"
 
 ;  this tests the overflow functionality in normal mode
 	
 .equ FAILURE = 1
 .equ SUCCESS = 42
-.equ INTERRUPTED = 12
-
-	;;  I need to figure out the interrupt number for TIMER2 overflow
+	
 ; Interrupt Jump Table
 L000:	jmp    MAIN             ; reset #1
 
@@ -25,10 +23,10 @@ L028:	jmp    INT_FAILURE           ; interrupt #11
 L02C:	jmp    INT_FAILURE           ; interrupt #12
 L030:	jmp    INT_FAILURE           ; interrupt #13
 L034:	jmp    INT_FAILURE           ; interrupt #14
-L038:	jmp    TIMER_OVF           ; interrupt #15
+L038:	jmp    INT_FAILURE           ; interrupt #15
 L03C:	jmp    INT_FAILURE           ; interrupt #16
-L040:	jmp    INT_FAILURE           ; interrupt #17
 
+L040:    jmp    TIMER_OVF        ; timer 0 overflow
 
 L044:	jmp    INT_FAILURE           ; interrupt #18
 L048:	jmp    INT_FAILURE           ; interrupt #19
@@ -50,7 +48,7 @@ L084:	jmp    INT_FAILURE           ; interrupt #34
 L088:	jmp    INT_FAILURE           ; interrupt #35
 
 INT_FAILURE:
-	ldi r16, INTERRUPTED 		; indicate failure
+	ldi r16, FAILURE 		; indicate failure
 	break
 
 
@@ -63,24 +61,18 @@ MAIN:
 	sei
 	ldi r18, 255
 	out SPL, r18		;  initialize stack pointer
-	ldi r18, 0b01010101
+	ldi r18, 0b00000001
 	out TIMSK, r18	;  turn on all bits in mask
-	ldi r18, 0b00000001
-	out OCR1AH, r18
 	ldi r18, 0b11111111
-	out OCR1AL, r18	;  set output compare register
-	ldi r18, 0b11111111
-	out TCNT1H, r18
-	ldi r18, 0b11111000
-	out TCNT1L, r18		; set counter value
+	out OCR0, r18	;  set output compare register
 	ldi r18, 0b00000001
-	out TCCR1B, r18	;  turn on timer
+	out TCCR0, r18	;  turn on timer
 
 CHECK:
 	nop
 	nop
-
-	
+	nop
+	nop
 	cpi r16, SUCCESS
 	breq OK
 	inc r0

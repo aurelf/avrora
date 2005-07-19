@@ -1,5 +1,5 @@
-; @Target: avr-sim
-; @Purpose: "Test the functionality of timer3 in generating interrupts"
+; @Harness: simulator
+; @Purpose: "Test the functionality of timer1 in generating interrupts"
 ; @Result: "r16 = 42, r17 = 42"
 
 ;  this tests the overflow functionality in normal mode
@@ -25,7 +25,7 @@ L028:	jmp    INT_FAILURE           ; interrupt #11
 L02C:	jmp    INT_FAILURE           ; interrupt #12
 L030:	jmp    INT_FAILURE           ; interrupt #13
 L034:	jmp    INT_FAILURE           ; interrupt #14
-L038:	jmp    INT_FAILURE           ; interrupt #15
+L038:	jmp    TIMER_OVF           ; interrupt #15
 L03C:	jmp    INT_FAILURE           ; interrupt #16
 L040:	jmp    INT_FAILURE           ; interrupt #17
 
@@ -42,7 +42,7 @@ L064:	jmp    INT_FAILURE           ; interrupt #26
 L068:	jmp    INT_FAILURE           ; interrupt #27
 L06C:	jmp    INT_FAILURE           ; interrupt #28
 L070:	jmp    INT_FAILURE           ; interrupt #29
-L074:	jmp    TIMER_OVF           ; interrupt #30
+L074:	jmp    INT_FAILURE           ; interrupt #30
 L078:	jmp    INT_FAILURE           ; interrupt #31
 L07C:	jmp    INT_FAILURE           ; interrupt #32
 L080:	jmp    INT_FAILURE           ; interrupt #33
@@ -63,22 +63,20 @@ MAIN:
 	sei
 	ldi r18, 255
 	out SPL, r18		;  initialize stack pointer
-
-	ldi r18, 0b00000100
-	sts 0x9d, r18		; initialize ETIMSK
-
+	ldi r18, 0b01010101
+	out TIMSK, r18	;  turn on all bits in mask
+	ldi r18, 0b00000001
+	out OCR1AH, r18
 	ldi r18, 0b11111111
-	;; initialize TCNT3
-	sts 0xa9, r18		; initialize TCNT3H
+	out OCR1AL, r18	;  set output compare register
+	ldi r18, 0b11111111
+	out TCNT1H, r18
 	ldi r18, 0b11111000
-	sts 0xa8, r18		; initialize TCNT3L
-	;; turn on timer
-	ldi r18, 0b0000001
-	sts 0xaA, r18		; initialize TCCR3B
-	
+	out TCNT1L, r18		; set counter value
+	ldi r18, 0b00000001
+	out TCCR1B, r18	;  turn on timer
+
 CHECK:
-	nop
-	nop
 	nop
 	nop
 

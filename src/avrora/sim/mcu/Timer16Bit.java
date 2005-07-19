@@ -247,7 +247,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     }
 
     void newOCU(int unit, int numUnits, Microcontroller m, RegisterSet rset, char uname, int fb) {
-        if ( unit < numUnits-1 ) {
+        if ( unit < numUnits ) {
             compareUnits[unit] = new OutputCompareUnit(m, rset, uname, fb);
         }
     }
@@ -446,14 +446,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         private void flushOCRnx() {
             for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
                 compareUnits[cntr].flush();
-            /*
-            OCRnAL_reg.flush();
-            OCRnAH_reg.flush();
-            OCRnBL_reg.flush();
-            OCRnBH_reg.flush();
-            OCRnCL_reg.flush();
-            OCRnCH_reg.flush();
-            */
         }
 
         private final int[] TOP = {0xffff, 0x00ff, 0x01ff, 0x03ff, 0, 0x0ff, 0x01ff, 0x03ff};
@@ -642,17 +634,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             if (!blockCompareMatch) {
                 for ( int cntr = 0; cntr < compareUnits.length; cntr++ )
                     compareUnits[cntr].compare(countSave);
-                /*
-                if (countSave == compareA) {
-                    compareMatchA();
-                }
-                if (countSave == compareB) {
-                    compareMatchB();
-                }
-                if (countSave == compareC) {
-                    compareMatchC();
-                }
-                */
             }
             write16(count, TCNTnH_reg, TCNTnL_reg);
             // make sure timings on this are correct

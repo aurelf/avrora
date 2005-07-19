@@ -1,4 +1,4 @@
-; @Target: avr-sim
+; @Harness: simulator
 ; @Purpose: "Test the functionality of timer2 in generating interrupts"
 ; @Result: "r16 = 42, r17 = 42"
 
