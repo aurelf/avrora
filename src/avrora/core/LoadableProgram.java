@@ -35,6 +35,7 @@ package avrora.core;
 import avrora.core.Program;
 import avrora.Defaults;
 import avrora.Avrora;
+import avrora.Main;
 import avrora.util.Status;
 
 import java.io.File;
@@ -48,6 +49,7 @@ import java.io.File;
  */
 public class LoadableProgram {
 
+    public final String fname;
     public final File file;
     protected Program program;
 
@@ -58,6 +60,17 @@ public class LoadableProgram {
      */
     public LoadableProgram(File f) {
         file = f;
+        fname = f.getAbsolutePath();
+    }
+
+    /**
+     * The constructor for the <code>LoadableProgram</code> class creates a new instance with
+     * a reference to the file on the disk. The program is NOT automatically loaded.
+     * @param fname the filename of the file containing the program
+     */
+    public LoadableProgram(String fname) {
+        file = new File(fname);
+        this.fname = fname;
     }
 
     /**
@@ -75,9 +88,7 @@ public class LoadableProgram {
      * The <code>load()</code> method loads (or reloads) the program from the disk.
      */
     public void load() throws Exception {
-        Status.begin("Loading "+file);
-        program = Defaults.getProgramReader("auto").read(new String[] { file.getAbsolutePath() } );
-        Status.success();
+        program = Main.loadProgram(new String[] { fname });
     }
 
     /**

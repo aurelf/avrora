@@ -101,6 +101,7 @@ public class Defaults {
             monitorMap.addClass("energy", EnergyMonitor.class);
             monitorMap.addClass("energy-log", EnergyMonitorLog.class);
             monitorMap.addClass("interrupts", InterruptMonitor.class);
+            monitorMap.addClass("interactive", InteractiveMonitor.class);
             monitorMap.addClass("trace", TraceMonitor.class);
             monitorMap.addClass("energy-profile", EnergyProfiler.class);
             monitorMap.addClass("packet", PacketMonitor.class);
@@ -165,6 +166,7 @@ public class Defaults {
             actions.addClass("analyze-stack", AnalyzeStackAction.class);
             actions.addClass("test", TestAction.class);
             actions.addClass("cfg", CFGAction.class);
+            actions.addClass("gui", VisualAction.class);
             actions.addClass("benchmark", BenchmarkAction.class);
             actions.addClass("isea", ISEAAction.class);
             //--BEGIN EXPERIMENTAL: isdl

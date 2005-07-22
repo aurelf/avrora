@@ -112,12 +112,6 @@ public class SimulateAction extends SimAction {
         }
     }
 
-    class BreakPointProbe extends Simulator.Probe.Empty {
-        public void fireBefore(State s, int pc) {
-            throw new BreakPointException(pc, s);
-        }
-    }
-
     protected void reportMonitors(Simulation sim) {
         Iterator i = sim.getNodeIterator();
         while (i.hasNext()) {

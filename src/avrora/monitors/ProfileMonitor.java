@@ -51,13 +51,6 @@ import java.util.*;
  */
 public class ProfileMonitor extends MonitorFactory {
 
-    public final Option.Bool BASIC_BLOCKS = options.newOption("basic-blocks", false,
-            "This option is used in by the profiling monitor to determine how to " +
-            "collate the profiling information. When this option is set to true, " +
-            "the profiling monitor will report the execution count and total " +
-            "cycles consumed by each basic block, rather than each instruction " +
-            "or instruction range.");
-
     public final Option.Bool CYCLES = options.newOption("record-cycles", true,
             "This option is used by the profiling and controls whether it records " +
             "the cycles consumed by each instruction or basic block. ");

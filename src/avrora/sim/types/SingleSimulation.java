@@ -43,6 +43,7 @@ import avrora.Defaults;
 import avrora.core.Program;
 import avrora.core.LoadableProgram;
 import avrora.util.Options;
+import avrora.util.Option;
 
 import java.io.File;
 
@@ -172,9 +173,10 @@ public class SingleSimulation extends Simulation {
             Avrora.userError("Simulation error", "Single node simulation accepts only one program");
         Main.checkFilesExist(args);
 
-        LoadableProgram p = new LoadableProgram(new File(args[0]));
+        LoadableProgram p = new LoadableProgram(args[0]);
         p.load();
         PlatformFactory pf = getPlatform();
         createNode(pf, p);
+
     }
 }

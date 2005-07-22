@@ -36,6 +36,7 @@ import avrora.sim.State;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.TermUtil;
 import avrora.util.profiling.Distribution;
 import avrora.core.Instr;
 import avrora.core.Program;
@@ -124,14 +125,13 @@ public class TripTimeMonitor extends MonitorFactory {
                 if ( distrib == null ) {
                 float avg = (float)cumul / count;
 				double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
-				Terminal.println("  start   end      count  avg         std         max        min");
                 Terminal.println("  "+StringUtil.addrToString(start)+"  "
                         +StringUtil.addrToString(end)+"  "
-                        +StringUtil.rightJustify(count, 6)+"  "
-                        +StringUtil.rightJustify(avg, 6)+"  "
-						+StringUtil.rightJustify((float)std, 6)+"  "
-						+StringUtil.rightJustify((float)max, 6)+"  "
-						+StringUtil.rightJustify((float)min, 6)
+                        +StringUtil.rightJustify(count, 8)+"  "
+                        +StringUtil.rightJustify(avg, 10)+"  "
+						+StringUtil.rightJustify((float)std, 10)+"  "
+						+StringUtil.rightJustify((float)max, 9)+"  "
+						+StringUtil.rightJustify((float)min, 9)
 						);
                 } else {
                     distrib.processData();
@@ -247,6 +247,9 @@ public class TripTimeMonitor extends MonitorFactory {
         }
 
         public void report() {
+            Terminal.printGreen("  start      end     count         avg         std        max        min");
+            Terminal.nextln();
+            TermUtil.printThinSeparator(Terminal.MAXLINE);
             for ( int cntr = 0; cntr < lastEnter.length; cntr++ )
                 for ( Pair p = startArray[cntr]; p != null; p = p.startLink ) {
                     if ( p.count > 0 ) p.report();

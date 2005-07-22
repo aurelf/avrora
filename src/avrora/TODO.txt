@@ -16,6 +16,7 @@
     1   devs  USART baud rates
     1   devs  USART frame sizes
 
+    1  input  Fixed processing of -sections option                 (1.5.118)
     1  probe  Recursion in State.getDataByte() from within watch   (1.5.102)
     2   devs  Interrupt mappings for devices on ATMega32           (1.5.102)
     1  probe  Memory monitor not reporting all of memory            (1.5.94)
@@ -60,6 +61,7 @@
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+    1  probe  Added simplest interactive monitor                   (1.5.118)
     1    sim  Automatically patch node ID for TinyOS and SOS       (1.5.116)
     1    sim  [Bastian Schlich] ATMega16 device added              (1.5.109)
   2-3    sim  Full support for ATMega32 device                     (1.5.105)

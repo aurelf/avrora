@@ -112,7 +112,7 @@ public class SensorSimulation extends Simulation {
             "result, then a list of time value pairs separated by whitespace; the sensor will continue " +
             "returning the current value until the next (relative) time in seconds, and then the sensor " +
             "will change to the new value. ");
-    public final Option.Bool UPDATE_NODE_ID = options.newOption("update-node-id", false, 
+    public final Option.Bool UPDATE_NODE_ID = options.newOption("update-node-id", true,
             "When this option is set, the sensor network simulator will attempt to update " +
             "the node identifiers stored in the flash memory of the program. For TinyOS programs, " +
             "this identifier is labelled \"TOS_LOCAL_ADDRESS\". For SOS programs, this identifier is " +
@@ -287,7 +287,7 @@ public class SensorSimulation extends Simulation {
             if (args.length <= cntr) break;
 
             String pname = args[cntr++];
-            LoadableProgram lp = new LoadableProgram(new File(pname));
+            LoadableProgram lp = new LoadableProgram(pname);
             lp.load();
 
             // create a number of nodes with the same program
