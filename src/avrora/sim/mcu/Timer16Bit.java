@@ -107,7 +107,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
                         output();
                     }
                 }
-                set(0);
+                // TODO: reset the value to 0
+                //set(0);
             }
         }
 

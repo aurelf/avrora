@@ -1670,9 +1670,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
     public int extended(int addr) {
-        // TODO: RAMPZ will have more than one bit on models with more flash
-        if ( RAMPZ > 0 )
-            return (getIORegisterByte(RAMPZ) & 1) << 16 | addr;
+        if ( RAMPZ > 0 ) return (getIORegisterByte(RAMPZ) & 1) << 16 | addr;
         else return addr;
     }
 

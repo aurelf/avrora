@@ -15,6 +15,7 @@
     1    sim  Out of bound accesses to SRAM, flash, EEPROM
     1   devs  USART baud rates
     1   devs  USART frame sizes
+    1    sim  RAMPZ usage for with more than 128k of flash
 
     1  input  Fixed processing of -sections option                 (1.5.118)
     1  probe  Recursion in State.getDataByte() from within watch   (1.5.102)
