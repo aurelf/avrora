@@ -150,13 +150,12 @@ public final class Terminal {
     }
 
     public static void print(int color, String s) {
-        if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
-        outputColor(color, s);
+        if (color >= MAXCOLORS || color < 0 ) print(s);
+        else outputColor(color, s);
     }
 
     public static void println(int color, String s) {
-        if (color >= MAXCOLORS) throw new IllegalArgumentException("invalid color");
-        outputColor(color, s);
+        print(color, s);
         out.print('\n');
     }
 

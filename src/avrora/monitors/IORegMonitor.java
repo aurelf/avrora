@@ -165,7 +165,7 @@ public class IORegMonitor extends MonitorFactory {
     }
 
     public IORegMonitor() {
-        super("This monitor is capable of monitoring the updates to IO registers on the microncontroller, " +
+        super("This monitor is capable of monitoring the updates to IO registers on the microcontroller, " +
                 "including IO registers corresponding to devices such as the timer, UART, SPI, etc.");
     }
 

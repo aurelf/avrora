@@ -35,6 +35,7 @@ package avrora.core;
 import avrora.core.Program;
 import avrora.Defaults;
 import avrora.Avrora;
+import avrora.util.Status;
 
 import java.io.File;
 
@@ -74,7 +75,9 @@ public class LoadableProgram {
      * The <code>load()</code> method loads (or reloads) the program from the disk.
      */
     public void load() throws Exception {
+        Status.begin("Loading "+file);
         program = Defaults.getProgramReader("auto").read(new String[] { file.getAbsolutePath() } );
+        Status.success();
     }
 
     /**

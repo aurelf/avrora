@@ -226,7 +226,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
         ERASE_CYCLES = (int)((mainClock.getHZ() * ERASE_MS_MAX / 1000));
         WRITE_CYCLES = (int)((mainClock.getHZ() * WRITE_MS_MAX / 1000));
 
-        flashPrinter = bi.getSimulator().getPrinter("atmega.flash");
+        flashPrinter = bi.getSimulator().getPrinter("atmel.flash");
     }
 
     /**

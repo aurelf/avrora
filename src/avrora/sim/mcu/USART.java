@@ -621,7 +621,7 @@ public class USART extends AtmelInternalDevice {
      */
     protected class SerialPrinter implements USARTDevice {
 
-        Simulator.Printer serialPrinter = simulator.getPrinter("atmega.usart.printer");
+        Simulator.Printer serialPrinter = simulator.getPrinter("atmel.usart.printer");
 
         char[] stream = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd'};
 

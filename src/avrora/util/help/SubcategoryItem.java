@@ -76,7 +76,13 @@ public class SubcategoryItem implements HelpItem {
     public void printHelp() {
         String h = getHelp();
         Terminal.print(StringUtil.dup(' ', indent));
-        Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, "-help", " ", helpCat.name);
+        String name;
+        if ( Terminal.htmlColors ) {
+            name = "<a href="+helpCat.name+".html>"+helpCat.name+"</a>";
+        } else {
+            name = helpCat.name;
+        }
+        Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, "-help", " ", name);
         Terminal.nextln();
         Terminal.println(StringUtil.makeParagraphs(h, indent+4, 0, Terminal.MAXLINE));
     }

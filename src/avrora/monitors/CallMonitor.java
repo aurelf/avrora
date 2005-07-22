@@ -204,7 +204,7 @@ public class CallMonitor extends MonitorFactory {
      * that explains each option and its use.
      */
     public CallMonitor() {
-        super("The \"call\" monitor tracks the call/return behavior of the program as it executes, " +
+        super("The \"calls\" monitor tracks the call/return behavior of the program as it executes, " +
                 "displaying the stacking up of function calls and interrupt handlers.");
     }
 

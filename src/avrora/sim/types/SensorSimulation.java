@@ -52,10 +52,7 @@ import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.core.LoadableProgram;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
-import avrora.util.Options;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Arithmetic;
+import avrora.util.*;
 import avrora.Avrora;
 import avrora.Main;
 
@@ -289,7 +286,8 @@ public class SensorSimulation extends Simulation {
 
             if (args.length <= cntr) break;
 
-            LoadableProgram lp = new LoadableProgram(new File(args[cntr++]));
+            String pname = args[cntr++];
+            LoadableProgram lp = new LoadableProgram(new File(pname));
             lp.load();
 
             // create a number of nodes with the same program

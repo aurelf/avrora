@@ -173,8 +173,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
     boolean blockCompareMatch;
 
-    Simulator.Printer timerPrinter;
-
     protected final Clock externalClock;
     Clock timerClock;
 
@@ -242,8 +240,6 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
 
         installIOReg("ICR"+n+"H", highTempReg);
         installIOReg("ICR"+n+"L", ICRn_reg);
-
-        timerPrinter = m.getSimulator().getPrinter("atmega.timer" + n);
     }
 
     void newOCU(int unit, int numUnits, Microcontroller m, RegisterSet rset, char uname, int fb) {
@@ -257,9 +253,9 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
      * Flags the overflow interrupt for this timer.
      */
     protected void overflow() {
-        if (timerPrinter.enabled) {
+        if (devicePrinter.enabled) {
             boolean enabled = xTIMSK_reg.readBit(TOIEn);
-            timerPrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ')' + "  ");
+            devicePrinter.println("Timer" + n + ".overFlow (enabled: " + enabled + ')' + "  ");
         }
         // set the overflow flag for this timer
         xTIFR_reg.flagBit(TOVn);
@@ -371,7 +367,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
     private void resetPeriod(int nPeriod) {
         if (nPeriod == 0) {
             if (timerEnabled) {
-                if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " disabled");
+                if (devicePrinter.enabled) devicePrinter.println("Timer" + n + " disabled");
                 timerClock.removeEvent(ticker);
                 timerEnabled = false;
             }
@@ -380,7 +376,7 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
         if (timerEnabled) {
             timerClock.removeEvent(ticker);
         }
-        if (timerPrinter.enabled) timerPrinter.println("Timer" + n + " enabled: period = " + nPeriod + " mode = " + WGMn.value);
+        if (devicePrinter.enabled) devicePrinter.println("Timer" + n + " enabled: period = " + nPeriod + " mode = " + WGMn.value);
         period = nPeriod;
         timerEnabled = true;
         timerClock.insertEvent(ticker, period);
@@ -462,8 +458,8 @@ public abstract class Timer16Bit extends AtmelInternalDevice {
             */
             int compareI = read16(ICRnH_reg, ICRnL_reg);
 
-            if (timerPrinter.enabled) {
-                timerPrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "]");
+            if (devicePrinter.enabled) {
+                devicePrinter.println("Timer" + n + " [TCNT" + n + " = " + count + ", OCR" + n + "A = " + compareA + "]");
             }
 
             // What exactly should I do when I phase/frequency current?

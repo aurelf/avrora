@@ -53,6 +53,7 @@ public class ClassMapValueItem implements HelpItem {
     public final String optname;
     public final String optvalue;
     public final ClassMap map;
+    boolean isHelpCategory;
     protected String help;
 
     /**
@@ -90,7 +91,13 @@ public class ClassMapValueItem implements HelpItem {
     public void printHelp() {
         String h = getHelp();
         Terminal.print(StringUtil.dup(' ', indent));
-        Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, optname, "=", optvalue);
+        String name;
+        if ( isHelpCategory && Terminal.htmlColors ) {
+            name = "<a href="+optvalue+".html>"+optvalue+"</a>";
+        } else {
+            name = optvalue;
+        }
+        Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, optname, "=", name);
         Terminal.nextln();
         Terminal.println(StringUtil.makeParagraphs(h, indent+4, 0, Terminal.MAXLINE));
     }
@@ -103,7 +110,9 @@ public class ClassMapValueItem implements HelpItem {
      */
     private String computeHelp() {
         try {
-            help = ((HelpItem)map.getObjectOfClass(optvalue)).getHelp();
+            HelpItem item = (HelpItem)map.getObjectOfClass(optvalue);
+            help = item.getHelp();
+            if ( item instanceof HelpCategory ) isHelpCategory = true;
         } catch ( Throwable t ) {
             return "(No help available for this item.)";
         }
