@@ -232,7 +232,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
      */
     public EnergyMonitorLog() {
         super("energy-log", "The \"energy-log\" is a monitor to trace energy consumption and log it," +
-                "the trace file is energyNODEID.log");
+                "the trace file is energy$NODE.log");
     }
 
 

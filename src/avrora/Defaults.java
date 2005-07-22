@@ -161,13 +161,11 @@ public class Defaults {
         if (actions == null) {
             actions = new ClassMap("Action", Action.class);
             //-- DEFAULT ACTIONS
-            actions.addClass("multi-simulate", MultiSimulateAction.class);
             actions.addClass("simulate", SimulateAction.class);
             actions.addClass("analyze-stack", AnalyzeStackAction.class);
             actions.addClass("test", TestAction.class);
             actions.addClass("cfg", CFGAction.class);
             actions.addClass("gui", VisualAction.class);
-            actions.addClass("benchmark", BenchmarkAction.class);
             actions.addClass("isea", ISEAAction.class);
             //--BEGIN EXPERIMENTAL: isdl
             actions.addClass("isdl", ISDLAction.class);
@@ -198,7 +196,7 @@ public class Defaults {
             simMap.addClass("sensor-network", SensorSimulation.class);
 
             // plug in a new help category for simulations accesible with "-help simulations"
-            HelpCategory hc = new HelpCategory("simulations", "Help for Simulation types.");
+            HelpCategory hc = new HelpCategory("simulations", "Help for supported simulation types.");
             addOptionSection(hc, "SIMULATION TYPES",
                     "When running a simulation, Avrora accepts the \"-simulation\" command line option " +
                     "that selects the simulation type from multiple different types provided, or a " +

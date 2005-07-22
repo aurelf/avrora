@@ -56,7 +56,7 @@ public class VisualAction extends Action {
 
     public AvroraGui app; //allows us to access GUI
 
-    public static final String HELP = "The \"visual\" action launches a GUI allowing the user to interactively " +
+    public static final String HELP = "The \"gui\" action launches a GUI allowing the user to interactively " +
             "create simulations, complete with graphical monitors.";
 
     public VisualAction() {

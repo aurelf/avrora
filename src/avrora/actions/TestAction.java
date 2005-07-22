@@ -34,6 +34,7 @@ package avrora.actions;
 
 import avrora.test.AutomatedTester;
 import avrora.util.Option;
+import avrora.util.Status;
 
 /**
  * The <code>TestAction</code> class represents an action to invoke the built-in automated testing framework
@@ -59,7 +60,8 @@ public class TestAction extends Action {
      * @throws Exception
      */
     public void run(String[] args) throws Exception {
-        AutomatedTester.LONG_REPORT = DETAIL.get(); 
+        AutomatedTester.LONG_REPORT = DETAIL.get();
+        Status.ENABLED = false;
         new AutomatedTester().runTests(args);
     }
 }

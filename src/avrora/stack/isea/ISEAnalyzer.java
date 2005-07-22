@@ -193,6 +193,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
             s.print(loc);
         } else {
             Terminal.printRed("PROCEDURE DOES NOT RETURN");
+            Terminal.nextln();
         }
     }
 }

@@ -105,8 +105,8 @@ public class SensorSimulation extends Simulation {
             "time 2*X, etc.");
     public final Option.List SENSOR_DATA = options.newOptionList("sensor-data", "", 
             "This option accepts a list describing the input data for each sensor node. The format " +
-            "for each entry in this list is <sensor>:<id>:<data>, where <sensor> is the name of " +
-            "the sensor device such as \"light\", <id> is the integer ID of the node, and <data> is " +
+            "for each entry in this list is $sensor:$id:$data, where $sensor$ is the name of " +
+            "the sensor device such as \"light\", $id is the integer ID of the node, and $data is " +
             "the name of a file or the special '.' character, indicating random data. A sensor data " +
             "input file consists of an initial sensor reading which is interpreted as a 10-bit ADC " +
             "result, then a list of time value pairs separated by whitespace; the sensor will continue " +

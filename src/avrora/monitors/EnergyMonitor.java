@@ -42,6 +42,7 @@ import avrora.sim.platform.Platform;
 import avrora.sim.energy.Energy;
 import avrora.sim.energy.*;
 import avrora.sim.radio.Radio;
+import avrora.sim.radio.RadioAir;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 import avrora.util.Option;
@@ -163,7 +164,9 @@ public class EnergyMonitor extends MonitorFactory {
 
                     //remove radio
                     Radio radio = (Radio)platform.getDevice("radio");
-                    radio.getAir().removeRadio(radio);
+                    RadioAir air = radio.getAir();
+                    if ( air != null )
+                        air.removeRadio(radio);
                     //stop loop
                     simulator.stop();
                 }

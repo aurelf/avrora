@@ -43,6 +43,7 @@ import avrora.sim.energy.Energy;
 import avrora.sim.mcu.Microcontroller;
 import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.Verbose;
 
 /**
  * The <code>ExternalFlash</code> class implements the necessary functionality of the
@@ -89,10 +90,8 @@ public class ExternalFlash {
     public static final int DF_TBE = 12;
     public static final double DF_TXFR = 0.0003;
 
-    public static final boolean ECHO_EVENT = true;
+    public static final boolean ECHO_EVENT = Verbose.getVerbosePrinter("mica2.flash").enabled;
 
-    // energy profile of this device
-    private Energy energy;
     // names of the states of this device
     private static final String[] modeName = {"standby", "read", "write", "load"};
     // power consumption of the device states
@@ -150,7 +149,7 @@ public class ExternalFlash {
         mcu.getPin("PD2").connect(new PD2Input());
 
         //setup energy recording
-        energy = new Energy("flash", modeAmpere, stateMachine);
+        new Energy("flash", modeAmpere, stateMachine);
     }
 
     private Page getMemoryPage(int num) {
@@ -219,13 +218,13 @@ public class ExternalFlash {
         public void write(boolean level) {
             if (!level && !isSelected) {
                 // falling edge, so instruction starts
-                if ((long) sim.getClock().getCount() > 1500) {
+                if (sim.getClock().getCount() > 1500) {
                     echo("Instruction started");
                 }
                 isSelected = true;
             } else if (level && isSelected) {
                 // rising edge, so instruction terminates
-                if ((long) sim.getClock().getCount() < 1500) {
+                if (sim.getClock().getCount() < 1500) {
                     echo("initialized");
                 } else {
                     echo("Instruction finished");
