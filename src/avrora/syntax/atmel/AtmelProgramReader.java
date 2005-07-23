@@ -33,7 +33,6 @@
 package avrora.syntax.atmel;
 
 import avrora.Avrora;
-import avrora.util.Status;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
@@ -69,13 +68,13 @@ public class AtmelProgramReader extends ProgramReader {
         File f = new File(args[0]);
         Module module = new Module(false, false);
         FileInputStream fis = new FileInputStream(f);
-        Status.begin("Parsing");
+        //Status.begin("Parsing");
         AtmelParser parser = new AtmelParser(fis, module, f.getName());
         parser.Module();
-        Status.success();
-        Status.begin("Building");
+        //Status.success();
+        //Status.begin("Building");
         Program p = module.build();
-        Status.success();
+        //Status.success();
         addIndirectEdges(p);
         return p;
     }

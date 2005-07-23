@@ -32,16 +32,16 @@
 
 package avrora.syntax.objdump;
 
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Status;
 import avrora.Avrora;
+import avrora.util.StringUtil;
 
-import java.io.*;
-import java.util.Iterator;
-import java.util.StringTokenizer;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * @author Ben L. Titzer
@@ -62,18 +62,18 @@ public class ObjDumpReformatter {
 
     public StringBuffer cleanCode(String inFile) throws IOException {
         try {
-            Status.begin("Preprocessing");
+            //Status.begin("Preprocessing");
             StringBuffer out = new StringBuffer(200000);
             BufferedReader in = new BufferedReader(new FileReader(inFile));
             cleanFile(in, out);
-            Status.success();
+            //Status.success();
             return out;
         } catch (IOException e) {
             // rethrow IO exceptions (e.g. file not found)
-            Status.error(e);
+            //Status.error(e);
             throw e;
         } catch (Throwable e) {
-            Status.error(e);
+            //Status.error(e);
             throw Avrora.unexpected(e);
         }
     }

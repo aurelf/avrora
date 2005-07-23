@@ -32,10 +32,9 @@
 
 package avrora.sim;
 
-import avrora.core.*;
 import avrora.Avrora;
+import avrora.core.*;
 import avrora.sim.util.MulticastProbe;
-import avrora.sim.mcu.AtmelMicrocontroller;
 
 /**
  * The <code>CodeSegment</code> class represents a segment of memory that stores executable

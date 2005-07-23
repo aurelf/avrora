@@ -35,11 +35,10 @@ package avrora.gui;
 import avrora.sim.Simulation;
 
 import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.Vector;
-import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * This manages the topology window within the GUI.  Currently,

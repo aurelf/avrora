@@ -38,11 +38,10 @@ package avrora.sim.platform;
 
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
-import avrora.sim.clock.Clock;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 import avrora.util.Verbose;
 
 /**

@@ -32,18 +32,18 @@
 
 package avrora.core.isdl.gen;
 
-import avrora.core.isdl.ast.*;
-import avrora.core.isdl.parser.Token;
-import avrora.core.isdl.parser.ISDLParserConstants;
-import avrora.core.isdl.SubroutineDecl;
+import avrora.Avrora;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.CodeRegion;
-import avrora.Avrora;
+import avrora.core.isdl.SubroutineDecl;
+import avrora.core.isdl.ast.*;
+import avrora.core.isdl.parser.ISDLParserConstants;
+import avrora.core.isdl.parser.Token;
 
-import java.util.List;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>Inliner</code> class implements a visitor over the code that inlines calls to known subroutines.

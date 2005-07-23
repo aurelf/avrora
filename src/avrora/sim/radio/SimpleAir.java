@@ -33,18 +33,11 @@
 package avrora.sim.radio;
 
 import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
-import avrora.sim.mcu.ADC;
 import avrora.sim.clock.IntervalSynchronizer;
 import avrora.sim.clock.Synchronizer;
-import avrora.util.Verbose;
-import avrora.util.Arithmetic;
-import avrora.Avrora;
+import avrora.sim.mcu.ADC;
 
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.TreeSet;
 
 /**
  * Very simple implementation of radio air. It assumes a lossless environment where all radios are able to

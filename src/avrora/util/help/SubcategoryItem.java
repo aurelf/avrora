@@ -32,10 +32,8 @@
 
 package avrora.util.help;
 
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
-import avrora.util.ClassMap;
-import avrora.Defaults;
+import avrora.util.Terminal;
 
 /**
  * The <code>SubcategoryItem</code> class implements a help item that represents a subcategory in

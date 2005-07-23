@@ -32,13 +32,14 @@
 
 package avrora.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.event.*;
-
 import avrora.util.Terminal;
-import avrora.actions.VisualAction;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 /**
  * This is a generic helper class for visual monitors.  It's purpose is to help

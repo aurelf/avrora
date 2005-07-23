@@ -36,9 +36,8 @@ import avrora.core.Instr;
 import avrora.core.InstrVisitor;
 import avrora.core.Program;
 import avrora.core.Register;
-import avrora.util.Arithmetic;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.Avrora;
+import avrora.util.Arithmetic;
 
 /**
  * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The

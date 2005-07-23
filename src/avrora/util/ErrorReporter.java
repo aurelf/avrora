@@ -34,7 +34,6 @@ package avrora.util;
 
 import avrora.syntax.ProgramPoint;
 import avrora.syntax.SimplifierError;
-import avrora.util.StringUtil;
 
 /**
  * The <code>ErrorReporter</code> is the super class of all error reporters in Avrora. It contains several

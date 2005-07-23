@@ -35,24 +35,15 @@ package avrora.sim.platform;
 import avrora.core.Program;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
-import avrora.sim.platform.sensors.SensorBoard;
-import avrora.sim.platform.sensors.LightSensor;
-import avrora.sim.platform.sensors.RandomSensorData;
-import avrora.sim.platform.sensors.ReplaySensorData;
 import avrora.sim.clock.ClockDomain;
-import avrora.sim.clock.DerivedClock;
-import avrora.sim.clock.ClockDomain;
-import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.ATMega128;
 import avrora.sim.mcu.AtmelMicrocontroller;
+import avrora.sim.mcu.Microcontroller;
+import avrora.sim.platform.sensors.LightSensor;
+import avrora.sim.platform.sensors.SensorBoard;
 import avrora.sim.radio.CC1000Radio;
 import avrora.sim.radio.Radio;
 import avrora.util.Terminal;
-import avrora.Avrora;
-
-import java.util.Random;
-import java.io.File;
-import java.io.IOException;
 
 /**
  * The <code>Mica2</code> class is an implementation of the <code>Platform</code> interface that represents

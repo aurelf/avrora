@@ -38,18 +38,17 @@
 package avrora.monitors;
 
 import avrora.Avrora;
-import avrora.sim.energy.Energy;
 import avrora.sim.Simulator;
+import avrora.sim.State;
+import avrora.sim.energy.Energy;
 import avrora.sim.energy.EnergyControl;
 import avrora.sim.energy.EnergyObserver;
 import avrora.util.Options;
-import avrora.sim.State;
-
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.Iterator;
 
 /**
  * energy monitor implementation this class handles logging and 
@@ -231,8 +230,8 @@ public class EnergyMonitorLog extends EnergyMonitor {
      * create a new monitor
      */
     public EnergyMonitorLog() {
-        super("energy-log", "The \"energy-log\" is a monitor to trace energy consumption and log it," +
-                "the trace file is energy$NODE.log");
+        super("The \"energy-log\" monitor traces energy consumption and logs it for each node to a file " +
+                "named energy$NODE.log");
     }
 
 

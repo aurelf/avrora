@@ -38,7 +38,6 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Option;
 import avrora.util.StringUtil;
-import avrora.core.Instr;
 
 import java.util.Iterator;
 
@@ -165,7 +164,7 @@ public class IORegMonitor extends MonitorFactory {
     }
 
     public IORegMonitor() {
-        super("This monitor is capable of monitoring the updates to IO registers on the microcontroller, " +
+        super("This \"ioregs\" monitor tracks the updates to IO registers on the microcontroller, " +
                 "including IO registers corresponding to devices such as the timer, UART, SPI, etc.");
     }
 

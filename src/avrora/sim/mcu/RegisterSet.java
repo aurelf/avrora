@@ -32,18 +32,14 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.mcu.Microcontroller;
+import avrora.Avrora;
 import avrora.sim.ActiveRegister;
 import avrora.sim.RWRegister;
-import avrora.Avrora;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.text.StringCharacterIterator;
-import java.text.CharacterIterator;
 
 /**
  * The <code>RegisterSet</code> class is a utility that simplifies the implementation

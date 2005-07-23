@@ -32,18 +32,17 @@
 
 package avrora.test;
 
-import avrora.Main;
 import avrora.Defaults;
+import avrora.Main;
+import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.util.InterruptScheduler;
+import avrora.syntax.Module;
 import avrora.test.probes.ProbeParser;
 import avrora.test.probes.ProbeTest;
-import avrora.core.Program;
-import avrora.core.ProgramReader;
-import avrora.syntax.Module;
-import avrora.sim.util.InterruptScheduler;
 
-import java.util.Properties;
 import java.io.FileInputStream;
+import java.util.Properties;
 
 /**
  * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the

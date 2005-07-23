@@ -33,7 +33,6 @@
 package avrora.core.isdl.gen;
 
 import avrora.core.isdl.ast.*;
-import avrora.core.isdl.gen.PrettyPrinter.MapRep;
 import avrora.core.isdl.parser.Token;
 import avrora.util.Printer;
 

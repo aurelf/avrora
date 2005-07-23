@@ -34,7 +34,6 @@ package avrora.sim;
 
 import avrora.core.Instr;
 import avrora.core.Register;
-import avrora.util.Arithmetic;
 
 /**
  * The <code>State</code> class represents the state of the simulator, including the contents of registers and

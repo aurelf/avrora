@@ -36,12 +36,10 @@
 
 package avrora.sim.radio.freespace;
 
-import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
-import avrora.sim.mcu.ADC;
 import avrora.sim.clock.Synchronizer;
-import avrora.sim.radio.Radio;
+import avrora.sim.mcu.ADC;
 import avrora.sim.radio.Channel;
+import avrora.sim.radio.Radio;
 
 import java.util.Iterator;
 import java.util.LinkedList;

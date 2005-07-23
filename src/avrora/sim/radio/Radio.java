@@ -32,12 +32,10 @@
 
 package avrora.sim.radio;
 
-import avrora.monitors.Monitor;
-import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
 import avrora.sim.FiniteStateMachine;
-import avrora.sim.mcu.Microcontroller;
+import avrora.sim.Simulator;
 import avrora.sim.mcu.ADC;
+import avrora.sim.mcu.Microcontroller;
 
 /**
  * The <code>Radio</code> interface should be implemented by classes which would like to act as radios and

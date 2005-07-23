@@ -32,15 +32,18 @@
 
 package avrora.stack.isea;
 
-import avrora.core.InstrVisitor;
-import avrora.core.Instr;
-import avrora.core.Register;
-import avrora.core.Program;
-import avrora.util.*;
 import avrora.Avrora;
+import avrora.core.Instr;
+import avrora.core.InstrVisitor;
+import avrora.core.Program;
+import avrora.core.Register;
+import avrora.util.StringUtil;
+import avrora.util.TermUtil;
+import avrora.util.Terminal;
+import avrora.util.Verbose;
 
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * The <code>ISEInterpreter</code> class implements an abstract interpreter for intraprocedural

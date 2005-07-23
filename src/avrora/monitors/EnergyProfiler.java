@@ -38,7 +38,6 @@ package avrora.monitors;
 import avrora.core.ControlFlowGraph.Block;
 import avrora.core.Instr;
 import avrora.core.Program;
-import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.Terminal;
@@ -285,7 +284,8 @@ public class EnergyProfiler extends MonitorFactory {
      * <code>newMonitor()</code> method.
      */
     public EnergyProfiler() {
-        super("The \"energy profile\" monitor tracks the power consumption of procedures");
+        super("The \"energy profile\" monitor tracks the power consumption of procedures and displays " +
+                "a report at the end of execution.");
     }
 
     /**

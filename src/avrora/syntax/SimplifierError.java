@@ -32,9 +32,8 @@
 
 package avrora.syntax;
 
-import avrora.syntax.ProgramPoint;
-import avrora.util.Terminal;
 import avrora.Avrora;
+import avrora.util.Terminal;
 
 /**
  * The <code>SimplifierError</code> class represents an error in a user program, including the module

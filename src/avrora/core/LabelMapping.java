@@ -35,7 +35,6 @@ package avrora.core;
 import avrora.util.StringUtil;
 
 import java.util.HashMap;
-import java.util.Comparator;
 
 /**
  * The <code>LabelMapping</code> class is a simple implementation of the <code>SourceMapping</code>

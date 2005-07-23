@@ -32,11 +32,9 @@
 
 package avrora.monitors;
 
-import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.util.ProgramProfiler;
 import avrora.util.StringUtil;
 import avrora.util.TermUtil;
 

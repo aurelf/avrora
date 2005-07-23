@@ -32,34 +32,21 @@
 
 package avrora.actions;
 
-import avrora.Main;
-import avrora.Avrora;
-import avrora.Defaults;
-import avrora.core.Program;
-import avrora.gui.*;
-import avrora.monitors.*;
-import avrora.sim.GenInterpreter;
-import avrora.sim.InterpreterFactory;
-import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
-import avrora.sim.platform.PlatformFactory;
-import avrora.util.*;
-
-import javax.swing.*;
-import java.util.*;
+import avrora.gui.AvroraGui;
+import avrora.util.Terminal;
 
 /**
  * The <code>VisualAction</code> class serves as an action that creates an initializes a GUI
  * for Avrora.
  */
-public class VisualAction extends Action {
+public class GUIAction extends Action {
 
     public AvroraGui app; //allows us to access GUI
 
     public static final String HELP = "The \"gui\" action launches a GUI allowing the user to interactively " +
             "create simulations, complete with graphical monitors.";
 
-    public VisualAction() {
+    public GUIAction() {
         super(HELP);
     }
 

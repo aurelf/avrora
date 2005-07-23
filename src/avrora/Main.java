@@ -32,21 +32,18 @@
 
 package avrora;
 
-import avrora.actions.*;
+import avrora.actions.Action;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
-import avrora.syntax.atmel.AtmelProgramReader;
-import avrora.syntax.gas.GASProgramReader;
-import avrora.syntax.objdump.ObjDumpProgramReader;
-import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.util.*;
 import avrora.util.help.HelpCategory;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * This is the main entrypoint to Avrora. It is responsible for parsing the options to the main program and
@@ -78,7 +75,7 @@ public class Main {
     public static final Option.List VERBOSE = mainOptions.newOptionList("verbose", "",
             "This option allows users to enable verbose printing of individual " +
             "subsystems within Avrora. A list can be given with individual items separated " +
-            "by commas. For example: -verbose=sim.pin,sim.interrupt,sim.event");
+            "by commas. For example: -verbose=loader,atmel.flash");
     public static final Option.Bool HELP = mainOptions.newOption("help", false,
             "Displays this help message.");
     public static final Option.Bool LICENSE = mainOptions.newOption("license", false,
@@ -169,7 +166,8 @@ public class Main {
     static HelpCategory buildHelpCategory() {
         HelpCategory hc = new HelpCategory("main", "");
         hc.addSection("OVERVIEW","Avrora is a tool for working with " +
-                "assembly language programs for the AVR architecture microcontrollers. " +
+                "assembly language programs for the AVR architecture microcontrollers " +
+                "and building simulations of hardward devices based on this microcontroller." +
                 "It contains tools to read AVR programs in multiple formats, perform " +
                 "actions on them, and generate output in multiple formats.\n" +
                 "Typical usage is to specify a list of files that contain a program " +
@@ -178,11 +176,11 @@ public class Main {
                 "that contains a program written in assembly language and a simulate " +
                 "action might look like: \n\n" +
                 "avrora -action=simulate -input=atmel program.asm \n\n" +
-                "Other actions that are available include giving a listing of the " +
+                "Other actions that are available include generating a control flow graph of the " +
                 "program or running one of the analysis tools on the program. See the " +
                 "actions section for more information.");
         hc.addOptionSection("The main options to Avrora specify the action to be performed as well as the input " +
-                "format, the output format (if any), and any general configuration parameters for " +
+                "format and any general configuration parameters for " +
                 "Avrora. The available main options are listed below along with their types and default " +
                 "values. Each action also has its own set of options. To access help for the options " +
                 "related to an action, specify the name of the action along with the \"help\" option.", mainOptions);

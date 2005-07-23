@@ -35,11 +35,11 @@ package avrora.sim.mcu;
 import avrora.Avrora;
 import avrora.util.StringUtil;
 
-import java.util.HashMap;
-import java.util.NoSuchElementException;
-import java.util.HashSet;
-import java.text.StringCharacterIterator;
 import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
 
 /**
  * The <code>RegisterLayout</code> class stores information about the IO register addresses for a particular

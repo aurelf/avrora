@@ -32,24 +32,16 @@
 
 package avrora.actions;
 
-import avrora.Main;
 import avrora.Avrora;
 import avrora.Defaults;
 import avrora.monitors.Monitor;
-import avrora.core.Program;
-import avrora.core.Instr;
-import avrora.core.LabelMapping;
-import avrora.sim.*;
-import avrora.sim.util.InterruptScheduler;
-import avrora.sim.clock.MainClock;
-import avrora.sim.mcu.Microcontroller;
-import avrora.util.*;
+import avrora.sim.Simulation;
+import avrora.sim.Simulator;
+import avrora.util.StringUtil;
+import avrora.util.TermUtil;
+import avrora.util.Terminal;
 
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.io.File;
-import java.io.IOException;
 
 /**
  * The <code>SimulateAction</code> implements the bridge between the functionality in the
@@ -62,9 +54,9 @@ import java.io.IOException;
  */
 public class SimulateAction extends SimAction {
 
-    public static final String HELP = "The \"simulate\" action launches a simulator with the specified program " +
-            "for the specified microcontroller and begins executing the program. There " +
-            "are several options provided by the simulator for profiling and analysis.";
+    public static final String HELP = "The \"simulate\" action creates a simulation with the specified program(s) " +
+            "for the specified node(s). The simulation type might be as simple as a single node with a single " +
+            "program, or a multiple-node sensor network simulation or robotics simulation.";
 
     public SimulateAction() {
         super(HELP);
@@ -104,7 +96,7 @@ public class SimulateAction extends SimAction {
             Terminal.print(": ");
             t.printStackTrace();
         } finally {
-            printSeparator();
+            TermUtil.printSeparator(Terminal.MAXLINE);
             long endms = System.currentTimeMillis();
 
             reportTime(sim, endms - startms);

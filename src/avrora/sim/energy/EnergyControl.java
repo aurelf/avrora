@@ -36,8 +36,6 @@
 
 package avrora.sim.energy;
 
-import avrora.sim.energy.Energy;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 

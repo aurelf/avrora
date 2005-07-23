@@ -32,7 +32,7 @@
 
 package avrora.sim.util;
 
-import avrora.Avrora;
+
 
 /**
  * The <code>TransactionalList</code> class implements a list of objects that has the special property that it

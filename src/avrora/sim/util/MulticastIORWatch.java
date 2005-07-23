@@ -32,7 +32,6 @@
 
 package avrora.sim.util;
 
-import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 

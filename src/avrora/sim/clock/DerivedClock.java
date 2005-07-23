@@ -33,7 +33,6 @@
 package avrora.sim.clock;
 
 import avrora.Avrora;
-import avrora.sim.clock.Clock;
 import avrora.sim.Simulator;
 
 /**

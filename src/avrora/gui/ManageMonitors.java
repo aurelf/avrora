@@ -35,7 +35,6 @@
 
 package avrora.gui;
 
-import avrora.Avrora;
 import avrora.sim.Simulation;
 
 import javax.swing.*;

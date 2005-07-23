@@ -32,7 +32,7 @@
 
 package avrora.gui;
 
-import java.io.*;
+import java.io.OutputStream;
 
 /**
  * This class acts as a bridge that remaps

@@ -32,10 +32,8 @@
 
 package avrora.sim.util;
 
-import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.Avrora;
 
 /**
  * The <code>MulticastInterruptProbe</code> is a wrapper around multiple probes that allows them to act as a single

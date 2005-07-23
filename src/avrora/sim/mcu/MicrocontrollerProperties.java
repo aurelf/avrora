@@ -32,12 +32,12 @@
 
 package avrora.sim.mcu;
 
-import avrora.util.StringUtil;
 import avrora.sim.CodeSegment;
+import avrora.util.StringUtil;
 
 import java.util.HashMap;
-import java.util.NoSuchElementException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * The <code>MicrocontrollerProperties</code> class is simply a wrapper class around several

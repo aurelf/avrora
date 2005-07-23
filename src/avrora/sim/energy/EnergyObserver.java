@@ -36,8 +36,7 @@
 
 package avrora.sim.energy;
 
-import avrora.sim.energy.Energy;
-import avrora.sim.energy.Energy;
+
 
 /**
  * energy monitor interface

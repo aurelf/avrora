@@ -32,21 +32,13 @@
 
 package avrora.gui;
 
-import avrora.core.Program;
+import avrora.sim.Simulation;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.Simulation;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.sim.util.ProgramProfiler;
-import avrora.gui.*;
-import avrora.actions.VisualAction;
-import avrora.monitors.MonitorFactory;
-import avrora.Avrora;
 
-import java.awt.*;
-import java.util.*;
-import java.util.List;
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * The <code>VisualStackMonitor</code> class is a monitor that tracks the current value of the PC

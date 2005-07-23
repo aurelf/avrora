@@ -32,10 +32,8 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.clock.Clock;
 import avrora.sim.RWRegister;
+import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.util.Arithmetic;
 

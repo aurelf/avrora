@@ -34,15 +34,13 @@ package avrora.gui;
 
 import avrora.core.Program;
 import avrora.core.Register;
+import avrora.monitors.MonitorFactory;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.ProgramProfiler;
-import avrora.gui.*;
-import avrora.actions.VisualAction;
-import avrora.monitors.MonitorFactory;
 
-import java.awt.*;
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * The <code>VisualRegMonitor</code> class is a monitor that tracks the current value of a register
@@ -137,7 +135,7 @@ public class VisualRegMonitor extends MonitorFactory {
      * <code>newMonitor()</code> method.
      */
     public VisualRegMonitor() {
-        super("The \"Reg26\" monitor tracks the current value of the reg 26");
+        super("The \"Reg26\" monitor tracks the current value of the reg 26.");
     }
 
     /**

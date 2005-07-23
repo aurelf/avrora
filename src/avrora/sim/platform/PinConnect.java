@@ -32,13 +32,10 @@
 
 package avrora.sim.platform;
 
-import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.State;
-import avrora.sim.radio.Radio;
-import avrora.sim.clock.Synchronizer;
 import avrora.sim.clock.StepSynchronizer;
+import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.Microcontroller;
 
 import java.util.Iterator;

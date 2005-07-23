@@ -32,13 +32,12 @@
 
 package avrora.gui;
 
-import avrora.sim.Simulator;
 import avrora.sim.Simulation;
-import avrora.Avrora;
+import avrora.sim.Simulator;
 
-import java.util.List;
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * There are two types of visual monitors for the GUI.  First, there are single

@@ -32,9 +32,8 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.State;
-import avrora.sim.Simulator;
 import avrora.sim.RWRegister;
+import avrora.sim.Simulator;
 
 /**
  * This is an implementation of the non-volatile EEPROM on the ATMega128 microcontroller.

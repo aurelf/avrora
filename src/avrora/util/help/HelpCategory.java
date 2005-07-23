@@ -33,7 +33,10 @@
 package avrora.util.help;
 
 import avrora.Avrora;
-import avrora.util.*;
+import avrora.util.Option;
+import avrora.util.Options;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 import java.util.*;
 

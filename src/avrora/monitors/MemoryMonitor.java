@@ -32,22 +32,20 @@
 
 package avrora.monitors;
 
+import avrora.actions.SimAction;
 import avrora.core.Program;
-import avrora.core.Instr;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.util.MemoryProfiler;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.TermUtil;
+import avrora.sim.util.MemoryProfiler;
 import avrora.util.Option;
-import avrora.actions.SimAction;
+import avrora.util.StringUtil;
+import avrora.util.TermUtil;
+import avrora.util.Terminal;
 
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * The <code>MemoryMonitor</code> class implements a monitor that collects information about how the program
@@ -59,13 +57,14 @@ import java.util.Iterator;
 public class MemoryMonitor extends MonitorFactory {
 
     public final Option.List LOCATIONS = options.newOptionList("locations", "",
-            "This option is used to test the overhead of adding an empty watch to every" +
-            "memory location. ");
+            "This option, when set, specifies a list of memory locations to instrument. When " +
+            "this option is not specified, the monitor will instrument all reads and writes to " +
+            "memory.");
 
     public final Option.Bool LOWER_ADDRESS = options.newOption("low-addresses", false,
             "When this option is enabled, the memory monitor will be inserted for lower addresses, " +
-            "recording reads and writes to IO registers and indirect reads and writes to the IO " +
-            "registers.");
+            "recording reads and writes to the general purpose registers on the AVR and also IO registers " +
+            "through direct and indirect memory reads and writes.");
 
     public class Monitor implements avrora.monitors.Monitor {
         public final Simulator simulator;
@@ -174,7 +173,7 @@ public class MemoryMonitor extends MonitorFactory {
 
     public MemoryMonitor() {
         super("The \"memory\" monitor collects information about the " +
-                "memory usage statistics of the program, which includes the number " +
+                "memory usage statistics of the program, including the number " +
                 "of reads and writes to every byte of data memory.");
     }
 

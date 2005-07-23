@@ -32,10 +32,8 @@ package avrora.sim.clock;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import avrora.sim.clock.Clock;
-import avrora.sim.Simulator;
-import avrora.sim.clock.Clock;
 import avrora.Avrora;
+import avrora.sim.Simulator;
 
 /**
  * The <code>SystemClock</code> class represents a wrapper around the system clock that

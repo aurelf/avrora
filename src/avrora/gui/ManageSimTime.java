@@ -35,15 +35,16 @@
 
 package avrora.gui;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-
-import avrora.util.Terminal;
 import avrora.sim.Simulation;
+import avrora.util.Terminal;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.PrintStream;
+import java.util.Hashtable;
+import java.util.Vector;
 
 /**
  * From a high level view, the controls what the simulation is doing.

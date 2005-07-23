@@ -32,20 +32,14 @@
 
 package avrora.sim.types;
 
-import avrora.sim.Simulation;
-import avrora.sim.SimulatorThread;
-import avrora.sim.util.InterruptScheduler;
-import avrora.sim.platform.PlatformFactory;
-import avrora.sim.clock.Synchronizer;
 import avrora.Avrora;
 import avrora.Main;
-import avrora.Defaults;
-import avrora.core.Program;
 import avrora.core.LoadableProgram;
+import avrora.sim.Simulation;
+import avrora.sim.SimulatorThread;
+import avrora.sim.clock.Synchronizer;
+import avrora.sim.platform.PlatformFactory;
 import avrora.util.Options;
-import avrora.util.Option;
-
-import java.io.File;
 
 /**
  * The <code>SingleSimulation</code> class implements a simulation for a single node. This class

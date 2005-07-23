@@ -33,17 +33,13 @@
 
 package avrora.syntax.objdump;
 
-import avrora.util.StringUtil;
-import avrora.util.Verbose;
-import avrora.util.Option;
-import avrora.util.Options;
-import avrora.Avrora;
 import avrora.actions.Action;
+import avrora.util.Option;
+import avrora.util.Verbose;
 
-import java.io.*;
-import java.util.StringTokenizer;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * The <code>ObjDumpPreprocessor</code> class is a utility class that takes the output from the

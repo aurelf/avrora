@@ -32,11 +32,11 @@
 
 package avrora.core;
 
-import avrora.util.Options;
+import avrora.Avrora;
 import avrora.util.Option;
+import avrora.util.Options;
 import avrora.util.StringUtil;
 import avrora.util.help.HelpCategory;
-import avrora.Avrora;
 
 import java.util.Iterator;
 

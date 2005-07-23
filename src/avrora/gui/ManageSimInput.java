@@ -32,18 +32,20 @@
 
 package avrora.gui;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-
-import avrora.util.Option;
 import avrora.Avrora;
 import avrora.Defaults;
 import avrora.core.LoadableProgram;
-import avrora.sim.platform.PlatformFactory;
 import avrora.sim.Simulation;
+import avrora.sim.platform.PlatformFactory;
+import avrora.util.Option;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.ListIterator;
 
 
 /**

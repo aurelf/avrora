@@ -37,7 +37,6 @@
 package avrora.sim.radio.freespace;
 
 import avrora.Avrora;
-import avrora.sim.radio.freespace.Position;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

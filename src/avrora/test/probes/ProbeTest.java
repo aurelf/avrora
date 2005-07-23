@@ -34,14 +34,12 @@ package avrora.test.probes;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.clock.DeltaQueue;
-import avrora.sim.clock.DeltaQueue;
-import avrora.core.Instr;
 import avrora.util.StringUtil;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer

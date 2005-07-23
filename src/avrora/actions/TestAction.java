@@ -44,7 +44,7 @@ import avrora.util.Status;
  */
 public class TestAction extends Action {
     public static final String HELP = "The \"test\" action invokes the internal automated testing framework " +
-            "that runs testcases supplied at the command line. The testcases are " +
+            "that runs test cases supplied at the command line. The test cases are " +
             "used in regressions for diagnosing bugs.";
 
     public final Option.Bool DETAIL = options.newOption("detail", false, "This option selects whether " +

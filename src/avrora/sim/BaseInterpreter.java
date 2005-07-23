@@ -33,11 +33,16 @@
 package avrora.sim;
 
 import avrora.Avrora;
-import avrora.core.*;
-import avrora.sim.util.*;
+import avrora.core.Instr;
+import avrora.core.InstrVisitor;
+import avrora.core.Program;
+import avrora.core.Register;
+import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.mcu.RegisterSet;
-import avrora.sim.clock.MainClock;
+import avrora.sim.util.MulticastExceptionWatch;
+import avrora.sim.util.MulticastProbe;
+import avrora.sim.util.MulticastWatch;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;

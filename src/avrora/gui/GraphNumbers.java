@@ -32,15 +32,14 @@
 
 package avrora.gui;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import java.awt.event.*;
-
-import avrora.util.Terminal;
 import avrora.util.profiling.Measurements;
-import avrora.actions.VisualAction;
-import avrora.Avrora;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 /**
  * The class assists visual monitors with graphing time-series data

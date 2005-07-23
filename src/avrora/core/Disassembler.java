@@ -34,7 +34,6 @@ package avrora.core;
 
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
-import avrora.Avrora;
 
 /**
  * The <code>Disassembler</code> class is (partially) generated from the instruction set description. It consists

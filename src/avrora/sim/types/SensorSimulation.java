@@ -32,36 +32,34 @@
 
 package avrora.sim.types;
 
-import avrora.sim.Simulation;
-import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
+import avrora.Avrora;
+import avrora.Main;
+import avrora.core.LoadableProgram;
+import avrora.core.Program;
+import avrora.core.SourceMapping;
 import avrora.sim.BaseInterpreter;
-import avrora.sim.mcu.Microcontroller;
-import avrora.sim.clock.IntervalSynchronizer;
-import avrora.sim.platform.PlatformFactory;
+import avrora.sim.Simulation;
+import avrora.sim.SimulatorThread;
 import avrora.sim.platform.Platform;
-import avrora.sim.platform.sensors.SensorData;
+import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.sensors.RandomSensorData;
 import avrora.sim.platform.sensors.ReplaySensorData;
 import avrora.sim.platform.sensors.Sensor;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
 import avrora.sim.radio.SimpleAir;
-import avrora.sim.radio.freespace.Topology;
 import avrora.sim.radio.freespace.FreeSpaceAir;
-import avrora.core.LoadableProgram;
-import avrora.core.Program;
-import avrora.core.SourceMapping;
-import avrora.util.*;
-import avrora.Avrora;
-import avrora.Main;
+import avrora.sim.radio.freespace.Topology;
+import avrora.util.Arithmetic;
+import avrora.util.Option;
+import avrora.util.Options;
+import avrora.util.StringUtil;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Random;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * The <code>SensorSimulation</code> class represents a simulaion type where multiple sensor nodes,
@@ -87,10 +85,10 @@ public class SensorSimulation extends Simulation {
     public final Option.Str TOPOLOGY = options.newOption("topology", "",
             "This option can be used to specify the name of " +
             "a file that contains information about the topology of the network. " +
-            "When this option is specified the free space radio model will be used " +
-            "to model radio propagation. See sample.top in topology for an example. \n(Status: alpha)");
+            "When this option is specified. the free space radio model will be used " +
+            "to model radio propagation.");
     public final Option.Interval RANDOM_START = options.newOption("random-start", 0, 0,
-            "This option causes the simulator to insert a random delay before starting " +
+            "This option inserts a random delay before starting " +
             "each node in order to prevent artificial cycle-level synchronization. The " +
             "starting delay is pseudo-randomly chosen with uniform distribution over the " +
             "specified interval, which is measured in clock cycles. If the \"random-seed\" " +
@@ -105,7 +103,7 @@ public class SensorSimulation extends Simulation {
             "time 2*X, etc.");
     public final Option.List SENSOR_DATA = options.newOptionList("sensor-data", "", 
             "This option accepts a list describing the input data for each sensor node. The format " +
-            "for each entry in this list is $sensor:$id:$data, where $sensor$ is the name of " +
+            "for each entry in this list is $sensor:$id:$data, where $sensor is the name of " +
             "the sensor device such as \"light\", $id is the integer ID of the node, and $data is " +
             "the name of a file or the special '.' character, indicating random data. A sensor data " +
             "input file consists of an initial sensor reading which is interpreted as a 10-bit ADC " +

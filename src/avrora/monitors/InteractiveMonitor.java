@@ -36,21 +36,15 @@
 
 package avrora.monitors;
 
-import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.InterruptTable;
-import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.core.Instr;
+import avrora.Avrora;
+import avrora.actions.SimAction;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
-import avrora.util.StringUtil;
+import avrora.sim.BaseInterpreter;
+import avrora.sim.Simulator;
+import avrora.sim.State;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Option;
-import avrora.util.Terminal;
-import avrora.util.TermUtil;
-import avrora.Avrora;
-import avrora.actions.SimulateAction;
-import avrora.actions.SimAction;
 
 import java.util.Iterator;
 
@@ -110,7 +104,7 @@ public class InteractiveMonitor extends MonitorFactory {
     public InteractiveMonitor() {
         super("The \"interactive\" monitor allows the user to interact with the program as" +
                 "it executes, including placing breakpoints, watchpoints, and inspecting the state" +
-                "of the simulation. Currently, it only supports terminating the simulation at breakpoibnts.");
+                "of the simulation. Currently, it only supports terminating the simulation at breakpoints.");
     }
 
     /**

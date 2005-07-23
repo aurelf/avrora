@@ -32,15 +32,13 @@
 
 package avrora.sim.platform;
 
-import avrora.sim.Simulator;
 import avrora.sim.FiniteStateMachine;
+import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.sim.mcu.*;
-import avrora.sim.platform.LED.LEDProbe;
-import avrora.sim.*;
-import avrora.util.Arithmetic;
-import avrora.util.Terminal;
+import avrora.sim.mcu.ATMegaFamily;
+import avrora.sim.mcu.Microcontroller;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>PinWire</code> class is the interface for making wire connections

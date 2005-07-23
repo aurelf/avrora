@@ -32,11 +32,10 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.Simulator;
-import avrora.sim.platform.Platform;
-import avrora.sim.clock.ClockDomain;
-import avrora.sim.radio.Radio;
 import avrora.core.InstrPrototype;
+import avrora.sim.Simulator;
+import avrora.sim.clock.ClockDomain;
+import avrora.sim.platform.Platform;
 
 /**
  * The <code>Microcontroller</code> interface corresponds to a hardware device that implements the AVR

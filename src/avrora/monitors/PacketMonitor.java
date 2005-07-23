@@ -40,14 +40,13 @@ package avrora.monitors;
 import avrora.sim.Simulator;
 import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
-import avrora.Avrora;
-import avrora.util.TermUtil;
 import avrora.util.Option;
 import avrora.util.StringUtil;
+import avrora.util.TermUtil;
 import avrora.util.Terminal;
 
-import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 
 /**
@@ -146,7 +145,7 @@ public class PacketMonitor extends MonitorFactory {
      * create a new monitor
      */
     public PacketMonitor() {
-        super("The \"packet\" is a monitor to log packets sent and received by nodes in the network.");
+        super("The \"packet\" monitor tracks packets sent and received by nodes in a sensor network.");
     }
 
 

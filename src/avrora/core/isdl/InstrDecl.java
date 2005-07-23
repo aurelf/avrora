@@ -32,10 +32,10 @@
 
 package avrora.core.isdl;
 
+import avrora.Avrora;
 import avrora.core.isdl.ast.Expr;
 import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
-import avrora.Avrora;
 
 import java.util.List;
 

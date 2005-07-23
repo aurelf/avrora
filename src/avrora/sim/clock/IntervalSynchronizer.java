@@ -33,15 +33,12 @@
 package avrora.sim.clock;
 
 import avrora.Avrora;
+import avrora.sim.Simulation;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
-import avrora.sim.Simulation;
-import avrora.sim.clock.DeltaQueue;
-import avrora.util.Verbose;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.HashSet;
 
 /**
  * The <code>IntervalSynchronizer</code> class implements a global timer among multiple simulators by inserting

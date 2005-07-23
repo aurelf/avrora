@@ -32,13 +32,16 @@
 
 package avrora.sim.platform.sensors;
 
-import avrora.sim.mcu.Microcontroller;
-import avrora.sim.clock.Clock;
-import avrora.sim.Simulator;
 import avrora.Avrora;
 import avrora.Main;
+import avrora.sim.Simulator;
+import avrora.sim.clock.Clock;
+import avrora.sim.mcu.Microcontroller;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StreamTokenizer;
 
 /**
  * The <code>ReplaySensorData</code> class implements a sensor data source that replays

@@ -32,10 +32,9 @@
 
 package avrora.util.help;
 
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
 import avrora.util.ClassMap;
-import avrora.Defaults;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>ClassMapValueItem</code> is a help item representing one possible value

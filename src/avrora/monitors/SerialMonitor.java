@@ -36,10 +36,9 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
-import avrora.sim.platform.SerialForwarder;
-import avrora.sim.mcu.USART;
 import avrora.sim.mcu.AtmelMicrocontroller;
-import avrora.Avrora;
+import avrora.sim.mcu.USART;
+import avrora.sim.platform.SerialForwarder;
 import avrora.util.Option;
 
 
@@ -53,7 +52,7 @@ import avrora.util.Option;
 public class SerialMonitor extends MonitorFactory {
 
     protected final Option.Long PORT = options.newOption("port", 2390,
-            "The \"port\" option specifies the server port on which the serial forwarder will listen to " +
+            "The \"port\" option specifies the server port on which the serial forwarder will " +
             "accept a connection for the serial port.");
     protected final Option.Long NODE = options.newOption("node", 0,
             "The \"node\" option specifies which node's serial port the socket will be connected to.");
@@ -88,7 +87,7 @@ public class SerialMonitor extends MonitorFactory {
      * method.
      */
     public SerialMonitor() {
-        super("The \"serial\" monitor allows the serial port (USART) of a node in the simulation to be connected " +
+        super("The \"serial\" monitor allows the serial port (UART) of a node in the simulation to be connected " +
                 "to a socket so that data from the program running in the simulation can be outputted, and " +
                 "external data can be fed into the serial port of the simulated node.");
     }

@@ -37,8 +37,8 @@
 
 package avrora.sim.energy;
 
-import avrora.sim.clock.Clock;
 import avrora.sim.FiniteStateMachine;
+import avrora.sim.clock.Clock;
 
 /**
  * Class for energy modeling. All consumers create an instance of this class and keep it updated with all

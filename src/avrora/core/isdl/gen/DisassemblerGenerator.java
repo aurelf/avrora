@@ -32,10 +32,13 @@
 
 package avrora.core.isdl.gen;
 
+import avrora.Avrora;
 import avrora.core.isdl.*;
 import avrora.core.isdl.ast.*;
-import avrora.util.*;
-import avrora.Avrora;
+import avrora.util.Arithmetic;
+import avrora.util.Printer;
+import avrora.util.StringUtil;
+import avrora.util.Verbose;
 
 import java.util.*;
 

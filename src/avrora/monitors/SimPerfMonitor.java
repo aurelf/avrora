@@ -34,9 +34,9 @@ package avrora.monitors;
 
 import avrora.sim.Simulator;
 import avrora.util.Option;
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
 import avrora.util.TermUtil;
+import avrora.util.Terminal;
 import avrora.util.profiling.TimedMeasurements;
 
 /**

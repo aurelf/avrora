@@ -34,10 +34,7 @@ package avrora.util.help;
 
 import avrora.util.ClassMap;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
 
 /**
  * The <code>HelpSystem</code> is the global repository for help information, indexing

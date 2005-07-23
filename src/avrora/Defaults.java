@@ -32,33 +32,35 @@
 
 package avrora;
 
-import avrora.util.ClassMap;
-import avrora.util.StringUtil;
-import avrora.util.help.HelpSystem;
-import avrora.util.help.HelpCategory;
-import avrora.util.help.ClassMapValueItem;
-import avrora.sim.mcu.MicrocontrollerFactory;
+import avrora.actions.*;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
+import avrora.monitors.*;
+import avrora.sim.GenInterpreter;
+import avrora.sim.InterpreterFactory;
+import avrora.sim.Simulation;
+import avrora.sim.Simulator;
+import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.ATMega128;
-import avrora.sim.mcu.ATMega32;
 import avrora.sim.mcu.ATMega16;
-import avrora.sim.platform.Platform;
+import avrora.sim.mcu.ATMega32;
+import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.platform.Mica2;
 import avrora.sim.platform.PlatformFactory;
 import avrora.sim.platform.Seres;
-import avrora.sim.*;
-import avrora.sim.types.SingleSimulation;
 import avrora.sim.types.SensorSimulation;
-import avrora.sim.clock.ClockDomain;
-import avrora.actions.*;
-import avrora.core.ProgramReader;
-import avrora.core.Program;
-import avrora.syntax.gas.GASProgramReader;
+import avrora.sim.types.SingleSimulation;
 import avrora.syntax.atmel.AtmelProgramReader;
-import avrora.syntax.objdump.ObjDumpProgramReader;
+import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.ODPPAction;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
+import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.test.*;
-import avrora.monitors.*;
+import avrora.util.ClassMap;
+import avrora.util.StringUtil;
+import avrora.util.help.ClassMapValueItem;
+import avrora.util.help.HelpCategory;
+import avrora.util.help.HelpSystem;
 
 import java.util.*;
 
@@ -115,7 +117,7 @@ public class Defaults {
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
             addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
                     "monitors that instrument the program in order to study and analyze its behavior. The " +
-                    "\"simulate\" and \"multi-simulate\" actions support this option that allows a monitor class " +
+                    "\"simulate\" action supports this option that allows a monitor class " +
                     "to be loaded which will instrument the program before it is run and then generate a report " +
                     "after the program has completed execution.", "-monitors", monitorMap);
             addMainCategory(hc);
@@ -165,7 +167,7 @@ public class Defaults {
             actions.addClass("analyze-stack", AnalyzeStackAction.class);
             actions.addClass("test", TestAction.class);
             actions.addClass("cfg", CFGAction.class);
-            actions.addClass("gui", VisualAction.class);
+            actions.addClass("gui", GUIAction.class);
             actions.addClass("isea", ISEAAction.class);
             //--BEGIN EXPERIMENTAL: isdl
             actions.addClass("isdl", ISDLAction.class);

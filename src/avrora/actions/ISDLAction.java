@@ -37,9 +37,15 @@ import avrora.Main;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.gen.*;
 import avrora.core.isdl.parser.ISDLParser;
-import avrora.util.*;
+import avrora.util.Option;
+import avrora.util.Printer;
+import avrora.util.SectionFile;
+import avrora.util.Status;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  * The <code>ISDLAction</code> class implements an action to load an instruction set description from a file
@@ -50,8 +56,8 @@ import java.io.*;
  */
 public class ISDLAction extends Action {
     public static final String HELP = "The \"isdl\" action invokes the instruction set description language " +
-            "(ISDL) tool, which is used internally in Avrora to describe the AVR " +
-            "instruction set.";
+            "(ISDL) processing tool, which is used internally in Avrora to describe the AVR " +
+            "instruction set and generate the interpreter and disassembler.";
 
     public final Option.Str CLASSES = newOption("instr-file", "",
             "This option specifies the destination file into which to generate the Instr classes. " +

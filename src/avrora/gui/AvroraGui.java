@@ -32,22 +32,22 @@
 
 package avrora.gui;
 
-import avrora.actions.VisualAction;
-import avrora.Version;
 import avrora.Avrora;
+import avrora.Version;
 import avrora.sim.Simulation;
 import avrora.sim.radio.SimpleAir;
-import avrora.sim.types.SingleSimulation;
 import avrora.sim.types.SensorSimulation;
 import avrora.util.Options;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Vector;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Vector;
 
 /**
  * The <code> AvroraGUI </code> is the top level GUI component.  It should

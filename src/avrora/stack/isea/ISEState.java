@@ -32,10 +32,8 @@
 
 package avrora.stack.isea;
 
-import avrora.core.Register;
 import avrora.Avrora;
-import avrora.util.Terminal;
-import avrora.util.StringUtil;
+import avrora.core.Register;
 
 /**
  * @author Ben L. Titzer

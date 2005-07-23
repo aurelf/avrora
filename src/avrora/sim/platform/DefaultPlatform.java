@@ -32,11 +32,11 @@
 
 package avrora.sim.platform;
 
+import avrora.core.Program;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.clock.ClockDomain;
-import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.mcu.Microcontroller;
-import avrora.core.Program;
+import avrora.sim.mcu.MicrocontrollerFactory;
 
 /**
  * The <code>DefaultPlatform</code> class represents the simplest type of platform, a microcontroller

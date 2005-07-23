@@ -32,15 +32,14 @@
 
 package avrora.test;
 
-import avrora.Defaults;
-import avrora.util.StringUtil;
+import avrora.core.Disassembler;
+import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
-import avrora.core.Instr;
-import avrora.core.Disassembler;
 import avrora.syntax.Module;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
-import avrora.test.TestCase.ExpectCompilationError;
+import avrora.util.StringUtil;
+
 import java.util.Properties;
 
 /**
@@ -51,7 +50,7 @@ import java.util.Properties;
  */
 public class DisassemblerTestHarness implements TestHarness {
 
-    class DisassemblerTest extends ExpectCompilationError {
+    class DisassemblerTest extends TestCase.ExpectCompilationError {
 
         Module module;
         Program program;
@@ -99,9 +98,6 @@ public class DisassemblerTestHarness implements TestHarness {
             return new TestResult.TestSuccess();
         }
 
-        private Instr id(int cntr) {
-            return instrs[cntr];
-        }
     }
 
     public TestCase newTestCase(String fname, Properties props) throws Exception {

@@ -33,8 +33,10 @@
 package avrora.sim;
 
 import avrora.Avrora;
-import avrora.sim.clock.Synchronizer;
 import avrora.actions.SimAction;
+import avrora.sim.clock.Synchronizer;
+import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 
 /**
@@ -96,7 +98,11 @@ public class SimulatorThread extends Thread {
             simulator.start();
         } catch (SimAction.TimeoutException te) {
             // suppress timeout exceptions.
+        } catch (SimAction.BreakPointException e) {
+            Terminal.printYellow("Simulation terminated");
+            Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
         } catch (Avrora.Error e) {
+
             e.report();
         } finally {
             if ( synchronizer != null )

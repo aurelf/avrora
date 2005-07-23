@@ -34,8 +34,8 @@ package avrora.core.isdl;
 
 import avrora.Avrora;
 import avrora.core.isdl.ast.*;
-import avrora.core.isdl.parser.Token;
 import avrora.core.isdl.gen.Inliner;
+import avrora.core.isdl.parser.Token;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;

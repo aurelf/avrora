@@ -43,7 +43,6 @@ import avrora.core.isdl.gen.DeadCodeEliminator;
 import avrora.core.isdl.gen.InterpreterGenerator;
 import avrora.core.isdl.parser.Token;
 import avrora.sim.GenInterpreter;
-import avrora.sim.dbbc.DBBC.DBBCClassLoader;
 import avrora.util.*;
 
 import java.io.File;
@@ -73,7 +72,7 @@ public class DBBC {
             "basic blocks may give no (or negative) performance benefit, while large blocks " +
             "might give high benefit.");
     public final Option.Bool USE_REGISTER_ARRAY = options.newOption("use-register-array", true,
-            "This option specifies the to dynamic compiler to always emit code that directly " +
+            "This option forces the dynamic compiler to always emit code that directly " +
             "uses the register array, rather than generating method calls to the interpreter's " +
             "accessor functions.");
     public final Option.Bool CACHE_REGISTERS = options.newOption("cache-registers", false,

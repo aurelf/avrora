@@ -32,8 +32,8 @@
 
 package avrora.util;
 
-import avrora.sim.clock.Clock;
 import avrora.sim.Simulator;
+import avrora.sim.clock.Clock;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;

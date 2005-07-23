@@ -32,17 +32,17 @@
 
 package avrora.monitors;
 
+import avrora.Avrora;
 import avrora.core.Instr;
-import avrora.core.Program;
 import avrora.core.LabelMapping;
+import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.TermUtil;
 import avrora.util.Option;
-import avrora.Avrora;
+import avrora.util.StringUtil;
+import avrora.util.TermUtil;
+import avrora.util.Terminal;
 
 import java.util.Iterator;
 

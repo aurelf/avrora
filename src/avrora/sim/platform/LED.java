@@ -32,14 +32,13 @@
 
 package avrora.sim.platform;
 
-import avrora.sim.energy.Energy;
-import avrora.sim.Simulator;
 import avrora.sim.FiniteStateMachine;
+import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.sim.clock.Clock;
+import avrora.sim.energy.Energy;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>LED</code> class implements an LED (light emitting diode) that can be hooked up

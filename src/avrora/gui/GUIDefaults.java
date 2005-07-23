@@ -32,12 +32,11 @@
 
 package avrora.gui;
 
-import avrora.util.ClassMap;
-import avrora.monitors.MonitorFactory;
 import avrora.sim.Simulation;
+import avrora.util.ClassMap;
 
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Any and all "random" data that needs to be stored about the GUI

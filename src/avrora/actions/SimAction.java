@@ -33,19 +33,15 @@
 package avrora.actions;
 
 import avrora.Avrora;
-import avrora.Defaults;
-import avrora.core.Program;
-import avrora.core.Instr;
 import avrora.core.LabelMapping;
+import avrora.core.Program;
 import avrora.core.SourceMapping;
-import avrora.monitors.*;
-import avrora.sim.*;
-import avrora.sim.dbbc.DBBC;
-import avrora.sim.dbbc.DBBCInterpreter;
-import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.platform.PlatformFactory;
-import avrora.sim.platform.Mica2;
-import avrora.util.*;
+import avrora.sim.Simulator;
+import avrora.sim.State;
+import avrora.util.Option;
+import avrora.util.StringUtil;
+import avrora.util.TermUtil;
+import avrora.util.Terminal;
 
 import java.util.*;
 
@@ -63,16 +59,6 @@ public abstract class SimAction extends Action {
     public final Option.Long SECONDS_PRECISION = newOption("seconds-precision", 6,
             "This option sets the precision (number of decimal places) reported for " +
             "event times in the simulation.");
-/*
-    public final Option.Str BOOT = newOption("boot-address", "0x0000",
-            "This option selects the address at which the microcontroller will begin executing " +
-            "the program. This is used for bootloaders and applications that do not begin " +
-            "execution at the beginning of the flash.");
-    public final Option.Str IBASE = newOption("interrupt-base", "0x0000",
-            "This option selects the address that is the base of the interrupt vector table. " +
-            "This is used for bootloaders and applications that do not begin " +
-            "execution at the beginning of the flash.");
-*/
     public final Option.Str SIMULATION = newOption("simulation", "single",
             "The \"simulation\" option selects from the available simulation types, including a single node " +
             "simulation, a sensor network simulation, or a robotics simulation.");
@@ -83,64 +69,6 @@ public abstract class SimAction extends Action {
         super(h);
         monitorListMap = new HashMap();
     }
-
-    /**
-     * The <code>newSimulator()</code> method is a simple utility used by actions deriving from this
-     * class that creates a new <code>Simulator</code> with the correct configuration, with the specified
-     * program, and then applies timeouts, breakpoints, and monitors to it.
-     * @param factory the factory that creates the interpreter for the simulator
-     * @param p the program to load onto the simulator
-     * @return a new <code>Simulator</code> instance
-     */
-    protected Simulator newSimulator(InterpreterFactory factory, Program p) {
-        throw Avrora.unimplemented();
-/*
-        Simulator simulator;
-        PlatformFactory pf = getPlatform();
-        if (pf != null) {
-            simulator = pf.newPlatform(simcount++, factory, p).getMicrocontroller().getSimulator();
-        } else {
-            long hz = CLOCKSPEED.get();
-            long exthz = EXTCLOCKSPEED.get();
-            if ( exthz == 0 ) exthz = hz;
-            if ( exthz > hz )
-                Avrora.userError("External clock is greater than main clock speed", exthz+"hz");
-            simulator = Defaults.newSimulator(simcount++, MCU.get(), hz, exthz, factory, p);
-        }
-
-        processBootPC(simulator, p);
-        processInterruptBase(simulator, p);
-        return simulator;
-*/
-    }
-
-/*
-    private void processBootPC(Simulator simulator, Program program) {
-        BaseInterpreter interpreter = simulator.getInterpreter();
-        String src = BOOT.get();
-        SourceMapping lm = program.getSourceMapping();
-        SourceMapping.Location loc = lm.getLocation(src);
-        if ( loc == null )
-            Avrora.userError("Invalid program address: ", src);
-        if ( program.readInstr(loc.address) == null )
-            Avrora.userError("Invalid program address: ", src);
-        interpreter.setBootPC(loc.address);
-    }
-*/
-
-/*
-    private void processInterruptBase(Simulator simulator, Program program) {
-        BaseInterpreter interpreter = simulator.getInterpreter();
-        String src = IBASE.get();
-        SourceMapping lm = program.getSourceMapping();
-        SourceMapping.Location loc = lm.getLocation(src);
-        if ( loc == null )
-            Avrora.userError("Invalid program address: ", src);
-        if ( program.readInstr(loc.address) == null )
-            Avrora.userError("Invalid program address: ", src);
-        interpreter.setInterruptBase(loc.address);
-    }
-*/
 
     /**
      * The <code>getLocationList()</code> method is to used to parse a list of program locations and turn them
@@ -180,10 +108,6 @@ public abstract class SimAction extends Action {
         Terminal.printGreen("Node       Time   Event");
         Terminal.nextln();
         TermUtil.printThinSeparator(Terminal.MAXLINE);
-    }
-
-    protected static void printSeparator() {
-        TermUtil.printSeparator(Terminal.MAXLINE);
     }
 
     /**
@@ -248,42 +172,6 @@ public abstract class SimAction extends Action {
             address = a;
             state = s;
             timeout = t;
-        }
-    }
-
-    /**
-     * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws a
-     * <code>TimeoutException</code> when the count reaches zero. It is useful for ensuring termination of the
-     * simulator, for performance testing, or for profiling and stopping after a specified number of
-     * invocations.
-     *
-     * @author Ben L. Titzer
-     */
-    public static class InstructionCountTimeout extends Simulator.Probe.Empty {
-        public final long timeout;
-        protected long left;
-
-        /**
-         * The constructor for <code>InstructionCountTimeout</code> creates with the specified initial value.
-         *
-         * @param t the number of clock cycles before timeout should occur
-         */
-        public InstructionCountTimeout(long t) {
-            timeout = t;
-            left = t;
-        }
-
-        /**
-         * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
-         * implementation of the timeout, it simply decrements the timeout and and throws a TimeoutException
-         * when the count reaches zero.
-         *
-         * @param state   the state of the simulation
-         * @param pc the address at which this instruction resides
-         */
-        public void fireAfter(State state, int pc) {
-            if (--left <= 0)
-                throw new TimeoutException(pc, state, timeout, "instructions");
         }
     }
 }

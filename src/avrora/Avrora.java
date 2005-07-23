@@ -32,8 +32,8 @@
 
 package avrora;
 
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
+import avrora.util.Terminal;
 
 /**
  * The <code>Avrora</code> class contains several utilities relating to exceptions and errors within Avrora.

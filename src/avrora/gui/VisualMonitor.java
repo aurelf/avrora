@@ -32,11 +32,9 @@
 
 package avrora.gui;
 
-import javax.swing.*;
-
-import avrora.actions.VisualAction;
-import avrora.gui.GraphEvents;
 import avrora.monitors.Monitor;
+
+import javax.swing.*;
 
 /**
  * The <code>VisualMonitor</code> class represents a monitor attached to a <code>Simulator</code> instance. Created

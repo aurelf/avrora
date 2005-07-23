@@ -36,14 +36,8 @@ import avrora.core.Program;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
-import avrora.sim.clock.DerivedClock;
-import avrora.sim.clock.ClockDomain;
-import avrora.sim.Simulator.Probe;
-import avrora.sim.mcu.*;
-import avrora.sim.mcu.ATMegaFamily.FlagRegister;
-import avrora.sim.mcu.ATMegaFamily.MaskRegister;
-import avrora.sim.radio.CC1000Radio;
-import avrora.sim.radio.Radio;
+import avrora.sim.mcu.ATMega128;
+import avrora.sim.mcu.Microcontroller;
 import avrora.util.Terminal;
 
 /**

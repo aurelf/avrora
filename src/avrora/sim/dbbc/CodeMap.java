@@ -37,7 +37,6 @@ import avrora.core.InstrVisitor;
 import avrora.core.isdl.CodeRegion;
 import avrora.core.isdl.ast.*;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 
 /**

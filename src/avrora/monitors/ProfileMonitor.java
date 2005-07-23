@@ -32,14 +32,14 @@
 
 package avrora.monitors;
 
-import avrora.core.Program;
 import avrora.core.Instr;
+import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.Option;
 import avrora.util.StringUtil;
-import avrora.util.Terminal;
 import avrora.util.TermUtil;
+import avrora.util.Terminal;
 
 import java.util.*;
 
@@ -52,7 +52,7 @@ import java.util.*;
 public class ProfileMonitor extends MonitorFactory {
 
     public final Option.Bool CYCLES = options.newOption("record-cycles", true,
-            "This option is used by the profiling and controls whether it records " +
+            "This option controls whether this monitor will record " +
             "the cycles consumed by each instruction or basic block. ");
     public final Option.Bool EMPTY = options.newOption("empty-probe", false,
             "This option is used to test the overhead of adding an empty probe to every " +

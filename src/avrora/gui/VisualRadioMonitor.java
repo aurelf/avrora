@@ -33,14 +33,12 @@
 package avrora.gui;
 
 import avrora.core.Program;
+import avrora.monitors.MonitorFactory;
 import avrora.sim.Simulator;
 import avrora.sim.util.ProgramProfiler;
-import avrora.gui.*;
-import avrora.actions.VisualAction;
-import avrora.monitors.MonitorFactory;
 
-import java.awt.*;
 import javax.swing.*;
+import java.awt.*;
 import java.util.Vector;
 
 /**
@@ -168,7 +166,7 @@ public class VisualRadioMonitor extends MonitorFactory {
      * <code>newMonitor()</code> method.
      */
     public VisualRadioMonitor() {
-        super("The \"radio\" monitor tracks radio usage");
+        super("The \"radio\" monitor tracks radio usage.");
     }
 
     /**

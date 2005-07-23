@@ -32,10 +32,10 @@
 
 package avrora.sim.util;
 
-import avrora.sim.Simulator;
-import avrora.util.Terminal;
 import avrora.Avrora;
 import avrora.Main;
+import avrora.sim.Simulator;
+import avrora.util.Terminal;
 
 import java.io.File;
 import java.io.IOException;

@@ -32,9 +32,8 @@
 
 package avrora.util.help;
 
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
-import avrora.Defaults;
+import avrora.util.Terminal;
 
 /**
  * The <code>ValueItem</code> method represents a help item that is used in a list. It represents

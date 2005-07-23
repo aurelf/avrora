@@ -32,10 +32,9 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.Simulator;
-import avrora.sim.State;
-import avrora.sim.RWRegister;
 import avrora.sim.InterruptTable;
+import avrora.sim.RWRegister;
+import avrora.sim.Simulator;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 

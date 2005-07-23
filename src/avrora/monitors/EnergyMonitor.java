@@ -38,16 +38,17 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
-import avrora.sim.platform.Platform;
 import avrora.sim.energy.Energy;
-import avrora.sim.energy.*;
+import avrora.sim.energy.EnergyControl;
+import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
+import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
-import avrora.util.Option;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * energy monitor implementation this class handles logging and
@@ -180,10 +181,10 @@ public class EnergyMonitor extends MonitorFactory {
      * create a new monitor
      */
     public EnergyMonitor() {
-        super("The \"energy\" is a monitor to trace energy consumption");
+        super("The \"energy\" is a monitor to trace energy consumption.");
     }
 
-    public EnergyMonitor(String s1, String s2) {
+    public EnergyMonitor(String s2) {
         super(s2);
     }
 

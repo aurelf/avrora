@@ -32,20 +32,21 @@
 
 package avrora.monitors;
 
+import avrora.Avrora;
+import avrora.core.Register;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.Option;
-import avrora.util.Terminal;
 import avrora.util.StringUtil;
-import avrora.Avrora;
-import avrora.core.Instr;
-import avrora.core.Register;
+import avrora.util.Terminal;
 
-import java.net.Socket;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
-import java.io.*;
-import java.text.StringCharacterIterator;
+import java.net.Socket;
 import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 
 /**
  * The <code>GDBServer</code> class implements a monitor that can communicate to gdb via
@@ -66,7 +67,7 @@ public class GDBServer extends MonitorFactory {
 
     private final Option.Long PORT = options.newOption("port", 10001,
             "This option specifies the port on which the GDB server will listen for a connection from " +
-            "the GDB frontend.");
+            "the GDB front-end.");
 
     /**
      * The <code>GDBMonitor</code> class implements a monitor that can interactively debug

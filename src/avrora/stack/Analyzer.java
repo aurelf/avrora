@@ -33,12 +33,12 @@
 package avrora.stack;
 
 import avrora.Avrora;
-import avrora.stack.isea.ISEAnalyzer;
-import avrora.stack.isea.ISEState;
-import avrora.stack.isea.ISEValue;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.core.Register;
+import avrora.stack.isea.ISEAnalyzer;
+import avrora.stack.isea.ISEState;
+import avrora.stack.isea.ISEValue;
 import avrora.util.*;
 import avrora.util.profiling.Distribution;
 

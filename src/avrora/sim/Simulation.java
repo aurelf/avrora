@@ -32,22 +32,19 @@
 
 package avrora.sim;
 
-import avrora.util.Options;
-import avrora.util.Option;
-import avrora.util.help.HelpCategory;
-import avrora.sim.clock.Clock;
-import avrora.sim.clock.Synchronizer;
-import avrora.sim.clock.ClockDomain;
-import avrora.sim.platform.PlatformFactory;
-import avrora.sim.platform.Platform;
-import avrora.sim.platform.DefaultPlatform;
-import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.util.InterruptScheduler;
-import avrora.core.LoadableProgram;
-import avrora.Defaults;
 import avrora.Avrora;
-import avrora.monitors.MonitorFactory;
+import avrora.Defaults;
 import avrora.core.LoadableProgram;
+import avrora.monitors.MonitorFactory;
+import avrora.sim.clock.Synchronizer;
+import avrora.sim.mcu.MicrocontrollerFactory;
+import avrora.sim.platform.DefaultPlatform;
+import avrora.sim.platform.Platform;
+import avrora.sim.platform.PlatformFactory;
+import avrora.sim.util.InterruptScheduler;
+import avrora.util.Option;
+import avrora.util.Options;
+import avrora.util.help.HelpCategory;
 
 import java.util.*;
 
@@ -71,11 +68,11 @@ public abstract class Simulation extends HelpCategory {
             "in the \"mcu\" option, with no external devices.");
     public final Option.Long CLOCKSPEED = options.newOption("clockspeed", 8000000,
             "This option specifies the clockspeed of the microcontroller when the platform " +
-            "is not specified. The speed is given in cycles per seconds, i.e. hertz.");
+            "is not specified. The speed is given in cycles per second, i.e. hertz.");
     public final Option.Long EXTCLOCKSPEED = options.newOption("external-clockspeed", 0,
             "This option specifies the clockspeed of the external clock supplied to the " +
             "microcontroller when the platform is not specified. The speed is given in cycles " +
-            "per seconds, i.e. hertz. When this option is set to zero, the external clock is the " +
+            "per second, i.e. hertz. When this option is set to zero, the external clock is the " +
             "same speed as the main clock.");
     public final Option.Str MCU = options.newOption("mcu", "atmega128",
             "This option selects the microcontroller from a library of supported " +
