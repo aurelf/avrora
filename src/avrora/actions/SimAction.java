@@ -105,7 +105,7 @@ public abstract class SimAction extends Action {
      */
     protected static void printSimHeader() {
         TermUtil.printSeparator(Terminal.MAXLINE, "Simulation events");
-        Terminal.printGreen("Node       Time   Event");
+        Terminal.printGreen("Node          Time   Event");
         Terminal.nextln();
         TermUtil.printThinSeparator(Terminal.MAXLINE);
     }

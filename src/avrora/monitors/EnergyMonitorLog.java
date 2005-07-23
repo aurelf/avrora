@@ -93,7 +93,6 @@ public class EnergyMonitorLog extends EnergyMonitor {
             super(s);
             this.state = simulator.getState();
             // subscribe the monitor to the energy  control
-            EnergyControl.subscribe(this);
 
             //open file for logging, currently with fixed path and file name
             String fileName = "energy" + simulator.getID() + ".log";
@@ -107,7 +106,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             //first: cycle
             write("cycle ");
             //and than all consumers names
-            Iterator it = consumer.iterator();
+            Iterator it = instance.consumer.iterator();
             while( it.hasNext() ){
             //for (int i = 0; i < consumer.size(); ++i) {
                 Energy en = (Energy)it.next();
@@ -188,7 +187,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             write(state.getCycles() + " ");
             //and than all consumers
             double total = 0.0f;
-            Iterator it = consumer.iterator();
+            Iterator it = instance.consumer.iterator();
             while(it.hasNext()){
                 Energy en = (Energy)it.next();
                 double ampere = en.getCurrentAmpere();
@@ -211,7 +210,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             write((state.getCycles() - 1) + " ");
             //and than all consumers
             double total = 0.0f;
-            Iterator it = consumer.iterator();
+            Iterator it = instance.consumer.iterator();
             //for (int i = 0; i < consumer.size(); ++i) {
             while( it.hasNext() ){
                 Energy en = (Energy)it.next();

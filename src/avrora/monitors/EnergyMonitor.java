@@ -79,8 +79,7 @@ public class EnergyMonitor extends MonitorFactory {
         // the simulator
         protected Simulator simulator;
         protected Platform platform;
-        // list of consumers
-        protected LinkedList consumer;
+        EnergyControl.Instance instance;
         //energy a node is allowed to consume (in joule)
         private double energy;
 
@@ -97,7 +96,8 @@ public class EnergyMonitor extends MonitorFactory {
             //activate energy monitoring....
             //so the state machine is set up for energy monitoring when needed
             EnergyControl.activate();
-            this.consumer = EnergyControl.getConsumers();
+            instance = EnergyControl.getCurrentInstance();
+            EnergyControl.nextInstance();
 
             energy = BATTERY.get();
             if ( energy > 0 ) {
@@ -120,7 +120,7 @@ public class EnergyMonitor extends MonitorFactory {
             long cycles = simulator.getState().getCycles();
             Terminal.println("Node lifetime: " + cycles + " cycles,  " + simulator.getMicrocontroller().cyclesToMillis(cycles) / 1000.0+ " seconds\n");
             // get energy information for each device
-            Iterator it = consumer.iterator();
+            Iterator it = instance.consumer.iterator();
             while( it.hasNext() ){
                 //get energy information
                 Energy en = (Energy)it.next();
@@ -146,7 +146,7 @@ public class EnergyMonitor extends MonitorFactory {
 
             public void fire(){
                 double totalEnergy = 0.0d;
-                Iterator it = consumer.iterator();
+                Iterator it = instance.consumer.iterator();
                 //for (int i = 0; i < consumer.size(); ++i) {
                 while(it.hasNext()){
                     //get energy information
@@ -157,11 +157,11 @@ public class EnergyMonitor extends MonitorFactory {
                     simulator.insertEvent(this, interval);
                 } else {
                     //shutdown this node
-                    String idstr = StringUtil.rightJustify(simulator.getID(), 4);
-                    String cycstr = StringUtil.rightJustify(simulator.getClock().getCount(), 10);
-                    Terminal.print(idstr + " " + cycstr + "   ");
-                    Terminal.print("energy limit exceed, shutdown node: ");
-                    Terminal.println("consumed " + totalEnergy + " Joule");
+                    String itstr = StringUtil.getIDTimeString(simulator);
+
+                    Terminal.print(itstr);
+                    Terminal.printYellow("energy limit exceeded: "+ totalEnergy+" joules");
+                    Terminal.nextln();
 
                     //remove radio
                     Radio radio = (Radio)platform.getDevice("radio");

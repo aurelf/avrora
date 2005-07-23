@@ -46,15 +46,55 @@ import java.util.LinkedList;
  */
 public class EnergyControl {
 
-    //consumer list
-    // e.g. list of devices which consume energy
-    private static LinkedList consumer;
+    public static class Instance {
+        //consumer list
+        // e.g. list of devices which consume energy
+        public final LinkedList consumer;
 
-    //list of monitors which want to be informed about
-    //energy consumption
-    private static LinkedList subscriber;
-    
-    //indicates whether someone is interested in energy 
+        //list of monitors which want to be informed about
+        //energy consumption
+        private final LinkedList subscriber;
+
+        Instance() {
+            consumer = new LinkedList();
+            subscriber = new LinkedList();
+        }
+
+        /**
+         * add energy monitor
+         *
+         * @param energyMonitor monitor
+         */
+        public void subscribe(EnergyObserver energyMonitor) {
+            subscriber.add(energyMonitor);
+        }
+
+        /**
+         * get list of consumers
+         *
+         * @return consumer list
+         */
+        public LinkedList getConsumers() {
+            return consumer;
+        }
+
+        /**
+         * update the state of a device
+         *
+         * @param energy the energy model of the device
+         */
+        public void stateChange(Energy energy) {
+            Iterator it = subscriber.iterator();
+            while( it.hasNext() ){
+                ((EnergyObserver)it.next()).stateChange(energy);
+            }
+        }
+
+    }
+
+    private static Instance currentInstance;
+
+    //indicates whether someone is interested in energy
     //data
     private static boolean active; 
 
@@ -63,17 +103,7 @@ public class EnergyControl {
      */
     static {
         active = false;
-        consumer = new LinkedList();
-        subscriber = new LinkedList();
-    }
-
-    /**
-     * add energy monitor
-     *
-     * @param energyMonitor monitor
-     */
-    public static void subscribe(EnergyObserver energyMonitor) {
-        subscriber.add(energyMonitor);
+        currentInstance = new Instance();
     }
 
     /**
@@ -82,31 +112,8 @@ public class EnergyControl {
      * @param energy consumer
      */
     public static void addConsumer(Energy energy) {
-        consumer.add(energy);
-    }
-
-    /**
-     * get list of consumers
-     *
-     * @return consumer list
-     */
-    public static LinkedList getConsumers() {
-        return consumer;
-    }
-
-    /**
-     * update the state of a device
-     *
-     * @param energy the energy model of the device
-     */
-    public static void stateChange(Energy energy) {
-        Iterator it = subscriber.iterator();
-        while( it.hasNext() ){
-            ((EnergyObserver)it.next()).stateChange(energy);
-        }
-        /*for (int i = 0; i < subscriber.size(); ++i) {
-            ((EnergyObserver)subscriber.get(i)).stateChange(energy);
-        }*/
+        currentInstance.consumer.add(energy);
+        if ( active ) energy.activate();
     }
 
     /**
@@ -116,10 +123,18 @@ public class EnergyControl {
     public static void activate(){
         if( !active ){
             active = true;
-            Iterator it = consumer.iterator();
+            Iterator it = currentInstance.consumer.iterator();
             while( it.hasNext() ){
                 ((Energy)it.next()).activate();
             }
         }
+    }
+
+    public static Instance getCurrentInstance() {
+        return currentInstance;
+    }
+
+    public static void nextInstance() {
+        currentInstance = new Instance();
     }
 }

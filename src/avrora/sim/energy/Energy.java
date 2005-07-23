@@ -73,7 +73,9 @@ public class Energy implements FiniteStateMachine.Probe {
     private FiniteStateMachine stateMachine;
     //the clock -> it knwos the time ;-)
     private Clock clock;
- 
+
+    private EnergyControl.Instance instance;
+
     /**
      * create new energy class, to enable energy modelling
      *
@@ -90,6 +92,7 @@ public class Energy implements FiniteStateMachine.Probe {
         this.currentMode = fsm.getStartState();
         this.freq = (int)clock.getHZ();
         this.cycleTime = 1.0d / freq;
+        this.instance = EnergyControl.getCurrentInstance();
 
         // subscribe this consumer to the energy control
         EnergyControl.addConsumer(this);
@@ -120,7 +123,7 @@ public class Energy implements FiniteStateMachine.Probe {
             currentMode = afterState;
             lastChange = clock.getCount();
             //notify the energy control that I am now in a new state
-            EnergyControl.stateChange(this);
+            instance.stateChange(this);
         }
     }
 
@@ -191,6 +194,7 @@ public class Energy implements FiniteStateMachine.Probe {
      * @return cycles
      */
     public long getCycles(int mode) {
+        if ( cycles == null ) return 0;
         long ret = cycles[mode];
         if (mode == currentMode)
             ret += clock.getCount() - lastChange;
@@ -237,7 +241,7 @@ public class Energy implements FiniteStateMachine.Probe {
      * active energy modeling, e.g. insert the probe into to 
      * component state machine
      */
-    public void activate(){
+    public void activate() {
         //insert probe into finite state machine
         stateMachine.insertProbe(this);
         // setup cycle array to store the cycles of each state
