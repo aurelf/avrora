@@ -36,6 +36,8 @@ import avrora.core.*;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
+import avrora.util.parser.AbstractToken;
+import avrora.util.parser.AbstractParseException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

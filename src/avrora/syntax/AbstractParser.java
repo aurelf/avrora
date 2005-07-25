@@ -32,6 +32,8 @@
 
 package avrora.syntax;
 
+import avrora.util.parser.AbstractParseException;
+
 
 /**
  * The <code>AbstractParser</code> is a superclass of all parsers introduced to give multiple JavaCC-generated
@@ -49,7 +51,7 @@ public abstract class AbstractParser {
     /**
      * The <code>Module()</code> method causes the parser to begin parsing the module.
      *
-     * @throws AbstractParseException if the program does not parse correctly
+     * @throws avrora.util.parser.AbstractParseException if the program does not parse correctly
      */
     public abstract void Module() throws AbstractParseException;
 }

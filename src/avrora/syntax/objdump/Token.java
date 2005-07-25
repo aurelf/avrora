@@ -33,7 +33,8 @@
 
 package avrora.syntax.objdump;
 
-import avrora.syntax.AbstractToken;
+import avrora.util.parser.AbstractToken;
+import avrora.util.parser.AbstractToken;
 
 /**
  * Describes the input token stream.

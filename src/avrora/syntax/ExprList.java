@@ -32,6 +32,8 @@
 
 package avrora.syntax;
 
+import avrora.util.parser.AbstractToken;
+
 
 /**
  * The <code>ExprList</code> class represents a list of expressions within the program. An expression list

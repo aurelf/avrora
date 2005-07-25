@@ -33,7 +33,7 @@
 
 package avrora.syntax.gas;
 
-import avrora.syntax.AbstractParseException;
+import avrora.util.parser.AbstractParseException;
 
 /**
  * This exception is thrown when parse errors are encountered. You can explicitly create objects of this

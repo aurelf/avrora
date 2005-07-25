@@ -35,7 +35,7 @@ package avrora.actions;
 import avrora.Main;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Program;
-import avrora.core.isdl.gen.PrettyPrinter;
+import jintgen.gen.PrettyPrinter;
 import avrora.sim.dbbc.DBBC;
 import avrora.util.Printer;
 import avrora.util.StringUtil;

@@ -34,8 +34,8 @@ package avrora.sim.dbbc;
 
 import avrora.core.Instr;
 import avrora.core.InstrVisitor;
-import avrora.core.isdl.CodeRegion;
-import avrora.core.isdl.ast.*;
+import jintgen.jigir.CodeRegion;
+import jintgen.jigir.*;
 
 import java.util.LinkedList;
 

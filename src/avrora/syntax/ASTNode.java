@@ -32,6 +32,8 @@
 
 package avrora.syntax;
 
+import avrora.util.parser.AbstractToken;
+
 
 /**
  * The <code>ASTNode</code> class is a unification of all syntax-related items that are dealt with in loading

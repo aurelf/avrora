@@ -36,12 +36,12 @@ import avrora.util.Util;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
 import avrora.core.Program;
-import avrora.core.isdl.CodeRegion;
-import avrora.core.isdl.ast.*;
-import avrora.core.isdl.gen.ConstantPropagator;
-import avrora.core.isdl.gen.DeadCodeEliminator;
-import avrora.core.isdl.gen.InterpreterGenerator;
-import avrora.core.isdl.parser.Token;
+import jintgen.jigir.CodeRegion;
+import jintgen.jigir.*;
+import jintgen.gen.ConstantPropagator;
+import jintgen.gen.DeadCodeEliminator;
+import jintgen.gen.InterpreterGenerator;
+import jintgen.isdl.parser.Token;
 import avrora.sim.GenInterpreter;
 import avrora.util.*;
 

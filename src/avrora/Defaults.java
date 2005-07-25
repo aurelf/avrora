@@ -170,9 +170,6 @@ public class Defaults {
             actions.addClass("cfg", CFGAction.class);
             actions.addClass("gui", GUIAction.class);
             actions.addClass("isea", ISEAAction.class);
-            //--BEGIN EXPERIMENTAL: isdl
-            actions.addClass("isdl", ISDLAction.class);
-            //--END EXPERIMENTAL: isdl
             //--BEGIN EXPERIMENTAL: dbbc
             actions.addClass("dbbc", DBBCAction.class);
             //--END EXPERIMENTAL: dbbc

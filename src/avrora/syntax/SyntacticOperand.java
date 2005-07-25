@@ -33,6 +33,7 @@
 package avrora.syntax;
 
 import avrora.util.Util;
+import avrora.util.parser.AbstractToken;
 import avrora.core.Operand;
 
 /**
