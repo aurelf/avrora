@@ -1,0 +1,2027 @@
+
+//
+//  instruction set description of the Texas Instruments MSP430 microcontroller
+//
+architecture msp {
+//---------------------------------------------------------------------------
+//  ENCODING FORMATS OF INSTRUCTIONS
+//---------------------------------------------------------------------------
+
+    //format GPRGPR = { opcode[5:0], r2[4:4], r1[4:4], r1[3:0], r2[3:0] };
+    //format GPR = { opcode[6:0], r1[4:4], r1[3:0], 0b0101 };
+    //format HGPRIMM8 = { opcode[3:0], imm1[7:4], r1[3:0], imm1[3:0] };
+    //format BRSET = { 0b111100, target[6:0], bit[2:0] };
+    //format BRCLR = { 0b111101, target[6:0], bit[2:0] };
+    //format SET = { 0b10010100, 0b0, bit[2:0], 0b1000 };
+    //format CLR = { 0b10010100, 0b1, bit[2:0], 0b1000 };
+    //format ABS4 = { opcode[9:3], target[21:17], opcode[2:0], target[16:0] };
+    //format MGPRMGPR = { opcode[7:0], s1[0], r1[2:0], s2[0], r2[2:0] };
+
+    format SINGOPER = { opcode[8:0],BW[0],AS[1:0],SREG[3:0] };
+    format DOUBOPER = { opcode[3:0],SREG[3:0], AD[0], BW[0], AS[1:0],DREG[3:0] };
+    format JUMPOPER = { opcode[5:0],PCOFF[9:0] };
+
+//  Some parts of the avr.isdl are still present in this file and might/might not be necessary
+//  for the msp description
+
+
+//---------------------------------------------------------------------------
+//  MEMORY ALLOWED TO INSTRUCTIONS
+//---------------------------------------------------------------------------
+    //memory $mem(int): int;
+    //memory $sram(int): byte;
+    //memory $regs(register)[32]: byte;
+   
+    memory $wregs(register): int;   //this is how everything is accessed right now from instructions
+
+    //memory $msp430_regs(register)[16]: short;
+
+//-------------------------------------------------------------------------- 
+//   ADDRESSING MODES ALLOWED FOR SINGLE OPERAND/DOUBLE OPERAND/JUMP INSTRUCTIONS
+//-------------------------------------------------------------------------   
+    addrmode REG_W {                   //addressing modes like REG_W, REGPUSH_W, REGCALL_W are single operand
+	operand source[4]: symbol = { r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 =8, 
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[8:0], 0b000, r1 = source  };
+	syntax = "%source";
+	cycles = 1;
+    }
+    addrmode REGPUSH_W { 
+	operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 =8, 
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[8:0], 0b000, r1 = source  };
+	syntax = "%source";
+	cycles = 3;
+    }
+    addrmode REGCALL_W { 
+	operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 =8, 
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[8:0], 0b100, r1 = source  };
+	syntax = "%source";
+	cycles = 4;
+    }
+    addrmode REG_B { 
+	operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 =8, 
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[8:0], 0b100, r1 = source  };
+	syntax = "%source";
+	cycles = 1;
+    }
+    addrmode REGPUSH_B { 
+	operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 =8, 
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[8:0], 0b100, r1 = source  };
+	syntax = "%source";
+	cycles = 3;
+    }
+    addrmode REGCALL_B { 
+	operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 =8, 
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[8:0], 0b100, r1 = source  };
+	syntax = "%source";
+	cycles = 4;
+    }	
+    addrmode REGREG_B {         //addressing modes like REGREG_B, REGIND_W, etc are double operand
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+        encoding = { opcode[3:0], r1 = source, 0b0100, r2 = dest };
+        syntax = "%source, %dest";
+        cycles = 1;
+    }
+    addrmode REGREG_W { 
+        operand source[4]: symbol = {  r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+        encoding = { opcode[3:0],r1 = source, 0b0000, r2 = dest };
+        syntax = "%source, %dest";
+        cycles = 1;
+    }
+    addrmode REGIND_B { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	operand dest[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1= source, 0b1100, r2 = dest, X[3:0] };
+	syntax = "%source, %X(%dest)";
+	cycles = 4;
+    }   
+    addrmode REGIND_W {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	operand dest[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1= source, 0b1000, r2 = dest, X[3:0] };
+	syntax = "%source, %X(%dest)";
+	cycles = 4;
+    }
+    addrmode REGSYM_B {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	operand dest[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[3:0], r1=source, 0b1100, r2=dest, X - r0 };  // X - r0 is the address at label - program counter
+	syntax = "%source, %X";
+	cycles = 4;
+    }
+    addrmode REGSYM_W {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	operand dest[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1=source, 0b1000, r2=dest, X - r0 };  // X - r0 is the address at label - program counter
+	syntax = "%source, %X";
+	cycles = 4;
+    }
+    addrmode REGABS_B {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	operand dest[12]: symbol = {r2 = 2 },   //in Absolute addressing mode, r2 is equal to 0 as part of the Constant Generator register
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1100, r2 = dest, X - r2 }; //X is the absolute address of the label
+	syntax = "%source, &%X";
+       	cycles = 4;
+    }
+    addrmode REGABS_W {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	operand dest[20]: symbol = {r2 = 2 },  //in Absolute addressing mode, r2 is equal to 0 as part of the Constant Generator register
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1000, r2 = dest, X - r2 }; //X is the absolute address of the label
+	syntax = "%source, &%X";
+       	cycles = 4;
+    }
+    addrmode IND_W { 
+	operand source[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b001, r1 = source, X  };
+	syntax = "%source";
+	cycles = 4;
+    }
+    addrmode INDPUSH_W { 
+	operand source[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b001, r1 = source, X  };
+	syntax = "%source";
+	cycles = 5;
+    }
+    addrmode INDCALL_W { 
+	operand source[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b001, r1 = source, X  };
+	syntax = "%source";
+	cycles = 5;
+    }
+    addrmode IND_B { 
+	operand source[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, X  };
+	syntax = "%source";
+	cycles = 4;
+    }
+    addrmode INDPUSH_B { 
+	operand source[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, X  };
+	syntax = "%source";
+	cycles = 5;
+    }
+    addrmode INDCALL_B { 
+	operand source[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, X  };
+	syntax = "%source";
+	cycles = 5;
+    }
+    addrmode INDREG_B {
+	operand source[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = {opcode[3:0], r1 = source, 0b0101, r2 = dest, X };
+	syntax = "%X(%source), %dest";
+	cycles = 3;
+    }
+    addrmode INDREG_W {
+	operand source[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = source, 0b0001, r2 = dest, X };
+	syntax = "%X(%source), %dest";
+	cycles = 3;
+    }
+    addrmode INDIND_B {
+	operand source[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	operand dest[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate Y = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X, Y };
+	syntax = "%X(%source), %Y(%dest)";
+	cycles = 6; 
+    }
+    addrmode INDIND_W {
+	operand source[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	operand dest[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate Y = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X, Y };
+	syntax = "%X(%source), %Y(%dest)";
+	cycles = 6; 
+    }
+    addrmode INDSYM_B {
+	operand source[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	operand dest[12]: symbol  = { r0 = 0 },
+	immediate Y =[0,0xFF], read, write;
+	encoding =  { opcode[3:0], r1 = source, 0b1101, r2 = dest, X,  Y - r0 };
+	syntax = "%X(%source), %Y";
+	cycles = 6;
+    }
+    addrmode INDSYM_W {
+	operand source[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	operand dest[20]: symbol  = { r0 = 0 },
+	immediate Y =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X, Y - r0 };
+	syntax = "%X(%source), %Y";
+	cycles = 6;
+    }
+    addrmode INDABS_B {
+	operand source[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	operand dest[12]: symbol = { r2 = 2 },
+	immediate Y = [0, 0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X, Y -r2 };
+	syntax = "%X(%source), &%Y";
+	cycles = 6;
+    }     
+    addrmode INDABS_W {
+	operand source[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	operand dest[20]: symbol = { r2 = 2 },
+	immediate Y = [0, 0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X, Y - r2 };
+	syntax = "%X(%source), &%Y";
+	cycles = 6;
+    } 
+    addrmode SYM_W { 
+	operand source[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b001, r1 = source, X - r0  };
+	syntax = "%X";
+	cycles = 4;
+    }
+    addrmode SYMPUSH_W { 
+	operand source[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b001, r1 = source, X - r0  };
+	syntax = "%X";
+	cycles = 5;
+    }
+    addrmode SYMCALL_W { 
+	operand source[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, X - r0  };
+	syntax = "%X";
+	cycles = 5;
+    }
+    addrmode SYM_B { 
+	operand source[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, X - r0  };
+	syntax = "%X";
+	cycles = 4;
+    }
+    addrmode SYMPUSH_B { 
+	operand source[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, X - r0  };
+	syntax = "%X";
+	cycles = 5;
+    }
+    addrmode SYMCALL_B { 
+	operand source[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, X - r0  };
+	syntax = "%X";
+	cycles = 5;
+    }	
+    addrmode SYMREG_B {
+	operand source[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = source, 0b0101, r2 = dest, X - r0 };
+	syntax = "%X, %dest";
+	cycles = 3;
+    }
+    addrmode SYMREG_W {
+	operand source[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = source, 0b0001, r2 = dest, X - r0 };
+	syntax = "%X, %dest";
+	cycles = 3;
+    }
+    addrmode SYMIND_B {
+	operand source[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	operand dest[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate Y = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X - r0, Y };
+	syntax = "%X, %Y(%dest)";
+	cycles = 6;
+    }
+    addrmode SYMIND_W {
+	operand source[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	operand dest[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15},
+	immediate Y = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X - r0, Y };
+	syntax = "%X, %Y(%dest)";
+	cycles = 6;
+    }		
+    addrmode SYMSYM_B {
+	operand source[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	operand dest[12]: symbol  = { r0 = 0 },
+	immediate Y =[0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X - r0, Y - r0 };
+	syntax = "%X, %Y";
+	cycles = 6; 
+    }
+    addrmode SYMSYM_W {
+	operand source[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	operand dest[20]: symbol  = { r0 = 0 },
+	immediate Y =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X - r0, Y - r0 };
+	syntax = "%X, %Y";
+	cycles = 6; 
+    }
+    addrmode SYMABS_B {
+	operand source[12]: symbol = { r0 = 0 }, 
+	immediate X = [0,0xFF], read, write;
+	operand dest[12]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFF], read, write; 
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X - r0, Y - r2 };
+	syntax = "%X, &%Y";
+	cycles = 6;
+    }
+    addrmode SYMABS_W {
+	operand source[20]: symbol = { r0 = 0 }, 
+	immediate X = [0,0xFFFF], read, write;
+	operand dest[20]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFFFF], read, write; 
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X - r0, Y - r2 };
+	syntax = "%X, &%Y";
+	cycles = 6;
+    }
+    addrmode ABS_W { 
+	operand source[20]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b001, r1 = source, Y - r2  };
+	syntax = "&%X";
+	cycles = 4;
+    }
+    addrmode ABSPUSH_W { 
+	operand source[20]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b001, r1 = source, Y - r2  };
+	syntax = "&%X";
+	cycles = 5;
+    }
+    addrmode ABSCALL_W { 
+	operand source[20]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFFFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, Y - r2  };
+	syntax = "&%X";
+	cycles = 5;
+    }
+    addrmode ABS_B { 
+	operand source[12]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, Y - r2  };
+	syntax = "&%X";
+	cycles = 4;
+    }
+    addrmode ABSPUSH_B { 
+	operand source[12]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, Y - r2 };
+	syntax = "&%X";
+	cycles = 5;
+    }
+    addrmode ABSCALL_B { 
+	operand source[12]: symbol = { r2 = 2 }, 
+	immediate Y = [0,0xFF], read, write;
+	encoding = { opcode[8:0], 0b101, r1 = source, Y - r2  };
+	syntax = "&%X";
+	cycles = 5;
+    }	
+    addrmode ABSREG_B {
+	operand source[12]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFF], read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = source, 0b0101, r2 = dest, X - r2 };
+	syntax = "&%X, %dest";
+	cycles = 3;
+    }
+    addrmode ABSREG_W {
+	operand source[20]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFFFF], read, write;
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = source, 0b0001, r2 = dest, X - r2 };
+	syntax = "&%X, %dest";
+	cycles = 3;
+    } 
+    addrmode ABSIND_B {
+	operand source[12]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFF], read, write;
+	operand dest[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate Y = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X - r2, Y };
+	syntax = "&%X, %Y(%dest)";
+	cycles = 6;
+    }
+    addrmode ABSIND_W {
+	operand source[20]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFFFF], read, write;
+	operand dest[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate Y = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X - r2, Y };
+	syntax = "&%X, %Y(%dest)";
+	cycles = 6;
+    }	
+    addrmode ABSSYM_B {
+	operand source[12]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFF], read, write;
+	operand dest[12]: symbol  = { r0 = 0 },
+	immediate Y =[0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X - r2, Y - r0 };
+	syntax = "&%X, %Y";
+	cycles = 6;
+    }
+    addrmode ABSSYM_W {
+	operand source[20]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFFFF], read, write;
+	operand dest[20]: symbol  = { r0 = 0 },
+	immediate Y =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X - r2, Y - r0 };
+	syntax = "&%X, %Y";
+	cycles = 6;
+    }
+    addrmode ABSABS_B {
+	operand source[12]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFF], read, write;
+	operand dest[12]: symbol = {r2 = 2 }, 
+	immediate Y = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1101, r2 = dest, X - r2, Y - r2 };
+	syntax = "&%X, &%Y";
+	cycles = 6;
+    }
+    addrmode ABSABS_W {
+	operand source[20]: symbol = { r2 = 2 }, 
+	immediate X = [0,0xFFFF], read, write;
+	operand dest[20]: symbol = {r2 = 2 }, 
+	immediate Y = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = source, 0b1001, r2 = dest, X - r2, Y - r2 };
+	syntax = "&%X, &%Y";
+	cycles = 6;
+    }
+    addrmode INREG_W { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	encoding = { opcode[8:0], 0b010, r1 = source  };
+	syntax = "@%source";
+	cycles = 3;
+    }
+    addrmode INREGPUSH_W { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	encoding = { opcode[8:0], 0b010, r1 = source  };
+	syntax = "@%source";
+	cycles = 4;
+    }
+    addrmode INREGCALL_W { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	encoding = { opcode[8:0], 0b110, r1 = source  };
+	syntax = "@%source";
+	cycles = 4;
+    }
+    addrmode INREG_B { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	encoding = { opcode[8:0], 0b110, r1 = source  };
+	syntax = "@%source";
+	cycles = 3;
+    }
+    addrmode INREGPUSH_B { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data	
+        encoding = { opcode[8:0], 0b110, r1 = source  };
+	syntax = "@%source";
+	cycles = 4;
+    }
+    addrmode INREGCALL_B { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	encoding = { opcode[8:0], 0b110, r1 = source  };
+	syntax = "@%source";
+	cycles = 4;
+    }	
+    addrmode INREGREG_B {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b0110, r2 = dest };
+	syntax = "@%source, %dest";
+	cycles = 2;
+    }	
+    addrmode INREGREG_W {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b0010, r2 = dest };
+	syntax = "@%source, %dest";
+	cycles = 2;
+    }	
+    addrmode INREGIND_B {
+        operand source[4]: symbol = {  r2 = 2, r3 = 3,r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	operand dest[12]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1110, r2 = dest, X };
+	syntax = "@%source, %X(%dest)";
+	cycles = 5;
+    }	
+    addrmode INREGIND_W {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	operand dest[20]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1010, r2 = dest, X };
+	syntax = "@%source, %X(%dest)";
+	cycles = 5;
+    }
+    addrmode INREGSYM_B {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	operand dest[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1110, r2 = dest, X - r0 };
+	syntax = "@%source, %X";
+	cycles = 5;
+   }
+    addrmode INREGSYM_W {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	operand dest[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1010, r2 = dest, X - r0 };
+	syntax = "@%source, %X";
+	cycles = 5;
+   }	
+    addrmode INREGABS_B {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	operand dest[12]: symbol = {r2 = 2 }, 
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1110, r2 = dest, X - r2 };
+	syntax = "@%source, &%X";
+	cycles = 5;
+   }
+    addrmode INREGABS_W {
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	operand dest[20]: symbol = {r2 = 2 }, 
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1010, r2 = dest, X - r2 };
+	syntax = "@%source, &%X";
+	cycles = 5;
+   }	
+    addrmode INDRA_W { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	encoding = { opcode[8:0], 0b011, r1 = source  };
+	syntax = "@%source+";
+	cycles = 3;
+    }
+    addrmode INDRAPUSH_W { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	encoding = { opcode[8:0], 0b011, r1 = source  };
+	syntax = "@%source+";
+	cycles = 5;
+    }
+    addrmode INDRACALL_W { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	encoding = { opcode[8:0], 0b111, r1 = source  };
+	syntax = "@%source+";
+	cycles = 5;
+    }
+    addrmode INDRA_B { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	encoding = { opcode[8:0], 0b111, r1 = source  };
+	syntax = "@%source+";
+	cycles = 3;
+    }
+    addrmode INDRAPUSH_B { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data	
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+        encoding = { opcode[8:0], 0b111, r1 = source  };
+	syntax = "@%source+";
+	cycles = 5;
+    }
+    addrmode INDRACALL_B { 
+        operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	encoding = { opcode[8:0], 0b111, r1 = source  };
+	syntax = "@%source+";
+	cycles = 5;
+    }	
+    addrmode INDRAREG_B {
+	operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+        operand dest[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b0111, r2 = dest };
+	syntax = "@%source+, %dest";
+	cycles = 2;
+   }
+    addrmode INDRAREG_W {
+	operand source[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 2); //attempt to increment the value of source by 2 bytes
+        operand dest[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b0011, r2 = dest };
+	syntax = "@%source+, %dest";
+	cycles = 2;
+   }
+    addrmode INDRAIND_B {
+	operand source[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	operand dest[12]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1111, r2 = dest, X };
+	syntax = "@%source+, %X(%dest)";
+	cycles = 5;
+    }  	
+    addrmode INDRAIND_W {
+	operand source[4]: symbol = { r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 2); //attempt to increment the value of source by 2 byte
+	operand dest[20]: symbol = {r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1011, r2 = dest, X };
+	syntax = "@%source+, %X(%dest)";
+	cycles = 5;
+    }
+    addrmode INDRASYM_B {
+	operand source[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	operand dest[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1111, r2 = dest, X - r0 };
+	syntax = "@%source+, %X";
+	cycles = 5;
+    }
+    addrmode INDRASYM_W {
+	operand source[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 2); //attempt to increment the value of source by 2 byte
+	operand dest[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1011, r2 = dest, X - r0 };
+	syntax = "@%source+, %X";
+	cycles = 5;
+    }
+    addrmode INDRAABS_B {
+	operand source[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 1); //attempt to increment the value of source by 1 byte
+	operand dest[12]: symbol  = { r2 = 2 },
+	immediate X =[0,0xFF], read, write; 
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1111, r2 = dest, X - r2 };
+	syntax  = "@%source+, %X";
+	cycles = 5;
+    }
+    addrmode INDRAABS_W {
+	operand source[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write; 
+	contofaddyatsource = read();  //attempt to read contents of source to get address of memory that contains required data
+	write(contofaddyatsource + 2); //attempt to increment the value of source by 2 byte
+	operand dest[20]: symbol  = { r2 = 2 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1011, r2 = dest, X - r2 };
+	syntax = "@%source+, %X";
+	cycles = 5;
+    }
+
+    //Using of RRA, RRC, SWPB, and SXT instructions with an Immediate operand is not allowed
+
+    addrmode IMMEDPUSH_W { 
+	operand source[20]: symbol = { r2 = 2 } read, write;
+	immediate contofaddyatsource = read()[15:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+	encoding = { opcode[8:0], 0b011, r1 = source  };
+	syntax = "#%contofaddyatsource";
+	cycles = 4;
+    }
+    addrmode IMMEDCALL_W { 
+	operand source[20]: symbol = { r2 = 2 } read, write;
+	immediate contofaddyatsource = read()[15:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+	encoding = { opcode[8:0], 0b111, r1 = source  };
+	syntax = "#%contofaddyatsource";
+	cycles = 5;
+    }
+
+    //Using of RRA, RRC, SWPB, and SXT instructions with an Immediate operand is not allowed
+
+    addrmode IMMEDPUSH_B { 
+	operand source[12]: symbol = { r2 = 2 } read, write;
+	immediate contofaddyatsource = read()[7:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+        encoding = { opcode[8:0], 0b111, r1 = source  };
+	syntax = "#%contofaddyatsource";
+	cycles = 4;
+    }
+    addrmode IMMEDCALL_B { 
+	operand source[12]: symbol = { r2 = 2 } read, write;
+	immediate contofaddyatsource = read()[7:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+	encoding = { opcode[8:0], 0b111, r1 = source  };
+	syntax = "#%contofaddyatsource";
+	cycles = 5;
+    }	
+    addrmode IMMEDREG_B {
+	operand source[12]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[7:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+        operand dest[4]: symbol = { r2 = 2, r3 = 3,r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b0111, r2 = dest };
+	syntax = "#%contofaddyatsource, %dest";
+	cycles = 2;
+    }
+    addrmode IMMEDREG_W {
+	operand source[20]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[15:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 2); //attempt to increment the PC by 2
+        operand dest[4]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12,r13 = 13, r14 = 14, r15 = 15} read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b0011, r2 = dest };
+	syntax = "#%contofaddyatsource, %dest";
+	cycles = 2;
+    }
+    addrmode IMMEDIND_B {
+	operand source[12]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[7:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+	operand dest[12]: symbol = { r2 = 2, r3 = 3,r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1111, r2 = dest, X };
+	syntax = "#%contofaddyatsource, %X(%dest)";
+	cycles = 5;
+    }
+    addrmode IMMEDIND_W {
+	operand source[20]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[15:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 2); //attempt to increment the PC by 2
+	operand dest[20]: symbol = {r2 = 2, r3 = 3, r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
+	r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15},
+	immediate X = [0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1011, r2 = dest, X };
+	syntax = "#%contofaddyatsource, %X(%dest)";
+	cycles = 5;
+    }
+    addrmode IMMEDSYM_B {
+	operand source[12]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[7:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+	operand dest[12]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1111, r2 = dest, X - r0 };
+	syntax = "#%contofaddyatsource, %X";
+	cycles = 5;
+    }
+    addrmode IMMEDSYM_W {
+	operand source[20]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[15:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 2); //attempt to increment the PC by 2
+	operand dest[20]: symbol  = { r0 = 0 },
+	immediate X =[0,0xFFFF], read, write;
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1011, r2 = dest, X - r0 };
+	syntax = "#%contofaddyatsource, %X";
+	cycles = 5;
+    }
+    addrmode IMMEDABS_B {
+	operand source[12]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[7:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 1); //attempt to increment the PC by 1
+	operand dest[12]: symbol  = { r2 = 2 },
+	immediate X =[0,0xFF], read, write; 
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1111, r2 = dest, X - r2 };
+	syntax = "#%contofaddyatsource, &%X";
+	cycles = 5;
+    }
+    addrmode IMMEDABS_W {
+	operand source[20]: symbol = { r2 = 2 } read, write;  //The PC points to the word following the instruction and moves the contents to dest
+	immediate contofaddyatsource = read()[15:0];  //attempt to read the value of the word containing the immediate value (after instruction)
+	write(r2 + 2); //attempt to increment the PC by 2
+	operand dest[20]: symbol  = { r2 = 2 },
+	immediate X =[0,0xFFFF], read, write; 
+	encoding = { opcode[3:0], r1 = contofaddyatsource, 0b1011, r2 = dest, X - r2 };
+	syntax = "#%contofaddyatsource, &%X";
+	cycles = 5;
+    }	
+    addrmode JMP {                 //Not sure if this is the only addressing mode need for Jump instructions... 
+	operand source[10]: int = {offset[0,0x3FF] } read, write;
+	encoding = {opcode[7:2], r1 = offset };
+	syntax = "%offset";
+	cycles = 2;
+    } 
+
+//----------------------------------------------------------------------------------
+//  OPERANDS ALLOWED FOR INSTRUCTIONS
+//----------------------------------------------------------------------------------
+    operand GPR[5]: symbol = { 
+        r0  = 0,  r1  = 1,  r2  = 2,  r3  = 3,
+        r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,
+        r8  = 8,  r9  = 9,  r10 = 10, r11 = 11,
+        r12 = 12, r13 = 13, r14 = 14, r15 = 15,
+        r16 = 16, r17 = 17, r18 = 18, r19 = 19,
+        r20 = 20, r21 = 21, r22 = 22, r23 = 23,
+        r24 = 24, r25 = 25, r26 = 26, r27 = 27,
+        r28 = 28, r29 = 29, r30 = 30, r31 = 31
+    };
+
+    operand HGPR[4]: symbol = {
+        r16 = 0,  r17 = 1,  r18 = 2,  r19 = 3,
+        r20 = 4,  r21 = 5,  r22 = 6,  r23 = 7,
+        r24 = 8,  r25 = 9,  r26 = 10, r27 = 11,
+        r28 = 12, r29 = 13, r30 = 14, r31 = 15
+    };
+
+    operand MGPR[3]: symbol = {
+        r16 = 0, r17 = 1, r18 = 2, r19 = 3,
+        r20 = 4, r21 = 5, r22 = 6, r23 = 7
+    };
+
+    operand YZ[1]: symbol = {
+        Y = 1, Z = 0
+    };
+
+    operand Z[0]: symbol = {
+        Z = 0
+    };
+
+    operand EGPR[4]: symbol = {
+        r0  = 0,  r2  = 1,  r4  = 2,  r6  = 3,
+        r8  = 4,  r10 = 5,  r12 = 6,  r14 = 7,
+        r16 = 8,  r18 = 9,  r20 = 10, r22 = 11,
+        r24 = 12, r26 = 13, r28 = 14, r30 = 15
+    };
+
+    operand RDL[2]: symbol = {
+        r24 = 0, r26 = 1, r28 = 2, r30 = 3
+    };
+
+    operand XYZ[2]: symbol = {
+        X = 0, Y = 1, Z = 2
+    };
+
+    operand IMM3[3]: immediate = [0, 7];
+    operand IMM5[5]: immediate = [0, 31];
+    operand IMM6[6]: immediate = [0, 63];
+    operand IMM7[7]: immediate = [0, 127];
+    operand IMM8[8]: immediate = [0, 255];
+    operand SREL[7]: relative = [-64, 63];
+    operand LREL[11]: relative = [-1024, 1023];
+    operand PADDR[16]: word = [0, 65536]; // this is encoded as a word address
+    operand DADDR[16]: address = [0, 65536];
+
+//---------------------------------------------------------------------------
+//  SUBROUTINES
+//---------------------------------------------------------------------------
+    inline subroutine performAddition(r1: int, r2: int, carry: int): byte {
+        local result: int = r1 + r2 + carry;
+        local ral: int = r1[3:0];
+        local rbl: int = r2[3:0];
+
+        local Rd7: boolean = r1[7];
+        local Rr7: boolean = r2[7];
+        local R7: boolean = result[7];
+
+        // set the flags as per instruction set documentation.
+       // H = (ral + rbl + carry)[4];
+        C = result[8];
+        N = result[7];
+        Z = low(result) == 0;
+        V = (Rd7 and Rr7 and !R7) or (!Rd7 and !Rr7 and R7);
+      //  S = N xor V;
+
+        return low(result);
+    };
+    inline subroutine performAdditionW(r1: int, r2: int, carry: int): word {
+	local result: int = r1 + r2 + carry;
+	local ral: int = r1[7:0];
+	local rbl: int = r2[7:0];
+
+	local Rd15: boolean = r1[15];
+	local Rr15: boolean = r2[15];
+	local R15: boolean  = result[15];
+
+	C = result[16]; 
+	N = result[15];
+	Z = (result == 0);
+	V = (Rd15 and Rr15 and !R15) or (!Rd15 and !Rr15 and R15);
+	
+	return result;
+    };
+	
+
+    inline subroutine performSubtraction(r1: int, r2: int, carry: int): byte {
+        local result: int = r1 - r2 - carry;
+
+        local Rd7: boolean = r1[7];
+        local Rr7: boolean = r2[7];
+        local R7:  boolean = result[7];
+        local Rd3: boolean = r1[3];
+        local Rr3: boolean = r2[3];
+        local R3:  boolean = result[3];
+
+        // set the flags as per instruction set documentation.
+        C = (!Rd7 and Rr7) or (Rr7 and R7) or (R7 and !Rd7);
+        N = R7;
+        Z = low(result) == 0;
+        V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
+       // S = N xor V;
+
+        return low(result);
+    };
+    inline subroutine performSubtractionW(r1: int, r2: int, carry: int): word {
+        local result: int = r1 - r2 - carry;
+
+        local Rd15: boolean = r1[15];
+        local Rr15: boolean = r2[15];
+        local R15:  boolean = result[15];
+        local Rd7: boolean = r1[7];
+        local Rr7: boolean = r2[7];
+        local R7:  boolean = result[7];
+
+        // set the flags as per instruction set documentation.
+
+        C = (!Rd15 and Rr15) or (Rr15 and R15) or (R15 and !Rd15);
+        N = R15;
+        Z = (low(result) == 0 and high(result) == 0);
+        V = (Rd15 and !Rr15 and !R15) or (!Rd15 and Rr15 and R15);
+       
+        return result;
+    };
+
+
+    inline subroutine performAnd(r1: int, r2: int): byte {
+        local result: int = r1 & r2;
+
+        N = result[7];
+        Z = low(result) == 0;
+        V = false;
+        C = !N;
+
+        return low(result);
+    }; 
+    inline subroutine performAndW(r1: int, r2: int): word {
+	local result: int = r1 & r2;
+	
+	N = result[15];
+	C = !N;
+	Z = if(result == 0);
+	V = 0;
+    };
+    inline subrountine performDeciAddCW(r1: int, r2: int, carry: int): word { //16 bit operation
+				    //r1 = source
+				    //r2 = dest.
+	local r10dec: int = 0;    //Fist   BCD sum
+	local r20dec: int = 0;	  //Second BCD sum
+	local r30dec: int = 0;    //Third  BCD sum
+	local r40dec: int = 0;   //Fourth  BCD sum
+
+	if ( carry)               //adds carry to source if carry set
+            r10dec = 1;		
+	if ( r1[3:0] < 0b1010 and r2[3:0] < 0b1010) {
+	   r10dec  = r1[3:0] + r2[3:0];    //sums lowest BCDs
+	   if (r10dec > 9) {
+	     r10dec = r10dec - 10;    //if sum overflowed, reset and 
+             r20dec = r20dec + 1;   //add one to next BCD sum
+           };
+         };
+	if (r1[7:4] < 0b1010 and r2[7:4] < 0b1010) {
+           r20dec = r1[7:4]  + r2[7:4];  //sums second BCD pairs
+	   if (r20dec > 9) {
+             r20dec = r20dec - 10;
+             r30dec = r30dec + 1;
+           };
+         };
+	if (r1[11:8] < 0b1010 and r2[11:8] < 0b1010) {
+           r30dec = r1[11:8]  + r2[11:8];  //sums third BCD pairs
+	   if (r30dec > 9) {
+             r30dec = r30dec - 10;
+             r40dec = r40dec + 1;
+           };
+         };
+	if (r1[15:12] < 0b1010 and r2[15:12] < 0b1010) {
+           r40dec = r1[15:12]  + r2[15:12];  //sums fourth BCD pairs
+	   if (r40dec > 9) {
+             r40dec = r40dec - 10;
+             C = 1;
+           };
+         };
+	local result: int = (r40dec * 1000) + (r30dec * 100) + (r20dec * 10) + r10dec;
+
+	N =(r40dec[3] == 1);   // set N if MSB is negative.
+	Z = !(result);        //reset Z unless result is zero
+	return result;
+    };
+
+
+    inline subrountine performDeciAddC(r1: int, r2: int, carry: int): byte {  //8 bit operation
+                                   //r1 = source
+                                  // r2 = dest.
+	local r1ldec: int   = 0;
+	local r1hdec: int   = 0;
+	local rltotdec: int = 0;
+	local r2ldec: int   = 0;
+	local r2hdec: int   = 0;
+	local rhtotdec: int = 0;
+	if (r1[0]) 
+ 	  r1ldec = r1ldec + 1;
+	if (r1[1]) 	
+	  r1ldec = r1ldec + 2;
+        if (r1[2]) 
+	  r1ldec = r1ldec + 4;
+	if (r1[3])	
+	  r1ldec = r1ldec + 8;
+	if (r1[4]) 
+ 	  r1hdec = r1hdec + 1;
+	if (r1[5]) 	
+	  r1hdec = r1hdec + 2;
+        if (r1[6]) 
+	  r1hdec = r1hdec + 4;
+	if (r1[7])	
+	  r1hdec = r1hdec + 8;	
+	r1ldec = r1ldec + carry;    //adding of the source operand to carry
+	if (r1ldec > 9) {          //if lower BCD overflows, add 1 to next digit
+	   r1ldec = r1ldec - 10;
+           r1hdec = r1hdec + 1;
+        };
+	if (r1hdec > 9) {         //if higher BCD overflows, sub 10 and set carry bit
+	   r1hdec = r1hdec - 10;
+           C = 1;
+        };
+	if (r2[0]) 
+	  r2ldec = r2ldec + 1;
+	if (r2[1])
+          r2ldec = r2ldec + 2;
+	if (r2[2])
+	  r2ldec = r2ldec + 4;
+	if (r2[3])
+  	  r2ldec = r2ldec + 8;
+	if (r2[4]) 
+	  r2hdec = r2hdec + 1;
+	if (r2[5])
+          r2hdec = r2hdec + 2;
+	if (r2[6])
+	  r2hdec = r2hdec + 4;
+	if (r2[7])
+  	  r2hdec = r2hdec + 8;
+	rltotdec = r1ldec + r2ldec;   ///adding lower BCDs (source and dest)
+	if (rltotdec > 9) {     //if sum is greater that 9, sub. 10 and add 1 to 
+	   rltotdec = rltotdec - 10;  // higher BCD
+	   rhtotdec = rhtotdec + 1;	
+	};
+	rhtotdec = rhtotdec + r1hdec + r2hdec; //add up higher BCDs
+	if (rhtotdec > 9) {      //if higher BCD overflows, sub 10 and set carry bit
+ 	   rhtotdec = rhtotdec  - 10;
+	   C = 1;
+	};
+	N = (rhtotdec[3] == 1);                      //set if MSB is 1
+	Z = (((rhtotdec * 10) + rltotdec) == 0);    //set if result is 0
+        return low((rhtotdec * 10) + rltotdec);
+    };
+
+    inline subroutine relativeBranch(target: int): void {
+        nextPC = relative(target);
+        cyclesConsumed = cyclesConsumed + 1;
+    };
+
+    inline subroutine relative(target: int): int {
+        return (target * 2) + nextPC;
+    };
+
+    inline subroutine absolute(target: int): int {
+        return target * 2;
+    };
+
+    inline subroutine skip(): void {
+        local dist: int = $isize(nextPC);
+        nextPC = nextPC + dist;
+        if ( dist == 4 ) cyclesConsumed = cyclesConsumed + 2;
+        else cyclesConsumed = cyclesConsumed + 1;
+    };
+
+    inline subroutine pushPC(npc: int): void {
+        npc = npc / 2;
+        pushByte(low(npc));
+        pushByte(high(npc));
+    };
+
+    inline subroutine popPC(): int {
+        local high: byte = popByte();
+        local low: byte = popByte();
+        return uword(low, high) * 2;
+    };
+
+    inline subroutine low(v: int): byte {
+        return v:byte;
+    };
+
+    inline subroutine high(v: int): byte {
+        return (v >> 8):byte;
+    };
+
+    inline subroutine uword(low: byte, high: byte): int {
+        return ((high << 8) | low)[15:0];
+    };
+
+    external bit(b: boolean): int;
+    external popByte(): byte;
+    external pushByte(b: byte): void;
+
+
+//---------------------------------------------------------------------------
+//  BEGIN INSTRUCTION SET DESCRIPTION
+//---------------------------------------------------------------------------
+	
+    instruction "adc" rd: dest, rr: source {
+	opcode = 0b0110;                     //opcode for ADDC (6) emulated to ADC
+	execute = {
+	    local r1: int       = $wregs(rd);
+            local result: int   = r1 + bit(C);
+	    	                    //word operation
+            local R15: boolean  = result[15];
+	    local Rdh7: boolean = r1[15];
+            C = (!R15 and Rdh7);
+	    N = (R15);
+	    V = (!Rdh7 and R15);
+            Z = (result[15:0]  == 0); 
+            
+
+	    $wregs(rd) = result;
+	};
+    };
+
+    instruction "adc.b" rd: dest, rr: source {
+	opcode = 0b0110;                     //opcode for ADDC (6) emulated to ADC
+	execute = {
+	    local r1: int       = low($wregs(rd));
+            local result: int   = r1 + bit(C);
+
+					 //byte operation
+            local R7: boolean   = result[7];
+            local Rdh1: boolean = r1[7];
+            C = (!R7 and Rdh1);
+	    N = (R7);
+	    V = (!Rdh1 and R7);
+            Z = (result[7:0]  == 0);            
+	    
+	    $wregs(rd)[7:0] = result;
+	};
+    };
+
+
+    instruction "add" rd: dest, rr: source {
+	opcode = 0b0101;
+	execute = {
+	    $wregs(rd) = performAdditionW($wregs(rd), $wregs(rr), 0);
+	};
+    };
+    instruction "add.b" rd: dest, rr: source {
+	opcode = 0b0101;
+	execute = {
+            $wregs(rd)[7:0] = performAddition(low($wregs(rd)), low($wregs(rr)), 0);
+	};
+    };
+
+    instruction "addc" rd: dest, rr: source {
+        opcode = 0b0110;
+	execute = {
+	    $wregs(rd) = performAdditionW($wregs(rd), $wregs(rr), bit(C));
+   	};
+    };    
+    instruction "addc.b" rd: dest, rr: source {
+        opcode = 0b0110;
+	execute = {
+            $wregs(rd)[7:0] = performAddition(low($wregs(rd)), low($wregs(rr)), bit(C));
+   	};
+    };    
+
+    instruction "and" rd: dest, rr: source {
+	opcode = 0b1111;
+	execute = {
+            $wregs(rd) = performAndW($wregs(rd), $wregs(rr));
+        };
+    };    
+    instruction "and.b" rd: dest, rr: source {
+	opcode = 0b1111;
+	execute = {
+            $wregs(rd)[7:0] = performAnd(low($wregs(rd)), low($wregs(rr)));
+        };
+    };    
+
+    instruction "bic" rd: dest, rr: source {    //logical and on inverted source and dest
+	opcode = 0b1100;                        //status bits are not affected
+	execute = {
+	    $wregs(rd) = !$wregs(rr) and $wregs(rd);
+        };
+    };
+    instruction "bic.b" rd: dest, rr: source {    //logical and on inverted source and dest
+	opcode = 0b1100;                        //status bits are not affected
+	execute = {
+	    $wregs(rd)[7:0] = !low($wregs(rr)) & low($wregs(rd));
+        };
+    };
+
+    instruction "bis" rd: dest, rr: source {   //logical or on source and dest
+        opcode = 0b1101;                       //status bits not affected
+        execute = { 
+            $wregs(rd) = $wregs(rr) or $wregs(rd);
+        };
+     };
+    instruction "bis.b" rd: dest, rr: source {   //logical or on source and dest
+        opcode = 0b1101;                       //status bits not affected
+        execute = { 
+	    $wregs(rd)[7:0] = low($wregs(rr)) | low($wregs(rd));
+        };
+     };
+
+    instruction "bit" rd: dest, rr: source {   //test bits in dest by anding source
+	opcode = 0b1011;                         //with dest and affecting only status bits
+	execute = {
+	    local dntcare: int;
+	    dntcare = performAndW($wregs(rd), $wregs(rr));
+        };
+     }; 
+    instruction "bit.b" rd: dest, rr: source {   //test bits in dest by anding source
+	opcode = 0b1011;                         //with dest and affecting only status bits
+	execute = {
+	    local dntcare: int;
+	    dntcare = performAnd(low($wregs(rd)), low($wregs(rr)));
+        };
+     }; 
+
+    instruction "br" rd: r0, rr: source {  //uncondtional branch emulated by moving
+	opcode = 0b0100;                     //operand to Program counter
+	execute = {
+	    $wregs(rd) = $wregs(rr);
+		//emulated by MOV instruction
+	};
+     };
+
+    instruction "call" rd: dest {     //calls a subroutine from 64k address space
+	opcode = 0b000100201000;          //stores old pc on TOS while jumping to subroutine
+	execute = {
+	    local temp: int    = $wregs(rd);  //r1 is the SP, r0 is the PC
+	    $wregs(r1) = $wregs(r1) -2;
+	    $wmem($wregs(r1)) = $wregs(r0);
+	    $wregs(r0) = temp;
+        };
+     };
+
+    instruction "clr" rd: dest {             //emulated by MOV instruction
+	opcode = 0b0100;
+	execute = {
+	    $wregs(rd) = $wregs(rd) and 0;
+	};
+     };
+    instruction "clr.b" rd: dest {           //emulated by MOV instruction
+	opcode = 0b0100;
+	execute = {
+	    $wregs(rd)[7:0] = $wregs(rd) and 0xFF00;
+	};
+     };
+
+
+    instruction "clrc" {               //clear carry bit by anding with #1
+	opcode = 0b1100;
+        execute = {
+            $wregs(r2)[7:0] = 0b0001 and low($wregs(r2));
+		//emulated by BIC instruction
+	};
+     };
+
+    instruction "clrn" {             //clear neg. bit by anding with #4
+	opcode = 0b1100;
+        execute = {
+            $wregs(r2)[7:0] = !(0b0100) and low($wregs(r2));
+       		//emulated by BIC instruction
+	 };
+     };	
+
+    instruction "clrz" {
+        opcode = 0b1100;
+        execute = {
+            $wregs(r2)[7:0] = !(0b0010) and low($wregs(r2));
+		//emulated by BIC instruction
+	};
+     };
+
+    instruction "cmp" rd: dest, rr: source {     //compares 2 operands by 
+	opcode = 0b1001;                       //adding source with inverted dest 
+	execute = {                        //and adding 1 to the result
+                                         //only status bits affected
+	    local temp: int   = performAdditionW($wregs(rd), !$wregs(rr), 1);
+         
+        };
+    };
+    instruction "cmp.b" rd: dest, rr: source {     //compares 2 operands by 
+	opcode = 0b1001;                       //adding source with inverted dest 
+	execute = {                        //and adding 1 to the result
+	                                  //only status bits affected
+           local temp: int   = performAddition(low($wregs(rd)), !low($wregs(rr)), 1);
+        };
+    };
+    instruction "dadc" rd: dest {   //add carry decimally to dest  
+	opcode = 0b1010;    //emulated by DADD instruction
+	execute = {
+	  $wregs(rd) = performDeciAddCW(0, $wregs(rd), bit(C));     
+	};
+    };
+    instruction "dadc.b" rd: dest {   //add carry decimally to dest  
+	opcode = 0b1010;     //emulated by DADD instruction
+	execute = {
+	  $wregs(rd)[7:0] = performDeciAddC(0, low($wregs(rd)), bit(C));     
+	};
+    };
+    instruction "dadd" rd: dest, rr: source {  //source and carry added decimally to dest
+	opcode = 0b1010;
+	execute = {
+	  $wregs(rd) = performDeciAddCW($wregs(rr), $wregs(rd), bit(C));
+	};
+    };
+    instruction "dadd.b" rd: dest, rr: source {  //source and carry added decimally to dest
+	opcode = 0b1010;
+	execute = {
+	  $wregs(rd)[7:0] = performDeciAddC(low($wregs(rr)), low($wregs(rd)), bit(C));
+	};
+    };
+    instruction "dec" rd: dest  { 
+	opcode = 0b1000;        //emulated by subtraction operation
+	execute = {
+	local original:int = $wregs(rd);
+	  $wregs(rd) = performSubtractionW($wregs(rd),1,0);
+ 	if (original == 1)   N = 1;    //if original value of dest was 1, set N bit
+        };
+     };
+    instruction "dec.b" rd: dest  { 
+	opcode = 0b1000;        //emulated by subtraction operation
+	execute = {
+	local original:int = low($wregs(rd));
+	  $wregs(rd)[7:0] = performSubtractionW(low($wregs(rd)),1,0);
+ 	if (original == 1)   N = 1;    //if original value of dest was 1, set N bit
+        };
+     };
+
+    instruction "decd" rd: dest {
+	opcode = 0b1000;         //emulated by subtraction  operation
+	execute = {
+ 	local original: int = $wregs(rd);
+        $wregs(rd) = performSubtractionW(original,2,0);
+	if (original == 2)   N = 1;    //if original value of dest was 2, set N bit
+	};
+     };	
+    instruction "decd.b" rd: dest {
+	opcode = 0b1000;         //emulated by subtraction  operation
+	execute = {
+ 	local original: int = low($wregs(rd));
+        $wregs(rd)[7:0] = performSubtractionW(low(original),2,0);
+	if (original == 2)   N = 1;    //if original value of dest was 2, set N bit
+	};
+     };	
+
+    instruction "dint" {        //disable general interrupts
+        opcode = 0b1100;       //emulated by BIC operation
+	execute = {
+	  $wregs(r2)[7:0] = !(0b1000) and $wregs(r2);    //#8 is inverted and logically ANDed with SR
+	};
+    };
+    instruction "eint" {     //enable general interrupts
+	opcode = 0b1101;       //emulated by BIS operation
+	execute = {
+          $wregs(r2)[7:0] = 0b1000 or $wregs(r2);   //#8 and SR are logically ORed
+	};
+    };
+    instruction "inc" rd: dest {     //increment dest
+	opcode = 0b0101;      //emulated by ADD operation
+	execute = {
+	   $wregs(rd) = performAdditionW($wregs(rd), 1, 0);
+ 	};
+    };
+    instruction "inc.b" rd: dest {     //increment dest
+	opcode = 0b0101;      //emulated by ADD operation
+	execute = {
+	   $wregs(rd)[7:0] = performAddition(low($wregs(rd)), 1, 0);
+ 	};
+    };
+    instruction "incd" rd: dest {      //double increment dest
+	opcode = 0b0101;	    //emulated by ADD operation
+	execute = {
+ 	   $wregs(rd) = performAdditionW($wregs(rd), 2, 0);
+	};
+     };
+    instruction "incd.b" rd: dest {      //double increment dest
+	opcode = 0b0101;	    //emulated by ADD operation
+	execute = {
+ 	   $wregs(rd)[7:0] = performAddition(low($wregs(rd)), 2, 0);
+	};
+     };
+    instruction "inv" rd: dest  {       //invert dest
+	opcode = 0b1110;    //emulated by XOR operation
+	execute = {
+   	   local results: int = 0xFFFF xor $wregs(rd);
+	   N = results[15];             //set if neg.
+	   Z = (results == 0xFFFF);  //set if contains 0FFFFh
+	   C = !(results == 0);      //set if result not 0
+	   V = ($wregs(rd) < 0);     //set if original contents neg.    
+	   $wregs(rd) = results;	    
+	};
+      };
+    instruction "inv.b" rd: dest  {       //invert dest
+	opcode = 0b1110;    //emulated by XOR operation
+	execute = {
+   	   local results: int = 0xFF xor low($wregs(rd));
+	   N = results[7];             //set if neg.
+	   Z = (results == 0xFF);  //set if contains 0FFh
+	   C = !(results == 0);      //set if result not 0
+	   V = (low($wregs(rd)) < 0);     //set if original contents neg.    
+	   $wregs(rd)[7:0] = results;	    
+	};
+      };
+    instruction "jc" rd: offset  {      //jump if carry set
+	opcode = 0b00101100;
+	execute = {
+ 	   if (bit(C)) {
+              $wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if carry bit set, jump to address listed by 10 bit offset
+	   };   //if carry bit not set, continue onto next instruction
+        };
+     };
+    instruction "jhs" rd: offset  {      //jump if higher or same
+	opcode = 0b00101100;
+	execute = {
+ 	   if (bit(C)) {
+              $wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if carry bit set, jump to address listed by 10 bit offset
+	   };   //if carry bit not set, continue onto next instruction
+        };
+     };
+    instruction "jeq" rd: offset {      //jump if equal
+	opcode = 0b00100100;
+	execute = {
+	   if (bit(Z)) { 
+	      $wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if neg. bit set, jump to address listed by 10 bit offset
+           };    //if neg. bit not set, continue onto next instruction
+         };
+     };
+    instruction "jz" rd: offset {      //jump if zero
+	opcode = 0b00100100;
+	execute = {
+	   if (bit(Z)) { 
+	      $wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if neg. bit set, jump to address listed by 10 bit offset
+           };    //if neg. bit not set, continue onto next instruction
+         };
+     };
+    instruction "jge" rd: offset {   //jump if greater or equal
+	opcode = 0b001101000;
+	execute = {
+	   if (bit(Z) xor bit(N)) {
+              $wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if XOR of Z and N = 1, jump to address listed by 10 bit offset
+	   };   /if XOR of Z and N = 0, continue onto next instruction
+	};
+     };
+    instruction "jl" rd: offset {   //jump if less
+	opcode = 0b00111000;
+	execute = {
+ 	   if (bit(N) xor bit(Z)) {
+	      $wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+		        //if XOR of N and Z =1, jump to address listed by 10 bit offset
+	   };
+	};
+     };
+    instruction "jmp" rd: offset {  //jump unconditionally
+	opcode = 0b00111100;
+	execute = {
+	   $wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+	}; //jump to address listed by 10 bit offset, unconditionally
+     };
+    instruction "jn" rd: offset {   //jump if negative
+	opcode = 0b00110000;
+	execute = {
+	   if (bit(N)) {
+		$wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if N = 1, jump to address listed by 10 bit offset
+	   };
+        };
+    };
+    instruction "jnc" rd: offset {  //jump if carry not set
+	opcode = 0b00101000;
+	execute = {
+	   if (!bit(C)) {
+		$wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if C != 0, jump to address listed by 10 bit offset
+	   };
+        };
+     };
+    instruction "jlo" rd: offset {  //jump if carry not set
+	opcode = 0b00101000;
+	execute = {
+	   if (!bit(C)) {
+		$wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if C != 0, jump to address listed by 10 bit offset
+	   };
+        };
+     }; 
+    instruction "jne" rd: offset {  //jump if not equal
+	opcode = 0b00100000;
+	execute = {
+	   if (!bit(Z)) {
+		$wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if Z != 0, jump to address listed by 10 bit offset
+	   }; 
+	};
+     };
+    instruction "jnz" rd: offset {  //jump if not equal
+	opcode = 0b00100000;
+	execute = {
+	   if (!bit(Z)) {
+		$wregs(r0) = $wregs(r0) + (2 * $wregs(rd));
+			//if Z != 0, jump to address listed by 10 bit offset
+	   }; 
+	};
+     };
+    instruction "mov" rd: dest, rr: source {  //move source to dest
+	opcode = 0b0100;
+	execute = {
+ 	   $wregs(rd) = $wregs(rr);
+        };
+    };
+    instruction "mov.b" rd: dest, rr: source {  //move source to dest
+	opcode = 0b0100;
+	execute = {
+ 	   $wregs(rd)[7:0] = low($wregs(rr));
+        };
+    };
+    instruction "nop"  {   //no operation
+	opcode = 0b0100;     //emulated by MOV operation
+	execute = {
+ 	   $wregs(r3) = 0;  // MOV    #0, R3
+	};
+    };
+    instruction "pop" rd: dest  {  //pop word from stack to dest
+	opcode = 0b0100;   //emulated by MOV operation
+	execute = {
+	   local temp:int = $wregs($wregs(r1));   //move contents at SP to temp
+	   $wregs(r1) = $wregs(r1) + 2;        //increment SP by 2
+	   $wregs(rd) = temp;               //move temp to dest
+        };
+     };
+    instruction "pop.b" rd: dest  {  //pop byte from stack to dest
+	opcode = 0b0100;   //emulated by MOV operation
+	execute = {
+	   local temp:int = $wregs($wregs(r1));   //move contents at SP to temp
+	   $wregs(r1) = $wregs(r1) + 2;        //increment SP by 2
+	   $wregs(rd)[7:0] = low(temp);               //move temp to dest
+        };
+     };
+    instruction "push" rr: source {  //push word onto stack
+	opcode = 0b00010010;  
+	execute = { 
+           $wregs(r1) = $wregs(r1) - 2;       //decrement SP 2
+	   $wregs($wregs(r1)) = $wregs(rr);   //push source onto stack 
+        };
+     }; 
+    instruction "push.b" rr: source {  //push byte onto stack
+	opcode = 0b00010010;  
+	execute = { 
+           $wregs(r1) = $wregs(r1) - 2;       //decrement SP 2
+	   $wregs($wregs(r1))[7:0] = low($wregs(rr));   //push source onto stack 
+        };
+     }; 
+    instruction "ret"  {    //return from subroutine
+	opcode = 0b0100;
+	execute = {
+	    $wregs(r0) = $wregs($wregs(r1));    //move contents at addy of SP to PC
+	    $wregs(r1) = $wregs(r1) + 2;    //increment the SP by 2
+	};
+     };
+    instruction "reti" {    //return from interrupt 
+	opcode = 0b00010011;
+	execute = {
+	    $wregs(r2) = $wregs($wregs(r1));   //move contents at addy of SP to SR
+	    $wregs(r1) = $wregs(r1) + 2;    //increment SP by two
+	    $wregs(r0) = $wregs($wregs(r1));   //move contents at addy of SP to PC
+	    $wregs(r1) = $wregs(r1) + 2;    //increment SP by two again
+	};
+     };
+    instruction "rla" rd: dest {    //rotate left arithmetically
+	opcode = 0b0101;    //emulated by add instruction (add dst, dst)
+	execute = {
+	    local dest:int = $wregs(rd);
+	    C = dest[15];      //move MSB into carry
+	    V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
+	    dest = dest + dest;    //shifting left 1 position
+	    dest[15] = 0b0;      //move 0 into LSB
+	    N = dest[15];       //setting Neg. bit
+            Z = (dest == 0);     //set Z bit if equal to zero
+            $wregs(rd) = dest;   //move shifted result into destination
+        };
+     };
+    instruction "rla.b" rd: dest {    //rotate left arithmetically
+	opcode = 0b0101;    //emulated by add instruction (add dst, dst)
+	execute = {
+	    local dest:int = low($wregs(rd));
+	    C = dest[7];      //move MSB into carry
+	    V = (dest > 0x3F and dest < 0xC0);  //overflow if >= 40h and less than C0h
+	    dest = dest + dest;    //shifting left 1 position
+	    dest[7] = 0b0;      //move 0 into LSB
+	    N = dest[7];       //setting Neg. bit
+            Z = (dest == 0);     //set Z bit if equal to zero
+            $wregs(rd)[7:0] = dest;   //move shifted result into destination
+        };
+     };
+    instruction "rlc" rd: dest {    //rotate left through carry
+	opcode = 0b0110;    //emulated by addc instruction (addc dst, dst)
+	execute = {
+	    local dest:int = $wregs(rd);
+	    local tempC:int = bit(C);
+	    C = dest[15];      //move MSB into carry
+	    V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
+	    dest = dest + dest;    //shifting left 1 position
+	    dest[15] = tempC;      //move old value of C bit into LSB
+	    N = dest[15];       //setting Neg. bit
+            Z = (dest == 0);     //set Z bit if equal to zero
+            $wregs(rd) = dest;   //move shifted result into destination
+        };
+     };
+    instruction "rlc.b" rd: dest {    //rotate left through carry
+	opcode = 0b0110;    //emulated by addc instruction (addc dst, dst)
+	execute = {
+	    local dest:int = low($wregs(rd));
+	    local tempC:int = bit(C);
+	    C = dest[7];      //move MSB into carry
+	    V = (dest > 0x3F and dest < 0xC0);  //overflow if >= 40h and less than C0h
+	    dest = dest + dest;    //shifting left 1 position
+	    dest[7] = tempC;      //move old value of C bit into LSB
+	    N = dest[7];       //setting Neg. bit
+            Z = (dest == 0);     //set Z bit if equal to zero
+            $wregs(rd)[7:0] = dest;   //move shifted result into destination
+        };
+     };
+    instruction "rra" rd: dest  {     //rotate right arithmetically
+	opcode = 0b00010001;
+	execute = {
+ 	    local temp:int  = $wregs(rd);
+	    local temp2:int = $wregs(rd);
+	    temp = temp >> 1;         //shift 1 right ( i think)
+	    temp[15] = temp2[15];    //keep MSB in MSB
+   	    C = temp2[0];            //move LSB into Carry
+	    N = temp[15];             
+            Z = (temp == 0);
+	    V = 0;                    //reset overflow bit
+	    $wregs(rd) = temp;        //move results into dest.
+	};	  
+     };
+    instruction "rra.b" rd: dest  {     //rotate right arithmetically
+	opcode = 0b000100010100;
+	execute = {
+ 	    local temp:int  = low($wregs(rd));
+	    local temp2:int = low($wregs(rd));
+	    temp = temp >> 1;         //shift 1 right ( i think)
+	    temp[7] = temp2[7];    //keep MSB in MSB
+   	    C = temp2[0];            //move LSB into Carry
+	    N = temp[7];             
+            Z = (temp == 0);
+	    V = 0;                    //reset overflow bit
+	    $wregs(rd)[7:0] = temp;        //move results into dest.
+	};	  
+     };
+    instruction "rrc" rd :dest  {    //rotate right through carry
+	opcode = 0b00010000;
+	execute = { 
+           local temp: int = $wregs(rd);
+	   local temp2:int = $wregs(rd);
+	   local oldC:int = bit(C);
+	   temp = temp >> 1;      //shift 1 bit right
+	   temp[15] = oldC;       //move carry into MSB
+	   C = temp2[0];         //Carry loaded from original LSB
+	   N = temp[15];
+	   Z = (temp == 0);
+	   V = (temp2[15] == 0 and oldC == 1)  //set if inital dest pos. and inital carry was set 
+	   $wregs(rd) = temp;     //move results into dest.
+	};
+     };	   
+    instruction "rrc.b" rd :dest  {    //rotate right through carry
+	opcode = 0b000100000100;
+	execute = { 
+           local temp: int = low($wregs(rd));
+	   local temp2:int = low($wregs(rd));
+	   local oldC:int = bit(C);
+	   temp = temp >> 1;      //shift 1 bit right
+	   temp[7] = oldC;       //move carry into MSB
+	   C = temp2[0];         //Carry loaded from original LSB
+	   N = temp[7];
+	   Z = (temp == 0);
+	   V = (temp2[7] == 0 and oldC == 1)  //set if inital dest pos. and inital carry was set 
+	   $wregs(rd)[7:0] = temp;     //move results into dest.
+	};
+     };	   
+    instruction "sbc" rd: dest {    //subtract source and borrow/.NOT. carry from dest
+	opcode = 0b0111;      //emulated by SUBC instruction
+	execute = {
+	    local dest: int = $wregs(rd);
+	    local highbit:int = dest[15];
+	    dest = dest + 0xFFFF + bit(C);  //carry bit is added to dest minus one
+	    N = dest[15];
+	    Z = (dest == 0);
+ 	    C = ((highbit > dest[15]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry 
+	    V = (dest > 0xFFFF);   //set overflow if arithmetic overflow occurs
+	    $wregs(rd) = dest;    //move results into dest.
+	};
+     };
+    instruction "sbc.b" rd: dest {    //subtract source and borrow/.NOT. carry from dest
+	opcode = 0b0111;      //emulated by SUBC instruction
+	execute = {
+	    local dest: int = low($wregs(rd));
+	    local highbit:int = dest[7];
+	    dest = dest + 0xFF + bit(C);  //carry bit is added to dest minus one
+	    N = dest[7];
+	    Z = (dest == 0);
+ 	    C = ((highbit > dest[7]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry 
+	    V = (dest > 0xFF);   //set overflow if arithmetic overflow occurs
+	    $wregs(rd)[7:0] = dest;    //move results into dest.
+	};
+     };
+    instruction "setc"    {     //set carry bit
+	opcode = 0b1101;    //emulated by the BIS operation
+	execute = {
+	   $wregs(r2)[7:0] = low($wregs(r2)) or 0b0001;  //BIS #1, SR
+	};
+     };
+    instruction "setn"   {   //set Negative bit
+ 	opcode = 0b1101;   //emulated by the BIS operation
+	execute = {
+	   $wregs(r2)[7:0] = low($wregs(r2)) or 0b0100;  //BIS #4, SR
+	};
+      };
+    instruction "setz"  {   /set zero bit
+	opcode = 0b1101;   //emulated by the BIS operation
+	execute = { 
+	   $wregs(r2)[7:0] = low($wregs(r2)) or 0b0010;  //BIS #2, SR
+	};
+     };
+    instruction "sub" rd: dest, rr: source {   //subtract source from dest
+	opcode = 0b1000;     
+	execute = {
+	    local results:int = $wregs(rd) + !$wregs(rr) + 1; 
+
+            local Rd15: boolean = $wregs(rd)[15];
+            local Rr15: boolean = $wregs(rr)[15];
+            local R15:  boolean = results[15];
+            C = (!Rd15 and Rr15) or (Rr15 and R15) or (R15 and !Rd15);
+            N = R15;
+            Z = result == 0;
+            V = (Rd15 and !Rr15 and !R15) or (!Rd15 and Rr15 and R15);
+            $wregs(rd) = results;    //move results into register destination	
+	};
+     };	
+    instruction "sub.b" rd: dest, rr: source {   //subtract source from dest
+	opcode = 0b1000;     
+	execute = {
+	    local results:int = low($wregs(rd)) + !low($wregs(rr)) + 1; 
+
+            local Rd7: boolean = $wregs(rd)[7];
+            local Rr7: boolean = $wregs(rr)[7];
+            local R7:  boolean = results[7];
+            C = (!Rd7 and Rr7) or (Rr7 and R7) or (R7 and !Rd7);
+            N = R7;
+            Z = result == 0;
+            V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
+            $wregs(rd)[7:0] = results;    //move results into register destination	
+	};
+     };
+    instruction "subc"  rd: dest, rr: source  {    //sub source and borrow/.NOT. carry from dest
+	opcode = 0b0111;
+	execute = { 
+	   local results:int = $wregs(rd) + !$wregs(rr) + bit(C);
+           local Rd15: boolean = $wregs(rd)[15];
+           local Rr15: boolean = $wregs(rr)[15];
+           local R15:  boolean = results[15];
+            C = (!Rd15 and Rr15) or (Rr15 and R15) or (R15 and !Rd15);
+            N = R15;
+            Z = result == 0;
+            V = (Rd15 and !Rr15 and !R15) or (!Rd15 and Rr15 and R15);
+            $wregs(rd) = results;    //move results into register destination	
+	};
+     };
+    instruction "subc.b"  rd: dest, rr: source  {    //sub source and borrow/.NOT. carry from dest
+	opcode = 0b0111;
+	execute = { 
+	   local results:int = low($wregs(rd)) + !low($wregs(rr)) + bit(C);
+           local Rd7: boolean = $wregs(rd)[7];
+           local Rr7: boolean = $wregs(rr)[7];
+           local R7:  boolean = results[7];
+            C = (!Rd7 and Rr7) or (Rr7 and R7) or (R7 and !Rd7);
+            N = R7;
+            Z = result == 0;
+            V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
+            $wregs(rd)[7:0] = results;    //move results into register destination	
+ 	};
+     };
+    instruction "sbb"  rd: dest, rr: source  {    //sub source and borrow/.NOT. carry from dest
+	opcode = 0b0111;                         //same operation as SUBC, different syntax
+	execute = { 
+	   local results:int = $wregs(rd) + !$wregs(rr) + bit(C);
+           local Rd15: boolean = $wregs(rd)[15];
+           local Rr15: boolean = $wregs(rr)[15];
+           local R15:  boolean = results[15];
+            C = (!Rd15 and Rr15) or (Rr15 and R15) or (R15 and !Rd15);
+            N = R15;
+            Z = result == 0;
+            V = (Rd15 and !Rr15 and !R15) or (!Rd15 and Rr15 and R15);
+            $wregs(rd) = results;    //move results into register destination	
+	};
+     };
+    instruction "sbb.b"  rd: dest, rr: source  {    //sub source and borrow/.NOT. carry from dest
+	opcode = 0b0111;                            //same operation as SUBC, different syntax
+	execute = { 
+	   local results:int = low($wregs(rd)) + !low($wregs(rr)) + bit(C);
+           local Rd7: boolean = $wregs(rd)[7];
+           local Rr7: boolean = $wregs(rr)[7];
+           local R7:  boolean = results[7];
+            C = (!Rd7 and Rr7) or (Rr7 and R7) or (R7 and !Rd7);
+            N = R7;
+            Z = result == 0;
+            V = (Rd7 and !Rr7 and !R7) or (!Rd7 and Rr7 and R7);
+            $wregs(rd)[7:0] = results;    //move results into register destination	
+ 	};
+     };
+    instruction "swpb"  rd: dest    {   //swap bytes
+	opcode = 0b000100001000;
+	execute = {
+ 	   local temp1: int = $wregs(rd);   //contains original
+	   local temp2: int = $wregs(rd);   //eventually contains swaped bytes
+	   temp2[15:8] = temp1[7:0];
+	   temp2[7:0] = temp1[15:8]; 
+	   $wregs(rd) = temp2;     //moved swaped bytes into dest register
+         };
+    };
+    instruction "sxt"  rd: dest    {  //extend sign
+	opcode = 0b000100011000;
+	execute = {
+	   local r1: int = $wregs(rd);
+	   local high: int = r1[7];
+	   r1[15:8] = high;
+	   N = r1[15];     //set if result is negative
+ 	   Z = (r1 == 0);  //set if result is zero
+	   C = !Z;      //set if result not zero
+	   V = 0;       //reset	
+	   $wregs(rd) = r1;
+	};
+    };
+    instruction "tst"  rd: dest   {  //test destination
+	opcode = 0b1001;
+	execute = {
+	   local r1: int = $wregs(rd);
+	   N = r1[15];       //if dest is negative, set
+	   Z = (r1 == 0);   //if dest contains 0, set
+	   C = 1;   //set carry
+ 	   V = 0;   //reset overflow	
+	};
+    };
+    instruction "tst.b"  rd: dest   {  //test destination
+	opcode = 0b1001;
+	execute = {
+	   local r1: int = low($wregs(rd));
+	   N = r1[7];       //if dest is negative, set
+	   Z = (r1 == 0);   //if dest contains 0, set
+	   C = 1;   //set carry
+ 	   V = 0;   //reset overflow	
+	};
+    };
+    instruction "xor" rd: dest  rr:source {  //Exclusive OR of source with dest
+	opcode = 1110;
+	execute = {
+	   local dest: int = $wregs(rd);
+	   local source: int = $wregs(rr);
+	   dest = dest xor source;	
+	   N = dest[15];
+	   Z = (dest == 0);
+           C = !Z;
+	   V = ((source < 0) and (dest < 0));
+	   $wregs(rd) = dest;
+	};
+    };
+    instruction "xor.b" rd: dest  rr:source {  //Exclusive OR of source with dest
+	opcode = 1110;
+	execute = {
+	   local dest: int = low($wregs(rd));
+	   local source: int = low($wregs(rr));
+	   dest = dest xor source;	
+	   N = dest[7];
+	   Z = (dest == 0);
+           C = !Z;
+	   V = ((source < 0) and (dest < 0));
+	   $wregs(rd)[7:0] = dest;
+	};
+    };
+
+}
