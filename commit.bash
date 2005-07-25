@@ -130,8 +130,4 @@ cp -r $CLASSBIN/* $OLDCLASSPATH/  &> /tmp/commit.log
 
 checkSuccess 'Copy completed successfully.' 'There were errors copying the classes.' 'assembleCompileErrors'
 
-echo Changing ownership of /project/cvs/pub to allow anonymous access...
-chown -R pubcvs /project/pub/cvs/avrora &> /tmp/commit.log
-checkSuccess 'Ownership changed successfully' 'There were errors changing ownership' 'assembleCompileErrors'
-
 rm -f /tmp/oldVersion.java
