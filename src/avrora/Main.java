@@ -123,7 +123,7 @@ public class Main {
                 runAction();
             }
 
-        } catch (Avrora.Error e) {
+        } catch (Util.Error e) {
             // report any internal Avrora errors
             e.report();
         } catch (Exception e) {
@@ -137,7 +137,7 @@ public class Main {
 
         Action a = Defaults.getAction(ACTION.get());
         if (a == null)
-            Avrora.userError("Unknown Action", StringUtil.quote(ACTION.get()));
+            Util.userError("Unknown Action", StringUtil.quote(ACTION.get()));
 
         a.options.process(mainOptions);
         a.run(mainOptions.getArguments());
@@ -204,7 +204,7 @@ public class Main {
         } else if (args.length == 1) {
             printHelp(args[0]);
         } else {
-            Avrora.userError("help available for only one category at a time.");
+            Util.userError("help available for only one category at a time.");
         }
 
         printFooter();
@@ -370,7 +370,7 @@ public class Main {
     public static void checkFileExists(String fstr) {
         File f = new File(fstr);
         if ( !f.exists() ) {
-            Avrora.userError("File not found", fstr);
+            Util.userError("File not found", fstr);
             return;
         }
     }

@@ -32,7 +32,8 @@
 
 package avrora.sim;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.core.*;
 import avrora.sim.util.MulticastProbe;
 
@@ -132,7 +133,7 @@ public class CodeSegment extends Segment {
      * flash memory types.
      */
     public void update() {
-        throw Avrora.failure("Update of flash memory not supported for this segment");
+        throw Util.failure("Update of flash memory not supported for this segment");
     }
 
     public Instr[] shareCode(CodeSharer s) {
@@ -294,7 +295,7 @@ public class CodeSegment extends Segment {
         }
 
         public Instr build(int address, Operand[] ops) {
-            throw Avrora.failure("ProbedInstr should be confined to BaseInterpreter");
+            throw Util.failure("ProbedInstr should be confined to BaseInterpreter");
         }
 
         public String getOperands() {
@@ -322,7 +323,7 @@ public class CodeSegment extends Segment {
          * @return a string representing the operands of the instruction
          */
         public String getOperands() {
-            throw Avrora.failure("no instruction here");
+            throw Util.failure("no instruction here");
         }
 
         /**
@@ -345,7 +346,7 @@ public class CodeSegment extends Segment {
          * @return a new <code>Instr</code> instance representing the instruction with the given operands
          */
         public Instr build(int pc, Operand[] ops) {
-            throw Avrora.failure("no instruction here");
+            throw Util.failure("no instruction here");
         }
 
         public Instr asInstr() {
@@ -371,7 +372,7 @@ public class CodeSegment extends Segment {
          * @return a string representing the operands of the instruction
          */
         public String getOperands() {
-            throw Avrora.failure("no instruction here");
+            throw Util.failure("no instruction here");
         }
 
         /**
@@ -394,7 +395,7 @@ public class CodeSegment extends Segment {
          * @return a new <code>Instr</code> instance representing the instruction with the given operands
          */
         public Instr build(int pc, Operand[] ops) {
-            throw Avrora.failure("no instruction here");
+            throw Util.failure("no instruction here");
         }
 
         public Instr asInstr() {

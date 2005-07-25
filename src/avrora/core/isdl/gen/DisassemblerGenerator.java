@@ -32,13 +32,10 @@
 
 package avrora.core.isdl.gen;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.isdl.*;
 import avrora.core.isdl.ast.*;
-import avrora.util.Arithmetic;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Verbose;
+import avrora.util.*;
 
 import java.util.*;
 
@@ -86,9 +83,9 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
         public void visit(BitExpr bre) {
             if ( !bre.expr.isVariable() ) {
-                throw Avrora.failure("bit range use not invertible: value is not a variable or constant");
+                throw Util.failure("bit range use not invertible: value is not a variable or constant");
             } else if ( !bre.bit.isLiteral() ) {
-                throw Avrora.failure("bit range use not invertible: bit is not a constant");
+                throw Util.failure("bit range use not invertible: bit is not a constant");
             }
             VarExpr ve = (VarExpr)bre.expr;
             int bit = ((Literal.IntExpr)bre.bit).value;
@@ -106,7 +103,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                     printer.println(" << "+bre.low_bit+";");
                 else printer.println(";");
             } else {
-                throw Avrora.failure("bit range use not invertible");
+                throw Util.failure("bit range use not invertible");
             }
         }
 
@@ -122,7 +119,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
         public void error(Expr e) {
             // this method is called when the expression does not match any of the overridden methods
-            throw Avrora.failure("expression not invertible");
+            throw Util.failure("expression not invertible");
         }
     }
 
@@ -310,7 +307,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 if ( lb >= ei.bitStates.length ) {
                     // there are no concrete bits in this encoding!
                     // It cannot be disambiguated from the other members of the set!
-                    throw Avrora.failure("cannot disambiguate "+ei.instr.name.toString()+" at depth "+depth);
+                    throw Util.failure("cannot disambiguate "+ei.instr.name.toString()+" at depth "+depth);
                 }
 
                 int rb = scanForRightBit(lb, ei);
@@ -318,7 +315,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 if ( lb > rb ) {
                     // there is no common bit among all of the instructions of this set!
                     // there is an ambiguity that needs to be resolved.
-                    throw Avrora.failure("cannot disambiguate at depth "+depth);
+                    throw Util.failure("cannot disambiguate at depth "+depth);
                 }
 
                 left_bit = lb;
@@ -372,7 +369,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                             ei.bitStates[cntr] = ENC_USED_ONE;
                             break;
                         default:
-                            throw Avrora.failure("invalid bit state at "+cntr+" in "+ei.instr.name);
+                            throw Util.failure("invalid bit state at "+cntr+" in "+ei.instr.name);
                     }
                 }
 
@@ -682,7 +679,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             while ( i.hasNext() ) {
                 OperandDecl.RegisterEncoding re = (OperandDecl.RegisterEncoding)i.next();
                 if ( register[re.value] != null )
-                    throw Avrora.failure("AMBIGUOUS REGISTER SET ENCODING");
+                    throw Util.failure("AMBIGUOUS REGISTER SET ENCODING");
                 register[re.value] = re.name.toString();
             }
 

@@ -32,7 +32,7 @@
 
 package avrora.sim;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.sim.util.MulticastWatch;
 import avrora.util.StringUtil;
 
@@ -111,7 +111,7 @@ public class Segment {
      * methods making accesses out of bounds; in that case, the <code>ErrorReporter</code>
      * object is consulted.
      */
-    public class AddressOutOfBoundsException extends Avrora.Error {
+    public class AddressOutOfBoundsException extends Util.Error {
         public final int data_addr;
 
         protected AddressOutOfBoundsException(int da) {

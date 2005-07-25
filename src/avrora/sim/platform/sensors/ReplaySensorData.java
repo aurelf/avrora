@@ -32,8 +32,9 @@
 
 package avrora.sim.platform.sensors;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
+import avrora.util.Util;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.sim.mcu.Microcontroller;
@@ -73,7 +74,7 @@ public class ReplaySensorData implements SensorData {
         int tt = st.nextToken();
         if ( tt == StreamTokenizer.TT_EOF ) return;
         if ( tt != StreamTokenizer.TT_NUMBER )
-            throw Avrora.failure("sensor data format error: expected number as sensor reading");
+            throw Util.failure("sensor data format error: expected number as sensor reading");
         currentReading = ((int)st.nval) & 0x3ff;
     }
 
@@ -83,7 +84,7 @@ public class ReplaySensorData implements SensorData {
                 getNextReading();
                 scheduleNextChange();
             } catch (IOException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
         }
     }
@@ -92,7 +93,7 @@ public class ReplaySensorData implements SensorData {
         int tt = st.nextToken();
         if ( tt == StreamTokenizer.TT_EOF ) return;
         if ( tt != StreamTokenizer.TT_NUMBER )
-            throw Avrora.failure("sensor data format error: expected number as time value");
+            throw Util.failure("sensor data format error: expected number as time value");
         clock.insertEvent(change, (long)(st.nval * clock.getHZ()));
     }
 

@@ -32,7 +32,8 @@
 
 package avrora.util.profiling;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 
 import java.util.Arrays;
 
@@ -167,7 +168,7 @@ public class TimedMeasurements {
      */
     public void add(long time, int nm) {
         if ( currentTime > time ) {
-            throw Avrora.failure("Timed measurements must be inserted in order");
+            throw Util.failure("Timed measurements must be inserted in order");
         }
 
         recordMinMax(nm);

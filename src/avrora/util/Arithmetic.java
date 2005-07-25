@@ -32,7 +32,6 @@
 
 package avrora.util;
 
-import avrora.Avrora;
 
 /**
  * The <code>Arithmetic</code> class implements a set of useful methods that are used by the simulator and
@@ -232,7 +231,7 @@ public class Arithmetic {
         long accum = 0;
         int radix = 1;
         if ( vals.length -1 != denom.length ) {
-            throw Avrora.failure("Expected value array of length 1 greater than denom");
+            throw Util.failure("Expected value array of length 1 greater than denom");
         }
         for ( int cntr = 0; cntr < vals.length-1; cntr++ ) {
             accum += vals[cntr] * radix;
@@ -244,7 +243,7 @@ public class Arithmetic {
 
     public static void inc(long[] vals, int[] denom, int pos) {
         if ( vals.length -1 != denom.length ) {
-            throw Avrora.failure("Expected value array of length 1 greater than denom");
+            throw Util.failure("Expected value array of length 1 greater than denom");
         }
 
         for ( int cntr = pos; cntr < vals.length; cntr++ ) {

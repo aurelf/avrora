@@ -32,8 +32,9 @@
 
 package avrora.core;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -330,7 +331,7 @@ public class Program {
      *
      * @param i       the instruction to write
      * @param address the byte address to write the instruction to that must be aligned on a 2-byte boundary.
-     * @throws Avrora.InternalError if the address is not within the limits put on the program instance when
+     * @throws Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
     public void writeInstr(Instr i, int address) {
@@ -353,7 +354,7 @@ public class Program {
      * @return the <code>Instr</code> instance at that address if that address is valid code from creation of
      *         the <code>Program</code> instance; null if the instruction is misaligned or only raw data is
      *         present at that location.
-     * @throws Avrora.InternalError if the address is not within the limits put on the program instance when
+     * @throws Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
     public Instr readInstr(int address) {
@@ -492,12 +493,12 @@ public class Program {
      * throws an error if the address is not within the bounds.
      *
      * @param addr the byte address to check
-     * @throws Avrora.InternalError if the address is not within the limits of the program segment
+     * @throws Util.InternalError if the address is not within the limits of the program segment
      */
     protected void checkAddress(int addr) {
         // TODO: throw correct error type
         if (addr < program_start || addr >= program_end)
-            throw Avrora.failure("address out of range: " + StringUtil.addrToString(addr));
+            throw Util.failure("address out of range: " + StringUtil.addrToString(addr));
     }
 
     /**
@@ -512,7 +513,7 @@ public class Program {
     public int getNextPC(int pc) {
         // TODO: better error checking
         if (pc > program_end)
-            throw Avrora.failure("no next PC after: " + StringUtil.addrToString(pc));
+            throw Util.failure("no next PC after: " + StringUtil.addrToString(pc));
         Instr i = readInstr(pc);
         if (i == null) return pc + 2;
         return pc + i.getSize();

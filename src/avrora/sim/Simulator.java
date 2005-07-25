@@ -32,7 +32,7 @@
 
 package avrora.sim;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.actions.SimAction;
 import avrora.core.Instr;
 import avrora.core.Program;
@@ -90,7 +90,7 @@ public class Simulator {
                     Terminal.println(buf.toString());
                 }
             } else {
-                throw Avrora.failure("Disabled printer: performance bug!");
+                throw Util.failure("Disabled printer: performance bug!");
             }
         }
     }

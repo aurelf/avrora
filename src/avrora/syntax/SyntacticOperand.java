@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Operand;
 
 /**
@@ -95,7 +95,7 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
 
         public avrora.core.Register getRegister() {
             // sanity check to avoid possibly hard to find bugs in the future
-            if (!simplified) throw Avrora.failure("register operand not yet simplified: " + name);
+            if (!simplified) throw Util.failure("register operand not yet simplified: " + name);
             return register;
         }
 
@@ -134,12 +134,12 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
 
         public int getValue() {
             // sanity check to avoid possibly hard to find bugs in the future
-            if (!simplified) throw Avrora.failure("expression operand not yet simplified: " + expr);
+            if (!simplified) throw Util.failure("expression operand not yet simplified: " + expr);
             return value;
         }
 
         public int getValueAsWord() {
-            if (!simplified) throw Avrora.failure("expression operand not yet simplified: " + expr);
+            if (!simplified) throw Util.failure("expression operand not yet simplified: " + expr);
             if (!useByteAddress) // already using a word address for this.
                 return value;
             else {

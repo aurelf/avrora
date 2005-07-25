@@ -36,7 +36,7 @@
 
 package avrora.monitors;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.actions.SimAction;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
@@ -85,7 +85,7 @@ public class InteractiveMonitor extends MonitorFactory {
             while ( i.hasNext() ) {
                 String str = (String)i.next();
                 SourceMapping.Location l = sm.getLocation(str);
-                if ( l == null ) Avrora.userError("Label not found", str);
+                if ( l == null ) Util.userError("Label not found", str);
                 simulator.insertProbe(new BreakPointProbe(), l.address);
             }
         }

@@ -31,8 +31,6 @@
  */
 package avrora.util;
 
-import avrora.Avrora;
-
 import java.util.Stack;
 
 /**
@@ -151,7 +149,7 @@ public class Status {
      * the last <code>begin()</code> call, and then reports the exception.
      * @param e an Avrora error that was caught since the last begin()
      */
-    public static void error(Avrora.Error e) {
+    public static void error(Util.Error e) {
         if ( !ENABLED ) return;
         print(Terminal.COLOR_RED, "ERROR");
     }

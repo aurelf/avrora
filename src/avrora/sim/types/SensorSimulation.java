@@ -32,7 +32,7 @@
 
 package avrora.sim.types;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
 import avrora.core.LoadableProgram;
 import avrora.core.Program;
@@ -50,10 +50,7 @@ import avrora.sim.radio.RadioAir;
 import avrora.sim.radio.SimpleAir;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.sim.radio.freespace.Topology;
-import avrora.util.Arithmetic;
-import avrora.util.Option;
-import avrora.util.Options;
-import avrora.util.StringUtil;
+import avrora.util.*;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -126,11 +123,11 @@ public class SensorSimulation extends Simulation {
             try {
                 Sensor s = (Sensor)p.getDevice(sensor+"-sensor");
                 if ( s == null )
-                    Avrora.userError("Sensor device does not exist", sensor);
+                    Util.userError("Sensor device does not exist", sensor);
                 if ( ".".equals(fname) ) s.setSensorData(new RandomSensorData(getRandom()));
                 else s.setSensorData(new ReplaySensorData(p.getMicrocontroller(), fname));
             } catch ( IOException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
         }
     }
@@ -247,7 +244,7 @@ public class SensorSimulation extends Simulation {
         processMonitorList();
 
         if ( args.length == 0 )
-            Avrora.userError("Simulation error", "No program specified");
+            Util.userError("Simulation error", "No program specified");
         Main.checkFilesExist(args);
         PlatformFactory pf = getPlatform();
 
@@ -272,7 +269,7 @@ public class SensorSimulation extends Simulation {
             // we need to build a new air model
             setAir(getRadioAir());
         } catch ( IOException e ) {
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
         super.instantiateNodes();
     }
@@ -305,12 +302,12 @@ public class SensorSimulation extends Simulation {
             String str = (String)i.next();
             int ind = str.indexOf(':');
             if ( ind <= 0 )
-                Avrora.userError("Sensor data format error", str);
+                Util.userError("Sensor data format error", str);
             String sensor = str.substring(0, ind);
             String rest = str.substring(ind+1);
             int ind2 = rest.indexOf(':');
             if ( ind2 <= 0 )
-                Avrora.userError("Sensor data format error", str);
+                Util.userError("Sensor data format error", str);
             String id = rest.substring(0, ind2);
             String file = rest.substring(ind2+1);
 

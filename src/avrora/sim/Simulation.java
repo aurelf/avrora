@@ -32,7 +32,7 @@
 
 package avrora.sim;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Defaults;
 import avrora.core.LoadableProgram;
 import avrora.monitors.MonitorFactory;
@@ -44,6 +44,7 @@ import avrora.sim.platform.PlatformFactory;
 import avrora.sim.util.InterruptScheduler;
 import avrora.util.Option;
 import avrora.util.Options;
+import avrora.util.Util;
 import avrora.util.help.HelpCategory;
 
 import java.util.*;
@@ -422,7 +423,7 @@ public abstract class Simulation extends HelpCategory {
      */
     public synchronized void resume() {
         if ( !running ) return;
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -454,7 +455,7 @@ public abstract class Simulation extends HelpCategory {
      */
     public synchronized void stopNode(int id) {
         if ( !running ) return;
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -503,7 +504,7 @@ public abstract class Simulation extends HelpCategory {
         }
 
         public void remove() {
-            throw Avrora.unimplemented();
+            throw Util.unimplemented();
         }
     }
 
@@ -528,7 +529,7 @@ public abstract class Simulation extends HelpCategory {
             long exthz = EXTCLOCKSPEED.get();
             if ( exthz == 0 ) exthz = hz;
             if ( exthz > hz )
-                Avrora.userError("External clock is greater than main clock speed", exthz+"hz");
+                Util.userError("External clock is greater than main clock speed", exthz+"hz");
             MicrocontrollerFactory mcf = Defaults.getMicrocontroller(MCU.get());
             return new DefaultPlatform.Factory(hz, exthz, mcf);
         } else {

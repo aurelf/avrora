@@ -36,7 +36,8 @@
 
 package avrora.sim.radio.freespace;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -95,7 +96,7 @@ public class Topology {
                     }
                     count++;
                 } catch (NoSuchElementException e) {
-                    throw Avrora.failure("Error reading topology tokens");
+                    throw Util.failure("Error reading topology tokens");
                 }
             }
             if (count == 4) {

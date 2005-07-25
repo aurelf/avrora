@@ -32,7 +32,7 @@
 
 package avrora.core;
 
-import avrora.Avrora;
+import avrora.util.Util;
 
 import java.util.*;
 
@@ -342,7 +342,7 @@ public class ControlFlowGraph {
      *         block exists; null otherwise
      */
     public Block getBlockContaining(int address) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**

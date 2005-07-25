@@ -32,13 +32,14 @@
 
 package avrora.core.isdl.gen;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.isdl.*;
 import avrora.core.isdl.ast.*;
 import avrora.core.isdl.parser.Token;
 import avrora.util.Arithmetic;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -110,7 +111,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
                 if (l != 0) printer.print(" << " + l);
                 printer.println(");");
             } else {
-                throw Avrora.failure("non-constant expr into map in bit-range assignment");
+                throw Util.failure("non-constant expr into map in bit-range assignment");
             }
         }
     }
@@ -176,7 +177,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
                 if (l != 0) printer.print(" << " + l);
                 printer.println(");");
             } else {
-                throw Avrora.failure("non-constant expr into map in bit-range assignment");
+                throw Util.failure("non-constant expr into map in bit-range assignment");
             }
         }
     }
@@ -301,7 +302,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     protected MapRep getMapRep(String n) {
         MapRep mr = (MapRep)mapMap.get(n);
         if (mr == null)
-            throw Avrora.failure("unknown map " + StringUtil.quote(n));
+            throw Util.failure("unknown map " + StringUtil.quote(n));
         return mr;
     }
 

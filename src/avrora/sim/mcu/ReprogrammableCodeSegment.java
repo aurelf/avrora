@@ -32,7 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.*;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.CodeSegment;
@@ -41,6 +41,7 @@ import avrora.sim.Simulator;
 import avrora.sim.clock.MainClock;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 /**
  * The <code>ReprogrammableCodeSegment</code> class represents a flash segment that stores code. This segment
@@ -402,16 +403,16 @@ public class ReprogrammableCodeSegment extends CodeSegment {
                 replaceInstr(address, i);
                 i.accept(v);
             } catch (Disassembler.InvalidInstruction e) {
-                throw Avrora.failure("invalid instruction at "+StringUtil.addrToString(address));
+                throw Util.failure("invalid instruction at "+StringUtil.addrToString(address));
             }
         }
 
         public Instr build(int address, Operand[] ops) {
-            throw Avrora.failure("DisassembleInstr should be confined to BaseInterpreter");
+            throw Util.failure("DisassembleInstr should be confined to BaseInterpreter");
         }
 
         public String getOperands() {
-            throw Avrora.failure("DisassembleInstr has no operands");
+            throw Util.failure("DisassembleInstr has no operands");
         }
 
         public Instr asInstr() {

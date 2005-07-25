@@ -32,7 +32,8 @@
 
 package avrora.syntax;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.core.InstrPrototype;
 
 /**
@@ -132,7 +133,7 @@ public abstract class Item {
 
             // TODO: define correct error for this
             if ((byteAddress & 0x1) == 0x1)
-                throw Avrora.failure("misaligned instruction");
+                throw Util.failure("misaligned instruction");
 
             for (int cntr = 0; cntr < operands.length; cntr++)
                 operands[cntr].simplify(byteAddress + proto.getSize(), module);

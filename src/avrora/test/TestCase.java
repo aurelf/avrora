@@ -32,9 +32,10 @@
 
 package avrora.test;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.syntax.SimplifierError;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.Properties;
 
@@ -66,8 +67,8 @@ public abstract class TestCase {
             return new TestResult.TestSuccess();
 
         // internal error encountered.
-        if (t instanceof Avrora.InternalError)
-            return new TestResult.InternalError((Avrora.InternalError)t);
+        if (t instanceof Util.InternalError)
+            return new TestResult.InternalError((Util.InternalError)t);
 
         // default: unexpected exception
         return new TestResult.UnexpectedException(t);

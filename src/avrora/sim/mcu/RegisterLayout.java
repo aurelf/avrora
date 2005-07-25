@@ -32,8 +32,9 @@
 
 package avrora.sim.mcu;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
@@ -149,7 +150,7 @@ public class RegisterLayout {
      */
     public void addIOReg(String n, int ior_num) {
         if ( ior_num >= ioreg_size )
-            throw new Avrora.Error("Layout Error", "invalid register address "+ior_num+" for register "+ StringUtil.quote(n));
+            throw new Util.Error("Layout Error", "invalid register address "+ior_num+" for register "+ StringUtil.quote(n));
         RegisterInfo i = new RegisterInfo(n, ior_num);
         info[ior_num] = i;
         ioregAssignments.put(n, i);
@@ -168,7 +169,7 @@ public class RegisterLayout {
      */
     public void addIOReg(String n, int ior_num, String format) {
         if ( ior_num >= ioreg_size )
-            throw new Avrora.Error("Layout Error", "invalid register address "+ior_num+" for register "+ StringUtil.quote(n));
+            throw new Util.Error("Layout Error", "invalid register address "+ior_num+" for register "+ StringUtil.quote(n));
         RegisterInfo i = new RegisterInfo(n, ior_num);
         i.subfields = parseSubFields(n, ior_num, format);
         info[ior_num] = i;
@@ -232,7 +233,7 @@ public class RegisterLayout {
 
         // check that there are exactly 8 bits
         if ( totalbits != ioreg_length ) {
-            throw new Avrora.Error("Layout Error", "expected "+ioreg_length+" bits, found: "+totalbits+" in "+StringUtil.quote(name));
+            throw new Util.Error("Layout Error", "expected "+ioreg_length+" bits, found: "+totalbits+" in "+StringUtil.quote(name));
         }
 
         // resize the array to be smaller

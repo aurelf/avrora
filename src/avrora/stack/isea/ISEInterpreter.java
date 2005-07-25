@@ -32,7 +32,7 @@
 
 package avrora.stack.isea;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Instr;
 import avrora.core.InstrVisitor;
 import avrora.core.Program;
@@ -513,11 +513,11 @@ public class ISEInterpreter implements InstrVisitor {
     }
 
     public void visit(Instr.EICALL i) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     public void visit(Instr.EIJMP i) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     public void visit(Instr.ELPM i) {
@@ -565,7 +565,7 @@ public class ISEInterpreter implements InstrVisitor {
     public void visit(Instr.ICALL i) {
         java.util.List iedges = program.getIndirectEdges(pc);
         if (iedges == null)
-            throw Avrora.failure("No control flow information for indirect call at: " +
+            throw Util.failure("No control flow information for indirect call at: " +
                     StringUtil.addrToString(pc));
         Iterator it = iedges.iterator();
         while (it.hasNext()) {
@@ -580,7 +580,7 @@ public class ISEInterpreter implements InstrVisitor {
     public void visit(Instr.IJMP i) {
         java.util.List iedges = program.getIndirectEdges(pc);
         if (iedges == null)
-            throw Avrora.failure("No control flow information for indirect call at: " +
+            throw Util.failure("No control flow information for indirect call at: " +
                     StringUtil.addrToString(pc));
         Iterator it = iedges.iterator();
         while (it.hasNext()) {

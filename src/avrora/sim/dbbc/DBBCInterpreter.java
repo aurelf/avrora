@@ -32,7 +32,8 @@
 
 package avrora.sim.dbbc;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.core.*;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.GenInterpreter;
@@ -116,7 +117,7 @@ public class DBBCInterpreter extends GenInterpreter {
             compileProgram();
         } catch (Exception e) {
             e.printStackTrace();
-            throw Avrora.failure("cannot compile program: " + e.toString());
+            throw Util.failure("cannot compile program: " + e.toString());
         }
     }
 
@@ -128,7 +129,7 @@ public class DBBCInterpreter extends GenInterpreter {
             int addr = b.getAddress();
             DBBC.CompiledBlock cb = compiler.getCompiledBlock(addr);
             if (cb != null) {
-                throw Avrora.unimplemented();
+                throw Util.unimplemented();
                 //flash_instr[addr] = new CompiledBlockBeginInstr(flash_instr[addr], addr, cb, this);
             }
         }

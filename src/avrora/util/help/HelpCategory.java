@@ -32,11 +32,8 @@
 
 package avrora.util.help;
 
-import avrora.Avrora;
-import avrora.util.Option;
-import avrora.util.Options;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
+import avrora.util.Util;
+import avrora.util.*;
 
 import java.util.*;
 
@@ -239,7 +236,7 @@ public class HelpCategory implements HelpItem {
      * @param command the command line example to add
      */
     public void addCommandExample(String prefix, String command) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**

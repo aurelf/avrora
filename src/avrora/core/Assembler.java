@@ -32,7 +32,8 @@
 
 package avrora.core;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 
 /**
  * The <code>Assembler</code> class represents an assembler that is capable of
@@ -54,6 +55,6 @@ public class Assembler {
      * size of the instruction
      */
     public int encode(Instr i, byte[] buffer, int offset) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 }

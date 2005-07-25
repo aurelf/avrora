@@ -32,7 +32,7 @@
 
 package avrora.gui;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Defaults;
 import avrora.core.LoadableProgram;
 import avrora.sim.Simulation;
@@ -454,7 +454,7 @@ public class ManageSimInput {
             pp.load();
         } catch ( Exception e ) {
             // TODO: display exception loading file
-            throw Avrora.failure(e.toString());
+            throw Util.failure(e.toString());
         }
         PlatformFactory pf = Defaults.getPlatform("mica2");
         Simulation s = AvroraGui.instance.getSimulation();

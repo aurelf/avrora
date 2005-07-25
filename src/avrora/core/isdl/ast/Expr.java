@@ -32,9 +32,10 @@
 
 package avrora.core.isdl.ast;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 /**
  * The <code>Expr</code> class represents an expression in the IR. Expressions are evaluated and produce a
@@ -116,7 +117,7 @@ public abstract class Expr {
      * @return the number of bits that this expression occupies
      */
     public int getBitWidth() {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**

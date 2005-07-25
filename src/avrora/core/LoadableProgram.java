@@ -32,7 +32,7 @@
 
 package avrora.core;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
 
 import java.io.File;
@@ -77,7 +77,7 @@ public class LoadableProgram {
      */
     public Program getProgram() {
         if ( program == null )
-            throw Avrora.failure("Program "+file+" must be loaded before use");
+            throw Util.failure("Program "+file+" must be loaded before use");
         return program;
     }
 

@@ -32,7 +32,7 @@
 
 package avrora.stack;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.core.Register;
@@ -210,7 +210,7 @@ public class Analyzer {
                     cntr++;
                 }
             } catch (InterruptedException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
         }
 
@@ -747,7 +747,7 @@ public class Analyzer {
             int callsite = s.pc;
             List iedges = program.getIndirectEdges(callsite);
             if (iedges == null)
-                throw Avrora.failure("No control flow information for indirect call at: " +
+                throw Util.failure("No control flow information for indirect call at: " +
                         StringUtil.addrToString(callsite));
             Iterator i = iedges.iterator();
             while (i.hasNext()) {
@@ -773,7 +773,7 @@ public class Analyzer {
             int callsite = s.pc;
             List iedges = program.getIndirectEdges(callsite);
             if (iedges == null)
-                throw Avrora.failure("No control flow information for indirect jump at: " +
+                throw Util.failure("No control flow information for indirect jump at: " +
                         StringUtil.addrToString(callsite));
             Iterator i = iedges.iterator();
             while (i.hasNext()) {

@@ -37,13 +37,14 @@
 
 package avrora.monitors;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.energy.Energy;
 import avrora.sim.energy.EnergyControl;
 import avrora.sim.energy.EnergyObserver;
 import avrora.util.Options;
+import avrora.util.Util;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -99,7 +100,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             try {
                 this.file = new BufferedWriter(new FileWriter(fileName));
             } catch (IOException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
             
             //write headlines 
@@ -128,7 +129,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             try {
                 file.write(text);
             } catch (IOException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
         }
 
@@ -139,7 +140,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             try {
                 file.newLine();
             } catch (IOException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
         }
 
@@ -161,7 +162,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
                 file.flush();
                 file.close();
             } catch (IOException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
         }
 

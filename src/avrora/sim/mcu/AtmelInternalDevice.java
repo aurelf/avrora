@@ -32,7 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.sim.ActiveRegister;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.RWRegister;
@@ -66,7 +66,7 @@ public abstract class AtmelInternalDevice {
     }
 
     public Iterator getIORegs() {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     protected void installIOReg(String name, ActiveRegister reg) {

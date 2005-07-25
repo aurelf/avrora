@@ -32,7 +32,7 @@
 
 package avrora.actions;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
@@ -62,7 +62,7 @@ public class ISEAAction extends Action {
         if ( !"".equals(START.get())) {
             SourceMapping.Location location = p.getSourceMapping().getLocation(START.get());
             if ( location == null )
-                Avrora.userError("Cannot find program location "+START.get());
+                Util.userError("Cannot find program location "+START.get());
             a.analyze(location.address);
         } else {
             a.analyze();

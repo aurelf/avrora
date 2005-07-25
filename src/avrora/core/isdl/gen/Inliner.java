@@ -32,7 +32,8 @@
 
 package avrora.core.isdl.gen;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.CodeRegion;
 import avrora.core.isdl.SubroutineDecl;
@@ -131,7 +132,7 @@ public class Inliner extends StmtRebuilder.DepthFirst {
 
     public Stmt visit(ReturnStmt s, Object env) {
         if (context.curSubroutine == null)
-            throw Avrora.failure("return not within subroutine!");
+            throw Util.failure("return not within subroutine!");
 
         context.returnTemp = newTemp(null);
         return (new DeclStmt(newToken(context.returnTemp), context.curSubroutine.ret, s.expr.accept(this, env)));
@@ -144,7 +145,7 @@ public class Inliner extends StmtRebuilder.DepthFirst {
 
     protected String inlineCall(Token m, SubroutineDecl d, List args) {
         if (d.numOperands() != args.size())
-            Avrora.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ':' + m.beginColumn);
+            Util.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ':' + m.beginColumn);
 
         Context nc = new Context(context);
 

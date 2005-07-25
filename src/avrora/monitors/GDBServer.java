@@ -32,13 +32,14 @@
 
 package avrora.monitors;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Register;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.Option;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,7 +100,7 @@ public class GDBServer extends MonitorFactory {
             try {
                 serverSocket = new ServerSocket(port);
             } catch ( IOException e ) {
-                Avrora.userError("GDBServer could not create socket on port "+port, e.getMessage());
+                Util.userError("GDBServer could not create socket on port "+port, e.getMessage());
             }
             // insert the startup probe at the beginning of the program
             simulator.insertProbe(new StartupProbe(), 0);
@@ -113,7 +114,7 @@ public class GDBServer extends MonitorFactory {
                 if ( socket != null )
                 socket.close();
             } catch ( IOException e ) {
-                throw Avrora.failure("Unexpected IOException: "+e);
+                throw Util.failure("Unexpected IOException: "+e);
             }
         }
 
@@ -146,7 +147,7 @@ public class GDBServer extends MonitorFactory {
                         break;
                 }
             } catch ( IOException e ) {
-                throw Avrora.failure("Unexpected IOException: "+e);
+                throw Util.failure("Unexpected IOException: "+e);
             }
         }
 
@@ -528,7 +529,7 @@ public class GDBServer extends MonitorFactory {
                         printer.println("Connection established with: "+socket.getInetAddress().getCanonicalHostName());
                     serverSocket.close();
                 } catch ( IOException e ) {
-                    throw Avrora.failure("Unexpected IOException: "+e);
+                    throw Util.failure("Unexpected IOException: "+e);
                 }
 
                 commandLoop(null);

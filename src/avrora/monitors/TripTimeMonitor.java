@@ -31,7 +31,7 @@
  */
 package avrora.monitors;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.LabelMapping;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
@@ -167,7 +167,7 @@ public class TripTimeMonitor extends MonitorFactory {
                 String str = (String)i.next();
                 int ind = str.indexOf(":");
                 if (ind <= 0)
-                    throw Avrora.failure("invalid address format: " + StringUtil.quote(str));
+                    throw Util.failure("invalid address format: " + StringUtil.quote(str));
                 String src = str.substring(0, ind);
                 String dst = str.substring(ind + 1);
 
@@ -182,9 +182,9 @@ public class TripTimeMonitor extends MonitorFactory {
             SourceMapping lm = program.getSourceMapping();
             SourceMapping.Location loc = lm.getLocation(src);
             if ( loc == null )
-                Avrora.userError("Invalid program address: ", src);
+                Util.userError("Invalid program address: ", src);
             if ( program.readInstr(loc.address) == null )
-                Avrora.userError("Invalid program address: ", src);
+                Util.userError("Invalid program address: ", src);
             return loc;
         }
 

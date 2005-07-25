@@ -32,7 +32,8 @@
 
 package avrora.gui;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 
 import javax.swing.*;
 
@@ -68,7 +69,7 @@ public class MonitorPanel {
      * to clear all the old data 
      */
     public void clear() {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**

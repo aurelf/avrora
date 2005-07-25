@@ -32,7 +32,7 @@
 
 package avrora.stack.isea;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Register;
 
 /**
@@ -142,7 +142,7 @@ public class ISEState extends ISEAbstractState {
         }
 
         if ( depth != 0)
-            throw Avrora.failure("return with nonzero stack height");
+            throw Util.failure("return with nonzero stack height");
 
         System.arraycopy(caller.stack, 0, stack, 0, caller.depth);
         depth = caller.depth;

@@ -32,7 +32,8 @@
 
 package avrora.syntax.atmel;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
@@ -61,9 +62,9 @@ public class AtmelProgramReader extends ProgramReader {
      */
     public Program read(String[] args) throws Exception {
         if (args.length == 0)
-            Avrora.userError("no input files");
+            Util.userError("no input files");
         if (args.length != 1)
-            Avrora.userError("input type \"atmel\" accepts only one file at a time.");
+            Util.userError("input type \"atmel\" accepts only one file at a time.");
 
         File f = new File(args[0]);
         Module module = new Module(false, false);

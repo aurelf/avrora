@@ -32,7 +32,8 @@ package avrora.sim.clock;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.sim.Simulator;
 
 /**
@@ -77,7 +78,7 @@ public class SystemClock extends Clock {
      * @param cycles the number of cycles in the future at which to fire
      */
     public void insertEvent(Simulator.Event e, long cycles) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -87,7 +88,7 @@ public class SystemClock extends Clock {
      * @param e the event to remove
      */
     public void removeEvent(Simulator.Event e) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -98,6 +99,6 @@ public class SystemClock extends Clock {
      * events in the queue
      */
     public long getFirstEventDelta() {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 }

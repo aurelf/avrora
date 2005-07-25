@@ -32,7 +32,8 @@
 
 package avrora.stack;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.core.Register;
 
 /**
@@ -80,7 +81,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
     public MutableState merge(MutableState s) {
 
         if (pc != s.pc)
-            throw Avrora.failure("cannot merge abstract states with different program counters");
+            throw Util.failure("cannot merge abstract states with different program counters");
 
         MutableState n = copy();
 
@@ -95,10 +96,10 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * The <code>hashCode()</code> method computes an integer hash code for this state. A good hash code is
      * needed to make hashtables in <code>StateSpace</code> efficient.
      *
-     * @throws avrora.Avrora.InternalError
+     * @throws avrora.util.Util.InternalError
      */
     public int hashCode() {
-        throw Avrora.failure("cannot compute hash code of MutableState");
+        throw Util.failure("cannot compute hash code of MutableState");
     }
 
     /**
@@ -106,10 +107,10 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * contract.
      *
      * @param o the object to test equality against.
-     * @throws avrora.Avrora.InternalError
+     * @throws avrora.util.Util.InternalError
      */
     public boolean equals(Object o) {
-        throw Avrora.failure("cannot perform .equals() on MutableState");
+        throw Util.failure("cannot perform .equals() on MutableState");
     }
 
     /**

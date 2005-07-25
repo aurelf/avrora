@@ -32,7 +32,7 @@
 
 package avrora.sim;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.sim.clock.Clock;
 import avrora.sim.util.MulticastFSMProbe;
 
@@ -249,13 +249,13 @@ public class FiniteStateMachine {
      * event into the queue of the underlying clock for this device. That event will complete the transition.
      * This method will not allow any transitions when the machine is already in transition.
      * @param newState the new state to transition to
-     * @throws Avrora.InternalError if it is illegal to transition between the current state and the new state
+     * @throws Util.InternalError if it is illegal to transition between the current state and the new state
      * according to the transition time matrix; or if the machine is already in a transitional state
      */
     public void transition(int newState) {
         // are we currently in a transition already?
         if ( curState == IN_TRANSITION ) {
-            throw Avrora.failure("cannot transition to state "
+            throw Util.failure("cannot transition to state "
                     +newState+" while in transition: "
                     +transEvent.oldState+" -> "+transEvent.newState);
         }
@@ -263,7 +263,7 @@ public class FiniteStateMachine {
         // get transition time
         int ttime = states[curState].transition_time[newState];
         if ( ttime < 0 ) // valid transition ?
-            throw Avrora.failure("cannot transition from state "
+            throw Util.failure("cannot transition from state "
                     +curState+" -> "+newState);
 
         // fire probes before transition

@@ -32,7 +32,7 @@
 
 package avrora.sim.dbbc;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.ControlFlowGraph;
 import avrora.core.Instr;
 import avrora.core.Program;
@@ -135,7 +135,7 @@ public class DBBC {
         }
 
         public void execute(GenInterpreter interp) {
-            throw Avrora.failure("cannot execute abstract basic block");
+            throw Util.failure("cannot execute abstract basic block");
         }
     }
 
@@ -173,7 +173,7 @@ public class DBBC {
      * @param addr the byte address for which the enclosing block should be invalidated
      */
     public void invalidateBlock(int addr) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -299,7 +299,7 @@ public class DBBC {
         int result = ((Integer)r).intValue();
 
         if (result != 0)
-            throw Avrora.failure("DBBC failed to compile: " + f.toString());
+            throw Util.failure("DBBC failed to compile: " + f.toString());
         String cname = name.replaceAll(".java", ".class");
         File c = new File(cname);
         return c;

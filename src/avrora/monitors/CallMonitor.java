@@ -36,7 +36,7 @@
 
 package avrora.monitors;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
@@ -128,7 +128,7 @@ public class CallMonitor extends MonitorFactory {
         private void push(String caller, String dest, String edge) {
             String idstr = StringUtil.getIDTimeString(simulator);
             if ( depth >= stack.length )
-                throw Avrora.failure("Stack overflow: more than "+MAX_STACK_DEPTH+" calls nested");
+                throw Util.failure("Stack overflow: more than "+MAX_STACK_DEPTH+" calls nested");
             stack[depth+1] = dest;
             synchronized (Terminal.class ) {
                 Terminal.print(idstr);

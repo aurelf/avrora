@@ -32,12 +32,13 @@
 
 package avrora.stack;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Instr;
 import avrora.core.InstrVisitor;
 import avrora.core.Program;
 import avrora.core.Register;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 /**
  * The <code>AbstractInterpreter</code> class implements the abstract transfer function for each instruction
@@ -107,10 +108,10 @@ public class AbstractInterpreter extends AbstractArithmetic implements InstrVisi
 
     private Instr readInstr(int pc) {
         if (pc >= program.program_end)
-            throw Avrora.failure("PC beyond end of program: " + StringUtil.addrToString(pc));
+            throw Util.failure("PC beyond end of program: " + StringUtil.addrToString(pc));
         Instr i = program.readInstr(pc);
         if (i == null)
-            throw Avrora.failure("Misaligned instruction access at PC: " + StringUtil.addrToString(pc));
+            throw Util.failure("Misaligned instruction access at PC: " + StringUtil.addrToString(pc));
         return i;
     }
 

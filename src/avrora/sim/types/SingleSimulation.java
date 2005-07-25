@@ -32,7 +32,7 @@
 
 package avrora.sim.types;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
 import avrora.core.LoadableProgram;
 import avrora.sim.Simulation;
@@ -40,6 +40,7 @@ import avrora.sim.SimulatorThread;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.platform.PlatformFactory;
 import avrora.util.Options;
+import avrora.util.Util;
 
 /**
  * The <code>SingleSimulation</code> class implements a simulation for a single node. This class
@@ -66,7 +67,7 @@ public class SingleSimulation extends Simulation {
          */
         public void addNode(Simulation.Node n) {
             if ( node != null )
-                throw Avrora.failure("Only one node supported at a time");
+                throw Util.failure("Only one node supported at a time");
             node = n;
         }
 
@@ -96,7 +97,7 @@ public class SingleSimulation extends Simulation {
          */
         public void start() {
             if ( node == null )
-                throw Avrora.failure("No nodes in simulation");
+                throw Util.failure("No nodes in simulation");
             thread = new SimulatorThread(node);
             thread.start();
         }
@@ -117,7 +118,7 @@ public class SingleSimulation extends Simulation {
          * the <code>start()</code> method is called again.
          */
         public void pause() {
-            throw Avrora.unimplemented();
+            throw Util.unimplemented();
         }
 
         /**
@@ -125,7 +126,7 @@ public class SingleSimulation extends Simulation {
          * not guaranteed to stop all the simulation threads at the same global time.
          */
         public void stop() {
-            throw Avrora.unimplemented();
+            throw Util.unimplemented();
         }
 
 
@@ -136,7 +137,7 @@ public class SingleSimulation extends Simulation {
          * @param globalTime the global time in clock cycles to run all threads ahead to
          */
         public void synch(long globalTime) {
-            throw Avrora.unimplemented();
+            throw Util.unimplemented();
         }
     }
 
@@ -162,9 +163,9 @@ public class SingleSimulation extends Simulation {
         processMonitorList();
 
         if ( args.length == 0 )
-            Avrora.userError("Simulation error", "No program specified");
+            Util.userError("Simulation error", "No program specified");
         if ( args.length > 1 )
-            Avrora.userError("Simulation error", "Single node simulation accepts only one program");
+            Util.userError("Simulation error", "Single node simulation accepts only one program");
         Main.checkFilesExist(args);
 
         LoadableProgram p = new LoadableProgram(args[0]);

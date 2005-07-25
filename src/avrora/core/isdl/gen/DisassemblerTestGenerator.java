@@ -32,13 +32,14 @@
 
 package avrora.core.isdl.gen;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.CodeRegion;
 import avrora.core.isdl.InstrDecl;
 import avrora.core.isdl.OperandDecl;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -62,7 +63,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     public DisassemblerTestGenerator(Architecture a, File dir) {
         architecture = a;
         if ( !dir.isDirectory() )
-            Avrora.userError("must specify directory for testcases");
+            Util.userError("must specify directory for testcases");
         dname = dir.getAbsolutePath();
         directory = dir;
         operandGenerators = new HashMap();
@@ -270,7 +271,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             File file = new File(fname);
             p = new Printer(new PrintStream(new FileOutputStream(file)));
         } catch ( IOException e) {
-            Avrora.userError("Cannot create test file", fname);
+            Util.userError("Cannot create test file", fname);
         }
         return p;
     }
@@ -291,7 +292,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     private OperandGenerator getOperandGenerator(OperandDecl decl) {
         OperandGenerator g = (OperandGenerator)operandGenerators.get(decl.kind.image);
         if ( g == null )
-            throw Avrora.failure("cannot generate representative values for operand of type "+decl.kind.image);
+            throw Util.failure("cannot generate representative values for operand of type "+decl.kind.image);
         return g;
     }
 

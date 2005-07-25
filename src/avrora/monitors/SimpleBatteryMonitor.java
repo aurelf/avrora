@@ -36,7 +36,7 @@
 
 package avrora.monitors;
 
-import avrora.Avrora;
+import avrora.util.Util;
 
 /**
  * simple battery monitors to shut down a node when an energy limit is exceeded ---- not yet implemented ----
@@ -49,7 +49,7 @@ public class SimpleBatteryMonitor {
      * Creates a new instance of BatteryMonitor
      */
     public SimpleBatteryMonitor() {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
 }

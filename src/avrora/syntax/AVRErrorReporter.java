@@ -33,7 +33,6 @@
 package avrora.syntax;
 
 import avrora.core.Register;
-import avrora.util.ErrorReporter;
 import avrora.util.StringUtil;
 
 /**

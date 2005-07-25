@@ -32,10 +32,11 @@
 
 package avrora.core;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.Option;
 import avrora.util.Options;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 import avrora.util.help.HelpCategory;
 
 import java.util.Iterator;
@@ -93,7 +94,7 @@ public abstract class ProgramReader extends HelpCategory {
             String s = (String)i.next();
             int ind = s.indexOf(":");
             if (ind <= 0)
-                throw Avrora.failure("invalid indirect edge format: " + StringUtil.quote(s));
+                throw Util.failure("invalid indirect edge format: " + StringUtil.quote(s));
             SourceMapping sm = p.getSourceMapping();
             SourceMapping.Location loc = sm.getLocation(s.substring(0, ind));
             SourceMapping.Location tar = sm.getLocation(s.substring(ind + 1));

@@ -32,8 +32,6 @@
 
 package avrora.util;
 
-import avrora.Avrora;
-
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Comparator;
@@ -149,7 +147,7 @@ public abstract class Option {
      * @param val  the (invalid) value passed
      */
     protected void parseError(String name, String type, String val) {
-        Avrora.userError("Option Error", "invalid value for " + type + " option " +
+        Util.userError("Option Error", "invalid value for " + type + " option " +
                 StringUtil.quote(name) + " = " + StringUtil.quote(val));
     }
 

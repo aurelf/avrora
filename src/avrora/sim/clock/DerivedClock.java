@@ -32,7 +32,8 @@
 
 package avrora.sim.clock;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.sim.Simulator;
 
 /**
@@ -71,7 +72,7 @@ public class DerivedClock extends Clock {
         super(n, hz);
         this.driveClock = driver;
         if (driver.getHZ() < hz)
-            throw Avrora.failure("cannot derive faster clock from slower clock");
+            throw Util.failure("cannot derive faster clock from slower clock");
         divider = driver.getHZ() / hz;
     }
 

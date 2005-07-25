@@ -32,10 +32,11 @@
 
 package avrora.syntax.objdump;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.util.Option;
+import avrora.util.Util;
 
 import java.io.File;
 import java.io.Reader;
@@ -66,9 +67,9 @@ public class ObjDumpProgramReader extends ProgramReader {
      */
     public Program read(String[] args) throws Exception {
         if (args.length == 0)
-            Avrora.userError("no input files");
+            Util.userError("no input files");
         if (args.length != 1)
-            Avrora.userError("input type \"objdump\" accepts only one file at a time.");
+            Util.userError("input type \"objdump\" accepts only one file at a time.");
 
         File f = new File(args[0]);
         RawModule module = new RawModule(true, true);

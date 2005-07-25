@@ -32,11 +32,12 @@
 
 package avrora.sim;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.actions.SimAction;
 import avrora.sim.clock.Synchronizer;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Util;
 
 
 /**
@@ -101,7 +102,7 @@ public class SimulatorThread extends Thread {
         } catch (SimAction.BreakPointException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": breakpoint at " + StringUtil.addrToString(e.address) + " reached.");
-        } catch (Avrora.Error e) {
+        } catch (Util.Error e) {
 
             e.report();
         } finally {

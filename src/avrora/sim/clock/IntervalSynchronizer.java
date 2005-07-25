@@ -32,7 +32,8 @@
 
 package avrora.sim.clock;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.sim.Simulation;
 import avrora.sim.Simulator;
 import avrora.sim.SimulatorThread;
@@ -125,7 +126,7 @@ public class IntervalSynchronizer extends Synchronizer {
                 // we have not been removed, we can reinsert the synch event
                 clock.insertEvent(this, period);
             } catch (java.lang.InterruptedException e) {
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
         }
 
@@ -202,7 +203,7 @@ public class IntervalSynchronizer extends Synchronizer {
      * the <code>start()</code> method is called again.
      */
     public synchronized void pause() {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -212,7 +213,7 @@ public class IntervalSynchronizer extends Synchronizer {
      * @param globalTime the global time in clock cycles to run all threads ahead to
      */
     public synchronized void synch(long globalTime) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -296,7 +297,7 @@ public class IntervalSynchronizer extends Synchronizer {
                     w.wait();
             }
         } catch ( java.lang.InterruptedException e) {
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
     }
 

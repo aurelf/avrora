@@ -32,8 +32,9 @@
 
 package avrora.util.profiling;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.Terminal;
+import avrora.util.Util;
 
 /**
  * This class keeps track of the min, max, and median of a stream of integers, as well as the distribution of
@@ -266,6 +267,6 @@ public class Distribution extends MinMaxMean {
      * Merge this statistical information with another.
      */
     public MinMaxMean merge(MinMaxMean m) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 }

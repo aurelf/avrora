@@ -32,12 +32,13 @@
 
 package avrora.gui;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Version;
 import avrora.sim.Simulation;
 import avrora.sim.radio.SimpleAir;
 import avrora.sim.types.SensorSimulation;
 import avrora.util.Options;
+import avrora.util.Util;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -418,7 +419,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
         java.net.URL imageURL = AvroraGui.class.getResource(path);
 
         if (imageURL == null) {
-            throw Avrora.failure("Resource not found: " + path);
+            throw Util.failure("Resource not found: " + path);
         } else {
             return new ImageIcon(imageURL);
         }

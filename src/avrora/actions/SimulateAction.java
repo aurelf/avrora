@@ -32,7 +32,7 @@
 
 package avrora.actions;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Defaults;
 import avrora.monitors.Monitor;
 import avrora.sim.Simulation;
@@ -87,7 +87,7 @@ public class SimulateAction extends SimAction {
         } catch (TimeoutException e) {
             Terminal.printYellow("Simulation terminated");
             Terminal.println(": timeout reached at pc = " + StringUtil.addrToString(e.address) + ", time = " + e.state.getCycles());
-        } catch (Avrora.Error e) {
+        } catch (Util.Error e) {
             Terminal.printRed("Simulation terminated");
             Terminal.print(": ");
             e.report();

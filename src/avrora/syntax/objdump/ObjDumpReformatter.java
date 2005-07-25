@@ -32,7 +32,7 @@
 
 package avrora.syntax.objdump;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.StringUtil;
 
 import java.io.BufferedReader;
@@ -74,7 +74,7 @@ public class ObjDumpReformatter {
             throw e;
         } catch (Throwable e) {
             //Status.error(e);
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
     }
 

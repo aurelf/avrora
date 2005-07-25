@@ -32,7 +32,8 @@
 
 package avrora.syntax.gas;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
@@ -60,10 +61,10 @@ public class GASProgramReader extends ProgramReader {
      */
     public Program read(String[] args) throws Exception {
         if (args.length == 0)
-            Avrora.userError("no input files");
+            Util.userError("no input files");
         // TODO: handle multiple GAS files and link them
         if (args.length != 1)
-            Avrora.userError("input type \"gas\" accepts only one file at a time.");
+            Util.userError("input type \"gas\" accepts only one file at a time.");
 
         File f = new File(args[0]);
         Module module = new Module(true, true);

@@ -32,7 +32,7 @@
 
 package avrora.core.isdl;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.isdl.ast.Expr;
 import avrora.core.isdl.parser.Token;
 import avrora.util.StringUtil;
@@ -90,7 +90,7 @@ public class InstrDecl extends CodeRegion {
 
     public int getEncodingSize() {
         if ( size <= 0 )
-            throw Avrora.failure("size for instruction "+name+" has not been computed");
+            throw Util.failure("size for instruction "+name+" has not been computed");
         return size;
     }
 

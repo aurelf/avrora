@@ -30,10 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.util;
+package avrora.syntax;
 
 import avrora.syntax.ProgramPoint;
 import avrora.syntax.SimplifierError;
+import avrora.util.StringUtil;
 
 /**
  * The <code>ErrorReporter</code> is the super class of all error reporters in Avrora. It contains several

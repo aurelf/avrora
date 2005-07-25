@@ -32,9 +32,10 @@
 
 package avrora.test;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.syntax.SimplifierError;
 import avrora.util.Terminal;
+import avrora.util.Util;
 
 /**
  * The <code>TestResult</code> class represents the result of running a test cases. The test run could
@@ -148,9 +149,9 @@ public abstract class TestResult {
     }
 
     public static class InternalError extends TestFailure {
-        Avrora.InternalError encountered;
+        Util.InternalError encountered;
 
-        public InternalError(Avrora.InternalError e) {
+        public InternalError(Util.InternalError e) {
             encountered = e;
         }
 

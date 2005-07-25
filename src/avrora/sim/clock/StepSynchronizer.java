@@ -32,7 +32,8 @@
 
 package avrora.sim.clock;
 
-import avrora.Avrora;
+import avrora.util.Util;
+import avrora.util.Util;
 import avrora.sim.Simulation;
 import avrora.sim.Simulator;
 
@@ -95,7 +96,7 @@ public class StepSynchronizer extends Synchronizer {
      * threads catch up in global time.
      */
     public void waitForNeighbors(long time) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -185,16 +186,16 @@ public class StepSynchronizer extends Synchronizer {
         }
 
         public void pause() {
-            throw Avrora.unimplemented();
+            throw Util.unimplemented();
         }
     }
 
     void reportExit(Simulator s, Throwable t) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     void removeSimulator(Simulator s) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
     /**
@@ -204,7 +205,7 @@ public class StepSynchronizer extends Synchronizer {
      * @param globalTime the global time in clock cycles to run all threads ahead to
      */
     public void synch(long globalTime) {
-        throw Avrora.unimplemented();
+        throw Util.unimplemented();
     }
 
 }

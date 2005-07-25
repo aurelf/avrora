@@ -32,7 +32,7 @@
 
 package avrora.actions;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
 import avrora.core.isdl.Architecture;
 import avrora.core.isdl.gen.*;
@@ -93,7 +93,7 @@ public class ISDLAction extends Action {
      */
     public void run(String[] args) throws Exception {
         if (args.length < 1)
-            Avrora.userError("isdl tool usage: avrora -action=isdl <arch.isdl>");
+            Util.userError("isdl tool usage: avrora -action=isdl <arch.isdl>");
 
         Architecture.INLINE = INLINE.get();
 
@@ -146,7 +146,7 @@ public class ISDLAction extends Action {
                 new DisassemblerTestGenerator(a, f).generate();
                 Status.success();
             }
-        } catch ( Avrora.Error e) {
+        } catch ( Util.Error e) {
             Status.error(e);
             return;
         } catch ( Throwable t) {

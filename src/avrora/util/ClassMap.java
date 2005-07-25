@@ -32,8 +32,6 @@
 
 package avrora.util;
 
-import avrora.Avrora;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -111,7 +109,7 @@ public class ClassMap {
     public void addInstance(String alias, Object o) {
         Class cz = o.getClass();
         if (!(clazz.isAssignableFrom(cz)))
-            throw Avrora.failure("Object of class "+StringUtil.quote(cz)+" is not an instance of " + clazz.getName());
+            throw Util.failure("Object of class "+StringUtil.quote(cz)+" is not an instance of " + clazz.getName());
 
         objMap.put(alias, o);
         classMap.put(alias, cz);
@@ -140,7 +138,7 @@ public class ClassMap {
      *
      * @param name the name of the class or alias
      * @return an instance of the specified class
-     * @throws Avrora.Error if there is a problem finding or instantiating the class
+     * @throws Util.Error if there is a problem finding or instantiating the class
      */
     public Object getObjectOfClass(String name) {
         Object o = objMap.get(name);
@@ -153,25 +151,25 @@ public class ClassMap {
             try {
                 c = Class.forName(name);
             } catch (ClassNotFoundException e) {
-                Avrora.userError(type + " class not found", clname);
+                Util.userError(type + " class not found", clname);
             }
         } else {
             clname = clname + " (" + c.toString() + ')';
         }
 
         if (!(clazz.isAssignableFrom(c)))
-            Avrora.userError("The specified class does not extend " + clazz.getName(), clname);
+            Util.userError("The specified class does not extend " + clazz.getName(), clname);
 
         try {
             return c.newInstance();
         } catch (InstantiationException e) {
-            Avrora.userError("The specified class does not have a default constructor", clname);
+            Util.userError("The specified class does not have a default constructor", clname);
         } catch (IllegalAccessException e) {
-            Avrora.userError("Illegal access to class", clname);
+            Util.userError("Illegal access to class", clname);
         }
 
         // UNREACHABLE
-        throw Avrora.failure("Unreachable state in dynamic instantiation of class");
+        throw Util.failure("Unreachable state in dynamic instantiation of class");
     }
 
     /**

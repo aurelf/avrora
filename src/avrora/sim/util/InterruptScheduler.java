@@ -32,10 +32,11 @@
 
 package avrora.sim.util;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
 import avrora.sim.Simulator;
 import avrora.util.Terminal;
+import avrora.util.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +72,7 @@ public class InterruptScheduler {
             tokens = new java.io.StreamTokenizer(inf_reader);
             scheduleNextInterrupt();
         } catch ( IOException e ) {
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
     }
 
@@ -79,16 +80,16 @@ public class InterruptScheduler {
         try {
             if (tokens.nextToken() != StreamTokenizer.TT_EOF) {
                 if (tokens.ttype != StreamTokenizer.TT_NUMBER) {
-                    throw Avrora.failure("interrupt schedule format expected integer in field 1, line " +
+                    throw Util.failure("interrupt schedule format expected integer in field 1, line " +
                             currentLine + " of " + schedFile);
                 }
                 int vec = (int) tokens.nval;
                 if (vec >= maxInt) {
-                    throw Avrora.failure("interrupt schedule contains out-of-bounds interrupt vector " +
+                    throw Util.failure("interrupt schedule contains out-of-bounds interrupt vector " +
                             vec + " in line " + currentLine + " of " + schedFile);
                 }
                 if (tokens.nextToken() != tokens.TT_NUMBER) {
-                    throw Avrora.failure("interrupt schedule format expected integer in field 2, line " +
+                    throw Util.failure("interrupt schedule format expected integer in field 2, line " +
                             currentLine + " of " + schedFile);
                 }
                 long time = (int) tokens.nval;
@@ -96,7 +97,7 @@ public class InterruptScheduler {
                 currentLine++;
             }
         } catch (IOException e) {
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
     }
 
@@ -129,7 +130,7 @@ public class InterruptScheduler {
     private void scheduleInterrupt(int vector, long cycles) {
         long future = cycles - simulator.getClock().getCount();
         if (future < 0) {
-            throw Avrora.failure("tried to schedule an interrupt in the past; schedule not sorted?");
+            throw Util.failure("tried to schedule an interrupt in the past; schedule not sorted?");
         }
         ScheduledInterrupt e = new ScheduledInterrupt(vector);
         simulator.insertEvent(e, future);

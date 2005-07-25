@@ -32,7 +32,7 @@
 
 package avrora.sim.radio;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.energy.Energy;
@@ -1151,7 +1151,7 @@ public class CC1000Radio implements Radio {
                 spi.connect(this);
                 connect(spi); // don't forget to connect ourselves to this device
             } else {
-                throw Avrora.failure("CC1000: only ATMegaFamily is supported");
+                throw Util.failure("CC1000: only ATMegaFamily is supported");
             }
         }
 

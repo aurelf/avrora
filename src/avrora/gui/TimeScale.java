@@ -32,7 +32,7 @@
 
 package avrora.gui;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.StringUtil;
 
 import java.awt.*;
@@ -114,7 +114,7 @@ public class TimeScale {
             cycles *= 10;
             nsecs *= 10;
         }
-        throw Avrora.failure("Zoom level not supported: "+scale);
+        throw Util.failure("Zoom level not supported: "+scale);
     }
 
     public int getMaxZoom() {

@@ -32,11 +32,12 @@
 
 package avrora.sim.mcu;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.sim.ActiveRegister;
 import avrora.sim.RWRegister;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -84,7 +85,7 @@ public class RegisterSet {
         }
 
         public void set(int nval) {
-            throw Avrora.unimplemented();
+            throw Util.unimplemented();
         }
 
         public void update() {
@@ -282,7 +283,7 @@ public class RegisterSet {
         }
         // check that there are exactly 8 bits
         if ( bwcount != 8 ) {
-            throw new Avrora.Error("RegisterSet Error", "expected 8 bits, found: "+bwcount);
+            throw new Util.Error("RegisterSet Error", "expected 8 bits, found: "+bwcount);
         }
         return bw;
     }
@@ -370,7 +371,7 @@ public class RegisterSet {
     private FieldWriter getFieldWriter(String fname) {
         FieldWriter fwriter = ((FieldWriter)fields.get(fname));
         if ( fwriter == null ) {
-            throw Avrora.failure("Field not found in RegisterSet: "+StringUtil.quote(fname));
+            throw Util.failure("Field not found in RegisterSet: "+StringUtil.quote(fname));
         }
         return fwriter;
     }

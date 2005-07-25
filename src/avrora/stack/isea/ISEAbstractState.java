@@ -32,7 +32,7 @@
 
 package avrora.stack.isea;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
@@ -42,7 +42,7 @@ import avrora.util.Terminal;
 public class ISEAbstractState {
 
     public void merge(ISEAbstractState s) {
-        if ( depth != s.depth ) throw Avrora.failure("stack height mismatch");
+        if ( depth != s.depth ) throw Util.failure("stack height mismatch");
         // merge elements (registers)
         for ( int cntr = 0; cntr < elements.length; cntr++ ) {
             elements[cntr].read = elements[cntr].read || s.elements[cntr].read;

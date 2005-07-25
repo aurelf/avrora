@@ -32,7 +32,7 @@
 
 package avrora.stack;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Program;
 import avrora.util.StringUtil;
 
@@ -136,7 +136,7 @@ public class StateCache {
             }
 
             public void remove() {
-                throw Avrora.unimplemented();
+                throw Util.unimplemented();
             }
 
         }

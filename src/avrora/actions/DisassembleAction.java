@@ -32,7 +32,7 @@
 
 package avrora.actions;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.Main;
 import avrora.core.Disassembler;
 import avrora.core.Instr;
@@ -65,7 +65,7 @@ public class DisassembleAction extends Action {
      */
     public void run(String[] args) throws Exception {
         if ( args.length < 1 )
-            Avrora.userError("no input files");
+            Util.userError("no input files");
 
         String fname = args[0];
         Main.checkFileExists(fname);

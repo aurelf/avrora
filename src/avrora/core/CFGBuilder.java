@@ -32,7 +32,7 @@
 
 package avrora.core;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
 
@@ -130,7 +130,7 @@ class CFGBuilder implements InstrVisitor {
             // check for any jumps into the middle of this instruction
             for (int cntr = 1; cntr < size; cntr++) {
                 if (info[pc + cntr].start || info[pc + cntr].instr != null) {
-                    throw Avrora.failure("misaligned branch target at " + (pc + cntr));
+                    throw Util.failure("misaligned branch target at " + (pc + cntr));
                 }
             }
 

@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.util.StringUtil;
 
 /**
@@ -123,7 +123,7 @@ public abstract class Expr extends ASTNode {
             if ("&&".equals(o)) return asInt(asBool(lval) && asBool(rval));
             if ("||".equals(o)) return asInt(asBool(lval) || asBool(rval));
 
-            throw Avrora.failure("unknown binary operator: " + op);
+            throw Util.failure("unknown binary operator: " + op);
         }
 
         public AbstractToken getLeftMostToken() {
@@ -171,7 +171,7 @@ public abstract class Expr extends ASTNode {
             if ("~".equals(o)) return ~oval;
             if ("-".equals(o)) return -oval;
 
-            throw Avrora.failure("unknown unary operator: " + op);
+            throw Util.failure("unknown unary operator: " + op);
         }
 
         public AbstractToken getLeftMostToken() {
@@ -229,7 +229,7 @@ public abstract class Expr extends ASTNode {
             if ("exp2".equalsIgnoreCase(f)) return 1 << aval;
             if ("log2".equalsIgnoreCase(f)) return log(aval);
 
-            throw Avrora.failure("unknown function: " + func);
+            throw Util.failure("unknown function: " + func);
         }
 
         private int log(int val) {
@@ -399,10 +399,10 @@ public abstract class Expr extends ASTNode {
          * @param currentByteAddress the current byte address within the program
          * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
-         * @throws Avrora.InternalError because a string cannot be evaluated to a 32-bit integer
+         * @throws avrora.util.Util.InternalError because a string cannot be evaluated to a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
-            throw Avrora.failure("cannot evaluate a string to an integer");
+            throw Util.failure("cannot evaluate a string to an integer");
         }
     }
 
@@ -448,7 +448,7 @@ public abstract class Expr extends ASTNode {
             if ("+".equals(op.image)) return currentByteAddress + offset;
             if ("-".equals(op.image)) return currentByteAddress - offset;
 
-            throw Avrora.failure("unknown operation in relative computation: " + op.image);
+            throw Util.failure("unknown operation in relative computation: " + op.image);
         }
     }
 

@@ -30,17 +30,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.util;
 
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
 
 /**
- * The <code>Avrora</code> class contains several utilities relating to exceptions and errors within Avrora.
+ * The <code>Util</code> class contains several utilities relating to exceptions and errors within Avrora.
  *
  * @author Ben L. Titzer
  */
-public class Avrora {
+public class Util {
 
     /**
      * The <code>Error</code> class is the base class of all errors in Avrora. It provides a few extra utility
@@ -52,7 +52,7 @@ public class Avrora {
         public static boolean STACKTRACES;
 
         public Error(String p) {
-            message = "Avrora Error";
+            message = "Error";
             param = p;
         }
 
@@ -85,7 +85,7 @@ public class Avrora {
         }
 
         public void report() {
-            Terminal.print(Terminal.ERROR_COLOR, "Avrora Internal Error");
+            Terminal.print(Terminal.ERROR_COLOR, "Internal Error");
             Terminal.print(": " + param + '\n');
             printStackTrace();
         }

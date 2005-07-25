@@ -58,6 +58,7 @@ import avrora.syntax.objdump.ObjDumpProgramReader;
 import avrora.test.*;
 import avrora.util.ClassMap;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 import avrora.util.help.ClassMapValueItem;
 import avrora.util.help.HelpCategory;
 import avrora.util.help.HelpSystem;
@@ -420,14 +421,14 @@ public class Defaults {
 
         public Program read(String[] args) throws Exception {
             if (args.length == 0)
-                Avrora.userError("no input files");
+                Util.userError("no input files");
             if (args.length != 1)
-                Avrora.userError("input type \"auto\" accepts only one file at a time.");
+                Util.userError("input type \"auto\" accepts only one file at a time.");
 
             String n = args[0];
             int offset = n.lastIndexOf(".");
             if (offset < 0)
-                Avrora.userError("file " + StringUtil.quote(n) + " does not have an extension");
+                Util.userError("file " + StringUtil.quote(n) + " does not have an extension");
 
             String extension = n.substring(offset).toLowerCase();
 
@@ -442,7 +443,7 @@ public class Defaults {
                 reader = new ObjDump2ProgramReader();
 
             if ( reader == null ) {
-                Avrora.userError("file extension " + StringUtil.quote(extension) + " unknown");
+                Util.userError("file extension " + StringUtil.quote(extension) + " unknown");
                 return null;
             }
 

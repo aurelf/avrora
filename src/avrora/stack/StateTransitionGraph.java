@@ -32,10 +32,11 @@
 
 package avrora.stack;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Program;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.Iterator;
 
@@ -167,9 +168,9 @@ public class StateTransitionGraph {
      */
     public Edge addEdge(StateCache.State s, int type, int weight, StateCache.State t) {
         if (s.info == null)
-            throw Avrora.failure("No edge info for: " + s.getUniqueName());
+            throw Util.failure("No edge info for: " + s.getUniqueName());
         if (t.info == null)
-            throw Avrora.failure("No edge info for: " + t.getUniqueName());
+            throw Util.failure("No edge info for: " + t.getUniqueName());
         edgeCount++;
         return s.info.addEdge(type, weight, t);
     }
@@ -188,7 +189,7 @@ public class StateTransitionGraph {
 
         StateCache.State state = l.state;
         if (state.info == null)
-            throw Avrora.failure("State on frontier has no edge info: " + state.getUniqueName());
+            throw Util.failure("State on frontier has no edge info: " + state.getUniqueName());
 
         state.onFrontier = false;
         frontierCount--;
@@ -202,7 +203,7 @@ public class StateTransitionGraph {
      */
     public void addFrontierState(StateCache.State s) {
         if (isExplored(s))
-            throw Avrora.failure("Attempt to re-add state to frontier: " + s.getUniqueName());
+            throw Util.failure("Attempt to re-add state to frontier: " + s.getUniqueName());
 
         if (!isFrontier(s)) {
             frontierList = new StateList(s, frontierList);
@@ -230,7 +231,7 @@ public class StateTransitionGraph {
      */
     public void setExplored(StateCache.State s) {
         if (isFrontier(s))
-            throw Avrora.failure("state cannot be on frontier and explored: " + s.getUniqueName());
+            throw Util.failure("state cannot be on frontier and explored: " + s.getUniqueName());
 
         if (!isExplored(s)) {
             s.isExplored = true;

@@ -32,11 +32,12 @@
 
 package avrora.sim.platform;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.sim.mcu.USART;
 import avrora.util.Terminal;
+import avrora.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +82,7 @@ public class SerialForwarder implements USART.USARTDevice {
             out = socket.getOutputStream();
             in = socket.getInputStream();
         } catch( IOException e ){
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
     }
 
@@ -90,7 +91,7 @@ public class SerialForwarder implements USART.USARTDevice {
             in.read(data, 0, 1);
             return new USART.Frame(data[0], false, 8);
         } catch( IOException e){
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
     }
 
@@ -99,7 +100,7 @@ public class SerialForwarder implements USART.USARTDevice {
         try{
             out.write((byte)frame.value);
         } catch( IOException e){
-            throw Avrora.unexpected(e);
+            throw Util.unexpected(e);
         }
     }
 
@@ -118,7 +119,7 @@ public class SerialForwarder implements USART.USARTDevice {
                     usart.startReceive();
                 }
             } catch( IOException e){
-                throw Avrora.unexpected(e);
+                throw Util.unexpected(e);
             }
             clock.insertEvent(this, delta);
         }

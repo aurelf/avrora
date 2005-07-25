@@ -32,7 +32,7 @@
 
 package avrora.sim;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.Instr;
 import avrora.core.InstrVisitor;
 import avrora.core.Program;
@@ -46,6 +46,7 @@ import avrora.sim.util.MulticastWatch;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Util;
 
 /**
  * The <code>BaseInterpreter</code> class represents a base class of the legacy interpreter and the generated
@@ -454,7 +455,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
          * @return an integer code representing the current sleep mode
          */
         public int getSleepMode() {
-            throw Avrora.unimplemented();
+            throw Util.unimplemented();
         }
 
     }
@@ -525,7 +526,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
 
         // if program will not fit onto hardware, error
         if (p.program_end > pr.flash_size)
-            throw Avrora.failure("program will not fit into " + pr.flash_size + " bytes");
+            throw Util.failure("program will not fit into " + pr.flash_size + " bytes");
 
         // beginning address of SRAM array
         sram_start = pr.ioreg_size + NUM_REGS;
@@ -1307,7 +1308,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
                 case SREG_C:
                     return C;
             }
-            throw Avrora.failure("bit out of range: " + num);
+            throw Util.failure("bit out of range: " + num);
         }
 
         public void writeBit(int num, boolean value) {
@@ -1340,7 +1341,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
                     C = value;
                     break;
                 default:
-                    throw Avrora.failure("bit out of range: " + num);
+                    throw Util.failure("bit out of range: " + num);
             }
         }
     }

@@ -32,15 +32,12 @@
 
 package avrora.stack.isea;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.ControlFlowGraph;
 import avrora.core.ProcedureMap;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
-import avrora.util.StringUtil;
-import avrora.util.TermUtil;
-import avrora.util.Terminal;
-import avrora.util.Verbose;
+import avrora.util.*;
 
 import java.util.*;
 
@@ -88,7 +85,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
     public ISEState getProcedureSummary(int start) {
         ControlFlowGraph.Block block = cfg.getBlockStartingAt(start);
         if ( block == null ) {
-            throw Avrora.failure("cannot get procedure summary for address: "+StringUtil.addrToString(start));
+            throw Util.failure("cannot get procedure summary for address: "+StringUtil.addrToString(start));
         }
         analyzeProcedure(block);
         return (ISEState)procedureSummaries.get(block);
@@ -165,7 +162,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
             printStart(start);
         }
         if ( stack.contains(start) ) {
-            throw Avrora.failure("program contains recursion");
+            throw Util.failure("program contains recursion");
         }
         stack.push(start);
         ISEState rs = new ISEInterpreter(program, this).analyze(start.getAddress());

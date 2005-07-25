@@ -32,13 +32,14 @@
 
 package avrora.core.isdl;
 
-import avrora.Avrora;
+import avrora.util.Util;
 import avrora.core.isdl.ast.*;
 import avrora.core.isdl.gen.Inliner;
 import avrora.core.isdl.parser.Token;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
+import avrora.util.Util;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -203,7 +204,7 @@ public class Architecture {
     private void verifyTiming(InstrDecl id) {
         // check that cycles make sense
         if (id.cycles < 0)
-            throw Avrora.failure("instruction " + id.name.image + " has negative cycle count");
+            throw Util.failure("instruction " + id.name.image + " has negative cycle count");
     }
 
     private void optimizeCode(InstrDecl id) {
@@ -221,7 +222,7 @@ public class Architecture {
             CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
             OperandDecl opdec = getOperandDecl(od.type.image);
             if (opdec == null)
-                throw Avrora.failure("operand type undefined " + StringUtil.quote(od.type.image));
+                throw Util.failure("operand type undefined " + StringUtil.quote(od.type.image));
             od.setOperandType(opdec);
         }
     }
@@ -240,7 +241,7 @@ public class Architecture {
 
             int encodingSize = encoding.getBitWidth();
             if (encodingSize <= 0 || encodingSize % 16 != 0)
-                throw Avrora.failure("encoding not word aligned: " + id.name.image + " is " + encodingSize + " bits");
+                throw Util.failure("encoding not word aligned: " + id.name.image + " is " + encodingSize + " bits");
             id.setEncodingSize(encodingSize);
         }
     }
