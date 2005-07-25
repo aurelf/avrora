@@ -20,6 +20,7 @@ JJ_FILES=`find src -name '*.jj'`
 
 CLASSBIN=/tmp/commit.bin/
 OLDCLASSPATH=$CLASSPATH
+VERSION_JAVA='src/avrora/Version.java'
 
 ROOTPATH=`pwd`
 
@@ -33,7 +34,7 @@ checkSuccess() {
 	$3
 	cat /tmp/commit.reason
 	if `test -e /tmp/oldVersion.java`; then
-	    cp /tmp/oldVersion.java $ROOTPATH/Version.java
+	    cp /tmp/oldVersion.java $ROOTPATH/$VERSION_JAVA
 	    rm -f /tmp/oldVersion.java
 	fi
 	exit 1
@@ -81,8 +82,6 @@ else
     test `grep cvs\ diff:\ cannot\ find /tmp/commit.log | wc -l` = 0
     checkSuccess 'No files are missing from CVS.' 'Files are missing here that are in CVS.' 'assembleCheckinList'
 fi
-
-VERSION_JAVA='src/avrora/Version.java'
 
 echo Incrementing build number...
 test -e $VERSION_JAVA

@@ -1,5 +1,5 @@
 #
-# TODO: list of fixes, refactorings, optimizations and functionality for Avrora
+# CHANGELOG: list of fixes, refactorings, optimizations and functionality for Avrora
 #
 
 ================================ F I X E S ==================================
@@ -17,6 +17,7 @@
     1   devs  USART frame sizes
     1    sim  RAMPZ usage for with more than 128k of flash
 
+Completed:
     1  input  Fixed processing of -sections option                 (1.5.118)
     1  probe  Recursion in State.getDataByte() from within watch   (1.5.102)
     2   devs  Interrupt mappings for devices on ATMega32           (1.5.102)
@@ -62,6 +63,7 @@
     1  probe  Indirect call / jump monitor
     3  radio  Partial preamble loss
 
+Completed:
     1  probe  Added simplest interactive monitor                   (1.5.118)
     1    sim  Automatically patch node ID for TinyOS and SOS       (1.5.116)
     1    sim  [Bastian Schlich] ATMega16 device added              (1.5.109)
@@ -110,6 +112,7 @@
     2    sim  Move sram representation to use a Segment
     2  probe  Collapse ExceptionWatch with Watch for all segments
 
+Completed:
     2    sim  Introduce Simulation class                           (1.5.104)
     2    sim  read/write vs get/set for State                      (1.5.102)
     2   devs  USART abstracted to work on multiple devices         (1.5.101)
@@ -159,6 +162,8 @@
     2    sim  Sleep modes
     1    sim  Probes for skip instructions (instr. size calculation)
 
+Completed:
+    1   test  Moved testcases from source directory to test dir      (1.7.1)
     1    sim  First interrupt schedule testcases added             (1.5.101)
     1  probe  Fixed probe testcases to reflect transactional list   (1.5.85)
     2   isdl  Fix Disassembler testcases for relative branches      (1.5.53)
@@ -190,6 +195,7 @@
     3   dbbc  Superblock construction
     2   dbbc  Intrablock probes and watches
 
+Completed:
     1    sim  Disabling interrupts does not terminate fast loop     (1.5.65)
     1    sim  Use shared_instr[] array directly in fast loop        (1.5.64)
     1    sim  Allocate all SPI.Frame's statically                   (1.5.35)
