@@ -72,7 +72,7 @@ architecture msp430 {
 	    }
 	    read: short = {
 	        local val: short = $regs(this);
-	        $regs(this) = val + 1;
+	        $regs(this) = val + 2;
 	        return val;
 	    }
 	    write: short = { $regs(this) = value; }
@@ -80,15 +80,15 @@ architecture msp430 {
 
 
     operand-type IND_B {
-        operand reg: SREG_B;
-        operand index[8]: immediate = [0,0xFF];
-	    read: byte = { return $sram(reg.read() + index); }
-	    write: byte = { $sram(reg.read() + index) = value; }
+        sub-operand reg: SREG_B;
+        sub-operand index[8]: immediate = [0,0xFF];
+	    read: byte = { return $sram(read(reg) + index); }
+	    write: byte = { $sram(read(reg) + index) = value; }
     }
 
     operand-type IND_W {
-        operand reg: SREG_W;
-        operand index[8]: immediate = [0,0xFF];
+        sub-operand reg: SREG_W;
+        sub-operand index[8]: immediate = [0,0xFF];
 	    read: short = { return $wsram(reg.read() + index); }
 	    write: short = { $wsram(reg.read() + index) = value; }
     }
@@ -958,10 +958,18 @@ architecture msp430 {
         cycles = 2;
     } 
 
-    addr-set DOUBLE = {
+    addr-set DOUBLE_W = {
+        REGREG_W,
+        REGIND_W,
     }
 
-    addr-set SINGLE = {
+    addr-set SINGLE_W = {
+    }
+
+    addr-set DOUBLE_B = {
+    }
+
+    addr-set SINGLE_B = {
     }
 
 //---------------------------------------------------------------------------
@@ -1259,7 +1267,7 @@ architecture msp430 {
 
 
     instruction "add" ops: DOUBLE_W {
-	opcode = 0b0101;
+	    opcode = 0b0101;
         execute = {
             local r1: short = read(ops.source);
             local r2: short = read(ops.dest);
