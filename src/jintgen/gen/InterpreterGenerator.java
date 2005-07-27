@@ -259,7 +259,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         // emit the code of the body
         visitStmtList(d.getCode());
         // emit the cycle count update
-        printer.println("cyclesConsumed += " + d.cycles + ';');
+        printer.println("cyclesConsumed += " + d.getCycles() + ';');
         printer.endblock();
     }
 

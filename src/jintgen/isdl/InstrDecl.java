@@ -54,20 +54,13 @@ public class InstrDecl extends CodeRegion {
      */
     public final Token name;
 
-    /**
-     * The <code>syntax</code> field stores a token corresponding to the syntax of the instruction. If null, the syntax
-     * is the default (instruction_name operand1, operand2, etc). If non-null, this field stores a format string
-     * that is used to render the instruction as a source level instruction.
-     */
-    public final Token syntax;
-
     public List encodingList;
+
+    public List propertyList;
 
     public final String className;
 
     public final String innerClassName;
-
-    public final int cycles;
 
     public final boolean pseudo;
 
@@ -78,13 +71,12 @@ public class InstrDecl extends CodeRegion {
      *
      * @param n the name of the instruction as a string
      */
-    public InstrDecl(boolean ps, Token n, List o, Token sy, Token c, List s, List el) {
+    public InstrDecl(boolean ps, Token n, List o, List p, List s, List el) {
         super(o, s);
         pseudo = ps;
         name = n;
-        syntax = sy;
-        cycles = Expr.tokenToInt(c);
         encodingList = el;
+        propertyList = p;
         innerClassName = StringUtil.trimquotes(name.image).toUpperCase();
         className = "Instr." + innerClassName;
     }
@@ -107,4 +99,11 @@ public class InstrDecl extends CodeRegion {
         size = bits;
     }
 
+    public int getCycles() {
+        throw Util.unimplemented();
+    }
+
+    public String getSyntax() {
+        throw Util.unimplemented();
+    }
 }

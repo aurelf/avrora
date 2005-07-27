@@ -99,7 +99,7 @@ public class ClassGenerator {
 
         private void emitStaticProperties(InstrDecl d) {
             printer.print("private static final InstrProperties props = new InstrProperties(");
-            printer.print(StringUtil.commalist(d.name, "null", "" + d.getEncodingSize() / 8, "" + d.cycles));
+            printer.print(StringUtil.commalist(d.name, "null", "" + d.getEncodingSize() / 8, "" + d.getCycles()));
             printer.println(");");
         }
 

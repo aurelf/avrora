@@ -18,54 +18,60 @@ public interface ISDLParserConstants {
   int ARCHITECTURE = 21;
   int FORMAT = 22;
   int OPERAND = 23;
-  int WHERE = 24;
-  int REGISTER = 25;
-  int PRIORITY = 26;
-  int ENCODING = 27;
-  int EXECUTE = 28;
-  int LOCAL = 29;
-  int IF = 30;
-  int ELSE = 31;
-  int AND = 32;
-  int OR = 33;
-  int XOR = 34;
-  int SUBROUTINE = 35;
-  int INLINE = 36;
-  int EXTERNAL = 37;
-  int RETURN = 38;
-  int BOOLEAN_LITERAL = 39;
-  int CYCLES = 40;
-  int PSEUDO = 41;
-  int WHEN = 42;
-  int SYNTAX = 43;
-  int LBRACKET = 44;
-  int RBRACKET = 45;
-  int EQUALS = 46;
-  int COMMA = 47;
-  int LPAREN = 48;
-  int RPAREN = 49;
-  int SEMI = 50;
-  int SHIFTLEFT = 51;
-  int SHIFTRIGHT = 52;
-  int ADD = 53;
-  int SUB = 54;
-  int MUL = 55;
-  int DIV = 56;
-  int B_AND = 57;
-  int B_OR = 58;
-  int B_XOR = 59;
-  int NOT = 60;
-  int B_COMP = 61;
-  int EQUAL = 62;
-  int NOTEQUAL = 63;
-  int LESS = 64;
-  int LESSEQ = 65;
-  int GREATER = 66;
-  int GREATEREQ = 67;
-  int DOLLAR = 68;
-  int IDENTIFIER = 69;
-  int LETTER = 70;
-  int DIGIT = 71;
+  int OPERAND_TYPE = 24;
+  int ADDR_MODE = 25;
+  int ADDR_SET = 26;
+  int READ = 27;
+  int WRITE = 28;
+  int WHERE = 29;
+  int PRIORITY = 30;
+  int ENCODING = 31;
+  int EXECUTE = 32;
+  int LOCAL = 33;
+  int GLOBAL = 34;
+  int MEMORY = 35;
+  int MAPPING = 36;
+  int IF = 37;
+  int ELSE = 38;
+  int AND = 39;
+  int OR = 40;
+  int XOR = 41;
+  int SUBROUTINE = 42;
+  int INLINE = 43;
+  int EXTERNAL = 44;
+  int RETURN = 45;
+  int BOOLEAN_LITERAL = 46;
+  int PSEUDO = 47;
+  int WHEN = 48;
+  int PROPERTY = 49;
+  int LBRACKET = 50;
+  int RBRACKET = 51;
+  int EQUALS = 52;
+  int COMMA = 53;
+  int LPAREN = 54;
+  int RPAREN = 55;
+  int SEMI = 56;
+  int SHIFTLEFT = 57;
+  int SHIFTRIGHT = 58;
+  int ADD = 59;
+  int SUB = 60;
+  int MUL = 61;
+  int DIV = 62;
+  int B_AND = 63;
+  int B_OR = 64;
+  int B_XOR = 65;
+  int NOT = 66;
+  int B_COMP = 67;
+  int EQUAL = 68;
+  int NOTEQUAL = 69;
+  int LESS = 70;
+  int LESSEQ = 71;
+  int GREATER = 72;
+  int GREATEREQ = 73;
+  int DOLLAR = 74;
+  int IDENTIFIER = 75;
+  int LETTER = 76;
+  int DIGIT = 77;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -97,12 +103,19 @@ public interface ISDLParserConstants {
     "\"architecture\"",
     "\"format\"",
     "\"operand\"",
+    "\"operand-type\"",
+    "\"addr-mode\"",
+    "\"addr-set\"",
+    "\"read\"",
+    "\"write\"",
     "\"where\"",
-    "\"register\"",
     "\"priority\"",
     "\"encoding\"",
     "\"execute\"",
     "\"local\"",
+    "\"global\"",
+    "\"memory\"",
+    "\"mapping\"",
     "\"if\"",
     "\"else\"",
     "\"and\"",
@@ -113,10 +126,9 @@ public interface ISDLParserConstants {
     "\"external\"",
     "\"return\"",
     "<BOOLEAN_LITERAL>",
-    "\"cycles\"",
     "\"pseudo\"",
     "\"when\"",
-    "\"syntax\"",
+    "\"property\"",
     "\"{\"",
     "\"}\"",
     "\"=\"",
@@ -145,9 +157,11 @@ public interface ISDLParserConstants {
     "<IDENTIFIER>",
     "<LETTER>",
     "<DIGIT>",
+    "\":\"",
+    "\"sub-operand\"",
     "\"[\"",
     "\"]\"",
-    "\":\"",
+    "\".\"",
   };
 
 }

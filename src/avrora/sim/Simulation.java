@@ -310,7 +310,7 @@ public abstract class Simulation extends HelpCategory {
         if ( running ) return null;
         int id = num_nodes++;
         Node n = newNode(id, pf, pp);
-        if ( id > nodes.length ) grow();
+        if ( id >= nodes.length ) grow();
         nodes[id] = n;
         return n;
     }

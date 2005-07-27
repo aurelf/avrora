@@ -80,7 +80,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     }
 
     public void visit(InstrDecl d) {
-        if ( d.syntax != null ) {
+        if ( d.getSyntax() != null ) {
             new SyntaxGenerator(d).generate();
         } else {
             new SimpleGenerator(d).generate();
@@ -244,7 +244,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
         SyntaxGenerator(InstrDecl decl) {
             super(decl);
 
-            syntax = StringUtil.trimquotes(decl.syntax.image);
+            syntax = decl.getSyntax();
 
             int numops = decl.getOperands().size();
             opnames = new String[numops];

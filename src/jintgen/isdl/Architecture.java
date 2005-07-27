@@ -137,7 +137,7 @@ public class Architecture {
         encodings = new LinkedList();
     }
 
-    public void process() {
+    public void verify() {
         processEncodings();
         processSubroutines();
         processInstructions();
@@ -203,7 +203,7 @@ public class Architecture {
 
     private void verifyTiming(InstrDecl id) {
         // check that cycles make sense
-        if (id.cycles < 0)
+        if (id.getCycles() < 0)
             throw Util.failure("instruction " + id.name.image + " has negative cycle count");
     }
 

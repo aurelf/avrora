@@ -60,13 +60,15 @@ options {
 
 PARSER_BEGIN(ISDLParser)
 
-package avrora.core.isdl.parser;
-import avrora.core.isdl.ast.*;
-import avrora.core.isdl.*;
+package jintgen.isdl.parser;
+import jintgen.jigir.*;
+import jintgen.isdl.*;
 import java.util.List;
 import java.util.LinkedList;
 
 public class ISDLParser {
+
+    Architecture arch;
 
 }
 
@@ -129,7 +131,7 @@ TOKEN :
 |
   < #DECIMAL_LITERAL: (("-")? ["1"-"9"] (["0"-"9"])*) >
 |
-  < #HEX_LITERAL: (("0" ["x","X"])|"$") (["0"-"9","a"-"f","A"-"F"])+ >
+  < #HEX_LITERAL: (("0" ["x","X"])) (["0"-"9","a"-"f","A"-"F"])+ >
 |
   < #BIN_LITERAL: "0" ["b","B"] (["0", "1"])+ >
 |
@@ -169,12 +171,19 @@ TOKEN :
   | < ARCHITECTURE : "architecture" >
   | < FORMAT : "format" >
   | < OPERAND : "operand" >
+  | < OPERAND_TYPE : "operand-type" >
+  | < ADDR_MODE : "addr-mode" >
+  | < ADDR_SET : "addr-set" >
+  | < READ : "read" >
+  | < WRITE : "write" >
   | < WHERE : "where" >
-  | < REGISTER : "register" >
   | < PRIORITY : "priority" >
   | < ENCODING : "encoding" >
   | < EXECUTE : "execute" >
   | < LOCAL : "local" >
+  | < GLOBAL : "global" >
+  | < MEMORY : "memory" >
+  | < MAPPING : "mapping" >
   | < IF : "if" >
   | < ELSE : "else" >
   | < AND: "and" >
@@ -185,10 +194,9 @@ TOKEN :
   | < EXTERNAL: "external" >
   | < RETURN: "return" >
   | < BOOLEAN_LITERAL: "true" | "false" >
-  | < CYCLES: "cycles" >
   | < PSEUDO: "pseudo" >
   | < WHEN : "when" >
-  | < SYNTAX: "syntax" >
+  | < PROPERTY: "property" >
 }
 
 TOKEN :
@@ -241,57 +249,92 @@ TOKEN :
 /* Begin GRAMMAR */
 
 
-Architecture Architecture() : { Token n; Architecture a; }
+Architecture Architecture() : { Token n; }
 {
-    "architecture" n = <IDENTIFIER> { a = new Architecture(n); }"{"
-        (Item(a))*
-    "}" { a.process(); return a; }
+    "architecture" n = <IDENTIFIER> { arch = new Architecture(n); }"{"
+        (Item())*
+    "}" { return arch; }
 }
 
-void Item(Architecture a) : {}
+void Item() : {}
 {
-    Instruction(a)
-  | FormatDecl(a)
-  | OperandDecl(a)
-  | RegisterDecl(a)
-  | Subroutine(a)
+    Instruction()
+  | FormatDecl()
+  | OperandTypeDecl()
+  | Subroutine()
+  | AddrModeDecl()
+  | AddrSetDecl()
+  | StateDecl()
 }
 
-void Instruction(Architecture a) :
+void Instruction() :
 {
     Token n;
     InstrDecl i;
     List o = new LinkedList(),
-         s = new LinkedList();
+         s = new LinkedList(),
+         p = new LinkedList();
     EncodingDecl e = null;
     List el = new LinkedList();
-    Token sy = null;
-    Token c = null;
     boolean pseudo = false;
 }
 {
     ["pseudo" { pseudo = true; }] "instruction" n = <STRING_LITERAL> o = Formals() "{"
         ( e = Encoding(n) { el.add(e); })*
-        [ sy = Syntax() ]
-        [ c = Cycles() ]
+        ( Property(p) )*
         [ s = Execute(s) ]
 
-    "}" ";" { a.addInstruction(new InstrDecl(pseudo, n, o, sy, c, s, el)); }
+    "}" { arch.addInstruction(new InstrDecl(pseudo, n, o, p, s, el)); }
 }
 
-Token Syntax() : { Token sy; }
+void Property(List p) : { Token name, t, v;}
 {
-    "syntax" "=" sy = <STRING_LITERAL> ";" { return sy; }
+    "property" name = <IDENTIFIER> ":" t = Type() "=" v = Value() ";" { p.add(new Property(name, t, v)); }
 }
 
-Token Cycles() : { Token c; }
+Token Value() : { Token t = null; }
 {
-    "cycles" "=" c = <INTEGER_LITERAL> ";" { return c; }
+  ( t = <STRING_LITERAL>
+  | t = <IDENTIFIER>
+  | t = <BOOLEAN_LITERAL>
+  | t = <INTEGER_LITERAL>)
+  { return t; }
+}
+
+void StateDecl() : {}
+{
+    Global()
+  | Memory()
+}
+
+void Global() : { Token n; }
+{
+    "global" n = <IDENTIFIER> ":" Type() ";"
+}
+
+void Memory() : { Token n; }
+{
+    "memory" <DOLLAR> n = <IDENTIFIER> "(" Type() ")" ":" Type() ";"
+}
+
+void AddrModeDecl() : { Token n; List o = new LinkedList(); List p = new LinkedList(); EncodingDecl e; }
+{
+    "addr-mode" n = <IDENTIFIER> "{"
+        (Property(p)
+        | Operand(o)
+        | e = Encoding(n)
+        )*
+    "}"
+}
+
+void AddrSetDecl() : { Token n; }
+{
+    "addr-set" n = <IDENTIFIER> "{" <IDENTIFIER> ("," <IDENTIFIER>)* "}"
 }
 
 EncodingDecl Encoding(Token n) : { EncodingDecl d; EncodingDecl.Cond ec = null; }
 {
-    "encoding" "=" d = Format(n) [ec = EncodingCond() { d.setCond(ec); }] ";" { return d; }
+    "encoding" "=" d = Format(n) [ec = EncodingCond() { d.setCond(ec); }] { return d; }
 }
 
 EncodingDecl.Cond EncodingCond() : { Token n; Expr e; }
@@ -301,35 +344,69 @@ EncodingDecl.Cond EncodingCond() : { Token n; Expr e; }
 
 List Execute(List s) : { }
 {
-    "execute" "=" Block(s) ";" { return s; }
+    "execute" Block(s) { return s; }
 }
 
-void FormatDecl(Architecture a) : { Token n; EncodingDecl d; }
+void FormatDecl() : { Token n; EncodingDecl d; }
 {
-    "format" n = <IDENTIFIER> "=" d = Format(n) ";" { a.addEncoding(d); }
+    "format" n = <IDENTIFIER> "=" d = Format(n) { arch.addEncoding(d); }
 }
 
-void OperandDecl(Architecture a) : { Token n, k, b; }
+void OperandTypeDecl() : { Token n, k, b; }
 {
-    "operand" n = <IDENTIFIER> "[" b = <INTEGER_LITERAL> "]" ":" k = Kind() "=" OperandTail(a, n, b, k) ";"
+    "operand-type" n = <IDENTIFIER> [OperandKind()] (OperandBody() | ";")
 }
 
-void OperandTail(Architecture a, Token n, Token k, Token b) : { OperandDecl d; }
+void OperandBody() : { SymbolMapping m; List o = new LinkedList(); }
 {
-    (d = OperandSetDecl(n, b, k) | d = OperandRangeDecl(n, b, k))
-    { a.addOperand(d); }
+    "{"
+    ( m = SymbolMapping()
+    | ReadMethod()
+    | WriteMethod()
+    | SubOperand(o) )*
+    "}"
 }
 
-OperandDecl OperandSetDecl(Token n, Token k, Token b) : { List l = new LinkedList(); }
+void SubOperand(List ol) : { CodeRegion.Operand o; }
 {
-    "{" OperandSetElem(l) ("," OperandSetElem(l))* "}"
-    { return new OperandDecl.RegisterSet(n, b, k, l); }
+    "sub-operand" o = Formal() { ol.add(o); } ";"
 }
 
-void OperandSetElem(List l) : { Token n, i; }
+void Operand(List ol) : { CodeRegion.Operand o; }
+{
+    "operand" o = Formal() { ol.add(o); } ";"
+}
+
+void ReadMethod() : { List s = new LinkedList(); }
+{
+    "read" ":" Type() Block(s)
+}
+
+void WriteMethod() : { List s = new LinkedList(); }
+{
+    "write" ":" Type() Block(s)
+}
+
+void OperandKind() : { Token b; }
+{
+    "[" b = <INTEGER_LITERAL> "]" ":" Type() [ Range() ]
+}
+
+void Range() : { Token l, h; }
+{
+    "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]"
+}
+
+SymbolMapping SymbolMapping() : { SymbolMapping m = new SymbolMapping(); }
+{
+    "mapping" "{" MappingSetElem(m) ("," MappingSetElem(m))* "}"
+    { return m; }
+}
+
+void MappingSetElem(SymbolMapping m) : { Token n, i; }
 {
     (n = <IDENTIFIER> "=" i = <INTEGER_LITERAL>)
-    { l.add(new OperandDecl.RegisterEncoding(n, i)); }
+    { m.add(n, i); }
 }
 
 OperandDecl OperandRangeDecl(Token n, Token k, Token b) : { Token l, h; }
@@ -348,11 +425,6 @@ List OperandSet() : { Token i; List l = new LinkedList(); }
 {
     "{" i = <IDENTIFIER> { l.add(i); } ("," i = <IDENTIFIER> { l.add(i); })* "}"
     { return l; }
-}
-
-void RegisterDecl(Architecture a) : {}
-{
-    "register" <IDENTIFIER> "=" <INTEGER_LITERAL> ";"
 }
 
 EncodingDecl Format(Token n) : { Token pr = null; EncodingDecl d; }
@@ -388,16 +460,16 @@ List Formals() : { CodeRegion.Operand o; List l = new LinkedList(); }
 
 CodeRegion.Operand Formal() : { Token n, t; }
 {
-    n = <IDENTIFIER> ":" t = <IDENTIFIER> { return new CodeRegion.Operand(n, t); }
+    n = <IDENTIFIER> ":" t = OperandType() { return new CodeRegion.Operand(n, t); }
 }
 
-void Subroutine(Architecture a) : { boolean i = false; Token m, r; List f, l = new LinkedList(); }
+void Subroutine() : { boolean i = false; Token m, r; List f, l = new LinkedList(); }
 {
     (["inline" { i = true; }] "subroutine" m = <IDENTIFIER>
-       "(" f = Formals() ")" ":" r = <IDENTIFIER> Block(l) ";"
-        { a.addSubroutine(new SubroutineDecl(i, m, f, r, l)); } )
+       "(" f = Formals() ")" ":" r = <IDENTIFIER> Block(l)
+        { arch.addSubroutine(new SubroutineDecl(i, m, f, r, l)); } )
    |("external" m = <IDENTIFIER> "(" f = Formals() ")" ":" r = <IDENTIFIER> ";"
-        { a.addSubroutine(new SubroutineDecl(i, m, f, r, null)); } )
+        { arch.addSubroutine(new SubroutineDecl(i, m, f, r, null)); } )
 
 }
 
@@ -415,6 +487,7 @@ List ExprList() : { List l = new LinkedList(); Expr e; }
 Expr Term() : { Expr e; }
 {
     ( LOOKAHEAD(2) e = CallExpr()
+    | LOOKAHEAD(2) e = DotExpr()
     | e = VarUse()
     | e = Literal()
     | e = MapAccess()
@@ -440,6 +513,11 @@ Expr VarUse() : { Token t; }
   t = <IDENTIFIER> { return new VarExpr(t); }
 }
 
+Expr DotExpr() : { }
+{
+    <IDENTIFIER> "." <IDENTIFIER> { return null; }
+}
+
 Expr Literal() : { Token t; }
 {
   (t = <INTEGER_LITERAL> { return new Literal.IntExpr(t); })
@@ -448,7 +526,16 @@ Expr Literal() : { Token t; }
 
 Expr CallExpr() : { Token t; List l; }
 {
-  t = <IDENTIFIER> l = Parameters() { return new CallExpr(t, l); }
+  t = Method() l = Parameters() { return new CallExpr(t, l); }
+}
+
+Token Method() : { Token m; }
+{
+ (
+   m = <IDENTIFIER>
+ | m = "read"
+ | m = "write"
+ ) { return m; }
 }
 
 List Parameters() : { List l = new LinkedList(); }
@@ -500,7 +587,7 @@ AssignStmt Assignment() : { AssignStmt s; }
 
 CallStmt CallStmt() : { Token m; List l; }
 {
-    m = <IDENTIFIER> l = Parameters() ";" { return new CallStmt(m, l); }
+    m = Method() l = Parameters() ";" { return new CallStmt(m, l); }
 }
 
 AssignStmt VarAssignment() : { AssignStmt s; Token v, i, j; Expr e; }
@@ -661,3 +748,12 @@ Expr Un_Expr() : { Expr e; }
 }
 
 
+Token Type() : { Token t; }
+{
+    t = <IDENTIFIER> { return t; }
+}
+
+Token OperandType() : { Token t; }
+{
+    t = <IDENTIFIER> { return t; }
+}

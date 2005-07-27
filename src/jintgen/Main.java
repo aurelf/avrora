@@ -43,6 +43,7 @@ import java.util.Properties;
 import jintgen.isdl.Architecture;
 import jintgen.gen.*;
 import jintgen.isdl.parser.ISDLParser;
+import jintgen.isdl.parser.ParseException;
 
 import avrora.util.*;
 import avrora.util.help.*;
@@ -136,56 +137,78 @@ public class Main {
         File archfile = new File(fname);
         FileInputStream fis = new FileInputStream(archfile);
         ISDLParser parser = new ISDLParser(fis);
-        Status.begin("Parsing "+fname);
         try {
+            Status.begin("Parsing "+fname);
             Architecture a = parser.Architecture();
             Status.success();
+            Status.begin("Verifying "+fname);
+            a.verify();
+            Status.success();
 
-            SectionFile sf = createSectionFile("interpreter", "INTERPRETER GENERATOR", INTERPRETER);
-            if (sf != null) {
-                // generate vanilla interpreter
-                new InterpreterGenerator(a, np(sf)).generate();
-                sf.close();
-                Status.success();
-            }
-
-            sf = createSectionFile("Instr.* inner classes", "INSTR GENERATOR", CLASSES);
-            if ( sf != null) {
-                // generate instruction classes
-                new ClassGenerator(a, np(sf)).generate();
-                sf.close();
-                Status.success();
-            }
-
-            sf = createSectionFile("codemap", "CODEBUILDER GENERATOR", CODEMAP);
-            if (sf != null) {
-                // generate instruction classes
-                new CodemapGenerator(a, np(sf)).generate();
-                sf.close();
-                Status.success();
-            }
-
-            sf = createSectionFile("disassembler", "DISASSEM GENERATOR", DISASSEM);
-            if (sf != null) {
-                // generate the disassembler
-                new DisassemblerGenerator(a, np(sf)).generate();
-                sf.close();
-                Status.success();
-            }
-
-            String distest = DISTEST.get();
-            if ( !"".equals(distest) ) {
-                Status.begin("Generating disassembler tests to " + distest);
-                File f = new File(distest);
-                new DisassemblerTestGenerator(a, f).generate();
-                Status.success();
-            }
-        } catch ( Util.Error e) {
-            Status.error(e);
-            return;
+            generateInterpreter(a);
+            generateInstrClasses(a);
+            generateCodeMap(a);
+            generateDisassembler(a);
+            generateDisassemblerTests(a);
+        } catch ( Util.Error t) {
+            Status.error(t);
+            t.report();
         } catch ( Throwable t) {
             Status.error(t);
-            return;
+            t.printStackTrace();
+        }
+    }
+
+    private static void generateDisassemblerTests(Architecture a) {
+        String distest = DISTEST.get();
+        if ( !"".equals(distest) ) {
+            Status.begin("Generating disassembler tests to " + distest);
+            File f = new File(distest);
+            new DisassemblerTestGenerator(a, f).generate();
+            Status.success();
+        }
+    }
+
+    private static void generateDisassembler(Architecture a) throws IOException {
+        SectionFile sf;
+        sf = createSectionFile("disassembler", "DISASSEM GENERATOR", DISASSEM);
+        if (sf != null) {
+            // generate the disassembler
+            new DisassemblerGenerator(a, np(sf)).generate();
+            sf.close();
+            Status.success();
+        }
+    }
+
+    private static void generateCodeMap(Architecture a) throws IOException {
+        SectionFile sf;
+        sf = createSectionFile("codemap", "CODEBUILDER GENERATOR", CODEMAP);
+        if (sf != null) {
+            // generate instruction classes
+            new CodemapGenerator(a, np(sf)).generate();
+            sf.close();
+            Status.success();
+        }
+    }
+
+    private static void generateInstrClasses(Architecture a) throws IOException {
+        SectionFile sf;
+        sf = createSectionFile("Instr.* inner classes", "INSTR GENERATOR", CLASSES);
+        if ( sf != null) {
+            // generate instruction classes
+            new ClassGenerator(a, np(sf)).generate();
+            sf.close();
+            Status.success();
+        }
+    }
+
+    private static void generateInterpreter(Architecture a) throws IOException {
+        SectionFile sf = createSectionFile("interpreter", "INTERPRETER GENERATOR", INTERPRETER);
+        if (sf != null) {
+            // generate vanilla interpreter
+            new InterpreterGenerator(a, np(sf)).generate();
+            sf.close();
+            Status.success();
         }
     }
 
@@ -244,16 +267,12 @@ public class Main {
                         -1,
                         Terminal.COLOR_GREEN,
                         -1,
-                        Terminal.COLOR_GREEN,
-                        -1,
-                        Terminal.COLOR_YELLOW,
-                        -1,
                         Terminal.COLOR_YELLOW,
                         -1,
                         Terminal.COLOR_YELLOW,
                         -1};
 
-        String[] strs = {"Usage", ": ", "jintgen", " [", "-action", "=", "action", "] [", "options", "] ", "<files>"};
+        String[] strs = {"Usage", ": ", "jintgen", " [", "options", "] ", "<architecture file>"};
         Terminal.print(colors, strs);
         Terminal.nextln();
 
