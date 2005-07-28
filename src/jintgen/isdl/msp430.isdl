@@ -58,9 +58,8 @@ architecture msp430 {
 	    }
 	    read: byte {
 	        local val: short = $regs(this);               //the value of val provides the address of contents to modify
-	        local val2: short = $regs(val);              //val2 is the contents to be modified
 	        $regs(this) = val + 1;                       //the original register's contents are incremented
-	        return val2: byte;
+	        return val: byte;
 	    }
 	    write: byte {  }                              //valid only as a source operand
 	}
@@ -665,7 +664,7 @@ architecture msp430 {
 
 
     addr-mode IMMEDREG_B {
-        operand source :IMMD_B;  //The PC points to the word following the instruction and moves the contents to dest
+        operand source: IMMD_B;  //The PC points to the word following the instruction and moves the contents to dest
         operand dest: SREG_B;
         encoding = { opcode[3:0], contofaddyatsource, 0b0111, dest }
         property syntax: String = "#%contofaddyatsource, %dest";

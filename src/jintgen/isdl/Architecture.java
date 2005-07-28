@@ -97,7 +97,7 @@ public class Architecture {
      * pass itself as a parameter.
      */
     public interface OperandVisitor {
-        public void visit(OperandDecl d);
+        public void visit(OperandTypeDecl d);
     }
 
     /**
@@ -171,7 +171,7 @@ public class Architecture {
             Iterator oi = sd.getOperandIterator();
             while (oi.hasNext()) {
                 CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
-                OperandDecl opdec = getOperandDecl(od.type.image);
+                OperandTypeDecl opdec = getOperandDecl(od.type.image);
                 if (opdec != null)
                     od.setOperandType(opdec);
             }
@@ -220,7 +220,7 @@ public class Architecture {
         Iterator oi = id.getOperandIterator();
         while (oi.hasNext()) {
             CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
-            OperandDecl opdec = getOperandDecl(od.type.image);
+            OperandTypeDecl opdec = getOperandDecl(od.type.image);
             if (opdec == null)
                 throw Util.failure("operand type undefined " + StringUtil.quote(od.type.image));
             od.setOperandType(opdec);
@@ -270,7 +270,7 @@ public class Architecture {
         instructions.add(i);
     }
 
-    public void addOperand(OperandDecl d) {
+    public void addOperand(OperandTypeDecl d) {
         printer.println("loading operand declaration " + d.name.image + "...");
         operandMap.put(d.name.image, d);
         operands.add(d);
@@ -299,7 +299,7 @@ public class Architecture {
     public void accept(OperandVisitor v) {
         Iterator i;
         i = operands.iterator();
-        while (i.hasNext()) v.visit((OperandDecl)i.next());
+        while (i.hasNext()) v.visit((OperandTypeDecl)i.next());
     }
 
     public void accept(EncodingVisitor v) {
@@ -328,8 +328,8 @@ public class Architecture {
         return (SubroutineDecl)subroutineMap.get(name);
     }
 
-    public OperandDecl getOperandDecl(String name) {
-        return (OperandDecl)operandMap.get(name);
+    public OperandTypeDecl getOperandDecl(String name) {
+        return (OperandTypeDecl)operandMap.get(name);
     }
 
 

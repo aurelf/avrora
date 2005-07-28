@@ -40,6 +40,7 @@ import jintgen.jigir.*;
 import jintgen.isdl.parser.Token;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -466,6 +467,10 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
                 } else
                     generateVarUse(e);
             }
+        }
+
+        public void visit(DotExpr e) {
+            throw Util.unimplemented();
         }
 
         private void generateVarUse(VarExpr e) {

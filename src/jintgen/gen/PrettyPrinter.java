@@ -65,6 +65,12 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         printer.print(getVariable(e.variable));
     }
 
+    public void visit(DotExpr e) {
+        printer.print(getVariable(e.operand));
+        printer.print(".");
+        printer.print(e.field.image);
+    }
+
     public void visit(MapAssignStmt s) {
         MapRep mr = getMapRep(s.mapname.image);
         mr.generateWrite(s.index, s.expr);

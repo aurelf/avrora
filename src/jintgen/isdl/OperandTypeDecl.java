@@ -33,9 +33,12 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
+import jintgen.jigir.CodeRegion;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>OperandDecl</code> class represents the declaration of a set of values (or registers) that can
@@ -45,65 +48,94 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public abstract class OperandDecl {
+public abstract class OperandTypeDecl {
 
     public final Token name;
-    public final Token kind;
-    public final int bitSize;
+    public final List subOperands;
+    public CodeRegion readMethod;
+    public CodeRegion writeMethod;
 
-    protected OperandDecl(Token n, Token b, Token k) {
+
+    protected OperandTypeDecl(Token n) {
         name = n;
-        kind = k;
-        bitSize = StringUtil.evaluateIntegerLiteral(b.image);
+        subOperands = new LinkedList();
     }
 
-    public static class Immediate extends OperandDecl {
+    public static class Value extends OperandTypeDecl {
 
         public final int low;
         public final int high;
+        public final Token kind;
+        public final int size;
 
-        public Immediate(Token n, Token b, Token k, Token l, Token h) {
-            super(n, b, k);
+        public Value(Token n, Token b, Token k, Token l, Token h) {
+            super(n);
+            kind = k;
+            size = StringUtil.evaluateIntegerLiteral(b.image);
             low = StringUtil.evaluateIntegerLiteral(l.image);
             high = StringUtil.evaluateIntegerLiteral(h.image);
         }
 
-        public boolean isImmediate() {
+        public boolean isValue() {
             return true;
         }
 
+        public void addSubOperand(CodeRegion.Operand o) {
+            throw Util.failure("Suboperands are not allowed to Value operands");
+        }
     }
 
-    public static class RegisterSet extends OperandDecl {
-        public final List members;
+    public static class SymbolSet extends OperandTypeDecl {
+        public final SymbolMapping map;
+        public final int size;
 
-        public RegisterSet(Token n, Token b, Token k, List l) {
-            super(n, b, k);
-            members = l;
+        public SymbolSet(Token n, Token b, SymbolMapping m) {
+            super(n);
+            size = StringUtil.evaluateIntegerLiteral(b.image);
+            map = m;
         }
 
-        public boolean isRegister() {
+        public boolean isSymbol() {
             return true;
         }
 
-    }
-
-    public static class RegisterEncoding {
-        public final Token name;
-        public final int value;
-
-        public RegisterEncoding(Token n, Token v) {
-            name = n;
-            value = StringUtil.evaluateIntegerLiteral(v.image);
+        public void addSubOperand(CodeRegion.Operand o) {
+            throw Util.failure("Suboperands are not allowed to SymbolSet operands");
         }
     }
 
-    public boolean isRegister() {
+    public static class Compound extends OperandTypeDecl {
+
+        public Compound(Token n) {
+            super(n);
+        }
+
+        public boolean isCompound() {
+            return true;
+        }
+    }
+
+    public CodeRegion getReadMethod() {
+        return readMethod;
+    }
+
+    public CodeRegion getWriteMethod() {
+        return writeMethod;
+    }
+
+    public boolean isCompound() {
         return false;
     }
 
-    public boolean isImmediate() {
+    public boolean isSymbol() {
         return false;
     }
 
+    public boolean isValue() {
+        return false;
+    }
+
+    public void addSubOperand(CodeRegion.Operand o) {
+        subOperands.add(o);
+    }
 }

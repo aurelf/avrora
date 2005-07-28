@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
-import jintgen.isdl.OperandDecl;
+import jintgen.isdl.OperandTypeDecl;
 
 import java.util.Iterator;
 import java.util.List;
@@ -50,23 +50,23 @@ public class CodeRegion {
     public static class Operand {
         public final Token name;
         public final Token type;
-        protected OperandDecl operandType;
+        protected OperandTypeDecl operandType;
 
         public Operand(Token n, Token t) {
             name = n;
             type = t;
         }
 
-        public void setOperandType(OperandDecl d) {
+        public void setOperandType(OperandTypeDecl d) {
             operandType = d;
         }
 
         public boolean isRegister() {
-            return operandType.isRegister();
+            return operandType.isSymbol();
         }
 
         public boolean isImmediate() {
-            return operandType.isImmediate();
+            return operandType.isValue();
         }
 
         public String getType() {
@@ -76,7 +76,7 @@ public class CodeRegion {
                 return type.image;
         }
 
-        public OperandDecl getOperandDecl() {
+        public OperandTypeDecl getOperandDecl() {
             return operandType;
         }
     }

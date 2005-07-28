@@ -194,6 +194,7 @@ TOKEN :
   | < EXTERNAL: "external" >
   | < RETURN: "return" >
   | < BOOLEAN_LITERAL: "true" | "false" >
+  | < SYMBOL: "symbol" >
   | < PSEUDO: "pseudo" >
   | < WHEN : "when" >
   | < PROPERTY: "property" >
@@ -314,7 +315,7 @@ void Global() : { Token n; }
 
 void Memory() : { Token n; }
 {
-    "memory" <DOLLAR> n = <IDENTIFIER> "(" Type() ")" ":" Type() ";"
+    "memory" <DOLLAR> n = <IDENTIFIER> "(" MapType() ")" ":" MapType() ";"
 }
 
 void AddrModeDecl() : { Token n; List o = new LinkedList(); List p = new LinkedList(); EncodingDecl e; }
@@ -352,24 +353,66 @@ void FormatDecl() : { Token n; EncodingDecl d; }
     "format" n = <IDENTIFIER> "=" d = Format(n) { arch.addEncoding(d); }
 }
 
-void OperandTypeDecl() : { Token n, k, b; }
+void OperandTypeDecl() : { Token n; OperandTypeDecl d; }
 {
-    "operand-type" n = <IDENTIFIER> [OperandKind()] (OperandBody() | ";")
+    "operand-type" n = <IDENTIFIER>  ( d = SimpleOperandType(n) | d = CompoundOperandType(n) )
+    { arch.addOperand(d); }
 }
 
-void OperandBody() : { SymbolMapping m; List o = new LinkedList(); }
+OperandTypeDecl SimpleOperandType(Token n) : { Token b; OperandTypeDecl d; }
+{
+    "[" b = <INTEGER_LITERAL> "]" ":"
+    (d = SymbolOperand(n, b) | d = ValueOperand(n, b))
+    { return d; }
+}
+
+OperandTypeDecl SymbolOperand(Token n, Token b) :
+{
+  SymbolMapping m = new SymbolMapping();
+  OperandTypeDecl.SymbolSet sd = new OperandTypeDecl.SymbolSet(n, b, m);
+}
+{
+    "symbol" OperandBody(sd, m)
+    { return sd; }
+}
+
+OperandTypeDecl ValueOperand(Token n, Token b) :
+{
+  Token t, l, h;
+  SymbolMapping m = new SymbolMapping();
+  OperandTypeDecl.Value vd;
+}
+{
+   (t = Type() "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]")
+    { vd = new OperandTypeDecl.Value(n, b, t, l, h); }
+   ( OperandBody(vd, m) | ";" )
+    { return vd; }
+}
+
+OperandTypeDecl CompoundOperandType(Token n) :
+{
+    SymbolMapping m = new SymbolMapping();
+    OperandTypeDecl.Compound cd = new OperandTypeDecl.Compound(n);
+}
+{
+    OperandBody(cd, m)
+    { return cd; }
+
+}
+
+void OperandBody(OperandTypeDecl td, SymbolMapping m) : { }
 {
     "{"
-    ( m = SymbolMapping()
-    | ReadMethod()
-    | WriteMethod()
-    | SubOperand(o) )*
+    ( SymbolMapping(m)
+    | ReadMethod(td)
+    | WriteMethod(td)
+    | SubOperand(td) )*
     "}"
 }
 
-void SubOperand(List ol) : { CodeRegion.Operand o; }
+void SubOperand(OperandTypeDecl td) : { CodeRegion.Operand o; }
 {
-    "sub-operand" o = Formal() { ol.add(o); } ";"
+    "sub-operand" o = Formal() { td.addSubOperand(o); } ";"
 }
 
 void Operand(List ol) : { CodeRegion.Operand o; }
@@ -377,48 +420,25 @@ void Operand(List ol) : { CodeRegion.Operand o; }
     "operand" o = Formal() { ol.add(o); } ";"
 }
 
-void ReadMethod() : { List s = new LinkedList(); }
+void ReadMethod(OperandTypeDecl td) : { List s = new LinkedList(); }
 {
     "read" ":" Type() Block(s)
 }
 
-void WriteMethod() : { List s = new LinkedList(); }
+void WriteMethod(OperandTypeDecl td) : { List s = new LinkedList(); }
 {
     "write" ":" Type() Block(s)
 }
 
-void OperandKind() : { Token b; }
-{
-    "[" b = <INTEGER_LITERAL> "]" ":" Type() [ Range() ]
-}
-
-void Range() : { Token l, h; }
-{
-    "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]"
-}
-
-SymbolMapping SymbolMapping() : { SymbolMapping m = new SymbolMapping(); }
+void SymbolMapping(SymbolMapping m) : {  }
 {
     "mapping" "{" MappingSetElem(m) ("," MappingSetElem(m))* "}"
-    { return m; }
 }
 
 void MappingSetElem(SymbolMapping m) : { Token n, i; }
 {
     (n = <IDENTIFIER> "=" i = <INTEGER_LITERAL>)
     { m.add(n, i); }
-}
-
-OperandDecl OperandRangeDecl(Token n, Token k, Token b) : { Token l, h; }
-{
-    "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]"
-    { return new OperandDecl.Immediate(n, b, k, l, h); }
-}
-
-Token Kind() : { Token t; }
-{
-    ( t = <IDENTIFIER> )
-    { return t; }
 }
 
 List OperandSet() : { Token i; List l = new LinkedList(); }
@@ -513,9 +533,9 @@ Expr VarUse() : { Token t; }
   t = <IDENTIFIER> { return new VarExpr(t); }
 }
 
-Expr DotExpr() : { }
+Expr DotExpr() : { Token o, f; }
 {
-    <IDENTIFIER> "." <IDENTIFIER> { return null; }
+    o = <IDENTIFIER> "." f = <IDENTIFIER> { return new DotExpr(o, f); }
 }
 
 Expr Literal() : { Token t; }
@@ -747,6 +767,11 @@ Expr Un_Expr() : { Expr e; }
   { return e; }
 }
 
+Token MapType() : { Token t; }
+{
+    ( t = "symbol" | t = Type() )
+    { return t; }
+}
 
 Token Type() : { Token t; }
 {

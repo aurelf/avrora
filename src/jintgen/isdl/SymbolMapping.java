@@ -35,6 +35,12 @@ package jintgen.isdl;
 import jintgen.isdl.parser.Token;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+
+import avrora.util.StringUtil;
+import avrora.util.Util;
 
 /**
  * @author Ben L. Titzer
@@ -42,12 +48,37 @@ import java.util.HashMap;
 public class SymbolMapping {
 
     final HashMap mapping;
+    final List list;
 
     public SymbolMapping() {
         mapping = new HashMap();
+        list = new LinkedList();
     }
 
     public void add(Token sym, Token val) {
-        mapping.put(sym.image, val);
+        String name = sym.image;
+        if ( mapping.containsKey(name) ) {
+            throw Util.failure("Symbol mapping already contains "+StringUtil.quote(name));
+        }
+        Entry entry = new Entry(name, StringUtil.evaluateIntegerLiteral(val.image));
+        mapping.put(name, entry);
+        list.add(entry);
+    }
+
+    public Iterator iterator() {
+        return list.iterator();
+    }
+
+    public Entry get(String name) {
+        return (Entry)mapping.get(name);
+    }
+
+    public static class Entry {
+        public final String name;
+        public final int value;
+        Entry(String s, int v) {
+            name = s;
+            value = v;
+        }
     }
 }

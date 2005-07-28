@@ -103,6 +103,8 @@ public interface CodeRebuilder {
 
     public Expr visit(VarExpr e, Object env);
 
+    public Expr visit(DotExpr e, Object env);
+
 
     /**
      * The <code>DepthFirst</code> class is a base implementation of the <code>CodeVisitor</code> interface
@@ -356,6 +358,11 @@ public interface CodeRebuilder {
         }
 
         public Expr visit(VarExpr e, Object env) {
+            // terminal node in the tree
+            return e;
+        }
+
+        public Expr visit(DotExpr e, Object env) {
             // terminal node in the tree
             return e;
         }

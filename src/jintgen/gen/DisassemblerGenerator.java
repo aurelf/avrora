@@ -519,7 +519,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             while ( i1.hasNext() ) {
                 CodeRegion.Operand o = (CodeRegion.Operand)i1.next();
                 printer.print(", ");
-                String getexpr = getValue(ei, o);
+                String getexpr = generateDecode(ei, o);
                 printer.print(getexpr);
             }
             printer.println(");");
@@ -552,7 +552,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             return false;
         }
 
-        private String getValue(EncodingInfo ei, CodeRegion.Operand o) {
+        private String generateDecode(EncodingInfo ei, CodeRegion.Operand o) {
             if ( ei.encoding.isConditional() ) {
                 String prefix = o.isRegister() ? "Register." : "";
                 EncodingDecl.Cond c = ei.encoding.getCond();
@@ -564,12 +564,16 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 return "getReg("+o.type+"_table, "+o.name+")";
             else {
                 // this operand is not a register
-                OperandDecl od = o.getOperandDecl();
+                //TODO: fix relative operands
+
+/*
+                OperandTypeDecl od = o.getOperandDecl();
                 if ( od.kind.image.equals("relative") ) {
                     int size = od.bitSize - 1;
                     return "relative("+o.name.image+", "+size+")"; // this operand is relative to the PC address (and word aligned)
                 }
                 else
+*/
                     return o.name.image;
             }
         }
@@ -662,25 +666,25 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
     }
 
     class OperandDeclVisitor implements Architecture.OperandVisitor {
-        public void visit(OperandDecl od) {
+        public void visit(OperandTypeDecl od) {
             // if the operand is a register set declaration, then we need to
             // generate a decoding table
-            if ( od.isRegister() )
-                generateRegisterTable(od);
+            if ( od.isSymbol() )
+                generateRegisterTable((OperandTypeDecl.SymbolSet)od);
         }
 
-        private void generateRegisterTable(OperandDecl od) {
-            int tablesize = 1 << od.bitSize;
+        private void generateRegisterTable(OperandTypeDecl.SymbolSet od) {
+            int tablesize = 1 << od.size;
             String register[] = new String[tablesize];
-            OperandDecl.RegisterSet rs = (OperandDecl.RegisterSet)od;
+            OperandTypeDecl.SymbolSet rs = (OperandTypeDecl.SymbolSet)od;
             // for each member in the operand declaration set, store the name of the register
             // corresponding to the value of the binary encoding
-            Iterator i = rs.members.iterator();
+            Iterator i = rs.map.iterator();
             while ( i.hasNext() ) {
-                OperandDecl.RegisterEncoding re = (OperandDecl.RegisterEncoding)i.next();
+                SymbolMapping.Entry re = (SymbolMapping.Entry)i.next();
                 if ( register[re.value] != null )
                     throw Util.failure("AMBIGUOUS REGISTER SET ENCODING");
-                register[re.value] = re.name.toString();
+                register[re.value] = re.name;
             }
 
             // generate an array of register references that is indexed by the value

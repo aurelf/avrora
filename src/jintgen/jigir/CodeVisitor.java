@@ -101,6 +101,8 @@ public interface CodeVisitor {
 
     public void visit(VarExpr e);
 
+    public void visit(DotExpr e);
+
 
     /**
      * The <code>DepthFirst</code> class is a base implementation of the <code>CodeVisitor</code> interface
@@ -251,10 +253,13 @@ public interface CodeVisitor {
             // terminal node in the tree
         }
 
+        public void visit(DotExpr e) {
+            // terminal node in the tree
+        }
     }
 
     /**
-     * The <code>DepthFirst</code> class is a base implementation of the <code>CodeVisitor</code> interface
+     * The <code>Default</code> class is a base implementation of the <code>CodeVisitor</code> interface
      * that visits the tree in depth-first order.
      *
      * @author Ben L. Titzer
@@ -378,6 +383,10 @@ public interface CodeVisitor {
         }
 
         public void visit(VarExpr e) {
+            error(e);
+        }
+
+        public void visit(DotExpr e) {
             error(e);
         }
 

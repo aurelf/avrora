@@ -65,6 +65,8 @@ public interface ExprVisitor {
 
     public void visit(VarExpr e);
 
+    public void visit(DotExpr e);
+
     /**
      * The <code>DepthFirst</code> class is a base implementation of the <code>ExprVisitor</code> interface
      * that visits the tree in depth-first order.
@@ -124,5 +126,8 @@ public interface ExprVisitor {
             // terminal node in the tree
         }
 
+        public void visit(DotExpr e) {
+            // terminal node in the tree
+        }
     }
 }

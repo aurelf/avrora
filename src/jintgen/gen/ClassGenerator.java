@@ -35,12 +35,14 @@ package jintgen.gen;
 import jintgen.isdl.Architecture;
 import jintgen.jigir.CodeRegion;
 import jintgen.isdl.InstrDecl;
-import jintgen.isdl.OperandDecl;
+import jintgen.isdl.OperandTypeDecl;
+import jintgen.isdl.SymbolMapping;
 import jintgen.jigir.CodeRegion;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
 
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
@@ -218,20 +220,20 @@ public class ClassGenerator {
             a.accept(this);
         }
 
-        public void visit(OperandDecl d) {
-            if (!d.isRegister()) return;
+        public void visit(OperandTypeDecl d) {
+            if (!d.isSymbol()) return;
 
-            OperandDecl.RegisterSet rset = (OperandDecl.RegisterSet)d;
+            OperandTypeDecl.SymbolSet rset = (OperandTypeDecl.SymbolSet)d;
 
             String type = d.name.image;
             printer.println("private static final Register[] " + type + "_array = {");
             printer.indent();
 
-            Iterator i = rset.members.iterator();
+            Iterator i = rset.map.iterator();
             int cntr = 0;
             while (i.hasNext()) {
-                OperandDecl.RegisterEncoding renc = (OperandDecl.RegisterEncoding)i.next();
-                printer.print("Register." + renc.name.image.toUpperCase());
+                SymbolMapping.Entry renc = (SymbolMapping.Entry)i.next();
+                printer.print("Register." + renc.name.toUpperCase());
                 if (i.hasNext()) printer.print(", ");
                 cntr++;
                 if (cntr != 0 && (cntr % 4) == 0) printer.nextln();
@@ -273,15 +275,15 @@ public class ClassGenerator {
             a.accept(this);
         }
 
-        public void visit(OperandDecl d) {
+        public void visit(OperandTypeDecl d) {
             String type = d.name.toString();
-            String ptype = d.isRegister() ? "Register" : "int";
+            String ptype = d.isSymbol() ? "Register" : "int";
             printer.startblock("private static " + ptype + " check_" + type + "(int n, " + ptype + " v)");
 
-            if (d.isRegister()) {
+            if (d.isSymbol()) {
                 printer.println("return checkRegSet(n, v, " + type + "_set);");
             } else {
-                OperandDecl.Immediate imm = (OperandDecl.Immediate)d;
+                OperandTypeDecl.Value imm = (OperandTypeDecl.Value)d;
                 printer.println("return checkRange(n, v, " + imm.low + ", " + imm.high + ");");
             }
 

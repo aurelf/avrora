@@ -241,7 +241,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
         printer.unindent();
     }
 
-    public void visit(OperandDecl d) {
+    public void visit(OperandTypeDecl d) {
         // don't care about operand declarations
     }
 
