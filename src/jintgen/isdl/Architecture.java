@@ -138,12 +138,12 @@ public class Architecture {
     }
 
     public void verify() {
-        processEncodings();
-        processSubroutines();
-        processInstructions();
+        verifyEncodings();
+        verifySubroutines();
+        verifyInstructions();
     }
 
-    private void processEncodings() {
+    private void verifyEncodings() {
         Iterator i = getEncodingIterator();
         while (i.hasNext()) {
             EncodingDecl d = (EncodingDecl)i.next();
@@ -161,7 +161,7 @@ public class Architecture {
         }
     }
 
-    private void processSubroutines() {
+    private void verifySubroutines() {
         Iterator i = subroutines.iterator();
         while (i.hasNext()) {
             SubroutineDecl sd = (SubroutineDecl)i.next();
@@ -183,7 +183,7 @@ public class Architecture {
         }
     }
 
-    private void processInstructions() {
+    private void verifyInstructions() {
         Iterator i = getInstrIterator();
         while (i.hasNext()) {
             InstrDecl id = (InstrDecl)i.next();

@@ -170,9 +170,6 @@ public class Defaults {
             actions.addClass("cfg", CFGAction.class);
             actions.addClass("gui", GUIAction.class);
             actions.addClass("isea", ISEAAction.class);
-            //--BEGIN EXPERIMENTAL: dbbc
-            actions.addClass("dbbc", DBBCAction.class);
-            //--END EXPERIMENTAL: dbbc
             actions.addClass("odpp", ODPPAction.class);
 
             // plug in a new help category for actions accesible with "-help actions"
