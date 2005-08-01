@@ -107,7 +107,7 @@ public class ConversionExpr extends Expr {
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public Expr accept(CodeRebuilder r, Object env) {
+    public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
         return r.visit(this, env);
     }
 

@@ -50,12 +50,12 @@ import java.util.Iterator;
  *
  * @author Ben L. Titzer
  */
-public class InterpreterGenerator extends PrettyPrinter implements Architecture.Visitor {
+public class InterpreterGenerator extends PrettyPrinter{
 
     protected final Architecture architecture;
 
-    protected final HashMap mapMap;
-    protected HashMap variableMap;
+    protected final HashMap<String, MapRep> mapMap;
+    protected HashMap<String, String> variableMap;
 
     protected class GetterSetterMap extends MapRep {
 
@@ -220,7 +220,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     public InterpreterGenerator(Architecture a, Printer p) {
         super(p);
         architecture = a;
-        mapMap = new HashMap();
+        mapMap = new HashMap<String, MapRep>();
 
         initializeMaps();
     }
@@ -237,7 +237,6 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
     public void generate() {
         printer.indent();
-        architecture.accept(this);
         printer.unindent();
     }
 
@@ -264,11 +263,8 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     }
 
     protected void initializeOperandMap(CodeRegion cr) {
-        variableMap = new HashMap();
-        Iterator i = cr.getOperandIterator();
-        while (i.hasNext()) {
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-
+        variableMap = new HashMap<String, String>();
+        for ( CodeRegion.Operand o : cr.getOperands() ) {
             String image = o.name.image;
             if (cr instanceof InstrDecl) {
                 if (o.isRegister())
@@ -284,11 +280,10 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
     public void visit(SubroutineDecl d) {
         if (d.inline || !d.hasBody()) return;
         printer.print("public " + d.ret.image + ' ' + d.name.image + '(');
-        Iterator i = d.getOperandIterator();
-        while (i.hasNext()) {
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+        int cntr = 0;
+        for ( CodeRegion.Operand o : d.getOperands() ) {
+            if ( cntr++ != 0 ) printer.print(", ");
             printer.print(o.type.image + ' ' + o.name.image);
-            if (i.hasNext()) printer.print(", ");
         }
         printer.print(") ");
         printer.startblock();
@@ -327,7 +322,7 @@ public class InterpreterGenerator extends PrettyPrinter implements Architecture.
 
     protected String getVariable(Token variable) {
         // TODO: get rid of direct register references
-        String var = (String)variableMap.get(variable.image);
+        String var = variableMap.get(variable.image);
         if (var == null) var = variable.image;
         return var;
     }

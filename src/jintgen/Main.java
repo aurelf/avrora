@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Properties;
 
 import jintgen.isdl.Architecture;
+import jintgen.isdl.Verifier;
 import jintgen.gen.*;
 import jintgen.isdl.parser.ISDLParser;
 import jintgen.isdl.parser.ParseException;
@@ -142,7 +143,7 @@ public class Main {
             Architecture a = parser.Architecture();
             Status.success();
             Status.begin("Verifying "+fname);
-            a.verify();
+            new Verifier(a).verify();
             Status.success();
 
             generateInterpreter(a);

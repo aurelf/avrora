@@ -89,13 +89,8 @@ public interface StmtVisitor {
             visitStmtList(s.falseBranch);
         }
 
-        protected void visitStmtList(List l) {
-            Iterator i = l.iterator();
-            // visit all the statements in the block
-            while (i.hasNext()) {
-                Stmt t = (Stmt)i.next();
-                t.accept(this);
-            }
+        protected void visitStmtList(List<Stmt> l) {
+            for ( Stmt t : l ) t.accept(this);
         }
 
         public void visit(MapAssignStmt s) {

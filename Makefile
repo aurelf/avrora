@@ -4,7 +4,7 @@
 #
 
 all:
-	javac -d bin `find src -name '*.java'`
+	javac -d bin `find src/avrora -name '*.java'`
 
 clean:
 	rm -rf `find bin -name '*.class'` `find doc -name '*.html'`
@@ -12,4 +12,4 @@ clean:
 doc: doc/index.html
 
 doc/index.html:
-	javadoc -breakiterator -sourcepath src -d doc `find src -name '*.java'`
+	javadoc -breakiterator -sourcepath src -d doc `find src/avrora -name '*.java'`

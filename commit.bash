@@ -20,9 +20,26 @@ JJ_FILES=`find src -name '*.jj'`
 
 CLASSBIN=/tmp/commit.bin/
 OLDCLASSPATH=$CLASSPATH
-VERSION_JAVA='src/avrora/Version.java'
-
+MODULES='avrora jintgen'
 ROOTPATH=`pwd`
+JAVAC_avrora='javac'
+JAVAC_jintgen='javac5'
+JAVA_avrora='java'
+JAVA_jintgen='java5'
+
+removeOldVersions() {
+	for m in $MODULES; do
+	    rm -f /tmp/${m}Version.java
+	done
+}
+
+restoreOldVersions() {
+	for m in $MODULES; do
+	    if `test -e /tmp/${m}Version.java`; then
+		cp /tmp/${m}Version.java $ROOTPATH/src/$m/Version.java
+	    fi
+	done
+}
 
 # routine to check for successful CVS commit conditions
 checkSuccess() {
@@ -33,10 +50,9 @@ checkSuccess() {
 	echo "*** STOP: $2 ***"
 	$3
 	cat /tmp/commit.reason
-	if `test -e /tmp/oldVersion.java`; then
-	    cp /tmp/oldVersion.java $ROOTPATH/$VERSION_JAVA
-	    rm -f /tmp/oldVersion.java
-	fi
+	# replace all old version files
+	restoreOldVersions
+	removeOldVersions
 	exit 1
     fi
 }
@@ -83,24 +99,38 @@ else
     checkSuccess 'No files are missing from CVS.' 'Files are missing here that are in CVS.' 'assembleCheckinList'
 fi
 
-echo Incrementing build number...
-test -e $VERSION_JAVA
-checkSuccess 'Version.java exists.' 'Version.java does not exist' 'echo'
-
-cp $VERSION_JAVA /tmp/oldVersion.java
-awk '{ if ( $1 == "public" && $3 == "int" && $4 == "commit" ) printf("    public final int commit = %d;\n",($6+1)); else print }' /tmp/oldVersion.java > $VERSION_JAVA
-
-
-echo Attempting to compile complete project...
-
 if `test -e $CLASSBIN`; then
     rm -rf $CLASSBIN
 fi
 mkdir $CLASSBIN
 CLASSPATH=
-javac -d $CLASSBIN -classpath $CLASSBIN $JAVA_FILES &> /tmp/commit.log
-checkSuccess 'Compiled successfully.' 'There were compilation errors building the project.' 'assembleCompileErrors'
 
+for m in $MODULES; do
+    echo "Checking module $m..."
+    MODULE_FILES=`find src/$m -name '*.java'`
+
+    cvs diff src/$m &> /tmp/commit.log
+    if `test "$?" = 0`; then
+	echo " -> No changes to commit."
+    else
+
+    VERSION_JAVA=src/$m/Version.java
+
+    echo "> Incrementing build number..."
+    test -e $VERSION_JAVA
+    checkSuccess 'Version.java exists.' 'Version.java does not exist' 'echo'
+
+    cp $VERSION_JAVA /tmp/${m}Version.java
+    awk '{ if ( $1 == "public" && $3 == "int" && $4 == "commit" ) printf("    public final int commit = %d;\n",($6+1)); else print }' /tmp/${m}Version.java > $VERSION_JAVA
+    fi
+
+    eval JAVAC=\$JAVAC_$m
+
+    echo "> Compiling $m with $JAVAC..."
+    $JAVAC -d $CLASSBIN -classpath $CLASSBIN $MODULE_FILES &> /tmp/commit.log
+    checkSuccess 'Compiled successfully.' 'There were compilation errors building the project.' 'assembleCompileErrors'
+done
+   
 TESTS='interpreter probes disassembler interrupts timers'
 for t in $TESTS; do
 
@@ -129,4 +159,4 @@ cp -r $CLASSBIN/* $OLDCLASSPATH/  &> /tmp/commit.log
 
 checkSuccess 'Copy completed successfully.' 'There were errors copying the classes.' 'assembleCompileErrors'
 
-rm -f /tmp/oldVersion.java
+removeOldVersions

@@ -35,6 +35,7 @@ package jintgen.isdl;
 import avrora.util.Util;
 import jintgen.jigir.Expr;
 import jintgen.jigir.CodeRegion;
+import jintgen.jigir.Stmt;
 import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
 
@@ -54,9 +55,9 @@ public class InstrDecl extends CodeRegion {
      */
     public final Token name;
 
-    public List encodingList;
+    public List<EncodingDecl> encodingList;
 
-    public List propertyList;
+    public List<Property> propertyList;
 
     public final String className;
 
@@ -71,7 +72,7 @@ public class InstrDecl extends CodeRegion {
      *
      * @param n the name of the instruction as a string
      */
-    public InstrDecl(boolean ps, Token n, List o, List p, List s, List el) {
+    public InstrDecl(boolean ps, Token n, List<CodeRegion.Operand> o, List<Property> p, List<Stmt> s, List<EncodingDecl> el) {
         super(o, s);
         pseudo = ps;
         name = n;
@@ -105,5 +106,9 @@ public class InstrDecl extends CodeRegion {
 
     public String getSyntax() {
         throw Util.unimplemented();
+    }
+
+    public Iterable<EncodingDecl> getEncodings() {
+        return encodingList;
     }
 }

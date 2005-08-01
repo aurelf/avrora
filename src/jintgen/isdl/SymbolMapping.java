@@ -47,12 +47,12 @@ import avrora.util.Util;
  */
 public class SymbolMapping {
 
-    final HashMap mapping;
-    final List list;
+    final HashMap<String, Entry> mapping;
+    final List<Entry> list;
 
     public SymbolMapping() {
-        mapping = new HashMap();
-        list = new LinkedList();
+        mapping = new HashMap<String, Entry>();
+        list = new LinkedList<Entry>();
     }
 
     public void add(Token sym, Token val) {
@@ -65,12 +65,12 @@ public class SymbolMapping {
         list.add(entry);
     }
 
-    public Iterator iterator() {
-        return list.iterator();
+    public Iterable<Entry> getEntries() {
+        return list;
     }
 
     public Entry get(String name) {
-        return (Entry)mapping.get(name);
+        return mapping.get(name);
     }
 
     public static class Entry {

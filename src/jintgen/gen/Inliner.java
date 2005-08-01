@@ -57,7 +57,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class Inliner extends StmtRebuilder.DepthFirst {
+public class Inliner extends StmtRebuilder.DepthFirst<Object> {
     int tmpCount;
 
     private Architecture architecture;
@@ -68,11 +68,11 @@ public class Inliner extends StmtRebuilder.DepthFirst {
         Context caller;
         String returnTemp;
         SubroutineDecl curSubroutine;
-        HashMap varMap;
+        HashMap<String, String> varMap;
 
         Context(Context c) {
             caller = c;
-            varMap = new HashMap();
+            varMap = new HashMap<String, String>();
         }
 
         String newTemp(String orig) {
@@ -83,7 +83,7 @@ public class Inliner extends StmtRebuilder.DepthFirst {
         }
 
         String varName(String n) {
-            String nn = (String)varMap.get(n);
+            String nn = varMap.get(n);
             if (nn == null && caller != null) nn = caller.varName(n);
             if (nn == null) return n;
             return nn;
@@ -96,8 +96,8 @@ public class Inliner extends StmtRebuilder.DepthFirst {
         context = new Context(null);
     }
 
-    public LinkedList process(List l) {
-        return (LinkedList)visitStmtList(l, null);
+    public List<Stmt> process(List<Stmt> l) {
+        return visitStmtList(l, null);
     }
 
     public Stmt visit(CallStmt s, Object env) {
@@ -143,18 +143,15 @@ public class Inliner extends StmtRebuilder.DepthFirst {
         return context.newTemp(orig);
     }
 
-    protected String inlineCall(Token m, SubroutineDecl d, List args) {
+    protected String inlineCall(Token m, SubroutineDecl d, List<Expr> args) {
         if (d.numOperands() != args.size())
             Util.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ':' + m.beginColumn);
 
         Context nc = new Context(context);
 
-        Iterator formal_iter = d.getOperandIterator();
-        Iterator arg_iter = args.iterator();
-
-        while (formal_iter.hasNext()) {
-            CodeRegion.Operand f = (CodeRegion.Operand)formal_iter.next();
-            Expr e = (Expr)arg_iter.next();
+        Iterator<Expr> arg_iter = args.iterator();
+        for ( CodeRegion.Operand f : d.getOperands() ) {
+            Expr e = arg_iter.next();
 
             // get a new temporary
             String nn = nc.newTemp(f.name.image);

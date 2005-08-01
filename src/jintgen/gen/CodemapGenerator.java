@@ -49,11 +49,11 @@ import java.util.List;
 /**
  * @author Ben L. Titzer
  */
-public class CodemapGenerator implements Architecture.InstrVisitor {
+public class CodemapGenerator {
     private final Architecture architecture;
     private final Printer printer;
 
-    HashMap registerMap = new HashMap();
+    HashMap<String, Integer> registerMap = new HashMap<String, Integer>();
 
     public CodemapGenerator(Architecture a, Printer p) {
         architecture = a;
@@ -63,7 +63,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
     public void generate() {
         initializeRegisterMap();
         printer.indent();
-        architecture.accept(this);
+        for ( InstrDecl d : architecture.getInstructions() ) visit(d);
         generateHelperMethods();
         printer.unindent();
     }
@@ -89,14 +89,12 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         printer.println("Stmt stmt;");
 
         sgen.lastblock = -1;
-        egen.operands = new HashMap();
+        egen.operands = new HashMap<String, Operand>();
 
         int regcount = 0;
         int immcount = 0;
-        Iterator i = d.getOperandIterator();
-        while (i.hasNext()) {
+        for ( CodeRegion.Operand o : d.getOperands() ) {
             Operand op = new Operand();
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
             if (o.isRegister()) {
                 op.name = "r" + (++regcount);
                 op.integer = false;
@@ -121,7 +119,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
 
     protected int biggestList;
 
-    protected String generateBlock(List stmts, String comment) {
+    protected String generateBlock(List<Stmt> stmts, String comment) {
         String lname = "list" + (++sgen.lastblock);
 
         printer.println("LinkedList " + lname + " = new LinkedList();");
@@ -131,9 +129,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
             printer.println(lname + ".addLast(stmt);");
         }
 
-        Iterator i = stmts.iterator();
-        while (i.hasNext()) {
-            Stmt s = (Stmt)i.next();
+        for ( Stmt s : stmts ) {
             s.accept(sgen);
             printer.println(lname + ".addLast(stmt);");
         }
@@ -161,7 +157,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
         }
     }
 
-    protected void generateExprList(List exprs) {
+    protected void generateExprList(List<Expr> exprs) {
         int len = exprs.size();
         String hname = "tolist" + len;
         if (len > biggestList) biggestList = len;
@@ -169,12 +165,10 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
             printer.print("new LinkedList()");
         } else {
             printer.print(hname + '(');
-            Iterator i = exprs.iterator();
-            while (i.hasNext()) {
-                Expr e = (Expr)i.next();
+            int cntr = 0;
+            for ( Expr e : exprs ) {
+                if ( cntr++ != 0 ) printer.print(", ");
                 e.accept(egen);
-                if (i.hasNext())
-                    printer.print(", ");
             }
             printer.print(")");
         }
@@ -298,7 +292,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
     }
 
     protected class ExprGenerator implements CodeVisitor {
-        HashMap operands;
+        HashMap<String, Operand> operands;
 
         public void generate(Arith.BinOp e, String clname) {
             printer.print("new Arith.BinOp." + clname + '(');
@@ -490,7 +484,7 @@ public class CodemapGenerator implements Architecture.InstrVisitor {
 
 
         protected Integer getRegister(String name) {
-            return (Integer)registerMap.get(name);
+            return registerMap.get(name);
         }
 
     }

@@ -39,19 +39,19 @@ import java.util.*;
 /**
  * @author Ben L. Titzer
  */
-public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
+public class DeadCodeEliminator extends StmtRebuilder.DepthFirst<DeadCodeEliminator.DefUseEnvironment> {
 
     Set globals;
 
     protected class DefUseEnvironment {
         DefUseEnvironment parent;
-        HashSet dead;
-        HashSet alive;
+        HashSet<String> dead;
+        HashSet<String> alive;
 
         DefUseEnvironment(DefUseEnvironment parent) {
             this.parent = parent;
-            alive = new HashSet();
-            dead = new HashSet();
+            alive = new HashSet<String>();
+            dead = new HashSet<String>();
         }
 
         void use(String var) {
@@ -80,21 +80,17 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
         }
 
         private void addLiveIns(DefUseEnvironment sibling) {
-            Iterator i = sibling.alive.iterator();
-            while (i.hasNext()) {
-                Object o = i.next();
-                parent.alive.add(o);
+            for ( String s : sibling.alive ) {
+                parent.alive.add(s);
             }
         }
 
         private void addDead(DefUseEnvironment sibling) {
-            Iterator i = dead.iterator();
-            while (i.hasNext()) {
-                Object o = i.next();
+            for ( String s : dead ) {
                 // dead on both branches
-                if (sibling.dead.contains(o)) {
-                    parent.alive.remove(o);
-                    parent.dead.add(o);
+                if (sibling.dead.contains(s)) {
+                    parent.alive.remove(s);
+                    parent.dead.add(s);
                 }
             }
         }
@@ -104,21 +100,19 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
         this.globals = globals;
     }
 
-    public LinkedList process(LinkedList stmts) {
+    public List<Stmt> process(List<Stmt> stmts) {
         DefUseEnvironment du = new DefUseEnvironment(null);
         du.alive.addAll(globals);
-        return (LinkedList)visitStmtList(stmts, du);
+        return visitStmtList(stmts, du);
     }
 
-    public List visitStmtList(List l, Object env) {
+    public List<Stmt> visitStmtList(List<Stmt> l, DefUseEnvironment denv) {
         Collections.reverse(l);
-        List nl = new LinkedList();
+        List<Stmt> nl = new LinkedList<Stmt>();
         boolean changed = false;
 
-        Iterator i = l.iterator();
-        while (i.hasNext()) {
-            Stmt sa = (Stmt)i.next();
-            Stmt na = sa.accept(this, env);
+        for ( Stmt sa : l ) {
+            Stmt na = sa.accept(this, denv);
             if (na == null) {
                 changed = true;
                 continue;
@@ -135,13 +129,11 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
         return l;
     }
 
-    public Stmt visit(IfStmt s, Object env) {
-        DefUseEnvironment denv = (DefUseEnvironment)env;
-
+    public Stmt visit(IfStmt s, DefUseEnvironment denv) {
         DefUseEnvironment tenv = new DefUseEnvironment(denv);
-        List nt = visitStmtList(s.trueBranch, tenv);
+        List<Stmt> nt = visitStmtList(s.trueBranch, tenv);
         DefUseEnvironment fenv = new DefUseEnvironment(denv);
-        List nf = visitStmtList(s.falseBranch, fenv);
+        List<Stmt> nf = visitStmtList(s.falseBranch, fenv);
 
         tenv.mergeIntoParent(fenv);
 
@@ -153,30 +145,25 @@ public class DeadCodeEliminator extends StmtRebuilder.DepthFirst {
             return s;
     }
 
-    public Stmt visit(DeclStmt s, Object env) {
-        DefUseEnvironment denv = (DefUseEnvironment)env;
-
+    public Stmt visit(DeclStmt s, DefUseEnvironment denv) {
         if (denv.isDead(s.name.toString())) return null;
 
         denv.def(s.name.toString());
 
-        s.init.accept(this, env);
+        s.init.accept(this, denv);
         return s;
     }
 
-    public Stmt visit(VarAssignStmt s, Object env) {
-        DefUseEnvironment denv = (DefUseEnvironment)env;
-
+    public Stmt visit(VarAssignStmt s, DefUseEnvironment denv) {
         if (denv.isDead(s.variable.toString())) return null;
 
         denv.def(s.variable.toString());
 
-        s.expr.accept(this, env);
+        s.expr.accept(this, denv);
         return s;
     }
 
-    public Expr visit(VarExpr e, Object env) {
-        DefUseEnvironment denv = (DefUseEnvironment)env;
+    public Expr visit(VarExpr e, DefUseEnvironment denv) {
         denv.use(e.variable.toString());
         return e;
     }

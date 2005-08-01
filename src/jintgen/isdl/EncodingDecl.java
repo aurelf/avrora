@@ -51,13 +51,13 @@ public class EncodingDecl {
 
     protected final int prio;
 
-    public final List fields;
+    public final List<Expr> fields;
 
     protected int bitWidth = -1;
 
     protected Cond condition;
 
-    public EncodingDecl(Token n, Token pr, List f) {
+    public EncodingDecl(Token n, Token pr, List<Expr> f) {
         name = n;
         fields = f;
         if ( pr == null ) {
@@ -89,10 +89,10 @@ public class EncodingDecl {
 
     public static class Derived extends EncodingDecl {
         public final Token pname;
-        public final List subst;
+        public final List<Substitution> subst;
         public EncodingDecl parent;
 
-        public Derived(Token n, Token pr, Token p, List s) {
+        public Derived(Token n, Token pr, Token p, List<Substitution> s) {
             super(n, pr, null);
             pname = p;
             subst = s;
@@ -118,9 +118,7 @@ public class EncodingDecl {
 
     private int computeBitWidth() {
         int accum = 0;
-        Iterator i = fields.iterator();
-        while (i.hasNext()) {
-            Expr e = (Expr)i.next();
+        for ( Expr e : fields ) {
             accum += e.getBitWidth();
         }
         return accum;

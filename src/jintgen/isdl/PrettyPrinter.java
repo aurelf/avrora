@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,70 +30,81 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jintgen.gen;
+package jintgen.isdl;
 
 import jintgen.jigir.*;
+import avrora.util.Printer;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * @author Ben L. Titzer
  */
-public class Canonicalizer extends StmtRebuilder.DepthFirst<Object> {
+public class PrettyPrinter extends StmtVisitor.DepthFirst {
 
-    int tempcount;
+    final Printer p;
+    private Architecture arch;
 
-    public Expr visit(MapExpr e, Object env) {
-        Expr ni = liftExpr(e.index, env);
-        return extractExpr(new MapExpr(e.mapname, ni));
+    PrettyPrinter(Architecture arch, Printer p) {
+        this.arch = arch;
+        this.p = p;
     }
 
-    public Expr visit(CallExpr e, Object env) {
-        List<Expr> ne = visitExprList(e.args, env);
-        return extractExpr(new CallExpr(e.method, ne));
+    public void visitStmtList(List<Stmt> s) {
+        p.startblock();
+        if (s == null) {
+            p.println(" // empty body");
+        } else {
+            for ( Stmt st : s ) st.accept(this);
+
+        }
+        p.endblock();
     }
 
-    public Stmt visit(MapAssignStmt e, Object env) {
-        Expr ni = liftExpr(e.index, env);
-        Expr nv = liftExpr(e.expr, env);
-        return new MapAssignStmt(e.mapname, ni, nv);
+    public void visit(IfStmt s) {
+        p.print("if ( ");
+        p.print(s.cond.toString());
+        p.print(" ) ");
+        visitStmtList(s.trueBranch);
+        p.print("else ");
+        visitStmtList(s.falseBranch);
     }
 
-    public Stmt visit(MapBitAssignStmt e, Object env) {
-        Expr ni = liftExpr(e.index, env);
-        Expr nb = liftExpr(e.bit, env);
-        Expr nv = liftExpr(e.expr, env);
-        return new MapBitAssignStmt(e.mapname, ni, nb, nv);
+    public void visit(CallStmt s) {
+        p.println(s.toString());
     }
 
-    public Stmt visit(MapBitRangeAssignStmt e, Object env) {
-        Expr ni = liftExpr(e.index, env);
-        Expr nv = liftExpr(e.expr, env);
-        return new MapBitRangeAssignStmt(e.mapname, ni, e.low_bit, e.high_bit, nv);
+    public void visit(DeclStmt s) {
+        p.println(s.toString());
     }
 
-    protected Expr liftExpr(Expr e, Object env) {
-        Expr ne = e.accept(this, env);
-
-        if (ne.isVariable()) return ne;
-        if (ne.isLiteral()) return ne;
-
-        return extractExpr(ne);
-
+    public void visit(MapAssignStmt s) {
+        p.println(s.toString());
     }
 
-    private Expr extractExpr(Expr ne) {
-        String tmpname = "_canon_tmp_" + (tempcount++);
-
-        // TODO: get correct type!
-        addStmt(new DeclStmt(tmpname, "int", ne));
-        return new VarExpr(tmpname);
+    public void visit(MapBitAssignStmt s) {
+        p.println(s.toString());
     }
 
-    public List<Stmt> process(List<Stmt> stmts) {
-        return visitStmtList(stmts, null);
+    public void visit(MapBitRangeAssignStmt s) {
+        p.println(s.toString());
     }
 
+    public void visit(ReturnStmt s) {
+        p.println(s.toString());
+    }
+
+    public void visit(VarAssignStmt s) {
+        p.println(s.toString());
+    }
+
+    public void visit(VarBitAssignStmt s) {
+        p.println(s.toString());
+    }
+
+    public void visit(VarBitRangeAssignStmt s) {
+        p.println(s.toString());
+    }
 
 }

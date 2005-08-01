@@ -174,7 +174,7 @@ public abstract class Expr {
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public abstract Expr accept(CodeRebuilder r, Object env);
+    public abstract <Env> Expr accept(CodeRebuilder<Env> r, Env env);
 
     /**
      * The <code>innerString()</code> method is a utility to embed an expression in parentheses only if its

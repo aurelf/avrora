@@ -60,63 +60,11 @@ public class Architecture {
 
     public final Token name;
 
-    HashMap subroutineMap;
-    HashMap instructionMap;
-    HashMap operandMap;
-    HashMap encodingMap;
-
-    List subroutines;
-    List instructions;
-    List operands;
-    List encodings;
-
-    /**
-     * The <code>InstrVisitor</code> interface is a simple interface that can be used to iterate
-     * over the instructions declared in the instruction set specification. A class implementing
-     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
-     * pass itself as a parameter.
-     */
-    public interface InstrVisitor {
-        public void visit(InstrDecl d);
-    }
-
-    /**
-     * The <code>SubroutineVisitor</code> interface is a simple interface that can be used to iterate
-     * over the subroutines declared in the instruction set specification. A class implementing
-     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
-     * pass itself as a parameter.
-     */
-    public interface SubroutineVisitor {
-        public void visit(SubroutineDecl d);
-    }
-
-    /**
-     * The <code>OperandVisitor</code> interface is a simple interface that can be used to iterate
-     * over the operands declared in the instruction set specification. A class implementing
-     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
-     * pass itself as a parameter.
-     */
-    public interface OperandVisitor {
-        public void visit(OperandTypeDecl d);
-    }
-
-    /**
-     * The <code>EncodingVisitor</code> interface is a simple interface that can be used to iterate
-     * over the encodings declared in the instruction set specification. A class implementing
-     * this interface can call the <code>accept()</code> method of <code>Architecture</code> and
-     * pass itself as a parameter.
-     */
-    public interface EncodingVisitor {
-        public void visit(EncodingDecl d);
-    }
-
-    /**
-     * The <code>Visitor</code> class represents a visitor over the elements of the architecture description.
-     * It has methods to visit each subroutine, instruction, operand, and encoding declared in the
-     * specification.
-     */
-    public interface Visitor extends InstrVisitor, SubroutineVisitor, OperandVisitor, EncodingVisitor {
-    }
+    protected final HashList<String, SubroutineDecl> subroutineMap;
+    protected final HashList<String, InstrDecl> instructionMap;
+    protected final HashList<String, OperandTypeDecl> operandMap;
+    protected final HashList<String, EncodingDecl> encodingMap;
+    protected final HashList<String, AddressingModeDecl> addrMap;
 
     /**
      * The constructor for the <code>Architecture</code> class creates an instance with the specified
@@ -126,280 +74,68 @@ public class Architecture {
     public Architecture(Token n) {
         name = n;
 
-        subroutineMap = new HashMap();
-        instructionMap = new HashMap();
-        operandMap = new HashMap();
-        encodingMap = new HashMap();
-
-        subroutines = new LinkedList();
-        instructions = new LinkedList();
-        operands = new LinkedList();
-        encodings = new LinkedList();
+        subroutineMap = new HashList<String, SubroutineDecl>();
+        instructionMap = new HashList<String, InstrDecl>();
+        operandMap = new HashList<String, OperandTypeDecl>();
+        encodingMap = new HashList<String, EncodingDecl>();
+        addrMap = new HashList<String, AddressingModeDecl>();
     }
 
-    public void verify() {
-        verifyEncodings();
-        verifySubroutines();
-        verifyInstructions();
+    public Iterable<SubroutineDecl> getSubroutines() {
+        return subroutineMap;
     }
 
-    private void verifyEncodings() {
-        Iterator i = getEncodingIterator();
-        while (i.hasNext()) {
-            EncodingDecl d = (EncodingDecl)i.next();
-            if (printer.enabled) {
-                printer.print("processing encoding " + d.name.image + ' ');
-            }
-
-            if (d instanceof EncodingDecl.Derived) {
-                EncodingDecl.Derived dd = (EncodingDecl.Derived)d;
-                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
-                dd.setParent(parent);
-            }
-
-            printer.println("-> result: " + d.getBitWidth() + " bits");
-        }
+    public Iterable<InstrDecl> getInstructions() {
+        return instructionMap;
     }
 
-    private void verifySubroutines() {
-        Iterator i = subroutines.iterator();
-        while (i.hasNext()) {
-            SubroutineDecl sd = (SubroutineDecl)i.next();
-            printer.print("processing subroutine " + sd.name + ' ');
-
-            // find operand decl
-            Iterator oi = sd.getOperandIterator();
-            while (oi.hasNext()) {
-                CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
-                OperandTypeDecl opdec = getOperandDecl(od.type.image);
-                if (opdec != null)
-                    od.setOperandType(opdec);
-            }
-
-            if (printer.enabled) {
-                new PrettyPrinter(printer).visitStmtList(sd.getCode());
-            }
-
-        }
+    public Iterable<OperandTypeDecl> getOperandTypes() {
+        return operandMap;
     }
 
-    private void verifyInstructions() {
-        Iterator i = getInstrIterator();
-        while (i.hasNext()) {
-            InstrDecl id = (InstrDecl)i.next();
-            printer.print("processing instruction " + id.name + ' ');
-
-            optimizeCode(id);
-            verifyEncodings(id);
-            verifyOperandTypes(id);
-            verifyTiming(id);
-
-            if (printer.enabled) {
-                new PrettyPrinter(printer).visitStmtList(id.getCode());
-            }
-
-        }
+    public Iterable<EncodingDecl> getEncodings() {
+        return encodingMap;
     }
 
-    private void verifyTiming(InstrDecl id) {
-        // check that cycles make sense
-        if (id.getCycles() < 0)
-            throw Util.failure("instruction " + id.name.image + " has negative cycle count");
-    }
-
-    private void optimizeCode(InstrDecl id) {
-        // inline and optimize the body of the instruction
-        List code = id.getCode();
-        code = new Inliner(this).process(code);
-
-        id.setCode(code);
-    }
-
-    private void verifyOperandTypes(InstrDecl id) {
-        // find operand decl
-        Iterator oi = id.getOperandIterator();
-        while (oi.hasNext()) {
-            CodeRegion.Operand od = (CodeRegion.Operand)oi.next();
-            OperandTypeDecl opdec = getOperandDecl(od.type.image);
-            if (opdec == null)
-                throw Util.failure("operand type undefined " + StringUtil.quote(od.type.image));
-            od.setOperandType(opdec);
-        }
-    }
-
-    private void verifyEncodings(InstrDecl id) {
-        // for each of the declared encodings, find the parent and verify the size
-        Iterator ei = id.encodingList.iterator();
-        while ( ei.hasNext() ) {
-            EncodingDecl encoding = (EncodingDecl)ei.next();
-            if (encoding instanceof EncodingDecl.Derived) {
-                // find parent encoding
-                EncodingDecl.Derived dd = (EncodingDecl.Derived)encoding;
-                EncodingDecl parent = (EncodingDecl)encodingMap.get(dd.pname.image);
-                dd.setParent(parent);
-            }
-
-            int encodingSize = encoding.getBitWidth();
-            if (encodingSize <= 0 || encodingSize % 16 != 0)
-                throw Util.failure("encoding not word aligned: " + id.name.image + " is " + encodingSize + " bits");
-            id.setEncodingSize(encodingSize);
-        }
-    }
-
-    public Iterator getInstrIterator() {
-        return instructions.iterator();
-    }
-
-    public Iterator getEncodingIterator() {
-        return encodings.iterator();
-    }
-
-    public Iterator getSubroutineIterator() {
-        return subroutines.iterator();
+    public Iterable<AddressingModeDecl> getAddressingModes() {
+        return addrMap;
     }
 
     public void addSubroutine(SubroutineDecl d) {
         printer.println("loading subroutine " + d.name.image + "...");
-        subroutineMap.put(d.name.image, d);
-        subroutines.add(d);
+        subroutineMap.add(d.name.image, d);
     }
 
     public void addInstruction(InstrDecl i) {
         printer.println("loading instruction " + i.name.image + "...");
-        instructionMap.put(i.name.image, i);
-        instructions.add(i);
+        instructionMap.add(i.name.image, i);
     }
 
     public void addOperand(OperandTypeDecl d) {
         printer.println("loading operand declaration " + d.name.image + "...");
-        operandMap.put(d.name.image, d);
-        operands.add(d);
+        operandMap.add(d.name.image, d);
     }
 
     public void addEncoding(EncodingDecl d) {
         printer.println("loading encoding format " + d.name.image + "...");
-        encodingMap.put(d.name.image, d);
-        encodings.add(d);
-    }
-
-    /**
-     * The <code>accept()</code> method implements part of the visitor pattern that allows a visitor to visit
-     * each part of the architecture description.
-     *
-     * @param v the visitor to accept
-     */
-    public void accept(Visitor v) {
-
-        accept((OperandVisitor)v);
-        accept((EncodingVisitor)v);
-        accept((SubroutineVisitor)v);
-        accept((InstrVisitor)v);
-    }
-
-    public void accept(OperandVisitor v) {
-        Iterator i;
-        i = operands.iterator();
-        while (i.hasNext()) v.visit((OperandTypeDecl)i.next());
-    }
-
-    public void accept(EncodingVisitor v) {
-        Iterator i;
-        i = encodings.iterator();
-        while (i.hasNext()) v.visit((EncodingDecl)i.next());
-    }
-
-    public void accept(SubroutineVisitor v) {
-        Iterator i;
-        i = subroutines.iterator();
-        while (i.hasNext()) v.visit((SubroutineDecl)i.next());
-    }
-
-    public void accept(InstrVisitor v) {
-        Iterator i;
-        i = instructions.iterator();
-        while (i.hasNext()) v.visit((InstrDecl)i.next());
+        encodingMap.add(d.name.image, d);
     }
 
     public InstrDecl getInstruction(String name) {
-        return (InstrDecl)instructionMap.get(name);
+        return instructionMap.get(name);
     }
 
     public SubroutineDecl getSubroutine(String name) {
-        return (SubroutineDecl)subroutineMap.get(name);
+        return subroutineMap.get(name);
     }
 
     public OperandTypeDecl getOperandDecl(String name) {
-        return (OperandTypeDecl)operandMap.get(name);
+        return operandMap.get(name);
     }
 
-
-    public class PrettyPrinter extends StmtVisitor.DepthFirst {
-
-        final Printer p;
-
-        PrettyPrinter(Printer p) {
-            this.p = p;
-        }
-
-        public void visitStmtList(List s) {
-            p.startblock();
-            if (s == null) {
-                p.println(" // empty body");
-            } else {
-                Iterator i = s.iterator();
-                while (i.hasNext()) {
-                    Stmt st = (Stmt)i.next();
-                    st.accept(this);
-                }
-            }
-            p.endblock();
-        }
-
-        public void visit(IfStmt s) {
-            p.print("if ( ");
-            p.print(s.cond.toString());
-            p.print(" ) ");
-            visitStmtList(s.trueBranch);
-            p.print("else ");
-            visitStmtList(s.falseBranch);
-        }
-
-        public void visit(CallStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(DeclStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(MapAssignStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(MapBitAssignStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(MapBitRangeAssignStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(ReturnStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(VarAssignStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(VarBitAssignStmt s) {
-            p.println(s.toString());
-        }
-
-        public void visit(VarBitRangeAssignStmt s) {
-            p.println(s.toString());
-        }
-
+    public EncodingDecl getEncoding(String name) {
+        return encodingMap.get(name);
     }
+
 
 }

@@ -54,7 +54,7 @@ public class CallExpr extends Expr {
      * The <code>args</code> fields stores a reference to a list of expressions that are evaluated and passed
      * as arguments to the subroutine.
      */
-    public final List args;
+    public final List<Expr> args;
 
     /**
      * The constructor of the <code>CallExpr</code> class simply initializes the references to the subroutine
@@ -63,7 +63,7 @@ public class CallExpr extends Expr {
      * @param m the name of the subroutine as a string
      * @param a list of expressions representing the arguments to the subroutine
      */
-    public CallExpr(Token m, List a) {
+    public CallExpr(Token m, List<Expr> a) {
         method = m;
         args = a;
     }
@@ -75,7 +75,7 @@ public class CallExpr extends Expr {
      * @param m the name of the subroutine as a string
      * @param a list of expressions representing the arguments to the subroutine
      */
-    public CallExpr(String m, List a) {
+    public CallExpr(String m, List<Expr> a) {
         method = new Token();
         method.image = m;
         args = a;
@@ -109,7 +109,7 @@ public class CallExpr extends Expr {
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public Expr accept(CodeRebuilder r, Object env) {
+    public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
         return r.visit(this, env);
     }
 

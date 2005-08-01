@@ -130,7 +130,7 @@ public class DeclStmt extends Stmt {
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
-    public Stmt accept(StmtRebuilder r, Object env) {
+    public <Env> Stmt accept(StmtRebuilder<Env> r, Env env) {
         return r.visit(this, env);
     }
 }

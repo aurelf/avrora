@@ -176,9 +176,7 @@ public interface CodeVisitor {
         }
 
         public void visit(CallExpr e) {
-            Iterator i = e.args.iterator();
-            while (i.hasNext()) {
-                Expr a = (Expr)i.next();
+            for ( Expr a : e.args ) {
                 a.accept(this);
             }
         }

@@ -55,13 +55,13 @@ import java.util.Map;
 /**
  * @author Ben L. Titzer
  */
-public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
+public class DisassemblerTestGenerator{
 
     Architecture architecture;
     File directory;
     String dname;
     Printer printer;
-    HashMap operandGenerators;
+    HashMap<String, OperandGenerator> operandGenerators;
 
     public DisassemblerTestGenerator(Architecture a, File dir) {
         architecture = a;
@@ -69,7 +69,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             Util.userError("must specify directory for testcases");
         dname = dir.getAbsolutePath();
         directory = dir;
-        operandGenerators = new HashMap();
+        operandGenerators = new HashMap<String, OperandGenerator>();
         operandGenerators.put("immediate", new ImmediateGenerator());
         operandGenerators.put("address", new ImmediateGenerator());
         operandGenerators.put("symbol", new SymbolGenerator());
@@ -78,7 +78,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     }
 
     public void generate() {
-        architecture.accept(this);
+        for ( InstrDecl d : architecture.getInstructions() ) visit(d);
     }
 
     public void visit(InstrDecl d) {
@@ -99,15 +99,13 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             // generate a test case for each possible register value of this operand,
             // substituting representative members for the rest of the operands
             OperandTypeDecl.SymbolSet r = (OperandTypeDecl.SymbolSet)od;
-            Iterator ri = r.map.iterator();
-            while ( ri.hasNext() ) {
-                SymbolMapping.Entry re = (SymbolMapping.Entry)ri.next();
+            for ( SymbolMapping.Entry re : r.map.getEntries() ) {
                 g.output(op, re.name, rep);
             }
         }
         String getSomeMember(OperandTypeDecl decl) {
             OperandTypeDecl.SymbolSet r = (OperandTypeDecl.SymbolSet)decl;
-            SymbolMapping.Entry enc = (SymbolMapping.Entry)r.map.iterator().next();
+            SymbolMapping.Entry enc = r.map.getEntries().iterator().next();
             return enc.name;
         }
     }
@@ -115,7 +113,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     class ImmediateGenerator extends OperandGenerator {
         void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep) {
             OperandTypeDecl.Value imm = (OperandTypeDecl.Value)od;
-            HashSet hs = new HashSet();
+            HashSet<String> hs = new HashSet<String>();
             outputImm(g, imm.high,  imm, hs, op,rep);
             outputImm(g, imm.low,  imm, hs, op,rep);
             outputImmediate(g, 0xffffffff, hs, imm, op, rep);
@@ -125,7 +123,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             outputImmediate(g, 0xaaaaaaaa, hs, imm, op, rep);
         }
 
-        protected void outputImmediate(Generator g, int value_l, HashSet hs, OperandTypeDecl.Value imm, int cntr, String[] rep) {
+        protected void outputImmediate(Generator g, int value_l, HashSet<String> hs, OperandTypeDecl.Value imm, int cntr, String[] rep) {
             int value_h = value_l;
             for ( int bit = 0; bit < 32; bit++) {
                 outputImm(g, value_l, imm, hs, cntr, rep);
@@ -135,7 +133,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             }
         }
 
-        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet hs, int cntr, String[] rep) {
+        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet<String> hs, int cntr, String[] rep) {
             if ( val <= imm.high && val >= imm.low ) {
                 String value = StringUtil.to0xHex(val,2);
                 if ( !hs.contains(value)) {
@@ -170,7 +168,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
     }
 
     class WordGenerator extends ImmediateGenerator {
-        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet hs, int cntr, String[] rep) {
+        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet<String> hs, int cntr, String[] rep) {
             if ( val <= imm.high && val >= imm.low ) {
                 val = val * 2;
                 String value = StringUtil.to0xHex(val,2);
@@ -206,14 +204,15 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             }
 
             String[] rep = getRepresentatives(decl);
-            Iterator i = decl.getOperandIterator();
+
             // for each operand, generate many different test cases, with the rest of
             // the operands set to "representative" values
-            for ( int cntr = 0; i.hasNext(); cntr++ ) {
-                CodeRegion.Operand op = (CodeRegion.Operand)i.next();
+            int cntr = 0;
+            for ( CodeRegion.Operand op : decl.getOperands() ) {
                 OperandTypeDecl decl = op.getOperandDecl();
                 OperandGenerator g = getOperandGenerator(decl);
                 g.generate(this, this.decl, decl, cntr, rep);
+                cntr++;
             }
         }
 
@@ -251,9 +250,7 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
             int numops = decl.getOperands().size();
             opnames = new String[numops];
             int cntr = 0;
-            Iterator i = decl.getOperandIterator();
-            while ( i.hasNext() ) {
-                CodeRegion.Operand op = (CodeRegion.Operand)i.next();
+            for ( CodeRegion.Operand op : decl.getOperands() ) {
                 opnames[cntr++] = op.name.image;
             }
         }
@@ -281,10 +278,8 @@ public class DisassemblerTestGenerator implements Architecture.InstrVisitor {
 
     private String[] getRepresentatives(InstrDecl d) {
         String[] rep = new String[d.getOperands().size()];
-        Iterator i = d.getOperandIterator();
         int cntr = 0;
-        while ( i.hasNext() ) {
-            CodeRegion.Operand op = (CodeRegion.Operand)i.next();
+        for ( CodeRegion.Operand op : d.getOperands() ) {
             OperandTypeDecl decl = op.getOperandDecl();
             OperandGenerator g = getOperandGenerator(decl);
             rep[cntr++] = g.getSomeMember(decl);

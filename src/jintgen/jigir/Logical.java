@@ -190,7 +190,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -214,7 +214,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -238,7 +238,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -262,7 +262,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -286,7 +286,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -310,7 +310,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -335,7 +335,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -359,7 +359,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -384,7 +384,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -408,7 +408,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public Expr accept(CodeRebuilder r, Object env) {
+        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
             return r.visit(this, env);
         }
     }

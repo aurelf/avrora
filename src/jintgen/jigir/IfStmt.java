@@ -53,13 +53,13 @@ public class IfStmt extends Stmt {
      * The <code>trueBranch</code> field stores a reference to the list of statements to be executed if the
      * condition is true.
      */
-    public final List trueBranch;
+    public final List<Stmt> trueBranch;
 
     /**
      * The <code>falseBranch</code> field stores a reference to the list of statements to be executed if the
      * condition is false.
      */
-    public final List falseBranch;
+    public final List<Stmt> falseBranch;
 
     /**
      * The constructor of the <code>IfStmt</code> class simply initializes the internal fields based on the
@@ -69,7 +69,7 @@ public class IfStmt extends Stmt {
      * @param t a reference to the list of statements to execute if the condition evaluates to true
      * @param f a reference to the list of statements to execute if the condition evaluates to false
      */
-    public IfStmt(Expr c, List t, List f) {
+    public IfStmt(Expr c, List<Stmt> t, List<Stmt> f) {
         cond = c;
         trueBranch = t;
         falseBranch = f;
@@ -110,7 +110,7 @@ public class IfStmt extends Stmt {
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
-    public Stmt accept(StmtRebuilder r, Object env) {
+    public <Env> Stmt accept(StmtRebuilder<Env> r, Env env) {
         return r.visit(this, env);
     }
 

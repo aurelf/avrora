@@ -331,11 +331,8 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         binop("xor", e.left, e.right, e.getPrecedence());
     }
 
-    public void visitStmtList(List l) {
-        Iterator i = l.iterator();
-        // visit all the statements in the block
-        while (i.hasNext()) {
-            Stmt t = (Stmt)i.next();
+    public void visitStmtList(List<Stmt> l) {
+        for ( Stmt t : l ) {
             t.accept(this);
         }
     }
@@ -370,12 +367,11 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         printer.print("[" + e.low_bit + ':' + e.high_bit + ']');
     }
 
-    protected void visitExprList(List l) {
-        Iterator i = l.iterator();
-        while (i.hasNext()) {
-            Expr a = (Expr)i.next();
+    protected void visitExprList(List<Expr> l) {
+        int cntr = 0;
+        for ( Expr a : l ) {
+            if ( cntr++ != 0 ) printer.print(", ");
             a.accept(this);
-            if (i.hasNext()) printer.print(", ");
         }
     }
 

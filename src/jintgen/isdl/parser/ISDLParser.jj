@@ -272,11 +272,11 @@ void Instruction() :
 {
     Token n;
     InstrDecl i;
-    List o = new LinkedList(),
-         s = new LinkedList(),
-         p = new LinkedList();
+    List<CodeRegion.Operand> o = new LinkedList<CodeRegion.Operand>();
+    List<Stmt> s = new LinkedList<Stmt>();
+    List<Property> p = new LinkedList<Property>();
     EncodingDecl e = null;
-    List el = new LinkedList();
+    List<EncodingDecl> el = new LinkedList<EncodingDecl>();
     boolean pseudo = false;
 }
 {
@@ -288,7 +288,7 @@ void Instruction() :
     "}" { arch.addInstruction(new InstrDecl(pseudo, n, o, p, s, el)); }
 }
 
-void Property(List p) : { Token name, t, v;}
+void Property(List<Property> p) : { Token name, t, v;}
 {
     "property" name = <IDENTIFIER> ":" t = Type() "=" v = Value() ";" { p.add(new Property(name, t, v)); }
 }
@@ -318,7 +318,12 @@ void Memory() : { Token n; }
     "memory" <DOLLAR> n = <IDENTIFIER> "(" MapType() ")" ":" MapType() ";"
 }
 
-void AddrModeDecl() : { Token n; List o = new LinkedList(); List p = new LinkedList(); EncodingDecl e; }
+void AddrModeDecl() : {
+    Token n;
+    List<CodeRegion.Operand> o = new LinkedList<CodeRegion.Operand>();
+    List<Property> p = new LinkedList<Property>();
+    EncodingDecl e;
+}
 {
     "addr-mode" n = <IDENTIFIER> "{"
         (Property(p)
@@ -343,7 +348,7 @@ EncodingDecl.Cond EncodingCond() : { Token n; Expr e; }
     "when" n = <IDENTIFIER> "==" e = Expr() { return new EncodingDecl.Cond(n, e); }
 }
 
-List Execute(List s) : { }
+List<Stmt> Execute(List<Stmt> s) : { }
 {
     "execute" Block(s) { return s; }
 }
@@ -415,17 +420,17 @@ void SubOperand(OperandTypeDecl td) : { CodeRegion.Operand o; }
     "sub-operand" o = Formal() { td.addSubOperand(o); } ";"
 }
 
-void Operand(List ol) : { CodeRegion.Operand o; }
+void Operand(List<CodeRegion.Operand> ol) : { CodeRegion.Operand o; }
 {
     "operand" o = Formal() { ol.add(o); } ";"
 }
 
-void ReadMethod(OperandTypeDecl td) : { List s = new LinkedList(); }
+void ReadMethod(OperandTypeDecl td) : { List<Stmt> s = new LinkedList<Stmt>(); }
 {
     "read" ":" Type() Block(s)
 }
 
-void WriteMethod(OperandTypeDecl td) : { List s = new LinkedList(); }
+void WriteMethod(OperandTypeDecl td) : { List<Stmt> s = new LinkedList<Stmt>(); }
 {
     "write" ":" Type() Block(s)
 }
@@ -441,29 +446,32 @@ void MappingSetElem(SymbolMapping m) : { Token n, i; }
     { m.add(n, i); }
 }
 
-List OperandSet() : { Token i; List l = new LinkedList(); }
-{
-    "{" i = <IDENTIFIER> { l.add(i); } ("," i = <IDENTIFIER> { l.add(i); })* "}"
-    { return l; }
-}
-
 EncodingDecl Format(Token n) : { Token pr = null; EncodingDecl d; }
 {
    ["priority" pr = <INTEGER_LITERAL>] (d = DerivedFormat(pr, n) | d = NewFormat(pr, n)) { return d; }
 }
 
-EncodingDecl DerivedFormat(Token pr, Token n) : { Token p; EncodingDecl d; List l = new LinkedList(); }
+EncodingDecl DerivedFormat(Token pr, Token n) :
+{
+    Token p;
+    EncodingDecl d;
+    List<EncodingDecl.Substitution> l = new LinkedList<EncodingDecl.Substitution>();
+}
 {
     p = <IDENTIFIER> ["where" l = SubstitutionList()]
     { return new EncodingDecl.Derived(n, pr, p, l); }
 }
 
-EncodingDecl NewFormat(Token pr, Token n) : { List l; }
+EncodingDecl NewFormat(Token pr, Token n) : { List<Expr> l; }
 {
     "{" l = ExprList() "}" { return new EncodingDecl(n, pr, l); }
 }
 
-List SubstitutionList() : { List l = new LinkedList(); EncodingDecl.Substitution s; }
+List<EncodingDecl.Substitution> SubstitutionList() :
+{
+    List<EncodingDecl.Substitution> l = new LinkedList<EncodingDecl.Substitution>();
+    EncodingDecl.Substitution s;
+}
 {
     "{" s = Substitution() { l.add(s); } ("," s = Substitution() { l.add(s); })* "}" { return l; }
 }
@@ -473,7 +481,11 @@ EncodingDecl.Substitution Substitution() : { Token n; Expr e; }
     n = <IDENTIFIER> "=" e = Expr() { return new EncodingDecl.Substitution(n, e); }
 }
 
-List Formals() : { CodeRegion.Operand o; List l = new LinkedList(); }
+List<CodeRegion.Operand> Formals() :
+{
+    CodeRegion.Operand o;
+    List<CodeRegion.Operand> l = new LinkedList<CodeRegion.Operand>();
+}
 {
     [ o = Formal() { l.add(o); } ("," o = Formal() { l.add(o); })* ] { return l; }
 }
@@ -483,7 +495,13 @@ CodeRegion.Operand Formal() : { Token n, t; }
     n = <IDENTIFIER> ":" t = OperandType() { return new CodeRegion.Operand(n, t); }
 }
 
-void Subroutine() : { boolean i = false; Token m, r; List f, l = new LinkedList(); }
+void Subroutine() :
+{
+    boolean i = false;
+    Token m, r;
+    List<CodeRegion.Operand> f;
+    List<Stmt> l = new LinkedList<Stmt>();
+}
 {
     (["inline" { i = true; }] "subroutine" m = <IDENTIFIER>
        "(" f = Formals() ")" ":" r = <IDENTIFIER> Block(l)
@@ -498,7 +516,7 @@ Expr Expr() : { Expr e; }
     e = Cond_Or_Expr() { return e; }
 }
 
-List ExprList() : { List l = new LinkedList(); Expr e; }
+List<Expr> ExprList() : { List<Expr> l = new LinkedList<Expr>(); Expr e; }
 {
     (e = Expr() { l.add(e); } ("," e = Expr() { l.add(e); } )*)
     { return l; }
@@ -544,7 +562,7 @@ Expr Literal() : { Token t; }
  |(t = <BOOLEAN_LITERAL> { return new Literal.BoolExpr(t); })
 }
 
-Expr CallExpr() : { Token t; List l; }
+Expr CallExpr() : { Token t; List<Expr> l; }
 {
   t = Method() l = Parameters() { return new CallExpr(t, l); }
 }
@@ -558,7 +576,7 @@ Token Method() : { Token m; }
  ) { return m; }
 }
 
-List Parameters() : { List l = new LinkedList(); }
+List<Expr> Parameters() : { List<Expr> l = new LinkedList<Expr>(); }
 {
     "(" [ l = ExprList() ] ")"
     { return l; }
@@ -581,7 +599,7 @@ DeclStmt LocalDecl() : { Token n, t; Expr e; }
     { return new DeclStmt(n, t, e); }
 }
 
-IfStmt IfStatement() : { Expr c; List t = new LinkedList(), f = new LinkedList(); }
+IfStmt IfStatement() : { Expr c; List<Stmt> t = new LinkedList<Stmt>(), f = new LinkedList<Stmt>(); }
 {
     "if" "(" c = Expr() ")" SingleStatement(t)
         [ LOOKAHEAD(1) "else" SingleStatement(f) ]
@@ -593,7 +611,7 @@ ReturnStmt ReturnStmt() : { Expr e; }
     "return" e = Expr() ";" { return new ReturnStmt(e); }
 }
 
-void SingleStatement(List l) : { Stmt s; }
+void SingleStatement(List<Stmt> l) : { Stmt s; }
 {
     s = Statement() { l.add(s); } | (Block(l))
 }
@@ -605,7 +623,7 @@ AssignStmt Assignment() : { AssignStmt s; }
     { return s; }
 }
 
-CallStmt CallStmt() : { Token m; List l; }
+CallStmt CallStmt() : { Token m; List<Expr> l; }
 {
     m = Method() l = Parameters() ";" { return new CallStmt(m, l); }
 }
@@ -643,7 +661,7 @@ AssignStmt MapAssignmentEnd(Token v, Expr ind) : { AssignStmt s; Token i, j; Exp
     ) { return s; }
 }
 
-List Block(List l) : { Stmt s; }
+List<Stmt> Block(List<Stmt> l) : { Stmt s; }
 {
     "{" (s = Statement() { l.add(s); })* "}"
     { return l; }

@@ -43,67 +43,69 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public interface CodeRebuilder {
+public interface CodeRebuilder<Env> {
 
-    public Expr visit(Arith.AddExpr e, Object env);
+    public Expr visit(Arith.AddExpr e, Env env);
 
-    public Expr visit(Arith.AndExpr e, Object env);
+    public Expr visit(Arith.AndExpr e, Env env);
 
-    public Expr visit(Arith.CompExpr e, Object env);
+    public Expr visit(Arith.CompExpr e, Env env);
 
-    public Expr visit(Arith.DivExpr e, Object env);
+    public Expr visit(Arith.DivExpr e, Env env);
 
-    public Expr visit(Arith.MulExpr e, Object env);
+    public Expr visit(Arith.MulExpr e, Env env);
 
-    public Expr visit(Arith.NegExpr e, Object env);
+    public Expr visit(Arith.NegExpr e, Env env);
 
-    public Expr visit(Arith.OrExpr e, Object env);
+    public Expr visit(Arith.OrExpr e, Env env);
 
-    public Expr visit(Arith.ShiftLeftExpr e, Object env);
+    public Expr visit(Arith.ShiftLeftExpr e, Env env);
 
-    public Expr visit(Arith.ShiftRightExpr e, Object env);
+    public Expr visit(Arith.ShiftRightExpr e, Env env);
 
-    public Expr visit(Arith.SubExpr e, Object env);
+    public Expr visit(Arith.SubExpr e, Env env);
 
-    public Expr visit(Arith.XorExpr e, Object env);
+    public Expr visit(Arith.XorExpr e, Env env);
 
-    public Expr visit(BitExpr e, Object env);
+    public Expr visit(BitExpr e, Env env);
 
-    public Expr visit(BitRangeExpr e, Object env);
+    public Expr visit(BitRangeExpr e, Env env);
 
-    public Expr visit(CallExpr e, Object env);
+    public Expr visit(CallExpr e, Env env);
 
-    public Expr visit(ConversionExpr e, Object env);
+    public Expr visit(ConversionExpr e, Env env);
 
-    public Expr visit(Literal.BoolExpr e, Object env);
+    public Expr visit(Literal.BoolExpr e, Env env);
 
-    public Expr visit(Literal.IntExpr e, Object env);
+    public Expr visit(Literal.IntExpr e, Env env);
 
-    public Expr visit(Logical.AndExpr e, Object env);
+    public Expr visit(Logical.AndExpr e, Env env);
 
-    public Expr visit(Logical.EquExpr e, Object env);
+    public Expr visit(Logical.EquExpr e, Env env);
 
-    public Expr visit(Logical.GreaterEquExpr e, Object env);
+    public Expr visit(Logical.GreaterEquExpr e, Env env);
 
-    public Expr visit(Logical.GreaterExpr e, Object env);
+    public Expr visit(Logical.GreaterExpr e, Env env);
 
-    public Expr visit(Logical.LessEquExpr e, Object env);
+    public Expr visit(Logical.LessEquExpr e, Env env);
 
-    public Expr visit(Logical.LessExpr e, Object env);
+    public Expr visit(Logical.LessExpr e, Env env);
 
-    public Expr visit(Logical.NequExpr e, Object env);
+    public Expr visit(Logical.NequExpr e, Env env);
 
-    public Expr visit(Logical.NotExpr e, Object env);
+    public Expr visit(Logical.NotExpr e, Env env);
 
-    public Expr visit(Logical.OrExpr e, Object env);
+    public Expr visit(Logical.OrExpr e, Env env);
 
-    public Expr visit(Logical.XorExpr e, Object env);
+    public Expr visit(Logical.XorExpr e, Env env);
 
-    public Expr visit(MapExpr e, Object env);
+    public Expr visit(MapExpr e, Env env);
 
-    public Expr visit(VarExpr e, Object env);
+    public Expr visit(VarExpr e, Env env);
 
-    public Expr visit(DotExpr e, Object env);
+    public Expr visit(DotExpr e, Env env);
+
+    public List<Expr> visitExprList(List<Expr> l, Env env);
 
 
     /**
@@ -112,9 +114,9 @@ public interface CodeRebuilder {
      *
      * @author Ben L. Titzer
      */
-    public class DepthFirst implements CodeRebuilder {
+    public class DepthFirst<Env> implements CodeRebuilder<Env> {
 
-        public Expr visit(Arith.AddExpr e, Object env) {
+        public Expr visit(Arith.AddExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -123,7 +125,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.AndExpr e, Object env) {
+        public Expr visit(Arith.AndExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -132,13 +134,13 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.CompExpr e, Object env) {
+        public Expr visit(Arith.CompExpr e, Env env) {
             Expr o = e.operand.accept(this, env);
             if (o != e.operand) return new Arith.CompExpr(o);
             return e;
         }
 
-        public Expr visit(Arith.DivExpr e, Object env) {
+        public Expr visit(Arith.DivExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -147,7 +149,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.MulExpr e, Object env) {
+        public Expr visit(Arith.MulExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -156,13 +158,13 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.NegExpr e, Object env) {
+        public Expr visit(Arith.NegExpr e, Env env) {
             Expr o = e.operand.accept(this, env);
             if (o != e.operand) return new Arith.NegExpr(o);
             return e;
         }
 
-        public Expr visit(Arith.OrExpr e, Object env) {
+        public Expr visit(Arith.OrExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -171,7 +173,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.ShiftLeftExpr e, Object env) {
+        public Expr visit(Arith.ShiftLeftExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -180,7 +182,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.ShiftRightExpr e, Object env) {
+        public Expr visit(Arith.ShiftRightExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -189,7 +191,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.SubExpr e, Object env) {
+        public Expr visit(Arith.SubExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -198,7 +200,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Arith.XorExpr e, Object env) {
+        public Expr visit(Arith.XorExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -208,7 +210,7 @@ public interface CodeRebuilder {
         }
 
 
-        public Expr visit(BitExpr e, Object env) {
+        public Expr visit(BitExpr e, Env env) {
             Expr i = e.expr.accept(this, env);
             Expr j = e.bit.accept(this, env);
             if (i != e.expr || j != e.bit)
@@ -217,19 +219,17 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(BitRangeExpr e, Object env) {
+        public Expr visit(BitRangeExpr e, Env env) {
             Expr o = e.operand.accept(this, env);
             if (o != e.operand) return new BitRangeExpr(o, e.low_bit, e.high_bit);
             return e;
         }
 
-        public List visitExprList(List l, Object env) {
-            List nl = new LinkedList();
+        public List<Expr> visitExprList(List<Expr> l, Env env) {
+            List<Expr> nl = new LinkedList<Expr>();
             boolean changed = false;
 
-            Iterator i = l.iterator();
-            while (i.hasNext()) {
-                Expr a = (Expr)i.next();
+            for ( Expr a : l ) {
                 Expr na = a.accept(this, env);
                 if (na != a) changed = true;
                 nl.add(na);
@@ -239,31 +239,31 @@ public interface CodeRebuilder {
             return l;
         }
 
-        public Expr visit(CallExpr e, Object env) {
-            List nargs = visitExprList(e.args, env);
+        public Expr visit(CallExpr e, Env env) {
+            List<Expr> nargs = visitExprList(e.args, env);
             if (nargs != e.args)
                 return new CallExpr(e.method, nargs);
             else
                 return e;
         }
 
-        public Expr visit(ConversionExpr e, Object env) {
+        public Expr visit(ConversionExpr e, Env env) {
             Expr ne = e.expr.accept(this, env);
             if (ne != e.expr) return new ConversionExpr(ne, e.typename);
             return e;
         }
 
-        public Expr visit(Literal.BoolExpr e, Object env) {
+        public Expr visit(Literal.BoolExpr e, Env env) {
             // terminal node in the tree
             return e;
         }
 
-        public Expr visit(Literal.IntExpr e, Object env) {
+        public Expr visit(Literal.IntExpr e, Env env) {
             // terminal node in the tree
             return e;
         }
 
-        public Expr visit(Logical.AndExpr e, Object env) {
+        public Expr visit(Logical.AndExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -272,7 +272,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.EquExpr e, Object env) {
+        public Expr visit(Logical.EquExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -281,7 +281,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.GreaterEquExpr e, Object env) {
+        public Expr visit(Logical.GreaterEquExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -290,7 +290,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.GreaterExpr e, Object env) {
+        public Expr visit(Logical.GreaterExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -299,7 +299,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.LessEquExpr e, Object env) {
+        public Expr visit(Logical.LessEquExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -308,7 +308,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.LessExpr e, Object env) {
+        public Expr visit(Logical.LessExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -317,7 +317,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.NequExpr e, Object env) {
+        public Expr visit(Logical.NequExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -326,13 +326,13 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.NotExpr e, Object env) {
+        public Expr visit(Logical.NotExpr e, Env env) {
             Expr ne = e.operand.accept(this, env);
             if (ne != e.operand) return new Logical.NotExpr(ne);
             return e;
         }
 
-        public Expr visit(Logical.OrExpr e, Object env) {
+        public Expr visit(Logical.OrExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -341,7 +341,7 @@ public interface CodeRebuilder {
                 return e;
         }
 
-        public Expr visit(Logical.XorExpr e, Object env) {
+        public Expr visit(Logical.XorExpr e, Env env) {
             Expr l = e.left.accept(this, env);
             Expr r = e.right.accept(this, env);
             if (l != e.left || r != e.right)
@@ -351,18 +351,18 @@ public interface CodeRebuilder {
         }
 
 
-        public Expr visit(MapExpr e, Object env) {
+        public Expr visit(MapExpr e, Env env) {
             Expr ne = e.index.accept(this, env);
             if (ne != e.index) return new MapExpr(e.mapname, ne);
             return e;
         }
 
-        public Expr visit(VarExpr e, Object env) {
+        public Expr visit(VarExpr e, Env env) {
             // terminal node in the tree
             return e;
         }
 
-        public Expr visit(DotExpr e, Object env) {
+        public Expr visit(DotExpr e, Env env) {
             // terminal node in the tree
             return e;
         }

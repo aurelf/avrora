@@ -35,32 +35,29 @@ package jintgen.gen;
 import jintgen.jigir.*;
 import avrora.util.Arithmetic;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * @author Ben L. Titzer
  */
-public class ConstantPropagator extends StmtRebuilder.DepthFirst {
+public class ConstantPropagator extends StmtRebuilder.DepthFirst<ConstantPropagator.ConstantEnvironment> {
 
     protected static Literal.IntExpr ZERO = new Literal.IntExpr(0);
     protected static Literal.IntExpr ONE = new Literal.IntExpr(1);
     protected static Literal.BoolExpr TRUE = new Literal.BoolExpr(true);
     protected static Literal.BoolExpr FALSE = new Literal.BoolExpr(false);
 
-    protected static HashSet trackedMaps;
+    protected static HashSet<String> trackedMaps;
 
     public class ConstantEnvironment {
         ConstantEnvironment parent;
-        HashMap constantMap;
-        HashMap mapMap; // HashMap<String, HashMap>
+        HashMap<String, Expr> constantMap;
+        HashMap<String, HashMap<Integer, Expr>> mapMap; // HashMap<String, HashMap>
 
         ConstantEnvironment(ConstantEnvironment p) {
             parent = p;
-            constantMap = new HashMap();
-            mapMap = new HashMap();
+            constantMap = new HashMap<String, Expr>();
+            mapMap = new HashMap<String, HashMap<Integer, Expr>>();
         }
 
         public Expr lookup(String name) {
@@ -97,9 +94,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         }
 
         private Expr lookupMap_fast(String name, int index) {
-            HashMap map = (HashMap)mapMap.get(name);
+            HashMap<Integer, Expr> map = mapMap.get(name);
             if (map != null) {
-                Expr e = (Expr)map.get(new Integer(index));
+                Expr e = map.get(new Integer(index));
                 if (e != null) return e;
             }
 
@@ -113,9 +110,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         void putMap(String mapname, int index, Expr e) {
             if (!trackedMaps.contains(mapname)) return;
 
-            HashMap map = (HashMap)mapMap.get(mapname);
+            HashMap<Integer, Expr> map = mapMap.get(mapname);
             if (map == null) {
-                map = new HashMap();
+                map = new HashMap<Integer, Expr>();
                 mapMap.put(mapname, map);
             }
 
@@ -126,7 +123,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         void removeMap(String mapname, int index) {
             if (!trackedMaps.contains(mapname)) return;
 
-            HashMap map = (HashMap)mapMap.get(mapname);
+            HashMap<Integer, Expr> map = mapMap.get(mapname);
             if (map != null) {
                 mapMap.remove(new Integer(index));
             }
@@ -148,9 +145,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         }
 
         void mergeIntoParent(ConstantEnvironment a, ConstantEnvironment b) {
-            Iterator i = a.constantMap.keySet().iterator();
-            while (i.hasNext()) {
-                String key = (String)i.next();
+            for ( String key : a.constantMap.keySet() ) {
                 Expr e = a.lookup(key);
                 Expr o = b.lookup(key);
                 // TODO: reference equality is just a first-order approximation of expression equality
@@ -163,7 +158,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
     }
 
     public ConstantPropagator() {
-        trackedMaps = new HashSet();
+        trackedMaps = new HashSet<String>();
         trackedMaps.add("$regs"); // this is all for now
     }
 
@@ -171,14 +166,11 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         return new ConstantEnvironment(null);
     }
 
-    public LinkedList process(LinkedList stmts) {
-        LinkedList s = (LinkedList)visitStmtList(stmts, new ConstantEnvironment(null));
-        return s;
+    public List<Stmt> process(List<Stmt> stmts) {
+        return visitStmtList(stmts, new ConstantEnvironment(null));
     }
 
-    public Stmt visit(DeclStmt s, Object env) {
-        ConstantEnvironment cenv = (ConstantEnvironment)env;
-
+    public Stmt visit(DeclStmt s, ConstantEnvironment cenv) {
         Expr ne = update(s.name.toString(), s.init, cenv);
         if (s.init != ne)
             return new DeclStmt(s.name, s.type, ne);
@@ -186,9 +178,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return s;
     }
 
-    public Stmt visit(VarAssignStmt s, Object env) {
-        ConstantEnvironment cenv = (ConstantEnvironment)env;
-
+    public Stmt visit(VarAssignStmt s, ConstantEnvironment cenv) {
         Expr ne = update(s.variable.toString(), s.expr, cenv);
         if (s.expr != ne)
             return new VarAssignStmt(s.variable, ne);
@@ -196,10 +186,8 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return s;
     }
 
-    public Stmt visit(VarBitRangeAssignStmt s, Object env) {
-        ConstantEnvironment cenv = (ConstantEnvironment)env;
-
-        Expr ne = s.expr.accept(this, env);
+    public Stmt visit(VarBitRangeAssignStmt s, ConstantEnvironment cenv) {
+        Expr ne = s.expr.accept(this, cenv);
 
         if (ne.isLiteral()) {
             Expr ve = cenv.lookup(s.variable.toString());
@@ -227,11 +215,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return s;
     }
 
-    public Stmt visit(VarBitAssignStmt s, Object env) {
-        ConstantEnvironment cenv = (ConstantEnvironment)env;
-
-        Expr ne = s.expr.accept(this, env);
-        Expr nb = s.bit.accept(this, env);
+    public Stmt visit(VarBitAssignStmt s, ConstantEnvironment cenv) {
+        Expr ne = s.expr.accept(this, cenv);
+        Expr nb = s.bit.accept(this, cenv);
 
         if (ne.isLiteral() && nb.isLiteral()) {
             Expr ve = cenv.lookup(s.variable.toString());
@@ -255,11 +241,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return s;
     }
 
-    public Stmt visit(MapAssignStmt s, Object env) {
-        ConstantEnvironment cenv = (ConstantEnvironment)env;
-
-        Expr ni = s.index.accept(this, env);
-        Expr ne = s.expr.accept(this, env);
+    public Stmt visit(MapAssignStmt s, ConstantEnvironment cenv) {
+        Expr ni = s.index.accept(this, cenv);
+        Expr ne = s.expr.accept(this, cenv);
 
         String mapname = s.mapname.toString();
         if (ni.isLiteral()) {
@@ -315,9 +299,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         return ne;
     }
 
-    public Expr visit(VarExpr e, Object env) {
-        ConstantEnvironment cenv = (ConstantEnvironment)env;
-
+    public Expr visit(VarExpr e, ConstantEnvironment cenv) {
         Expr ce = cenv.lookup(e.variable.toString());
         if (ce != null)
             return ce;
@@ -325,9 +307,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(BitExpr e, Object env) {
-        Expr nexpr = e.expr.accept(this, env);
-        Expr nbit = e.bit.accept(this, env);
+    public Expr visit(BitExpr e, ConstantEnvironment cenv) {
+        Expr nexpr = e.expr.accept(this, cenv);
+        Expr nbit = e.bit.accept(this, cenv);
 
         if (nexpr.isLiteral() && nbit.isLiteral()) {
             int eval = intValueOf(nexpr);
@@ -341,8 +323,8 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(BitRangeExpr e, Object env) {
-        Expr nexpr = e.operand.accept(this, env);
+    public Expr visit(BitRangeExpr e, ConstantEnvironment cenv) {
+        Expr nexpr = e.operand.accept(this, cenv);
 
         if (nexpr.isLiteral()) {
             int eval = intValueOf(nexpr);
@@ -358,9 +340,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
 
     // --- binary operations ---
 
-    public Expr visit(Arith.AddExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.AddExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -374,9 +356,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.AndExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.AndExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -390,8 +372,8 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.CompExpr e, Object env) {
-        Expr o = e.operand.accept(this, env);
+    public Expr visit(Arith.CompExpr e, ConstantEnvironment cenv) {
+        Expr o = e.operand.accept(this, cenv);
 
         if (o.isLiteral()) {
             int lval = intValueOf(o);
@@ -402,9 +384,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         return e;
     }
 
-    public Expr visit(Arith.DivExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.DivExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -417,9 +399,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.MulExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.MulExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -433,8 +415,8 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.NegExpr e, Object env) {
-        Expr o = e.operand.accept(this, env);
+    public Expr visit(Arith.NegExpr e, ConstantEnvironment cenv) {
+        Expr o = e.operand.accept(this, cenv);
 
         if (o.isLiteral()) {
             int lval = intValueOf(o);
@@ -445,9 +427,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         return e;
     }
 
-    public Expr visit(Arith.OrExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.OrExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -461,9 +443,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.ShiftLeftExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.ShiftLeftExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -477,9 +459,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.ShiftRightExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.ShiftRightExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -493,9 +475,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.SubExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.SubExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -509,9 +491,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Arith.XorExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Arith.XorExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -525,14 +507,14 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Literal.BoolExpr e, Object env) {
+    public Expr visit(Literal.BoolExpr e, ConstantEnvironment cenv) {
         if (e.value)
             return TRUE;
         else
             return FALSE;
     }
 
-    public Expr visit(Literal.IntExpr e, Object env) {
+    public Expr visit(Literal.IntExpr e, ConstantEnvironment cenv) {
         if (e.value == 0)
             return ZERO;
         else if (e.value == 1)
@@ -541,9 +523,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.AndExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.AndExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l == FALSE) {
             return FALSE;
@@ -557,9 +539,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.EquExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.EquExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -573,9 +555,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.GreaterEquExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.GreaterEquExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -589,9 +571,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.GreaterExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.GreaterExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -605,9 +587,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.LessEquExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.LessEquExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -621,9 +603,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.LessExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.LessExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -637,9 +619,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.NequExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.NequExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             int lval = intValueOf(l);
@@ -653,8 +635,8 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.NotExpr e, Object env) {
-        Expr ne = e.operand.accept(this, env);
+    public Expr visit(Logical.NotExpr e, ConstantEnvironment cenv) {
+        Expr ne = e.operand.accept(this, cenv);
 
         if (ne == TRUE) {
             return FALSE;
@@ -666,9 +648,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
         return e;
     }
 
-    public Expr visit(Logical.OrExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.OrExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l == TRUE) {
             return TRUE;
@@ -682,9 +664,9 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(Logical.XorExpr e, Object env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+    public Expr visit(Logical.XorExpr e, ConstantEnvironment cenv) {
+        Expr l = e.left.accept(this, cenv);
+        Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
             boolean lval = boolValueOf(l);
@@ -706,10 +688,8 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst {
             return e;
     }
 
-    public Expr visit(MapExpr e, Object env) {
-        ConstantEnvironment cenv = (ConstantEnvironment)env;
-
-        Expr ne = e.index.accept(this, env);
+    public Expr visit(MapExpr e, ConstantEnvironment cenv) {
+        Expr ne = e.index.accept(this, cenv);
 
         if (ne.isLiteral()) {
             int index = intValueOf(ne);

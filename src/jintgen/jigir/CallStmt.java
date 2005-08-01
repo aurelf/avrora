@@ -53,7 +53,7 @@ public class CallStmt extends Stmt {
      * The <code>args</code> fields stores a reference to a list of expressions that are evaluated and passed
      * as arguments to the subroutine.
      */
-    public final List args;
+    public final List<Expr> args;
 
     /**
      * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine
@@ -62,7 +62,7 @@ public class CallStmt extends Stmt {
      * @param m the name of the subroutine as a string
      * @param a list of expressions representing the arguments to the subroutine
      */
-    public CallStmt(Token m, List a) {
+    public CallStmt(Token m, List<Expr> a) {
         method = m;
         args = a;
     }
@@ -74,7 +74,7 @@ public class CallStmt extends Stmt {
      * @param m the name of the subroutine as a string
      * @param a list of expressions representing the arguments to the subroutine
      */
-    public CallStmt(String m, List a) {
+    public CallStmt(String m, List<Expr> a) {
         method = new Token();
         method.image = m;
         args = a;
@@ -107,7 +107,7 @@ public class CallStmt extends Stmt {
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
-    public Stmt accept(StmtRebuilder r, Object env) {
+    public <Env> Stmt accept(StmtRebuilder<Env> r, Env env) {
         return r.visit(this, env);
     }
 }

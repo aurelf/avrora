@@ -81,10 +81,10 @@ public class CodeRegion {
         }
     }
 
-    public final List operands;
-    protected List stmts;
+    public final List<CodeRegion.Operand> operands;
+    protected List<Stmt> stmts;
 
-    public CodeRegion(List o, List s) {
+    public CodeRegion(List<CodeRegion.Operand> o, List<Stmt> s) {
         operands = o;
         stmts = s;
     }
@@ -93,19 +93,15 @@ public class CodeRegion {
         return operands.size();
     }
 
-    public List getOperands() {
+    public List<CodeRegion.Operand> getOperands() {
         return operands;
     }
 
-    public Iterator getOperandIterator() {
-        return operands.iterator();
-    }
-
-    public List getCode() {
+    public List<Stmt> getCode() {
         return stmts;
     }
 
-    public void setCode(List s) {
+    public void setCode(List<Stmt> s) {
         stmts = s;
     }
 

@@ -51,14 +51,14 @@ import java.util.LinkedList;
 public abstract class OperandTypeDecl {
 
     public final Token name;
-    public final List subOperands;
+    public final List<CodeRegion.Operand> subOperands;
     public CodeRegion readMethod;
     public CodeRegion writeMethod;
 
 
     protected OperandTypeDecl(Token n) {
         name = n;
-        subOperands = new LinkedList();
+        subOperands = new LinkedList<CodeRegion.Operand>();
     }
 
     public static class Value extends OperandTypeDecl {

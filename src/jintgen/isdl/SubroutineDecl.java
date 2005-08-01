@@ -34,6 +34,7 @@ package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
+import jintgen.jigir.Stmt;
 
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class SubroutineDecl extends CodeRegion {
     public final Token ret;
     public final boolean inline;
 
-    public SubroutineDecl(boolean i, Token n, List o, Token r, List s) {
+    public SubroutineDecl(boolean i, Token n, List<CodeRegion.Operand> o, Token r, List<Stmt> s) {
         super(o, s);
         inline = i;
         name = n;

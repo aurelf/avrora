@@ -32,17 +32,13 @@
 
 package jintgen.gen;
 
+import avrora.util.Printer;
+import avrora.util.StringUtil;
 import jintgen.isdl.Architecture;
-import jintgen.jigir.CodeRegion;
 import jintgen.isdl.InstrDecl;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.isdl.SymbolMapping;
 import jintgen.jigir.CodeRegion;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
@@ -63,233 +59,210 @@ public class ClassGenerator {
 
     public void generate() {
         printer.indent();
-        new InstrSetEmitter().generate(architecture);
-        new RegSetEmitter().generate(architecture);
-        new CheckEmitter().generate(architecture);
-        new ConstructorEmitter().generate(architecture);
-        new ClassEmitter().generate(architecture);
+        generateInstrSet();
+        generateRegSets();
+        generateChecks();
+        generateConstructors();
+        generateClasses();
         printer.unindent();
     }
 
-    private class ClassEmitter implements Architecture.InstrVisitor {
-        public void generate(Architecture a) {
-            printer.println("");
-            printer.println("//-------------------------------------------------------");
-            printer.println("// GENERATED: Class definitions individual instructions ");
-            printer.println("//-------------------------------------------------------");
+    private void generateClasses() {
+        printer.println("");
+        printer.println("//-------------------------------------------------------");
+        printer.println("// GENERATED: Class definitions individual instructions ");
+        printer.println("//-------------------------------------------------------");
 
-            a.accept(this);
+        for (InstrDecl d : architecture.getInstructions()) emitClass(d);
+    }
+
+    private void generateConstructors() {
+        printer.println("");
+        printer.println("//----------------------------------------------------------------");
+        printer.println("// GENERATED: Static factory methods for individual instructions ");
+        printer.println("//----------------------------------------------------------------");
+
+        for (InstrDecl d : architecture.getInstructions()) emitConstructor(d);
+    }
+
+    private void generateChecks() {
+        printer.println("");
+        printer.println("//-------------------------------------------------------------------");
+        printer.println("// GENERATED: Methods to check the validity of individual operands ");
+        printer.println("//-------------------------------------------------------------------");
+
+        for (OperandTypeDecl d : architecture.getOperandTypes()) emitChecks(d);
+    }
+
+    private void generateRegSets() {
+        printer.println("");
+        printer.println("//-------------------------------------------------------");
+        printer.println("// GENERATED: Sets of registers to check constraints ");
+        printer.println("//-------------------------------------------------------");
+
+        for (OperandTypeDecl d : architecture.getOperandTypes()) emitRegSet(d);
+    }
+
+    private void generateInstrSet() {
+        printer.println("");
+        printer.println("//-------------------------------------------------------------------");
+        printer.println("// GENERATED: Method to initialize the instruction set mapping ");
+        printer.println("//-------------------------------------------------------------------");
+
+        printer.startblock("private static void initializeInstrSet()");
+
+        for (InstrDecl d : architecture.getInstructions())
+            printer.println("instructions.put(" + d.name + ", " + getClassName(d) + ".prototype);");
+
+        printer.endblock();
+    }
+
+    public void emitClass(InstrDecl d) {
+        String cName = d.name.image;
+        cName = StringUtil.trimquotes(cName.toUpperCase());
+        printer.startblock("public static class " + cName + " extends Instr");
+
+        emitStaticProperties(d);
+        emitPrototype(cName, d);
+        emitFields(d);
+        emitConstructor(cName, d);
+        emitAcceptMethod();
+
+        printer.endblock();
+    }
+
+    private void emitAcceptMethod() {
+        printer.println("public void accept(InstrVisitor v) { v.visit(this); }");
+    }
+
+    private void emitStaticProperties(InstrDecl d) {
+        printer.print("private static final InstrProperties props = new InstrProperties(");
+        printer.print(StringUtil.commalist(d.name, "null", "" + d.getEncodingSize() / 8, "" + d.getCycles()));
+        printer.println(");");
+    }
+
+    private void emitPrototype(String cName, InstrDecl d) {
+        printer.startblock("public static final InstrPrototype prototype = new InstrPrototype(props)");
+        printer.startblock("public Instr build(Operand[] ops)");
+        printer.println("return Instr.new" + cName + "(ops);");
+        printer.endblock();
+        printer.endblock();
+    }
+
+    private void emitFields(InstrDecl d) {
+        // emit the declaration of the fields
+        for (CodeRegion.Operand o : d.getOperands()) {
+            printer.print("public final ");
+            printer.print(o.getType() + ' ');
+            printer.println(o.name.toString() + ';');
+        }
+    }
+
+    private void emitConstructor(String cName, InstrDecl d) {
+        // emit the declaration of the constructor
+        printer.print("private " + cName + '(');
+        emitParams(d);
+        printer.startblock(")");
+
+        // emit the initialization code for each field
+        for (CodeRegion.Operand o : d.getOperands()) {
+            String n = o.name.toString();
+            printer.println("this." + n + " = " + n + ';');
         }
 
-        public void visit(InstrDecl d) {
-            String cName = d.name.image;
-            cName = StringUtil.trimquotes(cName.toUpperCase());
-            printer.startblock("public static class " + cName + " extends Instr");
+        printer.endblock();
+    }
 
-            emitStaticProperties(d);
-            emitPrototype(cName, d);
-            emitFields(d);
-            emitConstructor(cName, d);
-            emitAcceptMethod();
-
-            printer.endblock();
-        }
-
-        private void emitAcceptMethod() {
-            printer.println("public void accept(InstrVisitor v) { v.visit(this); }");
-        }
-
-        private void emitStaticProperties(InstrDecl d) {
-            printer.print("private static final InstrProperties props = new InstrProperties(");
-            printer.print(StringUtil.commalist(d.name, "null", "" + d.getEncodingSize() / 8, "" + d.getCycles()));
-            printer.println(");");
-        }
-
-        private void emitPrototype(String cName, InstrDecl d) {
-            printer.startblock("public static final InstrPrototype prototype = new InstrPrototype(props)");
-            printer.startblock("public Instr build(Operand[] ops)");
-            printer.println("return Instr.new" + cName + "(ops);");
-            printer.endblock();
-            printer.endblock();
-        }
-
-        private void emitFields(InstrDecl d) {
-            // emit the declaration of the fields
-            Iterator i = d.getOperandIterator();
-            while (i.hasNext()) {
-                printer.print("public final ");
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                printer.print(o.getType() + ' ');
-                printer.println(o.name.toString() + ';');
-            }
-        }
-
-        private void emitConstructor(String cName, InstrDecl d) {
-            // emit the declaration of the constructor
-            printer.print("private " + cName + '(');
-            emitParams(d);
-            printer.startblock(")");
-
-            // emit the initialization code for each field
-            Iterator i = d.getOperandIterator();
-            while (i.hasNext()) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                String n = o.name.toString();
-                printer.println("this." + n + " = " + n + ';');
-            }
-
-            printer.endblock();
-        }
+    public void emitConstructor(InstrDecl d) {
+        String cName = getClassName(d);
+        emitArrayMethod(cName, d);
+        emitSpecificMethod(cName, d);
 
     }
 
-    private class ConstructorEmitter implements Architecture.InstrVisitor {
-        public void generate(Architecture a) {
-            printer.println("");
-            printer.println("//----------------------------------------------------------------");
-            printer.println("// GENERATED: Static factory methods for individual instructions ");
-            printer.println("//----------------------------------------------------------------");
+    private void emitArrayMethod(String cName, InstrDecl d) {
+        printer.startblock("public static Instr." + cName + " new" + cName + "(Operand[] ops)");
+        printer.println("count(ops, " + d.operands.size() + ");");
 
-            a.accept(this);
+        printer.print("return new " + cName + '(');
+        // emit the checking code for each operand
+        int cntr = 0;
+        for (CodeRegion.Operand o : d.getOperands()) {
+            if (cntr++ != 0) printer.print(", ");
+            String asMeth = o.isRegister() ? "asReg" : "asImm";
+            printer.print("check_" + o.type.image + '(' + cntr + ", " + asMeth + '(' + cntr + ", ops))");
         }
-
-        public void visit(InstrDecl d) {
-            String cName = getClassName(d);
-            emitArrayMethod(cName, d);
-            emitSpecificMethod(cName, d);
-
-        }
-
-        private void emitArrayMethod(String cName, InstrDecl d) {
-            printer.startblock("public static Instr." + cName + " new" + cName + "(Operand[] ops)");
-            printer.println("count(ops, " + d.operands.size() + ");");
-
-            printer.print("return new " + cName + '(');
-            // emit the checking code for each operand
-            Iterator i = d.getOperandIterator();
-            int cntr = 0;
-            while (i.hasNext()) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                String asMeth = o.isRegister() ? "asReg" : "asImm";
-                printer.print("check_" + o.type.image + '(' + cntr + ", " + asMeth + '(' + cntr + ", ops))");
-                if (i.hasNext()) printer.print(", ");
-                cntr++;
-            }
-            printer.println(");");
-            printer.endblock();
-        }
-
-        private void emitSpecificMethod(String cName, InstrDecl d) {
-            printer.print("public static Instr." + cName + " new" + cName + '(');
-            emitParams(d);
-            printer.startblock(")");
-
-            printer.print("return new " + cName + '(');
-            // emit the checking code for each operand
-            Iterator i = d.getOperandIterator();
-            int cntr = 0;
-            while (i.hasNext()) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
-                String n = o.name.toString();
-                printer.print("check_" + o.type.image + '(' + cntr + ", " + n + ')');
-                if (i.hasNext()) printer.print(", ");
-                cntr++;
-            }
-            printer.println(");");
-            printer.endblock();
-        }
+        printer.println(");");
+        printer.endblock();
     }
+
+    private void emitSpecificMethod(String cName, InstrDecl d) {
+        printer.print("public static Instr." + cName + " new" + cName + '(');
+        emitParams(d);
+        printer.startblock(")");
+
+        printer.print("return new " + cName + '(');
+        // emit the checking code for each operand
+        int cntr = 0;
+        for (CodeRegion.Operand o : d.getOperands()) {
+            if (cntr++ != 0) printer.print(", ");
+            String n = o.name.toString();
+            printer.print("check_" + o.type.image + '(' + cntr + ", " + n + ')');
+        }
+        printer.println(");");
+        printer.endblock();
+    }
+
 
     private void emitParams(InstrDecl d) {
-        Iterator i = d.getOperandIterator();
-        while (i.hasNext()) {
-            CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+        boolean first = true;
+        for (CodeRegion.Operand o : d.getOperands()) {
+            if (!first) printer.print(", ");
             printer.print(o.getType() + ' ');
             printer.print(o.name.toString());
-            if (i.hasNext()) printer.print(", ");
+            first = false;
         }
     }
 
-    private class RegSetEmitter implements Architecture.OperandVisitor {
-        public void generate(Architecture a) {
-            printer.println("");
-            printer.println("//-------------------------------------------------------");
-            printer.println("// GENERATED: Sets of registers to check constraints ");
-            printer.println("//-------------------------------------------------------");
+    public void emitRegSet(OperandTypeDecl d) {
+        if (!d.isSymbol()) return;
 
-            a.accept(this);
+        OperandTypeDecl.SymbolSet rset = (OperandTypeDecl.SymbolSet) d;
+
+        String type = d.name.image;
+        printer.println("private static final Register[] " + type + "_array = {");
+        printer.indent();
+
+
+        int cntr = 0;
+        for (SymbolMapping.Entry renc : rset.map.getEntries()) {
+            if (cntr++ != 0) printer.print(", ");
+            printer.print("Register." + renc.name.toUpperCase());
+            if (cntr != 1 && (cntr % 4) == 1) printer.nextln();
         }
 
-        public void visit(OperandTypeDecl d) {
-            if (!d.isSymbol()) return;
-
-            OperandTypeDecl.SymbolSet rset = (OperandTypeDecl.SymbolSet)d;
-
-            String type = d.name.image;
-            printer.println("private static final Register[] " + type + "_array = {");
-            printer.indent();
-
-            Iterator i = rset.map.iterator();
-            int cntr = 0;
-            while (i.hasNext()) {
-                SymbolMapping.Entry renc = (SymbolMapping.Entry)i.next();
-                printer.print("Register." + renc.name.toUpperCase());
-                if (i.hasNext()) printer.print(", ");
-                cntr++;
-                if (cntr != 0 && (cntr % 4) == 0) printer.nextln();
-            }
-
-            printer.unindent();
-            printer.nextln();
-            printer.println("};");
-            printer.println("private static final Register.Set " + type + "_set = new Register.Set(" + type + "_array);");
-        }
+        printer.unindent();
+        printer.nextln();
+        printer.println("};");
+        printer.println("private static final Register.Set " + type + "_set = new Register.Set(" + type + "_array);");
     }
 
-    private class InstrSetEmitter implements Architecture.InstrVisitor {
-        public void generate(Architecture a) {
-            printer.println("");
-            printer.println("//-------------------------------------------------------------------");
-            printer.println("// GENERATED: Method to initialize the instruction set mapping ");
-            printer.println("//-------------------------------------------------------------------");
 
-            printer.startblock("private static void initializeInstrSet()");
+    public void emitChecks(OperandTypeDecl d) {
+        String type = d.name.toString();
+        String ptype = d.isSymbol() ? "Register" : "int";
+        printer.startblock("private static " + ptype + " check_" + type + "(int n, " + ptype + " v)");
 
-            a.accept(this);
-
-            printer.endblock();
+        if (d.isSymbol()) {
+            printer.println("return checkRegSet(n, v, " + type + "_set);");
+        } else {
+            OperandTypeDecl.Value imm = (OperandTypeDecl.Value) d;
+            printer.println("return checkRange(n, v, " + imm.low + ", " + imm.high + ");");
         }
 
-        public void visit(InstrDecl d) {
-            printer.println("instructions.put(" + d.name + ", " + getClassName(d) + ".prototype);");
-        }
+        printer.endblock();
     }
 
-    private class CheckEmitter implements Architecture.OperandVisitor {
-        public void generate(Architecture a) {
-            printer.println("");
-            printer.println("//-------------------------------------------------------------------");
-            printer.println("// GENERATED: Methods to check the validity of individual operands ");
-            printer.println("//-------------------------------------------------------------------");
-
-            a.accept(this);
-        }
-
-        public void visit(OperandTypeDecl d) {
-            String type = d.name.toString();
-            String ptype = d.isSymbol() ? "Register" : "int";
-            printer.startblock("private static " + ptype + " check_" + type + "(int n, " + ptype + " v)");
-
-            if (d.isSymbol()) {
-                printer.println("return checkRegSet(n, v, " + type + "_set);");
-            } else {
-                OperandTypeDecl.Value imm = (OperandTypeDecl.Value)d;
-                printer.println("return checkRange(n, v, " + imm.low + ", " + imm.high + ");");
-            }
-
-            printer.endblock();
-        }
-    }
 
     private static String getClassName(InstrDecl d) {
         String cName = d.name.image;

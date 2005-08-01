@@ -42,7 +42,7 @@ import java.util.*;
 /**
  * @author Ben L. Titzer
  */
-public class DisassemblerGenerator implements Architecture.InstrVisitor {
+public class DisassemblerGenerator {
 
     private static final byte ENC_ONE  = 1;
     private static final byte ENC_ZERO = 2;
@@ -128,12 +128,12 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         final EncodingDecl encoding;
         final int encodingNumber;
         final byte[] bitStates;
-        final List simplifiedExprs;
+        final List<EncodingField> simplifiedExprs;
 
         EncodingInfo(InstrDecl id, int encNum, EncodingDecl ed) {
             instr = id;
             bitStates = new byte[id.getEncodingSize()];
-            simplifiedExprs = new LinkedList();
+            simplifiedExprs = new LinkedList<EncodingField>();
             encodingNumber = encNum;
             encoding = ed;
 
@@ -146,32 +146,28 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
         private void initializeBitStates(InstrDecl id) {
             EncodingDecl ed = encoding;
-            Iterator i1; // iterator over expressions in the encoding
-
             // create a constant propagator needed to evaluate integer literals and operands
             ConstantPropagator cp = new ConstantPropagator();
             ConstantPropagator.ConstantEnvironment ce = cp.createEnvironment();
 
+            List<Expr> fields;
             if ( ed instanceof EncodingDecl.Derived ) {
                 EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
-                i1 = dd.parent.fields.iterator();
+                fields = dd.parent.fields;
 
                 // put all the substitutions into the map
-                Iterator si = dd.subst.iterator();
-                while ( si.hasNext() ) {
-                    EncodingDecl.Substitution s = (EncodingDecl.Substitution)si.next();
+                for ( EncodingDecl.Substitution s : dd.subst ) {
                     ce.put(s.name.toString(), s.expr);
                 }
             } else {
-                i1 = ed.fields.iterator();
+                fields = ed.fields;
             }
 
             // scan through the expressions corresponding to the fields that make up this encoding
             // and initialize the bitState array to either ENC_ONE, ENC_ZERO, or ENC_VAR
+
             int offset = 0;
-            while ( i1.hasNext() ) {
-                // get the expression of the parent encoding
-                Expr e = (Expr)i1.next();
+            for ( Expr e : fields ) {
                 // get the bit width of the parent encoding field
                 int size = e.getBitWidth();
 
@@ -236,7 +232,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             } else if (simpleExpr instanceof Literal.BoolExpr) {
                 // if it is a boolean literal, initialize one bit
                 Literal.BoolExpr l = (Literal.BoolExpr)simpleExpr;
-                bitStates[offset++] = l.value ? ENC_ONE : ENC_ZERO;
+                bitStates[offset] = l.value ? ENC_ONE : ENC_ZERO;
             } else {
                 // not a known value; initialize each bit to variable
                 for ( int cntr = 0; cntr < size; cntr++) {
@@ -272,14 +268,14 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
     }
 
     class DecodingTree {
-        HashSet encodings = new HashSet();
+        HashSet<EncodingInfo> encodings = new HashSet<EncodingInfo>();
         String methodname;
         int left_bit;
         int right_bit = LARGEST_INSTR;
         int value;
         int depth;
 
-        HashMap children = new HashMap();
+        HashMap<Integer, DecodingTree> children = new HashMap<Integer, DecodingTree>();
 
         void computeRange() {
             if ( encodings.size() == 0) {
@@ -297,10 +293,8 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             }
 
             // scan for the leftmost concrete bit range common to all encodings in this set.
-            Iterator i = encodings.iterator();
             verbose.println("scanning...");
-            while ( i.hasNext() ) {
-                EncodingInfo ei = (EncodingInfo)i.next();
+            for ( EncodingInfo ei : encodings ) {
                 ei.print();
 
                 int lb = scanForLeftBit(ei);
@@ -351,11 +345,9 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
         void createChildren() {
             if ( encodings.size() <= 1) return;
-            Iterator i = encodings.iterator();
-            // iterate through the bit states of this encoding for this bit range
-            // set the bit states to either MATCHED_ONE or MATCHED_ZERO
-            while ( i.hasNext() ) {
-                EncodingInfo ei = (EncodingInfo)i.next();
+            for ( EncodingInfo ei : encodings ) {
+                // iterate through the bit states of this encoding for this bit range
+                // set the bit states to either MATCHED_ONE or MATCHED_ZERO
                 int value = 0;
                 for ( int cntr = left_bit; cntr <= right_bit; cntr++ ) {
                     byte bitState = ei.bitStates[cntr];
@@ -376,7 +368,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 // add the instruction to the encoding set corresponding to the value of
                 // the bits in this range
                 Integer iv = new Integer(value);
-                DecodingTree es = (DecodingTree)children.get(iv);
+                DecodingTree es = children.get(iv);
                 if ( es == null ) {
                     es = new DecodingTree();
                     es.depth = depth+1;
@@ -396,18 +388,14 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
 
         void recurse() {
-            Iterator i = children.values().iterator();
-            while ( i.hasNext() ) {
-                DecodingTree es = (DecodingTree)i.next();
+            for ( DecodingTree es : children.values() ) {
                 es.compute();
             }
         }
 
         void generateCode() {
             // recursively generate code for each of the children
-            Iterator i = children.values().iterator();
-            while ( i.hasNext() ) {
-                DecodingTree es = (DecodingTree)i.next();
+            for ( DecodingTree es : children.values() ) {
                 es.generateCode();
             }
 
@@ -415,7 +403,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 if ( children.size() > 0)
                     methodname = "decode_"+(methods++);
                 else {
-                    EncodingInfo ei = (EncodingInfo)encodings.iterator().next();
+                    EncodingInfo ei = encodings.iterator().next();
                     methodname = "decode_"+ei.getName();
                 }
             }
@@ -442,13 +430,11 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             printer.println("int value = (word1 >> "+low_bit+") & "+StringUtil.to0xHex(mask, 5)+";");
             printer.startblock("switch ( value )");
 
-            Iterator i = children.keySet().iterator();
-            // generate a case for each value of the bits in this test.
-            while ( i.hasNext() ) {
-                Integer value = (Integer)i.next();
+            for ( Integer value : children.keySet() ) {
                 int val = value.intValue();
+                // generate a case for each value of the bits in this test.
                 printer.print("case "+StringUtil.to0xHex(val, 5)+": ");
-                DecodingTree child = (DecodingTree)children.get(value);
+                DecodingTree child = children.get(value);
                 printer.println("return "+child.methodname+"(word1);");
             }
 
@@ -462,7 +448,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
             int mask = 0;
             int value = 0;
             // first check for any left over concrete bits that must match
-            EncodingInfo ei = (EncodingInfo)encodings.iterator().next();
+            EncodingInfo ei = encodings.iterator().next();
 
             if ( ei.encoding.isConditional() ) {
                 EncodingDecl.Cond c = ei.encoding.getCond();
@@ -506,18 +492,14 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         }
 
         private void generateDecodeStatements(EncodingInfo ei) {
-            Iterator i = ei.simplifiedExprs.iterator();
-            while ( i.hasNext() ) {
-                EncodingField e = (EncodingField)i.next();
+            for ( EncodingField e : ei.simplifiedExprs ) {
                 e.generateDecoder();
             }
         }
 
         private void generateConstructorCall(EncodingInfo ei) {
             printer.print("return new "+ei.instr.getClassName()+"(pc");
-            Iterator i1 = ei.instr.getOperandIterator();
-            while ( i1.hasNext() ) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i1.next();
+            for ( CodeRegion.Operand o : ei.instr.getOperands() ) {
                 printer.print(", ");
                 String getexpr = generateDecode(ei, o);
                 printer.print(getexpr);
@@ -534,9 +516,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 else
                     printer.println("int word"+wordnum+" = getByte("+(wordnum-1)+");");
             }
-            Iterator i = ei.instr.getOperandIterator();
-            while ( i.hasNext() ) {
-                CodeRegion.Operand o = (CodeRegion.Operand)i.next();
+            for ( CodeRegion.Operand o : ei.instr.getOperands() ) {
                 if ( !isFixed(ei, o) )
                     printer.println("int "+o.name+" = 0;");
             }
@@ -583,18 +563,18 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     DecodingTree[] rootSets = new DecodingTree[0];
 
-    HashSet pseudo;
+    HashSet<EncodingInfo> pseudo;
 
     Architecture architecture;
 
     public DisassemblerGenerator(Architecture a, Printer p) {
-        pseudo = new HashSet();
+        pseudo = new HashSet<EncodingInfo>();
         architecture = a;
         printer = p;
     }
 
     public void generate() {
-        architecture.accept(this);
+        for ( InstrDecl d : architecture.getInstructions() ) visit(d);
         printer.indent();
         generateDecodeTables();
         for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
@@ -622,9 +602,8 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
 
     public void visit(InstrDecl d) {
         // for now, we ignore pseudo instructions.
-        Iterator i = d.encodingList.iterator();
-        for ( int cntr = 0; i.hasNext(); cntr++) {
-            EncodingDecl ed = (EncodingDecl)i.next();
+        int cntr = 0;
+        for ( EncodingDecl ed : d.encodingList ) {
             int priority = ed.getPriority();
             EncodingInfo ei = new EncodingInfo(d, cntr, ed);
             if ( d.pseudo ) {
@@ -640,6 +619,7 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
                 DecodingTree dt = getRoot(priority);
                 dt.encodings.add(ei);
             }
+            cntr++;
         }
     }
 
@@ -662,10 +642,12 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
     }
 
     private void generateDecodeTables() {
-        architecture.accept(new OperandDeclVisitor());
+        for ( OperandTypeDecl d : architecture.getOperandTypes() ) {
+            new OperandDeclVisitor().visit(d);
+        }
     }
 
-    class OperandDeclVisitor implements Architecture.OperandVisitor {
+    class OperandDeclVisitor {
         public void visit(OperandTypeDecl od) {
             // if the operand is a register set declaration, then we need to
             // generate a decoding table
@@ -676,12 +658,9 @@ public class DisassemblerGenerator implements Architecture.InstrVisitor {
         private void generateRegisterTable(OperandTypeDecl.SymbolSet od) {
             int tablesize = 1 << od.size;
             String register[] = new String[tablesize];
-            OperandTypeDecl.SymbolSet rs = (OperandTypeDecl.SymbolSet)od;
             // for each member in the operand declaration set, store the name of the register
             // corresponding to the value of the binary encoding
-            Iterator i = rs.map.iterator();
-            while ( i.hasNext() ) {
-                SymbolMapping.Entry re = (SymbolMapping.Entry)i.next();
+            for ( SymbolMapping.Entry re : od.map.getEntries() ) {
                 if ( register[re.value] != null )
                     throw Util.failure("AMBIGUOUS REGISTER SET ENCODING");
                 register[re.value] = re.name;
