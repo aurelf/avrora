@@ -34,10 +34,7 @@ package jintgen.gen;
 
 import avrora.util.Printer;
 import avrora.util.StringUtil;
-import jintgen.isdl.Architecture;
-import jintgen.isdl.InstrDecl;
-import jintgen.isdl.OperandTypeDecl;
-import jintgen.isdl.SymbolMapping;
+import jintgen.isdl.*;
 import jintgen.jigir.CodeRegion;
 
 /**
@@ -151,9 +148,9 @@ public class ClassGenerator {
 
     private void emitFields(InstrDecl d) {
         // emit the declaration of the fields
-        for (CodeRegion.Operand o : d.getOperands()) {
+        for (AddressingModeDecl.Operand o : d.getOperands()) {
             printer.print("public final ");
-            printer.print(o.getType() + ' ');
+            printer.print(o.getOperandType().toString() + ' ');
             printer.println(o.name.toString() + ';');
         }
     }
@@ -165,8 +162,8 @@ public class ClassGenerator {
         printer.startblock(")");
 
         // emit the initialization code for each field
-        for (CodeRegion.Operand o : d.getOperands()) {
-            String n = o.name.toString();
+        for (AddressingModeDecl.Operand o : d.getOperands()) {
+            String n = o.name.image;
             printer.println("this." + n + " = " + n + ';');
         }
 
@@ -182,14 +179,15 @@ public class ClassGenerator {
 
     private void emitArrayMethod(String cName, InstrDecl d) {
         printer.startblock("public static Instr." + cName + " new" + cName + "(Operand[] ops)");
-        printer.println("count(ops, " + d.operands.size() + ");");
+        printer.println("count(ops, " + d.getOperands().size() + ");");
 
         printer.print("return new " + cName + '(');
         // emit the checking code for each operand
         int cntr = 0;
-        for (CodeRegion.Operand o : d.getOperands()) {
+        for (AddressingModeDecl.Operand o : d.getOperands()) {
             if (cntr++ != 0) printer.print(", ");
-            String asMeth = o.isRegister() ? "asReg" : "asImm";
+            OperandTypeDecl ot = o.getOperandType();
+            String asMeth = ot.isSymbol() ? "asSym" : "asImm";
             printer.print("check_" + o.type.image + '(' + cntr + ", " + asMeth + '(' + cntr + ", ops))");
         }
         printer.println(");");
@@ -204,7 +202,7 @@ public class ClassGenerator {
         printer.print("return new " + cName + '(');
         // emit the checking code for each operand
         int cntr = 0;
-        for (CodeRegion.Operand o : d.getOperands()) {
+        for (AddressingModeDecl.Operand o : d.getOperands()) {
             if (cntr++ != 0) printer.print(", ");
             String n = o.name.toString();
             printer.print("check_" + o.type.image + '(' + cntr + ", " + n + ')');
@@ -216,9 +214,9 @@ public class ClassGenerator {
 
     private void emitParams(InstrDecl d) {
         boolean first = true;
-        for (CodeRegion.Operand o : d.getOperands()) {
+        for (AddressingModeDecl.Operand o : d.getOperands()) {
             if (!first) printer.print(", ");
-            printer.print(o.getType() + ' ');
+            printer.print(o.getOperandType().toString() + ' ');
             printer.print(o.name.toString());
             first = false;
         }

@@ -47,61 +47,17 @@ import java.util.List;
  */
 public class CodeRegion {
 
-    public static class Operand {
-        public final Token name;
-        public final Token type;
-        protected OperandTypeDecl operandType;
-
-        public Operand(Token n, Token t) {
-            name = n;
-            type = t;
-        }
-
-        public void setOperandType(OperandTypeDecl d) {
-            operandType = d;
-        }
-
-        public boolean isRegister() {
-            return operandType.isSymbol();
-        }
-
-        public boolean isImmediate() {
-            return operandType.isValue();
-        }
-
-        public String getType() {
-            if (operandType != null)
-                return isRegister() ? "Register" : "int";
-            else
-                return type.image;
-        }
-
-        public OperandTypeDecl getOperandDecl() {
-            return operandType;
-        }
-    }
-
-    public final List<CodeRegion.Operand> operands;
     protected List<Stmt> stmts;
 
-    public CodeRegion(List<CodeRegion.Operand> o, List<Stmt> s) {
-        operands = o;
+    public CodeRegion(List<Stmt> s) {
         stmts = s;
     }
 
-    public int numOperands() {
-        return operands.size();
-    }
-
-    public List<CodeRegion.Operand> getOperands() {
-        return operands;
-    }
-
-    public List<Stmt> getCode() {
+    public List<Stmt> getStmts() {
         return stmts;
     }
 
-    public void setCode(List<Stmt> s) {
+    public void setStmts(List<Stmt> s) {
         stmts = s;
     }
 

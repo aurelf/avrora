@@ -138,15 +138,13 @@ public class Verifier {
             previous.put(sd.name.image, sd.name);
 
             // find operand decl
-            for ( CodeRegion.Operand od : sd.getOperands() ) {
-                OperandTypeDecl opdec = arch.getOperandDecl(od.type.image);
-                if (opdec != null)
-                    od.setOperandType(opdec);
+            for ( SubroutineDecl.Parameter p : sd.getParams() ) {
+                // TODO: check the type of each parameter
                 // ERROR.UnresolvedType(od.type);
             }
 
             if (printer.enabled) {
-                new PrettyPrinter(arch, printer).visitStmtList(sd.getCode());
+                new PrettyPrinter(arch, printer).visitStmtList(sd.code.getStmts());
             }
 
         }
@@ -164,15 +162,9 @@ public class Verifier {
         }
     }
 
-    private void verifyOperands(List<CodeRegion.Operand> operands) {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
-        for ( CodeRegion.Operand o : operands ) {
-            if ( previous.containsKey(o.name.image) )
-                ERROR.RedefinedEncoding(previous.get(o.name));
-
-            previous.put(o.name.image, o.name);
-
-            String tname = o.getType();
+    private void verifyOperands(List<AddressingModeDecl.Operand> operands) {
+        for ( AddressingModeDecl.Operand o : operands ) {
+            String tname = o.type.image;
             OperandTypeDecl td = arch.getOperandDecl(tname);
             if ( td == null )
                 ERROR.UnresolvedOperandType(o.type);
@@ -212,7 +204,7 @@ public class Verifier {
             verifyOperands(id.getOperands());
 
             if (printer.enabled) {
-                new PrettyPrinter(arch, printer).visitStmtList(id.getCode());
+                new PrettyPrinter(arch, printer).visitStmtList(id.code.getStmts());
             }
 
         }
@@ -233,10 +225,10 @@ public class Verifier {
 
     private void optimizeCode(InstrDecl id) {
         // inline and optimize the body of the instruction
-        List<Stmt> code = id.getCode();
+        List<Stmt> code = id.code.getStmts();
         code = new Inliner(arch).process(code);
 
-        id.setCode(code);
+        id.code.setStmts(code);
     }
 
     private void verifyEncodings(InstrDecl id) {

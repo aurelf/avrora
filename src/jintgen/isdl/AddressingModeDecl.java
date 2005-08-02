@@ -43,9 +43,28 @@ import java.util.LinkedList;
  */
 public class AddressingModeDecl extends Item {
 
-    public final List<CodeRegion.Operand> operands;
+    public static class Operand {
+        public final Token name;
+        public final Token type;
+        protected OperandTypeDecl operandType;
 
-    public AddressingModeDecl(Token n, List<CodeRegion.Operand> ol) {
+        public Operand(Token n, Token t) {
+            name = n;
+            type = t;
+        }
+
+        public void setOperandType(OperandTypeDecl d) {
+            operandType = d;
+        }
+
+        public OperandTypeDecl getOperandType() {
+            return operandType;
+        }
+    }
+
+    public final List<AddressingModeDecl.Operand> operands;
+
+    public AddressingModeDecl(Token n, List<AddressingModeDecl.Operand> ol) {
         super(n);
         operands = ol;
     }

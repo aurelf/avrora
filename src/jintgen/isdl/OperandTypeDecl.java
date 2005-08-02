@@ -50,16 +50,20 @@ import java.util.LinkedList;
  */
 public abstract class OperandTypeDecl extends Item {
 
-    public final List<CodeRegion.Operand> subOperands;
+    public final List<AddressingModeDecl.Operand> subOperands;
     public CodeRegion readMethod;
     public CodeRegion writeMethod;
 
 
     protected OperandTypeDecl(Token n) {
         super(n);
-        subOperands = new LinkedList<CodeRegion.Operand>();
+        subOperands = new LinkedList<AddressingModeDecl.Operand>();
     }
 
+    /**
+     * The <code>Value</code> class represents an operand to an instruction that is
+     * a value such as an immediate or an absolute address.
+     */
     public static class Value extends OperandTypeDecl {
 
         public final int low;
@@ -79,11 +83,15 @@ public abstract class OperandTypeDecl extends Item {
             return true;
         }
 
-        public void addSubOperand(CodeRegion.Operand o) {
+        public void addSubOperand(AddressingModeDecl.Operand o) {
             throw Util.failure("Suboperands are not allowed to Value operands");
         }
     }
 
+    /**
+     * The <code>SymbolSet</code> class represents an operand to an instruction that
+     * is a symbol from a particular set, such as the names of general purpose registers.
+     */
     public static class SymbolSet extends OperandTypeDecl {
         public final SymbolMapping map;
         public final int size;
@@ -98,11 +106,15 @@ public abstract class OperandTypeDecl extends Item {
             return true;
         }
 
-        public void addSubOperand(CodeRegion.Operand o) {
+        public void addSubOperand(AddressingModeDecl.Operand o) {
             throw Util.failure("Suboperands are not allowed to SymbolSet operands");
         }
     }
 
+    /**
+     * The <code>Compound</code> class represents an operand declaration that consists of
+     * multiple sub-operands.
+     */
     public static class Compound extends OperandTypeDecl {
 
         public Compound(Token n) {
@@ -111,6 +123,27 @@ public abstract class OperandTypeDecl extends Item {
 
         public boolean isCompound() {
             return true;
+        }
+    }
+
+    /**
+     * The <code>Union</code> class represents an operand type that is the union of multiple
+     * operand types.
+     */
+    public static class Union extends OperandTypeDecl {
+        public final List<OperandTypeDecl> types;
+
+        public Union(Token n) {
+            super(n);
+            types = new LinkedList<OperandTypeDecl>();
+        }
+
+        public boolean isUnion() {
+            return true;
+        }
+
+        public void addType(OperandTypeDecl d) {
+            types.add(d);
         }
     }
 
@@ -134,7 +167,11 @@ public abstract class OperandTypeDecl extends Item {
         return false;
     }
 
-    public void addSubOperand(CodeRegion.Operand o) {
+    public boolean isUnion() {
+        return false;
+    }
+
+    public void addSubOperand(AddressingModeDecl.Operand o) {
         subOperands.add(o);
     }
 }

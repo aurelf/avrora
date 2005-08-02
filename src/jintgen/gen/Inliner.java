@@ -144,28 +144,28 @@ public class Inliner extends StmtRebuilder.DepthFirst<Object> {
     }
 
     protected String inlineCall(Token m, SubroutineDecl d, List<Expr> args) {
-        if (d.numOperands() != args.size())
+        if (d.params.size() != args.size())
             Util.failure("arity mismatch in call to " + m.image + " @ " + m.beginLine + ':' + m.beginColumn);
 
         Context nc = new Context(context);
 
         Iterator<Expr> arg_iter = args.iterator();
-        for ( CodeRegion.Operand f : d.getOperands() ) {
+        for ( SubroutineDecl.Parameter p : d.getParams() ) {
             Expr e = arg_iter.next();
 
             // get a new temporary
-            String nn = nc.newTemp(f.name.image);
+            String nn = nc.newTemp(p.name.image);
 
             // alpha-rename expression that is argument
             Expr ne = e.accept(this, null);
-            addStmt(new DeclStmt(nn, f.type, ne));
+            addStmt(new DeclStmt(nn, p.type, ne));
         }
 
         // set the current subroutine
         nc.curSubroutine = d;
         context = nc;
         // process body
-        visitStmts(d.getCode(), null);
+        visitStmts(d.code.getStmts(), null);
         context = nc.caller;
 
         return nc.returnTemp;
@@ -183,7 +183,7 @@ public class Inliner extends StmtRebuilder.DepthFirst<Object> {
     }
 
     protected boolean shouldNotInline(SubroutineDecl d) {
-        if (!Architecture.INLINE || d == null || !d.inline || !d.hasBody()) return true;
+        if (!Architecture.INLINE || d == null || !d.inline || !d.code.hasBody()) return true;
         return false;
     }
 

@@ -36,6 +36,8 @@ import avrora.core.Register;
 import jintgen.isdl.Architecture;
 import jintgen.jigir.CodeRegion;
 import jintgen.isdl.InstrDecl;
+import jintgen.isdl.AddressingModeDecl;
+import jintgen.isdl.OperandTypeDecl;
 import jintgen.jigir.*;
 import jintgen.isdl.parser.Token;
 import avrora.util.Printer;
@@ -93,19 +95,14 @@ public class CodemapGenerator {
 
         int regcount = 0;
         int immcount = 0;
-        for ( CodeRegion.Operand o : d.getOperands() ) {
+        for ( AddressingModeDecl.Operand o : d.getOperands() ) {
             Operand op = new Operand();
-            if (o.isRegister()) {
-                op.name = "r" + (++regcount);
-                op.integer = false;
-            } else {
-                op.name = "imm" + (++immcount);
-                op.integer = true;
-            }
+            OperandTypeDecl ot = o.getOperandType();
+            op.name = o.name.image;
             egen.operands.put(o.name.toString(), op);
         }
 
-        String bname = generateBlock(d.getCode(), "\"===== \"+i.getName()+\" \"+i.getOperands()+" +
+        String bname = generateBlock(d.code.getStmts(), "\"===== \"+i.getName()+\" \"+i.getOperands()+" +
                 "\" ==========================================\"");
 
         printer.print("result = new CodeRegion(new LinkedList(), " + bname + ");");

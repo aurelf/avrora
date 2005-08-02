@@ -49,14 +49,7 @@ import java.util.LinkedList;
  *
  * @author Ben L. Titzer
  */
-public class InstrDecl extends CodeRegion {
-
-    /**
-     * The <code>name</code> field stores a string representing the name of the instruction.
-     */
-    public final Token name;
-
-    public List<EncodingDecl> encodingList;
+public class InstrDecl extends Item {
 
     public List<Property> propertyList;
 
@@ -65,6 +58,8 @@ public class InstrDecl extends CodeRegion {
     public final String className;
 
     public final String innerClassName;
+
+    public final CodeRegion code;
 
     public final boolean pseudo;
 
@@ -75,12 +70,11 @@ public class InstrDecl extends CodeRegion {
      *
      * @param n the name of the instruction as a string
      */
-    public InstrDecl(boolean ps, Token n, AddrModeUse am, List<Property> p, List<Stmt> s, List<EncodingDecl> el) {
-        super(new LinkedList<CodeRegion.Operand>(), s);
+    public InstrDecl(boolean ps, Token n, AddrModeUse am, List<Property> p, List<Stmt> s) {
+        super(n);
+        code = new CodeRegion(s);
         pseudo = ps;
-        name = n;
         addrMode = am;
-        encodingList = el;
         propertyList = p;
         innerClassName = StringUtil.trimquotes(name.image).toUpperCase();
         className = "Instr." + innerClassName;
@@ -113,6 +107,10 @@ public class InstrDecl extends CodeRegion {
     }
 
     public Iterable<EncodingDecl> getEncodings() {
-        return encodingList;
+        return addrMode.encodings;
+    }
+
+    public List<AddressingModeDecl.Operand> getOperands() {
+        return addrMode.operands;
     }
 }

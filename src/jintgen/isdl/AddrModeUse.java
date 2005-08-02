@@ -34,6 +34,9 @@ package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
 
+import java.util.List;
+import java.util.LinkedList;
+
 /**
  * @author Ben L. Titzer
  */
@@ -41,13 +44,18 @@ public class AddrModeUse {
 
     public final Token name;
     public AddressingModeDecl decl;
-
-    public AddrModeUse(Token n) {
-        name = n;
-    }
+    public final List<EncodingDecl> encodings;
+    public final List<AddressingModeDecl.Operand> operands;
 
     public AddrModeUse(Token n, AddressingModeDecl d) {
         name = n;
         decl = d;
+        encodings = new LinkedList<EncodingDecl>();
+        if ( decl != null ) operands = decl.operands;
+        else operands = new LinkedList<AddressingModeDecl.Operand>();
+    }
+
+    public void addEncoding(EncodingDecl e) {
+        encodings.add(e);
     }
 }

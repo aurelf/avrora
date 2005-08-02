@@ -254,42 +254,38 @@ public class InterpreterGenerator extends PrettyPrinter{
         printer.println("nextPC = pc + " + (d.getEncodingSize() / 8) + ';');
 
         // initialize the map of local variables to operands
-        initializeOperandMap(d);
+        variableMap = new HashMap<String, String>();
+        for ( AddressingModeDecl.Operand o : d.getOperands() ) {
+            String image = "i." + o.name.image;
+            if ( o.getOperandType().isSymbol() )
+                image = image + ".getNumber()";
+
+            variableMap.put(o.name.image, image);
+        }
         // emit the code of the body
-        visitStmtList(d.getCode());
+        visitStmtList(d.code.getStmts());
         // emit the cycle count update
         printer.println("cyclesConsumed += " + d.getCycles() + ';');
         printer.endblock();
     }
 
-    protected void initializeOperandMap(CodeRegion cr) {
-        variableMap = new HashMap<String, String>();
-        for ( CodeRegion.Operand o : cr.getOperands() ) {
-            String image = o.name.image;
-            if (cr instanceof InstrDecl) {
-                if (o.isRegister())
-                    image = "i." + image + ".getNumber()";
-                else
-                    image = "i." + image;
-            }
-
-            variableMap.put(o.name.image, image);
-        }
-    }
-
     public void visit(SubroutineDecl d) {
-        if (d.inline || !d.hasBody()) return;
+        if (d.inline || !d.code.hasBody()) return;
         printer.print("public " + d.ret.image + ' ' + d.name.image + '(');
         int cntr = 0;
-        for ( CodeRegion.Operand o : d.getOperands() ) {
+        for ( SubroutineDecl.Parameter p : d.getParams() ) {
             if ( cntr++ != 0 ) printer.print(", ");
-            printer.print(o.type.image + ' ' + o.name.image);
+            printer.print(p.type.image + ' ' + p.name.image);
         }
         printer.print(") ");
         printer.startblock();
         // initialize the map of local variables to operands
-        initializeOperandMap(d);
-        visitStmtList(d.getCode());
+        variableMap = new HashMap<String, String>();
+        for ( SubroutineDecl.Parameter p : d.getParams() ) {
+            String image = p.name.image;
+            variableMap.put(image, image);
+        }
+        visitStmtList(d.code.getStmts());
         printer.endblock();
     }
 

@@ -499,7 +499,7 @@ public class DisassemblerGenerator {
 
         private void generateConstructorCall(EncodingInfo ei) {
             printer.print("return new "+ei.instr.getClassName()+"(pc");
-            for ( CodeRegion.Operand o : ei.instr.getOperands() ) {
+            for ( AddressingModeDecl.Operand o : ei.instr.getOperands() ) {
                 printer.print(", ");
                 String getexpr = generateDecode(ei, o);
                 printer.print(getexpr);
@@ -516,13 +516,13 @@ public class DisassemblerGenerator {
                 else
                     printer.println("int word"+wordnum+" = getByte("+(wordnum-1)+");");
             }
-            for ( CodeRegion.Operand o : ei.instr.getOperands() ) {
+            for ( AddressingModeDecl.Operand o : ei.instr.getOperands() ) {
                 if ( !isFixed(ei, o) )
                     printer.println("int "+o.name+" = 0;");
             }
         }
 
-        private boolean isFixed(EncodingInfo ei, CodeRegion.Operand o) {
+        private boolean isFixed(EncodingInfo ei, AddressingModeDecl.Operand o) {
             if ( ei.encoding.isConditional() ) {
                 EncodingDecl.Cond c = ei.encoding.getCond();
                 if ( o.name.image.equals(c.name.image) )
@@ -532,16 +532,16 @@ public class DisassemblerGenerator {
             return false;
         }
 
-        private String generateDecode(EncodingInfo ei, CodeRegion.Operand o) {
+        private String generateDecode(EncodingInfo ei, AddressingModeDecl.Operand o) {
+            OperandTypeDecl ot = o.getOperandType();
             if ( ei.encoding.isConditional() ) {
-                String prefix = o.isRegister() ? "Register." : "";
                 EncodingDecl.Cond c = ei.encoding.getCond();
                 if ( o.name.image.equals(c.name.image) )
-                    return prefix+c.expr.toString();
+                    return c.expr.toString();
             }
             // if this is a register, we have to look it up in the table
-            if ( o.isRegister() )
-                return "getReg("+o.type+"_table, "+o.name+")";
+            if ( ot.isSymbol() )
+                return "getSymbol("+o.type+"_table, "+o.name+")";
             else {
                 // this operand is not a register
                 //TODO: fix relative operands
@@ -603,7 +603,7 @@ public class DisassemblerGenerator {
     public void visit(InstrDecl d) {
         // for now, we ignore pseudo instructions.
         int cntr = 0;
-        for ( EncodingDecl ed : d.encodingList ) {
+        for ( EncodingDecl ed : d.getEncodings() ) {
             int priority = ed.getPriority();
             EncodingInfo ei = new EncodingInfo(d, cntr, ed);
             if ( d.pseudo ) {

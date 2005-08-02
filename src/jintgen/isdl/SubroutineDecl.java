@@ -45,17 +45,37 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class SubroutineDecl extends CodeRegion {
+public class SubroutineDecl extends Item {
 
-    public final Token name;
+    public static class Parameter {
+        public final Token name;
+        public final Token type;
+
+        public Parameter(Token n, Token t) {
+            name = n;
+            type = t;
+        }
+
+        public String getType() {
+            return type.image;
+        }
+    }
+
     public final Token ret;
     public final boolean inline;
+    public final CodeRegion code;
+    public final List<SubroutineDecl.Parameter> params;
 
-    public SubroutineDecl(boolean i, Token n, List<CodeRegion.Operand> o, Token r, List<Stmt> s) {
-        super(o, s);
+    public SubroutineDecl(boolean i, Token n, List<SubroutineDecl.Parameter> pl, Token r, List<Stmt> s) {
+        super(n);
         inline = i;
-        name = n;
         ret = r;
+        params = pl;
+        code = new CodeRegion(s);
+    }
+
+    public List<SubroutineDecl.Parameter> getParams() {
+        return params;
     }
 
 }

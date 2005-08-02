@@ -33,11 +33,8 @@
 package jintgen.gen;
 
 import avrora.util.Util;
-import jintgen.isdl.Architecture;
 import jintgen.jigir.CodeRegion;
-import jintgen.isdl.InstrDecl;
-import jintgen.isdl.OperandTypeDecl;
-import jintgen.isdl.SymbolMapping;
+import jintgen.isdl.*;
 import jintgen.jigir.CodeRegion;
 import avrora.util.Printer;
 import avrora.util.StringUtil;
@@ -208,8 +205,8 @@ public class DisassemblerTestGenerator{
             // for each operand, generate many different test cases, with the rest of
             // the operands set to "representative" values
             int cntr = 0;
-            for ( CodeRegion.Operand op : decl.getOperands() ) {
-                OperandTypeDecl decl = op.getOperandDecl();
+            for ( AddressingModeDecl.Operand op : decl.getOperands() ) {
+                OperandTypeDecl decl = op.getOperandType();
                 OperandGenerator g = getOperandGenerator(decl);
                 g.generate(this, this.decl, decl, cntr, rep);
                 cntr++;
@@ -250,7 +247,7 @@ public class DisassemblerTestGenerator{
             int numops = decl.getOperands().size();
             opnames = new String[numops];
             int cntr = 0;
-            for ( CodeRegion.Operand op : decl.getOperands() ) {
+            for ( AddressingModeDecl.Operand op : decl.getOperands() ) {
                 opnames[cntr++] = op.name.image;
             }
         }
@@ -279,8 +276,8 @@ public class DisassemblerTestGenerator{
     private String[] getRepresentatives(InstrDecl d) {
         String[] rep = new String[d.getOperands().size()];
         int cntr = 0;
-        for ( CodeRegion.Operand op : d.getOperands() ) {
-            OperandTypeDecl decl = op.getOperandDecl();
+        for ( AddressingModeDecl.Operand op : d.getOperands() ) {
+            OperandTypeDecl decl = op.getOperandType();
             OperandGenerator g = getOperandGenerator(decl);
             rep[cntr++] = g.getSomeMember(decl);
         }

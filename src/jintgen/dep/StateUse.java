@@ -34,6 +34,7 @@ package jintgen.dep;
 
 import jintgen.jigir.CodeRegion;
 import jintgen.jigir.CodeRegion;
+import jintgen.isdl.AddressingModeDecl;
 
 /**
  * The <code>StateUse</code> class represents the result of a dependency analysis of a particular instruction
@@ -87,18 +88,18 @@ public abstract class StateUse {
         }
 
         public static class Operand extends Index {
-            public final CodeRegion.Operand operand;
+            public final AddressingModeDecl.Operand operand;
 
-            Operand(CodeRegion.Operand op) {
+            Operand(AddressingModeDecl.Operand op) {
                 operand = op;
             }
         }
 
         public static class OperandPlusConstant extends Index {
-            public final CodeRegion.Operand operand;
+            public final AddressingModeDecl.Operand operand;
             public final int index;
 
-            OperandPlusConstant(CodeRegion.Operand op, int i) {
+            OperandPlusConstant(AddressingModeDecl.Operand op, int i) {
                 operand = op;
                 index = i;
             }
