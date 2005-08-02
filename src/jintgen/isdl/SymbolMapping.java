@@ -43,6 +43,10 @@ import avrora.util.StringUtil;
 import avrora.util.Util;
 
 /**
+ * The <code>SymbolMapping</code> class represents a class that maps string symbols
+ * (names) to an integer. This mapping is used in encoding such things as register
+ * names into instructions, for example.
+ *
  * @author Ben L. Titzer
  */
 public class SymbolMapping {
@@ -55,16 +59,23 @@ public class SymbolMapping {
         list = new LinkedList<Entry>();
     }
 
+    /**
+     * The <code>add()</code> method adds a new symbol mapped to a new value to this list of
+     * mappings.
+     * @param sym the token representing the symbol name
+     * @param val the integer value for this symbol
+     */
     public void add(Token sym, Token val) {
         String name = sym.image;
-        if ( mapping.containsKey(name) ) {
-            throw Util.failure("Symbol mapping already contains "+StringUtil.quote(name));
-        }
-        Entry entry = new Entry(name, StringUtil.evaluateIntegerLiteral(val.image));
+        Entry entry = new Entry(sym, val);
         mapping.put(name, entry);
         list.add(entry);
     }
 
+    /**
+     * The <code>getEntries()</code> method returns an iterable over the entries in this map.
+     * @return an iterable capable of iterating over all of the entries in the map
+     */
     public Iterable<Entry> getEntries() {
         return list;
     }
@@ -74,11 +85,17 @@ public class SymbolMapping {
     }
 
     public static class Entry {
+        public final Token ntoken;
+        public final Token vtoken;
+
         public final String name;
         public final int value;
-        Entry(String s, int v) {
-            name = s;
-            value = v;
+
+        Entry(Token n, Token v) {
+            ntoken = n;
+            vtoken = v;
+            name = ntoken.image;
+            value = StringUtil.evaluateIntegerLiteral(v.image);
         }
     }
 }

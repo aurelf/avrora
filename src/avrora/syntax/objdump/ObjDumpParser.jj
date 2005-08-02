@@ -653,10 +653,10 @@ SyntacticOperand.Register Register() : { Token tok; }
     { return module.newOperand(tok); }
 }
 
-void Label() : { Token tok; }
+void Label() : { Token tok; Token v; }
 {
-    "label" <INTEGER_LITERAL> tok = <STRING_LITERAL> ":"
-    { module.addQuotedLabel(tok); }
+    "label" v = <INTEGER_LITERAL> tok = <STRING_LITERAL> ":"
+    { rawModule.addQuotedLabelAt(v, tok); }
 }
 
 SyntacticOperand.Expr Const() : { Expr e; }

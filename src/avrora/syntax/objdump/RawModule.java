@@ -99,6 +99,40 @@ public class RawModule extends Module {
         segment.setOrigin(address);
     }
 
+    public void addQuotedLabelAt(Token val, Token label) {
+        label.image = StringUtil.trimquotes(label.image);
+        int address = StringUtil.evaluateIntegerLiteral(val.image) - section.vma_start + section.lma_start;
+        RawLabel li = new RawLabel(segment, label, address);
+        addItem(li);
+        labels.put(label.image.toLowerCase(), li);
+    }
+
+    /**
+     * The <code>Label</code> item represents a labelled location in the program that is given a name. This
+     * can appear in program, data, or eeprom sections.
+     */
+    public static class RawLabel extends Item {
+        private final AbstractToken name;
+        private final int byteAddress;
+
+        RawLabel(Module.Seg s, AbstractToken n, int a) {
+            super(s);
+            name = n;
+            byteAddress = a;
+        }
+
+        public void simplify() {
+            segment.addLabel(byteAddress, name.image);
+        }
+
+        public int getByteAddress() {
+            return byteAddress;
+        }
+
+        public String toString() {
+            return "label: " + name + " in " + segment.getName() + " @ " + byteAddress;
+        }
+    }
 
     protected void simplify(Item i) {
         try {

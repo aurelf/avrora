@@ -45,9 +45,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class EncodingDecl {
-
-    public final Token name;
+public class EncodingDecl extends Item {
 
     protected final int prio;
 
@@ -58,7 +56,7 @@ public class EncodingDecl {
     protected Cond condition;
 
     public EncodingDecl(Token n, Token pr, List<Expr> f) {
-        name = n;
+        super(n);
         fields = f;
         if ( pr == null ) {
             prio = 0;

@@ -272,6 +272,7 @@ void Instruction() :
 {
     Token n;
     InstrDecl i;
+    AddrModeUse am;
     List<CodeRegion.Operand> o = new LinkedList<CodeRegion.Operand>();
     List<Stmt> s = new LinkedList<Stmt>();
     List<Property> p = new LinkedList<Property>();
@@ -280,12 +281,18 @@ void Instruction() :
     boolean pseudo = false;
 }
 {
-    ["pseudo" { pseudo = true; }] "instruction" n = <STRING_LITERAL> o = Formals() "{"
+    ["pseudo" { pseudo = true; }] "instruction" n = <STRING_LITERAL> am = AddrModeUse(n) "{"
         ( e = Encoding(n) { el.add(e); })*
         ( Property(p) )*
         [ s = Execute(s) ]
 
-    "}" { arch.addInstruction(new InstrDecl(pseudo, n, o, p, s, el)); }
+    "}" { arch.addInstruction(new InstrDecl(pseudo, n, am, p, s, el)); }
+}
+
+AddrModeUse AddrModeUse(Token n) : { List<CodeRegion.Operand> o; }
+{
+    (":" n = <IDENTIFIER> { return new AddrModeUse(n); })
+   |(o = Formals() { return new AddrModeUse(n, new AddressingModeDecl(n, o)); })
 }
 
 void Property(List<Property> p) : { Token name, t, v;}
@@ -330,12 +337,16 @@ void AddrModeDecl() : {
         | Operand(o)
         | e = Encoding(n)
         )*
-    "}"
+    "}" { arch.addAddressingMode(new AddressingModeDecl(n, o)); }
 }
 
-void AddrSetDecl() : { Token n; }
+void AddrSetDecl() : { Token n; List<Token> l = new LinkedList<Token>(); Token e; }
 {
-    "addr-set" n = <IDENTIFIER> "{" <IDENTIFIER> ("," <IDENTIFIER>)* "}"
+    "addr-set" n = <IDENTIFIER> "{"
+        e = <IDENTIFIER> { l.add(e); }
+        ("," e = <IDENTIFIER> { l.add(e); })*
+    "}"
+    { arch.addAddressingModeSet(new AddressingModeSetDecl(n, l)); }
 }
 
 EncodingDecl Encoding(Token n) : { EncodingDecl d; EncodingDecl.Cond ec = null; }

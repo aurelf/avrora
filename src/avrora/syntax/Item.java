@@ -54,7 +54,7 @@ public abstract class Item {
      */
     public abstract void simplify();
 
-    Item(Module.Seg seg) {
+    public Item(Module.Seg seg) {
         byteAddress = seg.getCurrentAddress();
         segment = seg;
         module = seg.getModule();

@@ -48,16 +48,15 @@ import java.util.LinkedList;
  *
  * @author Ben L. Titzer
  */
-public abstract class OperandTypeDecl {
+public abstract class OperandTypeDecl extends Item {
 
-    public final Token name;
     public final List<CodeRegion.Operand> subOperands;
     public CodeRegion readMethod;
     public CodeRegion writeMethod;
 
 
     protected OperandTypeDecl(Token n) {
-        name = n;
+        super(n);
         subOperands = new LinkedList<CodeRegion.Operand>();
     }
 

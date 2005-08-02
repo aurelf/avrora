@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,17 +34,20 @@ package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
 
-import java.util.List;
-
 /**
  * @author Ben L. Titzer
  */
-public class AddressingModeSetDecl extends Item {
+public class AddrModeUse {
 
-    public final List<Token> list;
+    public final Token name;
+    public AddressingModeDecl decl;
 
-    public AddressingModeSetDecl(Token n, List<Token> l) {
-        super(n);
-        list = l;
+    public AddrModeUse(Token n) {
+        name = n;
+    }
+
+    public AddrModeUse(Token n, AddressingModeDecl d) {
+        name = n;
+        decl = d;
     }
 }

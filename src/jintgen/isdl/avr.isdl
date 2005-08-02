@@ -1360,7 +1360,7 @@ architecture avr {
         write: short { $wregs(r30) = value; }
     }
 
-    operand-type AI_Z_W[0]: symbol {
+    operand-type AI_RZ_W[0]: symbol {
         mapping { Z = 0 }
         read: int {
             local temp: int = $wregs(r30);
@@ -1372,21 +1372,21 @@ architecture avr {
 
     addr-mode XLPM { // load from flash at address Z into R0
         operand dest: R0_B;
-        operand source: Z_W;
+        operand source: RZ_W;
         encoding = { 0b10010101, 0b110, extended[0], 0b1000 }
         property syntax: String = "";
     }
 
     addr-mode XLPMD { // load from flash at address Z into rd
         operand dest: GPR;
-        operand source: Z_W;
+        operand source: RZ_W;
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b0 }
         property syntax: String = "%dest, %source";
     }
 
     addr-mode XLPMPI { // load from flash at address Z into rd and increment Z
         operand dest: GPR;
-        operand source: AI_Z_W;
+        operand source: AI_RZ_W;
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b1 }
         property syntax: String = "%dest, %source+";
     }
@@ -1457,40 +1457,40 @@ architecture avr {
 // POLYMORPHIC INSTRUCTIONS : lpm, elpm, ld, st
 //------------------------------------------------------------------------
 
-    instruction "elpm" ops: XLPM {
+    instruction "elpm": XLPM {
         property cycles: int = 3;
         property extended: int = 1;
         execute {
-            local addr: int = extended(read(ops.source));
-            write(ops.dest, $flash(addr));
+            local addr: int = extended(read(source));
+            write(dest, $flash(addr));
         }
     }
 
-    instruction "lpm" ops: XLPM {
+    instruction "lpm": XLPM {
         encoding = { 0b10010101, 0b11001000 }
         property cycles: int = 3;
         property extended: int = 0;
         execute {
-            local addr: int = read(ops.source);
-            write(ops.dest, $flash(addr));
+            local addr: int = read(source);
+            write(dest, $flash(addr));
         }
     }
 
-    instruction "ld" ops: LD_ST {
+    instruction "ld": LD_ST {
         property cycles: int = 2;
         property store: boolean = false;
         execute {
-            local addr: int = read(ops.ar);
-            write(ops.rd, $sram(addr));
+            local addr: int = read(ar);
+            write(rd, $sram(addr));
         }
     }
 
-    instruction "st" ops: LD_ST {
+    instruction "st": LD_ST {
         property cycles: int = 2;
         property store: boolean = true;
         execute {
-            local addr: int = read(ops.ar);
-            local val: byte = read(ops.rd);
+            local addr: int = read(ar);
+            local val: byte = read(rd);
             $sram(addr) = val;
         }
     }

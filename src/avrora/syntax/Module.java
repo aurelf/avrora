@@ -392,7 +392,7 @@ public class Module implements Context {
         return new SyntacticOperand.Register(tok);
     }
 
-    private void addItem(Item i) {
+    protected void addItem(Item i) {
         itemList.add(i);
         segment.advance(i.itemSize());
     }

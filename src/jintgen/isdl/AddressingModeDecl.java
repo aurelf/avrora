@@ -32,8 +32,22 @@
 
 package jintgen.isdl;
 
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.CodeRegion;
+
+import java.util.List;
+import java.util.LinkedList;
+
 /**
  * @author Ben L. Titzer
  */
-public class AddressingModeDecl {
+public class AddressingModeDecl extends Item {
+
+    public final List<CodeRegion.Operand> operands;
+
+    public AddressingModeDecl(Token n, List<CodeRegion.Operand> ol) {
+        super(n);
+        operands = ol;
+    }
+
 }

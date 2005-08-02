@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,17 +34,48 @@ package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
 
-import java.util.List;
-
 /**
+ * The <code>Item</code> class represents the base class of many different types of items
+ * that can occur in an ISDL file. Each item has a unique name and a list of properties
+ * associated with it.
+ *
  * @author Ben L. Titzer
  */
-public class AddressingModeSetDecl extends Item {
+public class Item {
 
-    public final List<Token> list;
+    /**
+     * The <code>name</code> field stores a reference to the token that names this
+     * item. The token contains information about which where in the file it occured.
+     */
+    public final Token name;
 
-    public AddressingModeSetDecl(Token n, List<Token> l) {
-        super(n);
-        list = l;
+    /**
+     * The <code>properties</code> field stores a reference to a hash map that can
+     * retrieve the properties by their name.
+     */
+    public final HashList<String, Property> properties;
+
+    Item(Token n) {
+        name = n;
+        properties = new HashList<String, Property>();
+    }
+
+    /**
+     * The <code>addProperty()</code> method adds a property to this syntactic item. The
+     * property can be retrieved by its name as a string.
+     * @param p the property to add to this item
+     */
+    public void addProperty(Property p) {
+        properties.add(p.name.image, p);
+    }
+
+    /**
+     * The <code>getProperty()</code> method retrieves a property by its name, if it exists,
+     * and returns it.
+     * @param name the name of the property as a string
+     * @return a reference to the property if it exists; null otherwise
+     */
+    public Property getProperty(String name) {
+        return properties.get(name);
     }
 }

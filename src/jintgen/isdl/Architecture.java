@@ -65,6 +65,7 @@ public class Architecture {
     protected final HashList<String, OperandTypeDecl> operandMap;
     protected final HashList<String, EncodingDecl> encodingMap;
     protected final HashList<String, AddressingModeDecl> addrMap;
+    protected final HashList<String, AddressingModeSetDecl> addrSetMap;
 
     /**
      * The constructor for the <code>Architecture</code> class creates an instance with the specified
@@ -79,6 +80,7 @@ public class Architecture {
         operandMap = new HashList<String, OperandTypeDecl>();
         encodingMap = new HashList<String, EncodingDecl>();
         addrMap = new HashList<String, AddressingModeDecl>();
+        addrSetMap = new HashList<String, AddressingModeSetDecl>();
     }
 
     public Iterable<SubroutineDecl> getSubroutines() {
@@ -101,6 +103,10 @@ public class Architecture {
         return addrMap;
     }
 
+    public Iterable<AddressingModeSetDecl> getAddressingModeSets() {
+        return addrSetMap;
+    }
+
     public void addSubroutine(SubroutineDecl d) {
         printer.println("loading subroutine " + d.name.image + "...");
         subroutineMap.add(d.name.image, d);
@@ -121,6 +127,16 @@ public class Architecture {
         encodingMap.add(d.name.image, d);
     }
 
+    public void addAddressingMode(AddressingModeDecl d) {
+        printer.println("loading addressing mode " + d + "...");
+        addrMap.add(d.name.image, d);
+    }
+
+    public void addAddressingModeSet(AddressingModeSetDecl d) {
+        printer.println("loading addressing mode set " + d + "...");
+        addrSetMap.add(d.name.image, d);
+    }
+
     public InstrDecl getInstruction(String name) {
         return instructionMap.get(name);
     }
@@ -137,5 +153,11 @@ public class Architecture {
         return encodingMap.get(name);
     }
 
+    public AddressingModeDecl getAddressingMode(String name) {
+        return addrMap.get(name);
+    }
 
+    public AddressingModeSetDecl getAddressingModeSet(String name) {
+        return addrSetMap.get(name);
+    }
 }

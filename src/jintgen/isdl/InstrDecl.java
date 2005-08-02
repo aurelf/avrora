@@ -40,6 +40,7 @@ import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
 
 import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>InstrDecl</code> class represents the declaration of an instruction in an instruction set
@@ -59,6 +60,8 @@ public class InstrDecl extends CodeRegion {
 
     public List<Property> propertyList;
 
+    public final AddrModeUse addrMode;
+
     public final String className;
 
     public final String innerClassName;
@@ -72,10 +75,11 @@ public class InstrDecl extends CodeRegion {
      *
      * @param n the name of the instruction as a string
      */
-    public InstrDecl(boolean ps, Token n, List<CodeRegion.Operand> o, List<Property> p, List<Stmt> s, List<EncodingDecl> el) {
-        super(o, s);
+    public InstrDecl(boolean ps, Token n, AddrModeUse am, List<Property> p, List<Stmt> s, List<EncodingDecl> el) {
+        super(new LinkedList<CodeRegion.Operand>(), s);
         pseudo = ps;
         name = n;
+        addrMode = am;
         encodingList = el;
         propertyList = p;
         innerClassName = StringUtil.trimquotes(name.image).toUpperCase();

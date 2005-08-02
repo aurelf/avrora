@@ -115,7 +115,7 @@ public class Main {
                 printHelp(mainOptions.getArguments());
             } else {
                 // otherwise run the specified action
-                run(args);
+                run(mainOptions.getArguments());
             }
 
         } catch (Util.Error e) {

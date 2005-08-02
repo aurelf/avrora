@@ -34,6 +34,7 @@ package avrora.monitors;
 
 import avrora.actions.SimAction;
 import avrora.core.Program;
+import avrora.core.SourceMapping;
 import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.mcu.Microcontroller;
@@ -98,8 +99,7 @@ public class MemoryMonitor extends MonitorFactory {
                 List loc = SimAction.getLocationList(program, l);
                 Iterator i = loc.iterator();
                 while ( i.hasNext() ) {
-                    // TODO: this should not be program locations, but memory locations!!!
-                    Program.Location location = (Program.Location)i.next();
+                    SourceMapping.Location location = (SourceMapping.Location)i.next();
                     simulator.insertWatch(memprofile, location.address);
                 }
             } else {
