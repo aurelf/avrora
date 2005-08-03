@@ -289,7 +289,7 @@ void Instruction() :
 AddrModeUse AddrModeUse(Token n) : { List<AddressingModeDecl.Operand> o; }
 {
     (":" n = <IDENTIFIER> { return new AddrModeUse(n, null); })
-   |(o = Operands() { return new AddrModeUse(n, new AddressingModeDecl(n, o)); })
+   |(o = Operands() { return new AddrModeUse(null, new AddressingModeDecl(n, o)); })
 }
 
 void Property(List<Property> p) : { Token name, t, v;}
@@ -324,14 +324,13 @@ void Memory() : { Token n; }
 
 void AddrModeDecl() : {
     Token n;
-    List<AddressingModeDecl.Operand> o = new LinkedList<AddressingModeDecl.Operand>();
+    List<AddressingModeDecl.Operand> o;
     List<Property> p = new LinkedList<Property>();
     EncodingDecl e;
 }
 {
-    "addr-mode" n = <IDENTIFIER> "{"
+    "addr-mode" n = <IDENTIFIER> o = Operands() "{"
         (Property(p)
-        | Operand(o)
         | e = Encoding(n)
         )*
     "}" { arch.addAddressingMode(new AddressingModeDecl(n, o)); }
@@ -425,12 +424,7 @@ void OperandBody(OperandTypeDecl td, SymbolMapping m) : { }
 
 void SubOperand(OperandTypeDecl td) : { AddressingModeDecl.Operand o; }
 {
-    "sub-operand" o = Formal() { td.addSubOperand(o); } ";"
-}
-
-void Operand(List<AddressingModeDecl.Operand> ol) : { AddressingModeDecl.Operand o; }
-{
-    "operand" o = Formal() { ol.add(o); } ";"
+    "sub-operand" o = Operand() { td.addSubOperand(o); } ";"
 }
 
 void ReadMethod(OperandTypeDecl td) : { List<Stmt> s = new LinkedList<Stmt>(); }
@@ -495,10 +489,10 @@ List<AddressingModeDecl.Operand> Operands() :
     List<AddressingModeDecl.Operand> l = new LinkedList<AddressingModeDecl.Operand>();
 }
 {
-    [ o = Formal() { l.add(o); } ("," o = Formal() { l.add(o); })* ] { return l; }
+    [ o = Operand() { l.add(o); } ("," o = Operand() { l.add(o); })* ] { return l; }
 }
 
-AddressingModeDecl.Operand Formal() : { Token n, t; }
+AddressingModeDecl.Operand Operand() : { Token n, t; }
 {
     n = <IDENTIFIER> ":" t = OperandType() { return new AddressingModeDecl.Operand(n, t); }
 }

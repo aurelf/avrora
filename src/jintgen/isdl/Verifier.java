@@ -40,9 +40,7 @@ import jintgen.jigir.Stmt;
 import jintgen.gen.Inliner;
 import jintgen.isdl.parser.Token;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * The <code>Verifier</code> class performs some consistency checks on an architecture description
@@ -164,11 +162,14 @@ public class Verifier {
 
     private void verifyOperands(List<AddressingModeDecl.Operand> operands) {
         for ( AddressingModeDecl.Operand o : operands ) {
-            String tname = o.type.image;
-            OperandTypeDecl td = arch.getOperandDecl(tname);
-            if ( td == null )
-                ERROR.UnresolvedOperandType(o.type);
-            o.setOperandType(td);
+            if ( o.getOperandType() == null ) {
+                // if the operand type has not been resolved yet
+                String tname = o.type.image;
+                OperandTypeDecl td = arch.getOperandDecl(tname);
+                if ( td == null )
+                    ERROR.UnresolvedOperandType(o.type);
+                o.setOperandType(td);
+            }
         }
     }
 
@@ -181,10 +182,64 @@ public class Verifier {
 
             previous.put(as.name.image, as.name);
 
+            HashMap<String, OperandTypeDecl.Union> unions = new HashMap<String, OperandTypeDecl.Union>();
+            HashSet<String> alloperands = new HashSet<String>();
             for ( Token t : as.list ) {
-                AddressingModeDecl d = arch.getAddressingMode(t.image);
-                if ( d == null )
+                AddressingModeDecl am = arch.getAddressingMode(t.image);
+                if ( am == null )
                     ERROR.UnresolvedAddressingMode(t);
+                as.addrModes.add(am);
+                unifyAddressingMode(unions, am, as, alloperands, t);
+            }
+
+            buildOperandList(unions, as);
+        }
+    }
+
+    private void buildOperandList(HashMap<String, OperandTypeDecl.Union> unions, AddressingModeSetDecl as) {
+        // now that we verified the unification of the operands, create a list of operands for
+        // this addressing mode with names and union types
+        List<AddressingModeDecl.Operand> operands = new LinkedList<AddressingModeDecl.Operand>();
+        for ( Map.Entry<String, OperandTypeDecl.Union> e : unions.entrySet() ) {
+            Token n = new Token();
+            Token t = new Token();
+            n.image = e.getKey();
+            t.image = "union";
+            AddressingModeDecl.Operand operand = new AddressingModeDecl.Operand(n, t);
+            operand.setOperandType(e.getValue());
+            operands.add(operand);
+        }
+
+        as.unionOperands = operands;
+    }
+
+    private void unifyAddressingMode(HashMap<String, OperandTypeDecl.Union> unions, AddressingModeDecl am, AddressingModeSetDecl as, HashSet<String> alloperands, Token t) {
+        if ( unions.size() == 0 ) {
+            // for the first addressing mode, put the union types in the map
+            for ( AddressingModeDecl.Operand o : am.operands ) {
+                OperandTypeDecl.Union ut = new OperandTypeDecl.Union(as.name);
+                OperandTypeDecl d = arch.getOperandDecl(o.type.image);
+                ut.addType(d);
+                unions.put(o.name.image, ut);
+                alloperands.add(o.name.image);
+            }
+        } else {
+            // for each operand in this addressing mode, check that it exists and add
+            // it to the types to be unified.
+            HashSet<String> operands = new HashSet<String>();
+            for ( AddressingModeDecl.Operand o : am.operands ) {
+                OperandTypeDecl.Union ut = unions.get(o.name.image);
+                if ( ut == null )
+                    ERROR.ExtraOperandInAddressingModeUnification(as.name, t, o.name);
+
+                OperandTypeDecl d = arch.getOperandDecl(o.type.image);
+                ut.addType(d);
+                operands.add(o.name.image);
+            }
+            if ( !operands.containsAll(alloperands) ) {
+                alloperands.removeAll(operands);
+                String oneop = alloperands.iterator().next();
+                ERROR.MissingOperandInAddressingModeUnification(as.name, t, oneop);
             }
         }
     }
@@ -212,14 +267,25 @@ public class Verifier {
 
     private void verifyAddressingMode(InstrDecl id) {
         AddrModeUse am = id.addrMode;
-        if ( am.decl == null ) {
-            Object decl = arch.getAddressingModeSet(am.name.image);
-            if ( decl == null )
-                decl = arch.getAddressingMode(am.name.image);
-            if ( decl == null )
-                ERROR.UnresolvedAddressingMode(am.name);
-            // TODO: set the reference to the addressing mode set
-            //am.decl = decl;
+        if ( am.ref != null ) {
+            AddressingModeSetDecl asd = arch.getAddressingModeSet(am.ref.image);
+            if ( asd == null ) {
+                resolveAddressingMode(am);
+            } else {
+                am.operands = asd.unionOperands;
+                am.addrModes = asd.addrModes;
+            }
+        }
+    }
+
+    private void resolveAddressingMode(AddrModeUse am) {
+        AddressingModeDecl amd = arch.getAddressingMode(am.ref.image);
+        if ( amd == null ) {
+            ERROR.UnresolvedAddressingMode(am.ref);
+        } else {
+            am.operands = amd.operands;
+            am.addrModes = new LinkedList<AddressingModeDecl>();
+            am.addrModes.add(amd);
         }
     }
 

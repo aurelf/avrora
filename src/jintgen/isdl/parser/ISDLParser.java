@@ -145,7 +145,7 @@ public class ISDLParser implements ISDLParserConstants {
     default:
       jj_la1[6] = jj_gen;
       o = Operands();
-                      {if (true) return new AddrModeUse(n, new AddressingModeDecl(n, o));}
+                      {if (true) return new AddrModeUse(null, new AddressingModeDecl(n, o));}
     }
     throw new Error("Missing return statement in function");
   }
@@ -225,16 +225,16 @@ public class ISDLParser implements ISDLParserConstants {
 
   final public void AddrModeDecl() throws ParseException {
     Token n;
-    List<AddressingModeDecl.Operand> o = new LinkedList<AddressingModeDecl.Operand>();
+    List<AddressingModeDecl.Operand> o;
     List<Property> p = new LinkedList<Property>();
     EncodingDecl e;
     jj_consume_token(ADDR_MODE);
     n = jj_consume_token(IDENTIFIER);
+    o = Operands();
     jj_consume_token(LBRACKET);
     label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case OPERAND:
       case ENCODING:
       case PROPERTY:
         ;
@@ -246,9 +246,6 @@ public class ISDLParser implements ISDLParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PROPERTY:
         Property(p);
-        break;
-      case OPERAND:
-        Operand(o);
         break;
       case ENCODING:
         e = Encoding(n);
@@ -457,16 +454,8 @@ public class ISDLParser implements ISDLParserConstants {
   final public void SubOperand(OperandTypeDecl td) throws ParseException {
                                         AddressingModeDecl.Operand o;
     jj_consume_token(82);
-    o = Formal();
-                                 td.addSubOperand(o);
-    jj_consume_token(SEMI);
-  }
-
-  final public void Operand(List<AddressingModeDecl.Operand> ol) throws ParseException {
-                                                      AddressingModeDecl.Operand o;
-    jj_consume_token(OPERAND);
-    o = Formal();
-                             ol.add(o);
+    o = Operand();
+                                  td.addSubOperand(o);
     jj_consume_token(SEMI);
   }
 
@@ -607,8 +596,8 @@ public class ISDLParser implements ISDLParserConstants {
     List<AddressingModeDecl.Operand> l = new LinkedList<AddressingModeDecl.Operand>();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IDENTIFIER:
-      o = Formal();
-                     l.add(o);
+      o = Operand();
+                      l.add(o);
       label_9:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -620,20 +609,20 @@ public class ISDLParser implements ISDLParserConstants {
           break label_9;
         }
         jj_consume_token(COMMA);
-        o = Formal();
-                                                     l.add(o);
+        o = Operand();
+                                                       l.add(o);
       }
       break;
     default:
       jj_la1[24] = jj_gen;
       ;
     }
-                                                                       {if (true) return l;}
+                                                                         {if (true) return l;}
     throw new Error("Missing return statement in function");
   }
 
-  final public AddressingModeDecl.Operand Formal() throws ParseException {
-                                        Token n, t;
+  final public AddressingModeDecl.Operand Operand() throws ParseException {
+                                         Token n, t;
     n = jj_consume_token(IDENTIFIER);
     jj_consume_token(79);
     t = OperandType();
@@ -1622,6 +1611,12 @@ public class ISDLParser implements ISDLParserConstants {
     finally { jj_save(5, xla); }
   }
 
+  final private boolean jj_3R_31() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_3R_33()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_28() {
     if (jj_scan_token(LPAREN)) return true;
     return false;
@@ -1633,23 +1628,23 @@ public class ISDLParser implements ISDLParserConstants {
     return false;
   }
 
-  final private boolean jj_3_2() {
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_30() {
     if (jj_3R_32()) return true;
     return false;
   }
 
-  final private boolean jj_3_1() {
-    if (jj_3R_24()) return true;
+  final private boolean jj_3_2() {
+    if (jj_3R_25()) return true;
     return false;
   }
 
   final private boolean jj_3R_29() {
     if (jj_3R_31()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_1() {
+    if (jj_3R_24()) return true;
     return false;
   }
 
@@ -1736,12 +1731,6 @@ public class ISDLParser implements ISDLParserConstants {
     return false;
   }
 
-  final private boolean jj_3R_31() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    if (jj_3R_33()) return true;
-    return false;
-  }
-
   public ISDLParserTokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -1761,7 +1750,7 @@ public class ISDLParser implements ISDLParserConstants {
       jj_la1_2();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x7500000,0x7500000,0x0,0x80000000,0x0,0x0,0x0,0x82000,0x0,0x80800000,0x80800000,0x0,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0x0,0x40000000,0x0,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000,0x0,0x0,0x2000,0x18000000,0x18002000,0x0,0x18000000,0x0,0x18000000,0x0,0x0,0x0,0x0,0x0,0x18000000,0x18002000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x18002000,0x0,};
+      jj_la1_0 = new int[] {0x7500000,0x7500000,0x0,0x80000000,0x0,0x0,0x0,0x82000,0x0,0x80000000,0x80000000,0x0,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0x0,0x40000000,0x0,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2000,0x0,0x0,0x2000,0x18000000,0x18002000,0x0,0x18000000,0x0,0x18000000,0x0,0x0,0x0,0x0,0x0,0x18000000,0x18002000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x18002000,0x0,};
    }
    private static void jj_la1_1() {
       jj_la1_1 = new int[] {0x11c0c,0x11c0c,0x10000,0x0,0x40000,0x1,0x0,0x4000,0xc,0x40000,0x40000,0x400000,0x20000,0x80000,0x8000,0x2080000,0x10,0x10,0x400000,0x0,0x80000,0x0,0x400000,0x400000,0x0,0x800,0x1c00,0x400000,0x0,0x400000,0x804000,0x0,0x0,0x4000,0x0,0x20804000,0x22,0x2000,0x40,0x82022,0x0,0x200000,0x0,0x200000,0x0,0x2022,0x20804000,0x100,0x200,0x80,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xc000000,0xc000000,0x30000000,0x30000000,0xc0000000,0xc0000000,0x20804000,0x8000,};

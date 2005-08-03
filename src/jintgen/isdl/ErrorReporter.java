@@ -41,6 +41,16 @@ import avrora.util.StringUtil;
  */
 public class ErrorReporter {
 
+    public void ExtraOperandInAddressingModeUnification(Token addrSet, Token addrMode, Token operand) {
+        throw Util.failure("Cannot unify addressing mode "+StringUtil.quote(addrMode)+" into set "+StringUtil.quote(addrSet)+ " at "+pos(addrMode)
+        +" because it defines an operand "+StringUtil.quote(operand)+" not in the other addressing modes");
+    }
+
+    public void MissingOperandInAddressingModeUnification(Token addrSet, Token addrMode, String operand) {
+        throw Util.failure("Cannot unify addressing mode "+StringUtil.quote(addrMode)+" into set "+StringUtil.quote(addrSet)+ " at "+pos(addrMode)
+        +" because it does not define an operand "+StringUtil.quote(operand)+" present in the other addressing modes");
+    }
+
     public void UnresolvedOperandType(Token t) {
         unresolved("operand type", t);
     }
@@ -98,10 +108,14 @@ public class ErrorReporter {
     }
 
     void redefined(String thing, Token where) {
-        throw Util.failure(thing+" "+StringUtil.quote(where.image)+" previously defined at "+where.beginLine+":"+where.beginColumn);
+        throw Util.failure(thing+" "+StringUtil.quote(where.image)+" previously defined at "+pos(where));
     }
 
     void unresolved(String thing, Token where) {
-        throw Util.failure("Unresolved "+thing+" "+StringUtil.quote(where.image)+" at "+where.beginLine+":"+where.beginColumn);
+        throw Util.failure("Unresolved "+thing+" "+StringUtil.quote(where.image)+" at "+pos(where));
+    }
+
+    private String pos(Token t) {
+        return t.beginLine+":"+t.beginColumn;
     }
 }

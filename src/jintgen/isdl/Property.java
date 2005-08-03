@@ -35,6 +35,11 @@ package jintgen.isdl;
 import jintgen.isdl.parser.Token;
 
 /**
+ * The <code>Property</code> class represents a property associated with an instruction, encoding,
+ * or addressing mode. It has a name, a type, and a value. Properties can be used by ISDL processing
+ * tools to learn certain information about the item, such as the number of cycles for an instruction,
+ * whether it is a branch, or the source syntax for an addressing mode.
+ *
  * @author Ben L. Titzer
  */
 public class Property {
@@ -43,6 +48,13 @@ public class Property {
     public final Token type;
     public final Token value;
 
+    /**
+     * The default constructor for the <code>Property</code> class simplying initializes all of the
+     * fields, including hte name, the type, and the value of this property.
+     * @param n the name of the property
+     * @param t the type of the property
+     * @param v the value of the property
+     */
     public Property(Token n, Token t, Token v) {
         name = n;
         type = t;

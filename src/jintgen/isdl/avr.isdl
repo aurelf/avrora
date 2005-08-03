@@ -117,41 +117,31 @@ architecture avr {
 // ADDRESSING MODES
 //---------------------------------------------------------------------------
 
-    addr-mode GPRGPR { // two general purpose registers
-        operand rd: GPR;
-        operand rr: GPR;
+    addr-mode GPRGPR rd: GPR, rr: GPR { // two general purpose registers
         encoding = { opcode[5:0], rr[4:4], rd[4:4], rd[3:0], rr[3:0] }
     }
 
-    addr-mode MGPRMGPR { // two midrange general purpose registers
-        operand rd: MGPR;
-        operand rr: MGPR;
+    addr-mode MGPRMGPR rd: MGPR, rr: MGPR { // two midrange general purpose registers
         encoding = { opcode[7:0], s1[0], rd[2:0], s2[0], rr[2:0] }
     }
 
-    addr-mode GPR { // one general purpose register
-        operand r1: GPR;
+    addr-mode GPR r1: GPR { // one general purpose register
         encoding = { opcode[6:0], r1[4:4], r1[3:0], 0b0101 }
     }
 
-    addr-mode HGPRIMM8 { // a high general purpose register and an 8-bit immediate
-        operand r1: HGPR;
-        operand imm1: IMM8;
+    addr-mode HGPRIMM8 r1: HGPR, imm1: IMM8 { // a high general purpose register and an 8-bit immediate
         encoding = { opcode[3:0], imm1[7:4], r1[3:0], imm1[3:0] }
     }
 
-    addr-mode ABS { // absolute address
-        operand target: PADDR;
+    addr-mode ABS target: PADDR { // absolute address
         encoding = { opcode[9:3], target[21:17], opcode[2:0], target[16:0] }
     }
 
-    addr-mode BRANCH { // branch if the bit is set
-        operand target: SREL;
+    addr-mode BRANCH target: SREL { // branch if the bit is set
         encoding = { 0b11110, clear[0], target[6:0], bit[2:0] }
     }
 
-    addr-mode CALL {
-        operand target: LREL;
+    addr-mode CALL target: LREL {
         encoding = { 0b1101, target[11:0] }
     }
 
@@ -1370,23 +1360,17 @@ architecture avr {
         write: short { $wregs(r30) = value; }
     }
 
-    addr-mode XLPM { // load from flash at address Z into R0
-        operand dest: R0_B;
-        operand source: RZ_W;
+    addr-mode XLPM dest: R0_B, source: RZ_W { // load from flash at address Z into R0
         encoding = { 0b10010101, 0b110, extended[0], 0b1000 }
         property syntax: String = "";
     }
 
-    addr-mode XLPMD { // load from flash at address Z into rd
-        operand dest: GPR;
-        operand source: RZ_W;
+    addr-mode XLPMD dest: GPR, source: RZ_W { // load from flash at address Z into rd
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b0 }
         property syntax: String = "%dest, %source";
     }
 
-    addr-mode XLPMPI { // load from flash at address Z into rd and increment Z
-        operand dest: GPR;
-        operand source: AI_RZ_W;
+    addr-mode XLPMPI dest: GPR, source: AI_RZ_W { // load from flash at address Z into rd and increment Z
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b1 }
         property syntax: String = "%dest, %source+";
     }
@@ -1425,26 +1409,20 @@ architecture avr {
         write: byte { }
     }
 
-    addr-mode LD_ST_XYZ {
-        operand rd: GPR;
-        operand ar: XYZ;
+    addr-mode LD_ST_XYZ rd: GPR, ar: XYZ {
         encoding = { 0b100100, store[0], rd[4:0], 0b1100 } when ar == X
         encoding = { 0b100000, store[0], rd[4:0], 0b1000 } when ar == Y
         encoding = { 0b100000, store[0], rd[4:0], 0b0000 } when ar == Z
     }
 
-    addr-mode LD_ST_AI_XYZ {
-        operand rd: GPR;
-        operand ar: AI_XYZ;
+    addr-mode LD_ST_AI_XYZ rd: GPR, ar: AI_XYZ {
         encoding = { 0b100100, store[0], rd[4:0], 0b1101 } when ar == X
         encoding = { 0b100100, store[0], rd[4:0], 0b1001 } when ar == Y
         encoding = { 0b100100, store[0], rd[4:0], 0b0001 } when ar == Z
         property syntax: String = "%rd, %ar+";
     }
 
-    addr-mode LD_ST_PD_XYZ {
-        operand rd: GPR;
-        operand ar: PD_XYZ;
+    addr-mode LD_ST_PD_XYZ rd: GPR, ar: PD_XYZ {
         encoding = { 0b100100, store[0], rd[4:0], 0b1110 } when ar == X
         encoding = { 0b100100, store[0], rd[4:0], 0b1010 } when ar == Y
         encoding = { 0b100100, store[0], rd[4:0], 0b0010 } when ar == Z

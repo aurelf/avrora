@@ -35,6 +35,7 @@ package jintgen.isdl;
 import jintgen.isdl.parser.Token;
 
 import java.util.List;
+import java.util.LinkedList;
 
 /**
  * @author Ben L. Titzer
@@ -42,9 +43,13 @@ import java.util.List;
 public class AddressingModeSetDecl extends Item {
 
     public final List<Token> list;
+    public final List<AddressingModeDecl> addrModes;
+    public List<AddressingModeDecl.Operand> unionOperands;
 
     public AddressingModeSetDecl(Token n, List<Token> l) {
         super(n);
         list = l;
+        addrModes = new LinkedList<AddressingModeDecl>();
     }
+
 }

@@ -42,17 +42,20 @@ import java.util.LinkedList;
  */
 public class AddrModeUse {
 
-    public final Token name;
-    public AddressingModeDecl decl;
+    public final Token ref;
     public final List<EncodingDecl> encodings;
-    public final List<AddressingModeDecl.Operand> operands;
+    public List<AddressingModeDecl> addrModes;
+    public List<AddressingModeDecl.Operand> operands;
 
     public AddrModeUse(Token n, AddressingModeDecl d) {
-        name = n;
-        decl = d;
+        ref = n;
+        addrModes = new LinkedList<AddressingModeDecl>();
         encodings = new LinkedList<EncodingDecl>();
-        if ( decl != null ) operands = decl.operands;
-        else operands = new LinkedList<AddressingModeDecl.Operand>();
+
+        if ( d != null ) {
+            addrModes.add(d);
+            operands = d.operands;
+        }
     }
 
     public void addEncoding(EncodingDecl e) {

@@ -170,474 +170,358 @@ architecture msp430 {
 //-------------------------------------------------------------------------- 
 //   ADDRESSING MODES ALLOWED FOR SINGLE OPERAND/DOUBLE OPERAND/JUMP INSTRUCTIONS
 //-------------------------------------------------------------------------   
-    addr-mode REG_W {                   //addressing modes like REG_W, REGPUSH_W, REGCALL_W are single operand
-	    operand source: SREG_W;
+    addr-mode REG_W source: SREG_W {                   //addressing modes like REG_W, REGPUSH_W, REGCALL_W are single operand
 	    encoding = { opcode[8:0], 0b000, source  }
 	    property syntax: String = "%source";
 	    property cycles: int = 1;
     }
 
-
-
-    addr-mode REG_B {
-	    operand source: SREG_B;
+    addr-mode REG_B source: SREG_B {
     	encoding = { opcode[8:0], 0b100, source  }
 	    property syntax: String = "%source";
 	    property cycles: int = 1;
     }
 
-
-    addr-mode REGREG_B {         //addressing modes like REGREG_B, REGIND_W, etc are double operand
-        operand source: SREG_B;
-        operand dest: SREG_B;
+    addr-mode REGREG_B source: SREG_B, dest: SREG_B {         //addressing modes like REGREG_B, REGIND_W, etc are double operand
         encoding = { opcode[3:0], source, 0b0100, dest }
         property syntax: String = "%source, %dest";
         property cycles: int = 1;
     }
 
-    addr-mode REGREG_W {
-        operand source: SREG_W;
-        operand dest: SREG_W;
+    addr-mode REGREG_W source: SREG_W, dest: SREG_W {
         encoding = { opcode[3:0], source, 0b0000, dest }
         property syntax: String = "%source, %dest";
         property cycles: int = 1;
     }
 
-    addr-mode REGIND_B {
-        operand source: SREG_B;
-        operand dest: INDX_B;
+    addr-mode REGIND_B source: SREG_B, dest: INDX_B {
 	    encoding = { opcode[3:0], source, 0b1100, dest.reg, dest.index[3:0] }
 	    property syntax: String = "%source, %dest.index(%dest.reg)";
 	    property cycles: int = 4;
     }
 
-    addr-mode REGIND_W {
-        operand source: SREG_W;
-        operand dest: INDX_W;
+    addr-mode REGIND_W source: SREG_W, dest: INDX_W {
 	    encoding = { opcode[3:0], source, 0b1000, dest.reg, dest.index[3:0] }
 	    property syntax: String = "%source, %dest.index(%dest.reg)";
 	    property cycles: int = 4;
     }
 
-    addr-mode REGSYM_B {
-        operand source: SREG_B;
-	    operand dest: SYMB_B;
+    addr-mode REGSYM_B source: SREG_B, dest: SYMB_B {
 	    encoding = { opcode[3:0], source, 0b1100, 0b0000, dest - pc }  // X - r0 is the address at label - program counter
 	    property syntax: String = "%source, %dest";
 	    property cycles: int = 4;
     }
 
-    addr-mode REGSYM_W {
-        operand source: SREG_W;
-        operand dest: SYMB_W;
+    addr-mode REGSYM_W source: SREG_W, dest: SYMB_W {
     	encoding = { opcode[3:0], source, 0b1000, 0b0000, dest - pc }  // X - r0 is the address at label - program counter
 	    property syntax: String = "%source, %dest";
 	    property cycles: int = 4;
     }
 
-    addr-mode REGABS_B {
-        operand source: SREG_B;
-	    operand dest: ABSO_B;
+    addr-mode REGABS_B source: SREG_B, dest: ABSO_B {
 	    encoding = { opcode[3:0], source, 0b1100, 0b0010, dest } //X is the absolute address of the label
 	    property syntax: String = "%source, &%dest";
        	property cycles: int = 4;
     }
 
-    addr-mode REGABS_W {
-        operand source: SREG_W;
-	    operand dest: ABSO_W;
+    addr-mode REGABS_W source: SREG_W, dest: ABSO_W {
 	    encoding = { opcode[3:0], source, 0b1100, 0b0010, dest } //X is the absolute address of the label
 	    property syntax: String = "%source, &%dest";
        	property cycles: int = 4;
     }
 
-    addr-mode IND_W {
-        operand source: INDX_W;
+    addr-mode IND_W source: INDX_W {
         encoding = { opcode[8:0], 0b001, source, x }
         property syntax: String = "%source";
         property cycles: int = 4;
     }
 
-    addr-mode IND_B {
-        operand source: INDX_B;
+    addr-mode IND_B source: INDX_B {
         encoding = { opcode[8:0], 0b101, source, X  }
         property syntax: String = "%source";
         property cycles: int = 4;
     }
 
-
-    addr-mode INDREG_B {
-        operand source: INDX_B;
-        operand dest: SREG_B;
+    addr-mode INDREG_B source: INDX_B, dest: SREG_B {
         encoding = { opcode[3:0], source, 0b0101, dest, X }
         property syntax: String = "%X(%source), %dest";
         property cycles: int = 3;
     }
-    addr-mode INDREG_W {
-        operand source: INDX_W;
-        operand dest: SREG_W;
+
+    addr-mode INDREG_W source: INDX_W, dest: SREG_W {
         encoding = { opcode[3:0], source, 0b0001, dest, X }
         property syntax: String = "%X(%source), %dest";
         property cycles: int = 3;
     }
 
-    addr-mode INDIND_B {
-        operand source: INDX_B;
-        operand dest: INDX_B;
+    addr-mode INDIND_B source: INDX_B, dest: INDX_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X, Y }
         property syntax: String = "%X(%source), %Y(%dest)";
         property cycles: int = 6;
     }
 
-    addr-mode INDIND_W {
-        operand source: INDX_W;
-        operand dest: INDX_W;
+    addr-mode INDIND_W source: INDX_W, dest: INDX_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X, Y }
         property syntax: String = "%X(%source), %Y(%dest)";
         property cycles: int = 6;
     }
 
-    addr-mode INDSYM_B {
-        operand source: INDX_B;
-        operand dest: SYMB_B;
+    addr-mode INDSYM_B source: INDX_B, dest: SYMB_B {
         encoding =  { opcode[3:0], source, 0b1101, dest, X,  Y - r0 }
         property syntax: String = "%X(%source), %Y";
         property cycles: int = 6;
     }
 
-    addr-mode INDSYM_W {
-        operand source: INDX_W;
-        operand dest: SYMB_W;
+    addr-mode INDSYM_W source: INDX_W, dest: SYMB_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X, Y - r0 }
         property syntax: String = "%X(%source), %Y";
         property cycles: int = 6;
     }
 
-    addr-mode INDABS_B {
-        operand source: INDX_B;
-        operand dest: ABSO_B;
+    addr-mode INDABS_B source: INDX_B, dest: ABSO_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X, Y -r2 }
         property syntax: String = "%X(%source), &%Y";
         property cycles: int = 6;
     }     
 
-    addr-mode INDABS_W {
-        operand source: INDX_W;
-        operand dest: ABSO_W;
+    addr-mode INDABS_W source: INDX_W, dest: ABSO_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X, Y - r2 }
         property syntax: String = "%X(%source), &%Y";
         property cycles: int = 6;
     } 
 
-    addr-mode SYM_W {
-        operand source: SYMB_W;
+    addr-mode SYM_W source: SYMB_W {
         encoding = { opcode[8:0], 0b001, source, X - r0  }
         property syntax: String = "%X";
         property cycles: int = 4;
     }
 
-
-    addr-mode SYM_B {
-        operand source: SYMB_B;
+    addr-mode SYM_B source: SYMB_B {
         encoding = { opcode[8:0], 0b101, source, X - r0  }
         property syntax: String = "%X";
         property cycles: int = 4;
     }
 
-    addr-mode SYMREG_B {
-        operand source: SYMB_B;
-        operand dest: SREG_B;
+    addr-mode SYMREG_B source: SYMB_B, dest: SREG_B {
         encoding = { opcode[3:0], source, 0b0101, dest, X - r0 }
         property syntax: String = "%X, %dest";
         property cycles: int = 3;
     }
 
-    addr-mode SYMREG_W {
-        operand source: SYMB_W;
-        operand dest: SREG_W;
+    addr-mode SYMREG_W source: SYMB_W, dest: SREG_W {
         encoding = { opcode[3:0], source, 0b0001, dest, X - r0 }
         property syntax: String = "%X, %dest";
         property cycles: int = 3;
     }
 
-    addr-mode SYMIND_B {
-        operand source: SYMB_B;
-        operand dest: INDX_B;
+    addr-mode SYMIND_B source: SYMB_B, dest: INDX_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X - r0, Y }
         property syntax: String = "%X, %Y(%dest)";
         property cycles: int = 6;
     }
 
-    addr-mode SYMIND_W {
-        operand source: SYMB_W;
-        operand dest: INDX_W;
+    addr-mode SYMIND_W source: SYMB_W, dest: INDX_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X - r0, Y }
         property syntax: String = "%X, %Y(%dest)";
         property cycles: int = 6;
     }		
 
-    addr-mode SYMSYM_B {
-        operand source: SYMB_B;
-        operand dest: SYMB_B;
+    addr-mode SYMSYM_B source : SYMB_B, dest: SYMB_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X - r0, Y - r0 }
         property syntax: String = "%X, %Y";
         property cycles: int = 6;
     }
 
-    addr-mode SYMSYM_W {
-        operand source: SYMB_W;
-        operand dest: SYMB_W;
+    addr-mode SYMSYM_W source: SYMB_W, dest: SYMB_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X - r0, Y - r0 }
         property syntax: String = "%X, %Y";
         property cycles: int = 6;
     }
 
-    addr-mode SYMABS_B {
-        operand source: SYMB_B;
-        operand dest: ABSO_B;
+    addr-mode SYMABS_B source: SYMB_B, dest: ABSO_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X - r0, Y - r2 }
         property syntax: String = "%X, &%Y";
         property cycles: int = 6;
     }
 
-    addr-mode SYMABS_W {
-        operand source: SYMB_W;
-        operand dest: ABSO_W;
+    addr-mode SYMABS_W source: SYMB_W, dest: ABSO_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X - r0, Y - r2 }
         property syntax: String = "%X, &%Y";
         property cycles: int = 6;
     }
 
-    addr-mode ABS_W {
-        operand source: ABSO_W;
+    addr-mode ABS_W source: ABSO_W {
         encoding = { opcode[8:0], 0b001, source, Y - r2  }
         property syntax: String = "&%X";
         property cycles: int = 4;
     }
 
-    addr-mode ABS_B {
-        operand source: ABSO_B;
+    addr-mode ABS_B source: ABSO_B {
         encoding = { opcode[8:0], 0b101, source, Y - r2  }
         property syntax: String = "&%X";
         property cycles: int = 4;
     }
 
-    addr-mode ABSREG_B {
-        operand source: ABSO_B;
-        operand dest: SREG_B;
+    addr-mode ABSREG_B source: ABSO_B, dest: SREG_B {
         encoding = { opcode[3:0], source, 0b0101, dest, X - r2 }
         property syntax: String = "&%X, %dest";
         property cycles: int = 3;
     }
 
-    addr-mode ABSREG_W {
-        operand source: ABSO_W;
-        operand dest: SREG_W;
+    addr-mode ABSREG_W source: ABSO_W, dest: SREG_W {
         encoding = { opcode[3:0], source, 0b0001, dest, X - r2 }
         property syntax: String = "&%X, %dest";
         property cycles: int = 3;
     }
 
-    addr-mode ABSIND_B {
-        operand source: ABSO_B;
-        operand dest: INDX_B;
+    addr-mode ABSIND_B source: ABSO_B, dest: INDX_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X - r2, Y }
         property syntax: String = "&%X, %Y(%dest)";
         property cycles: int = 6;
     }
 
-    addr-mode ABSIND_W {
-        operand source: ABSO_W;
-        operand dest: INDX_W;
+    addr-mode ABSIND_W source: ABSO_W, dest: INDX_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X - r2, Y }
         property syntax: String = "&%X, %Y(%dest)";
         property cycles: int = 6;
     }
 
-    addr-mode ABSSYM_B {
-        operand source: ABSO_B;
-        operand dest: SYMB_B;
+    addr-mode ABSSYM_B source: ABSO_B, dest: SYMB_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X - r2, Y - r0 }
         property syntax: String = "&%X, %Y";
         property cycles: int = 6;
     }
 
-    addr-mode ABSSYM_W {
-        operand source: ABSO_W;
-        operand dest: SYMB_W;
+    addr-mode ABSSYM_W source: ABSO_W, dest: SYMB_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X - r2, Y - r0 }
         property syntax: String = "&%X, %Y";
         property cycles: int = 6;
     }
 
-    addr-mode ABSABS_B {
-        operand source: ABSO_B;
-        operand dest: ABSO_B;
+    addr-mode ABSABS_B source: ABSO_B, dest: ABSO_B {
         encoding = { opcode[3:0], source, 0b1101, dest, X - r2, Y - r2 }
         property syntax: String = "&%X, &%Y";
         property cycles: int = 6;
     }
 
-    addr-mode ABSABS_W {
-        operand source: ABSO_W;
-        operand dest: ABSO_W;
+    addr-mode ABSABS_W source: ABSO_W, dest: ABSO_W {
         encoding = { opcode[3:0], source, 0b1001, dest, X - r2, Y - r2 }
         property syntax: String = "&%X, &%Y";
         property cycles: int = 6;
     }
 
-    addr-mode INREG_W {
-        operand source: INDREG_W;
+    addr-mode INREG_W source: INDREG_W {
         encoding = { opcode[8:0], 0b010, source  }
         property syntax: String = "@%source";
         property cycles: int = 3;
     }
 
-
-    addr-mode INREG_B {
-        operand source: INDREG_B;
+    addr-mode INREG_B source: INDREG_B {
         encoding = { opcode[8:0], 0b110, source  }
         property syntax: String = "@%source";
         property cycles: int = 3;
     }
 
-
-    addr-mode INREGREG_B {
-        operand source: INDREG_B;
-        operand dest: SREG_B;
+    addr-mode INREGREG_B source: INDREG_B, dest: SREG_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b0110, dest }
         property syntax: String = "@%source, %dest";
         property cycles: int = 2;
     }	
 
-    addr-mode INREGREG_W {
-        operand source: INDREG_W;
-        operand dest: SREG_W;
+    addr-mode INREGREG_W source: INDREG_W, dest: SREG_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b0010, dest }
         property syntax: String = "@%source, %dest";
         property cycles: int = 2;
     }	
 
-    addr-mode INREGIND_B {
-        operand source: INDREG_B;
-        operand dest: INDX_B;
+    addr-mode INREGIND_B source: INDREG_B, dest: INDX_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1110, dest, X }
         property syntax: String = "@%source, %X(%dest)";
         property cycles: int = 5;
     }
 
-    addr-mode INREGIND_W {
-        operand source: INDREG_W;
-        operand dest: INDX_W;
+    addr-mode INREGIND_W source: INDREG_W, dest: INDX_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1010, dest, X }
         property syntax: String = "@%source, %X(%dest)";
         property cycles: int = 5;
     }
 
-    addr-mode INREGSYM_B {
-        operand source: INDREG_B;
-        operand dest: SYMB_B;
+    addr-mode INREGSYM_B source: INDREG_B, dest: SYMB_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1110, dest, X - r0 }
         property syntax: String = "@%source, %X";
         property cycles: int = 5;
     }
 
-    addr-mode INREGSYM_W {
-        operand source: INDREG_W;
-        operand dest: SYMB_W;
+    addr-mode INREGSYM_W source: INDREG_W, dest: SYMB_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1010, dest, X - r0 }
         property syntax: String = "@%source, %X";
         property cycles: int = 5;
     }
 
-    addr-mode INREGABS_B {
-        operand source: INDREG_B;
-        operand dest: ABSO_B;
+    addr-mode INREGABS_B source: INDREG_B, dest: ABSO_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1110, dest, X - r2 }
         property syntax: String = "@%source, &%X";
         property cycles: int = 5;
     }
 
-    addr-mode INREGABS_W {
-        operand source: INDREG_W;
-        operand dest: ABSO_W;
+    addr-mode INREGABS_W source: INDREG_W, dest: ABSO_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1010, dest, X - r2 }
         property syntax: String = "@%source, &%X";
         property cycles: int = 5;
     }
 
-    addr-mode INDRA_W {
-        operand source: AIREG_W;
+    addr-mode INDRA_W source: AIREG_W {
         encoding = { opcode[8:0], 0b011, source  }
         property syntax: String = "@%source+";
         property cycles: int = 3;
     }
 
-
-
-    addr-mode INDRA_B {
-        operand source: AIREG_B;
+    addr-mode INDRA_B source: AIREG_B {
 	    encoding = { opcode[8:0], 0b111, source  }
 	    property syntax: String = "@%source+";
 	    property cycles: int = 3;
     }
 
-    addr-mode INDRAREG_B {
-        operand source: AIREG_B;
-        operand dest: SREG_B;
+    addr-mode INDRAREG_B source: AIREG_B, dest: SREG_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b0111, dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 2;
    }
-    addr-mode INDRAREG_W {
-        operand source: AIREG_W;
-        operand dest: SREG_W;
+    addr-mode INDRAREG_W source: AIREG_W, dest: SREG_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b0011, dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 2;
    }
-    addr-mode INDRAIND_B {
-        operand source: AIREG_B;
-        operand dest: INDX_B;
+    addr-mode INDRAIND_B source: AIREG_B, dest: INDX_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X }
         property syntax: String = "@%source+, %X(%dest)";
         property cycles: int = 5;
     }  	
 
-    addr-mode INDRAIND_W {
-	    operand source: AIREG_W;
-	    operand dest: INDX_W;
+    addr-mode INDRAIND_W source: AIREG_W, dest: INDX_W {
 	    encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X }
 	    property syntax: String = "@%source+, %X(%dest)";
 	    property cycles: int = 5;
     }
 
-    addr-mode INDRASYM_B {
-        operand source: AIREG_B;
-        operand dest :SYMB_B;
+    addr-mode INDRASYM_B source: AIREG_B, dest: SYMB_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r0 }
         property syntax: String = "@%source+, %X";
         property cycles: int = 5;
     }
 
-    addr-mode INDRASYM_W {
-        operand source: AIREG_B;
-        operand dest: SYMB_W;
+    addr-mode INDRASYM_W source: AIREG_W, dest: SYMB_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r0 }
         property syntax: String = "@%source+, %X";
         property cycles: int = 5;
     }
 
-    addr-mode INDRAABS_B {
-        operand source: AIREG_B;
-        operand dest: ABSO_B;
+    addr-mode INDRAABS_B source: AIREG_B, dest: ABSO_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r2 }
         property syntax: String = "@%source+, %X";
         property cycles: int = 5;
     }
-    addr-mode INDRAABS_W {
-        operand source: AIREG_W;
-        operand dest :ABSO_W;
+    addr-mode INDRAABS_W source: AIREG_W, dest: ABSO_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r2 }
         property syntax: String = "@%source+, %X";
         property cycles: int = 5;
@@ -645,8 +529,7 @@ architecture msp430 {
 
     //Using of RRA, RRC, SWPB, and SXT instructions with an Immediate operand is not allowed
 
-    addr-mode IMMED_W {
-        operand source: IMMD_W;
+    addr-mode IMMED_W source: IMMD_W {
         encoding = { opcode[8:0], 0b011, source }
         property syntax: String = "#%contofaddyatsource";
         property cycles: int = 4;
@@ -655,79 +538,62 @@ architecture msp430 {
 
     //Using of RRA, RRC, SWPB, and SXT instructions with an Immediate operand is not allowed
 
-    addr-mode IMMED_B {
-        operand source: IMMD_B;
+    addr-mode IMMED_B source: IMMD_B {
         encoding = { opcode[8:0], 0b011, source }
         property syntax: String = "#%contofaddyatsource";
         property cycles: int = 4;
     }
 
 
-    addr-mode IMMEDREG_B {
-        operand source: IMMD_B;  //The PC points to the word following the instruction and moves the contents to dest
-        operand dest: SREG_B;
+    addr-mode IMMEDREG_B source: IMMD_B, dest: SREG_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b0111, dest }
         property syntax: String = "#%contofaddyatsource, %dest";
         property cycles: int = 2;
     }
 
-    addr-mode IMMEDREG_W {
-        operand source: IMMD_W;  //The PC points to the word following the instruction and moves the contents to dest
-        operand dest: SREG_W;
+    addr-mode IMMEDREG_W source: IMMD_W, dest: SREG_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b0011, dest }
         property syntax: String = "#%contofaddyatsource, %dest";
         property cycles: int = 2;
     }
 
-    addr-mode IMMEDIND_B {
-        operand source: IMMD_B;  //The PC points to the word following the instruction and moves the contents to dest
-        operand dest: INDX_B;
+    addr-mode IMMEDIND_B source: IMMD_B, dest: INDX_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X }
         property syntax: String = "#%contofaddyatsource, %X(%dest)";
         property cycles: int = 5;
     }
 
-    addr-mode IMMEDIND_W {
-        operand source: IMMD_W; //The PC points to the word following the instruction and moves the contents to dest
-        operand dest: INDX_W;
+    addr-mode IMMEDIND_W source: IMMD_W, dest: INDX_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X }
         property syntax: String = "#%contofaddyatsource, %X(%dest)";
         property cycles: int = 5;
     }
 
-    addr-mode IMMEDSYM_B {
-        operand source: IMMD_B;  //The PC points to the word following the instruction and moves the contents to dest
-        operand dest: SYMB_B;
+    addr-mode IMMEDSYM_B source: IMMD_B, dest: SYMB_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r0 }
         property syntax: String = "#%contofaddyatsource, %X";
         property cycles: int = 5;
     }
 
-    addr-mode IMMEDSYM_W {
-        operand source: IMMD_W;  //The PC points to the word following the instruction and moves the contents to dest
-        operand dest :SYMB_W;
+    addr-mode IMMEDSYM_W source: IMMD_W, dest: SYMB_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r0 }
         property syntax: String = "#%contofaddyatsource, %X";
         property cycles: int = 5;
     }
 
-    addr-mode IMMEDABS_B {
-        operand source: IMMD_B;  //The PC points to the word following the instruction and moves the contents to dest
-        operand dest: ABSO_B;
+    addr-mode IMMEDABS_B source: IMMD_B, dest: ABSO_B {
         encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r2 }
         property syntax: String = "#%contofaddyatsource, &%X";
         property cycles: int = 5;
     }
-    addr-mode IMMEDABS_W {
-        operand source: IMMD_W;  //The PC points to the word following the instruction and moves the contents to dest
-        operand dest: ABSO_W;
+
+    addr-mode IMMEDABS_W source: IMMD_W, dest: ABSO_W {
         encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r2 }
         property syntax: String = "#%contofaddyatsource, &%X";
         property cycles: int = 5;
     }	
 
-    addr-mode JMP_W {
-        operand source:  JUMP_W;
+    addr-mode JMP_W source: JUMP_W {
         encoding = { opcode[7:2], source }
         property syntax: String = "%offset";
         property cycles: int = 2;
