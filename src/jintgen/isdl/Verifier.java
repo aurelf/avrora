@@ -72,7 +72,7 @@ public class Verifier {
     private void verifyEncodings() {
         HashMap<String, Token> previous = new HashMap<String, Token>();
 
-        for ( EncodingDecl ed : arch.getEncodings() ) {
+        for ( EncodingDecl ed : arch.encodings ) {
             if (printer.enabled) {
                 printer.print("processing encoding " + ed.name.image + ' ');
             }
@@ -100,7 +100,7 @@ public class Verifier {
 
     private void verifyOperands() {
         HashMap<String, Token> previous = new HashMap<String, Token>();
-        for ( OperandTypeDecl od : arch.getOperandTypes() ) {
+        for ( OperandTypeDecl od : arch.operandTypes ) {
             if ( previous.containsKey(od.name.image) )
                 ERROR.RedefinedOperandType(previous.get(od.name));
             previous.put(od.name.image, od.name);
@@ -127,7 +127,7 @@ public class Verifier {
     private void verifySubroutines() {
         HashMap<String, Token> previous = new HashMap<String, Token>();
 
-        for ( SubroutineDecl sd : arch.getSubroutines() ) {
+        for ( SubroutineDecl sd : arch.subroutines ) {
             printer.print("processing subroutine " + sd.name + ' ');
 
             if ( previous.containsKey(sd.name.image) )
@@ -151,7 +151,7 @@ public class Verifier {
     private void verifyAddrModes() {
         HashMap<String, Token> previous = new HashMap<String, Token>();
 
-        for ( AddressingModeDecl am : arch.getAddressingModes() ) {
+        for ( AddrModeDecl am : arch.addrModes ) {
             if ( previous.containsKey(am.name.image) )
                 ERROR.RedefinedAddressingMode(previous.get(am.name));
 
@@ -160,8 +160,8 @@ public class Verifier {
         }
     }
 
-    private void verifyOperands(List<AddressingModeDecl.Operand> operands) {
-        for ( AddressingModeDecl.Operand o : operands ) {
+    private void verifyOperands(List<AddrModeDecl.Operand> operands) {
+        for ( AddrModeDecl.Operand o : operands ) {
             if ( o.getOperandType() == null ) {
                 // if the operand type has not been resolved yet
                 String tname = o.type.image;
@@ -176,7 +176,7 @@ public class Verifier {
     private void verifyAddrSets() {
         HashMap<String, Token> previous = new HashMap<String, Token>();
 
-        for ( AddressingModeSetDecl as: arch.getAddressingModeSets() ) {
+        for ( AddrModeSetDecl as: arch.addrSets ) {
             if ( previous.containsKey(as.name.image) )
                 ERROR.RedefinedAddressingModeSet(previous.get(as.name));
 
@@ -185,7 +185,7 @@ public class Verifier {
             HashMap<String, OperandTypeDecl.Union> unions = new HashMap<String, OperandTypeDecl.Union>();
             HashSet<String> alloperands = new HashSet<String>();
             for ( Token t : as.list ) {
-                AddressingModeDecl am = arch.getAddressingMode(t.image);
+                AddrModeDecl am = arch.getAddressingMode(t.image);
                 if ( am == null )
                     ERROR.UnresolvedAddressingMode(t);
                 as.addrModes.add(am);
@@ -196,15 +196,15 @@ public class Verifier {
         }
     }
 
-    private void buildOperandList(HashMap<String, OperandTypeDecl.Union> unions, AddressingModeSetDecl as) {
+    private void buildOperandList(HashMap<String, OperandTypeDecl.Union> unions, AddrModeSetDecl as) {
         // now that we verified the unification of the operands, create a list of operands for
         // this addressing mode with names and union types
-        List<AddressingModeDecl.Operand> operands = new LinkedList<AddressingModeDecl.Operand>();
+        List<AddrModeDecl.Operand> operands = new LinkedList<AddrModeDecl.Operand>();
         for ( Map.Entry<String, OperandTypeDecl.Union> e : unions.entrySet() ) {
             Token n = new Token();
             n.image = e.getKey();
             OperandTypeDecl.Union unionType = e.getValue();
-            AddressingModeDecl.Operand operand = new AddressingModeDecl.Operand(n, unionType.name);
+            AddrModeDecl.Operand operand = new AddrModeDecl.Operand(n, unionType.name);
             operand.setOperandType(unionType);
             operands.add(operand);
         }
@@ -212,10 +212,10 @@ public class Verifier {
         as.unionOperands = operands;
     }
 
-    private void unifyAddressingMode(HashMap<String, OperandTypeDecl.Union> unions, AddressingModeDecl am, AddressingModeSetDecl as, HashSet<String> alloperands, Token t) {
+    private void unifyAddressingMode(HashMap<String, OperandTypeDecl.Union> unions, AddrModeDecl am, AddrModeSetDecl as, HashSet<String> alloperands, Token t) {
         if ( unions.size() == 0 ) {
             // for the first addressing mode, put the union types in the map
-            for ( AddressingModeDecl.Operand o : am.operands ) {
+            for ( AddrModeDecl.Operand o : am.operands ) {
                 Token tok = new Token();
                 tok.image = as.name.image+"_"+o.name.image+"_union";
                 OperandTypeDecl.Union ut = new OperandTypeDecl.Union(tok);
@@ -228,7 +228,7 @@ public class Verifier {
             // for each operand in this addressing mode, check that it exists and add
             // it to the types to be unified.
             HashSet<String> operands = new HashSet<String>();
-            for ( AddressingModeDecl.Operand o : am.operands ) {
+            for ( AddrModeDecl.Operand o : am.operands ) {
                 OperandTypeDecl.Union ut = unions.get(o.name.image);
                 if ( ut == null )
                     ERROR.ExtraOperandInAddressingModeUnification(as.name, t, o.name);
@@ -247,7 +247,7 @@ public class Verifier {
 
     private void verifyInstructions() {
         HashMap<String, Token> previous = new HashMap<String, Token>();
-        for ( InstrDecl id : arch.getInstructions() ) {
+        for ( InstrDecl id : arch.instructions ) {
             printer.print("processing instruction " + id.name + ' ');
             if ( previous.containsKey(id.name.image) )
                 ERROR.RedefinedAddressingMode(previous.get(id.name));
@@ -269,7 +269,7 @@ public class Verifier {
     private void verifyAddressingMode(InstrDecl id) {
         AddrModeUse am = id.addrMode;
         if ( am.ref != null ) {
-            AddressingModeSetDecl asd = arch.getAddressingModeSet(am.ref.image);
+            AddrModeSetDecl asd = arch.getAddressingModeSet(am.ref.image);
             if ( asd == null ) {
                 resolveAddressingMode(am);
             } else {
@@ -280,12 +280,12 @@ public class Verifier {
     }
 
     private void resolveAddressingMode(AddrModeUse am) {
-        AddressingModeDecl amd = arch.getAddressingMode(am.ref.image);
+        AddrModeDecl amd = arch.getAddressingMode(am.ref.image);
         if ( amd == null ) {
             ERROR.UnresolvedAddressingMode(am.ref);
         } else {
             am.operands = amd.operands;
-            am.addrModes = new LinkedList<AddressingModeDecl>();
+            am.addrModes = new LinkedList<AddrModeDecl>();
             am.addrModes.add(amd);
         }
     }

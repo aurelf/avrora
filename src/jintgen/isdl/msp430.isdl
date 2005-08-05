@@ -882,9 +882,9 @@ architecture msp430 {
         return ((high << 8) | low)[15:0];
     }
 
-    external bit(b: boolean): int;
-    external popByte(): byte;
-    external pushByte(b: byte): void;
+    external subroutine bit(b: boolean): int;
+    external subroutine popByte(): byte;
+    external subroutine pushByte(b: byte): void;
 
 
 //---------------------------------------------------------------------------

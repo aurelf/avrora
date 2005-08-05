@@ -40,6 +40,7 @@ import jintgen.Main;
 import java.io.PrintStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
@@ -56,6 +57,7 @@ public class InstrIRGenerator extends Generator {
     String operandClassName;
     String visitorClassName;
     String builderClassName;
+    String symbolClassName;
 
     protected final Option.Str CLASS_FILE = options.newOption("class-template", "Instr.java",
             "This option specifies the name of the file that contains a template for generating the " +
@@ -67,11 +69,14 @@ public class InstrIRGenerator extends Generator {
         operandClassName = className("Operand");
         visitorClassName = className("InstrVisitor");
         builderClassName = className("InstrBuilder");
+        symbolClassName = className("Symbol");
 
         //generateRegSets();
         //generateChecks();
+        generateOperandTypes();
         generateVisitor();
         generateInstrClasses();
+        generateSymbolSets();
     }
 
     private void emitPackage() {
@@ -92,7 +97,7 @@ public class InstrIRGenerator extends Generator {
 
         emitPackage();
         printer.startblock("public interface "+visitorClassName);
-        for (InstrDecl d : arch.getInstructions()) emitVisitMethod(d);
+        for (InstrDecl d : arch.instructions) emitVisitMethod(d);
         printer.endblock();
         printer.close();
     }
@@ -111,13 +116,13 @@ public class InstrIRGenerator extends Generator {
 
         emitPackage();
         printer.startblock("public abstract class "+instrClassName);
-        for (InstrDecl d : arch.getInstructions()) emitClass(d);
+        for (InstrDecl d : arch.instructions) emitClass(d);
         printer.endblock();
         printer.close();
     }
 
     private void emitClass(InstrDecl d) {
-        String cName = d.name.image;
+        String cName = d.getInnerClassName();
         cName = StringUtil.trimquotes(cName.toUpperCase());
         printer.startblock("public static class " + cName + " extends "+instrClassName);
 
@@ -133,7 +138,7 @@ public class InstrIRGenerator extends Generator {
 
     private void emitFields(InstrDecl d) {
         // emit the declaration of the fields
-        for (AddressingModeDecl.Operand o : d.getOperands()) {
+        for (AddrModeDecl.Operand o : d.getOperands()) {
             printer.print("public final ");
             printer.print(getOperandTypeName(o.getOperandType()) + ' ');
             printer.println(o.name.toString() + ';');
@@ -147,7 +152,7 @@ public class InstrIRGenerator extends Generator {
         printer.startblock(")");
 
         // emit the initialization code for each field
-        for (AddressingModeDecl.Operand o : d.getOperands()) {
+        for (AddrModeDecl.Operand o : d.getOperands()) {
             String n = o.name.image;
             printer.println("this." + n + " = " + n + ';');
         }
@@ -160,6 +165,157 @@ public class InstrIRGenerator extends Generator {
     }
 
     //=========================================================================================
+    // CODE TO EMIT SYMBOL SETS
+    //=========================================================================================
+
+    private void generateSymbolSets() throws IOException {
+        File f = new File(symbolClassName + ".java");
+        printer = new Printer(new PrintStream(f));
+
+        generateSymbolSetHeader();
+        for ( SymbolMapping m : arch.enums ) {
+            generateSymbolClass(m);
+
+        }
+
+        printer.endblock();
+        printer.close();
+    }
+
+    private void generateSymbolSetHeader() {
+        emitPackage();
+        printer.println("import java.util.HashMap;");
+        printer.startblock("public class "+symbolClassName);
+        printer.println("public final String symbol;");
+        printer.println("public final int value;");
+        printer.println("");
+        printer.println(symbolClassName+"(String sym, int v) { symbol = sym;  value = v; }");
+        printer.println("public int getValue() { return value; }");
+        printer.println("");
+    }
+
+    private void generateSymbolClass(SymbolMapping m) {
+        String n = m.name.image;
+        printer.startblock("public static class "+n+" extends "+symbolClassName);
+        printer.println(n+"(String sym, int v) { super(sym, v); }");
+
+        printer.println("private static HashMap "+n+"_set = new HashMap();");
+
+        printer.println("private static "+n+" new"+n+"(String n, int v) {");
+        printer.println("    "+n+" obj = new "+n+"(n, v);");
+        printer.println("    "+n+"_set.put(n, obj);");
+        printer.println("    return obj;");
+        printer.println("}");
+
+        printer.println("public static "+n+" get(String name) {");
+        printer.println("    return ("+n+")"+n+"_set.get(name);");
+        printer.println("}");
+
+        for ( SymbolMapping.Entry e : m.getEntries() ) {
+            String en = e.name;
+            String EN = en.toUpperCase();
+            printer.println("public static final "+n+" "+EN+" = new"+n+"(\""+en+"\", "+e.value+");");
+        }
+
+        printer.endblock();
+        printer.println("");
+    }
+
+    //=========================================================================================
+    // CODE TO EMIT OPERAND TYPES
+    //=========================================================================================
+    private void generateOperandTypes() throws IOException {
+        File f = new File(operandClassName + ".java");
+        printer = new Printer(new PrintStream(f));
+        emitPackage();
+        printer.println("import java.util.HashMap;");
+        printer.startblock("public class "+operandClassName);
+        // generate all the explicitly declared operand types
+        for ( OperandTypeDecl d : arch.operandTypes )
+            generateOperandType(d);
+        // generate all the explicitly declared operand types
+        for ( AddrModeSetDecl d : arch.addrSets ) {
+            for ( AddrModeDecl.Operand o : d.unionOperands )
+            generateOperandType(o.getOperandType());
+        }
+
+        printer.startblock("private static int checkValue(int val, int low, int high)");
+        printer.startblock("if ( val < low || val > high )");
+        printer.println("throw new Error();");
+        printer.endblock();
+        printer.println("return val;");
+        printer.endblock();
+        printer.endblock();
+        printer.close();
+    }
+
+    private void generateOperandType(OperandTypeDecl d) {
+        printer.startblock("public static class "+d.name.image+" extends "+operandClassName);
+        if ( d.isSymbol() ) {
+            generateSymbolType((OperandTypeDecl.SymbolSet)d);
+        } else if ( d.isValue() ) {
+            generateValueType((OperandTypeDecl.Value)d);
+        } else if ( d.isCompound() ) {
+            generateCompoundType((OperandTypeDecl.Compound)d);
+        } else if ( d.isUnion() ) {
+            generateUnionType((OperandTypeDecl.Union)d);
+        }
+        printer.endblock();
+        printer.println("");
+    }
+
+    private void generateSymbolType(OperandTypeDecl.SymbolSet d) {
+        printer.println("public final "+symbolClassName+" symbol;");
+        printer.println("public static final HashMap set = new HashMap();");
+        printer.startblock("static");
+        printer.endblock();
+        printer.startblock(d.name.image+"(String s)");
+        printer.println("symbol = null;");
+        printer.endblock();
+        printer.startblock(d.name.image+"("+symbolClassName+" sym)");
+        printer.println("symbol = null;");
+        printer.endblock();
+    }
+
+    private void generateValueType(OperandTypeDecl.Value d) {
+        printer.println("public static final int low = "+d.low+";");
+        printer.println("public static final int high = "+d.high+";");
+        printer.println("public final int value;");
+        printer.startblock(d.name.image+"(int val)");
+        printer.println("value = checkValue(val, low, high);");
+        printer.endblock();
+    }
+
+    private void generateCompoundType(OperandTypeDecl.Compound d) {
+        // generate fields of compound operand
+        for ( AddrModeDecl.Operand o : d.subOperands ) {
+            printer.println("public final "+o.type.image+" "+o.name.image+";");
+        }
+        printer.print(d.name.image+"(");
+        boolean previous = false;
+        for ( AddrModeDecl.Operand o : d.subOperands ) {
+            if ( previous ) printer.print(", ");
+            printer.print(o.type.image+" "+o.name.image);
+            previous = true;
+        }
+        printer.startblock(")");
+        for ( AddrModeDecl.Operand o : d.subOperands ) {
+            printer.println("this."+o.name.image+" = "+o.name.image+";");
+        }
+        printer.endblock();
+    }
+
+    private void generateUnionType(OperandTypeDecl.Union d) {
+        HashSet<String> seen = new HashSet<String>();
+        printer.println("public final "+operandClassName+" operand;");
+        for ( OperandTypeDecl ot : d.types ) {
+            if ( seen.contains(ot.name.image) ) continue;
+            seen.add(ot.name.image);
+            printer.println(d.name.image+"("+ot.name.image+" o) { operand = o; }");
+        }
+    }
+
+    //=========================================================================================
     // CODE TO EMIT OTHER STUFF
     //=========================================================================================
 
@@ -169,7 +325,7 @@ public class InstrIRGenerator extends Generator {
         printer.println("// GENERATED: Static factory methods for individual instructions ");
         printer.println("//----------------------------------------------------------------");
 
-        for (InstrDecl d : arch.getInstructions()) emitConstructor(d);
+        for (InstrDecl d : arch.instructions) emitConstructor(d);
     }
 
     private void generateChecks() {
@@ -178,16 +334,7 @@ public class InstrIRGenerator extends Generator {
         printer.println("// GENERATED: Methods to check the validity of individual operands ");
         printer.println("//-------------------------------------------------------------------");
 
-        for (OperandTypeDecl d : arch.getOperandTypes()) emitChecks(d);
-    }
-
-    private void generateRegSets() {
-        printer.println("");
-        printer.println("//-------------------------------------------------------");
-        printer.println("// GENERATED: Sets of registers to check constraints ");
-        printer.println("//-------------------------------------------------------");
-
-        for (OperandTypeDecl d : arch.getOperandTypes()) emitRegSet(d);
+        for (OperandTypeDecl d : arch.operandTypes) emitChecks(d);
     }
 
     private void emitStaticProperties(InstrDecl d) {
@@ -222,7 +369,7 @@ public class InstrIRGenerator extends Generator {
         printer.print("return new " + cName + '(');
         // emit the checking code for each operand
         int cntr = 0;
-        for (AddressingModeDecl.Operand o : d.getOperands()) {
+        for (AddrModeDecl.Operand o : d.getOperands()) {
             if (cntr++ != 0) printer.print(", ");
             OperandTypeDecl ot = o.getOperandType();
             String asMeth = ot.isSymbol() ? "asSym" : "asImm";
@@ -240,7 +387,7 @@ public class InstrIRGenerator extends Generator {
         printer.print("return new " + cName + '(');
         // emit the checking code for each operand
         int cntr = 0;
-        for (AddressingModeDecl.Operand o : d.getOperands()) {
+        for (AddrModeDecl.Operand o : d.getOperands()) {
             if (cntr++ != 0) printer.print(", ");
             String n = o.name.toString();
             printer.print("check_" + o.type.image + '(' + cntr + ", " + n + ')');
@@ -252,7 +399,7 @@ public class InstrIRGenerator extends Generator {
 
     private void emitParams(InstrDecl d) {
         boolean first = true;
-        for (AddressingModeDecl.Operand o : d.getOperands()) {
+        for (AddrModeDecl.Operand o : d.getOperands()) {
             if (!first) printer.print(", ");
             printer.print(getOperandTypeName(o.getOperandType()) + ' ');
             printer.print(o.name.toString());

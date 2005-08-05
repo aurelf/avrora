@@ -139,9 +139,10 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public void Enum() throws ParseException {
-                Token n; SymbolMapping m = new SymbolMapping();
+                Token n; SymbolMapping m;
     jj_consume_token(ENUM);
     n = jj_consume_token(IDENTIFIER);
+                              m = new SymbolMapping(n);
     jj_consume_token(LBRACKET);
     MappingSetElem(m);
     label_4:
@@ -158,10 +159,11 @@ public class ISDLParser implements ISDLParserConstants {
       MappingSetElem(m);
     }
     jj_consume_token(RBRACKET);
+          arch.addEnum(m);
   }
 
   final public AddrModeUse AddrModeUse(Token n) throws ParseException {
-                                     List<AddressingModeDecl.Operand> o;
+                                     List<AddrModeDecl.Operand> o;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 78:
       jj_consume_token(78);
@@ -171,7 +173,7 @@ public class ISDLParser implements ISDLParserConstants {
     default:
       jj_la1[7] = jj_gen;
       o = Operands();
-                      {if (true) return new AddrModeUse(null, new AddressingModeDecl(n, o));}
+                      {if (true) return new AddrModeUse(null, new AddrModeDecl(n, o));}
     }
     throw new Error("Missing return statement in function");
   }
@@ -251,7 +253,7 @@ public class ISDLParser implements ISDLParserConstants {
 
   final public void AddrModeDecl() throws ParseException {
     Token n;
-    List<AddressingModeDecl.Operand> o;
+    List<AddrModeDecl.Operand> o;
     List<Property> p = new LinkedList<Property>();
     EncodingDecl e;
     jj_consume_token(ADDR_MODE);
@@ -283,7 +285,7 @@ public class ISDLParser implements ISDLParserConstants {
       }
     }
     jj_consume_token(RBRACKET);
-          arch.addAddressingMode(new AddressingModeDecl(n, o));
+          arch.addAddressingMode(new AddrModeDecl(n, o));
   }
 
   final public void AddrSetDecl() throws ParseException {
@@ -308,7 +310,7 @@ public class ISDLParser implements ISDLParserConstants {
                                 l.add(e);
     }
     jj_consume_token(RBRACKET);
-      arch.addAddressingModeSet(new AddressingModeSetDecl(n, l));
+      arch.addAddressingModeSet(new AddrModeSetDecl(n, l));
   }
 
   final public EncodingDecl Encoding(Token n) throws ParseException {
@@ -397,7 +399,7 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public OperandTypeDecl SymbolOperand(Token n, Token b) throws ParseException {
-  SymbolMapping m = new SymbolMapping();
+  SymbolMapping m = new SymbolMapping(n);
   OperandTypeDecl.SymbolSet sd = new OperandTypeDecl.SymbolSet(n, b, m);
     jj_consume_token(SYMBOL);
     OperandBody(sd, m);
@@ -407,7 +409,7 @@ public class ISDLParser implements ISDLParserConstants {
 
   final public OperandTypeDecl ValueOperand(Token n, Token b) throws ParseException {
   Token t, l, h;
-  SymbolMapping m = new SymbolMapping();
+    SymbolMapping m = new SymbolMapping(n);
   OperandTypeDecl.Value vd;
     t = Type();
     jj_consume_token(79);
@@ -433,7 +435,7 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public OperandTypeDecl CompoundOperandType(Token n) throws ParseException {
-    SymbolMapping m = new SymbolMapping();
+    SymbolMapping m = new SymbolMapping(n);
     OperandTypeDecl.Compound cd = new OperandTypeDecl.Compound(n);
     OperandBody(cd, m);
       {if (true) return cd;}
@@ -478,7 +480,7 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public void SubOperand(OperandTypeDecl td) throws ParseException {
-                                        AddressingModeDecl.Operand o;
+                                        AddrModeDecl.Operand o;
     jj_consume_token(81);
     o = Operand();
                                   td.addSubOperand(o);
@@ -617,9 +619,9 @@ public class ISDLParser implements ISDLParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public List<AddressingModeDecl.Operand> Operands() throws ParseException {
-    AddressingModeDecl.Operand o;
-    List<AddressingModeDecl.Operand> l = new LinkedList<AddressingModeDecl.Operand>();
+  final public List<AddrModeDecl.Operand> Operands() throws ParseException {
+    AddrModeDecl.Operand o;
+    List<AddrModeDecl.Operand> l = new LinkedList<AddrModeDecl.Operand>();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IDENTIFIER:
       o = Operand();
@@ -647,12 +649,12 @@ public class ISDLParser implements ISDLParserConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public AddressingModeDecl.Operand Operand() throws ParseException {
+  final public AddrModeDecl.Operand Operand() throws ParseException {
                                          Token n, t;
     n = jj_consume_token(IDENTIFIER);
     jj_consume_token(78);
     t = OperandType();
-                                             {if (true) return new AddressingModeDecl.Operand(n, t);}
+                                             {if (true) return new AddrModeDecl.Operand(n, t);}
     throw new Error("Missing return statement in function");
   }
 

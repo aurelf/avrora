@@ -75,7 +75,7 @@ public class DisassemblerTestGenerator{
     }
 
     public void generate() {
-        for ( InstrDecl d : architecture.getInstructions() ) visit(d);
+        for ( InstrDecl d : architecture.instructions ) visit(d);
     }
 
     public void visit(InstrDecl d) {
@@ -205,7 +205,7 @@ public class DisassemblerTestGenerator{
             // for each operand, generate many different test cases, with the rest of
             // the operands set to "representative" values
             int cntr = 0;
-            for ( AddressingModeDecl.Operand op : decl.getOperands() ) {
+            for ( AddrModeDecl.Operand op : decl.getOperands() ) {
                 OperandTypeDecl decl = op.getOperandType();
                 OperandGenerator g = getOperandGenerator(decl);
                 g.generate(this, this.decl, decl, cntr, rep);
@@ -247,7 +247,7 @@ public class DisassemblerTestGenerator{
             int numops = decl.getOperands().size();
             opnames = new String[numops];
             int cntr = 0;
-            for ( AddressingModeDecl.Operand op : decl.getOperands() ) {
+            for ( AddrModeDecl.Operand op : decl.getOperands() ) {
                 opnames[cntr++] = op.name.image;
             }
         }
@@ -276,7 +276,7 @@ public class DisassemblerTestGenerator{
     private String[] getRepresentatives(InstrDecl d) {
         String[] rep = new String[d.getOperands().size()];
         int cntr = 0;
-        for ( AddressingModeDecl.Operand op : d.getOperands() ) {
+        for ( AddrModeDecl.Operand op : d.getOperands() ) {
             OperandTypeDecl decl = op.getOperandType();
             OperandGenerator g = getOperandGenerator(decl);
             rep[cntr++] = g.getSomeMember(decl);

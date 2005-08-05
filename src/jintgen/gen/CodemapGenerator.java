@@ -36,7 +36,7 @@ import avrora.core.Register;
 import jintgen.isdl.Architecture;
 import jintgen.jigir.CodeRegion;
 import jintgen.isdl.InstrDecl;
-import jintgen.isdl.AddressingModeDecl;
+import jintgen.isdl.AddrModeDecl;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.jigir.*;
 import jintgen.isdl.parser.Token;
@@ -68,7 +68,7 @@ public class CodemapGenerator extends Generator {
 
         initializeRegisterMap();
         printer.indent();
-        for ( InstrDecl d : arch.getInstructions() ) visit(d);
+        for ( InstrDecl d : arch.instructions ) visit(d);
         generateHelperMethods();
         printer.unindent();
     }
@@ -98,7 +98,7 @@ public class CodemapGenerator extends Generator {
 
         int regcount = 0;
         int immcount = 0;
-        for ( AddressingModeDecl.Operand o : d.getOperands() ) {
+        for ( AddrModeDecl.Operand o : d.getOperands() ) {
             Operand op = new Operand();
             OperandTypeDecl ot = o.getOperandType();
             op.name = o.name.image;

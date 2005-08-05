@@ -44,12 +44,12 @@ public class AddrModeUse {
 
     public final Token ref;
     public final List<EncodingDecl> encodings;
-    public List<AddressingModeDecl> addrModes;
-    public List<AddressingModeDecl.Operand> operands;
+    public List<AddrModeDecl> addrModes;
+    public List<AddrModeDecl.Operand> operands;
 
-    public AddrModeUse(Token n, AddressingModeDecl d) {
+    public AddrModeUse(Token n, AddrModeDecl d) {
         ref = n;
-        addrModes = new LinkedList<AddressingModeDecl>();
+        addrModes = new LinkedList<AddrModeDecl>();
         encodings = new LinkedList<EncodingDecl>();
 
         if ( d != null ) {

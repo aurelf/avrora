@@ -50,14 +50,14 @@ import java.util.LinkedList;
  */
 public abstract class OperandTypeDecl extends Item {
 
-    public final List<AddressingModeDecl.Operand> subOperands;
+    public final List<AddrModeDecl.Operand> subOperands;
     public CodeRegion readMethod;
     public CodeRegion writeMethod;
 
 
     protected OperandTypeDecl(Token n) {
         super(n);
-        subOperands = new LinkedList<AddressingModeDecl.Operand>();
+        subOperands = new LinkedList<AddrModeDecl.Operand>();
     }
 
     /**
@@ -83,7 +83,7 @@ public abstract class OperandTypeDecl extends Item {
             return true;
         }
 
-        public void addSubOperand(AddressingModeDecl.Operand o) {
+        public void addSubOperand(AddrModeDecl.Operand o) {
             throw Util.failure("Suboperands are not allowed to Value operands");
         }
     }
@@ -106,7 +106,7 @@ public abstract class OperandTypeDecl extends Item {
             return true;
         }
 
-        public void addSubOperand(AddressingModeDecl.Operand o) {
+        public void addSubOperand(AddrModeDecl.Operand o) {
             throw Util.failure("Suboperands are not allowed to SymbolSet operands");
         }
     }
@@ -171,7 +171,7 @@ public abstract class OperandTypeDecl extends Item {
         return false;
     }
 
-    public void addSubOperand(AddressingModeDecl.Operand o) {
+    public void addSubOperand(AddrModeDecl.Operand o) {
         subOperands.add(o);
     }
 }

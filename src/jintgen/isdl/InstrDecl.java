@@ -74,8 +74,13 @@ public class InstrDecl extends Item {
         pseudo = ps;
         addrMode = am;
         for ( Property p : pl ) addProperty(p);
-        innerClassName = StringUtil.trimquotes(name.image).toUpperCase();
+        innerClassName = makeInnerClassName(name);
         className = "Instr." + innerClassName;
+    }
+
+    private String makeInnerClassName(Token str) {
+        String bare = StringUtil.trimquotes(str.image).toUpperCase();
+        return bare.replace(".", "_");
     }
 
     public int getEncodingSize() {
@@ -110,7 +115,7 @@ public class InstrDecl extends Item {
         return addrMode.encodings;
     }
 
-    public List<AddressingModeDecl.Operand> getOperands() {
+    public List<AddrModeDecl.Operand> getOperands() {
         return addrMode.operands;
     }
 }

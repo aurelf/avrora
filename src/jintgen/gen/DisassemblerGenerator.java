@@ -500,7 +500,7 @@ public class DisassemblerGenerator extends Generator {
 
         private void generateConstructorCall(EncodingInfo ei) {
             printer.print("return new "+ei.instr.getClassName()+"(pc");
-            for ( AddressingModeDecl.Operand o : ei.instr.getOperands() ) {
+            for ( AddrModeDecl.Operand o : ei.instr.getOperands() ) {
                 printer.print(", ");
                 String getexpr = generateDecode(ei, o);
                 printer.print(getexpr);
@@ -517,13 +517,13 @@ public class DisassemblerGenerator extends Generator {
                 else
                     printer.println("int word"+wordnum+" = getByte("+(wordnum-1)+");");
             }
-            for ( AddressingModeDecl.Operand o : ei.instr.getOperands() ) {
+            for ( AddrModeDecl.Operand o : ei.instr.getOperands() ) {
                 if ( !isFixed(ei, o) )
                     printer.println("int "+o.name+" = 0;");
             }
         }
 
-        private boolean isFixed(EncodingInfo ei, AddressingModeDecl.Operand o) {
+        private boolean isFixed(EncodingInfo ei, AddrModeDecl.Operand o) {
             if ( ei.encoding.isConditional() ) {
                 EncodingDecl.Cond c = ei.encoding.getCond();
                 if ( o.name.image.equals(c.name.image) )
@@ -533,7 +533,7 @@ public class DisassemblerGenerator extends Generator {
             return false;
         }
 
-        private String generateDecode(EncodingInfo ei, AddressingModeDecl.Operand o) {
+        private String generateDecode(EncodingInfo ei, AddrModeDecl.Operand o) {
             OperandTypeDecl ot = o.getOperandType();
             if ( ei.encoding.isConditional() ) {
                 EncodingDecl.Cond c = ei.encoding.getCond();
@@ -581,7 +581,7 @@ public class DisassemblerGenerator extends Generator {
         SectionFile sf = createSectionFile(fname, "DISASSEM GENERATOR");
         printer = new Printer(new PrintStream(sf));
 
-        for ( InstrDecl d : arch.getInstructions() ) visit(d);
+        for ( InstrDecl d : arch.instructions ) visit(d);
         printer.indent();
         generateDecodeTables();
         for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
@@ -649,7 +649,7 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private void generateDecodeTables() {
-        for ( OperandTypeDecl d : arch.getOperandTypes() ) {
+        for ( OperandTypeDecl d : arch.operandTypes ) {
             new OperandDeclVisitor().visit(d);
         }
     }

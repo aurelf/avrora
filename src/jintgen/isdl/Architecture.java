@@ -60,12 +60,13 @@ public class Architecture {
 
     public final Token name;
 
-    protected final HashList<String, SubroutineDecl> subroutineMap;
-    protected final HashList<String, InstrDecl> instructionMap;
-    protected final HashList<String, OperandTypeDecl> operandMap;
-    protected final HashList<String, EncodingDecl> encodingMap;
-    protected final HashList<String, AddressingModeDecl> addrMap;
-    protected final HashList<String, AddressingModeSetDecl> addrSetMap;
+    public final HashList<String, SubroutineDecl> subroutines;
+    public final HashList<String, InstrDecl> instructions;
+    public final HashList<String, OperandTypeDecl> operandTypes;
+    public final HashList<String, EncodingDecl> encodings;
+    public final HashList<String, AddrModeDecl> addrModes;
+    public final HashList<String, AddrModeSetDecl> addrSets;
+    public final HashList<String, SymbolMapping> enums;
 
     /**
      * The constructor for the <code>Architecture</code> class creates an instance with the specified
@@ -75,93 +76,79 @@ public class Architecture {
     public Architecture(Token n) {
         name = n;
 
-        subroutineMap = new HashList<String, SubroutineDecl>();
-        instructionMap = new HashList<String, InstrDecl>();
-        operandMap = new HashList<String, OperandTypeDecl>();
-        encodingMap = new HashList<String, EncodingDecl>();
-        addrMap = new HashList<String, AddressingModeDecl>();
-        addrSetMap = new HashList<String, AddressingModeSetDecl>();
+        subroutines = new HashList<String, SubroutineDecl>();
+        instructions = new HashList<String, InstrDecl>();
+        operandTypes = new HashList<String, OperandTypeDecl>();
+        encodings = new HashList<String, EncodingDecl>();
+        addrModes = new HashList<String, AddrModeDecl>();
+        addrSets = new HashList<String, AddrModeSetDecl>();
+        enums = new HashList<String, SymbolMapping>();
     }
 
     public String getName() {
         return name.image;
     }
 
-    public Iterable<SubroutineDecl> getSubroutines() {
-        return subroutineMap;
-    }
-
-    public Iterable<InstrDecl> getInstructions() {
-        return instructionMap;
-    }
-
-    public Iterable<OperandTypeDecl> getOperandTypes() {
-        return operandMap;
-    }
-
-    public Iterable<EncodingDecl> getEncodings() {
-        return encodingMap;
-    }
-
-    public Iterable<AddressingModeDecl> getAddressingModes() {
-        return addrMap;
-    }
-
-    public Iterable<AddressingModeSetDecl> getAddressingModeSets() {
-        return addrSetMap;
-    }
-
     public void addSubroutine(SubroutineDecl d) {
         printer.println("loading subroutine " + d.name.image + "...");
-        subroutineMap.add(d.name.image, d);
+        subroutines.add(d.name.image, d);
     }
 
     public void addInstruction(InstrDecl i) {
         printer.println("loading instruction " + i.name.image + "...");
-        instructionMap.add(i.name.image, i);
+        instructions.add(i.name.image, i);
     }
 
     public void addOperand(OperandTypeDecl d) {
         printer.println("loading operand declaration " + d.name.image + "...");
-        operandMap.add(d.name.image, d);
+        operandTypes.add(d.name.image, d);
     }
 
     public void addEncoding(EncodingDecl d) {
         printer.println("loading encoding format " + d.name.image + "...");
-        encodingMap.add(d.name.image, d);
+        encodings.add(d.name.image, d);
     }
 
-    public void addAddressingMode(AddressingModeDecl d) {
+    public void addAddressingMode(AddrModeDecl d) {
         printer.println("loading addressing mode " + d + "...");
-        addrMap.add(d.name.image, d);
+        addrModes.add(d.name.image, d);
     }
 
-    public void addAddressingModeSet(AddressingModeSetDecl d) {
+    public void addAddressingModeSet(AddrModeSetDecl d) {
         printer.println("loading addressing mode set " + d + "...");
-        addrSetMap.add(d.name.image, d);
+        addrSets.add(d.name.image, d);
+    }
+
+    public void addEnum(SymbolMapping m) {
+        printer.println("loading enum " + m + "...");
+        enums.add(m.name.image, m);
     }
 
     public InstrDecl getInstruction(String name) {
-        return instructionMap.get(name);
+        return instructions.get(name);
     }
 
     public SubroutineDecl getSubroutine(String name) {
-        return subroutineMap.get(name);
+        return subroutines.get(name);
     }
 
     public OperandTypeDecl getOperandDecl(String name) {
-        return operandMap.get(name);
+        return operandTypes.get(name);
     }
 
     public EncodingDecl getEncoding(String name) {
-        return encodingMap.get(name);
+        return encodings.get(name);
     }
 
-    public AddressingModeDecl getAddressingMode(String name) {
-        return addrMap.get(name);
+    public AddrModeDecl getAddressingMode(String name) {
+        return addrModes.get(name);
     }
 
-    public AddressingModeSetDecl getAddressingModeSet(String name) {
-        return addrSetMap.get(name);
+    public AddrModeSetDecl getAddressingModeSet(String name) {
+        return addrSets.get(name);
+    }
+
+    public SymbolMapping getEnum(String name) {
+        return enums.get(name);
     }
 }

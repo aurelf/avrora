@@ -33,7 +33,6 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
-import jintgen.jigir.CodeRegion;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -41,32 +40,16 @@ import java.util.LinkedList;
 /**
  * @author Ben L. Titzer
  */
-public class AddressingModeDecl extends Item {
+public class AddrModeSetDecl extends Item {
 
-    public static class Operand {
-        public final Token name;
-        public final Token type;
-        protected OperandTypeDecl operandType;
+    public final List<Token> list;
+    public final List<AddrModeDecl> addrModes;
+    public List<AddrModeDecl.Operand> unionOperands;
 
-        public Operand(Token n, Token t) {
-            name = n;
-            type = t;
-        }
-
-        public void setOperandType(OperandTypeDecl d) {
-            operandType = d;
-        }
-
-        public OperandTypeDecl getOperandType() {
-            return operandType;
-        }
-    }
-
-    public final List<AddressingModeDecl.Operand> operands;
-
-    public AddressingModeDecl(Token n, List<AddressingModeDecl.Operand> ol) {
+    public AddrModeSetDecl(Token n, List<Token> l) {
         super(n);
-        operands = ol;
+        list = l;
+        addrModes = new LinkedList<AddrModeDecl>();
     }
 
 }

@@ -51,10 +51,12 @@ import avrora.util.Util;
  */
 public class SymbolMapping {
 
+    public final Token name;
     final HashMap<String, Entry> mapping;
     final List<Entry> list;
 
-    public SymbolMapping() {
+    public SymbolMapping(Token n) {
+        name = n;
         mapping = new HashMap<String, Entry>();
         list = new LinkedList<Entry>();
     }
