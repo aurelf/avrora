@@ -51,8 +51,6 @@ import java.util.LinkedList;
  */
 public class InstrDecl extends Item {
 
-    public List<Property> propertyList;
-
     public final AddrModeUse addrMode;
 
     public final String className;
@@ -70,12 +68,12 @@ public class InstrDecl extends Item {
      *
      * @param n the name of the instruction as a string
      */
-    public InstrDecl(boolean ps, Token n, AddrModeUse am, List<Property> p, List<Stmt> s) {
+    public InstrDecl(boolean ps, Token n, AddrModeUse am, List<Property> pl, List<Stmt> s) {
         super(n);
         code = new CodeRegion(s);
         pseudo = ps;
         addrMode = am;
-        propertyList = p;
+        for ( Property p : pl ) addProperty(p);
         innerClassName = StringUtil.trimquotes(name.image).toUpperCase();
         className = "Instr." + innerClassName;
     }
@@ -99,7 +97,9 @@ public class InstrDecl extends Item {
     }
 
     public int getCycles() {
-        throw Util.unimplemented();
+        Property p = getProperty("cycles");
+        if ( p == null ) return 1;
+        else return StringUtil.evaluateIntegerLiteral(p.value.image);
     }
 
     public String getSyntax() {

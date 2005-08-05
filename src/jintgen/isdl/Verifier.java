@@ -202,11 +202,10 @@ public class Verifier {
         List<AddressingModeDecl.Operand> operands = new LinkedList<AddressingModeDecl.Operand>();
         for ( Map.Entry<String, OperandTypeDecl.Union> e : unions.entrySet() ) {
             Token n = new Token();
-            Token t = new Token();
             n.image = e.getKey();
-            t.image = "union";
-            AddressingModeDecl.Operand operand = new AddressingModeDecl.Operand(n, t);
-            operand.setOperandType(e.getValue());
+            OperandTypeDecl.Union unionType = e.getValue();
+            AddressingModeDecl.Operand operand = new AddressingModeDecl.Operand(n, unionType.name);
+            operand.setOperandType(unionType);
             operands.add(operand);
         }
 
@@ -217,7 +216,9 @@ public class Verifier {
         if ( unions.size() == 0 ) {
             // for the first addressing mode, put the union types in the map
             for ( AddressingModeDecl.Operand o : am.operands ) {
-                OperandTypeDecl.Union ut = new OperandTypeDecl.Union(as.name);
+                Token tok = new Token();
+                tok.image = as.name.image+"_"+o.name.image+"_union";
+                OperandTypeDecl.Union ut = new OperandTypeDecl.Union(tok);
                 OperandTypeDecl d = arch.getOperandDecl(o.type.image);
                 ut.addType(d);
                 unions.put(o.name.image, ut);

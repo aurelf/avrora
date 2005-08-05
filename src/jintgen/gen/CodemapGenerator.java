@@ -40,32 +40,35 @@ import jintgen.isdl.AddressingModeDecl;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.jigir.*;
 import jintgen.isdl.parser.Token;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import avrora.util.*;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.io.PrintStream;
 
 /**
  * @author Ben L. Titzer
  */
-public class CodemapGenerator {
-    private final Architecture architecture;
-    private final Printer printer;
+public class CodemapGenerator extends Generator {
 
+    private Printer printer;
     HashMap<String, Integer> registerMap = new HashMap<String, Integer>();
 
-    public CodemapGenerator(Architecture a, Printer p) {
-        architecture = a;
-        printer = p;
-    }
+    protected final Option.Str CODEMAP_FILE = options.newOption("codemap-template", "CodeMap.java",
+            "This option specifies the name of the file that contains a template for generating the " +
+            "code map.");
 
-    public void generate() {
+    public void generate() throws Exception {
+        String fname = CODEMAP_FILE.get();
+        if ( "".equals(fname) )
+            Util.userError("No template file specified");
+        SectionFile sf = createSectionFile(fname, "CODEMAP GENERATOR");
+        printer = new Printer(new PrintStream(sf));
+
         initializeRegisterMap();
         printer.indent();
-        for ( InstrDecl d : architecture.getInstructions() ) visit(d);
+        for ( InstrDecl d : arch.getInstructions() ) visit(d);
         generateHelperMethods();
         printer.unindent();
     }

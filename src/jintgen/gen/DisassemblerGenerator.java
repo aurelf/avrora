@@ -38,11 +38,12 @@ import jintgen.jigir.*;
 import avrora.util.*;
 
 import java.util.*;
+import java.io.PrintStream;
 
 /**
  * @author Ben L. Titzer
  */
-public class DisassemblerGenerator {
+public class DisassemblerGenerator extends Generator {
 
     private static final byte ENC_ONE  = 1;
     private static final byte ENC_ZERO = 2;
@@ -53,7 +54,7 @@ public class DisassemblerGenerator {
     protected static final int LARGEST_INSTR = 15;
     protected static final int WORD_SIZE = 16;
 
-    final Printer printer;
+    Printer printer;
     Verbose.Printer verbose = Verbose.getVerbosePrinter("isdl.disassem");
 
     class EncodingField extends CodeVisitor.Default {
@@ -559,22 +560,28 @@ public class DisassemblerGenerator {
         }
     }
 
+    protected final Option.Str CLASS_FILE = options.newOption("disassembler-template", "Disassembler.java",
+            "This option specifies the name of the file that contains a template for generating the " +
+            "disassembler.");
+
     int methods;
 
     DecodingTree[] rootSets = new DecodingTree[0];
 
     HashSet<EncodingInfo> pseudo;
 
-    Architecture architecture;
-
-    public DisassemblerGenerator(Architecture a, Printer p) {
+    public DisassemblerGenerator() {
         pseudo = new HashSet<EncodingInfo>();
-        architecture = a;
-        printer = p;
     }
 
-    public void generate() {
-        for ( InstrDecl d : architecture.getInstructions() ) visit(d);
+    public void generate() throws Exception {
+        String fname = CLASS_FILE.get();
+        if ( "".equals(fname) )
+            Util.userError("No template file specified");
+        SectionFile sf = createSectionFile(fname, "DISASSEM GENERATOR");
+        printer = new Printer(new PrintStream(sf));
+
+        for ( InstrDecl d : arch.getInstructions() ) visit(d);
         printer.indent();
         generateDecodeTables();
         for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
@@ -642,7 +649,7 @@ public class DisassemblerGenerator {
     }
 
     private void generateDecodeTables() {
-        for ( OperandTypeDecl d : architecture.getOperandTypes() ) {
+        for ( OperandTypeDecl d : arch.getOperandTypes() ) {
             new OperandDeclVisitor().visit(d);
         }
     }

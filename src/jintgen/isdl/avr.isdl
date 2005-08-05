@@ -18,28 +18,48 @@ architecture avr {
 //---------------------------------------------------------------------------
 //  STATE USED IN THE SIMULATION
 //---------------------------------------------------------------------------
-    memory $regs(symbol): byte;
-    memory $uregs(symbol): int;
-    memory $wregs(symbol): int;
-    memory $sram(int): byte; // a "view" of the memory as bytes
+    memory $regs(GPR): byte;   // a "view" of the registers as bytes
+    memory $uregs(GPR): int;   // a "view" of the registers as unsigned
+    memory $wregs(GPR): int;   // a "view" of the registers as words
+    memory $aregs(ADR): int;   // a "view" of the address registers
+    memory $sram(int): byte;   // a "view" of the memory as bytes
     memory $ioregs(int): byte; // a "view" of the memory as bytes
-    memory $flash(int): byte; // the flash (program) memory
+    memory $flash(int): byte;  // the flash (program) memory
+    memory $isize(int): int;   // size of instruction (used in skip)
 
-    global I: boolean;
-    global T: boolean;
-    global H: boolean;
-    global S: boolean;
-    global C: boolean;
-    global N: boolean;
-    global Z: boolean;
-    global V: boolean;
+    global I: boolean;         // global interrupts enabled flag
+    global T: boolean;         // global T flag
+    global H: boolean;         // global H (half carry) flag
+    global S: boolean;         // global S (signed) flag
+    global C: boolean;         // global C (carry) flag
+    global N: boolean;         // global N (negative) flag
+    global Z: boolean;         // global Z (zero) flag
+    global V: boolean;         // global V (overflow) flag
 
-    global nextPC: int;
-    global cyclesConsumed: int;
+    global nextPC: int;          // the next pc afer executing this instructiobn
+    global cyclesConsumed: int;  // cycles consumed by this instruction
+    global RZ: GPR;              // reference to the Z register
+    global R0: GPR;              // reference to the R0 register
+    global R1: GPR;              // reference to the R1 register
 
 //---------------------------------------------------------------------------
 //  OPERANDS ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
+
+    enum GPR {
+        r0  = 0,  r1  = 1,  r2  = 2,  r3  = 3,
+        r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,
+        r8  = 8,  r9  = 9,  r10 = 10, r11 = 11,
+        r12 = 12, r13 = 13, r14 = 14, r15 = 15,
+        r16 = 16, r17 = 17, r18 = 18, r19 = 19,
+        r20 = 20, r21 = 21, r22 = 22, r23 = 23,
+        r24 = 24, r25 = 25, r26 = 26, r27 = 27,
+        r28 = 28, r29 = 29, r30 = 30, r31 = 31
+    }
+
+    enum ADR {
+        X = 26, Y = 28, Z = 30
+    }
 
     operand-type GPR[5]: symbol { // all of the general purpose registers
         mapping {
@@ -80,8 +100,8 @@ architecture avr {
         mapping {
             Y = 1, Z = 0
         }
-        read: int { return $wregs(this); }
-        write: int { $wregs(this) = value; }
+        read: int { return $aregs(this); }
+        write: int { $aregs(this) = value; }
     }
 
     operand-type EGPR[4]: symbol { // an "even" general purpose register
@@ -322,9 +342,12 @@ architecture avr {
         return ((high << 8) | low)[15:0];
     }
 
-    external bit(b: boolean): int;
-    external popByte(): byte;
-    external pushByte(b: byte): void;
+    external subroutine bit(b: boolean): int;
+    external subroutine popByte(): byte;
+    external subroutine pushByte(b: byte): void;
+    external subroutine extended(addr: int): addr;
+    external subroutine enableInterrupts(): void;
+    external subroutine disableInterrupts(): void;
 
 
 //---------------------------------------------------------------------------
@@ -898,7 +921,7 @@ architecture avr {
         property syntax: String = "ldd %rd, %ar+%imm";
         property cycles: int = 2;
         execute {
-            $regs(rd) = $sram($wregs(ar) + imm);
+            $regs(rd) = $sram($aregs(ar) + imm);
         }
     }
 
@@ -1273,7 +1296,7 @@ architecture avr {
         property syntax: String = "std %ar+%imm, %rr";
         property cycles: int = 2;
         execute {
-            $sram($wregs(ar) + imm) = $regs(rr);
+            $sram($aregs(ar) + imm) = $regs(rr);
         }
     }
 
@@ -1346,15 +1369,15 @@ architecture avr {
 
     operand-type RZ_W[0]: symbol {
         mapping { Z = 0 }
-        read: int { return $wregs(r30); }
-        write: short { $wregs(r30) = value; }
+        read: int { return $aregs(r30); }
+        write: short { $aregs(r30) = value; }
     }
 
     operand-type AI_RZ_W[0]: symbol {
         mapping { Z = 0 }
         read: int {
-            local temp: int = $wregs(r30);
-            $wregs(r30) = temp + 1;
+            local temp: int = $aregs(r30);
+            $aregs(r30) = temp + 1;
             return temp;
         }
         write: short { $wregs(r30) = value; }
@@ -1381,7 +1404,7 @@ architecture avr {
         mapping {
             X = 0, Y = 1, Z = 2
         }
-        read: int { return $wregs(this); }
+        read: int { return $aregs(this); }
         write: byte { }
     }
 
@@ -1390,8 +1413,8 @@ architecture avr {
             X = 0, Y = 1, Z = 2
         }
         read: int {
-            local tmp: int = $wregs(this);
-            $wregs(this) = tmp + 1;
+            local tmp: int = $aregs(this);
+            $aregs(this) = tmp + 1;
             return tmp;
         }
         write: byte { }
@@ -1402,8 +1425,8 @@ architecture avr {
             X = 0, Y = 1, Z = 2
         }
         read: int {
-            local tmp: int = $wregs(this) - 1;
-            $wregs(this) = tmp;
+            local tmp: int = $aregs(this) - 1;
+            $aregs(this) = tmp;
             return tmp;
         }
         write: byte { }

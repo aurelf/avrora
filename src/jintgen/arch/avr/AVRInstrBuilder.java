@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,80 +30,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.util;
+package jintgen.arch.avr;
 
-import java.io.PrintStream;
+import avrora.syntax.AVRErrorReporter;
 
-public class Printer {
+/**
+ * @author Ben L. Titzer
+ */
+public class AVRInstrBuilder {
+    private final AVRErrorReporter ERROR;
 
-    private final PrintStream o;
-    private boolean begLine;
-    private int indent;
-
-    public static final Printer STDOUT = new Printer(System.out);
-    public static final Printer STDERR = new Printer(System.out);
-
-    public Printer(PrintStream o) {
-        this.o = o;
-        this.begLine = true;
+    public AVRInstrBuilder(AVRErrorReporter er) {
+        ERROR = er;
     }
 
-    public void println(String s) {
-        spaces();
-        o.println(s);
-        begLine = true;
+    //===============================================================
+    // Instruction factory methods: one newXXX() method per instruction
+    //===============================================================
+
+    public AVRInstr.ADC newADC(AVRSymbol rd, AVRSymbol rr) {
+        // parameter types will either be int, AVRSymbol, or AVROperand
+        return new AVRInstr.ADC(checkGPR(rd), checkGPR(rr));
     }
 
-    public void print(String s) {
-        spaces();
-        o.print(s);
+    public AVRInstr.LDI newLDI(AVRSymbol rd, int imm) {
+        return new AVRInstr.LDI(checkHGPR(rd), checkIMM8(imm));
     }
 
-    public void nextln() {
-        if (!begLine) {
-            o.print("\n");
-            begLine = true;
-        }
+    //===============================================================
+    // Operand types: one checkXXX method per base operand type
+    //                and one checkXXX method per operand union type
+    //===============================================================
+
+    protected AVROperand.GPR checkGPR(AVRSymbol e) {
+        // this method has to know the representation type and valid set
+        return null;
     }
 
-    public void indent() {
-        indent++;
+    protected AVROperand.HGPR checkHGPR(AVRSymbol e) {
+        // this method has to know the representation type and valid set
+        return null;
     }
 
-    public void spaces() {
-        if (begLine) {
-            for (int cntr = 0; cntr < indent; cntr++)
-                o.print("    ");
-            begLine = false;
-        }
+    protected AVROperand.IMM8 checkIMM8(int imm) {
+        // this method has to know the representation type and the valid range
+        return null;
     }
 
-    public void unindent() {
-        indent--;
-        if (indent < 0) indent = 0;
-    }
-
-    public void startblock() {
-        println("{");
-        indent();
-    }
-
-    public void startblock(String name) {
-        println(name + " {");
-        indent();
-    }
-
-    public void endblock() {
-        unindent();
-        println("}");
-    }
-
-    public void endblock(String s) {
-        unindent();
-        println("}"+s);
-    }
-
-    public void close() {
-        o.close();
-    }
 }

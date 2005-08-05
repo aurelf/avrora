@@ -12,67 +12,66 @@ public interface ISDLParserConstants {
   int HEX_LITERAL = 15;
   int BIN_LITERAL = 16;
   int OCTAL_LITERAL = 17;
-  int CHARACTER_LITERAL = 18;
-  int STRING_LITERAL = 19;
-  int INSTRUCTION = 20;
-  int ARCHITECTURE = 21;
-  int FORMAT = 22;
-  int OPERAND = 23;
-  int OPERAND_TYPE = 24;
-  int ADDR_MODE = 25;
-  int ADDR_SET = 26;
-  int READ = 27;
-  int WRITE = 28;
-  int WHERE = 29;
-  int PRIORITY = 30;
-  int ENCODING = 31;
-  int EXECUTE = 32;
-  int LOCAL = 33;
-  int GLOBAL = 34;
-  int MEMORY = 35;
-  int MAPPING = 36;
-  int IF = 37;
-  int ELSE = 38;
-  int AND = 39;
-  int OR = 40;
-  int XOR = 41;
-  int SUBROUTINE = 42;
-  int INLINE = 43;
-  int EXTERNAL = 44;
-  int RETURN = 45;
-  int BOOLEAN_LITERAL = 46;
-  int SYMBOL = 47;
-  int PSEUDO = 48;
-  int WHEN = 49;
-  int PROPERTY = 50;
-  int LBRACKET = 51;
-  int RBRACKET = 52;
-  int EQUALS = 53;
-  int COMMA = 54;
-  int LPAREN = 55;
-  int RPAREN = 56;
-  int SEMI = 57;
-  int SHIFTLEFT = 58;
-  int SHIFTRIGHT = 59;
-  int ADD = 60;
-  int SUB = 61;
-  int MUL = 62;
-  int DIV = 63;
-  int B_AND = 64;
-  int B_OR = 65;
-  int B_XOR = 66;
-  int NOT = 67;
-  int B_COMP = 68;
-  int EQUAL = 69;
-  int NOTEQUAL = 70;
-  int LESS = 71;
-  int LESSEQ = 72;
-  int GREATER = 73;
-  int GREATEREQ = 74;
-  int DOLLAR = 75;
-  int IDENTIFIER = 76;
-  int LETTER = 77;
-  int DIGIT = 78;
+  int STRING_LITERAL = 18;
+  int INSTRUCTION = 19;
+  int ARCHITECTURE = 20;
+  int FORMAT = 21;
+  int ENUM = 22;
+  int OPERAND_TYPE = 23;
+  int ADDR_MODE = 24;
+  int ADDR_SET = 25;
+  int READ = 26;
+  int WRITE = 27;
+  int WHERE = 28;
+  int PRIORITY = 29;
+  int ENCODING = 30;
+  int EXECUTE = 31;
+  int LOCAL = 32;
+  int GLOBAL = 33;
+  int MEMORY = 34;
+  int MAPPING = 35;
+  int IF = 36;
+  int ELSE = 37;
+  int AND = 38;
+  int OR = 39;
+  int XOR = 40;
+  int SUBROUTINE = 41;
+  int INLINE = 42;
+  int EXTERNAL = 43;
+  int RETURN = 44;
+  int BOOLEAN_LITERAL = 45;
+  int SYMBOL = 46;
+  int PSEUDO = 47;
+  int WHEN = 48;
+  int PROPERTY = 49;
+  int LBRACKET = 50;
+  int RBRACKET = 51;
+  int EQUALS = 52;
+  int COMMA = 53;
+  int LPAREN = 54;
+  int RPAREN = 55;
+  int SEMI = 56;
+  int SHIFTLEFT = 57;
+  int SHIFTRIGHT = 58;
+  int ADD = 59;
+  int SUB = 60;
+  int MUL = 61;
+  int DIV = 62;
+  int B_AND = 63;
+  int B_OR = 64;
+  int B_XOR = 65;
+  int NOT = 66;
+  int B_COMP = 67;
+  int EQUAL = 68;
+  int NOTEQUAL = 69;
+  int LESS = 70;
+  int LESSEQ = 71;
+  int GREATER = 72;
+  int GREATEREQ = 73;
+  int DOLLAR = 74;
+  int IDENTIFIER = 75;
+  int LETTER = 76;
+  int DIGIT = 77;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -98,12 +97,11 @@ public interface ISDLParserConstants {
     "<HEX_LITERAL>",
     "<BIN_LITERAL>",
     "<OCTAL_LITERAL>",
-    "<CHARACTER_LITERAL>",
     "<STRING_LITERAL>",
     "\"instruction\"",
     "\"architecture\"",
     "\"format\"",
-    "\"operand\"",
+    "\"enum\"",
     "\"operand-type\"",
     "\"addr-mode\"",
     "\"addr-set\"",

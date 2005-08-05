@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,80 +30,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.util;
+package jintgen.arch.avr;
 
-import java.io.PrintStream;
+import avrora.syntax.AVRErrorReporter;
+import avrora.util.Util;
 
-public class Printer {
+/**
+ * @author Ben L. Titzer
+ */
+public abstract class AVRInstr {
 
-    private final PrintStream o;
-    private boolean begLine;
-    private int indent;
-
-    public static final Printer STDOUT = new Printer(System.out);
-    public static final Printer STDERR = new Printer(System.out);
-
-    public Printer(PrintStream o) {
-        this.o = o;
-        this.begLine = true;
+    public int getCycles() {
+        throw Util.unimplemented();
     }
 
-    public void println(String s) {
-        spaces();
-        o.println(s);
-        begLine = true;
+    public int getSize() {
+        throw Util.unimplemented();
     }
 
-    public void print(String s) {
-        spaces();
-        o.print(s);
+    public String toString() {
+        throw Util.unimplemented();
     }
 
-    public void nextln() {
-        if (!begLine) {
-            o.print("\n");
-            begLine = true;
+    public abstract void accept(AVRInstrVisitor v);
+
+    //===============================================================
+    // Instruction classes: one class per instruction
+    //===============================================================
+
+    public static class ADC extends AVRInstr {
+        public final AVROperand.GPR rd; // notice that the enum value has been cached
+        public final AVROperand.GPR rr;
+
+        ADC(AVROperand.GPR rd, AVROperand.GPR rr) {
+            this.rd = rd;
+            this.rr = rr;
+        }
+
+        public void accept(AVRInstrVisitor v) {
+            v.visit(this);
         }
     }
 
-    public void indent() {
-        indent++;
-    }
+    public static class LDI extends AVRInstr {
+        public final AVROperand.HGPR rd;
+        public final AVROperand.IMM8 imm;
 
-    public void spaces() {
-        if (begLine) {
-            for (int cntr = 0; cntr < indent; cntr++)
-                o.print("    ");
-            begLine = false;
+        LDI(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
+            this.rd = rd;
+            this.imm = imm;
         }
-    }
 
-    public void unindent() {
-        indent--;
-        if (indent < 0) indent = 0;
-    }
-
-    public void startblock() {
-        println("{");
-        indent();
-    }
-
-    public void startblock(String name) {
-        println(name + " {");
-        indent();
-    }
-
-    public void endblock() {
-        unindent();
-        println("}");
-    }
-
-    public void endblock(String s) {
-        unindent();
-        println("}"+s);
-    }
-
-    public void close() {
-        o.close();
+        public void accept(AVRInstrVisitor v) {
+            v.visit(this);
+        }
     }
 }

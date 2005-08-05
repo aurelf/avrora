@@ -137,19 +137,6 @@ TOKEN :
 |
   < #OCTAL_LITERAL: "0" (["0"-"7"])* >
 |
-  < CHARACTER_LITERAL:
-      "'"
-      (   (~["'","\\","\n","\r"])
-        | ("\\"
-            ( ["n","t","b","r","f","\\","'","\""]
-            | ["0"-"7"] ( ["0"-"7"] )?
-            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
-            )
-          )
-      )
-      "'"
-  >
-|
   < STRING_LITERAL:
       "\""
       (   (~["\"","\\","\n","\r"])
@@ -170,7 +157,7 @@ TOKEN :
     < INSTRUCTION : "instruction" >
   | < ARCHITECTURE : "architecture" >
   | < FORMAT : "format" >
-  | < OPERAND : "operand" >
+  | < ENUM : "enum" >
   | < OPERAND_TYPE : "operand-type" >
   | < ADDR_MODE : "addr-mode" >
   | < ADDR_SET : "addr-set" >
@@ -260,6 +247,7 @@ Architecture Architecture() : { Token n; }
 void Item() : {}
 {
     Instruction()
+  | Enum()
   | FormatDecl()
   | OperandTypeDecl()
   | Subroutine()
@@ -284,6 +272,13 @@ void Instruction() :
         [ s = Execute(s) ]
 
     "}" { arch.addInstruction(new InstrDecl(pseudo, n, am, p, s)); }
+}
+
+void Enum() : { Token n; SymbolMapping m = new SymbolMapping(); }
+{
+    "enum" n = <IDENTIFIER> "{"
+        MappingSetElem(m) ("," MappingSetElem(m))*
+    "}"
 }
 
 AddrModeUse AddrModeUse(Token n) : { List<AddressingModeDecl.Operand> o; }
@@ -508,7 +503,7 @@ void Subroutine() :
     (["inline" { i = true; }] "subroutine" m = <IDENTIFIER>
        "(" f = Params() ")" ":" r = <IDENTIFIER> Block(l)
         { arch.addSubroutine(new SubroutineDecl(i, m, f, r, l)); } )
-   |("external" m = <IDENTIFIER> "(" f = Params() ")" ":" r = <IDENTIFIER> ";"
+   |("external" "subroutine" m = <IDENTIFIER> "(" f = Params() ")" ":" r = <IDENTIFIER> ";"
         { arch.addSubroutine(new SubroutineDecl(i, m, f, r, null)); } )
 
 }

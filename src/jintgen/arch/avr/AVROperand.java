@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,80 +30,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.util;
+package jintgen.arch.avr;
 
-import java.io.PrintStream;
+import avrora.util.Util;
 
-public class Printer {
+/**
+ * @author Ben L. Titzer
+ */
+public class AVROperand {
 
-    private final PrintStream o;
-    private boolean begLine;
-    private int indent;
-
-    public static final Printer STDOUT = new Printer(System.out);
-    public static final Printer STDERR = new Printer(System.out);
-
-    public Printer(PrintStream o) {
-        this.o = o;
-        this.begLine = true;
+    public int read() {
+        throw Util.unimplemented();
     }
 
-    public void println(String s) {
-        spaces();
-        o.println(s);
-        begLine = true;
+    public void write(int value) {
+        throw Util.unimplemented();
     }
 
-    public void print(String s) {
-        spaces();
-        o.print(s);
+    //====================================================================
+    // Operand types: generate one per complex or symbol operand type
+    //====================================================================
+
+    public static class GPR extends AVROperand {
+
     }
 
-    public void nextln() {
-        if (!begLine) {
-            o.print("\n");
-            begLine = true;
-        }
+    public static class EPGR extends AVROperand {
+
     }
 
-    public void indent() {
-        indent++;
+    public static class HGPR extends AVROperand {
+
     }
 
-    public void spaces() {
-        if (begLine) {
-            for (int cntr = 0; cntr < indent; cntr++)
-                o.print("    ");
-            begLine = false;
-        }
-    }
+    public static class IMM8 extends AVROperand {
 
-    public void unindent() {
-        indent--;
-        if (indent < 0) indent = 0;
-    }
-
-    public void startblock() {
-        println("{");
-        indent();
-    }
-
-    public void startblock(String name) {
-        println(name + " {");
-        indent();
-    }
-
-    public void endblock() {
-        unindent();
-        println("}");
-    }
-
-    public void endblock(String s) {
-        unindent();
-        println("}"+s);
-    }
-
-    public void close() {
-        o.close();
     }
 }

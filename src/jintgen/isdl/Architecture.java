@@ -83,6 +83,10 @@ public class Architecture {
         addrSetMap = new HashList<String, AddressingModeSetDecl>();
     }
 
+    public String getName() {
+        return name.image;
+    }
+
     public Iterable<SubroutineDecl> getSubroutines() {
         return subroutineMap;
     }

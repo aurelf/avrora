@@ -32,10 +32,14 @@
 
 package jintgen.gen;
 
-import avrora.util.Printer;
-import avrora.util.StringUtil;
+import avrora.util.*;
 import jintgen.isdl.*;
 import jintgen.jigir.CodeRegion;
+import jintgen.Main;
+
+import java.io.PrintStream;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
@@ -44,34 +48,120 @@ import jintgen.jigir.CodeRegion;
  *
  * @author Ben L. Titzer
  */
-public class ClassGenerator {
+public class InstrIRGenerator extends Generator {
 
-    private final Architecture architecture;
-    private final Printer printer;
+    private Printer printer;
 
-    public ClassGenerator(Architecture a, Printer p) {
-        architecture = a;
-        printer = p;
+    String instrClassName;
+    String operandClassName;
+    String visitorClassName;
+    String builderClassName;
+
+    protected final Option.Str CLASS_FILE = options.newOption("class-template", "Instr.java",
+            "This option specifies the name of the file that contains a template for generating the " +
+            "instruction classes.");
+
+    public void generate() throws Exception {
+
+        instrClassName = className("Instr");
+        operandClassName = className("Operand");
+        visitorClassName = className("InstrVisitor");
+        builderClassName = className("InstrBuilder");
+
+        //generateRegSets();
+        //generateChecks();
+        generateVisitor();
+        generateInstrClasses();
     }
 
-    public void generate() {
-        printer.indent();
-        generateInstrSet();
-        generateRegSets();
-        generateChecks();
-        generateConstructors();
-        generateClasses();
-        printer.unindent();
+    private void emitPackage() {
+        String pname = this.DEST_PACKAGE.get();
+        if ( !"".equals(pname) ) {
+            printer.println("package "+pname+";");
+            printer.nextln();
+        }
     }
 
-    private void generateClasses() {
+    //=========================================================================================
+    // CODE TO EMIT VISITOR CLASS
+    //=========================================================================================
+
+    private void generateVisitor() throws IOException {
+        File f = new File(visitorClassName + ".java");
+        printer = new Printer(new PrintStream(f));
+
+        emitPackage();
+        printer.startblock("public interface "+visitorClassName);
+        for (InstrDecl d : arch.getInstructions()) emitVisitMethod(d);
+        printer.endblock();
+        printer.close();
+    }
+
+    private void emitVisitMethod(InstrDecl d) {
+        printer.println("public void visit("+instrClassName+"."+d.innerClassName+" i);");
+    }
+
+    //=========================================================================================
+    // CODE TO EMIT INSTR CLASSES
+    //=========================================================================================
+
+    private void generateInstrClasses() throws IOException {
+        File f = new File(instrClassName + ".java");
+        printer = new Printer(new PrintStream(f));
+
+        emitPackage();
+        printer.startblock("public abstract class "+instrClassName);
+        for (InstrDecl d : arch.getInstructions()) emitClass(d);
+        printer.endblock();
+        printer.close();
+    }
+
+    private void emitClass(InstrDecl d) {
+        String cName = d.name.image;
+        cName = StringUtil.trimquotes(cName.toUpperCase());
+        printer.startblock("public static class " + cName + " extends "+instrClassName);
+
+        //emitStaticProperties(d);
+        //emitPrototype(cName, d);
+        emitFields(d);
+        emitConstructor(cName, d);
+        emitAcceptMethod();
+
+        printer.endblock();
         printer.println("");
-        printer.println("//-------------------------------------------------------");
-        printer.println("// GENERATED: Class definitions individual instructions ");
-        printer.println("//-------------------------------------------------------");
-
-        for (InstrDecl d : architecture.getInstructions()) emitClass(d);
     }
+
+    private void emitFields(InstrDecl d) {
+        // emit the declaration of the fields
+        for (AddressingModeDecl.Operand o : d.getOperands()) {
+            printer.print("public final ");
+            printer.print(getOperandTypeName(o.getOperandType()) + ' ');
+            printer.println(o.name.toString() + ';');
+        }
+    }
+
+    private void emitConstructor(String cName, InstrDecl d) {
+        // emit the declaration of the constructor
+        printer.print(cName + '(');
+        emitParams(d);
+        printer.startblock(")");
+
+        // emit the initialization code for each field
+        for (AddressingModeDecl.Operand o : d.getOperands()) {
+            String n = o.name.image;
+            printer.println("this." + n + " = " + n + ';');
+        }
+
+        printer.endblock();
+    }
+
+    private void emitAcceptMethod() {
+        printer.println("public void accept("+visitorClassName+" v) { v.visit(this); }");
+    }
+
+    //=========================================================================================
+    // CODE TO EMIT OTHER STUFF
+    //=========================================================================================
 
     private void generateConstructors() {
         printer.println("");
@@ -79,7 +169,7 @@ public class ClassGenerator {
         printer.println("// GENERATED: Static factory methods for individual instructions ");
         printer.println("//----------------------------------------------------------------");
 
-        for (InstrDecl d : architecture.getInstructions()) emitConstructor(d);
+        for (InstrDecl d : arch.getInstructions()) emitConstructor(d);
     }
 
     private void generateChecks() {
@@ -88,7 +178,7 @@ public class ClassGenerator {
         printer.println("// GENERATED: Methods to check the validity of individual operands ");
         printer.println("//-------------------------------------------------------------------");
 
-        for (OperandTypeDecl d : architecture.getOperandTypes()) emitChecks(d);
+        for (OperandTypeDecl d : arch.getOperandTypes()) emitChecks(d);
     }
 
     private void generateRegSets() {
@@ -97,39 +187,7 @@ public class ClassGenerator {
         printer.println("// GENERATED: Sets of registers to check constraints ");
         printer.println("//-------------------------------------------------------");
 
-        for (OperandTypeDecl d : architecture.getOperandTypes()) emitRegSet(d);
-    }
-
-    private void generateInstrSet() {
-        printer.println("");
-        printer.println("//-------------------------------------------------------------------");
-        printer.println("// GENERATED: Method to initialize the instruction set mapping ");
-        printer.println("//-------------------------------------------------------------------");
-
-        printer.startblock("private static void initializeInstrSet()");
-
-        for (InstrDecl d : architecture.getInstructions())
-            printer.println("instructions.put(" + d.name + ", " + getClassName(d) + ".prototype);");
-
-        printer.endblock();
-    }
-
-    public void emitClass(InstrDecl d) {
-        String cName = d.name.image;
-        cName = StringUtil.trimquotes(cName.toUpperCase());
-        printer.startblock("public static class " + cName + " extends Instr");
-
-        emitStaticProperties(d);
-        emitPrototype(cName, d);
-        emitFields(d);
-        emitConstructor(cName, d);
-        emitAcceptMethod();
-
-        printer.endblock();
-    }
-
-    private void emitAcceptMethod() {
-        printer.println("public void accept(InstrVisitor v) { v.visit(this); }");
+        for (OperandTypeDecl d : arch.getOperandTypes()) emitRegSet(d);
     }
 
     private void emitStaticProperties(InstrDecl d) {
@@ -146,28 +204,8 @@ public class ClassGenerator {
         printer.endblock();
     }
 
-    private void emitFields(InstrDecl d) {
-        // emit the declaration of the fields
-        for (AddressingModeDecl.Operand o : d.getOperands()) {
-            printer.print("public final ");
-            printer.print(o.getOperandType().toString() + ' ');
-            printer.println(o.name.toString() + ';');
-        }
-    }
-
-    private void emitConstructor(String cName, InstrDecl d) {
-        // emit the declaration of the constructor
-        printer.print("private " + cName + '(');
-        emitParams(d);
-        printer.startblock(")");
-
-        // emit the initialization code for each field
-        for (AddressingModeDecl.Operand o : d.getOperands()) {
-            String n = o.name.image;
-            printer.println("this." + n + " = " + n + ';');
-        }
-
-        printer.endblock();
+    private String getOperandTypeName(OperandTypeDecl d) {
+        return operandClassName+"."+d.name.image;
     }
 
     public void emitConstructor(InstrDecl d) {
@@ -216,7 +254,7 @@ public class ClassGenerator {
         boolean first = true;
         for (AddressingModeDecl.Operand o : d.getOperands()) {
             if (!first) printer.print(", ");
-            printer.print(o.getOperandType().toString() + ' ');
+            printer.print(getOperandTypeName(o.getOperandType()) + ' ');
             printer.print(o.name.toString());
             first = false;
         }

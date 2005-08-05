@@ -32,10 +32,7 @@
 
 package jintgen;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -61,26 +58,12 @@ public class Main {
 
     static final Options mainOptions = new Options();
 
-    public static final Option.Str CLASSES = mainOptions.newOption("instr-file", "",
-            "This option specifies the destination file into which to generate the Instr classes. " +
-            "If this option is not set, the instruction classes will not be generated.");
-    public static final Option.Str INTERPRETER = mainOptions.newOption("interpreter", "",
-            "This option specifies the destination file into which to generate the code for interpreting " +
-            "each instruction. If this option is not set, the code for the interpreter will not be " +
-            "generated.");
     public static final Option.Str CODEMAP = mainOptions.newOption("codemap", "",
             "This option specifies the file to generate the codemap into. The codemap is used in a" +
             "dynamic basic block compiler and dependency analysis of instructions.");
     public static final Option.Bool INLINE = mainOptions.newOption("inline", true,
             "This option controls whether the ISDL processor will inline all subroutines marked as " +
             "\"inline\" in their declaration.");
-    public static final Option.Str DISASSEM = mainOptions.newOption("disassembler", "",
-            "This option specifies the destination file into which to generate the code for the " +
-            "disassembler. The disassembler decodes a binary stream into source-level instructions.");
-    public static final Option.Str DISTEST = mainOptions.newOption("disassembler-tests", "",
-            "This option specifies the directory into which to generate disassembler test cases. " +
-            "These test cases will attempt to cover a reasonable portion of the encoding space to " +
-            "test the correctness of the disassembler generator.");
 
     public static final Option.Bool COLORS = mainOptions.newOption("colors", true,
             "This option is used to enable or disable the terminal colors.");
@@ -97,7 +80,20 @@ public class Main {
     public static final Option.Bool HTML = mainOptions.newOption("html", false,
             "For terminal colors. Display terminal colors as HTML tags for " +
             "easier inclusion in webpages.");
+    public static final Option.List GENERATORS = mainOptions.newOptionList("generate", "",
+            "This option accepts a list of generators to be applied to the specified architecture " +
+            "description file. Each generator may generate a tool, such as an assembler or disassembler " +
+            "or perform an analysis on the architecture description. Each generator may support " +
+            "further options that allow its operation to be customized.");
 
+    public static ClassMap generatorMap = new ClassMap("Generator", Generator.class);
+    
+    static {
+        generatorMap.addClass("ir", InstrIRGenerator.class);
+        generatorMap.addClass("codemap", CodemapGenerator.class);
+        generatorMap.addClass("disassembler", DisassemblerGenerator.class);
+    }
+    
     /**
      * The <code>main()</code> method is the entrypoint into jIntGen. It processes the command line options,
      * looks up the action, and prints help (if there are no arguments or the <code>-help</code> option is
@@ -133,24 +129,9 @@ public class Main {
 
         Architecture.INLINE = INLINE.get();
 
-        String fname = args[0];
-        checkFileExists(fname);
-        File archfile = new File(fname);
-        FileInputStream fis = new FileInputStream(archfile);
-        ISDLParser parser = new ISDLParser(fis);
         try {
-            Status.begin("Parsing "+fname);
-            Architecture a = parser.Architecture();
-            Status.success();
-            Status.begin("Verifying "+fname);
-            new Verifier(a).verify();
-            Status.success();
-
-            generateInterpreter(a);
-            generateInstrClasses(a);
-            generateCodeMap(a);
-            generateDisassembler(a);
-            generateDisassemblerTests(a);
+            Architecture a = loadArchitecture(args[0]);
+            runGenerators(a);
         } catch ( Util.Error t) {
             Status.error(t);
             t.report();
@@ -160,70 +141,30 @@ public class Main {
         }
     }
 
-    private static void generateDisassemblerTests(Architecture a) {
-        String distest = DISTEST.get();
-        if ( !"".equals(distest) ) {
-            Status.begin("Generating disassembler tests to " + distest);
-            File f = new File(distest);
-            new DisassemblerTestGenerator(a, f).generate();
+    private static Architecture loadArchitecture(String fname) throws FileNotFoundException, ParseException {
+        checkFileExists(fname);
+        File archfile = new File(fname);
+        FileInputStream fis = new FileInputStream(archfile);
+        ISDLParser parser = new ISDLParser(fis);
+        Status.begin("Parsing "+fname);
+        Architecture a = parser.Architecture();
+        Status.success();
+        Status.begin("Verifying "+fname);
+        new Verifier(a).verify();
+        Status.success();
+        return a;
+    }
+
+    private static void runGenerators(Architecture a) throws Exception {
+        for ( Object o : GENERATORS.get() ) {
+            String str = (String)o;
+            Status.begin("Running "+str+" generator");
+            Generator g = (Generator)generatorMap.getObjectOfClass(str);
+            g.setArchitecture(a);
+            g.processOptions(mainOptions);
+            g.generate();
             Status.success();
         }
-    }
-
-    private static void generateDisassembler(Architecture a) throws IOException {
-        SectionFile sf;
-        sf = createSectionFile("disassembler", "DISASSEM GENERATOR", DISASSEM);
-        if (sf != null) {
-            // generate the disassembler
-            new DisassemblerGenerator(a, np(sf)).generate();
-            sf.close();
-            Status.success();
-        }
-    }
-
-    private static void generateCodeMap(Architecture a) throws IOException {
-        SectionFile sf;
-        sf = createSectionFile("codemap", "CODEBUILDER GENERATOR", CODEMAP);
-        if (sf != null) {
-            // generate instruction classes
-            new CodemapGenerator(a, np(sf)).generate();
-            sf.close();
-            Status.success();
-        }
-    }
-
-    private static void generateInstrClasses(Architecture a) throws IOException {
-        SectionFile sf;
-        sf = createSectionFile("Instr.* inner classes", "INSTR GENERATOR", CLASSES);
-        if ( sf != null) {
-            // generate instruction classes
-            new ClassGenerator(a, np(sf)).generate();
-            sf.close();
-            Status.success();
-        }
-    }
-
-    private static void generateInterpreter(Architecture a) throws IOException {
-        SectionFile sf = createSectionFile("interpreter", "INTERPRETER GENERATOR", INTERPRETER);
-        if (sf != null) {
-            // generate vanilla interpreter
-            new InterpreterGenerator(a, np(sf)).generate();
-            sf.close();
-            Status.success();
-        }
-    }
-
-    private static Printer np(SectionFile f) {
-        return new Printer(new PrintStream(f));
-    }
-
-    private static SectionFile createSectionFile(String gen, String sect, Option.Str opt) throws IOException {
-        String s = opt.get();
-        if ( !"".equals(s) ) {
-            Status.begin("Generating "+gen+" to " + s);
-            return new SectionFile(s, sect);
-        } else
-            return null;
     }
 
     static HelpCategory buildHelpCategory() {
@@ -238,7 +179,7 @@ public class Main {
                 "related to other subcategories, specify the name of the subcategory along with " +
                 "the \"help\" option.", mainOptions);
 
-        // TODO: add subcategory section
+        // TODO: add subcategory section for generators
         return hc;
     }
 
