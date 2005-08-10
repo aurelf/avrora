@@ -158,6 +158,7 @@ TOKEN :
   | < ARCHITECTURE : "architecture" >
   | < FORMAT : "format" >
   | < ENUM : "enum" >
+  | < ENUM_SUB : "enum-subset" >
   | < OPERAND_TYPE : "operand-type" >
   | < ADDR_MODE : "addr-mode" >
   | < ADDR_SET : "addr-set" >
@@ -170,7 +171,6 @@ TOKEN :
   | < LOCAL : "local" >
   | < GLOBAL : "global" >
   | < MEMORY : "memory" >
-  | < MAPPING : "mapping" >
   | < IF : "if" >
   | < ELSE : "else" >
   | < AND: "and" >
@@ -181,7 +181,6 @@ TOKEN :
   | < EXTERNAL: "external" >
   | < RETURN: "return" >
   | < BOOLEAN_LITERAL: "true" | "false" >
-  | < SYMBOL: "symbol" >
   | < PSEUDO: "pseudo" >
   | < WHEN : "when" >
   | < PROPERTY: "property" >
@@ -248,6 +247,7 @@ void Item() : {}
 {
     Instruction()
   | Enum()
+  | EnumSubset()
   | FormatDecl()
   | OperandTypeDecl()
   | Subroutine()
@@ -278,7 +278,14 @@ void Enum() : { Token n; SymbolMapping m; }
 {
     "enum" n = <IDENTIFIER> { m = new SymbolMapping(n); }"{"
         MappingSetElem(m) ("," MappingSetElem(m))*
-    "}" { arch.addEnum(m); }
+    "}" { arch.addEnum(new EnumDecl(n, m)); }
+}
+
+void EnumSubset() : { Token n; Token t; SymbolMapping m; }
+{
+    "enum-subset" n = <IDENTIFIER> ":" t = Type() { m = new SymbolMapping(n); }"{"
+        MappingSetElem(m) ("," MappingSetElem(m))*
+    "}" { arch.addEnum(new EnumDecl.Subset(n, t, m)); }
 }
 
 AddrModeUse AddrModeUse(Token n) : { List<AddrModeDecl.Operand> o; }
@@ -287,9 +294,12 @@ AddrModeUse AddrModeUse(Token n) : { List<AddrModeDecl.Operand> o; }
    |(o = Operands() { return new AddrModeUse(null, new AddrModeDecl(n, o)); })
 }
 
-void Property(List<Property> p) : { Token name, t, v;}
+Property Property(List<Property> pl) : { Property p; Token name, t, v;}
 {
-    "property" name = <IDENTIFIER> ":" t = Type() "=" v = Value() ";" { p.add(new Property(name, t, v)); }
+    "property" name = <IDENTIFIER> ":" t = Type() "=" v = Value() ";"
+    { p = new Property(name, t, v);
+      if ( pl != null ) pl.add(p);
+      return p; }
 }
 
 Token Value() : { Token t = null; }
@@ -319,16 +329,17 @@ void Memory() : { Token n; }
 
 void AddrModeDecl() : {
     Token n;
+    AddrModeDecl amd;
+    Property p;
     List<AddrModeDecl.Operand> o;
-    List<Property> p = new LinkedList<Property>();
     EncodingDecl e;
 }
 {
-    "addr-mode" n = <IDENTIFIER> o = Operands() "{"
-        (Property(p)
-        | e = Encoding(n)
+    "addr-mode" n = <IDENTIFIER> o = Operands() { amd = new AddrModeDecl(n, o); } "{"
+        (p = Property(null) { amd.addProperty(p); }
+        | e = Encoding(n) { amd.addEncoding(e); }
         )*
-    "}" { arch.addAddressingMode(new AddrModeDecl(n, o)); }
+    "}" { arch.addAddressingMode(amd); }
 }
 
 void AddrSetDecl() : { Token n; List<Token> l = new LinkedList<Token>(); Token e; }
@@ -366,52 +377,29 @@ void OperandTypeDecl() : { Token n; OperandTypeDecl d; }
     { arch.addOperand(d); }
 }
 
-OperandTypeDecl SimpleOperandType(Token n) : { Token b; OperandTypeDecl d; }
+OperandTypeDecl SimpleOperandType(Token n) : { Token b, t, l = null, h = null; OperandTypeDecl d; }
 {
     "[" b = <INTEGER_LITERAL> "]" ":"
-    (d = SymbolOperand(n, b) | d = ValueOperand(n, b))
+    t = Type() [ "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]" ]
+    { d = new OperandTypeDecl.Simple(n, b, t, l, h); }
+    ( OperandBody(d) | ";" )
     { return d; }
-}
-
-OperandTypeDecl SymbolOperand(Token n, Token b) :
-{
-  SymbolMapping m = new SymbolMapping(n);
-  OperandTypeDecl.SymbolSet sd = new OperandTypeDecl.SymbolSet(n, b, m);
-}
-{
-    "symbol" OperandBody(sd, m)
-    { return sd; }
-}
-
-OperandTypeDecl ValueOperand(Token n, Token b) :
-{
-  Token t, l, h;
-    SymbolMapping m = new SymbolMapping(n);
-  OperandTypeDecl.Value vd;
-}
-{
-   (t = Type() "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]")
-    { vd = new OperandTypeDecl.Value(n, b, t, l, h); }
-   ( OperandBody(vd, m) | ";" )
-    { return vd; }
 }
 
 OperandTypeDecl CompoundOperandType(Token n) :
 {
-    SymbolMapping m = new SymbolMapping(n);
     OperandTypeDecl.Compound cd = new OperandTypeDecl.Compound(n);
 }
 {
-    OperandBody(cd, m)
+    OperandBody(cd)
     { return cd; }
 
 }
 
-void OperandBody(OperandTypeDecl td, SymbolMapping m) : { }
+void OperandBody(OperandTypeDecl td) : { }
 {
     "{"
-    ( SymbolMapping(m)
-    | ReadMethod(td)
+    ( ReadMethod(td)
     | WriteMethod(td)
     | SubOperand(td) )*
     "}"
@@ -430,11 +418,6 @@ void ReadMethod(OperandTypeDecl td) : { List<Stmt> s = new LinkedList<Stmt>(); }
 void WriteMethod(OperandTypeDecl td) : { List<Stmt> s = new LinkedList<Stmt>(); }
 {
     "write" ":" Type() Block(s)
-}
-
-void SymbolMapping(SymbolMapping m) : {  }
-{
-    "mapping" "{" MappingSetElem(m) ("," MappingSetElem(m))* "}"
 }
 
 void MappingSetElem(SymbolMapping m) : { Token n, i; }
@@ -798,7 +781,7 @@ Expr Un_Expr() : { Expr e; }
 
 Token MapType() : { Token t; }
 {
-    ( t = "symbol" | t = Type() )
+    t = Type()
     { return t; }
 }
 

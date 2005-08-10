@@ -36,4 +36,5 @@ package jintgen.arch.avr;
  * @author Ben L. Titzer
  */
 public class AVRAddrMode {
+
 }

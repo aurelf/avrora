@@ -38,4 +38,5 @@ import jintgen.arch.Interpreter;
  * @author Ben L. Titzer
  */
 public class AVRInterpreter implements Interpreter {
+
 }

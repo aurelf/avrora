@@ -40,7 +40,7 @@ import jintgen.arch.*;
 public class AVRArchitecture implements Architecture {
 
     public Disassembler getDisassembler() {
-        return new AVRDisassembler();
+        return null;
     }
 
     public Assembler getAssembler() {

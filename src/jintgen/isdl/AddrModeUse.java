@@ -37,28 +37,33 @@ import jintgen.isdl.parser.Token;
 import java.util.List;
 import java.util.LinkedList;
 
+import avrora.util.Util;
+
 /**
  * @author Ben L. Titzer
  */
 public class AddrModeUse {
 
     public final Token ref;
-    public final List<EncodingDecl> encodings;
     public List<AddrModeDecl> addrModes;
     public List<AddrModeDecl.Operand> operands;
+    public final AddrModeDecl localDecl;
 
     public AddrModeUse(Token n, AddrModeDecl d) {
         ref = n;
         addrModes = new LinkedList<AddrModeDecl>();
-        encodings = new LinkedList<EncodingDecl>();
 
+        localDecl = d;
         if ( d != null ) {
             addrModes.add(d);
             operands = d.operands;
-        }
+        } 
     }
 
     public void addEncoding(EncodingDecl e) {
-        encodings.add(e);
+        if ( localDecl != null )
+            localDecl.addEncoding(e);
+        else
+            throw Util.failure("cannot add encoding to addressing mode directly");
     }
 }

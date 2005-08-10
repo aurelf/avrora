@@ -2,80 +2,50 @@ package jintgen.arch.msp430;
 import java.util.HashMap;
 public class MSP430Operand {
     public static class SREG_B extends MSP430Operand {
-        public final MSP430Symbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final MSP430Symbol.SREG symbol;
         SREG_B(String s) {
-            symbol = null;
-        }
-        SREG_B(MSP430Symbol sym) {
-            symbol = null;
+            symbol = MSP430Symbol.SREG.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class SREG_W extends MSP430Operand {
-        public final MSP430Symbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final MSP430Symbol.SREG symbol;
         SREG_W(String s) {
-            symbol = null;
-        }
-        SREG_W(MSP430Symbol sym) {
-            symbol = null;
+            symbol = MSP430Symbol.SREG.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class AIREG_B extends MSP430Operand {
-        public final MSP430Symbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final MSP430Symbol.SREG symbol;
         AIREG_B(String s) {
-            symbol = null;
-        }
-        AIREG_B(MSP430Symbol sym) {
-            symbol = null;
+            symbol = MSP430Symbol.SREG.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class AIREG_W extends MSP430Operand {
-        public final MSP430Symbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final MSP430Symbol.SREG symbol;
         AIREG_W(String s) {
-            symbol = null;
-        }
-        AIREG_W(MSP430Symbol sym) {
-            symbol = null;
+            symbol = MSP430Symbol.SREG.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class INDREG_B extends MSP430Operand {
-        public final MSP430Symbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final MSP430Symbol.SREG symbol;
         INDREG_B(String s) {
-            symbol = null;
-        }
-        INDREG_B(MSP430Symbol sym) {
-            symbol = null;
+            symbol = MSP430Symbol.SREG.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class INDREG_W extends MSP430Operand {
-        public final MSP430Symbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final MSP430Symbol.SREG symbol;
         INDREG_W(String s) {
-            symbol = null;
-        }
-        INDREG_W(MSP430Symbol sym) {
-            symbol = null;
+            symbol = MSP430Symbol.SREG.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     

@@ -41,6 +41,7 @@ import java.io.PrintStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
@@ -59,6 +60,8 @@ public class InstrIRGenerator extends Generator {
     String builderClassName;
     String symbolClassName;
 
+    LinkedList<String> hashMapImport;
+
     protected final Option.Str CLASS_FILE = options.newOption("class-template", "Instr.java",
             "This option specifies the name of the file that contains a template for generating the " +
             "instruction classes.");
@@ -71,12 +74,15 @@ public class InstrIRGenerator extends Generator {
         builderClassName = className("InstrBuilder");
         symbolClassName = className("Symbol");
 
+        hashMapImport = new LinkedList<String>();
+        hashMapImport.add("java.util.HashMap");
+
         //generateRegSets();
         //generateChecks();
         generateOperandTypes();
         generateVisitor();
         generateInstrClasses();
-        generateSymbolSets();
+        generateEnumerations();
     }
 
     private void emitPackage() {
@@ -92,11 +98,7 @@ public class InstrIRGenerator extends Generator {
     //=========================================================================================
 
     private void generateVisitor() throws IOException {
-        File f = new File(visitorClassName + ".java");
-        printer = new Printer(new PrintStream(f));
-
-        emitPackage();
-        printer.startblock("public interface "+visitorClassName);
+        printer = newInterfacePrinter(visitorClassName, null, null);
         for (InstrDecl d : arch.instructions) emitVisitMethod(d);
         printer.endblock();
         printer.close();
@@ -111,11 +113,7 @@ public class InstrIRGenerator extends Generator {
     //=========================================================================================
 
     private void generateInstrClasses() throws IOException {
-        File f = new File(instrClassName + ".java");
-        printer = new Printer(new PrintStream(f));
-
-        emitPackage();
-        printer.startblock("public abstract class "+instrClassName);
+        printer = newClassPrinter(instrClassName, null, null);
         for (InstrDecl d : arch.instructions) emitClass(d);
         printer.endblock();
         printer.close();
@@ -168,68 +166,92 @@ public class InstrIRGenerator extends Generator {
     // CODE TO EMIT SYMBOL SETS
     //=========================================================================================
 
-    private void generateSymbolSets() throws IOException {
-        File f = new File(symbolClassName + ".java");
-        printer = new Printer(new PrintStream(f));
+    private void generateEnumerations() throws IOException {
+        printer = newClassPrinter(symbolClassName, hashMapImport, null);
+        generateEnumHeader();
 
-        generateSymbolSetHeader();
-        for ( SymbolMapping m : arch.enums ) {
-            generateSymbolClass(m);
-
+        for ( EnumDecl d : arch.enums ) {
+            generateEnumClass(d);
         }
 
         printer.endblock();
         printer.close();
     }
 
-    private void generateSymbolSetHeader() {
-        emitPackage();
-        printer.println("import java.util.HashMap;");
-        printer.startblock("public class "+symbolClassName);
+    private void generateEnumHeader() {
         printer.println("public final String symbol;");
         printer.println("public final int value;");
         printer.println("");
         printer.println(symbolClassName+"(String sym, int v) { symbol = sym;  value = v; }");
         printer.println("public int getValue() { return value; }");
+        printer.println("public int getEncodingValue() { return value; }");
         printer.println("");
     }
 
-    private void generateSymbolClass(SymbolMapping m) {
+    private void generateEnumClass(EnumDecl d) {
+        SymbolMapping m = d.map;
         String n = m.name.image;
-        printer.startblock("public static class "+n+" extends "+symbolClassName);
-        printer.println(n+"(String sym, int v) { super(sym, v); }");
+        if ( d instanceof EnumDecl.Subset ) {
+            // this enumeration is a subset of another enumeration, but with possibly different
+            // encoding
+            EnumDecl.Subset sd = (EnumDecl.Subset)d;
+            printer.startblock("public static class "+n+" extends "+sd.pname.image);
+            printer.println("public final int encoding;");
+            printer.println("public int getEncodingValue() { return encoding; }");
+            printer.println("private static HashMap set = new HashMap();");
+            printer.println("private static "+n+" new"+n+"(String n, int v, int ev) {");
+            printer.println("    "+n+" obj = new "+n+"(n, v, ev);");
+            printer.println("    set.put(n, obj);");
+            printer.println("    return obj;");
+            printer.println("}");
 
-        printer.println("private static HashMap "+n+"_set = new HashMap();");
+            genGetMethod(n);
 
-        printer.println("private static "+n+" new"+n+"(String n, int v) {");
-        printer.println("    "+n+" obj = new "+n+"(n, v);");
-        printer.println("    "+n+"_set.put(n, obj);");
-        printer.println("    return obj;");
-        printer.println("}");
+            printer.println(n+"(String sym, int v, int ev) { super(sym, v); encoding = ev; }");
 
-        printer.println("public static "+n+" get(String name) {");
-        printer.println("    return ("+n+")"+n+"_set.get(name);");
-        printer.println("}");
+            for ( SymbolMapping.Entry e : m.getEntries() ) {
+                String en = e.name;
+                String EN = en.toUpperCase();
+                SymbolMapping.Entry se = sd.parent.map.get(e.name);
+                printer.println("public static final "+n+" "+EN+" = new"+n+"(\""+en+"\", "+se.value+", "+e.value+");");
+            }
+        } else {
+            // this enumeration is NOT a subset of another enumeration
+            printer.startblock("public static class "+n+" extends "+symbolClassName);
+            printer.println("private static HashMap set = new HashMap();");
 
-        for ( SymbolMapping.Entry e : m.getEntries() ) {
-            String en = e.name;
-            String EN = en.toUpperCase();
-            printer.println("public static final "+n+" "+EN+" = new"+n+"(\""+en+"\", "+e.value+");");
+            printer.println("private static "+n+" new"+n+"(String n, int v) {");
+            printer.println("    "+n+" obj = new "+n+"(n, v);");
+            printer.println("    set.put(n, obj);");
+            printer.println("    return obj;");
+            printer.println("}");
+
+            genGetMethod(n);
+
+            printer.println(n+"(String sym, int v) { super(sym, v); }");
+
+            for ( SymbolMapping.Entry e : m.getEntries() ) {
+                String en = e.name;
+                String EN = en.toUpperCase();
+                printer.println("public static final "+n+" "+EN+" = new"+n+"(\""+en+"\", "+e.value+");");
+            }
         }
 
         printer.endblock();
         printer.println("");
     }
 
+    private void genGetMethod(String n) {
+        printer.println("public static "+n+" get(String name) {");
+        printer.println("    return ("+n+")set.get(name);");
+        printer.println("}");
+    }
+
     //=========================================================================================
     // CODE TO EMIT OPERAND TYPES
     //=========================================================================================
     private void generateOperandTypes() throws IOException {
-        File f = new File(operandClassName + ".java");
-        printer = new Printer(new PrintStream(f));
-        emitPackage();
-        printer.println("import java.util.HashMap;");
-        printer.startblock("public class "+operandClassName);
+        printer = newClassPrinter(operandClassName, hashMapImport, null);
         // generate all the explicitly declared operand types
         for ( OperandTypeDecl d : arch.operandTypes )
             generateOperandType(d);
@@ -254,7 +276,7 @@ public class InstrIRGenerator extends Generator {
         if ( d.isSymbol() ) {
             generateSymbolType((OperandTypeDecl.SymbolSet)d);
         } else if ( d.isValue() ) {
-            generateValueType((OperandTypeDecl.Value)d);
+            generateSimpleType((OperandTypeDecl.Simple)d);
         } else if ( d.isCompound() ) {
             generateCompoundType((OperandTypeDecl.Compound)d);
         } else if ( d.isUnion() ) {
@@ -277,13 +299,24 @@ public class InstrIRGenerator extends Generator {
         printer.endblock();
     }
 
-    private void generateValueType(OperandTypeDecl.Value d) {
-        printer.println("public static final int low = "+d.low+";");
-        printer.println("public static final int high = "+d.high+";");
-        printer.println("public final int value;");
-        printer.startblock(d.name.image+"(int val)");
-        printer.println("value = checkValue(val, low, high);");
-        printer.endblock();
+    private void generateSimpleType(OperandTypeDecl.Simple d) {
+        String k = d.kind.image;
+        EnumDecl ed = arch.getEnum(k);
+        if ( ed != null ) {
+            String kn = symbolClassName+"."+k;
+            printer.println("public final "+kn+" symbol;");
+            printer.startblock(d.name.image+"(String s)");
+            printer.println("symbol = "+kn+".get(s);");
+            printer.println("if ( symbol == null ) throw new Error();");
+            printer.endblock();
+        } else {
+            printer.println("public static final int low = "+d.low+";");
+            printer.println("public static final int high = "+d.high+";");
+            printer.println("public final int value;");
+            printer.startblock(d.name.image+"(int val)");
+            printer.println("value = checkValue(val, low, high);");
+            printer.endblock();
+        }
     }
 
     private void generateCompoundType(OperandTypeDecl.Compound d) {
@@ -319,83 +352,9 @@ public class InstrIRGenerator extends Generator {
     // CODE TO EMIT OTHER STUFF
     //=========================================================================================
 
-    private void generateConstructors() {
-        printer.println("");
-        printer.println("//----------------------------------------------------------------");
-        printer.println("// GENERATED: Static factory methods for individual instructions ");
-        printer.println("//----------------------------------------------------------------");
-
-        for (InstrDecl d : arch.instructions) emitConstructor(d);
-    }
-
-    private void generateChecks() {
-        printer.println("");
-        printer.println("//-------------------------------------------------------------------");
-        printer.println("// GENERATED: Methods to check the validity of individual operands ");
-        printer.println("//-------------------------------------------------------------------");
-
-        for (OperandTypeDecl d : arch.operandTypes) emitChecks(d);
-    }
-
-    private void emitStaticProperties(InstrDecl d) {
-        printer.print("private static final InstrProperties props = new InstrProperties(");
-        printer.print(StringUtil.commalist(d.name, "null", "" + d.getEncodingSize() / 8, "" + d.getCycles()));
-        printer.println(");");
-    }
-
-    private void emitPrototype(String cName, InstrDecl d) {
-        printer.startblock("public static final InstrPrototype prototype = new InstrPrototype(props)");
-        printer.startblock("public Instr build(Operand[] ops)");
-        printer.println("return Instr.new" + cName + "(ops);");
-        printer.endblock();
-        printer.endblock();
-    }
-
     private String getOperandTypeName(OperandTypeDecl d) {
         return operandClassName+"."+d.name.image;
     }
-
-    public void emitConstructor(InstrDecl d) {
-        String cName = getClassName(d);
-        emitArrayMethod(cName, d);
-        emitSpecificMethod(cName, d);
-
-    }
-
-    private void emitArrayMethod(String cName, InstrDecl d) {
-        printer.startblock("public static Instr." + cName + " new" + cName + "(Operand[] ops)");
-        printer.println("count(ops, " + d.getOperands().size() + ");");
-
-        printer.print("return new " + cName + '(');
-        // emit the checking code for each operand
-        int cntr = 0;
-        for (AddrModeDecl.Operand o : d.getOperands()) {
-            if (cntr++ != 0) printer.print(", ");
-            OperandTypeDecl ot = o.getOperandType();
-            String asMeth = ot.isSymbol() ? "asSym" : "asImm";
-            printer.print("check_" + o.type.image + '(' + cntr + ", " + asMeth + '(' + cntr + ", ops))");
-        }
-        printer.println(");");
-        printer.endblock();
-    }
-
-    private void emitSpecificMethod(String cName, InstrDecl d) {
-        printer.print("public static Instr." + cName + " new" + cName + '(');
-        emitParams(d);
-        printer.startblock(")");
-
-        printer.print("return new " + cName + '(');
-        // emit the checking code for each operand
-        int cntr = 0;
-        for (AddrModeDecl.Operand o : d.getOperands()) {
-            if (cntr++ != 0) printer.print(", ");
-            String n = o.name.toString();
-            printer.print("check_" + o.type.image + '(' + cntr + ", " + n + ')');
-        }
-        printer.println(");");
-        printer.endblock();
-    }
-
 
     private void emitParams(InstrDecl d) {
         boolean first = true;
@@ -406,52 +365,4 @@ public class InstrIRGenerator extends Generator {
             first = false;
         }
     }
-
-    public void emitRegSet(OperandTypeDecl d) {
-        if (!d.isSymbol()) return;
-
-        OperandTypeDecl.SymbolSet rset = (OperandTypeDecl.SymbolSet) d;
-
-        String type = d.name.image;
-        printer.println("private static final Register[] " + type + "_array = {");
-        printer.indent();
-
-
-        int cntr = 0;
-        for (SymbolMapping.Entry renc : rset.map.getEntries()) {
-            if (cntr++ != 0) printer.print(", ");
-            printer.print("Register." + renc.name.toUpperCase());
-            if (cntr != 1 && (cntr % 4) == 1) printer.nextln();
-        }
-
-        printer.unindent();
-        printer.nextln();
-        printer.println("};");
-        printer.println("private static final Register.Set " + type + "_set = new Register.Set(" + type + "_array);");
-    }
-
-
-    public void emitChecks(OperandTypeDecl d) {
-        String type = d.name.toString();
-        String ptype = d.isSymbol() ? "Register" : "int";
-        printer.startblock("private static " + ptype + " check_" + type + "(int n, " + ptype + " v)");
-
-        if (d.isSymbol()) {
-            printer.println("return checkRegSet(n, v, " + type + "_set);");
-        } else {
-            OperandTypeDecl.Value imm = (OperandTypeDecl.Value) d;
-            printer.println("return checkRange(n, v, " + imm.low + ", " + imm.high + ");");
-        }
-
-        printer.endblock();
-    }
-
-
-    private static String getClassName(InstrDecl d) {
-        String cName = d.name.image;
-        cName = StringUtil.trimquotes(cName.toUpperCase());
-        return cName;
-    }
-
-
 }

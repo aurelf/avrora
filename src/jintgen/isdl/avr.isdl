@@ -61,64 +61,59 @@ architecture avr {
         X = 26, Y = 28, Z = 30
     }
 
-    operand-type GPR[5]: symbol { // all of the general purpose registers
-        mapping {
-            r0  = 0,  r1  = 1,  r2  = 2,  r3  = 3,
-            r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,
-            r8  = 8,  r9  = 9,  r10 = 10, r11 = 11,
-            r12 = 12, r13 = 13, r14 = 14, r15 = 15,
-            r16 = 16, r17 = 17, r18 = 18, r19 = 19,
-            r20 = 20, r21 = 21, r22 = 22, r23 = 23,
-            r24 = 24, r25 = 25, r26 = 26, r27 = 27,
-            r28 = 28, r29 = 29, r30 = 30, r31 = 31
-        }
+    enum-subset HGPR: GPR {
+        r16 = 0,  r17 = 1,  r18 = 2,  r19 = 3,
+        r20 = 4,  r21 = 5,  r22 = 6,  r23 = 7,
+        r24 = 8,  r25 = 9,  r26 = 10, r27 = 11,
+        r28 = 12, r29 = 13, r30 = 14, r31 = 15
+    }
+
+    enum-subset EGPR: GPR {
+        r0  = 0,  r2  = 1,  r4  = 2,  r6  = 3,
+        r8  = 4,  r10 = 5,  r12 = 6,  r14 = 7,
+        r16 = 8,  r18 = 9,  r20 = 10, r22 = 11,
+        r24 = 12, r26 = 13, r28 = 14, r30 = 15
+    }
+
+    enum-subset MGPR: GPR {
+        r16 = 0, r17 = 1, r18 = 2, r19 = 3,
+        r20 = 4, r21 = 5, r22 = 6, r23 = 7
+    }
+
+    enum-subset YZ: ADR {
+        Y = 1, Z = 0
+    }
+
+    enum-subset RDL: GPR {
+        r24 = 0, r26 = 1, r28 = 2, r30 = 3
+    }
+
+    operand-type GPR[5]: GPR { // all of the general purpose registers
         read: byte { return $regs(this); }
         write: byte { $regs(this) = value; }
     }
 
-    operand-type HGPR[4]: symbol { // the "high" general purpose registers
-        mapping {
-            r16 = 0,  r17 = 1,  r18 = 2,  r19 = 3,
-            r20 = 4,  r21 = 5,  r22 = 6,  r23 = 7,
-            r24 = 8,  r25 = 9,  r26 = 10, r27 = 11,
-            r28 = 12, r29 = 13, r30 = 14, r31 = 15
-        }
+    operand-type HGPR[4]: HGPR { // the "high" general purpose registers
         read: byte { return $regs(this); }
         write: byte { $regs(this) = value; }
     }
 
-    operand-type MGPR[3]: symbol { // the "mid-range" general purpose registers
-        mapping {
-            r16 = 0, r17 = 1, r18 = 2, r19 = 3,
-            r20 = 4, r21 = 5, r22 = 6, r23 = 7
-        }
+    operand-type MGPR[3]: MGPR { // the "mid-range" general purpose registers
         read: byte { return $regs(this); }
         write: byte { $regs(this) = value; }
     }
 
-    operand-type YZ[1]: symbol { // either the Y or Z address registers
-        mapping {
-            Y = 1, Z = 0
-        }
+    operand-type YZ[1]: YZ { // either the Y or Z address registers
         read: int { return $aregs(this); }
         write: int { $aregs(this) = value; }
     }
 
-    operand-type EGPR[4]: symbol { // an "even" general purpose register
-        mapping {
-            r0  = 0,  r2  = 1,  r4  = 2,  r6  = 3,
-            r8  = 4,  r10 = 5,  r12 = 6,  r14 = 7,
-            r16 = 8,  r18 = 9,  r20 = 10, r22 = 11,
-            r24 = 12, r26 = 13, r28 = 14, r30 = 15
-        }
+    operand-type EGPR[4]: EGPR { // an "even" general purpose register
         read: byte { return $regs(this); }
         write: byte { $regs(this) = value; }
     }
 
-    operand-type RDL[2]: symbol { // a word register r24:r25, r26:r27, etc
-        mapping {
-            r24 = 0, r26 = 1, r28 = 2, r30 = 3
-        }
+    operand-type RDL[2]: RDL { // a word register r24:r25, r26:r27, etc
         read: int { return $regs(this); }
         write: int { $regs(this) = value; }
     }
@@ -1361,20 +1356,25 @@ architecture avr {
 // POLYMORPHIC INSTRUCTIONS SUPPORT: lpm, elpm, ld, ldd, st, std
 //------------------------------------------------------------------------
 
-    operand-type R0_B[0]: symbol {
-        mapping { r0 = 0 }
+    enum-subset R0: GPR {
+        r0 = 0
+    }
+
+    enum-subset RZ: ADR {
+        Z = 0
+    }
+
+    operand-type R0_B[0]: R0 {
         read: byte { return $regs(r0); }
         write: byte { $regs(r0) = value; }
     }
 
-    operand-type RZ_W[0]: symbol {
-        mapping { Z = 0 }
+    operand-type RZ_W[0]: RZ {
         read: int { return $aregs(r30); }
         write: short { $aregs(r30) = value; }
     }
 
-    operand-type AI_RZ_W[0]: symbol {
-        mapping { Z = 0 }
+    operand-type AI_RZ_W[0]: RZ {
         read: int {
             local temp: int = $aregs(r30);
             $aregs(r30) = temp + 1;
@@ -1400,18 +1400,12 @@ architecture avr {
 
     addr-set XLPM { XLPM, XLPMD, XLPMPI } // addressing modes for LPM, ELPM
 
-    operand-type XYZ[0]: symbol { // simply read from X, Y, or Z
-        mapping {
-            X = 0, Y = 1, Z = 2
-        }
+    operand-type XYZ[0]: ADR { // simply read from X, Y, or Z
         read: int { return $aregs(this); }
         write: byte { }
     }
 
-    operand-type AI_XYZ[0]: symbol { // read from X, Y, or Z and post increment
-        mapping {
-            X = 0, Y = 1, Z = 2
-        }
+    operand-type AI_XYZ[0]: ADR { // read from X, Y, or Z and post increment
         read: int {
             local tmp: int = $aregs(this);
             $aregs(this) = tmp + 1;
@@ -1420,10 +1414,7 @@ architecture avr {
         write: byte { }
     }
 
-    operand-type PD_XYZ[0]: symbol { // read from X, Y, or Z with predecrement
-        mapping {
-            X = 0, Y = 1, Z = 2
-        }
+    operand-type PD_XYZ[0]: ADR { // read from X, Y, or Z with predecrement
         read: int {
             local tmp: int = $aregs(this) - 1;
             $aregs(this) = tmp;
@@ -1436,6 +1427,7 @@ architecture avr {
         encoding = { 0b100100, store[0], rd[4:0], 0b1100 } when ar == X
         encoding = { 0b100000, store[0], rd[4:0], 0b1000 } when ar == Y
         encoding = { 0b100000, store[0], rd[4:0], 0b0000 } when ar == Z
+        property syntax: String = "%rd, %ar";
     }
 
     addr-mode LD_ST_AI_XYZ rd: GPR, ar: AI_XYZ {

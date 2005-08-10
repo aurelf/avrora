@@ -55,7 +55,9 @@ public class DisassemblerGenerator extends Generator {
     protected static final int WORD_SIZE = 16;
 
     Printer printer;
-    Verbose.Printer verbose = Verbose.getVerbosePrinter("isdl.disassem");
+    Verbose.Printer verbose = Verbose.getVerbosePrinter("jintgen.disassem");
+    String instrClassName;
+    String symbolClassName;
 
     class EncodingField extends CodeVisitor.Default {
         final EncodingInfo ei;
@@ -126,26 +128,28 @@ public class DisassemblerGenerator extends Generator {
 
     class EncodingInfo {
         final InstrDecl instr;
+        final AddrModeDecl addrMode;
         final EncodingDecl encoding;
         final int encodingNumber;
         final byte[] bitStates;
         final List<EncodingField> simplifiedExprs;
 
-        EncodingInfo(InstrDecl id, int encNum, EncodingDecl ed) {
+        EncodingInfo(InstrDecl id, AddrModeDecl am, int encNum, EncodingDecl ed) {
             instr = id;
+            addrMode = am;
             bitStates = new byte[id.getEncodingSize()];
             simplifiedExprs = new LinkedList<EncodingField>();
             encodingNumber = encNum;
             encoding = ed;
 
-            initializeBitStates(id);
+            initializeBitStates();
         }
 
         String getName() {
             return instr.innerClassName+"_"+encodingNumber;
         }
 
-        private void initializeBitStates(InstrDecl id) {
+        private void initializeBitStates() {
             EncodingDecl ed = encoding;
             // create a constant propagator needed to evaluate integer literals and operands
             ConstantPropagator cp = new ConstantPropagator();
@@ -409,7 +413,7 @@ public class DisassemblerGenerator extends Generator {
                 }
             }
 
-            printer.startblock("private Instr "+methodname+"(int word1) throws InvalidInstruction");
+            printer.startblock("private "+instrClassName+" "+methodname+"(int word1) throws InvalidInstruction");
 
             if ( children.size() > 0 ) {
                 // if there are any children, we need to generate a switch statement over
@@ -560,10 +564,6 @@ public class DisassemblerGenerator extends Generator {
         }
     }
 
-    protected final Option.Str CLASS_FILE = options.newOption("disassembler-template", "Disassembler.java",
-            "This option specifies the name of the file that contains a template for generating the " +
-            "disassembler.");
-
     int methods;
 
     DecodingTree[] rootSets = new DecodingTree[0];
@@ -575,15 +575,13 @@ public class DisassemblerGenerator extends Generator {
     }
 
     public void generate() throws Exception {
-        String fname = CLASS_FILE.get();
-        if ( "".equals(fname) )
-            Util.userError("No template file specified");
-        SectionFile sf = createSectionFile(fname, "DISASSEM GENERATOR");
-        printer = new Printer(new PrintStream(sf));
+        printer = newClassPrinter(className("Disassembler"), null, null);
+        instrClassName = className("Instr");
+        symbolClassName = className("Symbol");
 
-        for ( InstrDecl d : arch.instructions ) visit(d);
-        printer.indent();
+        generateHeader();
         generateDecodeTables();
+        for ( InstrDecl d : arch.instructions ) visitInstr(d);
         for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
             DecodingTree es = rootSets[cntr];
             if ( es == null ) continue;
@@ -591,43 +589,58 @@ public class DisassemblerGenerator extends Generator {
             es.generateCode();
         }
         generateRoot();
-        printer.unindent();
+        printer.endblock();
+    }
+
+    private void generateHeader() {
+        printer.startblock("static class InvalidInstruction extends Exception");
+        printer.startblock("InvalidInstruction(int word1, int pc) ");
+        printer.println("super(\"Invalid instruction at \"+pc);");
+        printer.endblock();
+        printer.endblock();
     }
 
     private void generateRoot() {
-        printer.startblock("Instr decode_root(int word1) throws InvalidInstruction ");
-        printer.println("Instr i = null;");
+        printer.startblock(instrClassName+" decode_root(int word1) throws InvalidInstruction ");
+        printer.println(instrClassName+" i = null;");
         for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
             DecodingTree es = rootSets[cntr];
             if ( es == null ) continue;
             printer.println("i = decode_root"+cntr+"(word1);");
             printer.println("if ( i != null ) return i;");
         }
-        printer.println("throw new InvalidInstruction(word1, pc);");
+        invalidInstr();
         printer.endblock();
     }
 
-    public void visit(InstrDecl d) {
-        // for now, we ignore pseudo instructions.
-        int cntr = 0;
-        for ( EncodingDecl ed : d.getEncodings() ) {
-            int priority = ed.getPriority();
-            EncodingInfo ei = new EncodingInfo(d, cntr, ed);
-            if ( d.pseudo ) {
-                pseudo.add(ei);
-            } else {
-                // grow the root set array if necessary
-                if ( priority >= rootSets.length ) {
-                    DecodingTree[] nroots = new DecodingTree[priority+1];
-                    System.arraycopy(rootSets, 0, nroots, 0, rootSets.length);
-                    rootSets = nroots;
-                }
+    int encodingNumber = 0;
 
-                DecodingTree dt = getRoot(priority);
-                dt.encodings.add(ei);
-            }
-            cntr++;
+    public void visitInstr(InstrDecl d) {
+        // for now, we ignore pseudo instructions.
+        if ( d.pseudo ) return;
+        for ( AddrModeDecl am : d.addrMode.addrModes ) {
+            for ( EncodingDecl ed : am.encodings )
+                addEncodingInfo(d, am, ed);
         }
+    }
+
+    private void addEncodingInfo(InstrDecl d, AddrModeDecl am, EncodingDecl ed) {
+        EncodingInfo ei = new EncodingInfo(d, am, encodingNumber, ed);
+        DecodingTree dt = getDecodingTree(ed.getPriority());
+        dt.encodings.add(ei);
+        encodingNumber++;
+    }
+
+    private DecodingTree getDecodingTree(int priority) {
+        // grow the root set array if necessary
+        if ( priority >= rootSets.length ) {
+            DecodingTree[] nroots = new DecodingTree[priority+1];
+            System.arraycopy(rootSets, 0, nroots, 0, rootSets.length);
+            rootSets = nroots;
+        }
+
+        DecodingTree dt = getRoot(priority);
+        return dt;
     }
 
     private DecodingTree getRoot(int priority) {
@@ -649,43 +662,46 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private void generateDecodeTables() {
-        for ( OperandTypeDecl d : arch.operandTypes ) {
-            new OperandDeclVisitor().visit(d);
+        for ( EnumDecl d : arch.enums ) {
+            generateEnumDecodeTable(d);
         }
     }
 
-    class OperandDeclVisitor {
-        public void visit(OperandTypeDecl od) {
-            // if the operand is a register set declaration, then we need to
-            // generate a decoding table
-            if ( od.isSymbol() )
-                generateRegisterTable((OperandTypeDecl.SymbolSet)od);
+    void generateEnumDecodeTable(EnumDecl d) {
+        int max = getTableSize(d);
+        String[] symbol = new String[max+1];
+        for ( SymbolMapping.Entry e : d.map.getEntries() ) {
+            symbol[e.value] = e.name;
         }
-
-        private void generateRegisterTable(OperandTypeDecl.SymbolSet od) {
-            int tablesize = 1 << od.size;
-            String register[] = new String[tablesize];
-            // for each member in the operand declaration set, store the name of the register
-            // corresponding to the value of the binary encoding
-            for ( SymbolMapping.Entry re : od.map.getEntries() ) {
-                if ( register[re.value] != null )
-                    throw Util.failure("AMBIGUOUS REGISTER SET ENCODING");
-                register[re.value] = re.name;
-            }
-
-            // generate an array of register references that is indexed by the value
-            // of the operand from the encoding
-            String tablename = od.name+"_table";
-            printer.startblock("static final Register[] "+tablename+" =");
-            for ( int cntr = 0; cntr < register.length; cntr++ ) {
-                if ( register[cntr] == null ) printer.print("null");
-                else printer.print("Register."+register[cntr].toUpperCase());
-                if ( cntr != register.length - 1) printer.print(", ");
-                printer.nextln();
-            }
-            printer.endblock(";");
+        String tablename = d.name+"_table";
+        String symname = symbolClassName+"."+d.name;
+        printer.startblock("static final "+symname+"[] "+tablename+" =");
+        for ( int cntr = 0; cntr < symbol.length; cntr++ ) {
+            if ( symbol[cntr] == null ) printer.print("null");
+            else printer.print(symname+"."+symbol[cntr].toUpperCase());
+            if ( cntr != symbol.length - 1) printer.print(", ");
+            emitDecodeComment(max, cntr, symbol);
             printer.nextln();
         }
+        printer.endblock(";");
+    }
+
+    private void emitDecodeComment(int max, int cntr, String[] symbol) {
+        int lb = Arithmetic.highestBit(max);
+        if ( lb <= 0 ) lb = 0;
+        String binaryRep = StringUtil.toBin(cntr, lb+1);
+        printer.print(" // "+cntr+" (0b"+binaryRep+") -> "+symbol[cntr]);
+    }
+
+    private int getTableSize(EnumDecl d) {
+        int max = 0;
+        for ( SymbolMapping.Entry e : d.map.getEntries() ) {
+            if ( e.value > max ) max = e.value;
+        }
+        if ( max > 64 && max > (d.map.size() * 2) ) {
+            throw Util.failure("Enumeration "+StringUtil.quote(d.name)+" too sparse");
+        }
+        return max;
     }
 
     private void generateRead(int left_bit, int right_bit) {

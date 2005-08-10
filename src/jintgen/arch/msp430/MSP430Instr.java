@@ -1,5 +1,5 @@
 package jintgen.arch.msp430;
-public abstract class MSP430Instr {
+public class MSP430Instr {
     public static class ADC extends MSP430Instr {
         public final MSP430Operand.SINGLE_W_source_union source;
         ADC(MSP430Operand.SINGLE_W_source_union source) {

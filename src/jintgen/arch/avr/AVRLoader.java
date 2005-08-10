@@ -32,9 +32,9 @@
 
 package jintgen.arch.avr;
 
-import jintgen.arch.Loader;
-import avrora.util.parser.AbstractToken;
 import avrora.util.Util;
+import avrora.util.parser.AbstractToken;
+import jintgen.arch.Loader;
 
 /**
  * @author Ben L. Titzer

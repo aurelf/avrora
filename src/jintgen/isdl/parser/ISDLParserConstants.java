@@ -17,19 +17,19 @@ public interface ISDLParserConstants {
   int ARCHITECTURE = 20;
   int FORMAT = 21;
   int ENUM = 22;
-  int OPERAND_TYPE = 23;
-  int ADDR_MODE = 24;
-  int ADDR_SET = 25;
-  int READ = 26;
-  int WRITE = 27;
-  int WHERE = 28;
-  int PRIORITY = 29;
-  int ENCODING = 30;
-  int EXECUTE = 31;
-  int LOCAL = 32;
-  int GLOBAL = 33;
-  int MEMORY = 34;
-  int MAPPING = 35;
+  int ENUM_SUB = 23;
+  int OPERAND_TYPE = 24;
+  int ADDR_MODE = 25;
+  int ADDR_SET = 26;
+  int READ = 27;
+  int WRITE = 28;
+  int WHERE = 29;
+  int PRIORITY = 30;
+  int ENCODING = 31;
+  int EXECUTE = 32;
+  int LOCAL = 33;
+  int GLOBAL = 34;
+  int MEMORY = 35;
   int IF = 36;
   int ELSE = 37;
   int AND = 38;
@@ -40,38 +40,37 @@ public interface ISDLParserConstants {
   int EXTERNAL = 43;
   int RETURN = 44;
   int BOOLEAN_LITERAL = 45;
-  int SYMBOL = 46;
-  int PSEUDO = 47;
-  int WHEN = 48;
-  int PROPERTY = 49;
-  int LBRACKET = 50;
-  int RBRACKET = 51;
-  int EQUALS = 52;
-  int COMMA = 53;
-  int LPAREN = 54;
-  int RPAREN = 55;
-  int SEMI = 56;
-  int SHIFTLEFT = 57;
-  int SHIFTRIGHT = 58;
-  int ADD = 59;
-  int SUB = 60;
-  int MUL = 61;
-  int DIV = 62;
-  int B_AND = 63;
-  int B_OR = 64;
-  int B_XOR = 65;
-  int NOT = 66;
-  int B_COMP = 67;
-  int EQUAL = 68;
-  int NOTEQUAL = 69;
-  int LESS = 70;
-  int LESSEQ = 71;
-  int GREATER = 72;
-  int GREATEREQ = 73;
-  int DOLLAR = 74;
-  int IDENTIFIER = 75;
-  int LETTER = 76;
-  int DIGIT = 77;
+  int PSEUDO = 46;
+  int WHEN = 47;
+  int PROPERTY = 48;
+  int LBRACKET = 49;
+  int RBRACKET = 50;
+  int EQUALS = 51;
+  int COMMA = 52;
+  int LPAREN = 53;
+  int RPAREN = 54;
+  int SEMI = 55;
+  int SHIFTLEFT = 56;
+  int SHIFTRIGHT = 57;
+  int ADD = 58;
+  int SUB = 59;
+  int MUL = 60;
+  int DIV = 61;
+  int B_AND = 62;
+  int B_OR = 63;
+  int B_XOR = 64;
+  int NOT = 65;
+  int B_COMP = 66;
+  int EQUAL = 67;
+  int NOTEQUAL = 68;
+  int LESS = 69;
+  int LESSEQ = 70;
+  int GREATER = 71;
+  int GREATEREQ = 72;
+  int DOLLAR = 73;
+  int IDENTIFIER = 74;
+  int LETTER = 75;
+  int DIGIT = 76;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -102,6 +101,7 @@ public interface ISDLParserConstants {
     "\"architecture\"",
     "\"format\"",
     "\"enum\"",
+    "\"enum-subset\"",
     "\"operand-type\"",
     "\"addr-mode\"",
     "\"addr-set\"",
@@ -114,7 +114,6 @@ public interface ISDLParserConstants {
     "\"local\"",
     "\"global\"",
     "\"memory\"",
-    "\"mapping\"",
     "\"if\"",
     "\"else\"",
     "\"and\"",
@@ -125,7 +124,6 @@ public interface ISDLParserConstants {
     "\"external\"",
     "\"return\"",
     "<BOOLEAN_LITERAL>",
-    "\"symbol\"",
     "\"pseudo\"",
     "\"when\"",
     "\"property\"",

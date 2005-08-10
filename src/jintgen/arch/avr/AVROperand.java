@@ -2,80 +2,50 @@ package jintgen.arch.avr;
 import java.util.HashMap;
 public class AVROperand {
     public static class GPR extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.GPR symbol;
         GPR(String s) {
-            symbol = null;
-        }
-        GPR(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.GPR.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class HGPR extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.HGPR symbol;
         HGPR(String s) {
-            symbol = null;
-        }
-        HGPR(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.HGPR.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class MGPR extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.MGPR symbol;
         MGPR(String s) {
-            symbol = null;
-        }
-        MGPR(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.MGPR.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class YZ extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.YZ symbol;
         YZ(String s) {
-            symbol = null;
-        }
-        YZ(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.YZ.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class EGPR extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.EGPR symbol;
         EGPR(String s) {
-            symbol = null;
-        }
-        EGPR(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.EGPR.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class RDL extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.RDL symbol;
         RDL(String s) {
-            symbol = null;
-        }
-        RDL(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.RDL.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
@@ -161,80 +131,50 @@ public class AVROperand {
     }
     
     public static class R0_B extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.R0 symbol;
         R0_B(String s) {
-            symbol = null;
-        }
-        R0_B(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.R0.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class RZ_W extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.RZ symbol;
         RZ_W(String s) {
-            symbol = null;
-        }
-        RZ_W(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.RZ.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class AI_RZ_W extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.RZ symbol;
         AI_RZ_W(String s) {
-            symbol = null;
-        }
-        AI_RZ_W(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.RZ.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class XYZ extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.ADR symbol;
         XYZ(String s) {
-            symbol = null;
-        }
-        XYZ(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.ADR.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class AI_XYZ extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.ADR symbol;
         AI_XYZ(String s) {
-            symbol = null;
-        }
-        AI_XYZ(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.ADR.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     
     public static class PD_XYZ extends AVROperand {
-        public final AVRSymbol symbol;
-        public static final HashMap set = new HashMap();
-        static {
-        }
+        public final AVRSymbol.ADR symbol;
         PD_XYZ(String s) {
-            symbol = null;
-        }
-        PD_XYZ(AVRSymbol sym) {
-            symbol = null;
+            symbol = AVRSymbol.ADR.get(s);
+            if ( symbol == null ) throw new Error();
         }
     }
     

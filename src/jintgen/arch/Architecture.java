@@ -38,7 +38,10 @@ package jintgen.arch;
 public interface Architecture {
 
     public Disassembler getDisassembler();
+
     public Assembler getAssembler();
+
     public Loader getLoader();
+
     public Interpreter getInterpreter();
 }

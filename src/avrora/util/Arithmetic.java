@@ -159,6 +159,33 @@ public class Arithmetic {
         return (value == 0) ? -1 : low;
     }
 
+    public static int highestBit(int value) {
+        int high = 31;
+
+        if ((value & 0xFFFF0000) == 0) {
+            high -= 16;
+            value = value << 16;
+        }
+        if ((value & 0xFF000000) == 0) {
+            high -= 8;
+            value = value << 8;
+        }
+        if ((value & 0xF0000000) == 0) {
+            high -= 4;
+            value = value << 4;
+        }
+        if ((value & 0xC0000000) == 0) {
+            high -= 2;
+            value = value << 2;
+        }
+        if ((value & 0x80000000) == 0) {
+            high -= 1;
+            value = value << 1;
+        }
+
+        return (value == 0) ? -1 : high;
+    }
+
     /**
      * The <code>getBitField()</code> method reads a bit field from a value where the bits of the field
      * are not consecutive or in order. This method accepts an array of integers that denotes the permutation

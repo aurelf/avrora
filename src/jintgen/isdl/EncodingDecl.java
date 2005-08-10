@@ -51,7 +51,7 @@ public class EncodingDecl extends Item {
 
     public final List<Expr> fields;
 
-    protected int bitWidth = -1;
+    public int bitWidth = -1;
 
     protected Cond condition;
 
@@ -109,17 +109,7 @@ public class EncodingDecl extends Item {
     }
 
     public int getBitWidth() {
-        if (bitWidth < 0)
-            bitWidth = computeBitWidth();
         return bitWidth;
-    }
-
-    private int computeBitWidth() {
-        int accum = 0;
-        for ( Expr e : fields ) {
-            accum += e.getBitWidth();
-        }
-        return accum;
     }
 
     public void setCond(Cond c) {

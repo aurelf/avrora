@@ -36,4 +36,5 @@ package jintgen.arch;
  * @author Ben L. Titzer
  */
 public interface Disassembler {
+
 }

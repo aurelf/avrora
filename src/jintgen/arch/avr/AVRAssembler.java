@@ -32,8 +32,8 @@
 
 package jintgen.arch.avr;
 
-import jintgen.arch.Assembler;
 import avrora.util.Util;
+import jintgen.arch.Assembler;
 
 /**
  * @author Ben L. Titzer

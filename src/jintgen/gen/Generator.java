@@ -34,12 +34,13 @@ package jintgen.gen;
 
 import jintgen.isdl.Architecture;
 import jintgen.Main;
-import avrora.util.Options;
-import avrora.util.SectionFile;
-import avrora.util.Option;
-import avrora.util.Status;
+import avrora.util.*;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.PrintStream;
+import java.io.FileNotFoundException;
+import java.util.List;
 
 /**
  * The <code>Generator</code> class represents a class that generates
@@ -79,5 +80,29 @@ public abstract class Generator {
         String prefix = CLASS_PREFIX.get();
         if ( "*".equals(prefix) ) return arch.getName().toUpperCase()+cls;
         else return prefix+cls;
+    }
+
+    protected Printer newClassPrinter(String name, List<String> imports, String sup) throws IOException {
+        return newJavaPrinter(name, imports, sup, "class");
+    }
+
+    private Printer newJavaPrinter(String name, List<String> imports, String sup, String type) throws FileNotFoundException {
+        File f = new File(name + ".java");
+        Printer printer = new Printer(new PrintStream(f));
+        String pname = this.DEST_PACKAGE.get();
+        if ( !"".equals(pname) ) {
+            printer.println("package "+pname+";");
+            printer.nextln();
+        }
+        if ( imports != null ) for ( String s : imports ) {
+            printer.println("import "+s+";");
+        }
+        String ec = sup == null ? "" : "extends "+sup;
+        printer.startblock("public "+type+" "+name+ec);
+        return printer;
+    }
+
+    protected Printer newInterfacePrinter(String name, List<String> imports, String sup) throws IOException {
+        return newJavaPrinter(name, imports, sup, "interface");
     }
 }

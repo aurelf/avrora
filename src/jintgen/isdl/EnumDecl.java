@@ -30,51 +30,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jintgen.arch.avr;
+package jintgen.isdl;
 
-import avrora.syntax.AVRErrorReporter;
+import jintgen.isdl.parser.Token;
 
 /**
  * @author Ben L. Titzer
  */
-public class AVRInstrBuilder {
-    private final AVRErrorReporter ERROR;
+public class EnumDecl extends Item {
 
-    public AVRInstrBuilder(AVRErrorReporter er) {
-        ERROR = er;
+    public final SymbolMapping map;
+
+    public EnumDecl(Token n, SymbolMapping m) {
+        super(n);
+        map = m;
     }
 
-    //===============================================================
-    // Instruction factory methods: one newXXX() method per instruction
-    //===============================================================
+    public static class Subset extends EnumDecl {
+        public final Token pname;
+        public EnumDecl parent;
 
-    public AVRInstr.ADC newADC(AVRSymbol rd, AVRSymbol rr) {
-        // parameter types will either be int, AVRSymbol, or AVROperand
-        return new AVRInstr.ADC(checkGPR(rd), checkGPR(rr));
+        public Subset(Token n, Token d, SymbolMapping m) {
+            super(n, m);
+            pname = d;
+        }
+
+        public void setParent(EnumDecl d) {
+            parent = d;
+        }
     }
-
-    public AVRInstr.LDI newLDI(AVRSymbol rd, int imm) {
-        return new AVRInstr.LDI(checkHGPR(rd), checkIMM8(imm));
-    }
-
-    //===============================================================
-    // Operand types: one checkXXX method per base operand type
-    //                and one checkXXX method per operand union type
-    //===============================================================
-
-    protected AVROperand.GPR checkGPR(AVRSymbol e) {
-        // this method has to know the representation type and valid set
-        return null;
-    }
-
-    protected AVROperand.HGPR checkHGPR(AVRSymbol e) {
-        // this method has to know the representation type and valid set
-        return null;
-    }
-
-    protected AVROperand.IMM8 checkIMM8(int imm) {
-        // this method has to know the representation type and the valid range
-        return null;
-    }
-
 }

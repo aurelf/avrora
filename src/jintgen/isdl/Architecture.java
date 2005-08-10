@@ -66,7 +66,7 @@ public class Architecture {
     public final HashList<String, EncodingDecl> encodings;
     public final HashList<String, AddrModeDecl> addrModes;
     public final HashList<String, AddrModeSetDecl> addrSets;
-    public final HashList<String, SymbolMapping> enums;
+    public final HashList<String, EnumDecl> enums;
 
     /**
      * The constructor for the <code>Architecture</code> class creates an instance with the specified
@@ -82,7 +82,7 @@ public class Architecture {
         encodings = new HashList<String, EncodingDecl>();
         addrModes = new HashList<String, AddrModeDecl>();
         addrSets = new HashList<String, AddrModeSetDecl>();
-        enums = new HashList<String, SymbolMapping>();
+        enums = new HashList<String, EnumDecl>();
     }
 
     public String getName() {
@@ -119,7 +119,7 @@ public class Architecture {
         addrSets.add(d.name.image, d);
     }
 
-    public void addEnum(SymbolMapping m) {
+    public void addEnum(EnumDecl m) {
         printer.println("loading enum " + m + "...");
         enums.add(m.name.image, m);
     }
@@ -148,7 +148,7 @@ public class Architecture {
         return addrSets.get(name);
     }
 
-    public SymbolMapping getEnum(String name) {
+    public EnumDecl getEnum(String name) {
         return enums.get(name);
     }
 }

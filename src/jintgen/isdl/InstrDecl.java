@@ -97,10 +97,6 @@ public class InstrDecl extends Item {
         return innerClassName;
     }
 
-    public void setEncodingSize(int bits) {
-        size = bits;
-    }
-
     public int getCycles() {
         Property p = getProperty("cycles");
         if ( p == null ) return 1;
@@ -109,10 +105,6 @@ public class InstrDecl extends Item {
 
     public String getSyntax() {
         throw Util.unimplemented();
-    }
-
-    public Iterable<EncodingDecl> getEncodings() {
-        return addrMode.encodings;
     }
 
     public List<AddrModeDecl.Operand> getOperands() {

@@ -54,29 +54,28 @@ public abstract class OperandTypeDecl extends Item {
     public CodeRegion readMethod;
     public CodeRegion writeMethod;
 
-
     protected OperandTypeDecl(Token n) {
         super(n);
         subOperands = new LinkedList<AddrModeDecl.Operand>();
     }
 
     /**
-     * The <code>Value</code> class represents an operand to an instruction that is
+     * The <code>Simple</code> class represents an operand to an instruction that is
      * a value such as an immediate or an absolute address.
      */
-    public static class Value extends OperandTypeDecl {
+    public static class Simple extends OperandTypeDecl {
 
         public final int low;
         public final int high;
         public final Token kind;
         public final int size;
 
-        public Value(Token n, Token b, Token k, Token l, Token h) {
+        public Simple(Token n, Token b, Token k, Token l, Token h) {
             super(n);
             kind = k;
             size = StringUtil.evaluateIntegerLiteral(b.image);
-            low = StringUtil.evaluateIntegerLiteral(l.image);
-            high = StringUtil.evaluateIntegerLiteral(h.image);
+            low = l == null ? -1 : StringUtil.evaluateIntegerLiteral(l.image);
+            high = h == null ? -1 : StringUtil.evaluateIntegerLiteral(h.image);
         }
 
         public boolean isValue() {
@@ -84,7 +83,7 @@ public abstract class OperandTypeDecl extends Item {
         }
 
         public void addSubOperand(AddrModeDecl.Operand o) {
-            throw Util.failure("Suboperands are not allowed to Value operands");
+            throw Util.failure("Suboperands are not allowed to Simple operands");
         }
     }
 

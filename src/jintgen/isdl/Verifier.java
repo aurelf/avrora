@@ -35,8 +35,7 @@ package jintgen.isdl;
 import avrora.util.Verbose;
 import avrora.util.Util;
 import avrora.util.StringUtil;
-import jintgen.jigir.CodeRegion;
-import jintgen.jigir.Stmt;
+import jintgen.jigir.*;
 import jintgen.gen.Inliner;
 import jintgen.isdl.parser.Token;
 
@@ -61,12 +60,40 @@ public class Verifier {
     }
 
     public void verify() {
+        verifyEnums();
         verifyEncodings();
         verifyOperands();
         verifyAddrModes();
         verifyAddrSets();
         verifySubroutines();
         verifyInstructions();
+    }
+
+    private void verifyEnums() {
+        HashMap<String, Token> previous = new HashMap<String, Token>();
+
+        for ( EnumDecl ed : arch.enums ) {
+            if (printer.enabled) {
+                printer.print("processing enum " + ed.name.image + ' ');
+            }
+
+            if ( previous.containsKey(ed.name.image) )
+                ERROR.RedefinedEnum(previous.get(ed.name));
+
+            previous.put(ed.name.image, ed.name);
+
+            verifyEnum(ed);
+        }
+    }
+
+    private void verifyEnum(EnumDecl ed) {
+        if (ed instanceof EnumDecl.Subset) {
+            EnumDecl.Subset dd = (EnumDecl.Subset)ed;
+            EnumDecl parent = arch.getEnum(dd.pname.image);
+            if ( parent == null )
+                ERROR.UnresolvedEnum(dd.pname);
+            dd.setParent(parent);
+        }
     }
 
     private void verifyEncodings() {
@@ -82,19 +109,7 @@ public class Verifier {
 
             previous.put(ed.name.image, ed.name);
 
-            verifyEncoding(ed);
-
             printer.println("-> result: " + ed.getBitWidth() + " bits");
-        }
-    }
-
-    private void verifyEncoding(EncodingDecl ed) {
-        if (ed instanceof EncodingDecl.Derived) {
-            EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
-            EncodingDecl parent = arch.getEncoding(dd.pname.image);
-            if ( parent == null )
-                ERROR.UnresolvedEncodingFormat(dd.pname);
-            dd.setParent(parent);
         }
     }
 
@@ -157,6 +172,7 @@ public class Verifier {
 
             previous.put(am.name.image, am.name);
             verifyOperands(am.operands);
+            verifyEncodings(am.encodings, am);
         }
     }
 
@@ -256,8 +272,6 @@ public class Verifier {
 
             optimizeCode(id);
             verifyAddressingMode(id);
-            verifyEncodings(id);
-            verifyOperands(id.getOperands());
 
             if (printer.enabled) {
                 new PrettyPrinter(arch, printer).visitStmtList(id.code.getStmts());
@@ -269,24 +283,27 @@ public class Verifier {
     private void verifyAddressingMode(InstrDecl id) {
         AddrModeUse am = id.addrMode;
         if ( am.ref != null ) {
-            AddrModeSetDecl asd = arch.getAddressingModeSet(am.ref.image);
-            if ( asd == null ) {
-                resolveAddressingMode(am);
-            } else {
-                am.operands = asd.unionOperands;
-                am.addrModes = asd.addrModes;
-            }
+            resolveAddressingModeRef(am);
+        } else {
+            verifyEncodings(am.localDecl.encodings, am.localDecl);
+            verifyOperands(am.localDecl.operands);
         }
     }
 
-    private void resolveAddressingMode(AddrModeUse am) {
-        AddrModeDecl amd = arch.getAddressingMode(am.ref.image);
-        if ( amd == null ) {
-            ERROR.UnresolvedAddressingMode(am.ref);
+    private void resolveAddressingModeRef(AddrModeUse am) {
+        AddrModeSetDecl asd = arch.getAddressingModeSet(am.ref.image);
+        if ( asd == null ) {
+            AddrModeDecl amd = arch.getAddressingMode(am.ref.image);
+            if ( amd == null ) {
+                ERROR.UnresolvedAddressingMode(am.ref);
+            } else {
+                am.operands = amd.operands;
+                am.addrModes = new LinkedList<AddrModeDecl>();
+                am.addrModes.add(amd);
+            }
         } else {
-            am.operands = amd.operands;
-            am.addrModes = new LinkedList<AddrModeDecl>();
-            am.addrModes.add(amd);
+            am.operands = asd.unionOperands;
+            am.addrModes = asd.addrModes;
         }
     }
 
@@ -298,16 +315,110 @@ public class Verifier {
         id.code.setStmts(code);
     }
 
-    private void verifyEncodings(InstrDecl id) {
+    private void verifyEncodings(Iterable<EncodingDecl> el, AddrModeDecl am) {
         // for each of the declared encodings, find the parent and verify the size
-        for ( EncodingDecl encoding : id.getEncodings() ) {
-            verifyEncoding(encoding);
-
-            int encodingSize = encoding.getBitWidth();
-            if (encodingSize <= 0 || encodingSize % 16 != 0)
-                throw Util.failure("encoding not word aligned: " + id.name.image + " is " + encodingSize + " bits");
-            id.setEncodingSize(encodingSize);
+        for ( EncodingDecl encoding : el ) {
+            verifyEncoding(encoding, am);
         }
     }
 
+    private void verifyEncoding(EncodingDecl ed, AddrModeDecl am) {
+        if (ed instanceof EncodingDecl.Derived) {
+            EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
+            EncodingDecl parent = arch.getEncoding(dd.pname.image);
+            if ( parent == null )
+                ERROR.UnresolvedEncodingFormat(dd.pname);
+            dd.setParent(parent);
+        }
+
+        int encodingSize = computeEncodingSize(ed, am);
+        if (encodingSize <= 0 || encodingSize % 16 != 0)
+            throw Util.failure("encoding not word aligned: " + ed.name + " is " + encodingSize + " bits, at:  "
+                    +ed.name.beginLine+":"+ed.name.beginColumn);
+    }
+
+    private int computeEncodingSize(EncodingDecl encoding, AddrModeDecl am) {
+        BitWidthComputer bwc = new BitWidthComputer(am);
+        int size = 0;
+        for ( Expr e : encoding.fields ) {
+            e.accept(bwc);
+            size += bwc.width;
+        }
+        return size;
+    }
+
+    class BitWidthComputer extends CodeVisitor.Default {
+
+        int width = -1;
+        HashMap<String, Integer> operandWidthMap;
+
+        BitWidthComputer(AddrModeDecl d) {
+            operandWidthMap = new HashMap<String, Integer>();
+            for ( AddrModeDecl.Operand o : d.operands ) {
+                addSubOperands(o, o.name.image);
+            }
+        }
+
+        void addSubOperands(AddrModeDecl.Operand op, String prefix) {
+            OperandTypeDecl ot = op.getOperandType();
+            if ( ot == null ) ERROR.UnresolvedOperandType(op.type);
+            if ( ot.isCompound() ) {
+                OperandTypeDecl.Compound cd = (OperandTypeDecl.Compound)ot;
+                for ( AddrModeDecl.Operand o : cd.subOperands )
+                addSubOperands(o, prefix+"."+o.name.image);
+            } else if ( ot.isValue() ) {
+                OperandTypeDecl.Simple sd = (OperandTypeDecl.Simple)ot;
+                operandWidthMap.put(prefix, sd.size);
+            } else if ( ot.isUnion() ) {
+                // do nothing
+            }
+        }
+
+        public void visit(BitRangeExpr e) {
+            int diff = (e.high_bit - e.low_bit);
+            if (diff < 0) diff = -diff;
+            width = diff + 1;
+        }
+
+        public void visit(BitExpr e) {
+            width = 1;
+        }
+
+        public void visit(Literal.IntExpr e) {
+            if (e.token.image.charAt(1) == 'b') {
+                width = e.token.image.length() - 2;
+            } else {
+                ERROR.CannotComputeSizeOfLiteral(e);
+            }
+        }
+
+        public void visit(Literal.BoolExpr e) {
+            width = 1;
+        }
+
+        public void visit(VarExpr e) {
+            Integer i = operandWidthMap.get(e.variable.image);
+            if ( i != null )
+                width = i.intValue();
+            else
+                ERROR.CannotComputeSizeOfVariable(e.variable);
+        }
+
+        public void visit(DotExpr e) {
+            String str = e.operand+"."+e.field;
+            Integer i = operandWidthMap.get(str);
+            if ( i != null )
+                width = i.intValue();
+            else
+                ERROR.CannotComputeSizeOfVariable(e.field);
+        }
+
+        public void error(Expr e) {
+            ERROR.CannotComputeSizeOfExpression(e);
+        }
+    }
+
+    private String pos(Token t) {
+        return t.beginLine+":"+t.beginColumn;
+    }
 }

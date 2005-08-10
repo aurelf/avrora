@@ -33,6 +33,8 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
+import jintgen.jigir.Expr;
+import jintgen.jigir.Literal;
 import avrora.util.Util;
 import avrora.util.StringUtil;
 
@@ -55,6 +57,10 @@ public class ErrorReporter {
         unresolved("operand type", t);
     }
 
+    public void UnresolvedEnum(Token t) {
+        unresolved("enumeration", t);
+    }
+
     public void UnresolvedEncodingFormat(Token t) {
         unresolved("encoding format", t);
     }
@@ -73,6 +79,10 @@ public class ErrorReporter {
 
     public void RedefinedEncoding(Token t) {
         redefined("Encoding format", t);
+    }
+
+    public void RedefinedEnum(Token t) {
+        redefined("Enumeration", t);
     }
 
     public void RedefinedAddressingMode(Token t) {
@@ -104,7 +114,19 @@ public class ErrorReporter {
     }
 
     public void RedefinedValue(Token t) {
-        redefined("Value", t);
+        redefined("Simple", t);
+    }
+
+    public void CannotComputeSizeOfVariable(Token t) {
+        throw Util.failure("Cannot compute size of variable "+StringUtil.quote(t)+" at "+pos(t));
+    }
+
+    public void CannotComputeSizeOfExpression(Expr e) {
+        throw Util.failure("Cannot compute size of expression "+StringUtil.quote(e));
+    }
+
+    public void CannotComputeSizeOfLiteral(Literal l) {
+        throw Util.failure("Cannot compute size of literal "+StringUtil.quote(l)+" at "+pos(l.token));
     }
 
     void redefined(String thing, Token where) {
@@ -114,6 +136,8 @@ public class ErrorReporter {
     void unresolved(String thing, Token where) {
         throw Util.failure("Unresolved "+thing+" "+StringUtil.quote(where.image)+" at "+pos(where));
     }
+
+
 
     private String pos(Token t) {
         return t.beginLine+":"+t.beginColumn;

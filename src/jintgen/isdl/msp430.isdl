@@ -8,8 +8,8 @@ architecture msp430 {
 //  ENCODING FORMATS OF INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    format SINGOPER = { opcode[8:0], BW[0], AS[1:0],SREG[3:0] }
-    format DOUBOPER = { opcode[3:0], SREG[3:0], AD[0], BW[0], AS[1:0],DREG[3:0] }
+    format SINGOPER = { opcode[8:0], BW[0], AS[1:0], SREG[3:0] }
+    format DOUBOPER = { opcode[3:0], SREG[3:0], AD[0], BW[0], AS[1:0], DREG[3:0] }
     format JUMPOPER = { opcode[5:0], PCOFF[9:0] }
 
 //---------------------------------------------------------------------------
@@ -30,6 +30,8 @@ architecture msp430 {
 //----------------------------------------------------------------------------------
 //  OPERANDS ALLOWED FOR INSTRUCTIONS
 //----------------------------------------------------------------------------------
+
+    // all registers
     enum GPR {
         pc  = 0,  sreg = 1,  r2  = 2,  r3  = 3,
         r4  = 4,  r5   = 5,  r6  = 6,  r7  = 7,
@@ -37,32 +39,23 @@ architecture msp430 {
         r12 = 12, r13  = 13, r14 = 14, r15 = 15
     }
 
-    operand-type SREG_B[4]: symbol {
-        mapping {
-	        r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
-	        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14,
-	        r15 = 15
-	    }
+     // source registers r2 - r15
+    enum-subset SREG: GPR {
+        r2 = 2, r3  = 3,  r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,  r8 = 8,
+        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15
+    }
+
+    operand-type SREG_B[4]: SREG {
 	    read: byte { return low($regs(this)); }
 	    write: byte { $regs(this)[7:0] = value; }
 	}
 
-    operand-type SREG_W[4]: symbol {
-        mapping {
-	        r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
-	        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14,
-	        r15 = 15
-	    }
+    operand-type SREG_W[4]: SREG {
 	    read: short { return $regs(this); }
 	    write: short { $regs(this) = value; }
 	}
 
-    operand-type AIREG_B[4]: symbol {                    //Indirect AutoIncrement mode
-        mapping {
-	        r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
-	        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14,
-	        r15 = 15
-	    }
+    operand-type AIREG_B[4]: SREG {                    //Indirect AutoIncrement mode
 	    read: byte {
 	        local val: short = $regs(this);               //the value of val provides the address of contents to modify
 	        $regs(this) = val + 1;                       //the original register's contents are incremented
@@ -71,45 +64,28 @@ architecture msp430 {
 	    write: byte {  }                              //valid only as a source operand
 	}
 
-    operand-type AIREG_W[4]: symbol {
-        mapping {
-	        r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
-	        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14,
-	        r15 = 15
-	    }
+    operand-type AIREG_W[4]: SREG {
 	    read: short {
-	        local val: short = $regs(this);
-	        local val2: short = $regs(val);
-	        $regs(this) = val + 2;
-	        return val2;
+	        local addr: short = $regs(this);
+	        local val: short = $sram(addr);
+	        $regs(this) = addr + 2;
+	        return val;
 	    }
 	    write: short { }
 	}
 
-    operand-type INDREG_B[4]: symbol {                    //Indirect register mode
-        mapping {
-	        r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
-	        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14,
-	        r15 = 15
-	    }
+    operand-type INDREG_B[4]: SREG {                    //Indirect register mode
 	    read: byte {
-	        local val: short = $regs(this);
-	        local val2: short = $regs(val);
-	        return val2;
+	        local addr: short = $regs(this);
+	        local val: byte = $sram(addr);
+	        return val: byte;
 	    }
 	    write: byte { }
 	}
 
-    operand-type INDREG_W[4]: symbol {
-        mapping {
-	        r2 = 2, r3 = 3,  r4 = 4, r5 = 5, r6 = 6, r7 = 7, r8 = 8,
-	        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14,
-	        r15 = 15
-	    }
+    operand-type INDREG_W[4]: SREG {
 	    read: short {
-	        local val: short = $regs(this);
-	        local val2: short = $regs(val);
-	        return val2;
+	        return $sram($regs(this));
 	    }
 	    write: short { }
 	}

@@ -38,5 +38,6 @@ package jintgen.arch;
 public interface BuilderErrorReporter {
 
     public void ValueOutOfRange(int val, int low, int high);
+
     public void ExpectedSymbolInSet(String sym, String set);
 }

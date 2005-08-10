@@ -1,5 +1,5 @@
 package jintgen.arch.avr;
-public abstract class AVRInstr {
+public class AVRInstr {
     public static class ADC extends AVRInstr {
         public final AVROperand.GPR rd;
         public final AVROperand.GPR rr;

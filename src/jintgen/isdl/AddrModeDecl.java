@@ -63,10 +63,16 @@ public class AddrModeDecl extends Item {
     }
 
     public final List<AddrModeDecl.Operand> operands;
+    public final List<EncodingDecl> encodings;
 
     public AddrModeDecl(Token n, List<AddrModeDecl.Operand> ol) {
         super(n);
         operands = ol;
+        encodings = new LinkedList<EncodingDecl>();
+    }
+
+    public void addEncoding(EncodingDecl d) {
+        encodings.add(d);
     }
 
 }

@@ -86,6 +86,10 @@ public class SymbolMapping {
         return mapping.get(name);
     }
 
+    public int size() {
+        return list.size();
+    }
+
     public static class Entry {
         public final Token ntoken;
         public final Token vtoken;
