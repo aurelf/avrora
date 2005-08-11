@@ -1460,7 +1460,6 @@ architecture avr {
     }
 
     instruction "lpm": XLPM {
-        encoding = { 0b10010101, 0b11001000 }
         property cycles: int = 3;
         property extended: int = 0;
         execute {

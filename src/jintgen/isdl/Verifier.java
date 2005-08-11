@@ -74,7 +74,7 @@ public class Verifier {
 
         for ( EnumDecl ed : arch.enums ) {
             if (printer.enabled) {
-                printer.print("processing enum " + ed.name.image + ' ');
+                printer.print("verifying enum " + ed.name.image + ' ');
             }
 
             if ( previous.containsKey(ed.name.image) )
@@ -101,7 +101,7 @@ public class Verifier {
 
         for ( EncodingDecl ed : arch.encodings ) {
             if (printer.enabled) {
-                printer.print("processing encoding " + ed.name.image + ' ');
+                printer.print("verifying encoding " + ed.name.image + ' ');
             }
 
             if ( previous.containsKey(ed.name.image) )
@@ -143,7 +143,7 @@ public class Verifier {
         HashMap<String, Token> previous = new HashMap<String, Token>();
 
         for ( SubroutineDecl sd : arch.subroutines ) {
-            printer.print("processing subroutine " + sd.name + ' ');
+            printer.print("verifying subroutine " + sd.name + ' ');
 
             if ( previous.containsKey(sd.name.image) )
                 ERROR.RedefinedSubroutine(previous.get(sd.name));
@@ -167,6 +167,7 @@ public class Verifier {
         HashMap<String, Token> previous = new HashMap<String, Token>();
 
         for ( AddrModeDecl am : arch.addrModes ) {
+            printer.println("verifying addressing mode " + am.name + ' ');
             if ( previous.containsKey(am.name.image) )
                 ERROR.RedefinedAddressingMode(previous.get(am.name));
 
@@ -264,14 +265,14 @@ public class Verifier {
     private void verifyInstructions() {
         HashMap<String, Token> previous = new HashMap<String, Token>();
         for ( InstrDecl id : arch.instructions ) {
-            printer.print("processing instruction " + id.name + ' ');
+            printer.print("verifying instruction " + id.name + ' ');
             if ( previous.containsKey(id.name.image) )
                 ERROR.RedefinedAddressingMode(previous.get(id.name));
 
             previous.put(id.name.image, id.name);
 
-            optimizeCode(id);
             verifyAddressingMode(id);
+            optimizeCode(id);
 
             if (printer.enabled) {
                 new PrettyPrinter(arch, printer).visitStmtList(id.code.getStmts());
@@ -285,8 +286,8 @@ public class Verifier {
         if ( am.ref != null ) {
             resolveAddressingModeRef(am);
         } else {
-            verifyEncodings(am.localDecl.encodings, am.localDecl);
             verifyOperands(am.localDecl.operands);
+            verifyEncodings(am.localDecl.encodings, am.localDecl);
         }
     }
 
@@ -340,10 +341,22 @@ public class Verifier {
     private int computeEncodingSize(EncodingDecl encoding, AddrModeDecl am) {
         BitWidthComputer bwc = new BitWidthComputer(am);
         int size = 0;
-        for ( Expr e : encoding.fields ) {
-            e.accept(bwc);
+        List<EncodingDecl.BitField> fields;
+        if ( encoding instanceof EncodingDecl.Derived ) {
+            EncodingDecl.Derived ed = (EncodingDecl.Derived)encoding;
+            for ( EncodingDecl.Substitution s : ed.subst ) {
+                bwc.addSubstitution(s.name.image, s.expr);
+            }
+            fields = ed.parent.fields;
+        } else {
+            fields = encoding.fields;
+        }
+        for ( EncodingDecl.BitField e : fields ) {
+            e.field.accept(bwc);
+            e.width = bwc.width;
             size += bwc.width;
         }
+        encoding.bitWidth = size;
         return size;
     }
 
@@ -351,12 +364,18 @@ public class Verifier {
 
         int width = -1;
         HashMap<String, Integer> operandWidthMap;
+        HashMap<String, Expr> substMap;
 
         BitWidthComputer(AddrModeDecl d) {
+            substMap = new HashMap<String, Expr>();
             operandWidthMap = new HashMap<String, Integer>();
             for ( AddrModeDecl.Operand o : d.operands ) {
                 addSubOperands(o, o.name.image);
             }
+        }
+
+        void addSubstitution(String str, Expr e) {
+            substMap.put(str, e);
         }
 
         void addSubOperands(AddrModeDecl.Operand op, String prefix) {
@@ -397,6 +416,12 @@ public class Verifier {
         }
 
         public void visit(VarExpr e) {
+            Expr se = substMap.get(e.variable.image);
+            if ( se != null ) {
+                se.accept(this);
+                return;
+            }
+
             Integer i = operandWidthMap.get(e.variable.image);
             if ( i != null )
                 width = i.intValue();

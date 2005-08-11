@@ -20,7 +20,10 @@ public class MSP430Symbol {
         }
         GPR(String sym, int v) { super(sym, v); }
         public static final GPR PC = newGPR("pc", 0);
-        public static final GPR SREG = newGPR("sreg", 1);
+        public static final GPR SP = newGPR("sp", 1);
+        public static final GPR SR = newGPR("sr", 2);
+        public static final GPR R0 = newGPR("r0", 0);
+        public static final GPR R1 = newGPR("r1", 1);
         public static final GPR R2 = newGPR("r2", 2);
         public static final GPR R3 = newGPR("r3", 3);
         public static final GPR R4 = newGPR("r4", 4);

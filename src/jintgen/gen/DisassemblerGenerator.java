@@ -59,6 +59,8 @@ public class DisassemblerGenerator extends Generator {
     String instrClassName;
     String symbolClassName;
 
+    int indent;
+
     class EncodingField extends CodeVisitor.Default {
         final EncodingInfo ei;
         final int bitsize;
@@ -137,7 +139,7 @@ public class DisassemblerGenerator extends Generator {
         EncodingInfo(InstrDecl id, AddrModeDecl am, int encNum, EncodingDecl ed) {
             instr = id;
             addrMode = am;
-            bitStates = new byte[id.getEncodingSize()];
+            bitStates = new byte[ed.bitWidth];
             simplifiedExprs = new LinkedList<EncodingField>();
             encodingNumber = encNum;
             encoding = ed;
@@ -155,27 +157,15 @@ public class DisassemblerGenerator extends Generator {
             ConstantPropagator cp = new ConstantPropagator();
             ConstantPropagator.ConstantEnvironment ce = cp.createEnvironment();
 
-            List<Expr> fields;
-            if ( ed instanceof EncodingDecl.Derived ) {
-                EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
-                fields = dd.parent.fields;
-
-                // put all the substitutions into the map
-                for ( EncodingDecl.Substitution s : dd.subst ) {
-                    ce.put(s.name.toString(), s.expr);
-                }
-            } else {
-                fields = ed.fields;
-            }
+            List<EncodingDecl.BitField> fields = initializeConstantEnviron(ed, ce);
 
             // scan through the expressions corresponding to the fields that make up this encoding
             // and initialize the bitState array to either ENC_ONE, ENC_ZERO, or ENC_VAR
 
             int offset = 0;
-            for ( Expr e : fields ) {
+            for ( EncodingDecl.BitField e : fields ) {
                 // get the bit width of the parent encoding field
-                int size = e.getBitWidth();
-
+                int size = e.getWidth();
 
                 int endbit = offset + size - 1;
                 if ( (offset / WORD_SIZE) != (endbit / WORD_SIZE) ) {
@@ -186,7 +176,7 @@ public class DisassemblerGenerator extends Generator {
                         int bits = WORD_SIZE - (f_offset % WORD_SIZE);
                         if ( bits > WORD_SIZE ) bits = WORD_SIZE;
                         // evaluate the expression with a smaller bit interval
-                        Expr simpleExpr = eval(e, cp, ce, h_bit, h_bit-bits+1);
+                        Expr simpleExpr = eval(e.field, cp, ce, h_bit, h_bit-bits+1);
                         addExpr(f_offset, bits, simpleExpr);
 
                         f_offset += bits;
@@ -194,7 +184,7 @@ public class DisassemblerGenerator extends Generator {
                     }
                 } else {
                     // evaluate the parent encoding expression, given values for operands
-                    Expr simpleExpr = e.accept(cp,ce);
+                    Expr simpleExpr = e.field.accept(cp,ce);
 
                     addExpr(offset, size, simpleExpr);
                 }
@@ -202,6 +192,34 @@ public class DisassemblerGenerator extends Generator {
                 offset += size;
             }
             print();
+        }
+
+        private List<EncodingDecl.BitField> initializeConstantEnviron(EncodingDecl ed, ConstantPropagator.ConstantEnvironment ce) {
+            List<EncodingDecl.BitField> fields;
+            if ( ed instanceof EncodingDecl.Derived ) {
+                EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
+                fields = dd.parent.fields;
+
+                // put all the substitutions into the map
+                for ( EncodingDecl.Substitution s : dd.subst ) {
+                    ce.put(s.name.image, s.expr);
+                }
+            } else {
+                fields = ed.fields;
+            }
+
+            for ( Property p : addrMode.properties ) addProperty(p, ce);
+            for ( Property p : instr.properties ) addProperty(p, ce);
+
+            return fields;
+        }
+
+        private void addProperty(Property p, ConstantPropagator.ConstantEnvironment ce) {
+            if ( p.type.image.equals("int") ) {
+                ce.put(p.name.image, new Literal.IntExpr(p.value));
+            } else if ( p.type.image.equals("boolean") ) {
+                ce.put(p.name.image, new Literal.BoolExpr(p.value));
+            }
         }
 
         private void addExpr(int offset, int size, Expr simpleExpr) {
@@ -248,7 +266,11 @@ public class DisassemblerGenerator extends Generator {
 
         void print() {
             if ( !verbose.enabled ) return;
-            verbose.print(StringUtil.leftJustify(instr.name.toString(), 8)+": ");
+            for ( int cntr = 0; cntr < indent; cntr++ )
+                verbose.print("    ");
+            String ncross = instr.name +" x "+addrMode.name;
+            String name = StringUtil.leftJustify(ncross, 20);
+            verbose.print(name+": ");
             for ( int cntr = 0; cntr < bitStates.length; cntr++ ) {
                 switch ( bitStates[cntr] ) {
                     case ENC_ZERO:
@@ -393,9 +415,11 @@ public class DisassemblerGenerator extends Generator {
         }
 
         void recurse() {
+            indent++;
             for ( DecodingTree es : children.values() ) {
                 es.compute();
             }
+            indent--;
         }
 
         void generateCode() {
@@ -503,13 +527,17 @@ public class DisassemblerGenerator extends Generator {
         }
 
         private void generateConstructorCall(EncodingInfo ei) {
-            printer.print("return new "+ei.instr.getClassName()+"(pc");
+            printer.print("return new "+getClassName(ei)+"(pc");
             for ( AddrModeDecl.Operand o : ei.instr.getOperands() ) {
                 printer.print(", ");
                 String getexpr = generateDecode(ei, o);
                 printer.print(getexpr);
             }
             printer.println(");");
+        }
+
+        private String getClassName(EncodingInfo ei) {
+            return instrClassName+"."+ei.instr.innerClassName;
         }
 
         private void declareOperands(EncodingInfo ei) {
@@ -544,23 +572,8 @@ public class DisassemblerGenerator extends Generator {
                 if ( o.name.image.equals(c.name.image) )
                     return c.expr.toString();
             }
-            // if this is a register, we have to look it up in the table
-            if ( ot.isSymbol() )
-                return "getSymbol("+o.type+"_table, "+o.name+")";
-            else {
-                // this operand is not a register
-                //TODO: fix relative operands
-
-/*
-                OperandTypeDecl od = o.getOperandDecl();
-                if ( od.kind.image.equals("relative") ) {
-                    int size = od.bitSize - 1;
-                    return "relative("+o.name.image+", "+size+")"; // this operand is relative to the PC address (and word aligned)
-                }
-                else
-*/
-                    return o.name.image;
-            }
+            // TODO: fix symbol lookup
+            return o.name.image;
         }
     }
 
@@ -575,7 +588,9 @@ public class DisassemblerGenerator extends Generator {
     }
 
     public void generate() throws Exception {
-        printer = newClassPrinter(className("Disassembler"), null, null);
+        List<String> imports = new LinkedList<String>();
+        imports.add("avrora.util.Arithmetic");
+        printer = newClassPrinter(className("Disassembler"), imports, null);
         instrClassName = className("Instr");
         symbolClassName = className("Symbol");
 

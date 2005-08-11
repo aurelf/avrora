@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public interface StmtRebuilder<Env> extends CodeRebuilder {
+public interface StmtRebuilder<Env> extends CodeRebuilder<Env> {
 
     public Stmt visit(CallStmt s, Env env);
 
@@ -74,11 +74,11 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
      *
      * @author Ben L. Titzer
      */
-    public class DepthFirst<Env> extends CodeRebuilder.DepthFirst implements StmtRebuilder<Env> {
+    public class DepthFirst<DFEnv> extends CodeRebuilder.DepthFirst<DFEnv> implements StmtRebuilder<DFEnv> {
         List<Stmt> newList;
         boolean changed;
 
-        public Stmt visit(CallStmt s, Env env) {
+        public Stmt visit(CallStmt s, DFEnv env) {
             List<Expr> na = visitExprList(s.args, env);
             if (na != s.args)
                 return new CallStmt(s.method, na);
@@ -86,11 +86,11 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(CommentStmt s, Env env) {
+        public Stmt visit(CommentStmt s, DFEnv env) {
             return s;
         }
 
-        public Stmt visit(DeclStmt s, Env env) {
+        public Stmt visit(DeclStmt s, DFEnv env) {
             Expr ni = s.init.accept(this, env);
             if (ni != s.init)
                 return new DeclStmt(s.name, s.type, ni);
@@ -98,7 +98,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(IfStmt s, Env env) {
+        public Stmt visit(IfStmt s, DFEnv env) {
             Expr nc = s.cond.accept(this, env);
             List<Stmt> nt = visitStmtList(s.trueBranch, env);
             List<Stmt> nf = visitStmtList(s.falseBranch, env);
@@ -109,7 +109,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public List<Stmt> visitStmtList(List<Stmt> l, Env env) {
+        public List<Stmt> visitStmtList(List<Stmt> l, DFEnv env) {
             List<Stmt> oldList = this.newList;
             boolean oldChanged = changed;
             newList = new LinkedList<Stmt>();
@@ -123,7 +123,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
             return l;
         }
 
-        protected void visitStmts(List<Stmt> l, Env env) {
+        protected void visitStmts(List<Stmt> l, DFEnv env) {
             for ( Stmt sa : l) {
                 Stmt na = sa.accept(this, env);
                 if (na != sa) changed = true;
@@ -137,7 +137,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
             changed = true;
         }
 
-        public Stmt visit(MapAssignStmt s, Env env) {
+        public Stmt visit(MapAssignStmt s, DFEnv env) {
             Expr ni = s.index.accept(this, env);
             Expr ne = s.expr.accept(this, env);
             if (ni != s.index || ne != s.expr)
@@ -146,7 +146,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(MapBitAssignStmt s, Env env) {
+        public Stmt visit(MapBitAssignStmt s, DFEnv env) {
             Expr ni = s.index.accept(this, env);
             Expr nb = s.bit.accept(this, env);
             Expr ne = s.expr.accept(this, env);
@@ -156,7 +156,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(MapBitRangeAssignStmt s, Env env) {
+        public Stmt visit(MapBitRangeAssignStmt s, DFEnv env) {
             Expr ni = s.index.accept(this, env);
             Expr ne = s.expr.accept(this, env);
             if (ni != s.index || ne != s.expr)
@@ -165,7 +165,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(ReturnStmt s, Env env) {
+        public Stmt visit(ReturnStmt s, DFEnv env) {
             Expr ne = s.expr.accept(this, env);
             if (ne != s.expr)
                 return new ReturnStmt(ne);
@@ -173,7 +173,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(VarAssignStmt s, Env env) {
+        public Stmt visit(VarAssignStmt s, DFEnv env) {
             Expr ne = s.expr.accept(this, env);
             if (ne != s.expr)
                 return new VarAssignStmt(s.variable, ne);
@@ -181,7 +181,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(VarBitAssignStmt s, Env env) {
+        public Stmt visit(VarBitAssignStmt s, DFEnv env) {
             Expr ne = s.expr.accept(this, env);
             Expr nb = s.bit.accept(this, env);
             if (ne != s.expr || nb != s.bit)
@@ -190,7 +190,7 @@ public interface StmtRebuilder<Env> extends CodeRebuilder {
                 return s;
         }
 
-        public Stmt visit(VarBitRangeAssignStmt s, Env env) {
+        public Stmt visit(VarBitRangeAssignStmt s, DFEnv env) {
             Expr ne = s.expr.accept(this, env);
             if (ne != s.expr)
                 return new VarBitRangeAssignStmt(s.variable, s.low_bit, s.high_bit, ne);

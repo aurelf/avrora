@@ -35,9 +35,11 @@ package jintgen.isdl;
 import jintgen.jigir.Expr;
 import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>EncodingDecl</code> class represents the encoding of an instruction in machine code, describing
@@ -49,7 +51,7 @@ public class EncodingDecl extends Item {
 
     protected final int prio;
 
-    public final List<Expr> fields;
+    public final List<BitField> fields;
 
     public int bitWidth = -1;
 
@@ -57,11 +59,27 @@ public class EncodingDecl extends Item {
 
     public EncodingDecl(Token n, Token pr, List<Expr> f) {
         super(n);
-        fields = f;
+        fields = new LinkedList<BitField>();
+        if ( f != null ) for ( Expr e : f ) {
+            fields.add(new BitField(e));
+        }
         if ( pr == null ) {
             prio = 0;
         } else {
             prio = StringUtil.evaluateIntegerLiteral(pr.image);
+        }
+    }
+
+    public static class BitField {
+        public final Expr field;
+        public int width = -1;
+        BitField(Expr f) {
+            field = f;
+        }
+        public int getWidth() {
+            if ( width < 0 )
+                throw Util.failure("negative bit width");
+            return width;
         }
     }
 

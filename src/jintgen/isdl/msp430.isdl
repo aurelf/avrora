@@ -8,9 +8,12 @@ architecture msp430 {
 //  ENCODING FORMATS OF INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    format SINGOPER = { opcode[8:0], BW[0], AS[1:0], SREG[3:0] }
-    format DOUBOPER = { opcode[3:0], SREG[3:0], AD[0], BW[0], AS[1:0], DREG[3:0] }
-    format JUMPOPER = { opcode[5:0], PCOFF[9:0] }
+    format SINGLE_OP = { opcode[8:0], bw[0], As[1:0], sreg[3:0] }
+    format SINGLE_OP_X = { opcode[8:0], bw[0], As[1:0], sreg[3:0], X[15:0] }
+    format DOUBLE_OP = { opcode[3:0], sreg[3:0], Ad[0], bw[0], As[1:0], dreg[3:0] }
+    format DOUBLE_OP_X = { opcode[3:0], sreg[3:0], Ad[0], bw[0], As[1:0], dreg[3:0], X[15:0] }
+    format DOUBLE_OP_XY = { opcode[3:0], sreg[3:0], Ad[0], bw[0], As[1:0], dreg[3:0], X[15:0], Y[15:0] }
+    format JUMP_OP = { opcode[5:0], offset[9:0] }
 
 //---------------------------------------------------------------------------
 //  MEMORY ALLOWED TO INSTRUCTIONS
@@ -33,7 +36,8 @@ architecture msp430 {
 
     // all registers
     enum GPR {
-        pc  = 0,  sreg = 1,  r2  = 2,  r3  = 3,
+        pc  = 0,  sp   = 1,  sr  = 2,  // aliases for the first three registers
+        r0  = 0,  r1   = 1,  r2  = 2,  r3  = 3,
         r4  = 4,  r5   = 5,  r6  = 6,  r7  = 7,
         r8  = 8,  r9   = 9,  r10 = 10, r11 = 11,
         r12 = 12, r13  = 13, r14 = 14, r15 = 15
@@ -91,11 +95,11 @@ architecture msp430 {
 	}
 
     operand-type IMM8[8]: immediate [0,0xFF];
-    operand-type IMM16[16]: immediate [0,0xFFFF];
+    operand-type IMM16[16]: immediate [-32768,65536];
 
     operand-type INDX_B {
         sub-operand reg: SREG_B;
-        sub-operand index: IMM8;
+        sub-operand index: IMM16;
 	    read: byte { return $sram(read(reg) + index); }
 	    write: byte { $sram(read(reg) + index) = value; }
     }
@@ -107,17 +111,19 @@ architecture msp430 {
 	    write: short { $wsram(read(reg) + index) = value; }
     }
 
-    operand-type SYMB_B[8]: immediate [0,0xFF] {
+    // TODO: this is encoded as relative to the pc
+    operand-type SYMB_B[16]: immediate [0,0xFF] {
         read: byte { return $sram(pc + this); }
         write: byte {$sram(pc + this) = value; }
     }
 
+    // TODO: this is encoded as relative to the pc
     operand-type SYMB_W[16]: immediate [0,0xFFFF] {
 	    read: short { return $wsram(pc + this); }
 	    write: short { $wsram(pc + this) = value; }
     }
 
-    operand-type ABSO_B[8]: immediate [0,0xFF] {
+    operand-type ABSO_B[16]: immediate [0,0xFF] {
 	    read: byte { return $sram(this); }
 	    write: byte { $sram(this) = value; }
     }
@@ -135,7 +141,7 @@ architecture msp430 {
         write: byte { }   //Immediate operand can only be used as source
     }
 
-    operand-type IMMD_W[16]: immediate [0,0xFFFF] {
+    operand-type IMMD_W[16]: immediate [-32768,65536] {
         read: short {
             $wregs(pc) = pc + 2;
             return this;
@@ -154,473 +160,312 @@ architecture msp430 {
 //   ADDRESSING MODES ALLOWED FOR SINGLE OPERAND/DOUBLE OPERAND/JUMP INSTRUCTIONS
 //-------------------------------------------------------------------------   
     addr-mode REG_W source: SREG_W {                   //addressing modes like REG_W, REGPUSH_W, REGCALL_W are single operand
-	    encoding = { opcode[8:0], 0b000, source  }
+        encoding = priority 3 SINGLE_OP where { As = 0b00, sreg = source }
 	    property syntax: String = "%source";
 	    property cycles: int = 1;
     }
 
     addr-mode REG_B source: SREG_B {
-    	encoding = { opcode[8:0], 0b100, source  }
+        encoding = priority 3 SINGLE_OP where { As = 0b00, sreg = source }
 	    property syntax: String = "%source";
 	    property cycles: int = 1;
     }
 
     addr-mode REGREG_B source: SREG_B, dest: SREG_B {         //addressing modes like REGREG_B, REGIND_W, etc are double operand
-        encoding = { opcode[3:0], source, 0b0100, dest }
-        property syntax: String = "%source, %dest";
-        property cycles: int = 1;
-    }
-
-    addr-mode REGREG_W source: SREG_W, dest: SREG_W {
-        encoding = { opcode[3:0], source, 0b0000, dest }
+        encoding = priority 3 DOUBLE_OP where { As = 0b00, Ad = 0, sreg = source, dreg = dest }
         property syntax: String = "%source, %dest";
         property cycles: int = 1;
     }
 
     addr-mode REGIND_B source: SREG_B, dest: INDX_B {
-	    encoding = { opcode[3:0], source, 0b1100, dest.reg, dest.index[3:0] }
-	    property syntax: String = "%source, %dest.index(%dest.reg)";
-	    property cycles: int = 4;
-    }
-
-    addr-mode REGIND_W source: SREG_W, dest: INDX_W {
-	    encoding = { opcode[3:0], source, 0b1000, dest.reg, dest.index[3:0] }
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
 	    property syntax: String = "%source, %dest.index(%dest.reg)";
 	    property cycles: int = 4;
     }
 
     addr-mode REGSYM_B source: SREG_B, dest: SYMB_B {
-	    encoding = { opcode[3:0], source, 0b1100, 0b0000, dest - pc }  // X - r0 is the address at label - program counter
-	    property syntax: String = "%source, %dest";
-	    property cycles: int = 4;
-    }
-
-    addr-mode REGSYM_W source: SREG_W, dest: SYMB_W {
-    	encoding = { opcode[3:0], source, 0b1000, 0b0000, dest - pc }  // X - r0 is the address at label - program counter
+        // symbolic mode is encoded as indexing off of the PC register
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
 	    property syntax: String = "%source, %dest";
 	    property cycles: int = 4;
     }
 
     addr-mode REGABS_B source: SREG_B, dest: ABSO_B {
-	    encoding = { opcode[3:0], source, 0b1100, 0b0010, dest } //X is the absolute address of the label
+        // absolute mode (as destination) is encoded as indexing off of dreg = R2
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
 	    property syntax: String = "%source, &%dest";
        	property cycles: int = 4;
-    }
-
-    addr-mode REGABS_W source: SREG_W, dest: ABSO_W {
-	    encoding = { opcode[3:0], source, 0b1100, 0b0010, dest } //X is the absolute address of the label
-	    property syntax: String = "%source, &%dest";
-       	property cycles: int = 4;
-    }
-
-    addr-mode IND_W source: INDX_W {
-        encoding = { opcode[8:0], 0b001, source, x }
-        property syntax: String = "%source";
-        property cycles: int = 4;
     }
 
     addr-mode IND_B source: INDX_B {
-        encoding = { opcode[8:0], 0b101, source, X  }
-        property syntax: String = "%source";
+        encoding = priority 3 SINGLE_OP_X where { As = 0b10, sreg = source.reg, X = source.index }
+        property syntax: String = "@%source";
         property cycles: int = 4;
     }
 
     addr-mode INDREG_B source: INDX_B, dest: SREG_B {
-        encoding = { opcode[3:0], source, 0b0101, dest, X }
-        property syntax: String = "%X(%source), %dest";
-        property cycles: int = 3;
-    }
-
-    addr-mode INDREG_W source: INDX_W, dest: SREG_W {
-        encoding = { opcode[3:0], source, 0b0001, dest, X }
-        property syntax: String = "%X(%source), %dest";
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = source.reg, dreg = dest.reg, X = source.index }
+        property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 3;
     }
 
     addr-mode INDIND_B source: INDX_B, dest: INDX_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X, Y }
-        property syntax: String = "%X(%source), %Y(%dest)";
+        encoding = priority 3 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = dest.reg, X = source.index, Y = dest.index }
+        property syntax: String = "%source.index(%source.reg), %dest.index(%dest.reg)";
         property cycles: int = 6;
-    }
-
-    addr-mode INDIND_W source: INDX_W, dest: INDX_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X, Y }
-        property syntax: String = "%X(%source), %Y(%dest)";
-        property cycles: int = 6;
-    }
-
-    addr-mode INDSYM_B source: INDX_B, dest: SYMB_B {
-        encoding =  { opcode[3:0], source, 0b1101, dest, X,  Y - r0 }
-        property syntax: String = "%X(%source), %Y";
-        property cycles: int = 6;
-    }
-
-    addr-mode INDSYM_W source: INDX_W, dest: SYMB_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X, Y - r0 }
-        property syntax: String = "%X(%source), %Y";
-        property cycles: int = 6;
-    }
-
-    addr-mode INDABS_B source: INDX_B, dest: ABSO_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X, Y -r2 }
-        property syntax: String = "%X(%source), &%Y";
-        property cycles: int = 6;
-    }     
-
-    addr-mode INDABS_W source: INDX_W, dest: ABSO_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X, Y - r2 }
-        property syntax: String = "%X(%source), &%Y";
-        property cycles: int = 6;
-    } 
-
-    addr-mode SYM_W source: SYMB_W {
-        encoding = { opcode[8:0], 0b001, source, X - r0  }
-        property syntax: String = "%X";
-        property cycles: int = 4;
     }
 
     addr-mode SYM_B source: SYMB_B {
-        encoding = { opcode[8:0], 0b101, source, X - r0  }
-        property syntax: String = "%X";
+        encoding = priority 0 SINGLE_OP_X where { As = 0b01, sreg = 0b0000, X = source }
+        property syntax: String = "%source";
         property cycles: int = 4;
     }
 
     addr-mode SYMREG_B source: SYMB_B, dest: SREG_B {
-        encoding = { opcode[3:0], source, 0b0101, dest, X - r0 }
-        property syntax: String = "%X, %dest";
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
+        property syntax: String = "%source, %dest";
         property cycles: int = 3;
     }
 
-    addr-mode SYMREG_W source: SYMB_W, dest: SREG_W {
-        encoding = { opcode[3:0], source, 0b0001, dest, X - r0 }
-        property syntax: String = "%X, %dest";
-        property cycles: int = 3;
-    }
-
-    addr-mode SYMIND_B source: SYMB_B, dest: INDX_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X - r0, Y }
-        property syntax: String = "%X, %Y(%dest)";
+    addr-mode INDSYM_B source: INDX_B, dest: SYMB_B {
+        encoding = priority 2 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = source.reg, dreg = 0b0000, X = source.index, Y = dest.index }
+        property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 6;
     }
 
-    addr-mode SYMIND_W source: SYMB_W, dest: INDX_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X - r0, Y }
-        property syntax: String = "%X, %Y(%dest)";
-        property cycles: int = 6;
-    }		
-
-    addr-mode SYMSYM_B source : SYMB_B, dest: SYMB_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X - r0, Y - r0 }
-        property syntax: String = "%X, %Y";
-        property cycles: int = 6;
-    }
-
-    addr-mode SYMSYM_W source: SYMB_W, dest: SYMB_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X - r0, Y - r0 }
-        property syntax: String = "%X, %Y";
+    addr-mode INDABS_B source: INDX_B, dest: ABSO_B {
+        encoding = priority 2 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = source.reg, dreg = 0b0010, X = source.index, Y = dest }
+        property syntax: String = "%source.index(%source.reg), &%dest";
         property cycles: int = 6;
     }
 
     addr-mode SYMABS_B source: SYMB_B, dest: ABSO_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X - r0, Y - r2 }
-        property syntax: String = "%X, &%Y";
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
+        property syntax: String = "%source, &%dest";
         property cycles: int = 6;
     }
 
-    addr-mode SYMABS_W source: SYMB_W, dest: ABSO_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X - r0, Y - r2 }
-        property syntax: String = "%X, &%Y";
+    addr-mode SYMIND_B source: SYMB_B, dest: INDX_B {
+        encoding = priority 1 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
+        property syntax: String = "%source, %dest.index(%dest.reg)";
         property cycles: int = 6;
     }
 
-    addr-mode ABS_W source: ABSO_W {
-        encoding = { opcode[8:0], 0b001, source, Y - r2  }
-        property syntax: String = "&%X";
-        property cycles: int = 4;
-    }
-
-    addr-mode ABS_B source: ABSO_B {
-        encoding = { opcode[8:0], 0b101, source, Y - r2  }
-        property syntax: String = "&%X";
-        property cycles: int = 4;
-    }
-
-    addr-mode ABSREG_B source: ABSO_B, dest: SREG_B {
-        encoding = { opcode[3:0], source, 0b0101, dest, X - r2 }
-        property syntax: String = "&%X, %dest";
-        property cycles: int = 3;
-    }
-
-    addr-mode ABSREG_W source: ABSO_W, dest: SREG_W {
-        encoding = { opcode[3:0], source, 0b0001, dest, X - r2 }
-        property syntax: String = "&%X, %dest";
-        property cycles: int = 3;
-    }
-
-    addr-mode ABSIND_B source: ABSO_B, dest: INDX_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X - r2, Y }
-        property syntax: String = "&%X, %Y(%dest)";
-        property cycles: int = 6;
-    }
-
-    addr-mode ABSIND_W source: ABSO_W, dest: INDX_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X - r2, Y }
-        property syntax: String = "&%X, %Y(%dest)";
+    addr-mode SYMSYM_B source : SYMB_B, dest: SYMB_B {
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
+        property syntax: String = "%source, %dest";
         property cycles: int = 6;
     }
 
     addr-mode ABSSYM_B source: ABSO_B, dest: SYMB_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X - r2, Y - r0 }
-        property syntax: String = "&%X, %Y";
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = 0b0000, X = source, Y = dest }
+        property syntax: String = "&%source, %dest";
         property cycles: int = 6;
     }
 
-    addr-mode ABSSYM_W source: ABSO_W, dest: SYMB_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X - r2, Y - r0 }
-        property syntax: String = "&%X, %Y";
+    addr-mode ABS_B source: ABSO_B {
+        encoding = priority 0 SINGLE_OP_X where { As = 0b01, sreg = 0b0010, X = source }
+        property syntax: String = "&%source";
+        property cycles: int = 4;
+    }
+
+    addr-mode ABSREG_B source: ABSO_B, dest: SREG_B {
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b10, Ad = 0, sreg = 0b0010, dreg = dest, X = source }
+        property syntax: String = "&%source, %dest";
+        property cycles: int = 3;
+    }
+
+    addr-mode ABSIND_B source: ABSO_B, dest: INDX_B {
+        encoding = priority 1 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = dest.reg, X = source, Y = dest.index }
+        property syntax: String = "&%source, %dest.index(%dest.reg)";
         property cycles: int = 6;
     }
 
     addr-mode ABSABS_B source: ABSO_B, dest: ABSO_B {
-        encoding = { opcode[3:0], source, 0b1101, dest, X - r2, Y - r2 }
-        property syntax: String = "&%X, &%Y";
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = 0b0010, X = source, Y = dest }
+        property syntax: String = "&%source, &%dest";
         property cycles: int = 6;
     }
 
-    addr-mode ABSABS_W source: ABSO_W, dest: ABSO_W {
-        encoding = { opcode[3:0], source, 0b1001, dest, X - r2, Y - r2 }
-        property syntax: String = "&%X, &%Y";
-        property cycles: int = 6;
-    }
-
-    addr-mode INREG_W source: INDREG_W {
-        encoding = { opcode[8:0], 0b010, source  }
-        property syntax: String = "@%source";
-        property cycles: int = 3;
+    addr-mode INREGSYM_B source: INDREG_B, dest: SYMB_B {
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
+        property syntax: String = "@%source, %dest";
+        property cycles: int = 5;
     }
 
     addr-mode INREG_B source: INDREG_B {
-        encoding = { opcode[8:0], 0b110, source  }
+        encoding = priority 3 SINGLE_OP_X where { As = 0b10, sreg = source }
         property syntax: String = "@%source";
         property cycles: int = 3;
     }
 
     addr-mode INREGREG_B source: INDREG_B, dest: SREG_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b0110, dest }
+        encoding = priority 3 DOUBLE_OP where { As = 0b10, Ad = 0, sreg = source, dreg = dest }
         property syntax: String = "@%source, %dest";
         property cycles: int = 2;
-    }	
-
-    addr-mode INREGREG_W source: INDREG_W, dest: SREG_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b0010, dest }
-        property syntax: String = "@%source, %dest";
-        property cycles: int = 2;
-    }	
+    }
 
     addr-mode INREGIND_B source: INDREG_B, dest: INDX_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1110, dest, X }
-        property syntax: String = "@%source, %X(%dest)";
-        property cycles: int = 5;
-    }
-
-    addr-mode INREGIND_W source: INDREG_W, dest: INDX_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1010, dest, X }
-        property syntax: String = "@%source, %X(%dest)";
-        property cycles: int = 5;
-    }
-
-    addr-mode INREGSYM_B source: INDREG_B, dest: SYMB_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1110, dest, X - r0 }
-        property syntax: String = "@%source, %X";
-        property cycles: int = 5;
-    }
-
-    addr-mode INREGSYM_W source: INDREG_W, dest: SYMB_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1010, dest, X - r0 }
-        property syntax: String = "@%source, %X";
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
+        property syntax: String = "@%source, %dest.index(%dest.reg)";
         property cycles: int = 5;
     }
 
     addr-mode INREGABS_B source: INDREG_B, dest: ABSO_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1110, dest, X - r2 }
-        property syntax: String = "@%source, &%X";
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
+        property syntax: String = "@%source, &%dest";
         property cycles: int = 5;
     }
-
-    addr-mode INREGABS_W source: INDREG_W, dest: ABSO_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1010, dest, X - r2 }
-        property syntax: String = "@%source, &%X";
-        property cycles: int = 5;
-    }
-
-    addr-mode INDRA_W source: AIREG_W {
-        encoding = { opcode[8:0], 0b011, source  }
-        property syntax: String = "@%source+";
-        property cycles: int = 3;
-    }
-
-    addr-mode INDRA_B source: AIREG_B {
-	    encoding = { opcode[8:0], 0b111, source  }
-	    property syntax: String = "@%source+";
-	    property cycles: int = 3;
-    }
-
-    addr-mode INDRAREG_B source: AIREG_B, dest: SREG_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b0111, dest }
-        property syntax: String = "@%source+, %dest";
-        property cycles: int = 2;
-   }
-    addr-mode INDRAREG_W source: AIREG_W, dest: SREG_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b0011, dest }
-        property syntax: String = "@%source+, %dest";
-        property cycles: int = 2;
-   }
-    addr-mode INDRAIND_B source: AIREG_B, dest: INDX_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X }
-        property syntax: String = "@%source+, %X(%dest)";
-        property cycles: int = 5;
-    }  	
-
-    addr-mode INDRAIND_W source: AIREG_W, dest: INDX_W {
-	    encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X }
-	    property syntax: String = "@%source+, %X(%dest)";
-	    property cycles: int = 5;
-    }
-
-    addr-mode INDRASYM_B source: AIREG_B, dest: SYMB_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r0 }
-        property syntax: String = "@%source+, %X";
-        property cycles: int = 5;
-    }
-
-    addr-mode INDRASYM_W source: AIREG_W, dest: SYMB_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r0 }
-        property syntax: String = "@%source+, %X";
-        property cycles: int = 5;
-    }
-
-    addr-mode INDRAABS_B source: AIREG_B, dest: ABSO_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r2 }
-        property syntax: String = "@%source+, %X";
-        property cycles: int = 5;
-    }
-    addr-mode INDRAABS_W source: AIREG_W, dest: ABSO_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r2 }
-        property syntax: String = "@%source+, %X";
-        property cycles: int = 5;
-    }
-
-    //Using of RRA, RRC, SWPB, and SXT instructions with an Immediate operand is not allowed
-
-    addr-mode IMMED_W source: IMMD_W {
-        encoding = { opcode[8:0], 0b011, source }
-        property syntax: String = "#%contofaddyatsource";
-        property cycles: int = 4;
-    }
-
-
-    //Using of RRA, RRC, SWPB, and SXT instructions with an Immediate operand is not allowed
 
     addr-mode IMMED_B source: IMMD_B {
-        encoding = { opcode[8:0], 0b011, source }
-        property syntax: String = "#%contofaddyatsource";
+        encoding = priority 3 SINGLE_OP_X where { As = 0b11, sreg = 0b0000, X = source }
+        encoding = priority 0 SINGLE_OP where { As = 0b11, sreg = 0b0011 } when source == -1 // encodes as R3, As = 0b11
+        encoding = priority 0 SINGLE_OP where { As = 0b00, sreg = 0b0011 } when source == 0  // encodes as R2, As = 0b10
+        encoding = priority 0 SINGLE_OP where { As = 0b01, sreg = 0b0011 } when source == 1  // encodes as R3, As = 0b01
+        encoding = priority 0 SINGLE_OP where { As = 0b10, sreg = 0b0011 } when source == 2
+        encoding = priority 0 SINGLE_OP where { As = 0b10, sreg = 0b0010 } when source == 4
+        encoding = priority 0 SINGLE_OP where { As = 0b11, sreg = 0b0010 } when source == 8
+        property syntax: String = "#%source";
         property cycles: int = 4;
     }
 
-
     addr-mode IMMEDREG_B source: IMMD_B, dest: SREG_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b0111, dest }
-        property syntax: String = "#%contofaddyatsource, %dest";
-        property cycles: int = 2;
-    }
-
-    addr-mode IMMEDREG_W source: IMMD_W, dest: SREG_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b0011, dest }
-        property syntax: String = "#%contofaddyatsource, %dest";
+        // TODO: add in specific opcodes for constants
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
+        property syntax: String = "#%source, %dest";
         property cycles: int = 2;
     }
 
     addr-mode IMMEDIND_B source: IMMD_B, dest: INDX_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X }
-        property syntax: String = "#%contofaddyatsource, %X(%dest)";
-        property cycles: int = 5;
-    }
-
-    addr-mode IMMEDIND_W source: IMMD_W, dest: INDX_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X }
-        property syntax: String = "#%contofaddyatsource, %X(%dest)";
+        // TODO: expand the constant encodings
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = dest.index }
+        property syntax: String = "#%source, %dest.index(%dest.reg)";
         property cycles: int = 5;
     }
 
     addr-mode IMMEDSYM_B source: IMMD_B, dest: SYMB_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r0 }
-        property syntax: String = "#%contofaddyatsource, %X";
-        property cycles: int = 5;
-    }
-
-    addr-mode IMMEDSYM_W source: IMMD_W, dest: SYMB_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r0 }
-        property syntax: String = "#%contofaddyatsource, %X";
+        // TODO: expand the constant encodings
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = dest }
+        property syntax: String = "#%source, %dest";
         property cycles: int = 5;
     }
 
     addr-mode IMMEDABS_B source: IMMD_B, dest: ABSO_B {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1111, dest, X - r2 }
-        property syntax: String = "#%contofaddyatsource, &%X";
+        // TODO: expand the constant encodings
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = dest }
+        property syntax: String = "#%source, &%dest";
         property cycles: int = 5;
     }
 
-    addr-mode IMMEDABS_W source: IMMD_W, dest: ABSO_W {
-        encoding = { opcode[3:0], contofaddyatsource, 0b1011, dest, X - r2 }
-        property syntax: String = "#%contofaddyatsource, &%X";
-        property cycles: int = 5;
-    }	
+    addr-mode AUTO_B source: AIREG_B {
+        encoding = priority 3 SINGLE_OP where { As = 0b11, sreg = source }
+	    property syntax: String = "@%source+";
+	    property cycles: int = 3;
+    }
 
-    addr-mode JMP_W source: JUMP_W {
-        encoding = { opcode[7:2], source }
-        property syntax: String = "%offset";
+    addr-mode AUTOREG_B source: AIREG_B, dest: SREG_B {
+        encoding = priority 3 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = source, dreg = dest }
+        property syntax: String = "@%source+, %dest";
         property cycles: int = 2;
     }
 
+    addr-mode AUTOIND_B source: AIREG_B, dest: INDX_B {
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
+        property syntax: String = "@%source+, %dest.index(%dest.reg)";
+        property cycles: int = 5;
+    }
+
+    addr-mode AUTOSYM_B source: AIREG_B, dest: SYMB_B {
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
+        property syntax: String = "@%source+, %dest";
+        property cycles: int = 5;
+    }
+
+    addr-mode AUTOABS_B source: AIREG_B, dest: ABSO_B {
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
+        property syntax: String = "@%source+, %dest";
+        property cycles: int = 5;
+    }
+
+    addr-mode AUTO_W source: AIREG_W {
+        encoding = priority 3 SINGLE_OP where { As = 0b11, sreg = source }
+	    property syntax: String = "@%source+";
+	    property cycles: int = 3;
+    }
+
+    addr-mode AUTOREG_W source: AIREG_W, dest: SREG_B {
+        encoding = priority 3 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = source, dreg = dest }
+        property syntax: String = "@%source+, %dest";
+        property cycles: int = 2;
+    }
+
+    addr-mode AUTOIND_W source: AIREG_W, dest: INDX_B {
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
+        property syntax: String = "@%source+, %dest.index(%dest.reg)";
+        property cycles: int = 5;
+    }
+
+    addr-mode AUTOSYM_W source: AIREG_W, dest: SYMB_B {
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
+        property syntax: String = "@%source+, %dest";
+        property cycles: int = 5;
+    }
+
+    addr-mode AUTOABS_W source: AIREG_W, dest: ABSO_B {
+        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
+        property syntax: String = "@%source+, %dest";
+        property cycles: int = 5;
+    }
+
+     addr-mode JMP_W source: JUMP_W {
+         encoding = JUMP_OP where { offset = source }
+         property syntax: String = "%offset";
+         property cycles: int = 2;
+     }
+
+    //--------------------------------------------------------------------------
+    //   Begin WORD addressing modes
+    //--------------------------------------------------------------------------
+
     addr-set DOUBLE_W {
-        REGREG_W,
-        REGIND_W,
-        REGSYM_W,
-        REGABS_W,
-        INDREG_W,
-        INDIND_W,
-        INDSYM_W,
-        INDABS_W,
-        SYMREG_W,
-        SYMIND_W,
-        SYMSYM_W,
-        SYMABS_W,
-        ABSREG_W,
-        ABSIND_W,
-        ABSSYM_W,
-        ABSABS_W,
-        INREGREG_W,
-        INREGIND_W,
-        INREGSYM_W,
-        INREGABS_W,
-        INDRAREG_W,
-        INDRAIND_W,
-        INDRASYM_W,
-        INDRAABS_W,
-        IMMEDREG_W,
-        IMMEDIND_W,
-        IMMEDSYM_W,
-        IMMEDABS_W
+        REGREG_B,
+        REGIND_B,
+        REGSYM_B,
+        REGABS_B,
+        INDREG_B,
+        INDIND_B,
+        INDSYM_B,
+        INDABS_B,
+        SYMREG_B,
+        SYMIND_B,
+        SYMSYM_B,
+        SYMABS_B,
+        ABSREG_B,
+        ABSIND_B,
+        ABSSYM_B,
+        ABSABS_B,
+        INREGREG_B,
+        INREGIND_B,
+        INREGSYM_B,
+        INREGABS_B,
+        AUTOREG_W,
+        AUTOIND_W,
+        AUTOSYM_W,
+        AUTOABS_W,
+        IMMEDREG_B,
+        IMMEDIND_B,
+        IMMEDSYM_B,
+        IMMEDABS_B
     }
 
     addr-set SINGLE_W {
-        REG_W,
-        IND_W,
-        SYM_W,
-        ABS_W,
-        INREG_W,
-        INDRA_W,
-        IMMED_W
+        REG_B,
+        IND_B,
+        SYM_B,
+        ABS_B,
+        INREG_B,
+        AUTO_W,
+        IMMED_B
     }
 
     addr-set DOUBLE_B {
@@ -644,10 +489,10 @@ architecture msp430 {
         INREGIND_B,
         INREGSYM_B,
         INREGABS_B,
-        INDRAREG_B,
-        INDRAIND_B,
-        INDRASYM_B,
-        INDRAABS_B,
+        AUTOREG_B,
+        AUTOIND_B,
+        AUTOSYM_B,
+        AUTOABS_B,
         IMMEDREG_B,
         IMMEDIND_B,
         IMMEDSYM_B,
@@ -660,7 +505,7 @@ architecture msp430 {
         SYM_B,
         ABS_B,
         INREG_B,
-        INDRA_B,
+        AUTO_B,
         IMMED_B
     }
 
@@ -868,6 +713,7 @@ architecture msp430 {
 //---------------------------------------------------------------------------
 	
     instruction "adc": SINGLE_W {
+	    property bw: int = 1;
         property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
         execute {
             local r1: int       = read(source);
@@ -885,6 +731,7 @@ architecture msp430 {
     }
 
     instruction "adc.b": SINGLE_B {
+	    property bw: int = 0;
         property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
         execute {
             local r1: int       = read(source);
@@ -904,6 +751,7 @@ architecture msp430 {
 
 
     instruction "add": DOUBLE_W {
+	    property bw: int = 1;
 	    property opcode: int = 0b0101;
         execute {
             local r1: short = read(source);
@@ -914,6 +762,7 @@ architecture msp430 {
     }
 
     instruction "add.b": DOUBLE_B {
+	    property bw: int = 0;
         property opcode: int = 0b0101;
         execute {
             local r1: byte = read(source);
@@ -924,6 +773,7 @@ architecture msp430 {
     }
 
     instruction "addc": DOUBLE_W {
+	    property bw: int = 1;
         property opcode: int = 0b0110;
         execute {
             local r1: short = read(source);
@@ -934,6 +784,7 @@ architecture msp430 {
     }
 
     instruction "addc.b": DOUBLE_B {
+	    property bw: int = 0;
         property opcode: int = 0b0110;
     	execute {
             local r1: byte = read(source);
@@ -944,6 +795,7 @@ architecture msp430 {
     }
 
     instruction "and": DOUBLE_W {
+	    property bw: int = 1;
 	    property opcode: int = 0b1111;
 	    execute {
             local r1: short = read(source);
@@ -954,6 +806,7 @@ architecture msp430 {
     }
 
     instruction "and.b": DOUBLE_B {
+	    property bw: int = 0;
 	    property opcode: int = 0b1111;
 	    execute {
             local r1: byte = read(source);
@@ -964,6 +817,7 @@ architecture msp430 {
     }
 
     instruction "bic": DOUBLE_W {    //logical and on inverted source and dest
+	    property bw: int = 1;
 	    property opcode: int = 0b1100;                        //status bits are not affected
 	    execute {
             write(dest, ~(read(source)) & read(dest));
@@ -971,6 +825,7 @@ architecture msp430 {
     }
 
     instruction "bic.b": DOUBLE_B {    //logical and on inverted source and dest
+	    property bw: int = 0;
 	    property opcode: int = 0b1100;                        //status bits are not affected
 	    execute {
             write(dest, ~(read(source)) & read(dest));
@@ -978,6 +833,7 @@ architecture msp430 {
     }
 
     instruction "bis": DOUBLE_W {   //logical or on source and dest
+	    property bw: int = 1;
         property opcode: int = 0b1101;                       //status bits not affected
         execute {
             write(dest, read(source) | read(dest));
@@ -985,6 +841,7 @@ architecture msp430 {
      }
 
     instruction "bis.b": DOUBLE_B {   //logical or on source and dest
+	    property bw: int = 0;
         property opcode: int = 0b1101;                       //status bits not affected
         execute {
             write(dest, read(source) | read(dest));
@@ -992,6 +849,7 @@ architecture msp430 {
      }
 
     instruction "bit": DOUBLE_W {   //test bits in dest by anding source
+	    property bw: int = 1;
 	    property opcode: int = 0b1011;                         //with dest and affecting only status bits
 	    execute {
 	        performAndW(read(source), read(dest));
@@ -999,13 +857,15 @@ architecture msp430 {
     }
 
     instruction "bit.b": DOUBLE_B {   //test bits in dest by anding source
+	    property bw: int = 0;
 	    property opcode: int = 0b1011;                         //with dest and affecting only status bits
 	    execute {
 	        performAndW(read(source), read(dest));
         }
     }
 
-    instruction "br": SINGLE_W {  //uncondtional branch emulated by moving
+    pseudo instruction "br": SINGLE_W {  //uncondtional branch emulated by moving
+	    property bw: int = 1;
 	    property opcode: int = 0b0100;                     //operand to Program counter
 	    execute {
 		    // emulated by MOV instruction
@@ -1015,6 +875,7 @@ architecture msp430 {
 
     instruction "call": SINGLE_W {     //calls a subroutine from 64k address space
         // TODO: double check this opcode
+	    property bw: int = 1;
 	    property opcode: int = 0b000100101000;          //stores old pc on TOS while jumping to subroutine
 	    execute {
             local temp: int = read(source);  //r1 is the SP, r0 is the PC
@@ -1023,7 +884,8 @@ architecture msp430 {
         }
     }
 
-    instruction "clr": SINGLE_W {             //emulated by MOV instruction
+    pseudo instruction "clr": SINGLE_W {             //emulated by MOV instruction
+	    property bw: int = 1;
     	property opcode: int = 0b0100;
         execute {
             // note: the read is necessary for the auto-increment operands
@@ -1032,7 +894,8 @@ architecture msp430 {
         }
     }
 
-    instruction "clr.b": SINGLE_B {           //emulated by MOV instruction
+    pseudo instruction "clr.b": SINGLE_B {           //emulated by MOV instruction
+	    property bw: int = 0;
 	    property opcode: int = 0b0100;
 	    execute {
             // note: the read is necessary for the auto-increment operands
@@ -1042,7 +905,8 @@ architecture msp430 {
     }
 
 
-    instruction "clrc" {               //clear carry bit by anding with #1
+    pseudo instruction "clrc" {               //clear carry bit by anding with #1
+	    property bw: int = 1;
 	    property opcode: int = 0b1100;
         execute {
 		    //emulated by BIC instruction
@@ -1050,7 +914,8 @@ architecture msp430 {
 	    }
     }
 
-    instruction "clrn" {             //clear neg. bit by anding with #4
+    pseudo instruction "clrn" {             //clear neg. bit by anding with #4
+	    property bw: int = 1;
 	    property opcode: int = 0b1100;
         execute {
        		//emulated by BIC instruction
@@ -1058,7 +923,8 @@ architecture msp430 {
 	    }
     }
 
-    instruction "clrz" {
+    pseudo instruction "clrz" {
+	    property bw: int = 1;
         property opcode: int = 0b1100;
         execute {
     		//emulated by BIC instruction
@@ -1067,6 +933,7 @@ architecture msp430 {
     }
 
     instruction "cmp": DOUBLE_W {      // compares 2 operands by
+	    property bw: int = 1;
 	    property opcode: int = 0b1001;                   // adding source with inverted dest
 	    execute {                        // and adding 1 to the result
 	        performAdditionW(read(source), ~(read(dest)), 1);
@@ -1074,20 +941,23 @@ architecture msp430 {
     }
 
     instruction "cmp.b": DOUBLE_B {    // compares 2 operands by
+	    property bw: int = 0;
     	property opcode: int = 0b1001;                   // adding source with inverted dest
 	    execute {                        // and adding 1 to the result
 	        performAddition(read(source), ~(read(dest)), 1);
         }
     }
 
-    instruction "dadc": SINGLE_W {   // add carry decimally to dest
+    pseudo instruction "dadc": SINGLE_W {   // add carry decimally to dest
+	    property bw: int = 1;
 	    property opcode: int = 0b1010;                 // emulated by DADD instruction
 	    execute {
 	        write(source, performDeciAddCW(0, read(source), bit(C)));
 	    }
     }
 
-    instruction "dadc.b": SINGLE_B {   // add carry decimally to dest
+    pseudo instruction "dadc.b": SINGLE_B {   // add carry decimally to dest
+	    property bw: int = 0;
 	    property opcode: int = 0b1010;                   // emulated by DADD instruction
 	    execute {
 	        write(source, performDeciAddC(0, read(source), bit(C)));
@@ -1095,6 +965,7 @@ architecture msp430 {
     }
 
     instruction "dadd": DOUBLE_W {  //source and carry added decimally to dest
+	    property bw: int = 1;
 	    property opcode: int = 0b1010;
 	    execute {
 	        write(dest, performDeciAddCW(read(source), read(dest), bit(C)));
@@ -1102,13 +973,15 @@ architecture msp430 {
     }
 
     instruction "dadd.b": DOUBLE_B {  //source and carry added decimally to dest
+	    property bw: int = 0;
 	    property opcode: int = 0b1010;
 	    execute {
 	        write(dest, performDeciAddC(read(source), read(dest), bit(C)));
 	    }
     }
 
-    instruction "dec": SINGLE_W  {
+    pseudo instruction "dec": SINGLE_W  {
+	    property bw: int = 1;
 	    property opcode: int = 0b1000;        // emulated by subtraction operation
 	    execute {
 	        local original: short = read(source);
@@ -1118,7 +991,8 @@ architecture msp430 {
         }
     }
 
-    instruction "dec.b": SINGLE_B  {
+    pseudo instruction "dec.b": SINGLE_B  {
+	    property bw: int = 0;
 	    property opcode: int = 0b1000;        //emulated by subtraction operation
 	    execute {
 	        local original: byte = read(source);
@@ -1128,7 +1002,8 @@ architecture msp430 {
         }
     }
 
-    instruction "decd": SINGLE_W {
+    pseudo instruction "decd": SINGLE_W {
+	    property bw: int = 1;
 	    property opcode: int = 0b1000;         //emulated by subtraction  operation
 	    execute {
  	        local original: short = read(source);
@@ -1138,7 +1013,8 @@ architecture msp430 {
 	    }
     }
 
-    instruction "decd.b": SINGLE_B {
+    pseudo instruction "decd.b": SINGLE_B {
+	    property bw: int = 0;
 	    property opcode: int = 0b1000;         //emulated by subtraction  operation
 	    execute {
  	        local original: byte = read(source);
@@ -1148,49 +1024,55 @@ architecture msp430 {
 	    }
     }
 
-    instruction "dint" {       // disable general interrupts
+    pseudo instruction "dint" {       // disable general interrupts
+	    property bw: int = 1;
         property opcode: int = 0b1100;       // emulated by BIC operation
 	    execute {
 	        disableInterrupts();
 	    }
     }
 
-    instruction "eint" {       // enable general interrupts
+    pseudo instruction "eint" {       // enable general interrupts
+	    property bw: int = 1;
 	    property opcode: int = 0b1101;       // emulated by BIS operation
 	    execute {
 	        enableInterrupts();
 	    }
     }
 
-    instruction "inc": SINGLE_W {     // increment dest
+    pseudo instruction "inc": SINGLE_W {     // increment dest
+	    property bw: int = 1;
 	    property opcode: int = 0b0101;                  // emulated by ADD operation
 	    execute {
 	        write(source, performAdditionW(read(source), 1, 0));
  	    }
     }
 
-    instruction "inc.b": SINGLE_B {     // increment dest
+    pseudo instruction "inc.b": SINGLE_B {     // increment dest
+	    property bw: int = 0;
 	    property opcode: int = 0b0101;                    // emulated by ADD operation
 	    execute {
 	        write(source, performAdditionW(read(source), 1, 0));
  	    }
     }
 
-    instruction "incd": SINGLE_W {      //double increment dest
+    pseudo instruction "incd": SINGLE_W {      //double increment dest
 	    property opcode: int = 0b0101;	    //emulated by ADD operation
 	    execute {
 	        write(source, performAdditionW(read(source), 2, 0));
 	    }
     }
 
-    instruction "incd.b": SINGLE_B {      //double increment dest
+    pseudo instruction "incd.b": SINGLE_B {      //double increment dest
+	    property bw: int = 0;
 	    property opcode: int = 0b0101;	    //emulated by ADD operation
 	    execute {
 	        write(source, performAdditionW(read(source), 2, 0));
 	    }
     }
 
-    instruction "inv": SINGLE_W  {       //invert dest
+    pseudo instruction "inv": SINGLE_W  {       //invert dest
+	    property bw: int = 1;
 	    property opcode: int = 0b1110;    //emulated by XOR operation
 	    execute {
    	        local result: int = ~(read(source));
@@ -1202,7 +1084,8 @@ architecture msp430 {
 	    }
     }
 
-    instruction "inv.b": SINGLE_B  {       //invert dest
+    pseudo instruction "inv.b": SINGLE_B  {       //invert dest
+	    property bw: int = 0;
 	    property opcode: int = 0b1110;    //emulated by XOR operation
 	    execute {
    	        local result: int = ~(read(source));
@@ -1215,7 +1098,7 @@ architecture msp430 {
     }
 
     instruction "jc": JMP_W  {      //jump if carry set
-	    property opcode: int = 0b00101100;
+	    property opcode: int = 0b001011;
 	    execute {
  	        if ( C ) {
  	            nextPC = nextPC + 2 * read(source);
@@ -1223,8 +1106,8 @@ architecture msp430 {
         }
     }
 
-    instruction "jhs": JMP_W  {      //jump if higher or same
-	    property opcode: int = 0b00101100;
+    pseudo instruction "jhs": JMP_W  {      //jump if higher or same
+	    property opcode: int = 0b001011;
 	    execute {
  	        if ( C ) {
  	            nextPC = nextPC + 2 * read(source);
@@ -1233,7 +1116,7 @@ architecture msp430 {
     }
 
     instruction "jeq": JMP_W {      //jump if equal
-	    property opcode: int = 0b00100100;
+	    property opcode: int = 0b001001;
 	    execute {
 	        if ( Z ) {
  	            nextPC = nextPC + 2 * read(source);
@@ -1241,8 +1124,8 @@ architecture msp430 {
         }
     }
 
-    instruction "jz": JMP_W {      //jump if zero
-	    property opcode: int = 0b00100100;
+    pseudo instruction "jz": JMP_W {      //jump if zero
+	    property opcode: int = 0b001001;
 	    execute {
 	        if ( Z ) {
  	            nextPC = nextPC + 2 * read(source);
@@ -1251,25 +1134,25 @@ architecture msp430 {
     }
 
     instruction "jge": JMP_W {   //jump if greater or equal
-	    property opcode: int = 0b001101000;
+	    property opcode: int = 0b001101;
 	    execute {
-	        if ( Z  xor N ) {
+	        if ( Z xor N ) {
  	            nextPC = nextPC + 2 * read(source);
 	        }
 	    }
     }
 
     instruction "jl": JMP_W {   //jump if less
-        property opcode: int = 0b00111000;
+        property opcode: int = 0b001110;
         execute {
-             if ( N xor Z ) {
+             if ( N xor V ) {
  	            nextPC = nextPC + 2 * read(source);
              }
     	 }
     }
 
     instruction "jmp": JMP_W {  //jump unconditionally
-	    property opcode: int = 0b00111100;
+	    property opcode: int = 0b001111;
 	    execute {
             //jump to address listed by 10 bit offset, unconditionally
  	        nextPC = nextPC + 2 * read(source);
@@ -1277,7 +1160,7 @@ architecture msp430 {
     }
 
     instruction "jn": JMP_W {   //jump if negative
-	    property opcode: int = 0b00110000;
+	    property opcode: int = 0b001100;
 	    execute {
 	        if ( N ) {
 			    //if N = 1, jump to address listed by 10 bit offset
@@ -1287,7 +1170,7 @@ architecture msp430 {
     }
 
     instruction "jnc": JMP_W {  //jump if carry not set
-	    property opcode: int = 0b00101000;
+	    property opcode: int = 0b001010;
 	    execute {
 	        if ( !C ) {
 			    //if C != 0, jump to address listed by 10 bit offset
@@ -1296,8 +1179,8 @@ architecture msp430 {
         }
     }
 
-    instruction "jlo": JMP_W {  //jump if carry not set
-	    property opcode: int = 0b00101000;
+    pseudo instruction "jlo": JMP_W {  //jump if carry not set
+	    property opcode: int = 0b001010;
 	    execute {
             if ( !C ) {
                 //if C != 0, jump to address listed by 10 bit offset
@@ -1307,7 +1190,7 @@ architecture msp430 {
     }
 
     instruction "jne": JMP_W {  //jump if not equal
-        property opcode: int = 0b00100000;
+        property opcode: int = 0b001000;
         execute {
             if ( !Z ) {
                 //if Z != 0, jump to address listed by 10 bit offset
@@ -1316,8 +1199,8 @@ architecture msp430 {
         }
     }
 
-    instruction "jnz": JMP_W {  //jump if not equal
-	    property opcode: int = 0b00100000;
+    pseudo instruction "jnz": JMP_W {  //jump if not equal
+	    property opcode: int = 0b001000;
 	    execute {
 	        if ( !Z ) {
 			    //if Z != 0, jump to address listed by 10 bit offset
@@ -1327,6 +1210,7 @@ architecture msp430 {
     }
 
     instruction "mov": DOUBLE_W {  //move source to dest
+	    property bw: int = 1;
         property opcode: int = 0b0100;
         execute {
             write(dest, read(source));
@@ -1334,26 +1218,29 @@ architecture msp430 {
     }
 
     instruction "mov.b": DOUBLE_B {  //move source to dest
+	    property bw: int = 0;
         property opcode: int = 0b0100;
         execute {
             write(dest, read(source));
         }
     }
 
-    instruction "nop" {   //no operation
+    pseudo instruction "nop" {   //no operation
         property opcode: int = 0b0100;     //emulated by MOV operation
         execute {
         }
     }
 
-    instruction "pop": SINGLE_W  {  // pop word from stack to dest
+    pseudo instruction "pop": SINGLE_W  {  // pop word from stack to dest
+	    property bw: int = 1;
         property opcode: int = 0b0100;   // emulated by MOV operation
         execute {
             write(source, popWord());         // move temp to dest
         }
     }
 
-    instruction "pop.b": SINGLE_B  {  //pop byte from stack to dest
+    pseudo instruction "pop.b": SINGLE_B  {  //pop byte from stack to dest
+	    property bw: int = 0;
         property opcode: int = 0b0100;   //emulated by MOV operation
         execute {
             write(source, popByte());         // move temp to dest
@@ -1361,6 +1248,7 @@ architecture msp430 {
     }
 
     instruction "push": SINGLE_W {  //push word onto stack
+	    property bw: int = 1;
         property opcode: int = 0b00010010;
         execute {
             pushWord(read(source));
@@ -1368,13 +1256,14 @@ architecture msp430 {
     }
 
     instruction "push.b": SINGLE_B {  //push byte onto stack
+	    property bw: int = 0;
         property opcode: int = 0b00010010;
         execute {
             pushByte(read(source));
         }
     }
 
-    instruction "ret"  {    //return from subroutine
+    instruction "ret" {    //return from subroutine
         property opcode: int = 0b0100;
         execute {
             nextPC = popWord();
@@ -1389,7 +1278,8 @@ architecture msp430 {
         }
     }
 
-    instruction "rla": SINGLE_W {    // rotate left arithmetically
+    pseudo instruction "rla": SINGLE_W {    // rotate left arithmetically
+	    property bw: int = 1;
         property opcode: int = 0b0101;            // emulated by add instruction (add dst, dst)
         execute {
             local dest: short = read(source);
@@ -1402,7 +1292,8 @@ architecture msp430 {
         }
     }
 
-    instruction "rla.b": SINGLE_B {    // rotate left arithmetically
+    pseudo instruction "rla.b": SINGLE_B {    // rotate left arithmetically
+	    property bw: int = 0;
         property opcode: int = 0b0101;                   // emulated by add instruction (add dst, dst)
         execute {
             local dest: int = read(source);
@@ -1415,7 +1306,8 @@ architecture msp430 {
         }
     }
 
-    instruction "rlc": SINGLE_W {    //rotate left through carry
+    pseudo instruction "rlc": SINGLE_W {    //rotate left through carry
+	    property bw: int = 1;
         property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
         execute {
             local dest: short = read(source);
@@ -1430,7 +1322,8 @@ architecture msp430 {
         }
      }
 
-    instruction "rlc.b": SINGLE_B {    //rotate left through carry
+    pseudo instruction "rlc.b": SINGLE_B {    //rotate left through carry
+	    property bw: int = 0;
         property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
         execute {
             local dest: int = read(source);
@@ -1445,6 +1338,7 @@ architecture msp430 {
      }
 
     instruction "rra": SINGLE_W  {     //rotate right arithmetically
+	    property bw: int = 1;
         property opcode: int = 0b00010001;
         execute {
             local temp: short = read(source);
@@ -1458,6 +1352,7 @@ architecture msp430 {
     }
 
     instruction "rra.b": SINGLE_B  {     //rotate right arithmetically
+	    property bw: int = 0;
         property opcode: int = 0b000100010100;
         execute {
             local temp: byte = read(source);
@@ -1471,6 +1366,7 @@ architecture msp430 {
     }
 
     instruction "rrc": SINGLE_W  {    //rotate right through carry
+	    property bw: int = 1;
         property opcode: int = 0b00010000;
         execute {
             local temp: short = read(source);
@@ -1485,6 +1381,7 @@ architecture msp430 {
     }
 
     instruction "rrc.b": SINGLE_B  {    //rotate right through carry
+	    property bw: int = 0;
         property opcode: int = 0b000100000100;
         execute {
             local temp: byte = read(source);
@@ -1498,7 +1395,8 @@ architecture msp430 {
         }
     }
 
-    instruction "sbc": SINGLE_W {    // subtract source and borrow/.NOT. carry from dest
+    pseudo instruction "sbc": SINGLE_W {    // subtract source and borrow/.NOT. carry from dest
+	    property bw: int = 1;
         property opcode: int = 0b0111;                 // emulated by SUBC instruction
         execute {
             local dest: short = read(source);
@@ -1513,7 +1411,8 @@ architecture msp430 {
 	    }
     }
 
-    instruction "sbc.b": SINGLE_B {    //subtract source and borrow/.NOT. carry from dest
+    pseudo instruction "sbc.b": SINGLE_B {    //subtract source and borrow/.NOT. carry from dest
+	    property bw: int = 0;
         property opcode: int = 0b0111;      //emulated by SUBC instruction
         execute {
             local dest: byte = read(source);
@@ -1527,21 +1426,21 @@ architecture msp430 {
         }
     }
 
-    instruction "setc"    {     //set carry bit
+    pseudo instruction "setc"    {     //set carry bit
         property opcode: int = 0b1101;    //emulated by the BIS operation
         execute {
             C = true;
         }
     }
 
-    instruction "setn"   {   //set Negative bit
+    pseudo instruction "setn"   {   //set Negative bit
         property opcode: int = 0b1101;   //emulated by the BIS operation
         execute {
             N = true;
         }
     }
 
-    instruction "setz"  {   // set zero bit
+    pseudo instruction "setz"  {   // set zero bit
         property opcode: int = 0b1101;   //emulated by the BIS operation
         execute {
             Z = true;
@@ -1549,6 +1448,7 @@ architecture msp430 {
     }
 
     instruction "sub": DOUBLE_W {   //subtract source from dest
+	    property bw: int = 1;
         property opcode: int = 0b1000;
         execute {
             local r1: short = read(source);
@@ -1559,6 +1459,7 @@ architecture msp430 {
     }
 
     instruction "sub.b": DOUBLE_B {   //subtract source from dest
+	    property bw: int = 0;
         property opcode: int = 0b1000;
         execute {
             local r1: byte = read(source);
@@ -1569,6 +1470,7 @@ architecture msp430 {
     }
 
     instruction "subc": DOUBLE_W  {    //sub source and borrow/.NOT. carry from dest
+	    property bw: int = 1;
         property opcode: int = 0b0111;
         execute {
             local r1: short = read(source);
@@ -1579,6 +1481,7 @@ architecture msp430 {
     }
 
     instruction "subc.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
+	    property bw: int = 0;
         property opcode: int = 0b0111;
         execute {
             local r1: byte = read(source);
@@ -1588,7 +1491,8 @@ architecture msp430 {
  	    }
     }
 
-    instruction "sbb" : DOUBLE_W  {    //sub source and borrow/.NOT. carry from dest
+    pseudo instruction "sbb" : DOUBLE_W  {    //sub source and borrow/.NOT. carry from dest
+	    property bw: int = 1;
 	    property opcode: int = 0b0111;                         //same operation as SUBC, different syntax
 	    execute {
             local r1: short = read(source);
@@ -1598,7 +1502,8 @@ architecture msp430 {
 	    }
     }
 
-    instruction "sbb.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
+    pseudo instruction "sbb.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
+	    property bw: int = 0;
         property opcode: int = 0b0111;                            //same operation as SUBC, different syntax
         execute {
             local r1: byte = read(source);
@@ -1609,6 +1514,7 @@ architecture msp430 {
     }
 
     instruction "swpb": SINGLE_W {   //swap bytes
+	    property bw: int = 1;
         property opcode: int = 0b000100001000;
         execute {
            local temp1: short = read(source);   //contains original
@@ -1620,6 +1526,7 @@ architecture msp430 {
     }
 
     instruction "sxt": SINGLE_W {  //extend sign
+	    property bw: int = 1;
         property opcode: int = 0b000100011000;
         execute {
             local r1: short = read(source);
@@ -1633,6 +1540,7 @@ architecture msp430 {
     }
 
     instruction "tst": SINGLE_W {  //test destination
+	    property bw: int = 1;
         property opcode: int = 0b1001;
         execute {
             local r1: int = read(source);
@@ -1644,6 +1552,7 @@ architecture msp430 {
     }
 
     instruction "tst.b": SINGLE_B {  //test destination
+	    property bw: int = 0;
         property opcode: int = 0b1001;
         execute {
             local r1: int = read(source);
@@ -1655,7 +1564,8 @@ architecture msp430 {
     }
 
     instruction "xor": DOUBLE_W {  //Exclusive OR of source with dest
-        property opcode: int = 1110;
+	    property bw: int = 1;
+        property opcode: int = 0b1110;
         execute {
             local source: int = read(source);
             local dest: int = read(dest);
@@ -1669,7 +1579,8 @@ architecture msp430 {
     }
 
     instruction "xor.b": DOUBLE_B {  //Exclusive OR of source with dest
-	    property opcode: int = 1110;
+	    property bw: int = 0;
+	    property opcode: int = 0b1110;
 	    execute {
             local source: int = read(source);
             local dest: int = read(dest);
@@ -1683,4 +1594,3 @@ architecture msp430 {
     }
 
 }
-

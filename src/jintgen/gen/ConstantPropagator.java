@@ -61,7 +61,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst<ConstantPropaga
         }
 
         public Expr lookup(String name) {
-            Expr e = (Expr)constantMap.get(name);
+            Expr e = constantMap.get(name);
             if (e != null) return e;
             if (parent != null)
                 return parent.lookup(name);
@@ -704,6 +704,7 @@ public class ConstantPropagator extends StmtRebuilder.DepthFirst<ConstantPropaga
     // --- utilities ---
 
     private int intValueOf(Expr nexpr) {
+        if ( nexpr instanceof Literal.BoolExpr ) return boolValueOf(nexpr) ? 1 : 0;
         return ((Literal.IntExpr)nexpr).value;
     }
 

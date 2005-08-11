@@ -59,8 +59,8 @@ public class MSP430Operand {
     }
     
     public static class IMM16 extends MSP430Operand {
-        public static final int low = 0;
-        public static final int high = 65535;
+        public static final int low = -32768;
+        public static final int high = 65536;
         public final int value;
         IMM16(int val) {
             value = checkValue(val, low, high);
@@ -69,8 +69,8 @@ public class MSP430Operand {
     
     public static class INDX_B extends MSP430Operand {
         public final SREG_B reg;
-        public final IMM8 index;
-        INDX_B(SREG_B reg, IMM8 index) {
+        public final IMM16 index;
+        INDX_B(SREG_B reg, IMM16 index) {
             this.reg = reg;
             this.index = index;
         }
@@ -131,8 +131,8 @@ public class MSP430Operand {
     }
     
     public static class IMMD_W extends MSP430Operand {
-        public static final int low = 0;
-        public static final int high = 65535;
+        public static final int low = -32768;
+        public static final int high = 65536;
         public final int value;
         IMMD_W(int val) {
             value = checkValue(val, low, high);
@@ -150,32 +150,32 @@ public class MSP430Operand {
     
     public static class DOUBLE_W_source_union extends MSP430Operand {
         public final MSP430Operand operand;
-        DOUBLE_W_source_union(SREG_W o) { operand = o; }
-        DOUBLE_W_source_union(INDX_W o) { operand = o; }
-        DOUBLE_W_source_union(SYMB_W o) { operand = o; }
-        DOUBLE_W_source_union(ABSO_W o) { operand = o; }
-        DOUBLE_W_source_union(INDREG_W o) { operand = o; }
+        DOUBLE_W_source_union(SREG_B o) { operand = o; }
+        DOUBLE_W_source_union(INDX_B o) { operand = o; }
+        DOUBLE_W_source_union(SYMB_B o) { operand = o; }
+        DOUBLE_W_source_union(ABSO_B o) { operand = o; }
+        DOUBLE_W_source_union(INDREG_B o) { operand = o; }
         DOUBLE_W_source_union(AIREG_W o) { operand = o; }
-        DOUBLE_W_source_union(IMMD_W o) { operand = o; }
+        DOUBLE_W_source_union(IMMD_B o) { operand = o; }
     }
     
     public static class DOUBLE_W_dest_union extends MSP430Operand {
         public final MSP430Operand operand;
-        DOUBLE_W_dest_union(SREG_W o) { operand = o; }
-        DOUBLE_W_dest_union(INDX_W o) { operand = o; }
-        DOUBLE_W_dest_union(SYMB_W o) { operand = o; }
-        DOUBLE_W_dest_union(ABSO_W o) { operand = o; }
+        DOUBLE_W_dest_union(SREG_B o) { operand = o; }
+        DOUBLE_W_dest_union(INDX_B o) { operand = o; }
+        DOUBLE_W_dest_union(SYMB_B o) { operand = o; }
+        DOUBLE_W_dest_union(ABSO_B o) { operand = o; }
     }
     
     public static class SINGLE_W_source_union extends MSP430Operand {
         public final MSP430Operand operand;
-        SINGLE_W_source_union(SREG_W o) { operand = o; }
-        SINGLE_W_source_union(INDX_W o) { operand = o; }
-        SINGLE_W_source_union(SYMB_W o) { operand = o; }
-        SINGLE_W_source_union(ABSO_W o) { operand = o; }
-        SINGLE_W_source_union(INDREG_W o) { operand = o; }
+        SINGLE_W_source_union(SREG_B o) { operand = o; }
+        SINGLE_W_source_union(INDX_B o) { operand = o; }
+        SINGLE_W_source_union(SYMB_B o) { operand = o; }
+        SINGLE_W_source_union(ABSO_B o) { operand = o; }
+        SINGLE_W_source_union(INDREG_B o) { operand = o; }
         SINGLE_W_source_union(AIREG_W o) { operand = o; }
-        SINGLE_W_source_union(IMMD_W o) { operand = o; }
+        SINGLE_W_source_union(IMMD_B o) { operand = o; }
     }
     
     public static class DOUBLE_B_source_union extends MSP430Operand {
