@@ -78,7 +78,7 @@ architecture msp430 {
 	    write: short { }
 	}
 
-    operand-type INDREG_B[4]: SREG {                    //Indirect register mode
+    operand-type IREG_B[4]: SREG {                    //Indirect register mode
 	    read: byte {
 	        local addr: short = $regs(this);
 	        local val: byte = $sram(addr);
@@ -87,7 +87,7 @@ architecture msp430 {
 	    write: byte { }
 	}
 
-    operand-type INDREG_W[4]: SREG {
+    operand-type IREG_W[4]: SREG {
 	    read: short {
 	        return $sram($regs(this));
 	    }
@@ -160,165 +160,165 @@ architecture msp430 {
 //   ADDRESSING MODES ALLOWED FOR SINGLE OPERAND/DOUBLE OPERAND/JUMP INSTRUCTIONS
 //-------------------------------------------------------------------------   
     addr-mode REG_W source: SREG_W {                   //addressing modes like REG_W, REGPUSH_W, REGCALL_W are single operand
-        encoding = priority 3 SINGLE_OP where { As = 0b00, sreg = source }
+        encoding = priority 5 SINGLE_OP where { As = 0b00, sreg = source }
 	    property syntax: String = "%source";
 	    property cycles: int = 1;
     }
 
     addr-mode REG_B source: SREG_B {
-        encoding = priority 3 SINGLE_OP where { As = 0b00, sreg = source }
+        encoding = priority 5 SINGLE_OP where { As = 0b00, sreg = source }
 	    property syntax: String = "%source";
 	    property cycles: int = 1;
     }
 
     addr-mode REGREG_B source: SREG_B, dest: SREG_B {         //addressing modes like REGREG_B, REGIND_W, etc are double operand
-        encoding = priority 3 DOUBLE_OP where { As = 0b00, Ad = 0, sreg = source, dreg = dest }
+        encoding = priority 5 DOUBLE_OP where { As = 0b00, Ad = 0, sreg = source, dreg = dest }
         property syntax: String = "%source, %dest";
         property cycles: int = 1;
     }
 
     addr-mode REGIND_B source: SREG_B, dest: INDX_B {
-        encoding = priority 3 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
+        encoding = priority 5 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
 	    property syntax: String = "%source, %dest.index(%dest.reg)";
 	    property cycles: int = 4;
     }
 
     addr-mode REGSYM_B source: SREG_B, dest: SYMB_B {
         // symbolic mode is encoded as indexing off of the PC register
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
 	    property syntax: String = "%source, %dest";
 	    property cycles: int = 4;
     }
 
     addr-mode REGABS_B source: SREG_B, dest: ABSO_B {
         // absolute mode (as destination) is encoded as indexing off of dreg = R2
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
 	    property syntax: String = "%source, &%dest";
        	property cycles: int = 4;
     }
 
     addr-mode IND_B source: INDX_B {
-        encoding = priority 3 SINGLE_OP_X where { As = 0b10, sreg = source.reg, X = source.index }
-        property syntax: String = "@%source";
+        encoding = priority 5 SINGLE_OP_X where { As = 0b01, sreg = source.reg, X = source.index }
+        property syntax: String = "%source.index(%source.reg)";
         property cycles: int = 4;
     }
 
     addr-mode INDREG_B source: INDX_B, dest: SREG_B {
-        encoding = priority 3 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = source.reg, dreg = dest.reg, X = source.index }
+        encoding = priority 5 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = source.reg, dreg = dest.reg, X = source.index }
         property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 3;
     }
 
     addr-mode INDIND_B source: INDX_B, dest: INDX_B {
-        encoding = priority 3 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = dest.reg, X = source.index, Y = dest.index }
+        encoding = priority 5 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = dest.reg, X = source.index, Y = dest.index }
         property syntax: String = "%source.index(%source.reg), %dest.index(%dest.reg)";
         property cycles: int = 6;
     }
 
     addr-mode SYM_B source: SYMB_B {
-        encoding = priority 0 SINGLE_OP_X where { As = 0b01, sreg = 0b0000, X = source }
+        encoding = priority 2 SINGLE_OP_X where { As = 0b01, sreg = 0b0000, X = source }
         property syntax: String = "%source";
         property cycles: int = 4;
     }
 
     addr-mode SYMREG_B source: SYMB_B, dest: SREG_B {
-        encoding = priority 1 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
         property syntax: String = "%source, %dest";
         property cycles: int = 3;
     }
 
     addr-mode INDSYM_B source: INDX_B, dest: SYMB_B {
-        encoding = priority 2 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = source.reg, dreg = 0b0000, X = source.index, Y = dest.index }
+        encoding = priority 4 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = 0b0000, X = source.index, Y = dest.index }
         property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 6;
     }
 
     addr-mode INDABS_B source: INDX_B, dest: ABSO_B {
-        encoding = priority 2 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = source.reg, dreg = 0b0010, X = source.index, Y = dest }
+        encoding = priority 4 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = 0b0010, X = source.index, Y = dest }
         property syntax: String = "%source.index(%source.reg), &%dest";
         property cycles: int = 6;
     }
 
     addr-mode SYMABS_B source: SYMB_B, dest: ABSO_B {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
+        encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
         property syntax: String = "%source, &%dest";
         property cycles: int = 6;
     }
 
     addr-mode SYMIND_B source: SYMB_B, dest: INDX_B {
-        encoding = priority 1 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
+        encoding = priority 3 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
         property syntax: String = "%source, %dest.index(%dest.reg)";
         property cycles: int = 6;
     }
 
     addr-mode SYMSYM_B source : SYMB_B, dest: SYMB_B {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
+        encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
         property syntax: String = "%source, %dest";
         property cycles: int = 6;
     }
 
     addr-mode ABSSYM_B source: ABSO_B, dest: SYMB_B {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = 0b0000, X = source, Y = dest }
+        encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0010, dreg = 0b0000, X = source, Y = dest }
         property syntax: String = "&%source, %dest";
         property cycles: int = 6;
     }
 
     addr-mode ABS_B source: ABSO_B {
-        encoding = priority 0 SINGLE_OP_X where { As = 0b01, sreg = 0b0010, X = source }
+        encoding = priority 2 SINGLE_OP_X where { As = 0b01, sreg = 0b0010, X = source }
         property syntax: String = "&%source";
         property cycles: int = 4;
     }
 
     addr-mode ABSREG_B source: ABSO_B, dest: SREG_B {
-        encoding = priority 1 DOUBLE_OP_X where { As = 0b10, Ad = 0, sreg = 0b0010, dreg = dest, X = source }
+        encoding = priority 3 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = 0b0010, dreg = dest, X = source }
         property syntax: String = "&%source, %dest";
         property cycles: int = 3;
     }
 
     addr-mode ABSIND_B source: ABSO_B, dest: INDX_B {
-        encoding = priority 1 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = dest.reg, X = source, Y = dest.index }
+        encoding = priority 3 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0010, dreg = dest.reg, X = source, Y = dest.index }
         property syntax: String = "&%source, %dest.index(%dest.reg)";
         property cycles: int = 6;
     }
 
     addr-mode ABSABS_B source: ABSO_B, dest: ABSO_B {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = 0b0010, X = source, Y = dest }
+        encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0010, dreg = 0b0010, X = source, Y = dest }
         property syntax: String = "&%source, &%dest";
         property cycles: int = 6;
     }
 
-    addr-mode INREGSYM_B source: INDREG_B, dest: SYMB_B {
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
+    addr-mode IREGSYM_B source: IREG_B, dest: SYMB_B {
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source, %dest";
         property cycles: int = 5;
     }
 
-    addr-mode INREG_B source: INDREG_B {
-        encoding = priority 3 SINGLE_OP_X where { As = 0b10, sreg = source }
+    addr-mode IREG_B source: IREG_B {
+        encoding = priority 5 SINGLE_OP_X where { As = 0b10, sreg = source }
         property syntax: String = "@%source";
         property cycles: int = 3;
     }
 
-    addr-mode INREGREG_B source: INDREG_B, dest: SREG_B {
-        encoding = priority 3 DOUBLE_OP where { As = 0b10, Ad = 0, sreg = source, dreg = dest }
+    addr-mode IREGREG_B source: IREG_B, dest: SREG_B {
+        encoding = priority 5 DOUBLE_OP where { As = 0b10, Ad = 0, sreg = source, dreg = dest }
         property syntax: String = "@%source, %dest";
         property cycles: int = 2;
     }
 
-    addr-mode INREGIND_B source: INDREG_B, dest: INDX_B {
-        encoding = priority 3 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
+    addr-mode IREGIND_B source: IREG_B, dest: INDX_B {
+        encoding = priority 5 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
         property syntax: String = "@%source, %dest.index(%dest.reg)";
         property cycles: int = 5;
     }
 
-    addr-mode INREGABS_B source: INDREG_B, dest: ABSO_B {
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
+    addr-mode IREGABS_B source: IREG_B, dest: ABSO_B {
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
         property syntax: String = "@%source, &%dest";
         property cycles: int = 5;
     }
 
     addr-mode IMMED_B source: IMMD_B {
-        encoding = priority 3 SINGLE_OP_X where { As = 0b11, sreg = 0b0000, X = source }
+        encoding = priority 1 SINGLE_OP_X where { As = 0b11, sreg = 0b0000, X = source }
         encoding = priority 0 SINGLE_OP where { As = 0b11, sreg = 0b0011 } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 SINGLE_OP where { As = 0b00, sreg = 0b0011 } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 0 SINGLE_OP where { As = 0b01, sreg = 0b0011 } when source == 1  // encodes as R3, As = 0b01
@@ -330,89 +330,109 @@ architecture msp430 {
     }
 
     addr-mode IMMEDREG_B source: IMMD_B, dest: SREG_B {
-        // TODO: add in specific opcodes for constants
-        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
+        encoding = priority 1 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = 0b0011, dreg = dest } when source == -1 // encodes as R3, As = 0b11
+        encoding = priority 1 DOUBLE_OP where { As = 0b00, Ad = 0, sreg = 0b0011, dreg = dest } when source == 0  // encodes as R2, As = 0b10
+        encoding = priority 1 DOUBLE_OP where { As = 0b01, Ad = 0, sreg = 0b0011, dreg = dest } when source == 1  // encodes as R3, As = 0b01
+        encoding = priority 1 DOUBLE_OP where { As = 0b10, Ad = 0, sreg = 0b0011, dreg = dest } when source == 2
+        encoding = priority 1 DOUBLE_OP where { As = 0b10, Ad = 0, sreg = 0b0010, dreg = dest } when source == 4
+        encoding = priority 1 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = 0b0010, dreg = dest } when source == 8
         property syntax: String = "#%source, %dest";
         property cycles: int = 2;
     }
 
     addr-mode IMMEDIND_B source: IMMD_B, dest: INDX_B {
-        // TODO: expand the constant encodings
-        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = dest.index }
+        encoding = priority 1 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == -1 // encodes as R3, As = 0b11
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == 0  // encodes as R2, As = 0b10
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == 1  // encodes as R3, As = 0b01
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == 2
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = dest.reg, X = dest.index } when source == 4
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0010, dreg = dest.reg, X = dest.index } when source == 8
         property syntax: String = "#%source, %dest.index(%dest.reg)";
         property cycles: int = 5;
     }
 
     addr-mode IMMEDSYM_B source: IMMD_B, dest: SYMB_B {
-        // TODO: expand the constant encodings
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = dest }
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest.index }
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == -1 // encodes as R3, As = 0b11
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 0  // encodes as R2, As = 0b10
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 1  // encodes as R3, As = 0b01
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 2
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = 0b0000, X = dest } when source == 4
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0010, dreg = 0b0000, X = dest } when source == 8
         property syntax: String = "#%source, %dest";
         property cycles: int = 5;
     }
 
     addr-mode IMMEDABS_B source: IMMD_B, dest: ABSO_B {
-        // TODO: expand the constant encodings
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = dest }
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest.index }
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == -1 // encodes as R3, As = 0b11
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 0  // encodes as R2, As = 0b10
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 1  // encodes as R3, As = 0b01
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 2
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = 0b0010, X = dest } when source == 4
+        encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0010, dreg = 0b0010, X = dest } when source == 8
         property syntax: String = "#%source, &%dest";
         property cycles: int = 5;
     }
 
     addr-mode AUTO_B source: AIREG_B {
-        encoding = priority 3 SINGLE_OP where { As = 0b11, sreg = source }
+        encoding = priority 5 SINGLE_OP where { As = 0b11, sreg = source }
 	    property syntax: String = "@%source+";
 	    property cycles: int = 3;
     }
 
     addr-mode AUTOREG_B source: AIREG_B, dest: SREG_B {
-        encoding = priority 3 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = source, dreg = dest }
+        encoding = priority 5 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = source, dreg = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 2;
     }
 
     addr-mode AUTOIND_B source: AIREG_B, dest: INDX_B {
-        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
+        encoding = priority 5 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
         property syntax: String = "@%source+, %dest.index(%dest.reg)";
         property cycles: int = 5;
     }
 
     addr-mode AUTOSYM_B source: AIREG_B, dest: SYMB_B {
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
     }
 
     addr-mode AUTOABS_B source: AIREG_B, dest: ABSO_B {
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
     }
 
     addr-mode AUTO_W source: AIREG_W {
-        encoding = priority 3 SINGLE_OP where { As = 0b11, sreg = source }
+        encoding = priority 5 SINGLE_OP where { As = 0b11, sreg = source }
 	    property syntax: String = "@%source+";
 	    property cycles: int = 3;
     }
 
     addr-mode AUTOREG_W source: AIREG_W, dest: SREG_B {
-        encoding = priority 3 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = source, dreg = dest }
+        encoding = priority 5 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = source, dreg = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 2;
     }
 
     addr-mode AUTOIND_W source: AIREG_W, dest: INDX_B {
-        encoding = priority 3 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
+        encoding = priority 5 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = dest.reg, X = dest.index }
         property syntax: String = "@%source+, %dest.index(%dest.reg)";
         property cycles: int = 5;
     }
 
     addr-mode AUTOSYM_W source: AIREG_W, dest: SYMB_B {
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
     }
 
     addr-mode AUTOABS_W source: AIREG_W, dest: ABSO_B {
-        encoding = priority 2 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
+        encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0010, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
     }
@@ -444,10 +464,10 @@ architecture msp430 {
         ABSIND_B,
         ABSSYM_B,
         ABSABS_B,
-        INREGREG_B,
-        INREGIND_B,
-        INREGSYM_B,
-        INREGABS_B,
+        IREGREG_B,
+        IREGIND_B,
+        IREGSYM_B,
+        IREGABS_B,
         AUTOREG_W,
         AUTOIND_W,
         AUTOSYM_W,
@@ -463,7 +483,7 @@ architecture msp430 {
         IND_B,
         SYM_B,
         ABS_B,
-        INREG_B,
+        IREG_B,
         AUTO_W,
         IMMED_B
     }
@@ -485,10 +505,10 @@ architecture msp430 {
         ABSIND_B,
         ABSSYM_B,
         ABSABS_B,
-        INREGREG_B,
-        INREGIND_B,
-        INREGSYM_B,
-        INREGABS_B,
+        IREGREG_B,
+        IREGIND_B,
+        IREGSYM_B,
+        IREGABS_B,
         AUTOREG_B,
         AUTOIND_B,
         AUTOSYM_B,
@@ -504,7 +524,7 @@ architecture msp430 {
         IND_B,
         SYM_B,
         ABS_B,
-        INREG_B,
+        IREG_B,
         AUTO_B,
         IMMED_B
     }
@@ -876,7 +896,7 @@ architecture msp430 {
     instruction "call": SINGLE_W {     //calls a subroutine from 64k address space
         // TODO: double check this opcode
 	    property bw: int = 1;
-	    property opcode: int = 0b000100101000;          //stores old pc on TOS while jumping to subroutine
+	    property opcode: int = 0b000100101;          //stores old pc on TOS while jumping to subroutine
 	    execute {
             local temp: int = read(source);  //r1 is the SP, r0 is the PC
             pushPC(nextPC);
@@ -1353,7 +1373,7 @@ architecture msp430 {
 
     instruction "rra.b": SINGLE_B  {     //rotate right arithmetically
 	    property bw: int = 0;
-        property opcode: int = 0b000100010100;
+        property opcode: int = 0b000100010;
         execute {
             local temp: byte = read(source);
             C = temp2[0];            // move LSB into Carry
@@ -1382,7 +1402,7 @@ architecture msp430 {
 
     instruction "rrc.b": SINGLE_B  {    //rotate right through carry
 	    property bw: int = 0;
-        property opcode: int = 0b000100000100;
+        property opcode: int = 0b000100000;
         execute {
             local temp: byte = read(source);
             local oldC: int = bit(C);
@@ -1515,7 +1535,7 @@ architecture msp430 {
 
     instruction "swpb": SINGLE_W {   //swap bytes
 	    property bw: int = 1;
-        property opcode: int = 0b000100001000;
+        property opcode: int = 0b000100001;
         execute {
            local temp1: short = read(source);   //contains original
            local temp2: short = temp1;   //eventually contains swapped bytes
@@ -1527,7 +1547,7 @@ architecture msp430 {
 
     instruction "sxt": SINGLE_W {  //extend sign
 	    property bw: int = 1;
-        property opcode: int = 0b000100011000;
+        property opcode: int = 0b000100011;
         execute {
             local r1: short = read(source);
             r1 = (r1 << 8) >> 8;

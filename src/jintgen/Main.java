@@ -40,6 +40,7 @@ import java.util.Properties;
 import jintgen.isdl.Architecture;
 import jintgen.isdl.Verifier;
 import jintgen.gen.*;
+import jintgen.gen.disassembler.DisassemblerGenerator;
 import jintgen.isdl.parser.ISDLParser;
 import jintgen.isdl.parser.ParseException;
 

@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jintgen.gen;
+package jintgen.gen.disassembler;
 
 import avrora.util.Util;
 import jintgen.jigir.CodeRegion;
