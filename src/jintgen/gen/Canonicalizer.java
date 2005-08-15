@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * @author Ben L. Titzer
  */
-public class Canonicalizer extends StmtRebuilder.DepthFirst<Object> {
+public class Canonicalizer extends StmtRebuilder<Object> {
 
     int tempcount;
 

@@ -57,6 +57,7 @@ public class DisassemblerGenerator extends Generator {
 
     Printer printer;
     Verbose.Printer verbose = Verbose.getVerbosePrinter("jintgen.disassem");
+    Verbose.Printer verboseDump = Verbose.getVerbosePrinter("jintgen.disassem.tree");
     static String instrClassName;
     static String symbolClassName;
 
@@ -91,10 +92,19 @@ public class DisassemblerGenerator extends Generator {
             DecodingTree es = rootSets[cntr];
             if ( es == null ) continue;
             numTrees++;
-            es.compute();
+            es.compute(0);
             es.generateCode((cntr+1)*100000, printer);
         }
         generateRoot();
+        if ( verboseDump.enabled ) {
+            for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
+                DecodingTree es = rootSets[cntr];
+                if ( es == null ) continue;
+                verboseDump.println("Decoding tree "+cntr+" {");
+                es.dump(verboseDump, 0);
+                verboseDump.println("} // tree "+cntr);
+            }
+        }
         Terminal.nextln();
         TermUtil.reportQuantity("Instructions", instrs, "");
         TermUtil.reportQuantity("Pseudo-instructions", pseudoInstrs, "");
@@ -140,8 +150,9 @@ public class DisassemblerGenerator extends Generator {
 
     private void addEncodingInfo(InstrDecl d, AddrModeDecl am, EncodingDecl ed) {
         EncodingInfo ei = new EncodingInfo(d, am, encodingNumber, ed);
-        DecodingTree dt = getDecodingTree(ed.getPriority());
-        dt.encodings.add(ei);
+        //DecodingTree dt = getDecodingTree(ed.getPriority());
+        DecodingTree dt = getDecodingTree(0);
+        dt.addEncoding(ei);
         encodingNumber++;
     }
 

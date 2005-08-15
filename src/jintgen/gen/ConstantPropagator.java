@@ -40,7 +40,7 @@ import java.util.*;
 /**
  * @author Ben L. Titzer
  */
-public class ConstantPropagator extends StmtRebuilder.DepthFirst<ConstantPropagator.ConstantEnvironment> {
+public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.ConstantEnvironment> {
 
     protected static Literal.IntExpr ZERO = new Literal.IntExpr(0);
     protected static Literal.IntExpr ONE = new Literal.IntExpr(1);

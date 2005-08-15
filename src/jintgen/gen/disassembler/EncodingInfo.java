@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
+import avrora.util.Printer;
 
 /**
  * @author Ben L. Titzer
@@ -197,10 +198,11 @@ public class EncodingInfo {
         }
     }
 
-    void print(Verbose.Printer p) {
-        if ( !p.enabled ) return;
+    void print(int indent, Printer p) {
         String ncross = instr.name +" x "+addrMode.name;
         String name = StringUtil.leftJustify(ncross, 20);
+        for ( int cntr = 0; cntr < indent; cntr++ )
+            p.print("    ");
         p.print(name+": ");
         for ( int cntr = 0; cntr < bitStates.length; cntr++ ) {
             switch ( bitStates[cntr] ) {
@@ -222,5 +224,14 @@ public class EncodingInfo {
             }
         }
         p.nextln();
+    }
+
+    void printVerbose(int indent, Verbose.Printer p) {
+        if ( !p.enabled ) return;
+        print(indent, p);
+    }
+
+    public int getLength() {
+        return bitStates.length;
     }
 }

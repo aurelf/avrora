@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * @author Ben L. Titzer
  */
-public class DeadCodeEliminator extends StmtRebuilder.DepthFirst<DeadCodeEliminator.DefUseEnvironment> {
+public class DeadCodeEliminator extends StmtRebuilder<DeadCodeEliminator.DefUseEnvironment> {
 
     Set globals;
 

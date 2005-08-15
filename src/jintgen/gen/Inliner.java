@@ -57,7 +57,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class Inliner extends StmtRebuilder.DepthFirst<Object> {
+public class Inliner extends StmtRebuilder<Object> {
     int tmpCount;
 
     private Architecture architecture;
