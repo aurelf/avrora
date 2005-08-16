@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,48 +30,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jintgen;
+package jintgen.gen.disassembler;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
- *
  * @author Ben L. Titzer
  */
-public class Version {
+public class TreeFactorer {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
+    final DecodingTree oldRoot;
+    final HashMap<String, DecodingTree> pathMap;
 
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "0.1";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 12;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
+    public TreeFactorer(DecodingTree dt) {
+        oldRoot = dt;
+        pathMap = new HashMap<String, DecodingTree>();
     }
 
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
+    public DecodingTree getNewTree() {
+        return rebuild("root:", oldRoot);
+    }
+
+    private DecodingTree rebuild(String prefix, DecodingTree dt) {
+        String nprefix = prefix+"@"+"["+dt.left_bit+":"+dt.right_bit+"]";
+        String vstr = prefix+dt.getLabel()+"["+dt.left_bit+":"+dt.right_bit+"]";
+        DecodingTree prev = pathMap.get(vstr);
+        if ( prev != null ) return prev;
+
+        // make a shallow copy of this node
+        DecodingTree ndt = dt.shallowCopy();
+
+        // rebuild each of the children
+        for ( Map.Entry<Integer, DecodingTree> e : dt.children.entrySet() ) {
+            int value = e.getKey();
+            DecodingTree child = e.getValue();
+            DecodingTree nchild = rebuild(nprefix, child);
+            ndt.children.put(new Integer(value), nchild);
+        }
+
+        // cache this node and (and its subgraph)
+        pathMap.put(vstr, ndt);
+        return ndt;
     }
 }

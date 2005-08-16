@@ -143,11 +143,11 @@ public class Main {
     }
 
     private static Architecture loadArchitecture(String fname) throws FileNotFoundException, ParseException {
+        Status.begin("Loading architecture description "+fname);
         checkFileExists(fname);
         File archfile = new File(fname);
         FileInputStream fis = new FileInputStream(archfile);
         ISDLParser parser = new ISDLParser(fis);
-        Status.begin("Parsing "+fname);
         Architecture a = parser.Architecture();
         Status.success();
         Status.begin("Verifying "+fname);

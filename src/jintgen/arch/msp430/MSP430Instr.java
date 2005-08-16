@@ -335,96 +335,96 @@ public class MSP430Instr {
     }
     
     public static class JC extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JC(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JC(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JHS extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JHS(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JHS(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JEQ extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JEQ(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JEQ(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JZ extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JZ(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JZ(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JGE extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JGE(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JGE(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JL extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JL(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JL(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JMP extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JMP(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JMP(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JN extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JN(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JN(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JNC extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JNC(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JNC(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JLO extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JLO(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JLO(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JNE extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JNE(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JNE(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class JNZ extends MSP430Instr {
-        public final MSP430Operand.JUMP_W source;
-        JNZ(MSP430Operand.JUMP_W source) {
+        public final MSP430Operand.JUMP source;
+        JNZ(MSP430Operand.JUMP source) {
             this.source = source;
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }

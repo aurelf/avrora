@@ -82,40 +82,27 @@ architecture msp430 {
 	    write: byte { }
 	}
 
-    operand-type IMM16[16]: immediate [-32768,65536];
+    operand-type IMM[16]: immediate [-32768,65536];
 
     operand-type INDX {
         sub-operand reg: SREG;
-        sub-operand index: IMM16;
+        sub-operand index: IMM;
 	    read: byte { return $sram(read(reg) + index); }
 	    write: byte { $sram(read(reg) + index) = value; }
     }
 
     // TODO: this is encoded as relative to the pc
-    operand-type SYMB[16]: immediate [0,0xFF] {
+    operand-type SYM[16]: immediate [0,0xFFFF] {
         read: byte { return $sram(pc + this); }
         write: byte {$sram(pc + this) = value; }
     }
 
-    operand-type ABSO[16]: immediate [0,0xFF] {
+    operand-type ABSO[16]: immediate [0,0xFFFF] {
 	    read: byte { return $sram(this); }
 	    write: byte { $sram(this) = value; }
     }
 
-    operand-type IMMD[8]: immediate [0,0xFF] {
-        read: byte {
-            $regs(pc) = pc + 1;
-            return this;
-        }
-        write: byte { }   //Immediate operand can only be used as source
-    }
-
-    operand-type JUMP[10]: immediate [0,0x3FF] {
-        read: short {
-            return (this & 0x3FF);
-        }
-        write: short { }
-    }
+    operand-type JUMP[10]: immediate [0,0x3FF];
 
 //-------------------------------------------------------------------------- 
 //   ADDRESSING MODES ALLOWED FOR SINGLE OPERAND/DOUBLE OPERAND/JUMP INSTRUCTIONS
@@ -138,8 +125,8 @@ architecture msp430 {
 	    property cycles: int = 4;
     }
 
-    addr-mode REGSYM source: SREG, dest: SYMB {
-        // symbolic mode is encoded as indexing off of the PC register
+    addr-mode REGSYM source: SREG, dest: SYM {
+        // SYMolic mode is encoded as indexing off of the PC register
         encoding = priority 4 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
 	    property syntax: String = "%source, %dest";
 	    property cycles: int = 4;
@@ -170,19 +157,19 @@ architecture msp430 {
         property cycles: int = 6;
     }
 
-    addr-mode SYM source: SYMB {
+    addr-mode SYM source: SYM {
         encoding = priority 2 SINGLE_OP_X where { As = 0b01, sreg = 0b0000, X = source }
         property syntax: String = "%source";
         property cycles: int = 4;
     }
 
-    addr-mode SYMREG source: SYMB, dest: SREG {
+    addr-mode SYMREG source: SYM, dest: SREG {
         encoding = priority 3 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
         property syntax: String = "%source, %dest";
         property cycles: int = 3;
     }
 
-    addr-mode INDSYM source: INDX, dest: SYMB {
+    addr-mode INDSYM source: INDX, dest: SYM {
         encoding = priority 4 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = 0b0000, X = source.index, Y = dest.index }
         property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 6;
@@ -194,25 +181,25 @@ architecture msp430 {
         property cycles: int = 6;
     }
 
-    addr-mode SYMABS source: SYMB, dest: ABSO {
+    addr-mode SYMABS source: SYM, dest: ABSO {
         encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
         property syntax: String = "%source, &%dest";
         property cycles: int = 6;
     }
 
-    addr-mode SYMIND source: SYMB, dest: INDX {
+    addr-mode SYMIND source: SYM, dest: INDX {
         encoding = priority 3 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
         property syntax: String = "%source, %dest.index(%dest.reg)";
         property cycles: int = 6;
     }
 
-    addr-mode SYMSYM source : SYMB, dest: SYMB {
+    addr-mode SYMSYM source : SYM, dest: SYM {
         encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
         property syntax: String = "%source, %dest";
         property cycles: int = 6;
     }
 
-    addr-mode ABSSYM source: ABSO, dest: SYMB {
+    addr-mode ABSSYM source: ABSO, dest: SYM {
         encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0010, dreg = 0b0000, X = source, Y = dest }
         property syntax: String = "&%source, %dest";
         property cycles: int = 6;
@@ -242,7 +229,7 @@ architecture msp430 {
         property cycles: int = 6;
     }
 
-    addr-mode IREGSYM source: IREG, dest: SYMB {
+    addr-mode IREGSYM source: IREG, dest: SYM {
         encoding = priority 4 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source, %dest";
         property cycles: int = 5;
@@ -272,7 +259,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode IMMED source: IMMD {
+    addr-mode IMM source: IMM {
         encoding = priority 1 SINGLE_OP_X where { As = 0b11, sreg = 0b0000, X = source }
         encoding = priority 0 SINGLE_OP where { As = 0b11, sreg = 0b0011 } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 SINGLE_OP where { As = 0b00, sreg = 0b0011 } when source == 0  // encodes as R2, As = 0b10
@@ -284,7 +271,7 @@ architecture msp430 {
         property cycles: int = 4;
     }
 
-    addr-mode IMMEDREG source: IMMD, dest: SREG {
+    addr-mode IMMREG source: IMM, dest: SREG {
         encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
         encoding = priority 1 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = 0b0011, dreg = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 1 DOUBLE_OP where { As = 0b00, Ad = 0, sreg = 0b0011, dreg = dest } when source == 0  // encodes as R2, As = 0b10
@@ -296,7 +283,7 @@ architecture msp430 {
         property cycles: int = 2;
     }
 
-    addr-mode IMMEDIND source: IMMD, dest: INDX {
+    addr-mode IMMIND source: IMM, dest: INDX {
         encoding = priority 1 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
         encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 1 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == 0  // encodes as R2, As = 0b10
@@ -308,7 +295,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode IMMEDSYM source: IMMD, dest: SYMB {
+    addr-mode IMMSYM source: IMM, dest: SYM {
         encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest.index }
         encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 0  // encodes as R2, As = 0b10
@@ -320,7 +307,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode IMMEDABS source: IMMD, dest: ABSO {
+    addr-mode IMMABS source: IMM, dest: ABSO {
         encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest.index }
         encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 0  // encodes as R2, As = 0b10
@@ -350,7 +337,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode AUTOSYM_B source: AIREG_B, dest: SYMB {
+    addr-mode AUTOSYM_B source: AIREG_B, dest: SYM {
         encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
@@ -380,7 +367,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode AUTOSYM_W source: AIREG_W, dest: SYMB {
+    addr-mode AUTOSYM_W source: AIREG_W, dest: SYM {
         encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
@@ -427,10 +414,10 @@ architecture msp430 {
         AUTOIND_W,
         AUTOSYM_W,
         AUTOABS_W,
-        IMMEDREG,
-        IMMEDIND,
-        IMMEDSYM,
-        IMMEDABS
+        IMMREG,
+        IMMIND,
+        IMMSYM,
+        IMMABS
     }
 
     addr-set SINGLE_W {
@@ -440,7 +427,7 @@ architecture msp430 {
         ABS,
         IREG,
         AUTO_W,
-        IMMED
+        IMM
     }
 
     addr-set DOUBLE_B {
@@ -468,10 +455,10 @@ architecture msp430 {
         AUTOIND_B,
         AUTOSYM_B,
         AUTOABS_B,
-        IMMEDREG,
-        IMMEDIND,
-        IMMEDSYM,
-        IMMEDABS
+        IMMREG,
+        IMMIND,
+        IMMSYM,
+        IMMABS
     }
 
     addr-set SINGLE_B {
@@ -481,7 +468,7 @@ architecture msp430 {
         ABS,
         IREG,
         AUTO_B,
-        IMMED
+        IMM
     }
 
 //---------------------------------------------------------------------------
@@ -587,6 +574,7 @@ architecture msp430 {
         local reg2: int = r2;
         local result: int = 0;
 
+        // TODO: this code will not work: e.g. 9 + 9 = 18 (overflow)
         reg1[3:0] = reg1[3:0] + carry;
         result[3:0] = reg1[3:0] + reg2[3:0];
         if (result[3:0] > 10) {

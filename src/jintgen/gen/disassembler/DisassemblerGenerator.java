@@ -55,6 +55,17 @@ public class DisassemblerGenerator extends Generator {
     protected static final int LARGEST_INSTR = 15;
     protected static final int WORD_SIZE = 16;
 
+    protected final Option.Bool MULTI_TREE = options.newOption("multiple-trees", false, 
+            "This option selects whether the disassembler generator will create multiple decode trees " +
+            "(i.e. one per priority level) or whether it will create a single, unified tree. In some " +
+            "instances one large tree is more efficient, while in others multiple smaller trees may be " +
+            "more efficient.");
+    protected final Option.Bool PARALLEL_TREE = options.newOption("parallel-trees", false,
+            "This option selects whether the disassembler generator will create multiple decode trees " +
+            "that are applied in parallel to resolve both the addressing mode and instruction. For " +
+            "complex architectures, this can result in tremendously reduced tree sizes. For small architecture, " +
+            "the result can be less efficient.");
+
     Printer printer;
     Verbose.Printer verbose = Verbose.getVerbosePrinter("jintgen.disassem");
     Verbose.Printer verboseDump = Verbose.getVerbosePrinter("jintgen.disassem.tree");
@@ -70,9 +81,65 @@ public class DisassemblerGenerator extends Generator {
     int numTrees = 0;
     int pseudoInstrs = 0;
 
-    DecodingTree[] rootSets = new DecodingTree[0];
-
     HashSet<EncodingInfo> pseudo;
+
+    DecoderImplementation implementation;
+
+    class DecoderImplementation {
+        boolean multiple;
+        boolean parallel;
+
+        final DecodingTree[] completeTree;
+        final DecodingTree[] instrTree;
+        final DecodingTree[] addrTree;
+
+        DecoderImplementation(int maxprio) {
+            parallel = PARALLEL_TREE.get();
+            multiple = MULTI_TREE.get();
+            completeTree = new DecodingTree[maxprio+1];
+            instrTree = new DecodingTree[maxprio+1];
+            addrTree = new DecodingTree[maxprio+1];
+        }
+
+        void compute() {
+            for ( int cntr = 0; cntr < completeTree.length; cntr++ ) {
+                DecodingTree dt = completeTree[cntr];
+                if ( dt == null ) continue;
+                dt.compute(0);
+                if ( parallel ) {
+                    labelTreeWithInstrs(dt);
+                    instrTree[cntr] = new TreeFactorer(dt).getNewTree();
+                    labelTreeWithAddrModes(dt);
+                    addrTree[cntr] = new TreeFactorer(dt).getNewTree();
+                    treeNodes += DGUtil.numberNodes(instrTree[cntr]);
+                    treeNodes += DGUtil.numberNodes(addrTree[cntr]);
+                } else {
+                    treeNodes += DGUtil.numberNodes(dt);
+                }
+            }
+        }
+
+        void print(Printer p) {
+            for ( int cntr = 0; cntr < completeTree.length; cntr++ ) {
+                DecodingTree dt = completeTree[cntr];
+                if ( dt == null ) continue;
+                if ( parallel ) {
+                    DGUtil.printTree(p, instrTree[cntr]);
+                    DGUtil.printTree(p, addrTree[cntr]);
+                } else {
+                    DGUtil.printTree(p, completeTree[cntr]);
+                }
+            }
+        }
+
+        void add(EncodingInfo ei) {
+            int priority = ei.encoding.getPriority();
+            if ( !multiple ) priority = 0;
+            DecodingTree dt = completeTree[priority];
+            if ( dt == null ) dt = completeTree[priority] = new DecodingTree();
+            dt.addEncoding(ei);
+        }
+    }
 
     public DisassemblerGenerator() {
         pseudo = new HashSet<EncodingInfo>();
@@ -87,23 +154,13 @@ public class DisassemblerGenerator extends Generator {
 
         generateHeader();
         generateDecodeTables();
-        for ( InstrDecl d : arch.instructions ) visitInstr(d);
-        for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
-            DecodingTree es = rootSets[cntr];
-            if ( es == null ) continue;
-            numTrees++;
-            es.compute(0);
-            es.generateCode((cntr+1)*100000, printer);
-        }
+        int maxprio = getMaxPriority();
+        implementation = new DecoderImplementation(maxprio);
+        addInstructions();
+        implementation.compute();
         generateRoot();
         if ( verboseDump.enabled ) {
-            for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
-                DecodingTree es = rootSets[cntr];
-                if ( es == null ) continue;
-                verboseDump.println("Decoding tree "+cntr+" {");
-                es.dump(verboseDump, 0);
-                verboseDump.println("} // tree "+cntr);
-            }
+            implementation.print(verboseDump);
         }
         Terminal.nextln();
         TermUtil.reportQuantity("Instructions", instrs, "");
@@ -112,6 +169,25 @@ public class DisassemblerGenerator extends Generator {
         TermUtil.reportQuantity("Decoding Trees", numTrees, "");
         TermUtil.reportQuantity("Nodes", treeNodes, "");
         printer.endblock();
+    }
+
+    private int getMaxPriority() {
+        int maxprio = 0;
+        for ( InstrDecl d : arch.instructions ) {
+            if (!d.pseudo) {
+                for ( AddrModeDecl am : d.addrMode.addrModes ) {
+                    for ( EncodingDecl ed : am.encodings ) {
+                        int prio = ed.getPriority();
+                        if ( prio > maxprio ) maxprio = prio;
+                    }
+                }
+            }
+        }
+        return maxprio;
+    }
+
+    private void addInstructions() {
+        for ( InstrDecl d : arch.instructions ) visitInstr(d);
     }
 
     private void generateHeader() {
@@ -125,12 +201,6 @@ public class DisassemblerGenerator extends Generator {
     private void generateRoot() {
         printer.startblock(instrClassName+" decode_root(int word1) throws InvalidInstruction ");
         printer.println(instrClassName+" i = null;");
-        for ( int cntr = 0; cntr < rootSets.length; cntr++ ) {
-            DecodingTree es = rootSets[cntr];
-            if ( es == null ) continue;
-            printer.println("i = decode_root"+cntr+"(word1);");
-            printer.println("if ( i != null ) return i;");
-        }
         invalidInstr();
         printer.endblock();
     }
@@ -150,32 +220,8 @@ public class DisassemblerGenerator extends Generator {
 
     private void addEncodingInfo(InstrDecl d, AddrModeDecl am, EncodingDecl ed) {
         EncodingInfo ei = new EncodingInfo(d, am, encodingNumber, ed);
-        //DecodingTree dt = getDecodingTree(ed.getPriority());
-        DecodingTree dt = getDecodingTree(0);
-        dt.addEncoding(ei);
+        implementation.add(ei);
         encodingNumber++;
-    }
-
-    private DecodingTree getDecodingTree(int priority) {
-        // grow the root set array if necessary
-        if ( priority >= rootSets.length ) {
-            DecodingTree[] nroots = new DecodingTree[priority+1];
-            System.arraycopy(rootSets, 0, nroots, 0, rootSets.length);
-            rootSets = nroots;
-        }
-
-        DecodingTree dt = getRoot(priority);
-        return dt;
-    }
-
-    private DecodingTree getRoot(int priority) {
-        DecodingTree nset = rootSets[priority];
-        if ( nset == null ) {
-            nset = new DecodingTree();
-            nset.methodname = "decode_root"+priority;
-            rootSets[priority] = nset;
-        }
-        return nset;
     }
 
     private void invalidInstr() {
@@ -245,4 +291,84 @@ public class DisassemblerGenerator extends Generator {
     public static int nativeBitOrder(int bit) {
         return 15-(bit % WORD_SIZE);
     }
+
+    public static String getInstrClassName(EncodingInfo ei) {
+        return instrClassName+"."+ei.instr.getInnerClassName();
+    }
+
+    public static void labelTreeWithInstrs(DecodingTree dt) {
+        HashSet<InstrDecl> instrs = new HashSet<InstrDecl>();
+        for ( EncodingInfo ei : dt.highPrio )
+            instrs.add(ei.instr);
+        for ( EncodingInfo ei : dt.lowPrio )
+            instrs.add(ei.instr);
+        LinkedList<InstrDecl> list = new LinkedList<InstrDecl>(instrs);
+        Collections.sort(list, INSTR_COMPARATOR);
+        StringBuffer buf = new StringBuffer();
+
+        buf.append("|");
+        for ( InstrDecl d : list ) {
+            buf.append(d.name);
+            buf.append("|");
+        }
+
+        dt.setLabel(buf.toString());
+
+        // label all the children
+        if ( list.size() == 1 ) {
+            // label all the children
+            for ( DecodingTree cdt : dt.children.values() )
+            labelTree("*", cdt);
+        } else {
+            for ( DecodingTree cdt : dt.children.values() )
+                labelTreeWithInstrs(cdt);
+        }
+    }
+
+    public static void labelTreeWithAddrModes(DecodingTree dt) {
+        HashSet<AddrModeDecl> addrs = new HashSet<AddrModeDecl>();
+        for ( EncodingInfo ei : dt.highPrio )
+            addrs.add(ei.addrMode);
+        for ( EncodingInfo ei : dt.lowPrio )
+            addrs.add(ei.addrMode);
+        LinkedList<AddrModeDecl> list = new LinkedList<AddrModeDecl>(addrs);
+        Collections.sort(list, ADDR_COMPARATOR);
+        StringBuffer buf = new StringBuffer();
+
+        buf.append("|");
+        for ( AddrModeDecl d : list ) {
+            buf.append(d.name);
+            buf.append("|");
+        }
+
+        dt.setLabel(buf.toString());
+
+        if ( list.size() == 1 ) {
+            // label all the children
+            for ( DecodingTree cdt : dt.children.values() )
+            labelTree("*", cdt);
+        } else {
+            // label all the children
+            for ( DecodingTree cdt : dt.children.values() )
+                labelTreeWithAddrModes(cdt);
+        }
+    }
+
+    public static void labelTree(String l, DecodingTree dt) {
+        dt.setLabel(l);
+        for ( DecodingTree cdt : dt.children.values() )
+            labelTree(l, cdt);
+    }
+
+    public static Comparator<InstrDecl> INSTR_COMPARATOR = new Comparator<InstrDecl>() {
+        public int compare(InstrDecl a, InstrDecl b) {
+            return a.name.image.compareTo(b.name.image);
+        }
+    };
+
+    public static Comparator<AddrModeDecl> ADDR_COMPARATOR = new Comparator<AddrModeDecl>() {
+        public int compare(AddrModeDecl a, AddrModeDecl b) {
+            return a.name.image.compareTo(b.name.image);
+        }
+    };
 }

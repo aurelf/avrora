@@ -34,10 +34,7 @@ package jintgen.gen.disassembler;
 
 import avrora.util.*;
 
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import jintgen.isdl.EncodingDecl;
 import jintgen.isdl.AddrModeDecl;
@@ -54,11 +51,15 @@ import jintgen.isdl.OperandTypeDecl;
  * @author Ben L. Titzer
  */
 public class DecodingTree {
-    HashSet<EncodingInfo> encodings = new HashSet<EncodingInfo>();
-    String methodname;
-    int minlength = 128;
+    HashSet<EncodingInfo> lowPrio = new HashSet<EncodingInfo>();
+    HashSet<EncodingInfo> highPrio = new HashSet<EncodingInfo>();
+    private String label;
+    private int minlength = 128;
+    private int minprio = 128;
+    private int maxprio = 0;
     int left_bit;
     int right_bit;
+    int node_num;
 
     HashMap<Integer, DecodingTree> children = new HashMap<Integer, DecodingTree>();
     private Verbose.Printer verbose;
@@ -67,62 +68,89 @@ public class DecodingTree {
         verbose = Verbose.getVerbosePrinter("jintgen.disassem");
     }
 
+    public void setLabel(String l) {
+        label = l;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public DecodingTree shallowCopy() {
+        DecodingTree dt = new DecodingTree();
+        dt.label = label;
+        dt.minlength = minlength;
+        dt.minprio = minprio;
+        dt.maxprio = maxprio;
+        dt.left_bit = left_bit;
+        dt.right_bit = right_bit;
+        return dt;
+    }
+
     void computeRange(int depth) {
-        assert encodings.size() > 0;
+        // there should be at least one encoding in every decoding tree
+        assert lowPrio.size() > 0;
 
-        if ( encodings.size() == 1 ) {
-            // this encoding set has only one member; it will have no branches,
-            // but there might be bits that still need to be checked
-            verbose.println("singleton: ");
-        }
-
-        int length[] = newLengthArray();
-        int counts[] = new int[minlength];
+        int[] prio = newPriorityArray();
+        int[] length = newLengthArray();
+        int[] counts = new int[minlength];
         verbose.println("--> scanning...");
         // for each encoding, increment the count of each concrete bit
-        for ( EncodingInfo ei : encodings ) {
+        for ( EncodingInfo ei : lowPrio ) {
+            if ( ei.encoding.getPriority() == minprio ) highPrio.add(ei);
             ei.printVerbose(depth, verbose);
-            // for each bit, increment the count if it is concrete
-            incrementCounts(ei, counts);
-            // for each non-concrete bit, trim the possible field length
-            trimLengths(ei, length);
+            // scan for the most lucrative bit range
+            scanForBitRange(ei, prio, counts, length);
         }
 
         // scan from the left for the bit that is most often concrete
+        int max = getLeftBit(prio, counts, length);
+
+        verbose.println("result: decode["+left_bit+":"+right_bit+"]");
+
+        // problem: no encodings have any concrete bits left
+        if ( max == 0 && highPrio.size() > 1 ) DGUtil.ambiguous(highPrio);
+
+        // remove all the high priority encodings from the main encoding set
+        lowPrio.removeAll(highPrio);
+    }
+
+    private int[] newPriorityArray() {
+        int[] prio = new int[minlength];
+        Arrays.fill(prio, maxprio);
+        return prio;
+    }
+
+    private int getLeftBit(int[] prio, int[] counts, int[] length) {
         int max = 0;
         for ( int cntr = 0; cntr < minlength; cntr++ ) {
             int count = counts[cntr];
-            if ( count > max ) {
+            // only select bit ranges that are concrete in the highest priority level
+            if ( prio[cntr] == minprio && count > max ) {
                 left_bit = cntr;
                 max = count;
             }
         }
         assert length[left_bit] > 0;
         right_bit = left_bit + length[left_bit] - 1;
-
-        // problem: no encodings have any concrete bits left
-        if ( max == 0 && encodings.size() > 1 ) ambiguous();
+        return max;
     }
 
-    private void trimLengths(EncodingInfo ei, int[] length) {
+    private void scanForBitRange(EncodingInfo ei, int[] prio, int[] counts, int[] length) {
         int len = 1;
+        int p = ei.encoding.getPriority();
         // scan backwards through the bit states. for each
         // concrete bit range, record the number of bits until it meets a non-concrete bit.
         // this limits the length of a concrete bit match so that all encodings with
         // that concrete bit set have the entire bit range set
         for ( int cntr = minlength - 1; cntr >= 0; cntr--, len++ ) {
-            byte bitState = ei.bitStates[cntr];
-            if ( bitState != EncodingInfo.ENC_ONE && bitState != EncodingInfo.ENC_ZERO )
-                len = 0;
-            else if ( length[cntr] < len ) length[cntr] = len;
-        }
-    }
-
-    private void incrementCounts(EncodingInfo ei, int[] counts) {
-        for ( int cntr = 0; cntr < minlength; cntr++ ) {
-            byte bitState = ei.bitStates[cntr];
-            if ( bitState == EncodingInfo.ENC_ONE || bitState == EncodingInfo.ENC_ZERO )
+            if ( ei.isConcrete(cntr) ) {
+                if ( len < length[cntr] ) length[cntr] = len;
                 counts[cntr]++;
+                if ( p < prio[cntr] ) prio[cntr] = p;
+            } else {
+                len = 0;
+            }
         }
     }
 
@@ -135,40 +163,84 @@ public class DecodingTree {
     }
 
     public void addEncoding(EncodingInfo ei) {
-        encodings.add(ei);
+        lowPrio.add(ei);
+        int prio = ei.encoding.getPriority();
         int length = ei.getLength();
         if ( length < minlength ) minlength = length;
-    }
-
-    void ambiguous() {
-        Terminal.nextln();
-        Terminal.printRed("ERROR");
-        Terminal.println(": encodings are ambiguous");
-        verbose.enabled = true;
-        Terminal.println("-- The following encodings cannot be distinguished --");
-        for ( EncodingInfo el : encodings )
-            el.printVerbose(0, verbose);
-        throw Util.failure("Disassembler generator cannot continue");
+        if ( prio < minprio ) minprio = prio;
+        if ( prio > maxprio ) maxprio = prio;
     }
 
     void createChildren() {
-        if ( encodings.size() <= 1) return;
-        for ( EncodingInfo ei : encodings ) {
-            // iterate through the bit states of this encoding for this bit range
-            // set the bit states to either MATCHED_ONE or MATCHED_ZERO
-            int value = extractValue(ei);
+        List<EncodingInfo> unmatched = new LinkedList<EncodingInfo>();
 
-            // add the instruction to the encoding set corresponding to the value of
-            // the bits in this range
-            Integer iv = new Integer(value);
-            DecodingTree es = children.get(iv);
-            if ( es == null ) {
-                es = new DecodingTree();
-                children.put(iv, es);
+        // if this node is a singleton, remove all but highest encoding
+        if ( createSingleton() ) return;
+
+        // create the main branches
+        createMainBranches(unmatched);
+
+        // create the default branch
+        createDefaultBranch(unmatched);
+
+        assert children.size() > 0;
+    }
+
+    private boolean createSingleton() {
+        if ( highPrio.size() == 1 ) {
+            // get the encoding info of the singleton
+            EncodingInfo ei = highPrio.iterator().next();
+            // if the left bit is not concrete, there are no bits left
+            if ( !ei.isConcrete(left_bit) ) {
+                // this node represents a terminal node (no children)
+                // and overrides all of the lower priority encodings
+                lowPrio.clear();
+                return true;
             }
-
-            es.addEncoding(ei);
         }
+        return false;
+    }
+
+    private void createMainBranches(List<EncodingInfo> unmatched) {
+        // all of the encodings at the high priority must have the bits set
+        for ( EncodingInfo ei : highPrio ) {
+            if ( ei.isConcrete(left_bit) ) createChild(ei);
+            else  DGUtil.ambiguous(highPrio);
+        }
+        // for the rest of the encodings, add them to children or unmatched list
+        for ( EncodingInfo ei : lowPrio ) {
+            if ( ei.isConcrete(left_bit) ) createChild(ei);
+            else unmatched.add(ei);
+        }
+    }
+
+    private void createDefaultBranch(List<EncodingInfo> unmatched) {
+        if ( unmatched.size() > 0 ) {
+            // replicate the unmatched encodings over all branches
+            for ( EncodingInfo ei : unmatched ) {
+                for ( DecodingTree dt : children.values() )
+                    dt.addEncoding(ei.copy());
+            }
+            // if the tree is not complete, add a default branch
+            if ( children.size() < 1 << (right_bit - left_bit + 1) ) {
+                DecodingTree dt = new DecodingTree();
+                children.put(new Integer(-1), dt);
+                for ( EncodingInfo ei : unmatched ) {
+                    dt.addEncoding(ei.copy());
+                }
+            }
+        }
+    }
+
+    private void createChild(EncodingInfo ei) {
+        // get the value of the bits and add to corresponding subtree
+        Integer iv = new Integer(extractValue(ei));
+        DecodingTree dt = children.get(iv);
+        if ( dt == null ) {
+            dt = new DecodingTree();
+            children.put(iv, dt);
+        }
+        dt.addEncoding(ei);
     }
 
     private int extractValue(EncodingInfo ei) {
@@ -194,129 +266,9 @@ public class DecodingTree {
     void compute(int depth) {
         computeRange(depth);
         createChildren();
-        recurse(depth+1);
-    }
-
-    void recurse(int depth) {
-        for ( DecodingTree es : children.values() ) {
-            es.compute(depth);
+        for ( DecodingTree dt : children.values() ) {
+            dt.compute(depth+1);
         }
-    }
-
-    void generateCode(int meth_num, Printer p) {
-        // recursively generate code for each of the children
-        for ( DecodingTree es : children.values() ) {
-            es.generateCode(meth_num++, p);
-        }
-
-        if ( methodname == null ) {
-            if ( children.size() > 0)
-                methodname = "decode_"+meth_num;
-            else {
-                EncodingInfo ei = encodings.iterator().next();
-                methodname = "decode_"+ei.getName();
-            }
-        }
-
-        p.startblock("private "+DisassemblerGenerator.instrClassName+" "+methodname+"(int word1) throws InvalidInstruction");
-
-        if ( children.size() > 0 ) {
-            // if there are any children, we need to generate a switch statement over
-            // the possible values of this bit range
-            generateSwitch(p);
-        } else {
-            // this encoding set has no children; it therefore decodes to one and only
-            // one instruction.
-            generateLeaf(p);
-        }
-        p.endblock();
-    }
-
-    private void generateSwitch(Printer p) {
-        int high_bit = DisassemblerGenerator.nativeBitOrder(left_bit);
-        int low_bit = DisassemblerGenerator.nativeBitOrder(right_bit);
-        int mask = Arithmetic.getBitRangeMask(low_bit, high_bit);
-        p.println("// get value of bits logical["+left_bit+":"+right_bit+"]");
-        p.println("int value = (word1 >> "+low_bit+") & "+StringUtil.to0xHex(mask, 5)+";");
-        p.startblock("switch ( value )");
-
-        for ( Integer value : children.keySet() ) {
-            int val = value.intValue();
-            // generate a case for each value of the bits in this test.
-            p.print("case "+StringUtil.to0xHex(val, 5)+": ");
-            DecodingTree child = children.get(value);
-            p.println("return "+child.methodname+"(word1);");
-        }
-
-        p.println("default: return null;");
-        p.endblock();
-    }
-
-    public void dump(Printer p, int depth) {
-        if ( children.size() == 0 ) {
-            for ( EncodingInfo ei : encodings ) ei.print(0, p);
-            return;
-        }
-        int length = right_bit - left_bit + 1;
-        p.println("decode["+left_bit+":"+right_bit+"]: ");
-        for ( Map.Entry<Integer, DecodingTree> e : children.entrySet() ) {
-            int val = e.getKey();
-            indent(depth+1, p);
-            p.print(StringUtil.toBin(val, length)+" -> ");
-            e.getValue().dump(p, depth+1);
-        }
-    }
-
-    private void indent(int depth, Printer p) {
-        for ( int cntr = 0; cntr < depth; cntr++ ) p.print("    ");
-    }
-
-    private void generateLeaf(Printer p) {
-        boolean check = false;
-        int mask = 0;
-        int value = 0;
-        // first check for any left over concrete bits that must match
-        EncodingInfo ei = encodings.iterator().next();
-
-        if ( ei.encoding.isConditional() ) {
-            EncodingDecl.Cond c = ei.encoding.getCond();
-            p.println("// this method decodes "+ei.instr.innerClassName+" when "+c.name+" == "+c.expr);
-        }
-
-        // go through each of the bits in the bit states. if any of the bits have
-        // not been matched yet, then they need to be checked to make sure that
-        // they match.
-        for ( int cntr = 0; cntr < ei.bitStates.length; cntr++ ) {
-            byte bitState = ei.bitStates[cntr];
-            if ( bitState == EncodingInfo.ENC_ZERO ) {
-                check = true;
-                value = value << 1;
-                mask = mask << 1 | 1;
-            } else if ( bitState == EncodingInfo.ENC_ONE ) {
-                check = true;
-                value = value << 1 | 1;
-                mask = mask << 1 | 1;
-            } else {
-                value = value << 1;
-                mask = mask << 1;
-            }
-        }
-
-        if ( check ) {
-            // generate a check on the left over bits to verify they match this encoding.
-            p.startblock("if ( (word1 & "+StringUtil.to0xHex(mask, 5)+") != "+StringUtil.to0xHex(value, 5)+" )");
-            p.println("return null;");
-            p.endblock();
-        }
-
-        // declare each operand
-        declareOperands(p, ei);
-
-        // generate the code that reads the operands from the instruction encoding
-        generateDecodeStatements(p, ei);
-
-        // generate the call to the Instr class constructor
-        generateConstructorCall(p, ei);
     }
 
     private void generateDecodeStatements(Printer p, EncodingInfo ei) {
@@ -326,17 +278,13 @@ public class DecodingTree {
     }
 
     private void generateConstructorCall(Printer p, EncodingInfo ei) {
-        p.print("return new "+getClassName(ei)+"(pc");
+        p.print("return new "+DisassemblerGenerator.getInstrClassName(ei)+"(pc");
         for ( AddrModeDecl.Operand o : ei.instr.getOperands() ) {
             p.print(", ");
             String getexpr = generateDecode(ei, o);
             p.print(getexpr);
         }
         p.println(");");
-    }
-
-    private String getClassName(EncodingInfo ei) {
-        return DisassemblerGenerator.instrClassName+"."+ei.instr.innerClassName;
     }
 
     private void declareOperands(Printer p, EncodingInfo ei) {

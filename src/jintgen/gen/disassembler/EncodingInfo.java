@@ -78,6 +78,16 @@ public class EncodingInfo {
         initializeBitStates();
     }
 
+    EncodingInfo(EncodingInfo prev) {
+        instr = prev.instr;
+        addrMode = prev.addrMode;
+        bitStates = new byte[prev.bitStates.length];
+        simplifiedExprs = prev.simplifiedExprs;
+        encodingNumber = prev.encodingNumber;
+        encoding = prev.encoding;
+        System.arraycopy(prev.bitStates, 0, bitStates, 0, bitStates.length);
+    }
+
     String getName() {
         return instr.innerClassName+"_"+encodingNumber;
     }
@@ -105,18 +115,7 @@ public class EncodingInfo {
             int endbit = offset + size - 1;
             if ( (offset / DisassemblerGenerator.WORD_SIZE) != (endbit / DisassemblerGenerator.WORD_SIZE) ) {
                 // this field spans a word boundary; we will need to split it up
-                int f_offset = offset;
-                int h_bit = size - 1;
-                while ( f_offset < endbit ) {
-                    int bits = DisassemblerGenerator.WORD_SIZE - (f_offset % DisassemblerGenerator.WORD_SIZE);
-                    if ( bits > DisassemblerGenerator.WORD_SIZE ) bits = DisassemblerGenerator.WORD_SIZE;
-                    // evaluate the expression with a smaller bit interval
-                    Expr simpleExpr = eval(e.field, cp, ce, h_bit, h_bit-bits+1);
-                    addExpr(f_offset, bits, simpleExpr);
-
-                    f_offset += bits;
-                    h_bit -= bits;
-                }
+                splitOnWordBoundary(offset, size, endbit, e, cp, ce);
             } else {
                 // evaluate the parent encoding expression, given values for operands
                 Expr simpleExpr = e.field.accept(cp,ce);
@@ -125,6 +124,21 @@ public class EncodingInfo {
             }
 
             offset += size;
+        }
+    }
+
+    private void splitOnWordBoundary(int offset, int size, int endbit, EncodingDecl.BitField e, ConstantPropagator cp, ConstantPropagator.ConstantEnvironment ce) {
+        int f_offset = offset;
+        int h_bit = size - 1;
+        while ( f_offset < endbit ) {
+            int bits = DisassemblerGenerator.WORD_SIZE - (f_offset % DisassemblerGenerator.WORD_SIZE);
+            if ( bits > DisassemblerGenerator.WORD_SIZE ) bits = DisassemblerGenerator.WORD_SIZE;
+            // evaluate the expression with a smaller bit interval
+            Expr simpleExpr = eval(e.field, cp, ce, h_bit, h_bit-bits+1);
+            addExpr(f_offset, bits, simpleExpr);
+
+            f_offset += bits;
+            h_bit -= bits;
         }
     }
 
@@ -199,30 +213,9 @@ public class EncodingInfo {
     }
 
     void print(int indent, Printer p) {
-        String ncross = instr.name +" x "+addrMode.name;
-        String name = StringUtil.leftJustify(ncross, 20);
         for ( int cntr = 0; cntr < indent; cntr++ )
             p.print("    ");
-        p.print(name+": ");
-        for ( int cntr = 0; cntr < bitStates.length; cntr++ ) {
-            switch ( bitStates[cntr] ) {
-                case ENC_ZERO:
-                    p.print("0");
-                    break;
-                case ENC_ONE:
-                    p.print("1");
-                    break;
-                case ENC_MATCHED_ONE:
-                    p.print("U");
-                    break;
-                case ENC_MATCHED_ZERO:
-                    p.print("u");
-                    break;
-                case ENC_VAR:
-                    p.print(".");
-                    break;
-            }
-        }
+        p.print(DGUtil.toString(this));
         p.nextln();
     }
 
@@ -233,5 +226,14 @@ public class EncodingInfo {
 
     public int getLength() {
         return bitStates.length;
+    }
+
+    public EncodingInfo copy() {
+        return new EncodingInfo(this);
+    }
+
+    public boolean isConcrete(int bit) {
+        byte bitState = bitStates[bit];
+        return bitState == EncodingInfo.ENC_ONE || bitState == EncodingInfo.ENC_ZERO;
     }
 }
