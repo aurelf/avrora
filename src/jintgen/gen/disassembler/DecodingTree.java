@@ -57,6 +57,7 @@ public class DecodingTree {
     private int minlength = 128;
     private int minprio = 128;
     private int maxprio = 0;
+    private int hashCode = -1;
     int left_bit;
     int right_bit;
     int node_num;
@@ -109,10 +110,42 @@ public class DecodingTree {
         verbose.println("result: decode["+left_bit+":"+right_bit+"]");
 
         // problem: no encodings have any concrete bits left
-        if ( max == 0 && highPrio.size() > 1 ) DGUtil.ambiguous(highPrio);
+        if ( max == 0 ) {
+            if ( highPrio.size() > 1 ) {
+                DGUtil.ambiguous(highPrio);
+            } else {
+                left_bit = right_bit = 0;
+            }
+        }
 
         // remove all the high priority encodings from the main encoding set
         lowPrio.removeAll(highPrio);
+    }
+
+    public int hashCode() {
+        if ( hashCode == -1 ) {
+            hashCode = label.hashCode();
+            // if we have a child for zero, add to hash code
+            DecodingTree zdt = children.get(0);
+            if ( zdt != null ) hashCode += zdt.hashCode();
+        }
+        return hashCode;
+    }
+
+    public boolean equals(Object o) {
+        if ( !(o instanceof DecodingTree) ) return false;
+        DecodingTree dt = (DecodingTree)o;
+        if ( dt.left_bit != left_bit ) return false;
+        if ( dt.right_bit != right_bit ) return false;
+        if ( !dt.label.equals(label) ) return false;
+        if ( children.size() != dt.children.size() ) return false;
+        for ( Map.Entry<Integer, DecodingTree> e : children.entrySet() ) {
+            int value = e.getKey();
+            DecodingTree cdt = e.getValue();
+            DecodingTree odt = dt.children.get(value);
+            if ( cdt != odt ) return false;
+        }
+        return true;
     }
 
     private int[] newPriorityArray() {

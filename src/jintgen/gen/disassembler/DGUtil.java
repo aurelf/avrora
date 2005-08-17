@@ -37,9 +37,7 @@ import avrora.util.Printer;
 import avrora.util.Terminal;
 import avrora.util.Util;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * The <code>DGUtil</code> class contains a set of utility methods that are useful in
@@ -143,8 +141,7 @@ public class DGUtil {
 
     private static void printNode(HashSet<DecodingTree> nodes, Printer p, int depth, int val, int length, DecodingTree cdt) {
         indent(p, depth+1);
-        String vstr = val == -1 ? "*" : StringUtil.toBin(val, length);
-        p.print(vstr+" -> ");
+        p.print(getEdgeLabel(val, length)+" -> ");
         printTree(nodes, p, cdt, depth+1);
         p.nextln();
     }
@@ -188,4 +185,55 @@ public class DGUtil {
         throw Util.failure("Disassembler generator cannot continue");
     }
 
+    public static void printDotTree(String title, DecodingTree dt, Printer p) {
+        p.startblock("digraph "+title);
+        p.println("rankdir=LR;");
+        p.println("randsep=2;");
+        HashSet<DecodingTree> nodes = new HashSet<DecodingTree>();
+        printNode(p, dt, nodes);
+        p.endblock();
+    }
+
+    private static void printNode(Printer p, DecodingTree dt, HashSet<DecodingTree> nodes) {
+        int length = dt.right_bit - dt.left_bit + 1;
+        String name = getName(dt);
+        p.println(name+";");
+        for ( Map.Entry<Integer, DecodingTree> e : dt.children.entrySet() ) {
+            int value = e.getKey();
+            DecodingTree cdt = e.getValue();
+            if ( !nodes.contains(cdt) ) {
+                printNode(p, cdt, nodes);
+                nodes.add(cdt);
+            }
+            p.println(name+" -> "+getName(cdt)+" [label="+getEdgeLabel(value, length)+"];");
+        }
+    }
+
+    private static String getEdgeLabel(int value, int length) {
+        return value == -1 ? "*" : StringUtil.toBin(value, length);
+    }
+
+    private static String getName(DecodingTree dt) {
+        return StringUtil.quote(dt.node_num+":"+dt.getLabel()+"\\n["+dt.left_bit+":"+dt.right_bit+"]");
+    }
+
+    public static Collection<DTNode> topologicalOrder(DTNode n) {
+        HashSet<DTNode> set = new HashSet<DTNode>();
+        List<DTNode> list = new LinkedList<DTNode>();
+        n.addTopologicalOrder(list, set);
+        return list;
+    }
+
+    public static Collection<DTNode> preOrder(DTNode n) {
+        HashSet<DTNode> set = new HashSet<DTNode>();
+        List<DTNode> list = new LinkedList<DTNode>();
+        n.addPreOrder(list, set);
+        return list;
+    }
+
+    public static int numberNodes(DTNode n) {
+        int number = 0;
+        for ( DTNode c : preOrder(n) ) c.number = number++;
+        return number;
+    }
 }

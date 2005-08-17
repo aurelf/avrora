@@ -34,6 +34,7 @@ package jintgen.gen.disassembler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
 
 /**
  * @author Ben L. Titzer
@@ -41,11 +42,11 @@ import java.util.Map;
 public class TreeFactorer {
 
     final DecodingTree oldRoot;
-    final HashMap<String, DecodingTree> pathMap;
+    final HashMap<String, HashMap<DecodingTree, DecodingTree>> pathMap;
 
     public TreeFactorer(DecodingTree dt) {
         oldRoot = dt;
-        pathMap = new HashMap<String, DecodingTree>();
+        pathMap = new HashMap<String, HashMap<DecodingTree, DecodingTree>>();
     }
 
     public DecodingTree getNewTree() {
@@ -55,8 +56,6 @@ public class TreeFactorer {
     private DecodingTree rebuild(String prefix, DecodingTree dt) {
         String nprefix = prefix+"@"+"["+dt.left_bit+":"+dt.right_bit+"]";
         String vstr = prefix+dt.getLabel()+"["+dt.left_bit+":"+dt.right_bit+"]";
-        DecodingTree prev = pathMap.get(vstr);
-        if ( prev != null ) return prev;
 
         // make a shallow copy of this node
         DecodingTree ndt = dt.shallowCopy();
@@ -69,8 +68,30 @@ public class TreeFactorer {
             ndt.children.put(new Integer(value), nchild);
         }
 
+        DecodingTree prev = getPrevTree(vstr, ndt);
+        if ( prev != null ) return prev;
+
         // cache this node and (and its subgraph)
-        pathMap.put(vstr, ndt);
+        addNewTree(vstr, ndt);
         return ndt;
+    }
+
+    private void addNewTree(String vstr, DecodingTree ndt) {
+        HashMap<DecodingTree, DecodingTree> set = getTreeMap(vstr);
+        set.put(ndt, ndt);
+    }
+
+    private HashMap<DecodingTree, DecodingTree> getTreeMap(String vstr) {
+        HashMap<DecodingTree, DecodingTree> set = pathMap.get(vstr);
+        if ( set == null ) {
+            set = new HashMap<DecodingTree, DecodingTree>();
+            pathMap.put(vstr, set);
+        }
+        return set;
+    }
+
+    private DecodingTree getPrevTree(String vstr, DecodingTree dt) {
+        HashMap<DecodingTree, DecodingTree> set = getTreeMap(vstr);
+        return set.get(dt);
     }
 }
