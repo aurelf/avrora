@@ -211,9 +211,9 @@ public class DTNode {
      * @param list the list to add this node and its subnodes to
      * @param seen a set containing any nodes already in the topological list
      */
-    public void addTopologicalOrder(List<DTNode> list, Set<DTNode> seen) {
-        if ( seen.contains(this) ) return;
-        seen.add(this);
+    public void addTopologicalOrder(List<DTNode> list, Set<Integer> seen) {
+        if ( seen.contains(number) ) return;
+        seen.add(number);
         for ( DTNode n : children.values() )
             n.addTopologicalOrder(list, seen);
         list.add(this);
@@ -228,9 +228,9 @@ public class DTNode {
      * @param list the list to add this node and its subnodes to
      * @param seen a set containing any nodes already in the pre-order list
      */
-    public void addPreOrder(List<DTNode> list, Set<DTNode> seen) {
+    public void addPreOrder(List<DTNode> list, Set<Integer> seen) {
         if ( seen.contains(this) ) return;
-        seen.add(this);
+        seen.add(number);
         list.add(this);
         for ( DTNode n : children.values() )
             n.addTopologicalOrder(list, seen);
@@ -270,11 +270,27 @@ public class DTNode {
                 DTNode newC = e.getValue().deepCopy(nn);
                 nc.put(e.getKey(), newC);
             }
-            // create a new instance of this node
-            newThis = new DTNode(label, left_bit, right_bit, nc);
+            // create a new shallow copy of this node
+            newThis = shallowCopy(nc);
             // put it in the map so it is not duplicated over and over
             nn.put(this, newThis);
         }
+        return newThis;
+    }
+
+    public DTNode shallowCopy(HashMap<Integer, DTNode> nc) {
+        DTNode newThis = new DTNode(label, left_bit, right_bit, nc);
+        newThis.number = number;
+        newThis.label = label;
+        newThis.encodings.addAll(encodings);
+        return newThis;
+    }
+
+    public DTNode shallowCopy(int left_bit, int right_bit, HashMap<Integer, DTNode> nc) {
+        DTNode newThis = new DTNode(label, left_bit, right_bit, nc);
+        newThis.number = number;
+        newThis.label = label;
+        newThis.encodings.addAll(encodings);
         return newThis;
     }
 }

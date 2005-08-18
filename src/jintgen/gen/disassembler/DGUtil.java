@@ -32,10 +32,7 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.StringUtil;
-import avrora.util.Printer;
-import avrora.util.Terminal;
-import avrora.util.Util;
+import avrora.util.*;
 
 import java.util.*;
 
@@ -92,8 +89,8 @@ public class DGUtil {
      * @param p the printer to dump the tree to
      * @param dt the decoding tree to print
      */
-    public static void printTree(Printer p, DecodingTree dt) {
-        HashSet<DecodingTree> nodes = new HashSet<DecodingTree>();
+    public static void printTree(Printer p, DTNode dt) {
+        HashSet<DTNode> nodes = new HashSet<DTNode>();
         printTree(nodes, p, dt, 0);
     }
 
@@ -104,8 +101,8 @@ public class DGUtil {
      * @param dt the decoding tree to print
      * @param depth the indenting depth
      */
-    public static void printTree(HashSet<DecodingTree> nodes, Printer p, DecodingTree dt, int depth) {
-        p.print("#"+dt.node_num+" ");
+    public static void printTree(HashSet<DTNode> nodes, Printer p, DTNode dt, int depth) {
+        p.print("#"+dt.number+" ");
         if ( nodes.contains(dt) ) {
             p.nextln(); 
             return;
@@ -113,15 +110,15 @@ public class DGUtil {
         nodes.add(dt);
         String label = dt.getLabel();
         if ( label != null ) p.print(label+" ");
-        if ( dt.children.size() == 0 ) {
+        if ( dt.isLeaf() ) {
             printLeaf(dt, p);
             return;
         }
         int length = dt.right_bit - dt.left_bit + 1;
         p.println("decode["+dt.left_bit+":"+dt.right_bit+"]: ");
-        DecodingTree def = null;
-        for ( Map.Entry<Integer, DecodingTree> e : dt.children.entrySet() ) {
-            DecodingTree cdt = e.getValue();
+        DTNode def = null;
+        for ( Map.Entry<Integer, DTNode> e : dt.getSortedEdges() ) {
+            DTNode cdt = e.getValue();
             int val = e.getKey();
             if ( val < 0 ) {
                 def = cdt;
@@ -133,37 +130,17 @@ public class DGUtil {
             printNode(nodes, p, depth, -1, length, def);
     }
 
-    private static void printLeaf(DecodingTree dt, Printer p) {
+    private static void printLeaf(DTNode dt, Printer p) {
         String label = dt.getLabel();
         if ( label == null )
-            for ( EncodingInfo ei : dt.highPrio ) ei.print(0, p);
+            for ( EncodingInfo ei : dt.encodings ) ei.print(0, p);
     }
 
-    private static void printNode(HashSet<DecodingTree> nodes, Printer p, int depth, int val, int length, DecodingTree cdt) {
+    private static void printNode(HashSet<DTNode> nodes, Printer p, int depth, int val, int length, DTNode cdt) {
         indent(p, depth+1);
         p.print(getEdgeLabel(val, length)+" -> ");
         printTree(nodes, p, cdt, depth+1);
         p.nextln();
-    }
-
-    /**
-     * The <code>countNodes()</code> method counts the number of nodes in the decoding tree.
-     * @param dt the decoding tree for which to count the nodes
-     * @return the number of nodes in this decoding tree and its subtrees
-     */
-    public static int numberNodes(DecodingTree dt) {
-        HashSet<DecodingTree> nodes = new HashSet<DecodingTree>();
-        numberNodes(nodes, dt);
-        return nodes.size();
-    }
-
-    private static void numberNodes(HashSet<DecodingTree> nodes, DecodingTree dt) {
-        if ( nodes.contains(dt) ) return;
-        dt.node_num = nodes.size();
-        nodes.add(dt);
-        for ( DecodingTree cdt : dt.children.values() ) {
-            numberNodes(nodes, cdt);
-        }
     }
 
     /**
@@ -185,27 +162,30 @@ public class DGUtil {
         throw Util.failure("Disassembler generator cannot continue");
     }
 
-    public static void printDotTree(String title, DecodingTree dt, Printer p) {
+    public static void printDotTree(String title, DTNode dt, Printer p) {
         p.startblock("digraph "+title);
         p.println("rankdir=LR;");
-        p.println("randsep=2;");
-        HashSet<DecodingTree> nodes = new HashSet<DecodingTree>();
-        printNode(p, dt, nodes);
+        p.println("ranksep=2.0;");
+        p.println("node[fontsize=20,fontname=Monaco];");
+        HashSet<Integer> nodes = new HashSet<Integer>();
+        printNode(p, 0, dt, nodes);
         p.endblock();
     }
 
-    private static void printNode(Printer p, DecodingTree dt, HashSet<DecodingTree> nodes) {
+    private static void printNode(Printer p, long state, DTNode dt, HashSet<Integer> nodes) {
+        long nstate = DGUtil.getBitStates(state, dt);
         int length = dt.right_bit - dt.left_bit + 1;
-        String name = getName(dt);
+        String name = getName(dt, state);
         p.println(name+";");
-        for ( Map.Entry<Integer, DecodingTree> e : dt.children.entrySet() ) {
+        for ( Map.Entry<Integer, DTNode> e : dt.getEdges() ) {
             int value = e.getKey();
-            DecodingTree cdt = e.getValue();
-            if ( !nodes.contains(cdt) ) {
-                printNode(p, cdt, nodes);
-                nodes.add(cdt);
+            DTNode cdt = e.getValue();
+            if ( !nodes.contains(cdt.number) ) {
+                printNode(p, nstate, cdt, nodes);
+                nodes.add(cdt.number);
             }
-            p.println(name+" -> "+getName(cdt)+" [label="+getEdgeLabel(value, length)+"];");
+            String edgeLabel = StringUtil.quote(getEdgeLabel(value, length));
+            p.println(name+" -> "+getName(cdt, nstate)+" [label="+edgeLabel+"];");
         }
     }
 
@@ -213,19 +193,33 @@ public class DGUtil {
         return value == -1 ? "*" : StringUtil.toBin(value, length);
     }
 
-    private static String getName(DecodingTree dt) {
-        return StringUtil.quote(dt.node_num+":"+dt.getLabel()+"\\n["+dt.left_bit+":"+dt.right_bit+"]");
+    private static String getName(DTNode dt, long state) {
+        StringBuffer buf = new StringBuffer(100);
+        buf.append('"');
+        buf.append(dt.number);
+        buf.append(':');
+        buf.append(dt.getLabel());
+        buf.append("\\n");
+        for ( int cntr = 0; cntr < 16; cntr++ )
+            buf.append(Arithmetic.getBit(state, cntr) ? "X" : ".");
+        buf.append("\\n[");
+        buf.append(dt.left_bit);
+        buf.append(':');
+        buf.append(dt.right_bit);
+        buf.append(']');
+        buf.append('"');
+        return buf.toString();
     }
 
     public static Collection<DTNode> topologicalOrder(DTNode n) {
-        HashSet<DTNode> set = new HashSet<DTNode>();
+        HashSet<Integer> set = new HashSet<Integer>();
         List<DTNode> list = new LinkedList<DTNode>();
         n.addTopologicalOrder(list, set);
         return list;
     }
 
     public static Collection<DTNode> preOrder(DTNode n) {
-        HashSet<DTNode> set = new HashSet<DTNode>();
+        HashSet<Integer> set = new HashSet<Integer>();
         List<DTNode> list = new LinkedList<DTNode>();
         n.addPreOrder(list, set);
         return list;
@@ -235,5 +229,31 @@ public class DGUtil {
         int number = 0;
         for ( DTNode c : preOrder(n) ) c.number = number++;
         return number;
+    }
+
+    public static long getBitStates(long prev, DTNode n) {
+        if ( n.isLeaf() ) return prev;
+        for ( int bit = n.left_bit; bit <= n.right_bit; bit++ )
+            prev = Arithmetic.setBit(prev, bit, true);
+        return prev;
+    }
+
+    public static DTNode removeAll(DTNode n, String label) {
+        if ( label.equals(n.getLabel()) ) return null;
+        // rebuild each of the children
+        HashMap<Integer, DTNode> nc = new HashMap<Integer, DTNode>();
+        for ( Map.Entry<Integer, DTNode> e : n.getEdges() ) {
+            int value = e.getKey();
+            DTNode child = e.getValue();
+            DTNode nchild = removeAll(child, label);
+            if ( nchild != null )
+                nc.put(new Integer(value), nchild);
+        }
+
+        // reset left and right bits for a terminal node
+        if ( nc.size() == 0 )
+            return n.shallowCopy(0, 0, nc);
+        else
+            return n.shallowCopy(nc);
     }
 }

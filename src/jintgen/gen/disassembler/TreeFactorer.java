@@ -32,6 +32,8 @@
 
 package jintgen.gen.disassembler;
 
+import avrora.util.Arithmetic;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HashSet;
@@ -41,57 +43,54 @@ import java.util.HashSet;
  */
 public class TreeFactorer {
 
-    final DecodingTree oldRoot;
-    final HashMap<String, HashMap<DecodingTree, DecodingTree>> pathMap;
+    final DTNode oldRoot;
+    final HashMap<Long, HashMap<DTNode, DTNode>> pathMap;
 
-    public TreeFactorer(DecodingTree dt) {
+    public TreeFactorer(DTNode dt) {
         oldRoot = dt;
-        pathMap = new HashMap<String, HashMap<DecodingTree, DecodingTree>>();
+        pathMap = new HashMap<Long, HashMap<DTNode, DTNode>>();
     }
 
-    public DecodingTree getNewTree() {
-        return rebuild("root:", oldRoot);
+    public DTNode getNewTree() {
+        return rebuild(0, oldRoot);
     }
 
-    private DecodingTree rebuild(String prefix, DecodingTree dt) {
-        String nprefix = prefix+"@"+"["+dt.left_bit+":"+dt.right_bit+"]";
-        String vstr = prefix+dt.getLabel()+"["+dt.left_bit+":"+dt.right_bit+"]";
-
-        // make a shallow copy of this node
-        DecodingTree ndt = dt.shallowCopy();
-
+    private DTNode rebuild(long state, DTNode n) {
+        long nstate = DGUtil.getBitStates(state, n);
         // rebuild each of the children
-        for ( Map.Entry<Integer, DecodingTree> e : dt.children.entrySet() ) {
+        HashMap<Integer, DTNode> nc = new HashMap<Integer, DTNode>();
+        for ( Map.Entry<Integer, DTNode> e : n.getEdges() ) {
             int value = e.getKey();
-            DecodingTree child = e.getValue();
-            DecodingTree nchild = rebuild(nprefix, child);
-            ndt.children.put(new Integer(value), nchild);
+            DTNode child = e.getValue();
+            DTNode nchild = rebuild(nstate, child);
+            nc.put(new Integer(value), nchild);
         }
 
-        DecodingTree prev = getPrevTree(vstr, ndt);
+        DTNode nn = n.shallowCopy(nc);
+        DTNode prev = getPrevNode(state, nn);
         if ( prev != null ) return prev;
 
         // cache this node and (and its subgraph)
-        addNewTree(vstr, ndt);
-        return ndt;
+        addNewNode(state, nn);
+        return nn;
     }
 
-    private void addNewTree(String vstr, DecodingTree ndt) {
-        HashMap<DecodingTree, DecodingTree> set = getTreeMap(vstr);
+    private void addNewNode(long state, DTNode ndt) {
+        HashMap<DTNode, DTNode> set = getTreeMap(state);
         set.put(ndt, ndt);
     }
 
-    private HashMap<DecodingTree, DecodingTree> getTreeMap(String vstr) {
-        HashMap<DecodingTree, DecodingTree> set = pathMap.get(vstr);
+    private HashMap<DTNode, DTNode> getTreeMap(long state) {
+        HashMap<DTNode, DTNode> set = pathMap.get(state);
         if ( set == null ) {
-            set = new HashMap<DecodingTree, DecodingTree>();
-            pathMap.put(vstr, set);
+            set = new HashMap<DTNode, DTNode>();
+            pathMap.put(state, set);
         }
         return set;
     }
 
-    private DecodingTree getPrevTree(String vstr, DecodingTree dt) {
-        HashMap<DecodingTree, DecodingTree> set = getTreeMap(vstr);
+    private DTNode getPrevNode(long state, DTNode dt) {
+        HashMap<DTNode, DTNode> set = getTreeMap(state);
         return set.get(dt);
     }
 }

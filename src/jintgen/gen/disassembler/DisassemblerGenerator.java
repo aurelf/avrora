@@ -36,7 +36,7 @@ import avrora.util.Util;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
-import jintgen.gen.disassembler.DecodingTree;
+import jintgen.gen.disassembler.DTBuilder;
 import jintgen.gen.Generator;
 import avrora.util.*;
 
@@ -74,6 +74,7 @@ public class DisassemblerGenerator extends Generator {
     Verbose.Printer dotDump = Verbose.getVerbosePrinter("jintgen.disassem.dot");
     static String instrClassName;
     static String symbolClassName;
+    static String disassemblerClassName;
 
     int indent;
 
@@ -92,45 +93,56 @@ public class DisassemblerGenerator extends Generator {
         boolean multiple;
         boolean parallel;
 
-        final HashMap<String, DecodingTree> finalTrees;
+        final HashMap<String, DTNode> finalTrees;
 
-        final DecodingTree[] completeTree;
+        final DTBuilder[] completeTree;
 
         DecoderImplementation(int maxprio) {
             parallel = PARALLEL_TREE.get();
             multiple = MULTI_TREE.get();
-            completeTree = new DecodingTree[maxprio+1];
-            finalTrees = new HashMap<String, DecodingTree>();
+            completeTree = new DTBuilder[maxprio+1];
+            finalTrees = new HashMap<String, DTNode>();
         }
 
         void compute() {
             for ( int cntr = 0; cntr < completeTree.length; cntr++ ) {
-                DecodingTree dt = completeTree[cntr];
+                DTBuilder dt = completeTree[cntr];
                 if ( dt == null ) continue;
-                dt.compute(0);
+                DTNode root = dt.compute();
                 if ( parallel ) {
-                    labelTreeWithInstrs(dt);
-                    addFinalTree("instr"+cntr, new TreeFactorer(dt).getNewTree());
-                    labelTreeWithAddrModes(dt);
-                    addFinalTree("addr"+cntr, new TreeFactorer(dt).getNewTree());
+                    addFinalTree("instr"+cntr, optimizeInstrs(root));
+                    addFinalTree("addr"+cntr, optimizeAddrs(root));
                 } else {
-                    addFinalTree("root"+cntr, dt);
+                    addFinalTree("root"+cntr, root);
                 }
             }
         }
 
-        void addFinalTree(String n, DecodingTree t) {
+        private DTNode optimizeAddrs(DTNode root) {
+            labelTreeWithAddrModes(root);
+            DTNode newTree = new TreeFactorer(root).getNewTree();
+            return newTree;
+        }
+
+        private DTNode optimizeInstrs(DTNode root) {
+            labelTreeWithInstrs(root);
+            root = DGUtil.removeAll(root, "*");
+            DTNode newTree = new TreeFactorer(root).getNewTree();
+            return newTree;
+        }
+
+        void addFinalTree(String n, DTNode t) {
             finalTrees.put(n, t);
             treeNodes += DGUtil.numberNodes(t);
         }
 
         void print(Printer p) {
-            for ( DecodingTree dt : finalTrees.values() )
+            for ( DTNode dt : finalTrees.values() )
                 DGUtil.printTree(p, dt);
         }
 
         void dotDump() throws Exception {
-            for ( Map.Entry<String, DecodingTree> e : finalTrees.entrySet() ) {
+            for ( Map.Entry<String, DTNode> e : finalTrees.entrySet() ) {
                 String name = e.getKey();
                 FileOutputStream fos = new FileOutputStream(name+".dot");
                 Printer p = new Printer(new PrintStream(fos));
@@ -141,16 +153,53 @@ public class DisassemblerGenerator extends Generator {
         void add(EncodingInfo ei) {
             int priority = ei.encoding.getPriority();
             if ( !multiple ) priority = 0;
-            DecodingTree dt = completeTree[priority];
-            if ( dt == null ) dt = completeTree[priority] = new DecodingTree();
+            DTBuilder dt = completeTree[priority];
+            if ( dt == null ) dt = completeTree[priority] = new DTBuilder();
             dt.addEncoding(ei);
         }
 
         void generate() {
-            for ( Map.Entry<String, DecodingTree> e : finalTrees.entrySet() ) {
-                generateDecodingTree("make_"+e.getKey(), e.getValue());
+            for ( Map.Entry<String, DTNode> e : finalTrees.entrySet() ) {
+                String treeName = e.getKey();
+                generateDecodingTree("make_"+treeName, e.getValue());
+                printer.println("private static DTNode "+treeName+" = make_"+treeName+"();");
+            }
+            if ( parallel ) {
+                generateParallelRoot();
+            } else {
+                generateRoot();
             }
         }
+
+        void generateParallelRoot() {
+            printer.startblock(instrClassName+" decode_root(int word0) throws InvalidInstruction ");
+            printer.println("DTNode addr = addr0;");
+            printer.println("DTNode instr = instr0;");
+            printer.startblock("while (true)");
+            printer.println("int bits = (word0 >> addr.left_bit) & addr.mask;");
+            printer.println("addr = addr.move(bits);");
+            printer.println("if ( instr != null ) instr = instr.move(bits);");
+            printer.println("if ( addr == null ) break;");
+            printer.println("if ( addr.action != null ) addr.action();");
+            printer.println("if ( instr != null && instr.action != null ) instr.action();");
+            printer.endblock();
+            printer.println("return null;");
+            printer.endblock();
+        }
+
+        private void generateRoot() {
+            printer.startblock(instrClassName+" decode_root(int word0) throws InvalidInstruction ");
+            printer.println("DTNode node = root0;");
+            printer.startblock("while (true)");
+            printer.println("int bits = (word0 >> node.left_bit) & node.mask;");
+            printer.println("node = node.move(bits);");
+            printer.println("if ( node == null ) break;");
+            printer.println("if ( node.action != null ) node.action();");
+            printer.endblock();
+            printer.println("return null;");
+            printer.endblock();
+        }
+
     }
 
     public DisassemblerGenerator() {
@@ -161,9 +210,10 @@ public class DisassemblerGenerator extends Generator {
         List<String> imports = new LinkedList<String>();
         imports.add("avrora.util.Arithmetic");
         imports.add("java.util.Arrays");
-        printer = newClassPrinter(className("Disassembler"), imports, null);
         instrClassName = className("Instr");
         symbolClassName = className("Symbol");
+        disassemblerClassName = className("Disassembler");
+        printer = newClassPrinter(disassemblerClassName, imports, null);
 
         generateHeader();
         generateDecodeTables();
@@ -173,7 +223,6 @@ public class DisassemblerGenerator extends Generator {
         addInstructions();
         implementation.compute();
         implementation.generate();
-        generateRoot();
         if ( verboseDump.enabled ) {
             implementation.print(verboseDump);
         }
@@ -210,16 +259,9 @@ public class DisassemblerGenerator extends Generator {
 
     private void generateHeader() {
         printer.startblock("static class InvalidInstruction extends Exception");
-        printer.startblock("InvalidInstruction(int word1, int pc) ");
+        printer.startblock("InvalidInstruction(int pc) ");
         printer.println("super(\"Invalid instruction at \"+pc);");
         printer.endblock();
-        printer.endblock();
-    }
-
-    private void generateRoot() {
-        printer.startblock(instrClassName+" decode_root(int word1) throws InvalidInstruction ");
-        printer.println(instrClassName+" i = null;");
-        invalidInstr();
         printer.endblock();
     }
 
@@ -243,7 +285,7 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private void invalidInstr() {
-        printer.println("throw new InvalidInstruction(word1, pc);");
+        printer.println("throw new InvalidInstruction(0);");
     }
 
     private void returnNull() {
@@ -310,14 +352,16 @@ public class DisassemblerGenerator extends Generator {
         printer.startblock("static abstract class DTNode");
         printer.println("final int left_bit;");
         printer.println("final int mask;");
-        printer.println("DTNode(int lb, int msk) { left_bit = lb; mask = msk; }");
+        printer.println("final Action action;");
+        printer.println("DTNode(Action a, int lb, int msk) { action = a; left_bit = lb; mask = msk; }");
         printer.println("abstract DTNode move(int val);");
+        printer.println("void action() { }");
         printer.endblock();
 
         printer.startblock("static class DTArrayNode extends DTNode");
         printer.println("final DTNode[] nodes;");
-        printer.startblock("DTArrayNode(int lb, int msk, DTNode[] n)");
-        printer.println("super(lb, msk);");
+        printer.startblock("DTArrayNode(Action a, int lb, int msk, DTNode[] n)");
+        printer.println("super(a, lb, msk);");
         printer.println("nodes = n;");
         printer.endblock();
         printer.startblock("DTNode move(int val)");
@@ -329,27 +373,47 @@ public class DisassemblerGenerator extends Generator {
         printer.println("final DTNode def;");
         printer.println("final DTNode[] nodes;");
         printer.println("final int[] values;");
-        printer.startblock("DTArrayNode(int lb, int msk, int[] v, DTNode[] n, DTNode d)");
-        printer.println("super(lb, msk);");
+        printer.startblock("DTSortedNode(Action a, int lb, int msk, int[] v, DTNode[] n, DTNode d)");
+        printer.println("super(a, lb, msk);");
         printer.println("values = v;");
         printer.println("nodes = n;");
         printer.println("def = d;");
         printer.endblock();
         printer.startblock("DTNode move(int val)");
         printer.println("int ind = Arrays.binarySearch(values, val);");
-        printer.println("if ( ind < values.length && values[ind] == val );");
+        printer.println("if ( ind < values.length && values[ind] == val )");
         printer.println("    return nodes[ind];");
         printer.println("else");
         printer.println("    return def;");
         printer.endblock();
         printer.endblock();
+
+        printer.startblock("static class DTTerminal extends DTNode");
+        printer.startblock("DTTerminal(Action a)");
+        printer.println("super(a, 0, 0);");
+        printer.endblock();
+        printer.startblock("DTNode move(int val)");
+        printer.println("return null;");
+        printer.endblock();
+        printer.endblock();
+
+        printer.startblock("static abstract class Action");
+        printer.println("abstract void action("+disassemblerClassName+" d) throws Exception;");
+        printer.endblock();
+
+        printer.startblock("static class ErrorAction extends Action");
+        printer.println("void action("+disassemblerClassName+" d) throws Exception { throw new InvalidInstruction(0); }");
+        printer.endblock();
+
+        printer.println("public static final DTTerminal ERROR = new DTTerminal(null);");
     }
 
-    public void generateDecodingTree(String methname, DecodingTree dt) {
+    public void generateDecodingTree(String methname, DTNode dt) {
         printer.startblock("static DTNode "+methname+"()");
-        HashSet<DecodingTree> set = new HashSet<DecodingTree>();
-        String n = generateDecodingNode(dt, set);
-        printer.println("return "+n+";");
+        String last = "ERROR";
+        for ( DTNode n : DGUtil.topologicalOrder(dt) )
+            last = generateDecodingNode(n);
+        printer.println("return "+last+";");
         printer.endblock();
     }
 
@@ -358,11 +422,14 @@ public class DisassemblerGenerator extends Generator {
         final String nname;
         final int left;
         final int mask;
+        final int length;
         LinkedList<String> init;
-        DTNodeImpl(DecodingTree dt) {
-            nname = "node"+dt.node_num;
+
+        DTNodeImpl(DTNode dt) {
+            nname = nodeName(dt);
             left = dt.left_bit;
-            mask = -1 >>> (32 - (dt.right_bit - dt.left_bit + 1));
+            length = dt.right_bit - dt.left_bit + 1;
+            mask = -1 >>> (32 - length);
             init = new LinkedList<String>();
         }
         abstract void add(int value, String nname);
@@ -383,7 +450,7 @@ public class DisassemblerGenerator extends Generator {
     class DTArrayNodeImpl extends DTNodeImpl {
         int current;
 
-        DTArrayNodeImpl(DecodingTree dt) {
+        DTArrayNodeImpl(DTNode dt) {
             super(dt);
         }
         void add(int value, String nname) {
@@ -398,16 +465,23 @@ public class DisassemblerGenerator extends Generator {
             }
         }
         void generate() {
-            printer.print("DTNode "+nname+" = new DTArrayNode("+left+", "+mask+", new DTNode[] {");
-            boolean first = true;
+            printer.print("DTNode "+nname+" = new DTArrayNode(null, "+left+", "+mask+", new DTNode[] {");
+            padInits();
             printInits();
             printer.println("});");
+        }
+
+        void padInits() {
+            int total = 1 << (length);
+            for ( int cntr = init.size(); cntr < total; cntr++ ) {
+                init.add(def);
+            }
         }
     }
 
     class DTSortedNodeImpl extends DTNodeImpl {
         LinkedList<Integer> values = new LinkedList<Integer>();
-        DTSortedNodeImpl(DecodingTree dt) {
+        DTSortedNodeImpl(DTNode dt) {
             super(dt);
         }
         void add(int value, String nname) {
@@ -418,7 +492,7 @@ public class DisassemblerGenerator extends Generator {
             }
         }
         void generate() {
-            printer.print("DTNode "+nname+" = new DTSortedNode("+left+", "+mask+", new int[] {");
+            printer.print("DTNode "+nname+" = new DTSortedNode(null, "+left+", "+mask+", new int[] {");
             boolean first = true;
             for ( Integer i : values ) {
                 if ( !first ) {
@@ -429,37 +503,38 @@ public class DisassemblerGenerator extends Generator {
             }
             printer.print("}, new DTNode[] {");
             printInits();
-            printer.println(", "+def+"});");
+            printer.println("}, "+def+");");
         }
+
 
     }
 
-    private String generateDecodingNode(DecodingTree dt, HashSet<DecodingTree> set) {
-        DTNodeImpl nodeImpl = newDTNode(dt);
-        List<Map.Entry<Integer, DecodingTree>> children = new LinkedList<Map.Entry<Integer, DecodingTree>>(dt.children.entrySet());
-        Collections.sort(children, ENTRY_COMPARATOR);
-        for ( Map.Entry<Integer, DecodingTree> e : children ) {
+    private String generateDecodingNode(DTNode n) {
+        if ( n.isLeaf() ) {
+            String nname = nodeName(n);
+            printer.println("DTNode "+nname+" = new DTTerminal(null);");
+            return nname;
+        }
+        DTNodeImpl nodeImpl = newDTNode(n);
+        for ( Map.Entry<Integer, DTNode> e : n.getSortedEdges() ) {
             int value = e.getKey();
-            DecodingTree cdt = e.getValue();
-            if ( !set.contains(cdt) ) generateDecodingNode(cdt, set);
-            nodeImpl.add(value, "node"+cdt.node_num);
+            DTNode cdt = e.getValue();
+            nodeImpl.add(value, nodeName(cdt));
         }
         nodeImpl.generate();
-        set.add(dt);
         return nodeImpl.nname;
     }
 
-    private DTNodeImpl newDTNode(DecodingTree dt) {
-        int size = 1 << (dt.right_bit - dt.left_bit);
-        if ( size > 16 && (dt.children.size() < (size/2)) ) return new DTSortedNodeImpl(dt);
-        return new DTArrayNodeImpl(dt);
+    private String nodeName(DTNode cdt) {
+        if ( cdt.isLeaf() ) return "T"+cdt.number;
+        else return "N"+cdt.number;
     }
 
-    public static Comparator<Map.Entry<Integer, DecodingTree>> ENTRY_COMPARATOR = new Comparator<Map.Entry<Integer, DecodingTree>>() {
-        public int compare(Map.Entry<Integer, DecodingTree> a, Map.Entry<Integer, DecodingTree> b) {
-            return a.getKey() - b.getKey();
-        }
-    };
+    private DTNodeImpl newDTNode(DTNode dt) {
+        int size = 1 << (dt.right_bit - dt.left_bit);
+        if ( size > 16 && (dt.getChildren().size() < (size/2)) ) return new DTSortedNodeImpl(dt);
+        return new DTArrayNodeImpl(dt);
+    }
 
     public static int nativeBitOrder(int bit) {
         return 15-(bit % WORD_SIZE);
@@ -469,49 +544,45 @@ public class DisassemblerGenerator extends Generator {
         return instrClassName+"."+ei.instr.getInnerClassName();
     }
 
-    public static void labelTreeWithInstrs(DecodingTree dt) {
+    public static void labelTreeWithInstrs(DTNode dt) {
         HashSet<InstrDecl> instrs = new HashSet<InstrDecl>();
-        for ( EncodingInfo ei : dt.highPrio )
-            instrs.add(ei.instr);
-        for ( EncodingInfo ei : dt.lowPrio )
+        for ( EncodingInfo ei : dt.encodings )
             instrs.add(ei.instr);
 
         // label all the children
         if ( instrs.size() == 1 ) {
             dt.setLabel(instrs.iterator().next().innerClassName);
             // label all the children
-            for ( DecodingTree cdt : dt.children.values() )
+            for ( DTNode cdt : dt.getChildren() )
             labelTree("*", cdt);
         } else {
             dt.setLabel("-");
-            for ( DecodingTree cdt : dt.children.values() )
+            for ( DTNode cdt : dt.getChildren() )
                 labelTreeWithInstrs(cdt);
         }
     }
 
-    public static void labelTreeWithAddrModes(DecodingTree dt) {
+    public static void labelTreeWithAddrModes(DTNode dt) {
         HashSet<AddrModeDecl> addrs = new HashSet<AddrModeDecl>();
-        for ( EncodingInfo ei : dt.highPrio )
-            addrs.add(ei.addrMode);
-        for ( EncodingInfo ei : dt.lowPrio )
+        for ( EncodingInfo ei : dt.encodings )
             addrs.add(ei.addrMode);
 
         if ( addrs.size() == 1 ) {
             // label all the children
             dt.setLabel(addrs.iterator().next().name.image);
-            for ( DecodingTree cdt : dt.children.values() )
+            for ( DTNode cdt : dt.getChildren() )
             labelTree("*", cdt);
         } else {
             // label all the children
             dt.setLabel("-");
-            for ( DecodingTree cdt : dt.children.values() )
+            for ( DTNode cdt : dt.getChildren() )
                 labelTreeWithAddrModes(cdt);
         }
     }
 
-    public static void labelTree(String l, DecodingTree dt) {
+    public static void labelTree(String l, DTNode dt) {
         dt.setLabel(l);
-        for ( DecodingTree cdt : dt.children.values() )
+        for ( DTNode cdt : dt.getChildren() )
             labelTree(l, cdt);
     }
 
