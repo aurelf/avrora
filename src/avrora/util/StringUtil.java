@@ -39,6 +39,7 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing with strings such as
@@ -693,6 +694,44 @@ public class StringUtil {
             }
         }
         return buf.toString();
+    }
+
+    public static List trimLines(String s, int indent, int width) {
+        LinkedList list = new LinkedList();
+        int len = s.length();
+        int consumed = indent;
+        String indstr = dup(' ', indent);
+        StringBuffer buf = new StringBuffer(s.length());
+        buf.append(indstr);
+        int lastSp = -1;
+        for (int cntr = 0; cntr < len; cntr++) {
+            char c = s.charAt(cntr);
+            if (c == '\n') {
+                buf = newBuffer(indstr, buf, list);
+                consumed = buf.length();
+                continue;
+            } else if (Character.isWhitespace(c)) {
+                lastSp = consumed;
+            }
+            buf.append(c);
+            consumed++;
+
+            if (consumed > width) {
+                if (lastSp >= 0) {
+                    String leftover = buf.substring(lastSp+1); // get leftover already in the buffer
+                    buf.setLength(lastSp); // trim off any stuff after the last space
+                    buf = newBuffer(leftover, buf, list); // create new buffer and add last to list
+                    consumed = buf.length();
+                }
+            }
+        }
+        if ( buf.length() > 0 ) list.add(buf.toString());
+        return list;
+    }
+
+    static StringBuffer newBuffer(String n, StringBuffer old, List strs) {
+        strs.add(old.toString());
+        return new StringBuffer(n);
     }
 
     /**

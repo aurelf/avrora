@@ -1,4 +1,10 @@
 package jintgen.arch.msp430;
+
+/**
+ * The <code>MSP430InstrVisitor</code> interface allows user code that
+ * implements the interface to easily dispatch on the type of an
+ * instruction without casting using the visitor pattern.
+ */
 public interface MSP430InstrVisitor {
     public void visit(MSP430Instr.ADC i);
     public void visit(MSP430Instr.ADC_B i);

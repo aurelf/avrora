@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.HashMap;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
@@ -83,14 +85,7 @@ public class InstrIRGenerator extends Generator {
         generateVisitor();
         generateInstrClasses();
         generateEnumerations();
-    }
-
-    private void emitPackage() {
-        String pname = this.DEST_PACKAGE.get();
-        if ( !"".equals(pname) ) {
-            printer.println("package "+pname+";");
-            printer.nextln();
-        }
+        generateBuilder();
     }
 
     //=========================================================================================
@@ -98,7 +93,10 @@ public class InstrIRGenerator extends Generator {
     //=========================================================================================
 
     private void generateVisitor() throws IOException {
-        printer = newInterfacePrinter(visitorClassName, null, null);
+        printer = newInterfacePrinter(visitorClassName, null, null,
+                "The <code>"+visitorClassName+"</code> interface allows user code that implements " +
+                "the interface to easily dispatch on the type of an instruction without casting using " +
+                "the visitor pattern.");
         for (InstrDecl d : arch.instructions) emitVisitMethod(d);
         printer.endblock();
         printer.close();
@@ -113,7 +111,10 @@ public class InstrIRGenerator extends Generator {
     //=========================================================================================
 
     private void generateInstrClasses() throws IOException {
-        printer = newClassPrinter(instrClassName, null, null);
+        printer = newClassPrinter(instrClassName, null, null,
+                "The <code>"+instrClassName+"</code> class is a container (almost a namespace) for " +
+                "all of the instructions in this architecture. Each inner class represents an instruction " +
+                "in the architecture and also extends the outer class.");
         for (InstrDecl d : arch.instructions) emitClass(d);
         printer.endblock();
         printer.close();
@@ -167,7 +168,11 @@ public class InstrIRGenerator extends Generator {
     //=========================================================================================
 
     private void generateEnumerations() throws IOException {
-        printer = newClassPrinter(symbolClassName, hashMapImport, null);
+        printer = newClassPrinter(symbolClassName, hashMapImport, null,
+                "The <code>"+symbolClassName+"</code> class represents a symbol (or an enumeration as " +
+                "declared in the instruction set description) relevant to the instruction set architecture. " +
+                "For example register names, status bit names, etc are given here. This class provides a " +
+                "type-safe enumeration for such symbolic names.");
         generateEnumHeader();
 
         for ( EnumDecl d : arch.enums ) {
@@ -251,36 +256,49 @@ public class InstrIRGenerator extends Generator {
     // CODE TO EMIT OPERAND TYPES
     //=========================================================================================
     private void generateOperandTypes() throws IOException {
-        printer = newClassPrinter(operandClassName, hashMapImport, null);
-        // generate all the explicitly declared operand types
-        for ( OperandTypeDecl d : arch.operandTypes )
-            generateOperandType(d);
-        // generate all the explicitly declared operand types
+        printer = newInterfacePrinter(operandClassName, hashMapImport, null,
+                "The <code>"+operandClassName+"</code> interface represents operands that are allowed to " +
+                "instructions in this architecture. Inner classes of this interface enumerate the possible " +
+                "operand types to instructions and their constructors allow for dynamic checking of " +
+                "correctness constraints as expressed in the instruction set description.");
+        // generate union operand types
+        HashMap<String, HashSet<String>> interfaces = new HashMap<String, HashSet<String>>();
         for ( AddrModeSetDecl d : arch.addrSets ) {
-            for ( AddrModeDecl.Operand o : d.unionOperands )
-            generateOperandType(o.getOperandType());
+            for ( AddrModeDecl.Operand o : d.unionOperands ) {
+                OperandTypeDecl.Union d1 = (OperandTypeDecl.Union)o.getOperandType();
+                printer.println("public interface "+d1.name.image+" extends "+operandClassName+" { }");
+                for ( OperandTypeDecl ut : d1.types ) {
+                    HashSet<String>set = interfaces.get(ut.name.image);
+                    if ( set == null ) {
+                        set = new HashSet<String>();
+                        interfaces.put(ut.name.image, set);
+                    }
+                    set.add(d1.name.image);
+                }
+            }
         }
 
-        printer.startblock("private static int checkValue(int val, int low, int high)");
-        printer.startblock("if ( val < low || val > high )");
-        printer.println("throw new Error();");
-        printer.endblock();
-        printer.println("return val;");
-        printer.endblock();
+        // generate all the explicitly declared operand types
+        for ( OperandTypeDecl d : arch.operandTypes )
+            generateOperandType(d, interfaces);
+
         printer.endblock();
         printer.close();
     }
 
-    private void generateOperandType(OperandTypeDecl d) {
-        printer.startblock("public static class "+d.name.image+" extends "+operandClassName);
+    private void generateOperandType(OperandTypeDecl d, HashMap<String, HashSet<String>> interfaces) {
+        printer.print("public class "+d.name.image+" implements "+operandClassName);
+        HashSet<String> intf = interfaces.get(d.name.image);
+        if ( intf != null ) for ( String str : intf ) {
+            printer.print(", "+str);
+        }
+        printer.startblock(" ");
         if ( d.isSymbol() ) {
             generateSymbolType((OperandTypeDecl.SymbolSet)d);
         } else if ( d.isValue() ) {
             generateSimpleType((OperandTypeDecl.Simple)d);
         } else if ( d.isCompound() ) {
             generateCompoundType((OperandTypeDecl.Compound)d);
-        } else if ( d.isUnion() ) {
-            generateUnionType((OperandTypeDecl.Union)d);
         }
         printer.endblock();
         printer.println("");
@@ -314,7 +332,7 @@ public class InstrIRGenerator extends Generator {
             printer.println("public static final int high = "+d.high+";");
             printer.println("public final int value;");
             printer.startblock(d.name.image+"(int val)");
-            printer.println("value = checkValue(val, low, high);");
+            printer.println("value = "+builderClassName+".checkValue(val, low, high);");
             printer.endblock();
         }
     }
@@ -364,5 +382,48 @@ public class InstrIRGenerator extends Generator {
             printer.print(o.name.toString());
             first = false;
         }
+    }
+
+    private void generateBuilder() throws IOException {
+        printer = newClassPrinter(builderClassName, hashMapImport, null, null);
+
+        printer.startblock("public static abstract class Single");
+        printer.println("public abstract "+instrClassName+" build("+operandClassName+"[] operands);");
+        printer.endblock();
+
+        printer.println("static final HashMap builders = new HashMap();");
+
+        printer.startblock("static Single addSingle(String name, Single s)");
+        printer.println("builders.put(name, s);");
+        printer.println("return s;");
+        printer.endblock();
+
+        for ( InstrDecl d : arch.instructions ) {
+            printer.startblock("public static final Single "+d.innerClassName+" = addSingle("+d.name+", new Single()");
+            printer.startblock("public "+instrClassName+" build("+operandClassName+"[] operands)");
+            List<AddrModeDecl.Operand> operands = d.getOperands();
+            printer.println("assert operands.length == "+operands.size()+";");
+            int cntr = 0;
+            printer.print("return new "+instrClassName+"."+d.innerClassName+"(");
+            for ( AddrModeDecl.Operand o : operands ) {
+                if ( cntr > 0 ) printer.print(", ");
+                printer.print("("+operandClassName+"."+o.type+")");
+                printer.print("operands["+cntr+"]");
+                cntr++;
+            }
+            printer.println(");");
+            printer.endblock();
+            printer.endblock(");");
+        }
+
+        printer.startblock("public static int checkValue(int val, int low, int high)");
+        printer.startblock("if ( val < low || val > high )");
+        printer.println("throw new Error();");
+        printer.endblock();
+        printer.println("return val;");
+        printer.endblock();
+        
+        printer.endblock();
+        printer.close();
     }
 }

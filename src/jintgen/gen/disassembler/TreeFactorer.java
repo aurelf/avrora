@@ -39,11 +39,17 @@ import java.util.Map;
 import java.util.HashSet;
 
 /**
+ * The <code>TreeFactorer</code> class implements a factoring algorithm that reduces
+ * the size of a decoding tree and turns it into directed acyclic graph. It does this
+ * by recursively rebuilding the tree and caching equivalent subtrees. The algorithm
+ * guarantees that the new DAG that is created will be equivalent.
+ *
  * @author Ben L. Titzer
  */
 public class TreeFactorer {
 
     final DTNode oldRoot;
+    DTNode newRoot;
     final HashMap<Long, HashMap<DTNode, DTNode>> pathMap;
 
     public TreeFactorer(DTNode dt) {
@@ -51,8 +57,14 @@ public class TreeFactorer {
         pathMap = new HashMap<Long, HashMap<DTNode, DTNode>>();
     }
 
+    /**
+     * The <code>getNewTree()</code> method rebuilds the tree and returns a reference to the new
+     * root.
+     * @return a reference to the new root of the tree
+     */
     public DTNode getNewTree() {
-        return rebuild(0, oldRoot);
+        if ( newRoot == null ) newRoot = rebuild(0, oldRoot);
+        return newRoot;
     }
 
     private DTNode rebuild(long state, DTNode n) {

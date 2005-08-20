@@ -1,4 +1,11 @@
 package jintgen.arch.msp430;
+
+/**
+ * The <code>MSP430Instr</code> class is a container (almost a namespace)
+ * for all of the instructions in this architecture. Each inner class
+ * represents an instruction in the architecture and also extends the
+ * outer class.
+ */
 public class MSP430Instr {
     public static class ADC extends MSP430Instr {
         public final MSP430Operand.SINGLE_W_source_union source;

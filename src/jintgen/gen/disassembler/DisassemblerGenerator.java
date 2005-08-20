@@ -74,7 +74,9 @@ public class DisassemblerGenerator extends Generator {
     Verbose.Printer dotDump = Verbose.getVerbosePrinter("jintgen.disassem.dot");
     static String instrClassName;
     static String symbolClassName;
+    static String operandClassName;
     static String disassemblerClassName;
+    static String builderClassName;
 
     int indent;
 
@@ -159,19 +161,61 @@ public class DisassemblerGenerator extends Generator {
         }
 
         void generate() {
-            for ( Map.Entry<String, DTNode> e : finalTrees.entrySet() ) {
-                String treeName = e.getKey();
-                generateDecodingTree("make_"+treeName, e.getValue());
-                printer.println("private static DTNode "+treeName+" = make_"+treeName+"();");
-            }
+            generateFields();
+            generateTreeBuilderMethods();
+            generateTreeFields();
             if ( parallel ) {
                 generateParallelRoot();
             } else {
                 generateRoot();
             }
+
+        }
+
+        private void generateTreeFields() {
+            for ( Map.Entry<String, DTNode> e : finalTrees.entrySet() ) {
+                String treeName = e.getKey();
+                generateJavaDoc("The <code>"+treeName+"</code> field stores a reference to the root of " +
+                        "a decoding tree. It is the starting point for decoding a bit pattern.");
+                printer.println("private static final DTNode "+treeName+" = make_"+treeName+"();");
+            }
+        }
+
+        private void generateTreeBuilderMethods() {
+            for ( Map.Entry<String, DTNode> e : finalTrees.entrySet() ) {
+                String treeName = e.getKey();
+                ActionGetter ag;
+                if ( treeName.startsWith("instr") )
+                    ag = new InstrActionGetter();
+                else ag = new AddrModeActionGetter();
+                generateDecodingTree("make_"+treeName, ag, e.getValue());
+            }
+        }
+
+        void generateFields() {
+            generateJavaDoc("The <code>builder</code> field stores a reference to the builder that was " +
+                    "discovered as a result of traversing the decoder tree. The builder corresponds to one " +
+                    "and only one instruction and has a method that can build a new instance of the instruction " +
+                    "from the operands.");
+            printer.println("private "+builderClassName+".Single builder;");
+            generateJavaDoc("The <code>operands</code> field stores a reference to the operands that were " +
+                    "extracted from the bit pattern as a result of traversing the decoding tree. When a node is " +
+                    "reached where the addressing mode is known, then the action on that node executes and " +
+                    "reads the operands from the bit pattern, storing them in this field.");
+            printer.println("private "+operandClassName+"[] operands;");
         }
 
         void generateParallelRoot() {
+            generateJavaDoc("The <code>decode_root()</code> method begins decoding the bit pattern " +
+                    "into an instruction. " +
+                    "This implementation is <i>parallel</i>, meaning there are two trees: one for " +
+                    "the instruction resolution and one of the addressing mode resolution. By beginning " +
+                    "at the root node of the addressing mode and " +
+                    "instruction resolution trees, the loop compares bits in the bit patterns and moves down " +
+                    "the two trees in parallel. When both trees reach an endpoint, the comparison stops and " +
+                    "an instruction will be built. This method accepts the value of the first word of the " +
+                    "bits and begins decoding from there.\n" +
+                    "@param word0 the first 16 bits of the bit pattern");
             printer.startblock(instrClassName+" decode_root(int word0) throws InvalidInstruction ");
             printer.println("DTNode addr = addr0;");
             printer.println("DTNode instr = instr0;");
@@ -183,11 +227,19 @@ public class DisassemblerGenerator extends Generator {
             printer.println("if ( addr.action != null ) addr.action();");
             printer.println("if ( instr != null && instr.action != null ) instr.action();");
             printer.endblock();
+            printer.println("if ( builder != null && operands != null ) return builder.build(operands);");
             printer.println("return null;");
             printer.endblock();
         }
 
         private void generateRoot() {
+            generateJavaDoc("The <code>decode_root()</code> method begins decoding the bit pattern " +
+                    "into an instruction. This implementation resolves both instruction and addressing " +
+                    "mode with one tree. It begins at the root node and continues comparing bits and " +
+                    "following the appropriate paths until a terminal node is reached. This method " +
+                    "accepts the value of the first word of the bits and begins " +
+                    "decoding from there.\n" +
+                    "@param word0 the first 16 bits of the bit pattern");
             printer.startblock(instrClassName+" decode_root(int word0) throws InvalidInstruction ");
             printer.println("DTNode node = root0;");
             printer.startblock("while (true)");
@@ -196,10 +248,61 @@ public class DisassemblerGenerator extends Generator {
             printer.println("if ( node == null ) break;");
             printer.println("if ( node.action != null ) node.action();");
             printer.endblock();
+            printer.println("if ( builder != null && operands != null ) return builder.build(operands);");
             printer.println("return null;");
             printer.endblock();
         }
 
+        private void generateDecodingTree(String methname, ActionGetter ag, DTNode dt) {
+            generateJavaDoc("The <code>"+methname+"()</code> method creates a new instance of a " +
+                    "decoding tree by allocating the DTNode instances and connecting the references " +
+                    "together correctly. It is called only once in the static initialization of the " +
+                    "disassembler to build a single shared instance of the decoder tree implementation " +
+                    "and the reference to the root node is stored in a single private static field of " +
+                    "the same name.");
+            printer.startblock("static DTNode "+methname+"()");
+            String last = "ERROR";
+            for ( DTNode n : DGUtil.topologicalOrder(dt) )
+                last = generateDecodingNode(n, ag);
+            printer.println("return "+last+";");
+            printer.endblock();
+        }
+
+        private String generateDecodingNode(DTNode n, ActionGetter ag) {
+            String action = ag.getAction(n);
+            if ( n.isLeaf() ) {
+                String nname = nodeName(n);
+                printer.println("DTNode "+nname+" = new DTTerminal("+action+");");
+                return nname;
+            }
+            DTNodeImpl nodeImpl = newDTNode(n, action);
+            for ( Map.Entry<Integer, DTNode> e : n.getSortedEdges() ) {
+                int value = e.getKey();
+                DTNode cdt = e.getValue();
+                nodeImpl.add(value, nodeName(cdt));
+            }
+            nodeImpl.generate();
+            return nodeImpl.nname;
+        }
+
+        abstract class ActionGetter {
+            abstract String getAction(DTNode n);
+        }
+
+        class InstrActionGetter extends ActionGetter {
+            String getAction(DTNode n) {
+                String label = n.getLabel();
+                if ( "*".equals(label) ) return "null";
+                if ( "-".equals(label) ) return "null";
+                else return "new SetBuilder("+builderClassName+"."+label+")";
+            }
+        }
+
+        class AddrModeActionGetter extends ActionGetter {
+            String getAction(DTNode n) {
+                return "null";
+            }
+        }
     }
 
     public DisassemblerGenerator() {
@@ -213,7 +316,10 @@ public class DisassemblerGenerator extends Generator {
         instrClassName = className("Instr");
         symbolClassName = className("Symbol");
         disassemblerClassName = className("Disassembler");
-        printer = newClassPrinter(disassemblerClassName, imports, null);
+        builderClassName = className("InstrBuilder");
+        operandClassName = className("Operand");
+        printer = newClassPrinter(disassemblerClassName, imports, null,
+                "The <code>"+disassemblerClassName+"</code> class decodes bit patterns into instructions.");
 
         generateHeader();
         generateDecodeTables();
@@ -284,14 +390,6 @@ public class DisassemblerGenerator extends Generator {
         encodingNumber++;
     }
 
-    private void invalidInstr() {
-        printer.println("throw new InvalidInstruction(0);");
-    }
-
-    private void returnNull() {
-        printer.println("return null;");
-    }
-
     private void generateDecodeTables() {
         for ( EnumDecl d : arch.enums ) {
             generateEnumDecodeTable(d);
@@ -349,6 +447,10 @@ public class DisassemblerGenerator extends Generator {
     }
 
     public void generateNodeClasses() {
+        generateJavaDoc("The <code>DTNode</code> class represents a node in a decoding graph. Each node " +
+                "compares a range of bits and branches to other nodes based on the value. Each node may " +
+                "also have an action (such as fixing the addressing mode or instruction) that is " +
+                "executed when the node is reached. Actions on the root node are not executed.");
         printer.startblock("static abstract class DTNode");
         printer.println("final int left_bit;");
         printer.println("final int mask;");
@@ -358,6 +460,9 @@ public class DisassemblerGenerator extends Generator {
         printer.println("void action() { }");
         printer.endblock();
 
+        generateJavaDoc("The <code>DTArrayNode</code> implementation is used for small (less than 32) " +
+                "and dense (more than 50% full) edge lists. It uses an array of indices that is " +
+                "directly indexed by the bits extracted from the stream.");
         printer.startblock("static class DTArrayNode extends DTNode");
         printer.println("final DTNode[] nodes;");
         printer.startblock("DTArrayNode(Action a, int lb, int msk, DTNode[] n)");
@@ -369,6 +474,8 @@ public class DisassemblerGenerator extends Generator {
         printer.endblock();
         printer.endblock();
 
+        generateJavaDoc("The DTSortedNode implementation is used for sparse edge lists. It uses a " +
+                "sorted array of indices and uses binary search on the value of the bits.");
         printer.startblock("static class DTSortedNode extends DTNode");
         printer.println("final DTNode def;");
         printer.println("final DTNode[] nodes;");
@@ -388,6 +495,10 @@ public class DisassemblerGenerator extends Generator {
         printer.endblock();
         printer.endblock();
 
+        generateJavaDoc("The <code>DTTerminal</code> class represents a terminal node in the decoding " +
+                "tree. Terminal nodes are reached when decoding is finished, and represent either " +
+                "successful decoding (meaning instruction and addressing mode were discovered) or " +
+                "unsucessful decoding (meaning the bit pattern does not encode a valid instruction.");
         printer.startblock("static class DTTerminal extends DTNode");
         printer.startblock("DTTerminal(Action a)");
         printer.println("super(a, 0, 0);");
@@ -397,92 +508,104 @@ public class DisassemblerGenerator extends Generator {
         printer.endblock();
         printer.endblock();
 
+        generateJavaDoc("The ERROR node is reached for incorrectly encoded instructions and signals " +
+                "that the bit pattern was an incorrectly encoded instruction.");
+        printer.println("public static final DTTerminal ERROR = new DTTerminal(new ErrorAction());");
+
+        generateActionClasses();
+
+        generateJavaDoc("The <code>OperandReader</code> class is an object that is capable of reading the " +
+                "operands from the bit pattern of an instruction, once the addressing mode is known. One " +
+                "of these classes is generated for each addressing mode. When the addressing mode is " +
+                "finally known, an action will fire that sets the operand reader which is used to read " +
+                "the operands from the bit pattern.");
+        printer.startblock("static abstract class OperandReader");
+        printer.println("abstract "+operandClassName+"[] read("+disassemblerClassName+" d);");
+        printer.endblock();
+    }
+
+    private void generateActionClasses() {
+        generateJavaDoc("The <code>Action</code> class represents an action that can happen when the " +
+                "decoder reaches a particular node in the tree. The action may be to fix the instruction " +
+                "or addressing mode, or to signal an error.");
         printer.startblock("static abstract class Action");
         printer.println("abstract void action("+disassemblerClassName+" d) throws Exception;");
         printer.endblock();
 
+        generateJavaDoc("The <code>ErrorAction</code> class is an action that is fired when the decoding tree " +
+                "reaches a state which indicates the bit pattern is not a valid instruction.");
         printer.startblock("static class ErrorAction extends Action");
         printer.println("void action("+disassemblerClassName+" d) throws Exception { throw new InvalidInstruction(0); }");
         printer.endblock();
 
-        printer.println("public static final DTTerminal ERROR = new DTTerminal(null);");
+        generateJavaDoc("The <code>SetBuilder</code> class is an action that is fired when the decoding tree " +
+                "reaches a node where the instruction is known. This action fires and sets the <code>builder</code> " +
+                "field to point the appropriate builder for the instruction..");
+        printer.startblock("static class SetBuilder extends Action");
+        printer.println(builderClassName+".Single builder;");
+        printer.println("SetBuilder("+builderClassName+".Single b) { builder = b; }");
+        printer.println("void action("+disassemblerClassName+" d) throws Exception { d.builder = builder; }");
+        printer.endblock();
     }
 
-    public void generateDecodingTree(String methname, DTNode dt) {
-        printer.startblock("static DTNode "+methname+"()");
-        String last = "ERROR";
-        for ( DTNode n : DGUtil.topologicalOrder(dt) )
-            last = generateDecodingNode(n);
-        printer.println("return "+last+";");
-        printer.endblock();
+    private void generateJavaDoc(String p) {
+        generateJavaDoc(printer, p);
     }
 
     abstract class DTNodeImpl {
         String def = "ERROR";
+        String action;
         final String nname;
         final int left;
         final int mask;
         final int length;
-        LinkedList<String> init;
 
-        DTNodeImpl(DTNode dt) {
+        DTNodeImpl(DTNode dt, String act) {
             nname = nodeName(dt);
             left = dt.left_bit;
             length = dt.right_bit - dt.left_bit + 1;
             mask = -1 >>> (32 - length);
-            init = new LinkedList<String>();
+            action = act;
         }
         abstract void add(int value, String nname);
         abstract void generate();
-
-        protected void printInits() {
-            boolean first2 = true;
-            for ( String str : init ) {
-                if ( !first2 ) {
-                    printer.print(", ");
-                }
-                printer.print(str);
-                first2 = false;
-            }
-        }
     }
 
     class DTArrayNodeImpl extends DTNodeImpl {
         int current;
+        String[] vals;
 
-        DTArrayNodeImpl(DTNode dt) {
-            super(dt);
+        DTArrayNodeImpl(DTNode dt, String action) {
+            super(dt, action);
+            vals = new String[1 << length];
         }
         void add(int value, String nname) {
             if ( value == -1 ) def = nname;
             else {
-                while ( current < value ) {
-                    current++;
-                    init.add(def);
-                }
-                current++;
-                init.add(nname);
+                vals[value] = nname;
             }
         }
         void generate() {
-            printer.print("DTNode "+nname+" = new DTArrayNode(null, "+left+", "+mask+", new DTNode[] {");
-            padInits();
-            printInits();
+            printer.print("DTNode "+nname+" = new DTArrayNode("+action+", "+left+", "+mask+", new DTNode[] {");
+            boolean first = true;
+            for ( String str : vals ) {
+                if ( !first ) {
+                    printer.print(", ");
+                }
+                first = false;
+                if ( str == null ) printer.print(def);
+                else printer.print(str);
+            }
             printer.println("});");
         }
 
-        void padInits() {
-            int total = 1 << (length);
-            for ( int cntr = init.size(); cntr < total; cntr++ ) {
-                init.add(def);
-            }
-        }
     }
 
     class DTSortedNodeImpl extends DTNodeImpl {
+        LinkedList<String> init = new LinkedList<String>();
         LinkedList<Integer> values = new LinkedList<Integer>();
-        DTSortedNodeImpl(DTNode dt) {
-            super(dt);
+        DTSortedNodeImpl(DTNode dt, String act) {
+            super(dt, act);
         }
         void add(int value, String nname) {
             if ( value == -1 ) def = nname;
@@ -492,7 +615,7 @@ public class DisassemblerGenerator extends Generator {
             }
         }
         void generate() {
-            printer.print("DTNode "+nname+" = new DTSortedNode(null, "+left+", "+mask+", new int[] {");
+            printer.print("DTNode "+nname+" = new DTSortedNode("+action+", "+left+", "+mask+", new int[] {");
             boolean first = true;
             for ( Integer i : values ) {
                 if ( !first ) {
@@ -504,25 +627,19 @@ public class DisassemblerGenerator extends Generator {
             printer.print("}, new DTNode[] {");
             printInits();
             printer.println("}, "+def+");");
+
         }
 
-
-    }
-
-    private String generateDecodingNode(DTNode n) {
-        if ( n.isLeaf() ) {
-            String nname = nodeName(n);
-            printer.println("DTNode "+nname+" = new DTTerminal(null);");
-            return nname;
+        void printInits() {
+            boolean first2 = true;
+            for ( String str : init ) {
+                if ( !first2 ) {
+                    printer.print(", ");
+                }
+                printer.print(str);
+                first2 = false;
+            }
         }
-        DTNodeImpl nodeImpl = newDTNode(n);
-        for ( Map.Entry<Integer, DTNode> e : n.getSortedEdges() ) {
-            int value = e.getKey();
-            DTNode cdt = e.getValue();
-            nodeImpl.add(value, nodeName(cdt));
-        }
-        nodeImpl.generate();
-        return nodeImpl.nname;
     }
 
     private String nodeName(DTNode cdt) {
@@ -530,10 +647,10 @@ public class DisassemblerGenerator extends Generator {
         else return "N"+cdt.number;
     }
 
-    private DTNodeImpl newDTNode(DTNode dt) {
+    private DTNodeImpl newDTNode(DTNode dt, String action) {
         int size = 1 << (dt.right_bit - dt.left_bit);
-        if ( size > 16 && (dt.getChildren().size() < (size/2)) ) return new DTSortedNodeImpl(dt);
-        return new DTArrayNodeImpl(dt);
+        if ( size > 16 && (dt.getChildren().size() < (size/2)) ) return new DTSortedNodeImpl(dt, action);
+        return new DTArrayNodeImpl(dt, action);
     }
 
     public static int nativeBitOrder(int bit) {

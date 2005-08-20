@@ -1,5 +1,13 @@
 package jintgen.arch.msp430;
 import java.util.HashMap;
+
+/**
+ * The <code>MSP430Symbol</code> class represents a symbol (or an
+ * enumeration as declared in the instruction set description) relevant
+ * to the instruction set architecture. For example register names,
+ * status bit names, etc are given here. This class provides a type-safe
+ * enumeration for such symbolic names.
+ */
 public class MSP430Symbol {
     public final String symbol;
     public final int value;

@@ -82,11 +82,11 @@ public abstract class Generator {
         else return prefix+cls;
     }
 
-    protected Printer newClassPrinter(String name, List<String> imports, String sup) throws IOException {
-        return newJavaPrinter(name, imports, sup, "class");
+    protected Printer newClassPrinter(String name, List<String> imports, String sup, String jdoc) throws IOException {
+        return newJavaPrinter(name, imports, sup, "class", jdoc);
     }
 
-    private Printer newJavaPrinter(String name, List<String> imports, String sup, String type) throws FileNotFoundException {
+    private Printer newJavaPrinter(String name, List<String> imports, String sup, String type, String jdoc) throws FileNotFoundException {
         File f = new File(name + ".java");
         Printer printer = new Printer(new PrintStream(f));
         String pname = this.DEST_PACKAGE.get();
@@ -97,12 +97,25 @@ public abstract class Generator {
         if ( imports != null ) for ( String s : imports ) {
             printer.println("import "+s+";");
         }
+        if ( jdoc != null )
+            generateJavaDoc(printer, jdoc);
         String ec = sup == null ? "" : "extends "+sup;
         printer.startblock("public "+type+" "+name+ec);
         return printer;
     }
 
-    protected Printer newInterfacePrinter(String name, List<String> imports, String sup) throws IOException {
-        return newJavaPrinter(name, imports, sup, "interface");
+    protected Printer newInterfacePrinter(String name, List<String> imports, String sup, String jdoc) throws IOException {
+        return newJavaPrinter(name, imports, sup, "interface", jdoc);
+    }
+
+    protected void generateJavaDoc(Printer printer, String p) {
+        List lines = StringUtil.trimLines(p, 0, 70);
+        printer.println("");
+        printer.println("/**");
+        for ( Object l : lines ) {
+            printer.print(" * ");
+            printer.println(l.toString());
+        }
+        printer.println(" */");
     }
 }
