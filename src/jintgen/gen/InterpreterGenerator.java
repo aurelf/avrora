@@ -256,11 +256,7 @@ public class InterpreterGenerator extends PrettyPrinter{
         // initialize the map of local variables to operands
         variableMap = new HashMap<String, String>();
         for ( AddrModeDecl.Operand o : d.getOperands() ) {
-            String image = "i." + o.name.image;
-            if ( o.getOperandType().isSymbol() )
-                image = image + ".getNumber()";
-
-            variableMap.put(o.name.image, image);
+            variableMap.put(o.name.image, "i." + o.name.image);
         }
         // emit the code of the body
         visitStmtList(d.code.getStmts());

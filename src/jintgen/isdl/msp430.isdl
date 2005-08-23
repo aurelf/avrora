@@ -379,11 +379,11 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-     addr-mode JMP source: JUMP {
-         encoding = JUMP_OP where { offset = source }
-         property syntax: String = "%offset";
-         property cycles: int = 2;
-     }
+    addr-mode JMP source: JUMP {
+        encoding = JUMP_OP where { offset = source }
+        property syntax: String = "%offset";
+        property cycles: int = 2;
+    }
 
     //--------------------------------------------------------------------------
     //   Begin WORD addressing modes

@@ -54,10 +54,52 @@ import java.io.FileNotFoundException;
  */
 public class DisassemblerGenerator extends Generator {
 
-    protected static final int LARGEST_INSTR = 15;
-    protected static final int WORD_SIZE = 16;
+    // static configuration stuff
+    static String instrClassName;
+    static String symbolClassName;
+    static String operandClassName;
+    static String disassemblerClassName;
+    static String builderClassName;
 
-    protected final Option.Bool MULTI_TREE = options.newOption("multiple-trees", false, 
+    static int WORD_SIZE;
+
+    class EncodingInfo {
+        String name;
+        EncodingDecl decl;
+        AddrModeDecl addrMode;
+
+        int[] computeScatter(String name, OperandTypeDecl.Value vd, List<EncodingDecl.BitField> fs) {
+            int bit = 0;
+            int[] result = new int[vd.size];
+            Arrays.fill(result, -1);
+            for ( EncodingDecl.BitField f : fs) {
+                visitExpr(f, name, bit, result);
+                bit += f.getWidth();
+            }
+            return result;
+        }
+
+        private void visitExpr(EncodingDecl.BitField f, String name, int bit, int[] result) {
+            if ( f.field.isVariable() ) {
+                VarExpr v = (VarExpr)f.field;
+                if ( v.variable.image.equals(name) ) {
+                    for ( int cntr = 0; cntr < f.getWidth(); cntr++ ) {
+                        result[cntr] = cntr + bit;
+                    }
+                }
+            } else if ( f.field.isBitRangeExpr() ) {
+                BitRangeExpr bre = (BitRangeExpr)f.field;
+                VarExpr v = (VarExpr)bre.operand;
+                if ( v.variable.image.equals(name) ) {
+                    for ( int cntr = 0; cntr < f.getWidth(); cntr++ ) {
+                        result[cntr+bre.low_bit] = cntr + bit;
+                    }
+                }
+            }
+        }
+    }
+
+    protected final Option.Bool MULTI_TREE = options.newOption("multiple-trees", false,
             "This option selects whether the disassembler generator will create multiple decode trees " +
             "(i.e. one per priority level) or whether it will create a single, unified tree. In some " +
             "instances one large tree is more efficient, while in others multiple smaller trees may be " +
@@ -67,33 +109,32 @@ public class DisassemblerGenerator extends Generator {
             "that are applied in parallel to resolve both the addressing mode and instruction. For " +
             "complex architectures, this can result in tremendously reduced tree sizes. For small architecture, " +
             "the result can be less efficient.");
+    protected final Option.Long WORD = options.newOption("word-size", 16,
+            "This option controls the word size (in bits) that is used when generating the disassembler " +
+            "code. The disassembler reads fields from individual words of the instruction stream. This " +
+            "option tunes whether the disassembler will read 8, 16, 32, etc bits from the instruction " +
+            "stream at a time.");
 
     Printer printer;
     Verbose.Printer verbose = Verbose.getVerbosePrinter("jintgen.disassem");
     Verbose.Printer verboseDump = Verbose.getVerbosePrinter("jintgen.disassem.tree");
     Verbose.Printer dotDump = Verbose.getVerbosePrinter("jintgen.disassem.dot");
-    static String instrClassName;
-    static String symbolClassName;
-    static String operandClassName;
-    static String disassemblerClassName;
-    static String builderClassName;
 
-    int indent;
-
-    int methods;
+    int numEncodings = 0;
     int encodingNumber = 0;
     int instrs = 0;
-    int treeNodes = 0;
-    int numTrees = 0;
     int pseudoInstrs = 0;
 
-    HashSet<EncodingInfo> pseudo;
+    HashMap<EncodingDecl, EncodingInfo> encodingInfo;
+    HashMap<String, EncodingInfo> encodingRev;
 
     DecoderImplementation implementation;
 
     class DecoderImplementation {
         boolean multiple;
         boolean parallel;
+        int treeNodes = 0;
+        int numTrees = 0;
 
         final HashMap<String, DTNode> finalTrees;
 
@@ -121,7 +162,7 @@ public class DisassemblerGenerator extends Generator {
         }
 
         private DTNode optimizeAddrs(DTNode root) {
-            labelTreeWithAddrModes(root);
+            labelTreeWithEncodings(root);
             DTNode newTree = new TreeFactorer(root).getNewTree();
             return newTree;
         }
@@ -136,6 +177,7 @@ public class DisassemblerGenerator extends Generator {
         void addFinalTree(String n, DTNode t) {
             finalTrees.put(n, t);
             treeNodes += DGUtil.numberNodes(t);
+            numTrees++;
         }
 
         void print(Printer p) {
@@ -152,7 +194,7 @@ public class DisassemblerGenerator extends Generator {
             }
         }
 
-        void add(EncodingInfo ei) {
+        void add(EncodingInst ei) {
             int priority = ei.encoding.getPriority();
             if ( !multiple ) priority = 0;
             DTBuilder dt = completeTree[priority];
@@ -300,13 +342,17 @@ public class DisassemblerGenerator extends Generator {
 
         class AddrModeActionGetter extends ActionGetter {
             String getAction(DTNode n) {
-                return "null";
+                String label = n.getLabel();
+                if ( "*".equals(label) ) return "null";
+                if ( "-".equals(label) ) return "null";
+                else return "new SetReader("+label+")";
             }
         }
     }
 
     public DisassemblerGenerator() {
-        pseudo = new HashSet<EncodingInfo>();
+        encodingInfo = new HashMap<EncodingDecl, EncodingInfo>();
+        encodingRev = new HashMap<String, EncodingInfo>();
     }
 
     public void generate() throws Exception {
@@ -318,6 +364,7 @@ public class DisassemblerGenerator extends Generator {
         disassemblerClassName = className("Disassembler");
         builderClassName = className("InstrBuilder");
         operandClassName = className("Operand");
+        WORD_SIZE = (int)WORD.get();
         printer = newClassPrinter(disassemblerClassName, imports, null,
                 "The <code>"+disassemblerClassName+"</code> class decodes bit patterns into instructions.");
 
@@ -326,7 +373,8 @@ public class DisassemblerGenerator extends Generator {
         generateNodeClasses();
         int maxprio = getMaxPriority();
         implementation = new DecoderImplementation(maxprio);
-        addInstructions();
+        visitInstructions();
+        generateOperandReaders();
         implementation.compute();
         implementation.generate();
         if ( verboseDump.enabled ) {
@@ -338,9 +386,10 @@ public class DisassemblerGenerator extends Generator {
         Terminal.nextln();
         TermUtil.reportQuantity("Instructions", instrs, "");
         TermUtil.reportQuantity("Pseudo-instructions", pseudoInstrs, "");
-        TermUtil.reportQuantity("Encodings", encodingNumber, "");
-        TermUtil.reportQuantity("Decoding Trees", numTrees, "");
-        TermUtil.reportQuantity("Nodes", treeNodes, "");
+        TermUtil.reportQuantity("Encodings", numEncodings, "");
+        TermUtil.reportQuantity("Encoding Instances", encodingNumber, "");
+        TermUtil.reportQuantity("Decoding Trees", implementation.numTrees, "");
+        TermUtil.reportQuantity("Nodes", implementation.treeNodes, "");
         printer.endblock();
     }
 
@@ -359,8 +408,31 @@ public class DisassemblerGenerator extends Generator {
         return maxprio;
     }
 
-    private void addInstructions() {
-        for ( InstrDecl d : arch.instructions ) visitInstr(d);
+    private void visitInstructions() {
+        for ( InstrDecl d : arch.instructions ) {
+            if ( d.pseudo ) {
+                pseudoInstrs++;
+            } else {
+                instrs++;
+                for ( AddrModeDecl am : d.addrMode.addrModes ) {
+                    int cntr = 0;
+                    for ( EncodingDecl ed : am.encodings ) {
+                        addEncodingInfo(d, am, ed);
+                        String eName = am.name+"_"+cntr;
+                        if ( !encodingInfo.containsKey(ed) ) {
+                            EncodingInfo ei = new EncodingInfo();
+                            ei.decl = ed;
+                            ei.name = eName;
+                            ei.addrMode = am;
+                            encodingInfo.put(ed, ei);
+                            encodingRev.put(eName, ei);
+                            numEncodings++;
+                        }
+                        cntr++;
+                    }
+                }
+            }
+        }
     }
 
     private void generateHeader() {
@@ -371,21 +443,8 @@ public class DisassemblerGenerator extends Generator {
         printer.endblock();
     }
 
-    public void visitInstr(InstrDecl d) {
-        // for now, we ignore pseudo instructions.
-        if ( d.pseudo ) {
-            pseudoInstrs++;
-        } else {
-            instrs++;
-            for ( AddrModeDecl am : d.addrMode.addrModes ) {
-                for ( EncodingDecl ed : am.encodings )
-                    addEncodingInfo(d, am, ed);
-            }
-        }
-    }
-
     private void addEncodingInfo(InstrDecl d, AddrModeDecl am, EncodingDecl ed) {
-        EncodingInfo ei = new EncodingInfo(d, am, encodingNumber, ed);
+        EncodingInst ei = new EncodingInst(d, am, encodingNumber, ed);
         implementation.add(ei);
         encodingNumber++;
     }
@@ -508,7 +567,7 @@ public class DisassemblerGenerator extends Generator {
         printer.endblock();
         printer.endblock();
 
-        generateJavaDoc("The ERROR node is reached for incorrectly encoded instructions and signals " +
+        generateJavaDoc("The <code>ERROR</code> node is reached for incorrectly encoded instructions and indicates " +
                 "that the bit pattern was an incorrectly encoded instruction.");
         printer.println("public static final DTTerminal ERROR = new DTTerminal(new ErrorAction());");
 
@@ -522,6 +581,106 @@ public class DisassemblerGenerator extends Generator {
         printer.startblock("static abstract class OperandReader");
         printer.println("abstract "+operandClassName+"[] read("+disassemblerClassName+" d);");
         printer.endblock();
+    }
+
+    public void generateOperandReaders() {
+
+        int max_operands = 0;
+        for ( EncodingDecl d : encodingInfo.keySet() ) {
+            EncodingInfo ei = encodingInfo.get(d);
+            String n = ei.name;
+            printer.startblock("static class "+n+"_reader extends OperandReader");
+            printer.startblock(operandClassName+"[] read("+disassemblerClassName+" d)");
+            int size = ei.addrMode.operands.size();
+            if ( size > max_operands ) max_operands = size;
+            for ( AddrModeDecl.Operand o : ei.addrMode.operands )
+                generateOperandRead("", o, d);
+            printer.beginList("return d.fill_"+size+"(");
+            for ( AddrModeDecl.Operand o : ei.addrMode.operands ) {
+                printer.print(o.name.image);
+            }
+            printer.endList(");");
+            printer.nextln();
+            printer.endblock();
+            printer.endblock();
+            printer.println("static final OperandReader "+n+" = new "+n+"_reader();");
+        }
+
+        for ( int cntr = 0; cntr <= max_operands; cntr++ ) {
+            printer.println("final "+operandClassName+"[] OPERANDS_"+cntr+" = new "+operandClassName+"["+cntr+"];");
+        }
+
+        generateFills(max_operands);
+
+    }
+
+    private void generateFills(int max_operands) {
+        for ( int loop = 1; loop <= max_operands; loop++ ) {
+            printer.beginList(operandClassName+"[] fill_"+loop+"(");
+            for ( int cntr = 0; cntr < loop; cntr++ ) {
+                printer.print(operandClassName+" o"+cntr);
+            }
+            printer.endList(")");
+            printer.startblock();
+            for ( int cntr = 0; cntr < loop; cntr++ ) {
+                printer.println("OPERANDS_"+loop+"["+cntr+"] = o"+cntr+";");
+            }
+            printer.println("return OPERANDS_"+loop+";");
+            printer.endblock();
+        }
+    }
+
+    void generateOperandRead(String prefix, AddrModeDecl.Operand o, EncodingDecl d) {
+        String oname = o.name.image;
+        String vname = prefix+oname;
+        String vn = vname.replace('.', '_');
+        OperandTypeDecl td = arch.getOperandDecl(o.type.image);
+        if ( td.isCompound() ) {
+            generateCompound(td, vname, d);
+        } else if ( td.isValue() ) {
+            OperandTypeDecl.Value vtd = (OperandTypeDecl.Value)td;
+
+            EncodingDecl.Cond cond = d.getCond();
+            if ( cond != null && cond.name.image.equals(o.name.image)) {
+                // conditional encoding
+                String type = operandClassName+"."+vtd.name;
+                EnumDecl ed = arch.getEnum(vtd.kind.image);
+                if ( ed != null  ) {
+                    printer.println(type+" "+vn +" = new "+type+"("+symbolClassName+"."+vtd.kind+"."+cond.expr+");");
+                } else {
+                    printer.println(type+" "+vn +" = new "+type+"("+cond.expr+");");
+                }
+            } else {
+                // not a conditional encoding; load bits and generate tables
+                String type = operandClassName+"."+vtd.name;
+                EnumDecl ed = arch.getEnum(vtd.kind.image);
+                if ( ed != null  ) {
+                    generateRawRead(vname+"_raw", d);
+                    printer.println(type+" "+vn +" = new "+type+"("+ed.name+"_table["+vn+"_raw]);");
+                } else {
+                    generateRawRead(vname+"_raw", d);
+                    printer.println(type+" "+vn +" = new "+type+"("+vn+"_raw);");
+                }
+            }
+        }
+    }
+
+    private void generateCompound(OperandTypeDecl td, String vname, EncodingDecl d) {
+        for ( AddrModeDecl.Operand so : td.subOperands )
+            generateOperandRead(vname+".", so, d);
+        String vn = vname.replace('.', '_');
+        String type = operandClassName+"."+td.name;
+        printer.beginList(type+" "+vn+" = new "+type+"(");
+        for ( AddrModeDecl.Operand so : td.subOperands ) {
+            printer.print(vname+"_"+so.name);
+        }
+        printer.endList(");");
+        printer.nextln();
+    }
+
+    private void generateRawRead(String varname, EncodingDecl d) {
+        String vn = varname.replace('.', '_');
+        printer.println("int "+vn+" = 0;");
     }
 
     private void generateActionClasses() {
@@ -540,11 +699,20 @@ public class DisassemblerGenerator extends Generator {
 
         generateJavaDoc("The <code>SetBuilder</code> class is an action that is fired when the decoding tree " +
                 "reaches a node where the instruction is known. This action fires and sets the <code>builder</code> " +
-                "field to point the appropriate builder for the instruction..");
+                "field to point the appropriate builder for the instruction.");
         printer.startblock("static class SetBuilder extends Action");
         printer.println(builderClassName+".Single builder;");
         printer.println("SetBuilder("+builderClassName+".Single b) { builder = b; }");
         printer.println("void action("+disassemblerClassName+" d) throws Exception { d.builder = builder; }");
+        printer.endblock();
+
+        generateJavaDoc("The <code>SetReader</code> class is an action that is fired when the decoding tree " +
+                "reaches a node where the addressing mode is known. This action fires and sets the " +
+                "<code>operands</code> field to point the operands read from the instruction stream.");
+        printer.startblock("static class SetReader extends Action");
+        printer.println("OperandReader reader;");
+        printer.println("SetReader(OperandReader r) { reader = r; }");
+        printer.println("void action("+disassemblerClassName+" d) throws Exception { d.operands = reader.read(d); }");
         printer.endblock();
     }
 
@@ -586,17 +754,12 @@ public class DisassemblerGenerator extends Generator {
             }
         }
         void generate() {
-            printer.print("DTNode "+nname+" = new DTArrayNode("+action+", "+left+", "+mask+", new DTNode[] {");
-            boolean first = true;
+            printer.beginList("DTNode "+nname+" = new DTArrayNode("+action+", "+left+", "+mask+", new DTNode[] {");
             for ( String str : vals ) {
-                if ( !first ) {
-                    printer.print(", ");
-                }
-                first = false;
                 if ( str == null ) printer.print(def);
                 else printer.print(str);
             }
-            printer.println("});");
+            printer.endListln("});");
         }
 
     }
@@ -614,31 +777,18 @@ public class DisassemblerGenerator extends Generator {
                 values.add(value);
             }
         }
+
         void generate() {
-            printer.print("DTNode "+nname+" = new DTSortedNode("+action+", "+left+", "+mask+", new int[] {");
-            boolean first = true;
+            printer.beginList("DTNode "+nname+" = new DTSortedNode("+action+", "+left+", "+mask+", new int[] {");
             for ( Integer i : values ) {
-                if ( !first ) {
-                    printer.print(", ");
-                }
                 printer.print(i.toString());
-                first = false;
             }
-            printer.print("}, new DTNode[] {");
-            printInits();
-            printer.println("}, "+def+");");
-
-        }
-
-        void printInits() {
-            boolean first2 = true;
+            printer.endList("}, ");
+            printer.beginList("new DTNode[] {");
             for ( String str : init ) {
-                if ( !first2 ) {
-                    printer.print(", ");
-                }
                 printer.print(str);
-                first2 = false;
             }
+            printer.endListln("}, "+def+");");
         }
     }
 
@@ -654,16 +804,16 @@ public class DisassemblerGenerator extends Generator {
     }
 
     public static int nativeBitOrder(int bit) {
-        return 15-(bit % WORD_SIZE);
+        return (WORD_SIZE-1)-(bit % WORD_SIZE);
     }
 
-    public static String getInstrClassName(EncodingInfo ei) {
+    public static String getInstrClassName(EncodingInst ei) {
         return instrClassName+"."+ei.instr.getInnerClassName();
     }
 
-    public static void labelTreeWithInstrs(DTNode dt) {
+    void labelTreeWithInstrs(DTNode dt) {
         HashSet<InstrDecl> instrs = new HashSet<InstrDecl>();
-        for ( EncodingInfo ei : dt.encodings )
+        for ( EncodingInst ei : dt.encodings )
             instrs.add(ei.instr);
 
         // label all the children
@@ -679,21 +829,22 @@ public class DisassemblerGenerator extends Generator {
         }
     }
 
-    public static void labelTreeWithAddrModes(DTNode dt) {
-        HashSet<AddrModeDecl> addrs = new HashSet<AddrModeDecl>();
-        for ( EncodingInfo ei : dt.encodings )
-            addrs.add(ei.addrMode);
+    void labelTreeWithEncodings(DTNode dt) {
+        HashSet<EncodingDecl> addrs = new HashSet<EncodingDecl>();
+        for ( EncodingInst ei : dt.encodings )
+            addrs.add(ei.encoding);
 
         if ( addrs.size() == 1 ) {
             // label all the children
-            dt.setLabel(addrs.iterator().next().name.image);
+            EncodingDecl ed = addrs.iterator().next();
+            dt.setLabel(encodingInfo.get(ed).name);
             for ( DTNode cdt : dt.getChildren() )
             labelTree("*", cdt);
         } else {
             // label all the children
             dt.setLabel("-");
             for ( DTNode cdt : dt.getChildren() )
-                labelTreeWithAddrModes(cdt);
+                labelTreeWithEncodings(cdt);
         }
     }
 
@@ -703,15 +854,4 @@ public class DisassemblerGenerator extends Generator {
             labelTree(l, cdt);
     }
 
-    public static Comparator<InstrDecl> INSTR_COMPARATOR = new Comparator<InstrDecl>() {
-        public int compare(InstrDecl a, InstrDecl b) {
-            return a.name.image.compareTo(b.name.image);
-        }
-    };
-
-    public static Comparator<AddrModeDecl> ADDR_COMPARATOR = new Comparator<AddrModeDecl>() {
-        public int compare(AddrModeDecl a, AddrModeDecl b) {
-            return a.name.image.compareTo(b.name.image);
-        }
-    };
 }

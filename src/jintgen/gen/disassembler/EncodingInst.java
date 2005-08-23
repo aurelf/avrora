@@ -54,7 +54,7 @@ import avrora.util.Printer;
 /**
  * @author Ben L. Titzer
  */
-public class EncodingInfo {
+public class EncodingInst {
     final InstrDecl instr;
     final AddrModeDecl addrMode;
     final EncodingDecl encoding;
@@ -67,7 +67,7 @@ public class EncodingInfo {
     public static final byte ENC_MATCHED_ZERO = 4;
     public static final byte ENC_VAR  = 0;
 
-    EncodingInfo(InstrDecl id, AddrModeDecl am, int encNum, EncodingDecl ed) {
+    EncodingInst(InstrDecl id, AddrModeDecl am, int encNum, EncodingDecl ed) {
         instr = id;
         addrMode = am;
         bitStates = new byte[ed.bitWidth];
@@ -78,7 +78,7 @@ public class EncodingInfo {
         initializeBitStates();
     }
 
-    EncodingInfo(EncodingInfo prev) {
+    EncodingInst(EncodingInst prev) {
         instr = prev.instr;
         addrMode = prev.addrMode;
         bitStates = new byte[prev.bitStates.length];
@@ -86,10 +86,6 @@ public class EncodingInfo {
         encodingNumber = prev.encodingNumber;
         encoding = prev.encoding;
         System.arraycopy(prev.bitStates, 0, bitStates, 0, bitStates.length);
-    }
-
-    String getName() {
-        return instr.innerClassName+"_"+encodingNumber;
     }
 
     public String toString() {
@@ -100,9 +96,9 @@ public class EncodingInfo {
         EncodingDecl ed = encoding;
         // create a constant propagator needed to evaluate integer literals and operands
         ConstantPropagator cp = new ConstantPropagator();
-        ConstantPropagator.ConstantEnvironment ce = cp.createEnvironment();
+        ConstantPropagator.Environ ce = cp.createEnvironment();
 
-        List<EncodingDecl.BitField> fields = initializeConstantEnviron(ed, ce);
+        List<EncodingDecl.BitField> fields = DGUtil.initConstantEnviron(ce, instr, addrMode, ed);
 
         // scan through the expressions corresponding to the fields that make up this encoding
         // and initialize the bitState array to either ENC_ONE, ENC_ZERO, or ENC_VAR
@@ -127,7 +123,7 @@ public class EncodingInfo {
         }
     }
 
-    private void splitOnWordBoundary(int offset, int size, int endbit, EncodingDecl.BitField e, ConstantPropagator cp, ConstantPropagator.ConstantEnvironment ce) {
+    private void splitOnWordBoundary(int offset, int size, int endbit, EncodingDecl.BitField e, ConstantPropagator cp, ConstantPropagator.Environ ce) {
         int f_offset = offset;
         int h_bit = size - 1;
         while ( f_offset < endbit ) {
@@ -142,34 +138,6 @@ public class EncodingInfo {
         }
     }
 
-    private List<EncodingDecl.BitField> initializeConstantEnviron(EncodingDecl ed, ConstantPropagator.ConstantEnvironment ce) {
-        List<EncodingDecl.BitField> fields;
-        if ( ed instanceof EncodingDecl.Derived ) {
-            EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
-            fields = dd.parent.fields;
-
-            // put all the substitutions into the map
-            for ( EncodingDecl.Substitution s : dd.subst ) {
-                ce.put(s.name.image, s.expr);
-            }
-        } else {
-            fields = ed.fields;
-        }
-
-        for ( Property p : addrMode.properties ) addProperty(p, ce);
-        for ( Property p : instr.properties ) addProperty(p, ce);
-
-        return fields;
-    }
-
-    private void addProperty(Property p, ConstantPropagator.ConstantEnvironment ce) {
-        if ( p.type.image.equals("int") ) {
-            ce.put(p.name.image, new Literal.IntExpr(p.value));
-        } else if ( p.type.image.equals("boolean") ) {
-            ce.put(p.name.image, new Literal.BoolExpr(p.value));
-        }
-    }
-
     private void addExpr(int offset, int size, Expr simpleExpr) {
         // store the expression for future use
         EncodingField ee = new EncodingField(this, offset, size, simpleExpr);
@@ -178,7 +146,7 @@ public class EncodingInfo {
         setBitStates(simpleExpr, size, offset);
     }
 
-    Expr eval(Expr e, ConstantPropagator cp, ConstantPropagator.ConstantEnvironment ce, int h_bit, int l_bit) {
+    Expr eval(Expr e, ConstantPropagator cp, ConstantPropagator.Environ ce, int h_bit, int l_bit) {
         if ( e.isBitRangeExpr() ) {
             BitRangeExpr orig = (BitRangeExpr)e;
             int nmax = h_bit + orig.low_bit;
@@ -228,12 +196,12 @@ public class EncodingInfo {
         return bitStates.length;
     }
 
-    public EncodingInfo copy() {
-        return new EncodingInfo(this);
+    public EncodingInst copy() {
+        return new EncodingInst(this);
     }
 
     public boolean isConcrete(int bit) {
         byte bitState = bitStates[bit];
-        return bitState == EncodingInfo.ENC_ONE || bitState == EncodingInfo.ENC_ZERO;
+        return bitState == EncodingInst.ENC_ONE || bitState == EncodingInst.ENC_ZERO;
     }
 }

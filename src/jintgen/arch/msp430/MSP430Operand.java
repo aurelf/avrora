@@ -21,6 +21,9 @@ public interface MSP430Operand {
             symbol = MSP430Symbol.SREG.get(s);
             if ( symbol == null ) throw new Error();
         }
+        SREG(MSP430Symbol.SREG sym) {
+            symbol = sym;
+        }
     }
     
     public class AIREG_B implements MSP430Operand, DOUBLE_B_source_union, SINGLE_B_source_union  {
@@ -28,6 +31,9 @@ public interface MSP430Operand {
         AIREG_B(String s) {
             symbol = MSP430Symbol.SREG.get(s);
             if ( symbol == null ) throw new Error();
+        }
+        AIREG_B(MSP430Symbol.SREG sym) {
+            symbol = sym;
         }
     }
     
@@ -37,6 +43,9 @@ public interface MSP430Operand {
             symbol = MSP430Symbol.SREG.get(s);
             if ( symbol == null ) throw new Error();
         }
+        AIREG_W(MSP430Symbol.SREG sym) {
+            symbol = sym;
+        }
     }
     
     public class IREG implements MSP430Operand, DOUBLE_B_source_union, SINGLE_W_source_union, DOUBLE_W_source_union, SINGLE_B_source_union  {
@@ -44,6 +53,9 @@ public interface MSP430Operand {
         IREG(String s) {
             symbol = MSP430Symbol.SREG.get(s);
             if ( symbol == null ) throw new Error();
+        }
+        IREG(MSP430Symbol.SREG sym) {
+            symbol = sym;
         }
     }
     

@@ -60,17 +60,17 @@ public abstract class OperandTypeDecl extends Item {
     }
 
     /**
-     * The <code>Simple</code> class represents an operand to an instruction that is
+     * The <code>Value</code> class represents an operand to an instruction that is
      * a value such as an immediate or an absolute address.
      */
-    public static class Simple extends OperandTypeDecl {
+    public static class Value extends OperandTypeDecl {
 
         public final int low;
         public final int high;
         public final Token kind;
         public final int size;
 
-        public Simple(Token n, Token b, Token k, Token l, Token h) {
+        public Value(Token n, Token b, Token k, Token l, Token h) {
             super(n);
             kind = k;
             size = StringUtil.evaluateIntegerLiteral(b.image);
@@ -84,29 +84,6 @@ public abstract class OperandTypeDecl extends Item {
 
         public void addSubOperand(AddrModeDecl.Operand o) {
             throw Util.failure("Suboperands are not allowed to Simple operands");
-        }
-    }
-
-    /**
-     * The <code>SymbolSet</code> class represents an operand to an instruction that
-     * is a symbol from a particular set, such as the names of general purpose registers.
-     */
-    public static class SymbolSet extends OperandTypeDecl {
-        public final SymbolMapping map;
-        public final int size;
-
-        public SymbolSet(Token n, Token b, SymbolMapping m) {
-            super(n);
-            size = StringUtil.evaluateIntegerLiteral(b.image);
-            map = m;
-        }
-
-        public boolean isSymbol() {
-            return true;
-        }
-
-        public void addSubOperand(AddrModeDecl.Operand o) {
-            throw Util.failure("Suboperands are not allowed to SymbolSet operands");
         }
     }
 
@@ -155,10 +132,6 @@ public abstract class OperandTypeDecl extends Item {
     }
 
     public boolean isCompound() {
-        return false;
-    }
-
-    public boolean isSymbol() {
         return false;
     }
 

@@ -123,7 +123,8 @@ public class Verifier {
             if ( od.isCompound() ) {
                 OperandTypeDecl.Compound cd = (OperandTypeDecl.Compound)od;
                 verifyOperands(cd.subOperands);
-            } else if ( od.isSymbol() ) {
+            }
+            /*else if ( od.isSymbol() ) {
                 OperandTypeDecl.SymbolSet sd = (OperandTypeDecl.SymbolSet)od;
                 HashMap<String, Token> symbols = new HashMap<String, Token>();
                 HashMap<String, Token> values = new HashMap<String, Token>();
@@ -135,7 +136,7 @@ public class Verifier {
                     symbols.put(e.ntoken.image, e.ntoken);
                     values.put(""+e.value, e.vtoken);
                 }
-            }
+            }*/
         }
     }
 
@@ -386,7 +387,7 @@ public class Verifier {
                 for ( AddrModeDecl.Operand o : cd.subOperands )
                 addSubOperands(o, prefix+"."+o.name.image);
             } else if ( ot.isValue() ) {
-                OperandTypeDecl.Simple sd = (OperandTypeDecl.Simple)ot;
+                OperandTypeDecl.Value sd = (OperandTypeDecl.Value)ot;
                 operandWidthMap.put(prefix, sd.size);
             } else if ( ot.isUnion() ) {
                 // do nothing

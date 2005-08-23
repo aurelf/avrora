@@ -293,10 +293,8 @@ public class InstrIRGenerator extends Generator {
             printer.print(", "+str);
         }
         printer.startblock(" ");
-        if ( d.isSymbol() ) {
-            generateSymbolType((OperandTypeDecl.SymbolSet)d);
-        } else if ( d.isValue() ) {
-            generateSimpleType((OperandTypeDecl.Simple)d);
+        if ( d.isValue() ) {
+            generateSimpleType((OperandTypeDecl.Value)d);
         } else if ( d.isCompound() ) {
             generateCompoundType((OperandTypeDecl.Compound)d);
         }
@@ -304,20 +302,7 @@ public class InstrIRGenerator extends Generator {
         printer.println("");
     }
 
-    private void generateSymbolType(OperandTypeDecl.SymbolSet d) {
-        printer.println("public final "+symbolClassName+" symbol;");
-        printer.println("public static final HashMap set = new HashMap();");
-        printer.startblock("static");
-        printer.endblock();
-        printer.startblock(d.name.image+"(String s)");
-        printer.println("symbol = null;");
-        printer.endblock();
-        printer.startblock(d.name.image+"("+symbolClassName+" sym)");
-        printer.println("symbol = null;");
-        printer.endblock();
-    }
-
-    private void generateSimpleType(OperandTypeDecl.Simple d) {
+    private void generateSimpleType(OperandTypeDecl.Value d) {
         String k = d.kind.image;
         EnumDecl ed = arch.getEnum(k);
         if ( ed != null ) {
@@ -326,6 +311,9 @@ public class InstrIRGenerator extends Generator {
             printer.startblock(d.name.image+"(String s)");
             printer.println("symbol = "+kn+".get(s);");
             printer.println("if ( symbol == null ) throw new Error();");
+            printer.endblock();
+            printer.startblock(d.name.image+"("+kn+" sym)");
+            printer.println("symbol = sym;");
             printer.endblock();
         } else {
             printer.println("public static final int low = "+d.low+";");
@@ -342,14 +330,12 @@ public class InstrIRGenerator extends Generator {
         for ( AddrModeDecl.Operand o : d.subOperands ) {
             printer.println("public final "+o.type.image+" "+o.name.image+";");
         }
-        printer.print(d.name.image+"(");
-        boolean previous = false;
+        printer.beginList(d.name.image+"(");
         for ( AddrModeDecl.Operand o : d.subOperands ) {
-            if ( previous ) printer.print(", ");
             printer.print(o.type.image+" "+o.name.image);
-            previous = true;
         }
-        printer.startblock(")");
+        printer.endList(") ");
+        printer.startblock();
         for ( AddrModeDecl.Operand o : d.subOperands ) {
             printer.println("this."+o.name.image+" = "+o.name.image+";");
         }
@@ -375,13 +361,12 @@ public class InstrIRGenerator extends Generator {
     }
 
     private void emitParams(InstrDecl d) {
+        printer.beginList();
         boolean first = true;
         for (AddrModeDecl.Operand o : d.getOperands()) {
-            if (!first) printer.print(", ");
-            printer.print(getOperandTypeName(o.getOperandType()) + ' ');
-            printer.print(o.name.toString());
-            first = false;
+            printer.print(getOperandTypeName(o.getOperandType()) + ' ' + o.name.toString());
         }
+        printer.endList();
     }
 
     private void generateBuilder() throws IOException {
@@ -404,14 +389,12 @@ public class InstrIRGenerator extends Generator {
             List<AddrModeDecl.Operand> operands = d.getOperands();
             printer.println("assert operands.length == "+operands.size()+";");
             int cntr = 0;
-            printer.print("return new "+instrClassName+"."+d.innerClassName+"(");
+            printer.beginList("return new "+instrClassName+"."+d.innerClassName+"(");
             for ( AddrModeDecl.Operand o : operands ) {
-                if ( cntr > 0 ) printer.print(", ");
-                printer.print("("+operandClassName+"."+o.type+")");
-                printer.print("operands["+cntr+"]");
+                printer.print("("+operandClassName+"."+o.type+")operands["+cntr+"]");
                 cntr++;
             }
-            printer.println(");");
+            printer.endListln(");");
             printer.endblock();
             printer.endblock(");");
         }

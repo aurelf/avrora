@@ -37,6 +37,8 @@ import jintgen.gen.disassembler.DisassemblerGenerator;
 import avrora.util.Util;
 import avrora.util.Printer;
 
+import java.util.HashMap;
+
 /**
  * The <code>EncodingField</code> class represents a single expression within the encoding
  * of an instruction. The field has a length and an offset and is used in the disassembler
@@ -45,20 +47,20 @@ import avrora.util.Printer;
  * @author Ben L. Titzer
  */
 public class EncodingField extends CodeVisitor.Default {
-    final EncodingInfo ei;
+    final EncodingInst ei;
     final int bitsize;
     final Expr expr;
     final int offset;
     Printer printer;
 
-    EncodingField(EncodingInfo ei, int o, int s, Expr e) {
+    EncodingField(EncodingInst ei, int o, int s, Expr e) {
         this.ei = ei;
         offset = o;
         expr = e;
         bitsize = s;
     }
 
-    void generateDecoder(Printer p) {
+    void generateDecoder(Printer p, HashMap<String, String> varMap) {
         printer = p;
         printer.print("// logical["+offset+":"+(offset+bitsize-1)+"] -> ");
         expr.accept(this);

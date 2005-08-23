@@ -53,8 +53,8 @@ import jintgen.isdl.OperandTypeDecl;
 public class DTBuilder {
 
     class EncodingSet {
-        HashSet<EncodingInfo> lowPrio = new HashSet<EncodingInfo>();
-        HashSet<EncodingInfo> highPrio = new HashSet<EncodingInfo>();
+        HashSet<EncodingInst> lowPrio = new HashSet<EncodingInst>();
+        HashSet<EncodingInst> highPrio = new HashSet<EncodingInst>();
         HashMap<Integer, EncodingSet> children = new HashMap<Integer, EncodingSet>();
         private int minlength = 128;
         private int minprio = 128;
@@ -66,7 +66,7 @@ public class DTBuilder {
         int[] length;
         int[] counts;
 
-        void addEncoding(EncodingInfo ei) {
+        void addEncoding(EncodingInst ei) {
             lowPrio.add(ei);
             int prio = ei.encoding.getPriority();
             int length = ei.getLength();
@@ -119,7 +119,7 @@ public class DTBuilder {
         root = new EncodingSet();
     }
 
-    public void addEncoding(EncodingInfo ei) {
+    public void addEncoding(EncodingInst ei) {
         root.addEncoding(ei);
     }
 
@@ -130,7 +130,7 @@ public class DTBuilder {
         set.buildArrays();
         verbose.println("--> scanning...");
         // for each encoding, increment the count of each concrete bit
-        for ( EncodingInfo ei : set.lowPrio ) {
+        for ( EncodingInst ei : set.lowPrio ) {
             if ( ei.encoding.getPriority() == set.minprio ) set.highPrio.add(ei);
             ei.printVerbose(depth, verbose);
             // scan for the most lucrative bit range
@@ -170,7 +170,7 @@ public class DTBuilder {
         return max;
     }
 
-    void scanForBitRange(EncodingSet set, EncodingInfo ei) {
+    void scanForBitRange(EncodingSet set, EncodingInst ei) {
         int len = 1;
         int p = ei.encoding.getPriority();
         // scan backwards through the bit states. for each
@@ -189,7 +189,7 @@ public class DTBuilder {
     }
 
     void createChildren(EncodingSet set) {
-        List<EncodingInfo> unmatched = new LinkedList<EncodingInfo>();
+        List<EncodingInst> unmatched = new LinkedList<EncodingInst>();
 
         // if this node is a singleton, remove all but highest encoding
         if ( createSingleton(set) ) return;
@@ -206,7 +206,7 @@ public class DTBuilder {
     private boolean createSingleton(EncodingSet set) {
         if ( set.highPrio.size() == 1 ) {
             // get the encoding info of the singleton
-            EncodingInfo ei = set.highPrio.iterator().next();
+            EncodingInst ei = set.highPrio.iterator().next();
             // if the left bit is not concrete, there are no bits left
             if ( !ei.isConcrete(set.left_bit) ) {
                 // this node represents a terminal node (no children)
@@ -218,23 +218,23 @@ public class DTBuilder {
         return false;
     }
 
-    private void createMainBranches(EncodingSet set, List<EncodingInfo> unmatched) {
+    private void createMainBranches(EncodingSet set, List<EncodingInst> unmatched) {
         // all of the encodings at the high priority must have the bits set
-        for ( EncodingInfo ei : set.highPrio ) {
+        for ( EncodingInst ei : set.highPrio ) {
             if ( ei.isConcrete(set.left_bit) ) createChild(set, ei);
             else DGUtil.ambiguous(set.highPrio);
         }
         // for the rest of the encodings, add them to children or unmatched list
-        for ( EncodingInfo ei : set.lowPrio ) {
+        for ( EncodingInst ei : set.lowPrio ) {
             if ( ei.isConcrete(set.left_bit) ) createChild(set, ei);
             else unmatched.add(ei);
         }
     }
 
-    private void createDefaultBranch(EncodingSet set, List<EncodingInfo> unmatched) {
+    private void createDefaultBranch(EncodingSet set, List<EncodingInst> unmatched) {
         if ( unmatched.size() > 0 ) {
             // replicate the unmatched encodings over all branches
-            for ( EncodingInfo ei : unmatched ) {
+            for ( EncodingInst ei : unmatched ) {
                 for ( EncodingSet c : set.children.values() )
                     c.addEncoding(ei.copy());
             }
@@ -242,14 +242,14 @@ public class DTBuilder {
             if ( set.children.size() < 1 << (set.right_bit - set.left_bit + 1) ) {
                 EncodingSet def = new EncodingSet();
                 set.children.put(new Integer(-1), def);
-                for ( EncodingInfo ei : unmatched ) {
+                for ( EncodingInst ei : unmatched ) {
                     def.addEncoding(ei.copy());
                 }
             }
         }
     }
 
-    private void createChild(EncodingSet set, EncodingInfo ei) {
+    private void createChild(EncodingSet set, EncodingInst ei) {
         // get the value of the bits and add to corresponding subtree
         Integer iv = new Integer(extractValue(set, ei));
         EncodingSet c = set.children.get(iv);
@@ -260,18 +260,18 @@ public class DTBuilder {
         c.addEncoding(ei);
     }
 
-    private int extractValue(EncodingSet set, EncodingInfo ei) {
+    private int extractValue(EncodingSet set, EncodingInst ei) {
         int value = 0;
         for ( int cntr = set.left_bit; cntr <= set.right_bit; cntr++ ) {
             byte bitState = ei.bitStates[cntr];
             switch (bitState) {
-                case EncodingInfo.ENC_ZERO:
+                case EncodingInst.ENC_ZERO:
                     value = value << 1;
-                    ei.bitStates[cntr] = EncodingInfo.ENC_MATCHED_ZERO;
+                    ei.bitStates[cntr] = EncodingInst.ENC_MATCHED_ZERO;
                     break;
-                case EncodingInfo.ENC_ONE:
+                case EncodingInst.ENC_ONE:
                     value = value << 1 | 1;
-                    ei.bitStates[cntr] = EncodingInfo.ENC_MATCHED_ONE;
+                    ei.bitStates[cntr] = EncodingInst.ENC_MATCHED_ONE;
                     break;
                 default:
                     throw Util.failure("invalid bit state at "+cntr+" in "+ei);

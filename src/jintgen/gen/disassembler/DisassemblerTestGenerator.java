@@ -95,21 +95,26 @@ public class DisassemblerTestGenerator{
         void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep) {
             // generate a test case for each possible register value of this operand,
             // substituting representative members for the rest of the operands
+            /*
             OperandTypeDecl.SymbolSet r = (OperandTypeDecl.SymbolSet)od;
             for ( SymbolMapping.Entry re : r.map.getEntries() ) {
                 g.output(op, re.name, rep);
             }
+            */
         }
         String getSomeMember(OperandTypeDecl decl) {
+            /*
             OperandTypeDecl.SymbolSet r = (OperandTypeDecl.SymbolSet)decl;
             SymbolMapping.Entry enc = r.map.getEntries().iterator().next();
             return enc.name;
+            */
+            return "";
         }
     }
 
     class ImmediateGenerator extends OperandGenerator {
         void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep) {
-            OperandTypeDecl.Simple imm = (OperandTypeDecl.Simple)od;
+            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)od;
             HashSet<String> hs = new HashSet<String>();
             outputImm(g, imm.high,  imm, hs, op,rep);
             outputImm(g, imm.low,  imm, hs, op,rep);
@@ -120,7 +125,7 @@ public class DisassemblerTestGenerator{
             outputImmediate(g, 0xaaaaaaaa, hs, imm, op, rep);
         }
 
-        protected void outputImmediate(Generator g, int value_l, HashSet<String> hs, OperandTypeDecl.Simple imm, int cntr, String[] rep) {
+        protected void outputImmediate(Generator g, int value_l, HashSet<String> hs, OperandTypeDecl.Value imm, int cntr, String[] rep) {
             int value_h = value_l;
             for ( int bit = 0; bit < 32; bit++) {
                 outputImm(g, value_l, imm, hs, cntr, rep);
@@ -130,7 +135,7 @@ public class DisassemblerTestGenerator{
             }
         }
 
-        protected void outputImm(Generator g, int val, OperandTypeDecl.Simple imm, HashSet<String> hs, int cntr, String[] rep) {
+        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet<String> hs, int cntr, String[] rep) {
             if ( val <= imm.high && val >= imm.low ) {
                 String value = StringUtil.to0xHex(val,2);
                 if ( !hs.contains(value)) {
@@ -141,7 +146,7 @@ public class DisassemblerTestGenerator{
         }
 
         String getSomeMember(OperandTypeDecl decl) {
-            OperandTypeDecl.Simple imm = (OperandTypeDecl.Simple)decl;
+            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)decl;
             // return the average value
             return StringUtil.to0xHex((imm.low+((imm.high-imm.low)/2)), 2);
         }
@@ -149,7 +154,7 @@ public class DisassemblerTestGenerator{
 
     class RelativeGenerator extends OperandGenerator {
         void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep) {
-            OperandTypeDecl.Simple imm = (OperandTypeDecl.Simple)od;
+            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)od;
             int pc = 0;
             // for relative, we will dumbly generate all possibilities.
             for ( int cntr = imm.high; cntr >= imm.low; cntr-- ) {
@@ -165,7 +170,7 @@ public class DisassemblerTestGenerator{
     }
 
     class WordGenerator extends ImmediateGenerator {
-        protected void outputImm(Generator g, int val, OperandTypeDecl.Simple imm, HashSet<String> hs, int cntr, String[] rep) {
+        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet<String> hs, int cntr, String[] rep) {
             if ( val <= imm.high && val >= imm.low ) {
                 val = val * 2;
                 String value = StringUtil.to0xHex(val,2);
@@ -177,7 +182,7 @@ public class DisassemblerTestGenerator{
         }
 
         String getSomeMember(OperandTypeDecl decl) {
-            OperandTypeDecl.Simple imm = (OperandTypeDecl.Simple)decl;
+            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)decl;
             // return the average value
             int avg = (imm.low+((imm.high-imm.low)/2));
             return StringUtil.to0xHex(avg * 2, 2);

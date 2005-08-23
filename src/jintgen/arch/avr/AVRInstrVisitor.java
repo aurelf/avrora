@@ -1,4 +1,10 @@
 package jintgen.arch.avr;
+
+/**
+ * The <code>AVRInstrVisitor</code> interface allows user code that
+ * implements the interface to easily dispatch on the type of an
+ * instruction without casting using the visitor pattern.
+ */
 public interface AVRInstrVisitor {
     public void visit(AVRInstr.ADC i);
     public void visit(AVRInstr.ADD i);

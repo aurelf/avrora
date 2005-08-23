@@ -40,7 +40,7 @@ import java.util.*;
 /**
  * @author Ben L. Titzer
  */
-public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.ConstantEnvironment> {
+public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ> {
 
     protected static Literal.IntExpr ZERO = new Literal.IntExpr(0);
     protected static Literal.IntExpr ONE = new Literal.IntExpr(1);
@@ -49,12 +49,12 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
 
     protected static HashSet<String> trackedMaps;
 
-    public class ConstantEnvironment {
-        ConstantEnvironment parent;
+    public class Environ {
+        Environ parent;
         HashMap<String, Expr> constantMap;
         HashMap<String, HashMap<Integer, Expr>> mapMap; // HashMap<String, HashMap>
 
-        ConstantEnvironment(ConstantEnvironment p) {
+        Environ(Environ p) {
             parent = p;
             constantMap = new HashMap<String, Expr>();
             mapMap = new HashMap<String, HashMap<Integer, Expr>>();
@@ -139,12 +139,12 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             if (parent != null) parent.removeAll(mapname);
         }
 
-        void mergeToParent(ConstantEnvironment sibling) {
+        void mergeToParent(Environ sibling) {
             mergeIntoParent(this, sibling);
             mergeIntoParent(sibling, this);
         }
 
-        void mergeIntoParent(ConstantEnvironment a, ConstantEnvironment b) {
+        void mergeIntoParent(Environ a, Environ b) {
             for ( String key : a.constantMap.keySet() ) {
                 Expr e = a.lookup(key);
                 Expr o = b.lookup(key);
@@ -162,15 +162,15 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
         trackedMaps.add("$regs"); // this is all for now
     }
 
-    public ConstantEnvironment createEnvironment() {
-        return new ConstantEnvironment(null);
+    public Environ createEnvironment() {
+        return new Environ(null);
     }
 
     public List<Stmt> process(List<Stmt> stmts) {
-        return visitStmtList(stmts, new ConstantEnvironment(null));
+        return visitStmtList(stmts, new Environ(null));
     }
 
-    public Stmt visit(DeclStmt s, ConstantEnvironment cenv) {
+    public Stmt visit(DeclStmt s, Environ cenv) {
         Expr ne = update(s.name.toString(), s.init, cenv);
         if (s.init != ne)
             return new DeclStmt(s.name, s.type, ne);
@@ -178,7 +178,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return s;
     }
 
-    public Stmt visit(VarAssignStmt s, ConstantEnvironment cenv) {
+    public Stmt visit(VarAssignStmt s, Environ cenv) {
         Expr ne = update(s.variable.toString(), s.expr, cenv);
         if (s.expr != ne)
             return new VarAssignStmt(s.variable, ne);
@@ -186,7 +186,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return s;
     }
 
-    public Stmt visit(VarBitRangeAssignStmt s, ConstantEnvironment cenv) {
+    public Stmt visit(VarBitRangeAssignStmt s, Environ cenv) {
         Expr ne = s.expr.accept(this, cenv);
 
         if (ne.isLiteral()) {
@@ -215,7 +215,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return s;
     }
 
-    public Stmt visit(VarBitAssignStmt s, ConstantEnvironment cenv) {
+    public Stmt visit(VarBitAssignStmt s, Environ cenv) {
         Expr ne = s.expr.accept(this, cenv);
         Expr nb = s.bit.accept(this, cenv);
 
@@ -241,7 +241,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return s;
     }
 
-    public Stmt visit(MapAssignStmt s, ConstantEnvironment cenv) {
+    public Stmt visit(MapAssignStmt s, Environ cenv) {
         Expr ni = s.index.accept(this, cenv);
         Expr ne = s.expr.accept(this, cenv);
 
@@ -277,7 +277,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
     }
 
 
-    private Expr update(String name, Expr val, ConstantEnvironment cenv) {
+    private Expr update(String name, Expr val, Environ cenv) {
         Expr ne = val.accept(this, cenv);
         if (ne.isLiteral()) {
             // propagate this constant forward
@@ -299,7 +299,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
         return ne;
     }
 
-    public Expr visit(VarExpr e, ConstantEnvironment cenv) {
+    public Expr visit(VarExpr e, Environ cenv) {
         Expr ce = cenv.lookup(e.variable.toString());
         if (ce != null)
             return ce;
@@ -307,7 +307,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(BitExpr e, ConstantEnvironment cenv) {
+    public Expr visit(BitExpr e, Environ cenv) {
         Expr nexpr = e.expr.accept(this, cenv);
         Expr nbit = e.bit.accept(this, cenv);
 
@@ -323,7 +323,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(BitRangeExpr e, ConstantEnvironment cenv) {
+    public Expr visit(BitRangeExpr e, Environ cenv) {
         Expr nexpr = e.operand.accept(this, cenv);
 
         if (nexpr.isLiteral()) {
@@ -340,7 +340,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
 
     // --- binary operations ---
 
-    public Expr visit(Arith.AddExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.AddExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -356,7 +356,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.AndExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.AndExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -372,7 +372,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.CompExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.CompExpr e, Environ cenv) {
         Expr o = e.operand.accept(this, cenv);
 
         if (o.isLiteral()) {
@@ -384,7 +384,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
         return e;
     }
 
-    public Expr visit(Arith.DivExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.DivExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -399,7 +399,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.MulExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.MulExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -415,7 +415,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.NegExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.NegExpr e, Environ cenv) {
         Expr o = e.operand.accept(this, cenv);
 
         if (o.isLiteral()) {
@@ -427,7 +427,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
         return e;
     }
 
-    public Expr visit(Arith.OrExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.OrExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -443,7 +443,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.ShiftLeftExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.ShiftLeftExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -459,7 +459,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.ShiftRightExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.ShiftRightExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -475,7 +475,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.SubExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.SubExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -491,7 +491,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Arith.XorExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Arith.XorExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -507,14 +507,14 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Literal.BoolExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Literal.BoolExpr e, Environ cenv) {
         if (e.value)
             return TRUE;
         else
             return FALSE;
     }
 
-    public Expr visit(Literal.IntExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Literal.IntExpr e, Environ cenv) {
         if (e.value == 0)
             return ZERO;
         else if (e.value == 1)
@@ -523,7 +523,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.AndExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.AndExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -539,7 +539,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.EquExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.EquExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -555,7 +555,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.GreaterEquExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.GreaterEquExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -571,7 +571,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.GreaterExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.GreaterExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -587,7 +587,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.LessEquExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.LessEquExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -603,7 +603,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.LessExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.LessExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -619,7 +619,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.NequExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.NequExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -635,7 +635,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.NotExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.NotExpr e, Environ cenv) {
         Expr ne = e.operand.accept(this, cenv);
 
         if (ne == TRUE) {
@@ -648,7 +648,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
         return e;
     }
 
-    public Expr visit(Logical.OrExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.OrExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -664,7 +664,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(Logical.XorExpr e, ConstantEnvironment cenv) {
+    public Expr visit(Logical.XorExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
@@ -688,7 +688,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Constan
             return e;
     }
 
-    public Expr visit(MapExpr e, ConstantEnvironment cenv) {
+    public Expr visit(MapExpr e, Environ cenv) {
         Expr ne = e.index.accept(this, cenv);
 
         if (ne.isLiteral()) {

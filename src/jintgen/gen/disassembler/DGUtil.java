@@ -36,6 +36,13 @@ import avrora.util.*;
 
 import java.util.*;
 
+import jintgen.isdl.EncodingDecl;
+import jintgen.isdl.Property;
+import jintgen.isdl.AddrModeDecl;
+import jintgen.isdl.InstrDecl;
+import jintgen.gen.ConstantPropagator;
+import jintgen.jigir.Literal;
+
 /**
  * The <code>DGUtil</code> class contains a set of utility methods that are useful in
  * implementing, debugging, and understanding the disassembler generator.
@@ -45,12 +52,12 @@ import java.util.*;
 public class DGUtil {
 
     /**
-     * The <code>toString()</code> method converts an instance of the <code>EncodingInfo</code>
+     * The <code>toString()</code> method converts an instance of the <code>EncodingInst</code>
      * class into a string.
      * @param ei the encoding info instance to convert to a string
      * @return a string representation of the encoding info
      */
-    public static String toString(EncodingInfo ei) {
+    public static String toString(EncodingInst ei) {
         StringBuffer buf = new StringBuffer(25+ei.bitStates.length);
         buf.append(ei.instr.name.toString());
         buf.append(" x ");
@@ -63,19 +70,19 @@ public class DGUtil {
         buf.append(": ");
         for ( int cntr = 0; cntr < ei.bitStates.length; cntr++ ) {
             switch ( ei.bitStates[cntr] ) {
-                case EncodingInfo.ENC_ZERO:
+                case EncodingInst.ENC_ZERO:
                     buf.append("0");
                     break;
-                case EncodingInfo.ENC_ONE:
+                case EncodingInst.ENC_ONE:
                     buf.append("1");
                     break;
-                case EncodingInfo.ENC_MATCHED_ONE:
+                case EncodingInst.ENC_MATCHED_ONE:
                     buf.append("U");
                     break;
-                case EncodingInfo.ENC_MATCHED_ZERO:
+                case EncodingInst.ENC_MATCHED_ZERO:
                     buf.append("u");
                     break;
-                case EncodingInfo.ENC_VAR:
+                case EncodingInst.ENC_VAR:
                     buf.append(".");
                     break;
             }
@@ -133,7 +140,7 @@ public class DGUtil {
     private static void printLeaf(DTNode dt, Printer p) {
         String label = dt.getLabel();
         if ( label == null )
-            for ( EncodingInfo ei : dt.encodings ) ei.print(0, p);
+            for ( EncodingInst ei : dt.encodings ) ei.print(0, p);
     }
 
     private static void printNode(HashSet<DTNode> nodes, Printer p, int depth, int val, int length, DTNode cdt) {
@@ -153,11 +160,11 @@ public class DGUtil {
         for ( int cntr = 0; cntr < depth; cntr++ ) p.print("    ");
     }
 
-    public static void ambiguous(Set<EncodingInfo> set) {
+    public static void ambiguous(Set<EncodingInst> set) {
         Terminal.nextln();
         Terminal.printRed("ERROR");
         Terminal.println(": the following encodings are ambiguous:");
-        for ( EncodingInfo el : set )
+        for ( EncodingInst el : set )
             el.print(0, Printer.STDOUT);
         throw Util.failure("Disassembler generator cannot continue");
     }
@@ -255,5 +262,40 @@ public class DGUtil {
             return n.shallowCopy(0, 0, nc);
         else
             return n.shallowCopy(nc);
+    }
+
+    public static List<EncodingDecl.BitField> initConstantEnviron(ConstantPropagator.Environ ce, InstrDecl id, AddrModeDecl am, EncodingDecl ed) {
+        List<EncodingDecl.BitField> list = DGUtil.initConstantEnviron(ed, ce);
+        if ( am != null ) addProperties(am.properties, ce);
+        if ( id != null ) addProperties(id.properties, ce);
+        return list;
+    }
+
+    public static void addProperties(Iterable<Property> properties, ConstantPropagator.Environ ce) {
+        for ( Property p : properties ) DGUtil.addProperty(p, ce);
+    }
+
+    public static List<EncodingDecl.BitField> initConstantEnviron(EncodingDecl ed, ConstantPropagator.Environ ce) {
+        List<EncodingDecl.BitField> fields;
+        if ( ed instanceof EncodingDecl.Derived ) {
+            EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
+            fields = dd.parent.fields;
+
+            // put all the substitutions into the map
+            for ( EncodingDecl.Substitution s : dd.subst ) {
+                ce.put(s.name.image, s.expr);
+            }
+        } else {
+            fields = ed.fields;
+        }
+        return fields;
+    }
+
+    public static void addProperty(Property p, ConstantPropagator.Environ ce) {
+        if ( p.type.image.equals("int") ) {
+            ce.put(p.name.image, new Literal.IntExpr(p.value));
+        } else if ( p.type.image.equals("boolean") ) {
+            ce.put(p.name.image, new Literal.BoolExpr(p.value));
+        }
     }
 }

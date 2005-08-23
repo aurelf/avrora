@@ -62,7 +62,7 @@ public class DTNode {
 
     public int number;
 
-    public final HashSet <EncodingInfo> encodings;
+    public final HashSet <EncodingInst> encodings;
 
     private final HashMap<Integer, DTNode> children;
     private boolean needHash = true;
@@ -86,7 +86,7 @@ public class DTNode {
         left_bit = lb;
         right_bit = rb;
         children = c;
-        encodings = new HashSet<EncodingInfo>();
+        encodings = new HashSet<EncodingInst>();
     }
 
     /**

@@ -461,7 +461,7 @@ public class ISDLParser implements ISDLParserConstants {
                 jj_la1[16] = jj_gen;
                 ;
         }
-        d = new OperandTypeDecl.Simple(n, b, t, l, h);
+        d = new OperandTypeDecl.Value(n, b, t, l, h);
         switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
             case LBRACKET:
                 OperandBody(d);

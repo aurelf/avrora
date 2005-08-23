@@ -1,4 +1,11 @@
 package jintgen.arch.avr;
+
+/**
+ * The <code>AVRInstr</code> class is a container (almost a namespace)
+ * for all of the instructions in this architecture. Each inner class
+ * represents an instruction in the architecture and also extends the
+ * outer class.
+ */
 public class AVRInstr {
     public static class ADC extends AVRInstr {
         public final AVROperand.GPR rd;
