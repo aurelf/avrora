@@ -411,7 +411,12 @@ public class StringUtil {
     }
 
     private static String convertToHex(long value, int width, int start, char[] result) {
-        if (value > (long)1 << width * 4) return Long.toHexString(value).toUpperCase();
+        if (value > (long)1 << width * 4) {
+            StringBuffer buf = new StringBuffer();
+            for ( int cntr = 0; cntr < start; cntr++ ) buf.append(result[cntr]);
+            buf.append(Long.toHexString(value).toUpperCase());
+            return buf.toString();
+        }
 
         int i = start + width - 1;
         for (int cntr = 0; cntr < width; cntr++) {

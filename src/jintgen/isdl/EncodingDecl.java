@@ -76,6 +76,10 @@ public class EncodingDecl extends Item {
         BitField(Expr f) {
             field = f;
         }
+        public BitField(Expr f, int w) {
+            field = f;
+            width = w;
+        }
         public int getWidth() {
             if ( width < 0 )
                 throw Util.failure("negative bit width");

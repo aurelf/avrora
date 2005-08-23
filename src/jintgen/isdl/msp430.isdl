@@ -146,7 +146,7 @@ architecture msp430 {
     }
 
     addr-mode INDREG source: INDX, dest: SREG {
-        encoding = priority 5 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = source.reg, dreg = dest.reg, X = source.index }
+        encoding = priority 5 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = source.reg, dreg = dest, X = source.index }
         property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 3;
     }
@@ -170,7 +170,7 @@ architecture msp430 {
     }
 
     addr-mode INDSYM source: INDX, dest: SYM {
-        encoding = priority 4 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = 0b0000, X = source.index, Y = dest.index }
+        encoding = priority 4 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = 0b0000, X = source.index, Y = dest }
         property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 6;
     }
@@ -296,7 +296,7 @@ architecture msp430 {
     }
 
     addr-mode IMMSYM source: IMM, dest: SYM {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest.index }
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
         encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 0 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 1  // encodes as R3, As = 0b01
@@ -308,7 +308,7 @@ architecture msp430 {
     }
 
     addr-mode IMMABS source: IMM, dest: ABSO {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest.index }
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
         encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 0 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 1  // encodes as R3, As = 0b01

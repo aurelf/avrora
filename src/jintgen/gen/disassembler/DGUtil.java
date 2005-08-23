@@ -40,8 +40,10 @@ import jintgen.isdl.EncodingDecl;
 import jintgen.isdl.Property;
 import jintgen.isdl.AddrModeDecl;
 import jintgen.isdl.InstrDecl;
+import jintgen.isdl.parser.Token;
 import jintgen.gen.ConstantPropagator;
 import jintgen.jigir.Literal;
+import jintgen.jigir.Expr;
 
 /**
  * The <code>DGUtil</code> class contains a set of utility methods that are useful in
@@ -264,6 +266,19 @@ public class DGUtil {
             return n.shallowCopy(nc);
     }
 
+    public static List<EncodingDecl.BitField> reduceEncoding(EncodingDecl ed, InstrDecl id, AddrModeDecl am) {
+        LinkedList<EncodingDecl.BitField> nl = new LinkedList<EncodingDecl.BitField>();
+        ConstantPropagator cp = new ConstantPropagator();
+        ConstantPropagator.Environ ce = cp.createEnvironment();
+        List<EncodingDecl.BitField> fs = initConstantEnviron(ce, id, am, ed);
+        for ( EncodingDecl.BitField bf : fs ) {
+            Expr ne = bf.field.accept(cp, ce);
+            EncodingDecl.BitField nbf = new EncodingDecl.BitField(ne, bf.getWidth());
+            nl.add(nbf);
+        }
+        return nl;
+    }
+
     public static List<EncodingDecl.BitField> initConstantEnviron(ConstantPropagator.Environ ce, InstrDecl id, AddrModeDecl am, EncodingDecl ed) {
         List<EncodingDecl.BitField> list = DGUtil.initConstantEnviron(ed, ce);
         if ( am != null ) addProperties(am.properties, ce);
@@ -297,5 +312,9 @@ public class DGUtil {
         } else if ( p.type.image.equals("boolean") ) {
             ce.put(p.name.image, new Literal.BoolExpr(p.value));
         }
+    }
+
+    public static String pos(Token t) {
+        return t.beginColumn+":"+t.beginLine;
     }
 }
