@@ -205,7 +205,7 @@ class DecoderImplementation extends DGenerator {
         p.endblock();
         p.startblock("DTNode move(int val)");
         p.println("int ind = Arrays.binarySearch(values, val);");
-        p.println("if ( ind < values.length && values[ind] == val )");
+        p.println("if ( ind >= 0 && ind < values.length && values[ind] == val )");
         p.println("    return nodes[ind];");
         p.println("else");
         p.println("    return def;");

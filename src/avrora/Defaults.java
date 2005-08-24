@@ -164,6 +164,7 @@ public class Defaults {
         if (actions == null) {
             actions = new ClassMap("Action", Action.class);
             //-- DEFAULT ACTIONS
+            actions.addClass("disassemble", DisassembleAction.class);
             actions.addClass("simulate", SimulateAction.class);
             actions.addClass("analyze-stack", AnalyzeStackAction.class);
             actions.addClass("test", TestAction.class);

@@ -34,10 +34,13 @@ package avrora.actions;
 
 import avrora.util.Util;
 import avrora.Main;
-import avrora.core.Disassembler;
-import avrora.core.Instr;
+import avrora.arch.avr.AVRDisassembler;
+import avrora.arch.avr.AVRInstr;
+import avrora.arch.msp430.MSP430Instr;
+import avrora.arch.msp430.MSP430Disassembler;
 import avrora.util.StringUtil;
 import avrora.util.Terminal;
+import avrora.util.Option;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,6 +54,9 @@ import java.io.FileInputStream;
  */
 public class DisassembleAction extends Action {
 
+    Option.Str ARCH = options.newOption("arch", "avr", 
+            "This option selects the architecture for the disassembler.");
+    
     public DisassembleAction() {
         super("The \"disassemble\" action disassembles a binary file into source level instructions.");
     }
@@ -65,21 +71,32 @@ public class DisassembleAction extends Action {
      */
     public void run(String[] args) throws Exception {
         if ( args.length < 1 )
-            Util.userError("no input files");
+            Util.userError("no input data");
 
-        String fname = args[0];
-        Main.checkFileExists(fname);
-        FileInputStream fis = new FileInputStream(new File(fname));
+        byte[] buf = new byte[128];
 
-        byte[] buf = new byte[fis.available()];
-        int len = fis.read(buf);
-
-        Disassembler da = new Disassembler();
-        for ( int index = 0; index < len; ) {
-            Instr i = da.disassemble(0, buf, index);
-            Terminal.println(StringUtil.addrToString(index)+": "+hb(buf, index)+" "+hb(buf, index+1)+"        "+i.toString());
-            index += i.getSize();
+        for ( int cntr = 0; cntr < args.length; cntr++ ) {
+            buf[cntr] = (byte)StringUtil.evaluateIntegerLiteral(args[cntr]);
         }
+
+        String arch = ARCH.get();
+        if ( "avr".equals(arch)) {
+            AVRDisassembler da = new AVRDisassembler();
+            AVRInstr i = da.decode(0, 0, buf);
+            String str = i.toString();
+            print(buf, str);
+        } else if ( "msp430".equals(arch)) {
+            MSP430Disassembler da = new MSP430Disassembler();
+            MSP430Instr i = da.decode(0, 0, buf);
+            String str = i.toString();
+            print(buf, str);
+        } else {
+            Util.userError("Unknown architecture", arch);
+        }
+    }
+
+    private void print(byte[] buf, String str) {
+        Terminal.println(StringUtil.addrToString(0)+": "+hb(buf, 0)+" "+hb(buf, 0+1)+"        "+str);
     }
 
     private String hb(byte[] buf, int index) {

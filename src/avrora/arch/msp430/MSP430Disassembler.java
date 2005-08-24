@@ -657,7 +657,7 @@ public class MSP430Disassembler {
         }
         DTNode move(int val) {
             int ind = Arrays.binarySearch(values, val);
-            if ( ind < values.length && values[ind] == val )
+            if ( ind >= 0 && ind < values.length && values[ind] == val )
                 return nodes[ind];
             else
                 return def;
