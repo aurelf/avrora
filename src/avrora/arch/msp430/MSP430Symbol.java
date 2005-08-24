@@ -1,4 +1,4 @@
-package jintgen.arch.msp430;
+package avrora.arch.msp430;
 import java.util.HashMap;
 
 /**
@@ -23,9 +23,6 @@ public class MSP430Symbol {
             set.put(n, obj);
             return obj;
         }
-        public static GPR get(String name) {
-            return (GPR)set.get(name);
-        }
         GPR(String sym, int v) { super(sym, v); }
         public static final GPR PC = newGPR("pc", 0);
         public static final GPR SP = newGPR("sp", 1);
@@ -48,6 +45,10 @@ public class MSP430Symbol {
         public static final GPR R15 = newGPR("r15", 15);
     }
     
+    public static GPR get_GPR(String name) {
+        return (GPR)GPR.set.get(name);
+    }
+    
     public static class SREG extends GPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
@@ -56,9 +57,6 @@ public class MSP430Symbol {
             SREG obj = new SREG(n, v, ev);
             set.put(n, obj);
             return obj;
-        }
-        public static SREG get(String name) {
-            return (SREG)set.get(name);
         }
         SREG(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final SREG R2 = newSREG("r2", 2, 2);
@@ -75,6 +73,10 @@ public class MSP430Symbol {
         public static final SREG R13 = newSREG("r13", 13, 13);
         public static final SREG R14 = newSREG("r14", 14, 14);
         public static final SREG R15 = newSREG("r15", 15, 15);
+    }
+    
+    public static SREG get_SREG(String name) {
+        return (SREG)SREG.set.get(name);
     }
     
 }

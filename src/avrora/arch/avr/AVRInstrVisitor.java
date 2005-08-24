@@ -1,4 +1,4 @@
-package jintgen.arch.avr;
+package avrora.arch.avr;
 
 /**
  * The <code>AVRInstrVisitor</code> interface allows user code that

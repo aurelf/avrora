@@ -85,6 +85,8 @@ public class DisassemblerGenerator extends Generator {
     Verbose.Printer verboseDump = Verbose.getVerbosePrinter("jintgen.disassem.tree");
     Verbose.Printer dotDump = Verbose.getVerbosePrinter("jintgen.disassem.dot");
 
+    Properties properties = new Properties();
+
     int numEncodings = 0;
     int encodingNumber = 0;
     int instrs = 0;
@@ -98,14 +100,16 @@ public class DisassemblerGenerator extends Generator {
     public void generate() throws Exception {
         List<String> imports = new LinkedList<String>();
         imports.add("java.util.Arrays");
-        instrClassName = className("Instr");
-        symbolClassName = className("Symbol");
-        disassemblerClassName = className("Disassembler");
-        builderClassName = className("InstrBuilder");
-        operandClassName = className("Operand");
+        initClassNames();
         WORD_SIZE = (int)WORD.get();
         printer = newClassPrinter(disassemblerClassName, imports, null,
-                "The <code>"+disassemblerClassName+"</code> class decodes bit patterns into instructions.");
+                "The <code>"+disassemblerClassName+"</code> class decodes bit patterns into instructions. It has " +
+                "been generated automatically by jIntGen from a file containing a description of the instruction " +
+                "set and their encodings.\n\n" +
+                "The following options have been specified to tune this implementation:\n\n" +
+                "</p>-word-size="+WORD.get()+"\n"+
+                "</p>-parallel-trees="+PARALLEL_TREE.get()+"\n"+
+                "</p>-multiple-trees="+MULTI_TREE.get()+"\n");
 
         generateHeader();
         generateDecodeTables();
@@ -130,6 +134,20 @@ public class DisassemblerGenerator extends Generator {
         TermUtil.reportQuantity("Decoding Trees", implementation.numTrees, "");
         TermUtil.reportQuantity("Nodes", implementation.treeNodes, "");
         printer.endblock();
+    }
+
+    private void initClassNames() {
+        instrClassName = className("Instr");
+        symbolClassName = className("Symbol");
+        disassemblerClassName = className("Disassembler");
+        builderClassName = className("InstrBuilder");
+        operandClassName = className("Operand");
+
+        properties.setProperty("instr", instrClassName);
+        properties.setProperty("symbol", symbolClassName);
+        properties.setProperty("disassembler", disassemblerClassName);
+        properties.setProperty("builder", builderClassName);
+        properties.setProperty("operand", operandClassName);
     }
 
     private int getMaxPriority() {
@@ -333,49 +351,6 @@ public class DisassemblerGenerator extends Generator {
 
     public static String getInstrClassName(EncodingInst ei) {
         return instrClassName+"."+ei.instr.getInnerClassName();
-    }
-
-    void labelTreeWithInstrs(DTNode dt) {
-        HashSet<InstrDecl> instrs = new HashSet<InstrDecl>();
-        for ( EncodingInst ei : dt.encodings )
-            instrs.add(ei.instr);
-
-        // label all the children
-        if ( instrs.size() == 1 ) {
-            dt.setLabel(instrs.iterator().next().innerClassName);
-            // label all the children
-            for ( DTNode cdt : dt.getChildren() )
-            labelTree("*", cdt);
-        } else {
-            dt.setLabel("-");
-            for ( DTNode cdt : dt.getChildren() )
-                labelTreeWithInstrs(cdt);
-        }
-    }
-
-    void labelTreeWithEncodings(DTNode dt) {
-        HashSet<EncodingDecl> addrs = new HashSet<EncodingDecl>();
-        for ( EncodingInst ei : dt.encodings )
-            addrs.add(ei.encoding);
-
-        if ( addrs.size() == 1 ) {
-            // label all the children
-            EncodingDecl ed = addrs.iterator().next();
-            dt.setLabel(reader.getName(ed));
-            for ( DTNode cdt : dt.getChildren() )
-            labelTree("*", cdt);
-        } else {
-            // label all the children
-            dt.setLabel("-");
-            for ( DTNode cdt : dt.getChildren() )
-                labelTreeWithEncodings(cdt);
-        }
-    }
-
-    public static void labelTree(String l, DTNode dt) {
-        dt.setLabel(l);
-        for ( DTNode cdt : dt.getChildren() )
-            labelTree(l, cdt);
     }
 
 }

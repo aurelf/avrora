@@ -30,16 +30,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jintgen.arch.avr;
+package jintgen.gen.disassembler;
 
-import avrora.util.Util;
+import avrora.util.StringUtil;
+import avrora.util.Printer;
 
 /**
  * @author Ben L. Titzer
  */
-public class AVRRenderer {
+public class DGenerator {
 
-    public String toString(AVRInstr i) {
-        throw Util.unimplemented();
+    protected final DisassemblerGenerator dGen;
+    protected final Printer p;
+
+    String tr(String t) {
+        return StringUtil.stringReplace(t, dGen.properties);
+    }
+
+    String tr(String t, Object o1) {
+        return StringUtil.stringReplace(t, dGen.properties, o1);
+    }
+
+    String tr(String t, Object o1, Object o2) {
+        return StringUtil.stringReplace(t, dGen.properties, o1, o2);
+    }
+
+    String tr(String t, Object o1, Object o2, Object o3) {
+        return StringUtil.stringReplace(t, dGen.properties, o1, o2, o3);
+    }
+
+    DGenerator(DisassemblerGenerator dg) {
+        dGen = dg;
+        p = dGen.printer;
     }
 }

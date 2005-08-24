@@ -59,6 +59,7 @@ public class InstrIRGenerator extends Generator {
     String instrClassName;
     String operandClassName;
     String visitorClassName;
+    String opvisitorClassName;
     String builderClassName;
     String symbolClassName;
 
@@ -72,6 +73,7 @@ public class InstrIRGenerator extends Generator {
 
         instrClassName = className("Instr");
         operandClassName = className("Operand");
+        opvisitorClassName = className("OperandVisitor");
         visitorClassName = className("InstrVisitor");
         builderClassName = className("InstrBuilder");
         symbolClassName = className("Symbol");
@@ -81,7 +83,7 @@ public class InstrIRGenerator extends Generator {
 
         //generateRegSets();
         //generateChecks();
-        generateOperandTypes();
+        generateOperandClasses();
         generateVisitor();
         generateInstrClasses();
         generateEnumerations();
@@ -210,8 +212,6 @@ public class InstrIRGenerator extends Generator {
             printer.println("    return obj;");
             printer.println("}");
 
-            genGetMethod(n);
-
             printer.println(n+"(String sym, int v, int ev) { super(sym, v); encoding = ev; }");
 
             for ( SymbolMapping.Entry e : m.getEntries() ) {
@@ -231,8 +231,6 @@ public class InstrIRGenerator extends Generator {
             printer.println("    return obj;");
             printer.println("}");
 
-            genGetMethod(n);
-
             printer.println(n+"(String sym, int v) { super(sym, v); }");
 
             for ( SymbolMapping.Entry e : m.getEntries() ) {
@@ -244,23 +242,33 @@ public class InstrIRGenerator extends Generator {
 
         printer.endblock();
         printer.println("");
+
+        genGetMethod(n);
+
+        printer.println("");
     }
 
     private void genGetMethod(String n) {
-        printer.println("public static "+n+" get(String name) {");
-        printer.println("    return ("+n+")set.get(name);");
+        printer.println("public static "+n+" get_"+n+"(String name) {");
+        printer.println("    return ("+n+")"+n+".set.get(name);");
         printer.println("}");
     }
 
     //=========================================================================================
     // CODE TO EMIT OPERAND TYPES
     //=========================================================================================
-    private void generateOperandTypes() throws IOException {
+    private void generateOperandClasses() throws IOException {
         printer = newInterfacePrinter(operandClassName, hashMapImport, null,
                 "The <code>"+operandClassName+"</code> interface represents operands that are allowed to " +
                 "instructions in this architecture. Inner classes of this interface enumerate the possible " +
                 "operand types to instructions and their constructors allow for dynamic checking of " +
                 "correctness constraints as expressed in the instruction set description.");
+
+        printer.println("public void accept("+opvisitorClassName+" v);");
+
+        Printer vprinter = newInterfacePrinter(opvisitorClassName, hashMapImport, null,
+                "The <code>"+opvisitorClassName+"</code> interface allows clients to use the Visitor pattern to " +
+                "resolve the types of operands to instructions.");
         // generate union operand types
         HashMap<String, HashSet<String>> interfaces = new HashMap<String, HashSet<String>>();
         for ( AddrModeSetDecl d : arch.addrSets ) {
@@ -280,15 +288,20 @@ public class InstrIRGenerator extends Generator {
 
         // generate all the explicitly declared operand types
         for ( OperandTypeDecl d : arch.operandTypes )
-            generateOperandType(d, interfaces);
+            generateOperandType(d, vprinter, interfaces);
 
         printer.endblock();
         printer.close();
+        vprinter.endblock();
+        vprinter.close();
     }
 
-    private void generateOperandType(OperandTypeDecl d, HashMap<String, HashSet<String>> interfaces) {
-        printer.print("public class "+d.name.image+" implements "+operandClassName);
-        HashSet<String> intf = interfaces.get(d.name.image);
+    private void generateOperandType(OperandTypeDecl d, Printer vprinter, HashMap<String, HashSet<String>> interfaces) {
+        String otname = d.name.image;
+        // generate visit method inside visitor
+        vprinter.println("public void visit("+operandClassName+"."+otname+" o);");
+        printer.print("public class "+otname+" implements "+operandClassName);
+        HashSet<String> intf = interfaces.get(otname);
         if ( intf != null ) for ( String str : intf ) {
             printer.print(", "+str);
         }
@@ -298,6 +311,10 @@ public class InstrIRGenerator extends Generator {
         } else if ( d.isCompound() ) {
             generateCompoundType((OperandTypeDecl.Compound)d);
         }
+        // generate accept method in operand class
+        printer.startblock("public void accept("+opvisitorClassName+" v)");
+        printer.println("v.visit(this);");
+        printer.endblock();
         printer.endblock();
         printer.println("");
     }
@@ -309,7 +326,7 @@ public class InstrIRGenerator extends Generator {
             String kn = symbolClassName+"."+k;
             printer.println("public final "+kn+" symbol;");
             printer.startblock(d.name.image+"(String s)");
-            printer.println("symbol = "+kn+".get(s);");
+            printer.println("symbol = "+symbolClassName+".get_"+k+"(s);");
             printer.println("if ( symbol == null ) throw new Error();");
             printer.endblock();
             printer.startblock(d.name.image+"("+kn+" sym)");
@@ -387,7 +404,7 @@ public class InstrIRGenerator extends Generator {
             printer.startblock("public static final Single "+d.innerClassName+" = addSingle("+d.name+", new Single()");
             printer.startblock("public "+instrClassName+" build("+operandClassName+"[] operands)");
             List<AddrModeDecl.Operand> operands = d.getOperands();
-            printer.println("assert operands.length == "+operands.size()+";");
+            printer.println("// assert operands.length == "+operands.size()+";");
             int cntr = 0;
             printer.beginList("return new "+instrClassName+"."+d.innerClassName+"(");
             for ( AddrModeDecl.Operand o : operands ) {

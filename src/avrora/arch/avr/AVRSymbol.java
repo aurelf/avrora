@@ -1,4 +1,4 @@
-package jintgen.arch.avr;
+package avrora.arch.avr;
 import java.util.HashMap;
 
 /**
@@ -22,9 +22,6 @@ public class AVRSymbol {
             GPR obj = new GPR(n, v);
             set.put(n, obj);
             return obj;
-        }
-        public static GPR get(String name) {
-            return (GPR)set.get(name);
         }
         GPR(String sym, int v) { super(sym, v); }
         public static final GPR R0 = newGPR("r0", 0);
@@ -61,6 +58,10 @@ public class AVRSymbol {
         public static final GPR R31 = newGPR("r31", 31);
     }
     
+    public static GPR get_GPR(String name) {
+        return (GPR)GPR.set.get(name);
+    }
+    
     public static class ADR extends AVRSymbol {
         private static HashMap set = new HashMap();
         private static ADR newADR(String n, int v) {
@@ -68,13 +69,14 @@ public class AVRSymbol {
             set.put(n, obj);
             return obj;
         }
-        public static ADR get(String name) {
-            return (ADR)set.get(name);
-        }
         ADR(String sym, int v) { super(sym, v); }
         public static final ADR X = newADR("X", 26);
         public static final ADR Y = newADR("Y", 28);
         public static final ADR Z = newADR("Z", 30);
+    }
+    
+    public static ADR get_ADR(String name) {
+        return (ADR)ADR.set.get(name);
     }
     
     public static class HGPR extends GPR {
@@ -85,9 +87,6 @@ public class AVRSymbol {
             HGPR obj = new HGPR(n, v, ev);
             set.put(n, obj);
             return obj;
-        }
-        public static HGPR get(String name) {
-            return (HGPR)set.get(name);
         }
         HGPR(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final HGPR R16 = newHGPR("r16", 16, 0);
@@ -108,6 +107,10 @@ public class AVRSymbol {
         public static final HGPR R31 = newHGPR("r31", 31, 15);
     }
     
+    public static HGPR get_HGPR(String name) {
+        return (HGPR)HGPR.set.get(name);
+    }
+    
     public static class EGPR extends GPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
@@ -116,9 +119,6 @@ public class AVRSymbol {
             EGPR obj = new EGPR(n, v, ev);
             set.put(n, obj);
             return obj;
-        }
-        public static EGPR get(String name) {
-            return (EGPR)set.get(name);
         }
         EGPR(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final EGPR R0 = newEGPR("r0", 0, 0);
@@ -139,6 +139,10 @@ public class AVRSymbol {
         public static final EGPR R30 = newEGPR("r30", 30, 15);
     }
     
+    public static EGPR get_EGPR(String name) {
+        return (EGPR)EGPR.set.get(name);
+    }
+    
     public static class MGPR extends GPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
@@ -147,9 +151,6 @@ public class AVRSymbol {
             MGPR obj = new MGPR(n, v, ev);
             set.put(n, obj);
             return obj;
-        }
-        public static MGPR get(String name) {
-            return (MGPR)set.get(name);
         }
         MGPR(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final MGPR R16 = newMGPR("r16", 16, 0);
@@ -162,6 +163,10 @@ public class AVRSymbol {
         public static final MGPR R23 = newMGPR("r23", 23, 7);
     }
     
+    public static MGPR get_MGPR(String name) {
+        return (MGPR)MGPR.set.get(name);
+    }
+    
     public static class YZ extends ADR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
@@ -171,12 +176,13 @@ public class AVRSymbol {
             set.put(n, obj);
             return obj;
         }
-        public static YZ get(String name) {
-            return (YZ)set.get(name);
-        }
         YZ(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final YZ Y = newYZ("Y", 28, 1);
         public static final YZ Z = newYZ("Z", 30, 0);
+    }
+    
+    public static YZ get_YZ(String name) {
+        return (YZ)YZ.set.get(name);
     }
     
     public static class RDL extends GPR {
@@ -188,14 +194,15 @@ public class AVRSymbol {
             set.put(n, obj);
             return obj;
         }
-        public static RDL get(String name) {
-            return (RDL)set.get(name);
-        }
         RDL(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final RDL R24 = newRDL("r24", 24, 0);
         public static final RDL R26 = newRDL("r26", 26, 1);
         public static final RDL R28 = newRDL("r28", 28, 2);
         public static final RDL R30 = newRDL("r30", 30, 3);
+    }
+    
+    public static RDL get_RDL(String name) {
+        return (RDL)RDL.set.get(name);
     }
     
     public static class R0 extends GPR {
@@ -207,11 +214,12 @@ public class AVRSymbol {
             set.put(n, obj);
             return obj;
         }
-        public static R0 get(String name) {
-            return (R0)set.get(name);
-        }
         R0(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final R0 R0 = newR0("r0", 0, 0);
+    }
+    
+    public static R0 get_R0(String name) {
+        return (R0)R0.set.get(name);
     }
     
     public static class RZ extends ADR {
@@ -223,11 +231,12 @@ public class AVRSymbol {
             set.put(n, obj);
             return obj;
         }
-        public static RZ get(String name) {
-            return (RZ)set.get(name);
-        }
         RZ(String sym, int v, int ev) { super(sym, v); encoding = ev; }
         public static final RZ Z = newRZ("Z", 30, 0);
+    }
+    
+    public static RZ get_RZ(String name) {
+        return (RZ)RZ.set.get(name);
     }
     
 }

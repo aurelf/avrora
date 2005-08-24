@@ -1,4 +1,4 @@
-package jintgen.arch.msp430;
+package avrora.arch.msp430;
 
 /**
  * The <code>MSP430Instr</code> class is a container (almost a namespace)

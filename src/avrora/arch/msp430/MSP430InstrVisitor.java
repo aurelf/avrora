@@ -1,4 +1,4 @@
-package jintgen.arch.msp430;
+package avrora.arch.msp430;
 
 /**
  * The <code>MSP430InstrVisitor</code> interface allows user code that

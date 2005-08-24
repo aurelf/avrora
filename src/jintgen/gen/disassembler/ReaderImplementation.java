@@ -54,7 +54,7 @@ import avrora.util.Printer;
  *
  * @author Ben L. Titzer
  */
-class ReaderImplementation {
+class ReaderImplementation extends DGenerator {
 
     HashMap<EncodingDecl, EncodingReader> encodingInfo = new HashMap<EncodingDecl, EncodingReader>();
     HashMap<String, EncodingReader> encodingRev = new HashMap<String, EncodingReader>();
@@ -62,12 +62,9 @@ class ReaderImplementation {
 
     int maxoperands;
     int readMethods;
-    private DisassemblerGenerator dGen;
-    protected Printer p;
 
     public ReaderImplementation(DisassemblerGenerator disassemblerGenerator) {
-        this.dGen = disassemblerGenerator;
-        p = dGen.printer;
+        super(disassemblerGenerator);
     }
 
     class ReadMethod {
@@ -108,8 +105,7 @@ class ReaderImplementation {
         }
 
         void generate() {
-            String mname = "readop_"+number;
-            p.startblock("static int "+mname+"("+DisassemblerGenerator.disassemblerClassName+" d)");
+            p.startblock(tr("static int readop_$1($disassembler d)", number));
             if ( fields.size() == 0 ) {
                 p.println("return 0;");
             } else {
@@ -285,15 +281,16 @@ class ReaderImplementation {
         }
 
         void generateReader() {
-            p.startblock("static class "+name+"_reader extends OperandReader");
-            p.startblock(DisassemblerGenerator.operandClassName+"[] read("+DisassemblerGenerator.disassemblerClassName+" d)");
+            dGen.properties.setProperty("reader", name);
+            p.startblock(tr("static class $reader_reader extends OperandReader"));
+            p.startblock(tr("$operand[] read($disassembler d)"));
             int size = addrMode.operands.size();
             for ( AddrModeDecl.Operand o : addrMode.operands )
                 generateOperandRead("", o);
             if ( addrMode.operands.size() == 0 )
                 p.print("return d.OPERANDS_0;");
             else {
-                p.beginList("return d.fill_"+size+"(");
+                p.beginList(tr("return d.fill_$1(", size));
                 for ( AddrModeDecl.Operand o : addrMode.operands ) {
                     p.print(o.name.image);
                 }
@@ -302,10 +299,6 @@ class ReaderImplementation {
             p.nextln();
             p.endblock();
             p.endblock();
-        }
-
-        void generateInstance() {
-            p.println("static final OperandReader "+name+" = new "+name+"_reader();");
         }
 
         void generateOperandRead(String prefix, AddrModeDecl.Operand o) {
@@ -355,11 +348,10 @@ class ReaderImplementation {
 
         for ( EncodingReader er : encodingInfo.values() )
             er.generateReader();
-        for ( EncodingReader er : encodingInfo.values() )
-            er.generateInstance();
 
         for ( int cntr = 0; cntr <= maxoperands; cntr++ ) {
-            p.println("final "+DisassemblerGenerator.operandClassName+"[] OPERANDS_"+cntr+" = new "+DisassemblerGenerator.operandClassName+"["+cntr+"];");
+            //String str = "final "+DisassemblerGenerator.operandClassName+"[] OPERANDS_"+cntr+" = new "+DisassemblerGenerator.operandClassName+"["+cntr+"];";
+            p.println(tr("final $operand[] OPERANDS_$1 = new $operand[$1];", cntr));
         }
 
         generateFills(maxoperands);
@@ -374,12 +366,12 @@ class ReaderImplementation {
             p.endList(")");
             p.startblock();
             for ( int cntr = 0; cntr < loop; cntr++ ) {
-                p.println("OPERANDS_"+loop+"["+cntr+"] = o"+cntr+";");
+                //String str = "OPERANDS_"+loop+"["+cntr+"] = o"+cntr+";";
+                p.println(tr("OPERANDS_$1[$2] = o$2;", loop, cntr));
             }
             p.println("return OPERANDS_"+loop+";");
             p.endblock();
         }
     }
-
 
 }

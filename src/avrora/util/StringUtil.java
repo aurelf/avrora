@@ -40,6 +40,7 @@ import java.text.StringCharacterIterator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Properties;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing with strings such as
@@ -887,5 +888,74 @@ public class StringUtil {
 
     public static void getIDTimeString(StringBuffer buf, Simulator s) {
         toIDTimeString(buf, s.getID(), s.getClock());
+    }
+
+    public static String stringReplace(String template, Properties p, Object o1) {
+        p.setProperty("1", o1.toString());
+        return stringReplace(template, p);
+    }
+
+    public static String stringReplace(String template, Properties p, Object o1, Object o2) {
+        p.setProperty("1", o1.toString());
+        p.setProperty("2", o2.toString());
+        return stringReplace(template, p);
+    }
+
+    public static String stringReplace(String template, Properties p, Object o1, Object o2, Object o3) {
+        p.setProperty("1", o1.toString());
+        p.setProperty("2", o2.toString());
+        p.setProperty("3", o3.toString());
+        return stringReplace(template, p);
+    }
+
+    public static String stringReplace(String template, Properties p) {
+        int max = template.length();
+        StringBuffer buf = new StringBuffer(max);
+        for ( int pos = 0; pos < max; pos++ ) {
+            char ch = template.charAt(pos);
+            if ( ch == '$' ) {
+                pos = replaceVar(pos, max, template, buf, p);
+            } else if ( ch == '%' ) {
+                pos = replaceVarQuote(pos, max, template, buf, p);
+            } else {
+                buf.append(ch);
+            }
+        }
+        return buf.toString();
+    }
+
+    private static int replaceVar(int pos, int max, String template, StringBuffer buf, Properties p) {
+        StringBuffer var = new StringBuffer(10);
+        pos = scanAhead(pos, '$', max, template, buf, var);
+        String result = getProperty(var, p);
+        buf.append(result);
+        return pos;
+    }
+
+    private static int scanAhead(int pos, char ch, int max, String template, StringBuffer buf, StringBuffer var) {
+        for ( pos++; pos < max; pos++) {
+            char vch = template.charAt(pos);
+            if ( !Character.isLetterOrDigit(vch) ) { pos--; break; }
+            if ( vch == ch ) { buf.append(ch); break; }
+            var.append(vch);
+        }
+        return pos;
+    }
+
+    private static String getProperty(StringBuffer var, Properties p) {
+        String varname = var.toString();
+        String result = p.getProperty(varname);
+        if ( result == null ) throw Util.failure("stringReplace(): unknown variable "+quote(varname));
+        return result;
+    }
+
+    private static int replaceVarQuote(int pos, int max, String template, StringBuffer buf, Properties p) {
+        StringBuffer var = new StringBuffer(10);
+        pos = scanAhead(pos, '%', max, template, buf, var);
+        String result = getProperty(var, p);
+        buf.append('"');
+        buf.append(result);
+        buf.append('"');
+        return pos;
     }
 }
