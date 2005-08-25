@@ -56,7 +56,12 @@ public class DisassembleAction extends Action {
 
     Option.Str ARCH = options.newOption("arch", "avr", 
             "This option selects the architecture for the disassembler.");
-    
+    Option.Long MAX_LENGTH = options.newOption("max-length", 4,
+            "This option specifies the maximum length of an instruction in bytes.");
+    Option.Bool EXHAUSTIVE = options.newOption("exhaustive", false,
+            "When this option is specified, the disassembler tests the disassembler exhaustively by " +
+            "trying bit patterns systematically.");
+
     public DisassembleAction() {
         super("The \"disassemble\" action disassembles a binary file into source level instructions.");
     }
@@ -79,19 +84,40 @@ public class DisassembleAction extends Action {
             buf[cntr] = (byte)StringUtil.evaluateIntegerLiteral(args[cntr]);
         }
 
+        DA da = getDA();
+        if ( EXHAUSTIVE.get() )
+            exhaustive(da);
+        else {
+            print(buf, da.decode(0, buf).toString());
+        }
+    }
+
+    private DA getDA() {
         String arch = ARCH.get();
         if ( "avr".equals(arch)) {
-            AVRDisassembler da = new AVRDisassembler();
-            AVRInstr i = da.decode(0, 0, buf);
-            String str = i.toString();
-            print(buf, str);
+            return new AVRDA();
         } else if ( "msp430".equals(arch)) {
-            MSP430Disassembler da = new MSP430Disassembler();
-            MSP430Instr i = da.decode(0, 0, buf);
-            String str = i.toString();
-            print(buf, str);
-        } else {
-            Util.userError("Unknown architecture", arch);
+            return new MSPDA();
+        }
+        Util.userError("Unknown architecture", arch);
+        return null;
+    }
+
+    void exhaustive(DA da) {
+        byte[] buf = new byte[(int)MAX_LENGTH.get()];
+        for ( int cntr = 0; cntr < 0x10000; cntr++ ) {
+            buf[0] = (byte)cntr;
+            buf[1] = (byte)(cntr >> 8);
+            String result;
+            try {
+                Object obj = da.decode(0, buf);
+                if ( obj == null ) result = "null";
+                else result = obj.toString();
+            } catch (Exception e) {
+                result = "exception";
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            print(buf, result);
         }
     }
 
@@ -101,5 +127,29 @@ public class DisassembleAction extends Action {
 
     private String hb(byte[] buf, int index) {
         return StringUtil.toHex(buf[index],2);
+    }
+
+    abstract class DA {
+        abstract Object decode(int ind, byte[] buf) throws Exception;
+    }
+
+    class MSPDA extends DA {
+        MSP430Disassembler da;
+        MSPDA() {
+            da = new MSP430Disassembler();
+        }
+        Object decode(int ind, byte[] buf) throws Exception {
+            return da.decode(0, ind, buf);
+        }
+    }
+
+    class AVRDA extends DA {
+        AVRDisassembler da;
+        AVRDA() {
+            da = new AVRDisassembler();
+        }
+        Object decode(int ind, byte[] buf) throws Exception {
+            return da.decode(0, ind, buf);
+        }
     }
 }

@@ -49,7 +49,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public abstract class Generator {
+public abstract class Generator extends GenBase {
 
     public Architecture arch;
     protected final Options options = new Options();
@@ -86,7 +86,9 @@ public abstract class Generator {
         return newJavaPrinter(name, imports, sup, "class", jdoc);
     }
 
-    private Printer newJavaPrinter(String name, List<String> imports, String sup, String type, String jdoc) throws FileNotFoundException {
+    private Printer newJavaPrinter(String n, List<String> imports, String sup, String type, String jdoc) throws FileNotFoundException {
+        String name = properties.getProperty(n);
+        if ( name == null ) throw Util.failure("unknown class template: "+n);
         File f = new File(name + ".java");
         Printer printer = new Printer(new PrintStream(f));
         String pname = this.DEST_PACKAGE.get();

@@ -37,6 +37,7 @@ import jintgen.isdl.AddrModeDecl;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.isdl.EnumDecl;
 import jintgen.jigir.*;
+import jintgen.gen.GenBase;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +55,7 @@ import avrora.util.Printer;
  *
  * @author Ben L. Titzer
  */
-class ReaderImplementation extends DGenerator {
+class ReaderImplementation extends GenBase {
 
     HashMap<EncodingDecl, EncodingReader> encodingInfo = new HashMap<EncodingDecl, EncodingReader>();
     HashMap<String, EncodingReader> encodingRev = new HashMap<String, EncodingReader>();
@@ -62,9 +63,12 @@ class ReaderImplementation extends DGenerator {
 
     int maxoperands;
     int readMethods;
+    DisassemblerGenerator dGen;
 
-    public ReaderImplementation(DisassemblerGenerator disassemblerGenerator) {
-        super(disassemblerGenerator);
+    public ReaderImplementation(DisassemblerGenerator dGen) {
+        super(dGen.properties);
+        this.dGen = dGen;
+        setPrinter(dGen.p);
     }
 
     class ReadMethod {
@@ -105,30 +109,40 @@ class ReaderImplementation extends DGenerator {
         }
 
         void generate() {
-            p.startblock(tr("static int readop_$1($disassembler d)", number));
+            startblock("static int readop_$1($disassembler d)", number);
             if ( fields.size() == 0 ) {
-                p.println("return 0;");
+                println("return 0;");
             } else {
                 int offset = 0;
                 for ( Field f : fields ) {
-                    if ( offset == 0 ) p.print("int result = ");
-                    else p.print("result |= ");
-                    int word = f.low_bit / DisassemblerGenerator.WORD_SIZE;
-                    int off = f.low_bit % DisassemblerGenerator.WORD_SIZE;
-                    int mask = ((1 << f.length)-1);
-                    if ( off == 0 )
-                        p.print("(d.word"+word+" & ");
-                    else
-                        p.print("((d.word"+word+" >>> "+off+") & ");
-                    p.print(StringUtil.to0xHex(mask, DisassemblerGenerator.WORD_SIZE / 4));
-                    if ( offset == 0 ) p.print(");");
-                    else p.print(") << "+offset+";");
+                    if ( offset == 0 ) print("int result = ");
+                    else print("result |= ");
+                    generateRead(f.low_bit, f.length);
+                    if ( offset != 0 ) print(" << "+offset);
                     offset += f.length;
-                    p.nextln();
+                    println(";");
                 }
-                p.println("return result;");
+                println("return result;");
             }
-            p.endblock();
+            endblock();
+        }
+
+        private void generateRead(int logical_start, int length) {
+            int wsize = DisassemblerGenerator.WORD_SIZE;
+            int word = logical_start / wsize;
+
+            if ( logical_start == 0 && length == wsize ) {
+                print("d.word"+word);
+            } else {
+                int low_bit = DisassemblerGenerator.nativeBitOrder(logical_start, length);
+                int off = low_bit % wsize;
+                int mask = ((1 << length)-1);
+                String mstr = StringUtil.to0xHex(mask, wsize / 4);
+                if ( off == 0 )
+                    print("(d.word$1 & $2)", word, mstr);
+                else
+                    print("((d.word$1 >>> $2) & $3)", word, off, mstr);
+            }
         }
     }
 
@@ -201,7 +215,7 @@ class ReaderImplementation extends DGenerator {
                 if ( cond != null && cond.name.image.equals(opname) ) {
                     String et = getEnumType(ot);
                     if ( et != null )
-                        operandDecodeString.put(o, DisassemblerGenerator.symbolClassName+"."+et+"."+cond.expr.toString());
+                        operandDecodeString.put(o, tr("$symbol.$1.$2", et, cond.expr));
                     else
                         operandDecodeString.put(o, cond.expr.toString());
                     continue;
@@ -211,7 +225,7 @@ class ReaderImplementation extends DGenerator {
                     int[] decoder = computeScatter(opname, (OperandTypeDecl.Value)ot, nl);
                     ReadMethod rm = getReadMethod(decoder);
                     if ( et != null )
-                        operandDecodeString.put(o, et+"_table["+rm.toString()+"]");
+                        operandDecodeString.put(o, tr("$1_table[$2]", et, rm));
                     else
                         operandDecodeString.put(o, rm.toString());
                 } else if ( ot.isCompound() ) {
@@ -282,23 +296,23 @@ class ReaderImplementation extends DGenerator {
 
         void generateReader() {
             dGen.properties.setProperty("reader", name);
-            p.startblock(tr("static class $reader_reader extends OperandReader"));
-            p.startblock(tr("$operand[] read($disassembler d)"));
+            startblock("static class $reader_reader extends OperandReader");
+            startblock("$operand[] read($disassembler d)");
             int size = addrMode.operands.size();
             for ( AddrModeDecl.Operand o : addrMode.operands )
                 generateOperandRead("", o);
             if ( addrMode.operands.size() == 0 )
-                p.print("return d.OPERANDS_0;");
+                print("return d.OPERANDS_0;");
             else {
-                p.beginList(tr("return d.fill_$1(", size));
+                beginList("return d.fill_$1(", size);
                 for ( AddrModeDecl.Operand o : addrMode.operands ) {
-                    p.print(o.name.image);
+                    print(o.name.image);
                 }
-                p.endList(");");
+                endList(");");
             }
-            p.nextln();
-            p.endblock();
-            p.endblock();
+            nextln();
+            endblock();
+            endblock();
         }
 
         void generateOperandRead(String prefix, AddrModeDecl.Operand o) {
@@ -311,10 +325,9 @@ class ReaderImplementation extends DGenerator {
             } else if ( td.isValue() ) {
                 OperandTypeDecl.Value vtd = (OperandTypeDecl.Value)td;
                 // not a conditional encoding; load bits and generate tables
-                String type = DisassemblerGenerator.operandClassName+"."+vtd.name;
-                p.print(type+" "+vn +" = new "+type+"(");
+                print("$operand.$1 $2 = new $operand.$1(", vtd.name, vn);
                 generateRawRead(o);
-                p.println(");");
+                println(");");
             }
         }
 
@@ -322,19 +335,18 @@ class ReaderImplementation extends DGenerator {
             for ( AddrModeDecl.Operand so : td.subOperands )
                 generateOperandRead(vname+".", so);
             String vn = vname.replace('.', '_');
-            String type = DisassemblerGenerator.operandClassName+"."+td.name;
-            p.beginList(type+" "+vn+" = new "+type+"(");
+            beginList("$operand.$1 $2 = new $operand.$1(", td.name, vn);
             for ( AddrModeDecl.Operand so : td.subOperands ) {
-                p.print(vname+"_"+so.name);
+                print(vname+"_"+so.name);
             }
-            p.endList(");");
-            p.nextln();
+            endList(");");
+            nextln();
         }
 
         private void generateRawRead(AddrModeDecl.Operand o) {
             String str = operandDecodeString.get(o);
             assert str != null;
-            p.print(str);
+            print(str);
         }
     }
 
@@ -351,7 +363,7 @@ class ReaderImplementation extends DGenerator {
 
         for ( int cntr = 0; cntr <= maxoperands; cntr++ ) {
             //String str = "final "+DisassemblerGenerator.operandClassName+"[] OPERANDS_"+cntr+" = new "+DisassemblerGenerator.operandClassName+"["+cntr+"];";
-            p.println(tr("final $operand[] OPERANDS_$1 = new $operand[$1];", cntr));
+            println("final $operand[] OPERANDS_$1 = new $operand[$1];", cntr);
         }
 
         generateFills(maxoperands);
@@ -359,18 +371,18 @@ class ReaderImplementation extends DGenerator {
 
     private void generateFills(int max_operands) {
         for ( int loop = 1; loop <= max_operands; loop++ ) {
-            p.beginList(DisassemblerGenerator.operandClassName+"[] fill_"+loop+"(");
+            beginList("$operand[] fill_$1(", loop);
             for ( int cntr = 0; cntr < loop; cntr++ ) {
-                p.print(DisassemblerGenerator.operandClassName+" o"+cntr);
+                print("$operand o$1", cntr);
             }
-            p.endList(")");
-            p.startblock();
+            endList(")");
+            startblock();
             for ( int cntr = 0; cntr < loop; cntr++ ) {
                 //String str = "OPERANDS_"+loop+"["+cntr+"] = o"+cntr+";";
-                p.println(tr("OPERANDS_$1[$2] = o$2;", loop, cntr));
+                println("OPERANDS_$1[$2] = o$2;", loop, cntr);
             }
-            p.println("return OPERANDS_"+loop+";");
-            p.endblock();
+            println("return OPERANDS_"+loop+";");
+            endblock();
         }
     }
 

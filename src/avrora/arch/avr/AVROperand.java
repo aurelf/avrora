@@ -103,7 +103,7 @@ public interface AVROperand {
         public static final int high = 7;
         public final int value;
         IMM3(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -115,7 +115,7 @@ public interface AVROperand {
         public static final int high = 31;
         public final int value;
         IMM5(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -127,7 +127,7 @@ public interface AVROperand {
         public static final int high = 63;
         public final int value;
         IMM6(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -139,7 +139,7 @@ public interface AVROperand {
         public static final int high = 127;
         public final int value;
         IMM7(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -151,7 +151,7 @@ public interface AVROperand {
         public static final int high = 255;
         public final int value;
         IMM8(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -163,7 +163,7 @@ public interface AVROperand {
         public static final int high = 63;
         public final int value;
         SREL(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -175,7 +175,7 @@ public interface AVROperand {
         public static final int high = 1023;
         public final int value;
         LREL(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -187,7 +187,7 @@ public interface AVROperand {
         public static final int high = 65536;
         public final int value;
         PADDR(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -199,7 +199,7 @@ public interface AVROperand {
         public static final int high = 65536;
         public final int value;
         DADDR(int val) {
-            value = AVRInstrBuilder.checkValue(val, low, high);
+            value = AVRBuilder.checkValue(val, low, high);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);

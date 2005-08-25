@@ -55,14 +55,9 @@ import java.io.FileNotFoundException;
  */
 public class DisassemblerGenerator extends Generator {
 
-    // static configuration stuff
-    static String instrClassName;
-    static String symbolClassName;
-    static String operandClassName;
-    static String disassemblerClassName;
-    static String builderClassName;
-
     static int WORD_SIZE;
+    static boolean LITTLE_ENDIAN;
+    static boolean LITTLE_BIT_ENDIAN;
 
     protected final Option.Bool MULTI_TREE = options.newOption("multiple-trees", false,
             "This option selects whether the disassembler generator will create multiple decode trees " +
@@ -74,47 +69,59 @@ public class DisassemblerGenerator extends Generator {
             "that are applied in parallel to resolve both the addressing mode and instruction. For " +
             "complex architectures, this can result in tremendously reduced tree sizes. For small architecture, " +
             "the result can be less efficient.");
+    protected final Option.Bool CHAINED = options.newOption("chained-trees", false,
+            "This option selects whether the disassembler generator will chain the decoders from multiple " +
+            "priority levels together into one larger tree. This can reduce the complexity of the main " +
+            "decoder loop, but is only supported for non-parallel decoder implementations.");
     protected final Option.Long WORD = options.newOption("word-size", 16,
             "This option controls the word size (in bits) that is used when generating the disassembler " +
             "code. The disassembler reads fields from individual words of the instruction stream. This " +
             "option tunes whether the disassembler will read 8, 16, 32, etc bits from the instruction " +
             "stream at a time.");
+    protected final Option.Str ENDIAN = options.newOption("endian", "little",
+            "This option controls whether the generated disassembler assumes big-endian or little-endian " +
+            "ordering of bytes within words.");
+    protected final Option.Str BIT_ENDIAN = options.newOption("bit-endian", "big",
+            "This option controls whether the generated disassembler assumes big-endian or little-endian " +
+            "ordering of bits within words. This is important for the description of encodings of " +
+            "instructions. When set to \"big\", the disassembler generator assumes that the first logical " +
+            "bit of an encoding description is the most significant bit of the word.");
 
-    Printer printer;
     Verbose.Printer verbose = Verbose.getVerbosePrinter("jintgen.disassem");
     Verbose.Printer verboseDump = Verbose.getVerbosePrinter("jintgen.disassem.tree");
     Verbose.Printer dotDump = Verbose.getVerbosePrinter("jintgen.disassem.dot");
 
-    Properties properties = new Properties();
-
     int numEncodings = 0;
-    int encodingNumber = 0;
+    int encodingInstances = 0;
     int instrs = 0;
     int pseudoInstrs = 0;
     int minInstrLength = Integer.MAX_VALUE;
     int maxInstrLength = 0;
 
     ReaderImplementation reader;
-    DecoderImplementation implementation;
+    Decoder implementation;
 
     public void generate() throws Exception {
         List<String> imports = new LinkedList<String>();
         imports.add("java.util.Arrays");
-        initClassNames();
-        WORD_SIZE = (int)WORD.get();
-        printer = newClassPrinter(disassemblerClassName, imports, null,
-                "The <code>"+disassemblerClassName+"</code> class decodes bit patterns into instructions. It has " +
+        initStatics();
+        setPrinter(newClassPrinter("disassembler", imports, null,
+                tr("The <code>$disassembler</code> class decodes bit patterns into instructions. It has " +
                 "been generated automatically by jIntGen from a file containing a description of the instruction " +
                 "set and their encodings.\n\n" +
                 "The following options have been specified to tune this implementation:\n\n" +
                 "</p>-word-size="+WORD.get()+"\n"+
                 "</p>-parallel-trees="+PARALLEL_TREE.get()+"\n"+
-                "</p>-multiple-trees="+MULTI_TREE.get()+"\n");
+                "</p>-multiple-trees="+MULTI_TREE.get()+"\n")));
 
         generateHeader();
         generateDecodeTables();
         int maxprio = getMaxPriority();
-        implementation = new DecoderImplementation(this, maxprio);
+        if ( PARALLEL_TREE.get() )
+            implementation = new Decoder.Parallel(this, maxprio);
+        else
+            implementation = new Decoder.Serial(this, maxprio);
+
         reader = new ReaderImplementation(this);
         visitInstructions();
         reader.generateOperandReaders();
@@ -130,24 +137,24 @@ public class DisassemblerGenerator extends Generator {
         TermUtil.reportQuantity("Instructions", instrs, "");
         TermUtil.reportQuantity("Pseudo-instructions", pseudoInstrs, "");
         TermUtil.reportQuantity("Encodings", numEncodings, "");
-        TermUtil.reportQuantity("Encoding Instances", encodingNumber, "");
+        TermUtil.reportQuantity("Encoding Instances", encodingInstances, "");
         TermUtil.reportQuantity("Decoding Trees", implementation.numTrees, "");
         TermUtil.reportQuantity("Nodes", implementation.treeNodes, "");
-        printer.endblock();
+        endblock();
     }
 
-    private void initClassNames() {
-        instrClassName = className("Instr");
-        symbolClassName = className("Symbol");
-        disassemblerClassName = className("Disassembler");
-        builderClassName = className("InstrBuilder");
-        operandClassName = className("Operand");
+    private void initStatics() {
+        properties.setProperty("instr", className("Instr"));
+        properties.setProperty("operand", className("Operand"));
+        properties.setProperty("opvisitor", className("OperandVisitor"));
+        properties.setProperty("visitor", className("InstrVisitor"));
+        properties.setProperty("builder", className("Builder"));
+        properties.setProperty("symbol", className("Symbol"));
+        properties.setProperty("disassembler", className("Disassembler"));
 
-        properties.setProperty("instr", instrClassName);
-        properties.setProperty("symbol", symbolClassName);
-        properties.setProperty("disassembler", disassemblerClassName);
-        properties.setProperty("builder", builderClassName);
-        properties.setProperty("operand", operandClassName);
+        WORD_SIZE = (int)WORD.get();
+        LITTLE_ENDIAN = "little".equals(ENDIAN.get());
+        LITTLE_BIT_ENDIAN = "little".equals(BIT_ENDIAN.get());
     }
 
     private int getMaxPriority() {
@@ -189,17 +196,17 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private void generateHeader() {
-        printer.startblock("static class InvalidInstruction extends Exception");
-        printer.startblock("InvalidInstruction(int pc) ");
-        printer.println("super(\"Invalid instruction at \"+pc);");
-        printer.endblock();
-        printer.endblock();
+        startblock("public static class InvalidInstruction extends Exception");
+        startblock("InvalidInstruction(int pc) ");
+        println("super(\"Invalid instruction at \"+pc);");
+        endblock();
+        endblock();
     }
 
     private void addEncodingInfo(InstrDecl d, AddrModeDecl am, EncodingDecl ed) {
-        EncodingInst ei = new EncodingInst(d, am, encodingNumber, ed);
+        EncodingInst ei = new EncodingInst(d, am, ed);
         implementation.add(ei);
-        encodingNumber++;
+        encodingInstances++;
     }
 
     private void generateDecodeTables() {
@@ -215,23 +222,21 @@ public class DisassemblerGenerator extends Generator {
             symbol[e.value] = e.name;
         }
         String tablename = d.name+"_table";
-        String symname = symbolClassName+"."+d.name;
-        printer.startblock("static final "+symname+"[] "+tablename+" =");
+        startblock("static final $symbol.$1[] $2 =", d.name, tablename);
         for ( int cntr = 0; cntr < symbol.length; cntr++ ) {
-            if ( symbol[cntr] == null ) printer.print("null");
-            else printer.print(symname+"."+symbol[cntr].toUpperCase());
-            if ( cntr != symbol.length - 1) printer.print(", ");
+            if ( symbol[cntr] == null ) print("null");
+            else print("$symbol.$1.$2", d.name, symbol[cntr].toUpperCase());
+            if ( cntr != symbol.length - 1) print(", ");
             emitDecodeComment(max, cntr, symbol);
-            printer.nextln();
+            nextln();
         }
-        printer.endblock(";");
+        endblock(";");
     }
 
     private void emitDecodeComment(int max, int cntr, String[] symbol) {
         int lb = Arithmetic.highestBit(max);
         if ( lb <= 0 ) lb = 0;
-        String binaryRep = StringUtil.toBin(cntr, lb+1);
-        printer.print(" // "+cntr+" (0b"+binaryRep+") -> "+symbol[cntr]);
+        print(" // $1 (0b$2) -> $3", cntr, StringUtil.toBin(cntr, lb+1), symbol[cntr]);
     }
 
     private int getTableSize(EnumDecl d) {
@@ -245,35 +250,19 @@ public class DisassemblerGenerator extends Generator {
         return max;
     }
 
-    public static void generateRead(Printer p, int left_bit, int right_bit) {
-        int high_bit = nativeBitOrder(left_bit);
-        int low_bit = nativeBitOrder(right_bit);
-        int mask = Arithmetic.getBitRangeMask(low_bit, high_bit);
-
-        int word = 1 + (left_bit / WORD_SIZE);
-
-        if ( low_bit > 0 )
-            p.print("((word"+word+" >> "+low_bit+") & "+StringUtil.to0xHex(mask, 5)+")");
-        else
-            p.print("(word"+word+" & "+StringUtil.to0xHex(mask, 5)+")");
-    }
-
-    void generateJavaDoc(String p) {
-        generateJavaDoc(printer, p);
-    }
-
     abstract class DTNodeImpl {
-        String def = "ERROR";
+        String def;
         String action;
         final String nname;
         final int left;
         final int mask;
         final int length;
 
-        DTNodeImpl(DTNode dt, String act) {
+        DTNodeImpl(DTNode dt, String act, String d) {
             nname = nodeName(dt);
-            left = dt.left_bit;
+            def = d;
             length = dt.right_bit - dt.left_bit + 1;
+            left = DisassemblerGenerator.nativeBitOrder(dt.left_bit, length);
             mask = -1 >>> (32 - length);
             action = act;
         }
@@ -285,8 +274,8 @@ public class DisassemblerGenerator extends Generator {
         int current;
         String[] vals;
 
-        DTArrayNodeImpl(DTNode dt, String action) {
-            super(dt, action);
+        DTArrayNodeImpl(DTNode dt, String action, String d) {
+            super(dt, action, d);
             vals = new String[1 << length];
         }
         void add(int value, String nname) {
@@ -296,12 +285,12 @@ public class DisassemblerGenerator extends Generator {
             }
         }
         void generate() {
-            printer.beginList("DTNode "+nname+" = new DTArrayNode("+action+", "+left+", "+mask+", new DTNode[] {");
+            beginList("DTNode $1 = new DTArrayNode($2, $3, $4, new DTNode[] {", nname, action, left, mask);
             for ( String str : vals ) {
-                if ( str == null ) printer.print(def);
-                else printer.print(str);
+                if ( str == null ) print(def);
+                else print(str);
             }
-            printer.endListln("});");
+            endListln("});");
         }
 
     }
@@ -309,8 +298,8 @@ public class DisassemblerGenerator extends Generator {
     class DTSortedNodeImpl extends DTNodeImpl {
         LinkedList<String> init = new LinkedList<String>();
         LinkedList<Integer> values = new LinkedList<Integer>();
-        DTSortedNodeImpl(DTNode dt, String act) {
-            super(dt, act);
+        DTSortedNodeImpl(DTNode dt, String act, String d) {
+            super(dt, act, d);
         }
         void add(int value, String nname) {
             if ( value == -1 ) def = nname;
@@ -321,16 +310,16 @@ public class DisassemblerGenerator extends Generator {
         }
 
         void generate() {
-            printer.beginList("DTNode "+nname+" = new DTSortedNode("+action+", "+left+", "+mask+", new int[] {");
+            beginList("DTNode $1 = new DTSortedNode($2, $3, $4, new int[] {", nname, action, left, mask);
             for ( Integer i : values ) {
-                printer.print(i.toString());
+                print(i.toString());
             }
-            printer.endList("}, ");
-            printer.beginList("new DTNode[] {");
+            endList("}, ");
+            beginList("new DTNode[] {");
             for ( String str : init ) {
-                printer.print(str);
+                print(str);
             }
-            printer.endListln("}, "+def+");");
+            endListln("}, $1);", def);
         }
     }
 
@@ -339,18 +328,14 @@ public class DisassemblerGenerator extends Generator {
         else return "N"+cdt.number;
     }
 
-    DTNodeImpl newDTNode(DTNode dt, String action) {
+    DTNodeImpl newDTNode(DTNode dt, String action, String def) {
         int size = 1 << (dt.right_bit - dt.left_bit);
-        if ( size > 16 && (dt.getChildren().size() < (size/2)) ) return new DTSortedNodeImpl(dt, action);
-        return new DTArrayNodeImpl(dt, action);
+        if ( size > 16 && (dt.getChildren().size() < (size/2)) ) return new DTSortedNodeImpl(dt, action, def);
+        return new DTArrayNodeImpl(dt, action, def);
     }
 
-    public static int nativeBitOrder(int bit) {
-        return (WORD_SIZE-1)-(bit % WORD_SIZE);
+    public static int nativeBitOrder(int left_bit, int length) {
+        if ( !LITTLE_BIT_ENDIAN ) return WORD_SIZE - left_bit - length;
+        return left_bit;
     }
-
-    public static String getInstrClassName(EncodingInst ei) {
-        return instrClassName+"."+ei.instr.getInnerClassName();
-    }
-
 }

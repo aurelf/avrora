@@ -40,7 +40,6 @@ import jintgen.jigir.Expr;
 import jintgen.jigir.Literal;
 import jintgen.jigir.BitRangeExpr;
 import jintgen.gen.disassembler.DisassemblerGenerator;
-import jintgen.gen.disassembler.EncodingField;
 import jintgen.gen.ConstantPropagator;
 
 import java.util.List;
@@ -55,24 +54,43 @@ import avrora.util.Printer;
  * @author Ben L. Titzer
  */
 public class EncodingInst {
-    final InstrDecl instr;
-    final AddrModeDecl addrMode;
-    final EncodingDecl encoding;
-    final int encodingNumber;
-    final byte[] bitStates;
-    final List<EncodingField> simplifiedExprs;
     public static final byte ENC_ONE  = 1;
     public static final byte ENC_ZERO = 2;
     public static final byte ENC_MATCHED_ONE = 3;
     public static final byte ENC_MATCHED_ZERO = 4;
     public static final byte ENC_VAR  = 0;
 
-    EncodingInst(InstrDecl id, AddrModeDecl am, int encNum, EncodingDecl ed) {
+    /**
+     * The <code>Field</code> class represents a single expression within the encoding
+     * of an instruction. The field has a length and an offset and is used in the disassembler
+     * generator to generate the code to extract the operand from the bits of the instruction.
+     *
+     * @author Ben L. Titzer
+     */
+    public class Field {
+        final int bitsize;
+        final Expr expr;
+        final int offset;
+
+        Field(int o, int s, Expr e) {
+            offset = o;
+            expr = e;
+            bitsize = s;
+        }
+    }
+
+    final InstrDecl instr;
+    final AddrModeDecl addrMode;
+    final EncodingDecl encoding;
+    final byte[] bitStates;
+    final List<Field> simplifiedExprs;
+
+
+    EncodingInst(InstrDecl id, AddrModeDecl am, EncodingDecl ed) {
         instr = id;
         addrMode = am;
         bitStates = new byte[ed.bitWidth];
-        simplifiedExprs = new LinkedList<EncodingField>();
-        encodingNumber = encNum;
+        simplifiedExprs = new LinkedList<Field>();
         encoding = ed;
 
         initializeBitStates();
@@ -83,7 +101,6 @@ public class EncodingInst {
         addrMode = prev.addrMode;
         bitStates = new byte[prev.bitStates.length];
         simplifiedExprs = prev.simplifiedExprs;
-        encodingNumber = prev.encodingNumber;
         encoding = prev.encoding;
         System.arraycopy(prev.bitStates, 0, bitStates, 0, bitStates.length);
     }
@@ -116,7 +133,7 @@ public class EncodingInst {
 
     private void addExpr(int offset, int size, Expr simpleExpr) {
         // store the expression for future use
-        EncodingField ee = new EncodingField(this, offset, size, simpleExpr);
+        Field ee = new Field(offset, size, simpleExpr);
         simplifiedExprs.add(ee);
 
         setBitStates(simpleExpr, size, offset);
