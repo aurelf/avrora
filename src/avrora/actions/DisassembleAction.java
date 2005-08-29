@@ -56,7 +56,7 @@ public class DisassembleAction extends Action {
 
     Option.Str ARCH = options.newOption("arch", "avr", 
             "This option selects the architecture for the disassembler.");
-    Option.Long MAX_LENGTH = options.newOption("max-length", 4,
+    Option.Long MAX_LENGTH = options.newOption("max-length", 16,
             "This option specifies the maximum length of an instruction in bytes.");
     Option.Bool EXHAUSTIVE = options.newOption("exhaustive", false,
             "When this option is specified, the disassembler tests the disassembler exhaustively by " +
@@ -88,7 +88,10 @@ public class DisassembleAction extends Action {
         if ( EXHAUSTIVE.get() )
             exhaustive(da);
         else {
-            print(buf, da.decode(0, buf).toString());
+            da.decode(0, buf);
+            Object instr = da.instr;
+            int len = instr == null ? 2 : da.size;
+            print(buf, len, ""+instr);
         }
     }
 
@@ -109,28 +112,40 @@ public class DisassembleAction extends Action {
             buf[0] = (byte)cntr;
             buf[1] = (byte)(cntr >> 8);
             String result;
+            int len = 2;
             try {
-                Object obj = da.decode(0, buf);
+                da.decode(0, buf);
+                Object obj = da.instr;
                 if ( obj == null ) result = "null";
-                else result = obj.toString();
+                else {
+                    result = obj.toString();
+                    len = da.size;
+                }
             } catch (Exception e) {
                 result = "exception";
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
-            print(buf, result);
+            print(buf, len, result);
         }
     }
 
-    private void print(byte[] buf, String str) {
-        Terminal.println(StringUtil.addrToString(0)+": "+hb(buf, 0)+" "+hb(buf, 0+1)+"        "+str);
-    }
-
-    private String hb(byte[] buf, int index) {
-        return StringUtil.toHex(buf[index],2);
+    private void print(byte[] buf, int len, String str) {
+        StringBuffer sbuf = new StringBuffer();
+        sbuf.append(StringUtil.addrToString(0));
+        sbuf.append(": ");
+        for ( int cntr = 0; cntr < len; cntr++ ) {
+            StringUtil.toHex(sbuf, buf[cntr], 2);
+            sbuf.append(' ');
+        }
+        for ( int cntr = sbuf.length(); cntr < 30; cntr++ ) sbuf.append(' ');
+        sbuf.append(str);
+        Terminal.println(sbuf.toString());
     }
 
     abstract class DA {
-        abstract Object decode(int ind, byte[] buf) throws Exception;
+        int size;
+        Object instr;
+        abstract void decode(int ind, byte[] buf) throws Exception;
     }
 
     class MSPDA extends DA {
@@ -138,8 +153,10 @@ public class DisassembleAction extends Action {
         MSPDA() {
             da = new MSP430Disassembler();
         }
-        Object decode(int ind, byte[] buf) throws Exception {
-            return da.decode(0, ind, buf);
+        void decode(int ind, byte[] buf) throws Exception {
+            MSP430Instr i = da.decode(0, ind, buf);
+            instr = i;
+            if ( i != null ) size = i.size;
         }
     }
 
@@ -148,8 +165,10 @@ public class DisassembleAction extends Action {
         AVRDA() {
             da = new AVRDisassembler();
         }
-        Object decode(int ind, byte[] buf) throws Exception {
-            return da.decode(0, ind, buf);
+        void decode(int ind, byte[] buf) throws Exception {
+            AVRInstr i = da.decode(0, ind, buf);
+            instr = i;
+            if ( i != null ) size = i.size;
         }
     }
 }

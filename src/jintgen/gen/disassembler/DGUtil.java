@@ -317,4 +317,14 @@ public class DGUtil {
     public static String pos(Token t) {
         return t.beginColumn+":"+t.beginLine;
     }
+
+    public static boolean isPolyMorphic(InstrDecl d) {
+        return d.addrMode.addrModes.size() > 1;
+    }
+
+    public static boolean addrModeClassExists(InstrDecl d) {
+        AddrModeDecl localDecl = d.addrMode.localDecl;
+        if ( localDecl != null && localDecl.operands.size() == 0 ) return false;
+        return true;
+    }
 }

@@ -298,6 +298,7 @@ class ReaderImplementation extends GenBase {
             dGen.properties.setProperty("reader", name);
             startblock("static class $reader_reader extends OperandReader");
             startblock("$addr read($disassembler d)");
+            println("d.size = $1;", decl.getBitWidth() / 8);
             for ( AddrModeDecl.Operand o : addrMode.operands )
                 generateOperandRead("", o);
             beginList("return new $addr.$1(", javaName(addrMode.name.image));

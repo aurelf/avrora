@@ -1,435 +1,435 @@
 package avrora.arch.msp430;
 import java.util.HashMap;
 public abstract class MSP430InstrBuilder {
-    public abstract MSP430Instr build(MSP430AddrMode am);
+    public abstract MSP430Instr build(int size, MSP430AddrMode am);
     static final HashMap builders = new HashMap();
     static MSP430InstrBuilder add(String name, MSP430InstrBuilder b) {
         builders.put(name, b);
         return b;
     }
     public static class ADC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.ADC((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.ADC(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class ADC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.ADC_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.ADC_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class ADD_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.ADD((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.ADD(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class ADD_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.ADD_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.ADD_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class ADDC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.ADDC((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.ADDC(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class ADDC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.ADDC_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.ADDC_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class AND_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.AND((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.AND(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class AND_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.AND_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.AND_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class BIC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.BIC((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.BIC(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class BIC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.BIC_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.BIC_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class BIS_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.BIS((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.BIS(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class BIS_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.BIS_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.BIS_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class BIT_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.BIT((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.BIT(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class BIT_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.BIT_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.BIT_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class BR_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.BR((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.BR(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class CALL_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CALL((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CALL(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class CLR_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CLR((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CLR(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class CLR_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CLR_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CLR_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class CLRC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CLRC((MSP430AddrMode.$clrc$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CLRC(size, (MSP430AddrMode.$clrc$)am);
         }
     }
     public static class CLRN_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CLRN((MSP430AddrMode.$clrn$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CLRN(size, (MSP430AddrMode.$clrn$)am);
         }
     }
     public static class CLRZ_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CLRZ((MSP430AddrMode.$clrz$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CLRZ(size, (MSP430AddrMode.$clrz$)am);
         }
     }
     public static class CMP_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CMP((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CMP(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class CMP_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.CMP_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.CMP_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class DADC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DADC((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DADC(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class DADC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DADC_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DADC_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class DADD_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DADD((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DADD(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class DADD_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DADD_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DADD_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class DEC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DEC((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DEC(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class DEC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DEC_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DEC_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class DECD_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DECD((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DECD(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class DECD_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DECD_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DECD_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class DINT_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.DINT((MSP430AddrMode.$dint$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.DINT(size, (MSP430AddrMode.$dint$)am);
         }
     }
     public static class EINT_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.EINT((MSP430AddrMode.$eint$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.EINT(size, (MSP430AddrMode.$eint$)am);
         }
     }
     public static class INC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.INC((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.INC(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class INC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.INC_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.INC_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class INCD_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.INCD((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.INCD(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class INCD_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.INCD_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.INCD_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class INV_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.INV((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.INV(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class INV_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.INV_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.INV_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class JC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JC((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JC(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JHS_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JHS((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JHS(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JEQ_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JEQ((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JEQ(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JZ_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JZ((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JZ(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JGE_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JGE((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JGE(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JL_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JL((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JL(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JMP_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JMP((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JMP(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JN_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JN((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JN(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JNC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JNC((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JNC(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JLO_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JLO((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JLO(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JNE_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JNE((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JNE(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class JNZ_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.JNZ((MSP430AddrMode.JMP)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.JNZ(size, (MSP430AddrMode.JMP)am);
         }
     }
     public static class MOV_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.MOV((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.MOV(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class MOV_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.MOV_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.MOV_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class NOP_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.NOP((MSP430AddrMode.$nop$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.NOP(size, (MSP430AddrMode.$nop$)am);
         }
     }
     public static class POP_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.POP((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.POP(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class POP_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.POP_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.POP_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class PUSH_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.PUSH((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.PUSH(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class PUSH_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.PUSH_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.PUSH_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class RET_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RET((MSP430AddrMode.$ret$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RET(size, (MSP430AddrMode.$ret$)am);
         }
     }
     public static class RETI_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RETI((MSP430AddrMode.$reti$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RETI(size, (MSP430AddrMode.$reti$)am);
         }
     }
     public static class RLA_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RLA((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RLA(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class RLA_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RLA_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RLA_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class RLC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RLC((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RLC(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class RLC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RLC_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RLC_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class RRA_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RRA((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RRA(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class RRA_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RRA_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RRA_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class RRC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RRC((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RRC(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class RRC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.RRC_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.RRC_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class SBC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SBC((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SBC(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class SBC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SBC_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SBC_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class SETC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SETC((MSP430AddrMode.$setc$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SETC(size, (MSP430AddrMode.$setc$)am);
         }
     }
     public static class SETN_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SETN((MSP430AddrMode.$setn$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SETN(size, (MSP430AddrMode.$setn$)am);
         }
     }
     public static class SETZ_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SETZ((MSP430AddrMode.$setz$)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SETZ(size, (MSP430AddrMode.$setz$)am);
         }
     }
     public static class SUB_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SUB((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SUB(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class SUB_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SUB_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SUB_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class SUBC_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SUBC((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SUBC(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class SUBC_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SUBC_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SUBC_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class SBB_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SBB((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SBB(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class SBB_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SBB_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SBB_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static class SWPB_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SWPB((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SWPB(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class SXT_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.SXT((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.SXT(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class TST_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.TST((MSP430AddrMode.SINGLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.TST(size, (MSP430AddrMode.SINGLE_W)am);
         }
     }
     public static class TST_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.TST_B((MSP430AddrMode.SINGLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.TST_B(size, (MSP430AddrMode.SINGLE_B)am);
         }
     }
     public static class XOR_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.XOR((MSP430AddrMode.DOUBLE_W)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.XOR(size, (MSP430AddrMode.DOUBLE_W)am);
         }
     }
     public static class XOR_B_builder extends MSP430InstrBuilder {
-        public MSP430Instr build(MSP430AddrMode am) {
-            return new MSP430Instr.XOR_B((MSP430AddrMode.DOUBLE_B)am);
+        public MSP430Instr build(int size, MSP430AddrMode am) {
+            return new MSP430Instr.XOR_B(size, (MSP430AddrMode.DOUBLE_B)am);
         }
     }
     public static final MSP430InstrBuilder ADC = add("adc", new ADC_builder());

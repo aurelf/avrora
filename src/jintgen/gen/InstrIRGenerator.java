@@ -109,52 +109,100 @@ public class InstrIRGenerator extends Generator {
         println("public abstract void accept($visitor v);");
         println("public abstract void accept($addrvisitor v);");
 
+        generateJavaDoc("The <code>name</code> field stores a reference to the name of the instruction as a " +
+                "string.");
+        println("public final String name;");
+
+        generateJavaDoc("The <code>size</code> field stores the size of the instruction in bytes.");
+        println("public final int size;");
+
+        startblock("protected $instr(String name, int size)");
+        println("this.name = name;");
+        println("this.size = size;");
+        endblock();
+
+        for (AddrModeDecl d : arch.addrModes) emitAddrInstrClass(d);
+        for (AddrModeSetDecl d : arch.addrSets) emitAddrSetClass(d);
+
         for (InstrDecl d : arch.instructions) emitClass(d);
         endblock();
         close();
     }
 
+    private void emitAddrInstrClass(AddrModeDecl d) {
+        startblock("public abstract static class $1_Instr extends $instr", d.name);
+        for (AddrModeDecl.Operand o : d.operands)
+            println("public final $operand.$1 $2;", o.type, o.name);
+        startblock("protected $1_Instr(String name, int size, $addr.$1 am)", d.name);
+
+        println("super(name, size);");
+        initFields("this.$1 = am.$1;", d.operands);
+        endblock();
+        // emit the accept method for the addressing mode visitor
+        startblock("public void accept($addrvisitor v)");
+        beginList("v.visit_$1(", d.name);
+        for (AddrModeDecl.Operand o : d.operands) print(o.name.image);
+        endListln(");");
+        endblock();
+        endblock();
+    }
+
+    private void emitAddrSetClass(AddrModeSetDecl d) {
+        startblock("public abstract static class $1_Instr extends $instr", d.name);
+        println("public final $addr.$1 am;", d.name);
+        for (AddrModeDecl.Operand o : d.unionOperands)
+            println("public final $operand $1;", o.name);
+        startblock("protected $1_Instr(String name, int size, $addr.$1 am)", d.name);
+
+        println("super(name, size);");
+        println("this.am = am;", d.name);
+        initFields("this.$1 = am.get_$1();", d.unionOperands);
+        endblock();
+        // emit the accept method for the addressing mode visitor
+        startblock("public void accept($addrvisitor v)");
+        println("am.accept(v);");
+        endblock();
+        endblock();
+    }
+
     private void emitClass(InstrDecl d) {
         String cName = d.getInnerClassName();
         cName = StringUtil.trimquotes(cName.toUpperCase());
-        startblock("public static class $1 extends $instr", cName);
+        boolean hasSuper = d.addrMode.localDecl == null;
+        String sup = hasSuper ? addrModeName(d) + "_Instr" : tr("$instr");
+        startblock("public static class $1 extends $2", cName, sup);
 
-        emitFields(d);
-        emitConstructor(cName, d);
+        emitFields(d, hasSuper);
+        emitConstructor(cName, d, hasSuper);
         println("public void accept($visitor v) { v.visit(this); }");
-        startblock("public void accept($addrvisitor v)");
-        if ( isPolyMorphic(d))
-            println("addrMode.accept(v);");
-        else {
+        if ( !hasSuper ) {
+            startblock("public void accept($addrvisitor v)");
             beginList("v.visit_$1(", addrModeName(d));
             for (AddrModeDecl.Operand o : d.getOperands()) print(o.name.image);
             endListln(");");
+            endblock();
         }
-        endblock();
 
         endblock();
         println("");
     }
 
-    private void emitFields(InstrDecl d) {
+    private void emitFields(InstrDecl d, boolean hasSuper) {
         // emit the declaration of the fields
-        if ( isPolyMorphic(d) ) {
+        if ( !hasSuper ) {
             for (AddrModeDecl.Operand o : d.getOperands())
-                println("public final $operand $1;", o.name);
-            println("public final $addr.$1 addrMode;", addrModeName(d));
-        } else {
-            emitOperandFields(d.getOperands());
+                println("public final $operand.$1 $2;", o.type, o.name);
         }
     }
 
-    private void emitConstructor(String cName, InstrDecl d) {
+    private void emitConstructor(String cName, InstrDecl d, boolean hasSuper) {
         // emit the declaration of the constructor
-        startblock("$1($addr.$2 am)", cName, addrModeName(d));
+        startblock("$1(int size, $addr.$2 am)", cName, addrModeName(d));
 
-        if ( isPolyMorphic(d) ) {
-            initFields("this.$1 = am.get_$1();", d.getOperands());
-            println("this.addrMode = am;");
+        if ( hasSuper ) {
+            println("super($1, size, am);", d.name);
         } else {
+            println("super($1, size);", d.name);
             initFields("this.$1 = am.$1;", d.getOperands());
         }
         endblock();
@@ -170,10 +218,6 @@ public class InstrIRGenerator extends Generator {
     private String addrModeName(InstrDecl d) {
         if ( d.addrMode.localDecl != null ) return javaName(d.name.image);
         else return d.addrMode.ref.image;
-    }
-
-    private boolean isPolyMorphic(InstrDecl d) {
-        return d.addrMode.addrModes.size() > 1;
     }
 
     //=========================================================================================
@@ -376,7 +420,7 @@ public class InstrIRGenerator extends Generator {
     private void generateBuilder() throws IOException {
         setPrinter(newAbstractClassPrinter("builder", hashMapImport, null, null));
 
-        println("public abstract $instr build($addr am);");
+        println("public abstract $instr build(int size, $addr am);");
 
         println("static final HashMap builders = new HashMap();");
 
@@ -387,8 +431,8 @@ public class InstrIRGenerator extends Generator {
 
         for ( InstrDecl d : arch.instructions ) {
             startblock("public static class $1_builder extends $builder", d.innerClassName);
-            startblock("public $instr build($addr am)");
-            println("return new $instr.$1(($addr.$2)am);", d.innerClassName, addrModeName(d));
+            startblock("public $instr build(int size, $addr am)");
+            println("return new $instr.$1(size, ($addr.$2)am);", d.innerClassName, addrModeName(d));
             endblock();
             endblock();
         }

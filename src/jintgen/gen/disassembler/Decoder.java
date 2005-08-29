@@ -128,6 +128,7 @@ abstract class Decoder extends GenBase {
             generateJavaDoc("The <code>decoder_root()</code> method begins decoding the bit pattern " +
                     "into an instruction.");
             startblock("$instr decode_root()");
+            println("size = 0;");
             println("builder = null;");
             println("addrMode = null;");
             if ( !multiple ) {
@@ -161,7 +162,7 @@ abstract class Decoder extends GenBase {
             println("instr = instr.move(this, bits);");
             endblock();
             println("if ( state == ERR ) return null;");
-            println("else return builder.build(addrMode);");
+            println("else return builder.build(size, addrMode);");
             endblock();
         }
 
@@ -254,6 +255,7 @@ abstract class Decoder extends GenBase {
             generateJavaDoc("The <code>decoder_root()</code> method begins decoding the bit pattern " +
                     "into an instruction.");
             startblock("$instr decode_root()");
+            println("size = 0;");
             println("builder = null;");
             println("addrMode = null;");
             if ( chained || !multiple ) {
@@ -276,15 +278,13 @@ abstract class Decoder extends GenBase {
                     "following the appropriate paths until a terminal node is reached.\n" +
                     "@param node a reference to the root of the decoder where to begin decoding");
             startblock("private $instr run_decoder(DTNode node)");
-            println("builder = null;");
-            println("addrMode = null;");
             println("state = MOVE;");
             startblock("while ( state == MOVE )");
             println("int bits = (word0 >> node.left_bit) & node.mask;");
             println("node = node.move(this, bits);");
             endblock();
             println("if ( state == ERR ) return null;");
-            println("else return builder.build(addrMode);");
+            println("else return builder.build(size, addrMode);");
             endblock();
         }
 
@@ -467,6 +467,9 @@ abstract class Decoder extends GenBase {
     }
 
     void generateFields() {
+        generateJavaDoc("The <code>size</code> field is set to the length of the instruction when the " +
+                "decoder reaches a terminal state with a valid instruction.");
+        println("private int size;");
         generateJavaDoc("The <code>builder</code> field stores a reference to the builder that was " +
                 "discovered as a result of traversing the decoder tree. The builder corresponds to one " +
                 "and only one instruction and has a method that can build a new instance of the instruction " +
@@ -480,10 +483,18 @@ abstract class Decoder extends GenBase {
         generateJavaDoc("The <code>state</code> field controls the execution of the main decoder loop. When " +
                 "the decoder begins execution, the state field is set to <code>MOVE</code>. The decoder " +
                 "continues until an action fires or a terminal node is reached that sets this field to " +
-                "either <code>OK</code> or <code>ERROR</code>.");
+                "either <code>OK</code> or <code>ERR</code>.");
         println("private int state;");
+
+        generateJavaDoc("The <code>state</code> field is set to <code>MOVE</code> at the beginning of the " +
+                "decoding process and remains this value until a terminal state is reached. This value " +
+                "indicates the main loop should continue.");
         println("private static final int MOVE = 0;");
+        generateJavaDoc("The <code>state</code> field is set to <code>OK</code> when the decoder has reached " +
+                "a terminal state corresponding to a valid instruction.");
         println("private static final int OK = 1;");
+        generateJavaDoc("The <code>state</code> field is set to <code>ERR</code> when the decoder reaches a " +
+                "state corresponding to an incorrectly encoded instruction.");
         println("private static final int ERR = -1;");
 
         for ( int cntr = 0; cntr < dGen.maxInstrLength - 1; cntr += DisassemblerGenerator.WORD_SIZE ) {

@@ -4,9 +4,9 @@ architecture avr {
 //  ENCODING FORMATS OF INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    format GPRGPR = { opcode[5:0], r2[4:4], r1[4:4], r1[3:0], r2[3:0] }
+    format GPRGPR = { opcode[5:0], rr[4:4], rd[4:4], rd[3:0], rr[3:0] }
     format GPR = { opcode[6:0], r1[4:4], r1[3:0], 0b0101 }
-    format HGPRIMM8 = { opcode[3:0], imm1[7:4], r1[3:0], imm1[3:0] }
+    format HGPRIMM8 = { opcode[3:0], imm[7:4], rd[3:0], imm[3:0] }
     format BRSET = { 0b111100, target[6:0], bit[2:0] }
     format BRCLR = { 0b111101, target[6:0], bit[2:0] }
     format SET = { 0b10010100, 0b0, bit[2:0], 0b1000 }
@@ -140,12 +140,12 @@ architecture avr {
         encoding = { opcode[7:0], s1[0], rd[2:0], s2[0], rr[2:0] }
     }
 
-    addr-mode GPR r1: GPR { // one general purpose register
-        encoding = { opcode[6:0], r1[4:4], r1[3:0], 0b0101 }
+    addr-mode GPR rd: GPR { // one general purpose register
+        encoding = { opcode[6:0], rd[4:4], rd[3:0], ext[3:0] }
     }
 
-    addr-mode HGPRIMM8 r1: HGPR, imm1: IMM8 { // a high general purpose register and an 8-bit immediate
-        encoding = { opcode[3:0], imm1[7:4], r1[3:0], imm1[3:0] }
+    addr-mode HGPRIMM8 rd: HGPR, imm: IMM8 { // a high general purpose register and an 8-bit immediate
+        encoding = { opcode[3:0], imm[7:4], rd[3:0], imm[3:0] }
     }
 
     addr-mode ABS target: PADDR { // absolute address
@@ -349,16 +349,16 @@ architecture avr {
 //  BEGIN INSTRUCTION SET DESCRIPTION
 //---------------------------------------------------------------------------
 
-    instruction "adc" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rr }
+    instruction "adc": GPRGPR {
+        property opcode: int = 0b000111;
         property cycles: int = 1;
         execute {
             $regs(rd) = performAddition($uregs(rd), $uregs(rr), bit(C));
         }
     }
 
-    instruction "add" rd: GPR, rr: GPR { // add second register to first
-        encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rr }
+    instruction "add": GPRGPR { // add second register to first
+        property opcode: int = 0b000011;
         property cycles: int = 1;
         execute {
             $regs(rd) = performAddition($uregs(rd), $uregs(rr), 0);
@@ -384,24 +384,25 @@ architecture avr {
         }
     }
 
-    instruction "and" rd: GPR, rr: GPR { // and first register with second
-        encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rr }
+    instruction "and": GPRGPR { // and first register with second
+        property opcode: int = 0b001000;
         property cycles: int = 1;
         execute {
             $regs(rd) = performAnd($regs(rd), $regs(rr));
         }
     }
 
-    instruction "andi" rd: HGPR, imm: IMM8 { // and register with immediate
-        encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = imm }
+    instruction "andi": HGPRIMM8 { // and register with immediate
+        property opcode: int = 0b0111;
         property cycles: int = 1;
         execute {
             $regs(rd) = performAnd($regs(rd), imm);
         }
     }
 
-    instruction "asr" rd: GPR {
-        encoding = GPR where { opcode = 0b1001010, r1 = rd }
+    instruction "asr": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b0101;
         property cycles: int = 1;
         execute {
             local r1: byte = $regs(rd);
@@ -447,8 +448,9 @@ architecture avr {
         }
     }
 
-    instruction "brcc" target: SREL {
-        encoding = BRCLR where { bit = 0b000 }
+    instruction "brcc": BRANCH {
+        property bit: int = 0b000;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !C ) relativeBranch(target);
@@ -456,8 +458,9 @@ architecture avr {
     }
 
     // BRCS is equivalen to the BRLO instruction, thus this one is a pseudo instruction
-    instruction "brcs" target: SREL {
-        encoding = BRSET where { bit = 0b000 }
+    instruction "brcs": BRANCH {
+        property bit: int = 0b000;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( C ) relativeBranch(target);
@@ -472,88 +475,99 @@ architecture avr {
         }
     }
 
-    instruction "breq" target: SREL {
-        encoding = BRSET where { bit = 0b001 }
+    instruction "breq": BRANCH {
+        property bit: int = 0b001;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( Z ) relativeBranch(target);
         }
     }
 
-    instruction "brge" target: SREL{
-        encoding = BRCLR where { bit = 0b100 }
+    instruction "brge": BRANCH {
+        property bit: int = 0b100;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !S ) relativeBranch(target);
         }
     }
 
-    instruction "brhc" target: SREL {
-        encoding = BRCLR where { bit = 0b101 }
+    instruction "brhc": BRANCH {
+        property bit: int = 0b101;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !H ) relativeBranch(target);
         }
     }
 
-    instruction "brhs" target: SREL {
-        encoding = BRSET where { bit = 0b101 }
+    instruction "brhs": BRANCH {
+        property bit: int = 0b101;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( H ) relativeBranch(target);
         }
     }
 
-    instruction "brid" target: SREL {
-        encoding = BRCLR where { bit = 0b111 }
+    instruction "brid": BRANCH {
+        property bit: int = 0b111;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !I ) relativeBranch(target);
         }
     }
 
-    instruction "brie" target: SREL {
-        encoding = BRSET where { bit = 0b111 }
+    instruction "brie": BRANCH {
+        property bit: int = 0b111;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( I ) relativeBranch(target);
         }
     }
 
-    pseudo instruction "brlo" target: SREL {
-        encoding = BRSET where { bit = 0b000 }
+    pseudo instruction "brlo": BRANCH {
+        property bit: int = 0b000;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( C ) relativeBranch(target);
         }
     }
 
-    instruction "brlt" target: SREL {
-        encoding = BRSET where { bit = 0b100 }
+    instruction "brlt": BRANCH {
+        property bit: int = 0b100;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( S ) relativeBranch(target);
         }
     }
 
-    instruction "brmi" target: SREL {
-        encoding = BRSET where { bit = 0b010 }
+    instruction "brmi": BRANCH {
+        property bit: int = 0b010;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( N ) relativeBranch(target);
         }
     }
 
-    instruction "brne" target: SREL {
-        encoding = BRCLR where { bit = 0b001 }
+    instruction "brne": BRANCH {
+        property bit: int = 0b001;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !Z ) relativeBranch(target);
         }
     }
 
-    instruction "brpl" target: SREL {
-        encoding = BRCLR where { bit = 0b010 }
+    instruction "brpl": BRANCH {
+        property bit: int = 0b010;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !N ) relativeBranch(target);
@@ -561,40 +575,45 @@ architecture avr {
     }
 
     // BRSH is equivalent to the BRCC instruction
-    pseudo instruction "brsh" target: SREL {
-        encoding = BRCLR where { bit = 0b000 }
+    pseudo instruction "brsh": BRANCH {
+        property bit: int = 0b000;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !C ) relativeBranch(target);
         }
     }
 
-    instruction "brtc" target: SREL {
-        encoding = BRCLR where { bit = 0b110 }
+    instruction "brtc": BRANCH {
+        property bit: int = 0b110;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !T ) relativeBranch(target);
         }
     }
 
-    instruction "brts" target: SREL {
-        encoding = BRSET where { bit = 0b110 }
+    instruction "brts": BRANCH {
+        property bit: int = 0b110;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( T ) relativeBranch(target);
         }
     }
 
-    instruction "brvc" target: SREL {
-        encoding = BRCLR where { bit = 0b011 }
+    instruction "brvc": BRANCH {
+        property bit: int = 0b011;
+        property clear: int = 1;
         property cycles: int = 1;
         execute {
             if ( !V ) relativeBranch(target);
         }
     }
 
-    instruction "brvs" target: SREL {
-        encoding = BRSET where { bit = 0b011 }
+    instruction "brvs": BRANCH {
+        property bit: int = 0b011;
+        property clear: int = 0;
         property cycles: int = 1;
         execute {
             if ( V ) relativeBranch(target);
@@ -638,8 +657,8 @@ architecture avr {
 
     // CBR (clear bits in register) is equivalent to an ANDI instruction
     // and is encoded as an ANDI instruction with the operand complemented
-    pseudo instruction "cbr" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0111, r1 = rd, imm1 = ~imm }
+    pseudo instruction "cbr": HGPRIMM8 {
+        property opcode: int = 0b0111;
         property cycles: int = 1;
         execute {
             $regs(rd) = performAnd($regs(rd), ~imm);
@@ -724,8 +743,9 @@ architecture avr {
         }
     }
 
-    instruction "com" rd: GPR {
-        encoding = { 0b1001010, rd[4:0], 0b0000 }
+    instruction "com": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b0000;
         property cycles: int = 1;
         execute {
             local result: int = 0xff - $regs(rd);
@@ -740,8 +760,8 @@ architecture avr {
         }
     }
 
-    instruction "cp" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b000101, r1 = rd, r2 = rr }
+    instruction "cp": GPRGPR {
+        property opcode: int = 0b000101;
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
@@ -749,8 +769,8 @@ architecture avr {
         }
     }
 
-    instruction "cpc" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b000001, r1 = rd, r2 = rr }
+    instruction "cpc": GPRGPR {
+        property opcode: int = 0b000001;
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
@@ -758,8 +778,8 @@ architecture avr {
         }
     }
 
-    instruction "cpi" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0011, r1 = rd, imm1 = imm }
+    instruction "cpi": HGPRIMM8 {
+        property opcode: int = 0b0011;
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
@@ -767,8 +787,8 @@ architecture avr {
         }
     }
 
-    instruction "cpse" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b000100, r1 = rd, r2 = rr }
+    instruction "cpse": GPRGPR {
+        property opcode: int = 0b000100;
         property cycles: int = 1;
         execute {
             local r1: int = $regs(rd);
@@ -779,8 +799,9 @@ architecture avr {
         }
     }
 
-    instruction "dec" rd: GPR {
-        encoding = { 0b1001010, rd[4:0], 0b1010 }
+    instruction "dec": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b1010;
         property cycles: int = 1;
         execute {
             local r1: int = $uregs(rd);
@@ -811,8 +832,8 @@ architecture avr {
         }
     }
 
-    instruction "eor" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b001001, r1 = rd, r2 = rr }
+    instruction "eor": GPRGPR {
+        property opcode: int = 0b001001;
         property cycles: int = 1;
         execute {
             local result: byte = low($regs(rd) ^ $regs(rr));
@@ -887,8 +908,9 @@ architecture avr {
         }
     }
 
-    instruction "inc" rd: GPR {
-        encoding = { 0b1001010, rd[4:0], 0b0011 }
+    instruction "inc": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b0011;
         property cycles: int = 1;
         execute {
             local r1: int = $uregs(rd);
@@ -920,8 +942,8 @@ architecture avr {
         }
     }
 
-    instruction "ldi" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b1110, r1 = rd, imm1 = imm }
+    instruction "ldi": HGPRIMM8 {
+        property opcode: int = 0b1110;
         property cycles: int = 1;
         execute {
             $regs(rd) = low(imm);
@@ -946,16 +968,17 @@ architecture avr {
         }
     }
 
-    instruction "lsr" rd: GPR {
-        encoding = { 0b1001010, rd[4:0], 0b0110 }
+    instruction "lsr": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b110;
         property cycles: int = 1;
         execute {
             $regs(rd) = performRightShift($regs(rd), false);
         }
     }
 
-    instruction "mov" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b001011, r1 = rd, r2 = rr }
+    instruction "mov": GPRGPR {
+        property opcode: int = 0b001011;
         property cycles: int = 1;
         execute {
             $regs(rd) = $regs(rr);
@@ -970,8 +993,8 @@ architecture avr {
         }
     }
 
-    instruction "mul" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b100111, r1 = rd, r2 = rr }
+    instruction "mul": GPRGPR {
+        property opcode: int = 0b100111;
         property cycles: int = 2;
         execute {
             local result: int = $uregs(rd) * $uregs(rr);
@@ -1003,8 +1026,9 @@ architecture avr {
         }
     }
 
-    instruction "neg" rd: GPR {
-        encoding = { 0b1001010, rd[4:0], 0b0001 }
+    instruction "neg": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b0001;
         property cycles: int = 1;
         execute {
             $regs(rd) = performSubtraction(0, $regs(rd), 0);
@@ -1019,16 +1043,16 @@ architecture avr {
         }
     }
 
-    instruction "or" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b001010, r1 = rd, r2 = rr }
+    instruction "or": GPRGPR {
+        property opcode: int = 0b001010;
         property cycles: int = 1;
         execute {
             $regs(rd) = performOr($regs(rd), $regs(rr));
         }
     }
 
-    instruction "ori" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0110, r1 = rd, imm1 = imm }
+    instruction "ori": HGPRIMM8 {
+        property opcode: int = 0b0110;
         property cycles: int = 1;
         execute {
             $regs(rd) = performOr($regs(rd), imm);
@@ -1043,8 +1067,9 @@ architecture avr {
         }
     }
 
-    instruction "pop" rd: GPR {
-        encoding = { 0b1001000, rd[4:0], 0b1111 }
+    instruction "pop": GPR {
+        property opcode: int = 0b1001000;
+        property ext: int = 0b1111;
         property cycles: int = 2;
         execute {
             $regs(rd) = popByte();
@@ -1052,7 +1077,8 @@ architecture avr {
     }
 
     instruction "push" rr: GPR {
-        encoding = { 0b1001001, rr[4:0], 0b1111 }
+        property opcode: int = 0b1001001;
+        property ext: int = 0b1111;
         property cycles: int = 2;
         execute {
             pushByte($regs(rr));
@@ -1105,24 +1131,25 @@ architecture avr {
         }
     }
 
-    instruction "ror" rd: GPR {
-        encoding = { 0b1001010, rd[4:0], 0b0111 }
+    instruction "ror": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b0111;
         property cycles: int = 1;
         execute {
             $regs(rd) = performRightShift($regs(rd), C);
         }
     }
 
-    instruction "sbc" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b0000010, r1 = rd, r2 = rr }
+    instruction "sbc": GPRGPR {
+        property opcode: int = 0b000010;
         property cycles: int = 1;
         execute {
             $regs(rd) = performSubtractionPZ($regs(rd), $regs(rr), bit(C));
         }
     }
 
-    instruction "sbci" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0100, r1 = rd, imm1 = imm }
+    instruction "sbci": HGPRIMM8 {
+        property opcode: int = 0b0100;
         property cycles: int = 1;
         execute {
             $regs(rd) = performSubtractionPZ($regs(rd), imm, bit(C));
@@ -1174,8 +1201,8 @@ architecture avr {
     }
 
     // SBR (set bits in register) is equivalent to the ORI (or with immediate) instruction
-    pseudo instruction "sbr" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0110 }
+    pseudo instruction "sbr": HGPRIMM8 {
+        property opcode: int = 0b0110;
         property cycles: int = 1;
         execute {
             $regs(rd) = performOr($regs(rd), imm);
@@ -1303,24 +1330,25 @@ architecture avr {
         }
     }
 
-    instruction "sub" rd: GPR, rr: GPR {
-        encoding = GPRGPR where { opcode = 0b000110, r1 = rd, r2 = rr }
+    instruction "sub": GPRGPR {
+        property opcode: int = 0b000110;
         property cycles: int = 1;
         execute {
             $regs(rd) = performSubtraction($regs(rd), $regs(rr), 0);
         }
     }
 
-    instruction "subi" rd: HGPR, imm: IMM8 {
-        encoding = HGPRIMM8 where { opcode = 0b0101, r1 = rd, imm1 = imm }
+    instruction "subi": HGPRIMM8 {
+        property opcode: int = 0b0101;
         property cycles: int = 1;
         execute {
             $regs(rd) = performSubtraction($regs(rd), imm, 0);
         }
     }
 
-    instruction "swap" rd: GPR {
-        encoding = { 0b1001010, rd[4:0], 0b0010 }
+    instruction "swap": GPR {
+        property opcode: int = 0b1001010;
+        property ext: int = 0b0010;
         property cycles: int = 1;
         execute {
             local val: int = $uregs(rd);
@@ -1333,7 +1361,8 @@ architecture avr {
 
     // TST (test) is encoded as an AND instruction
     pseudo instruction "tst" rd: GPR {
-        encoding = GPRGPR where { opcode = 0b001000, r1 = rd, r2 = rd }
+        encoding = GPRGPR where { rr = rd }
+        property opcode: int = 0b001000;
         property cycles: int = 1;
         execute {
             local r1: int = $regs(rd);
