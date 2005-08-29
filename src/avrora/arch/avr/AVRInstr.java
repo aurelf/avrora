@@ -6,963 +6,1315 @@ package avrora.arch.avr;
  * represents an instruction in the architecture and also extends the
  * outer class.
  */
-public class AVRInstr {
+public abstract class AVRInstr {
+    public abstract void accept(AVRInstrVisitor v);
+    public abstract void accept(AVRAddrModeVisitor v);
     public static class ADC extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        ADC(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        ADC(AVRAddrMode.$adc$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$adc$(rd, rr);
+        }
     }
     
     public static class ADD extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        ADD(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        ADD(AVRAddrMode.$add$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$add$(rd, rr);
+        }
     }
     
     public static class ADIW extends AVRInstr {
-        public final AVROperand.RDL rd;
-        public final AVROperand.IMM6 imm;
-        ADIW(AVROperand.RDL rd, AVROperand.IMM6 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.RDL rd;
+        public AVROperand.IMM6 imm;
+        ADIW(AVRAddrMode.$adiw$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$adiw$(rd, imm);
+        }
     }
     
     public static class AND extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        AND(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        AND(AVRAddrMode.$and$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$and$(rd, rr);
+        }
     }
     
     public static class ANDI extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        ANDI(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        ANDI(AVRAddrMode.$andi$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$andi$(rd, imm);
+        }
     }
     
     public static class ASR extends AVRInstr {
-        public final AVROperand.GPR rd;
-        ASR(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        ASR(AVRAddrMode.$asr$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$asr$(rd);
+        }
     }
     
     public static class BCLR extends AVRInstr {
-        public final AVROperand.IMM3 bit;
-        BCLR(AVROperand.IMM3 bit) {
-            this.bit = bit;
+        public AVROperand.IMM3 bit;
+        BCLR(AVRAddrMode.$bclr$ am) {
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$bclr$(bit);
+        }
     }
     
     public static class BLD extends AVRInstr {
-        public final AVROperand.GPR rr;
-        public final AVROperand.IMM3 bit;
-        BLD(AVROperand.GPR rr, AVROperand.IMM3 bit) {
-            this.rr = rr;
-            this.bit = bit;
+        public AVROperand.GPR rr;
+        public AVROperand.IMM3 bit;
+        BLD(AVRAddrMode.$bld$ am) {
+            this.rr = am.rr;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$bld$(rr, bit);
+        }
     }
     
     public static class BRBC extends AVRInstr {
-        public final AVROperand.IMM3 bit;
-        public final AVROperand.SREL target;
-        BRBC(AVROperand.IMM3 bit, AVROperand.SREL target) {
-            this.bit = bit;
-            this.target = target;
+        public AVROperand.IMM3 bit;
+        public AVROperand.SREL target;
+        BRBC(AVRAddrMode.$brbc$ am) {
+            this.bit = am.bit;
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brbc$(bit, target);
+        }
     }
     
     public static class BRBS extends AVRInstr {
-        public final AVROperand.IMM3 bit;
-        public final AVROperand.SREL target;
-        BRBS(AVROperand.IMM3 bit, AVROperand.SREL target) {
-            this.bit = bit;
-            this.target = target;
+        public AVROperand.IMM3 bit;
+        public AVROperand.SREL target;
+        BRBS(AVRAddrMode.$brbs$ am) {
+            this.bit = am.bit;
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brbs$(bit, target);
+        }
     }
     
     public static class BRCC extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRCC(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRCC(AVRAddrMode.$brcc$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brcc$(target);
+        }
     }
     
     public static class BRCS extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRCS(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRCS(AVRAddrMode.$brcs$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brcs$(target);
+        }
     }
     
     public static class BREAK extends AVRInstr {
-        BREAK() {
+        BREAK(AVRAddrMode.$break$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$break$();
+        }
     }
     
     public static class BREQ extends AVRInstr {
-        public final AVROperand.SREL target;
-        BREQ(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BREQ(AVRAddrMode.$breq$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$breq$(target);
+        }
     }
     
     public static class BRGE extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRGE(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRGE(AVRAddrMode.$brge$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brge$(target);
+        }
     }
     
     public static class BRHC extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRHC(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRHC(AVRAddrMode.$brhc$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brhc$(target);
+        }
     }
     
     public static class BRHS extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRHS(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRHS(AVRAddrMode.$brhs$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brhs$(target);
+        }
     }
     
     public static class BRID extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRID(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRID(AVRAddrMode.$brid$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brid$(target);
+        }
     }
     
     public static class BRIE extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRIE(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRIE(AVRAddrMode.$brie$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brie$(target);
+        }
     }
     
     public static class BRLO extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRLO(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRLO(AVRAddrMode.$brlo$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brlo$(target);
+        }
     }
     
     public static class BRLT extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRLT(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRLT(AVRAddrMode.$brlt$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brlt$(target);
+        }
     }
     
     public static class BRMI extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRMI(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRMI(AVRAddrMode.$brmi$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brmi$(target);
+        }
     }
     
     public static class BRNE extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRNE(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRNE(AVRAddrMode.$brne$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brne$(target);
+        }
     }
     
     public static class BRPL extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRPL(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRPL(AVRAddrMode.$brpl$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brpl$(target);
+        }
     }
     
     public static class BRSH extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRSH(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRSH(AVRAddrMode.$brsh$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brsh$(target);
+        }
     }
     
     public static class BRTC extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRTC(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRTC(AVRAddrMode.$brtc$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brtc$(target);
+        }
     }
     
     public static class BRTS extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRTS(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRTS(AVRAddrMode.$brts$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brts$(target);
+        }
     }
     
     public static class BRVC extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRVC(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRVC(AVRAddrMode.$brvc$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brvc$(target);
+        }
     }
     
     public static class BRVS extends AVRInstr {
-        public final AVROperand.SREL target;
-        BRVS(AVROperand.SREL target) {
-            this.target = target;
+        public AVROperand.SREL target;
+        BRVS(AVRAddrMode.$brvs$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$brvs$(target);
+        }
     }
     
     public static class BSET extends AVRInstr {
-        public final AVROperand.IMM3 bit;
-        BSET(AVROperand.IMM3 bit) {
-            this.bit = bit;
+        public AVROperand.IMM3 bit;
+        BSET(AVRAddrMode.$bset$ am) {
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$bset$(bit);
+        }
     }
     
     public static class BST extends AVRInstr {
-        public final AVROperand.GPR rr;
-        public final AVROperand.IMM3 bit;
-        BST(AVROperand.GPR rr, AVROperand.IMM3 bit) {
-            this.rr = rr;
-            this.bit = bit;
+        public AVROperand.GPR rr;
+        public AVROperand.IMM3 bit;
+        BST(AVRAddrMode.$bst$ am) {
+            this.rr = am.rr;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$bst$(rr, bit);
+        }
     }
     
     public static class CALL extends AVRInstr {
-        public final AVROperand.PADDR target;
-        CALL(AVROperand.PADDR target) {
-            this.target = target;
+        public AVROperand.PADDR target;
+        CALL(AVRAddrMode.$call$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$call$(target);
+        }
     }
     
     public static class CBI extends AVRInstr {
-        public final AVROperand.IMM5 ior;
-        public final AVROperand.IMM3 bit;
-        CBI(AVROperand.IMM5 ior, AVROperand.IMM3 bit) {
-            this.ior = ior;
-            this.bit = bit;
+        public AVROperand.IMM5 ior;
+        public AVROperand.IMM3 bit;
+        CBI(AVRAddrMode.$cbi$ am) {
+            this.ior = am.ior;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cbi$(ior, bit);
+        }
     }
     
     public static class CBR extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        CBR(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        CBR(AVRAddrMode.$cbr$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cbr$(rd, imm);
+        }
     }
     
     public static class CLC extends AVRInstr {
-        CLC() {
+        CLC(AVRAddrMode.$clc$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$clc$();
+        }
     }
     
     public static class CLH extends AVRInstr {
-        CLH() {
+        CLH(AVRAddrMode.$clh$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$clh$();
+        }
     }
     
     public static class CLI extends AVRInstr {
-        CLI() {
+        CLI(AVRAddrMode.$cli$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cli$();
+        }
     }
     
     public static class CLN extends AVRInstr {
-        CLN() {
+        CLN(AVRAddrMode.$cln$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cln$();
+        }
     }
     
     public static class CLR extends AVRInstr {
-        public final AVROperand.GPR rd;
-        CLR(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        CLR(AVRAddrMode.$clr$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$clr$(rd);
+        }
     }
     
     public static class CLS extends AVRInstr {
-        CLS() {
+        CLS(AVRAddrMode.$cls$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cls$();
+        }
     }
     
     public static class CLT extends AVRInstr {
-        CLT() {
+        CLT(AVRAddrMode.$clt$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$clt$();
+        }
     }
     
     public static class CLV extends AVRInstr {
-        CLV() {
+        CLV(AVRAddrMode.$clv$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$clv$();
+        }
     }
     
     public static class CLZ extends AVRInstr {
-        CLZ() {
+        CLZ(AVRAddrMode.$clz$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$clz$();
+        }
     }
     
     public static class COM extends AVRInstr {
-        public final AVROperand.GPR rd;
-        COM(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        COM(AVRAddrMode.$com$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$com$(rd);
+        }
     }
     
     public static class CP extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        CP(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        CP(AVRAddrMode.$cp$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cp$(rd, rr);
+        }
     }
     
     public static class CPC extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        CPC(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        CPC(AVRAddrMode.$cpc$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cpc$(rd, rr);
+        }
     }
     
     public static class CPI extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        CPI(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        CPI(AVRAddrMode.$cpi$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cpi$(rd, imm);
+        }
     }
     
     public static class CPSE extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        CPSE(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        CPSE(AVRAddrMode.$cpse$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$cpse$(rd, rr);
+        }
     }
     
     public static class DEC extends AVRInstr {
-        public final AVROperand.GPR rd;
-        DEC(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        DEC(AVRAddrMode.$dec$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$dec$(rd);
+        }
     }
     
     public static class EICALL extends AVRInstr {
-        EICALL() {
+        EICALL(AVRAddrMode.$eicall$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$eicall$();
+        }
     }
     
     public static class EIJMP extends AVRInstr {
-        EIJMP() {
+        EIJMP(AVRAddrMode.$eijmp$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$eijmp$();
+        }
     }
     
     public static class EOR extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        EOR(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        EOR(AVRAddrMode.$eor$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$eor$(rd, rr);
+        }
     }
     
     public static class FMUL extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        FMUL(AVROperand.MGPR rd, AVROperand.MGPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.MGPR rd;
+        public AVROperand.MGPR rr;
+        FMUL(AVRAddrMode.$fmul$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$fmul$(rd, rr);
+        }
     }
     
     public static class FMULS extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        FMULS(AVROperand.MGPR rd, AVROperand.MGPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.MGPR rd;
+        public AVROperand.MGPR rr;
+        FMULS(AVRAddrMode.$fmuls$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$fmuls$(rd, rr);
+        }
     }
     
     public static class FMULSU extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        FMULSU(AVROperand.MGPR rd, AVROperand.MGPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.MGPR rd;
+        public AVROperand.MGPR rr;
+        FMULSU(AVRAddrMode.$fmulsu$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$fmulsu$(rd, rr);
+        }
     }
     
     public static class ICALL extends AVRInstr {
-        ICALL() {
+        ICALL(AVRAddrMode.$icall$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$icall$();
+        }
     }
     
     public static class IJMP extends AVRInstr {
-        IJMP() {
+        IJMP(AVRAddrMode.$ijmp$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ijmp$();
+        }
     }
     
     public static class IN extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.IMM6 imm;
-        IN(AVROperand.GPR rd, AVROperand.IMM6 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.GPR rd;
+        public AVROperand.IMM6 imm;
+        IN(AVRAddrMode.$in$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$in$(rd, imm);
+        }
     }
     
     public static class INC extends AVRInstr {
-        public final AVROperand.GPR rd;
-        INC(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        INC(AVRAddrMode.$inc$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$inc$(rd);
+        }
     }
     
     public static class JMP extends AVRInstr {
-        public final AVROperand.PADDR target;
-        JMP(AVROperand.PADDR target) {
-            this.target = target;
+        public AVROperand.PADDR target;
+        JMP(AVRAddrMode.$jmp$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$jmp$(target);
+        }
     }
     
     public static class LDD extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.YZ ar;
-        public final AVROperand.IMM6 imm;
-        LDD(AVROperand.GPR rd, AVROperand.YZ ar, AVROperand.IMM6 imm) {
-            this.rd = rd;
-            this.ar = ar;
-            this.imm = imm;
+        public AVROperand.GPR rd;
+        public AVROperand.YZ ar;
+        public AVROperand.IMM6 imm;
+        LDD(AVRAddrMode.$ldd$ am) {
+            this.rd = am.rd;
+            this.ar = am.ar;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ldd$(rd, ar, imm);
+        }
     }
     
     public static class LDI extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        LDI(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        LDI(AVRAddrMode.$ldi$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ldi$(rd, imm);
+        }
     }
     
     public static class LDS extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.DADDR addr;
-        LDS(AVROperand.GPR rd, AVROperand.DADDR addr) {
-            this.rd = rd;
-            this.addr = addr;
+        public AVROperand.GPR rd;
+        public AVROperand.DADDR addr;
+        LDS(AVRAddrMode.$lds$ am) {
+            this.rd = am.rd;
+            this.addr = am.addr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$lds$(rd, addr);
+        }
     }
     
     public static class LSL extends AVRInstr {
-        public final AVROperand.GPR rd;
-        LSL(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        LSL(AVRAddrMode.$lsl$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$lsl$(rd);
+        }
     }
     
     public static class LSR extends AVRInstr {
-        public final AVROperand.GPR rd;
-        LSR(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        LSR(AVRAddrMode.$lsr$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$lsr$(rd);
+        }
     }
     
     public static class MOV extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        MOV(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        MOV(AVRAddrMode.$mov$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$mov$(rd, rr);
+        }
     }
     
     public static class MOVW extends AVRInstr {
-        public final AVROperand.EGPR rd;
-        public final AVROperand.EGPR rr;
-        MOVW(AVROperand.EGPR rd, AVROperand.EGPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.EGPR rd;
+        public AVROperand.EGPR rr;
+        MOVW(AVRAddrMode.$movw$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$movw$(rd, rr);
+        }
     }
     
     public static class MUL extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        MUL(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        MUL(AVRAddrMode.$mul$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$mul$(rd, rr);
+        }
     }
     
     public static class MULS extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.HGPR rr;
-        MULS(AVROperand.HGPR rd, AVROperand.HGPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.HGPR rd;
+        public AVROperand.HGPR rr;
+        MULS(AVRAddrMode.$muls$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$muls$(rd, rr);
+        }
     }
     
     public static class MULSU extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        MULSU(AVROperand.MGPR rd, AVROperand.MGPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.MGPR rd;
+        public AVROperand.MGPR rr;
+        MULSU(AVRAddrMode.$mulsu$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$mulsu$(rd, rr);
+        }
     }
     
     public static class NEG extends AVRInstr {
-        public final AVROperand.GPR rd;
-        NEG(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        NEG(AVRAddrMode.$neg$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$neg$(rd);
+        }
     }
     
     public static class NOP extends AVRInstr {
-        NOP() {
+        NOP(AVRAddrMode.$nop$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$nop$();
+        }
     }
     
     public static class OR extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        OR(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        OR(AVRAddrMode.$or$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$or$(rd, rr);
+        }
     }
     
     public static class ORI extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        ORI(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        ORI(AVRAddrMode.$ori$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ori$(rd, imm);
+        }
     }
     
     public static class OUT extends AVRInstr {
-        public final AVROperand.IMM6 ior;
-        public final AVROperand.GPR rr;
-        OUT(AVROperand.IMM6 ior, AVROperand.GPR rr) {
-            this.ior = ior;
-            this.rr = rr;
+        public AVROperand.IMM6 ior;
+        public AVROperand.GPR rr;
+        OUT(AVRAddrMode.$out$ am) {
+            this.ior = am.ior;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$out$(ior, rr);
+        }
     }
     
     public static class POP extends AVRInstr {
-        public final AVROperand.GPR rd;
-        POP(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        POP(AVRAddrMode.$pop$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$pop$(rd);
+        }
     }
     
     public static class PUSH extends AVRInstr {
-        public final AVROperand.GPR rr;
-        PUSH(AVROperand.GPR rr) {
-            this.rr = rr;
+        public AVROperand.GPR rr;
+        PUSH(AVRAddrMode.$push$ am) {
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$push$(rr);
+        }
     }
     
     public static class RCALL extends AVRInstr {
-        public final AVROperand.LREL target;
-        RCALL(AVROperand.LREL target) {
-            this.target = target;
+        public AVROperand.LREL target;
+        RCALL(AVRAddrMode.$rcall$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$rcall$(target);
+        }
     }
     
     public static class RET extends AVRInstr {
-        RET() {
+        RET(AVRAddrMode.$ret$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ret$();
+        }
     }
     
     public static class RETI extends AVRInstr {
-        RETI() {
+        RETI(AVRAddrMode.$reti$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$reti$();
+        }
     }
     
     public static class RJMP extends AVRInstr {
-        public final AVROperand.LREL target;
-        RJMP(AVROperand.LREL target) {
-            this.target = target;
+        public AVROperand.LREL target;
+        RJMP(AVRAddrMode.$rjmp$ am) {
+            this.target = am.target;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$rjmp$(target);
+        }
     }
     
     public static class ROL extends AVRInstr {
-        public final AVROperand.GPR rd;
-        ROL(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        ROL(AVRAddrMode.$rol$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$rol$(rd);
+        }
     }
     
     public static class ROR extends AVRInstr {
-        public final AVROperand.GPR rd;
-        ROR(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        ROR(AVRAddrMode.$ror$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ror$(rd);
+        }
     }
     
     public static class SBC extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        SBC(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        SBC(AVRAddrMode.$sbc$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbc$(rd, rr);
+        }
     }
     
     public static class SBCI extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        SBCI(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        SBCI(AVRAddrMode.$sbci$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbci$(rd, imm);
+        }
     }
     
     public static class SBI extends AVRInstr {
-        public final AVROperand.IMM5 ior;
-        public final AVROperand.IMM3 bit;
-        SBI(AVROperand.IMM5 ior, AVROperand.IMM3 bit) {
-            this.ior = ior;
-            this.bit = bit;
+        public AVROperand.IMM5 ior;
+        public AVROperand.IMM3 bit;
+        SBI(AVRAddrMode.$sbi$ am) {
+            this.ior = am.ior;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbi$(ior, bit);
+        }
     }
     
     public static class SBIC extends AVRInstr {
-        public final AVROperand.IMM5 ior;
-        public final AVROperand.IMM3 bit;
-        SBIC(AVROperand.IMM5 ior, AVROperand.IMM3 bit) {
-            this.ior = ior;
-            this.bit = bit;
+        public AVROperand.IMM5 ior;
+        public AVROperand.IMM3 bit;
+        SBIC(AVRAddrMode.$sbic$ am) {
+            this.ior = am.ior;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbic$(ior, bit);
+        }
     }
     
     public static class SBIS extends AVRInstr {
-        public final AVROperand.IMM5 ior;
-        public final AVROperand.IMM3 bit;
-        SBIS(AVROperand.IMM5 ior, AVROperand.IMM3 bit) {
-            this.ior = ior;
-            this.bit = bit;
+        public AVROperand.IMM5 ior;
+        public AVROperand.IMM3 bit;
+        SBIS(AVRAddrMode.$sbis$ am) {
+            this.ior = am.ior;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbis$(ior, bit);
+        }
     }
     
     public static class SBIW extends AVRInstr {
-        public final AVROperand.RDL rd;
-        public final AVROperand.IMM6 imm;
-        SBIW(AVROperand.RDL rd, AVROperand.IMM6 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.RDL rd;
+        public AVROperand.IMM6 imm;
+        SBIW(AVRAddrMode.$sbiw$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbiw$(rd, imm);
+        }
     }
     
     public static class SBR extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        SBR(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        SBR(AVRAddrMode.$sbr$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbr$(rd, imm);
+        }
     }
     
     public static class SBRC extends AVRInstr {
-        public final AVROperand.GPR rr;
-        public final AVROperand.IMM3 bit;
-        SBRC(AVROperand.GPR rr, AVROperand.IMM3 bit) {
-            this.rr = rr;
-            this.bit = bit;
+        public AVROperand.GPR rr;
+        public AVROperand.IMM3 bit;
+        SBRC(AVRAddrMode.$sbrc$ am) {
+            this.rr = am.rr;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbrc$(rr, bit);
+        }
     }
     
     public static class SBRS extends AVRInstr {
-        public final AVROperand.GPR rr;
-        public final AVROperand.IMM3 bit;
-        SBRS(AVROperand.GPR rr, AVROperand.IMM3 bit) {
-            this.rr = rr;
-            this.bit = bit;
+        public AVROperand.GPR rr;
+        public AVROperand.IMM3 bit;
+        SBRS(AVRAddrMode.$sbrs$ am) {
+            this.rr = am.rr;
+            this.bit = am.bit;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sbrs$(rr, bit);
+        }
     }
     
     public static class SEC extends AVRInstr {
-        SEC() {
+        SEC(AVRAddrMode.$sec$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sec$();
+        }
     }
     
     public static class SEH extends AVRInstr {
-        SEH() {
+        SEH(AVRAddrMode.$seh$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$seh$();
+        }
     }
     
     public static class SEI extends AVRInstr {
-        SEI() {
+        SEI(AVRAddrMode.$sei$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sei$();
+        }
     }
     
     public static class SEN extends AVRInstr {
-        SEN() {
+        SEN(AVRAddrMode.$sen$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sen$();
+        }
     }
     
     public static class SER extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        SER(AVROperand.HGPR rd) {
-            this.rd = rd;
+        public AVROperand.HGPR rd;
+        SER(AVRAddrMode.$ser$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ser$(rd);
+        }
     }
     
     public static class SES extends AVRInstr {
-        SES() {
+        SES(AVRAddrMode.$ses$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$ses$();
+        }
     }
     
     public static class SET extends AVRInstr {
-        SET() {
+        SET(AVRAddrMode.$set$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$set$();
+        }
     }
     
     public static class SEV extends AVRInstr {
-        SEV() {
+        SEV(AVRAddrMode.$sev$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sev$();
+        }
     }
     
     public static class SEZ extends AVRInstr {
-        SEZ() {
+        SEZ(AVRAddrMode.$sez$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sez$();
+        }
     }
     
     public static class SLEEP extends AVRInstr {
-        SLEEP() {
+        SLEEP(AVRAddrMode.$sleep$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sleep$();
+        }
     }
     
     public static class SPM extends AVRInstr {
-        SPM() {
+        SPM(AVRAddrMode.$spm$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$spm$();
+        }
     }
     
     public static class STD extends AVRInstr {
-        public final AVROperand.YZ ar;
-        public final AVROperand.IMM6 imm;
-        public final AVROperand.GPR rr;
-        STD(AVROperand.YZ ar, AVROperand.IMM6 imm, AVROperand.GPR rr) {
-            this.ar = ar;
-            this.imm = imm;
-            this.rr = rr;
+        public AVROperand.YZ ar;
+        public AVROperand.IMM6 imm;
+        public AVROperand.GPR rr;
+        STD(AVRAddrMode.$std$ am) {
+            this.ar = am.ar;
+            this.imm = am.imm;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$std$(ar, imm, rr);
+        }
     }
     
     public static class STS extends AVRInstr {
-        public final AVROperand.DADDR addr;
-        public final AVROperand.GPR rr;
-        STS(AVROperand.DADDR addr, AVROperand.GPR rr) {
-            this.addr = addr;
-            this.rr = rr;
+        public AVROperand.DADDR addr;
+        public AVROperand.GPR rr;
+        STS(AVRAddrMode.$sts$ am) {
+            this.addr = am.addr;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sts$(addr, rr);
+        }
     }
     
     public static class SUB extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        SUB(AVROperand.GPR rd, AVROperand.GPR rr) {
-            this.rd = rd;
-            this.rr = rr;
+        public AVROperand.GPR rd;
+        public AVROperand.GPR rr;
+        SUB(AVRAddrMode.$sub$ am) {
+            this.rd = am.rd;
+            this.rr = am.rr;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$sub$(rd, rr);
+        }
     }
     
     public static class SUBI extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.IMM8 imm;
-        SUBI(AVROperand.HGPR rd, AVROperand.IMM8 imm) {
-            this.rd = rd;
-            this.imm = imm;
+        public AVROperand.HGPR rd;
+        public AVROperand.IMM8 imm;
+        SUBI(AVRAddrMode.$subi$ am) {
+            this.rd = am.rd;
+            this.imm = am.imm;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$subi$(rd, imm);
+        }
     }
     
     public static class SWAP extends AVRInstr {
-        public final AVROperand.GPR rd;
-        SWAP(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        SWAP(AVRAddrMode.$swap$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$swap$(rd);
+        }
     }
     
     public static class TST extends AVRInstr {
-        public final AVROperand.GPR rd;
-        TST(AVROperand.GPR rd) {
-            this.rd = rd;
+        public AVROperand.GPR rd;
+        TST(AVRAddrMode.$tst$ am) {
+            this.rd = am.rd;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$tst$(rd);
+        }
     }
     
     public static class WDR extends AVRInstr {
-        WDR() {
+        WDR(AVRAddrMode.$wdr$ am) {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_$wdr$();
+        }
     }
     
     public static class ELPM extends AVRInstr {
-        public final AVROperand.XLPM_source_union source;
-        public final AVROperand.XLPM_dest_union dest;
-        ELPM(AVROperand.XLPM_source_union source, AVROperand.XLPM_dest_union dest) {
-            this.source = source;
-            this.dest = dest;
+        public final AVROperand source;
+        public final AVROperand dest;
+        public final AVRAddrMode.XLPM addrMode;
+        ELPM(AVRAddrMode.XLPM am) {
+            this.source = am.get_source();
+            this.dest = am.get_dest();
+            this.addrMode = am;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            addrMode.accept(v);
+        }
     }
     
     public static class LPM extends AVRInstr {
-        public final AVROperand.XLPM_source_union source;
-        public final AVROperand.XLPM_dest_union dest;
-        LPM(AVROperand.XLPM_source_union source, AVROperand.XLPM_dest_union dest) {
-            this.source = source;
-            this.dest = dest;
+        public final AVROperand source;
+        public final AVROperand dest;
+        public final AVRAddrMode.XLPM addrMode;
+        LPM(AVRAddrMode.XLPM am) {
+            this.source = am.get_source();
+            this.dest = am.get_dest();
+            this.addrMode = am;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            addrMode.accept(v);
+        }
     }
     
     public static class LD extends AVRInstr {
-        public final AVROperand.LD_ST_rd_union rd;
-        public final AVROperand.LD_ST_ar_union ar;
-        LD(AVROperand.LD_ST_rd_union rd, AVROperand.LD_ST_ar_union ar) {
-            this.rd = rd;
-            this.ar = ar;
+        public final AVROperand rd;
+        public final AVROperand ar;
+        public final AVRAddrMode.LD_ST addrMode;
+        LD(AVRAddrMode.LD_ST am) {
+            this.rd = am.get_rd();
+            this.ar = am.get_ar();
+            this.addrMode = am;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            addrMode.accept(v);
+        }
     }
     
     public static class ST extends AVRInstr {
-        public final AVROperand.LD_ST_rd_union rd;
-        public final AVROperand.LD_ST_ar_union ar;
-        ST(AVROperand.LD_ST_rd_union rd, AVROperand.LD_ST_ar_union ar) {
-            this.rd = rd;
-            this.ar = ar;
+        public final AVROperand rd;
+        public final AVROperand ar;
+        public final AVRAddrMode.LD_ST addrMode;
+        ST(AVRAddrMode.LD_ST am) {
+            this.rd = am.get_rd();
+            this.ar = am.get_ar();
+            this.addrMode = am;
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
+        public void accept(AVRAddrModeVisitor v) {
+            addrMode.accept(v);
+        }
     }
     
 }

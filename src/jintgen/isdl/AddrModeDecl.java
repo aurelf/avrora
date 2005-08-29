@@ -64,15 +64,21 @@ public class AddrModeDecl extends Item {
 
     public final List<AddrModeDecl.Operand> operands;
     public final List<EncodingDecl> encodings;
+    public final List<AddrModeSetDecl> sets;
 
     public AddrModeDecl(Token n, List<AddrModeDecl.Operand> ol) {
         super(n);
         operands = ol;
         encodings = new LinkedList<EncodingDecl>();
+        sets = new LinkedList<AddrModeSetDecl>();
     }
 
     public void addEncoding(EncodingDecl d) {
         encodings.add(d);
+    }
+
+    public void joinSet(AddrModeSetDecl d) {
+        sets.add(d);
     }
 
 }

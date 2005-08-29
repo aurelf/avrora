@@ -55,11 +55,11 @@ public class MSP430Disassembler {
         MSP430Symbol.SREG.R14,  // 14 (0b1110) -> r14
         MSP430Symbol.SREG.R15 // 15 (0b1111) -> r15
     };
-    static int readop_1(MSP430Disassembler d) {
+    static int readop_0(MSP430Disassembler d) {
         int result = (d.word1 & 0xFFFF);
         return result;
     }
-    static int readop_3(MSP430Disassembler d) {
+    static int readop_2(MSP430Disassembler d) {
         int result = (d.word0 & 0x000F);
         return result;
     }
@@ -67,545 +67,533 @@ public class MSP430Disassembler {
         int result = (d.word0 & 0x03FF);
         return result;
     }
-    static int readop_0(MSP430Disassembler d) {
+    static int readop_1(MSP430Disassembler d) {
         int result = ((d.word0 >>> 8) & 0x000F);
         return result;
     }
-    static int readop_2(MSP430Disassembler d) {
+    static int readop_3(MSP430Disassembler d) {
         int result = (d.word2 & 0xFFFF);
         return result;
     }
-    static class INDSYM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_0(d)]);
-            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_2(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IREGREG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMREG_2_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class AUTOABS_W_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_0(d)]);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
+    static class IMM_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_0(d));
+            return new MSP430AddrMode.IMM(source);
         }
     }
     static class AUTOREG_B_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class SYMABS_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_1(d));
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_2(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class SYMSYM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_1(d));
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_2(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class ABSABS_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_1(d));
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_2(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMIND_2_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMSYM_2_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMREG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.AUTOREG_B(source, dest);
         }
     }
     static class IREGSYM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_0(d)]);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMSYM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_2(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMABS_3_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMM_2_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
-            return d.fill_1(source);
-        }
-    }
-    static class REGABS_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_0(d)]);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class AUTOSYM_W_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_0(d)]);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class ABS_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_1(source);
-        }
-    }
-    static class IMMREG_5_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMSYM_3_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class REGIND_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMIND_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_2(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMIND_4_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class REGSYM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_0(d)]);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class ABSREG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_1(d));
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMM_4_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
-            return d.fill_1(source);
-        }
-    }
-    static class AUTOREG_W_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMABS_2_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMSYM_6_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(8);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IREGIND_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMREG_4_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IND_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
-            return d.fill_1(source);
-        }
-    }
-    static class IMM_5_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
-            return d.fill_1(source);
-        }
-    }
-    static class IMMREG_1_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMM_1_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
-            return d.fill_1(source);
-        }
-    }
-    static class AUTOIND_W_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMABS_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_2(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IREG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_3(d)]);
-            return d.fill_1(source);
-        }
-    }
-    static class AUTOSYM_B_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_0(d)]);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMIND_6_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(8);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMIND_5_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMABS_5_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class JMP_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.JUMP source = new MSP430Operand.JUMP(readop_4(d));
-            return d.fill_1(source);
-        }
-    }
-    static class IMMREG_3_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMSYM_5_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class AUTO_B_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_3(d)]);
-            return d.fill_1(source);
-        }
-    }
-    static class REG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_1(source);
-        }
-    }
-    static class SYMREG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_1(d));
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class AUTO_W_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_3(d)]);
-            return d.fill_1(source);
-        }
-    }
-    static class IMMSYM_1_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMIND_3_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMMREG_6_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(8);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
-        }
-    }
-    static class INDREG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_0(d)]);
-            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_1(d));
-            MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_1(d)]);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.IREGSYM(source, dest);
         }
     }
     static class ABSIND_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_1(d));
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_2(d));
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_0(d));
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_3(d));
             MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
+            return new MSP430AddrMode.ABSIND(source, dest);
         }
     }
-    static class SYM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_1(source);
+    static class REGABS_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_1(d)]);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.REGABS(source, dest);
         }
     }
-    static class IMM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_1(d));
-            return d.fill_1(source);
-        }
-    }
-    static class ABSSYM_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_1(d));
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_2(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class IMM_3_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
-            return d.fill_1(source);
-        }
-    }
-    static class AUTOABS_B_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_0(d)]);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
-        }
-    }
-    static class AUTOIND_B_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
+    static class IMMIND_5_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
             MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
+            return new MSP430AddrMode.IMMIND(source, dest);
+        }
+    }
+    static class IMMREG_1_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IMMREG(source, dest);
+        }
+    }
+    static class IMMIND_4_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.IMMIND(source, dest);
         }
     }
     static class IMM_6_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
+        MSP430AddrMode read(MSP430Disassembler d) {
             MSP430Operand.IMM source = new MSP430Operand.IMM(8);
-            return d.fill_1(source);
+            return new MSP430AddrMode.IMM(source);
         }
     }
-    static class IMMABS_1_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
+    static class REGSYM_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_1(d)]);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.REGSYM(source, dest);
+        }
+    }
+    static class REGIND_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.REGIND(source, dest);
+        }
+    }
+    static class IMMSYM_1_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
             MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.IMMSYM(source, dest);
         }
     }
-    static class IMMABS_4_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
+    static class INDREG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_1(d)]);
+            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.INDREG(source, dest);
+        }
+    }
+    static class ABSABS_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_0(d));
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_3(d));
+            return new MSP430AddrMode.ABSABS(source, dest);
+        }
+    }
+    static class IREGIND_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.IREGIND(source, dest);
+        }
+    }
+    static class IMMREG_6_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(8);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IMMREG(source, dest);
+        }
+    }
+    static class IMM_3_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
+            return new MSP430AddrMode.IMM(source);
+        }
+    }
+    static class IMMREG_4_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
             MSP430Operand.IMM source = new MSP430Operand.IMM(2);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IMMREG(source, dest);
         }
     }
     static class INDABS_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_0(d)]);
-            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_1(d));
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_1(d)]);
+            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_0(d));
             MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_2(d));
-            return d.fill_2(source, dest);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_3(d));
+            return new MSP430AddrMode.INDABS(source, dest);
         }
     }
-    static class REGREG_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_0(d)]);
-            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            return d.fill_2(source, dest);
+    static class IMMIND_2_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.IMMIND(source, dest);
         }
     }
-    static class IREGABS_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_0(d)]);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
+    static class SYMREG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_0(d));
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.SYMREG(source, dest);
+        }
+    }
+    static class ABS_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.ABS(source);
+        }
+    }
+    static class IMMREG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IMMREG(source, dest);
+        }
+    }
+    static class IMMSYM_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_3(d));
+            return new MSP430AddrMode.IMMSYM(source, dest);
+        }
+    }
+    static class IREGREG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IREGREG(source, dest);
         }
     }
     static class INDIND_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_2(d));
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_3(d));
             MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_2(d));
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_3(d));
             MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
+            return new MSP430AddrMode.INDIND(source, dest);
         }
     }
-    static class IMMSYM_4_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
-            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_1(d));
-            return d.fill_2(source, dest);
+    static class REGREG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.REGREG(source, dest);
         }
     }
-    static class IMMABS_6_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
+    static class IMM_1_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
+            return new MSP430AddrMode.IMM(source);
+        }
+    }
+    static class AUTO_B_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.AUTO_B(source);
+        }
+    }
+    static class ABSREG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_0(d));
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.ABSREG(source, dest);
+        }
+    }
+    static class AUTOIND_W_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.AUTOIND_W(source, dest);
+        }
+    }
+    static class AUTOSYM_B_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_1(d)]);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.AUTOSYM_B(source, dest);
+        }
+    }
+    static class IND_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
+            return new MSP430AddrMode.IND(source);
+        }
+    }
+    static class INDSYM_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(SREG_table[readop_1(d)]);
+            MSP430Operand.IMM source_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_3(d));
+            return new MSP430AddrMode.INDSYM(source, dest);
+        }
+    }
+    static class IMMREG_3_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IMMREG(source, dest);
+        }
+    }
+    static class SYM_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.SYM(source);
+        }
+    }
+    static class IREGABS_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_1(d)]);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.IREGABS(source, dest);
+        }
+    }
+    static class IMMSYM_6_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
             MSP430Operand.IMM source = new MSP430Operand.IMM(8);
-            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_1(d));
-            return d.fill_2(source, dest);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.IMMSYM(source, dest);
+        }
+    }
+    static class IMMABS_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_3(d));
+            return new MSP430AddrMode.IMMABS(source, dest);
+        }
+    }
+    static class SYMABS_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_0(d));
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_3(d));
+            return new MSP430AddrMode.SYMABS(source, dest);
         }
     }
     static class SYMIND_0_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
-            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_1(d));
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_2(d));
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_0(d));
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_3(d));
             MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
+            return new MSP430AddrMode.SYMIND(source, dest);
+        }
+    }
+    static class IREG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IREG source = new MSP430Operand.IREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IREG(source);
+        }
+    }
+    static class JMP_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.JUMP source = new MSP430Operand.JUMP(readop_4(d));
+            return new MSP430AddrMode.JMP(source);
+        }
+    }
+    static class IMMABS_3_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.IMMABS(source, dest);
+        }
+    }
+    static class AUTO_W_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.AUTO_W(source);
+        }
+    }
+    static class IMMABS_6_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(8);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.IMMABS(source, dest);
+        }
+    }
+    static class SYMSYM_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SYM source = new MSP430Operand.SYM(readop_0(d));
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_3(d));
+            return new MSP430AddrMode.SYMSYM(source, dest);
         }
     }
     static class IMMIND_1_reader extends OperandReader {
-        MSP430Operand[] read(MSP430Disassembler d) {
+        MSP430AddrMode read(MSP430Disassembler d) {
             MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
-            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_3(d)]);
-            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_1(d));
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
             MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
-            return d.fill_2(source, dest);
+            return new MSP430AddrMode.IMMIND(source, dest);
         }
     }
-    final MSP430Operand[] OPERANDS_0 = new MSP430Operand[0];
-    final MSP430Operand[] OPERANDS_1 = new MSP430Operand[1];
-    final MSP430Operand[] OPERANDS_2 = new MSP430Operand[2];
-    MSP430Operand[] fill_1(MSP430Operand o0){
-        OPERANDS_1[0] = o0;
-        return OPERANDS_1;
+    static class AUTOIND_B_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.AUTOIND_B(source, dest);
+        }
     }
-    MSP430Operand[] fill_2(MSP430Operand o0, MSP430Operand o1){
-        OPERANDS_2[0] = o0;
-        OPERANDS_2[1] = o1;
-        return OPERANDS_2;
+    static class IMMREG_2_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IMMREG(source, dest);
+        }
+    }
+    static class IMMREG_5_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.IMMREG(source, dest);
+        }
+    }
+    static class IMMABS_5_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.IMMABS(source, dest);
+        }
+    }
+    static class IMMIND_3_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.IMMIND(source, dest);
+        }
+    }
+    static class IMM_4_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
+            return new MSP430AddrMode.IMM(source);
+        }
+    }
+    static class IMMSYM_3_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(1);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.IMMSYM(source, dest);
+        }
+    }
+    static class IMMABS_1_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(-1);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.IMMABS(source, dest);
+        }
+    }
+    static class REG_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.SREG source = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.REG(source);
+        }
+    }
+    static class IMMABS_2_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.IMMABS(source, dest);
+        }
+    }
+    static class IMM_2_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
+            return new MSP430AddrMode.IMM(source);
+        }
+    }
+    static class AUTOREG_W_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_1(d)]);
+            MSP430Operand.SREG dest = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            return new MSP430AddrMode.AUTOREG_W(source, dest);
+        }
+    }
+    static class IMMSYM_2_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(0);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.IMMSYM(source, dest);
+        }
+    }
+    static class IMM_5_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
+            return new MSP430AddrMode.IMM(source);
+        }
+    }
+    static class AUTOSYM_W_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_1(d)]);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.AUTOSYM_W(source, dest);
+        }
+    }
+    static class IMMSYM_5_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(4);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.IMMSYM(source, dest);
+        }
+    }
+    static class IMMABS_4_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.IMMABS(source, dest);
+        }
+    }
+    static class AUTOABS_W_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_W source = new MSP430Operand.AIREG_W(SREG_table[readop_1(d)]);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.AUTOABS_W(source, dest);
+        }
+    }
+    static class IMMIND_6_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(8);
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.IMMIND(source, dest);
+        }
+    }
+    static class IMMSYM_4_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(2);
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_0(d));
+            return new MSP430AddrMode.IMMSYM(source, dest);
+        }
+    }
+    static class IMMIND_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.IMM source = new MSP430Operand.IMM(readop_0(d));
+            MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(SREG_table[readop_2(d)]);
+            MSP430Operand.IMM dest_index = new MSP430Operand.IMM(readop_3(d));
+            MSP430Operand.INDX dest = new MSP430Operand.INDX(dest_reg, dest_index);
+            return new MSP430AddrMode.IMMIND(source, dest);
+        }
+    }
+    static class AUTOABS_B_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.AIREG_B source = new MSP430Operand.AIREG_B(SREG_table[readop_1(d)]);
+            MSP430Operand.ABSO dest = new MSP430Operand.ABSO(readop_0(d));
+            return new MSP430AddrMode.AUTOABS_B(source, dest);
+        }
+    }
+    static class ABSSYM_0_reader extends OperandReader {
+        MSP430AddrMode read(MSP430Disassembler d) {
+            MSP430Operand.ABSO source = new MSP430Operand.ABSO(readop_0(d));
+            MSP430Operand.SYM dest = new MSP430Operand.SYM(readop_3(d));
+            return new MSP430AddrMode.ABSSYM(source, dest);
+        }
     }
     
     /**
@@ -636,6 +624,7 @@ public class MSP430Disassembler {
             nodes = n;
         }
         DTNode move(MSP430Disassembler d, int val) {
+            if ( action != null ) action.execute(d);
             return nodes[val];
         }
     }
@@ -656,6 +645,7 @@ public class MSP430Disassembler {
             def = d;
         }
         DTNode move(MSP430Disassembler d, int val) {
+            if ( action != null ) action.execute(d);
             int ind = Arrays.binarySearch(values, val);
             if ( ind >= 0 && ind < values.length && values[ind] == val )
                 return nodes[ind];
@@ -665,19 +655,13 @@ public class MSP430Disassembler {
     }
     
     /**
-     * The <code>DTTerminal</code> class represents a terminal node in the
-     * decoding tree. Terminal nodes are reached when decoding is finished,
-     * and represent either successful decoding (meaning instruction and
-     * addressing mode were discovered) or unsucessful decoding (meaning the
-     * bit pattern does not encode a valid instruction.
+     * The <code>DTErrorTerm</code> class is a node that terminates the
+     * exploration of the instruction decoder with failure.
      */
-    static class DTTerminal extends DTNode {
-        DTTerminal(Action a) {
-            super(a, 0, 0);
-        }
-        DTNode move(MSP430Disassembler d, int val) {
-            d.state = OK;
-            if ( action != null ) action.execute(d);
+    static class DTErrorTerm extends DTNode {
+        DTErrorTerm() { super(null, 0, 0); }
+        DTNode move(MSP430Disassembler d, int bits) {
+            d.state = ERR;
             return this;
         }
     }
@@ -687,7 +671,7 @@ public class MSP430Disassembler {
      * instructions and indicates that the bit pattern was an incorrectly
      * encoded instruction.
      */
-    public static final DTTerminal ERROR = new DTTerminal(new ErrorAction());
+    public static final DTErrorTerm ERROR = new DTErrorTerm();
     
     /**
      * The <code>Action</code> class represents an action that can happen
@@ -714,22 +698,55 @@ public class MSP430Disassembler {
      * appropriate builder for the instruction.
      */
     static class SetBuilder extends Action {
-        MSP430Builder.Single builder;
-        SetBuilder(MSP430Builder.Single b) { builder = b; }
+        MSP430InstrBuilder builder;
+        SetBuilder(MSP430InstrBuilder b) { builder = b; }
         void execute(MSP430Disassembler d) { d.builder = builder; }
     }
     
     /**
      * The <code>SetReader</code> class is an action that is fired when the
      * decoding tree reaches a node where the addressing mode is known. This
-     * action fires and sets the <code>operands</code> field to point the
+     * action fires and sets the <code>addrMode</code> field to point the
      * operands read from the instruction stream.
      */
     static class SetReader extends Action {
         OperandReader reader;
         SetReader(OperandReader r) { reader = r; }
-        void execute(MSP430Disassembler d) { d.operands = reader.read(d); }
+        void execute(MSP430Disassembler d) { d.addrMode = reader.read(d); }
     }
+    
+    /**
+     * The <code>DTLoop</code> class is a node that terminates the
+     * exploration of the decoder when both the instruction and addressing
+     * mode decoders have reached the this state.
+     */
+    static class DTLoop extends DTNode {
+        DTLoop() { super(null, 0, 0); }
+        DTNode move(MSP430Disassembler d, int bits) {
+            if ( d.terminated >= 2 ) d.state = OK;
+            return this;
+        }
+    }
+    
+    /**
+     * The <code>DTTerminal</code> class is a node that terminates the
+     * exploration of the instruction decoder.
+     */
+    static class DTTerminal extends DTNode {
+        DTTerminal(Action a) { super(a, 0, 0); }
+        DTNode move(MSP430Disassembler d, int bits) {
+            d.terminated++;
+            if ( action != null ) action.execute(d);
+            return LOOP;
+        }
+    }
+    
+    /**
+     * The <code>LOOP</code> node is reached when either of the decoder trees
+     * reaches a terminal node. This node essentially waits for both trees to
+     * reach either an OK state  or an ERR state.
+     */
+    public static final DTLoop LOOP = new DTLoop();
     
     /**
      * The <code>OperandReader</code> class is an object that is capable of
@@ -740,7 +757,7 @@ public class MSP430Disassembler {
      * operands from the bit pattern.
      */
     static abstract class OperandReader {
-        abstract MSP430Operand[] read(MSP430Disassembler d);
+        abstract MSP430AddrMode read(MSP430Disassembler d);
     }
     
     /**
@@ -749,16 +766,16 @@ public class MSP430Disassembler {
      * corresponds to one and only one instruction and has a method that can
      * build a new instance of the instruction from the operands.
      */
-    private MSP430Builder.Single builder;
+    private MSP430InstrBuilder builder;
     
     /**
-     * The <code>operands</code> field stores a reference to the operands
+     * The <code>addrMode</code> field stores a reference to the operands
      * that were extracted from the bit pattern as a result of traversing the
      * decoding tree. When a node is reached where the addressing mode is
      * known, then the action on that node executes and reads the operands
      * from the bit pattern, storing them in this field.
      */
-    private MSP430Operand[] operands;
+    private MSP430AddrMode addrMode;
     
     /**
      * The <code>state</code> field controls the execution of the main
@@ -795,8 +812,7 @@ public class MSP430Disassembler {
      * 16-bit words.
      */
     private int word2;
-    int astate;
-    int istate;
+    int terminated;
     
     /**
      * The <code>make_addr0()</code> method creates a new instance of a
@@ -811,9 +827,9 @@ public class MSP430Disassembler {
         DTNode T2 = new DTTerminal(new SetReader(new IMMIND_6_reader()));
         DTNode T3 = new DTTerminal(new SetReader(new IMMSYM_6_reader()));
         DTNode N4 = new DTArrayNode(null, 0, 15, new DTNode[] {T3, T2, T1, T2, T2, T2, T2, T2, T2, T2, T2, T2, T2, T2, T2, T2});
-        DTNode T5 = new DTTerminal(new SetReader(new AUTOABS_W_0_reader()));
-        DTNode T6 = new DTTerminal(new SetReader(new AUTOIND_W_0_reader()));
-        DTNode T7 = new DTTerminal(new SetReader(new AUTOSYM_W_0_reader()));
+        DTNode T5 = new DTTerminal(new SetReader(new AUTOABS_B_0_reader()));
+        DTNode T6 = new DTTerminal(new SetReader(new AUTOIND_B_0_reader()));
+        DTNode T7 = new DTTerminal(new SetReader(new AUTOSYM_B_0_reader()));
         DTNode N8 = new DTArrayNode(null, 0, 15, new DTNode[] {T7, T6, T5, T6, T6, T6, T6, T6, T6, T6, T6, T6, T6, T6, T6, T6});
         DTNode T9 = new DTTerminal(new SetReader(new IMMABS_1_reader()));
         DTNode T10 = new DTTerminal(new SetReader(new IMMIND_1_reader()));
@@ -837,17 +853,17 @@ public class MSP430Disassembler {
         DTNode T28 = new DTTerminal(new SetReader(new IMMSYM_2_reader()));
         DTNode N29 = new DTArrayNode(null, 8, 15, new DTNode[] {T27, T27, T27, T28, T27, T27, T27, T27, T27, T27, T27, T27, T27, T27, T27, T27});
         DTNode N30 = new DTArrayNode(null, 0, 15, new DTNode[] {N29, N26, N23, N26, N26, N26, N26, N26, N26, N26, N26, N26, N26, N26, N26, N26});
-        DTNode T31 = new DTTerminal(new SetReader(new AUTOABS_B_0_reader()));
-        DTNode T32 = new DTTerminal(new SetReader(new AUTOIND_B_0_reader()));
-        DTNode T33 = new DTTerminal(new SetReader(new AUTOSYM_B_0_reader()));
+        DTNode T31 = new DTTerminal(new SetReader(new AUTOABS_W_0_reader()));
+        DTNode T32 = new DTTerminal(new SetReader(new AUTOIND_W_0_reader()));
+        DTNode T33 = new DTTerminal(new SetReader(new AUTOSYM_W_0_reader()));
         DTNode N34 = new DTArrayNode(null, 0, 15, new DTNode[] {T33, T32, T31, T32, T32, T32, T32, T32, T32, T32, T32, T32, T32, T32, T32, T32});
         DTNode N35 = new DTArrayNode(null, 8, 15, new DTNode[] {N16, N34, N4, N12, N34, N34, N34, N34, N34, N34, N34, N34, N34, N34, N34, N34});
         DTNode T36 = new DTTerminal(new SetReader(new IMMREG_6_reader()));
-        DTNode T37 = new DTTerminal(new SetReader(new AUTOREG_B_0_reader()));
+        DTNode T37 = new DTTerminal(new SetReader(new AUTOREG_W_0_reader()));
         DTNode T38 = new DTTerminal(new SetReader(new IMMREG_1_reader()));
         DTNode T39 = new DTTerminal(new SetReader(new IMMREG_0_reader()));
         DTNode N40 = new DTArrayNode(null, 8, 15, new DTNode[] {T39, T37, T36, T38, T37, T37, T37, T37, T37, T37, T37, T37, T37, T37, T37, T37});
-        DTNode T41 = new DTTerminal(new SetReader(new AUTOREG_W_0_reader()));
+        DTNode T41 = new DTTerminal(new SetReader(new AUTOREG_B_0_reader()));
         DTNode N42 = new DTArrayNode(null, 8, 15, new DTNode[] {T39, T41, T36, T38, T41, T41, T41, T41, T41, T41, T41, T41, T41, T41, T41, T41});
         DTNode T43 = new DTTerminal(new SetReader(new IMMREG_5_reader()));
         DTNode T44 = new DTTerminal(new SetReader(new IREGREG_0_reader()));
@@ -891,27 +907,27 @@ public class MSP430Disassembler {
         DTNode N82 = new DTArrayNode(null, 4, 15, new DTNode[] {N20, N68, N46, N40, N20, N68, N46, N42, N30, N63, N81, N35, N30, N63, N81, N17});
         DTNode T83 = new DTTerminal(null);
         DTNode N84 = new DTArrayNode(new SetReader(new JMP_0_reader()), 10, 3, new DTNode[] {T83, T83, T83, T83});
-        DTNode T85 = new DTTerminal(new SetReader(new IMM_6_reader()));
-        DTNode T86 = new DTTerminal(new SetReader(new AUTO_W_0_reader()));
-        DTNode T87 = new DTTerminal(new SetReader(new IMM_1_reader()));
-        DTNode T88 = new DTTerminal(new SetReader(new IMM_0_reader()));
-        DTNode N89 = new DTArrayNode(null, 0, 15, new DTNode[] {T88, T86, T85, T87, T86, T86, T86, T86, T86, T86, T86, T86, T86, T86, T86, T86});
-        DTNode T90 = new DTTerminal(new SetReader(new AUTO_B_0_reader()));
-        DTNode N91 = new DTArrayNode(null, 0, 15, new DTNode[] {T88, T90, T85, T87, T90, T90, T90, T90, T90, T90, T90, T90, T90, T90, T90, T90});
-        DTNode T92 = new DTTerminal(new SetReader(new IMM_5_reader()));
-        DTNode T93 = new DTTerminal(new SetReader(new IREG_0_reader()));
-        DTNode T94 = new DTTerminal(new SetReader(new IMM_4_reader()));
-        DTNode N95 = new DTArrayNode(null, 0, 15, new DTNode[] {T93, T93, T92, T94, T93, T93, T93, T93, T93, T93, T93, T93, T93, T93, T93, T93});
-        DTNode T96 = new DTTerminal(new SetReader(new REG_0_reader()));
-        DTNode T97 = new DTTerminal(new SetReader(new IMM_2_reader()));
-        DTNode N98 = new DTArrayNode(null, 0, 15, new DTNode[] {T96, T96, T96, T97, T96, T96, T96, T96, T96, T96, T96, T96, T96, T96, T96, T96});
+        DTNode T85 = new DTTerminal(new SetReader(new REG_0_reader()));
+        DTNode T86 = new DTTerminal(new SetReader(new IMM_2_reader()));
+        DTNode N87 = new DTArrayNode(null, 0, 15, new DTNode[] {T85, T85, T85, T86, T85, T85, T85, T85, T85, T85, T85, T85, T85, T85, T85, T85});
+        DTNode T88 = new DTTerminal(new SetReader(new IMM_5_reader()));
+        DTNode T89 = new DTTerminal(new SetReader(new IREG_0_reader()));
+        DTNode T90 = new DTTerminal(new SetReader(new IMM_4_reader()));
+        DTNode N91 = new DTArrayNode(null, 0, 15, new DTNode[] {T89, T89, T88, T90, T89, T89, T89, T89, T89, T89, T89, T89, T89, T89, T89, T89});
+        DTNode T92 = new DTTerminal(new SetReader(new IMM_6_reader()));
+        DTNode T93 = new DTTerminal(new SetReader(new AUTO_B_0_reader()));
+        DTNode T94 = new DTTerminal(new SetReader(new IMM_1_reader()));
+        DTNode T95 = new DTTerminal(new SetReader(new IMM_0_reader()));
+        DTNode N96 = new DTArrayNode(null, 0, 15, new DTNode[] {T95, T93, T92, T94, T93, T93, T93, T93, T93, T93, T93, T93, T93, T93, T93, T93});
+        DTNode T97 = new DTTerminal(new SetReader(new AUTO_W_0_reader()));
+        DTNode N98 = new DTArrayNode(null, 0, 15, new DTNode[] {T95, T97, T92, T94, T97, T97, T97, T97, T97, T97, T97, T97, T97, T97, T97, T97});
         DTNode T99 = new DTTerminal(new SetReader(new ABS_0_reader()));
         DTNode T100 = new DTTerminal(new SetReader(new IND_0_reader()));
         DTNode T101 = new DTTerminal(new SetReader(new IMM_3_reader()));
         DTNode T102 = new DTTerminal(new SetReader(new SYM_0_reader()));
         DTNode N103 = new DTArrayNode(null, 0, 15, new DTNode[] {T102, T100, T99, T101, T100, T100, T100, T100, T100, T100, T100, T100, T100, T100, T100, T100});
-        DTNode N104 = new DTSortedNode(null, 4, 255, new int[] {0, 1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19, 28, 29, 30, 31, 44, 45, 46, 47}, new DTNode[] {N98, N103, N95, N91, N98, N103, N95, N89, N98, N103, N95, N91, N98, N103, N95, N89, N98, N103, N95, N89}, N103);
-        DTNode N105 = new DTSortedNode(null, 4, 255, new int[] {48, 49, 50, 51, 52, 53, 54, 55, 72, 73, 74, 75, 76, 77, 78, 79, 132, 133, 134, 135, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151}, new DTNode[] {N98, N103, N95, N91, N98, N103, N95, N89, N98, N103, N95, N91, N98, N103, N95, N89, N98, N103, N95, N89, N98, N103, N95, N89, N98, N103, N95, N91, N98, N103, N95, N89}, N104);
+        DTNode N104 = new DTSortedNode(null, 4, 255, new int[] {4, 5, 6, 7, 8, 9, 10, 11, 20, 21, 22, 23, 24, 25, 26, 27, 40, 41, 42, 43}, new DTNode[] {N87, N103, N91, N96, N87, N103, N91, N98, N87, N103, N91, N96, N87, N103, N91, N98, N87, N103, N91, N98}, ERROR);
+        DTNode N105 = new DTSortedNode(null, 4, 255, new int[] {48, 49, 50, 51, 52, 53, 54, 55, 72, 73, 74, 75, 76, 77, 78, 79, 128, 129, 130, 131, 136, 137, 138, 139, 144, 145, 146, 147, 148, 149, 150, 151}, new DTNode[] {N87, N103, N91, N98, N87, N103, N91, N96, N87, N103, N91, N98, N87, N103, N91, N96, N87, N103, N91, N98, N87, N103, N91, N98, N87, N103, N91, N98, N87, N103, N91, N96}, ERROR);
         DTNode N0 = new DTArrayNode(null, 12, 15, new DTNode[] {N105, N104, N84, N84, N82, N82, N82, N82, N82, N82, N82, N82, N82, N82, N82, N82});
         return N0;
     }
@@ -931,67 +947,67 @@ public class MSP430Disassembler {
      * is stored in a single private static field of the same name.
      */
     static DTNode make_instr0() {
-        DTNode T1 = new DTTerminal(new SetBuilder(MSP430Builder.AND));
-        DTNode T2 = new DTTerminal(new SetBuilder(MSP430Builder.AND_B));
+        DTNode T1 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.AND_B));
+        DTNode T2 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.AND));
         DTNode N3 = new DTArrayNode(null, 4, 15, new DTNode[] {T2, T2, T2, T2, T1, T1, T1, T1, T2, T2, T2, T2, T1, T1, T1, T1});
-        DTNode T4 = new DTTerminal(new SetBuilder(MSP430Builder.MOV));
-        DTNode T5 = new DTTerminal(new SetBuilder(MSP430Builder.MOV_B));
+        DTNode T4 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.MOV_B));
+        DTNode T5 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.MOV));
         DTNode N6 = new DTArrayNode(null, 4, 15, new DTNode[] {T5, T5, T5, T5, T4, T4, T4, T4, T5, T5, T5, T5, T4, T4, T4, T4});
-        DTNode T7 = new DTTerminal(new SetBuilder(MSP430Builder.SUB));
-        DTNode T8 = new DTTerminal(new SetBuilder(MSP430Builder.SUB_B));
+        DTNode T7 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.SUB_B));
+        DTNode T8 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.SUB));
         DTNode N9 = new DTArrayNode(null, 4, 15, new DTNode[] {T8, T8, T8, T8, T7, T7, T7, T7, T8, T8, T8, T8, T7, T7, T7, T7});
-        DTNode T10 = new DTTerminal(new SetBuilder(MSP430Builder.BIT));
-        DTNode T11 = new DTTerminal(new SetBuilder(MSP430Builder.BIT_B));
+        DTNode T10 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.BIT_B));
+        DTNode T11 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.BIT));
         DTNode N12 = new DTArrayNode(null, 4, 15, new DTNode[] {T11, T11, T11, T11, T10, T10, T10, T10, T11, T11, T11, T11, T10, T10, T10, T10});
-        DTNode T13 = new DTTerminal(new SetBuilder(MSP430Builder.JL));
-        DTNode T14 = new DTTerminal(new SetBuilder(MSP430Builder.JGE));
-        DTNode T15 = new DTTerminal(new SetBuilder(MSP430Builder.JMP));
-        DTNode T16 = new DTTerminal(new SetBuilder(MSP430Builder.JN));
+        DTNode T13 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JL));
+        DTNode T14 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JGE));
+        DTNode T15 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JMP));
+        DTNode T16 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JN));
         DTNode N17 = new DTArrayNode(null, 10, 3, new DTNode[] {T16, T14, T13, T15});
-        DTNode T18 = new DTTerminal(new SetBuilder(MSP430Builder.SUBC));
-        DTNode T19 = new DTTerminal(new SetBuilder(MSP430Builder.SUBC_B));
+        DTNode T18 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.SUBC_B));
+        DTNode T19 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.SUBC));
         DTNode N20 = new DTArrayNode(null, 4, 15, new DTNode[] {T19, T19, T19, T19, T18, T18, T18, T18, T19, T19, T19, T19, T18, T18, T18, T18});
-        DTNode T21 = new DTTerminal(new SetBuilder(MSP430Builder.BIC));
-        DTNode T22 = new DTTerminal(new SetBuilder(MSP430Builder.BIC_B));
+        DTNode T21 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.BIC_B));
+        DTNode T22 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.BIC));
         DTNode N23 = new DTArrayNode(null, 4, 15, new DTNode[] {T22, T22, T22, T22, T21, T21, T21, T21, T22, T22, T22, T22, T21, T21, T21, T21});
-        DTNode T24 = new DTTerminal(new SetBuilder(MSP430Builder.JNC));
-        DTNode T25 = new DTTerminal(new SetBuilder(MSP430Builder.JEQ));
-        DTNode T26 = new DTTerminal(new SetBuilder(MSP430Builder.JC));
-        DTNode T27 = new DTTerminal(new SetBuilder(MSP430Builder.JNE));
+        DTNode T24 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JNC));
+        DTNode T25 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JEQ));
+        DTNode T26 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JC));
+        DTNode T27 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.JNE));
         DTNode N28 = new DTArrayNode(null, 10, 3, new DTNode[] {T27, T25, T24, T26});
-        DTNode T29 = new DTTerminal(new SetBuilder(MSP430Builder.BIS));
-        DTNode T30 = new DTTerminal(new SetBuilder(MSP430Builder.BIS_B));
+        DTNode T29 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.BIS_B));
+        DTNode T30 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.BIS));
         DTNode N31 = new DTArrayNode(null, 4, 15, new DTNode[] {T30, T30, T30, T30, T29, T29, T29, T29, T30, T30, T30, T30, T29, T29, T29, T29});
-        DTNode T32 = new DTTerminal(new SetBuilder(MSP430Builder.CMP));
-        DTNode T33 = new DTTerminal(new SetBuilder(MSP430Builder.CMP_B));
+        DTNode T32 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.CMP_B));
+        DTNode T33 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.CMP));
         DTNode N34 = new DTArrayNode(null, 4, 15, new DTNode[] {T33, T33, T33, T33, T32, T32, T32, T32, T33, T33, T33, T33, T32, T32, T32, T32});
-        DTNode T35 = new DTTerminal(new SetBuilder(MSP430Builder.ADDC));
-        DTNode T36 = new DTTerminal(new SetBuilder(MSP430Builder.ADDC_B));
+        DTNode T35 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.ADDC_B));
+        DTNode T36 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.ADDC));
         DTNode N37 = new DTArrayNode(null, 4, 15, new DTNode[] {T36, T36, T36, T36, T35, T35, T35, T35, T36, T36, T36, T36, T35, T35, T35, T35});
-        DTNode T38 = new DTTerminal(new SetBuilder(MSP430Builder.SWPB));
-        DTNode T39 = new DTTerminal(new SetBuilder(MSP430Builder.CALL));
-        DTNode T40 = new DTTerminal(new SetBuilder(MSP430Builder.RRA_B));
-        DTNode T41 = new DTTerminal(new SetBuilder(MSP430Builder.SXT));
-        DTNode T42 = new DTTerminal(new SetBuilder(MSP430Builder.RRC_B));
-        DTNode N43 = new DTSortedNode(null, 4, 255, new int[] {0, 1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19, 28, 29, 30, 31, 44, 45, 46, 47}, new DTNode[] {T42, T42, T42, T42, T38, T38, T38, T38, T40, T40, T40, T40, T41, T41, T41, T41, T39, T39, T39, T39}, T42);
-        DTNode T44 = new DTTerminal(new SetBuilder(MSP430Builder.XOR));
-        DTNode T45 = new DTTerminal(new SetBuilder(MSP430Builder.XOR_B));
+        DTNode T38 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.RRC_B));
+        DTNode T39 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.SWPB));
+        DTNode T40 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.SXT));
+        DTNode T41 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.RRA_B));
+        DTNode T42 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.CALL));
+        DTNode N43 = new DTSortedNode(null, 4, 255, new int[] {4, 5, 6, 7, 8, 9, 10, 11, 20, 21, 22, 23, 24, 25, 26, 27, 40, 41, 42, 43}, new DTNode[] {T38, T38, T38, T38, T39, T39, T39, T39, T41, T41, T41, T41, T40, T40, T40, T40, T42, T42, T42, T42}, ERROR);
+        DTNode T44 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.XOR_B));
+        DTNode T45 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.XOR));
         DTNode N46 = new DTArrayNode(null, 4, 15, new DTNode[] {T45, T45, T45, T45, T44, T44, T44, T44, T45, T45, T45, T45, T44, T44, T44, T44});
-        DTNode T47 = new DTTerminal(new SetBuilder(MSP430Builder.DADD));
-        DTNode T48 = new DTTerminal(new SetBuilder(MSP430Builder.DADD_B));
+        DTNode T47 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.DADD_B));
+        DTNode T48 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.DADD));
         DTNode N49 = new DTArrayNode(null, 4, 15, new DTNode[] {T48, T48, T48, T48, T47, T47, T47, T47, T48, T48, T48, T48, T47, T47, T47, T47});
-        DTNode T50 = new DTTerminal(new SetBuilder(MSP430Builder.ADD));
-        DTNode T51 = new DTTerminal(new SetBuilder(MSP430Builder.ADD_B));
+        DTNode T50 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.ADD_B));
+        DTNode T51 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.ADD));
         DTNode N52 = new DTArrayNode(null, 4, 15, new DTNode[] {T51, T51, T51, T51, T50, T50, T50, T50, T51, T51, T51, T51, T50, T50, T50, T50});
-        DTNode T53 = new DTTerminal(new SetBuilder(MSP430Builder.TST));
-        DTNode T54 = new DTTerminal(new SetBuilder(MSP430Builder.ADC_B));
-        DTNode T55 = new DTTerminal(new SetBuilder(MSP430Builder.PUSH));
-        DTNode T56 = new DTTerminal(new SetBuilder(MSP430Builder.RRA));
-        DTNode T57 = new DTTerminal(new SetBuilder(MSP430Builder.TST_B));
-        DTNode T58 = new DTTerminal(new SetBuilder(MSP430Builder.RRC));
-        DTNode T59 = new DTTerminal(new SetBuilder(MSP430Builder.ADC));
-        DTNode T60 = new DTTerminal(new SetBuilder(MSP430Builder.PUSH_B));
-        DTNode N61 = new DTSortedNode(null, 4, 255, new int[] {48, 49, 50, 51, 52, 53, 54, 55, 72, 73, 74, 75, 76, 77, 78, 79, 132, 133, 134, 135, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151}, new DTNode[] {T54, T54, T54, T54, T59, T59, T59, T59, T57, T57, T57, T57, T53, T53, T53, T53, T58, T58, T58, T58, T56, T56, T56, T56, T60, T60, T60, T60, T55, T55, T55, T55}, T60);
+        DTNode T53 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.RRA));
+        DTNode T54 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.TST_B));
+        DTNode T55 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.PUSH_B));
+        DTNode T56 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.ADC));
+        DTNode T57 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.TST));
+        DTNode T58 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.ADC_B));
+        DTNode T59 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.PUSH));
+        DTNode T60 = new DTTerminal(new SetBuilder(MSP430InstrBuilder.RRC));
+        DTNode N61 = new DTSortedNode(null, 4, 255, new int[] {48, 49, 50, 51, 52, 53, 54, 55, 72, 73, 74, 75, 76, 77, 78, 79, 128, 129, 130, 131, 136, 137, 138, 139, 144, 145, 146, 147, 148, 149, 150, 151}, new DTNode[] {T56, T56, T56, T56, T58, T58, T58, T58, T57, T57, T57, T57, T54, T54, T54, T54, T60, T60, T60, T60, T53, T53, T53, T53, T59, T59, T59, T59, T55, T55, T55, T55}, ERROR);
         DTNode N0 = new DTArrayNode(null, 12, 15, new DTNode[] {N61, N43, N28, N17, N6, N52, N37, N20, N9, N34, N49, N12, N23, N31, N46, N3});
         return N0;
     }
@@ -1016,9 +1032,9 @@ public class MSP430Disassembler {
      * instruction exists here; null otherwise
      */
     public MSP430Instr decode(int base, int index, byte[] code) {
-        word0 = ((code[index + 0] << 0) & 0xFF) | ((code[index + 1] << 8) & 0xFF);
-        word1 = ((code[index + 2] << 0) & 0xFF) | ((code[index + 3] << 8) & 0xFF);
-        word2 = ((code[index + 4] << 0) & 0xFF) | ((code[index + 5] << 8) & 0xFF);
+        word0 = ((code[index + 0] & 0xFF) << 0) | ((code[index + 1] & 0xFF) << 8);
+        word1 = ((code[index + 2] & 0xFF) << 0) | ((code[index + 3] & 0xFF) << 8);
+        word2 = ((code[index + 4] & 0xFF) << 0) | ((code[index + 5] & 0xFF) << 8);
         return decode_root();
     }
     
@@ -1036,9 +1052,9 @@ public class MSP430Disassembler {
      * instruction exists here; null otherwise
      */
     public MSP430Instr decode(int base, int index, char[] code) {
-        word0 = ((code[index + 0] << 0) & 0xFFFF);
-        word1 = ((code[index + 1] << 0) & 0xFFFF);
-        word2 = ((code[index + 2] << 0) & 0xFFFF);
+        word0 = (code[index + 0] << 0);
+        word1 = (code[index + 1] << 0);
+        word2 = (code[index + 2] << 0);
         return decode_root();
     }
     
@@ -1056,9 +1072,9 @@ public class MSP430Disassembler {
      * instruction exists here; null otherwise
      */
     public MSP430Instr decode(int base, int index, short[] code) {
-        word0 = ((code[index + 0] << 0) & 0xFFFF);
-        word1 = ((code[index + 1] << 0) & 0xFFFF);
-        word2 = ((code[index + 2] << 0) & 0xFFFF);
+        word0 = ((code[index + 0] & 0xFFFF) << 0);
+        word1 = ((code[index + 1] & 0xFFFF) << 0);
+        word2 = ((code[index + 2] & 0xFFFF) << 0);
         return decode_root();
     }
     
@@ -1068,7 +1084,7 @@ public class MSP430Disassembler {
      */
     MSP430Instr decode_root() {
         builder = null;
-        operands = null;
+        addrMode = null;
         return run_decoder(addr0, instr0);
     }
     
@@ -1085,14 +1101,13 @@ public class MSP430Disassembler {
      */
     MSP430Instr run_decoder(DTNode addr, DTNode instr) {
         state = MOVE;
-        astate = MOVE;
-        istate = MOVE;
+        terminated = 0;
         while ( state == MOVE ) {
             int bits = (word0 >> addr.left_bit) & addr.mask;
             addr = addr.move(this, bits);
             instr = instr.move(this, bits);
         }
         if ( state == ERR ) return null;
-        else return builder.build(operands);
+        else return builder.build(addrMode);
     }
 }

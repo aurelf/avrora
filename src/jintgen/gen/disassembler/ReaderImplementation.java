@@ -297,19 +297,14 @@ class ReaderImplementation extends GenBase {
         void generateReader() {
             dGen.properties.setProperty("reader", name);
             startblock("static class $reader_reader extends OperandReader");
-            startblock("$operand[] read($disassembler d)");
-            int size = addrMode.operands.size();
+            startblock("$addr read($disassembler d)");
             for ( AddrModeDecl.Operand o : addrMode.operands )
                 generateOperandRead("", o);
-            if ( addrMode.operands.size() == 0 )
-                print("return d.OPERANDS_0;");
-            else {
-                beginList("return d.fill_$1(", size);
-                for ( AddrModeDecl.Operand o : addrMode.operands ) {
-                    print(o.name.image);
-                }
-                endList(");");
+            beginList("return new $addr.$1(", javaName(addrMode.name.image));
+            for ( AddrModeDecl.Operand o : addrMode.operands ) {
+                print(o.name.image);
             }
+            endList(");");
             nextln();
             endblock();
             endblock();
@@ -318,7 +313,7 @@ class ReaderImplementation extends GenBase {
         void generateOperandRead(String prefix, AddrModeDecl.Operand o) {
             String oname = o.name.image;
             String vname = prefix+oname;
-            String vn = vname.replace('.', '_');
+            String vn = javaName(vname);
             OperandTypeDecl td = dGen.arch.getOperandDecl(o.type.image);
             if ( td.isCompound() ) {
                 generateCompound(td, vname);
@@ -334,7 +329,7 @@ class ReaderImplementation extends GenBase {
         private void generateCompound(OperandTypeDecl td, String vname) {
             for ( AddrModeDecl.Operand so : td.subOperands )
                 generateOperandRead(vname+".", so);
-            String vn = vname.replace('.', '_');
+            String vn = javaName(vname);
             beginList("$operand.$1 $2 = new $operand.$1(", td.name, vn);
             for ( AddrModeDecl.Operand so : td.subOperands ) {
                 print(vname+"_"+so.name);
@@ -360,30 +355,6 @@ class ReaderImplementation extends GenBase {
 
         for ( EncodingReader er : encodingInfo.values() )
             er.generateReader();
-
-        for ( int cntr = 0; cntr <= maxoperands; cntr++ ) {
-            //String str = "final "+DisassemblerGenerator.operandClassName+"[] OPERANDS_"+cntr+" = new "+DisassemblerGenerator.operandClassName+"["+cntr+"];";
-            println("final $operand[] OPERANDS_$1 = new $operand[$1];", cntr);
-        }
-
-        generateFills(maxoperands);
-    }
-
-    private void generateFills(int max_operands) {
-        for ( int loop = 1; loop <= max_operands; loop++ ) {
-            beginList("$operand[] fill_$1(", loop);
-            for ( int cntr = 0; cntr < loop; cntr++ ) {
-                print("$operand o$1", cntr);
-            }
-            endList(")");
-            startblock();
-            for ( int cntr = 0; cntr < loop; cntr++ ) {
-                //String str = "OPERANDS_"+loop+"["+cntr+"] = o"+cntr+";";
-                println("OPERANDS_$1[$2] = o$2;", loop, cntr);
-            }
-            println("return OPERANDS_"+loop+";");
-            endblock();
-        }
     }
 
 }

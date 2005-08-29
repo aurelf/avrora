@@ -125,6 +125,7 @@ public class Main {
     }
 
     private static void run(String[] args) throws Exception {
+        banner();
         if (args.length < 1)
             Util.userError("Usage: jintgen <arch.isdl>");
 
@@ -256,15 +257,15 @@ public class Main {
         String notice;
         if (!LICENSE.get())
             notice =
-                    "This simulator and analysis tool is provided with absolutely no " +
+                    "This interpreter generator tool is provided with absolutely no " +
                     "warranty, either expressed or implied. It is provided to you with the hope " +
-                    "that it be useful for evaluation of and experimentation with microcontroller " +
-                    "and sensor network programs. For more information about the license " +
+                    "that it be useful for generating tools to work with machine code programs. " +
+                    "For more information about the license " +
                     "that this software is provided to you under, specify the \"license\" " +
                     "option.\n\n";
         else
             notice =
-                    "Copyright (c) 2003-2005, Regents of the University of California \n" +
+                    "Copyright (c) 2005, Regents of the University of California \n" +
                     "All rights reserved.\n\n" +
 
                     "Redistribution and use in source and binary forms, with or without " +

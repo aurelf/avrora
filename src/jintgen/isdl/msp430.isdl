@@ -676,7 +676,7 @@ architecture msp430 {
 //---------------------------------------------------------------------------
 	
     instruction "adc": SINGLE_W {
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
         execute {
             local r1: int       = read(source);
@@ -694,7 +694,7 @@ architecture msp430 {
     }
 
     instruction "adc.b": SINGLE_B {
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
         execute {
             local r1: int       = read(source);
@@ -714,7 +714,7 @@ architecture msp430 {
 
 
     instruction "add": DOUBLE_W {
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b0101;
         execute {
             local r1: short = read(source);
@@ -725,7 +725,7 @@ architecture msp430 {
     }
 
     instruction "add.b": DOUBLE_B {
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0101;
         execute {
             local r1: byte = read(source);
@@ -736,7 +736,7 @@ architecture msp430 {
     }
 
     instruction "addc": DOUBLE_W {
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0110;
         execute {
             local r1: short = read(source);
@@ -747,7 +747,7 @@ architecture msp430 {
     }
 
     instruction "addc.b": DOUBLE_B {
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0110;
     	execute {
             local r1: byte = read(source);
@@ -758,7 +758,7 @@ architecture msp430 {
     }
 
     instruction "and": DOUBLE_W {
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1111;
 	    execute {
             local r1: short = read(source);
@@ -769,7 +769,7 @@ architecture msp430 {
     }
 
     instruction "and.b": DOUBLE_B {
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1111;
 	    execute {
             local r1: byte = read(source);
@@ -780,7 +780,7 @@ architecture msp430 {
     }
 
     instruction "bic": DOUBLE_W {    //logical and on inverted source and dest
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1100;                        //status bits are not affected
 	    execute {
             write(dest, ~(read(source)) & read(dest));
@@ -788,7 +788,7 @@ architecture msp430 {
     }
 
     instruction "bic.b": DOUBLE_B {    //logical and on inverted source and dest
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1100;                        //status bits are not affected
 	    execute {
             write(dest, ~(read(source)) & read(dest));
@@ -796,7 +796,7 @@ architecture msp430 {
     }
 
     instruction "bis": DOUBLE_W {   //logical or on source and dest
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b1101;                       //status bits not affected
         execute {
             write(dest, read(source) | read(dest));
@@ -804,7 +804,7 @@ architecture msp430 {
      }
 
     instruction "bis.b": DOUBLE_B {   //logical or on source and dest
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b1101;                       //status bits not affected
         execute {
             write(dest, read(source) | read(dest));
@@ -812,14 +812,6 @@ architecture msp430 {
      }
 
     instruction "bit": DOUBLE_W {   //test bits in dest by anding source
-	    property bw: int = 1;
-	    property opcode: int = 0b1011;                         //with dest and affecting only status bits
-	    execute {
-	        performAndW(read(source), read(dest));
-        }
-    }
-
-    instruction "bit.b": DOUBLE_B {   //test bits in dest by anding source
 	    property bw: int = 0;
 	    property opcode: int = 0b1011;                         //with dest and affecting only status bits
 	    execute {
@@ -827,8 +819,16 @@ architecture msp430 {
         }
     }
 
-    pseudo instruction "br": SINGLE_W {  //uncondtional branch emulated by moving
+    instruction "bit.b": DOUBLE_B {   //test bits in dest by anding source
 	    property bw: int = 1;
+	    property opcode: int = 0b1011;                         //with dest and affecting only status bits
+	    execute {
+	        performAndW(read(source), read(dest));
+        }
+    }
+
+    pseudo instruction "br": SINGLE_W {  //uncondtional branch emulated by moving
+	    property bw: int = 0;
 	    property opcode: int = 0b0100;                     //operand to Program counter
 	    execute {
 		    // emulated by MOV instruction
@@ -838,7 +838,7 @@ architecture msp430 {
 
     instruction "call": SINGLE_W {     //calls a subroutine from 64k address space
         // TODO: double check this opcode
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b000100101;          //stores old pc on TOS while jumping to subroutine
 	    execute {
             local temp: int = read(source);  //r1 is the SP, r0 is the PC
@@ -848,7 +848,7 @@ architecture msp430 {
     }
 
     pseudo instruction "clr": SINGLE_W {             //emulated by MOV instruction
-	    property bw: int = 1;
+	    property bw: int = 0;
     	property opcode: int = 0b0100;
         execute {
             // note: the read is necessary for the auto-increment operands
@@ -858,7 +858,7 @@ architecture msp430 {
     }
 
     pseudo instruction "clr.b": SINGLE_B {           //emulated by MOV instruction
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b0100;
 	    execute {
             // note: the read is necessary for the auto-increment operands
@@ -869,7 +869,7 @@ architecture msp430 {
 
 
     pseudo instruction "clrc" {               //clear carry bit by anding with #1
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1100;
         execute {
 		    //emulated by BIC instruction
@@ -878,7 +878,7 @@ architecture msp430 {
     }
 
     pseudo instruction "clrn" {             //clear neg. bit by anding with #4
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1100;
         execute {
        		//emulated by BIC instruction
@@ -887,7 +887,7 @@ architecture msp430 {
     }
 
     pseudo instruction "clrz" {
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b1100;
         execute {
     		//emulated by BIC instruction
@@ -896,7 +896,7 @@ architecture msp430 {
     }
 
     instruction "cmp": DOUBLE_W {      // compares 2 operands by
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1001;                   // adding source with inverted dest
 	    execute {                        // and adding 1 to the result
 	        performAdditionW(read(source), ~(read(dest)), 1);
@@ -904,7 +904,7 @@ architecture msp430 {
     }
 
     instruction "cmp.b": DOUBLE_B {    // compares 2 operands by
-	    property bw: int = 0;
+	    property bw: int = 1;
     	property opcode: int = 0b1001;                   // adding source with inverted dest
 	    execute {                        // and adding 1 to the result
 	        performAddition(read(source), ~(read(dest)), 1);
@@ -912,7 +912,7 @@ architecture msp430 {
     }
 
     pseudo instruction "dadc": SINGLE_W {   // add carry decimally to dest
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1010;                 // emulated by DADD instruction
 	    execute {
 	        write(source, performDeciAddCW(0, read(source), bit(C)));
@@ -920,7 +920,7 @@ architecture msp430 {
     }
 
     pseudo instruction "dadc.b": SINGLE_B {   // add carry decimally to dest
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1010;                   // emulated by DADD instruction
 	    execute {
 	        write(source, performDeciAddC(0, read(source), bit(C)));
@@ -928,7 +928,7 @@ architecture msp430 {
     }
 
     instruction "dadd": DOUBLE_W {  //source and carry added decimally to dest
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1010;
 	    execute {
 	        write(dest, performDeciAddCW(read(source), read(dest), bit(C)));
@@ -936,7 +936,7 @@ architecture msp430 {
     }
 
     instruction "dadd.b": DOUBLE_B {  //source and carry added decimally to dest
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1010;
 	    execute {
 	        write(dest, performDeciAddC(read(source), read(dest), bit(C)));
@@ -944,7 +944,7 @@ architecture msp430 {
     }
 
     pseudo instruction "dec": SINGLE_W  {
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1000;        // emulated by subtraction operation
 	    execute {
 	        local original: short = read(source);
@@ -955,7 +955,7 @@ architecture msp430 {
     }
 
     pseudo instruction "dec.b": SINGLE_B  {
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1000;        //emulated by subtraction operation
 	    execute {
 	        local original: byte = read(source);
@@ -966,7 +966,7 @@ architecture msp430 {
     }
 
     pseudo instruction "decd": SINGLE_W {
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1000;         //emulated by subtraction  operation
 	    execute {
  	        local original: short = read(source);
@@ -977,7 +977,7 @@ architecture msp430 {
     }
 
     pseudo instruction "decd.b": SINGLE_B {
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1000;         //emulated by subtraction  operation
 	    execute {
  	        local original: byte = read(source);
@@ -988,7 +988,7 @@ architecture msp430 {
     }
 
     pseudo instruction "dint" {       // disable general interrupts
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b1100;       // emulated by BIC operation
 	    execute {
 	        disableInterrupts();
@@ -996,7 +996,7 @@ architecture msp430 {
     }
 
     pseudo instruction "eint" {       // enable general interrupts
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1101;       // emulated by BIS operation
 	    execute {
 	        enableInterrupts();
@@ -1004,7 +1004,7 @@ architecture msp430 {
     }
 
     pseudo instruction "inc": SINGLE_W {     // increment dest
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b0101;                  // emulated by ADD operation
 	    execute {
 	        write(source, performAdditionW(read(source), 1, 0));
@@ -1012,7 +1012,7 @@ architecture msp430 {
     }
 
     pseudo instruction "inc.b": SINGLE_B {     // increment dest
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b0101;                    // emulated by ADD operation
 	    execute {
 	        write(source, performAdditionW(read(source), 1, 0));
@@ -1027,7 +1027,7 @@ architecture msp430 {
     }
 
     pseudo instruction "incd.b": SINGLE_B {      //double increment dest
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b0101;	    //emulated by ADD operation
 	    execute {
 	        write(source, performAdditionW(read(source), 2, 0));
@@ -1035,7 +1035,7 @@ architecture msp430 {
     }
 
     pseudo instruction "inv": SINGLE_W  {       //invert dest
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b1110;    //emulated by XOR operation
 	    execute {
    	        local result: int = ~(read(source));
@@ -1048,7 +1048,7 @@ architecture msp430 {
     }
 
     pseudo instruction "inv.b": SINGLE_B  {       //invert dest
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1110;    //emulated by XOR operation
 	    execute {
    	        local result: int = ~(read(source));
@@ -1173,7 +1173,7 @@ architecture msp430 {
     }
 
     instruction "mov": DOUBLE_W {  //move source to dest
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0100;
         execute {
             write(dest, read(source));
@@ -1181,7 +1181,7 @@ architecture msp430 {
     }
 
     instruction "mov.b": DOUBLE_B {  //move source to dest
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0100;
         execute {
             write(dest, read(source));
@@ -1195,7 +1195,7 @@ architecture msp430 {
     }
 
     pseudo instruction "pop": SINGLE_W  {  // pop word from stack to dest
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0100;   // emulated by MOV operation
         execute {
             write(source, popWord());         // move temp to dest
@@ -1203,7 +1203,7 @@ architecture msp430 {
     }
 
     pseudo instruction "pop.b": SINGLE_B  {  //pop byte from stack to dest
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0100;   //emulated by MOV operation
         execute {
             write(source, popByte());         // move temp to dest
@@ -1211,7 +1211,7 @@ architecture msp430 {
     }
 
     instruction "push": SINGLE_W {  //push word onto stack
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b00010010;
         execute {
             pushWord(read(source));
@@ -1219,7 +1219,7 @@ architecture msp430 {
     }
 
     instruction "push.b": SINGLE_B {  //push byte onto stack
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b00010010;
         execute {
             pushByte(read(source));
@@ -1242,7 +1242,7 @@ architecture msp430 {
     }
 
     pseudo instruction "rla": SINGLE_W {    // rotate left arithmetically
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0101;            // emulated by add instruction (add dst, dst)
         execute {
             local dest: short = read(source);
@@ -1256,7 +1256,7 @@ architecture msp430 {
     }
 
     pseudo instruction "rla.b": SINGLE_B {    // rotate left arithmetically
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0101;                   // emulated by add instruction (add dst, dst)
         execute {
             local dest: int = read(source);
@@ -1270,7 +1270,7 @@ architecture msp430 {
     }
 
     pseudo instruction "rlc": SINGLE_W {    //rotate left through carry
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
         execute {
             local dest: short = read(source);
@@ -1286,7 +1286,7 @@ architecture msp430 {
      }
 
     pseudo instruction "rlc.b": SINGLE_B {    //rotate left through carry
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
         execute {
             local dest: int = read(source);
@@ -1301,7 +1301,7 @@ architecture msp430 {
      }
 
     instruction "rra": SINGLE_W  {     //rotate right arithmetically
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b00010001;
         execute {
             local temp: short = read(source);
@@ -1315,7 +1315,7 @@ architecture msp430 {
     }
 
     instruction "rra.b": SINGLE_B  {     //rotate right arithmetically
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b000100010;
         execute {
             local temp: byte = read(source);
@@ -1329,7 +1329,7 @@ architecture msp430 {
     }
 
     instruction "rrc": SINGLE_W  {    //rotate right through carry
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b00010000;
         execute {
             local temp: short = read(source);
@@ -1344,7 +1344,7 @@ architecture msp430 {
     }
 
     instruction "rrc.b": SINGLE_B  {    //rotate right through carry
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b000100000;
         execute {
             local temp: byte = read(source);
@@ -1359,7 +1359,7 @@ architecture msp430 {
     }
 
     pseudo instruction "sbc": SINGLE_W {    // subtract source and borrow/.NOT. carry from dest
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0111;                 // emulated by SUBC instruction
         execute {
             local dest: short = read(source);
@@ -1375,7 +1375,7 @@ architecture msp430 {
     }
 
     pseudo instruction "sbc.b": SINGLE_B {    //subtract source and borrow/.NOT. carry from dest
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0111;      //emulated by SUBC instruction
         execute {
             local dest: byte = read(source);
@@ -1411,7 +1411,7 @@ architecture msp430 {
     }
 
     instruction "sub": DOUBLE_W {   //subtract source from dest
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b1000;
         execute {
             local r1: short = read(source);
@@ -1422,7 +1422,7 @@ architecture msp430 {
     }
 
     instruction "sub.b": DOUBLE_B {   //subtract source from dest
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b1000;
         execute {
             local r1: byte = read(source);
@@ -1433,7 +1433,7 @@ architecture msp430 {
     }
 
     instruction "subc": DOUBLE_W  {    //sub source and borrow/.NOT. carry from dest
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b0111;
         execute {
             local r1: short = read(source);
@@ -1444,7 +1444,7 @@ architecture msp430 {
     }
 
     instruction "subc.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0111;
         execute {
             local r1: byte = read(source);
@@ -1455,7 +1455,7 @@ architecture msp430 {
     }
 
     pseudo instruction "sbb" : DOUBLE_W  {    //sub source and borrow/.NOT. carry from dest
-	    property bw: int = 1;
+	    property bw: int = 0;
 	    property opcode: int = 0b0111;                         //same operation as SUBC, different syntax
 	    execute {
             local r1: short = read(source);
@@ -1466,7 +1466,7 @@ architecture msp430 {
     }
 
     pseudo instruction "sbb.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b0111;                            //same operation as SUBC, different syntax
         execute {
             local r1: byte = read(source);
@@ -1477,7 +1477,7 @@ architecture msp430 {
     }
 
     instruction "swpb": SINGLE_W {   //swap bytes
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b000100001;
         execute {
            local temp1: short = read(source);   //contains original
@@ -1489,7 +1489,7 @@ architecture msp430 {
     }
 
     instruction "sxt": SINGLE_W {  //extend sign
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b000100011;
         execute {
             local r1: short = read(source);
@@ -1503,7 +1503,7 @@ architecture msp430 {
     }
 
     instruction "tst": SINGLE_W {  //test destination
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b1001;
         execute {
             local r1: int = read(source);
@@ -1515,7 +1515,7 @@ architecture msp430 {
     }
 
     instruction "tst.b": SINGLE_B {  //test destination
-	    property bw: int = 0;
+	    property bw: int = 1;
         property opcode: int = 0b1001;
         execute {
             local r1: int = read(source);
@@ -1527,7 +1527,7 @@ architecture msp430 {
     }
 
     instruction "xor": DOUBLE_W {  //Exclusive OR of source with dest
-	    property bw: int = 1;
+	    property bw: int = 0;
         property opcode: int = 0b1110;
         execute {
             local source: int = read(source);
@@ -1542,7 +1542,7 @@ architecture msp430 {
     }
 
     instruction "xor.b": DOUBLE_B {  //Exclusive OR of source with dest
-	    property bw: int = 0;
+	    property bw: int = 1;
 	    property opcode: int = 0b1110;
 	    execute {
             local source: int = read(source);

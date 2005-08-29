@@ -207,6 +207,7 @@ public class Verifier {
                 if ( am == null )
                     ERROR.UnresolvedAddressingMode(t);
                 as.addrModes.add(am);
+                am.joinSet(as);
                 unifyAddressingMode(unions, am, as, alloperands, t);
             }
 

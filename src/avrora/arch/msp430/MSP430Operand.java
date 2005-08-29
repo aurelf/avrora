@@ -77,7 +77,7 @@ public interface MSP430Operand {
         public static final int high = 65536;
         public final int value;
         IMM(int val) {
-            value = MSP430Builder.checkValue(val, low, high);
+            value = MSP430InstrBuilder.checkValue(val, low, high);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
@@ -101,7 +101,7 @@ public interface MSP430Operand {
         public static final int high = 65535;
         public final int value;
         SYM(int val) {
-            value = MSP430Builder.checkValue(val, low, high);
+            value = MSP430InstrBuilder.checkValue(val, low, high);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
@@ -113,7 +113,7 @@ public interface MSP430Operand {
         public static final int high = 65535;
         public final int value;
         ABSO(int val) {
-            value = MSP430Builder.checkValue(val, low, high);
+            value = MSP430InstrBuilder.checkValue(val, low, high);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
@@ -125,7 +125,7 @@ public interface MSP430Operand {
         public static final int high = 1023;
         public final int value;
         JUMP(int val) {
-            value = MSP430Builder.checkValue(val, low, high);
+            value = MSP430InstrBuilder.checkValue(val, low, high);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);

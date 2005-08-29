@@ -1383,22 +1383,22 @@ architecture avr {
         write: short { $wregs(r30) = value; }
     }
 
-    addr-mode XLPM dest: R0_B, source: RZ_W { // load from flash at address Z into R0
+    addr-mode XLPM_REG dest: R0_B, source: RZ_W { // load from flash at address Z into R0
         encoding = { 0b10010101, 0b110, extended[0], 0b1000 }
         property syntax: String = "";
     }
 
-    addr-mode XLPMD dest: GPR, source: RZ_W { // load from flash at address Z into rd
+    addr-mode XLPM_D dest: GPR, source: RZ_W { // load from flash at address Z into rd
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b0 }
         property syntax: String = "%dest, %source";
     }
 
-    addr-mode XLPMPI dest: GPR, source: AI_RZ_W { // load from flash at address Z into rd and increment Z
+    addr-mode XLPM_INC dest: GPR, source: AI_RZ_W { // load from flash at address Z into rd and increment Z
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b1 }
         property syntax: String = "%dest, %source+";
     }
 
-    addr-set XLPM { XLPM, XLPMD, XLPMPI } // addressing modes for LPM, ELPM
+    addr-set XLPM { XLPM_REG, XLPM_D, XLPM_INC } // addressing modes for LPM, ELPM
 
     operand-type XYZ[0]: ADR { // simply read from X, Y, or Z
         read: int { return $aregs(this); }

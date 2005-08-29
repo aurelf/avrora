@@ -110,9 +110,11 @@ public class DisassemblerGenerator extends Generator {
                 "been generated automatically by jIntGen from a file containing a description of the instruction " +
                 "set and their encodings.\n\n" +
                 "The following options have been specified to tune this implementation:\n\n" +
-                "</p>-word-size="+WORD.get()+"\n"+
-                "</p>-parallel-trees="+PARALLEL_TREE.get()+"\n"+
-                "</p>-multiple-trees="+MULTI_TREE.get()+"\n")));
+                "</p>-word-size=$1\n"+
+                "</p>-parallel-trees=$2\n"+
+                "</p>-multiple-trees=$3\n"+
+                "</p>-chained-trees=$4\n",
+                        WORD.get(), PARALLEL_TREE.get(), MULTI_TREE.get(), CHAINED.get())));
 
         generateHeader();
         generateDecodeTables();
@@ -144,11 +146,12 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private void initStatics() {
+        properties.setProperty("addr", className("AddrMode"));
         properties.setProperty("instr", className("Instr"));
         properties.setProperty("operand", className("Operand"));
         properties.setProperty("opvisitor", className("OperandVisitor"));
         properties.setProperty("visitor", className("InstrVisitor"));
-        properties.setProperty("builder", className("Builder"));
+        properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
         properties.setProperty("disassembler", className("Disassembler"));
 
@@ -192,7 +195,7 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private String encodingName(AddrModeDecl am, int cntr) {
-        return (am.name+"_"+cntr).replace('"', '$').replace('.', '_');
+        return javaName(am.name+"_"+cntr);
     }
 
     private void generateHeader() {

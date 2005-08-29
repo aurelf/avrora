@@ -129,7 +129,7 @@ abstract class Decoder extends GenBase {
                     "into an instruction.");
             startblock("$instr decode_root()");
             println("builder = null;");
-            println("operands = null;");
+            println("addrMode = null;");
             if ( !multiple ) {
                 println("return run_decoder(addr0, instr0);");
             } else {
@@ -154,15 +154,14 @@ abstract class Decoder extends GenBase {
                     "bits and begins decoding from there.\n");
             startblock("$instr run_decoder(DTNode addr, DTNode instr)");
             println("state = MOVE;");
-            println("astate = MOVE;");
-            println("istate = MOVE;");
+            println("terminated = 0;");
             startblock("while ( state == MOVE )");
             println("int bits = (word0 >> addr.left_bit) & addr.mask;");
             println("addr = addr.move(this, bits);");
             println("instr = instr.move(this, bits);");
             endblock();
             println("if ( state == ERR ) return null;");
-            println("else return builder.build(operands);");
+            println("else return builder.build(addrMode);");
             endblock();
         }
 
@@ -172,24 +171,51 @@ abstract class Decoder extends GenBase {
                     "reaches a node where the instruction is known. This action fires and sets the <code>builder</code> " +
                     "field to point the appropriate builder for the instruction.");
             startblock("static class SetBuilder extends Action");
-            println("$builder.Single builder;");
-            println("SetBuilder($builder.Single b) { builder = b; }");
+            println("$builder builder;");
+            println("SetBuilder($builder b) { builder = b; }");
             println("void execute($disassembler d) { d.builder = builder; }");
             endblock();
 
             generateJavaDoc("The <code>SetReader</code> class is an action that is fired when the decoding tree " +
                     "reaches a node where the addressing mode is known. This action fires and sets the " +
-                    "<code>operands</code> field to point the operands read from the instruction stream.");
+                    "<code>addrMode</code> field to point the operands read from the instruction stream.");
             startblock("static class SetReader extends Action");
             println("OperandReader reader;");
             println("SetReader(OperandReader r) { reader = r; }");
-            println("void execute($disassembler d) { d.operands = reader.read(d); }");
+            println("void execute($disassembler d) { d.addrMode = reader.read(d); }");
             endblock();
+
+            generateJavaDoc("The <code>DTLoop</code> class is a node that terminates the exploration " +
+                    "of the decoder when both the instruction and addressing mode decoders have reached " +
+                    "the this state.");
+            startblock("static class DTLoop extends DTNode");
+            println("DTLoop() { super(null, 0, 0); }");
+            startblock("DTNode move($disassembler d, int bits)");
+            println("if ( d.terminated >= 2 ) d.state = OK;");
+            println("return this;");
+            endblock();
+            endblock();
+
+            generateJavaDoc("The <code>DTTerminal</code> class is a node that terminates the exploration " +
+                    "of the instruction decoder.");
+            startblock("static class DTTerminal extends DTNode");
+            println("DTTerminal(Action a) { super(a, 0, 0); }");
+            startblock("DTNode move($disassembler d, int bits)");
+            println("d.terminated++;");
+            println("if ( action != null ) action.execute(d);");
+            println("return LOOP;");
+            endblock();
+            endblock();
+
+            generateJavaDoc("The <code>LOOP</code> node is reached when either of the decoder trees reaches " +
+                    "a terminal node. This node essentially waits for both trees to reach either an OK state " +
+                    " or an ERR state.");
+            println("public static final DTLoop LOOP = new DTLoop();");
+
         }
 
         void generateSpecialFields() {
-            println("int astate;");
-            println("int istate;");
+            println("int terminated;");
         }
 
     }
@@ -229,7 +255,7 @@ abstract class Decoder extends GenBase {
                     "into an instruction.");
             startblock("$instr decode_root()");
             println("builder = null;");
-            println("operands = null;");
+            println("addrMode = null;");
             if ( chained || !multiple ) {
                 println("return run_decoder(root0);");
             } else {
@@ -251,29 +277,56 @@ abstract class Decoder extends GenBase {
                     "@param node a reference to the root of the decoder where to begin decoding");
             startblock("private $instr run_decoder(DTNode node)");
             println("builder = null;");
-            println("operands = null;");
+            println("addrMode = null;");
             println("state = MOVE;");
             startblock("while ( state == MOVE )");
             println("int bits = (word0 >> node.left_bit) & node.mask;");
             println("node = node.move(this, bits);");
             endblock();
             println("if ( state == ERR ) return null;");
-            println("else return builder.build(operands);");
+            println("else return builder.build(addrMode);");
             endblock();
         }
 
         void generateSpecialActions() {
+            generateJavaDoc("The <code>DTTerm</code> class represents a terminal node in the decoding " +
+                    "tree. Terminal nodes are reached when decoding is finished, and represent either " +
+                    "successful decoding (meaning instruction and addressing mode were discovered) or " +
+                    "unsucessful decoding (meaning the bit pattern does not encode a valid instruction.");
+            startblock("static class DTTerm extends DTNode");
+            startblock("DTTerm(Action a)");
+            println("super(a, 0, 0);");
+            endblock();
+            startblock("DTNode move($disassembler d, int val)");
+            println("d.state = OK;");
+            println("if ( action != null ) action.execute(d);");
+            println("return this;");
+            endblock();
+            endblock();
+
             generateJavaDoc("The <code>SetBuilderAndRead</code> class is an action that is fired when the " +
                     "decoding tree reaches a node where both the instruction and encoding are known. This action " +
                     "fires and sets the <code>builder</code> field to point the appropriate builder for the " +
-                    "instruction, as well as setting the <code>operands</code> field to point to the operands " +
+                    "instruction, as well as setting the <code>addrMode</code> field to point to the operands " +
                     "extracted from the instruction stream.");
             startblock("static class SetBuilderAndRead extends Action");
-            println("$builder.Single builder;");
+            println("$builder builder;");
             println("OperandReader reader;");
-            println("SetBuilderAndRead($builder.Single b, OperandReader r) { builder = b; reader = r; }");
-            println("void execute($disassembler d) { d.builder = builder; d.operands = reader.read(d); }");
+            println("SetBuilderAndRead($builder b, OperandReader r) { builder = b; reader = r; }");
+            println("void execute($disassembler d) { d.builder = builder; d.addrMode = reader.read(d); }");
             endblock();
+
+            generateJavaDoc("The <code>DTTerminal</code> class is a node that terminates the exploration " +
+                    "of the decoder.");
+            startblock("static class DTTerminal extends DTNode");
+            println("DTTerminal(Action a) { super(a, 0, 0); }");
+            startblock("DTNode move($disassembler d, int bits)");
+            println("d.state = OK;");
+            println("if ( action != null ) action.execute(d);");
+            println("return this;");
+            endblock();
+            endblock();
+
         }
 
         void generateSpecialFields() {
@@ -343,6 +396,7 @@ abstract class Decoder extends GenBase {
         println("nodes = n;");
         endblock();
         startblock("DTNode move($disassembler d, int val)");
+        println("if ( action != null ) action.execute(d);");
         println("return nodes[val];");
         endblock();
         endblock();
@@ -360,6 +414,7 @@ abstract class Decoder extends GenBase {
         println("def = d;");
         endblock();
         startblock("DTNode move($disassembler d, int val)");
+        println("if ( action != null ) action.execute(d);");
         println("int ind = Arrays.binarySearch(values, val);");
         println("if ( ind >= 0 && ind < values.length && values[ind] == val )");
         println("    return nodes[ind];");
@@ -368,24 +423,19 @@ abstract class Decoder extends GenBase {
         endblock();
         endblock();
 
-        generateJavaDoc("The <code>DTTerminal</code> class represents a terminal node in the decoding " +
-                "tree. Terminal nodes are reached when decoding is finished, and represent either " +
-                "successful decoding (meaning instruction and addressing mode were discovered) or " +
-                "unsucessful decoding (meaning the bit pattern does not encode a valid instruction.");
-        startblock("static class DTTerminal extends DTNode");
-        startblock("DTTerminal(Action a)");
-        println("super(a, 0, 0);");
-        endblock();
-        startblock("DTNode move($disassembler d, int val)");
-        println("d.state = OK;");
-        println("if ( action != null ) action.execute(d);");
+        generateJavaDoc("The <code>DTErrorTerm</code> class is a node that terminates the exploration " +
+                "of the instruction decoder with failure.");
+        startblock("static class DTErrorTerm extends DTNode");
+        println("DTErrorTerm() { super(null, 0, 0); }");
+        startblock("DTNode move($disassembler d, int bits)");
+        println("d.state = ERR;");
         println("return this;");
         endblock();
         endblock();
 
         generateJavaDoc("The <code>ERROR</code> node is reached for incorrectly encoded instructions and indicates " +
                 "that the bit pattern was an incorrectly encoded instruction.");
-        println("public static final DTTerminal ERROR = new DTTerminal(new ErrorAction());");
+        println("public static final DTErrorTerm ERROR = new DTErrorTerm();");
 
         generateActionClasses();
 
@@ -395,7 +445,7 @@ abstract class Decoder extends GenBase {
                 "finally known, an action will fire that sets the operand reader which is used to read " +
                 "the operands from the bit pattern.");
         startblock("static abstract class OperandReader");
-        println("abstract $operand[] read($disassembler d);");
+        println("abstract $addr read($disassembler d);");
         endblock();
     }
 
@@ -421,12 +471,12 @@ abstract class Decoder extends GenBase {
                 "discovered as a result of traversing the decoder tree. The builder corresponds to one " +
                 "and only one instruction and has a method that can build a new instance of the instruction " +
                 "from the operands.");
-        println("private $builder.Single builder;");
-        generateJavaDoc("The <code>operands</code> field stores a reference to the operands that were " +
+        println("private $builder builder;");
+        generateJavaDoc("The <code>addrMode</code> field stores a reference to the operands that were " +
                 "extracted from the bit pattern as a result of traversing the decoding tree. When a node is " +
                 "reached where the addressing mode is known, then the action on that node executes and " +
                 "reads the operands from the bit pattern, storing them in this field.");
-        println("private $operand[] operands;");
+        println("private $addr addrMode;");
         generateJavaDoc("The <code>state</code> field controls the execution of the main decoder loop. When " +
                 "the decoder begins execution, the state field is set to <code>MOVE</code>. The decoder " +
                 "continues until an action fires or a terminal node is reached that sets this field to " +
@@ -446,14 +496,14 @@ abstract class Decoder extends GenBase {
     }
 
     void generateEntryPoints() {
-        generateArrayEntryPoint("byte", 8);
-        generateArrayEntryPoint("char", 16);
-        generateArrayEntryPoint("short", 16);
-        generateArrayEntryPoint("int", 32);
-        generateArrayEntryPoint("long", 64);
+        generateArrayEntryPoint("byte", 8, true);
+        generateArrayEntryPoint("char", 16, false);
+        generateArrayEntryPoint("short", 16, true);
+        generateArrayEntryPoint("int", 32, true);
+        generateArrayEntryPoint("long", 64, true);
     }
 
-    void generateArrayEntryPoint(String type, int elemSize) {
+    void generateArrayEntryPoint(String type, int elemSize, boolean signed) {
         if ( DisassemblerGenerator.WORD_SIZE < elemSize ) return;
         generateJavaDoc(tr("The <code>decode()</code> method is the main entrypoint to the disassembler. " +
                 "Given an array of type <code>$1[]</code>, a base address, and an index, the disassembler will attempt to " +
@@ -468,20 +518,23 @@ abstract class Decoder extends GenBase {
         int num = DisassemblerGenerator.WORD_SIZE / elemSize;
         for ( int cntr = 0; cntr < dGen.maxInstrLength - 1; cntr += DisassemblerGenerator.WORD_SIZE ) {
             int word = cntr / DisassemblerGenerator.WORD_SIZE;
-            generateWordLoad(word, num, elemSize);
+            generateWordLoad(word, num, elemSize, signed);
         }
         println("return decode_root();");
         endblock();
     }
 
-    void generateWordLoad(int word, int num, int bits) {
+    void generateWordLoad(int word, int num, int bits, boolean signed) {
         String mask = StringUtil.to0xHex((1 << bits) - 1, bits / 4);
         print("word$1 = ", word);
         for ( int cntr = 0; cntr < num; cntr++ ) {
             int ind;
             if ( DisassemblerGenerator.LITTLE_ENDIAN ) ind = cntr + word * num;
             else ind = num * (word+1) - cntr - 1;
-            print("((code[index + $1] << $2) & $3)", ind, cntr * bits, mask);
+            if ( signed )
+                print("((code[index + $1] & $2) << $3)", ind, mask, cntr * bits);
+            else
+                print("(code[index + $1] << $2)", ind, cntr * bits);
             if ( cntr < num - 1 ) print(" | ");
         }
         println(";");

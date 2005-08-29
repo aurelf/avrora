@@ -86,6 +86,10 @@ public abstract class Generator extends GenBase {
         return newJavaPrinter(name, imports, sup, "class", jdoc);
     }
 
+    protected Printer newAbstractClassPrinter(String name, List<String> imports, String sup, String jdoc) throws IOException {
+        return newJavaPrinter(name, imports, sup, "abstract class", jdoc);
+    }
+
     private Printer newJavaPrinter(String n, List<String> imports, String sup, String type, String jdoc) throws FileNotFoundException {
         String name = properties.getProperty(n);
         if ( name == null ) throw Util.failure("unknown class template: "+n);
@@ -120,4 +124,5 @@ public abstract class Generator extends GenBase {
         }
         printer.println(" */");
     }
+
 }

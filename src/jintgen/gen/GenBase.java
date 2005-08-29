@@ -134,4 +134,8 @@ public class GenBase {
     protected void close() {
         p.close();
     }
+
+    protected String javaName(String n) {
+        return n.replace('"', '$').replace('.', '_');
+    }
 }
