@@ -1,4 +1,5 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
 import java.util.HashMap;
 
 /**
@@ -10,84 +11,90 @@ import java.util.HashMap;
  */
 public interface MSP430Operand {
     public void accept(MSP430OperandVisitor v);
-    public interface DOUBLE_W_source_union extends MSP430Operand { }
-    public interface DOUBLE_W_dest_union extends MSP430Operand { }
-    public interface SINGLE_W_source_union extends MSP430Operand { }
-    public interface DOUBLE_B_source_union extends MSP430Operand { }
-    public interface DOUBLE_B_dest_union extends MSP430Operand { }
-    public interface SINGLE_B_source_union extends MSP430Operand { }
-    public class SREG implements MSP430Operand, DOUBLE_B_source_union, SINGLE_W_source_union, DOUBLE_W_source_union, DOUBLE_W_dest_union, SINGLE_B_source_union, DOUBLE_B_dest_union  {
-        public final MSP430Symbol.SREG symbol;
+    abstract static class Int implements MSP430Operand {
+        public final int value;
+        Int(int val) {
+            this.value = val;
+        }
+        public String toString() {
+            return Integer.toString(value);
+        }
+    }
+    
+    abstract static class Sym implements MSP430Operand {
+        public final MSP430Symbol symbol;
+        Sym(MSP430Symbol sym) {
+            if ( sym == null ) throw new Error();
+            this.symbol = sym;
+        }
+        public String toString() {
+            return symbol.symbol;
+        }
+    }
+    
+    public class SREG extends Sym {
         SREG(String s) {
-            symbol = MSP430Symbol.get_SREG(s);
-            if ( symbol == null ) throw new Error();
+            super(MSP430Symbol.get_GPR(s));
         }
-        SREG(MSP430Symbol.SREG sym) {
-            symbol = sym;
+        SREG(MSP430Symbol.GPR sym) {
+            super(sym);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class AIREG_B implements MSP430Operand, DOUBLE_B_source_union, SINGLE_B_source_union  {
-        public final MSP430Symbol.SREG symbol;
+    public class AIREG_B extends Sym {
         AIREG_B(String s) {
-            symbol = MSP430Symbol.get_SREG(s);
-            if ( symbol == null ) throw new Error();
+            super(MSP430Symbol.get_GPR(s));
         }
-        AIREG_B(MSP430Symbol.SREG sym) {
-            symbol = sym;
+        AIREG_B(MSP430Symbol.GPR sym) {
+            super(sym);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class AIREG_W implements MSP430Operand, SINGLE_W_source_union, DOUBLE_W_source_union  {
-        public final MSP430Symbol.SREG symbol;
+    public class AIREG_W extends Sym {
         AIREG_W(String s) {
-            symbol = MSP430Symbol.get_SREG(s);
-            if ( symbol == null ) throw new Error();
+            super(MSP430Symbol.get_GPR(s));
         }
-        AIREG_W(MSP430Symbol.SREG sym) {
-            symbol = sym;
+        AIREG_W(MSP430Symbol.GPR sym) {
+            super(sym);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class IREG implements MSP430Operand, DOUBLE_B_source_union, SINGLE_W_source_union, DOUBLE_W_source_union, SINGLE_B_source_union  {
-        public final MSP430Symbol.SREG symbol;
+    public class IREG extends Sym {
         IREG(String s) {
-            symbol = MSP430Symbol.get_SREG(s);
-            if ( symbol == null ) throw new Error();
+            super(MSP430Symbol.get_GPR(s));
         }
-        IREG(MSP430Symbol.SREG sym) {
-            symbol = sym;
+        IREG(MSP430Symbol.GPR sym) {
+            super(sym);
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class IMM implements MSP430Operand, DOUBLE_B_source_union, SINGLE_W_source_union, DOUBLE_W_source_union, SINGLE_B_source_union  {
+    public class IMM extends Int {
         public static final int low = -32768;
         public static final int high = 65536;
-        public final int value;
         IMM(int val) {
-            value = MSP430InstrBuilder.checkValue(val, low, high);
+            super(MSP430InstrBuilder.checkValue(val, low, high));
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class INDX implements MSP430Operand, DOUBLE_B_source_union, SINGLE_W_source_union, DOUBLE_W_source_union, DOUBLE_W_dest_union, SINGLE_B_source_union, DOUBLE_B_dest_union  {
-        public final SREG reg;
-        public final IMM index;
-        INDX(SREG reg, IMM index) {
+    public class INDX implements MSP430Operand {
+        public final MSP430Operand.SREG reg;
+        public final MSP430Operand.IMM index;
+        public INDX(MSP430Operand.SREG reg, MSP430Operand.IMM index)  {
             this.reg = reg;
             this.index = index;
         }
@@ -96,36 +103,33 @@ public interface MSP430Operand {
         }
     }
     
-    public class SYM implements MSP430Operand, DOUBLE_B_source_union, SINGLE_W_source_union, DOUBLE_W_source_union, DOUBLE_W_dest_union, SINGLE_B_source_union, DOUBLE_B_dest_union  {
+    public class SYM extends Int {
         public static final int low = 0;
         public static final int high = 65535;
-        public final int value;
         SYM(int val) {
-            value = MSP430InstrBuilder.checkValue(val, low, high);
+            super(MSP430InstrBuilder.checkValue(val, low, high));
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class ABSO implements MSP430Operand, DOUBLE_B_source_union, SINGLE_W_source_union, DOUBLE_W_source_union, DOUBLE_W_dest_union, SINGLE_B_source_union, DOUBLE_B_dest_union  {
+    public class ABSO extends Int {
         public static final int low = 0;
         public static final int high = 65535;
-        public final int value;
         ABSO(int val) {
-            value = MSP430InstrBuilder.checkValue(val, low, high);
+            super(MSP430InstrBuilder.checkValue(val, low, high));
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class JUMP implements MSP430Operand  {
+    public class JUMP extends Int {
         public static final int low = 0;
         public static final int high = 1023;
-        public final int value;
         JUMP(int val) {
-            value = MSP430InstrBuilder.checkValue(val, low, high);
+            super(MSP430InstrBuilder.checkValue(val, low, high));
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);

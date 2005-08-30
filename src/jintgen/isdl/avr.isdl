@@ -935,7 +935,7 @@ architecture avr {
 
     instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
         encoding = priority 1 { 0b10, imm[5], 0b0, imm[4:3], 0b0, rd[4:0], ar[0], imm[2:0] }
-        property syntax: String = "ldd %rd, %ar+%imm";
+        property syntax: String = "%rd, %ar+%imm";
         property cycles: int = 2;
         execute {
             $regs(rd) = $sram($aregs(ar) + imm);
@@ -1315,7 +1315,7 @@ architecture avr {
 
     instruction "std" ar: YZ, imm: IMM6, rr: GPR {
         encoding = priority 1 { 0b10, imm[5], 0b0, imm[4:3], 0b1, rr[4:0], ar[0], imm[2:0] }
-        property syntax: String = "std %ar+%imm, %rr";
+        property syntax: String = "%ar+%imm, %rr";
         property cycles: int = 2;
         execute {
             $sram($aregs(ar) + imm) = $regs(rr);

@@ -1,4 +1,5 @@
 package avrora.arch.avr;
+import avrora.arch.*;
 
 /**
  * The <code>AVRInstrVisitor</code> interface allows user code that

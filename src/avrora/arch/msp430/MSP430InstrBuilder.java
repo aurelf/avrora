@@ -1,4 +1,5 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
 import java.util.HashMap;
 public abstract class MSP430InstrBuilder {
     public abstract MSP430Instr build(int size, MSP430AddrMode am);
@@ -99,17 +100,17 @@ public abstract class MSP430InstrBuilder {
     }
     public static class CLRC_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.CLRC(size, (MSP430AddrMode.$clrc$)am);
+            return new MSP430Instr.CLRC(size);
         }
     }
     public static class CLRN_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.CLRN(size, (MSP430AddrMode.$clrn$)am);
+            return new MSP430Instr.CLRN(size);
         }
     }
     public static class CLRZ_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.CLRZ(size, (MSP430AddrMode.$clrz$)am);
+            return new MSP430Instr.CLRZ(size);
         }
     }
     public static class CMP_builder extends MSP430InstrBuilder {
@@ -164,12 +165,12 @@ public abstract class MSP430InstrBuilder {
     }
     public static class DINT_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.DINT(size, (MSP430AddrMode.$dint$)am);
+            return new MSP430Instr.DINT(size);
         }
     }
     public static class EINT_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.EINT(size, (MSP430AddrMode.$eint$)am);
+            return new MSP430Instr.EINT(size);
         }
     }
     public static class INC_builder extends MSP430InstrBuilder {
@@ -274,7 +275,7 @@ public abstract class MSP430InstrBuilder {
     }
     public static class NOP_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.NOP(size, (MSP430AddrMode.$nop$)am);
+            return new MSP430Instr.NOP(size);
         }
     }
     public static class POP_builder extends MSP430InstrBuilder {
@@ -299,12 +300,12 @@ public abstract class MSP430InstrBuilder {
     }
     public static class RET_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.RET(size, (MSP430AddrMode.$ret$)am);
+            return new MSP430Instr.RET(size);
         }
     }
     public static class RETI_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.RETI(size, (MSP430AddrMode.$reti$)am);
+            return new MSP430Instr.RETI(size);
         }
     }
     public static class RLA_builder extends MSP430InstrBuilder {
@@ -359,17 +360,17 @@ public abstract class MSP430InstrBuilder {
     }
     public static class SETC_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.SETC(size, (MSP430AddrMode.$setc$)am);
+            return new MSP430Instr.SETC(size);
         }
     }
     public static class SETN_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.SETN(size, (MSP430AddrMode.$setn$)am);
+            return new MSP430Instr.SETN(size);
         }
     }
     public static class SETZ_builder extends MSP430InstrBuilder {
         public MSP430Instr build(int size, MSP430AddrMode am) {
-            return new MSP430Instr.SETZ(size, (MSP430AddrMode.$setz$)am);
+            return new MSP430Instr.SETZ(size);
         }
     }
     public static class SUB_builder extends MSP430InstrBuilder {

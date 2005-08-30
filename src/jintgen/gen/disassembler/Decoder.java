@@ -606,7 +606,7 @@ abstract class Decoder extends GenBase {
             String label = n.getLabel();
             if ( "*".equals(label) ) return "null";
             if ( "-".equals(label) ) return "null";
-            else return tr("new SetReader(new $1_reader())", label);
+            else return tr("new SetReader($1)", dGen.reader.getReaderCreation(label));
         }
     }
 
@@ -618,7 +618,7 @@ abstract class Decoder extends GenBase {
             else {
                 EncodingInst ei = n.encodings.iterator().next();
                 String reader = dGen.reader.getName(ei.encoding);
-                return tr("new SetBuilderAndRead($builder.$1, new $2_reader())", ei.instr.innerClassName, reader);
+                return tr("new SetBuilderAndRead($builder.$1, $2)", ei.instr.innerClassName, dGen.reader.getReaderCreation(reader));
             }
         }
     }

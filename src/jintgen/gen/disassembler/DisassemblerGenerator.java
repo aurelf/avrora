@@ -181,16 +181,28 @@ public class DisassemblerGenerator extends Generator {
                 pseudoInstrs++;
             } else {
                 instrs++;
-                for ( AddrModeDecl am : d.addrMode.addrModes ) {
-                    int cntr = 0;
-                    for ( EncodingDecl ed : am.encodings ) {
-                        addEncodingInfo(d, am, ed);
-                        String eName = encodingName(am, cntr);
-                        reader.addEncoding(eName, ed, am);
-                        cntr++;
-                    }
-                }
+                addEncoding(d);
             }
+        }
+    }
+
+    private void addEncoding(InstrDecl d) {
+        if ( d.addrMode.localDecl != null ) {
+            addAllEncodings(d.addrMode.localDecl, d, d);
+        } else {
+            for ( AddrModeDecl am : d.addrMode.addrModes ) {
+                addAllEncodings(am, d, null);
+            }
+        }
+    }
+
+    private void addAllEncodings(AddrModeDecl am, InstrDecl d, InstrDecl instr) {
+        int cntr = 0;
+        for ( EncodingDecl ed : am.encodings ) {
+            addEncodingInfo(d, am, ed);
+            String eName = encodingName(am, cntr);
+            reader.addEncoding(eName, instr, ed, am);
+            cntr++;
         }
     }
 

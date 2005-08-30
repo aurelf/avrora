@@ -43,18 +43,18 @@ architecture msp430 {
         r12 = 12, r13  = 13, r14 = 14, r15 = 15
     }
 
-     // source registers r2 - r15
-    enum-subset SREG: GPR {
-        r2 = 2, r3  = 3,  r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,  r8 = 8,
-        r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15
-    }
+    // source registers r2 - r15
+    //enum-subset SREG: GPR {
+    //    r2 = 2, r3  = 3,  r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,  r8 = 8,
+    //    r9 = 9, r10 = 10, r11 = 11, r12 = 12, r13 = 13, r14 = 14, r15 = 15
+    //}
 
-    operand-type SREG[4]: SREG {
+    operand-type SREG[4]: GPR {
 	    read: short { return $regs(this); }
 	    write: short { $regs(this) = value; }
 	}
 
-    operand-type AIREG_B[4]: SREG {                    //Indirect AutoIncrement mode
+    operand-type AIREG_B[4]: GPR {                    //Indirect AutoIncrement mode
 	    read: byte {
 	        local val: short = $regs(this);               //the value of val provides the address of contents to modify
 	        $regs(this) = val + 1;                       //the original register's contents are incremented
@@ -63,7 +63,7 @@ architecture msp430 {
 	    write: byte {  }                              //valid only as a source operand
 	}
 
-    operand-type AIREG_W[4]: SREG {
+    operand-type AIREG_W[4]: GPR {
 	    read: short {
 	        local addr: short = $regs(this);
 	        local val: short = $sram(addr);
@@ -73,7 +73,7 @@ architecture msp430 {
 	    write: short { }
 	}
 
-    operand-type IREG[4]: SREG {                    //Indirect register mode
+    operand-type IREG[4]: GPR {                    //Indirect register mode
 	    read: byte {
 	        local addr: short = $regs(this);
 	        local val: byte = $sram(addr);
@@ -381,7 +381,7 @@ architecture msp430 {
 
     addr-mode JMP source: JUMP {
         encoding = JUMP_OP where { offset = source }
-        property syntax: String = "%offset";
+        property syntax: String = "%source";
         property cycles: int = 2;
     }
 

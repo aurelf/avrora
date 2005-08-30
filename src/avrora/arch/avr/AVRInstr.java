@@ -1,4 +1,5 @@
 package avrora.arch.avr;
+import avrora.arch.*;
 
 /**
  * The <code>AVRInstr</code> class is a container (almost a namespace)
@@ -6,9 +7,37 @@ package avrora.arch.avr;
  * represents an instruction in the architecture and also extends the
  * outer class.
  */
-public abstract class AVRInstr {
+public abstract class AVRInstr implements AbstractInstr {
+    
+    /**
+     * The <code>accept()</code> method accepts an instruction visitor and
+     * calls the appropriate <code>visit()</code> method for this
+     * instruction.
+     * @param v the instruction visitor to accept
+     */
     public abstract void accept(AVRInstrVisitor v);
-    public abstract void accept(AVRAddrModeVisitor v);
+    
+    /**
+     * The <code>accept()</code> method accepts an addressing mode visitor
+     * and calls the appropriate <code>visit_*()</code> method for this
+     * instruction's addressing mode.
+     * @param v the addressing mode visitor to accept
+     */
+    public void accept(AVRAddrModeVisitor v) {
+        // the default implementation of accept() is empty
+    }
+    
+    /**
+     * The <code>toString()</code> method converts this instruction to a
+     * string representation. For instructions with operands, this method
+     * will render the operands in the appropriate syntax as declared in the
+     * architecture description.
+     * @return a string representation of this instruction
+     */
+    public String toString() {
+        // the default implementation of toString() simply returns the name
+        return name;
+    }
     
     /**
      * The <code>name</code> field stores a reference to the name of the
@@ -21,44 +50,59 @@ public abstract class AVRInstr {
      * bytes.
      */
     public final int size;
+    
+    /**
+     * The <code>getSize()</code> method returns the size of this instruction
+     * in bytes.
+     */
+    public int getSize() {
+        return size;
+    }
+    
+    
+    /**
+     * The <code>getName()</code> method returns the name of this
+     * instruction.
+     */
+    public String getName() {
+        return name;
+    }
+    
+    
+    /**
+     * The <code>getArchitecture()</code> method returns the architecture of
+     * this instruction.
+     */
+    public AbstractArchitecture getArchitecture() {
+        return null;
+    }
+    
+    
+    /**
+     * The default constructor for the <code>AVRInstr</code> class accepts a
+     * string name and a size for each instruction.
+     * @param name the string name of the instruction
+     * @param size the size of the instruction in bytes
+     */
     protected AVRInstr(String name, int size) {
         this.name = name;
         this.size = size;
     }
-    public abstract static class GPRGPR_Instr extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        protected GPRGPR_Instr(String name, int size, AVRAddrMode.GPRGPR am) {
+    
+    public abstract static class BRANCH_Instr extends AVRInstr {
+        public final AVROperand.SREL target;
+        protected BRANCH_Instr(String name, int size, AVRAddrMode.BRANCH am) {
             super(name, size);
-            this.rd = am.rd;
-            this.rr = am.rr;
+            this.target = am.target;
         }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_GPRGPR(rd, rr);
+            v.visit_BRANCH(this, target);
+        }
+        public String toString() {
+            return name + ' ' + target;
         }
     }
-    public abstract static class MGPRMGPR_Instr extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        protected MGPRMGPR_Instr(String name, int size, AVRAddrMode.MGPRMGPR am) {
-            super(name, size);
-            this.rd = am.rd;
-            this.rr = am.rr;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_MGPRMGPR(rd, rr);
-        }
-    }
-    public abstract static class GPR_Instr extends AVRInstr {
-        public final AVROperand.GPR rd;
-        protected GPR_Instr(String name, int size, AVRAddrMode.GPR am) {
-            super(name, size);
-            this.rd = am.rd;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_GPR(rd);
-        }
-    }
+    
     public abstract static class HGPRIMM8_Instr extends AVRInstr {
         public final AVROperand.HGPR rd;
         public final AVROperand.IMM8 imm;
@@ -68,133 +112,43 @@ public abstract class AVRInstr {
             this.imm = am.imm;
         }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_HGPRIMM8(rd, imm);
+            v.visit_HGPRIMM8(this, rd, imm);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + imm;
         }
     }
-    public abstract static class ABS_Instr extends AVRInstr {
-        public final AVROperand.PADDR target;
-        protected ABS_Instr(String name, int size, AVRAddrMode.ABS am) {
-            super(name, size);
-            this.target = am.target;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_ABS(target);
-        }
-    }
-    public abstract static class BRANCH_Instr extends AVRInstr {
-        public final AVROperand.SREL target;
-        protected BRANCH_Instr(String name, int size, AVRAddrMode.BRANCH am) {
-            super(name, size);
-            this.target = am.target;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_BRANCH(target);
-        }
-    }
-    public abstract static class CALL_Instr extends AVRInstr {
-        public final AVROperand.LREL target;
-        protected CALL_Instr(String name, int size, AVRAddrMode.CALL am) {
-            super(name, size);
-            this.target = am.target;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_CALL(target);
-        }
-    }
-    public abstract static class WRITEBIT_Instr extends AVRInstr {
-        protected WRITEBIT_Instr(String name, int size, AVRAddrMode.WRITEBIT am) {
-            super(name, size);
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_WRITEBIT();
-        }
-    }
-    public abstract static class XLPM_REG_Instr extends AVRInstr {
-        public final AVROperand.R0_B dest;
-        public final AVROperand.RZ_W source;
-        protected XLPM_REG_Instr(String name, int size, AVRAddrMode.XLPM_REG am) {
-            super(name, size);
-            this.dest = am.dest;
-            this.source = am.source;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_XLPM_REG(dest, source);
-        }
-    }
-    public abstract static class XLPM_D_Instr extends AVRInstr {
-        public final AVROperand.GPR dest;
-        public final AVROperand.RZ_W source;
-        protected XLPM_D_Instr(String name, int size, AVRAddrMode.XLPM_D am) {
-            super(name, size);
-            this.dest = am.dest;
-            this.source = am.source;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_XLPM_D(dest, source);
-        }
-    }
-    public abstract static class XLPM_INC_Instr extends AVRInstr {
-        public final AVROperand.GPR dest;
-        public final AVROperand.AI_RZ_W source;
-        protected XLPM_INC_Instr(String name, int size, AVRAddrMode.XLPM_INC am) {
-            super(name, size);
-            this.dest = am.dest;
-            this.source = am.source;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_XLPM_INC(dest, source);
-        }
-    }
-    public abstract static class LD_ST_XYZ_Instr extends AVRInstr {
+    
+    public abstract static class GPR_Instr extends AVRInstr {
         public final AVROperand.GPR rd;
-        public final AVROperand.XYZ ar;
-        protected LD_ST_XYZ_Instr(String name, int size, AVRAddrMode.LD_ST_XYZ am) {
+        protected GPR_Instr(String name, int size, AVRAddrMode.GPR am) {
             super(name, size);
             this.rd = am.rd;
-            this.ar = am.ar;
         }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_LD_ST_XYZ(rd, ar);
+            v.visit_GPR(this, rd);
+        }
+        public String toString() {
+            return name + ' ' + rd;
         }
     }
-    public abstract static class LD_ST_AI_XYZ_Instr extends AVRInstr {
+    
+    public abstract static class GPRGPR_Instr extends AVRInstr {
         public final AVROperand.GPR rd;
-        public final AVROperand.AI_XYZ ar;
-        protected LD_ST_AI_XYZ_Instr(String name, int size, AVRAddrMode.LD_ST_AI_XYZ am) {
+        public final AVROperand.GPR rr;
+        protected GPRGPR_Instr(String name, int size, AVRAddrMode.GPRGPR am) {
             super(name, size);
             this.rd = am.rd;
-            this.ar = am.ar;
+            this.rr = am.rr;
         }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_LD_ST_AI_XYZ(rd, ar);
+            v.visit_GPRGPR(this, rd, rr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + rr;
         }
     }
-    public abstract static class LD_ST_PD_XYZ_Instr extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.PD_XYZ ar;
-        protected LD_ST_PD_XYZ_Instr(String name, int size, AVRAddrMode.LD_ST_PD_XYZ am) {
-            super(name, size);
-            this.rd = am.rd;
-            this.ar = am.ar;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_LD_ST_PD_XYZ(rd, ar);
-        }
-    }
-    public abstract static class XLPM_Instr extends AVRInstr {
-        public final AVRAddrMode.XLPM am;
-        public final AVROperand source;
-        public final AVROperand dest;
-        protected XLPM_Instr(String name, int size, AVRAddrMode.XLPM am) {
-            super(name, size);
-            this.am = am;
-            this.source = am.get_source();
-            this.dest = am.get_dest();
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            am.accept(v);
-        }
-    }
+    
     public abstract static class LD_ST_Instr extends AVRInstr {
         public final AVRAddrMode.LD_ST am;
         public final AVROperand rd;
@@ -206,9 +160,31 @@ public abstract class AVRInstr {
             this.ar = am.get_ar();
         }
         public void accept(AVRAddrModeVisitor v) {
-            am.accept(v);
+            am.accept(this, v);
+        }
+        public String toString() {
+            return name+am.toString();
         }
     }
+    
+    public abstract static class XLPM_Instr extends AVRInstr {
+        public final AVRAddrMode.XLPM am;
+        public final AVROperand source;
+        public final AVROperand dest;
+        protected XLPM_Instr(String name, int size, AVRAddrMode.XLPM am) {
+            super(name, size);
+            this.am = am;
+            this.source = am.get_source();
+            this.dest = am.get_dest();
+        }
+        public void accept(AVRAddrModeVisitor v) {
+            am.accept(this, v);
+        }
+        public String toString() {
+            return name+am.toString();
+        }
+    }
+    
     public static class ADC extends GPRGPR_Instr {
         ADC(int size, AVRAddrMode.GPRGPR am) {
             super("adc", size, am);
@@ -233,7 +209,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$adiw$(rd, imm);
+            v.visit_$adiw$(this, rd, imm);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + imm;
         }
     }
     
@@ -266,7 +245,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$bclr$(bit);
+            v.visit_$bclr$(this, bit);
+        }
+        public String toString() {
+            return name + ' ' + bit;
         }
     }
     
@@ -280,7 +262,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$bld$(rr, bit);
+            v.visit_$bld$(this, rr, bit);
+        }
+        public String toString() {
+            return name + ' ' + rr + ", " + bit;
         }
     }
     
@@ -294,7 +279,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$brbc$(bit, target);
+            v.visit_$brbc$(this, bit, target);
+        }
+        public String toString() {
+            return name + ' ' + bit + ", " + target;
         }
     }
     
@@ -308,7 +296,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$brbs$(bit, target);
+            v.visit_$brbs$(this, bit, target);
+        }
+        public String toString() {
+            return name + ' ' + bit + ", " + target;
         }
     }
     
@@ -327,12 +318,12 @@ public abstract class AVRInstr {
     }
     
     public static class BREAK extends AVRInstr {
-        BREAK(int size, AVRAddrMode.$break$ am) {
+        BREAK(int size) {
             super("break", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$break$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -456,7 +447,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$bset$(bit);
+            v.visit_$bset$(this, bit);
+        }
+        public String toString() {
+            return name + ' ' + bit;
         }
     }
     
@@ -470,7 +464,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$bst$(rr, bit);
+            v.visit_$bst$(this, rr, bit);
+        }
+        public String toString() {
+            return name + ' ' + rr + ", " + bit;
         }
     }
     
@@ -482,7 +479,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$call$(target);
+            v.visit_$call$(this, target);
+        }
+        public String toString() {
+            return name + ' ' + target;
         }
     }
     
@@ -496,7 +496,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$cbi$(ior, bit);
+            v.visit_$cbi$(this, ior, bit);
+        }
+        public String toString() {
+            return name + ' ' + ior + ", " + bit;
         }
     }
     
@@ -508,42 +511,42 @@ public abstract class AVRInstr {
     }
     
     public static class CLC extends AVRInstr {
-        CLC(int size, AVRAddrMode.$clc$ am) {
+        CLC(int size) {
             super("clc", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$clc$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLH extends AVRInstr {
-        CLH(int size, AVRAddrMode.$clh$ am) {
+        CLH(int size) {
             super("clh", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$clh$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLI extends AVRInstr {
-        CLI(int size, AVRAddrMode.$cli$ am) {
+        CLI(int size) {
             super("cli", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$cli$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLN extends AVRInstr {
-        CLN(int size, AVRAddrMode.$cln$ am) {
+        CLN(int size) {
             super("cln", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$cln$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -555,47 +558,50 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$clr$(rd);
+            v.visit_$clr$(this, rd);
+        }
+        public String toString() {
+            return name + ' ' + rd;
         }
     }
     
     public static class CLS extends AVRInstr {
-        CLS(int size, AVRAddrMode.$cls$ am) {
+        CLS(int size) {
             super("cls", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$cls$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLT extends AVRInstr {
-        CLT(int size, AVRAddrMode.$clt$ am) {
+        CLT(int size) {
             super("clt", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$clt$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLV extends AVRInstr {
-        CLV(int size, AVRAddrMode.$clv$ am) {
+        CLV(int size) {
             super("clv", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$clv$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLZ extends AVRInstr {
-        CLZ(int size, AVRAddrMode.$clz$ am) {
+        CLZ(int size) {
             super("clz", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$clz$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -642,22 +648,22 @@ public abstract class AVRInstr {
     }
     
     public static class EICALL extends AVRInstr {
-        EICALL(int size, AVRAddrMode.$eicall$ am) {
+        EICALL(int size) {
             super("eicall", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$eicall$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class EIJMP extends AVRInstr {
-        EIJMP(int size, AVRAddrMode.$eijmp$ am) {
+        EIJMP(int size) {
             super("eijmp", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$eijmp$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -678,7 +684,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$fmul$(rd, rr);
+            v.visit_$fmul$(this, rd, rr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + rr;
         }
     }
     
@@ -692,7 +701,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$fmuls$(rd, rr);
+            v.visit_$fmuls$(this, rd, rr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + rr;
         }
     }
     
@@ -706,27 +718,30 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$fmulsu$(rd, rr);
+            v.visit_$fmulsu$(this, rd, rr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + rr;
         }
     }
     
     public static class ICALL extends AVRInstr {
-        ICALL(int size, AVRAddrMode.$icall$ am) {
+        ICALL(int size) {
             super("icall", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$icall$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class IJMP extends AVRInstr {
-        IJMP(int size, AVRAddrMode.$ijmp$ am) {
+        IJMP(int size) {
             super("ijmp", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$ijmp$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -740,7 +755,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$in$(rd, imm);
+            v.visit_$in$(this, rd, imm);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + imm;
         }
     }
     
@@ -759,7 +777,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$jmp$(target);
+            v.visit_$jmp$(this, target);
+        }
+        public String toString() {
+            return name + ' ' + target;
         }
     }
     
@@ -775,7 +796,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$ldd$(rd, ar, imm);
+            v.visit_$ldd$(this, rd, ar, imm);
+        }
+        public String toString() {
+            return name+" "+rd+", "+ar+"+"+imm;
         }
     }
     
@@ -796,7 +820,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$lds$(rd, addr);
+            v.visit_$lds$(this, rd, addr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + addr;
         }
     }
     
@@ -808,7 +835,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$lsl$(rd);
+            v.visit_$lsl$(this, rd);
+        }
+        public String toString() {
+            return name + ' ' + rd;
         }
     }
     
@@ -836,7 +866,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$movw$(rd, rr);
+            v.visit_$movw$(this, rd, rr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + rr;
         }
     }
     
@@ -857,7 +890,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$muls$(rd, rr);
+            v.visit_$muls$(this, rd, rr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + rr;
         }
     }
     
@@ -871,7 +907,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$mulsu$(rd, rr);
+            v.visit_$mulsu$(this, rd, rr);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + rr;
         }
     }
     
@@ -883,12 +922,12 @@ public abstract class AVRInstr {
     }
     
     public static class NOP extends AVRInstr {
-        NOP(int size, AVRAddrMode.$nop$ am) {
+        NOP(int size) {
             super("nop", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$nop$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -916,7 +955,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$out$(ior, rr);
+            v.visit_$out$(this, ior, rr);
+        }
+        public String toString() {
+            return name + ' ' + ior + ", " + rr;
         }
     }
     
@@ -935,7 +977,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$push$(rr);
+            v.visit_$push$(this, rr);
+        }
+        public String toString() {
+            return name + ' ' + rr;
         }
     }
     
@@ -947,27 +992,30 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$rcall$(target);
+            v.visit_$rcall$(this, target);
+        }
+        public String toString() {
+            return name + ' ' + target;
         }
     }
     
     public static class RET extends AVRInstr {
-        RET(int size, AVRAddrMode.$ret$ am) {
+        RET(int size) {
             super("ret", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$ret$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class RETI extends AVRInstr {
-        RETI(int size, AVRAddrMode.$reti$ am) {
+        RETI(int size) {
             super("reti", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$reti$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -979,7 +1027,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$rjmp$(target);
+            v.visit_$rjmp$(this, target);
+        }
+        public String toString() {
+            return name + ' ' + target;
         }
     }
     
@@ -991,7 +1042,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$rol$(rd);
+            v.visit_$rol$(this, rd);
+        }
+        public String toString() {
+            return name + ' ' + rd;
         }
     }
     
@@ -1026,7 +1080,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sbi$(ior, bit);
+            v.visit_$sbi$(this, ior, bit);
+        }
+        public String toString() {
+            return name + ' ' + ior + ", " + bit;
         }
     }
     
@@ -1040,7 +1097,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sbic$(ior, bit);
+            v.visit_$sbic$(this, ior, bit);
+        }
+        public String toString() {
+            return name + ' ' + ior + ", " + bit;
         }
     }
     
@@ -1054,7 +1114,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sbis$(ior, bit);
+            v.visit_$sbis$(this, ior, bit);
+        }
+        public String toString() {
+            return name + ' ' + ior + ", " + bit;
         }
     }
     
@@ -1068,7 +1131,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sbiw$(rd, imm);
+            v.visit_$sbiw$(this, rd, imm);
+        }
+        public String toString() {
+            return name + ' ' + rd + ", " + imm;
         }
     }
     
@@ -1089,7 +1155,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sbrc$(rr, bit);
+            v.visit_$sbrc$(this, rr, bit);
+        }
+        public String toString() {
+            return name + ' ' + rr + ", " + bit;
         }
     }
     
@@ -1103,47 +1172,50 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sbrs$(rr, bit);
+            v.visit_$sbrs$(this, rr, bit);
+        }
+        public String toString() {
+            return name + ' ' + rr + ", " + bit;
         }
     }
     
     public static class SEC extends AVRInstr {
-        SEC(int size, AVRAddrMode.$sec$ am) {
+        SEC(int size) {
             super("sec", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sec$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SEH extends AVRInstr {
-        SEH(int size, AVRAddrMode.$seh$ am) {
+        SEH(int size) {
             super("seh", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$seh$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SEI extends AVRInstr {
-        SEI(int size, AVRAddrMode.$sei$ am) {
+        SEI(int size) {
             super("sei", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sei$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SEN extends AVRInstr {
-        SEN(int size, AVRAddrMode.$sen$ am) {
+        SEN(int size) {
             super("sen", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sen$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -1155,67 +1227,70 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$ser$(rd);
+            v.visit_$ser$(this, rd);
+        }
+        public String toString() {
+            return name + ' ' + rd;
         }
     }
     
     public static class SES extends AVRInstr {
-        SES(int size, AVRAddrMode.$ses$ am) {
+        SES(int size) {
             super("ses", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$ses$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SET extends AVRInstr {
-        SET(int size, AVRAddrMode.$set$ am) {
+        SET(int size) {
             super("set", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$set$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SEV extends AVRInstr {
-        SEV(int size, AVRAddrMode.$sev$ am) {
+        SEV(int size) {
             super("sev", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sev$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SEZ extends AVRInstr {
-        SEZ(int size, AVRAddrMode.$sez$ am) {
+        SEZ(int size) {
             super("sez", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sez$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SLEEP extends AVRInstr {
-        SLEEP(int size, AVRAddrMode.$sleep$ am) {
+        SLEEP(int size) {
             super("sleep", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sleep$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SPM extends AVRInstr {
-        SPM(int size, AVRAddrMode.$spm$ am) {
+        SPM(int size) {
             super("spm", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$spm$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -1231,7 +1306,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$std$(ar, imm, rr);
+            v.visit_$std$(this, ar, imm, rr);
+        }
+        public String toString() {
+            return name+" "+ar+"+"+imm+", "+rr;
         }
     }
     
@@ -1245,7 +1323,10 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$sts$(addr, rr);
+            v.visit_$sts$(this, addr, rr);
+        }
+        public String toString() {
+            return name + ' ' + addr + ", " + rr;
         }
     }
     
@@ -1278,17 +1359,20 @@ public abstract class AVRInstr {
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
         public void accept(AVRAddrModeVisitor v) {
-            v.visit_$tst$(rd);
+            v.visit_$tst$(this, rd);
+        }
+        public String toString() {
+            return name + ' ' + rd;
         }
     }
     
     public static class WDR extends AVRInstr {
-        WDR(int size, AVRAddrMode.$wdr$ am) {
+        WDR(int size) {
             super("wdr", size);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$wdr$();
+        public String toString() {
+            return name;
         }
     }
     

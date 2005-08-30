@@ -1,4 +1,5 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
 
 /**
  * The <code>MSP430Instr</code> class is a container (almost a namespace)
@@ -6,9 +7,37 @@ package avrora.arch.msp430;
  * represents an instruction in the architecture and also extends the
  * outer class.
  */
-public abstract class MSP430Instr {
+public abstract class MSP430Instr  implements AbstractInstr {
+    
+    /**
+     * The <code>accept()</code> method accepts an instruction visitor and
+     * calls the appropriate <code>visit()</code> method for this
+     * instruction.
+     * @param v the instruction visitor to accept
+     */
     public abstract void accept(MSP430InstrVisitor v);
-    public abstract void accept(MSP430AddrModeVisitor v);
+    
+    /**
+     * The <code>accept()</code> method accepts an addressing mode visitor
+     * and calls the appropriate <code>visit_*()</code> method for this
+     * instruction's addressing mode.
+     * @param v the addressing mode visitor to accept
+     */
+    public void accept(MSP430AddrModeVisitor v) {
+        // the default implementation of accept() is empty
+    }
+    
+    /**
+     * The <code>toString()</code> method converts this instruction to a
+     * string representation. For instructions with operands, this method
+     * will render the operands in the appropriate syntax as declared in the
+     * architecture description.
+     * @return a string representation of this instruction
+     */
+    public String toString() {
+        // the default implementation of toString() simply returns the name
+        return name;
+    }
     
     /**
      * The <code>name</code> field stores a reference to the name of the
@@ -21,474 +50,45 @@ public abstract class MSP430Instr {
      * bytes.
      */
     public final int size;
+    
+    /**
+     * The <code>getSize()</code> method returns the size of this instruction
+     * in bytes.
+     */
+    public int getSize() {
+        return size;
+    }
+    
+    
+    /**
+     * The <code>getName()</code> method returns the name of this
+     * instruction.
+     */
+    public String getName() {
+        return name;
+    }
+    
+    
+    /**
+     * The <code>getArchitecture()</code> method returns the architecture of
+     * this instruction.
+     */
+    public AbstractArchitecture getArchitecture() {
+        return null;
+    }
+    
+    
+    /**
+     * The default constructor for the <code>MSP430Instr</code> class accepts
+     * a string name and a size for each instruction.
+     * @param name the string name of the instruction
+     * @param size the size of the instruction in bytes
+     */
     protected MSP430Instr(String name, int size) {
         this.name = name;
         this.size = size;
     }
-    public abstract static class REG_Instr extends MSP430Instr {
-        public final MSP430Operand.SREG source;
-        protected REG_Instr(String name, int size, MSP430AddrMode.REG am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_REG(source);
-        }
-    }
-    public abstract static class REGREG_Instr extends MSP430Instr {
-        public final MSP430Operand.SREG source;
-        public final MSP430Operand.SREG dest;
-        protected REGREG_Instr(String name, int size, MSP430AddrMode.REGREG am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_REGREG(source, dest);
-        }
-    }
-    public abstract static class REGIND_Instr extends MSP430Instr {
-        public final MSP430Operand.SREG source;
-        public final MSP430Operand.INDX dest;
-        protected REGIND_Instr(String name, int size, MSP430AddrMode.REGIND am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_REGIND(source, dest);
-        }
-    }
-    public abstract static class REGSYM_Instr extends MSP430Instr {
-        public final MSP430Operand.SREG source;
-        public final MSP430Operand.SYM dest;
-        protected REGSYM_Instr(String name, int size, MSP430AddrMode.REGSYM am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_REGSYM(source, dest);
-        }
-    }
-    public abstract static class REGABS_Instr extends MSP430Instr {
-        public final MSP430Operand.SREG source;
-        public final MSP430Operand.ABSO dest;
-        protected REGABS_Instr(String name, int size, MSP430AddrMode.REGABS am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_REGABS(source, dest);
-        }
-    }
-    public abstract static class IND_Instr extends MSP430Instr {
-        public final MSP430Operand.INDX source;
-        protected IND_Instr(String name, int size, MSP430AddrMode.IND am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IND(source);
-        }
-    }
-    public abstract static class INDREG_Instr extends MSP430Instr {
-        public final MSP430Operand.INDX source;
-        public final MSP430Operand.SREG dest;
-        protected INDREG_Instr(String name, int size, MSP430AddrMode.INDREG am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_INDREG(source, dest);
-        }
-    }
-    public abstract static class INDIND_Instr extends MSP430Instr {
-        public final MSP430Operand.INDX source;
-        public final MSP430Operand.INDX dest;
-        protected INDIND_Instr(String name, int size, MSP430AddrMode.INDIND am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_INDIND(source, dest);
-        }
-    }
-    public abstract static class SYM_Instr extends MSP430Instr {
-        public final MSP430Operand.SYM source;
-        protected SYM_Instr(String name, int size, MSP430AddrMode.SYM am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_SYM(source);
-        }
-    }
-    public abstract static class SYMREG_Instr extends MSP430Instr {
-        public final MSP430Operand.SYM source;
-        public final MSP430Operand.SREG dest;
-        protected SYMREG_Instr(String name, int size, MSP430AddrMode.SYMREG am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_SYMREG(source, dest);
-        }
-    }
-    public abstract static class INDSYM_Instr extends MSP430Instr {
-        public final MSP430Operand.INDX source;
-        public final MSP430Operand.SYM dest;
-        protected INDSYM_Instr(String name, int size, MSP430AddrMode.INDSYM am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_INDSYM(source, dest);
-        }
-    }
-    public abstract static class INDABS_Instr extends MSP430Instr {
-        public final MSP430Operand.INDX source;
-        public final MSP430Operand.ABSO dest;
-        protected INDABS_Instr(String name, int size, MSP430AddrMode.INDABS am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_INDABS(source, dest);
-        }
-    }
-    public abstract static class SYMABS_Instr extends MSP430Instr {
-        public final MSP430Operand.SYM source;
-        public final MSP430Operand.ABSO dest;
-        protected SYMABS_Instr(String name, int size, MSP430AddrMode.SYMABS am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_SYMABS(source, dest);
-        }
-    }
-    public abstract static class SYMIND_Instr extends MSP430Instr {
-        public final MSP430Operand.SYM source;
-        public final MSP430Operand.INDX dest;
-        protected SYMIND_Instr(String name, int size, MSP430AddrMode.SYMIND am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_SYMIND(source, dest);
-        }
-    }
-    public abstract static class SYMSYM_Instr extends MSP430Instr {
-        public final MSP430Operand.SYM source;
-        public final MSP430Operand.SYM dest;
-        protected SYMSYM_Instr(String name, int size, MSP430AddrMode.SYMSYM am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_SYMSYM(source, dest);
-        }
-    }
-    public abstract static class ABSSYM_Instr extends MSP430Instr {
-        public final MSP430Operand.ABSO source;
-        public final MSP430Operand.SYM dest;
-        protected ABSSYM_Instr(String name, int size, MSP430AddrMode.ABSSYM am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_ABSSYM(source, dest);
-        }
-    }
-    public abstract static class ABS_Instr extends MSP430Instr {
-        public final MSP430Operand.ABSO source;
-        protected ABS_Instr(String name, int size, MSP430AddrMode.ABS am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_ABS(source);
-        }
-    }
-    public abstract static class ABSREG_Instr extends MSP430Instr {
-        public final MSP430Operand.ABSO source;
-        public final MSP430Operand.SREG dest;
-        protected ABSREG_Instr(String name, int size, MSP430AddrMode.ABSREG am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_ABSREG(source, dest);
-        }
-    }
-    public abstract static class ABSIND_Instr extends MSP430Instr {
-        public final MSP430Operand.ABSO source;
-        public final MSP430Operand.INDX dest;
-        protected ABSIND_Instr(String name, int size, MSP430AddrMode.ABSIND am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_ABSIND(source, dest);
-        }
-    }
-    public abstract static class ABSABS_Instr extends MSP430Instr {
-        public final MSP430Operand.ABSO source;
-        public final MSP430Operand.ABSO dest;
-        protected ABSABS_Instr(String name, int size, MSP430AddrMode.ABSABS am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_ABSABS(source, dest);
-        }
-    }
-    public abstract static class IREGSYM_Instr extends MSP430Instr {
-        public final MSP430Operand.IREG source;
-        public final MSP430Operand.SYM dest;
-        protected IREGSYM_Instr(String name, int size, MSP430AddrMode.IREGSYM am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IREGSYM(source, dest);
-        }
-    }
-    public abstract static class IREG_Instr extends MSP430Instr {
-        public final MSP430Operand.IREG source;
-        protected IREG_Instr(String name, int size, MSP430AddrMode.IREG am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IREG(source);
-        }
-    }
-    public abstract static class IREGREG_Instr extends MSP430Instr {
-        public final MSP430Operand.IREG source;
-        public final MSP430Operand.SREG dest;
-        protected IREGREG_Instr(String name, int size, MSP430AddrMode.IREGREG am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IREGREG(source, dest);
-        }
-    }
-    public abstract static class IREGIND_Instr extends MSP430Instr {
-        public final MSP430Operand.IREG source;
-        public final MSP430Operand.INDX dest;
-        protected IREGIND_Instr(String name, int size, MSP430AddrMode.IREGIND am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IREGIND(source, dest);
-        }
-    }
-    public abstract static class IREGABS_Instr extends MSP430Instr {
-        public final MSP430Operand.IREG source;
-        public final MSP430Operand.ABSO dest;
-        protected IREGABS_Instr(String name, int size, MSP430AddrMode.IREGABS am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IREGABS(source, dest);
-        }
-    }
-    public abstract static class IMM_Instr extends MSP430Instr {
-        public final MSP430Operand.IMM source;
-        protected IMM_Instr(String name, int size, MSP430AddrMode.IMM am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IMM(source);
-        }
-    }
-    public abstract static class IMMREG_Instr extends MSP430Instr {
-        public final MSP430Operand.IMM source;
-        public final MSP430Operand.SREG dest;
-        protected IMMREG_Instr(String name, int size, MSP430AddrMode.IMMREG am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IMMREG(source, dest);
-        }
-    }
-    public abstract static class IMMIND_Instr extends MSP430Instr {
-        public final MSP430Operand.IMM source;
-        public final MSP430Operand.INDX dest;
-        protected IMMIND_Instr(String name, int size, MSP430AddrMode.IMMIND am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IMMIND(source, dest);
-        }
-    }
-    public abstract static class IMMSYM_Instr extends MSP430Instr {
-        public final MSP430Operand.IMM source;
-        public final MSP430Operand.SYM dest;
-        protected IMMSYM_Instr(String name, int size, MSP430AddrMode.IMMSYM am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IMMSYM(source, dest);
-        }
-    }
-    public abstract static class IMMABS_Instr extends MSP430Instr {
-        public final MSP430Operand.IMM source;
-        public final MSP430Operand.ABSO dest;
-        protected IMMABS_Instr(String name, int size, MSP430AddrMode.IMMABS am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_IMMABS(source, dest);
-        }
-    }
-    public abstract static class AUTO_B_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_B source;
-        protected AUTO_B_Instr(String name, int size, MSP430AddrMode.AUTO_B am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTO_B(source);
-        }
-    }
-    public abstract static class AUTOREG_B_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_B source;
-        public final MSP430Operand.SREG dest;
-        protected AUTOREG_B_Instr(String name, int size, MSP430AddrMode.AUTOREG_B am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOREG_B(source, dest);
-        }
-    }
-    public abstract static class AUTOIND_B_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_B source;
-        public final MSP430Operand.INDX dest;
-        protected AUTOIND_B_Instr(String name, int size, MSP430AddrMode.AUTOIND_B am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOIND_B(source, dest);
-        }
-    }
-    public abstract static class AUTOSYM_B_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_B source;
-        public final MSP430Operand.SYM dest;
-        protected AUTOSYM_B_Instr(String name, int size, MSP430AddrMode.AUTOSYM_B am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOSYM_B(source, dest);
-        }
-    }
-    public abstract static class AUTOABS_B_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_B source;
-        public final MSP430Operand.ABSO dest;
-        protected AUTOABS_B_Instr(String name, int size, MSP430AddrMode.AUTOABS_B am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOABS_B(source, dest);
-        }
-    }
-    public abstract static class AUTO_W_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_W source;
-        protected AUTO_W_Instr(String name, int size, MSP430AddrMode.AUTO_W am) {
-            super(name, size);
-            this.source = am.source;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTO_W(source);
-        }
-    }
-    public abstract static class AUTOREG_W_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_W source;
-        public final MSP430Operand.SREG dest;
-        protected AUTOREG_W_Instr(String name, int size, MSP430AddrMode.AUTOREG_W am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOREG_W(source, dest);
-        }
-    }
-    public abstract static class AUTOIND_W_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_W source;
-        public final MSP430Operand.INDX dest;
-        protected AUTOIND_W_Instr(String name, int size, MSP430AddrMode.AUTOIND_W am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOIND_W(source, dest);
-        }
-    }
-    public abstract static class AUTOSYM_W_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_W source;
-        public final MSP430Operand.SYM dest;
-        protected AUTOSYM_W_Instr(String name, int size, MSP430AddrMode.AUTOSYM_W am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOSYM_W(source, dest);
-        }
-    }
-    public abstract static class AUTOABS_W_Instr extends MSP430Instr {
-        public final MSP430Operand.AIREG_W source;
-        public final MSP430Operand.ABSO dest;
-        protected AUTOABS_W_Instr(String name, int size, MSP430AddrMode.AUTOABS_W am) {
-            super(name, size);
-            this.source = am.source;
-            this.dest = am.dest;
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_AUTOABS_W(source, dest);
-        }
-    }
+    
     public abstract static class JMP_Instr extends MSP430Instr {
         public final MSP430Operand.JUMP source;
         protected JMP_Instr(String name, int size, MSP430AddrMode.JMP am) {
@@ -496,35 +96,29 @@ public abstract class MSP430Instr {
             this.source = am.source;
         }
         public void accept(MSP430AddrModeVisitor v) {
-            v.visit_JMP(source);
+            v.visit_JMP(this, source);
+        }
+        public String toString() {
+            return name+" "+source;
         }
     }
-    public abstract static class DOUBLE_W_Instr extends MSP430Instr {
-        public final MSP430AddrMode.DOUBLE_W am;
+    
+    public abstract static class SINGLE_B_Instr extends MSP430Instr {
+        public final MSP430AddrMode.SINGLE_B am;
         public final MSP430Operand source;
-        public final MSP430Operand dest;
-        protected DOUBLE_W_Instr(String name, int size, MSP430AddrMode.DOUBLE_W am) {
-            super(name, size);
-            this.am = am;
-            this.source = am.get_source();
-            this.dest = am.get_dest();
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            am.accept(v);
-        }
-    }
-    public abstract static class SINGLE_W_Instr extends MSP430Instr {
-        public final MSP430AddrMode.SINGLE_W am;
-        public final MSP430Operand source;
-        protected SINGLE_W_Instr(String name, int size, MSP430AddrMode.SINGLE_W am) {
+        protected SINGLE_B_Instr(String name, int size, MSP430AddrMode.SINGLE_B am) {
             super(name, size);
             this.am = am;
             this.source = am.get_source();
         }
         public void accept(MSP430AddrModeVisitor v) {
-            am.accept(v);
+            am.accept(this, v);
+        }
+        public String toString() {
+            return name+am.toString();
         }
     }
+    
     public abstract static class DOUBLE_B_Instr extends MSP430Instr {
         public final MSP430AddrMode.DOUBLE_B am;
         public final MSP430Operand source;
@@ -536,21 +130,47 @@ public abstract class MSP430Instr {
             this.dest = am.get_dest();
         }
         public void accept(MSP430AddrModeVisitor v) {
-            am.accept(v);
+            am.accept(this, v);
+        }
+        public String toString() {
+            return name+am.toString();
         }
     }
-    public abstract static class SINGLE_B_Instr extends MSP430Instr {
-        public final MSP430AddrMode.SINGLE_B am;
+    
+    public abstract static class SINGLE_W_Instr extends MSP430Instr {
+        public final MSP430AddrMode.SINGLE_W am;
         public final MSP430Operand source;
-        protected SINGLE_B_Instr(String name, int size, MSP430AddrMode.SINGLE_B am) {
+        protected SINGLE_W_Instr(String name, int size, MSP430AddrMode.SINGLE_W am) {
             super(name, size);
             this.am = am;
             this.source = am.get_source();
         }
         public void accept(MSP430AddrModeVisitor v) {
-            am.accept(v);
+            am.accept(this, v);
+        }
+        public String toString() {
+            return name+am.toString();
         }
     }
+    
+    public abstract static class DOUBLE_W_Instr extends MSP430Instr {
+        public final MSP430AddrMode.DOUBLE_W am;
+        public final MSP430Operand source;
+        public final MSP430Operand dest;
+        protected DOUBLE_W_Instr(String name, int size, MSP430AddrMode.DOUBLE_W am) {
+            super(name, size);
+            this.am = am;
+            this.source = am.get_source();
+            this.dest = am.get_dest();
+        }
+        public void accept(MSP430AddrModeVisitor v) {
+            am.accept(this, v);
+        }
+        public String toString() {
+            return name+am.toString();
+        }
+    }
+    
     public static class ADC extends SINGLE_W_Instr {
         ADC(int size, MSP430AddrMode.SINGLE_W am) {
             super("adc", size, am);
@@ -678,32 +298,32 @@ public abstract class MSP430Instr {
     }
     
     public static class CLRC extends MSP430Instr {
-        CLRC(int size, MSP430AddrMode.$clrc$ am) {
+        CLRC(int size) {
             super("clrc", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$clrc$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLRN extends MSP430Instr {
-        CLRN(int size, MSP430AddrMode.$clrn$ am) {
+        CLRN(int size) {
             super("clrn", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$clrn$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class CLRZ extends MSP430Instr {
-        CLRZ(int size, MSP430AddrMode.$clrz$ am) {
+        CLRZ(int size) {
             super("clrz", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$clrz$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -778,22 +398,22 @@ public abstract class MSP430Instr {
     }
     
     public static class DINT extends MSP430Instr {
-        DINT(int size, MSP430AddrMode.$dint$ am) {
+        DINT(int size) {
             super("dint", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$dint$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class EINT extends MSP430Instr {
-        EINT(int size, MSP430AddrMode.$eint$ am) {
+        EINT(int size) {
             super("eint", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$eint$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -938,12 +558,12 @@ public abstract class MSP430Instr {
     }
     
     public static class NOP extends MSP430Instr {
-        NOP(int size, MSP430AddrMode.$nop$ am) {
+        NOP(int size) {
             super("nop", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$nop$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -976,22 +596,22 @@ public abstract class MSP430Instr {
     }
     
     public static class RET extends MSP430Instr {
-        RET(int size, MSP430AddrMode.$ret$ am) {
+        RET(int size) {
             super("ret", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$ret$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class RETI extends MSP430Instr {
-        RETI(int size, MSP430AddrMode.$reti$ am) {
+        RETI(int size) {
             super("reti", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$reti$();
+        public String toString() {
+            return name;
         }
     }
     
@@ -1066,32 +686,32 @@ public abstract class MSP430Instr {
     }
     
     public static class SETC extends MSP430Instr {
-        SETC(int size, MSP430AddrMode.$setc$ am) {
+        SETC(int size) {
             super("setc", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$setc$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SETN extends MSP430Instr {
-        SETN(int size, MSP430AddrMode.$setn$ am) {
+        SETN(int size) {
             super("setn", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$setn$();
+        public String toString() {
+            return name;
         }
     }
     
     public static class SETZ extends MSP430Instr {
-        SETZ(int size, MSP430AddrMode.$setz$ am) {
+        SETZ(int size) {
             super("setz", size);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public void accept(MSP430AddrModeVisitor v) {
-            v.visit_$setz$();
+        public String toString() {
+            return name;
         }
     }
     

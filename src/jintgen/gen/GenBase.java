@@ -37,6 +37,9 @@ import avrora.util.Printer;
 
 import java.util.Properties;
 import java.util.List;
+import java.util.LinkedList;
+
+import jintgen.isdl.AddrModeDecl;
 
 /**
  * The <code>GenBase</code> class contains a number of utility methods that help
@@ -138,4 +141,37 @@ public class GenBase {
     protected String javaName(String n) {
         return n.replace('"', '$').replace('.', '_');
     }
+
+    protected LinkedList<String> nameList(List<AddrModeDecl.Operand> ol) {
+        LinkedList<String> list = new LinkedList<String>();
+        for ( AddrModeDecl.Operand o : ol ) list.add(o.name.image);
+        return list;
+    }
+
+    protected LinkedList<String> nameTypeList(List<AddrModeDecl.Operand> ol) {
+        LinkedList<String> list = new LinkedList<String>();
+        for ( AddrModeDecl.Operand o : ol ) list.add("$operand."+o.type.image+' '+o.name.image);
+        return list;
+    }
+
+    protected LinkedList<String> nameList(String a, List<AddrModeDecl.Operand> ol) {
+        LinkedList<String> list = new LinkedList<String>();
+        list.add(a);
+        for ( AddrModeDecl.Operand o : ol ) list.add(o.name.image);
+        return list;
+    }
+
+    protected LinkedList<String> nameTypeList(String t, String n, List<AddrModeDecl.Operand> ol) {
+        LinkedList<String> list = new LinkedList<String>();
+        list.add(t+" "+n);
+        for ( AddrModeDecl.Operand o : ol ) list.add("$operand."+o.type.image+' '+o.name.image);
+        return list;
+    }
+
+    protected void printParams(List<String> list) {
+        beginList("(");
+        for ( String str : list ) print(str);
+        endList(")");
+    }
+
 }

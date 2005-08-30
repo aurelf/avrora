@@ -60,6 +60,9 @@ public abstract class Generator extends GenBase {
             "This option specifies a prefix for each class name to be generated. When this option " +
             "is set to \"*\", the generators will append the name of the architecture to the beginning " +
             "of each class generated; otherwise generators will append the specified string.");
+    public final Option.Str ABSTRACT = options.newOption("abstract-package", "",
+            "This option specifies the name of the java package that contains the abstract " +
+            "versions of the instructions and architecture.");
 
     public void setArchitecture(Architecture a) {
         arch = a;
@@ -83,14 +86,14 @@ public abstract class Generator extends GenBase {
     }
 
     protected Printer newClassPrinter(String name, List<String> imports, String sup, String jdoc) throws IOException {
-        return newJavaPrinter(name, imports, sup, "class", jdoc);
+        return newJavaPrinter(name, imports, sup, "class", null, jdoc);
     }
 
-    protected Printer newAbstractClassPrinter(String name, List<String> imports, String sup, String jdoc) throws IOException {
-        return newJavaPrinter(name, imports, sup, "abstract class", jdoc);
+    protected Printer newAbstractClassPrinter(String name, List<String> imports, String sup, List<String> impl, String jdoc) throws IOException {
+        return newJavaPrinter(name, imports, sup, "abstract class", impl, jdoc);
     }
 
-    private Printer newJavaPrinter(String n, List<String> imports, String sup, String type, String jdoc) throws FileNotFoundException {
+    private Printer newJavaPrinter(String n, List<String> imports, String sup, String type, List<String> impl, String jdoc) throws FileNotFoundException {
         String name = properties.getProperty(n);
         if ( name == null ) throw Util.failure("unknown class template: "+n);
         File f = new File(name + ".java");
@@ -100,18 +103,27 @@ public abstract class Generator extends GenBase {
             printer.println("package "+pname+";");
             printer.nextln();
         }
+        String pabs = ABSTRACT.get();
+        if ( !"".equals(pabs));
+            printer.println("import "+pabs+".*;");
         if ( imports != null ) for ( String s : imports ) {
             printer.println("import "+s+";");
         }
         if ( jdoc != null )
             generateJavaDoc(printer, jdoc);
         String ec = sup == null ? "" : "extends "+sup;
-        printer.startblock("public "+type+" "+name+ec);
+        printer.print("public "+type+" "+name+ec+' ');
+        if ( impl != null ) {
+            printer.beginList("implements ");
+            for ( String str : impl ) printer.print(str);
+            printer.endList(" ");
+        }
+        printer.startblock();
         return printer;
     }
 
     protected Printer newInterfacePrinter(String name, List<String> imports, String sup, String jdoc) throws IOException {
-        return newJavaPrinter(name, imports, sup, "interface", jdoc);
+        return newJavaPrinter(name, imports, sup, "interface", null, jdoc);
     }
 
     protected void generateJavaDoc(Printer printer, String p) {

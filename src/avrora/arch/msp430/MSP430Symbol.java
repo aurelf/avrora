@@ -1,4 +1,5 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
 import java.util.HashMap;
 
 /**
@@ -47,36 +48,6 @@ public class MSP430Symbol {
     
     public static GPR get_GPR(String name) {
         return (GPR)GPR.set.get(name);
-    }
-    
-    public static class SREG extends GPR {
-        public final int encoding;
-        public int getEncodingValue() { return encoding; }
-        private static HashMap set = new HashMap();
-        private static SREG newSREG(String n, int v, int ev) {
-            SREG obj = new SREG(n, v, ev);
-            set.put(n, obj);
-            return obj;
-        }
-        SREG(String sym, int v, int ev) { super(sym, v); encoding = ev; }
-        public static final SREG R2 = newSREG("r2", 2, 2);
-        public static final SREG R3 = newSREG("r3", 3, 3);
-        public static final SREG R4 = newSREG("r4", 4, 4);
-        public static final SREG R5 = newSREG("r5", 5, 5);
-        public static final SREG R6 = newSREG("r6", 6, 6);
-        public static final SREG R7 = newSREG("r7", 7, 7);
-        public static final SREG R8 = newSREG("r8", 8, 8);
-        public static final SREG R9 = newSREG("r9", 9, 9);
-        public static final SREG R10 = newSREG("r10", 10, 10);
-        public static final SREG R11 = newSREG("r11", 11, 11);
-        public static final SREG R12 = newSREG("r12", 12, 12);
-        public static final SREG R13 = newSREG("r13", 13, 13);
-        public static final SREG R14 = newSREG("r14", 14, 14);
-        public static final SREG R15 = newSREG("r15", 15, 15);
-    }
-    
-    public static SREG get_SREG(String name) {
-        return (SREG)SREG.set.get(name);
     }
     
 }

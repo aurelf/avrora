@@ -32,10 +32,7 @@
 
 package jintgen.gen.disassembler;
 
-import jintgen.isdl.EncodingDecl;
-import jintgen.isdl.AddrModeDecl;
-import jintgen.isdl.OperandTypeDecl;
-import jintgen.isdl.EnumDecl;
+import jintgen.isdl.*;
 import jintgen.jigir.*;
 import jintgen.gen.GenBase;
 
@@ -155,14 +152,11 @@ class ReaderImplementation extends GenBase {
         for ( ReadMethod m : operandDecodeMethods.values() ) m.generate();
     }
 
-    void addEncoding(String eName, EncodingDecl ed, AddrModeDecl am) {
+    void addEncoding(String eName, InstrDecl instr, EncodingDecl ed, AddrModeDecl am) {
         int no = am.operands.size();
         if ( no > maxoperands ) maxoperands = no;
         if ( !encodingInfo.containsKey(ed) ) {
-            EncodingReader er = new EncodingReader();
-            er.decl = ed;
-            er.name = eName;
-            er.addrMode = am;
+            EncodingReader er = new EncodingReader(eName, instr, ed, am);
             encodingInfo.put(ed, er);
             encodingRev.put(eName, er);
             dGen.numEncodings++;
@@ -197,10 +191,19 @@ class ReaderImplementation extends GenBase {
     }
 
     class EncodingReader {
-        String name;
-        EncodingDecl decl;
-        AddrModeDecl addrMode;
-        HashMap<AddrModeDecl.Operand, String> operandDecodeString = new HashMap<AddrModeDecl.Operand, String>();
+        final String name;
+        final InstrDecl instr;
+        final EncodingDecl decl;
+        final AddrModeDecl addrMode;
+        final HashMap<AddrModeDecl.Operand, String> operandDecodeString;
+
+        EncodingReader(String n, InstrDecl i, EncodingDecl ed, AddrModeDecl addr) {
+            name = n;
+            instr = i;
+            decl = ed;
+            addrMode = addr;
+            operandDecodeString = new HashMap<AddrModeDecl.Operand, String>();
+        }
 
         void computeDecoders() {
             computeDecoders("", addrMode.operands);
@@ -295,17 +298,18 @@ class ReaderImplementation extends GenBase {
         }
 
         void generateReader() {
+            // if we do not need to generate a real reader for this one
+            if ( instr != null && !DGUtil.addrModeClassExists(instr))  return;
+
             dGen.properties.setProperty("reader", name);
             startblock("static class $reader_reader extends OperandReader");
             startblock("$addr read($disassembler d)");
             println("d.size = $1;", decl.getBitWidth() / 8);
             for ( AddrModeDecl.Operand o : addrMode.operands )
                 generateOperandRead("", o);
-            beginList("return new $addr.$1(", javaName(addrMode.name.image));
-            for ( AddrModeDecl.Operand o : addrMode.operands ) {
-                print(o.name.image);
-            }
-            endList(");");
+            print("return new $addr.$1", javaName(addrMode.name.image));
+            printParams(nameList(addrMode.operands));
+            println(";");
             nextln();
             endblock();
             endblock();
@@ -354,8 +358,28 @@ class ReaderImplementation extends GenBase {
 
         generateReads();
 
+        generateJavaDoc("The <code>NULL_reader</code> class is used for instructions that define their " +
+                "own addressing mode and have no operands. This reader sets the size of the instruction " +
+                "to the appropriate size for the encoding and the addressing mode to <code>null</code>.");
+        startblock("public static class NULL_reader extends OperandReader");
+        println("final int size;");
+        startblock("NULL_reader(int sz)");
+        println("this.size = sz;");
+        endblock();
+        startblock("$addr read($disassembler d)");
+        println("d.size = size;");
+        println("return null;");
+        endblock();
+        endblock();
+
         for ( EncodingReader er : encodingInfo.values() )
             er.generateReader();
     }
 
+    String getReaderCreation(String r) {
+        EncodingReader reader = this.encodingRev.get(r);
+        if ( reader.instr != null && !DGUtil.addrModeClassExists(reader.instr) )
+            return tr("new NULL_reader($1)", reader.decl.getBitWidth()/8);
+        else return tr("new $1_reader()", r);
+    }
 }
