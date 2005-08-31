@@ -32,18 +32,18 @@
 
 package avrora.actions;
 
-import avrora.util.Util;
 import avrora.Main;
 import avrora.arch.avr.AVRDisassembler;
 import avrora.arch.avr.AVRInstr;
 import avrora.arch.msp430.MSP430Instr;
 import avrora.arch.msp430.MSP430Disassembler;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Option;
+import avrora.arch.AbstractDisassembler;
+import avrora.arch.AbstractInstr;
+import avrora.util.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * The <code>DisassembleAction</code> class represents an action that allows the user to disassemble
@@ -59,11 +59,19 @@ public class DisassembleAction extends Action {
     Option.Long MAX_LENGTH = options.newOption("max-length", 16,
             "This option specifies the maximum length of an instruction in bytes.");
     Option.Bool EXHAUSTIVE = options.newOption("exhaustive", false,
-            "When this option is specified, the disassembler tests the disassembler exhaustively by " +
+            "When this option is specified, this action will test the disassembler exhaustively by " +
             "trying bit patterns systematically.");
+    Option.Str FILE = options.newOption("file", "",
+            "When this option is specified, this action will test the disassembler by loading the " +
+            "specified file and disassembling the data contained inside.");
+
+    final ClassMap disassemblerMap;
 
     public DisassembleAction() {
         super("The \"disassemble\" action disassembles a binary file into source level instructions.");
+        disassemblerMap = new ClassMap("Architecture", AbstractDisassembler.class);
+        disassemblerMap.addClass("avr", AVRDisassembler.class);
+        disassemblerMap.addClass("msp430", MSP430Disassembler.class);
     }
 
     /**
@@ -75,100 +83,78 @@ public class DisassembleAction extends Action {
      * file
      */
     public void run(String[] args) throws Exception {
-        if ( args.length < 1 )
-            Util.userError("no input data");
-
         byte[] buf = new byte[128];
 
+        AbstractDisassembler da = (AbstractDisassembler)disassemblerMap.getObjectOfClass(ARCH.get());
+        if ( EXHAUSTIVE.get() ) {
+            // run the exhaustive disassembler
+            exhaustive(da);
+        } else if ( !"".equals(FILE.get())) {
+            // load and disassemble a complete file
+            disassembleFile(da);
+        } else {
+            // disassemble the bytes specified on the command line
+            disassembleArguments(args, buf, da);
+        }
+    }
+
+    private void disassembleArguments(String[] args, byte[] buf, AbstractDisassembler da) {
+        if ( args.length < 1 )
+            Util.userError("no input data");
         for ( int cntr = 0; cntr < args.length; cntr++ ) {
             buf[cntr] = (byte)StringUtil.evaluateIntegerLiteral(args[cntr]);
         }
 
-        DA da = getDA();
-        if ( EXHAUSTIVE.get() )
-            exhaustive(da);
-        else {
-            da.decode(0, buf);
-            Object instr = da.instr;
-            int len = instr == null ? 2 : da.size;
-            print(buf, len, ""+instr);
+        disassembleAndPrint(buf, 0, da);
+    }
+
+    private void disassembleFile(AbstractDisassembler da) throws IOException {
+        String fname = FILE.get();
+        Main.checkFileExists(fname);
+        FileInputStream fis = new FileInputStream(fname);
+        byte[] buf = new byte[fis.available()];
+        fis.read(buf);
+        for ( int cntr = 0; cntr < buf.length; ) {
+            cntr += disassembleAndPrint(buf, cntr, da);
         }
     }
 
-    private DA getDA() {
-        String arch = ARCH.get();
-        if ( "avr".equals(arch)) {
-            return new AVRDA();
-        } else if ( "msp430".equals(arch)) {
-            return new MSPDA();
-        }
-        Util.userError("Unknown architecture", arch);
-        return null;
-    }
-
-    void exhaustive(DA da) {
+    void exhaustive(AbstractDisassembler da) {
         byte[] buf = new byte[(int)MAX_LENGTH.get()];
         for ( int cntr = 0; cntr < 0x10000; cntr++ ) {
             buf[0] = (byte)cntr;
             buf[1] = (byte)(cntr >> 8);
-            String result;
-            int len = 2;
             try {
-                da.decode(0, buf);
-                Object obj = da.instr;
-                if ( obj == null ) result = "null";
-                else {
-                    result = obj.toString();
-                    len = da.size;
-                }
+                disassembleAndPrint(buf, 0, da);
             } catch (Exception e) {
-                result = "exception";
                 e.printStackTrace();
             }
-            print(buf, len, result);
         }
     }
 
-    private void print(byte[] buf, int len, String str) {
+    private int disassembleAndPrint(byte[] buf, int off, AbstractDisassembler da) {
+        String result;
+        int len = 2;
+        AbstractInstr instr = da.disassemble(0, off, buf);
+        if ( instr == null ) result = "null";
+        else {
+            result = instr.toString();
+            len = instr.getSize();
+        }
+        print(buf, off, len, result);
+        return len;
+    }
+
+    private void print(byte[] buf, int off, int len, String str) {
         StringBuffer sbuf = new StringBuffer();
-        sbuf.append(StringUtil.addrToString(0));
+        sbuf.append(StringUtil.addrToString(off));
         sbuf.append(": ");
         for ( int cntr = 0; cntr < len; cntr++ ) {
-            StringUtil.toHex(sbuf, buf[cntr], 2);
+            StringUtil.toHex(sbuf, buf[off+cntr], 2);
             sbuf.append(' ');
         }
         for ( int cntr = sbuf.length(); cntr < 30; cntr++ ) sbuf.append(' ');
         sbuf.append(str);
         Terminal.println(sbuf.toString());
-    }
-
-    abstract class DA {
-        int size;
-        Object instr;
-        abstract void decode(int ind, byte[] buf) throws Exception;
-    }
-
-    class MSPDA extends DA {
-        MSP430Disassembler da;
-        MSPDA() {
-            da = new MSP430Disassembler();
-        }
-        void decode(int ind, byte[] buf) throws Exception {
-            MSP430Instr i = da.decode(0, ind, buf);
-            instr = i;
-            if ( i != null ) size = i.size;
-        }
-    }
-
-    class AVRDA extends DA {
-        AVRDisassembler da;
-        AVRDA() {
-            da = new AVRDisassembler();
-        }
-        void decode(int ind, byte[] buf) throws Exception {
-            AVRInstr i = da.decode(0, ind, buf);
-            instr = i;
-            if ( i != null ) size = i.size;
-        }
     }
 }

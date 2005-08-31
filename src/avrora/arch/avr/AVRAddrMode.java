@@ -560,19 +560,6 @@ public interface AVRAddrMode {
         public AVROperand get_ior() { return ior; }
         public AVROperand get_rr() { return rr; }
     }
-    public static class $push$ implements AVRAddrMode {
-        public final AVROperand.GPR rr;
-        public $push$(AVROperand.GPR rr)  {
-            this.rr = rr;
-        }
-        public void accept(AVRInstr i, AVRAddrModeVisitor v) {
-            v.visit_$push$(i, rr);
-        }
-        public String toString() {
-            return "" + ' ' + rr;
-        }
-        public AVROperand get_rr() { return rr; }
-    }
     public static class $rcall$ implements AVRAddrMode {
         public final AVROperand.LREL target;
         public $rcall$(AVROperand.LREL target)  {

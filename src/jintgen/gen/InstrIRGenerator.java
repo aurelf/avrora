@@ -312,7 +312,7 @@ public class InstrIRGenerator extends Generator {
     //=========================================================================================
 
     private void generateEnumerations() throws IOException {
-        setPrinter(newClassPrinter("symbol", hashMapImport, null,
+        setPrinter(newClassPrinter("symbol", hashMapImport, null, null,
                 tr("The <code>$symbol</code> class represents a symbol (or an enumeration as " +
                 "declared in the instruction set description) relevant to the instruction set architecture. " +
                 "For example register names, status bit names, etc are given here. This class provides a " +
@@ -436,6 +436,34 @@ public class InstrIRGenerator extends Generator {
         endblock();
         println("");
 
+        startblock("abstract static class Addr implements $operand");
+        println("public final int address;");
+        startblock("Addr(int addr)");
+        println("this.address = addr;");
+        endblock();
+        startblock("public String toString()");
+        println("String hs = Integer.toHexString(address);");
+        println("StringBuffer buf = new StringBuffer(\"0x\");");
+        println("for ( int cntr = hs.length(); cntr < 4; cntr++ ) buf.append('0');");
+        println("buf.append(hs);");
+        println("return buf.toString();");
+        endblock();
+        endblock();
+        println("");
+
+        startblock("abstract static class Rel implements $operand");
+        println("public final int address;");
+        println("public final int relative;");
+        startblock("Rel(int addr, int rel)");
+        println("this.address = addr;");
+        println("this.relative = rel;");
+        endblock();
+        startblock("public String toString()");
+        println("if ( relative >= 0 ) return \".+\"+relative;");
+        println("else return \".\"+relative;");
+        endblock();
+        endblock();
+        println("");
         // generate all the explicitly declared operand types
         for ( OperandTypeDecl d : arch.operandTypes )
             generateOperandType(d, vprinter);
@@ -469,7 +497,11 @@ public class InstrIRGenerator extends Generator {
     private String operandSuperClass(OperandTypeDecl.Value d) {
         EnumDecl ed = arch.getEnum(d.kind.image);
         if ( ed != null ) return "Sym";
-        else return "Int";
+        else {
+            if ( d.isRelative() ) return "Rel";
+            if ( d.isAddress() ) return "Addr";
+            return "Int";
+        }
     }
 
     private void generateSimpleType(OperandTypeDecl.Value d) {
@@ -486,8 +518,13 @@ public class InstrIRGenerator extends Generator {
         } else {
             println("public static final int low = "+d.low+";");
             println("public static final int high = "+d.high+";");
-            startblock("$oname(int val)");
-            println("super($builder.checkValue(val, low, high));");
+            if ( d.isRelative() ) {
+                startblock("$oname(int pc, int rel)");
+                println("super(pc + 2 + 2 * rel, $builder.checkValue(rel, low, high));");
+            } else {
+                startblock("$oname(int val)");
+                println("super($builder.checkValue(val, low, high));");
+            }
             endblock();
         }
     }

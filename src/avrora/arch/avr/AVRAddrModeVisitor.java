@@ -43,7 +43,6 @@ public interface AVRAddrModeVisitor {
     public void visit_$muls$(AVRInstr i, AVROperand.HGPR rd, AVROperand.HGPR rr);
     public void visit_$mulsu$(AVRInstr i, AVROperand.MGPR rd, AVROperand.MGPR rr);
     public void visit_$out$(AVRInstr i, AVROperand.IMM6 ior, AVROperand.GPR rr);
-    public void visit_$push$(AVRInstr i, AVROperand.GPR rr);
     public void visit_$rcall$(AVRInstr i, AVROperand.LREL target);
     public void visit_$rjmp$(AVRInstr i, AVROperand.LREL target);
     public void visit_$rol$(AVRInstr i, AVROperand.GPR rd);

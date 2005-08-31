@@ -13,14 +13,14 @@ architecture msp430 {
     format DOUBLE_OP = { opcode[3:0], sreg[3:0], Ad[0], bw[0], As[1:0], dreg[3:0] }
     format DOUBLE_OP_X = { opcode[3:0], sreg[3:0], Ad[0], bw[0], As[1:0], dreg[3:0], X[15:0] }
     format DOUBLE_OP_XY = { opcode[3:0], sreg[3:0], Ad[0], bw[0], As[1:0], dreg[3:0], X[15:0], Y[15:0] }
-    format JUMP_OP = { opcode[5:0], offset[9:0] }
+    format JUMP_OP = { opcode[5:0], target[9:0] }
 
 //---------------------------------------------------------------------------
 //  MEMORY ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
-    memory $regs(GPR): short;
-    memory $sram(int): byte; // a "view" of the memory as bytes
-    memory $wsram(int): short; // a "view" of the memory as shorts
+    memory $regs(GPR): char;
+    memory $sram(char): byte; // a "view" of the memory as bytes
+    memory $wsram(char): char; // a "view" of the memory as unsigned shorts
 
     global C: boolean;
     global N: boolean;
@@ -82,7 +82,7 @@ architecture msp430 {
 	    write: byte { }
 	}
 
-    operand-type IMM[16]: immediate [-32768,65536];
+    operand-type IMM[16]: int [-32768,65536];
 
     operand-type INDX {
         sub-operand reg: SREG;
@@ -92,17 +92,17 @@ architecture msp430 {
     }
 
     // TODO: this is encoded as relative to the pc
-    operand-type SYM[16]: immediate [0,0xFFFF] {
-        read: byte { return $sram(pc + this); }
-        write: byte {$sram(pc + this) = value; }
+    operand-type SYM[16]: relative [-32768,32767] {
+        read: byte { return $sram(this); }
+        write: byte {$sram(this) = value; }
     }
 
-    operand-type ABSO[16]: immediate [0,0xFFFF] {
+    operand-type ABSO[16]: address [0,0xFFFF] {
 	    read: byte { return $sram(this); }
 	    write: byte { $sram(this) = value; }
     }
 
-    operand-type JUMP[10]: immediate [0,0x3FF];
+    operand-type JUMP[10]: relative [-512,511];
 
 //-------------------------------------------------------------------------- 
 //   ADDRESSING MODES ALLOWED FOR SINGLE OPERAND/DOUBLE OPERAND/JUMP INSTRUCTIONS
@@ -379,9 +379,8 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode JMP source: JUMP {
-        encoding = JUMP_OP where { offset = source }
-        property syntax: String = "%source";
+    addr-mode JMP target: JUMP {
+        encoding = JUMP_OP
         property cycles: int = 2;
     }
 
@@ -620,26 +619,6 @@ architecture msp430 {
         N = result[7];
         Z = !(result);
         return result[7:0];
-    }
-
-    inline subroutine relativeBranch(target: int): void {
-        nextPC = relative(target);
-        cyclesConsumed = cyclesConsumed + 1;
-    }
-
-    inline subroutine relative(target: int): int {
-        return (target * 2) + nextPC;
-    }
-
-    inline subroutine absolute(target: int): int {
-        return target * 2;
-    }
-
-    inline subroutine skip(): void {
-        local dist: int = $isize(nextPC);
-        nextPC = nextPC + dist;
-        if ( dist == 4 ) cyclesConsumed = cyclesConsumed + 2;
-        else cyclesConsumed = cyclesConsumed + 1;
     }
 
     inline subroutine pushPC(npc: int): void {
@@ -1064,7 +1043,7 @@ architecture msp430 {
 	    property opcode: int = 0b001011;
 	    execute {
  	        if ( C ) {
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
 	        }
         }
     }
@@ -1073,25 +1052,25 @@ architecture msp430 {
 	    property opcode: int = 0b001011;
 	    execute {
  	        if ( C ) {
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
 	        }
         }
     }
 
-    instruction "jeq": JMP {      //jump if equal
+    pseudo instruction "jeq": JMP {      //jump if equal
 	    property opcode: int = 0b001001;
 	    execute {
 	        if ( Z ) {
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
             }
         }
     }
 
-    pseudo instruction "jz": JMP {      //jump if zero
+    instruction "jz": JMP {      //jump if zero
 	    property opcode: int = 0b001001;
 	    execute {
 	        if ( Z ) {
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
             }
         }
     }
@@ -1100,7 +1079,7 @@ architecture msp430 {
 	    property opcode: int = 0b001101;
 	    execute {
 	        if ( Z xor N ) {
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
 	        }
 	    }
     }
@@ -1109,7 +1088,7 @@ architecture msp430 {
         property opcode: int = 0b001110;
         execute {
              if ( N xor V ) {
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
              }
     	 }
     }
@@ -1118,7 +1097,7 @@ architecture msp430 {
 	    property opcode: int = 0b001111;
 	    execute {
             //jump to address listed by 10 bit offset, unconditionally
- 	        nextPC = nextPC + 2 * read(source);
+ 	        nextPC = read(target);
 	    }
     }
 
@@ -1127,7 +1106,7 @@ architecture msp430 {
 	    execute {
 	        if ( N ) {
 			    //if N = 1, jump to address listed by 10 bit offset
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
 	        }
         }
     }
@@ -1137,7 +1116,7 @@ architecture msp430 {
 	    execute {
 	        if ( !C ) {
 			    //if C != 0, jump to address listed by 10 bit offset
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
 	        }
         }
     }
@@ -1147,27 +1126,27 @@ architecture msp430 {
 	    execute {
             if ( !C ) {
                 //if C != 0, jump to address listed by 10 bit offset
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
             }
         }
     }
 
-    instruction "jne": JMP {  //jump if not equal
+    pseudo instruction "jne": JMP {  //jump if not equal
         property opcode: int = 0b001000;
         execute {
             if ( !Z ) {
                 //if Z != 0, jump to address listed by 10 bit offset
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
             }
         }
     }
 
-    pseudo instruction "jnz": JMP {  //jump if not equal
+    instruction "jnz": JMP {  //jump if not equal
 	    property opcode: int = 0b001000;
 	    execute {
 	        if ( !Z ) {
 			    //if Z != 0, jump to address listed by 10 bit offset
- 	            nextPC = nextPC + 2 * read(source);
+ 	            nextPC = read(target);
 	        }
 	    }
     }
@@ -1234,7 +1213,7 @@ architecture msp430 {
     }
 
     instruction "reti" {    //return from interrupt
-        property opcode: int = 0b00010011;
+        encoding = { 0b00010011, 0b00000000 } // encodes 0x1300
         execute {
             sreg = popWord();
             nextPC = popWord();
@@ -1330,7 +1309,7 @@ architecture msp430 {
 
     instruction "rrc": SINGLE_W  {    //rotate right through carry
 	    property bw: int = 0;
-        property opcode: int = 0b00010000;
+        property opcode: int = 0b000100000;
         execute {
             local temp: short = read(source);
             local oldC: int = bit(C);

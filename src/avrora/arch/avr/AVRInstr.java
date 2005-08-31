@@ -969,19 +969,11 @@ public abstract class AVRInstr implements AbstractInstr {
         public void accept(AVRInstrVisitor v) { v.visit(this); }
     }
     
-    public static class PUSH extends AVRInstr {
-        public final AVROperand.GPR rr;
-        PUSH(int size, AVRAddrMode.$push$ am) {
-            super("push", size);
-            this.rr = am.rr;
+    public static class PUSH extends GPR_Instr {
+        PUSH(int size, AVRAddrMode.GPR am) {
+            super("push", size, am);
         }
         public void accept(AVRInstrVisitor v) { v.visit(this); }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_$push$(this, rr);
-        }
-        public String toString() {
-            return name + ' ' + rr;
-        }
     }
     
     public static class RCALL extends AVRInstr {

@@ -64,8 +64,25 @@
 package avrora.arch;
 
 /**
- * @author Ben L. Titzer
+ * The <code>AbstractDisassembler</code> interface is implemented by disassembler
+ * implementations and allows architecture-independent processing tools to decode
+ * raw machine code into instructions.
+ *
+ * @author jIntGen
  */
 public interface AbstractDisassembler {
 
+    /**
+     * The <code>disassemble()</code> method disassembles a single instruction from
+     * a stream of bytes. If the binary data at that location contains a valid
+     * instruction, then it is created and returned. If the binary data at the
+     * specified location is not a valid instruction, this method returns null.
+     * @param base the base address corresponding to index 0 in the array
+     * @param index the index into the specified array where to begin disassembling
+     * @param code the binary data to disassemble into an instruction
+     * @return a reference to a new instruction object representing the instruction
+     * at that location; null if the binary data at the specified location does not
+     * represent a valid instruction
+     */
+    public AbstractInstr disassemble(int base, int index, byte[] code);
 }

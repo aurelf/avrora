@@ -7,7 +7,7 @@ import avrora.arch.*;
  * represents an instruction in the architecture and also extends the
  * outer class.
  */
-public abstract class MSP430Instr  implements AbstractInstr {
+public abstract class MSP430Instr implements AbstractInstr {
     
     /**
      * The <code>accept()</code> method accepts an instruction visitor and
@@ -90,16 +90,16 @@ public abstract class MSP430Instr  implements AbstractInstr {
     }
     
     public abstract static class JMP_Instr extends MSP430Instr {
-        public final MSP430Operand.JUMP source;
+        public final MSP430Operand.JUMP target;
         protected JMP_Instr(String name, int size, MSP430AddrMode.JMP am) {
             super(name, size);
-            this.source = am.source;
+            this.target = am.target;
         }
         public void accept(MSP430AddrModeVisitor v) {
-            v.visit_JMP(this, source);
+            v.visit_JMP(this, target);
         }
         public String toString() {
-            return name+" "+source;
+            return name + ' ' + target;
         }
     }
     

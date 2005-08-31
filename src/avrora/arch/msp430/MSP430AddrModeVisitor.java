@@ -47,5 +47,5 @@ public interface MSP430AddrModeVisitor {
     public void visit_AUTOIND_W(MSP430Instr i, MSP430Operand.AIREG_W source, MSP430Operand.INDX dest);
     public void visit_AUTOSYM_W(MSP430Instr i, MSP430Operand.AIREG_W source, MSP430Operand.SYM dest);
     public void visit_AUTOABS_W(MSP430Instr i, MSP430Operand.AIREG_W source, MSP430Operand.ABSO dest);
-    public void visit_JMP(MSP430Instr i, MSP430Operand.JUMP source);
+    public void visit_JMP(MSP430Instr i, MSP430Operand.JUMP target);
 }

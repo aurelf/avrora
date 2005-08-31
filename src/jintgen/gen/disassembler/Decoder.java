@@ -486,6 +486,10 @@ abstract class Decoder extends GenBase {
                 "either <code>OK</code> or <code>ERR</code>.");
         println("private int state;");
 
+        generateJavaDoc("The <code>pc</code> field stores the current PC, which is needed for PC-relative " +
+                "calculations in loading some operand types.");
+        println("private int pc;");
+
         generateJavaDoc("The <code>state</code> field is set to <code>MOVE</code> at the beginning of the " +
                 "decoding process and remains this value until a terminal state is reached. This value " +
                 "indicates the main loop should continue.");
@@ -507,11 +511,28 @@ abstract class Decoder extends GenBase {
     }
 
     void generateEntryPoints() {
+        generateAbstractMethod();
         generateArrayEntryPoint("byte", 8, true);
         generateArrayEntryPoint("char", 16, false);
         generateArrayEntryPoint("short", 16, true);
         generateArrayEntryPoint("int", 32, true);
         generateArrayEntryPoint("long", 64, true);
+    }
+
+    void generateAbstractMethod() {
+        generateJavaDoc("The <code>disassemble()</code> method disassembles a single instruction from " +
+                "a stream of bytes. If the binary data at that location contains a valid " +
+                "instruction, then it is created and returned. If the binary data at the " +
+                "specified location is not a valid instruction, this method returns null.\n" +
+                "@param base the base address corresponding to index 0 in the array\n" +
+                "@param index the index into the specified array where to begin disassembling\n" +
+                "@param code the binary data to disassemble into an instruction\n" +
+                "@return a reference to a new instruction object representing the instruction " +
+                "at that location; null if the binary data at the specified location does not " +
+                "represent a valid instruction");
+        startblock("public AbstractInstr disassemble(int base, int index, byte[] code)");
+        println("return decode(base, index, code);");
+        endblock();
     }
 
     void generateArrayEntryPoint(String type, int elemSize, boolean signed) {
@@ -531,6 +552,7 @@ abstract class Decoder extends GenBase {
             int word = cntr / DisassemblerGenerator.WORD_SIZE;
             generateWordLoad(word, num, elemSize, signed);
         }
+        println("pc = base + index * "+(elemSize/8)+";");
         println("return decode_root();");
         endblock();
     }

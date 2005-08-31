@@ -1076,12 +1076,12 @@ architecture avr {
         }
     }
 
-    instruction "push" rr: GPR {
+    instruction "push": GPR {
         property opcode: int = 0b1001001;
         property ext: int = 0b1111;
         property cycles: int = 2;
         execute {
-            pushByte($regs(rr));
+            pushByte($regs(rd));
         }
     }
 

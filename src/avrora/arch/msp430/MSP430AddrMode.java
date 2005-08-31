@@ -640,16 +640,16 @@ public interface MSP430AddrMode {
         public MSP430Operand get_dest() { return dest; }
     }
     public static class JMP implements MSP430AddrMode {
-        public final MSP430Operand.JUMP source;
-        public JMP(MSP430Operand.JUMP source)  {
-            this.source = source;
+        public final MSP430Operand.JUMP target;
+        public JMP(MSP430Operand.JUMP target)  {
+            this.target = target;
         }
         public void accept(MSP430Instr i, MSP430AddrModeVisitor v) {
-            v.visit_JMP(i, source);
+            v.visit_JMP(i, target);
         }
         public String toString() {
-            return ""+" "+source;
+            return "" + ' ' + target;
         }
-        public MSP430Operand get_source() { return source; }
+        public MSP430Operand get_target() { return target; }
     }
 }

@@ -215,8 +215,8 @@ class ReaderImplementation extends GenBase {
                 OperandTypeDecl ot = dGen.arch.getOperandDecl(o.type.image);
                 EncodingDecl.Cond cond = decl.getCond();
                 String opname = prefix+o.name.image;
+                String et = getEnumType(ot);
                 if ( cond != null && cond.name.image.equals(opname) ) {
-                    String et = getEnumType(ot);
                     if ( et != null )
                         operandDecodeString.put(o, tr("$symbol.$1.$2", et, cond.expr));
                     else
@@ -224,17 +224,25 @@ class ReaderImplementation extends GenBase {
                     continue;
                 }
                 if ( ot.isValue() ) {
-                    String et = getEnumType(ot);
-                    int[] decoder = computeScatter(opname, (OperandTypeDecl.Value)ot, nl);
+                    OperandTypeDecl.Value vt = (OperandTypeDecl.Value)ot;
+                    int[] decoder = computeScatter(opname, vt, nl);
                     ReadMethod rm = getReadMethod(decoder);
                     if ( et != null )
                         operandDecodeString.put(o, tr("$1_table[$2]", et, rm));
-                    else
-                        operandDecodeString.put(o, rm.toString());
+                    else if (ot.isRelative() ) {
+                        operandDecodeString.put(o, "d.pc, "+getReadExpr(rm, vt));
+                    } else {
+                        operandDecodeString.put(o, getReadExpr(rm, vt));
+                    }
                 } else if ( ot.isCompound() ) {
                     computeDecoders(prefix+opname+".", ot.subOperands);
                 }
             }
+        }
+
+        String getReadExpr(ReadMethod rm, OperandTypeDecl.Value ot) {
+            if ( ot.isSigned() ) return "signExtend("+rm+", "+ot.size+")";
+            else return rm.toString();
         }
 
         String getEnumType(OperandTypeDecl ot) {
@@ -370,6 +378,12 @@ class ReaderImplementation extends GenBase {
         println("d.size = size;");
         println("return null;");
         endblock();
+        endblock();
+
+        startblock("private static int signExtend(int val, int size)");
+        println("// shift all the way to the left and then back (arithmetically)");
+        println("int shift = 32 - size;");
+        println("return (val << shift) >> shift;");
         endblock();
 
         for ( EncodingReader er : encodingInfo.values() )

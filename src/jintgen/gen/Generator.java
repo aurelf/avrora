@@ -85,8 +85,8 @@ public abstract class Generator extends GenBase {
         else return prefix+cls;
     }
 
-    protected Printer newClassPrinter(String name, List<String> imports, String sup, String jdoc) throws IOException {
-        return newJavaPrinter(name, imports, sup, "class", null, jdoc);
+    protected Printer newClassPrinter(String name, List<String> imports, String sup, List<String> impl, String jdoc) throws IOException {
+        return newJavaPrinter(name, imports, sup, "class", impl, jdoc);
     }
 
     protected Printer newAbstractClassPrinter(String name, List<String> imports, String sup, List<String> impl, String jdoc) throws IOException {

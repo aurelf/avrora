@@ -390,7 +390,7 @@ public abstract class AVRInstrBuilder {
     }
     public static class PUSH_builder extends AVRInstrBuilder {
         public AVRInstr build(int size, AVRAddrMode am) {
-            return new AVRInstr.PUSH(size, (AVRAddrMode.$push$)am);
+            return new AVRInstr.PUSH(size, (AVRAddrMode.GPR)am);
         }
     }
     public static class RCALL_builder extends AVRInstrBuilder {

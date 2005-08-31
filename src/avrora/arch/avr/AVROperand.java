@@ -32,6 +32,33 @@ public interface AVROperand {
         }
     }
     
+    abstract static class Addr implements AVROperand {
+        public final int address;
+        Addr(int addr) {
+            this.address = addr;
+        }
+        public String toString() {
+            String hs = Integer.toHexString(address);
+            StringBuffer buf = new StringBuffer("0x");
+            for ( int cntr = hs.length(); cntr < 4; cntr++ ) buf.append('0');
+            buf.append(hs);
+            return buf.toString();
+        }
+    }
+    
+    abstract static class Rel implements AVROperand {
+        public final int address;
+        public final int relative;
+        Rel(int addr, int rel) {
+            this.address = addr;
+            this.relative = rel;
+        }
+        public String toString() {
+            if ( relative >= 0 ) return ".+"+relative;
+            else return "."+relative;
+        }
+    }
+    
     public class GPR extends Sym {
         GPR(String s) {
             super(AVRSymbol.get_GPR(s));
@@ -159,22 +186,22 @@ public interface AVROperand {
         }
     }
     
-    public class SREL extends Int {
+    public class SREL extends Rel {
         public static final int low = -64;
         public static final int high = 63;
-        SREL(int val) {
-            super(AVRInstrBuilder.checkValue(val, low, high));
+        SREL(int pc, int rel) {
+            super(pc + 2 + 2 * rel, AVRInstrBuilder.checkValue(rel, low, high));
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
     
-    public class LREL extends Int {
+    public class LREL extends Rel {
         public static final int low = -1024;
         public static final int high = 1023;
-        LREL(int val) {
-            super(AVRInstrBuilder.checkValue(val, low, high));
+        LREL(int pc, int rel) {
+            super(pc + 2 + 2 * rel, AVRInstrBuilder.checkValue(rel, low, high));
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
@@ -192,7 +219,7 @@ public interface AVROperand {
         }
     }
     
-    public class DADDR extends Int {
+    public class DADDR extends Addr {
         public static final int low = 0;
         public static final int high = 65536;
         DADDR(int val) {

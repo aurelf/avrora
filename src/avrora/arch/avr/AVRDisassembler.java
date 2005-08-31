@@ -15,7 +15,7 @@ import java.util.Arrays;
  * </p>-multiple-trees=true
  * </p>-chained-trees=true
  */
-public class AVRDisassembler {
+public class AVRDisassembler implements AbstractDisassembler {
     public static class InvalidInstruction extends Exception {
         InvalidInstruction(int pc)  {
             super("Invalid instruction at "+pc);
@@ -150,74 +150,74 @@ public class AVRDisassembler {
     static final AVRSymbol.RZ[] RZ_table = {
         AVRSymbol.RZ.Z // 0 (0b0) -> Z
     };
-    static int readop_2(AVRDisassembler d) {
+    static int readop_17(AVRDisassembler d) {
         int result = ((d.word0 >>> 4) & 0x0003);
         return result;
     }
-    static int readop_6(AVRDisassembler d) {
+    static int readop_2(AVRDisassembler d) {
         int result = ((d.word0 >>> 4) & 0x000F);
         return result;
     }
-    static int readop_9(AVRDisassembler d) {
+    static int readop_16(AVRDisassembler d) {
         int result = (d.word1 & 0xFFFF);
         return result;
     }
-    static int readop_11(AVRDisassembler d) {
+    static int readop_9(AVRDisassembler d) {
         int result = (d.word0 & 0x000F);
         result |= ((d.word0 >>> 9) & 0x0001) << 4;
         return result;
     }
-    static int readop_7(AVRDisassembler d) {
+    static int readop_3(AVRDisassembler d) {
         int result = (d.word0 & 0x000F);
         return result;
     }
-    static int readop_8(AVRDisassembler d) {
+    static int readop_6(AVRDisassembler d) {
         int result = ((d.word0 >>> 3) & 0x007F);
         return result;
     }
-    static int readop_17(AVRDisassembler d) {
+    static int readop_12(AVRDisassembler d) {
         int result = (d.word0 & 0x0007);
         result |= ((d.word0 >>> 10) & 0x0003) << 3;
         result |= ((d.word0 >>> 13) & 0x0001) << 5;
         return result;
     }
-    static int readop_10(AVRDisassembler d) {
+    static int readop_8(AVRDisassembler d) {
         int result = ((d.word0 >>> 4) & 0x000F);
         result |= ((d.word0 >>> 8) & 0x0001) << 4;
         return result;
     }
-    static int readop_12(AVRDisassembler d) {
+    static int readop_10(AVRDisassembler d) {
         int result = (d.word0 & 0x000F);
         result |= ((d.word0 >>> 8) & 0x000F) << 4;
         return result;
     }
-    static int readop_1(AVRDisassembler d) {
+    static int readop_0(AVRDisassembler d) {
         int result = (d.word0 & 0x000F);
         result |= ((d.word0 >>> 9) & 0x0003) << 4;
-        return result;
-    }
-    static int readop_16(AVRDisassembler d) {
-        int result = ((d.word0 >>> 3) & 0x0001);
         return result;
     }
     static int readop_13(AVRDisassembler d) {
         int result = ((d.word0 >>> 4) & 0x0007);
         return result;
     }
+    static int readop_11(AVRDisassembler d) {
+        int result = ((d.word0 >>> 3) & 0x0001);
+        return result;
+    }
     static int readop_5(AVRDisassembler d) {
         int result = (d.word0 & 0x0007);
         return result;
     }
-    static int readop_0(AVRDisassembler d) {
+    static int readop_1(AVRDisassembler d) {
         int result = ((d.word0 >>> 4) & 0x001F);
         return result;
     }
-    static int readop_3(AVRDisassembler d) {
+    static int readop_18(AVRDisassembler d) {
         int result = (d.word0 & 0x000F);
         result |= ((d.word0 >>> 6) & 0x0003) << 4;
         return result;
     }
-    static int readop_15(AVRDisassembler d) {
+    static int readop_14(AVRDisassembler d) {
         int result = (d.word0 & 0x0001);
         result |= ((d.word1 >>> -15) & 0x7FFF) << 1;
         return result;
@@ -226,10 +226,10 @@ public class AVRDisassembler {
         int result = ((d.word0 >>> 3) & 0x001F);
         return result;
     }
-    static int readop_18(AVRDisassembler d) {
+    static int readop_15(AVRDisassembler d) {
         return 0;
     }
-    static int readop_14(AVRDisassembler d) {
+    static int readop_7(AVRDisassembler d) {
         int result = ((d.word0 >>> 1) & 0x07FF);
         return result;
     }
@@ -250,160 +250,25 @@ public class AVRDisassembler {
             return null;
         }
     }
-    static class LD_ST_AI_XYZ_2_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.AI_XYZ ar = new AVROperand.AI_XYZ(AVRSymbol.ADR.Z);
-            return new AVRAddrMode.LD_ST_AI_XYZ(rd, ar);
-        }
+    private static int signExtend(int val, int size) {
+        // shift all the way to the left and then back (arithmetically)
+        int shift = 32 - size;
+        return (val << shift) >> shift;
     }
     static class $out$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.IMM6 ior = new AVROperand.IMM6(readop_1(d));
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_0(d)]);
+            AVROperand.IMM6 ior = new AVROperand.IMM6(readop_0(d));
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_1(d)]);
             return new AVRAddrMode.$out$(ior, rr);
-        }
-    }
-    static class $sbiw$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.RDL rd = new AVROperand.RDL(RDL_table[readop_2(d)]);
-            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_3(d));
-            return new AVRAddrMode.$sbiw$(rd, imm);
-        }
-    }
-    static class $sbi$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.IMM5 ior = new AVROperand.IMM5(readop_4(d));
-            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
-            return new AVRAddrMode.$sbi$(ior, bit);
         }
     }
     static class $movw$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.EGPR rd = new AVROperand.EGPR(EGPR_table[readop_6(d)]);
-            AVROperand.EGPR rr = new AVROperand.EGPR(EGPR_table[readop_7(d)]);
+            AVROperand.EGPR rd = new AVROperand.EGPR(EGPR_table[readop_2(d)]);
+            AVROperand.EGPR rr = new AVROperand.EGPR(EGPR_table[readop_3(d)]);
             return new AVRAddrMode.$movw$(rd, rr);
-        }
-    }
-    static class BRANCH_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.SREL target = new AVROperand.SREL(readop_8(d));
-            return new AVRAddrMode.BRANCH(target);
-        }
-    }
-    static class $sts$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 4;
-            AVROperand.DADDR addr = new AVROperand.DADDR(readop_9(d));
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            return new AVRAddrMode.$sts$(addr, rr);
-        }
-    }
-    static class $sbic$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.IMM5 ior = new AVROperand.IMM5(readop_4(d));
-            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
-            return new AVRAddrMode.$sbic$(ior, bit);
-        }
-    }
-    static class GPRGPR_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_10(d)]);
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_11(d)]);
-            return new AVRAddrMode.GPRGPR(rd, rr);
-        }
-    }
-    static class LD_ST_XYZ_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.XYZ ar = new AVROperand.XYZ(AVRSymbol.ADR.X);
-            return new AVRAddrMode.LD_ST_XYZ(rd, ar);
-        }
-    }
-    static class HGPRIMM8_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.HGPR rd = new AVROperand.HGPR(HGPR_table[readop_6(d)]);
-            AVROperand.IMM8 imm = new AVROperand.IMM8(readop_12(d));
-            return new AVRAddrMode.HGPRIMM8(rd, imm);
-        }
-    }
-    static class $fmulsu$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.MGPR rd = new AVROperand.MGPR(MGPR_table[readop_13(d)]);
-            AVROperand.MGPR rr = new AVROperand.MGPR(MGPR_table[readop_5(d)]);
-            return new AVRAddrMode.$fmulsu$(rd, rr);
-        }
-    }
-    static class $rcall$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.LREL target = new AVROperand.LREL(readop_14(d));
-            return new AVRAddrMode.$rcall$(target);
-        }
-    }
-    static class LD_ST_AI_XYZ_1_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.AI_XYZ ar = new AVROperand.AI_XYZ(AVRSymbol.ADR.Y);
-            return new AVRAddrMode.LD_ST_AI_XYZ(rd, ar);
-        }
-    }
-    static class $call$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 4;
-            AVROperand.PADDR target = new AVROperand.PADDR(readop_15(d));
-            return new AVRAddrMode.$call$(target);
-        }
-    }
-    static class LD_ST_PD_XYZ_2_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.PD_XYZ ar = new AVROperand.PD_XYZ(AVRSymbol.ADR.Z);
-            return new AVRAddrMode.LD_ST_PD_XYZ(rd, ar);
-        }
-    }
-    static class $jmp$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 4;
-            AVROperand.PADDR target = new AVROperand.PADDR(readop_15(d));
-            return new AVRAddrMode.$jmp$(target);
-        }
-    }
-    static class $sbrs$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
-            return new AVRAddrMode.$sbrs$(rr, bit);
-        }
-    }
-    static class $mulsu$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.MGPR rd = new AVROperand.MGPR(MGPR_table[readop_13(d)]);
-            AVROperand.MGPR rr = new AVROperand.MGPR(MGPR_table[readop_5(d)]);
-            return new AVRAddrMode.$mulsu$(rd, rr);
-        }
-    }
-    static class LD_ST_PD_XYZ_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.PD_XYZ ar = new AVROperand.PD_XYZ(AVRSymbol.ADR.X);
-            return new AVRAddrMode.LD_ST_PD_XYZ(rd, ar);
         }
     }
     static class $sbis$_0_reader extends OperandReader {
@@ -414,52 +279,176 @@ public class AVRDisassembler {
             return new AVRAddrMode.$sbis$(ior, bit);
         }
     }
+    static class BRANCH_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.SREL target = new AVROperand.SREL(d.pc, signExtend(readop_6(d), 7));
+            return new AVRAddrMode.BRANCH(target);
+        }
+    }
+    static class LD_ST_PD_XYZ_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.PD_XYZ ar = new AVROperand.PD_XYZ(AVRSymbol.ADR.X);
+            return new AVRAddrMode.LD_ST_PD_XYZ(rd, ar);
+        }
+    }
+    static class $rcall$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.LREL target = new AVROperand.LREL(d.pc, signExtend(readop_7(d), 11));
+            return new AVRAddrMode.$rcall$(target);
+        }
+    }
+    static class GPRGPR_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_8(d)]);
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_9(d)]);
+            return new AVRAddrMode.GPRGPR(rd, rr);
+        }
+    }
+    static class LD_ST_AI_XYZ_2_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.AI_XYZ ar = new AVROperand.AI_XYZ(AVRSymbol.ADR.Z);
+            return new AVRAddrMode.LD_ST_AI_XYZ(rd, ar);
+        }
+    }
+    static class HGPRIMM8_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.HGPR rd = new AVROperand.HGPR(HGPR_table[readop_2(d)]);
+            AVROperand.IMM8 imm = new AVROperand.IMM8(readop_10(d));
+            return new AVRAddrMode.HGPRIMM8(rd, imm);
+        }
+    }
+    static class $std$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.YZ ar = new AVROperand.YZ(YZ_table[readop_11(d)]);
+            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_12(d));
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            return new AVRAddrMode.$std$(ar, imm, rr);
+        }
+    }
+    static class $fmulsu$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.MGPR rd = new AVROperand.MGPR(MGPR_table[readop_13(d)]);
+            AVROperand.MGPR rr = new AVROperand.MGPR(MGPR_table[readop_5(d)]);
+            return new AVRAddrMode.$fmulsu$(rd, rr);
+        }
+    }
+    static class LD_ST_AI_XYZ_1_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.AI_XYZ ar = new AVROperand.AI_XYZ(AVRSymbol.ADR.Y);
+            return new AVRAddrMode.LD_ST_AI_XYZ(rd, ar);
+        }
+    }
+    static class $sbrs$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
+            return new AVRAddrMode.$sbrs$(rr, bit);
+        }
+    }
+    static class $call$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 4;
+            AVROperand.PADDR target = new AVROperand.PADDR(readop_14(d));
+            return new AVRAddrMode.$call$(target);
+        }
+    }
+    static class $sbic$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.IMM5 ior = new AVROperand.IMM5(readop_4(d));
+            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
+            return new AVRAddrMode.$sbic$(ior, bit);
+        }
+    }
+    static class XLPM_REG_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.R0_B dest = new AVROperand.R0_B(R0_table[readop_15(d)]);
+            AVROperand.RZ_W source = new AVROperand.RZ_W(RZ_table[readop_15(d)]);
+            return new AVRAddrMode.XLPM_REG(dest, source);
+        }
+    }
+    static class $jmp$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 4;
+            AVROperand.PADDR target = new AVROperand.PADDR(readop_14(d));
+            return new AVRAddrMode.$jmp$(target);
+        }
+    }
+    static class $mulsu$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.MGPR rd = new AVROperand.MGPR(MGPR_table[readop_13(d)]);
+            AVROperand.MGPR rr = new AVROperand.MGPR(MGPR_table[readop_5(d)]);
+            return new AVRAddrMode.$mulsu$(rd, rr);
+        }
+    }
+    static class $rjmp$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.LREL target = new AVROperand.LREL(d.pc, signExtend(readop_7(d), 11));
+            return new AVRAddrMode.$rjmp$(target);
+        }
+    }
+    static class XLPM_D_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR dest = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.RZ_W source = new AVROperand.RZ_W(RZ_table[readop_15(d)]);
+            return new AVRAddrMode.XLPM_D(dest, source);
+        }
+    }
     static class GPR_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_10(d)]);
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_8(d)]);
             return new AVRAddrMode.GPR(rd);
         }
     }
     static class $ldd$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.YZ ar = new AVROperand.YZ(YZ_table[readop_16(d)]);
-            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_17(d));
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.YZ ar = new AVROperand.YZ(YZ_table[readop_11(d)]);
+            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_12(d));
             return new AVRAddrMode.$ldd$(rd, ar, imm);
-        }
-    }
-    static class LD_ST_XYZ_2_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.XYZ ar = new AVROperand.XYZ(AVRSymbol.ADR.Z);
-            return new AVRAddrMode.LD_ST_XYZ(rd, ar);
-        }
-    }
-    static class $bst$_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
-            return new AVRAddrMode.$bst$(rr, bit);
         }
     }
     static class $sbrc$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_0(d)]);
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_1(d)]);
             AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
             return new AVRAddrMode.$sbrc$(rr, bit);
         }
     }
-    static class XLPM_D_0_reader extends OperandReader {
+    static class $bst$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.GPR dest = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.RZ_W source = new AVROperand.RZ_W(RZ_table[readop_18(d)]);
-            return new AVRAddrMode.XLPM_D(dest, source);
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
+            return new AVRAddrMode.$bst$(rr, bit);
+        }
+    }
+    static class LD_ST_PD_XYZ_1_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.PD_XYZ ar = new AVROperand.PD_XYZ(AVRSymbol.ADR.Y);
+            return new AVRAddrMode.LD_ST_PD_XYZ(rd, ar);
         }
     }
     static class $fmul$_0_reader extends OperandReader {
@@ -470,34 +459,26 @@ public class AVRDisassembler {
             return new AVRAddrMode.$fmul$(rd, rr);
         }
     }
-    static class XLPM_INC_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR dest = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.AI_RZ_W source = new AVROperand.AI_RZ_W(RZ_table[readop_18(d)]);
-            return new AVRAddrMode.XLPM_INC(dest, source);
-        }
-    }
     static class $muls$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.HGPR rd = new AVROperand.HGPR(HGPR_table[readop_6(d)]);
-            AVROperand.HGPR rr = new AVROperand.HGPR(HGPR_table[readop_7(d)]);
+            AVROperand.HGPR rd = new AVROperand.HGPR(HGPR_table[readop_2(d)]);
+            AVROperand.HGPR rr = new AVROperand.HGPR(HGPR_table[readop_3(d)]);
             return new AVRAddrMode.$muls$(rd, rr);
         }
     }
     static class $lds$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 4;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.DADDR addr = new AVROperand.DADDR(readop_9(d));
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.DADDR addr = new AVROperand.DADDR(readop_16(d));
             return new AVRAddrMode.$lds$(rd, addr);
         }
     }
     static class $bld$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_0(d)]);
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_1(d)]);
             AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
             return new AVRAddrMode.$bld$(rr, bit);
         }
@@ -510,52 +491,92 @@ public class AVRDisassembler {
             return new AVRAddrMode.$cbi$(ior, bit);
         }
     }
-    static class $std$_0_reader extends OperandReader {
+    static class LD_ST_XYZ_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.YZ ar = new AVROperand.YZ(YZ_table[readop_16(d)]);
-            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_17(d));
-            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            return new AVRAddrMode.$std$(ar, imm, rr);
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.XYZ ar = new AVROperand.XYZ(AVRSymbol.ADR.X);
+            return new AVRAddrMode.LD_ST_XYZ(rd, ar);
+        }
+    }
+    static class LD_ST_AI_XYZ_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.AI_XYZ ar = new AVROperand.AI_XYZ(AVRSymbol.ADR.X);
+            return new AVRAddrMode.LD_ST_AI_XYZ(rd, ar);
         }
     }
     static class $in$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_1(d));
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_0(d));
             return new AVRAddrMode.$in$(rd, imm);
+        }
+    }
+    static class $sbiw$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.RDL rd = new AVROperand.RDL(RDL_table[readop_17(d)]);
+            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_18(d));
+            return new AVRAddrMode.$sbiw$(rd, imm);
+        }
+    }
+    static class LD_ST_XYZ_2_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.XYZ ar = new AVROperand.XYZ(AVRSymbol.ADR.Z);
+            return new AVRAddrMode.LD_ST_XYZ(rd, ar);
+        }
+    }
+    static class LD_ST_PD_XYZ_2_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 2;
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.PD_XYZ ar = new AVROperand.PD_XYZ(AVRSymbol.ADR.Z);
+            return new AVRAddrMode.LD_ST_PD_XYZ(rd, ar);
         }
     }
     static class $adiw$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.RDL rd = new AVROperand.RDL(RDL_table[readop_2(d)]);
-            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_3(d));
+            AVROperand.RDL rd = new AVROperand.RDL(RDL_table[readop_17(d)]);
+            AVROperand.IMM6 imm = new AVROperand.IMM6(readop_18(d));
             return new AVRAddrMode.$adiw$(rd, imm);
         }
     }
-    static class $rjmp$_0_reader extends OperandReader {
+    static class $sts$_0_reader extends OperandReader {
+        AVRAddrMode read(AVRDisassembler d) {
+            d.size = 4;
+            AVROperand.DADDR addr = new AVROperand.DADDR(readop_16(d));
+            AVROperand.GPR rr = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            return new AVRAddrMode.$sts$(addr, rr);
+        }
+    }
+    static class XLPM_INC_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.LREL target = new AVROperand.LREL(readop_14(d));
-            return new AVRAddrMode.$rjmp$(target);
+            AVROperand.GPR dest = new AVROperand.GPR(GPR_table[readop_1(d)]);
+            AVROperand.AI_RZ_W source = new AVROperand.AI_RZ_W(RZ_table[readop_15(d)]);
+            return new AVRAddrMode.XLPM_INC(dest, source);
         }
     }
     static class LD_ST_XYZ_1_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
+            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_1(d)]);
             AVROperand.XYZ ar = new AVROperand.XYZ(AVRSymbol.ADR.Y);
             return new AVRAddrMode.LD_ST_XYZ(rd, ar);
         }
     }
-    static class XLPM_REG_0_reader extends OperandReader {
+    static class $sbi$_0_reader extends OperandReader {
         AVRAddrMode read(AVRDisassembler d) {
             d.size = 2;
-            AVROperand.R0_B dest = new AVROperand.R0_B(R0_table[readop_18(d)]);
-            AVROperand.RZ_W source = new AVROperand.RZ_W(RZ_table[readop_18(d)]);
-            return new AVRAddrMode.XLPM_REG(dest, source);
+            AVROperand.IMM5 ior = new AVROperand.IMM5(readop_4(d));
+            AVROperand.IMM3 bit = new AVROperand.IMM3(readop_5(d));
+            return new AVRAddrMode.$sbi$(ior, bit);
         }
     }
     static class $fmuls$_0_reader extends OperandReader {
@@ -564,22 +585,6 @@ public class AVRDisassembler {
             AVROperand.MGPR rd = new AVROperand.MGPR(MGPR_table[readop_13(d)]);
             AVROperand.MGPR rr = new AVROperand.MGPR(MGPR_table[readop_5(d)]);
             return new AVRAddrMode.$fmuls$(rd, rr);
-        }
-    }
-    static class LD_ST_PD_XYZ_1_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.PD_XYZ ar = new AVROperand.PD_XYZ(AVRSymbol.ADR.Y);
-            return new AVRAddrMode.LD_ST_PD_XYZ(rd, ar);
-        }
-    }
-    static class LD_ST_AI_XYZ_0_reader extends OperandReader {
-        AVRAddrMode read(AVRDisassembler d) {
-            d.size = 2;
-            AVROperand.GPR rd = new AVROperand.GPR(GPR_table[readop_0(d)]);
-            AVROperand.AI_XYZ ar = new AVROperand.AI_XYZ(AVRSymbol.ADR.X);
-            return new AVRAddrMode.LD_ST_AI_XYZ(rd, ar);
         }
     }
     
@@ -769,6 +774,12 @@ public class AVRDisassembler {
     private int state;
     
     /**
+     * The <code>pc</code> field stores the current PC, which is needed for
+     * PC-relative calculations in loading some operand types.
+     */
+    private int pc;
+    
+    /**
      * The <code>state</code> field is set to <code>MOVE</code> at the
      * beginning of the decoding process and remains this value until a
      * terminal state is reached. This value indicates the main loop should
@@ -920,14 +931,14 @@ public class AVRDisassembler {
         DTNode N80 = new DTArrayNode(null, 0, 1, new DTNode[] {T79, T78});
         DTNode N81 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.ELPM, new XLPM_REG_0_reader()), 0, 1, new DTNode[] {T57, root1});
         DTNode N82 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.CLT, new NULL_reader(2)), 0, 1, new DTNode[] {T57, root1});
-        DTNode N83 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.SLEEP, new NULL_reader(2)), 0, 1, new DTNode[] {T57, root1});
-        DTNode N84 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.BREAK, new NULL_reader(2)), 0, 1, new DTNode[] {T57, root1});
+        DTNode N83 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.BREAK, new NULL_reader(2)), 0, 1, new DTNode[] {T57, root1});
+        DTNode N84 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.SLEEP, new NULL_reader(2)), 0, 1, new DTNode[] {T57, root1});
         DTNode N85 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.CLN, new NULL_reader(2)), 0, 1, new DTNode[] {T57, root1});
         DTNode N86 = new DTArrayNode(new SetBuilderAndRead(AVRInstrBuilder.SEH, new NULL_reader(2)), 0, 1, new DTNode[] {T57, root1});
         DTNode T87 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.IJMP, new NULL_reader(2)));
         DTNode T88 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SEC, new NULL_reader(2)));
         DTNode N89 = new DTArrayNode(null, 0, 1, new DTNode[] {T88, T87});
-        DTNode N90 = new DTArrayNode(null, 4, 31, new DTNode[] {N89, N80, N73, N67, N59, N86, N77, N68, N61, N75, N85, N63, N69, N74, N82, N58, N66, N72, root1, root1, root1, root1, root1, root1, N83, N84, N62, root1, N76, N81, N60, root1});
+        DTNode N90 = new DTArrayNode(null, 4, 31, new DTNode[] {N89, N80, N73, N67, N59, N86, N77, N68, N61, N75, N85, N63, N69, N74, N82, N58, N66, N72, root1, root1, root1, root1, root1, root1, N84, N83, N62, root1, N76, N81, N60, root1});
         DTNode T91 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.JMP, new $jmp$_0_reader()));
         DTNode T92 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.INC, new GPR_0_reader()));
         DTNode T93 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SWAP, new GPR_0_reader()));
@@ -943,55 +954,56 @@ public class AVRDisassembler {
         DTNode N103 = new DTArrayNode(null, 1, 7, new DTNode[] {N102, N94, N56, N97, N90, N99, T91, T98});
         DTNode N104 = new DTArrayNode(null, 9, 1, new DTNode[] {N103, N54});
         DTNode T105 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.MUL, new GPRGPR_0_reader()));
-        DTNode T106 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_PD_XYZ_2_reader()));
-        DTNode T107 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_AI_XYZ_0_reader()));
-        DTNode T108 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_AI_XYZ_1_reader()));
-        DTNode T109 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_AI_XYZ_2_reader()));
-        DTNode T110 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_PD_XYZ_0_reader()));
-        DTNode T111 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_PD_XYZ_1_reader()));
-        DTNode T112 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_XYZ_0_reader()));
-        DTNode T113 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.STS, new $sts$_0_reader()));
-        DTNode N114 = new DTArrayNode(null, 0, 15, new DTNode[] {T113, T109, T106, root1, root1, root1, root1, root1, root1, T108, T111, root1, T112, T107, T110, root1});
-        DTNode T115 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.POP, new GPR_0_reader()));
-        DTNode T116 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LPM, new XLPM_D_0_reader()));
-        DTNode T117 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ELPM, new XLPM_INC_0_reader()));
-        DTNode T118 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_XYZ_0_reader()));
-        DTNode T119 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_PD_XYZ_2_reader()));
-        DTNode T120 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_AI_XYZ_0_reader()));
-        DTNode T121 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_AI_XYZ_1_reader()));
-        DTNode T122 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ELPM, new XLPM_D_0_reader()));
-        DTNode T123 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_AI_XYZ_2_reader()));
-        DTNode T124 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_PD_XYZ_0_reader()));
-        DTNode T125 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_PD_XYZ_1_reader()));
-        DTNode T126 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LPM, new XLPM_INC_0_reader()));
-        DTNode T127 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LDS, new $lds$_0_reader()));
-        DTNode N128 = new DTArrayNode(null, 0, 15, new DTNode[] {T127, T123, T119, root1, T116, T126, T122, T117, root1, T121, T125, root1, T118, T120, T124, T115});
-        DTNode N129 = new DTArrayNode(null, 9, 1, new DTNode[] {N128, N114});
-        DTNode N130 = new DTArrayNode(null, 10, 3, new DTNode[] {N129, N104, N51, T105});
-        DTNode T131 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ORI, new HGPRIMM8_0_reader()));
-        DTNode T132 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SUB, new GPRGPR_0_reader()));
-        DTNode T133 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.CP, new GPRGPR_0_reader()));
-        DTNode T134 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ADC, new GPRGPR_0_reader()));
-        DTNode T135 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.CPSE, new GPRGPR_0_reader()));
-        DTNode N136 = new DTArrayNode(null, 10, 3, new DTNode[] {T135, T133, T132, T134});
-        DTNode T137 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LDI, new HGPRIMM8_0_reader()));
-        DTNode T138 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SUBI, new HGPRIMM8_0_reader()));
-        DTNode T139 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SBC, new GPRGPR_0_reader()));
-        DTNode T140 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.CPC, new GPRGPR_0_reader()));
-        DTNode T141 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ADD, new GPRGPR_0_reader()));
-        DTNode T142 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.MULS, new $muls$_0_reader()));
-        DTNode T143 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.MOVW, new $movw$_0_reader()));
-        DTNode T144 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.FMULSU, new $fmulsu$_0_reader()));
-        DTNode T145 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.FMULS, new $fmuls$_0_reader()));
-        DTNode N146 = new DTArrayNode(null, 3, 1, new DTNode[] {T145, T144});
-        DTNode T147 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.FMUL, new $fmul$_0_reader()));
-        DTNode T148 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.MULSU, new $mulsu$_0_reader()));
-        DTNode N149 = new DTArrayNode(null, 3, 1, new DTNode[] {T148, T147});
-        DTNode N150 = new DTArrayNode(null, 7, 1, new DTNode[] {N149, N146});
-        DTNode N151 = new DTSortedNode(new SetBuilderAndRead(AVRInstrBuilder.NOP, new NULL_reader(2)), 0, 255, new int[] {0}, new DTNode[] {T57}, root1);
-        DTNode N152 = new DTArrayNode(null, 8, 3, new DTNode[] {N151, T143, T142, N150});
-        DTNode N153 = new DTArrayNode(null, 10, 3, new DTNode[] {N152, T140, T139, T141});
-        DTNode N0 = new DTArrayNode(null, 12, 15, new DTNode[] {N153, N136, N45, T38, T27, T138, T131, T39, N34, N130, root1, N37, T40, T46, T137, N26});
+        DTNode T106 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.PUSH, new GPR_0_reader()));
+        DTNode T107 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_PD_XYZ_2_reader()));
+        DTNode T108 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_AI_XYZ_0_reader()));
+        DTNode T109 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_AI_XYZ_1_reader()));
+        DTNode T110 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_AI_XYZ_2_reader()));
+        DTNode T111 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_PD_XYZ_0_reader()));
+        DTNode T112 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_PD_XYZ_1_reader()));
+        DTNode T113 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ST, new LD_ST_XYZ_0_reader()));
+        DTNode T114 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.STS, new $sts$_0_reader()));
+        DTNode N115 = new DTArrayNode(null, 0, 15, new DTNode[] {T114, T110, T107, root1, root1, root1, root1, root1, root1, T109, T112, root1, T113, T108, T111, T106});
+        DTNode T116 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.POP, new GPR_0_reader()));
+        DTNode T117 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LPM, new XLPM_D_0_reader()));
+        DTNode T118 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ELPM, new XLPM_INC_0_reader()));
+        DTNode T119 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_XYZ_0_reader()));
+        DTNode T120 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_PD_XYZ_2_reader()));
+        DTNode T121 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_AI_XYZ_0_reader()));
+        DTNode T122 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_AI_XYZ_1_reader()));
+        DTNode T123 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ELPM, new XLPM_D_0_reader()));
+        DTNode T124 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_AI_XYZ_2_reader()));
+        DTNode T125 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_PD_XYZ_0_reader()));
+        DTNode T126 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LD, new LD_ST_PD_XYZ_1_reader()));
+        DTNode T127 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LPM, new XLPM_INC_0_reader()));
+        DTNode T128 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LDS, new $lds$_0_reader()));
+        DTNode N129 = new DTArrayNode(null, 0, 15, new DTNode[] {T128, T124, T120, root1, T117, T127, T123, T118, root1, T122, T126, root1, T119, T121, T125, T116});
+        DTNode N130 = new DTArrayNode(null, 9, 1, new DTNode[] {N129, N115});
+        DTNode N131 = new DTArrayNode(null, 10, 3, new DTNode[] {N130, N104, N51, T105});
+        DTNode T132 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ORI, new HGPRIMM8_0_reader()));
+        DTNode T133 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SUB, new GPRGPR_0_reader()));
+        DTNode T134 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.CP, new GPRGPR_0_reader()));
+        DTNode T135 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ADC, new GPRGPR_0_reader()));
+        DTNode T136 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.CPSE, new GPRGPR_0_reader()));
+        DTNode N137 = new DTArrayNode(null, 10, 3, new DTNode[] {T136, T134, T133, T135});
+        DTNode T138 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.LDI, new HGPRIMM8_0_reader()));
+        DTNode T139 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SUBI, new HGPRIMM8_0_reader()));
+        DTNode T140 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.SBC, new GPRGPR_0_reader()));
+        DTNode T141 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.CPC, new GPRGPR_0_reader()));
+        DTNode T142 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.ADD, new GPRGPR_0_reader()));
+        DTNode T143 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.MULS, new $muls$_0_reader()));
+        DTNode T144 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.MOVW, new $movw$_0_reader()));
+        DTNode T145 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.FMULSU, new $fmulsu$_0_reader()));
+        DTNode T146 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.FMULS, new $fmuls$_0_reader()));
+        DTNode N147 = new DTArrayNode(null, 3, 1, new DTNode[] {T146, T145});
+        DTNode T148 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.FMUL, new $fmul$_0_reader()));
+        DTNode T149 = new DTTerminal(new SetBuilderAndRead(AVRInstrBuilder.MULSU, new $mulsu$_0_reader()));
+        DTNode N150 = new DTArrayNode(null, 3, 1, new DTNode[] {T149, T148});
+        DTNode N151 = new DTArrayNode(null, 7, 1, new DTNode[] {N150, N147});
+        DTNode N152 = new DTSortedNode(new SetBuilderAndRead(AVRInstrBuilder.NOP, new NULL_reader(2)), 0, 255, new int[] {0}, new DTNode[] {T57}, root1);
+        DTNode N153 = new DTArrayNode(null, 8, 3, new DTNode[] {N152, T144, T143, N151});
+        DTNode N154 = new DTArrayNode(null, 10, 3, new DTNode[] {N153, T141, T140, T142});
+        DTNode N0 = new DTArrayNode(null, 12, 15, new DTNode[] {N154, N137, N45, T38, T27, T139, T132, T39, N34, N131, root1, N37, T40, T46, T138, N26});
         return N0;
     }
     
@@ -1000,6 +1012,24 @@ public class AVRDisassembler {
      * decoding tree. It is the starting point for decoding a bit pattern.
      */
     private static final DTNode root0 = make_root0();
+    
+    /**
+     * The <code>disassemble()</code> method disassembles a single
+     * instruction from a stream of bytes. If the binary data at that
+     * location contains a valid instruction, then it is created and
+     * returned. If the binary data at the specified location is not a valid
+     * instruction, this method returns null.
+     * @param base the base address corresponding to index 0 in the array
+     * @param index the index into the specified array where to begin
+     * disassembling
+     * @param code the binary data to disassemble into an instruction
+     * @return a reference to a new instruction object representing the
+     * instruction at that location; null if the binary data at the specified
+     * location does not represent a valid instruction
+     */
+    public AbstractInstr disassemble(int base, int index, byte[] code) {
+        return decode(base, index, code);
+    }
     
     /**
      * The <code>decode()</code> method is the main entrypoint to the
@@ -1017,6 +1047,7 @@ public class AVRDisassembler {
     public AVRInstr decode(int base, int index, byte[] code) {
         word0 = ((code[index + 0] & 0xFF) << 0) | ((code[index + 1] & 0xFF) << 8);
         word1 = ((code[index + 2] & 0xFF) << 0) | ((code[index + 3] & 0xFF) << 8);
+        pc = base + index * 1;
         return decode_root();
     }
     
@@ -1036,6 +1067,7 @@ public class AVRDisassembler {
     public AVRInstr decode(int base, int index, char[] code) {
         word0 = (code[index + 0] << 0);
         word1 = (code[index + 1] << 0);
+        pc = base + index * 2;
         return decode_root();
     }
     
@@ -1055,6 +1087,7 @@ public class AVRDisassembler {
     public AVRInstr decode(int base, int index, short[] code) {
         word0 = ((code[index + 0] & 0xFFFF) << 0);
         word1 = ((code[index + 1] & 0xFFFF) << 0);
+        pc = base + index * 2;
         return decode_root();
     }
     

@@ -105,7 +105,9 @@ public class DisassemblerGenerator extends Generator {
         List<String> imports = new LinkedList<String>();
         imports.add("java.util.Arrays");
         initStatics();
-        setPrinter(newClassPrinter("disassembler", imports, null,
+        List<String> impl = new LinkedList<String>();
+        impl.add("AbstractDisassembler");
+        setPrinter(newClassPrinter("disassembler", imports, null, impl,
                 tr("The <code>$disassembler</code> class decodes bit patterns into instructions. It has " +
                 "been generated automatically by jIntGen from a file containing a description of the instruction " +
                 "set and their encodings.\n\n" +
@@ -181,22 +183,29 @@ public class DisassemblerGenerator extends Generator {
                 pseudoInstrs++;
             } else {
                 instrs++;
-                addEncoding(d);
+                int encodings = addEncodings(d);
+                if ( encodings == 0 ) {
+                    Terminal.nextln();
+                    Terminal.printYellow("Warning");
+                    Terminal.println(": instruction "+d.name+" has no declared encodings");
+                }
             }
         }
     }
 
-    private void addEncoding(InstrDecl d) {
+    private int addEncodings(InstrDecl d) {
+        int encodings = 0;
         if ( d.addrMode.localDecl != null ) {
-            addAllEncodings(d.addrMode.localDecl, d, d);
+            encodings = addAllEncodings(d.addrMode.localDecl, d, d);
         } else {
             for ( AddrModeDecl am : d.addrMode.addrModes ) {
-                addAllEncodings(am, d, null);
+                encodings += addAllEncodings(am, d, null);
             }
         }
+        return encodings;
     }
 
-    private void addAllEncodings(AddrModeDecl am, InstrDecl d, InstrDecl instr) {
+    private int addAllEncodings(AddrModeDecl am, InstrDecl d, InstrDecl instr) {
         int cntr = 0;
         for ( EncodingDecl ed : am.encodings ) {
             addEncodingInfo(d, am, ed);
@@ -204,6 +213,7 @@ public class DisassemblerGenerator extends Generator {
             reader.addEncoding(eName, instr, ed, am);
             cntr++;
         }
+        return cntr;
     }
 
     private String encodingName(AddrModeDecl am, int cntr) {

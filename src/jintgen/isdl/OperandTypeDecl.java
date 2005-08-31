@@ -69,12 +69,19 @@ public abstract class OperandTypeDecl extends Item {
         public final int high;
         public final Token kind;
         public final int size;
+        final boolean signed;
 
         public Value(Token n, Token b, Token k, Token l, Token h) {
             super(n);
             kind = k;
             size = StringUtil.evaluateIntegerLiteral(b.image);
-            low = l == null ? -1 : StringUtil.evaluateIntegerLiteral(l.image);
+            if (l == null) {
+                low = -1;
+                signed = false;
+            } else {
+                low = StringUtil.evaluateIntegerLiteral(l.image);
+                signed = low < 0;
+            }
             high = h == null ? -1 : StringUtil.evaluateIntegerLiteral(h.image);
         }
 
@@ -84,6 +91,18 @@ public abstract class OperandTypeDecl extends Item {
 
         public void addSubOperand(AddrModeDecl.Operand o) {
             throw Util.failure("Suboperands are not allowed to Simple operands");
+        }
+
+        public boolean isRelative() {
+            return "relative".equals(kind.image);
+        }
+
+        public boolean isSigned() {
+            return signed;
+        }
+
+        public boolean isAddress() {
+            return "address".equals(kind.image);
         }
     }
 
@@ -145,5 +164,17 @@ public abstract class OperandTypeDecl extends Item {
 
     public void addSubOperand(AddrModeDecl.Operand o) {
         subOperands.add(o);
+    }
+
+    public boolean isRelative() {
+        return false;
+    }
+
+    public boolean isSigned() {
+        return false;
+    }
+
+    public boolean isAddress() {
+        return false;
     }
 }
