@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,48 +30,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora;
+package avrora.syntax.elf;
 
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>ELFLoader</code> class is capable of loading ELF (Executable and Linkable Format)
+ * files and disassembling them into the simulator's internal format.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class ELFLoader {
 
-    /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "1.7";
-
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public final int commit = 26;
-
-    /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
-     */
-    public static Version getVersion() {
-        return new Version();
-    }
-
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
-    }
 }
