@@ -32,12 +32,46 @@
 
 package avrora.syntax.elf;
 
+import avrora.core.ProgramReader;
+import avrora.core.Program;
+import avrora.Main;
+import avrora.util.*;
+
+import java.io.FileInputStream;
+
 /**
  * The <code>ELFLoader</code> class is capable of loading ELF (Executable and Linkable Format)
  * files and disassembling them into the simulator's internal format.
  *
  * @author Ben L. Titzer
  */
-public class ELFLoader {
+public class ELFLoader extends ProgramReader {
 
+    public ELFLoader() {
+        super("The \"elf\" format loader reads a program from an ELF (Executable and Linkable " +
+                "Format) as a binary and disassembles the sections corresponding to executable code.");
+    }
+
+    public Program read(String[] args) throws Exception {
+        if (args.length == 0)
+            Util.userError("no input files");
+        if (args.length != 1)
+            Util.userError("input type \"elf\" accepts only one file at a time.");
+
+        String fname = args[0];
+        Main.checkFileExists(fname);
+
+        FileInputStream fis = new FileInputStream(fname);
+
+        ELFHeader header = new ELFHeader();
+        header.read(fis);
+
+        Terminal.nextln();
+        TermUtil.reportQuantity("ELF version", header.e_version, "");
+        TermUtil.reportQuantity("ELF machine", header.e_machine, "("+header.getArchitecture()+")");
+        TermUtil.reportQuantity("ELF size", header.is64Bit() ? 64 : 32, "bits");
+        TermUtil.reportQuantity("ELF endianness", header.isLittleEndian() ? "little" : "big", "");
+
+        return null;
+    }
 }

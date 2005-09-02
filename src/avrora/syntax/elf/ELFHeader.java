@@ -33,9 +33,6 @@
 package avrora.syntax.elf;
 
 import avrora.util.Util;
-import avrora.util.Arithmetic;
-
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -48,6 +45,11 @@ import java.io.InputStream;
  * @author Ben L. Titzer
  */
 public class ELFHeader {
+
+    protected static final int ELFCLASSNONE = 0;
+    protected static final int ELFCLASS32   = 1;
+    protected static final int ELFCLASS64   = 2;
+    protected static final int ELFCLASSNUM  = 3;
 
     protected static final int EI_NIDENT = 16;
 
@@ -169,7 +171,7 @@ public class ELFHeader {
      * @return a String representation of the architecture name
      */
     public String getArchitecture() {
-        throw Util.unimplemented();
+        return ELFIdentifier.getArchitecture(e_machine);
     }
 
     /**
@@ -190,5 +192,13 @@ public class ELFHeader {
      */
     public boolean isBigEndian() {
         return e_ident[EI_VERSION] == ELFDATA2MSB;
+    }
+
+    public boolean is32Bit()  {
+        return e_ident[EI_CLASS] == ELFCLASS32;
+    }
+
+    public boolean is64Bit()  {
+        return e_ident[EI_CLASS] == ELFCLASS64;
     }
 }
