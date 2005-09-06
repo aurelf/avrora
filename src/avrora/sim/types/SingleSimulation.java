@@ -32,7 +32,6 @@
 
 package avrora.sim.types;
 
-import avrora.util.Util;
 import avrora.Main;
 import avrora.core.LoadableProgram;
 import avrora.sim.Simulation;

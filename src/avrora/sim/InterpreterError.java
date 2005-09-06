@@ -32,7 +32,6 @@
 
 package avrora.sim;
 
-import avrora.util.Util;
 import avrora.util.StringUtil;
 import avrora.util.Util;
 

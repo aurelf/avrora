@@ -33,16 +33,11 @@
 package avrora.test;
 
 import avrora.Defaults;
-import avrora.core.Program;
-import avrora.core.ProgramReader;
-import avrora.core.Register;
+import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.syntax.Module;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-
+import avrora.util.*;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;

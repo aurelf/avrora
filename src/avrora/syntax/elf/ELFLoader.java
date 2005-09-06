@@ -32,14 +32,13 @@
 
 package avrora.syntax.elf;
 
-import avrora.core.ProgramReader;
-import avrora.core.Program;
 import avrora.Main;
+import avrora.core.*;
 import avrora.util.*;
-
-import java.io.FileInputStream;
 import java.io.RandomAccessFile;
 import java.io.IOException;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>ELFLoader</code> class is capable of loading ELF (Executable and Linkable Format)
@@ -52,7 +51,18 @@ public class ELFLoader extends ProgramReader {
     ELFHeader header;
     ELFProgramHeaderTable pht;
     ELFSectionHeaderTable sht;
+    List symbolTables;
     ELFStringTable shstrtab;
+
+    protected final Option.Bool DUMP = options.newOption("dump", false,
+            "This option causes the ELF loader to dump information about the ELF file being loaded, " +
+            "including information the sections and the symbol table.");
+    protected final Option.Bool SYMBOLS = options.newOption("load-symbols", true,
+            "This option causes the ELF loader to load the symbol table (if it exists) from " +
+                    "the ELF file. The symbol table contains information about the names and sizes of " +
+                    "data items and functions within the executable. Enabling this option allows for " +
+                    "more source-level information during simulation, but disabling it speeds up loading " +
+                    "of ELF files.");
 
     public ELFLoader() {
         super("The \"elf\" format loader reads a program from an ELF (Executable and Linkable " +
@@ -70,17 +80,87 @@ public class ELFLoader extends ProgramReader {
 
         RandomAccessFile fis = new RandomAccessFile(fname, "r");
 
-        header = new ELFHeader();
-        header.read(fis);
-
-        printHeader(header);
+        // read the ELF header
+        readHeader(fis);
 
         // read the program header table (if it exists)
-        pht = new ELFProgramHeaderTable(header);
-        pht.read(fis);
-        printPHT();
+        readProgramHeader(fis);
 
         // read the section header table (if it exists)
+        readSectionHeader(fis);
+
+        // read the symbol tables (if they exist)
+        readSymbolTables(fis);
+
+        // load the sections from the ELF file
+        return loadSections(fis);
+    }
+
+    private Program loadSections(RandomAccessFile fis) throws IOException {
+        int minp = Integer.MAX_VALUE;
+        int maxp = 0;
+        // find the dimensions of the program
+        for ( int cntr = 0; cntr < pht.entries.length; cntr++ ) {
+            ELFProgramHeaderTable.Entry32 e = pht.entries[cntr];
+            if ( e.isLoadable()  && e.p_filesz > 0 ) {
+                int start = e.p_paddr;
+                int end = start + e.p_filesz;
+                if ( start < minp ) minp = start;
+                if ( end > maxp ) maxp = end;
+            }
+        }
+        // load each section
+        ELFDataInputStream is = new ELFDataInputStream(header, fis);
+        Program p = new Program(minp, maxp, 0, 0, 0, 0);
+        for ( int cntr = 0; cntr < pht.entries.length; cntr++ ) {
+            ELFProgramHeaderTable.Entry32 e = pht.entries[cntr];
+            if ( e.isLoadable() && e.p_filesz > 0 ) {
+                fis.seek(e.p_offset);
+                byte[] sect = is.read_section(e.p_offset, e.p_filesz);
+                p.writeProgramBytes(sect, e.p_paddr);
+                if ( e.isExecutable() )
+                    disassembleSection(sect, e, p);
+            }
+        }
+        return p;
+    }
+
+    private void disassembleSection(byte[] sect, ELFProgramHeaderTable.Entry32 e, Program p) {
+        Disassembler d = new Disassembler();
+        for ( int off = 0; off < sect.length; off += 2 ) {
+            try {
+                Instr i = d.disassemble(e.p_paddr, sect, off);
+                p.writeInstr(i, e.p_paddr + off);
+            } catch (Disassembler.InvalidInstruction invalidInstruction) {
+                // do nothing
+            }
+        }
+    }
+
+    private void readSymbolTables(RandomAccessFile fis) throws IOException {
+        symbolTables = new LinkedList();
+        if ( !DUMP.get() && SYMBOLS.get() ) return;
+
+        for ( int cntr = 0; cntr < sht.entries.length; cntr++ ) {
+            ELFSectionHeaderTable.Entry32 e = sht.entries[cntr];
+            if ( e.isSymbolTable() ) {
+                ELFSymbolTable stab = new ELFSymbolTable(header, e);
+                stab.read(fis);
+                symbolTables.add(stab);
+                ELFSectionHeaderTable.Entry32 strent = sht.entries[e.sh_link];
+                ELFStringTable str = null;
+                if ( strent.isStringTable() ) {
+                    str = new ELFStringTable(header, strent);
+                    str.read(fis);
+                    stab.setStringTable(str);
+                }
+                if ( DUMP.get() ) printSymbolTable(stab, str);
+            }
+        }
+    }
+
+    private void readSectionHeader(RandomAccessFile fis) throws IOException {
+        if ( !DUMP.get() && SYMBOLS.get() ) return;
         sht = new ELFSectionHeaderTable(header);
         sht.read(fis);
 
@@ -89,25 +169,22 @@ public class ELFLoader extends ProgramReader {
             ELFSectionHeaderTable.Entry32 e = sht.entries[header.e_shstrndx];
             shstrtab = new ELFStringTable(header, e);
             shstrtab.read(fis);
+            sht.setStringTable(shstrtab);
         }
-        printSHT();
+        if ( DUMP.get() ) printSHT();
+    }
 
-        for ( int cntr = 0; cntr < sht.entries.length; cntr++ ) {
-            ELFSectionHeaderTable.Entry32 e = sht.entries[cntr];
-            if ( e.isSymbolTable() ) {
-                ELFSymbolTable stab = new ELFSymbolTable(header, e);
-                stab.read(fis);
-                ELFSectionHeaderTable.Entry32 strent = sht.entries[e.sh_link];
-                ELFStringTable str = null;
-                if ( strent.isStringTable() ) {
-                    str = new ELFStringTable(header, strent);
-                    str.read(fis);
-                }
-                printSymbolTable(stab, str);
-            }
-        }
+    private void readProgramHeader(RandomAccessFile fis) throws IOException {
+        pht = new ELFProgramHeaderTable(header);
+        pht.read(fis);
+        if ( DUMP.get() ) printPHT();
+    }
 
-        return null;
+    private void readHeader(RandomAccessFile fis) throws IOException {
+        header = new ELFHeader();
+        header.read(fis);
+
+        if ( DUMP.get() ) printHeader(header);
     }
 
     private void printHeader(ELFHeader header) {
@@ -132,7 +209,7 @@ public class ELFLoader extends ProgramReader {
         for ( int cntr = 0; cntr < sht.entries.length; cntr++ ) {
             ELFSectionHeaderTable.Entry32 e = sht.entries[cntr];
             Terminal.print(StringUtil.rightJustify(cntr, 3));
-            Terminal.print("  "+StringUtil.leftJustify(getName(shstrtab, e.sh_name), 24));
+            Terminal.print("  "+StringUtil.leftJustify(e.getName(), 24));
             Terminal.print(StringUtil.rightJustify(e.getType(), 8));
             Terminal.print("  "+StringUtil.toHex(e.sh_addr, 8));
             Terminal.print(StringUtil.rightJustify(e.sh_offset, 8));
@@ -149,13 +226,13 @@ public class ELFLoader extends ProgramReader {
 
     private void printPHT() {
         TermUtil.printSeparator(Terminal.MAXLINE, "Program Header Table");
-        Terminal.printGreen("Ent    Type  Virtual   Physical  Offset  Filesize  Memsize  Flags");
+        Terminal.printGreen("Ent     Type  Virtual   Physical  Offset  Filesize  Memsize  Flags");
         Terminal.nextln();
         TermUtil.printThinSeparator();
         for ( int cntr = 0; cntr < pht.entries.length; cntr++ ) {
             ELFProgramHeaderTable.Entry32 e = pht.entries[cntr];
             Terminal.print(StringUtil.rightJustify(cntr, 3));
-            Terminal.print(StringUtil.rightJustify(ELFProgramHeaderTable.getType(e), 8));
+            Terminal.print(StringUtil.rightJustify(ELFProgramHeaderTable.getType(e), 9));
             Terminal.print("  "+StringUtil.toHex(e.p_vaddr, 8));
             Terminal.print("  "+StringUtil.toHex(e.p_paddr, 8));
             Terminal.print(StringUtil.rightJustify(e.p_offset, 8));
@@ -187,6 +264,6 @@ public class ELFLoader extends ProgramReader {
     private String sectionName(int ind) {
         if ( ind < 0 || ind >= sht.entries.length ) return "";
         ELFSectionHeaderTable.Entry32 e = sht.entries[ind];
-        return getName(shstrtab, e.sh_name);
+        return e.getName();
     }
 }

@@ -36,16 +36,13 @@
 
 package avrora.monitors;
 
-import avrora.util.Util;
 import avrora.actions.SimAction;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Option;
-
+import avrora.util.Util;
 import java.util.Iterator;
 
 /**

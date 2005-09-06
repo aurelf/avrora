@@ -33,9 +33,8 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
-
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer

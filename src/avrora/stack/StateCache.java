@@ -32,13 +32,10 @@
 
 package avrora.stack;
 
-import avrora.util.Util;
 import avrora.core.Program;
 import avrora.util.StringUtil;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import avrora.util.Util;
+import java.util.*;
 
 /**
  * The <code>StateSpace</code> class represents the reachable state space as it is explored by the

@@ -33,8 +33,8 @@
  */
 package avrora.syntax.elf;
 
-import java.io.RandomAccessFile;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.HashMap;
 
 /**

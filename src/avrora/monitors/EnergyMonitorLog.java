@@ -37,18 +37,13 @@
 
 package avrora.monitors;
 
-import avrora.util.Util;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.energy.Energy;
-import avrora.sim.energy.EnergyControl;
 import avrora.sim.energy.EnergyObserver;
 import avrora.util.Options;
 import avrora.util.Util;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Iterator;
 
 /**

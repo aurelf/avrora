@@ -3,7 +3,6 @@ package jintgen.isdl.parser;
 
 import jintgen.isdl.*;
 import jintgen.jigir.*;
-
 import java.util.LinkedList;
 import java.util.List;
 

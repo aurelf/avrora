@@ -32,12 +32,10 @@
 
 package avrora.syntax.gas;
 
-import avrora.util.Util;
-import avrora.util.Util;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
-
+import avrora.util.Util;
 import java.io.File;
 import java.io.FileInputStream;
 

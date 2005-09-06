@@ -32,7 +32,6 @@
 
 package avrora.syntax;
 
-import avrora.util.Util;
 import avrora.util.Terminal;
 import avrora.util.Util;
 

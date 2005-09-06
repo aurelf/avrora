@@ -1,5 +1,6 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
+import avrora.arch.AbstractArchitecture;
+import avrora.arch.AbstractInstr;
 
 /**
  * The <code>MSP430Instr</code> class is a container (almost a namespace)

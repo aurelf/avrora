@@ -33,11 +33,8 @@
  */
 package avrora.syntax.elf;
 
-import avrora.util.Util;
 import avrora.util.StringUtil;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
+import avrora.util.Util;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -69,6 +66,10 @@ public class ELFProgramHeaderTable {
     public static final int PT_LOPROC = 0x70000000;
     public static final int PT_HIPROC = 0x7fffffff;
 
+    public static final int PF_EXEC = 0x1;
+    public static final int PF_WRITE = 0x2;
+    public static final int PF_READ = 0x4;
+
     public class Entry32 {
         public int p_type;
         public int p_offset;
@@ -81,7 +82,18 @@ public class ELFProgramHeaderTable {
 
         public String getFlags() {
             StringBuffer flags = new StringBuffer();
+            if ((p_flags & PF_EXEC) != 0) flags.append("EXEC ");
+            if ((p_flags & PF_WRITE) != 0) flags.append("WRITE ");
+            if ((p_flags & PF_READ) != 0) flags.append("READ ");
             return flags.toString();
+        }
+
+        public boolean isLoadable() {
+            return p_type == PT_LOAD;
+        }
+
+        public boolean isExecutable() {
+            return (p_flags & PF_EXEC) != 0;
         }
     }
 
@@ -140,11 +152,11 @@ public class ELFProgramHeaderTable {
             case PT_NULL: return "null";
             case PT_LOAD: return "load";
             case PT_DYNAMIC: return "dynamic";
-            case PT_INTERP: return "itnerpreter";
+            case PT_INTERP: return "interp";
             case PT_NOTE: return "note";
             case PT_SHLIB: return "shlib";
             case PT_PHDR: return "phdr";
-            default: return StringUtil.to0xHex(e.p_type, 8);
+            default: return StringUtil.toHex(e.p_type, 8);
         }
     }
 

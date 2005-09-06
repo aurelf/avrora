@@ -32,14 +32,10 @@
 
 package avrora.test;
 
-import avrora.core.Disassembler;
-import avrora.core.Instr;
-import avrora.core.Program;
-import avrora.core.ProgramReader;
+import avrora.core.*;
 import avrora.syntax.Module;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
 import avrora.util.StringUtil;
-
 import java.util.Properties;
 
 /**

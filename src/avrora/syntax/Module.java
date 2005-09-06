@@ -36,15 +36,11 @@ import avrora.core.*;
 import avrora.syntax.atmel.AtmelParser;
 import avrora.util.StringUtil;
 import avrora.util.Verbose;
-import avrora.util.parser.AbstractToken;
 import avrora.util.parser.AbstractParseException;
-
+import avrora.util.parser.AbstractToken;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>Module</code> class collects together the instructions and data into an AVR assembly program.

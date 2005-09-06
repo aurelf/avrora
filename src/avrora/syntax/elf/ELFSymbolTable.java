@@ -33,8 +33,8 @@
  */
 package avrora.syntax.elf;
 
-import java.io.RandomAccessFile;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
  * The <code>ELFSymbolTable</code> class represents a symbol table within
@@ -86,11 +86,18 @@ public class ELFSymbolTable {
                 default: return "unknown";
             }
         }
+
+        public String getName() {
+            if ( strtab != null ) return strtab.getString(st_name);
+            return "";
+        }
+
     }
 
     protected final ELFHeader header;
     protected final ELFSectionHeaderTable.Entry32 entry;
     protected final Entry[] entries;
+    protected ELFStringTable strtab;
 
     /**
      * The constructor for the <code>ELFSymbolTable</code> class creates a new
@@ -130,5 +137,13 @@ public class ELFSymbolTable {
             entries[cntr] = e;
             for ( int pad = 16; pad < entry.sh_entsize; pad++ ) f.read();
         }
+    }
+
+    public void setStringTable(ELFStringTable str) {
+        strtab = str;
+    }
+
+    public ELFStringTable getStringTable() {
+        return strtab;
     }
 }

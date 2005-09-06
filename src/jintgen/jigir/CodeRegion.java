@@ -32,10 +32,6 @@
 
 package jintgen.jigir;
 
-import jintgen.isdl.parser.Token;
-import jintgen.isdl.OperandTypeDecl;
-
-import java.util.Iterator;
 import java.util.List;
 
 /**

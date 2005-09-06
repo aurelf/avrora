@@ -32,10 +32,7 @@
 
 package avrora.util;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * The <code>Options</code> class represents a collection of command line options and utility methods for

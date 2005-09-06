@@ -32,15 +32,9 @@
 
 package jintgen.isdl;
 
-import jintgen.isdl.parser.Token;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.LinkedList;
-
 import avrora.util.StringUtil;
-import avrora.util.Util;
+import jintgen.isdl.parser.Token;
+import java.util.*;
 
 /**
  * The <code>SymbolMapping</code> class represents a class that maps string symbols

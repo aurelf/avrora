@@ -32,11 +32,9 @@
 
 package jintgen.gen;
 
-import jintgen.jigir.*;
-import jintgen.isdl.parser.Token;
 import avrora.util.Printer;
-
-import java.util.Iterator;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.*;
 import java.util.List;
 
 /**

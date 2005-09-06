@@ -33,7 +33,6 @@
 package avrora.core;
 
 import avrora.util.Util;
-
 import java.util.*;
 
 /**

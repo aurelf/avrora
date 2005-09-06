@@ -38,7 +38,6 @@ import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.util.Option;
 import avrora.util.StringUtil;
-
 import java.util.Iterator;
 
 /**

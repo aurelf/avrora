@@ -32,22 +32,11 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.Util;
-import jintgen.jigir.CodeRegion;
+import avrora.util.*;
 import jintgen.isdl.*;
-import jintgen.jigir.CodeRegion;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Util;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author Ben L. Titzer

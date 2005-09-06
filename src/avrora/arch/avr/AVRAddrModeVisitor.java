@@ -1,7 +1,4 @@
 package avrora.arch.avr;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>AVRAddrModeVisitor</code> interface implements the visitor
  * pattern for addressing modes.

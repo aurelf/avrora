@@ -32,11 +32,9 @@
 
 package avrora.test;
 
-import avrora.util.Util;
 import avrora.syntax.SimplifierError;
 import avrora.util.StringUtil;
 import avrora.util.Util;
-
 import java.util.Properties;
 
 /**

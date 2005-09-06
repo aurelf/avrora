@@ -32,21 +32,12 @@
 
 package avrora.sim;
 
-import avrora.util.Util;
-import avrora.core.Instr;
-import avrora.core.InstrVisitor;
-import avrora.core.Program;
-import avrora.core.Register;
+import avrora.core.*;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.mcu.RegisterSet;
-import avrora.sim.util.MulticastExceptionWatch;
-import avrora.sim.util.MulticastProbe;
-import avrora.sim.util.MulticastWatch;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Util;
+import avrora.sim.util.*;
+import avrora.util.*;
 
 /**
  * The <code>BaseInterpreter</code> class represents a base class of the legacy interpreter and the generated

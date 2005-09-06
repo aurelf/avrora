@@ -32,16 +32,12 @@
 
 package avrora.sim.platform;
 
-import avrora.util.Util;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.sim.mcu.USART;
 import avrora.util.Terminal;
 import avrora.util.Util;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 

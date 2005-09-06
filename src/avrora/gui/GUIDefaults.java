@@ -34,7 +34,6 @@ package avrora.gui;
 
 import avrora.sim.Simulation;
 import avrora.util.ClassMap;
-
 import java.util.LinkedList;
 import java.util.List;
 

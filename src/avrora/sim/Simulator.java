@@ -32,16 +32,13 @@
 
 package avrora.sim;
 
-import avrora.util.Util;
 import avrora.actions.SimAction;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Verbose;
+import avrora.util.*;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator for the AVR instruction set. It is

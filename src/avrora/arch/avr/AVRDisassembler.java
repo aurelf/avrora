@@ -1,5 +1,6 @@
 package avrora.arch.avr;
-import avrora.arch.*;
+import avrora.arch.AbstractDisassembler;
+import avrora.arch.AbstractInstr;
 import java.util.Arrays;
 
 /**

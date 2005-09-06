@@ -32,15 +32,11 @@
 
 package avrora.sim.mcu;
 
-import avrora.util.Util;
 import avrora.util.StringUtil;
 import avrora.util.Util;
-
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * The <code>RegisterLayout</code> class stores information about the IO register addresses for a particular

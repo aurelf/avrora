@@ -43,12 +43,8 @@ import avrora.sim.energy.EnergyControl;
 import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-
+import avrora.util.*;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * energy monitor implementation this class handles logging and

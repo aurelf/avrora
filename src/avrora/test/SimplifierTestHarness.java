@@ -36,7 +36,6 @@ import avrora.Defaults;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
-
 import java.util.Properties;
 
 /**

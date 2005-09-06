@@ -32,13 +32,9 @@
 
 package avrora.sim.mcu;
 
-import avrora.util.Util;
 import avrora.sim.ActiveRegister;
 import avrora.sim.RWRegister;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
-import avrora.util.Util;
-
+import avrora.util.*;
 import java.util.HashMap;
 import java.util.Iterator;
 

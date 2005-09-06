@@ -32,13 +32,9 @@
 
 package avrora.sim.mcu;
 
-import avrora.sim.ActiveRegister;
-import avrora.sim.InterruptTable;
-import avrora.sim.RWRegister;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.util.Arithmetic;
 import avrora.util.StringUtil;
-
 import java.util.LinkedList;
 
 /**

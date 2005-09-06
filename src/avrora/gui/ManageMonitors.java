@@ -36,13 +36,10 @@
 package avrora.gui;
 
 import avrora.sim.Simulation;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * This class manages the dialog boxes for adding a monitor to the simulator.

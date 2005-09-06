@@ -32,14 +32,10 @@
 
 package jintgen.gen;
 
-import jintgen.isdl.Architecture;
-import jintgen.Main;
 import avrora.util.*;
-
-import java.io.IOException;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.FileNotFoundException;
+import jintgen.Main;
+import jintgen.isdl.Architecture;
+import java.io.*;
 import java.util.List;
 
 /**

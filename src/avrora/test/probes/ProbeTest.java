@@ -35,11 +35,7 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.clock.DeltaQueue;
 import avrora.util.StringUtil;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Ben L. Titzer

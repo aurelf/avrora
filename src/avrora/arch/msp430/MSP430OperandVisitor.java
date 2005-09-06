@@ -1,7 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>MSP430OperandVisitor</code> interface allows clients to use
  * the Visitor pattern to resolve the types of operands to instructions.

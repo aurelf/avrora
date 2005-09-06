@@ -32,23 +32,13 @@
 
 package jintgen.gen.disassembler;
 
-import jintgen.isdl.InstrDecl;
-import jintgen.isdl.AddrModeDecl;
-import jintgen.isdl.EncodingDecl;
-import jintgen.isdl.Property;
+import avrora.util.*;
+import jintgen.gen.ConstantPropagator;
+import jintgen.isdl.*;
 import jintgen.jigir.Expr;
 import jintgen.jigir.Literal;
-import jintgen.jigir.BitRangeExpr;
-import jintgen.gen.disassembler.DisassemblerGenerator;
-import jintgen.gen.ConstantPropagator;
-
-import java.util.List;
 import java.util.LinkedList;
-
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
-import avrora.util.Verbose;
-import avrora.util.Printer;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer

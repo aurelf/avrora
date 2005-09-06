@@ -32,13 +32,9 @@
 
 package avrora.sim.mcu;
 
-import avrora.util.Util;
-import avrora.sim.ActiveRegister;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.RWRegister;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.clock.Clock;
-
+import avrora.util.Util;
 import java.util.Iterator;
 
 /**

@@ -1,6 +1,4 @@
 package avrora.arch.avr;
-import avrora.arch.*;
-
 /**
  * The <code>AVRInstrVisitor</code> interface allows user code that
  * implements the interface to easily dispatch on the type of an

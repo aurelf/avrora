@@ -32,7 +32,6 @@
 
 package avrora.test;
 
-import avrora.util.Util;
 import avrora.syntax.SimplifierError;
 import avrora.util.Terminal;
 import avrora.util.Util;

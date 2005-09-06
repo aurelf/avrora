@@ -32,7 +32,6 @@
 
 package avrora.util.parser;
 
-import avrora.util.parser.AbstractToken;
 import avrora.syntax.ProgramPoint;
 
 

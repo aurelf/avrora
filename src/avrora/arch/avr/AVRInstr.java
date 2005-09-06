@@ -1,5 +1,6 @@
 package avrora.arch.avr;
-import avrora.arch.*;
+import avrora.arch.AbstractArchitecture;
+import avrora.arch.AbstractInstr;
 
 /**
  * The <code>AVRInstr</code> class is a container (almost a namespace)

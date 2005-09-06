@@ -1,7 +1,4 @@
 package avrora.arch.avr;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>AVRAddrMode</code> class represents an addressing mode for
  * this architecture. An addressing mode fixes the number and type of

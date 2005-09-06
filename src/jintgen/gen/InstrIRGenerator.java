@@ -33,14 +33,10 @@
 package jintgen.gen;
 
 import avrora.util.*;
-import jintgen.isdl.*;
 import jintgen.gen.disassembler.DGUtil;
-
+import jintgen.isdl.*;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an

@@ -33,17 +33,12 @@
 package jintgen.gen.disassembler;
 
 import avrora.util.*;
-
-import java.util.*;
-
-import jintgen.isdl.EncodingDecl;
-import jintgen.isdl.Property;
-import jintgen.isdl.AddrModeDecl;
-import jintgen.isdl.InstrDecl;
-import jintgen.isdl.parser.Token;
 import jintgen.gen.ConstantPropagator;
-import jintgen.jigir.Literal;
+import jintgen.isdl.*;
+import jintgen.isdl.parser.Token;
 import jintgen.jigir.Expr;
+import jintgen.jigir.Literal;
+import java.util.*;
 
 /**
  * The <code>DGUtil</code> class contains a set of utility methods that are useful in

@@ -32,14 +32,12 @@
 
 package avrora.sim.radio;
 
-import avrora.util.Util;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.util.TransactionalList;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
+import avrora.util.*;
 
 /**
  * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with avrora. The CC1000

@@ -32,10 +32,9 @@
 
 package jintgen.jigir;
 
-import avrora.util.Util;
-import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
 import avrora.util.Util;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>Expr</code> class represents an expression in the IR. Expressions are evaluated and produce a

@@ -33,8 +33,6 @@
 package avrora.util.profiling;
 
 import avrora.util.Util;
-import avrora.util.Util;
-
 import java.util.Arrays;
 
 /**

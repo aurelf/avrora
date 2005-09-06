@@ -33,7 +33,6 @@
 package jintgen.jigir;
 
 import avrora.util.StringUtil;
-
 import java.util.List;
 
 /**

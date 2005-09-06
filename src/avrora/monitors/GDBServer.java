@@ -32,18 +32,11 @@
 
 package avrora.monitors;
 
-import avrora.util.Util;
 import avrora.core.Register;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Util;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import avrora.util.*;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.CharacterIterator;

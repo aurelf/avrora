@@ -41,11 +41,7 @@ import avrora.sim.clock.IntervalSynchronizer;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Implementation of the free space radio propagation model

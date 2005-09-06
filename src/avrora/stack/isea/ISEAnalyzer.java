@@ -32,13 +32,8 @@
 
 package avrora.stack.isea;
 
-import avrora.util.Util;
-import avrora.core.ControlFlowGraph;
-import avrora.core.ProcedureMap;
-import avrora.core.Program;
-import avrora.core.SourceMapping;
+import avrora.core.*;
 import avrora.util.*;
-
 import java.util.*;
 
 /**

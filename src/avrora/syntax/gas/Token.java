@@ -34,7 +34,6 @@
 package avrora.syntax.gas;
 
 import avrora.util.parser.AbstractToken;
-import avrora.util.parser.AbstractToken;
 
 /**
  * Describes the input token stream.

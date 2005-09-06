@@ -32,7 +32,6 @@
 
 package avrora.util.profiling;
 
-import avrora.util.Util;
 import avrora.util.Terminal;
 import avrora.util.Util;
 

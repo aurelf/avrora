@@ -36,7 +36,6 @@ package avrora.syntax.objdump;
 import avrora.actions.Action;
 import avrora.util.Option;
 import avrora.util.Verbose;
-
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.HashSet;

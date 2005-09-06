@@ -32,20 +32,17 @@
 
 package jintgen;
 
+import avrora.util.*;
+import avrora.util.help.HelpCategory;
+import jintgen.gen.*;
+import jintgen.gen.disassembler.DisassemblerGenerator;
+import jintgen.isdl.Architecture;
+import jintgen.isdl.Verifier;
+import jintgen.isdl.parser.ISDLParser;
+import jintgen.isdl.parser.ParseException;
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
-
-import jintgen.isdl.Architecture;
-import jintgen.isdl.Verifier;
-import jintgen.gen.*;
-import jintgen.gen.disassembler.DisassemblerGenerator;
-import jintgen.isdl.parser.ISDLParser;
-import jintgen.isdl.parser.ParseException;
-
-import avrora.util.*;
-import avrora.util.help.*;
 
 /**
  * This is the main entrypoint to Jintgen. It is responsible for parsing the options to the main program and

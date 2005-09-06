@@ -32,21 +32,15 @@
 
 package avrora.sim;
 
-import avrora.util.Util;
 import avrora.Defaults;
 import avrora.core.LoadableProgram;
 import avrora.monitors.MonitorFactory;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.platform.DefaultPlatform;
-import avrora.sim.platform.Platform;
-import avrora.sim.platform.PlatformFactory;
+import avrora.sim.platform.*;
 import avrora.sim.util.InterruptScheduler;
-import avrora.util.Option;
-import avrora.util.Options;
-import avrora.util.Util;
+import avrora.util.*;
 import avrora.util.help.HelpCategory;
-
 import java.util.*;
 
 /**

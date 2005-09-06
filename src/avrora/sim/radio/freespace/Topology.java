@@ -37,14 +37,8 @@
 package avrora.sim.radio.freespace;
 
 import avrora.util.Util;
-import avrora.util.Util;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 /**
  * handles node positions.

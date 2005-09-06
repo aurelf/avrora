@@ -32,13 +32,12 @@
 
 package jintgen.isdl;
 
-import jintgen.isdl.parser.Token;
-import jintgen.jigir.CodeRegion;
 import avrora.util.StringUtil;
 import avrora.util.Util;
-
-import java.util.List;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.CodeRegion;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>OperandDecl</code> class represents the declaration of a set of values (or registers) that can

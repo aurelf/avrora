@@ -32,11 +32,8 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.Arithmetic;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.HashSet;
 
 /**
  * The <code>TreeFactorer</code> class implements a factoring algorithm that reduces

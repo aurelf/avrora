@@ -32,8 +32,6 @@
 
 package jintgen.jigir;
 
-import java.util.Iterator;
-
 /**
  * The <code>ExprVisitor</code> interface is part of the visitor pattern for expressions within the program.
  * It allows clients to visit nodes of the abstract syntax tree that represent expressions within the

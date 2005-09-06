@@ -32,8 +32,8 @@
 
 package avrora.syntax;
 
-import avrora.util.Util;
 import avrora.util.StringUtil;
+import avrora.util.Util;
 import avrora.util.parser.AbstractToken;
 
 /**

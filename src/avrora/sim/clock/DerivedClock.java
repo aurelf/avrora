@@ -32,9 +32,8 @@
 
 package avrora.sim.clock;
 
-import avrora.util.Util;
-import avrora.util.Util;
 import avrora.sim.Simulator;
+import avrora.util.Util;
 
 /**
  * The <code>DerivedClock</code> class represents a clock that is derived from another clock; i.e. the derived

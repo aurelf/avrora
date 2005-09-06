@@ -32,11 +32,7 @@
 
 package avrora.stack;
 
-import avrora.util.Util;
-import avrora.core.Instr;
-import avrora.core.InstrVisitor;
-import avrora.core.Program;
-import avrora.core.Register;
+import avrora.core.*;
 import avrora.util.StringUtil;
 import avrora.util.Util;
 

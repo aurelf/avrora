@@ -32,9 +32,8 @@
 
 package avrora.core;
 
-import avrora.util.Util;
 import avrora.Main;
-
+import avrora.util.Util;
 import java.io.File;
 
 /**

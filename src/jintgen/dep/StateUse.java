@@ -32,8 +32,6 @@
 
 package jintgen.dep;
 
-import jintgen.jigir.CodeRegion;
-import jintgen.jigir.CodeRegion;
 import jintgen.isdl.AddrModeDecl;
 
 /**

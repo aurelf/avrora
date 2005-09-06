@@ -32,8 +32,8 @@
 
 package jintgen.jigir;
 
-import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>MapBitRangeAssignment</code> class represents an assignment to a range of bits of an element

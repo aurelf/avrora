@@ -33,9 +33,7 @@
 package avrora.sim.platform.sensors;
 
 import avrora.sim.FiniteStateMachine;
-import avrora.sim.mcu.ADC;
-import avrora.sim.mcu.AtmelMicrocontroller;
-import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.*;
 
 /**
  * The <code>LightSensor</code> class implements a light sensor like that present on the Mica2.

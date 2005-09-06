@@ -1,7 +1,4 @@
 package avrora.arch.avr;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>AVROperand</code> interface represents operands that are
  * allowed to instructions in this architecture. Inner classes of this
@@ -20,7 +17,7 @@ public interface AVROperand {
             return Integer.toString(value);
         }
     }
-    
+
     abstract static class Sym implements AVROperand {
         public final AVRSymbol symbol;
         Sym(AVRSymbol sym) {
@@ -31,7 +28,7 @@ public interface AVROperand {
             return symbol.symbol;
         }
     }
-    
+
     abstract static class Addr implements AVROperand {
         public final int address;
         Addr(int addr) {
@@ -45,7 +42,7 @@ public interface AVROperand {
             return buf.toString();
         }
     }
-    
+
     abstract static class Rel implements AVROperand {
         public final int address;
         public final int relative;
@@ -58,7 +55,7 @@ public interface AVROperand {
             else return "."+relative;
         }
     }
-    
+
     public class GPR extends Sym {
         GPR(String s) {
             super(AVRSymbol.get_GPR(s));
@@ -70,7 +67,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class HGPR extends Sym {
         HGPR(String s) {
             super(AVRSymbol.get_HGPR(s));
@@ -82,7 +79,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class MGPR extends Sym {
         MGPR(String s) {
             super(AVRSymbol.get_MGPR(s));
@@ -94,7 +91,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class YZ extends Sym {
         YZ(String s) {
             super(AVRSymbol.get_YZ(s));
@@ -106,7 +103,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class EGPR extends Sym {
         EGPR(String s) {
             super(AVRSymbol.get_EGPR(s));
@@ -118,7 +115,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class RDL extends Sym {
         RDL(String s) {
             super(AVRSymbol.get_RDL(s));
@@ -130,7 +127,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class IMM3 extends Int {
         public static final int low = 0;
         public static final int high = 7;
@@ -141,7 +138,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class IMM5 extends Int {
         public static final int low = 0;
         public static final int high = 31;
@@ -152,7 +149,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class IMM6 extends Int {
         public static final int low = 0;
         public static final int high = 63;
@@ -163,7 +160,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class IMM7 extends Int {
         public static final int low = 0;
         public static final int high = 127;
@@ -174,7 +171,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class IMM8 extends Int {
         public static final int low = 0;
         public static final int high = 255;
@@ -185,7 +182,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class SREL extends Rel {
         public static final int low = -64;
         public static final int high = 63;
@@ -196,7 +193,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class LREL extends Rel {
         public static final int low = -1024;
         public static final int high = 1023;
@@ -207,7 +204,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class PADDR extends Int {
         public static final int low = 0;
         public static final int high = 65536;
@@ -218,7 +215,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class DADDR extends Addr {
         public static final int low = 0;
         public static final int high = 65536;
@@ -229,7 +226,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class R0_B extends Sym {
         R0_B(String s) {
             super(AVRSymbol.get_R0(s));
@@ -241,7 +238,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class RZ_W extends Sym {
         RZ_W(String s) {
             super(AVRSymbol.get_RZ(s));
@@ -253,7 +250,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class AI_RZ_W extends Sym {
         AI_RZ_W(String s) {
             super(AVRSymbol.get_RZ(s));
@@ -265,7 +262,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class XYZ extends Sym {
         XYZ(String s) {
             super(AVRSymbol.get_ADR(s));
@@ -277,7 +274,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class AI_XYZ extends Sym {
         AI_XYZ(String s) {
             super(AVRSymbol.get_ADR(s));
@@ -289,7 +286,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
     public class PD_XYZ extends Sym {
         PD_XYZ(String s) {
             super(AVRSymbol.get_ADR(s));
@@ -301,5 +298,5 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-    
+
 }

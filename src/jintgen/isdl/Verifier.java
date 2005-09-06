@@ -32,13 +32,11 @@
 
 package jintgen.isdl;
 
-import avrora.util.Verbose;
 import avrora.util.Util;
-import avrora.util.StringUtil;
-import jintgen.jigir.*;
+import avrora.util.Verbose;
 import jintgen.gen.Inliner;
 import jintgen.isdl.parser.Token;
-
+import jintgen.jigir.*;
 import java.util.*;
 
 /**

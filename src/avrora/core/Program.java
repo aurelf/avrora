@@ -32,14 +32,9 @@
 
 package avrora.core;
 
-import avrora.util.Util;
 import avrora.util.StringUtil;
 import avrora.util.Util;
-
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>Program</code> class represents a complete program of AVR instructions. It stores the actual

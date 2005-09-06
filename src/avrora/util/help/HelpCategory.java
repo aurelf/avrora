@@ -32,9 +32,7 @@
 
 package avrora.util.help;
 
-import avrora.util.Util;
 import avrora.util.*;
-
 import java.util.*;
 
 /**

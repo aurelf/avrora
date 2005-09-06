@@ -40,9 +40,7 @@ import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Verbose;
+import avrora.util.*;
 
 /**
  * The <code>ExternalFlash</code> class implements the necessary functionality of the

@@ -37,13 +37,8 @@ import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.util.*;
 import avrora.util.help.HelpCategory;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
 
 /**
  * This is the main entrypoint to Avrora. It is responsible for parsing the options to the main program and

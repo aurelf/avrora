@@ -36,7 +36,6 @@ import avrora.sim.Simulator;
 import avrora.sim.clock.IntervalSynchronizer;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.ADC;
-
 import java.util.HashSet;
 
 /**

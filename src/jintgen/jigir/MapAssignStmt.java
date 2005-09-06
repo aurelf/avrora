@@ -32,8 +32,8 @@
 
 package jintgen.jigir;
 
-import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>MapAssignStmt</code> class represents a statement that is an assignment to an element of a map.

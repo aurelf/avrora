@@ -32,8 +32,6 @@
 
 package jintgen.jigir;
 
-import java.util.Iterator;
-
 /**
  * The <code>CodeVisitor</code> interface represents a visitor that is more specific than the
  * <code>ExprVisitor</code> visitor, in that it contains visit methods for every type of arithmetic and

@@ -32,14 +32,9 @@
 
 package avrora.actions;
 
-import avrora.util.Util;
-import avrora.core.LabelMapping;
-import avrora.core.Program;
-import avrora.core.SourceMapping;
-import avrora.sim.Simulator;
+import avrora.core.*;
 import avrora.sim.State;
 import avrora.util.*;
-
 import java.util.*;
 
 /**

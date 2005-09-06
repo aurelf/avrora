@@ -34,16 +34,10 @@ package avrora.actions;
 
 import avrora.Main;
 import avrora.core.*;
-import avrora.util.Option;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-
+import avrora.util.*;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>CFGAction</code> is an Avrora action that allows a control flow graph to be generated and output

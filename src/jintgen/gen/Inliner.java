@@ -33,18 +33,12 @@
 package jintgen.gen;
 
 import avrora.util.Util;
-import avrora.util.Util;
 import jintgen.isdl.Architecture;
-import jintgen.jigir.CodeRegion;
 import jintgen.isdl.SubroutineDecl;
-import jintgen.jigir.*;
 import jintgen.isdl.parser.ISDLParserConstants;
 import jintgen.isdl.parser.Token;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import jintgen.jigir.*;
+import java.util.*;
 
 /**
  * The <code>Inliner</code> class implements a visitor over the code that inlines calls to known subroutines.

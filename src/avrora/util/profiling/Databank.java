@@ -33,7 +33,6 @@
 package avrora.util.profiling;
 
 import avrora.util.Terminal;
-
 import java.util.Vector;
 
 /**

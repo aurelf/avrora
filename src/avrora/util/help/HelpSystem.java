@@ -33,7 +33,6 @@
 package avrora.util.help;
 
 import avrora.util.ClassMap;
-
 import java.util.List;
 
 /**

@@ -32,19 +32,8 @@
 
 package jintgen.isdl;
 
-import avrora.util.Util;
-import jintgen.jigir.*;
-import jintgen.gen.Inliner;
-import jintgen.isdl.parser.Token;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
 import avrora.util.Verbose;
-import avrora.util.Util;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and

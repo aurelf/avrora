@@ -34,13 +34,9 @@ package avrora.util;
 
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * The <code>StringUtil</code> class implements several useful functions for dealing with strings such as

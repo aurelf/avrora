@@ -601,7 +601,7 @@ public class Disassembler {
         // logical[0:3] -> 
         // logical[4:15] -> target[11:0]
         target |= (word1 & 0x00FFF);
-        return new Instr.RJMP(pc, relative(target, 10));
+        return new Instr.RJMP(pc, relative(target, 11));
     }
     private Instr decode_OR_0(int word1) throws InvalidInstruction {
         int rd = 0;
@@ -676,7 +676,7 @@ public class Disassembler {
         // logical[0:3] -> 
         // logical[4:15] -> target[11:0]
         target |= (word1 & 0x00FFF);
-        return new Instr.RCALL(pc, relative(target, 10));
+        return new Instr.RCALL(pc, relative(target, 11));
     }
     private Instr decode_SBI_0(int word1) throws InvalidInstruction {
         int ior = 0;

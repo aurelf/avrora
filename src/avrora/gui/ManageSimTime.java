@@ -37,7 +37,6 @@ package avrora.gui;
 
 import avrora.sim.Simulation;
 import avrora.util.Terminal;
-
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import java.awt.*;

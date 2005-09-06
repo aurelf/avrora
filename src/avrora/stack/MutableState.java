@@ -32,9 +32,8 @@
 
 package avrora.stack;
 
-import avrora.util.Util;
-import avrora.util.Util;
 import avrora.core.Register;
+import avrora.util.Util;
 
 /**
  * The <code>MutableState</code> class represents an abstract state of the processor that is mutable. This is

@@ -34,13 +34,9 @@ package avrora.sim.mcu;
 
 import avrora.core.InstrPrototype;
 import avrora.core.Program;
-import avrora.sim.ActiveRegister;
-import avrora.sim.FiniteStateMachine;
-import avrora.sim.InterpreterFactory;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
 import avrora.util.Arithmetic;
-
 import java.util.HashMap;
 
 /**

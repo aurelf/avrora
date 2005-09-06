@@ -33,7 +33,6 @@
 package avrora.gui;
 
 import avrora.monitors.Monitor;
-
 import javax.swing.*;
 
 /**

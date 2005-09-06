@@ -33,16 +33,10 @@
 package avrora.test;
 
 import avrora.Defaults;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Verbose;
-
+import avrora.util.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * The <code>AutomatedTester</code> is a class that is designed to be an in-program test facility. It is

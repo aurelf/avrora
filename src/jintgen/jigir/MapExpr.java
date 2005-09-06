@@ -32,8 +32,8 @@
 
 package jintgen.jigir;
 
-import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>MapExpr</code> class represents an expression that is an access of an element within a map.

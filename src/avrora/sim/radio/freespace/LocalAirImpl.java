@@ -40,10 +40,7 @@ import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.ADC;
 import avrora.sim.radio.Channel;
 import avrora.sim.radio.Radio;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * Implementation of Local Air

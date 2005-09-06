@@ -36,33 +36,19 @@ import avrora.actions.*;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.monitors.*;
-import avrora.sim.GenInterpreter;
-import avrora.sim.InterpreterFactory;
-import avrora.sim.Simulation;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
-import avrora.sim.mcu.ATMega128;
-import avrora.sim.mcu.ATMega16;
-import avrora.sim.mcu.ATMega32;
-import avrora.sim.mcu.MicrocontrollerFactory;
-import avrora.sim.platform.Mica2;
-import avrora.sim.platform.PlatformFactory;
-import avrora.sim.platform.Seres;
+import avrora.sim.mcu.*;
+import avrora.sim.platform.*;
 import avrora.sim.types.SensorSimulation;
 import avrora.sim.types.SingleSimulation;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.gas.GASProgramReader;
-import avrora.syntax.objdump.ODPPAction;
-import avrora.syntax.objdump.ObjDump2ProgramReader;
-import avrora.syntax.objdump.ObjDumpProgramReader;
+import avrora.syntax.objdump.*;
+import avrora.syntax.elf.ELFLoader;
 import avrora.test.*;
-import avrora.util.ClassMap;
-import avrora.util.StringUtil;
-import avrora.util.Util;
-import avrora.util.help.ClassMapValueItem;
-import avrora.util.help.HelpCategory;
-import avrora.util.help.HelpSystem;
-
+import avrora.util.*;
+import avrora.util.help.*;
 import java.util.*;
 
 /**
@@ -147,6 +133,7 @@ public class Defaults {
             inputs.addClass("atmel", AtmelProgramReader.class);
             inputs.addClass("objdump", ObjDumpProgramReader.class);
             inputs.addClass("odpp", ObjDump2ProgramReader.class);
+            inputs.addClass("elf", ELFLoader.class);
 
             HelpCategory hc = new HelpCategory("inputs", "Help for the supported program input formats.");
             addOptionSection(hc, "INPUT FORMATS", "The input format of the program is specified with the \"-input\" " +
@@ -436,6 +423,8 @@ public class Defaults {
                 reader = new ObjDumpProgramReader();
             else if (".odpp".equals(extension))
                 reader = new ObjDump2ProgramReader();
+            else if (".elf".equals(extension))
+                reader = new ELFLoader();
 
             if ( reader == null ) {
                 Util.userError("file extension " + StringUtil.quote(extension) + " unknown");

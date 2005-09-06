@@ -33,15 +33,11 @@
 package avrora.actions;
 
 import avrora.Main;
-import avrora.arch.avr.AVRDisassembler;
-import avrora.arch.avr.AVRInstr;
-import avrora.arch.msp430.MSP430Instr;
-import avrora.arch.msp430.MSP430Disassembler;
 import avrora.arch.AbstractDisassembler;
 import avrora.arch.AbstractInstr;
+import avrora.arch.avr.AVRDisassembler;
+import avrora.arch.msp430.MSP430Disassembler;
 import avrora.util.*;
-
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 

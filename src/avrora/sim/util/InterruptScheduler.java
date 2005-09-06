@@ -32,15 +32,11 @@
 
 package avrora.sim.util;
 
-import avrora.util.Util;
 import avrora.Main;
 import avrora.sim.Simulator;
 import avrora.util.Terminal;
 import avrora.util.Util;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StreamTokenizer;
+import java.io.*;
 
 /**
  * The <code>InterruptScheduler</code> class is a testing utility that reads an interrupt schedule

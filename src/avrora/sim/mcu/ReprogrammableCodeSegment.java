@@ -32,16 +32,10 @@
 
 package avrora.sim.mcu;
 
-import avrora.util.Util;
 import avrora.core.*;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.CodeSegment;
-import avrora.sim.RWRegister;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.clock.MainClock;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import avrora.util.*;
 
 /**
  * The <code>ReprogrammableCodeSegment</code> class represents a flash segment that stores code. This segment

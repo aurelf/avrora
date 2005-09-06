@@ -33,9 +33,6 @@
  */
 package avrora.syntax.elf;
 
-import avrora.util.StringUtil;
-
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -117,10 +114,16 @@ public class ELFSectionHeaderTable {
         public boolean isSymbolTable() {
             return sh_type == SHT_SYMTAB;
         }
+
+        public String getName() {
+            if ( strtab != null ) return strtab.getString(sh_name);
+            return "";
+        }
     }
 
     protected final ELFHeader header;
     protected final Entry32[] entries;
+    protected ELFStringTable strtab;
 
     /**
      * The constructor for the <code>ELFSectionHeaderTable</code> class creates a new instance
@@ -164,4 +167,13 @@ public class ELFSectionHeaderTable {
             for ( int pad = 40; pad < header.e_shentsize; pad++ ) fis.read();
         }
     }
+
+    public void setStringTable(ELFStringTable str) {
+        strtab = str;
+    }
+
+    public ELFStringTable getStringTable() {
+        return strtab;
+    }
+
 }

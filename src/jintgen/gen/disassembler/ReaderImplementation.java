@@ -32,18 +32,12 @@
 
 package jintgen.gen.disassembler;
 
-import jintgen.isdl.*;
-import jintgen.jigir.*;
-import jintgen.gen.GenBase;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Arrays;
-
 import avrora.util.StringUtil;
 import avrora.util.Util;
-import avrora.util.Printer;
+import jintgen.gen.GenBase;
+import jintgen.isdl.*;
+import jintgen.jigir.*;
+import java.util.*;
 
 /**
  * The <code>ReaderImplementation</code> class implements the functionality needed to generate

@@ -38,7 +38,6 @@ import avrora.monitors.MonitorFactory;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.util.ProgramProfiler;
-
 import javax.swing.*;
 import java.awt.*;
 

@@ -33,7 +33,6 @@
 package avrora.sim.clock;
 
 import avrora.util.StringUtil;
-
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 

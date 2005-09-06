@@ -36,11 +36,7 @@ import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.TermUtil;
-import avrora.util.Terminal;
-
+import avrora.util.*;
 import java.util.*;
 
 /**

@@ -32,19 +32,13 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.Printer;
-import avrora.util.Util;
-import avrora.util.StringUtil;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.HashSet;
+import avrora.util.*;
+import jintgen.gen.GenBase;
+import jintgen.isdl.EncodingDecl;
+import jintgen.isdl.InstrDecl;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-
-import jintgen.isdl.InstrDecl;
-import jintgen.isdl.EncodingDecl;
-import jintgen.gen.GenBase;
+import java.util.*;
 
 /**
  * @author Ben L. Titzer

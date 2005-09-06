@@ -32,11 +32,11 @@
 
 package jintgen.isdl;
 
+import avrora.util.StringUtil;
+import avrora.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.Expr;
 import jintgen.jigir.Literal;
-import avrora.util.Util;
-import avrora.util.StringUtil;
 
 /**
  * @author Ben L. Titzer

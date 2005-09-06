@@ -32,9 +32,9 @@
 
 package avrora.sim;
 
-import avrora.util.Util;
 import avrora.sim.clock.Clock;
 import avrora.sim.util.MulticastFSMProbe;
+import avrora.util.Util;
 
 /**
  * The <code>FiniteStateMachine</code> class represents a model of a finite state machine that

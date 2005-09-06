@@ -32,12 +32,8 @@
 
 package avrora.sim.clock;
 
+import avrora.sim.*;
 import avrora.util.Util;
-import avrora.util.Util;
-import avrora.sim.Simulation;
-import avrora.sim.Simulator;
-import avrora.sim.SimulatorThread;
-
 import java.util.HashMap;
 import java.util.Iterator;
 

@@ -32,16 +32,10 @@
 
 package avrora.monitors;
 
-import avrora.sim.InterruptTable;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.Option;
-import avrora.util.StringUtil;
-import avrora.util.TermUtil;
-import avrora.util.Terminal;
+import avrora.util.*;
 import avrora.util.profiling.MinMaxMean;
-
 import java.util.Arrays;
 
 /**

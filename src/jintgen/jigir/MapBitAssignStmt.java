@@ -32,8 +32,8 @@
 
 package jintgen.jigir;
 
-import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>MapBitAssignStmt</code> represents an assignment to a single bit within an element within a map.

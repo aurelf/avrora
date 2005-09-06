@@ -1,7 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>MSP430Operand</code> interface represents operands that are
  * allowed to instructions in this architecture. Inner classes of this
@@ -20,7 +17,7 @@ public interface MSP430Operand {
             return Integer.toString(value);
         }
     }
-    
+
     abstract static class Sym implements MSP430Operand {
         public final MSP430Symbol symbol;
         Sym(MSP430Symbol sym) {
@@ -31,7 +28,7 @@ public interface MSP430Operand {
             return symbol.symbol;
         }
     }
-    
+
     abstract static class Addr implements MSP430Operand {
         public final int address;
         Addr(int addr) {
@@ -45,7 +42,7 @@ public interface MSP430Operand {
             return buf.toString();
         }
     }
-    
+
     abstract static class Rel implements MSP430Operand {
         public final int address;
         public final int relative;
@@ -58,7 +55,7 @@ public interface MSP430Operand {
             else return "."+relative;
         }
     }
-    
+
     public class SREG extends Sym {
         SREG(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -70,7 +67,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class AIREG_B extends Sym {
         AIREG_B(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -82,7 +79,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class AIREG_W extends Sym {
         AIREG_W(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -94,7 +91,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class IREG extends Sym {
         IREG(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -106,7 +103,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class IMM extends Int {
         public static final int low = -32768;
         public static final int high = 65536;
@@ -117,7 +114,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class INDX implements MSP430Operand {
         public final MSP430Operand.SREG reg;
         public final MSP430Operand.IMM index;
@@ -129,7 +126,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class SYM extends Rel {
         public static final int low = -32768;
         public static final int high = 32767;
@@ -140,7 +137,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class ABSO extends Addr {
         public static final int low = 0;
         public static final int high = 65535;
@@ -151,7 +148,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
     public class JUMP extends Rel {
         public static final int low = -512;
         public static final int high = 511;
@@ -162,5 +159,5 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-    
+
 }

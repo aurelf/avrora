@@ -32,11 +32,8 @@
 
 package avrora.gui;
 
-import avrora.sim.Simulation;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
-
 import javax.swing.*;
 import java.awt.*;
 

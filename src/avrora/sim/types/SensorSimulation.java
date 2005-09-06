@@ -32,31 +32,18 @@
 
 package avrora.sim.types;
 
-import avrora.util.Util;
 import avrora.Main;
-import avrora.core.LoadableProgram;
-import avrora.core.Program;
-import avrora.core.SourceMapping;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.Simulation;
-import avrora.sim.SimulatorThread;
+import avrora.core.*;
+import avrora.sim.*;
 import avrora.sim.platform.Platform;
 import avrora.sim.platform.PlatformFactory;
-import avrora.sim.platform.sensors.RandomSensorData;
-import avrora.sim.platform.sensors.ReplaySensorData;
-import avrora.sim.platform.sensors.Sensor;
-import avrora.sim.radio.Radio;
-import avrora.sim.radio.RadioAir;
-import avrora.sim.radio.SimpleAir;
+import avrora.sim.platform.sensors.*;
+import avrora.sim.radio.*;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.sim.radio.freespace.Topology;
 import avrora.util.*;
-
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * The <code>SensorSimulation</code> class represents a simulaion type where multiple sensor nodes,

@@ -32,19 +32,11 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.Util;
-import jintgen.isdl.*;
-import jintgen.isdl.parser.Token;
-import jintgen.jigir.*;
-import jintgen.gen.disassembler.DTBuilder;
-import jintgen.gen.Generator;
-import jintgen.gen.ConstantPropagator;
 import avrora.util.*;
-
-import java.util.*;
-import java.io.PrintStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
+import jintgen.gen.Generator;
+import jintgen.isdl.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>DisassemblerGenerator</code> class is a generator that can create a Java class

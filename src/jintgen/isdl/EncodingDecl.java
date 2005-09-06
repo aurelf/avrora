@@ -32,14 +32,12 @@
 
 package jintgen.isdl;
 
-import jintgen.jigir.Expr;
-import jintgen.isdl.parser.Token;
 import avrora.util.StringUtil;
 import avrora.util.Util;
-
-import java.util.Iterator;
-import java.util.List;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.Expr;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>EncodingDecl</code> class represents the encoding of an instruction in machine code, describing

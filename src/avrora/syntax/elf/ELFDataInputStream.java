@@ -33,8 +33,8 @@
  */
 package avrora.syntax.elf;
 
-import java.io.RandomAccessFile;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
  * @author Ben L. Titzer
@@ -49,6 +49,15 @@ public class ELFDataInputStream {
         this.header = header;
         bigEndian = header.isBigEndian();
         file = f;
+    }
+
+    public byte[] read_section(int off, int length) throws IOException {
+        byte[] buffer = new byte[length];
+        file.seek(off);
+        for ( int cntr = 0; cntr < length; ) {
+            cntr += file.read(buffer, cntr, length - cntr);
+        }
+        return buffer;
     }
 
     public byte read_Elf32_byte() throws IOException {

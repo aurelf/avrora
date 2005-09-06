@@ -36,18 +36,10 @@
 
 package avrora.monitors;
 
-import avrora.util.Util;
-import avrora.core.Instr;
-import avrora.core.Program;
-import avrora.core.SourceMapping;
-import avrora.sim.BaseInterpreter;
-import avrora.sim.InterruptTable;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.core.*;
+import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.StringUtil;
-import avrora.util.TermUtil;
-import avrora.util.Terminal;
+import avrora.util.*;
 
 /**
  * The <code>CallMonitor</code> class implements a monitor that is capable of tracing the call/return behavior

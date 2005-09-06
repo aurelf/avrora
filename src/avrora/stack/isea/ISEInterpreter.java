@@ -32,16 +32,8 @@
 
 package avrora.stack.isea;
 
-import avrora.util.Util;
-import avrora.core.Instr;
-import avrora.core.InstrVisitor;
-import avrora.core.Program;
-import avrora.core.Register;
-import avrora.util.StringUtil;
-import avrora.util.TermUtil;
-import avrora.util.Terminal;
-import avrora.util.Verbose;
-
+import avrora.core.*;
+import avrora.util.*;
 import java.util.HashMap;
 import java.util.Iterator;
 

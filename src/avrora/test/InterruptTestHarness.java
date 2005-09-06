@@ -40,7 +40,6 @@ import avrora.sim.util.InterruptScheduler;
 import avrora.syntax.Module;
 import avrora.test.probes.ProbeParser;
 import avrora.test.probes.ProbeTest;
-
 import java.io.FileInputStream;
 import java.util.Properties;
 

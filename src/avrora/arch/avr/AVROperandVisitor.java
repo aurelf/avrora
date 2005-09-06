@@ -1,7 +1,4 @@
 package avrora.arch.avr;
-import avrora.arch.*;
-import java.util.HashMap;
-
 /**
  * The <code>AVROperandVisitor</code> interface allows clients to use the
  * Visitor pattern to resolve the types of operands to instructions.

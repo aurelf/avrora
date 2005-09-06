@@ -32,13 +32,9 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.*;
-
+import avrora.util.Util;
+import avrora.util.Verbose;
 import java.util.*;
-
-import jintgen.isdl.EncodingDecl;
-import jintgen.isdl.AddrModeDecl;
-import jintgen.isdl.OperandTypeDecl;
 
 /**
  * The <code>DTBuilder</code> class represents a node in the decoding tree for a particular

@@ -33,19 +33,13 @@
 package jintgen.gen;
 
 import avrora.core.Register;
-import jintgen.isdl.Architecture;
-import jintgen.jigir.CodeRegion;
-import jintgen.isdl.InstrDecl;
-import jintgen.isdl.AddrModeDecl;
-import jintgen.isdl.OperandTypeDecl;
-import jintgen.jigir.*;
-import jintgen.isdl.parser.Token;
 import avrora.util.*;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import jintgen.isdl.*;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.*;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer

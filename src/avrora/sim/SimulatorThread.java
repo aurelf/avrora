@@ -32,12 +32,9 @@
 
 package avrora.sim;
 
-import avrora.util.Util;
 import avrora.actions.SimAction;
 import avrora.sim.clock.Synchronizer;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
-import avrora.util.Util;
+import avrora.util.*;
 
 
 /**

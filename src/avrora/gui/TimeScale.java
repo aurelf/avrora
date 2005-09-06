@@ -32,9 +32,8 @@
 
 package avrora.gui;
 
-import avrora.util.Util;
 import avrora.util.StringUtil;
-
+import avrora.util.Util;
 import java.awt.*;
 import java.util.LinkedList;
 

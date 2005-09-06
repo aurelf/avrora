@@ -32,8 +32,6 @@
 
 package avrora.syntax;
 
-import avrora.syntax.ProgramPoint;
-import avrora.syntax.SimplifierError;
 import avrora.util.StringUtil;
 
 /**

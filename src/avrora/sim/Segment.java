@@ -32,10 +32,9 @@
 
 package avrora.sim;
 
-import avrora.util.Util;
 import avrora.sim.util.MulticastWatch;
 import avrora.util.StringUtil;
-
+import avrora.util.Util;
 import java.util.Arrays;
 
 /**

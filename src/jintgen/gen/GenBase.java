@@ -32,14 +32,10 @@
 
 package jintgen.gen;
 
-import avrora.util.StringUtil;
 import avrora.util.Printer;
-
-import java.util.Properties;
-import java.util.List;
-import java.util.LinkedList;
-
+import avrora.util.StringUtil;
 import jintgen.isdl.AddrModeDecl;
+import java.util.*;
 
 /**
  * The <code>GenBase</code> class contains a number of utility methods that help

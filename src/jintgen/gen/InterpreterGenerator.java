@@ -32,17 +32,11 @@
 
 package jintgen.gen;
 
-import avrora.util.Util;
+import avrora.util.*;
 import jintgen.isdl.*;
-import jintgen.jigir.*;
 import jintgen.isdl.parser.Token;
-import avrora.util.Arithmetic;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Util;
-
+import jintgen.jigir.*;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * The <code>InterpreterGenerator</code> class is a visitor over the code of an instruction declaration or

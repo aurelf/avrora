@@ -33,7 +33,6 @@
 package avrora.core;
 
 import avrora.util.Util;
-import avrora.util.Util;
 
 /**
  * The <code>Assembler</code> class represents an assembler that is capable of

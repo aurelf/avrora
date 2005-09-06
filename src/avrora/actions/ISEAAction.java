@@ -32,12 +32,12 @@
 
 package avrora.actions;
 
-import avrora.util.Util;
 import avrora.Main;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.stack.isea.ISEAnalyzer;
 import avrora.util.Option;
+import avrora.util.Util;
 
 /**
  * The <code>ISEAAction</code> class implements interprocedural side-effect analysis. This class

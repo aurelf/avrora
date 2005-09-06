@@ -32,12 +32,8 @@
 
 package avrora.stack;
 
-import avrora.util.Util;
 import avrora.core.Program;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Util;
-
+import avrora.util.*;
 import java.util.Iterator;
 
 /**

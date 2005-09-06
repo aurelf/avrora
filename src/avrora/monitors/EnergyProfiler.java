@@ -41,11 +41,7 @@ import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.util.Terminal;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 
 /**
