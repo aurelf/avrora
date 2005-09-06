@@ -109,6 +109,15 @@ public class TermUtil {
     }
 
     /**
+     * The <code>printSeparator()</code> method prints a horizontal bar on the terminal
+     * that helps to separate different sections of textual output. This implementation
+     * uses the '=' character, providing a double-thick separator line.
+     */
+    public static void printSeparator() {
+        Terminal.println(StringUtil.dup('=', Terminal.MAXLINE));
+    }
+
+    /**
      * The <code>printThinSeparator()</code> method prints a horizontal bar on the terminal
      * that helps to separate different sections of textual output. This implementation
      * uses the '-' character, providing a thinner separator line for separating subsections
@@ -117,6 +126,16 @@ public class TermUtil {
      */
     public static void printThinSeparator(int width) {
         Terminal.println(StringUtil.dup('-', width));
+    }
+
+    /**
+     * The <code>printThinSeparator()</code> method prints a horizontal bar on the terminal
+     * that helps to separate different sections of textual output. This implementation
+     * uses the '-' character, providing a thinner separator line for separating subsections
+     * of text output.
+     */
+    public static void printThinSeparator() {
+        Terminal.println(StringUtil.dup('-', Terminal.MAXLINE));
     }
 
     /**

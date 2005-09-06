@@ -35,6 +35,7 @@ package avrora.syntax.elf;
 import avrora.util.Util;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 
 /**
  * The <code>ELFHeader</code> class represents the header of an ELF file.
@@ -83,7 +84,7 @@ public class ELFHeader {
     /**
      * The default constructor for the <code>ELFHeader</code> class simply creates a new, unitialized
      * instance of this class that is ready to load.
-     */ 
+     */
     public ELFHeader() {
         e_ident = new byte[EI_NIDENT];
     }
@@ -95,24 +96,25 @@ public class ELFHeader {
      * @param fs the input stream from which to read the ELF header
      * @throws IOException if there is a problem reading from the input stream
      */
-    public void read(InputStream fs) throws IOException {
+    public void read(RandomAccessFile fs) throws IOException {
         // read the indentification string
         for ( int index = 0; index < EI_NIDENT; )
             index += fs.read(e_ident, index, EI_NIDENT - index);
         checkIdent();
-        e_type = readShort(fs);
-        e_machine = readShort(fs);
-        e_version = readInt(fs);
-        e_entry = readInt(fs);
-        e_phoff = readInt(fs);
-        e_shoff = readInt(fs);
-        e_flags = readInt(fs);
-        e_ehsize = readShort(fs);
-        e_phentsize = readShort(fs);
-        e_phnum = readShort(fs);
-        e_shentsize = readShort(fs);
-        e_shnum = readShort(fs);
-        e_shstrndx = readShort(fs);
+        ELFDataInputStream is = new ELFDataInputStream(this, fs);
+        e_type      = is.read_Elf32_Half();
+        e_machine   = is.read_Elf32_Half();
+        e_version   = is.read_Elf32_Word();
+        e_entry     = is.read_Elf32_Addr();
+        e_phoff     = is.read_Elf32_Off();
+        e_shoff     = is.read_Elf32_Off();
+        e_flags     = is.read_Elf32_Word();
+        e_ehsize    = is.read_Elf32_Half();
+        e_phentsize = is.read_Elf32_Half();
+        e_phnum     = is.read_Elf32_Half();
+        e_shentsize = is.read_Elf32_Half();
+        e_shnum     = is.read_Elf32_Half();
+        e_shstrndx  = is.read_Elf32_Half();
     }
 
     private void checkIdent() {
@@ -125,34 +127,6 @@ public class ELFHeader {
 
     private void checkIndentByte(int ind, int val) {
         if ( e_ident[ind] != val ) throw Util.failure("ELF Magic mismatch at byte "+ind);
-    }
-
-    private short readShort(InputStream fs) throws IOException {
-        int b1 = readByte(fs);
-        int b2 = readByte(fs);
-        if ( bigEndian ) return asShort(b2, b1);
-        return asShort(b1, b2);
-    }
-
-    private int readByte(InputStream fs) throws IOException {
-        return fs.read() & 0xff;
-    }
-
-    private short asShort(int bl, int bh) {
-        return (short)((bh << 8) | bl);
-    }
-
-    private int readInt(InputStream fs) throws IOException {
-        int b1 = readByte(fs);
-        int b2 = readByte(fs);
-        int b3 = readByte(fs);
-        int b4 = readByte(fs);
-        if ( bigEndian ) return asInt(b4, b3, b2, b1);
-        return asInt(b1, b2, b3, b4);
-    }
-
-    private int asInt(int b1, int b2, int b3, int b4) {
-        return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
     }
 
     /**
@@ -194,10 +168,22 @@ public class ELFHeader {
         return e_ident[EI_VERSION] == ELFDATA2MSB;
     }
 
+    /**
+     * The <code>is32Bit()</code> method checks whether this ELF file is encoded
+     * as 32 or 64 bits. This information is contained in the header in the EI_CLASS
+     * byte.
+     * @return true if this ELF file is 32 bit
+     */
     public boolean is32Bit()  {
         return e_ident[EI_CLASS] == ELFCLASS32;
     }
 
+    /**
+     * The <code>is64Bit()</code> method checks whether this ELF file is encoded
+     * as 32 or 64 bits. This information is contained in the header in the EI_CLASS
+     * byte.
+     * @return true if this ELF file is 64 bit
+     */
     public boolean is64Bit()  {
         return e_ident[EI_CLASS] == ELFCLASS64;
     }

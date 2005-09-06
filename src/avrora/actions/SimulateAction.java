@@ -96,7 +96,7 @@ public class SimulateAction extends SimAction {
             Terminal.print(": ");
             t.printStackTrace();
         } finally {
-            TermUtil.printSeparator(Terminal.MAXLINE);
+            TermUtil.printSeparator();
             long endms = System.currentTimeMillis();
 
             reportTime(sim, endms - startms);

@@ -255,7 +255,7 @@ public class ISEInterpreter implements InstrVisitor {
 
     private void printItem(Instr instr) {
         if ( !printer.enabled ) return;
-        TermUtil.printSeparator(Terminal.MAXLINE);
+        TermUtil.printSeparator();
         printState(state, pc);
         Terminal.printBrightBlue(instr.getVariant());
         Terminal.println(" "+instr.getOperands());

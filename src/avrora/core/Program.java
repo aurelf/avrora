@@ -266,7 +266,7 @@ public class Program {
 
     /**
      * The <code>eeprom_start</code> field records the lowest address of declared, labelled memory in the
-     * eeprom segment.
+     * eepromiwswcbimh segment.
      */
     public final int eeprom_start;
 

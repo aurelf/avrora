@@ -72,7 +72,7 @@ public class SimPerfMonitor extends MonitorFactory {
             TermUtil.printSeparator(Terminal.MAXLINE, "Simulator performance results");
             Terminal.printGreen("  Time    Millis  Instant     Cumulative");
             Terminal.nextln();
-            TermUtil.printSeparator(Terminal.MAXLINE);
+            TermUtil.printSeparator();
 
             TimedMeasurements.Measurement m = new TimedMeasurements.Measurement();
             TimedMeasurements.Iterator i = data.iterator(0);

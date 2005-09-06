@@ -186,7 +186,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
 
     public void analyze(int loc) {
         ISEState s = new ISEInterpreter(program, this).analyze(loc);
-        TermUtil.printSeparator(Terminal.MAXLINE);
+        TermUtil.printSeparator();
         if ( s != null ) {
             Terminal.printRed("RETURN STATE");
             Terminal.nextln();
