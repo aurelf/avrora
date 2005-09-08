@@ -46,9 +46,10 @@ import java.util.Arrays;
  */
 public class Segment {
 
+    public final int length;
+
     protected final BaseInterpreter interpreter;
     protected final String name;
-    protected final int size;
     protected final byte value;
     protected byte[] segment_data;
     protected final ErrorReporter errorReporter;
@@ -67,7 +68,7 @@ public class Segment {
      */
     public Segment(String name, int size, byte defvalue, BaseInterpreter bi, ErrorReporter er) {
         this.name = name;
-        this.size = size;
+        this.length = size;
         this.value = defvalue;
         this.errorReporter = er;
         this.segment_data = new byte[size];
@@ -266,7 +267,7 @@ public class Segment {
      */
     public void insertWatch(int data_addr, Simulator.Watch p) {
         if (segment_watches == null)
-            segment_watches = new MulticastWatch[size];
+            segment_watches = new MulticastWatch[length];
 
         // add the probe to the multicast probe present at the location (if there is one)
         MulticastWatch mcw = segment_watches[data_addr];
