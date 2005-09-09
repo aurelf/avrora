@@ -32,11 +32,19 @@
 
 package jintgen.gen;
 
-import avrora.util.*;
-import jintgen.isdl.*;
+import avrora.util.Arithmetic;
+import avrora.util.Printer;
+import avrora.util.StringUtil;
+import avrora.util.Util;
+import jintgen.isdl.AddrModeDecl;
+import jintgen.isdl.Architecture;
+import jintgen.isdl.InstrDecl;
+import jintgen.isdl.SubroutineDecl;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
-import java.util.HashMap;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * The <code>InterpreterGenerator</code> class is a visitor over the code of an instruction declaration or
@@ -44,358 +52,378 @@ import java.util.HashMap;
  *
  * @author Ben L. Titzer
  */
-public class InterpreterGenerator extends PrettyPrinter{
+public class InterpreterGenerator extends Generator {
 
-    protected final Architecture architecture;
+    protected CodeGen codeGen;
 
-    protected final HashMap<String, MapRep> mapMap;
-    protected HashMap<String, String> variableMap;
-
-    protected class GetterSetterMap extends MapRep {
-
-        public final String readMeth;
-        public final String writeMeth;
-
-        GetterSetterMap(String r, String w) {
-            readMeth = r;
-            writeMeth = w;
-        }
-
-        public void generateWrite(Expr ind, Expr val) {
-            emitCall(getMethod(writeMeth), ind, val);
-            printer.println(";");
-        }
-
-        public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            // TODO: extract out expr value if it is not a simple expression
-            printer.print(getMethod(writeMeth) + '(');
-            ind.accept(InterpreterGenerator.this);
-            printer.print(", Arithmetic.setBit(" + readMeth + '(');
-            ind.accept(InterpreterGenerator.this);
-            printer.print("), ");
-            b.accept(InterpreterGenerator.this);
-            printer.print(", ");
-            val.accept(InterpreterGenerator.this);
-            printer.println("));");
-        }
-
-        public void generateRead(Expr ind) {
-            emitCall(getMethod(readMeth), ind);
-        }
-
-        public void generateBitRead(Expr ind, Expr b) {
-            printer.print("Arithmetic.getBit(" + getMethod(readMeth) + '(');
-            ind.accept(InterpreterGenerator.this);
-            printer.print("), ");
-            b.accept(InterpreterGenerator.this);
-            printer.print(")");
-        }
-
-        public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-            if (ind.isVariable() || ind.isLiteral()) {
-                String var = (String)variableMap.get(ind.toString());
-                if (var == null) var = ind.toString();
-                printer.print(writeMeth + '(' + var + ", ");
-                int mask = Arithmetic.getBitRangeMask(l, h);
-                int smask = mask << l;
-                int imask = ~smask;
-                printer.print('(' + readMeth + '(' + var + ')' + andString(imask) + ')');
-                printer.print(" | (");
-                emitAnd(val, mask);
-                if (l != 0) printer.print(" << " + l);
-                printer.println(");");
-            } else {
-                throw Util.failure("non-constant expr into map in bit-range assignment");
-            }
-        }
+    public void generate() throws IOException {
+        initStatics();
+        List<String> impl = new LinkedList<String>();
+        impl.add(tr("$visitor"));
+        setPrinter(newAbstractClassPrinter("interpreter", null, tr("$state"), impl, null));
+        codeGen = new CodeGen();
+        for (SubroutineDecl d : arch.subroutines)
+            visit(d);
+        for (InstrDecl d : arch.instructions)
+            visit(d);
+        endblock();
+        close();
     }
 
-    protected class ArrayMap extends MapRep {
-        public final String varname;
-        public final Token token;
-
-        ArrayMap(String v) {
-            varname = v;
-            token = new Token();
-            token.image = varname;
-        }
-
-        public void generateWrite(Expr ind, Expr val) {
-            printer.print(getVariable(token) + '[');
-            ind.accept(InterpreterGenerator.this);
-            printer.print("] = ");
-            val.accept(InterpreterGenerator.this);
-            printer.println(";");
-        }
-
-        public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            // TODO: extract out expr value if it is not a simple expression
-            printer.print(getVariable(token) + '[');
-            ind.accept(InterpreterGenerator.this);
-            printer.print("] = Arithmetic.getBit(" + getVariable(token) + '[');
-            ind.accept(InterpreterGenerator.this);
-            printer.print("], ");
-            b.accept(InterpreterGenerator.this);
-            printer.print(", ");
-            val.accept(InterpreterGenerator.this);
-            printer.println("));");
-        }
-
-        public void generateRead(Expr ind) {
-            printer.print(getVariable(token) + '[');
-            ind.accept(InterpreterGenerator.this);
-            printer.print("]");
-        }
-
-        public void generateBitRead(Expr ind, Expr b) {
-            printer.print("Arithmetic.getBit(" + getVariable(token) + '[');
-            ind.accept(InterpreterGenerator.this);
-            printer.print("], ");
-            b.accept(InterpreterGenerator.this);
-            printer.print(")");
-        }
-
-        public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-            if (ind.isVariable() || ind.isLiteral()) {
-                Token t = new Token();
-                t.image = ind.toString();
-                String var = getVariable(t);
-                if (var == null) var = ind.toString();
-                printer.print(getVariable(token) + '[' + var + "] = ");
-                int mask = Arithmetic.getBitRangeMask(l, h);
-                int smask = mask << l;
-                int imask = ~smask;
-                printer.print(getVariable(token) + '[' + var + ']' + andString(imask) + ')');
-                printer.print(" | (");
-                emitAnd(val, mask);
-                if (l != 0) printer.print(" << " + l);
-                printer.println(");");
-            } else {
-                throw Util.failure("non-constant expr into map in bit-range assignment");
-            }
-        }
-    }
-
-    protected class IORegMap extends GetterSetterMap {
-        IORegMap() {
-            super("getIORegisterByte", "writeIORegisterByte");
-        }
-
-        public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            printer.print(getMethod("getIOReg") + '(');
-            ind.accept(InterpreterGenerator.this);
-            printer.print(").writeBit(");
-            b.accept(InterpreterGenerator.this);
-            printer.print(", ");
-            val.accept(InterpreterGenerator.this);
-            printer.println(");");
-        }
-
-        public void generateBitRead(Expr ind, Expr b) {
-            printer.print(getMethod("getIOReg") + '(');
-            ind.accept(InterpreterGenerator.this);
-            printer.print(").readBit(");
-            b.accept(InterpreterGenerator.this);
-            printer.print(")");
-        }
+    private void initStatics() {
+        properties.setProperty("addr", className("AddrMode"));
+        properties.setProperty("instr", className("Instr"));
+        properties.setProperty("operand", className("Operand"));
+        properties.setProperty("opvisitor", className("OperandVisitor"));
+        properties.setProperty("visitor", className("InstrVisitor"));
+        properties.setProperty("builder", className("InstrBuilder"));
+        properties.setProperty("symbol", className("Symbol"));
+        properties.setProperty("interpreter", className("Interpreter"));
+        properties.setProperty("state", className("State"));
     }
 
 
-    /**
-     * The constructor for the <code>InterpreterGenerator</code> class builds an object capable of generating
-     * the interpreter for a particular architecture that outputs to the specified printer. In this
-     * implementation, the interpreter generator simply outputs visit() methods for each instruction that are
-     * meant to be pasted into a template file containing the rest of the interpreter. This can be done by
-     * constructing a <code>SectionFile</code> instance.
-     *
-     * @param a the architecture to generate an interrupter for
-     * @param p a printer to output the code implementing the interpreter
-     */
-    public InterpreterGenerator(Architecture a, Printer p) {
-        super(p);
-        architecture = a;
-        mapMap = new HashMap<String, MapRep>();
-
-        initializeMaps();
-    }
-
-    protected void initializeMaps() {
-        mapMap.put("regs", new ArrayMap("sram"));
-        mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "writeRegisterByte"));
-        mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "writeRegisterWord"));
-        mapMap.put("sram", new GetterSetterMap("getDataByte", "writeDataByte"));
-        mapMap.put("ioregs", new IORegMap());
-        mapMap.put("program", new GetterSetterMap("getProgramByte", "setProgramByte"));
-        mapMap.put("isize", new GetterSetterMap("getInstrSize", "---"));
-    }
-
-    public void generate() {
-        printer.indent();
-        printer.unindent();
-    }
-
-    public void visit(OperandTypeDecl d) {
-        // don't care about operand declarations
-    }
-
-    public void visit(EncodingDecl d) {
-        // don't care about operand declarations
-    }
 
     public void visit(InstrDecl d) {
-        printer.startblock("public void visit(" + d.getClassName() + " i) ");
+        startblock("public void visit($instr.$1 i) ", d.innerClassName);
         // emit the default next pc computation
-        printer.println("nextPC = pc + " + (d.getEncodingSize() / 8) + ';');
+        //println("nextpc = pc + " + (d.getEncodingSize() / 8) + ';');
 
         // initialize the map of local variables to operands
-        variableMap = new HashMap<String, String>();
-        for ( AddrModeDecl.Operand o : d.getOperands() ) {
-            variableMap.put(o.name.image, "i." + o.name.image);
+        codeGen.variableMap = new HashMap<String, String>();
+        for (AddrModeDecl.Operand o : d.getOperands()) {
+            codeGen.variableMap.put(o.name.image, "i." + o.name.image);
         }
         // emit the code of the body
-        visitStmtList(d.code.getStmts());
+        generateCode(d.code.getStmts());
         // emit the cycle count update
-        printer.println("cyclesConsumed += " + d.getCycles() + ';');
-        printer.endblock();
+        println("cycles += " + d.getCycles() + ';');
+        endblock();
     }
 
     public void visit(SubroutineDecl d) {
-        if (d.inline || !d.code.hasBody()) return;
-        printer.print("public " + d.ret.image + ' ' + d.name.image + '(');
-        int cntr = 0;
-        for ( SubroutineDecl.Parameter p : d.getParams() ) {
-            if ( cntr++ != 0 ) printer.print(", ");
-            printer.print(p.type.image + ' ' + p.name.image);
+        if ( !d.code.hasBody()) {
+            print("protected abstract " + d.ret.image + ' ' + d.name.image);
+            beginList("(");
+            for (SubroutineDecl.Parameter p : d.getParams()) {
+                print(p.type.image + ' ' + p.name.image);
+            }
+            endListln(");");
+            return;
         }
-        printer.print(") ");
-        printer.startblock();
+        if (d.inline) return;
+        print("public " + d.ret.image + ' ' + d.name.image);
+        beginList("(");
+        for (SubroutineDecl.Parameter p : d.getParams()) {
+            print(p.type.image + ' ' + p.name.image);
+        }
+        endList(") ");
+        startblock();
         // initialize the map of local variables to operands
-        variableMap = new HashMap<String, String>();
-        for ( SubroutineDecl.Parameter p : d.getParams() ) {
+        codeGen.variableMap = new HashMap<String, String>();
+        for (SubroutineDecl.Parameter p : d.getParams()) {
             String image = p.name.image;
-            variableMap.put(image, image);
+            codeGen.variableMap.put(image, image);
         }
-        visitStmtList(d.code.getStmts());
-        printer.endblock();
+        generateCode(d.code.getStmts());
+        endblock();
     }
 
-
-    protected MapRep getMapRep(String n) {
-        MapRep mr = (MapRep)mapMap.get(n);
-        if (mr == null)
-            throw Util.failure("unknown map " + StringUtil.quote(n));
-        return mr;
+    void generateCode(List<Stmt> stmts) {
+        ConstantPropagator cp = new ConstantPropagator();
+        stmts = cp.process(stmts);
+        codeGen.visitStmtList(stmts);
     }
 
-    public void visit(VarBitAssignStmt s) {
-        String var = getVariable(s.variable);
-        printer.print(var + " = ");
-        emitCall("Arithmetic.setBit", var, s.bit, s.expr);
-        printer.println(";");
-    }
+    protected class CodeGen extends PrettyPrinter {
 
-    public void visit(VarBitRangeAssignStmt s) {
-        String var = getVariable(s.variable);
-        int mask = Arithmetic.getBitRangeMask(s.low_bit, s.high_bit);
-        int smask = mask << s.low_bit;
-        int imask = ~smask;
-        printer.print(var + " = (" + var + andString(imask) + ')');
-        printer.print(" | (");
-        emitAnd(s.expr, mask);
-        if (s.low_bit != 0) printer.print(" << " + s.low_bit);
-        printer.println(");");
-    }
+        protected final HashMap<String, PrettyPrinter.MapRep> mapMap;
+        protected HashMap<String, String> variableMap;
 
-    protected String getVariable(Token variable) {
-        // TODO: get rid of direct register references
-        String var = variableMap.get(variable.image);
-        if (var == null) var = variable.image;
-        return var;
-    }
+        CodeGen() {
+            super(p);
+            mapMap = new HashMap<String, PrettyPrinter.MapRep>();
+            mapMap.put("regs", new ArrayMap("sram"));
+            mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "writeRegisterByte"));
+            mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "writeRegisterWord"));
+            mapMap.put("aregs", new GetterSetterMap("getRegisterWord", "writeRegisterWord"));
+            mapMap.put("sram", new GetterSetterMap("data.read", "data.write"));
+            mapMap.put("ioregs", new IORegMap());
+            mapMap.put("flash", new GetterSetterMap("getFlash", "---"));
+            mapMap.put("isize", new GetterSetterMap("getInstrSize", "---"));
+        }
 
-    protected void emitBinOp(Expr e, String op, int p, int val) {
-        printer.print("(");
-        this.inner(e, p);
-        printer.print(' ' + op + ' ' + val + ')');
-    }
+        protected class GetterSetterMap extends PrettyPrinter.MapRep {
 
-    protected String andString(int mask) {
-        return " & " + StringUtil.to0xHex(mask, 8);
-    }
+            public final String readMeth;
+            public final String writeMeth;
 
-    protected void emitAnd(Expr e, int val) {
-        printer.print("(");
-        this.inner(e, Expr.PREC_A_AND);
-        printer.print(andString(val) + ')');
-    }
+            GetterSetterMap(String r, String w) {
+                readMeth = r;
+                writeMeth = w;
+            }
 
-    protected void emitCall(String s, Expr e) {
-        printer.print(s + '(');
-        e.accept(this);
-        printer.print(")");
-    }
+            public void generateWrite(Expr ind, Expr val) {
+                emitCall(getMethod(writeMeth), ind, val);
+                println(";");
+            }
 
-    protected void emitCall(String s, Expr e1, Expr e2) {
-        printer.print(s + '(');
-        e1.accept(this);
-        printer.print(", ");
-        e2.accept(this);
-        printer.print(")");
-    }
+            public void generateBitWrite(Expr ind, Expr b, Expr val) {
+                // TODO: extract out expr value if it is not a simple expression
+                print(getMethod(writeMeth) + '(');
+                ind.accept(codeGen);
+                print(", Arithmetic.setBit(" + readMeth + '(');
+                ind.accept(codeGen);
+                print("), ");
+                b.accept(codeGen);
+                print(", ");
+                val.accept(codeGen);
+                println("));");
+            }
 
-    protected void emitCall(String s, String e1, Expr e2, Expr e3) {
-        printer.print(s + '(' + e1 + ", ");
-        e2.accept(this);
-        printer.print(", ");
-        e3.accept(this);
-        printer.print(")");
-    }
+            public void generateRead(Expr ind) {
+                emitCall(getMethod(readMeth), ind);
+            }
 
-    public void visit(BitExpr e) {
-        if (e.expr.isMap()) {
-            MapExpr me = (MapExpr)e.expr;
-            MapRep mr = getMapRep(me.mapname.image);
-            mr.generateBitRead(me.index, e.bit);
-        } else {
-            if (e.bit.isLiteral()) {
-                int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr)e.bit).value);
-                printer.print("((");
-                inner(e.expr, Expr.PREC_A_AND);
-                printer.print(" & " + mask + ") != 0");
-                printer.print(")");
-            } else {
-                emitCall("Arithmetic.getBit", e.expr, e.bit);
+            public void generateBitRead(Expr ind, Expr b) {
+                print("Arithmetic.getBit(" + getMethod(readMeth) + '(');
+                ind.accept(codeGen);
+                print("), ");
+                b.accept(codeGen);
+                print(")");
+            }
+
+            public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
+                if (ind.isVariable() || ind.isLiteral()) {
+                    String var = variableMap.get(ind.toString());
+                    if (var == null) var = ind.toString();
+                    print(writeMeth + '(' + var + ", ");
+                    int mask = Arithmetic.getBitRangeMask(l, h);
+                    int smask = mask << l;
+                    int imask = ~smask;
+                    print('(' + readMeth + '(' + var + ')' + andString(imask) + ')');
+                    print(" | (");
+                    emitAnd(val, mask);
+                    if (l != 0) print(" << " + l);
+                    println(");");
+                } else {
+                    throw Util.failure("non-constant expr into map in bit-range assignment");
+                }
             }
         }
-    }
 
-    public void visit(BitRangeExpr e) {
-        int mask = Arithmetic.getBitRangeMask(e.low_bit, e.high_bit);
-        int low = e.low_bit;
-        if (low != 0) {
-            printer.print("(");
-            emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
-            printer.print(" & " + StringUtil.to0xHex(mask, 8) + ')');
-        } else {
-            emitAnd(e.operand, mask);
+        protected class ArrayMap extends PrettyPrinter.MapRep {
+            public final String varname;
+            public final Token token;
+
+            ArrayMap(String v) {
+                varname = v;
+                token = new Token();
+                token.image = varname;
+            }
+
+            public void generateWrite(Expr ind, Expr val) {
+                print(getVariable(token) + '[');
+                ind.accept(codeGen);
+                print("] = ");
+                val.accept(codeGen);
+                println(";");
+            }
+
+            public void generateBitWrite(Expr ind, Expr b, Expr val) {
+                // TODO: extract out expr value if it is not a simple expression
+                print(getVariable(token) + '[');
+                ind.accept(codeGen);
+                print("] = Arithmetic.getBit(" + getVariable(token) + '[');
+                ind.accept(codeGen);
+                print("], ");
+                b.accept(codeGen);
+                print(", ");
+                val.accept(codeGen);
+                println("));");
+            }
+
+            public void generateRead(Expr ind) {
+                print(getVariable(token) + '[');
+                ind.accept(codeGen);
+                print("]");
+            }
+
+            public void generateBitRead(Expr ind, Expr b) {
+                print("Arithmetic.getBit(" + getVariable(token) + '[');
+                ind.accept(codeGen);
+                print("], ");
+                b.accept(codeGen);
+                print(")");
+            }
+
+            public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
+                if (ind.isVariable() || ind.isLiteral()) {
+                    Token t = new Token();
+                    t.image = ind.toString();
+                    String var = getVariable(t);
+                    if (var == null) var = ind.toString();
+                    print(getVariable(token) + '[' + var + "] = ");
+                    int mask = Arithmetic.getBitRangeMask(l, h);
+                    int smask = mask << l;
+                    int imask = ~smask;
+                    print(getVariable(token) + '[' + var + ']' + andString(imask) + ')');
+                    print(" | (");
+                    emitAnd(val, mask);
+                    if (l != 0) print(" << " + l);
+                    println(");");
+                } else {
+                    throw Util.failure("non-constant expr into map in bit-range assignment");
+                }
+            }
+        }
+
+        protected class IORegMap extends GetterSetterMap {
+            IORegMap() {
+                super("getIORegisterByte", "writeIORegisterByte");
+            }
+
+            public void generateBitWrite(Expr ind, Expr b, Expr val) {
+                print(getMethod("getIOReg") + '(');
+                ind.accept(codeGen);
+                print(").writeBit(");
+                b.accept(codeGen);
+                print(", ");
+                val.accept(codeGen);
+                println(");");
+            }
+
+            public void generateBitRead(Expr ind, Expr b) {
+                print(getMethod("getIOReg") + '(');
+                ind.accept(codeGen);
+                print(").readBit(");
+                b.accept(codeGen);
+                print(")");
+            }
+        }
+
+
+        protected MapRep getMapRep(String n) {
+            MapRep mr = mapMap.get(n);
+            if (mr == null) throw Util.failure("unknown map " + StringUtil.quote(n));
+            return mr;
+        }
+
+        public void visit(VarBitAssignStmt s) {
+            String var = getVariable(s.variable);
+            print(var + " = ");
+            emitCall("Arithmetic.setBit", var, s.bit, s.expr);
+            println(";");
+        }
+
+        public void visit(VarBitRangeAssignStmt s) {
+            String var = getVariable(s.variable);
+            int mask = Arithmetic.getBitRangeMask(s.low_bit, s.high_bit);
+            int smask = mask << s.low_bit;
+            int imask = ~smask;
+            print(var + " = (" + var + andString(imask) + ')');
+            print(" | (");
+            emitAnd(s.expr, mask);
+            if (s.low_bit != 0) print(" << " + s.low_bit);
+            println(");");
+        }
+
+        protected String getVariable(Token variable) {
+            // TODO: get rid of direct register references
+            String var = variableMap.get(variable.image);
+            if (var == null) var = variable.image;
+            return var;
+        }
+
+        protected void emitBinOp(Expr e, String op, int p, int val) {
+            print("(");
+            this.inner(e, p);
+            print(' ' + op + ' ' + val + ')');
+        }
+
+        protected String andString(int mask) {
+            return " & " + StringUtil.to0xHex(mask, 8);
+        }
+
+        protected void emitAnd(Expr e, int val) {
+            print("(");
+            this.inner(e, Expr.PREC_A_AND);
+            print(andString(val) + ')');
+        }
+
+        protected void emitCall(String s, Expr e) {
+            print(s + '(');
+            e.accept(this);
+            print(")");
+        }
+
+        protected void emitCall(String s, Expr e1, Expr e2) {
+            print(s + '(');
+            e1.accept(this);
+            print(", ");
+            e2.accept(this);
+            print(")");
+        }
+
+        protected void emitCall(String s, String e1, Expr e2, Expr e3) {
+            print(s + '(' + e1 + ", ");
+            e2.accept(this);
+            print(", ");
+            e3.accept(this);
+            print(")");
+        }
+
+        public void visit(ConversionExpr e) {
+            print("("+e.typename.image+")");
+            inner(e.expr, Expr.PREC_TERM);
+        }
+
+
+        public void visit(BitExpr e) {
+            if (e.expr.isMap()) {
+                MapExpr me = (MapExpr) e.expr;
+                MapRep mr = getMapRep(me.mapname.image);
+                mr.generateBitRead(me.index, e.bit);
+            } else {
+                if (e.bit.isLiteral()) {
+                    int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr) e.bit).value);
+                    print("((");
+                    inner(e.expr, Expr.PREC_A_AND);
+                    print(" & " + mask + ") != 0");
+                    print(")");
+                } else {
+                    emitCall("Arithmetic.getBit", e.expr, e.bit);
+                }
+            }
+        }
+
+        public void visit(BitRangeExpr e) {
+            int mask = Arithmetic.getBitRangeMask(e.low_bit, e.high_bit);
+            int low = e.low_bit;
+            if (low != 0) {
+                print("(");
+                emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
+                print(" & " + StringUtil.to0xHex(mask, 8) + ')');
+            } else {
+                emitAnd(e.operand, mask);
+            }
+        }
+
+        public void visit(Logical.AndExpr e) {
+            binop("&&", e.left, e.right, e.getPrecedence());
+        }
+
+        public void visit(Logical.OrExpr e) {
+            binop("||", e.left, e.right, e.getPrecedence());
+        }
+
+        public void visit(Logical.XorExpr e) {
+            binop("!=", e.left, e.right, Logical.PREC_L_EQU);
+        }
+
+        public void visit(Arith.XorExpr e) {
+            binop("^", e.left, e.right, e.getPrecedence());
         }
     }
-
-    public void visit(Logical.AndExpr e) {
-        binop("&&", e.left, e.right, e.getPrecedence());
-    }
-
-    public void visit(Logical.OrExpr e) {
-        binop("||", e.left, e.right, e.getPrecedence());
-    }
-
-    public void visit(Logical.XorExpr e) {
-        binop("!=", e.left, e.right, Logical.PREC_L_EQU);
-    }
-
-    public void visit(Arith.XorExpr e) {
-        binop("^", e.left, e.right, e.getPrecedence());
-    }
-
 
 }

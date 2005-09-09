@@ -36,8 +36,8 @@ architecture avr {
     global Z: boolean;         // global Z (zero) flag
     global V: boolean;         // global V (overflow) flag
 
-    global nextPC: int;          // the next pc afer executing this instructiobn
-    global cyclesConsumed: int;  // cycles consumed by this instruction
+    global nextpc: int;          // the next pc afer executing this instructiobn
+    global cycles: int;          // cycles consumed by this instruction
     global RZ: GPR;              // reference to the Z register
     global R0: GPR;              // reference to the R0 register
     global R1: GPR;              // reference to the R1 register
@@ -281,12 +281,12 @@ architecture avr {
     }
 
     inline subroutine relativeBranch(target: int): void {
-        nextPC = relative(target);
-        cyclesConsumed = cyclesConsumed + 1;
+        nextpc = relative(target);
+        cycles = cycles + 1;
     }
 
     inline subroutine relative(target: int): int {
-        return (target * 2) + nextPC;
+        return (target * 2) + nextpc;
     }
 
     inline subroutine absolute(target: int): int {
@@ -294,10 +294,10 @@ architecture avr {
     }
 
     inline subroutine skip(): void {
-        local dist: int = $isize(nextPC);
-        nextPC = nextPC + dist;
-        if ( dist == 4 ) cyclesConsumed = cyclesConsumed + 2;
-        else cyclesConsumed = cyclesConsumed + 1;
+        local dist: int = $isize(nextpc);
+        nextpc = nextpc + dist;
+        if ( dist == 4 ) cycles = cycles + 2;
+        else cycles = cycles + 1;
     }
 
     inline subroutine pushPC(npc: int): void {
@@ -340,9 +340,11 @@ architecture avr {
     external subroutine bit(b: boolean): int;
     external subroutine popByte(): byte;
     external subroutine pushByte(b: byte): void;
-    external subroutine extended(addr: int): addr;
+    external subroutine extended(addr: int): int;
     external subroutine enableInterrupts(): void;
     external subroutine disableInterrupts(): void;
+    external subroutine enterSleepMode(): void;
+    external subroutine storeProgramMemory(): void;
 
 
 //---------------------------------------------------------------------------
@@ -642,8 +644,8 @@ architecture avr {
         encoding = ABS4 where { opcode = 0b1001010111 }
         property cycles: int = 4;
         execute {
-            pushPC(nextPC);
-            nextPC = absolute(target);
+            pushPC(nextpc);
+            nextpc = absolute(target);
         }
     }
 
@@ -887,8 +889,8 @@ architecture avr {
         encoding = { 0b10010101, 0b00001001 }
         property cycles: int = 3;
         execute {
-            pushPC(nextPC);
-            nextPC = absolute($wregs(RZ));
+            pushPC(nextpc);
+            nextpc = absolute($wregs(RZ));
         }
     }
 
@@ -896,7 +898,7 @@ architecture avr {
         encoding = { 0b10010100, 0b00001001 }
         property cycles: int = 2;
         execute {
-            nextPC = absolute($wregs(RZ));
+            nextpc = absolute($wregs(RZ));
         }
     }
 
@@ -929,7 +931,7 @@ architecture avr {
         encoding = ABS4 where { opcode = 0b1001010110 }
         property cycles: int = 3;
         execute {
-            nextPC = absolute(target);
+            nextpc = absolute(target);
         }
     }
 
@@ -1089,8 +1091,8 @@ architecture avr {
         encoding = { 0b1101, target[11:0] }
         property cycles: int = 3;
         execute {
-            pushPC(nextPC);
-            nextPC = relative(target);
+            pushPC(nextpc);
+            nextpc = relative(target);
         }
     }
 
@@ -1098,7 +1100,7 @@ architecture avr {
         encoding = { 0b10010101, 0b00001000 }
         property cycles: int = 4;
         execute {
-            nextPC = popPC();
+            nextpc = popPC();
         }
     }
 
@@ -1106,7 +1108,7 @@ architecture avr {
         encoding = { 0b10010101, 0b00011000 }
         property cycles: int = 4;
         execute {
-            nextPC = popPC();
+            nextpc = popPC();
             enableInterrupts();
             // lastRETI = totalCycles;
             justReturnedFromInterrupt = true;
@@ -1117,7 +1119,7 @@ architecture avr {
         encoding = { 0b1100, target[11:0] }
         property cycles: int = 2;
         execute {
-            nextPC = relative(target);
+            nextpc = relative(target);
         }
     }
 

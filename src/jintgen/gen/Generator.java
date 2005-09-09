@@ -107,7 +107,7 @@ public abstract class Generator extends GenBase {
         }
         if ( jdoc != null )
             generateJavaDoc(printer, jdoc);
-        String ec = sup == null ? "" : "extends "+sup;
+        String ec = sup == null ? "" : " extends "+sup;
         printer.print("public "+type+" "+name+ec+' ');
         if ( impl != null ) {
             printer.beginList("implements ");

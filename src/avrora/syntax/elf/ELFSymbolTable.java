@@ -78,7 +78,7 @@ public class ELFSymbolTable {
 
         public String getType() {
             switch ( st_info & 0xf ) {
-                case STT_NOTYPE: return "";
+                case STT_NOTYPE: return "n";
                 case STT_OBJECT: return "object";
                 case STT_FUNC: return "func";
                 case STT_SECTION: return "section";

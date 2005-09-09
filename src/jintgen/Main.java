@@ -90,6 +90,7 @@ public class Main {
         generatorMap.addClass("ir", InstrIRGenerator.class);
         generatorMap.addClass("codemap", CodemapGenerator.class);
         generatorMap.addClass("disassembler", DisassemblerGenerator.class);
+        generatorMap.addClass("interpreter", InterpreterGenerator.class);
     }
     
     /**

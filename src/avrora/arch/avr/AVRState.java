@@ -63,11 +63,13 @@ public class AVRState {
     protected int pc;
     protected int nextpc;
     protected boolean I, T, H, V, S, N, Z, C;
-    protected Segment sram;
+    protected Segment data;
+    protected byte[] sram;
     protected CodeSegment flash;
     protected ActiveRegister[] ioregs;
     protected DeltaQueue queue;
     protected ActiveRegister SREG;
+    protected int cycles;
 
     /**
      * The <code>getPC()</code> retrieves the current program counter.
@@ -101,7 +103,7 @@ public class AVRState {
      * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid memory range
      */
     public byte getSRAM(int address) {
-        return sram.get(address);
+        return data.get(address);
     }
 
     /**
@@ -142,7 +144,7 @@ public class AVRState {
      * @return the current value of the specified register as a byte
      */
     public byte getRegister(AVRSymbol.GPR reg) {
-        return sram.get(reg.value);
+        return sram[reg.value];
     }
 
     /**
