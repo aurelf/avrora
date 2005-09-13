@@ -32,7 +32,7 @@
 
 package avrora.sim;
 
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 
 /**
  * The <code>RWRegister</code> class is an implementation of an IO register that has the simple, default

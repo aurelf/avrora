@@ -35,7 +35,7 @@ package avrora.sim.mcu;
 import avrora.sim.*;
 import avrora.sim.clock.*;
 import avrora.sim.platform.Platform;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 

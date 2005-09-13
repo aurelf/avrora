@@ -34,7 +34,7 @@ package avrora.sim;
 
 import avrora.core.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 
 /**
  * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The

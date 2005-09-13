@@ -33,7 +33,7 @@
 package avrora.syntax;
 
 import avrora.core.Register;
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
 
 /**
  * The <code>Context</code> interface represents a context in which an expression in a program should be

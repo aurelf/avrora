@@ -32,7 +32,8 @@
 
 package avrora.syntax;
 
-import avrora.util.StringUtil;
+import cck.parser.ProgramPoint;
+import cck.text.StringUtil;
 
 /**
  * The <code>ErrorReporter</code> is the super class of all error reporters in Avrora. It contains several

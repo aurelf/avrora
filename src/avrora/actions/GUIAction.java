@@ -33,7 +33,7 @@
 package avrora.actions;
 
 import avrora.gui.AvroraGui;
-import avrora.util.Terminal;
+import cck.text.Terminal;
 
 /**
  * The <code>VisualAction</code> class serves as an action that creates an initializes a GUI

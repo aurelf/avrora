@@ -32,7 +32,7 @@
 
 package avrora.gui;
 
-import avrora.util.Util;
+import cck.util.Util;
 import javax.swing.*;
 
 /**

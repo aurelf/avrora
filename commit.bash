@@ -18,12 +18,8 @@ fi
 JAVA_FILES=`find src -name '*.java'`
 JJ_FILES=`find src -name '*.jj'`
 
-CLASSBIN=/tmp/commit.bin/
-OLDCLASSPATH=$CLASSPATH
-MODULES='avrora jintgen'
+MODULES='cck jintgen avrora'
 ROOTPATH=`pwd`
-JAVAC_avrora='javac'
-JAVAC_jintgen='javac5'
 JAVA_avrora='java'
 JAVA_jintgen='java5'
 
@@ -99,11 +95,8 @@ else
     checkSuccess 'No files are missing from CVS.' 'Files are missing here that are in CVS.' 'assembleCheckinList'
 fi
 
-if `test -e $CLASSBIN`; then
-    rm -rf $CLASSBIN
-fi
-mkdir $CLASSBIN
-CLASSPATH=
+echo "Removing all class files with \"make clean\""
+make clean
 
 for m in $MODULES; do
     echo "Checking module $m..."
@@ -124,10 +117,8 @@ for m in $MODULES; do
     awk '{ if ( $1 == "public" && $3 == "int" && $4 == "commit" ) printf("    public final int commit = %d;\n",($6+1)); else print }' /tmp/${m}Version.java > $VERSION_JAVA
     fi
 
-    eval JAVAC=\$JAVAC_$m
-
-    echo "> Compiling $m with $JAVAC..."
-    $JAVAC -d $CLASSBIN -classpath $CLASSBIN $MODULE_FILES &> /tmp/commit.log
+    echo "> Making $m..."
+    make $m
     checkSuccess 'Compiled successfully.' 'There were compilation errors building the project.' 'assembleCompileErrors'
 done
    
@@ -139,12 +130,10 @@ for t in $TESTS; do
     checkSuccess "test/$t exists." "test/$t does not exist." 'cat > /tmp/commit.reason'
 
     cd test/$t
-    java -cp $CLASSBIN avrora.Main -action=test *.tst &> /tmp/commit.log
+    java avrora.Main -action=test *.tst &> /tmp/commit.log
     checkSuccess 'All tests passed.' 'There were test case failures.' 'assembleTestErrors'
     cd $ROOTPATH
 done
-
-CLASSPATH=$OLDCLASSPATH
 
 echo Attempting to commit to CVS...
 
@@ -153,10 +142,5 @@ cvs commit -m "$1" &> /tmp/commit.log
 checkSuccess 'Commit completed successfully.' 'There were errors committing to CVS.' 'assembleCommitErrors'
 
 cat /tmp/commit.log
-
-echo Copying class files to $OLDCLASSPATH...
-cp -r $CLASSBIN/* $OLDCLASSPATH/  &> /tmp/commit.log
-
-checkSuccess 'Copy completed successfully.' 'There were errors copying the classes.' 'assembleCompileErrors'
 
 removeOldVersions

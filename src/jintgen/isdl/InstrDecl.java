@@ -32,8 +32,8 @@
 
 package jintgen.isdl;
 
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import cck.text.StringUtil;
+import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
 import jintgen.jigir.Stmt;

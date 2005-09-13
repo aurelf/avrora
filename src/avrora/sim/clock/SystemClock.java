@@ -33,7 +33,7 @@ package avrora.sim.clock;
  */
 
 import avrora.sim.Simulator;
-import avrora.util.Util;
+import cck.util.Util;
 
 /**
  * The <code>SystemClock</code> class represents a wrapper around the system clock that

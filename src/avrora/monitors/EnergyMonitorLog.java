@@ -41,8 +41,8 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.energy.Energy;
 import avrora.sim.energy.EnergyObserver;
-import avrora.util.Options;
-import avrora.util.Util;
+import cck.util.Options;
+import cck.util.Util;
 import java.io.*;
 import java.util.Iterator;
 
@@ -69,7 +69,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
      * 
      * Furthermore the monitor shutsdown the node, when an energy limit is exceeded.
      * 
-     */    
+     */
     public class Monitor extends EnergyMonitor.Monitor implements EnergyObserver {
 
         // file for data logging
@@ -77,7 +77,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
         // the simulator state
         protected State state;
 
-        
+
         /**
          * Create a new energy monitor. Creates a file with logging information: temp.log that contains the
          * current draw of all devices, and the state changes can be loaded into Matlab, Gnuplot, Excel... for
@@ -97,7 +97,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             } catch (IOException e) {
                 throw Util.unexpected(e);
             }
-            
+
             //write headlines 
             //first: cycle
             write("cycle ");
@@ -110,7 +110,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
             }
             write("total");
             newLine();
-            
+
             //log the startup state
             logCurrentState();
         }
@@ -147,11 +147,11 @@ public class EnergyMonitorLog extends EnergyMonitor {
          */
         public void report() {
             super.report();
-            
+
             //simulation will end
             //update log file
             logCurrentState();
-            
+
             //close log file
             try {
                 file.flush();
@@ -219,8 +219,8 @@ public class EnergyMonitorLog extends EnergyMonitor {
             newLine();
         }
     }
-    
-    
+
+
     /**
      * create a new monitor
      */

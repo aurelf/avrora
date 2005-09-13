@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,48 +28,38 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Sep 12, 2005
  */
 
-package avrora.util.profiling;
+package cck;
 
-import avrora.util.Terminal;
+import cck.util.VersionTag;
 
 /**
- * @author Ben L. Titzer This class is used to record instances of profiling data from a Hashtable.
+ * The <code>Version</code> class records the version information for this module.
+ * It has a single static method called <code>getVersion()</code> to retrieve the
+ * version for this module in a <code>VersionTag</code> object.
+ *
+ * </p>
+ * This file is automatically updated by CVS commit scripts that increment the
+ * commit number each time code is committed to CVS. This guarantees that the
+ * version number uniquely determines the version of the software.
+ *
+ * @author Ben L. Titzer
  */
-public abstract class ProfilingData {
+public class Version {
 
-    abstract void computeStatistics();
+    /**
+     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
+     * CVS since the last release).
+     */
+    public static final int commit = 0;
 
-    abstract void reportData();
+    /**
+     * The <code>TAG</code> field stores a reference to the version tag for the current
+     * release and commit number.
+     */
+    public static final VersionTag TAG = new VersionTag("cck", "Stable", 0, 1, commit);
 
-    abstract void merge(ProfilingData d);
-
-    abstract boolean dataCollected();
-
-    void printDistribution(int base, int data[]) {
-        int max, cntr;
-        float scale = 1;
-
-        if (data.length == 0) return;
-
-        for (max = data[0], cntr = 0; cntr < data.length; cntr++) {
-            if (data[cntr] > max) max = data[cntr];
-        }
-
-        if (max > 70) scale = ((float)max) / 70;
-
-        for (cntr = 0; cntr < data.length; cntr++) {
-            float fstars = ((float)data[cntr]) / scale;
-            int stars = (int)fstars;
-            if ((fstars - stars) >= 0.5) stars++;
-
-            Terminal.print("\n" + (base + cntr) + ':' + data[cntr] + '\t');
-
-            for (int scntr = 0; scntr < stars; scntr++) {
-                Terminal.print("*");
-            }
-        }
-        Terminal.print("\n");
-    }
 }

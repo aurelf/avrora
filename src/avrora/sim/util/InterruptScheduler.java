@@ -34,8 +34,8 @@ package avrora.sim.util;
 
 import avrora.Main;
 import avrora.sim.Simulator;
-import avrora.util.Terminal;
-import avrora.util.Util;
+import cck.text.Terminal;
+import cck.util.Util;
 import java.io.*;
 
 /**

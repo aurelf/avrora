@@ -37,8 +37,8 @@ import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.sim.mcu.ATMegaFamily;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
+import avrora.sim.util.SimUtil;
+import cck.text.Terminal;
 
 /**
  * The <code>PinWire</code> class is the interface for making wire connections
@@ -152,15 +152,15 @@ public class PinWire {
 
         public void fireAfterTransition(int beforeState, int afterState) {
             if (beforeState == afterState) return;
-            
+
             // print the status of the PinWire
             synchronized (Terminal.class) {
                 // synchronize on the terminal to prevent interleaved output
-                Terminal.print(StringUtil.getIDTimeString(sim));
+                Terminal.print(SimUtil.getIDTimeString(sim));
                 Terminal.print(colorNum, pinName);
                 Terminal.println(": " + modeName[afterState]);
             }
-            
+
             // if this is an interrupt pin, and the transition triggers an interrupt
             // post an interrupt
             if (isInterruptPin) {

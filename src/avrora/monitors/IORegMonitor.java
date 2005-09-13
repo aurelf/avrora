@@ -36,8 +36,8 @@ import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.Option;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
+import cck.util.Option;
 import java.util.Iterator;
 
 /**

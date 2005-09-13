@@ -41,7 +41,8 @@ import avrora.sim.platform.sensors.*;
 import avrora.sim.radio.*;
 import avrora.sim.radio.freespace.FreeSpaceAir;
 import avrora.sim.radio.freespace.Topology;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.util.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -85,7 +86,7 @@ public class SensorSimulation extends Simulation {
             "of clock cycles. For example, if this option is given the " +
             "value X, then node 0 will start at time 0, node 1 at time 1*X, node 2 at " +
             "time 2*X, etc.");
-    public final Option.List SENSOR_DATA = options.newOptionList("sensor-data", "", 
+    public final Option.List SENSOR_DATA = options.newOptionList("sensor-data", "",
             "This option accepts a list describing the input data for each sensor node. The format " +
             "for each entry in this list is $sensor:$id:$data, where $sensor is the name of " +
             "the sensor device such as \"light\", $id is the integer ID of the node, and $data is " +
@@ -101,7 +102,7 @@ public class SensorSimulation extends Simulation {
             "called \"node_address\". When loading a program onto " +
             "a node, the simulator will search for these labels, and if found, will update the word " +
             "in flash with the node's ID number.");
-    
+
     class SensorDataInput {
         String sensor;
         String fname;
@@ -241,7 +242,7 @@ public class SensorSimulation extends Simulation {
 
         // create the nodes based on arguments
         createNodes(args, pf);
-        
+
         // process the sensor data input option
         processSensorInput();
     }
@@ -282,7 +283,7 @@ public class SensorSimulation extends Simulation {
             }
         }
     }
-    
+
     private void processSensorInput() {
         Iterator i = SENSOR_DATA.get().iterator();
         while ( i.hasNext() ) {

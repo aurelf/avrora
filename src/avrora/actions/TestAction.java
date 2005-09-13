@@ -33,8 +33,8 @@
 package avrora.actions;
 
 import avrora.test.AutomatedTester;
-import avrora.util.Option;
-import avrora.util.Status;
+import cck.text.Status;
+import cck.util.Option;
 
 /**
  * The <code>TestAction</code> class represents an action to invoke the built-in automated testing framework

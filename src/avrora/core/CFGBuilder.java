@@ -32,7 +32,9 @@
 
 package avrora.core;
 
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.text.Verbose;
+import cck.util.Util;
 
 /**
  * The <code>CFGBuilder</code> class is a visitor that builds a representation of the control flow graph for a

@@ -34,8 +34,10 @@ package avrora.monitors;
 
 import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.*;
-import avrora.util.profiling.MinMaxMean;
+import avrora.sim.util.SimUtil;
+import cck.stat.MinMaxMean;
+import cck.text.*;
+import cck.util.Option;
 import java.util.Arrays;
 
 /**
@@ -95,7 +97,7 @@ public class InterruptMonitor extends MonitorFactory {
 
         private void print(String s, int inum) {
             StringBuffer buf = new StringBuffer();
-            StringUtil.getIDTimeString(buf, simulator);
+            SimUtil.getIDTimeString(buf, simulator);
             Terminal.append(Terminal.COLOR_GREEN, buf, s);
             if ( inum > 0) {
                 buf.append(": ");

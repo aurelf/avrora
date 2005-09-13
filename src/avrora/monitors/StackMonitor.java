@@ -35,8 +35,8 @@ package avrora.monitors;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.util.StringUtil;
-import avrora.util.TermUtil;
+import cck.text.StringUtil;
+import cck.text.TermUtil;
 
 /**
  * The <code>StackMonitor</code> class is a monitor that tracks the height of the program's stack over the

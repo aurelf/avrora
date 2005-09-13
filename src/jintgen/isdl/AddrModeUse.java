@@ -32,7 +32,7 @@
 
 package jintgen.isdl;
 
-import avrora.util.Util;
+import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +55,7 @@ public class AddrModeUse {
         if ( d != null ) {
             addrModes.add(d);
             operands = d.operands;
-        } 
+        }
     }
 
     public void addEncoding(EncodingDecl e) {

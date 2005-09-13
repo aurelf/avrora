@@ -33,7 +33,7 @@
 package avrora.sim.clock;
 
 import avrora.sim.*;
-import avrora.util.Util;
+import cck.util.Util;
 import java.util.HashMap;
 import java.util.Iterator;
 

@@ -34,7 +34,7 @@ package avrora.sim;
 
 import avrora.core.*;
 import avrora.sim.util.MulticastProbe;
-import avrora.util.Util;
+import cck.util.Util;
 
 /**
  * The <code>CodeSegment</code> class represents a segment of memory that stores executable

@@ -38,8 +38,8 @@ import avrora.sim.Simulation;
 import avrora.sim.SimulatorThread;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.platform.PlatformFactory;
-import avrora.util.Options;
-import avrora.util.Util;
+import cck.util.Options;
+import cck.util.Util;
 
 /**
  * The <code>SingleSimulation</code> class implements a simulation for a single node. This class

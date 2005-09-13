@@ -33,8 +33,8 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
 
 /**
  * Serial Peripheral Interface. Used on the <code>Mica2</code> platform for radio communication.

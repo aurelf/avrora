@@ -32,7 +32,7 @@
 
 package jintgen.gen;
 
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 import jintgen.jigir.*;
 import java.util.*;
 

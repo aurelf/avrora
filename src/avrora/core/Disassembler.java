@@ -32,8 +32,8 @@
 
 package avrora.core;
 
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
 
 /**
  * The <code>Disassembler</code> class is (partially) generated from the instruction set description. It consists
@@ -63,7 +63,7 @@ public class Disassembler {
         public final int word1;
 
         InvalidInstruction(int word1, int pc) {
-            super("Invalid Instruction at "+StringUtil.addrToString(pc));
+            super("Invalid Instruction at "+ StringUtil.addrToString(pc));
             this.pc = pc;
             this.word1 = word1;
         }
@@ -114,102 +114,102 @@ public class Disassembler {
 
 //--BEGIN DISASSEM GENERATOR--
     static final Register[] GPR_table = {
-        Register.R0, 
-        Register.R1, 
-        Register.R2, 
-        Register.R3, 
-        Register.R4, 
-        Register.R5, 
-        Register.R6, 
-        Register.R7, 
-        Register.R8, 
-        Register.R9, 
-        Register.R10, 
-        Register.R11, 
-        Register.R12, 
-        Register.R13, 
-        Register.R14, 
-        Register.R15, 
-        Register.R16, 
-        Register.R17, 
-        Register.R18, 
-        Register.R19, 
-        Register.R20, 
-        Register.R21, 
-        Register.R22, 
-        Register.R23, 
-        Register.R24, 
-        Register.R25, 
-        Register.R26, 
-        Register.R27, 
-        Register.R28, 
-        Register.R29, 
-        Register.R30, 
+        Register.R0,
+        Register.R1,
+        Register.R2,
+        Register.R3,
+        Register.R4,
+        Register.R5,
+        Register.R6,
+        Register.R7,
+        Register.R8,
+        Register.R9,
+        Register.R10,
+        Register.R11,
+        Register.R12,
+        Register.R13,
+        Register.R14,
+        Register.R15,
+        Register.R16,
+        Register.R17,
+        Register.R18,
+        Register.R19,
+        Register.R20,
+        Register.R21,
+        Register.R22,
+        Register.R23,
+        Register.R24,
+        Register.R25,
+        Register.R26,
+        Register.R27,
+        Register.R28,
+        Register.R29,
+        Register.R30,
         Register.R31
     };
     static final Register[] HGPR_table = {
-        Register.R16, 
-        Register.R17, 
-        Register.R18, 
-        Register.R19, 
-        Register.R20, 
-        Register.R21, 
-        Register.R22, 
-        Register.R23, 
-        Register.R24, 
-        Register.R25, 
-        Register.R26, 
-        Register.R27, 
-        Register.R28, 
-        Register.R29, 
-        Register.R30, 
+        Register.R16,
+        Register.R17,
+        Register.R18,
+        Register.R19,
+        Register.R20,
+        Register.R21,
+        Register.R22,
+        Register.R23,
+        Register.R24,
+        Register.R25,
+        Register.R26,
+        Register.R27,
+        Register.R28,
+        Register.R29,
+        Register.R30,
         Register.R31
     };
     static final Register[] MGPR_table = {
-        Register.R16, 
-        Register.R17, 
-        Register.R18, 
-        Register.R19, 
-        Register.R20, 
-        Register.R21, 
-        Register.R22, 
+        Register.R16,
+        Register.R17,
+        Register.R18,
+        Register.R19,
+        Register.R20,
+        Register.R21,
+        Register.R22,
         Register.R23
     };
     static final Register[] YZ_table = {
-        Register.Z, 
+        Register.Z,
         Register.Y
     };
     static final Register[] Z_table = {
         Register.Z
     };
     static final Register[] EGPR_table = {
-        Register.R0, 
-        Register.R2, 
-        Register.R4, 
-        Register.R6, 
-        Register.R8, 
-        Register.R10, 
-        Register.R12, 
-        Register.R14, 
-        Register.R16, 
-        Register.R18, 
-        Register.R20, 
-        Register.R22, 
-        Register.R24, 
-        Register.R26, 
-        Register.R28, 
+        Register.R0,
+        Register.R2,
+        Register.R4,
+        Register.R6,
+        Register.R8,
+        Register.R10,
+        Register.R12,
+        Register.R14,
+        Register.R16,
+        Register.R18,
+        Register.R20,
+        Register.R22,
+        Register.R24,
+        Register.R26,
+        Register.R28,
         Register.R30
     };
     static final Register[] RDL_table = {
-        Register.R24, 
-        Register.R26, 
-        Register.R28, 
+        Register.R24,
+        Register.R26,
+        Register.R28,
         Register.R30
     };
     static final Register[] XYZ_table = {
-        Register.X, 
-        Register.Y, 
-        Register.Z, 
+        Register.X,
+        Register.Y,
+        Register.Z,
         null
     };
     private Instr decode_BST_0(int word1) throws InvalidInstruction {

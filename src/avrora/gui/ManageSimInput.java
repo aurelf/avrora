@@ -36,8 +36,8 @@ import avrora.Defaults;
 import avrora.core.LoadableProgram;
 import avrora.sim.Simulation;
 import avrora.sim.platform.PlatformFactory;
-import avrora.util.Option;
-import avrora.util.Util;
+import cck.util.Option;
+import cck.util.Util;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -54,12 +54,12 @@ import java.util.*;
  * class owns.
  */
 public class ManageSimInput {
-    
+
     File currentFileAllInfo;
     JLabel currentFile;
-    
+
     JButton openFile;
-    
+
     JFileChooser fc;
     int stageForFileSelection; //we display different screens depending on where the user is
     JButton nextButton;
@@ -73,7 +73,7 @@ public class ManageSimInput {
     JButton fileSelectionDialogUpdate;
     SpinnerNumberModel numOfNodesSpinner;
 
-    
+
     /**
      * This is the "constructor" for this class.  It inits all the dialog boxes where 
      * appropiate
@@ -84,7 +84,7 @@ public class ManageSimInput {
 
         //Set up file chooser box...so if user clicks open file it opens a filechooser
         thesetup.fc = new JFileChooser();
-        
+
         return thesetup;
     }
 
@@ -150,8 +150,8 @@ public class ManageSimInput {
     public void createFileSelectionDialog() {
 
         stageForFileSelection = 0; //so we start on the first page.
-        
-        
+
+
         //We should init all the stuff here
         //The stuff that is init below is NOT necessarily displayed
         //at this time
@@ -368,7 +368,7 @@ public class ManageSimInput {
      */
     public boolean checkAndDispatch(ActionEvent e) {
         //if open file button was pushed...load file chooser
-        
+
         if (e.getSource() == optionsDialogUpdate) {
             return optionsUpdate();
         } else if (e.getSource() == openFile) {

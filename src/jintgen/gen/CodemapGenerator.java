@@ -32,8 +32,9 @@
 
 package jintgen.gen;
 
-import avrora.core.Register;
-import avrora.util.*;
+import cck.text.*;
+import cck.util.Option;
+import cck.util.Util;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
@@ -72,9 +73,12 @@ public class CodemapGenerator extends Generator {
         for (int cntr = 0; cntr < 32; cntr++) {
             registerMap.put("R" + cntr, new Integer(cntr));
         }
+        throw Util.unimplemented();
+        /*
         registerMap.put("RX", new Integer(Register.X.getNumber()));
         registerMap.put("RY", new Integer(Register.Y.getNumber()));
         registerMap.put("RZ", new Integer(Register.Z.getNumber()));
+        */
     }
 
     static class Operand {

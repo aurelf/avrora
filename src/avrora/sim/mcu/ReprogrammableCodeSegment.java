@@ -35,7 +35,9 @@ package avrora.sim.mcu;
 import avrora.core.*;
 import avrora.sim.*;
 import avrora.sim.clock.MainClock;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
+import cck.util.Util;
 
 /**
  * The <code>ReprogrammableCodeSegment</code> class represents a flash segment that stores code. This segment
@@ -397,7 +399,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
                 replaceInstr(address, i);
                 i.accept(v);
             } catch (Disassembler.InvalidInstruction e) {
-                throw Util.failure("invalid instruction at "+StringUtil.addrToString(address));
+                throw Util.failure("invalid instruction at "+ StringUtil.addrToString(address));
             }
         }
 

@@ -33,8 +33,8 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
-import avrora.util.Arithmetic;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
 
 /**
  * The <code>ADC</code> class represents an on-chip device on the ATMega series of microcontroller

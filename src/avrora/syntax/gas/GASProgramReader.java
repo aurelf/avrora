@@ -35,7 +35,7 @@ package avrora.syntax.gas;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
-import avrora.util.Util;
+import cck.util.Util;
 import java.io.File;
 import java.io.FileInputStream;
 

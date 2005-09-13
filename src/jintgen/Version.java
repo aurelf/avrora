@@ -32,46 +32,32 @@
 
 package jintgen;
 
+import cck.util.VersionTag;
+
 /**
- * The <code>Version</code> class represents a version number, including the major version, the commit number,
- * as well as the date and time of the last commit.
+ * The <code>Version</code> class records the version information for this module.
+ * It has a single static method called <code>getVersion()</code> to retrieve the
+ * version for this module in a <code>VersionTag</code> object.
+ *
+ * </p>
+ * This file is automatically updated by CVS commit scripts that increment the
+ * commit number each time code is committed to CVS. This guarantees that the
+ * version number uniquely determines the version of the software.
  *
  * @author Ben L. Titzer
  */
 public class Version {
 
     /**
-     * The <code>prefix</code> field stores the string that the prefix of the version (if any) for this
-     * version.
-     */
-    public final String prefix = "Beta ";
-
-    /**
-     * The <code>major</code> field stores the string that represents the major version number (the release
-     * number).
-     */
-    public final String major = "0.1";
-
-    /**
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public final int commit = 26;
+    public static final int commit = 26;
 
     /**
-     * The <code>getVersion()</code> method returns a reference to a <code>Version</code> object
-     * that represents the version of the code base.
-     * @return a <code>Version</code> object representing the current version
+     * The <code>TAG</code> field stores a reference to the version tag for the current
+     * release and commit number.
      */
-    public static Version getVersion() {
-        return new Version();
-    }
+    public static final VersionTag TAG = new VersionTag("jintgen", "Beta", 0, 1, commit);
 
-    /**
-     * The <code>toString()</code> method converts this version to a string.
-     * @return a string representation of this version
-     */
-    public String toString() {
-        return prefix + major + '.' + commit;
-    }
 }

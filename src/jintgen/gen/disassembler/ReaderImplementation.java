@@ -32,8 +32,8 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import cck.text.StringUtil;
+import cck.util.Util;
 import jintgen.gen.GenBase;
 import jintgen.isdl.*;
 import jintgen.jigir.*;

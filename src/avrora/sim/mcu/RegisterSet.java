@@ -34,7 +34,9 @@ package avrora.sim.mcu;
 
 import avrora.sim.ActiveRegister;
 import avrora.sim.RWRegister;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
+import cck.util.Util;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -367,7 +369,7 @@ public class RegisterSet {
     private FieldWriter getFieldWriter(String fname) {
         FieldWriter fwriter = ((FieldWriter)fields.get(fname));
         if ( fwriter == null ) {
-            throw Util.failure("Field not found in RegisterSet: "+StringUtil.quote(fname));
+            throw Util.failure("Field not found in RegisterSet: "+ StringUtil.quote(fname));
         }
         return fwriter;
     }

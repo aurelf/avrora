@@ -35,8 +35,9 @@ package avrora;
 import avrora.actions.Action;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
-import avrora.util.*;
-import avrora.util.help.HelpCategory;
+import cck.help.HelpCategory;
+import cck.text.*;
+import cck.util.*;
 import java.io.*;
 import java.util.*;
 
@@ -47,8 +48,6 @@ import java.util.*;
  * @author Ben L. Titzer
  */
 public class Main {
-
-    static final String VERSION = Version.getVersion().toString();
 
     static final Options mainOptions = new Options();
 
@@ -251,9 +250,8 @@ public class Main {
         Terminal.println("To report bugs or seek help, consult the Avrora mailing list: ");
         Terminal.printCyan("http://lists.ucla.edu/cgi-bin/mailman/listinfo/avrora");
         Terminal.nextln();
-        String version = Version.getVersion().toString();
         Terminal.print("Please include the version number [");
-        Terminal.printBrightBlue(version);
+        Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("] when posting to the list.");
         Terminal.nextln();
     }
@@ -314,7 +312,7 @@ public class Main {
     static void title() {
         Terminal.printBrightBlue("Avrora ");
         Terminal.print("[");
-        Terminal.printBrightBlue(VERSION);
+        Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("]");
         Terminal.print(" - (c) 2003-2005 UCLA Compilers Group\n\n");
     }

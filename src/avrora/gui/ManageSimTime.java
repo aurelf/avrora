@@ -36,7 +36,7 @@
 package avrora.gui;
 
 import avrora.sim.Simulation;
-import avrora.util.Terminal;
+import cck.text.Terminal;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import java.awt.*;
@@ -62,13 +62,13 @@ public class ManageSimTime {
      * can then interact with it
      */
     public JPanel simTimeEverything;
-    
+
     private JToolBar simTimeToolbar;
     private JSlider simTimeSlider;
     private SpinnerNumberModel simTimeDelaySpinner;
     private SpinnerNumberModel simTimeCycleSpinner;
     private JComboBox simTimeIorCSelect;
-    
+
     private static int[] simTimeDelayDefaults;
     private static int[] simTimeCycleDefaults;
     private static int numofdefaults;

@@ -39,7 +39,7 @@ import avrora.sim.Simulator;
 import avrora.sim.mcu.AtmelMicrocontroller;
 import avrora.sim.mcu.USART;
 import avrora.sim.platform.SerialForwarder;
-import avrora.util.Option;
+import cck.util.Option;
 
 
 /**

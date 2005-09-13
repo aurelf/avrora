@@ -33,7 +33,7 @@
 package avrora.stack;
 
 import avrora.core.Register;
-import avrora.util.Util;
+import cck.util.Util;
 
 /**
  * The <code>MutableState</code> class represents an abstract state of the processor that is mutable. This is
@@ -95,7 +95,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * The <code>hashCode()</code> method computes an integer hash code for this state. A good hash code is
      * needed to make hashtables in <code>StateSpace</code> efficient.
      *
-     * @throws avrora.util.Util.InternalError
+     * @throws cck.util.Util.InternalError
      */
     public int hashCode() {
         throw Util.failure("cannot compute hash code of MutableState");
@@ -106,7 +106,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * contract.
      *
      * @param o the object to test equality against.
-     * @throws avrora.util.Util.InternalError
+     * @throws cck.util.Util.InternalError
      */
     public boolean equals(Object o) {
         throw Util.failure("cannot perform .equals() on MutableState");

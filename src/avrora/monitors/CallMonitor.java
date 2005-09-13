@@ -39,7 +39,9 @@ package avrora.monitors;
 import avrora.core.*;
 import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.*;
+import avrora.sim.util.SimUtil;
+import cck.text.*;
+import cck.util.Util;
 
 /**
  * The <code>CallMonitor</code> class implements a monitor that is capable of tracing the call/return behavior
@@ -118,7 +120,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void push(String caller, String dest, String edge) {
-            String idstr = StringUtil.getIDTimeString(simulator);
+            String idstr = SimUtil.getIDTimeString(simulator);
             if ( depth >= stack.length )
                 throw Util.failure("Stack overflow: more than "+MAX_STACK_DEPTH+" calls nested");
             stack[depth+1] = dest;
@@ -145,7 +147,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         private void pop(String caller, String edge) {
-            String idstr = StringUtil.getIDTimeString(simulator);
+            String idstr = SimUtil.getIDTimeString(simulator);
             synchronized (Terminal.class ) {
                 Terminal.print(idstr);
                 printStack(depth-1);

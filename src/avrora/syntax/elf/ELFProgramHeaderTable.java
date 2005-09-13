@@ -33,8 +33,8 @@
  */
 package avrora.syntax.elf;
 
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import cck.text.StringUtil;
+import cck.util.Util;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 

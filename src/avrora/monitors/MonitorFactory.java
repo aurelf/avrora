@@ -33,8 +33,8 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
-import avrora.util.Options;
-import avrora.util.help.HelpCategory;
+import cck.help.HelpCategory;
+import cck.util.Options;
 
 /**
  * The <code>MonitorFactory</code> class represents a profiling utility that is able to produce a

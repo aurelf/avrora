@@ -33,8 +33,9 @@
 package avrora.syntax;
 
 import avrora.core.Register;
-import avrora.util.StringUtil;
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
+import cck.parser.ProgramPoint;
+import cck.text.StringUtil;
 
 /**
  * The <code>AVRErrorReporter</code> contains one method per compilation error. The method constructs a

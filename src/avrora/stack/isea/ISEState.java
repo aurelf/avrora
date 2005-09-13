@@ -33,7 +33,7 @@
 package avrora.stack.isea;
 
 import avrora.core.Register;
-import avrora.util.Util;
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer

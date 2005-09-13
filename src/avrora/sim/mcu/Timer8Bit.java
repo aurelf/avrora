@@ -35,7 +35,7 @@ package avrora.sim.mcu;
 import avrora.sim.RWRegister;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 
 /**
  * Base class of 8-bit timers. Timer0 and Timer2 are subclasses of this.

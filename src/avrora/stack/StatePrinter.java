@@ -32,8 +32,8 @@
 
 package avrora.stack;
 
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
+import cck.text.StringUtil;
+import cck.text.Terminal;
 
 /**
  * @author Ben L. Titzer

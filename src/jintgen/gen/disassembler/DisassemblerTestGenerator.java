@@ -32,7 +32,9 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.*;
+import cck.text.Printer;
+import cck.text.StringUtil;
+import cck.util.Util;
 import jintgen.isdl.*;
 import java.io.*;
 import java.util.HashMap;

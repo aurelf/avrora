@@ -40,7 +40,7 @@ import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.util.Terminal;
+import cck.text.Terminal;
 import java.util.*;
 
 
@@ -112,8 +112,8 @@ public class EnergyProfiler extends MonitorFactory {
             sleepCycles = 0;
             sleepProbe = new SleepProbe();
             //find all sleep opcodes in the program
-            findSleep();            
-            
+            findSleep();
+
             //scan all labels and put the in the list
             setupLabels();
 

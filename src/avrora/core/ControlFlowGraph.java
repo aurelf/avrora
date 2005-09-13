@@ -32,7 +32,7 @@
 
 package avrora.core;
 
-import avrora.util.Util;
+import cck.util.Util;
 import java.util.*;
 
 /**

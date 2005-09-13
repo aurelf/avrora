@@ -32,8 +32,8 @@
 
 package jintgen.isdl;
 
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import cck.text.StringUtil;
+import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.Expr;
 import jintgen.jigir.Literal;
@@ -118,7 +118,7 @@ public class ErrorReporter {
     }
 
     public void CannotComputeSizeOfVariable(Token t) {
-        throw Util.failure("Cannot compute size of variable "+StringUtil.quote(t)+" at "+pos(t));
+        throw Util.failure("Cannot compute size of variable "+ StringUtil.quote(t)+" at "+pos(t));
     }
 
     public void CannotComputeSizeOfExpression(Expr e) {

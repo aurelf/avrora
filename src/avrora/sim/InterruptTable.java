@@ -33,7 +33,7 @@
 package avrora.sim;
 
 import avrora.sim.util.MulticastInterruptProbe;
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 
 /**
  * The <code>InterruptTable</code> class encapsulates the functionality relating to handling

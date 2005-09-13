@@ -32,7 +32,9 @@
 
 package jintgen.gen;
 
-import avrora.util.*;
+import cck.text.Printer;
+import cck.text.StringUtil;
+import cck.util.Option;
 import jintgen.gen.disassembler.DGUtil;
 import jintgen.isdl.*;
 import java.io.IOException;
@@ -573,7 +575,7 @@ public class InstrIRGenerator extends Generator {
         endblock();
         println("return val;");
         endblock();
-        
+
         endblock();
         close();
     }

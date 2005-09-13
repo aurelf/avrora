@@ -34,8 +34,9 @@ package avrora.stack;
 
 import avrora.core.*;
 import avrora.stack.isea.*;
-import avrora.util.*;
-import avrora.util.profiling.Distribution;
+import cck.stat.Distribution;
+import cck.text.*;
+import cck.util.Util;
 import java.util.*;
 
 /**

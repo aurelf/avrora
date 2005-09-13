@@ -32,8 +32,9 @@
 
 package jintgen;
 
-import avrora.util.*;
-import avrora.util.help.HelpCategory;
+import cck.help.HelpCategory;
+import cck.text.*;
+import cck.util.*;
 import jintgen.gen.*;
 import jintgen.gen.disassembler.DisassemblerGenerator;
 import jintgen.isdl.Architecture;
@@ -51,8 +52,6 @@ import java.util.List;
  * @author Ben L. Titzer
  */
 public class Main {
-
-    static final String VERSION = Version.getVersion().toString();
 
     static final Options mainOptions = new Options();
 
@@ -85,14 +84,14 @@ public class Main {
             "further options that allow its operation to be customized.");
 
     public static ClassMap generatorMap = new ClassMap("Generator", Generator.class);
-    
+
     static {
         generatorMap.addClass("ir", InstrIRGenerator.class);
         generatorMap.addClass("codemap", CodemapGenerator.class);
         generatorMap.addClass("disassembler", DisassemblerGenerator.class);
         generatorMap.addClass("interpreter", InterpreterGenerator.class);
     }
-    
+
     /**
      * The <code>main()</code> method is the entrypoint into jIntGen. It processes the command line options,
      * looks up the action, and prints help (if there are no arguments or the <code>-help</code> option is
@@ -237,9 +236,8 @@ public class Main {
         Terminal.println("To report bugs or seek help, consult the jIntGen mailing list: ");
         Terminal.printCyan("http://lists.ucla.edu/cgi-bin/mailman/listinfo/jintgen");
         Terminal.nextln();
-        String version = Version.getVersion().toString();
         Terminal.print("Please include the version number [");
-        Terminal.printBrightBlue(version);
+        Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("] when posting to the list.");
         Terminal.nextln();
     }
@@ -299,7 +297,7 @@ public class Main {
     static void title() {
         Terminal.printBrightBlue("jIntGen ");
         Terminal.print("[");
-        Terminal.printBrightBlue(VERSION);
+        Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("]");
         Terminal.print(" - (c) 2005 UCLA Compilers Group\n\n");
     }

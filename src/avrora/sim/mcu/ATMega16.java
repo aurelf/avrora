@@ -36,7 +36,7 @@ import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 import java.util.HashMap;
 
 /**
@@ -53,7 +53,7 @@ public class ATMega16 extends ATMegaFamily {
 
     public static final int _1kb = 1024;
     public static final int _512b = 512;
-    
+
     public static final int ATMEGA16_IOREG_SIZE = 64;
     public static final int ATMEGA16_SRAM_SIZE = 1 * _1kb;
     public static final int ATMEGA16_FLASH_SIZE = 16 * _1kb;
@@ -144,8 +144,8 @@ public class ATMega16 extends ATMegaFamily {
         addPin(pinAssignments, 38, "ADC2", "PA2");
         addPin(pinAssignments, 39, "ADC1", "PA1");
         addPin(pinAssignments, 40, "ADC0", "PA0");
-         
-        
+
+
         // lower 64 IO registers
         rl.addIOReg("SREG", 0x3F);
         rl.addIOReg("SPH", 0x3E);

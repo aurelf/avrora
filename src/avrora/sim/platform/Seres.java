@@ -38,7 +38,7 @@ import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.ATMega128;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.Terminal;
+import cck.text.Terminal;
 
 /**
  * The <code>Seres</code> class is an implementation of the <code>Platform</code> interface that represents
@@ -61,7 +61,7 @@ public class Seres extends Platform {
         public Platform newPlatform(int id, InterpreterFactory f, Program p) {
             ClockDomain cd = new ClockDomain(7372800);
             cd.newClock("external", 32768);
-    
+
             return new Seres(new ATMega128(id, cd, f, p));
         }
     }
@@ -79,21 +79,21 @@ public class Seres extends Platform {
         PinWire westPinTx = new PinWire(sim, Terminal.COLOR_BLUE, "West Tx");
 
         // connect transmit pins to physical pins
-   		mcu.getPin("PC0").connect(northPinTx.wireInput);
-		mcu.getPin("PC0").connect(northPinTx.wireOutput);
-		mcu.getPin("PC1").connect(eastPinTx.wireInput);
-		mcu.getPin("PC1").connect(eastPinTx.wireOutput);
-		mcu.getPin("PF5").connect(southPinTx.wireInput);
-		mcu.getPin("PF5").connect(southPinTx.wireOutput);
-		mcu.getPin("PF6").connect(westPinTx.wireInput);
-		mcu.getPin("PF6").connect(westPinTx.wireOutput);
+           mcu.getPin("PC0").connect(northPinTx.wireInput);
+        mcu.getPin("PC0").connect(northPinTx.wireOutput);
+        mcu.getPin("PC1").connect(eastPinTx.wireInput);
+        mcu.getPin("PC1").connect(eastPinTx.wireOutput);
+        mcu.getPin("PF5").connect(southPinTx.wireInput);
+        mcu.getPin("PF5").connect(southPinTx.wireOutput);
+        mcu.getPin("PF6").connect(westPinTx.wireInput);
+        mcu.getPin("PF6").connect(westPinTx.wireOutput);
 
-		// enable printing on output pins
-		northPinTx.enableConnect();
-		eastPinTx.enableConnect();
-		southPinTx.enableConnect();
-		westPinTx.enableConnect();
-		
+        // enable printing on output pins
+        northPinTx.enableConnect();
+        eastPinTx.enableConnect();
+        southPinTx.enableConnect();
+        westPinTx.enableConnect();
+
         // receive pins
         PinWire northPinRx = new PinWire(sim, Terminal.COLOR_YELLOW, "North Rx");
         PinWire eastPinRx = new PinWire(sim, Terminal.COLOR_GREEN, "East Rx");
@@ -101,49 +101,49 @@ public class Seres extends Platform {
         PinWire westPinRx = new PinWire(sim, Terminal.COLOR_BLUE, "West Rx");
 
         // connect receive pins to physical pins
-   		mcu.getPin("PD1").connect(northPinRx.wireInput);
-		mcu.getPin("PD1").connect(northPinRx.wireOutput);
-		mcu.getPin("PF2").connect(eastPinRx.wireInput);
-		mcu.getPin("PF2").connect(eastPinRx.wireOutput);
-		mcu.getPin("PD0").connect(southPinRx.wireInput);
-		mcu.getPin("PD0").connect(southPinRx.wireOutput);
-		mcu.getPin("PF3").connect(westPinRx.wireInput);
-		mcu.getPin("PF3").connect(westPinRx.wireOutput);
+           mcu.getPin("PD1").connect(northPinRx.wireInput);
+        mcu.getPin("PD1").connect(northPinRx.wireOutput);
+        mcu.getPin("PF2").connect(eastPinRx.wireInput);
+        mcu.getPin("PF2").connect(eastPinRx.wireOutput);
+        mcu.getPin("PD0").connect(southPinRx.wireInput);
+        mcu.getPin("PD0").connect(southPinRx.wireOutput);
+        mcu.getPin("PF3").connect(westPinRx.wireInput);
+        mcu.getPin("PF3").connect(westPinRx.wireOutput);
 
-		// enable printing on output pins
-		northPinRx.enableConnect();
-		eastPinRx.enableConnect();
-		southPinRx.enableConnect();
-		westPinRx.enableConnect();
-		
+        // enable printing on output pins
+        northPinRx.enableConnect();
+        eastPinRx.enableConnect();
+        southPinRx.enableConnect();
+        westPinRx.enableConnect();
+
         // receive interrupt pins
         PinWire northPinInt = new PinWire(sim, Terminal.COLOR_YELLOW, "North Int", 1+2, mcu);
         PinWire eastPinInt = new PinWire(sim, Terminal.COLOR_GREEN, "East Int", 2+2, mcu);
         PinWire southPinInt = new PinWire(sim, Terminal.COLOR_RED, "South Int", 0+2, mcu);
-        PinWire westPinInt = new PinWire(sim, Terminal.COLOR_BLUE, "West Int", 6+2, mcu); 
+        PinWire westPinInt = new PinWire(sim, Terminal.COLOR_BLUE, "West Int", 6+2, mcu);
 
         // connect receive interrupt pins to physical pins
-   		mcu.getPin("INT1").connect(northPinInt.wireInput);
-		mcu.getPin("INT1").connect(northPinInt.wireOutput);
-		mcu.getPin("INT2").connect(eastPinInt.wireInput);
-		mcu.getPin("INT2").connect(eastPinInt.wireOutput);
-		mcu.getPin("INT0").connect(southPinInt.wireInput);
-		mcu.getPin("INT0").connect(southPinInt.wireOutput);
-		mcu.getPin("INT6").connect(westPinInt.wireInput);
-		mcu.getPin("INT6").connect(westPinInt.wireOutput);
+           mcu.getPin("INT1").connect(northPinInt.wireInput);
+        mcu.getPin("INT1").connect(northPinInt.wireOutput);
+        mcu.getPin("INT2").connect(eastPinInt.wireInput);
+        mcu.getPin("INT2").connect(eastPinInt.wireOutput);
+        mcu.getPin("INT0").connect(southPinInt.wireInput);
+        mcu.getPin("INT0").connect(southPinInt.wireOutput);
+        mcu.getPin("INT6").connect(westPinInt.wireInput);
+        mcu.getPin("INT6").connect(westPinInt.wireOutput);
 
-		// enable printing on output pins
-		northPinInt.enableConnect();
-		eastPinInt.enableConnect();
-		southPinInt.enableConnect();
-		westPinInt.enableConnect();
-	
-		// pin management device
+        // enable printing on output pins
+        northPinInt.enableConnect();
+        eastPinInt.enableConnect();
+        southPinInt.enableConnect();
+        westPinInt.enableConnect();
+
+        // pin management device
         pinConnect = PinConnect.pinConnect;
-        
+
         pinConnect.addSeresNode(mcu, northPinTx, eastPinTx, southPinTx, westPinTx,
-        		northPinRx, eastPinRx, southPinRx, westPinRx, northPinInt, eastPinInt,
-				southPinInt, westPinInt);
+                northPinRx, eastPinRx, southPinRx, westPinRx, northPinInt, eastPinInt,
+                southPinInt, westPinInt);
     }
 
 }

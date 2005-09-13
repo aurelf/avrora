@@ -37,7 +37,7 @@ import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.sim.mcu.AtmelMicrocontroller;
-import avrora.util.*;
+import cck.text.*;
 
 /**
  * The <code>SleepMonitor</code> class is a monitor that tracks statistics about the sleeping patterns of

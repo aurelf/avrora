@@ -32,17 +32,12 @@
 
 package jintgen.gen;
 
-import avrora.util.Arithmetic;
-import avrora.util.Printer;
-import avrora.util.StringUtil;
-import avrora.util.Util;
-import jintgen.isdl.AddrModeDecl;
-import jintgen.isdl.Architecture;
-import jintgen.isdl.InstrDecl;
-import jintgen.isdl.SubroutineDecl;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
+import cck.util.Util;
+import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
-
 import java.io.IOException;
 import java.util.*;
 

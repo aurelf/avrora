@@ -33,8 +33,8 @@
 package avrora.stack;
 
 import avrora.core.Program;
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import cck.text.StringUtil;
+import cck.util.Util;
 import java.util.*;
 
 /**

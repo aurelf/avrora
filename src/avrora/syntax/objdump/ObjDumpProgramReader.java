@@ -34,8 +34,8 @@ package avrora.syntax.objdump;
 
 import avrora.core.Program;
 import avrora.core.ProgramReader;
-import avrora.util.Option;
-import avrora.util.Util;
+import cck.util.Option;
+import cck.util.Util;
 import java.io.*;
 
 /**

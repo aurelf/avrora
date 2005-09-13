@@ -32,7 +32,7 @@
 
 package avrora.core;
 
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 import java.util.Comparator;
 
 /**

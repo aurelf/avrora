@@ -39,8 +39,8 @@ import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.platform.*;
 import avrora.sim.util.InterruptScheduler;
-import avrora.util.*;
-import avrora.util.help.HelpCategory;
+import cck.help.HelpCategory;
+import cck.util.*;
 import java.util.*;
 
 /**

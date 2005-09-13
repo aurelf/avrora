@@ -41,8 +41,8 @@ import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.Option;
-import avrora.util.Util;
+import cck.util.Option;
+import cck.util.Util;
 import java.util.Iterator;
 
 /**

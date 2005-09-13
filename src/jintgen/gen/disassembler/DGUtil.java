@@ -32,7 +32,9 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.*;
+import cck.text.*;
+import cck.util.Arithmetic;
+import cck.util.Util;
 import jintgen.gen.ConstantPropagator;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
@@ -108,7 +110,7 @@ public class DGUtil {
     public static void printTree(HashSet<DTNode> nodes, Printer p, DTNode dt, int depth) {
         p.print("#"+dt.number+" ");
         if ( nodes.contains(dt) ) {
-            p.nextln(); 
+            p.nextln();
             return;
         }
         nodes.add(dt);

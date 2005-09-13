@@ -41,7 +41,7 @@ import avrora.sim.platform.sensors.LightSensor;
 import avrora.sim.platform.sensors.SensorBoard;
 import avrora.sim.radio.CC1000Radio;
 import avrora.sim.radio.Radio;
-import avrora.util.Terminal;
+import cck.text.Terminal;
 
 /**
  * The <code>Mica2</code> class is an implementation of the <code>Platform</code> interface that represents

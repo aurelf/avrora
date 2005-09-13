@@ -32,8 +32,8 @@
 
 package avrora.sim;
 
-import avrora.util.StringUtil;
-import avrora.util.Util;
+import cck.text.StringUtil;
+import cck.util.Util;
 
 /**
  * The <code>InterpreterError</code> class is a collection point for all of the error classes that

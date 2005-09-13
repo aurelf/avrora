@@ -34,8 +34,8 @@
 package avrora.syntax.objdump;
 
 import avrora.actions.Action;
-import avrora.util.Option;
-import avrora.util.Verbose;
+import cck.text.Verbose;
+import cck.util.Option;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.HashSet;
@@ -50,13 +50,13 @@ import java.util.HashSet;
  */
 public class ODPPAction extends Action {
 
-    protected final Option.Str FILE = options.newOption("file", "", 
+    protected final Option.Str FILE = options.newOption("file", "",
             "The \"file\" option, when set, indicates the file to which to output the " +
             "preprocessed objdump output.");
-    protected final Option.List SECTIONS = options.newOptionList("sections",".text,.data", 
+    protected final Option.List SECTIONS = options.newOptionList("sections",".text,.data",
             "This option specifies a list of sections that the loader should load from " +
             "the output.");
-    
+
     protected final Verbose.Printer printer = Verbose.getVerbosePrinter("reader.objdump");
     private static final String HELP = "The \"odpp\" action tests the functionality of the objdump preprocessor that " +
                   "cleans up the output of objdump into something more suitable for automated parsing.";

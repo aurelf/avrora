@@ -37,7 +37,9 @@ import avrora.sim.Simulator;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.util.TransactionalList;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
+import cck.util.Util;
 import java.util.Arrays;
 
 /**

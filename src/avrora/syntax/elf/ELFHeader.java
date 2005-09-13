@@ -32,7 +32,7 @@
 
 package avrora.syntax.elf;
 
-import avrora.util.Util;
+import cck.util.Util;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 

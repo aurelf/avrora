@@ -33,8 +33,8 @@
 package avrora.test;
 
 import avrora.syntax.SimplifierError;
-import avrora.util.Terminal;
-import avrora.util.Util;
+import cck.text.Terminal;
+import cck.util.Util;
 
 /**
  * The <code>TestResult</code> class represents the result of running a test cases. The test run could

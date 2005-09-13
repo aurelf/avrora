@@ -33,7 +33,8 @@
 package avrora.stack.isea;
 
 import avrora.core.*;
-import avrora.util.*;
+import cck.text.*;
+import cck.util.Util;
 import java.util.HashMap;
 import java.util.Iterator;
 

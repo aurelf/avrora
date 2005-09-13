@@ -32,8 +32,8 @@
 
 package jintgen.isdl;
 
-import avrora.util.Util;
-import avrora.util.Verbose;
+import cck.text.Verbose;
+import cck.util.Util;
 import jintgen.gen.Inliner;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;

@@ -32,7 +32,7 @@
 
 package avrora.gui;
 
-import avrora.util.profiling.Measurements;
+import cck.stat.Measurements;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -64,12 +64,12 @@ public class GraphNumbers extends JPanel implements ChangeListener, AdjustmentLi
      * The visual widget that sets the step size
      */
     public SpinnerNumberModel stepsizeVisual;
-    
+
     /**
      * The max value of the y-axis
      */
     public int maxvalue;
-    
+
     /**
      * The visual wdiget that sets the max value for the y-axis
      */

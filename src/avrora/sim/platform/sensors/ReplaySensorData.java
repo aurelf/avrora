@@ -36,7 +36,7 @@ import avrora.Main;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.Util;
+import cck.util.Util;
 import java.io.*;
 
 /**

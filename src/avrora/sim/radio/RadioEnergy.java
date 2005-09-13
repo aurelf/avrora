@@ -33,7 +33,7 @@
  */
 package avrora.sim.radio;
 
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 
 /**
  * Constants for CC1000 radio energy consumption

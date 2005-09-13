@@ -34,7 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 
 /**
  * The <code>ATMegaFamily</code> class encapsulates much of the common functionality among the

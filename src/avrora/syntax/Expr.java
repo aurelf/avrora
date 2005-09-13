@@ -32,9 +32,9 @@
 
 package avrora.syntax;
 
-import avrora.util.StringUtil;
-import avrora.util.Util;
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
+import cck.text.StringUtil;
+import cck.util.Util;
 
 /**
  * The <code>Expr</code> class represents an expression within the program that must be evaluated to a value.
@@ -400,7 +400,7 @@ public abstract class Expr extends ASTNode {
          * @param currentByteAddress the current byte address within the program
          * @param c                  the context in which to evaluate this expression
          * @return the value of the expression as a 32-bit integer
-         * @throws avrora.util.Util.InternalError because a string cannot be evaluated to a 32-bit integer
+         * @throws cck.util.Util.InternalError because a string cannot be evaluated to a 32-bit integer
          */
         public int evaluate(int currentByteAddress, Context c) {
             throw Util.failure("cannot evaluate a string to an integer");

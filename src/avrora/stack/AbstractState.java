@@ -33,7 +33,7 @@
 package avrora.stack;
 
 import avrora.core.Register;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 
 /**
  * The <code>AbstractState</code> class represents an abstract state within the state space. The program

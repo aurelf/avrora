@@ -32,8 +32,9 @@
 
 package avrora.core;
 
-import avrora.util.*;
-import avrora.util.help.HelpCategory;
+import cck.help.HelpCategory;
+import cck.text.StringUtil;
+import cck.util.*;
 import java.util.Iterator;
 
 /**

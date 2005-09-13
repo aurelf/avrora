@@ -32,7 +32,8 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.*;
+import cck.text.*;
+import cck.util.*;
 import jintgen.gen.Generator;
 import jintgen.isdl.*;
 import java.util.LinkedList;

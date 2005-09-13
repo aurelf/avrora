@@ -33,8 +33,8 @@
 package avrora.syntax;
 
 import avrora.core.Operand;
-import avrora.util.Util;
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
+import cck.util.Util;
 
 /**
  * The <code>SyntacticOperand</code> class is an implementation of the <code>avrora.core.Operand</code>

@@ -33,7 +33,7 @@
 package avrora.test;
 
 import avrora.Defaults;
-import avrora.util.*;
+import cck.text.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;

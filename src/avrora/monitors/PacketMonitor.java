@@ -40,7 +40,9 @@ package avrora.monitors;
 import avrora.sim.Simulator;
 import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
-import avrora.util.*;
+import avrora.sim.util.SimUtil;
+import cck.text.*;
+import cck.util.Option;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -54,7 +56,7 @@ public class PacketMonitor extends MonitorFactory {
 
     public static final int INTER_PACKET_TIME = 2 * Radio.TRANSFER_TIME;
 
-    protected Option.Bool PACKETS = options.newOption("show-packets", true, 
+    protected Option.Bool PACKETS = options.newOption("show-packets", true,
             "This option enables the printing of packets as they are transmitted.");
     protected Option.Bool PREAMBLE = options.newOption("show-preamble", false,
             "This option will show the preamble of a packet when it is printed out.");
@@ -107,7 +109,7 @@ public class PacketMonitor extends MonitorFactory {
 
         private StringBuffer buildPacket() {
             StringBuffer buf = new StringBuffer(2 * bytes.size() + 45);
-            StringUtil.getIDTimeString(buf, simulator);
+            SimUtil.getIDTimeString(buf, simulator);
             Terminal.append(Terminal.COLOR_BRIGHT_CYAN, buf, "Packet sent");
             buf.append(": ");
             Iterator i = bytes.iterator();

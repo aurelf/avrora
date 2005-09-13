@@ -40,7 +40,8 @@ import avrora.sim.Simulator;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.util.MemoryProfiler;
-import avrora.util.*;
+import cck.text.*;
+import cck.util.Option;
 import java.util.Iterator;
 import java.util.List;
 

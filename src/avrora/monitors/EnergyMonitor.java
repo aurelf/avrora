@@ -43,7 +43,9 @@ import avrora.sim.energy.EnergyControl;
 import avrora.sim.platform.Platform;
 import avrora.sim.radio.Radio;
 import avrora.sim.radio.RadioAir;
-import avrora.util.*;
+import avrora.sim.util.SimUtil;
+import cck.text.Terminal;
+import cck.util.Option;
 import java.util.Iterator;
 
 /**
@@ -135,7 +137,7 @@ public class EnergyMonitor extends MonitorFactory {
         public class BatteryCheck implements Simulator.Event{
             //check 10 times per second
             private static final int interval = 737280;
-            
+
             public BatteryCheck(){
                 simulator.insertEvent(this, interval);
             }
@@ -153,7 +155,7 @@ public class EnergyMonitor extends MonitorFactory {
                     simulator.insertEvent(this, interval);
                 } else {
                     //shutdown this node
-                    String itstr = StringUtil.getIDTimeString(simulator);
+                    String itstr = SimUtil.getIDTimeString(simulator);
 
                     Terminal.print(itstr);
                     Terminal.printYellow("energy limit exceeded: "+ totalEnergy+" joules");

@@ -34,10 +34,10 @@ package avrora.syntax;
 
 import avrora.core.*;
 import avrora.syntax.atmel.AtmelParser;
-import avrora.util.StringUtil;
-import avrora.util.Verbose;
-import avrora.util.parser.AbstractParseException;
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractParseException;
+import cck.parser.AbstractToken;
+import cck.text.StringUtil;
+import cck.text.Verbose;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;

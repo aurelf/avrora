@@ -32,7 +32,7 @@
 
 package jintgen.jigir;
 
-import avrora.util.Util;
+import cck.util.Util;
 import jintgen.isdl.parser.Token;
 
 /**

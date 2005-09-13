@@ -37,7 +37,10 @@ import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.*;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.text.Terminal;
+import cck.util.Arithmetic;
+import cck.util.Util;
 
 /**
  * The <code>BaseInterpreter</code> class represents a base class of the legacy interpreter and the generated
@@ -869,7 +872,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
         Segment segment;
 
         public byte readError(int address) {
-            String idstr = StringUtil.getIDTimeString(simulator);
+            String idstr = SimUtil.getIDTimeString(simulator);
             Terminal.print(idstr);
             Terminal.printYellow(StringUtil.toHex(pc, 4));
             Terminal.println(": illegal read from " + segment.name + " at address " + StringUtil.addrToString(address));
@@ -878,7 +881,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
         }
 
         public void writeError(int address, byte value) {
-            String idstr = StringUtil.getIDTimeString(simulator);
+            String idstr = SimUtil.getIDTimeString(simulator);
             Terminal.print(idstr);
             Terminal.printYellow(StringUtil.toHex(pc, 4));
             Terminal.println(": illegal write to " + segment.name + " at address " + StringUtil.addrToString(address));
@@ -887,7 +890,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
     }
 
     private void readError(String segment, int address) {
-        String idstr = StringUtil.getIDTimeString(simulator);
+        String idstr = SimUtil.getIDTimeString(simulator);
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
         Terminal.println(": illegal read from " + segment + " at address " + StringUtil.addrToString(address));
@@ -895,7 +898,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
     }
 
     private void writeError(String segment, int address, byte value) {
-        String idstr = StringUtil.getIDTimeString(simulator);
+        String idstr = SimUtil.getIDTimeString(simulator);
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
         Terminal.println(": illegal write to " + segment + " at address " + StringUtil.addrToString(address));

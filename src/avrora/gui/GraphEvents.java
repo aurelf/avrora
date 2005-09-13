@@ -32,7 +32,7 @@
 
 package avrora.gui;
 
-import avrora.util.Terminal;
+import cck.text.Terminal;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -59,7 +59,7 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
     private MyVector[] privateNumbers; //only accessed by paint
     private static final int VECSIZE = 5;
     private JPanel parentPanel;
-    
+
     private Object vSync; //just a private sync variable
 
     /**
@@ -74,12 +74,12 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
      * number of pixels per x-axis value
      */
     public double stepsize;
-    
-    /** 
+
+    /**
      * The visual component for setting <code> stepsize </code>
      */
     public SpinnerNumberModel stepsizeVisual;
-        
+
     //options not done yet
     private Color lineColor; //color of line that is drawn
     private Color backColor; //color of background
@@ -88,7 +88,7 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
     private int minvalue;
     private int maxvalue;
 
-    
+
     //The min and max values of the data in question: for VERTICAL sizing
     //the step size is the HORZ step size (there is no notion of vertical step size)
     /* Called by a monitor who wants to use this class
@@ -97,7 +97,7 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
      * @param pstepsize For horz sizing - number of pixels per unit of x-axis
      */
     public GraphEvents(int pminvalue, int pmaxvalue, double pstepsize) {
-        
+
         vSync = new Object();
 
         publicNumbers = new MyVector[VECSIZE];
@@ -473,7 +473,7 @@ public class GraphEvents extends JPanel implements ChangeListener, AdjustmentLis
         if (e.getSource() == stepsizeVisual) {
             stepsize = ((Double) stepsizeVisual.getValue()).doubleValue();
             repaint();
-        } 
+        }
     }
 
     /**

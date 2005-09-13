@@ -35,7 +35,10 @@ package avrora.monitors;
 import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.util.*;
+import avrora.sim.util.SimUtil;
+import cck.text.*;
+import cck.util.Option;
+import cck.util.Util;
 import java.util.Iterator;
 
 /**
@@ -82,7 +85,7 @@ public class TraceMonitor extends MonitorFactory {
             StartProbe(int s, int e) {
                 start = s;
                 end = e;
-                pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
+                pair = StringUtil.addrToString(s)+":"+ StringUtil.addrToString(e);
             }
 
 
@@ -124,7 +127,7 @@ public class TraceMonitor extends MonitorFactory {
         int nextPc;
 
         private void print(State s, Instr i) {
-            String idstr = StringUtil.getIDTimeString(simulator);
+            String idstr = SimUtil.getIDTimeString(simulator);
             Terminal.print(idstr);
             int pc = s.getPC();
             int color = pc == nextPc ? Terminal.COLOR_BLUE : Terminal.COLOR_RED;
@@ -136,7 +139,7 @@ public class TraceMonitor extends MonitorFactory {
         }
 
         private void print(String s) {
-            String idstr = StringUtil.getIDTimeString(simulator);
+            String idstr = SimUtil.getIDTimeString(simulator);
             Terminal.println(idstr+s);
         }
 

@@ -32,7 +32,7 @@
 
 package jintgen.isdl;
 
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
 import java.util.*;
 

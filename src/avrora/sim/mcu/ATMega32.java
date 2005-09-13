@@ -36,7 +36,7 @@ import avrora.core.InstrPrototype;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 import java.util.HashMap;
 
 /**

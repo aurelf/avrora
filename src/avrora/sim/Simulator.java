@@ -38,7 +38,10 @@ import avrora.core.Program;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.util.*;
+import avrora.sim.util.SimUtil;
+import cck.text.Terminal;
+import cck.text.Verbose;
+import cck.util.Util;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator for the AVR instruction set. It is
@@ -82,7 +85,7 @@ public class Simulator {
                 synchronized ( Terminal.class ) {
                     // synchronize on the terminal to prevent interleaved output
                     StringBuffer buf = new StringBuffer(s.length()+30);
-                    StringUtil.getIDTimeString(buf, Simulator.this);
+                    SimUtil.getIDTimeString(buf, Simulator.this);
                     buf.append(s);
                     Terminal.println(buf.toString());
                 }

@@ -33,7 +33,7 @@
 
 package avrora.syntax.gas;
 
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
 
 /**
  * Describes the input token stream.

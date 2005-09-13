@@ -32,7 +32,9 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.*;
+import cck.text.Printer;
+import cck.text.StringUtil;
+import cck.util.Util;
 import jintgen.gen.GenBase;
 import jintgen.isdl.EncodingDecl;
 import jintgen.isdl.InstrDecl;

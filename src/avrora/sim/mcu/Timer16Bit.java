@@ -35,7 +35,7 @@ package avrora.sim.mcu;
 import avrora.sim.RWRegister;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 
 /**
  * The <code>Timer16Bit</code> class emulates the functionality and behavior of a 16-bit timer on the

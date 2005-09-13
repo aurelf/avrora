@@ -33,8 +33,9 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
-import avrora.util.*;
-import avrora.util.profiling.TimedMeasurements;
+import cck.stat.TimedMeasurements;
+import cck.text.*;
+import cck.util.Option;
 
 /**
  * This monitor measures the instantaneous performance of the simulator by inserting

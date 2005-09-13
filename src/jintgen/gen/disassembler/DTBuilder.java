@@ -32,8 +32,8 @@
 
 package jintgen.gen.disassembler;
 
-import avrora.util.Util;
-import avrora.util.Verbose;
+import cck.text.Verbose;
+import cck.util.Util;
 import java.util.*;
 
 /**

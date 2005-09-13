@@ -34,7 +34,9 @@ package avrora.sim;
 
 import avrora.actions.SimAction;
 import avrora.sim.clock.Synchronizer;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.text.Terminal;
+import cck.util.Util;
 
 
 /**

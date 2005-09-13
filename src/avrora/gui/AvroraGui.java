@@ -36,8 +36,8 @@ import avrora.Version;
 import avrora.sim.Simulation;
 import avrora.sim.radio.SimpleAir;
 import avrora.sim.types.SensorSimulation;
-import avrora.util.Options;
-import avrora.util.Util;
+import cck.util.Options;
+import cck.util.Util;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -121,7 +121,7 @@ public class AvroraGui implements ActionListener, ChangeListener {
     //current monitor being displayed (see paint thread)
     private MonitorPanel currentMonitorDisplayed;
 
-    private static final String AVRORA_VERSION = "Avrora "+Version.getVersion();
+    private static final String AVRORA_VERSION = "Avrora "+Version.TAG;
     private static final String AVRORA_GUI_VERSION = "Avrora Gui v.0.3.2";
     private static final int PAINT_THREAD_SLEEP_TIME = 200;
 

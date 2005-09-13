@@ -32,7 +32,8 @@
 
 package jintgen.gen;
 
-import avrora.util.*;
+import cck.text.*;
+import cck.util.*;
 import jintgen.Main;
 import jintgen.isdl.Architecture;
 import java.io.*;

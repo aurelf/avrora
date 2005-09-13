@@ -34,7 +34,7 @@ package avrora.test.probes;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.sim.clock.DeltaQueue;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 import java.util.*;
 
 /**

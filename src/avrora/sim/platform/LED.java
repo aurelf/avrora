@@ -37,8 +37,8 @@ import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.Microcontroller;
-import avrora.util.StringUtil;
-import avrora.util.Terminal;
+import avrora.sim.util.SimUtil;
+import cck.text.Terminal;
 
 /**
  * The <code>LED</code> class implements an LED (light emitting diode) that can be hooked up
@@ -80,7 +80,7 @@ public class LED extends Microcontroller.OutputPin {
             // print the status of the LED
             synchronized ( Terminal.class ) {
                 // synchronize on the terminal to prevent interleaved output
-                Terminal.print(StringUtil.getIDTimeString(sim));
+                Terminal.print(SimUtil.getIDTimeString(sim));
                 Terminal.print(colornum, color);
                 Terminal.println(": " + modeName[afterState]);
             }
@@ -93,7 +93,7 @@ public class LED extends Microcontroller.OutputPin {
         color = c;
         //setup energy recording
         Clock clk = sim.getClock();
-        
+
         state = new FiniteStateMachine(clk, startMode, modeName, 0);
         probe = new LEDProbe();
         new Energy(c, modeAmpere, state);

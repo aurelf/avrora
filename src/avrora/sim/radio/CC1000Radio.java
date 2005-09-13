@@ -37,7 +37,9 @@ import avrora.sim.Simulator;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.util.TransactionalList;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.util.Arithmetic;
+import cck.util.Util;
 
 /**
  * The <code>CC1000Radio</code> class is a simulation of the CC1000 radio for use with avrora. The CC1000
@@ -245,9 +247,9 @@ public class CC1000Radio implements Radio {
 
         //setup energy recording
         Simulator simulator = mcu.getSimulator();
- 
+
         stateMachine = new FiniteStateMachine(simulator.getClock(), RadioEnergy.startMode, allModeNames, ttm);
-        
+
         new Energy("Radio", RadioEnergy.modeAmpere, stateMachine);
 
     }
@@ -414,7 +416,7 @@ public class CC1000Radio implements Radio {
                 //resetRadio();
                 return;
             }
-            
+
             if (val != oldVal) {
                 int state = computeState();
                 stateMachine.transition(state);

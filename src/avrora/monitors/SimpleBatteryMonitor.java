@@ -36,7 +36,7 @@
 
 package avrora.monitors;
 
-import avrora.util.Util;
+import cck.util.Util;
 
 /**
  * simple battery monitors to shut down a node when an energy limit is exceeded ---- not yet implemented ----

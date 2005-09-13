@@ -36,8 +36,8 @@ import avrora.Main;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.stack.isea.ISEAnalyzer;
-import avrora.util.Option;
-import avrora.util.Util;
+import cck.util.Option;
+import cck.util.Util;
 
 /**
  * The <code>ISEAAction</code> class implements interprocedural side-effect analysis. This class

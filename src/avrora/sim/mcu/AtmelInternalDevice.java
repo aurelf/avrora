@@ -34,7 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.sim.*;
 import avrora.sim.clock.Clock;
-import avrora.util.Util;
+import cck.util.Util;
 import java.util.Iterator;
 
 /**

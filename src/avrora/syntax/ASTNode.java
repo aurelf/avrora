@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
 
 
 /**

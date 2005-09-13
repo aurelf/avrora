@@ -32,7 +32,7 @@
 
 package jintgen.isdl;
 
-import avrora.util.Verbose;
+import cck.text.Verbose;
 import jintgen.isdl.parser.Token;
 
 /**

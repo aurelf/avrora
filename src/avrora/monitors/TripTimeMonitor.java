@@ -34,8 +34,10 @@ package avrora.monitors;
 import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.util.*;
-import avrora.util.profiling.Distribution;
+import cck.stat.Distribution;
+import cck.text.*;
+import cck.util.Option;
+import cck.util.Util;
 import java.util.Iterator;
 
 /**
@@ -76,10 +78,10 @@ public class TripTimeMonitor extends MonitorFactory {
             final int start;
             final int end;
             long cumul;
-			long cumul_sqr;
+            long cumul_sqr;
             int count;
-			long max;
-			long min;
+            long max;
+            long min;
 
             Pair startLink;
             Pair endLink;
@@ -91,10 +93,10 @@ public class TripTimeMonitor extends MonitorFactory {
                 this.start = start;
                 this.end = end;
 
-				this.cumul = 0;
-				this.cumul_sqr = 0;
-				this.max = 0;
-				this.min = Long.MAX_VALUE;
+                this.cumul = 0;
+                this.cumul_sqr = 0;
+                this.max = 0;
+                this.min = Long.MAX_VALUE;
                 if ( DISTRIBUTION.get() )
                     distrib = new Distribution("trip time "
                             +StringUtil.addrToString(start)+" -to- "
@@ -106,9 +108,9 @@ public class TripTimeMonitor extends MonitorFactory {
                     distrib.record((int)time);
                 } else {
                     cumul += time;
-					cumul_sqr += (time * time);
-					max = Math.max(max, time);
-					min = Math.min(min, time);
+                    cumul_sqr += (time * time);
+                    max = Math.max(max, time);
+                    min = Math.min(min, time);
                 }
                 count++;
             }
@@ -116,15 +118,15 @@ public class TripTimeMonitor extends MonitorFactory {
             void report() {
                 if ( distrib == null ) {
                 float avg = (float)cumul / count;
-				double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
-                Terminal.println("  "+StringUtil.addrToString(start)+"  "
+                double std = Math.sqrt(((double)cumul_sqr / count) - (avg * avg));
+                Terminal.println("  "+ StringUtil.addrToString(start)+"  "
                         +StringUtil.addrToString(end)+"  "
                         +StringUtil.rightJustify(count, 8)+"  "
                         +StringUtil.rightJustify(avg, 10)+"  "
-						+StringUtil.rightJustify((float)std, 10)+"  "
-						+StringUtil.rightJustify((float)max, 9)+"  "
-						+StringUtil.rightJustify((float)min, 9)
-						);
+                        +StringUtil.rightJustify((float)std, 10)+"  "
+                        +StringUtil.rightJustify((float)max, 9)+"  "
+                        +StringUtil.rightJustify((float)min, 9)
+                        );
                 } else {
                     distrib.processData();
                     distrib.textReport();

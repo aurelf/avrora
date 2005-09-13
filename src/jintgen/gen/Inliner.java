@@ -32,7 +32,7 @@
 
 package jintgen.gen;
 
-import avrora.util.Util;
+import cck.util.Util;
 import jintgen.isdl.Architecture;
 import jintgen.isdl.SubroutineDecl;
 import jintgen.isdl.parser.ISDLParserConstants;

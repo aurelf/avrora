@@ -34,7 +34,7 @@ package avrora.sim.clock;
 
 import avrora.sim.Simulation;
 import avrora.sim.Simulator;
-import avrora.util.Util;
+import cck.util.Util;
 
 /**
  * The <code>StepSynchronizer</code> class is an implementation of simulator synchronization

@@ -32,7 +32,9 @@
 
 package avrora.stack.isea;
 
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.text.Terminal;
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer

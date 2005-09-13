@@ -32,7 +32,7 @@
 
 package avrora.sim.clock;
 
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 

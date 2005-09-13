@@ -33,8 +33,8 @@
 package avrora.syntax;
 
 import avrora.core.InstrPrototype;
-import avrora.util.Util;
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
+import cck.util.Util;
 
 /**
  * The <code>Item</code> class represents either an assembler directive, an instruction, or a sequence of

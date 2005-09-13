@@ -34,7 +34,9 @@ package avrora.actions;
 
 import avrora.core.*;
 import avrora.sim.State;
-import avrora.util.*;
+import cck.text.*;
+import cck.util.Option;
+import cck.util.Util;
 import java.util.*;
 
 /**

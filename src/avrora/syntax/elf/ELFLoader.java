@@ -34,11 +34,13 @@ package avrora.syntax.elf;
 
 import avrora.Main;
 import avrora.core.*;
-import avrora.util.*;
-import java.io.RandomAccessFile;
+import cck.text.*;
+import cck.util.Option;
+import cck.util.Util;
 import java.io.IOException;
-import java.util.List;
+import java.io.RandomAccessFile;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>ELFLoader</code> class is capable of loading ELF (Executable and Linkable Format)

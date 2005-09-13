@@ -33,7 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.CodeSegment;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 import java.util.*;
 
 /**

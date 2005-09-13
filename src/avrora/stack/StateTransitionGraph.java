@@ -33,7 +33,9 @@
 package avrora.stack;
 
 import avrora.core.Program;
-import avrora.util.*;
+import cck.text.Printer;
+import cck.text.StringUtil;
+import cck.util.Util;
 import java.util.Iterator;
 
 /**

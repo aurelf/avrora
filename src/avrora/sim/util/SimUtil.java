@@ -28,81 +28,55 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Sep 12, 2005
  */
 
-package jintgen.isdl;
+package avrora.sim.util;
 
-import cck.text.Printer;
-import jintgen.jigir.*;
-import java.util.List;
+import avrora.sim.Simulator;
+import avrora.sim.clock.Clock;
+import cck.text.StringUtil;
 
 /**
+ * The <code>SimUtil</code> class encapsulates a set of utility methods that are used in
+ * the simulation, including textual utilities, etc.
+ *
  * @author Ben L. Titzer
  */
-public class PrettyPrinter extends StmtVisitor.DepthFirst {
+public class SimUtil {
 
-    final Printer p;
-    private Architecture arch;
+    public static void toIDTimeString(StringBuffer buf, int id, Clock clk) {
+        buf.append(StringUtil.rightJustify(id, StringUtil.ID_LENGTH));
+        buf.append("  ");
 
-    PrettyPrinter(Architecture arch, Printer p) {
-        this.arch = arch;
-        this.p = p;
-    }
-
-    public void visitStmtList(List<Stmt> s) {
-        p.startblock();
-        if (s == null) {
-            p.println(" // empty body");
+        if ( StringUtil.REPORT_SECONDS ) {
+            StringBuffer buf2 = new StringBuffer(StringUtil.TIME_LENGTH +1);
+            long hz = clk.getHZ();
+            long count = clk.getCount();
+            long seconds = count / hz;
+            long fract = count % hz;
+            double f = (double)fract / hz;
+            StringUtil.appendSecs(buf2, seconds);
+            StringUtil.appendFract(buf2, f, StringUtil.SECONDS_PRECISION);
+            buf.append(StringUtil.rightJustify(buf2.toString(), StringUtil.TIME_LENGTH));
         } else {
-            for ( Stmt st : s ) st.accept(this);
-
+            buf.append(StringUtil.rightJustify(clk.getCount(), StringUtil.TIME_LENGTH));
         }
-        p.endblock();
+        buf.append("  ");
     }
 
-    public void visit(IfStmt s) {
-        p.print("if ( ");
-        p.print(s.cond.toString());
-        p.print(" ) ");
-        visitStmtList(s.trueBranch);
-        p.print("else ");
-        visitStmtList(s.falseBranch);
+    public static String toIDTimeString(int id, Clock clk) {
+        StringBuffer buf = new StringBuffer(40);
+        toIDTimeString(buf, id, clk);
+        return buf.toString();
     }
 
-    public void visit(CallStmt s) {
-        p.println(s.toString());
+    public static String getIDTimeString(Simulator s) {
+        return toIDTimeString(s.getID(), s.getClock());
     }
 
-    public void visit(DeclStmt s) {
-        p.println(s.toString());
+    public static void getIDTimeString(StringBuffer buf, Simulator s) {
+        toIDTimeString(buf, s.getID(), s.getClock());
     }
-
-    public void visit(MapAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(MapBitAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(MapBitRangeAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(ReturnStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(VarAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(VarBitAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(VarBitRangeAssignStmt s) {
-        p.println(s.toString());
-    }
-
 }

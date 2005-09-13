@@ -33,7 +33,8 @@
 package avrora.stack.isea;
 
 import avrora.core.*;
-import avrora.util.*;
+import cck.text.*;
+import cck.util.Util;
 import java.util.*;
 
 /**
@@ -176,7 +177,7 @@ public class ISEAnalyzer implements ISEInterpreter.SummaryCache {
 
     private String getBlockName(ControlFlowGraph.Block start) {
         int address = start.getAddress();
-        return "("+smap.getName(address)+": "+StringUtil.addrToString(address)+")";
+        return "("+smap.getName(address)+": "+ StringUtil.addrToString(address)+")";
     }
 
     public void analyze(int loc) {

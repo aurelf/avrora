@@ -36,7 +36,8 @@ import avrora.Defaults;
 import avrora.monitors.Monitor;
 import avrora.sim.Simulation;
 import avrora.sim.Simulator;
-import avrora.util.*;
+import cck.text.*;
+import cck.util.Util;
 import java.util.Iterator;
 
 /**

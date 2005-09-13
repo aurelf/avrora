@@ -33,8 +33,8 @@
 package avrora.syntax.objdump;
 
 import avrora.syntax.*;
-import avrora.util.StringUtil;
-import avrora.util.parser.AbstractToken;
+import cck.parser.AbstractToken;
+import cck.text.StringUtil;
 import java.util.HashMap;
 
 /**

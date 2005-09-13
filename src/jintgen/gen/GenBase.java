@@ -32,8 +32,8 @@
 
 package jintgen.gen;
 
-import avrora.util.Printer;
-import avrora.util.StringUtil;
+import cck.text.Printer;
+import cck.text.StringUtil;
 import jintgen.isdl.AddrModeDecl;
 import java.util.*;
 

@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.util.parser.AbstractParseException;
+import cck.parser.AbstractParseException;
 
 
 /**
@@ -51,7 +51,7 @@ public abstract class AbstractParser {
     /**
      * The <code>Module()</code> method causes the parser to begin parsing the module.
      *
-     * @throws avrora.util.parser.AbstractParseException if the program does not parse correctly
+     * @throws cck.parser.AbstractParseException if the program does not parse correctly
      */
     public abstract void Module() throws AbstractParseException;
 }

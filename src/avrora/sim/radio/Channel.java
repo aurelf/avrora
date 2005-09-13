@@ -32,7 +32,7 @@
 
 package avrora.sim.radio;
 
-import avrora.util.Arithmetic;
+import cck.util.Arithmetic;
 
 /**
  * The <code>Channel</code> class implements a serial channel that represents a communication

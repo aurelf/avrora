@@ -37,7 +37,9 @@ import avrora.arch.AbstractDisassembler;
 import avrora.arch.AbstractInstr;
 import avrora.arch.avr.AVRDisassembler;
 import avrora.arch.msp430.MSP430Disassembler;
-import avrora.util.*;
+import cck.text.StringUtil;
+import cck.text.Terminal;
+import cck.util.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -50,7 +52,7 @@ import java.io.IOException;
  */
 public class DisassembleAction extends Action {
 
-    Option.Str ARCH = options.newOption("arch", "avr", 
+    Option.Str ARCH = options.newOption("arch", "avr",
             "This option selects the architecture for the disassembler.");
     Option.Long MAX_LENGTH = options.newOption("max-length", 16,
             "This option specifies the maximum length of an instruction in bytes.");

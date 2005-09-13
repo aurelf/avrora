@@ -36,7 +36,7 @@ package avrora.arch.msp430;
 
 import avrora.sim.*;
 import avrora.sim.clock.MainClock;
-import avrora.util.Util;
+import cck.util.Util;
 
 /**
  * The <code>MSP430State</code> class represents an instance of the internal state of

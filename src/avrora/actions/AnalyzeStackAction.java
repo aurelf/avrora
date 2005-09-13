@@ -35,7 +35,7 @@ package avrora.actions;
 import avrora.Main;
 import avrora.core.Program;
 import avrora.stack.Analyzer;
-import avrora.util.Option;
+import cck.util.Option;
 
 /**
  * The <code>AnalyzeStackAction</code> class is an extension of the <code>Main.Action</code> class that allows

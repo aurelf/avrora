@@ -35,7 +35,7 @@ package avrora.test;
 import avrora.core.*;
 import avrora.syntax.Module;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
-import avrora.util.StringUtil;
+import cck.text.StringUtil;
 import java.util.Properties;
 
 /**
