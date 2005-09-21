@@ -56,7 +56,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(ConversionExpr e) {
         inner(e.expr, Expr.PREC_TERM);
-        printer.print(':' + e.typename.image);
+        printer.print(':' + e.typename.toString());
     }
 
     public void visit(VarExpr e) {
@@ -206,7 +206,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(DeclStmt s) {
-        printer.print(s.type.image + ' ' + getVariable(s.name) + " = ");
+        printer.print(s.type.toString() + ' ' + getVariable(s.name) + " = ");
         s.init.accept(this);
         printer.println(";");
     }

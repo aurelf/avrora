@@ -32,6 +32,8 @@
 
 package jintgen.jigir;
 
+import cck.parser.ProgramPoint;
+
 /**
  * The <code>Logical</code> class is a container for classes that represent expressions that produce booleans
  * in the IR. For example, the class <code>Logical.AndExpr</code> represents an expression that is the logical
@@ -100,16 +102,6 @@ public abstract class Logical extends Expr {
             return left.isConstantExpr() && right.isConstantExpr();
         }
 
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(ExprVisitor v) {
-            v.visit(this);
-        }
-
         public String toString() {
             return innerString(left) + ' ' + operation + ' ' + innerString(right);
         }
@@ -118,6 +110,9 @@ public abstract class Logical extends Expr {
             return precedence;
         }
 
+        public ProgramPoint getLocation() {
+            return new ProgramPoint(left.getLocation(), right.getLocation());
+        }
     }
 
     /**
@@ -152,22 +147,16 @@ public abstract class Logical extends Expr {
             return operand.isConstantExpr();
         }
 
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(ExprVisitor v) {
-            v.visit(this);
-        }
-
         public String toString() {
             return operation + innerString(operand);
         }
 
         public int getPrecedence() {
             return PREC_UN;
+        }
+
+        public ProgramPoint getLocation() {
+            return operand.getLocation();
         }
     }
 
@@ -190,7 +179,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -214,7 +203,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -238,7 +227,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -262,7 +251,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -286,7 +275,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -310,7 +299,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -335,7 +324,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -359,7 +348,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -384,7 +373,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -408,7 +397,7 @@ public abstract class Logical extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }

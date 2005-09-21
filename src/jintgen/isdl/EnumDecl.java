@@ -33,6 +33,7 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
+import jintgen.jigir.Type;
 
 /**
  * @author Ben L. Titzer
@@ -47,12 +48,12 @@ public class EnumDecl extends Item {
     }
 
     public static class Subset extends EnumDecl {
-        public final Token pname;
+        public final Type ptype;
         public EnumDecl parent;
 
-        public Subset(Token n, Token d, SymbolMapping m) {
+        public Subset(Token n, Type t, SymbolMapping m) {
             super(n, m);
-            pname = d;
+            ptype = t;
         }
 
         public void setParent(EnumDecl d) {

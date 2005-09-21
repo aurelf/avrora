@@ -33,6 +33,7 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
+import cck.parser.ProgramPoint;
 
 /**
  * The <code>DotExpr</code> class represents an access of a field of an operand
@@ -59,15 +60,6 @@ public class DotExpr extends Expr {
     }
 
     /**
-     * The <code>accept()</code> method implements half of the visitor pattern for expression visitors.
-     *
-     * @param v the visitor to accept
-     */
-    public void accept(ExprVisitor v) {
-        v.visit(this);
-    }
-
-    /**
      * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
      * traverse the syntax tree easily and in an extensible way.
      *
@@ -85,7 +77,7 @@ public class DotExpr extends Expr {
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+    public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
     }
 
@@ -99,4 +91,7 @@ public class DotExpr extends Expr {
         return PREC_TERM;
     }
 
+    public ProgramPoint getLocation() {
+        return new ProgramPoint(operand, field);
+    }
 }

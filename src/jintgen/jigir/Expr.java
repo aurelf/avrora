@@ -34,6 +34,7 @@ package jintgen.jigir;
 
 import cck.text.StringUtil;
 import cck.util.Util;
+import cck.parser.ProgramPoint;
 import jintgen.isdl.parser.Token;
 
 /**
@@ -58,6 +59,25 @@ public abstract class Expr {
     public static final int PREC_UN = 11;
     public static final int PREC_TERM = 12;
 
+    protected Type type;
+
+    /**
+     * The <code>getType()</code> method returns the type of this expression as computed by the
+     * TypeChecker.
+     * @return a reference to a <code>Type</code> object that represents the type of this expression.
+     */
+    public Type getType() {
+        return type;
+    }
+
+    /**
+     * The <code>setType()</code> method sets the type of this expression. This is meant to be called
+     * by the TypeChecker as it visits the program and computes the type of each expression.
+     * @param t the new type of this expression
+     */
+    public void setType(Type t) {
+        type = t;
+    }
 
     /**
      * The <code>isVariable()</code> method tests whether this expression is a single variable use.
@@ -147,15 +167,8 @@ public abstract class Expr {
      * @return the boolean value of the token if it exists
      */
     public static boolean tokenToBool(Token i) {
-        return Boolean.valueOf(i.image).booleanValue();
+        return Boolean.valueOf(i.image);
     }
-
-    /**
-     * The <code>accept()</code> method implements half of the visitor pattern for expression visitors.
-     *
-     * @param v the visitor to accept
-     */
-    public abstract void accept(ExprVisitor v);
 
     /**
      * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
@@ -170,10 +183,10 @@ public abstract class Expr {
      * expressions. This visitor allows code to be slightly modified while only writing visit methods for the
      * parts of the syntax tree affected.
      *
-     * @param r the rebuilder to accept
+     * @param r the accumulator to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public abstract <Env> Expr accept(CodeRebuilder<Env> r, Env env);
+    public abstract <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env);
 
     /**
      * The <code>innerString()</code> method is a utility to embed an expression in parentheses only if its
@@ -190,4 +203,12 @@ public abstract class Expr {
         else
             return e.toString();
     }
+
+    /**
+     * The <code>getLocation()</code> method returns a reference to a <code>ProgramPoint</code>
+     * instance that represents the location in the source program of this expression.
+     * @return a <code>ProgramPoint</code> instance that represents this expression in the
+     * source program
+     */
+    public abstract ProgramPoint getLocation();
 }

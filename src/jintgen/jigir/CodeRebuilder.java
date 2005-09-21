@@ -36,13 +36,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>CodeVisitor</code> interface represents a visitor that is more specific than the
+ * The <code>CodeRebuilder</code> interface represents a visitor that is more specific than the
  * <code>ExprVisitor</code> visitor, in that it contains visit methods for every type of arithmetic and
  * logical operation in the IR.
  *
  * @author Ben L. Titzer
  */
-public class CodeRebuilder<Env> {
+public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
 
     public Expr visit(Arith.AddExpr e, Env env) {
         Expr l = e.left.accept(this, env);
@@ -294,14 +294,4 @@ public class CodeRebuilder<Env> {
     }
 
 
-    /**
-     * The <code>DepthFirst</code> class is a base implementation of the <code>CodeVisitor</code> interface
-     * that visits the tree in depth-first order.
-     *
-     * @author Ben L. Titzer
-     */
-    public class DepthFirst<Env> extends CodeRebuilder<Env> {
-
-
-    }
 }

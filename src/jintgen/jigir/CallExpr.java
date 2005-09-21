@@ -33,6 +33,7 @@
 package jintgen.jigir;
 
 import cck.text.StringUtil;
+import cck.parser.ProgramPoint;
 import jintgen.isdl.parser.Token;
 import java.util.List;
 
@@ -86,16 +87,6 @@ public class CallExpr extends Expr {
      *
      * @param v the visitor to accept
      */
-    public void accept(ExprVisitor v) {
-        v.visit(this);
-    }
-
-    /**
-     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-     * traverse the syntax tree easily and in an extensible way.
-     *
-     * @param v the visitor to accept
-     */
     public void accept(CodeVisitor v) {
         v.visit(this);
     }
@@ -108,7 +99,7 @@ public class CallExpr extends Expr {
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+    public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
     }
 
@@ -133,5 +124,9 @@ public class CallExpr extends Expr {
      */
     public int getPrecedence() {
         return PREC_TERM;
+    }
+
+    public ProgramPoint getLocation() {
+        return new ProgramPoint(method);
     }
 }

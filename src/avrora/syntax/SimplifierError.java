@@ -59,7 +59,7 @@ public class SimplifierError extends Util.Error {
     public void report() {
         Terminal.printRed(point.file);
         Terminal.print(" ");
-        Terminal.printBrightBlue(point.line + ":" + point.beginColumn);
+        Terminal.printBrightBlue(point.beginLine + ":" + point.beginColumn);
         Terminal.print(": ");
         if (CLASSES)
             Terminal.print(errclass + ": ");

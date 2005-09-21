@@ -32,6 +32,9 @@
 
 package jintgen.jigir;
 
+import cck.parser.ProgramPoint;
+import cck.util.Util;
+
 /**
  * The <code>Arith</code> class is a container for classes that represent integer arithmetic in the IR. For
  * example, the class <code>Arith.AddExpr</code> represents an expression that is the addition of two
@@ -100,16 +103,6 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(ExprVisitor v) {
-            v.visit(this);
-        }
-
-        /**
          * The <code>toString()</code> method recursively converts this expression to a string. For binary
          * operations, inner expressions will be nested within parentheses if their precedence is lower than
          * the precedence of the parent expression.
@@ -130,6 +123,10 @@ public abstract class Arith extends Expr {
          */
         public int getPrecedence() {
             return precedence;
+        }
+
+        public ProgramPoint getLocation() {
+            return new ProgramPoint(left.getLocation(), right.getLocation());
         }
     }
 
@@ -173,16 +170,6 @@ public abstract class Arith extends Expr {
         }
 
         /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(ExprVisitor v) {
-            v.visit(this);
-        }
-
-        /**
          * The <code>toString()</code> method recursively converts this expression to a string. For binary
          * operations, inner expressions will be nested within parentheses if their precedence is lower than
          * the precedence of the parent expression.
@@ -203,6 +190,10 @@ public abstract class Arith extends Expr {
          */
         public int getPrecedence() {
             return PREC_UN;
+        }
+
+        public ProgramPoint getLocation() {
+            return operand.getLocation();
         }
     }
 
@@ -233,7 +224,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -265,7 +256,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -297,7 +288,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -329,7 +320,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -361,7 +352,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -393,7 +384,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -425,7 +416,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -457,7 +448,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -489,7 +480,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -521,7 +512,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }
@@ -553,7 +544,7 @@ public abstract class Arith extends Expr {
          * @param r the rebuilder to accept
          * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
          */
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
     }

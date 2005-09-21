@@ -87,9 +87,9 @@ public class Verifier {
     private void verifyEnum(EnumDecl ed) {
         if (ed instanceof EnumDecl.Subset) {
             EnumDecl.Subset dd = (EnumDecl.Subset)ed;
-            EnumDecl parent = arch.getEnum(dd.pname.image);
+            EnumDecl parent = arch.getEnum(dd.ptype.getBaseName());
             if ( parent == null )
-                ERROR.UnresolvedEnum(dd.pname);
+                ERROR.UnresolvedEnum(dd.ptype.getBaseType());
             dd.setParent(parent);
         }
     }

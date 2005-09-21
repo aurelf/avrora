@@ -98,19 +98,19 @@ public class InterpreterGenerator extends Generator {
 
     public void visit(SubroutineDecl d) {
         if ( !d.code.hasBody()) {
-            print("protected abstract " + d.ret.image + ' ' + d.name.image);
+            print("protected abstract " + d.ret.getJavaType() + ' ' + d.name.image);
             beginList("(");
             for (SubroutineDecl.Parameter p : d.getParams()) {
-                print(p.type.image + ' ' + p.name.image);
+                print(p.type.getJavaType() + ' ' + p.name.image);
             }
             endListln(");");
             return;
         }
         if (d.inline) return;
-        print("public " + d.ret.image + ' ' + d.name.image);
+        print("public " + d.ret.getJavaType() + ' ' + d.name.image);
         beginList("(");
         for (SubroutineDecl.Parameter p : d.getParams()) {
-            print(p.type.image + ' ' + p.name.image);
+            print(p.type.getJavaType() + ' ' + p.name.image);
         }
         endList(") ");
         startblock();
@@ -369,7 +369,7 @@ public class InterpreterGenerator extends Generator {
         }
 
         public void visit(ConversionExpr e) {
-            print("("+e.typename.image+")");
+            print("("+e.typename.getJavaType()+")");
             inner(e.expr, Expr.PREC_TERM);
         }
 

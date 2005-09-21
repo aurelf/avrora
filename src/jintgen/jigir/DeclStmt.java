@@ -33,6 +33,7 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
+import cck.util.Util;
 
 /**
  * The <code>DeclStmt</code> represents a declaration of a local, temporary value in the IR. A named temporary
@@ -50,7 +51,7 @@ public class DeclStmt extends Stmt {
     /**
      * The <code>type</code> field stores a reference to a token representing the type of the local.
      */
-    public final Token type;
+    public final Type type;
 
     /**
      * The <code>init</code> field stores a reference to the expression which is evaluated to give an initial
@@ -66,7 +67,7 @@ public class DeclStmt extends Stmt {
      * @param t the type of the local as a token
      * @param i a reference to the expression evaluated to give the local an initial value
      */
-    public DeclStmt(Token n, Token t, Expr i) {
+    public DeclStmt(Token n, Type t, Expr i) {
         name = n;
         type = t;
         init = i;
@@ -80,7 +81,7 @@ public class DeclStmt extends Stmt {
      * @param t the type of the local as a token
      * @param i a reference to the expression evaluated to give the local an initial value
      */
-    public DeclStmt(String n, Token t, Expr i) {
+    public DeclStmt(String n, Type t, Expr i) {
         name = new Token();
         name.image = n;
         type = t;
@@ -98,9 +99,9 @@ public class DeclStmt extends Stmt {
     public DeclStmt(String n, String t, Expr i) {
         name = new Token();
         name.image = n;
-        type = new Token();
-        type.image = t;
-        init = i;
+        throw Util.unimplemented();
+//        type = new Type(null, null, null);
+//        init = i;
     }
 
     /**
@@ -119,7 +120,7 @@ public class DeclStmt extends Stmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return "local " + name.image + " : " + type.image + " = " + init.toString() + ';';
+        return "local " + name.image + " : " + type + " = " + init.toString() + ';';
     }
 
     /**

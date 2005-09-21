@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import cck.text.StringUtil;
-import jintgen.isdl.parser.Token;
+import cck.parser.ProgramPoint;
 
 /**
  * The <code>MapExpr</code> class represents an expression that is an access of an element within a map.
@@ -46,7 +46,7 @@ public class ConversionExpr extends Expr {
      * The <code>typename</code> field stores a reference to the name of the map whose element is being
      * accessed.
      */
-    public final Token typename;
+    public final Type typename;
 
     /**
      * The <code>expr</code> field stores a references to the expression which is evaluated to yield the expr
@@ -61,32 +61,9 @@ public class ConversionExpr extends Expr {
      * @param s the string name of the map as a token
      * @param i an expression representing the expr into the map
      */
-    public ConversionExpr(Expr i, Token s) {
+    public ConversionExpr(Expr i, Type s) {
         typename = s;
         expr = i;
-    }
-
-    /**
-     * The constructor of the <code>MapExpr</code> class initializes the publicly accessable fields that
-     * represent the members of this expression
-     *
-     * @param s the string name of the map as a token
-     * @param i an expression representing the expr into the map
-     */
-    public ConversionExpr(Expr i, String s) {
-        typename = new Token();
-        typename.image = s;
-        expr = i;
-    }
-
-    /**
-     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-     * traverse the syntax tree easily and in an extensible way.
-     *
-     * @param v the visitor to accept
-     */
-    public void accept(ExprVisitor v) {
-        v.visit(this);
     }
 
     /**
@@ -107,7 +84,7 @@ public class ConversionExpr extends Expr {
      * @param r the rebuilder to accept
      * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
      */
-    public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+    public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
     }
 
@@ -143,5 +120,9 @@ public class ConversionExpr extends Expr {
      */
     public boolean isMap() {
         return true;
+    }
+
+    public ProgramPoint getLocation() {
+        return expr.getLocation();
     }
 }

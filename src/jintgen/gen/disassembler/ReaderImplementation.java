@@ -242,7 +242,7 @@ class ReaderImplementation extends GenBase {
         String getEnumType(OperandTypeDecl ot) {
             if ( ot.isValue() ) {
                 OperandTypeDecl.Value vt = (OperandTypeDecl.Value)ot;
-                EnumDecl ed = dGen.arch.getEnum(vt.kind.image);
+                EnumDecl ed = dGen.arch.getEnum(vt.kind.getBaseName());
                 if ( ed != null ) return ed.name.image;
                 return null;
             }

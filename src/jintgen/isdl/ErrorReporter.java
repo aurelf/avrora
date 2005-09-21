@@ -35,8 +35,7 @@ package jintgen.isdl;
 import cck.text.StringUtil;
 import cck.util.Util;
 import jintgen.isdl.parser.Token;
-import jintgen.jigir.Expr;
-import jintgen.jigir.Literal;
+import jintgen.jigir.*;
 
 /**
  * @author Ben L. Titzer
@@ -127,6 +126,10 @@ public class ErrorReporter {
 
     public void CannotComputeSizeOfLiteral(Literal l) {
         throw Util.failure("Cannot compute size of literal "+StringUtil.quote(l)+" at "+pos(l.token));
+    }
+
+    public void TypeMismatch(String what, Type exp, Type got) {
+        throw Util.failure("Type mismatch in "+what+": expected "+exp+", found "+got);
     }
 
     void redefined(String thing, Token where) {

@@ -3,80 +3,163 @@ package jintgen.isdl.parser;
 
 public interface ISDLParserConstants {
 
-    int EOF = 0;
-    int SINGLE_LINE_COMMENT = 9;
-    int FORMAL_COMMENT = 10;
-    int MULTI_LINE_COMMENT = 11;
-    int INTEGER_LITERAL = 13;
-    int DECIMAL_LITERAL = 14;
-    int HEX_LITERAL = 15;
-    int BIN_LITERAL = 16;
-    int OCTAL_LITERAL = 17;
-    int STRING_LITERAL = 18;
-    int INSTRUCTION = 19;
-    int ARCHITECTURE = 20;
-    int FORMAT = 21;
-    int ENUM = 22;
-    int ENUM_SUB = 23;
-    int OPERAND_TYPE = 24;
-    int ADDR_MODE = 25;
-    int ADDR_SET = 26;
-    int READ = 27;
-    int WRITE = 28;
-    int WHERE = 29;
-    int PRIORITY = 30;
-    int ENCODING = 31;
-    int EXECUTE = 32;
-    int LOCAL = 33;
-    int GLOBAL = 34;
-    int MEMORY = 35;
-    int IF = 36;
-    int ELSE = 37;
-    int AND = 38;
-    int OR = 39;
-    int XOR = 40;
-    int SUBROUTINE = 41;
-    int INLINE = 42;
-    int EXTERNAL = 43;
-    int RETURN = 44;
-    int BOOLEAN_LITERAL = 45;
-    int PSEUDO = 46;
-    int WHEN = 47;
-    int PROPERTY = 48;
-    int LBRACKET = 49;
-    int RBRACKET = 50;
-    int EQUALS = 51;
-    int COMMA = 52;
-    int LPAREN = 53;
-    int RPAREN = 54;
-    int SEMI = 55;
-    int SHIFTLEFT = 56;
-    int SHIFTRIGHT = 57;
-    int ADD = 58;
-    int SUB = 59;
-    int MUL = 60;
-    int DIV = 61;
-    int B_AND = 62;
-    int B_OR = 63;
-    int B_XOR = 64;
-    int NOT = 65;
-    int B_COMP = 66;
-    int EQUAL = 67;
-    int NOTEQUAL = 68;
-    int LESS = 69;
-    int LESSEQ = 70;
-    int GREATER = 71;
-    int GREATEREQ = 72;
-    int DOLLAR = 73;
-    int IDENTIFIER = 74;
-    int LETTER = 75;
-    int DIGIT = 76;
+  int EOF = 0;
+  int SINGLE_LINE_COMMENT = 9;
+  int FORMAL_COMMENT = 10;
+  int MULTI_LINE_COMMENT = 11;
+  int INTEGER_LITERAL = 13;
+  int DECIMAL_LITERAL = 14;
+  int HEX_LITERAL = 15;
+  int BIN_LITERAL = 16;
+  int OCTAL_LITERAL = 17;
+  int STRING_LITERAL = 18;
+  int INSTRUCTION = 19;
+  int ARCHITECTURE = 20;
+  int FORMAT = 21;
+  int ENUM = 22;
+  int ENUM_SUB = 23;
+  int OPERAND_TYPE = 24;
+  int ADDR_MODE = 25;
+  int ADDR_SET = 26;
+  int READ = 27;
+  int WRITE = 28;
+  int WHERE = 29;
+  int PRIORITY = 30;
+  int ENCODING = 31;
+  int EXECUTE = 32;
+  int LOCAL = 33;
+  int GLOBAL = 34;
+  int MEMORY = 35;
+  int IF = 36;
+  int ELSE = 37;
+  int AND = 38;
+  int OR = 39;
+  int XOR = 40;
+  int SUBROUTINE = 41;
+  int INLINE = 42;
+  int EXTERNAL = 43;
+  int RETURN = 44;
+  int BOOLEAN_LITERAL = 45;
+  int PSEUDO = 46;
+  int WHEN = 47;
+  int PROPERTY = 48;
+  int LBRACKET = 49;
+  int RBRACKET = 50;
+  int EQUALS = 51;
+  int COMMA = 52;
+  int LPAREN = 53;
+  int RPAREN = 54;
+  int SEMI = 55;
+  int SHIFTLEFT = 56;
+  int SHIFTRIGHT = 57;
+  int ADD = 58;
+  int SUB = 59;
+  int MUL = 60;
+  int DIV = 61;
+  int B_AND = 62;
+  int B_OR = 63;
+  int B_XOR = 64;
+  int NOT = 65;
+  int B_COMP = 66;
+  int EQUAL = 67;
+  int NOTEQUAL = 68;
+  int LESS = 69;
+  int LESSEQ = 70;
+  int GREATER = 71;
+  int GREATEREQ = 72;
+  int DOLLAR = 73;
+  int IDENTIFIER = 74;
+  int LETTER = 75;
+  int DIGIT = 76;
 
-    int DEFAULT = 0;
-    int IN_SINGLE_LINE_COMMENT = 1;
-    int IN_FORMAL_COMMENT = 2;
-    int IN_MULTI_LINE_COMMENT = 3;
+  int DEFAULT = 0;
+  int IN_SINGLE_LINE_COMMENT = 1;
+  int IN_FORMAL_COMMENT = 2;
+  int IN_MULTI_LINE_COMMENT = 3;
 
-    String[] tokenImage = {"<EOF>", "\" \"", "\"\\t\"", "\"\\n\"", "\"\\r\"", "\"\\f\"", "\"//\"", "<token of kind 7>", "\"/*\"", "<SINGLE_LINE_COMMENT>", "\"*/\"", "\"*/\"", "<token of kind 12>", "<INTEGER_LITERAL>", "<DECIMAL_LITERAL>", "<HEX_LITERAL>", "<BIN_LITERAL>", "<OCTAL_LITERAL>", "<STRING_LITERAL>", "\"instruction\"", "\"architecture\"", "\"format\"", "\"enum\"", "\"enum-subset\"", "\"operand-type\"", "\"addr-mode\"", "\"addr-set\"", "\"read\"", "\"write\"", "\"where\"", "\"priority\"", "\"encoding\"", "\"execute\"", "\"local\"", "\"global\"", "\"memory\"", "\"if\"", "\"else\"", "\"and\"", "\"or\"", "\"xor\"", "\"subroutine\"", "\"inline\"", "\"external\"", "\"return\"", "<BOOLEAN_LITERAL>", "\"pseudo\"", "\"when\"", "\"property\"", "\"{\"", "\"}\"", "\"=\"", "\",\"", "\"(\"", "\")\"", "\";\"", "\"<<\"", "\">>\"", "\"+\"", "\"-\"", "\"*\"", "\"/\"", "\"&\"", "\"|\"", "\"^\"", "\"!\"", "\"~\"", "\"==\"", "\"!=\"", "\"<\"", "\"<=\"", "\">\"", "\">=\"", "\"$\"", "<IDENTIFIER>", "<LETTER>", "<DIGIT>", "\":\"", "\"[\"", "\"]\"", "\"sub-operand\"", "\".\"", };
+  String[] tokenImage = {
+    "<EOF>",
+    "\" \"",
+    "\"\\t\"",
+    "\"\\n\"",
+    "\"\\r\"",
+    "\"\\f\"",
+    "\"//\"",
+    "<token of kind 7>",
+    "\"/*\"",
+    "<SINGLE_LINE_COMMENT>",
+    "\"*/\"",
+    "\"*/\"",
+    "<token of kind 12>",
+    "<INTEGER_LITERAL>",
+    "<DECIMAL_LITERAL>",
+    "<HEX_LITERAL>",
+    "<BIN_LITERAL>",
+    "<OCTAL_LITERAL>",
+    "<STRING_LITERAL>",
+    "\"instruction\"",
+    "\"architecture\"",
+    "\"format\"",
+    "\"enum\"",
+    "\"enum-subset\"",
+    "\"operand-type\"",
+    "\"addr-mode\"",
+    "\"addr-set\"",
+    "\"read\"",
+    "\"write\"",
+    "\"where\"",
+    "\"priority\"",
+    "\"encoding\"",
+    "\"execute\"",
+    "\"local\"",
+    "\"global\"",
+    "\"memory\"",
+    "\"if\"",
+    "\"else\"",
+    "\"and\"",
+    "\"or\"",
+    "\"xor\"",
+    "\"subroutine\"",
+    "\"inline\"",
+    "\"external\"",
+    "\"return\"",
+    "<BOOLEAN_LITERAL>",
+    "\"pseudo\"",
+    "\"when\"",
+    "\"property\"",
+    "\"{\"",
+    "\"}\"",
+    "\"=\"",
+    "\",\"",
+    "\"(\"",
+    "\")\"",
+    "\";\"",
+    "\"<<\"",
+    "\">>\"",
+    "\"+\"",
+    "\"-\"",
+    "\"*\"",
+    "\"/\"",
+    "\"&\"",
+    "\"|\"",
+    "\"^\"",
+    "\"!\"",
+    "\"~\"",
+    "\"==\"",
+    "\"!=\"",
+    "\"<\"",
+    "\"<=\"",
+    "\">\"",
+    "\">=\"",
+    "\"$\"",
+    "<IDENTIFIER>",
+    "<LETTER>",
+    "<DIGIT>",
+    "\":\"",
+    "\"[\"",
+    "\"]\"",
+    "\"sub-operand\"",
+    "\".\"",
+  };
 
 }

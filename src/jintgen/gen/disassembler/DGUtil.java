@@ -304,9 +304,9 @@ public class DGUtil {
     }
 
     public static void addProperty(Property p, ConstantPropagator.Environ ce) {
-        if ( p.type.image.equals("int") ) {
+        if ( p.type.isBasedOn("int") ) {
             ce.put(p.name.image, new Literal.IntExpr(p.value));
-        } else if ( p.type.image.equals("boolean") ) {
+        } else if ( p.type.isBasedOn("boolean") ) {
             ce.put(p.name.image, new Literal.BoolExpr(p.value));
         }
     }

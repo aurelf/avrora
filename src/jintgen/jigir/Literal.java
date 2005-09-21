@@ -33,6 +33,7 @@
 package jintgen.jigir;
 
 import cck.util.Util;
+import cck.parser.ProgramPoint;
 import jintgen.isdl.parser.Token;
 
 /**
@@ -63,18 +64,12 @@ public abstract class Literal extends Expr {
         return true;
     }
 
-    /**
-     * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors can
-     * traverse the syntax tree easily and in an extensible way.
-     *
-     * @param v the visitor to accept
-     */
-    public void accept(ExprVisitor v) {
-        v.visit(this);
-    }
-
     public Literal(Token t) {
         token = t;
+    }
+
+    public ProgramPoint getLocation() {
+        return new ProgramPoint(token);
     }
 
     /**
@@ -138,7 +133,7 @@ public abstract class Literal extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
 
@@ -196,7 +191,7 @@ public abstract class Literal extends Expr {
             v.visit(this);
         }
 
-        public <Env> Expr accept(CodeRebuilder<Env> r, Env env) {
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
             return r.visit(this, env);
         }
 

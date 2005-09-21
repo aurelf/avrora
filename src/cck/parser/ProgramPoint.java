@@ -41,18 +41,44 @@ package cck.parser;
  */
 public class ProgramPoint {
     public final String file;
-    public final int line;
+    public final int beginLine;
+    public final int endLine;
     public final int beginColumn;
     public final int endColumn;
 
     public ProgramPoint(String m, int l, int bc, int ec) {
         file = (m == null) ? "(unknown)" : m;
-        line = l;
+        beginLine = l;
+        endLine = l;
         beginColumn = bc;
         endColumn = ec;
     }
 
+    public ProgramPoint(ProgramPoint l, ProgramPoint r) {
+        file = l.file;
+        beginLine = l.beginLine;
+        beginColumn = l.beginColumn;
+        endColumn = r.endColumn;
+        endLine = r.endLine;
+    }
+
+    public ProgramPoint(AbstractToken t) {
+        file = t.file;
+        beginLine = t.beginLine;
+        beginColumn = t.beginColumn;
+        endLine = t.endLine;
+        endColumn = t.endColumn;
+    }
+
+    public ProgramPoint(AbstractToken l, AbstractToken r) {
+        file = l.file;
+        beginLine = l.beginLine;
+        beginColumn = l.beginColumn;
+        endLine = r.endLine;
+        endColumn = r.endColumn;
+    }
+
     public String toString() {
-        return file + ' ' + line + ':' + beginColumn;
+        return file + ' ' + beginLine + ':' + beginColumn;
     }
 }

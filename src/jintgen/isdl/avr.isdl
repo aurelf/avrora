@@ -18,14 +18,14 @@ architecture avr {
 //---------------------------------------------------------------------------
 //  STATE USED IN THE SIMULATION
 //---------------------------------------------------------------------------
-    memory $regs(GPR): byte;   // a "view" of the registers as bytes
-    memory $uregs(GPR): int;   // a "view" of the registers as unsigned
-    memory $wregs(GPR): int;   // a "view" of the registers as words
-    memory $aregs(ADR): int;   // a "view" of the address registers
-    memory $sram(int): byte;   // a "view" of the memory as bytes
-    memory $ioregs(int): byte; // a "view" of the memory as bytes
-    memory $flash(int): byte;  // the flash (program) memory
-    memory $isize(int): int;   // size of instruction (used in skip)
+    memory $regs(GPR): int.8;   // a "view" of the registers as bytes
+    memory $uregs(GPR): +int.8;   // a "view" of the registers as unsigned
+    memory $wregs(GPR): +int.16;   // a "view" of the registers as words
+    memory $aregs(ADR): +int.16;   // a "view" of the address registers
+    memory $sram(int): int.8;   // a "view" of the memory as bytes
+    memory $ioregs(int): int.8; // a "view" of the memory as bytes
+    memory $flash(int): int.8;  // the flash (program) memory
+    memory $isize(int): +int.16;   // size of instruction (used in skip)
 
     global I: boolean;         // global interrupts enabled flag
     global T: boolean;         // global T flag
@@ -89,33 +89,33 @@ architecture avr {
     }
 
     operand-type GPR[5]: GPR { // all of the general purpose registers
-        read: byte { return $regs(this); }
-        write: byte { $regs(this) = value; }
+        read: int.8 { return $regs(this); }
+        write: int.8 { $regs(this) = value; }
     }
 
     operand-type HGPR[4]: HGPR { // the "high" general purpose registers
-        read: byte { return $regs(this); }
-        write: byte { $regs(this) = value; }
+        read: int.8 { return $regs(this); }
+        write: int.8 { $regs(this) = value; }
     }
 
     operand-type MGPR[3]: MGPR { // the "mid-range" general purpose registers
-        read: byte { return $regs(this); }
-        write: byte { $regs(this) = value; }
+        read: int.8 { return $regs(this); }
+        write: int.8 { $regs(this) = value; }
     }
 
     operand-type YZ[1]: YZ { // either the Y or Z address registers
-        read: int { return $aregs(this); }
-        write: int { $aregs(this) = value; }
+        read: +int.16 { return $aregs(this); }
+        write: +int.16 { $aregs(this) = value; }
     }
 
     operand-type EGPR[4]: EGPR { // an "even" general purpose register
-        read: byte { return $regs(this); }
-        write: byte { $regs(this) = value; }
+        read: int.8 { return $regs(this); }
+        write: int.8 { $regs(this) = value; }
     }
 
     operand-type RDL[2]: RDL { // a word register r24:r25, r26:r27, etc
-        read: int { return $regs(this); }
-        write: int { $regs(this) = value; }
+        read: +int.16 { return $regs(this); }
+        write: +int.16 { $regs(this) = value; }
     }
 
     operand-type IMM3[3]: immediate [0, 7];
@@ -168,10 +168,10 @@ architecture avr {
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
-    inline subroutine performAddition(r1: int, r2: int, carry: int): byte {
-        local result: int = r1 + r2 + carry;
-        local ral: int = r1[3:0];
-        local rbl: int = r2[3:0];
+    inline subroutine performAddition(r1: int.8, r2: int.8, carry: int.1): int.8 {
+        local result: int.9 = r1 + r2 + carry;
+        local ral: +int.4 = r1[3:0];
+        local rbl: +int.4 = r2[3:0];
 
         local Rd7: boolean = r1[7];
         local Rr7: boolean = r2[7];
@@ -188,8 +188,8 @@ architecture avr {
         return low(result);
     }
 
-    inline subroutine performSubtraction(r1: int, r2: int, carry: int): byte {
-        local result: int = r1 - r2 - carry;
+    inline subroutine performSubtraction(r1: int.8, r2: int.8, carry: int.1): int.8 {
+        local result: int.9 = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
         local Rr7: boolean = r2[7];
@@ -210,7 +210,7 @@ architecture avr {
     }
 
     // perform subtraction, but preserve zero flag if result is zero
-    inline subroutine performSubtractionPZ(r1: int, r2: int, carry: int): byte {
+    inline subroutine performSubtractionPZ(r1: int.8, r2: int.8, carry: int.1): int.8 {
         local result: int = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
@@ -231,8 +231,8 @@ architecture avr {
         return low(result);
     }
 
-    inline subroutine performLeftShift(r1: int, lowbit: boolean): byte {
-        local result: int = r1 << 1;
+    inline subroutine performLeftShift(r1: int.8, lowbit: boolean): int.8 {
+        local result: int.9 = r1 << 1;
         result[0] = lowbit;
 
         H = result[4];
@@ -245,8 +245,8 @@ architecture avr {
         return low(result);
     }
 
-    inline subroutine performRightShift(r1: int, highbit: boolean): byte {
-        local result: int = ((r1 & 0xff) >> 1);
+    inline subroutine performRightShift(r1: int.8, highbit: boolean): int.8 {
+        local result: int.8 = ((r1 & 0xff) >> 1);
         result[7] = highbit;
 
         C = r1[0];
@@ -258,8 +258,8 @@ architecture avr {
         return low(result);
     }
 
-    inline subroutine performOr(r1: int, r2: int): byte {
-        local result: int = r1 | r2;
+    inline subroutine performOr(r1: int.8, r2: int.8): int.8 {
+        local result: int.8 = r1 | r2;
 
         N = result[7];
         Z = low(result) == 0;
@@ -269,8 +269,8 @@ architecture avr {
         return low(result);
     }
 
-    inline subroutine performAnd(r1: int, r2: int): byte {
-        local result: int = r1 & r2;
+    inline subroutine performAnd(r1: int.8, r2: int.8): int.8 {
+        local result: int.8 = r1 & r2;
 
         N = result[7];
         Z = low(result) == 0;
@@ -300,15 +300,15 @@ architecture avr {
         else cycles = cycles + 1;
     }
 
-    inline subroutine pushPC(npc: int): void {
+    inline subroutine pushPC(npc: +int.17): void {
         npc = npc / 2;
         pushByte(low(npc));
         pushByte(high(npc));
     }
 
-    inline subroutine popPC(): int {
-        local high: byte = popByte();
-        local low: byte = popByte();
+    inline subroutine popPC(): +int.17 {
+        local high: int.8 = popByte();
+        local low: int.8 = popByte();
         return uword(low, high) * 2;
     }
 
@@ -320,26 +320,26 @@ architecture avr {
         return $regs(r)[7:0];
     }
 
-    inline subroutine set_wreg(r: Register, v: int): void {
+    inline subroutine set_wreg(r: Register, v: int.16): void {
         $regs(r) = low(v);
         $regs(r+1) = high(v);
     }
 
-    inline subroutine low(v: int): byte {
-        return v:byte;
+    inline subroutine low(v: int): int.8 {
+        return v:int.8;
     }
 
-    inline subroutine high(v: int): byte {
-        return (v >> 8):byte;
+    inline subroutine high(v: int): int.8 {
+        return (v >> 8):int.8;
     }
 
-    inline subroutine uword(low: byte, high: byte): int {
+    inline subroutine uword(low: int.8, high: int.8): int {
         return ((high << 8) | low)[15:0];
     }
 
     external subroutine bit(b: boolean): int;
-    external subroutine popByte(): byte;
-    external subroutine pushByte(b: byte): void;
+    external subroutine popByte(): int.8;
+    external subroutine pushByte(b: int.8): void;
     external subroutine extended(addr: int): int;
     external subroutine enableInterrupts(): void;
     external subroutine disableInterrupts(): void;
@@ -371,10 +371,10 @@ architecture avr {
         encoding = { 0b10010110, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
-            local r1: int       = $wregs(rd);
-            local result: int   = r1 + imm;
-            local R15: boolean  = result[15];
-            local Rdh7: boolean = r1[15];
+            local r1: int.16     = $wregs(rd);
+            local result: int.17 = r1 + imm;
+            local R15: boolean   = result[15];
+            local Rdh7: boolean  = r1[15];
 
             C = (!R15 and Rdh7);
             N = (R15);
@@ -407,7 +407,7 @@ architecture avr {
         property ext: int = 0b0101;
         property cycles: int = 1;
         execute {
-            local r1: byte = $regs(rd);
+            local r1: int.8 = $regs(rd);
             $regs(rd) = performRightShift(r1, r1[7]);
         }
     }
@@ -793,8 +793,8 @@ architecture avr {
         property opcode: int = 0b000100;
         property cycles: int = 1;
         execute {
-            local r1: int = $regs(rd);
-            local r2: int = $regs(rr);
+            local r1: int.8 = $regs(rd);
+            local r2: int.8 = $regs(rr);
             // perform subtraction for flag side effects.
             performSubtraction(r1, r2, 0);
             if (r1 == r2) skip();
@@ -806,8 +806,8 @@ architecture avr {
         property ext: int = 0b1010;
         property cycles: int = 1;
         execute {
-            local r1: int = $uregs(rd);
-            local result: byte = low(r1 - 1);
+            local r1: +int.8 = $uregs(rd);
+            local result: +int.8 = low(r1 - 1);
 
             N = result[7];
             Z = result == 0;
@@ -838,7 +838,7 @@ architecture avr {
         property opcode: int = 0b001001;
         property cycles: int = 1;
         execute {
-            local result: byte = low($regs(rd) ^ $regs(rr));
+            local result: int.8 = low($regs(rd) ^ $regs(rr));
 
             N = result[7];
             Z = result == 0;
@@ -853,7 +853,7 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 0, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int = ($uregs(rd) * $uregs(rr)) << 1;
+            local result: int.17 = ($uregs(rd) * $uregs(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
             $regs(R0) = low(result);
@@ -865,7 +865,7 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 0, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int = ($regs(rd) * $regs(rr)) << 1;
+            local result: int.17 = ($regs(rd) * $regs(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
             $regs(R0) = low(result);
@@ -877,7 +877,7 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int = ($regs(rd) * $uregs(rr)) << 1;
+            local result: int.17 = ($regs(rd) * $uregs(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
             $regs(R0) = low(result);
@@ -915,8 +915,8 @@ architecture avr {
         property ext: int = 0b0011;
         property cycles: int = 1;
         execute {
-            local r1: int = $uregs(rd);
-            local result: byte = low(r1 + 1);
+            local r1: +int.8 = $uregs(rd);
+            local result: +int.8 = low(r1 + 1);
 
             N = result[7];
             Z = result == 0;
@@ -999,7 +999,7 @@ architecture avr {
         property opcode: int = 0b100111;
         property cycles: int = 2;
         execute {
-            local result: int = $uregs(rd) * $uregs(rr);
+            local result: +int.16 = $uregs(rd) * $uregs(rr);
             C = result[15];
             Z = (result[15:0] == 0);
             $wregs(R0) = result;
@@ -1010,7 +1010,7 @@ architecture avr {
         encoding = { 0b00000010, rd[3:0], rr[3:0] }
         property cycles: int = 2;
         execute {
-            local result: int = $regs(rd) * $regs(rr);
+            local result: -int.16 = $regs(rd) * $regs(rr);
             C = result[15];
             Z = (result[15:0] == 0);
             $wregs(R0) = result;
@@ -1021,7 +1021,7 @@ architecture avr {
         encoding = { 0b00000011, 0b0, rd[2:0], 0b0, rr[2:0] }
         property cycles: int = 2;
         execute {
-            local result: int = $regs(rd) * $uregs(rr);
+            local result: -int.16 = $regs(rd) * $uregs(rr);
             C = result[15];
             Z = (result[15:0] == 0);
             $wregs(R0) = result;
@@ -1186,8 +1186,8 @@ architecture avr {
         encoding = { 0b10010111, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
-            local val: int = $wregs(rd);
-            local result: int = val - imm;
+            local val: +int.16 = $wregs(rd);
+            local result: -int.16 = val - imm;
 
             local Rdh7: boolean = val[15];
             local R15: boolean = result[15];
@@ -1353,8 +1353,8 @@ architecture avr {
         property ext: int = 0b0010;
         property cycles: int = 1;
         execute {
-            local val: int = $uregs(rd);
-            local result: int = 0;
+            local val: +int.8 = $uregs(rd);
+            local result: +int.8 = 0;
             result[3:0] = val[7:4];
             result[7:4] = val[3:0];
             $regs(rd) = low(result);
@@ -1367,7 +1367,7 @@ architecture avr {
         property opcode: int = 0b001000;
         property cycles: int = 1;
         execute {
-            local r1: int = $regs(rd);
+            local r1: int.8 = $regs(rd);
             V = false;
             Z = low(r1) == 0;
             N = r1[7];
@@ -1396,8 +1396,8 @@ architecture avr {
     }
 
     operand-type R0_B[0]: R0 {
-        read: byte { return $regs(r0); }
-        write: byte { $regs(r0) = value; }
+        read: int.8 { return $regs(r0); }
+        write: int.8 { $regs(r0) = value; }
     }
 
     operand-type RZ_W[0]: RZ {
@@ -1433,7 +1433,7 @@ architecture avr {
 
     operand-type XYZ[0]: ADR { // simply read from X, Y, or Z
         read: int { return $aregs(this); }
-        write: byte { }
+        write: int.8 { }
     }
 
     operand-type AI_XYZ[0]: ADR { // read from X, Y, or Z and post increment
@@ -1442,7 +1442,7 @@ architecture avr {
             $aregs(this) = tmp + 1;
             return tmp;
         }
-        write: byte { }
+        write: int.8 { }
     }
 
     operand-type PD_XYZ[0]: ADR { // read from X, Y, or Z with predecrement
@@ -1451,7 +1451,7 @@ architecture avr {
             $aregs(this) = tmp;
             return tmp;
         }
-        write: byte { }
+        write: int.8 { }
     }
 
     addr-mode LD_ST_XYZ rd: GPR, ar: XYZ {
@@ -1513,7 +1513,7 @@ architecture avr {
         property store: boolean = true;
         execute {
             local addr: int = read(ar);
-            local val: byte = read(rd);
+            local val: int.8 = read(rd);
             $sram(addr) = val;
         }
     }

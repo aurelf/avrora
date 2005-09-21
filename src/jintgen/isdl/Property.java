@@ -33,6 +33,7 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
+import jintgen.jigir.Type;
 
 /**
  * The <code>Property</code> class represents a property associated with an instruction, encoding,
@@ -45,7 +46,7 @@ import jintgen.isdl.parser.Token;
 public class Property {
 
     public final Token name;
-    public final Token type;
+    public final Type type;
     public final Token value;
 
     /**
@@ -55,7 +56,7 @@ public class Property {
      * @param t the type of the property
      * @param v the value of the property
      */
-    public Property(Token n, Token t, Token v) {
+    public Property(Token n, Type t, Token v) {
         name = n;
         type = t;
         value = v;

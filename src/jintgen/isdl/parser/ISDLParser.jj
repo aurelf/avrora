@@ -281,7 +281,7 @@ void Enum() : { Token n; SymbolMapping m; }
     "}" { arch.addEnum(new EnumDecl(n, m)); }
 }
 
-void EnumSubset() : { Token n; Token t; SymbolMapping m; }
+void EnumSubset() : { Token n; Type t; SymbolMapping m; }
 {
     "enum-subset" n = <IDENTIFIER> ":" t = Type() { m = new SymbolMapping(n); }"{"
         MappingSetElem(m) ("," MappingSetElem(m))*
@@ -294,7 +294,7 @@ AddrModeUse AddrModeUse(Token n) : { List<AddrModeDecl.Operand> o; }
    |(o = Operands() { return new AddrModeUse(null, new AddrModeDecl(n, o)); })
 }
 
-Property Property(List<Property> pl) : { Property p; Token name, t, v;}
+Property Property(List<Property> pl) : { Property p; Token name, v; Type t; }
 {
     "property" name = <IDENTIFIER> ":" t = Type() "=" v = Value() ";"
     { p = new Property(name, t, v);
@@ -377,11 +377,11 @@ void OperandTypeDecl() : { Token n; OperandTypeDecl d; }
     { arch.addOperand(d); }
 }
 
-OperandTypeDecl SimpleOperandType(Token n) : { Token b, t, l = null, h = null; OperandTypeDecl d; }
+OperandTypeDecl SimpleOperandType(Token n) : { Type t; Token b, l = null, h = null; OperandTypeDecl d; }
 {
     "[" b = <INTEGER_LITERAL> "]" ":"
     t = Type() [ "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]" ]
-    { d = new OperandTypeDecl.Simple(n, b, t, l, h); }
+    { d = new OperandTypeDecl.Value(n, b, t, l, h); }
     ( OperandBody(d) | ";" )
     { return d; }
 }
@@ -478,15 +478,16 @@ AddrModeDecl.Operand Operand() : { Token n, t; }
 void Subroutine() :
 {
     boolean i = false;
-    Token m, r;
+    Token m;
+    Type r;
     List<SubroutineDecl.Parameter> f;
     List<Stmt> l = new LinkedList<Stmt>();
 }
 {
     (["inline" { i = true; }] "subroutine" m = <IDENTIFIER>
-       "(" f = Params() ")" ":" r = <IDENTIFIER> Block(l)
+       "(" f = Params() ")" ":" r = Type() Block(l)
         { arch.addSubroutine(new SubroutineDecl(i, m, f, r, l)); } )
-   |("external" "subroutine" m = <IDENTIFIER> "(" f = Params() ")" ":" r = <IDENTIFIER> ";"
+   |("external" "subroutine" m = <IDENTIFIER> "(" f = Params() ")" ":" r = Type() ";"
         { arch.addSubroutine(new SubroutineDecl(i, m, f, r, null)); } )
 
 }
@@ -500,7 +501,7 @@ List<SubroutineDecl.Parameter> Params() :
     [ p = Param() { l.add(p); } ("," p = Param() { l.add(p); })* ] { return l; }
 }
 
-SubroutineDecl.Parameter Param() : { Token n, t; }
+SubroutineDecl.Parameter Param() : { Token n; Type t; }
 {
     n = <IDENTIFIER> ":" t = Type() { return new SubroutineDecl.Parameter(n, t); }
 }
@@ -530,9 +531,9 @@ Expr Term() : { Expr e; }
     { return e; }
 }
 
-Expr Conversion(Expr e) : { Token t; }
+Expr Conversion(Expr e) : { Type t; }
 {
-  ":" t = <IDENTIFIER> { return new ConversionExpr(e, t); }
+  ":" t = Type() { return new ConversionExpr(e, t); }
 }
 
 Expr MapAccess() : { Expr e; Token t; }
@@ -587,9 +588,9 @@ Stmt Statement() : { Stmt s; }
   ) { return s; }
 }
 
-DeclStmt LocalDecl() : { Token n, t; Expr e; }
+DeclStmt LocalDecl() : { Token n; Type t; Expr e; }
 {
-    "local" n = <IDENTIFIER> ":" t = <IDENTIFIER> "=" e = Expr() ";"
+    "local" n = <IDENTIFIER> ":" t = Type() "=" e = Expr() ";"
     { return new DeclStmt(n, t, e); }
 }
 
@@ -779,15 +780,15 @@ Expr Un_Expr() : { Expr e; }
   { return e; }
 }
 
-Token MapType() : { Token t; }
+Type MapType() : { Type t; }
 {
     t = Type()
     { return t; }
 }
 
-Token Type() : { Token t; }
+Type Type() : { Token t, s = null, w = null; }
 {
-    t = <IDENTIFIER> { return t; }
+    [s = "+" | s = "-"] t = <IDENTIFIER> [ "." w = <INTEGER_LITERAL> ] { return new Type(s, t, w); }
 }
 
 Token OperandType() : { Token t; }

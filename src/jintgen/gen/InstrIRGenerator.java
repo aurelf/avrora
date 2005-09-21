@@ -37,6 +37,7 @@ import cck.text.StringUtil;
 import cck.util.Option;
 import jintgen.gen.disassembler.DGUtil;
 import jintgen.isdl.*;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -343,7 +344,7 @@ public class InstrIRGenerator extends Generator {
             // this enumeration is a subset of another enumeration, but with possibly different
             // encoding
             EnumDecl.Subset sd = (EnumDecl.Subset)d;
-            startblock("public static class $enum extends $1", sd.pname.image);
+            startblock("public static class $enum extends $1", sd.ptype.getJavaType());
             println("public final int encoding;");
             println("public int getEncodingValue() { return encoding; }");
             println("private static HashMap set = new HashMap();");
@@ -493,7 +494,7 @@ public class InstrIRGenerator extends Generator {
     }
 
     private String operandSuperClass(OperandTypeDecl.Value d) {
-        EnumDecl ed = arch.getEnum(d.kind.image);
+        EnumDecl ed = arch.getEnum(d.kind.getBaseType().image);
         if ( ed != null ) return "Sym";
         else {
             if ( d.isRelative() ) return "Rel";
@@ -503,9 +504,9 @@ public class InstrIRGenerator extends Generator {
     }
 
     private void generateSimpleType(OperandTypeDecl.Value d) {
-        EnumDecl ed = arch.getEnum(d.kind.image);
+        EnumDecl ed = arch.getEnum(d.kind.getBaseType().image);
         properties.setProperty("oname", d.name.image);
-        properties.setProperty("kind", d.kind.image);
+        properties.setProperty("kind", d.kind.getBaseType().image);
         if ( ed != null ) {
             startblock("$oname(String s)");
             println("super($symbol.get_$kind(s));");
@@ -662,7 +663,7 @@ public class InstrIRGenerator extends Generator {
     }
 
     private void emitRenderer(Property syntax, List<AddrModeDecl.Operand> list) {
-        if ( syntax != null && syntax.type.image.equals("String")) {
+        if ( syntax != null && syntax.type.isBasedOn("String")) {
             String format = StringUtil.trimquotes(syntax.value.image);
             int max = format.length();
             StringBuffer buf = new StringBuffer();
