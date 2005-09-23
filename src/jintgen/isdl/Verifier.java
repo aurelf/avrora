@@ -65,6 +65,33 @@ public class Verifier {
         verifyAddrSets();
         verifySubroutines();
         verifyInstructions();
+        typeCheck();
+    }
+
+    private void typeCheck() {
+        TypeChecker tc = new TypeChecker(ERROR);
+        Environment env = new Environment(arch);
+
+        // typecheck all of the subroutine bodies
+        for ( SubroutineDecl d : arch.subroutines ) {
+            if ( !d.code.hasBody() ) continue;
+            Environment senv = new Environment(env);
+            for ( SubroutineDecl.Parameter p : d.getParams() ) {
+                senv.addVariable(p.name.image, p.type);
+            }
+            tc.typeCheck(d.code.getStmts(), senv);
+        }
+
+        // typecheck all of the instruction bodies
+        for ( InstrDecl d : arch.instructions ) {
+            if ( !d.code.hasBody() ) continue;
+            Environment senv = new Environment(env);
+            for ( AddrModeDecl.Operand p : d.getOperands() ) {
+                // senv.addVariable(p.name.image, p.type);
+            }
+            tc.typeCheck(d.code.getStmts(), senv);
+        }
+
     }
 
     private void verifyEnums() {

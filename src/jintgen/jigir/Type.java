@@ -46,7 +46,7 @@ import cck.text.StringUtil;
 public class Type {
 
     public static Type BOOLEAN = new Type(false, "boolean", 1);
-    
+
     protected final boolean signed;
     protected final Token baseType;
     protected final int width;
@@ -99,6 +99,17 @@ public class Type {
         if ( signed == other.signed ) return (width >= other.width);
         // if this type is signed (and the other is not), need an extra bit
         return signed && (this.width > other.width);
+    }
+
+    /**
+     * The <code>isComparableTo()</code> method checks whether this type can be compared to
+     * values of the specified type.
+     * @param other the other type that this type is being compared to
+     * @return true if this type can be compared to the specified type; false otherwise
+     */
+    public boolean isComparableTo(Type other) {
+        if ( !baseType.image.equals(other.baseType.image) ) return false;
+        return true;
     }
 
     /**

@@ -72,6 +72,10 @@ public class ErrorReporter {
         unresolved("addressing mode", t);
     }
 
+    public void UnresolvedVariable(Token t) {
+        unresolved("variable", t);
+    }
+
     public void RedefinedInstruction(Token t) {
         redefined("Instruction", t);
     }
@@ -128,8 +132,16 @@ public class ErrorReporter {
         throw Util.failure("Cannot compute size of literal "+StringUtil.quote(l)+" at "+pos(l.token));
     }
 
-    public void TypeMismatch(String what, Type exp, Type got) {
-        throw Util.failure("Type mismatch in "+what+": expected "+exp+", found "+got);
+    public void TypeMismatch(String what, Type exp, Expr e) {
+        throw Util.failure("Type mismatch in "+what+": expected "+exp+", found "+e.getType()+" at "+pos(e));
+    }
+
+    public void TypesCannotBeCompared(Type exp, Type got) {
+        throw Util.failure("Types cannot be compared: "+exp+" and "+got);
+    }
+
+    public void IntTypeExpected(String what, Type got) {
+        throw Util.failure("Integer type expected in "+what+", found "+got);
     }
 
     void redefined(String thing, Token where) {
@@ -144,5 +156,9 @@ public class ErrorReporter {
 
     private String pos(Token t) {
         return t.beginLine+":"+t.beginColumn;
+    }
+
+    private String pos(Expr e) {
+        return (e.getLocation()).toString();
     }
 }

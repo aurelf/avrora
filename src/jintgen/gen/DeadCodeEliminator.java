@@ -40,7 +40,7 @@ import java.util.*;
  */
 public class DeadCodeEliminator extends StmtRebuilder<DeadCodeEliminator.DefUseEnvironment> {
 
-    Set globals;
+    Set<String> globals;
 
     protected class DefUseEnvironment {
         DefUseEnvironment parent;
@@ -95,7 +95,7 @@ public class DeadCodeEliminator extends StmtRebuilder<DeadCodeEliminator.DefUseE
         }
     }
 
-    public DeadCodeEliminator(Set globals) {
+    public DeadCodeEliminator(Set<String> globals) {
         this.globals = globals;
     }
 

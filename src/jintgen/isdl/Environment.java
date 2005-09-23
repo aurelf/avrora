@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,61 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Created Sep 21, 2005
  */
+package jintgen.isdl;
 
-package jintgen.jigir;
-
+import jintgen.jigir.Type;
+import java.util.HashMap;
 
 /**
  * @author Ben L. Titzer
  */
-public class CommentStmt extends Stmt {
-    /**
-     * The <code>name</code> field stores a reference to the name of the local.
-     */
-    public final String comment;
+public class Environment {
 
-    public CommentStmt(String c) {
-        comment = c;
+    final Environment parent;
+    final HashMap<String, Type> varMap;
+    final HashMap<String, SubroutineDecl> methodMap;
+    final HashMap<String, Object> mapMap;
+
+    public Environment(Environment p) {
+        parent = p;
+        varMap = new HashMap<String, Type>();
+        methodMap = new HashMap<String, SubroutineDecl>();
+        mapMap = new HashMap<String, Object>();
     }
 
-    /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
-     * syntax trees representing the code of a particular instruction or subroutine.
-     *
-     * @param v the visitor to accept
-     */
-    public void accept(StmtVisitor v) {
-        v.visit(this);
+    public Environment(Architecture a) {
+        parent = null;
+        varMap = new HashMap<String, Type>();
+        methodMap = new HashMap<String, SubroutineDecl>();
+        mapMap = new HashMap<String, Object>();
     }
 
-    /**
-     * The <code>toString()</code> method recursively converts this statement to a string.
-     *
-     * @return a string representation of this statement
-     */
-    public String toString() {
-        return "// " + comment;
+    public Type resolveVariable(String name) {
+        Type type = varMap.get(name);
+        if ( type != null ) return type;
+        return parent != null ? parent.resolveVariable(name) : null;
     }
 
-    /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
-     * syntax trees representing the code of a particular instruction or subroutine. The
-     * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
-     *
-     * @param r the visitor to accept
-     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
-     */
-    public <Res, Env> Res accept(StmtAccumulator<Res, Env> r, Env env) {
-        return r.visit(this, env);
+    public Object resolveMap(String name) {
+        Object type = mapMap.get(name);
+        if ( type != null ) return type;
+        return parent != null ? parent.resolveMap(name) : null;
+    }
+
+    public Object resolveMethod(String name) {
+        Object type = methodMap.get(name);
+        if ( type != null ) return type;
+        return parent != null ? parent.resolveMethod(name) : null;
+    }
+
+    public void addVariable(String name, Type t) {
+        varMap.put(name, t);
+    }
+
+    public void addMethod(String name, SubroutineDecl d) {
+        methodMap.put(name, d);
     }
 }

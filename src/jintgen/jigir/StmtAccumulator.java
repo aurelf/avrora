@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,33 +28,40 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Sep 22, 2005
  */
 
 package jintgen.jigir;
 
+import java.util.List;
+
 /**
- * The <code>Stmt</code> class represents a statement in the IR that expresses the computation of an
- * instruction.
- *
  * @author Ben L. Titzer
  */
-public abstract class Stmt {
+public interface StmtAccumulator<Res, Env> {
 
-    /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
-     * syntax trees representing the code of a particular instruction or subroutine.
-     *
-     * @param v the visitor to accept
-     */
-    public abstract void accept(StmtVisitor v);
+    public Res visit(CallStmt s, Env env);
 
-    /**
-     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
-     * syntax trees representing the code of a particular instruction or subroutine. The
-     * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
-     *
-     * @param v the visitor to accept
-     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
-     */
-    public abstract <Res, Env> Res accept(StmtAccumulator<Res,Env> v, Env env);
+    public Res visit(CommentStmt s, Env env);
+
+    public Res visit(DeclStmt s, Env env);
+
+    public Res visit(IfStmt s, Env env);
+
+    public List<Res> visitStmtList(List<Stmt> l, Env env);
+
+    public Res visit(MapAssignStmt s, Env env);
+
+    public Res visit(MapBitAssignStmt s, Env env);
+
+    public Res visit(MapBitRangeAssignStmt s, Env env);
+
+    public Res visit(ReturnStmt s, Env env);
+
+    public Res visit(VarAssignStmt s, Env env);
+
+    public Res visit(VarBitAssignStmt s, Env env);
+
+    public Res visit(VarBitRangeAssignStmt s, Env env);
 }

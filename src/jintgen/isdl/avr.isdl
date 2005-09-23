@@ -169,7 +169,7 @@ architecture avr {
 //  SUBROUTINES
 //---------------------------------------------------------------------------
     inline subroutine performAddition(r1: int.8, r2: int.8, carry: int.1): int.8 {
-        local result: int.9 = r1 + r2 + carry;
+        local result: int.10 = r1 + r2 + carry;
         local ral: +int.4 = r1[3:0];
         local rbl: +int.4 = r2[3:0];
 

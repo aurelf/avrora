@@ -41,7 +41,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class StmtRebuilder<Env> extends CodeRebuilder<Env> {
+public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumulator<Stmt, Env> {
 
     List<Stmt> newList;
     boolean changed;

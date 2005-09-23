@@ -99,7 +99,7 @@ public class VarAssignStmt extends AssignStmt {
      * @param r the visitor to accept
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
-    public <Env> Stmt accept(StmtRebuilder<Env> r, Env env) {
+    public <Res, Env> Res accept(StmtAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
     }
 
