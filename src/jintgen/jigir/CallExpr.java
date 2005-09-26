@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import cck.text.StringUtil;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 import jintgen.isdl.parser.Token;
 import java.util.List;
 
@@ -126,7 +126,7 @@ public class CallExpr extends Expr {
         return PREC_TERM;
     }
 
-    public ProgramPoint getLocation() {
-        return new ProgramPoint(method);
+    public SourcePoint getSourcePoint() {
+        return method.asSourcePoint();
     }
 }

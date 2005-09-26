@@ -69,6 +69,10 @@ public class Util {
             return param;
         }
 
+        /**
+         * The <code>report()</code> method generates a textual report that is printed
+         * on the terminal for the user.
+         */
         public void report() {
             Terminal.print(Terminal.ERROR_COLOR, message);
             Terminal.print(": " + param + '\n');

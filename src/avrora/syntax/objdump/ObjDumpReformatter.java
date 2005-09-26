@@ -211,8 +211,7 @@ public class ObjDumpReformatter {
 
     private String nextLine(BufferedReader in) throws IOException {
         line_count++;
-        String line = in.readLine();
-        return line;
+        return in.readLine();
     }
 
     /**

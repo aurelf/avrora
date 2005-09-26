@@ -63,4 +63,7 @@ public abstract class AbstractToken {
 
     public abstract AbstractToken getNextToken();
 
+    public SourcePoint asSourcePoint() {
+        return new SourcePoint(file, beginLine, beginColumn, endColumn);
+    }
 }

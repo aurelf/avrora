@@ -32,8 +32,7 @@
 
 package jintgen.jigir;
 
-import cck.parser.ProgramPoint;
-import cck.util.Util;
+import cck.parser.SourcePoint;
 
 /**
  * The <code>Arith</code> class is a container for classes that represent integer arithmetic in the IR. For
@@ -125,8 +124,8 @@ public abstract class Arith extends Expr {
             return precedence;
         }
 
-        public ProgramPoint getLocation() {
-            return new ProgramPoint(left.getLocation(), right.getLocation());
+        public SourcePoint getSourcePoint() {
+            return new SourcePoint(left.getSourcePoint(), right.getSourcePoint());
         }
     }
 
@@ -192,8 +191,8 @@ public abstract class Arith extends Expr {
             return PREC_UN;
         }
 
-        public ProgramPoint getLocation() {
-            return operand.getLocation();
+        public SourcePoint getSourcePoint() {
+            return operand.getSourcePoint();
         }
     }
 

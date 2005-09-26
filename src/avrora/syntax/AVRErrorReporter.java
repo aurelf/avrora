@@ -34,12 +34,13 @@ package avrora.syntax;
 
 import avrora.core.Register;
 import cck.parser.AbstractToken;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
+import cck.parser.ErrorReporter;
 import cck.text.StringUtil;
 
 /**
  * The <code>AVRErrorReporter</code> contains one method per compilation error. The method constructs a
- * <code>SimplifierError</code> object that represents the error and throws it. One method per type of error
+ * <code>SourceError</code> object that represents the error and throws it. One method per type of error
  * provides a convenient interface and allows pinpointing the generation of each type of error within the
  * verifier.
  *
@@ -47,69 +48,69 @@ import cck.text.StringUtil;
  */
 public class AVRErrorReporter extends ErrorReporter {
 
-    private ProgramPoint point(AbstractToken t) {
-        return new ProgramPoint(t.file, t.beginLine, t.beginColumn, t.endColumn);
+    private SourcePoint point(AbstractToken t) {
+        return new SourcePoint(t.file, t.beginLine, t.beginColumn, t.endColumn);
     }
 
-    private ProgramPoint point(ASTNode n) {
+    private SourcePoint point(ASTNode n) {
         AbstractToken l = n.getLeftMostToken();
         AbstractToken r = n.getRightMostToken();
-        return new ProgramPoint(l.file, l.beginLine, l.beginColumn, r.endColumn);
+        return new SourcePoint(l.file, l.beginLine, l.beginColumn, r.endColumn);
     }
 
     public void UnknownRegister(AbstractToken reg) {
         String report = "unknown register " + StringUtil.quote(reg);
-        error(report, "UnknownRegister", point(reg));
+        error("UnknownRegister", point(reg), report);
     }
 
     public void InstructionCannotBeInSegment(String seg, AbstractToken instr) {
         String report = "instructions cannot be declared in " + seg + " cseg";
-        error(report, "InstructionCannotBeInSegment", point(instr));
+        error("InstructionCannotBeInSegment", point(instr), report);
     }
 
     public void UnknownInstruction(AbstractToken instr) {
         String report = "unknown instruction " + StringUtil.quote(instr);
-        error(report, "UnknownInstruction", point(instr));
+        error("UnknownInstruction", point(instr), report);
     }
 
     public void RegisterExpected(SyntacticOperand o) {
         String report = "register expected";
-        error(report, "RegisterExpected", point(o));
+        error("RegisterExpected", point(o), report);
     }
 
     public void IncorrectRegister(SyntacticOperand o, Register reg, String expect) {
         String report = "incorrected register " + StringUtil.quote(reg) + ", expected one of " + expect;
-        error(report, "IncorrectRegister", point(o));
+        error("IncorrectRegister", point(o), report);
     }
 
     public void ConstantExpected(SyntacticOperand o) {
         String report = "constant expected";
-        error(report, "ConstantExpected", point(o));
+        error("ConstantExpected", point(o), report);
     }
 
     public void ConstantOutOfRange(SyntacticOperand o, int value, String range) {
         String report = "constant " + StringUtil.quote("" + value) + " out of expected range " + range;
-        error(report, "ConstantOutOfRange", "" + value, point(o));
+        error("ConstantOutOfRange", point(o), report, "" + value);
     }
 
     public void WrongNumberOfOperands(AbstractToken instr, int seen, int expected) {
         String report = "wrong number of operands to instruction " + StringUtil.quote(instr) + ", expected "
                 + expected + " and found " + seen;
-        error(report, "WrongNumberOfOperands", point(instr));
+        error("WrongNumberOfOperands", point(instr), report);
     }
 
     public void UnknownVariable(AbstractToken name) {
         String report = "unknown variable or label " + StringUtil.quote(name.image);
-        error(report, "UnknownVariable", name.image, point(name));
+        error("UnknownVariable", point(name), report, name.image);
     }
 
     public void DataCannotBeInSegment(String seg, ASTNode loc) {
         String report = "initialized data cannot be in " + seg + " segment";
-        error(report, "DataCannotBeInSegment", seg, point(loc));
+        error("DataCannotBeInSegment", point(loc), report, seg);
     }
 
     public void IncludeFileNotFound(AbstractToken tok) {
         String report = "include file not found " + tok;
-        error(report, "IncludeFileNotFound", point(tok));
+        error("IncludeFileNotFound", point(tok), report);
     }
 }

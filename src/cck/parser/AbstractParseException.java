@@ -57,7 +57,7 @@ public class AbstractParseException extends RuntimeException {
         expectedTokenSequences = expectedTokenSequencesVal;
         tokenImage = tokenImageVal;
         AbstractToken tok = currentToken.getNextToken();
-        programPoint = new ProgramPoint(tok.file, tok.beginLine, tok.beginColumn, tok.endColumn);
+        sourcePoint = new SourcePoint(tok.file, tok.beginLine, tok.beginColumn, tok.endColumn);
     }
 
     /**
@@ -103,7 +103,7 @@ public class AbstractParseException extends RuntimeException {
      */
     protected String eol = System.getProperty("line.separator", "\n");
 
-    public ProgramPoint programPoint;
+    public SourcePoint sourcePoint;
 
     /**
      * Used to convert raw characters to their escaped version when these raw version cannot be used as part
@@ -147,7 +147,6 @@ public class AbstractParseException extends RuntimeException {
                     } else {
                         retval.append(ch);
                     }
-                    continue;
             }
         }
         return retval.toString();

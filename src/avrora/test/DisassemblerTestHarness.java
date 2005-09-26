@@ -46,7 +46,7 @@ import java.util.Properties;
  */
 public class DisassemblerTestHarness implements TestHarness {
 
-    class DisassemblerTest extends TestCase.ExpectCompilationError {
+    class DisassemblerTest extends TestCase.ExpectSourceError {
 
         Module module;
         Program program;

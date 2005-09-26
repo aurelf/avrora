@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import cck.text.StringUtil;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 
 /**
  * The <code>MapExpr</code> class represents an expression that is an access of an element within a map.
@@ -122,7 +122,7 @@ public class ConversionExpr extends Expr {
         return true;
     }
 
-    public ProgramPoint getLocation() {
-        return expr.getLocation();
+    public SourcePoint getSourcePoint() {
+        return expr.getSourcePoint();
     }
 }

@@ -98,15 +98,13 @@ abstract class Decoder extends GenBase {
 
         private DTNode optimizeAddrs(DTNode root) {
             labelTreeWithEncodings(root);
-            DTNode newTree = new TreeFactorer(root).getNewTree();
-            return newTree;
+            return new TreeFactorer(root).getNewTree();
         }
 
         private DTNode optimizeInstrs(DTNode root) {
             labelTreeWithInstrs(root);
             root = DGUtil.removeAll(root, "*");
-            DTNode newTree = new TreeFactorer(root).getNewTree();
-            return newTree;
+            return new TreeFactorer(root).getNewTree();
         }
 
         void generateDecoderConstructors() {
@@ -231,8 +229,7 @@ abstract class Decoder extends GenBase {
 
         private DTNode optimizeTree(DTNode root) {
             labelTreeWithInsts(root);
-            DTNode newTree = new TreeFactorer(root).getNewTree();
-            return newTree;
+            return new TreeFactorer(root).getNewTree();
         }
 
         void generateDecoderConstructors() {

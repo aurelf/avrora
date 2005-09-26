@@ -29,6 +29,7 @@
     1     devs  USART frame sizes
     1      sim  RAMPZ usage for with more than 128k of flash
     1  jintgen  DisassemblerGenerator: split fields that span word boundaries
+    1      sim  Nullpointer in updateNodeID() when loading from ELF file
 
 ----------------------------------- Completed -----------------------------------------
     1    input  Fixed processing of -sections option                         1.5.118
@@ -82,7 +83,9 @@
     1     devs  WARN: writing reserved bits of IO registers
     1     devs  WARN: failure to erase flash page before writing
     1     devs  WARN: pin direction mismatch in attempt to read / write pins
+    1     devs  WARN: ADC input not connected
     1   sensor  ADC value / light intensity conversion tables
+    1   energy  Report energy counts in amp-hours
 
 ----------------------------------- Completed -----------------------------------------
   2-3    input  ELF format reader                                            1.7.xx
@@ -133,6 +136,8 @@
     1    probe  migrate to SourceMapping, remove Program.Location
     2      sim  Move sram representation to use a Segment
     2    probe  Collapse ExceptionWatch with Watch for all segments
+    1      sim  Inline SimulateAction into superclass
+    2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
     2     util  Extracted util.* into cck repository                         1.7.xx

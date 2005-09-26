@@ -177,8 +177,7 @@ public class Inliner extends StmtRebuilder<Object> {
     }
 
     protected boolean shouldNotInline(SubroutineDecl d) {
-        if (!Architecture.INLINE || d == null || !d.inline || !d.code.hasBody()) return true;
-        return false;
+        return !Architecture.INLINE || d == null || !d.inline || !d.code.hasBody();
     }
 
     public Expr visit(VarExpr v, Object env) {

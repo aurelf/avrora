@@ -184,8 +184,7 @@ public class InterruptMonitor extends MonitorFactory {
             if (show && !invokeOnly) {
                 print("post interrupt", inum);
             }
-            long time = s.getCycles();
-            lastPost[inum] = time;
+            lastPost[inum] = s.getCycles();
         }
 
         /**

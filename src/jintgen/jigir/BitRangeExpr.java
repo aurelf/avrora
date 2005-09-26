@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 
 /**
  * The <code>BitRangeExpr</code> class represents an expression whose value is the result of extracting a
@@ -171,7 +171,7 @@ public class BitRangeExpr extends Expr {
     }
 
 
-    public ProgramPoint getLocation() {
-        return operand.getLocation();
+    public SourcePoint getSourcePoint() {
+        return operand.getSourcePoint();
     }
 }

@@ -32,53 +32,34 @@
 
 package cck.parser;
 
+import cck.parser.SourcePoint;
+import cck.parser.SourceError;
+import cck.text.StringUtil;
+
 /**
- * The <code>ProgramPoint</code> class represents a location within a program for the purposes of tracking
- * error messages and debug information. It encapsulates the module (file) contents, the line, the beginning
- * column and ending column.
+ * The <code>ErrorReporter</code> class is used to generate errors related to source files
+ * and contains a number of utility methods that allow error messages to be reported with
+ * fewer lines of code.
  *
  * @author Ben L. Titzer
  */
-public class ProgramPoint {
-    public final String file;
-    public final int beginLine;
-    public final int endLine;
-    public final int beginColumn;
-    public final int endColumn;
-
-    public ProgramPoint(String m, int l, int bc, int ec) {
-        file = (m == null) ? "(unknown)" : m;
-        beginLine = l;
-        endLine = l;
-        beginColumn = bc;
-        endColumn = ec;
+public class ErrorReporter {
+    public void error(String type, SourcePoint p, String report) {
+        throw new SourceError(type, p, report, StringUtil.EMPTY_STRING_ARRAY);
     }
 
-    public ProgramPoint(ProgramPoint l, ProgramPoint r) {
-        file = l.file;
-        beginLine = l.beginLine;
-        beginColumn = l.beginColumn;
-        endColumn = r.endColumn;
-        endLine = r.endLine;
+    public void error(String type, SourcePoint p, String report, String p1) {
+        String[] ps = {p1};
+        throw new SourceError(type, p, report, ps);
     }
 
-    public ProgramPoint(AbstractToken t) {
-        file = t.file;
-        beginLine = t.beginLine;
-        beginColumn = t.beginColumn;
-        endLine = t.endLine;
-        endColumn = t.endColumn;
+    public void error(String type, SourcePoint p, String report, String p1, String p2) {
+        String[] ps = {p1, p2};
+        throw new SourceError(type, p, report, ps);
     }
 
-    public ProgramPoint(AbstractToken l, AbstractToken r) {
-        file = l.file;
-        beginLine = l.beginLine;
-        beginColumn = l.beginColumn;
-        endLine = r.endLine;
-        endColumn = r.endColumn;
-    }
-
-    public String toString() {
-        return file + ' ' + beginLine + ':' + beginColumn;
+    public void error(String type, SourcePoint p, String report, String p1, String p2, String p3) {
+        String[] ps = {p1, p2, p3};
+        throw new SourceError(type, p, report, ps);
     }
 }

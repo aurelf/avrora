@@ -101,7 +101,7 @@ public class SimulateAction extends SimAction {
         }
     }
 
-    protected void reportMonitors(Simulation sim) {
+    protected static void reportMonitors(Simulation sim) {
         Iterator i = sim.getNodeIterator();
         while (i.hasNext()) {
             Simulation.Node n = (Simulation.Node)i.next();
@@ -115,7 +115,7 @@ public class SimulateAction extends SimAction {
         }
     }
 
-    protected void reportTime(Simulation sim, long diff) {
+    protected static void reportTime(Simulation sim, long diff) {
         // calculate total throughput over all threads
         Iterator i = sim.getNodeIterator();
         long aggCycles = 0;

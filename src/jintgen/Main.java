@@ -328,7 +328,6 @@ public class Main {
         File f = new File(fstr);
         if ( !f.exists() ) {
             Util.userError("File not found", fstr);
-            return;
         }
     }
 }

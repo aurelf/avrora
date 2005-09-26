@@ -50,9 +50,9 @@ import cck.util.Util;
  */
 public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccumulator<Environment, Environment> {
 
-    final ErrorReporter ERROR;
+    final JIGIRErrorReporter ERROR;
 
-    TypeChecker(ErrorReporter er) {
+    TypeChecker(JIGIRErrorReporter er) {
         ERROR = er;
     }
 
@@ -148,8 +148,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(Arith.CompExpr e, Environment env) {
-        Type lt = intTypeOf(e.operand, env);
-        return lt;
+        return intTypeOf(e.operand, env);
     }
 
     public Type visit(Arith.DivExpr e, Environment env) {
@@ -309,7 +308,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     protected Type typeOf(Expr e, Environment env) {
         Type t = e.accept(this, env);
-        if ( t == null ) throw Util.failure("null type at "+e.getLocation());
+        if ( t == null ) throw Util.failure("null type at "+e.getSourcePoint());
         e.setType(t);
         return t;
     }
@@ -318,7 +317,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         Type t = e.accept(this, env);
         e.setType(t);
         if (!t.isBasedOn("int"))
-            ERROR.IntTypeExpected("expression", t);
+            ERROR.IntTypeExpected("expression", e);
         return t;
     }
 

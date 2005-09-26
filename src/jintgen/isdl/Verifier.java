@@ -48,13 +48,13 @@ import java.util.*;
 public class Verifier {
 
     public final Architecture arch;
-    public final ErrorReporter ERROR;
+    public final JIGIRErrorReporter ERROR;
 
     Verbose.Printer printer = Verbose.getVerbosePrinter("jintgen.verifier");
 
     public Verifier(Architecture a) {
         arch = a;
-        ERROR = new ErrorReporter();
+        ERROR = new JIGIRErrorReporter();
     }
 
     public void verify() {
@@ -103,7 +103,7 @@ public class Verifier {
             }
 
             if ( previous.containsKey(ed.name.image) )
-                ERROR.RedefinedEnum(previous.get(ed.name));
+                ERROR.RedefinedEnum(previous.get(ed.name), ed.name);
 
             previous.put(ed.name.image, ed.name);
 
@@ -130,7 +130,7 @@ public class Verifier {
             }
 
             if ( previous.containsKey(ed.name.image) )
-                ERROR.RedefinedEncoding(previous.get(ed.name));
+                ERROR.RedefinedEncoding(previous.get(ed.name), ed.name);
 
             previous.put(ed.name.image, ed.name);
 
@@ -142,7 +142,7 @@ public class Verifier {
         HashMap<String, Token> previous = new HashMap<String, Token>();
         for ( OperandTypeDecl od : arch.operandTypes ) {
             if ( previous.containsKey(od.name.image) )
-                ERROR.RedefinedOperandType(previous.get(od.name));
+                ERROR.RedefinedOperandType(previous.get(od.name), od.name);
             previous.put(od.name.image, od.name);
 
             if ( od.isCompound() ) {
@@ -172,7 +172,7 @@ public class Verifier {
             printer.print("verifying subroutine " + sd.name + ' ');
 
             if ( previous.containsKey(sd.name.image) )
-                ERROR.RedefinedSubroutine(previous.get(sd.name));
+                ERROR.RedefinedSubroutine(previous.get(sd.name), sd.name);
 
             previous.put(sd.name.image, sd.name);
 
@@ -195,7 +195,7 @@ public class Verifier {
         for ( AddrModeDecl am : arch.addrModes ) {
             printer.println("verifying addressing mode " + am.name + ' ');
             if ( previous.containsKey(am.name.image) )
-                ERROR.RedefinedAddressingMode(previous.get(am.name));
+                ERROR.RedefinedAddressingMode(previous.get(am.name), am.name);
 
             previous.put(am.name.image, am.name);
             verifyOperands(am.operands);
@@ -221,7 +221,7 @@ public class Verifier {
 
         for ( AddrModeSetDecl as: arch.addrSets ) {
             if ( previous.containsKey(as.name.image) )
-                ERROR.RedefinedAddressingModeSet(previous.get(as.name));
+                ERROR.RedefinedAddressingModeSet(previous.get(as.name), as.name);
 
             previous.put(as.name.image, as.name);
 
@@ -294,7 +294,7 @@ public class Verifier {
         for ( InstrDecl id : arch.instructions ) {
             printer.print("verifying instruction " + id.name + ' ');
             if ( previous.containsKey(id.name.image) )
-                ERROR.RedefinedAddressingMode(previous.get(id.name));
+                ERROR.RedefinedInstruction(previous.get(id.name), id.name);
 
             previous.put(id.name.image, id.name);
 
@@ -470,7 +470,4 @@ public class Verifier {
         }
     }
 
-    private String pos(Token t) {
-        return t.beginLine+":"+t.beginColumn;
-    }
 }

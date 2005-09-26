@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 
 /**
  * The <code>DotExpr</code> class represents an access of a field of an operand
@@ -91,7 +91,7 @@ public class DotExpr extends Expr {
         return PREC_TERM;
     }
 
-    public ProgramPoint getLocation() {
-        return new ProgramPoint(operand, field);
+    public SourcePoint getSourcePoint() {
+        return new SourcePoint(operand, field);
     }
 }

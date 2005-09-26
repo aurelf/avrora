@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 
 /**
  * The <code>VarExpr</code> class represents an expression in the IR that is a use of a local or global
@@ -127,7 +127,7 @@ public class VarExpr extends Expr {
         return PREC_TERM;
     }
 
-    public ProgramPoint getLocation() {
-        return new ProgramPoint(variable);
+    public SourcePoint getSourcePoint() {
+        return variable.asSourcePoint();
     }
 }

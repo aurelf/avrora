@@ -32,7 +32,7 @@
 
 package jintgen.jigir;
 
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 
 /**
  * The <code>BitExpr</code> class represents an access of an individual bit within a value. In the IR,
@@ -133,7 +133,7 @@ public class BitExpr extends Expr {
         return PREC_TERM;
     }
 
-    public ProgramPoint getLocation() {
-        return new ProgramPoint(expr.getLocation(), bit.getLocation());
+    public SourcePoint getSourcePoint() {
+        return new SourcePoint(expr.getSourcePoint(), bit.getSourcePoint());
     }
 }

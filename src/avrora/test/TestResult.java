@@ -32,9 +32,9 @@
 
 package avrora.test;
 
-import avrora.syntax.SimplifierError;
 import cck.text.Terminal;
 import cck.util.Util;
+import cck.parser.SourceError;
 
 /**
  * The <code>TestResult</code> class represents the result of running a test cases. The test run could
@@ -101,15 +101,15 @@ public abstract class TestResult {
 
     public static class IncorrectError extends TestFailure {
         String expected;
-        SimplifierError encountered;
+        SourceError encountered;
 
-        public IncorrectError(String ex, SimplifierError ce) {
+        public IncorrectError(String ex, SourceError ce) {
             expected = ex;
             encountered = ce;
         }
 
         public void shortReport() {
-            Terminal.print("expected error " + expected + ", but received " + encountered.getErrorClass());
+            Terminal.print("expected error " + expected + ", but received " + encountered.getErrorType());
         }
 
         public void longReport() {
@@ -119,14 +119,14 @@ public abstract class TestResult {
     }
 
     public static class ExpectedPass extends TestFailure {
-        SimplifierError encountered;
+        SourceError encountered;
 
-        public ExpectedPass(SimplifierError e) {
+        public ExpectedPass(SourceError e) {
             encountered = e;
         }
 
         public void shortReport() {
-            Terminal.print("expected pass, but received error " + encountered.getErrorClass());
+            Terminal.print("expected pass, but received error " + encountered.getErrorType());
         }
 
         public void longReport() {

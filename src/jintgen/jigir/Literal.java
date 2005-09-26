@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import cck.util.Util;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 import jintgen.isdl.parser.Token;
 
 /**
@@ -68,8 +68,8 @@ public abstract class Literal extends Expr {
         token = t;
     }
 
-    public ProgramPoint getLocation() {
-        return new ProgramPoint(token);
+    public SourcePoint getSourcePoint() {
+        return token.asSourcePoint();
     }
 
     /**

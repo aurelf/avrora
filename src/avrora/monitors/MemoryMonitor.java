@@ -127,7 +127,6 @@ public class MemoryMonitor extends MonitorFactory {
             int zeroes = 0;
 
             for (int cntr = memstart; cntr < imax; cntr++) {
-                int start = cntr;
                 long r = rcount[cntr];
                 long w = wcount[cntr];
 
@@ -142,7 +141,7 @@ public class MemoryMonitor extends MonitorFactory {
                     continue;
                 } else if (zeroes > 2) continue;
 
-                String addr = StringUtil.addrToString(start);
+                String addr = StringUtil.addrToString(cntr);
                 printLine(addr, r, rtotal, w, wtotal);
 
             }

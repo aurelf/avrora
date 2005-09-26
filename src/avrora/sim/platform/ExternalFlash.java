@@ -454,7 +454,7 @@ public class ExternalFlash {
             }
 
             // write relevant bit to so
-            so = ((temp & (1 << (7 - i))) > 0) ? true : false; // MSB first
+            so = ((temp & (1 << (7 - i))) > 0); // MSB first
 
         }
 

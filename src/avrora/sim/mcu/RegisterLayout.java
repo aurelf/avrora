@@ -294,8 +294,7 @@ public class RegisterLayout {
             flbit =  StringUtil.readDecimalValue(i, 1);
         }
         int length = fhbit - flbit + 1;
-        int ior_lbit = ior_hbit - length + 1;
-        sf.ior_low_bit = ior_lbit;
+        sf.ior_low_bit = ior_hbit - length + 1;
         sf.field_low_bit = flbit;
         sf.mask = 0xff >> (8 - length);
         sf.length = length;

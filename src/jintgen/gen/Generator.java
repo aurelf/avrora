@@ -101,7 +101,7 @@ public abstract class Generator extends GenBase {
             printer.nextln();
         }
         String pabs = ABSTRACT.get();
-        if ( !"".equals(pabs));
+        if ( !"".equals(pabs))
             printer.println("import "+pabs+".*;");
         if ( imports != null ) for ( String s : imports ) {
             printer.println("import "+s+";");

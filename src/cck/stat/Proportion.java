@@ -162,8 +162,7 @@ public class Proportion extends DataItem {
 
         for (int i = 0; i < numshares; i++) {
             Share s = (Share)shares.get(i);
-            float f = ((float)s.getTotal()) / ((float)total);
-            s.fraction = f;
+            s.fraction = ((float)s.getTotal()) / ((float)total);
         }
 
     }

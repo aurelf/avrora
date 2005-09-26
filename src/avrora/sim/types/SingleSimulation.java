@@ -86,7 +86,7 @@ public class SingleSimulation extends Simulation {
          * threads catch up in global time.
          */
         public void waitForNeighbors(long time) {
-            return;
+            // do nothing
         }
 
         /**

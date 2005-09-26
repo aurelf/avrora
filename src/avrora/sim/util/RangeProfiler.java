@@ -35,6 +35,7 @@ package avrora.sim.util;
 import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.State;
+import avrora.sim.Simulator;
 
 /**
  * The <code>RangeProfiler</code> class implements a probe that can be used to profile a range of addresses in
@@ -46,7 +47,7 @@ import avrora.sim.State;
  * @see avrora.sim.util.Counter
  * @see avrora.sim.util.ProgramProfiler
  */
-public class RangeProfiler {
+public class RangeProfiler extends Simulator.Probe.Empty {
     /**
      * The <code>program</code> field stores a reference to the program being profiled.
      */
@@ -90,25 +91,12 @@ public class RangeProfiler {
      * implementation of the range profiler, it simply increments the count of the instruction at the
      * specified address if that address is in the given range.
      *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
      * @param state   the state of the simulation
+     * @param address the address at which this instruction resides
      */
-    public void fireBefore(Instr i, int address, State state) {
+    public void fireBefore(State state, int address) {
         if (address < low_addr) return;
         if (address >= high_addr) return;
         icount[address - low_addr]++;
-    }
-
-    /**
-     * The <code>fireAfter()</code> method is called after the probed instruction executes. In the
-     * implementation of the range profiler, it does nothing.
-     *
-     * @param i       the instruction being probed
-     * @param address the address at which this instruction resides
-     * @param state   the state of the simulation
-     */
-    public void fireAfter(Instr i, int address, State state) {
-        // do nothing.
     }
 }

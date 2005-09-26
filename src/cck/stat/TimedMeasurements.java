@@ -124,8 +124,7 @@ public class TimedMeasurements {
         } else {
             // both full, recursively create uncle
             TreeNode uncle = new TreeNode(tn, tn.beginTime);
-            TreeNode unp = addNode(uncle, parent.parent);
-            uncle.parent = unp;
+            uncle.parent = addNode(uncle, parent.parent);
             return uncle;
         }
     }

@@ -300,19 +300,15 @@ public class RegisterSet {
         RegisterLayout.Field field = sf.field;
 
         if ( sf.field == RegisterLayout.RESERVED ) {
-            ReservedWriter rw = new ReservedWriter(sf);
-            srw[cntr] = rw;
+            srw[cntr] = new ReservedWriter(sf);
         } else if ( sf.field == RegisterLayout.UNUSED ) {
-            UnusedWriter uw = new UnusedWriter(sf);
-            srw[cntr] = uw;
+            srw[cntr] = new UnusedWriter(sf);
         } else if ( sf.field.subfields.length == 1) {
             // if the field has only one subfield, write the whole field value at once
-            TotalFieldWriter tfw = new TotalFieldWriter(sf, (FieldWriter)fields.get(field.name));
-            srw[cntr] = tfw;
+            srw[cntr] = new TotalFieldWriter(sf, (FieldWriter)fields.get(field.name));
         } else {
             // otherwise, this subfield is for a field that is fragmented
-            SubFieldWriter sfw = new SubFieldWriter(sf, (FieldWriter)fields.get(field.name));
-            srw[cntr] = sfw;
+            srw[cntr] = new SubFieldWriter(sf, (FieldWriter)fields.get(field.name));
         }
     }
 

@@ -46,7 +46,7 @@ import java.util.Properties;
  */
 public class SimplifierTestHarness implements TestHarness {
 
-    class SimplifierTest extends TestCase.ExpectCompilationError {
+    class SimplifierTest extends TestCase.ExpectSourceError {
 
         Module module;
         Program program;

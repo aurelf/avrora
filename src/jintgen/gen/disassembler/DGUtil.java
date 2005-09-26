@@ -321,7 +321,6 @@ public class DGUtil {
 
     public static boolean addrModeClassExists(InstrDecl d) {
         AddrModeDecl localDecl = d.addrMode.localDecl;
-        if ( localDecl != null && localDecl.operands.size() == 0 ) return false;
-        return true;
+        return localDecl == null || localDecl.operands.size() != 0;
     }
 }

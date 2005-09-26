@@ -108,8 +108,7 @@ public class Type {
      * @return true if this type can be compared to the specified type; false otherwise
      */
     public boolean isComparableTo(Type other) {
-        if ( !baseType.image.equals(other.baseType.image) ) return false;
-        return true;
+        return baseType.image.equals(other.baseType.image);
     }
 
     /**

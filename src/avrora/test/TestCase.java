@@ -32,9 +32,10 @@
 
 package avrora.test;
 
-import avrora.syntax.SimplifierError;
 import cck.text.StringUtil;
 import cck.util.Util;
+import cck.parser.SourceError;
+
 import java.util.Properties;
 
 /**
@@ -72,12 +73,12 @@ public abstract class TestCase {
         return new TestResult.UnexpectedException(t);
     }
 
-    public abstract static class ExpectCompilationError extends TestCase {
+    public abstract static class ExpectSourceError extends TestCase {
 
         boolean shouldPass;
         String error;
 
-        public ExpectCompilationError(String fname, Properties props) {
+        public ExpectSourceError(String fname, Properties props) {
             super(fname, props);
             String result = StringUtil.trimquotes(props.getProperty("Result"));
             if (result.equals("PASS"))
@@ -97,17 +98,17 @@ public abstract class TestCase {
             if (shouldPass) {
                 if (t == null) // no exceptions encountered, passed.
                     return new TestResult.TestSuccess();
-                if (t instanceof SimplifierError) { // encountered compilation error.
-                    SimplifierError ce = (SimplifierError)t;
+                if (t instanceof SourceError) { // encountered compilation error.
+                    SourceError ce = (SourceError)t;
                     return new TestResult.ExpectedPass(ce);
                 }
             } else {
                 if (t == null) // expected a compilation error, but passed.
                     return new TestResult.ExpectedError(error);
 
-                if (t instanceof SimplifierError) {
-                    SimplifierError ce = (SimplifierError)t;
-                    if (ce.getErrorClass().equals(error)) // correct error encountered.
+                if (t instanceof SourceError) {
+                    SourceError ce = (SourceError)t;
+                    if (ce.getErrorType().equals(error)) // correct error encountered.
                         return new TestResult.TestSuccess();
                     else // incorrect compilation error.
                         return new TestResult.IncorrectError(error, ce);

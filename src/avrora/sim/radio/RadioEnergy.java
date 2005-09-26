@@ -332,8 +332,7 @@ public abstract class RadioEnergy {
     public static String[] allModeNames() {
         String[] modeName = new String[262];
 
-        for (int i = 0; i < 6; i++)
-            modeName[i] = RadioEnergy.modeName[i];
+        System.arraycopy(RadioEnergy.modeName, 0, modeName, 0, 6);
         for (int i = 0; i < 256; i++) {
             modeName[i + 6] = RadioEnergy.modeName[6] + StringUtil.leftJustify(i+":   ", 3);
         }

@@ -58,9 +58,9 @@ public class ISEState extends ISEAbstractState {
         for ( ; cntr < NUM_REGISTERS; cntr++ ) {
             defaultElements[cntr] = new ISEAbstractState.Element("R"+cntr, (byte)(ISEValue.R0+cntr), false);
         }
-        defaultElements[SREG_OFF] = new ISEAbstractState.Element("SR", (byte)(ISEValue.SREG), false);
-        defaultElements[EIMSK_OFF] = new ISEAbstractState.Element("EM", (byte)(ISEValue.EIMSK), false);
-        defaultElements[TIMSK_OFF] = new ISEAbstractState.Element("TM", (byte)(ISEValue.TIMSK), false);
+        defaultElements[SREG_OFF] = new ISEAbstractState.Element("SR", ISEValue.SREG, false);
+        defaultElements[EIMSK_OFF] = new ISEAbstractState.Element("EM", ISEValue.EIMSK, false);
+        defaultElements[TIMSK_OFF] = new ISEAbstractState.Element("TM", ISEValue.TIMSK, false);
         defaultStack = new byte[MAX_STACK];
     }
 

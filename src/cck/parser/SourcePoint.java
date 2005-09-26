@@ -30,35 +30,60 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.syntax;
-
-import cck.parser.ProgramPoint;
-import cck.text.StringUtil;
+package cck.parser;
 
 /**
- * The <code>ErrorReporter</code> is the super class of all error reporters in Avrora. It contains several
- * utility methods that subclasses can use to generate compilation errors that are thrown with much less
- * code.
+ * The <code>SourcePoint</code> class represents a location within a program for the purposes of tracking
+ * error messages and debug information. It encapsulates the module (file) contents, the line, the beginning
+ * column and ending column.
  *
  * @author Ben L. Titzer
  */
-public class ErrorReporter {
-    protected void error(String report, String name, ProgramPoint p) {
-        throw new SimplifierError(p, report, name, StringUtil.EMPTY_STRING_ARRAY);
+public class SourcePoint {
+
+    public final String file;
+    public final int beginLine;
+    public final int endLine;
+    public final int beginColumn;
+    public final int endColumn;
+
+    public SourcePoint(String m, int l, int bc, int ec) {
+        file = (m == null) ? "(unknown)" : m;
+        beginLine = l;
+        endLine = l;
+        beginColumn = bc;
+        endColumn = ec;
     }
 
-    protected void error(String report, String name, String p1, ProgramPoint p) {
-        String[] ps = {p1};
-        throw new SimplifierError(p, report, name, ps);
+    public SourcePoint(String m, int l, int el, int bc, int ec) {
+        file = (m == null) ? "(unknown)" : m;
+        beginLine = l;
+        endLine = el;
+        beginColumn = bc;
+        endColumn = ec;
     }
 
-    protected void error(String report, String name, String p1, String p2, ProgramPoint p) {
-        String[] ps = {p1, p2};
-        throw new SimplifierError(p, report, name, ps);
+    public SourcePoint(SourcePoint l, SourcePoint r) {
+        file = l.file;
+        beginLine = l.beginLine;
+        beginColumn = l.beginColumn;
+        endColumn = r.endColumn;
+        endLine = r.endLine;
     }
 
-    protected void error(String report, String name, String p1, String p2, String p3, ProgramPoint p) {
-        String[] ps = {p1, p2, p3};
-        throw new SimplifierError(p, report, name, ps);
+    public SourcePoint(AbstractToken l, AbstractToken r) {
+        file = l.file;
+        beginLine = l.beginLine;
+        beginColumn = l.beginColumn;
+        endLine = r.endLine;
+        endColumn = r.endColumn;
+    }
+
+    public String toString() {
+        return file + ' ' + beginLine + ':' + beginColumn;
+    }
+
+    public String toShortString() {
+        return beginLine + ":" + beginColumn;
     }
 }

@@ -449,7 +449,7 @@ public class CodemapGenerator extends Generator {
 
         public void visit(VarExpr e) {
             String name = e.variable.toString();
-            Operand op = (Operand)operands.get(name);
+            Operand op = operands.get(name);
             if (op != null) {
                 generateOperandUse(op);
             } else {

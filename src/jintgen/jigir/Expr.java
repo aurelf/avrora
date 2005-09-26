@@ -34,7 +34,7 @@ package jintgen.jigir;
 
 import cck.text.StringUtil;
 import cck.util.Util;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 import jintgen.isdl.parser.Token;
 
 /**
@@ -205,10 +205,10 @@ public abstract class Expr {
     }
 
     /**
-     * The <code>getLocation()</code> method returns a reference to a <code>ProgramPoint</code>
+     * The <code>getSourcePoint()</code> method returns a reference to a <code>SourcePoint</code>
      * instance that represents the location in the source program of this expression.
-     * @return a <code>ProgramPoint</code> instance that represents this expression in the
+     * @return a <code>SourcePoint</code> instance that represents this expression in the
      * source program
      */
-    public abstract ProgramPoint getLocation();
+    public abstract SourcePoint getSourcePoint();
 }

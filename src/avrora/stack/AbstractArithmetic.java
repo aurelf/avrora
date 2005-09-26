@@ -190,8 +190,7 @@ public class AbstractArithmetic {
      */
     public static boolean areEqual(char val1, char val2) {
         if (val1 == val2) return true;
-        if (canon(val1) == canon(val2)) return true;
-        return false;
+        return canon(val1) == canon(val2);
     }
 
     /**

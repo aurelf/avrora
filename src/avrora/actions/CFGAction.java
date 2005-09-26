@@ -375,7 +375,7 @@ public class CFGAction extends Action {
         return pmap.getProcedureContaining(b);
     }
 
-    private String blockName(ControlFlowGraph.Block block) {
+    public static String blockName(ControlFlowGraph.Block block) {
         String start = StringUtil.addrToString(block.getAddress());
         String end = StringUtil.addrToString(block.getAddress() + block.getSize());
         return StringUtil.quote(start + " - \\n" + end);

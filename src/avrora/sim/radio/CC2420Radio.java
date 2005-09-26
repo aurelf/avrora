@@ -1852,8 +1852,7 @@ public class CC2420Radio implements Radio {
         // according to CC1000 handbook
         // fRef = fXosc / REFDIV
         // frequency = fRef * ( ( FREQ + 8192 ) / 16384 )
-        double ret = 2048 + FSCTRL_reg.freq;
-        return ret;
+        return (double)(2048 + FSCTRL_reg.freq);
     }
 
     public RadioAir getAir() {

@@ -33,7 +33,7 @@
 package jintgen.jigir;
 
 import cck.text.StringUtil;
-import cck.parser.ProgramPoint;
+import cck.parser.SourcePoint;
 import jintgen.isdl.parser.Token;
 
 /**
@@ -137,7 +137,7 @@ public class MapExpr extends Expr {
     }
 
 
-    public ProgramPoint getLocation() {
-        return new ProgramPoint(mapname);
+    public SourcePoint getSourcePoint() {
+        return mapname.asSourcePoint();
     }
 }

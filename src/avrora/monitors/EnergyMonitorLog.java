@@ -170,7 +170,6 @@ public class EnergyMonitorLog extends EnergyMonitor {
         public void stateChange(Energy energy) {
             logOldState(energy);
             logCurrentState();
-            return;
         }
 
 

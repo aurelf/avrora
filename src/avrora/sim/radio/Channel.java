@@ -79,8 +79,7 @@ public class Channel {
         if ( invert ) value = ~value;
         for ( int cntr = 0; cntr < 8; cntr++ ) {
             int ind = cntr+off;
-            boolean bit = Arithmetic.getBit(value, (bits-1)-cntr);
-            channelValues[ind] |= bit;
+            channelValues[ind] |= Arithmetic.getBit(value, (bits-1)-cntr);
             channelWritten[ind] = true;
         }
     }
