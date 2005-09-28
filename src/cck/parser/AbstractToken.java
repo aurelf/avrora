@@ -64,6 +64,10 @@ public abstract class AbstractToken {
     public abstract AbstractToken getNextToken();
 
     public SourcePoint asSourcePoint() {
-        return new SourcePoint(file, beginLine, beginColumn, endColumn);
+        return new SourcePoint(file, beginLine, endLine, beginColumn, endColumn);
+    }
+
+    public SourcePoint asSourcePoint(String f) {
+        return new SourcePoint(f, beginLine, endLine, beginColumn, endColumn);
     }
 }
