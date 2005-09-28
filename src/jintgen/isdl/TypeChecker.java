@@ -37,6 +37,8 @@ package jintgen.isdl;
 import jintgen.jigir.*;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Iterator;
+
 import cck.util.Arithmetic;
 import cck.util.Util;
 
@@ -212,8 +214,16 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(CallExpr e, Environment env) {
-        List<Type> lt = visitExprList(e.args, env);
-        return null;
+        SubroutineDecl d = env.resolveMethod(e.method.image);
+        if ( d == null ) ERROR.UnresolvedSubroutine(e.method);
+        Iterator<Expr> eiter = e.args.iterator();
+        if ( d.getParams().size() != e.args.size() )
+            ERROR.ArityMismatch(e.method);
+        for ( SubroutineDecl.Parameter p : d.getParams() ) {
+            Type t = p.type;
+            typeCheck("invocation", eiter.next(), t, env);
+        }
+        return d.ret;
     }
 
     public Type visit(ConversionExpr e, Environment env) { return e.typename; }

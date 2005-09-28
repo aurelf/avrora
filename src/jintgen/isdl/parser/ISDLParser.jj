@@ -317,9 +317,9 @@ void StateDecl() : {}
   | Memory()
 }
 
-void Global() : { Token n; }
+void Global() : { Token n; Type t; }
 {
-    "global" n = <IDENTIFIER> ":" Type() ";"
+    "global" n = <IDENTIFIER> ":" t = Type() ";" { arch.addGlobal(n, t); }
 }
 
 void Memory() : { Token n; }

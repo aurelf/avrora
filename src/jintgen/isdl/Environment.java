@@ -35,6 +35,7 @@ package jintgen.isdl;
 
 import jintgen.jigir.Type;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Ben L. Titzer
@@ -58,6 +59,12 @@ public class Environment {
         varMap = new HashMap<String, Type>();
         methodMap = new HashMap<String, SubroutineDecl>();
         mapMap = new HashMap<String, Object>();
+        for ( Map.Entry<String, Type> e : a.globals.map.entrySet() ) {
+            varMap.put(e.getKey(), e.getValue());
+        }
+        for ( SubroutineDecl s : a.subroutines ) {
+            methodMap.put(s.name.image, s);
+        }
     }
 
     public Type resolveVariable(String name) {
@@ -72,8 +79,8 @@ public class Environment {
         return parent != null ? parent.resolveMap(name) : null;
     }
 
-    public Object resolveMethod(String name) {
-        Object type = methodMap.get(name);
+    public SubroutineDecl resolveMethod(String name) {
+        SubroutineDecl type = methodMap.get(name);
         if ( type != null ) return type;
         return parent != null ? parent.resolveMethod(name) : null;
     }

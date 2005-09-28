@@ -34,6 +34,7 @@ package jintgen.isdl;
 
 import cck.text.Verbose;
 import jintgen.isdl.parser.Token;
+import jintgen.jigir.Type;
 
 /**
  * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and
@@ -56,6 +57,7 @@ public class Architecture {
     public final HashList<String, AddrModeDecl> addrModes;
     public final HashList<String, AddrModeSetDecl> addrSets;
     public final HashList<String, EnumDecl> enums;
+    public final HashList<String, Type> globals;
 
     /**
      * The constructor for the <code>Architecture</code> class creates an instance with the specified
@@ -72,6 +74,7 @@ public class Architecture {
         addrModes = new HashList<String, AddrModeDecl>();
         addrSets = new HashList<String, AddrModeSetDecl>();
         enums = new HashList<String, EnumDecl>();
+        globals = new HashList<String, Type>();
     }
 
     public String getName() {
@@ -111,6 +114,10 @@ public class Architecture {
     public void addEnum(EnumDecl m) {
         printer.println("loading enum " + m + "...");
         enums.add(m.name.image, m);
+    }
+
+    public void addGlobal(Token n, Type t) {
+        globals.add(n.image, t);
     }
 
     public InstrDecl getInstruction(String name) {

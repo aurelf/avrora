@@ -77,6 +77,15 @@ public class JIGIRErrorReporter extends ErrorReporter {
         unresolved("Variable", "variable", t);
     }
 
+    public void UnresolvedSubroutine(Token t) {
+        unresolved("Subroutine", "subroutine", t);
+    }
+
+    public void ArityMismatch(Token t) {
+        String report = "Argument count mismatch";
+        error("ArityMismatch", t.asSourcePoint(), report);
+    }
+
     public void RedefinedInstruction(Token prevdecl, Token newdecl) {
         redefined("Instruction", "Instruction", prevdecl, newdecl);
     }

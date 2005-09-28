@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,34 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Sep 28, 2005
  */
 
-package jintgen.dep;
+package jintgen.jigir;
+
+import cck.parser.AbstractToken;
+import java.util.List;
 
 /**
+ * The <code>TypeRef</code> class represents a reference to a type within
+ * a source program. This class is used to
+ *
  * @author Ben L. Titzer
  */
-public class DependencyAnalyzer {
+public abstract class TypeRef {
+    protected final AbstractToken typecon;
+    protected final List qualifiers;
+    protected final List<TypeRef> parameters;
+    protected TypeCon typeCon;
+    protected Type type;
+
+    public TypeRef(AbstractToken n, List qual, List<TypeRef> p) {
+        typecon = n;
+        qualifiers = qual;
+        parameters = p;
+    }
+
+    public abstract Type resolve();
+    public abstract TypeCon resolveTypeCon();
 }

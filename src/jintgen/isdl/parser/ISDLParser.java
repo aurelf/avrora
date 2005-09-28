@@ -263,12 +263,13 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public void Global() throws ParseException {
-                  Token n;
+                  Token n; Type t;
     jj_consume_token(GLOBAL);
     n = jj_consume_token(IDENTIFIER);
     jj_consume_token(77);
-    Type();
+    t = Type();
     jj_consume_token(SEMI);
+                                                   arch.addGlobal(n, t);
   }
 
   final public void Memory() throws ParseException {
