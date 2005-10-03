@@ -32,10 +32,11 @@
  * Creation date: Sep 28, 2005
  */
 
-package jintgen.jigir;
+package jintgen.types;
 
-import java.util.List;
-import java.util.HashSet;
+import jintgen.isdl.HashList;
+import java.util.*;
+import cck.util.Util;
 
 /**
  * The <code>TypeCon</code> class represents a type constructor that given a list
@@ -58,34 +59,70 @@ import java.util.HashSet;
  *
  * @author Ben L. Titzer
  */
-public abstract class TypeCon {
+public class TypeCon {
 
     protected final String name;
-    protected final HashSet<String> supportedQuals;
-    protected final HashSet<String> supportedBinOps;
-    protected final HashSet<String> supportedUnOps;
+    protected final HashList<String, Dimension> dimensions;
+
+    /**
+     * The <code>Dimension</code> class represents a new type dimension that applies
+     * to a type constructor. A dimension might be the size of an integer type,
+     * the types of parameters to a function, the element type of an array, or a
+     * qualifier that has been introduced by the user.
+     */
+    protected abstract static class Dimension {
+
+        protected final String name;
+
+        /**
+         * The default constructor for the <code>Dimension</code> class simply accepts
+         * the name of the dimension as a string that is used to distinguish it from
+         * other type dimensions.
+         * @param n the name of the type dimension as a string
+         */
+        protected Dimension(String n) {
+            name = n;
+        }
+
+        public abstract Object build(List params);
+    }
 
     /**
      * The protected constructor for the <code>TypeCon</code> class initializes
      * the name field.
      * @param n the name of this type constructor
-     * @param qual the set of qualifiers supported by this type constructor
-     * @param binop the set of binary operations supported by this type constructor
-     * @param unop the set of unary operations supported by this type constructor
      */
-    protected TypeCon(String n, String[] qual, String[] binop, String[] unop) {
+    public TypeCon(String n) {
         name = n;
-        supportedQuals = set(qual);
-        supportedBinOps = set(binop);
-        supportedUnOps = set(unop);
+        dimensions = new HashList<String, Dimension>();
     }
 
-    private HashSet<String> set(String[] str) {
-        HashSet<String> ret = new HashSet<String>();
-        if ( str != null ) {
-            for ( String s : str ) ret.add(s);
-        }
-        return ret;
+    public Type newType(TypeEnv te) {
+        throw Util.unimplemented();
+    }
+
+    public Type newType(TypeEnv te, HashMap<String, List> dims) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>addDimension()</code> method adds a new dimension to this type constructor.
+     * The new dimension has a string name that can be used to retrieve the dimension later.
+     * @param d the new type dimension to add to this type constructor
+     */
+    public void addDimension(Dimension d) {
+        dimensions.add(d.name, d);
+    }
+
+    /**
+     * The <code>getDimension()</code> method looks up the specified type dimension for this
+     * type constructor given the name of the dimension as a string.
+     * @param name the name of the type dimension as a string
+     * @return a reference to the <code>Dimension</code> instance if this type constructor
+     * supports the dimension; null otherwise
+     */
+    public Dimension getDimension(String name) {
+        return dimensions.get(name);
     }
 
     /**
@@ -96,54 +133,18 @@ public abstract class TypeCon {
         return name;
     }
 
-    /**
-     * The <code>newType()</code> method creates a new <code>Type</code> instance
-     * with the given qualifiers and type parameters.
-     * @param qualifiers a list of type qualifiers for this type
-     * @param types a list of type parameters (e.g. types of a HashMap) to this type
-     * @return a new <code>Type</code> instance that represents the type
-     */
-    public abstract Type newType(TypeEnv te, List qualifiers, List types);
-
-    /**
-     * The <code>supportsQualifier()</code> method checks whether this type constructor
-     * supports the specified type qualifier. Not all qualifiers can apply to all types;
-     * for example, the "non-null" qualifier would not apply to primitive types, and
-     * "positive" qualifier would not apply to reference types.
-     * @param qual the qualifier represented as a string
-     * @return true if types constructed by this <code>TypeCon</code> can legally have
-     * the specified qualifier.
-     */
-    public boolean supportsQualifier(String qual) {
-        return supportedQuals.contains(qual);
-    }
-
-    /**
-     * The <code>supportsBinOp()</code> method checks whether this type constructor
-     * supports the specified (infix) binary operator. Not all binary operators can
-     * apply to all types; for example, the bitwise operators apply only to integers,
-     * and the logical operators apply only to booleans. Reference types do not
-     * support any binary operators.
-     * @param binop the binary operator represented as a string
-     * @return true if types constructed by this <code>TypeCon</code> can legally
-     * support the specified binary operator
-     */
-    public boolean supportsBinOp(String binop) {
-        return supportedBinOps.contains(binop);
-    }
-
-    /**
-     * The <code>supportsUnOp()</code> method checks whether this type constructor
-     * supports the specified unary operator. Not all unary operators can
-     * apply to all types; for example, the bitwise complement operator "~" applies
-     * only to integers, and the logical not operator "!" applies only to booleans.
-     * Reference types do not support any binary operators.
-     * @param unop the unary operator represented as a string
-     * @return true if types constructed by this <code>TypeCon</code> can legally
-     * support the specified unary operator
-     */
-    public boolean supportsUnOp(String unop) {
-        return supportedUnOps.contains(unop);
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append(name);
+        buf.append("(");
+        boolean first = true;
+        for ( Dimension d : dimensions ) {
+            if ( !first ) buf.append(", ");
+            buf.append(d.name);
+            first = false;
+        }
+        buf.append("(");
+        return name;
     }
 
     /**
@@ -154,7 +155,9 @@ public abstract class TypeCon {
      * @return true if types constructed by this <code>TypeCon</code> can legally
      * support indexing with the <code>[]</code> brackets
      */
-    public abstract boolean supportsIndex();
+    public boolean supportsIndex() {
+        return false;
+    }
 
     /**
      * The <code>supportsRange()</code> method checks whether this type constructor
@@ -164,7 +167,9 @@ public abstract class TypeCon {
      * @return true if types constructed by this <code>TypeCon</code> can legally
      * support range indexing with the <code>[h:l]</code> brackets
      */
-    public abstract boolean supportsRange();
+    public boolean supportsRange() {
+        return false;
+    }
 
     /**
      * The <code>supportsMembers()</code> method checks whether this type constructor
@@ -174,5 +179,18 @@ public abstract class TypeCon {
      * @return true if types constructed by this <code>TypeCon</code> can legally
      * support member access
      */
-    public abstract boolean supportsMembers();
+    public boolean supportsMembers() {
+        return false;
+    }
+
+    /**
+     * The <code>supportsApplication()</code> method checks whether this type constructor
+     * supports function application. Few types support application to an expression
+     * or list of expressions; in Virgil, only the "function" family of types do.
+     * @return true if types constructed by this <code>TypeCon</code> can legally
+     * support application
+     */
+    public boolean supportsApplication() {
+        return false;
+    }
 }

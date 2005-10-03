@@ -28,37 +28,45 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Oct 3, 2005
  */
 
-package jintgen.isdl;
+package jintgen.types;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.Type;
+import cck.util.Util;
+import cck.parser.AbstractToken;
+import java.util.List;
 
 /**
- * The <code>Property</code> class represents a property associated with an instruction, encoding,
- * or addressing mode. It has a name, a type, and a value. Properties can be used by ISDL processing
- * tools to learn certain information about the item, such as the number of cycles for an instruction,
- * whether it is a branch, or the source syntax for an addressing mode.
+ * The <code>SignDimension</code> class represents a sign dimension that applies to integer
+ * variables. The sign dimension indicates the presence of a signed bit.
  *
  * @author Ben L. Titzer
  */
-public class Property {
+public class SignDimension extends TypeCon.Dimension {
 
-    public final Token name;
-    public final Type type;
-    public final Token value;
+    public SignDimension() {
+        super("sign");
+    }
 
-    /**
-     * The default constructor for the <code>Property</code> class simplying initializes all of the
-     * fields, including hte name, the type, and the value of this property.
-     * @param n the name of the property
-     * @param t the type of the property
-     * @param v the value of the property
-     */
-    public Property(Token n, Type t, Token v) {
-        name = n;
-        type = t;
-        value = v;
+    public Object build(List params) {
+        boolean signed = true;
+        if ( params.size() > 1) throw Util.failure("sign type dimension expects 0 or 1 parameters");
+        if ( params.size() == 1 ) {
+            Object obj = params.get(0);
+            if ( obj instanceof AbstractToken )
+                signed = isSigned(((AbstractToken)obj).image);
+            else if ( obj instanceof String )
+                signed = isSigned((String)obj);
+            else throw Util.failure("sign type dimension expects AbstractToken or String");
+        }
+        return signed;
+    }
+
+    private boolean isSigned(String str) {
+        if ( str.equals("+") ) return false;
+        if ( str.equals("-") ) return true;
+        throw Util.failure("sign type dimension expects \"+\" or \"-\"");
     }
 }

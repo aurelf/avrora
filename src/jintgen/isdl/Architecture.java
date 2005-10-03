@@ -34,7 +34,7 @@ package jintgen.isdl;
 
 import cck.text.Verbose;
 import jintgen.isdl.parser.Token;
-import jintgen.jigir.Type;
+import jintgen.types.Type;
 
 /**
  * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and

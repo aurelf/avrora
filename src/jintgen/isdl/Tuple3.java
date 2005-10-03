@@ -28,37 +28,37 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Oct 3, 2005
  */
 
 package jintgen.isdl;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.Type;
-
 /**
- * The <code>Property</code> class represents a property associated with an instruction, encoding,
- * or addressing mode. It has a name, a type, and a value. Properties can be used by ISDL processing
- * tools to learn certain information about the item, such as the number of cycles for an instruction,
- * whether it is a branch, or the source syntax for an addressing mode.
+ * The <code>Tuple3</code> class represents a tuple of three objects.
+ * This class is used in hash maps, hash sets, etc.
  *
  * @author Ben L. Titzer
  */
-public class Property {
+public class Tuple3<A, B, C> {
+    public final A a;
+    public final B b;
+    public final C c;
 
-    public final Token name;
-    public final Type type;
-    public final Token value;
+    public Tuple3(A a, B b, C c) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
+    }
 
-    /**
-     * The default constructor for the <code>Property</code> class simplying initializes all of the
-     * fields, including hte name, the type, and the value of this property.
-     * @param n the name of the property
-     * @param t the type of the property
-     * @param v the value of the property
-     */
-    public Property(Token n, Type t, Token v) {
-        name = n;
-        type = t;
-        value = v;
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof Tuple3) ) return false;
+        Tuple3 to = (Tuple3)o;
+        return to.a.equals(a) && to.b.equals(b) && to.c.equals(c);
+    }
+
+    public int hashCode() {
+        return a.hashCode() + b.hashCode() * 61 + c.hashCode() * 123;
     }
 }

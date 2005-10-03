@@ -31,7 +31,7 @@
  *
  * Created Sep 20, 2005
  */
-package jintgen.jigir;
+package jintgen.types;
 
 import jintgen.isdl.parser.Token;
 import cck.text.StringUtil;

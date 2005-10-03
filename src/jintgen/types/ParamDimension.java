@@ -28,37 +28,39 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Oct 3, 2005
  */
 
-package jintgen.isdl;
+package jintgen.types;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.Type;
+import java.util.List;
 
 /**
- * The <code>Property</code> class represents a property associated with an instruction, encoding,
- * or addressing mode. It has a name, a type, and a value. Properties can be used by ISDL processing
- * tools to learn certain information about the item, such as the number of cycles for an instruction,
- * whether it is a branch, or the source syntax for an addressing mode.
- *
  * @author Ben L. Titzer
  */
-public class Property {
+public class ParamDimension extends TypeCon.Dimension {
 
-    public final Token name;
-    public final Type type;
-    public final Token value;
+    public static final int COVARIANT = 0;
+    public static final int CONTRAVARIANT = 1;
+    public static final int INVARIANT = 2;
 
-    /**
-     * The default constructor for the <code>Property</code> class simplying initializes all of the
-     * fields, including hte name, the type, and the value of this property.
-     * @param n the name of the property
-     * @param t the type of the property
-     * @param v the value of the property
-     */
-    public Property(Token n, Type t, Token v) {
-        name = n;
-        type = t;
-        value = v;
+    protected final int variance;
+    protected final List<Integer> vars;
+
+    public ParamDimension(String name, int variance) {
+        super(name);
+        this.variance = variance;
+        this.vars = null;
+    }
+
+    public ParamDimension(String name, List<Integer> var) {
+        super(name);
+        this.variance = -1;
+        this.vars = var;
+    }
+
+    public Object build(List params) {
+        return null;
     }
 }

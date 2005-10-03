@@ -36,7 +36,7 @@ import cck.text.StringUtil;
 import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
-import jintgen.jigir.Type;
+import jintgen.types.Type;
 
 import java.util.LinkedList;
 import java.util.List;

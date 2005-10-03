@@ -33,7 +33,7 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
-import jintgen.jigir.Type;
+import jintgen.types.Type;
 
 /**
  * @author Ben L. Titzer

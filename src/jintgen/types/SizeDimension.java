@@ -28,37 +28,45 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Oct 3, 2005
  */
 
-package jintgen.isdl;
+package jintgen.types;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.Type;
+import cck.util.Util;
+import cck.parser.AbstractToken;
+import cck.text.StringUtil;
+import java.util.List;
 
 /**
- * The <code>Property</code> class represents a property associated with an instruction, encoding,
- * or addressing mode. It has a name, a type, and a value. Properties can be used by ISDL processing
- * tools to learn certain information about the item, such as the number of cycles for an instruction,
- * whether it is a branch, or the source syntax for an addressing mode.
+ * The <code>SizeDimension</code> class represents a size dimension for an integer
+ * type in the ISDL code.
  *
  * @author Ben L. Titzer
  */
-public class Property {
+public class SizeDimension extends TypeCon.Dimension {
 
-    public final Token name;
-    public final Type type;
-    public final Token value;
+    public SizeDimension() {
+        super("size");
+    }
 
-    /**
-     * The default constructor for the <code>Property</code> class simplying initializes all of the
-     * fields, including hte name, the type, and the value of this property.
-     * @param n the name of the property
-     * @param t the type of the property
-     * @param v the value of the property
-     */
-    public Property(Token n, Type t, Token v) {
-        name = n;
-        type = t;
-        value = v;
+    public Object build(List params) {
+        int size;
+        int len = params.size();
+        if ( len != 1) throw Util.failure("size type dimension expects 1 parameter");
+        Object obj = params.get(0);
+        if ( obj instanceof AbstractToken )
+            size = sizeOf(((AbstractToken)obj).image);
+        else if ( obj instanceof String )
+            size = sizeOf((String)obj);
+        else if ( obj instanceof Integer )
+            size = ((Integer)obj);
+        else throw Util.failure("size type dimension expects AbstractToken, String or Integer");
+        return size;
+    }
+
+    private int sizeOf(String str) {
+        return StringUtil.evaluateIntegerLiteral(str);
     }
 }

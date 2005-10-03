@@ -36,6 +36,7 @@ import cck.text.StringUtil;
 import cck.util.Util;
 import cck.parser.SourcePoint;
 import jintgen.isdl.parser.Token;
+import jintgen.types.Type;
 
 /**
  * The <code>Expr</code> class represents an expression in the IR. Expressions are evaluated and produce a

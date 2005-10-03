@@ -33,6 +33,7 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
+import jintgen.types.Type;
 import cck.util.Util;
 
 /**

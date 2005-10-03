@@ -37,6 +37,7 @@ import cck.util.Util;
 import cck.parser.ErrorReporter;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
+import jintgen.types.Type;
 
 /**
  * @author Ben L. Titzer

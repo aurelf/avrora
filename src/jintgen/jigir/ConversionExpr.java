@@ -34,6 +34,7 @@ package jintgen.jigir;
 
 import cck.text.StringUtil;
 import cck.parser.SourcePoint;
+import jintgen.types.Type;
 
 /**
  * The <code>MapExpr</code> class represents an expression that is an access of an element within a map.

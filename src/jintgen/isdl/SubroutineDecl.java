@@ -35,7 +35,7 @@ package jintgen.isdl;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
 import jintgen.jigir.Stmt;
-import jintgen.jigir.Type;
+import jintgen.types.Type;
 
 import java.util.List;
 

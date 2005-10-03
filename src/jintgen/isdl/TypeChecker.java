@@ -35,6 +35,7 @@
 package jintgen.isdl;
 
 import jintgen.jigir.*;
+import jintgen.types.Type;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;

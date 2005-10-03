@@ -32,10 +32,14 @@
  * Creation date: Sep 28, 2005
  */
 
-package jintgen.jigir;
+package jintgen.types;
 
-import cck.util.Util;
+import jintgen.types.Type;
+import jintgen.types.TypeCon;
+import jintgen.isdl.Tuple3;
+import jintgen.isdl.Tuple2;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The <code>TypeEnv</code> class represents a type environment that contains a
@@ -48,8 +52,11 @@ import java.util.HashMap;
  */
 public abstract class TypeEnv {
 
+    protected final TypeEnv parent;
     protected final HashMap<String, TypeCon> typeCons;
     protected final HashMap<String, Type> types;
+    protected final HashMap<Tuple3<String, TypeCon, TypeCon>, Object> binops;
+    protected final HashMap<Tuple2<String, TypeCon>, Object> unops;
 
     /**
      * The constructor for the <code>TypeEnv</code> class creates an internal map
@@ -57,8 +64,11 @@ public abstract class TypeEnv {
      * by name.
      */
     protected TypeEnv() {
+        parent = null;
         typeCons = new HashMap<String, TypeCon>();
         types = new HashMap<String, Type>();
+        binops = new HashMap<Tuple3<String, TypeCon, TypeCon>, Object>();
+        unops = new HashMap<Tuple2<String, TypeCon>, Object>();
     }
 
     /**
@@ -69,19 +79,42 @@ public abstract class TypeEnv {
      * type constructor if it exists; null otherwise
      */
     public TypeCon resolveTypeCon(String name) {
-        return typeCons.get(name);
+        TypeCon typeCon = typeCons.get(name);
+        if ( typeCon == null && parent != null ) return parent.resolveTypeCon(name);
+        return typeCon;
     }
 
     /**
-     * The <code>addTypeCon()</code> method adds a new, named, type constructor
+     * The <code>addLocalTypeCon()</code> method adds a new, named, type constructor
      * to this type environment. This method is used in the initialization of
      * a language's type environment (e.g. to add type constructors corresponding
      * to arrays, functions, etc) and during the processing of a program to
      * add user-defined types and type constructors to this environment
      * @param tc the new type constructor to add to this type environment
      */
-    public void addTypeCon(TypeCon tc) {
+    public void addLocalTypeCon(TypeCon tc) {
         typeCons.put(tc.getName(), tc);
+    }
+
+    /**
+     * The <code>addGlobalTypeCon()</code> method adds a new, named, type constructor
+     * to this type environment. This method is used in the initialization of
+     * a language's type environment (e.g. to add type constructors corresponding
+     * to arrays, functions, etc) and during the processing of a program to
+     * add user-defined types and type constructors to this environment
+     * @param tc the new type constructor to add to this type environment
+     */
+    public void addGlobalTypeCon(TypeCon tc) {
+        if ( parent != null ) parent.addGlobalTypeCon(tc);
+        else typeCons.put(tc.getName(), tc);
+    }
+
+    public void addBinOp(String binop, TypeCon a, TypeCon b) {
+        binops.put(new Tuple3<String, TypeCon, TypeCon>(binop, a, b), binop);
+    }
+
+    public void addUnOp(String binop, TypeCon a) {
+        unops.put(new Tuple2<String, TypeCon>(binop, a), binop);
     }
 
     /**

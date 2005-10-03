@@ -32,10 +32,11 @@
  * Creation date: Sep 28, 2005
  */
 
-package jintgen.jigir;
+package jintgen.types;
 
 import cck.parser.AbstractToken;
 import java.util.List;
+import java.util.HashMap;
 
 /**
  * The <code>TypeRef</code> class represents a reference to a type within
@@ -43,19 +44,57 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public abstract class TypeRef {
-    protected final AbstractToken typecon;
-    protected final List qualifiers;
-    protected final List<TypeRef> parameters;
+public class TypeRef {
+
+    /**
+     * The <code>tcName</code> field stores a reference to the token in the source program
+     * that mentions the type constructor's name (such as "int", "boolean", "array", etc).
+     */
+    protected final AbstractToken tcName;
+
+    /**
+     * The <code>dimensions</code> field stores a reference to a map that contains, for
+     * each dimension, the values of the parameters to that dimension.
+     */
+    protected final HashMap<String, List> dimensions;
+
+    /**
+     * The <code>typeCon</code> field stores a reference to the type constructor for
+     * this type reference. This field is not initialized until the type environment
+     * is fully constructed and this type reference is resolved.
+     */
     protected TypeCon typeCon;
+
+    /**
+     * The <code>type</code> field stores a reference to the actual type that this
+     * type reference to refers to. This field is not initialized until the type
+     * environment is fully constructed and this type reference is resolved.
+     */
     protected Type type;
 
-    public TypeRef(AbstractToken n, List qual, List<TypeRef> p) {
-        typecon = n;
-        qualifiers = qual;
-        parameters = p;
+    /**
+     * The constructor for the <code>TypeRef</code> class creates a new type reference
+     * that refers to the specified type constructor.
+     * @param n a token that represents the name of the specified type constructor
+     */
+    public TypeRef(AbstractToken n) {
+        tcName = n;
+        dimensions = new HashMap<String, List>();
     }
 
-    public abstract Type resolve();
-    public abstract TypeCon resolveTypeCon();
+    public void addDimension(String name, List val) {
+        dimensions.put(name, val);
+    }
+
+    public Type resolve(TypeEnv te) {
+        if ( type == null ) {
+            typeCon = te.resolveTypeCon(tcName.image);
+            type = typeCon.newType(te, dimensions);
+        }
+        return type;
+    }
+
+    public TypeCon resolveTypeCon(TypeEnv te) {
+        return te.resolveTypeCon(tcName.image);
+    }
 }
