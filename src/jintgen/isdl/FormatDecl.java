@@ -40,12 +40,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The <code>EncodingDecl</code> class represents the encoding of an instruction in machine code, describing
+ * The <code>FormatDecl</code> class represents the encoding of an instruction in machine code, describing
  * how to encode the mnemonic and operands into binary and vice versa.
  *
  * @author Ben L. Titzer
  */
-public class EncodingDecl extends Item {
+public class FormatDecl extends Item {
 
     protected final int prio;
 
@@ -55,7 +55,7 @@ public class EncodingDecl extends Item {
 
     protected Cond condition;
 
-    public EncodingDecl(Token n, Token pr, List<Expr> f) {
+    public FormatDecl(Token n, Token pr, List<Expr> f) {
         super(n);
         fields = new LinkedList<BitField>();
         if ( f != null ) for ( Expr e : f ) {
@@ -105,10 +105,10 @@ public class EncodingDecl extends Item {
         }
     }
 
-    public static class Derived extends EncodingDecl {
+    public static class Derived extends FormatDecl {
         public final Token pname;
         public final List<Substitution> subst;
-        public EncodingDecl parent;
+        public FormatDecl parent;
 
         public Derived(Token n, Token pr, Token p, List<Substitution> s) {
             super(n, pr, null);
@@ -116,7 +116,7 @@ public class EncodingDecl extends Item {
             subst = s;
         }
 
-        public void setParent(EncodingDecl p) {
+        public void setParent(FormatDecl p) {
             parent = p;
         }
 

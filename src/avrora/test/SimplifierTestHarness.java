@@ -37,6 +37,8 @@ import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
 import java.util.Properties;
+import cck.test.TestCase;
+import cck.test.TestHarness;
 
 /**
  * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the

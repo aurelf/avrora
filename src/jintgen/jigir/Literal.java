@@ -33,7 +33,6 @@
 package jintgen.jigir;
 
 import cck.parser.SourcePoint;
-import cck.util.Util;
 import jintgen.isdl.parser.Token;
 
 /**
@@ -106,21 +105,6 @@ public abstract class Literal extends Expr {
         public IntExpr(int v) {
             super(new Token());
             value = v;
-        }
-
-        /**
-         * The <code>getBitWidth()</code> method returns the known bit size of this expression which is needed
-         * in computing the size of an encoding. For integer literals, the known bit width is only defined for
-         * binary constants (e.g. "0b0101011"), in which case it is the number of bits after the "0b" prefix.
-         *
-         * @return the width of this integer in bits if it is a binary literal; an error otherwise
-         */
-        public int getBitWidth() {
-            if (token.image.charAt(1) == 'b') {
-                return token.image.length() - 2;
-            } else {
-                throw Util.failure("unknown bit width of integer constant: " + token.image);
-            }
         }
 
         /**

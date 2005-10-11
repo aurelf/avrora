@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,29 +28,40 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Oct 11, 2005
  */
 
-package avrora.test;
+package jintgen.isdl;
 
+import cck.test.TestHarness;
 import java.util.Properties;
+import java.io.File;
+import java.io.FileInputStream;
+import jintgen.isdl.parser.ISDLParser;
+import cck.test.TestCase;
 
 /**
- * The <code>TestHarness</code> interface encapsulates the notion of a testing harness that is capable of
- * creating the correct type of test cases given the file and a list of properties extracted from the file by
- * the automated testing framework.
- *
  * @author Ben L. Titzer
  */
-public interface TestHarness {
+public class VerifierTestHarness implements TestHarness {
 
-    /**
-     * The <code>newTestCase()</code> method creates a new test case of the right type given the file name and
-     * the properties already extracted from the file by the testing framework.
-     *
-     * @param fname the name of the file
-     * @param props a list of properties extracted from the file
-     * @return an instance of the <code>TestCase</code> class
-     * @throws Exception if there is a problem creating the testcase or reading it
-     */
-    public TestCase newTestCase(String fname, Properties props) throws Exception;
+    class VerifierTest extends TestCase.ExpectSourceError {
+
+        VerifierTest(String fname, Properties props) {
+            super(fname, props);
+        }
+
+        public void run() throws Exception {
+            File archfile = new File(filename);
+            FileInputStream fis = new FileInputStream(archfile);
+            ISDLParser parser = new ISDLParser(fis);
+            Architecture a = parser.Architecture();
+            new Verifier(a).verify();
+        }
+    }
+
+    public TestCase newTestCase(String fname, Properties props) throws Exception {
+        return new VerifierTest(fname, props);
+    }
 }

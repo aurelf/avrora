@@ -177,6 +177,10 @@ public class JIGIRTypeEnv extends TypeEnv {
         addBinOp(BOOL, BOOL, new Logical.EQU());
         addBinOp(BOOL, BOOL, new Logical.NEQU());
 
+        // add comparisons for booleans
+        addBinOp(BOOL, BOOL, new Logical.EQU());
+        addBinOp(BOOL, BOOL, new Logical.NEQU());
+
         // add comparisons for integers
         addBinOp(INT, INT, new Logical.EQU());
         addBinOp(INT, INT, new Logical.NEQU());

@@ -100,9 +100,10 @@ public class DeclStmt extends Stmt {
     public DeclStmt(String n, String t, Expr i) {
         name = new Token();
         name.image = n;
-        throw Util.unimplemented();
-//        type = new Type(null, null, null);
-//        init = i;
+        Token tok = new Token();
+        tok.image = t;
+        type = new TypeRef(tok);
+        init = i;
     }
 
     /**

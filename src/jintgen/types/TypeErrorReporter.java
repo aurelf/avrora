@@ -34,12 +34,17 @@
 
 package jintgen.types;
 
-import cck.parser.ErrorReporter;
-import cck.parser.AbstractToken;
-import cck.util.Util;
-import jintgen.isdl.parser.Token;
+import cck.parser.*;
 
 /**
+ * The <code>TypeErrorReporter</code> class implements an <code>ErrorReporter</code> subclass
+ * that has methods to report typing errors that occur in type checking a program. For example,
+ * when a type mismatch occurs, the typechecker can call <code>.TypeMismatch()</code> with the
+ * type of syntactic construct in question <code>Typeable</code> instance, and the type expected.
+ *
+ * An instance of this error reporter is needed with each <code>TypeEnv</code> instance so that
+ * an unresolved <code>TypeRef</code> can be reported to the user.
+ *
  * @author Ben L. Titzer
  */
 public class TypeErrorReporter extends ErrorReporter {
@@ -55,6 +60,7 @@ public class TypeErrorReporter extends ErrorReporter {
 
     public void TypesCannotBeCompared(Typeable t1, Typeable t2) {
         String report = "Types cannot be compared: " + t1.getType() + " and " + t2.getType();
-        throw Util.failure(report);
+        SourcePoint sp = new SourcePoint(t1.getSourcePoint(), t2.getSourcePoint());
+        error("TypesCannotBeCompared", sp, report);
     }
 }

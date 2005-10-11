@@ -131,17 +131,6 @@ public abstract class Expr implements Typeable {
     }
 
     /**
-     * The <code>getBitWidth()</code> method gets the number of bits needed to represent this value. This is
-     * needed in the case of encoding formats, which need to compute the size of an instruction based on the
-     * width of its internal fields.
-     *
-     * @return the number of bits that this expression occupies
-     */
-    public int getBitWidth() {
-        throw Util.unimplemented();
-    }
-
-    /**
      * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is used
      * to compute when inner expressions must be nested within parentheses in order to preserve the implied
      * order of evaluation.

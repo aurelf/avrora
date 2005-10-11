@@ -30,10 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.test;
+package cck.test;
 
-import avrora.Defaults;
 import cck.text.*;
+import cck.util.ClassMap;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
@@ -47,15 +47,20 @@ import java.util.*;
  * instances of the <code>TestCase</code> class that are collected by this framework.
  *
  * @author Ben L. Titzer
- * @see TestHarness
- * @see TestCase
- * @see TestResult
+ * @see cck.test.TestHarness
+ * @see cck.test.TestCase
+ * @see cck.test.TestResult
  */
 public class AutomatedTester {
 
     public static boolean LONG_REPORT;
 
+    private final ClassMap harnessMap;
     private final Verbose.Printer printer = Verbose.getVerbosePrinter("test");
+
+    public AutomatedTester(ClassMap hm) {
+        harnessMap = hm;
+    }
 
     private class TestPair {
         final TestCase testcase;
@@ -189,7 +194,7 @@ public class AutomatedTester {
             return new TestCase.Malformed(fname, "no test harness specified");
 
         try {
-            TestHarness harness = Defaults.getTestHarness(hname);
+            TestHarness harness = (TestHarness)harnessMap.getObjectOfClass(hname);
             return harness.newTestCase(fname, vars);
         } catch (Throwable t) {
             // TODO: better error messages for failure to find test harness

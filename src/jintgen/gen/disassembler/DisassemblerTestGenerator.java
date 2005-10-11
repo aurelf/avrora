@@ -70,11 +70,15 @@ public class DisassemblerTestGenerator{
     }
 
     public void visit(InstrDecl d) {
-        if ( d.getSyntax() != null ) {
+        if ( getSyntax(d) != null ) {
             new SyntaxGenerator(d).generate();
         } else {
             new SimpleGenerator(d).generate();
         }
+    }
+
+    private String getSyntax(InstrDecl d) {
+        throw Util.unimplemented();
     }
 
     abstract class OperandGenerator {
@@ -238,7 +242,7 @@ public class DisassemblerTestGenerator{
         SyntaxGenerator(InstrDecl decl) {
             super(decl);
 
-            syntax = decl.getSyntax();
+            syntax = getSyntax(decl);
 
             int numops = decl.getOperands().size();
             opnames = new String[numops];

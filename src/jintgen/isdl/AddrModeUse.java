@@ -58,7 +58,7 @@ public class AddrModeUse {
         }
     }
 
-    public void addEncoding(EncodingDecl e) {
+    public void addEncoding(FormatDecl e) {
         if ( localDecl != null )
             localDecl.addEncoding(e);
         else

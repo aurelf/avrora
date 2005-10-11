@@ -73,12 +73,12 @@ public class EncodingInst {
 
     final InstrDecl instr;
     final AddrModeDecl addrMode;
-    final EncodingDecl encoding;
+    final FormatDecl encoding;
     final byte[] bitStates;
     final List<Field> simplifiedExprs;
 
 
-    EncodingInst(InstrDecl id, AddrModeDecl am, EncodingDecl ed) {
+    EncodingInst(InstrDecl id, AddrModeDecl am, FormatDecl ed) {
         instr = id;
         addrMode = am;
         bitStates = new byte[ed.bitWidth];
@@ -102,17 +102,17 @@ public class EncodingInst {
     }
 
     private void initializeBitStates() {
-        EncodingDecl ed = encoding;
+        FormatDecl ed = encoding;
         // create a constant propagator needed to evaluate integer literals and operands
         ConstantPropagator cp = new ConstantPropagator();
         ConstantPropagator.Environ ce = cp.createEnvironment();
 
-        List<EncodingDecl.BitField> fields = DGUtil.initConstantEnviron(ce, instr, addrMode, ed);
+        List<FormatDecl.BitField> fields = DGUtil.initConstantEnviron(ce, instr, addrMode, ed);
 
         // scan through the expressions corresponding to the fields that make up this encoding
         // and initialize the bitState array to either ENC_ONE, ENC_ZERO, or ENC_VAR
         int offset = 0;
-        for ( EncodingDecl.BitField e : fields ) {
+        for ( FormatDecl.BitField e : fields ) {
             // get the bit width of the parent encoding field
             int size = e.getWidth();
             // evaluate the parent encoding expression, given values for operands

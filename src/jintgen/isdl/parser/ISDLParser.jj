@@ -265,7 +265,7 @@ void Instruction() :
     AddrModeUse am;
     List<Stmt> s = new LinkedList<Stmt>();
     List<Property> p = new LinkedList<Property>();
-    EncodingDecl e = null;
+    FormatDecl e;
     boolean pseudo = false;
 }
 {
@@ -305,7 +305,7 @@ Property Property(List<Property> pl) : { Property p; Token name, v; TypeRef t; }
       return p; }
 }
 
-Token Value() : { Token t = null; }
+Token Value() : { Token t; }
 {
   ( t = <STRING_LITERAL>
   | t = <IDENTIFIER>
@@ -324,7 +324,7 @@ void AddrModeDecl() : {
     AddrModeDecl amd;
     Property p;
     List<AddrModeDecl.Operand> o;
-    EncodingDecl e;
+    FormatDecl e;
 }
 {
     "addr-mode" n = <IDENTIFIER> o = Operands() { amd = new AddrModeDecl(n, o); } "{"
@@ -343,14 +343,14 @@ void AddrSetDecl() : { Token n; List<Token> l = new LinkedList<Token>(); Token e
     { arch.addAddressingModeSet(new AddrModeSetDecl(n, l)); }
 }
 
-EncodingDecl Encoding(Token n) : { EncodingDecl d; EncodingDecl.Cond ec = null; }
+FormatDecl Encoding(Token n) : { FormatDecl d; FormatDecl.Cond ec; }
 {
     "encoding" "=" d = Format(n) [ec = EncodingCond() { d.setCond(ec); }] { return d; }
 }
 
-EncodingDecl.Cond EncodingCond() : { Token n; Expr e; }
+FormatDecl.Cond EncodingCond() : { Token n; Expr e; }
 {
-    "when" n = <IDENTIFIER> "==" e = Expr() { return new EncodingDecl.Cond(n, e); }
+    "when" n = <IDENTIFIER> "==" e = Expr() { return new FormatDecl.Cond(n, e); }
 }
 
 List<Stmt> Execute(List<Stmt> s) : { }
@@ -358,7 +358,7 @@ List<Stmt> Execute(List<Stmt> s) : { }
     "execute" Block(s) { return s; }
 }
 
-void FormatDecl() : { Token n; EncodingDecl d; }
+void FormatDecl() : { Token n; FormatDecl d; }
 {
     "format" n = <IDENTIFIER> "=" d = Format(n) { arch.addEncoding(d); }
 }
@@ -418,39 +418,38 @@ void MappingSetElem(SymbolMapping m) : { Token n, i; }
     { m.add(n, i); }
 }
 
-EncodingDecl Format(Token n) : { Token pr = null; EncodingDecl d; }
+FormatDecl Format(Token n) : { Token pr = null; FormatDecl d; }
 {
    ["priority" pr = <INTEGER_LITERAL>] (d = DerivedFormat(pr, n) | d = NewFormat(pr, n)) { return d; }
 }
 
-EncodingDecl DerivedFormat(Token pr, Token n) :
+FormatDecl DerivedFormat(Token pr, Token n) :
 {
     Token p;
-    EncodingDecl d;
-    List<EncodingDecl.Substitution> l = new LinkedList<EncodingDecl.Substitution>();
+    List<FormatDecl.Substitution> l = new LinkedList<FormatDecl.Substitution>();
 }
 {
     p = <IDENTIFIER> ["where" l = SubstitutionList()]
-    { return new EncodingDecl.Derived(n, pr, p, l); }
+    { return new FormatDecl.Derived(n, pr, p, l); }
 }
 
-EncodingDecl NewFormat(Token pr, Token n) : { List<Expr> l; }
+FormatDecl NewFormat(Token pr, Token n) : { List<Expr> l; }
 {
-    "{" l = ExprList() "}" { return new EncodingDecl(n, pr, l); }
+    "{" l = ExprList() "}" { return new FormatDecl(n, pr, l); }
 }
 
-List<EncodingDecl.Substitution> SubstitutionList() :
+List<FormatDecl.Substitution> SubstitutionList() :
 {
-    List<EncodingDecl.Substitution> l = new LinkedList<EncodingDecl.Substitution>();
-    EncodingDecl.Substitution s;
+    List<FormatDecl.Substitution> l = new LinkedList<FormatDecl.Substitution>();
+    FormatDecl.Substitution s;
 }
 {
     "{" s = Substitution() { l.add(s); } ("," s = Substitution() { l.add(s); })* "}" { return l; }
 }
 
-EncodingDecl.Substitution Substitution() : { Token n; Expr e; }
+FormatDecl.Substitution Substitution() : { Token n; Expr e; }
 {
-    n = <IDENTIFIER> "=" e = Expr() { return new EncodingDecl.Substitution(n, e); }
+    n = <IDENTIFIER> "=" e = Expr() { return new FormatDecl.Substitution(n, e); }
 }
 
 List<AddrModeDecl.Operand> Operands() :
@@ -739,7 +738,7 @@ TypeRef Type() : { Token t; HashMap<String, List> dims = new HashMap<String, Lis
 
 void SignDimension(HashMap<String, List> dims) : { Token s; }
 {
-    s = "+" | s = "-" { List l = new LinkedList(); l.add(s); dims.put("sign", l); }
+    (s = "+" | s = "-") { List l = new LinkedList(); l.add(s); dims.put("sign", l); }
 }
 
 void SizeDimension(HashMap<String, List> dims) : { Token w; }

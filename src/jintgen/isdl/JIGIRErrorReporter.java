@@ -92,8 +92,8 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         redefined("Instruction", "Instruction", prevdecl, newdecl);
     }
 
-    public void RedefinedEncoding(Token prevdecl, Token newdecl) {
-        redefined("Encoding", "Encoding format", prevdecl, newdecl);
+    public void RedefinedFormat(Token prevdecl, Token newdecl) {
+        redefined("Format", "Encoding format", prevdecl, newdecl);
     }
 
     public void RedefinedEnum(Token prevdecl, Token newdecl) {

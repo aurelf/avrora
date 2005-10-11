@@ -160,7 +160,7 @@ public class DisassemblerGenerator extends Generator {
         for ( InstrDecl d : arch.instructions ) {
             if (!d.pseudo) {
                 for ( AddrModeDecl am : d.addrMode.addrModes ) {
-                    for ( EncodingDecl ed : am.encodings ) {
+                    for ( FormatDecl ed : am.encodings ) {
                         int prio = ed.getPriority();
                         if ( prio > maxprio ) maxprio = prio;
                     }
@@ -200,7 +200,7 @@ public class DisassemblerGenerator extends Generator {
 
     private int addAllEncodings(AddrModeDecl am, InstrDecl d, InstrDecl instr) {
         int cntr = 0;
-        for ( EncodingDecl ed : am.encodings ) {
+        for ( FormatDecl ed : am.encodings ) {
             addEncodingInfo(d, am, ed);
             String eName = encodingName(am, cntr);
             reader.addEncoding(eName, instr, ed, am);
@@ -221,7 +221,7 @@ public class DisassemblerGenerator extends Generator {
         endblock();
     }
 
-    private void addEncodingInfo(InstrDecl d, AddrModeDecl am, EncodingDecl ed) {
+    private void addEncodingInfo(InstrDecl d, AddrModeDecl am, FormatDecl ed) {
         EncodingInst ei = new EncodingInst(d, am, ed);
         implementation.add(ei);
         encodingInstances++;

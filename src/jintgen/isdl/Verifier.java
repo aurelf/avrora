@@ -75,7 +75,7 @@ public class Verifier {
 
     private void verifyUniqueness() {
         uniqueCheck("UserType", "User type", arch.userTypes);
-        uniqueCheck("Encoding", "Encoding", arch.encodings);
+        uniqueCheck("Format", "Encoding format", arch.formats);
         uniqueCheck("Subroutine", "Subroutine", arch.subroutines);
         uniqueCheck("AddrMode", "Addressing mode", arch.addrModes);
         uniqueCheck("AddrModeSet", "AddressingModeSet", arch.addrSets);
@@ -132,7 +132,7 @@ public class Verifier {
 
     private void verifyEncodings() {
 
-        for ( EncodingDecl ed : arch.encodings ) {
+        for ( FormatDecl ed : arch.formats ) {
             if (printer.enabled) {
                 printer.print("verifying encoding " + ed.name.image + ' ');
             }
@@ -179,10 +179,14 @@ public class Verifier {
     }
 
     private void verifyOperands(List<AddrModeDecl.Operand> operands) {
+        HashMap<String, Token> set = new HashMap<String, Token>();
         for ( AddrModeDecl.Operand o : operands ) {
             if ( o.getOperandType() == null ) {
                 // if the operand type has not been resolved yet
                 String tname = o.type.image;
+                if ( set.containsKey(o.name.image) )
+                    ERROR.RedefinedOperand(o.name, set.get(o.name.image));
+                set.put(o.name.image, o.name);
                 OperandTypeDecl td = arch.getOperandDecl(tname);
                 if ( td == null )
                     ERROR.UnresolvedOperandType(o.type);
@@ -307,17 +311,17 @@ public class Verifier {
         id.code.setStmts(code);
     }
 
-    private void verifyEncodings(Iterable<EncodingDecl> el, AddrModeDecl am) {
+    private void verifyEncodings(Iterable<FormatDecl> el, AddrModeDecl am) {
         // for each of the declared encodings, find the parent and verify the size
-        for ( EncodingDecl encoding : el ) {
+        for ( FormatDecl encoding : el ) {
             verifyEncoding(encoding, am);
         }
     }
 
-    private void verifyEncoding(EncodingDecl ed, AddrModeDecl am) {
-        if (ed instanceof EncodingDecl.Derived) {
-            EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
-            EncodingDecl parent = arch.getEncoding(dd.pname.image);
+    private void verifyEncoding(FormatDecl ed, AddrModeDecl am) {
+        if (ed instanceof FormatDecl.Derived) {
+            FormatDecl.Derived dd = (FormatDecl.Derived)ed;
+            FormatDecl parent = arch.getEncoding(dd.pname.image);
             if ( parent == null )
                 ERROR.UnresolvedEncodingFormat(dd.pname);
             dd.setParent(parent);
@@ -329,20 +333,20 @@ public class Verifier {
                     +ed.name.beginLine+":"+ed.name.beginColumn);
     }
 
-    private int computeEncodingSize(EncodingDecl encoding, AddrModeDecl am) {
+    private int computeEncodingSize(FormatDecl encoding, AddrModeDecl am) {
         BitWidthComputer bwc = new BitWidthComputer(am);
         int size = 0;
-        List<EncodingDecl.BitField> fields;
-        if ( encoding instanceof EncodingDecl.Derived ) {
-            EncodingDecl.Derived ed = (EncodingDecl.Derived)encoding;
-            for ( EncodingDecl.Substitution s : ed.subst ) {
+        List<FormatDecl.BitField> fields;
+        if ( encoding instanceof FormatDecl.Derived ) {
+            FormatDecl.Derived ed = (FormatDecl.Derived)encoding;
+            for ( FormatDecl.Substitution s : ed.subst ) {
                 bwc.addSubstitution(s.name.image, s.expr);
             }
             fields = ed.parent.fields;
         } else {
             fields = encoding.fields;
         }
-        for ( EncodingDecl.BitField e : fields ) {
+        for ( FormatDecl.BitField e : fields ) {
             e.field.accept(bwc);
             e.width = bwc.width;
             size += bwc.width;

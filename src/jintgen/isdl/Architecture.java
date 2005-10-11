@@ -57,7 +57,7 @@ public class Architecture {
     public final HashList<String, SubroutineDecl> subroutines;
     public final HashList<String, InstrDecl> instructions;
     public final HashList<String, OperandTypeDecl> operandTypes;
-    public final HashList<String, EncodingDecl> encodings;
+    public final HashList<String, FormatDecl> formats;
     public final HashList<String, AddrModeDecl> addrModes;
     public final HashList<String, AddrModeSetDecl> addrSets;
     public final HashList<String, EnumDecl> enums;
@@ -78,7 +78,7 @@ public class Architecture {
         subroutines = new HashList<String, SubroutineDecl>();
         instructions = new HashList<String, InstrDecl>();
         operandTypes = new HashList<String, OperandTypeDecl>();
-        encodings = new HashList<String, EncodingDecl>();
+        formats = new HashList<String, FormatDecl>();
         addrModes = new HashList<String, AddrModeDecl>();
         addrSets = new HashList<String, AddrModeSetDecl>();
         enums = new HashList<String, EnumDecl>();
@@ -109,9 +109,9 @@ public class Architecture {
         operandTypes.add(d.name.image, d);
     }
 
-    public void addEncoding(EncodingDecl d) {
+    public void addEncoding(FormatDecl d) {
         printer.println("loading encoding format " + d.name.image + "...");
-        encodings.add(d.name.image, d);
+        formats.add(d.name.image, d);
     }
 
     public void addAddressingMode(AddrModeDecl d) {
@@ -146,8 +146,8 @@ public class Architecture {
         return operandTypes.get(name);
     }
 
-    public EncodingDecl getEncoding(String name) {
-        return encodings.get(name);
+    public FormatDecl getEncoding(String name) {
+        return formats.get(name);
     }
 
     public AddrModeDecl getAddressingMode(String name) {

@@ -92,20 +92,6 @@ public class FixedRangeExpr extends Expr {
     }
 
     /**
-     * The <code>getBitWidth()</code> method gets the number of bits needed to represent this value. This is
-     * needed in the case of encoding formats, which need to compute the size of an instruction based on the
-     * width of its internal fields. For a <code>FixedRangeExpr</code>, the number of bits required is
-     * statically known.
-     *
-     * @return the number of bits that this expression occupies
-     */
-    public int getBitWidth() {
-        int diff = (high_bit - low_bit);
-        if (diff < 0) diff = -diff;
-        return diff + 1;
-    }
-
-    /**
      * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e.
      * it is reducable to a constant and has no references to variables, maps, etc).
      *

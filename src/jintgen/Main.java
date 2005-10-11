@@ -37,13 +37,14 @@ import cck.text.*;
 import cck.util.*;
 import jintgen.gen.*;
 import jintgen.gen.disassembler.DisassemblerGenerator;
-import jintgen.isdl.Architecture;
-import jintgen.isdl.Verifier;
+import jintgen.isdl.*;
 import jintgen.isdl.parser.ISDLParser;
 import jintgen.isdl.parser.ParseException;
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
+import cck.test.AutomatedTester;
+import cck.test.TestHarness;
 
 /**
  * This is the main entrypoint to Jintgen. It is responsible for parsing the options to the main program and
@@ -82,6 +83,8 @@ public class Main {
             "description file. Each generator may generate a tool, such as an assembler or disassembler " +
             "or perform an analysis on the architecture description. Each generator may support " +
             "further options that allow its operation to be customized.");
+    public static final Option.Bool TEST = mainOptions.newOption("test", false,
+            "When specified, this option activates the internal testing framework of jIntGen.");
 
     public static ClassMap generatorMap = new ClassMap("Generator", Generator.class);
 
@@ -104,7 +107,11 @@ public class Main {
             // parse the command line options
             parseOptions(args);
 
-            if (args.length == 0 || HELP.get()) {
+            if ( TEST.get() ) {
+                ClassMap harnessMap = new ClassMap("Test Harness", TestHarness.class);
+                harnessMap.addClass("verifier", VerifierTestHarness.class);
+                new AutomatedTester(harnessMap).runTests(mainOptions.getArguments());
+            } else if (args.length == 0 || HELP.get()) {
                 // print the help if there are no arguments or -help is specified
                 printHelp(mainOptions.getArguments());
             } else {

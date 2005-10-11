@@ -263,21 +263,21 @@ public class DGUtil {
             return n.shallowCopy(nc);
     }
 
-    public static List<EncodingDecl.BitField> reduceEncoding(EncodingDecl ed, InstrDecl id, AddrModeDecl am) {
-        LinkedList<EncodingDecl.BitField> nl = new LinkedList<EncodingDecl.BitField>();
+    public static List<FormatDecl.BitField> reduceEncoding(FormatDecl ed, InstrDecl id, AddrModeDecl am) {
+        LinkedList<FormatDecl.BitField> nl = new LinkedList<FormatDecl.BitField>();
         ConstantPropagator cp = new ConstantPropagator();
         ConstantPropagator.Environ ce = cp.createEnvironment();
-        List<EncodingDecl.BitField> fs = initConstantEnviron(ce, id, am, ed);
-        for ( EncodingDecl.BitField bf : fs ) {
+        List<FormatDecl.BitField> fs = initConstantEnviron(ce, id, am, ed);
+        for ( FormatDecl.BitField bf : fs ) {
             Expr ne = bf.field.accept(cp, ce);
-            EncodingDecl.BitField nbf = new EncodingDecl.BitField(ne, bf.getWidth());
+            FormatDecl.BitField nbf = new FormatDecl.BitField(ne, bf.getWidth());
             nl.add(nbf);
         }
         return nl;
     }
 
-    public static List<EncodingDecl.BitField> initConstantEnviron(ConstantPropagator.Environ ce, InstrDecl id, AddrModeDecl am, EncodingDecl ed) {
-        List<EncodingDecl.BitField> list = DGUtil.initConstantEnviron(ed, ce);
+    public static List<FormatDecl.BitField> initConstantEnviron(ConstantPropagator.Environ ce, InstrDecl id, AddrModeDecl am, FormatDecl ed) {
+        List<FormatDecl.BitField> list = DGUtil.initConstantEnviron(ed, ce);
         if ( am != null ) addProperties(am.properties, ce);
         if ( id != null ) addProperties(id.properties, ce);
         return list;
@@ -287,14 +287,14 @@ public class DGUtil {
         for ( Property p : properties ) DGUtil.addProperty(p, ce);
     }
 
-    public static List<EncodingDecl.BitField> initConstantEnviron(EncodingDecl ed, ConstantPropagator.Environ ce) {
-        List<EncodingDecl.BitField> fields;
-        if ( ed instanceof EncodingDecl.Derived ) {
-            EncodingDecl.Derived dd = (EncodingDecl.Derived)ed;
+    public static List<FormatDecl.BitField> initConstantEnviron(FormatDecl ed, ConstantPropagator.Environ ce) {
+        List<FormatDecl.BitField> fields;
+        if ( ed instanceof FormatDecl.Derived ) {
+            FormatDecl.Derived dd = (FormatDecl.Derived)ed;
             fields = dd.parent.fields;
 
             // put all the substitutions into the map
-            for ( EncodingDecl.Substitution s : dd.subst ) {
+            for ( FormatDecl.Substitution s : dd.subst ) {
                 ce.put(s.name.image, s.expr);
             }
         } else {

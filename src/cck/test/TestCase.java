@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.test;
+package cck.test;
 
 import cck.text.StringUtil;
 import cck.util.Util;

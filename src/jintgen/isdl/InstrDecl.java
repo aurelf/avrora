@@ -100,10 +100,6 @@ public class InstrDecl extends Item {
         else return StringUtil.evaluateIntegerLiteral(p.value.image);
     }
 
-    public String getSyntax() {
-        throw Util.unimplemented();
-    }
-
     public List<AddrModeDecl.Operand> getOperands() {
         return addrMode.operands;
     }

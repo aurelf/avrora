@@ -48,7 +48,7 @@ import java.util.*;
  */
 class ReaderImplementation extends GenBase {
 
-    HashMap<EncodingDecl, EncodingReader> encodingInfo = new HashMap<EncodingDecl, EncodingReader>();
+    HashMap<FormatDecl, EncodingReader> encodingInfo = new HashMap<FormatDecl, EncodingReader>();
     HashMap<String, EncodingReader> encodingRev = new HashMap<String, EncodingReader>();
     HashMap<String, ReadMethod> operandDecodeMethods = new HashMap<String, ReadMethod>();
 
@@ -146,7 +146,7 @@ class ReaderImplementation extends GenBase {
         for ( ReadMethod m : operandDecodeMethods.values() ) m.generate();
     }
 
-    void addEncoding(String eName, InstrDecl instr, EncodingDecl ed, AddrModeDecl am) {
+    void addEncoding(String eName, InstrDecl instr, FormatDecl ed, AddrModeDecl am) {
         int no = am.operands.size();
         if ( no > maxoperands ) maxoperands = no;
         if ( !encodingInfo.containsKey(ed) ) {
@@ -162,7 +162,7 @@ class ReaderImplementation extends GenBase {
             dGen.maxInstrLength = bitWidth;
     }
 
-    String getName(EncodingDecl ed) {
+    String getName(FormatDecl ed) {
         return encodingInfo.get(ed).name;
     }
 
@@ -187,11 +187,11 @@ class ReaderImplementation extends GenBase {
     class EncodingReader {
         final String name;
         final InstrDecl instr;
-        final EncodingDecl decl;
+        final FormatDecl decl;
         final AddrModeDecl addrMode;
         final HashMap<AddrModeDecl.Operand, String> operandDecodeString;
 
-        EncodingReader(String n, InstrDecl i, EncodingDecl ed, AddrModeDecl addr) {
+        EncodingReader(String n, InstrDecl i, FormatDecl ed, AddrModeDecl addr) {
             name = n;
             instr = i;
             decl = ed;
@@ -204,10 +204,10 @@ class ReaderImplementation extends GenBase {
         }
 
         void computeDecoders(String prefix, Iterable<AddrModeDecl.Operand> operands) {
-            List<EncodingDecl.BitField> nl = DGUtil.reduceEncoding(decl, null, addrMode);
+            List<FormatDecl.BitField> nl = DGUtil.reduceEncoding(decl, null, addrMode);
             for ( AddrModeDecl.Operand o : operands ) {
                 OperandTypeDecl ot = dGen.arch.getOperandDecl(o.type.image);
-                EncodingDecl.Cond cond = decl.getCond();
+                FormatDecl.Cond cond = decl.getCond();
                 String opname = prefix+o.name.image;
                 String et = getEnumType(ot);
                 if ( cond != null && cond.name.image.equals(opname) ) {
@@ -249,11 +249,11 @@ class ReaderImplementation extends GenBase {
             return null;
         }
 
-        int[] computeScatter(String name, OperandTypeDecl.Value vd, List<EncodingDecl.BitField> fs) {
+        int[] computeScatter(String name, OperandTypeDecl.Value vd, List<FormatDecl.BitField> fs) {
             int bit = 0;
             int[] result = new int[vd.size];
             Arrays.fill(result, -1);
-            for ( EncodingDecl.BitField f : fs) {
+            for ( FormatDecl.BitField f : fs) {
                 visitExpr(f, name, bit, result);
                 bit += f.getWidth();
             }
@@ -265,7 +265,7 @@ class ReaderImplementation extends GenBase {
             return result;
         }
 
-        private void visitExpr(EncodingDecl.BitField f, String name, int bit, int[] result) {
+        private void visitExpr(FormatDecl.BitField f, String name, int bit, int[] result) {
             Expr e = f.field;
             if ( matches(e, name) ) {
                 for ( int cntr = 0; cntr < f.getWidth(); cntr++ ) result[cntr] = cntr + bit;

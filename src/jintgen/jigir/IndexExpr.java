@@ -67,18 +67,6 @@ public class IndexExpr extends Expr {
     }
 
     /**
-     * The <code>getBitWidth()</code> method gets the number of bits needed to represent this value. This is
-     * needed in the case of encoding formats, which need to compute the size of an instruction based on the
-     * width of its internal fields. For a <code>IndexExpr</code>, only one bit is required, so this method
-     * returns 1.
-     *
-     * @return 1
-     */
-    public int getBitWidth() {
-        return 1;
-    }
-
-    /**
      * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression (i.e.
      * it is reducable to a constant and has no references to variables, maps, etc).
      *

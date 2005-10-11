@@ -42,6 +42,7 @@ import avrora.test.probes.ProbeParser;
 import avrora.test.probes.ProbeTest;
 import java.io.FileInputStream;
 import java.util.Properties;
+import cck.test.*;
 
 /**
  * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the
@@ -58,7 +59,7 @@ public class InterruptTestHarness implements TestHarness {
         Program program;
         ProbeTest probeTest;
         String progName;
-		String interruptSched;
+        String interruptSched;
 
         InterruptTestCase(String fname, Properties props) throws Exception {
             super(fname, props);
@@ -66,13 +67,13 @@ public class InterruptTestHarness implements TestHarness {
             ProbeParser p = new ProbeParser(new FileInputStream(fname));
             probeTest = p.ProbeTest();
             progName = props.getProperty("Program");
-			interruptSched = props.getProperty("Interrupt-schedule");
+            interruptSched = props.getProperty("Interrupt-schedule");
         }
 
         public void run() throws Exception {
             Program p = Main.loadProgram(new String[] { progName });
             Simulator s = Defaults.newSimulator(0, p);
-			new InterruptScheduler(interruptSched, s);
+            new InterruptScheduler(interruptSched, s);
             probeTest.run(s);
         }
 

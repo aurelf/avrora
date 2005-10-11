@@ -41,6 +41,7 @@ import avrora.test.probes.ProbeParser;
 import avrora.test.probes.ProbeTest;
 import java.io.FileInputStream;
 import java.util.Properties;
+import cck.test.*;
 
 /**
  * The <code>SimulatorTestHarness</code> implements a test harness that interfaces the

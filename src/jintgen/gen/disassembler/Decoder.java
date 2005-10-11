@@ -36,7 +36,7 @@ import cck.text.Printer;
 import cck.text.StringUtil;
 import cck.util.Util;
 import jintgen.gen.GenBase;
-import jintgen.isdl.EncodingDecl;
+import jintgen.isdl.FormatDecl;
 import jintgen.isdl.InstrDecl;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
@@ -657,13 +657,13 @@ abstract class Decoder extends GenBase {
     }
 
     void labelTreeWithEncodings(DTNode dt) {
-        HashSet<EncodingDecl> addrs = new HashSet<EncodingDecl>();
+        HashSet<FormatDecl> addrs = new HashSet<FormatDecl>();
         for ( EncodingInst ei : dt.encodings )
             addrs.add(ei.encoding);
 
         if ( addrs.size() == 1 ) {
             // label all the children
-            EncodingDecl ed = addrs.iterator().next();
+            FormatDecl ed = addrs.iterator().next();
             dt.setLabel(dGen.reader.getName(ed));
             for ( DTNode cdt : dt.getChildren() )
             labelTree("*", cdt);

@@ -51,6 +51,7 @@ import cck.help.*;
 import cck.text.StringUtil;
 import cck.util.ClassMap;
 import cck.util.Util;
+import cck.test.TestHarness;
 import java.util.*;
 
 /**
@@ -291,17 +292,14 @@ public class Defaults {
     }
 
     /**
-     * The <code>getTestHarness()</code> method gets the test harness class corresponding to
-     * the given name represented as a string. This string can represent a short name for the class (an alias),
-     * or a fully qualified Java class name.
+     * The <code>getTestHarnessMap()</code> method gets the test harness class map.
      *
-     * @param s the name of the test harness as a string
-     * @return an instance of the <code>TestHarness</code> class that is capable of creating a
+     * @return an instance of the <code>ClassMap</code> class that is capable of creating a
      *         test case for a file and running it
      */
-    public static TestHarness getTestHarness(String s) {
+    public static ClassMap getTestHarnessMap() {
         addTestHarnesses();
-        return (TestHarness) harnessMap.getObjectOfClass(s);
+        return harnessMap;
     }
 
     /**
