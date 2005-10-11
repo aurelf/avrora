@@ -46,61 +46,25 @@ import java.util.List;
  */
 public interface CodeAccumulator<Res, Env> {
 
-    public Res visit(Arith.AddExpr e, Env env);
+    public Res visit(BinOpExpr e, Env env);
 
-    public Res visit(Arith.AndExpr e, Env env);
+    public Res visit(UnOpExpr e, Env env);
 
-    public Res visit(Arith.CompExpr e, Env env);
+    public Res visit(IndexExpr e, Env env);
 
-    public Res visit(Arith.DivExpr e, Env env);
-
-    public Res visit(Arith.MulExpr e, Env env);
-
-    public Res visit(Arith.NegExpr e, Env env);
-
-    public Res visit(Arith.OrExpr e, Env env);
-
-    public Res visit(Arith.ShiftLeftExpr e, Env env);
-
-    public Res visit(Arith.ShiftRightExpr e, Env env);
-
-    public Res visit(Arith.SubExpr e, Env env);
-
-    public Res visit(Arith.XorExpr e, Env env);
-
-    public Res visit(BitExpr e, Env env);
-
-    public Res visit(BitRangeExpr e, Env env);
+    public Res visit(FixedRangeExpr e, Env env);
 
     List<Res> visitExprList(List<Expr> l, Env env);
 
     public Res visit(CallExpr e, Env env);
+
+    public Res visit(ReadExpr e, Env env);
 
     public Res visit(ConversionExpr e, Env env);
 
     public Res visit(Literal.BoolExpr e, Env env);
 
     public Res visit(Literal.IntExpr e, Env env);
-
-    public Res visit(Logical.AndExpr e, Env env);
-
-    public Res visit(Logical.EquExpr e, Env env);
-
-    public Res visit(Logical.GreaterEquExpr e, Env env);
-
-    public Res visit(Logical.GreaterExpr e, Env env);
-
-    public Res visit(Logical.LessEquExpr e, Env env);
-
-    public Res visit(Logical.LessExpr e, Env env);
-
-    public Res visit(Logical.NequExpr e, Env env);
-
-    public Res visit(Logical.NotExpr e, Env env);
-
-    public Res visit(Logical.OrExpr e, Env env);
-
-    public Res visit(Logical.XorExpr e, Env env);
 
     public Res visit(MapExpr e, Env env);
 

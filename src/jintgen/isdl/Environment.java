@@ -33,7 +33,7 @@
  */
 package jintgen.isdl;
 
-import jintgen.types.Type;
+import jintgen.types.TypeRef;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,23 +43,23 @@ import java.util.Map;
 public class Environment {
 
     final Environment parent;
-    final HashMap<String, Type> varMap;
+    final HashMap<String, TypeRef> varMap;
     final HashMap<String, SubroutineDecl> methodMap;
     final HashMap<String, Object> mapMap;
 
     public Environment(Environment p) {
         parent = p;
-        varMap = new HashMap<String, Type>();
+        varMap = new HashMap<String, TypeRef>();
         methodMap = new HashMap<String, SubroutineDecl>();
         mapMap = new HashMap<String, Object>();
     }
 
     public Environment(Architecture a) {
         parent = null;
-        varMap = new HashMap<String, Type>();
+        varMap = new HashMap<String, TypeRef>();
         methodMap = new HashMap<String, SubroutineDecl>();
         mapMap = new HashMap<String, Object>();
-        for ( Map.Entry<String, Type> e : a.globals.map.entrySet() ) {
+        for ( Map.Entry<String, TypeRef> e : a.globals.map.entrySet() ) {
             varMap.put(e.getKey(), e.getValue());
         }
         for ( SubroutineDecl s : a.subroutines ) {
@@ -67,8 +67,8 @@ public class Environment {
         }
     }
 
-    public Type resolveVariable(String name) {
-        Type type = varMap.get(name);
+    public TypeRef resolveVariable(String name) {
+        TypeRef type = varMap.get(name);
         if ( type != null ) return type;
         return parent != null ? parent.resolveVariable(name) : null;
     }
@@ -85,7 +85,7 @@ public class Environment {
         return parent != null ? parent.resolveMethod(name) : null;
     }
 
-    public void addVariable(String name, Type t) {
+    public void addVariable(String name, TypeRef t) {
         varMap.put(name, t);
     }
 

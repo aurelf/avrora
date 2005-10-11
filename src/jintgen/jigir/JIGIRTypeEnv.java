@@ -34,22 +34,35 @@
 
 package jintgen.jigir;
 
-import jintgen.types.*;
-import jintgen.isdl.parser.Token;
-import java.util.*;
 import cck.util.Util;
+import jintgen.isdl.parser.Token;
+import jintgen.isdl.JIGIRErrorReporter;
+import jintgen.isdl.OperandTypeDecl;
+import jintgen.isdl.EnumDecl;
+import jintgen.types.*;
+import java.util.*;
 
 /**
+ * The <code>JIGIRTypeEnv</code> class represents a type environment for
+ * JIGIR code. It supports void, boolean, integers, maps, and function
+ * types.
+ *
  * @author Ben L. Titzer
  */
 public class JIGIRTypeEnv extends TypeEnv {
+    public final Type VOID;
     public final Type BOOLEAN;
-    public final TypeCon BOOL;
     public final TypeCon INT;
     public final TypeCon MAP;
     public final TypeCon FUNCTION;
-    public final TypeCon TUPLE;
+    public final Relation ASSIGNABLE;
+    public final Relation COMPARABLE;
+    public final Relation PROMOTABLE;
 
+    /**
+     * The <code>TYPECON_int</code> class represents the type constructor for types
+     * based on "int". In JIGIR, such types have both a sign and a size.
+     */
     protected class TYPECON_int extends TypeCon {
         final SignDimension sign;
         final SizeDimension size;
@@ -62,25 +75,75 @@ public class JIGIRTypeEnv extends TypeEnv {
             addDimension(size);
         }
 
-        public Type newType(HashMap<String, List> dims) {
-            throw Util.unimplemented();
+        public Type newType(TypeEnv te, HashMap<String, List> dims) {
+            HashMap<String, Object> dimInst = buildDimensions(dims);
+            Boolean sign = (Boolean) dimInst.get("sign");
+            if ( sign == null ) sign = true;
+            Integer len = (Integer) dimInst.get("size");
+            // TODO: assuming 32 bit integers is a hack!
+            if ( len == null ) len = 32;
+            return new TYPE_int(sign, len, dimInst);
         }
+
     }
 
+    /**
+     * The <code>TYPE_int</code> class represents integer types that
+     * include a sign and a size.
+     */
     protected class TYPE_int extends Type {
         protected final boolean signed;
-        protected final int length;
+        protected final int size;
+
+        protected TYPE_int(boolean sign, int len, HashMap<String, Object> dims) {
+            super(INT, dims);
+            signed = sign;
+            size = len;
+        }
 
         protected TYPE_int(boolean sign, int len) {
-            super(null, null, null);
+            super(INT, new HashMap<String, Object>());
             signed = sign;
-            length = len;
+            size = len;
+        }
+
+        public boolean isSigned() {
+            return signed;
+        }
+
+        public int getSize() {
+            return size;
         }
     }
 
-    public JIGIRTypeEnv() {
+    public class TYPE_enum extends TypeCon {
+        public final EnumDecl decl;
+        protected TYPE_enum(EnumDecl decl) {
+            super(decl.name.image);
+            this.decl = decl;
+        }
+    }
+
+    public class TYPE_operand extends TypeCon {
+        public final OperandTypeDecl decl;
+        protected TYPE_operand(OperandTypeDecl decl) {
+            super(decl.name.image);
+            this.decl = decl;
+        }
+    }
+
+    public JIGIRTypeEnv(JIGIRErrorReporter er) {
+        super(er);
+
+        ASSIGNABLE = new TransitiveRelation("assignable");
+        COMPARABLE = new TransitiveRelation("comparable");
+        PROMOTABLE = new Relation("promotable");
+
         // initialize the boolean type constructor
-        BOOL = new TypeCon("boolean");
+        TypeCon VTC = new TypeCon("void");
+        VOID = VTC.newType(this);
+        // initialize the boolean type constructor
+        TypeCon BOOL = new TypeCon("boolean");
         BOOLEAN = BOOL.newType(this);
 
         // initialize the integer type constructor
@@ -88,47 +151,58 @@ public class JIGIRTypeEnv extends TypeEnv {
 
         // initialize the map type constructor
         MAP = new TypeCon("map");
-        MAP.addDimension(new ParamDimension("index", variance(ParamDimension.INVARIANT)));
-        MAP.addDimension(new ParamDimension("elem", variance(ParamDimension.INVARIANT)));
+        MAP.addDimension(new ParamDimension("types", variance(ParamDimension.INVARIANT, ParamDimension.INVARIANT)));
 
         // initialize the function type constructor
         FUNCTION = new TypeCon("function");
         FUNCTION.addDimension(new ParamDimension("param", ParamDimension.CONTRAVARIANT));
         FUNCTION.addDimension(new ParamDimension("return", variance(ParamDimension.COVARIANT)));
 
-        // initialize the function type constructor
-        TUPLE = new TypeCon("tuple");
-        TUPLE.addDimension(new ParamDimension("elems", ParamDimension.COVARIANT));
-
         // add the global type constructors
-        addGlobalTypeCon(BOOL);
-        addGlobalTypeCon(INT);
-        addGlobalTypeCon(MAP);
-        addGlobalTypeCon(FUNCTION);
+        addTypeCon(VTC);
+        addTypeCon(BOOL, COMPARABLE, ASSIGNABLE, PROMOTABLE);
+        addTypeCon(INT, COMPARABLE, ASSIGNABLE, PROMOTABLE);
+        addTypeCon(MAP, ASSIGNABLE);
+        addTypeCon(FUNCTION);
+
+        // add the relations
+        addRelation(ASSIGNABLE);
+        addRelation(COMPARABLE);
+        addRelation(PROMOTABLE);
 
         // add binops for booleans
-        addBinOp("and", BOOL, BOOL);
-        addBinOp("or", BOOL, BOOL);
-        addBinOp("xor", BOOL, BOOL);
+        addBinOp(BOOL, BOOL, new Logical.AND());
+        addBinOp(BOOL, BOOL, new Logical.OR());
+        addBinOp(BOOL, BOOL, new Logical.XOR());
+        addBinOp(BOOL, BOOL, new Logical.EQU());
+        addBinOp(BOOL, BOOL, new Logical.NEQU());
+
+        // add comparisons for integers
+        addBinOp(INT, INT, new Logical.EQU());
+        addBinOp(INT, INT, new Logical.NEQU());
+        addBinOp(INT, INT, new Logical.GR());
+        addBinOp(INT, INT, new Logical.GREQ());
+        addBinOp(INT, INT, new Logical.LESS());
+        addBinOp(INT, INT, new Logical.LESSEQU());
 
         // add binops for integers
-        addBinOp("+", INT, INT);
-        addBinOp("-", INT, INT);
-        addBinOp("/", INT, INT);
-        addBinOp("*", INT, INT);
-        addBinOp("&", INT, INT);
-        addBinOp("|", INT, INT);
-        addBinOp("^", INT, INT);
-        addBinOp("<<", INT, INT);
-        addBinOp(">>", INT, INT);
+        addBinOp(INT, INT, new Arith.ADD());
+        addBinOp(INT, INT, new Arith.SUB());
+        addBinOp(INT, INT, new Arith.DIV());
+        addBinOp(INT, INT, new Arith.MUL());
+        addBinOp(INT, INT, new Arith.AND());
+        addBinOp(INT, INT, new Arith.OR());
+        addBinOp(INT, INT, new Arith.XOR());
+        addBinOp(INT, INT, new Arith.SHL());
+        addBinOp(INT, INT, new Arith.SHR());
 
         // add logical not operator
-        addUnOp("!", BOOL);
+        addUnOp(BOOL, new Logical.NOT());
 
         // add unary integer operators
-        addUnOp("-", INT);
-        addUnOp("~", INT);
-
+        addUnOp(INT, new Arith.NEG());
+        addUnOp(INT, new Arith.COMP());
+        addUnOp(INT, new Arith.UNSIGN());
     }
 
     List<Integer> variance(int... i) {
@@ -146,5 +220,26 @@ public class JIGIRTypeEnv extends TypeEnv {
         ref.addDimension("sign", sign_list);
         ref.addDimension("size", size_list);
         return ref;
+    }
+
+    public Type newIntType(boolean sign, int size) {
+        List sign_list = new LinkedList();
+        sign_list.add(sign);
+        List size_list = new LinkedList();
+        size_list.add(size);
+        HashMap<String, List> map = new HashMap<String, List>();
+        map.put("size", size_list);
+        map.put("sign", sign_list);
+        return INT.newType(this, map);
+    }
+
+    public void addOperandType(OperandTypeDecl ot) {
+        TypeCon tycon = new TYPE_operand(ot);
+        addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
+    }
+
+    public void addEnum(EnumDecl ot) {
+        TypeCon tycon = new TYPE_enum(ot);
+        addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
     }
 }

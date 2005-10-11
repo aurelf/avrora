@@ -34,9 +34,9 @@
 
 package jintgen.types;
 
-import cck.util.Util;
 import cck.parser.AbstractToken;
 import cck.text.StringUtil;
+import cck.util.Util;
 import java.util.List;
 
 /**

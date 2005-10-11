@@ -104,19 +104,8 @@ public class Inliner extends StmtRebuilder<Object> {
         }
     }
 
-    public Stmt visit(VarAssignStmt s, Object env) {
-        String nv = varName(s.variable);
-        return new VarAssignStmt(newToken(nv), s.expr.accept(this, env));
-    }
-
-    public Stmt visit(VarBitAssignStmt s, Object env) {
-        String nv = varName(s.variable);
-        return (new VarBitAssignStmt(newToken(nv), s.bit.accept(this, env), s.expr.accept(this, env)));
-    }
-
-    public Stmt visit(VarBitRangeAssignStmt s, Object env) {
-        String nv = varName(s.variable);
-        return (new VarBitRangeAssignStmt(newToken(nv), s.low_bit, s.high_bit, s.expr.accept(this, env)));
+    public Stmt visit(AssignStmt s, Object env) {
+        throw Util.unimplemented();
     }
 
     public Stmt visit(DeclStmt s, Object env) {

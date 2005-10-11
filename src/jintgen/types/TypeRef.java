@@ -35,8 +35,8 @@
 package jintgen.types;
 
 import cck.parser.AbstractToken;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * The <code>TypeRef</code> class represents a reference to a type within
@@ -82,19 +82,46 @@ public class TypeRef {
         dimensions = new HashMap<String, List>();
     }
 
+    /**
+     * The constructor for the <code>TypeRef</code> class creates a new type reference
+     * that refers to the specified type constructor.
+     * @param n a token that represents the name of the specified type constructor
+     */
+    public TypeRef(AbstractToken n, HashMap<String, List> dimensions) {
+        tcName = n;
+        this.dimensions = (HashMap<String, List>)dimensions.clone(); 
+    }
+
     public void addDimension(String name, List val) {
         dimensions.put(name, val);
     }
 
     public Type resolve(TypeEnv te) {
-        if ( type == null ) {
+        if ( typeCon == null ) {
             typeCon = te.resolveTypeCon(tcName.image);
+            if ( typeCon == null )
+                te.ERROR.UnresolvedType(tcName);
+        }
+        if ( type == null ) {
             type = typeCon.newType(te, dimensions);
         }
         return type;
     }
 
     public TypeCon resolveTypeCon(TypeEnv te) {
-        return te.resolveTypeCon(tcName.image);
+        if ( typeCon == null ) typeCon = te.resolveTypeCon(tcName.image);
+        return typeCon;
+    }
+
+    public boolean isBasedOn(String name) {
+        return tcName.image.equals(name);
+    }
+
+    public String getTypeConName() {
+        return tcName.image;
+    }
+
+    public AbstractToken getToken() {
+        return tcName;
     }
 }

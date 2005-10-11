@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,46 +28,18 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Oct 5, 2005
  */
 
-package cck.parser;
+package jintgen.types;
+
+import cck.parser.SourcePoint;
 
 /**
- * This class is used to unify the Token classes from all JavaCC-generated parsers.
- *
  * @author Ben L. Titzer
  */
-public abstract class AbstractToken {
-    /**
-     * beginLine and beginColumn describe the position of the first character of this token; endLine and
-     * endColumn describe the position of the last character of this token.
-     */
-    public int beginLine, beginColumn, endLine, endColumn;
-
-    /**
-     * The string image of the token.
-     */
-    public String image;
-
-    /**
-     * The file in which the token originated.
-     */
-    public String file;
-
-    /**
-     * Returns the image.
-     */
-    public String toString() {
-        return image;
-    }
-
-    public abstract AbstractToken getNextToken();
-
-    public SourcePoint getSourcePoint() {
-        return new SourcePoint(file, beginLine, endLine, beginColumn, endColumn);
-    }
-
-    public SourcePoint asSourcePoint(String f) {
-        return new SourcePoint(f, beginLine, endLine, beginColumn, endColumn);
-    }
+public interface Typeable {
+    public Type getType();
+    public SourcePoint getSourcePoint();
 }

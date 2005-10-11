@@ -56,21 +56,22 @@ public interface ISDLParserConstants {
   int SUB = 59;
   int MUL = 60;
   int DIV = 61;
-  int B_AND = 62;
-  int B_OR = 63;
-  int B_XOR = 64;
-  int NOT = 65;
-  int B_COMP = 66;
-  int EQUAL = 67;
-  int NOTEQUAL = 68;
-  int LESS = 69;
-  int LESSEQ = 70;
-  int GREATER = 71;
-  int GREATEREQ = 72;
-  int DOLLAR = 73;
-  int IDENTIFIER = 74;
-  int LETTER = 75;
-  int DIGIT = 76;
+  int MOD = 62;
+  int B_AND = 63;
+  int B_OR = 64;
+  int B_XOR = 65;
+  int NOT = 66;
+  int B_COMP = 67;
+  int EQUAL = 68;
+  int NOTEQUAL = 69;
+  int LESS = 70;
+  int LESSEQ = 71;
+  int GREATER = 72;
+  int GREATEREQ = 73;
+  int DOLLAR = 74;
+  int IDENTIFIER = 75;
+  int LETTER = 76;
+  int DIGIT = 77;
 
   int DEFAULT = 0;
   int IN_SINGLE_LINE_COMMENT = 1;
@@ -140,6 +141,7 @@ public interface ISDLParserConstants {
     "\"-\"",
     "\"*\"",
     "\"/\"",
+    "\"%\"",
     "\"&\"",
     "\"|\"",
     "\"^\"",

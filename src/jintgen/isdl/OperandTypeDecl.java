@@ -36,8 +36,7 @@ import cck.text.StringUtil;
 import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
-import jintgen.types.Type;
-
+import jintgen.types.TypeRef;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,11 +67,11 @@ public abstract class OperandTypeDecl extends Item {
 
         public final int low;
         public final int high;
-        public final Type kind;
+        public final TypeRef kind;
         public final int size;
         final boolean signed;
 
-        public Value(Token n, Token b, Type k, Token l, Token h) {
+        public Value(Token n, Token b, TypeRef k, Token l, Token h) {
             super(n);
             kind = k;
             size = StringUtil.evaluateIntegerLiteral(b.image);
@@ -95,7 +94,7 @@ public abstract class OperandTypeDecl extends Item {
         }
 
         public boolean isRelative() {
-            return "relative".equals(kind.getBaseType().image);
+            return kind.isBasedOn("relative");
         }
 
         public boolean isSigned() {
@@ -103,7 +102,7 @@ public abstract class OperandTypeDecl extends Item {
         }
 
         public boolean isAddress() {
-            return "address".equals(kind.getBaseType().image);
+            return kind.isBasedOn("address");
         }
     }
 

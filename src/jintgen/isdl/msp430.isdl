@@ -18,14 +18,15 @@ architecture msp430 {
 //---------------------------------------------------------------------------
 //  MEMORY ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
-    memory $regs(GPR): char;
-    memory $sram(char): byte; // a "view" of the memory as bytes
-    memory $wsram(char): char; // a "view" of the memory as unsigned shorts
+    global regs: map<GPR, +int.16>;
+    global sram: map<+int.16, +int.8>; // a "view" of the memory as bytes
+    global wsram: map<+int.16, +int.16>; // a "view" of the memory as unsigned shorts
 
     global C: boolean;
     global N: boolean;
     global Z: boolean;
     global V: boolean;
+    global sreg: int.16;
 
     global nextPC: int;
     global cyclesConsumed: int;
@@ -50,36 +51,44 @@ architecture msp430 {
     //}
 
     operand-type SREG[4]: GPR {
-	    read: short { return $regs(this); }
-	    write: short { $regs(this) = value; }
+	    read: int.16 { return regs[this]; }
+	    write: int.16 { regs[this] = value; }
+	    read: int.8 { return regs[this]:int.8; }
+	    write: int.8 { regs[this][7:0] = value; }
 	}
 
     operand-type AIREG_B[4]: GPR {                    //Indirect AutoIncrement mode
-	    read: byte {
-	        local val: short = $regs(this);               //the value of val provides the address of contents to modify
-	        $regs(this) = val + 1;                       //the original register's contents are incremented
-	        return val: byte;
+	    read: int.8 {
+	        local val: int.16 = regs[this];               //the value of val provides the address of contents to modify
+	        regs[this] = val + 1;                       //the original register's contents are incremented
+	        return val: int.8;
 	    }
-	    write: byte {  }                              //valid only as a source operand
+	    write: int.8 {  }                              //valid only as a source operand
 	}
 
     operand-type AIREG_W[4]: GPR {
-	    read: short {
-	        local addr: short = $regs(this);
-	        local val: short = $sram(addr);
-	        $regs(this) = addr + 2;
+	    read: int.16 {
+	        local addr: int.16 = regs[this];
+	        local val: int.16 = sram[addr];
+	        regs[this] = addr + 2;
 	        return val;
 	    }
-	    write: short { }
+	    write: int.16 { }
 	}
 
     operand-type IREG[4]: GPR {                    //Indirect register mode
-	    read: byte {
-	        local addr: short = $regs(this);
-	        local val: byte = $sram(addr);
-	        return val: byte;
+	    read: int.8 {
+	        local addr: int.16 = regs[this];
+	        local val: int.8 = sram[addr];
+	        return val: int.8;
 	    }
-	    write: byte { }
+	    read: int.16 {
+	        local addr: int.16 = regs[this];
+	        local val: int.16 = wsram[addr];
+	        return val: int.8;
+	    }
+	    write: int.8 { }
+	    write: int.16 { }
 	}
 
     operand-type IMM[16]: int [-32768,65536];
@@ -87,22 +96,28 @@ architecture msp430 {
     operand-type INDX {
         sub-operand reg: SREG;
         sub-operand index: IMM;
-	    read: byte { return $sram(read(reg) + index); }
-	    write: byte { $sram(read(reg) + index) = value; }
+	    read: int.8 { return sram[read(reg) + index]; }
+	    write: int.8 { sram[read(reg) + index] = value; }
+	    read: int.16 { return wsram[read(reg) + index]; }
+	    write: int.16 { wsram[read(reg) + index] = value; }
     }
 
     // TODO: this is encoded as relative to the pc
-    operand-type SYM[16]: relative [-32768,32767] {
-        read: byte { return $sram(this); }
-        write: byte {$sram(this) = value; }
+    operand-type SYM[16]: int /* address, relative */[-32768,32767] {
+        read: int.8 { return sram[this]; }
+        write: int.8 { sram[this] = value; }
+        read: int.16 { return wsram[this]; }
+        write: int.16 { wsram[this] = value; }
     }
 
-    operand-type ABSO[16]: address [0,0xFFFF] {
-	    read: byte { return $sram(this); }
-	    write: byte { $sram(this) = value; }
+    operand-type ABSO[16]: int /* address, absolute */[0,0xFFFF] {
+	    read: int.8 { return sram[this]; }
+	    write: int.8 { sram[this] = value; }
+	    read: int.16 { return wsram[this]; }
+	    write: int.16 { wsram[this] = value; }
     }
 
-    operand-type JUMP[10]: relative [-512,511];
+    operand-type JUMP[10]: int /* address, relative */[-512,511];
 
 //-------------------------------------------------------------------------- 
 //   ADDRESSING MODES ALLOWED FOR SINGLE OPERAND/DOUBLE OPERAND/JUMP INSTRUCTIONS
@@ -473,7 +488,7 @@ architecture msp430 {
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
-    inline subroutine performAddition(r1: int, r2: int, carry: int): byte {
+    inline subroutine performAddition(r1: int, r2: int, carry: int): int.8 {
         local result: int = r1 + r2 + carry;
         local ral: int = r1[3:0];
         local rbl: int = r2[3:0];
@@ -491,7 +506,7 @@ architecture msp430 {
         return low(result);
     }
 
-    inline subroutine performAdditionW(r1: int, r2: int, carry: int): word {
+    inline subroutine performAdditionW(r1: int, r2: int, carry: int): +int.16 {
         local result: int = r1 + r2 + carry;
         local ral: int = r1[7:0];
         local rbl: int = r2[7:0];
@@ -509,7 +524,7 @@ architecture msp430 {
     }
 	
 
-    inline subroutine performSubtraction(r1: int, r2: int, carry: int): byte {
+    inline subroutine performSubtraction(r1: int, r2: int, carry: int): int.8 {
         local result: int = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
@@ -527,7 +542,7 @@ architecture msp430 {
 
         return low(result);
     }
-    inline subroutine performSubtractionW(r1: int, r2: int, carry: int): word {
+    inline subroutine performSubtractionW(r1: int, r2: int, carry: int): +int.16 {
         local result: int = r1 - r2 - carry;
 
         local Rd15: boolean = r1[15];
@@ -548,7 +563,7 @@ architecture msp430 {
     }
 
 
-    inline subroutine performAnd(r1: int, r2: int): byte {
+    inline subroutine performAnd(r1: int, r2: int): int.8 {
         local result: int = r1 & r2;
 
         N = result[7];
@@ -559,7 +574,7 @@ architecture msp430 {
         return low(result);
     }
 
-    inline subroutine performAndW(r1: int, r2: int): word {
+    inline subroutine performAndW(r1: int, r2: int): +int.16 {
         local result: int = r1 & r2;
 
         N = result[15];
@@ -568,7 +583,7 @@ architecture msp430 {
         V = 0;
     }
 
-    subroutine performDeciAddCW(r1: int, r2: int, carry: int): word {
+    subroutine performDeciAddCW(r1: int, r2: int, carry: int): +int.16 {
         local reg1: int = r1;
         local reg2: int = r2;
         local result: int = 0;
@@ -596,11 +611,11 @@ architecture msp430 {
             C = 1;
         }
         N = result[15];
-        Z = !(result);
+        Z = result == 0;
         return result;
     }
 
-    subroutine performDeciAddC(r1: int, r2: int, carry: int): byte {
+    subroutine performDeciAddC(r1: int, r2: int, carry: int): int.8 {
         local reg1: int = r1;
         local reg2: int = r2;
         local result: int = 0;
@@ -617,7 +632,7 @@ architecture msp430 {
             C = 1;
         }
         N = result[7];
-        Z = !(result);
+        Z = result == 0;
         return result[7:0];
     }
 
@@ -628,26 +643,30 @@ architecture msp430 {
     }
 
     inline subroutine popPC(): int {
-        local high: byte = popByte();
-        local low: byte = popByte();
+        local high: int.8 = popByte();
+        local low: int.8 = popByte();
         return uword(low, high) * 2;
     }
 
-    inline subroutine low(v: int): byte {
-        return v: byte;
+    inline subroutine low(v: int): int.8 {
+        return v: int.8;
     }
 
-    inline subroutine high(v: int): byte {
-        return (v >> 8): byte;
+    inline subroutine high(v: int): int.8 {
+        return (v >> 8): int.8;
     }
 
-    inline subroutine uword(low: byte, high: byte): int {
+    inline subroutine uword(low: int.8, high: int.8): int {
         return ((high << 8) | low)[15:0];
     }
 
     external subroutine bit(b: boolean): int;
-    external subroutine popByte(): byte;
-    external subroutine pushByte(b: byte): void;
+    external subroutine popByte(): int.8;
+    external subroutine pushByte(b: int.8): void;
+    external subroutine disableInterrupts(): void;
+    external subroutine enableInterrupts(): void;
+    external subroutine popWord(): int.16;
+    external subroutine pushWord(b: int.16): void;
 
 
 //---------------------------------------------------------------------------
@@ -658,9 +677,9 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
         execute {
-            local r1: int       = read(source);
+            local r1: int       = read:int.16(source);
             local result: int   = r1 + bit(C);
-                                    //word operation
+                                    //+int.16 operation
             local R15: boolean  = result[15];
             local Rdh7: boolean = r1[15];
             C = (!R15 and Rdh7);
@@ -668,7 +687,7 @@ architecture msp430 {
             V = (!Rdh7 and R15);
             Z = (result[15:0]  == 0);
 
-            write(source, result: short);
+            write:int.16(source, result: int.16);
         }
     }
 
@@ -679,7 +698,7 @@ architecture msp430 {
             local r1: int       = read(source);
             local result: int   = r1 + bit(C);
 
-            //byte operation
+            //int.8 operation
             local R7: boolean   = result[7];
             local Rdh1: boolean = r1[7];
             C = (!R7 and Rdh1);
@@ -687,7 +706,7 @@ architecture msp430 {
             V = (!Rdh1 and R7);
             Z = (result[7:0]  == 0);
 
-            write(source, result: byte);
+            write(source, result: int.8);
         }
     }
 
@@ -696,9 +715,9 @@ architecture msp430 {
 	    property bw: int = 0;
 	    property opcode: int = 0b0101;
         execute {
-            local r1: short = read(source);
-            local r2: short = read(dest);
-            local result: short = performAdditionW(r1, r2, 0);
+            local r1: int.16 = read(source);
+            local r2: int.16 = read(dest);
+            local result: int.16 = performAdditionW(r1, r2, 0);
             write(dest, result);
         }
     }
@@ -707,9 +726,9 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b0101;
         execute {
-            local r1: byte = read(source);
-            local r2: byte = read(dest);
-            local result: byte = performAddition(r1, r2, 0);
+            local r1: int.8 = read(source);
+            local r2: int.8 = read(dest);
+            local result: int.8 = performAddition(r1, r2, 0);
             write(dest, result);
         }
     }
@@ -718,9 +737,9 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b0110;
         execute {
-            local r1: short = read(source);
-            local r2: short = read(dest);
-            local result: short = performAdditionW(r1, r2, bit(C));
+            local r1: int.16 = read(source);
+            local r2: int.16 = read(dest);
+            local result: int.16 = performAdditionW(r1, r2, bit(C));
             write(dest, result);
         }
     }
@@ -729,9 +748,9 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b0110;
     	execute {
-            local r1: byte = read(source);
-            local r2: byte = read(dest);
-            local result: byte = performAddition(r1, r2, bit(C));
+            local r1: int.8 = read(source);
+            local r2: int.8 = read(dest);
+            local result: int.8 = performAddition(r1, r2, bit(C));
             write(dest, result);
    	    }
     }
@@ -740,9 +759,9 @@ architecture msp430 {
 	    property bw: int = 0;
 	    property opcode: int = 0b1111;
 	    execute {
-            local r1: short = read(source);
-            local r2: short = read(dest);
-            local result: short = performAndW(r1, r2);
+            local r1: int.16 = read(source);
+            local r2: int.16 = read(dest);
+            local result: int.16 = performAndW(r1, r2);
             write(dest, result);
         }
     }
@@ -751,9 +770,9 @@ architecture msp430 {
 	    property bw: int = 1;
 	    property opcode: int = 0b1111;
 	    execute {
-            local r1: byte = read(source);
-            local r2: byte = read(dest);
-            local result: byte = performAnd(r1, r2);
+            local r1: int.8 = read(source);
+            local r2: int.8 = read(dest);
+            local result: int.8 = performAnd(r1, r2);
             write(dest, result);
         }
     }
@@ -831,8 +850,8 @@ architecture msp430 {
     	property opcode: int = 0b0100;
         execute {
             // note: the read is necessary for the auto-increment operands
-            read(source);
-            write(source, 0);
+            local b: int = read:int.16(source);
+            write:int.16(source, 0);
         }
     }
 
@@ -841,8 +860,8 @@ architecture msp430 {
 	    property opcode: int = 0b0100;
 	    execute {
             // note: the read is necessary for the auto-increment operands
-            read(source);
-            write(source, 0);
+            local b: int = read:int.8(source);
+            write:int.8(source, 0);
 	    }
     }
 
@@ -926,7 +945,7 @@ architecture msp430 {
 	    property bw: int = 0;
 	    property opcode: int = 0b1000;        // emulated by subtraction operation
 	    execute {
-	        local original: short = read(source);
+	        local original: int.16 = read(source);
 	        write(source, performSubtractionW(original, 1, 0));
  	        if (original == 1)
  	            N = 1;    // if original value of dest was 1, set N bit
@@ -937,7 +956,7 @@ architecture msp430 {
 	    property bw: int = 1;
 	    property opcode: int = 0b1000;        //emulated by subtraction operation
 	    execute {
-	        local original: byte = read(source);
+	        local original: int.8 = read(source);
 	        write(source, performSubtraction(original, 1, 0));
  	        if (original == 1)
  	            N = 1;    // if original value of dest was 1, set N bit
@@ -948,7 +967,7 @@ architecture msp430 {
 	    property bw: int = 0;
 	    property opcode: int = 0b1000;         //emulated by subtraction  operation
 	    execute {
- 	        local original: short = read(source);
+ 	        local original: int.16 = read(source);
             write(source, performSubtractionW(original, 2, 0));
 	        if (original == 2)
 	            N = 1;    //if original value of dest was 2, set N bit
@@ -959,7 +978,7 @@ architecture msp430 {
 	    property bw: int = 1;
 	    property opcode: int = 0b1000;         //emulated by subtraction  operation
 	    execute {
- 	        local original: byte = read(source);
+ 	        local original: int.8 = read(source);
             write(source, performSubtraction(original, 2, 0));
 	        if (original == 2)
 	            N = 1;    //if original value of dest was 2, set N bit
@@ -1017,12 +1036,13 @@ architecture msp430 {
 	    property bw: int = 0;
 	    property opcode: int = 0b1110;    //emulated by XOR operation
 	    execute {
-   	        local result: int = ~(read(source));
+	        local val: int = read:int.16(source);
+   	        local result: int = ~val;
 	        N = result[15];             //set if neg.
 	        Z = (result == 0xFFFF);  //set if contains 0FFFFh
 	        C = !(result == 0);      //set if result not 0
-	        V = ($regs(rd) < 0);     //set if original contents neg.
-	        write(source, result: short);
+	        V = (val < 0);     //set if original contents neg.
+	        write:int.16(source, result:int.16);
 	    }
     }
 
@@ -1030,12 +1050,13 @@ architecture msp430 {
 	    property bw: int = 1;
 	    property opcode: int = 0b1110;    //emulated by XOR operation
 	    execute {
-   	        local result: int = ~(read(source));
-	        N = results[7];             //set if neg.
-	        Z = (results == 0xFF);  //set if contains 0FFh
-	        C = !(results == 0);      //set if result not 0
-	        V = (low($regs(rd)) < 0);     //set if original contents neg.
-	        write(source, low(result));
+	        local val: int = read:int.8(source);
+   	        local result: int = ~val;
+	        N = result[7];             //set if neg.
+	        Z = (result == 0xFF);  //set if contains 0FFh
+	        C = !(result == 0);      //set if result not 0
+	        V = (val < 0);     //set if original contents neg.
+	        write:int.8(source, low(result));
 	    }
     }
 
@@ -1173,7 +1194,7 @@ architecture msp430 {
         }
     }
 
-    pseudo instruction "pop": SINGLE_W  {  // pop word from stack to dest
+    pseudo instruction "pop": SINGLE_W  {  // pop +int.16 from stack to dest
 	    property bw: int = 0;
         property opcode: int = 0b0100;   // emulated by MOV operation
         execute {
@@ -1181,7 +1202,7 @@ architecture msp430 {
         }
     }
 
-    pseudo instruction "pop.b": SINGLE_B  {  //pop byte from stack to dest
+    pseudo instruction "pop.b": SINGLE_B  {  //pop int.8 from stack to dest
 	    property bw: int = 1;
         property opcode: int = 0b0100;   //emulated by MOV operation
         execute {
@@ -1189,7 +1210,7 @@ architecture msp430 {
         }
     }
 
-    instruction "push": SINGLE_W {  //push word onto stack
+    instruction "push": SINGLE_W {  //push +int.16 onto stack
 	    property bw: int = 0;
         property opcode: int = 0b00010010;
         execute {
@@ -1197,7 +1218,7 @@ architecture msp430 {
         }
     }
 
-    instruction "push.b": SINGLE_B {  //push byte onto stack
+    instruction "push.b": SINGLE_B {  //push int.8 onto stack
 	    property bw: int = 1;
         property opcode: int = 0b00010010;
         execute {
@@ -1224,7 +1245,7 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b0101;            // emulated by add instruction (add dst, dst)
         execute {
-            local dest: short = read(source);
+            local dest: int.16 = read(source);
             C = dest[15];        // move MSB into carry
             V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
             dest = dest << 1;    // shifting left 1 position
@@ -1252,14 +1273,13 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
         execute {
-            local dest: short = read(source);
+            local dest: int.16 = read(source);
             local tempC: int = bit(C);
             C = dest[15];      // move MSB into carry
             V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
             dest = dest << 1 | tempC;    //shifting left 1 position
             N = dest[15];      // setting Neg. bit
             Z = (dest == 0);   // set Z bit if equal to zero
-            $regs(rd) = dest;  // move shifted result into destination
             write(source, dest);
         }
      }
@@ -1283,7 +1303,7 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b00010001;
         execute {
-            local temp: short = read(source);
+            local temp: int.16 = read(source);
             C = temp[0];             // move LSB into Carry
             temp = temp >> 1;        // shift 1 right ( i think)
             N = temp[15];
@@ -1297,8 +1317,8 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b000100010;
         execute {
-            local temp: byte = read(source);
-            C = temp2[0];            // move LSB into Carry
+            local temp: int.8 = read(source);
+            C = temp[0];            // move LSB into Carry
             temp = temp >> 1;        // shift 1 right ( i think)
             N = temp[7];
             Z = (temp == 0);
@@ -1311,13 +1331,13 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b000100000;
         execute {
-            local temp: short = read(source);
+            local temp: int.16 = read(source);
             local oldC: int = bit(C);
             C = temp[0];          // carry loaded from original LSB
             temp = temp >> 1 | oldC << 15;      //shift 1 bit right
             N = temp[15];
             Z = (temp == 0);
-            V = (temp[14] == 0 and oldC == 1);  //set if inital dest pos. and inital carry was set
+            V = (temp[14] == false and oldC == 1);  //set if inital dest pos. and inital carry was set
             write(source, temp);
         }
     }
@@ -1326,13 +1346,13 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b000100000;
         execute {
-            local temp: byte = read(source);
+            local temp: int.8 = read(source);
             local oldC: int = bit(C);
-            C = temp2[0];         //Carry loaded from original LSB
+            C = temp[0];         //Carry loaded from original LSB
             temp = temp >> 1 | oldC << 7;      //shift 1 bit right
             N = temp[7];
             Z = (temp == 0);
-            V = (temp[6] == 0 and oldC == 1);  //set if inital dest pos. and inital carry was set
+            V = (temp[6] == false and oldC == 1);  //set if inital dest pos. and inital carry was set
             write(source, temp);
         }
     }
@@ -1341,13 +1361,13 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b0111;                 // emulated by SUBC instruction
         execute {
-            local dest: short = read(source);
-            local highbit: int = dest[15];
+            local dest: int.16 = read(source);
+            local highbit: boolean = dest[15];
             // TODO: why not emulate this with the performSubtraction method?
             dest = dest + 0xFFFF + bit(C);  //carry bit is added to dest minus one
             N = dest[15];
             Z = (dest == 0);
-            C = ((highbit > dest[15]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
+            C = ((highbit != dest[15]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
             V = (dest > 0xFFFF);   //set overflow if arithmetic overflow occurs
             write(source, dest);
 	    }
@@ -1357,12 +1377,12 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b0111;      //emulated by SUBC instruction
         execute {
-            local dest: byte = read(source);
-            local highbit: int = dest[7];
+            local dest: int.8 = read(source);
+            local highbit: boolean = dest[7];
             dest = dest + 0xFF + bit(C);  //carry bit is added to dest minus one
             N = dest[7];
             Z = (dest == 0);
-            C = ((highbit > dest[7]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
+            C = ((highbit != dest[7]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
             V = (dest > 0xFF);   //set overflow if arithmetic overflow occurs
             write(source, dest);
         }
@@ -1393,10 +1413,10 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b1000;
         execute {
-            local r1: short = read(source);
-            local r2: short = read(dest);
+            local r1: int.16 = read(source);
+            local r2: int.16 = read(dest);
             local results: int = performSubtractionW(r1, r2, 0);
-            write(dest, results: short);
+            write(dest, results: int.16);
     	}
     }
 
@@ -1404,8 +1424,8 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b1000;
         execute {
-            local r1: byte = read(source);
-            local r2: byte = read(dest);
+            local r1: int.8 = read(source);
+            local r2: int.8 = read(dest);
             local results: int = performSubtraction(r1, r2, 0);
             write(dest, low(results));
     	}
@@ -1415,10 +1435,10 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b0111;
         execute {
-            local r1: short = read(source);
-            local r2: short = read(dest);
+            local r1: int.16 = read(source);
+            local r2: int.16 = read(dest);
             local results: int = performSubtractionW(r1, r2, bit(C));
-            write(dest, results: short);
+            write(dest, results: int.16);
 	    }
     }
 
@@ -1426,8 +1446,8 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b0111;
         execute {
-            local r1: byte = read(source);
-            local r2: byte = read(dest);
+            local r1: int.8 = read(source);
+            local r2: int.8 = read(dest);
             local results: int = performSubtraction(r1, r2, bit(C));
             write(dest, low(results));
  	    }
@@ -1437,10 +1457,10 @@ architecture msp430 {
 	    property bw: int = 0;
 	    property opcode: int = 0b0111;                         //same operation as SUBC, different syntax
 	    execute {
-            local r1: short = read(source);
-            local r2: short = read(dest);
+            local r1: int.16 = read(source);
+            local r2: int.16 = read(dest);
 	        local results: int = performSubtractionW(r1, r2, bit(C));
-            write(dest, results: short);
+            write(dest, results: int.16);
 	    }
     }
 
@@ -1448,8 +1468,8 @@ architecture msp430 {
 	    property bw: int = 1;
         property opcode: int = 0b0111;                            //same operation as SUBC, different syntax
         execute {
-            local r1: byte = read(source);
-            local r2: byte = read(dest);
+            local r1: int.8 = read(source);
+            local r2: int.8 = read(dest);
             local results: int = performSubtraction(r1, r2, bit(C));
             write(dest, low(results));
  	    }
@@ -1459,8 +1479,8 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b000100001;
         execute {
-           local temp1: short = read(source);   //contains original
-           local temp2: short = temp1;   //eventually contains swapped bytes
+           local temp1: int.16 = read(source);   //contains original
+           local temp2: int.16 = temp1;   //eventually contains swapped bytes
            temp2[15:8] = temp1[7:0];
            temp2[7:0] = temp1[15:8];
            write(source, temp2);
@@ -1471,7 +1491,7 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b000100011;
         execute {
-            local r1: short = read(source);
+            local r1: int.16 = read(source);
             r1 = (r1 << 8) >> 8;
             N = r1[15];      // set if result is negative
             Z = (r1 == 0);   // set if result is zero
@@ -1510,13 +1530,13 @@ architecture msp430 {
         property opcode: int = 0b1110;
         execute {
             local source: int = read(source);
-            local dest: int = read(dest);
-            dest = dest ^ source;
-            N = dest[15];
-            Z = (dest == 0);
+            local res: int = read(dest);
+            res = res ^ source;
+            N = res[15];
+            Z = (res == 0);
             C = !Z;
-            V = ((source < 0) and (dest < 0));
-            write(dest, dest: short);
+            V = ((source < 0) and (res < 0));
+            write(dest, res: int.16);
         }
     }
 
@@ -1525,13 +1545,13 @@ architecture msp430 {
 	    property opcode: int = 0b1110;
 	    execute {
             local source: int = read(source);
-            local dest: int = read(dest);
-            dest = dest ^ source;
-            N = dest[7];
-            Z = (dest == 0);
+            local res: int = read(dest);
+            res = res ^ source;
+            N = res[7];
+            Z = (res == 0);
             C = !Z;
-            V = ((source < 0) and (dest < 0));
-            write(dest, low(dest));
+            V = ((source < 0) and (res < 0));
+            write(dest, low(res));
         }
     }
 

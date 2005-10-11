@@ -32,8 +32,6 @@
 
 package cck.parser;
 
-import cck.parser.SourcePoint;
-import cck.parser.SourceError;
 import cck.text.StringUtil;
 
 /**
@@ -61,5 +59,21 @@ public class ErrorReporter {
     public void error(String type, SourcePoint p, String report, String p1, String p2, String p3) {
         String[] ps = {p1, p2, p3};
         throw new SourceError(type, p, report, ps);
+    }
+
+    public void redefined(String type, String thing, AbstractToken prevdecl, AbstractToken newdecl) {
+        type = "Redefined"+type;
+        String report = thing + " " + StringUtil.quote(prevdecl.image) + " previously defined at " + pos(prevdecl);
+        error(type, newdecl.getSourcePoint(), report, prevdecl.image);
+    }
+
+    public void unresolved(String type, String thing, AbstractToken where) {
+        type = "Unresolved"+type;
+        String report = "Unresolved " + thing + " " + StringUtil.quote(where.image);
+        error(type, where.getSourcePoint(), report, where.image);
+    }
+
+    protected String pos(AbstractToken t) {
+        return t.beginLine+":"+t.beginColumn;
     }
 }

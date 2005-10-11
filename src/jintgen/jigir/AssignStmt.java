@@ -39,7 +39,13 @@ package jintgen.jigir;
  *
  * @author Ben L. Titzer
  */
-public abstract class AssignStmt extends Stmt {
+public class AssignStmt extends Stmt {
+
+    /**
+     * The <code>dest</code> field stores a reference to the expression (which must be an Lvalue)
+     * that specifies the location to store the value to.
+     */
+    public final Expr dest;
 
     /**
      * The <code>expr</code> field stores a reference to the expression whose result is assigned to the left
@@ -53,8 +59,32 @@ public abstract class AssignStmt extends Stmt {
      *
      * @param r the expression representing the right hand side of the assignment
      */
-    public AssignStmt(Expr r) {
+    public AssignStmt(Expr d, Expr r) {
+        dest = d;
         expr = r;
     }
+
+    /**
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine.
+     *
+     * @param v the visitor to accept
+     */
+    public void accept(StmtVisitor v) {
+        v.visit(this);
+    }
+
+    /**
+     * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+     * syntax trees representing the code of a particular instruction or subroutine. The
+     * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
+     *
+     * @param v the visitor to accept
+     * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
+     */
+    public <Res, Env> Res accept(StmtAccumulator<Res,Env> v, Env env) {
+            return v.visit(this, env);
+    }
+
 
 }

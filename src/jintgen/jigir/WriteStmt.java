@@ -34,63 +34,39 @@ package jintgen.jigir;
 
 import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.types.TypeRef;
+
+import java.util.List;
 
 /**
- * The <code>MapBitAssignStmt</code> represents an assignment to a single bit within an element within a map.
+ * The <code>CallStmt</code> class represents a call to a subroutine that does not produce a value.
  *
  * @author Ben L. Titzer
  */
-public class MapBitAssignStmt extends AssignStmt {
+public class WriteStmt extends Stmt {
 
     /**
-     * The <code>typename</code> field stores a reference to the name of the map whose element is being
-     * assigned to.
+     * The <code>method</code> field stores a string that represents the name of the subroutine being called.
      */
-    public final Token mapname;
+    public final Token method;
+
+    public final TypeRef type;
+
+    public final Token operand;
+
+    public final Expr expr;
 
     /**
-     * The <code>expr</code> field stores a references to the expression which is evaluated to yield the expr
-     * into the map.
-     */
-    public final Expr index;
-
-    /**
-     * The <code>bit</code> field stores a reference to the expression which is evaluated to yield the bit
-     * expr into the element of the map.
-     */
-    public final Expr bit;
-
-    /**
-     * The constructor for the <code>MapAssignStmt</code> class initializes the public final fields in this
-     * class that refer to the elements of the assignment.
+     * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine
+     * name and arguments.
      *
-     * @param m the string name of the map as a token
-     * @param i the expression representing the expr into the map
-     * @param b the expression representing the bit expr into the element
-     * @param e the expression representing the right hand side of the assignment
+     * @param m the name of the subroutine as a string
      */
-    public MapBitAssignStmt(Token m, Expr i, Expr b, Expr e) {
-        super(e);
-        mapname = m;
-        index = i;
-        bit = b;
-    }
-
-    /**
-     * The constructor for the <code>MapAssignStmt</code> class initializes the public final fields in this
-     * class that refer to the elements of the assignment.
-     *
-     * @param m the string name of the map as a token
-     * @param i the expression representing the expr into the map
-     * @param b the expression representing the bit expr into the element
-     * @param e the expression representing the right hand side of the assignment
-     */
-    public MapBitAssignStmt(String m, Expr i, Expr b, Expr e) {
-        super(e);
-        mapname = new Token();
-        mapname.image = m;
-        index = i;
-        bit = b;
+    public WriteStmt(Token m, TypeRef t, Token o, Expr e) {
+        method = m;
+        type = t;
+        operand = o;
+        expr = e;
     }
 
     /**
@@ -109,7 +85,7 @@ public class MapBitAssignStmt extends AssignStmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return StringUtil.embed("$" + mapname, index) + '[' + bit + ']' + " = " + expr + ';';
+        return "write : "+type+" ("+operand+", "+expr.toString()+");";
     }
 
     /**
@@ -123,5 +99,4 @@ public class MapBitAssignStmt extends AssignStmt {
     public <Res, Env> Res accept(StmtAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
     }
-
 }

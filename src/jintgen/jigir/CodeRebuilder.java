@@ -44,111 +44,31 @@ import java.util.List;
  */
 public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
 
-    public Expr visit(Arith.AddExpr e, Env env) {
+    public Expr visit(BinOpExpr e, Env env) {
         Expr l = e.left.accept(this, env);
         Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.AddExpr(l, r);
-        else
-            return e;
+        return rebuild(e, l, r);
     }
 
-    public Expr visit(Arith.AndExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.AndExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.CompExpr e, Env env) {
-        Expr o = e.operand.accept(this, env);
-        if (o != e.operand) return new Arith.CompExpr(o);
+    protected Expr rebuild(BinOpExpr e, Expr l, Expr r) {
+        if (l != e.left || r != e.right) {
+            BinOpExpr binOpExpr = new BinOpExpr(l, e.operation, r);
+            binOpExpr.setBinOp(e.getBinOp());
+            return binOpExpr;
+        }
         return e;
     }
 
-    public Expr visit(Arith.DivExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.DivExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.MulExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.MulExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.NegExpr e, Env env) {
-        Expr o = e.operand.accept(this, env);
-        if (o != e.operand) return new Arith.NegExpr(o);
-        return e;
-    }
-
-    public Expr visit(Arith.OrExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.OrExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.ShiftLeftExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.ShiftLeftExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.ShiftRightExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.ShiftRightExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.SubExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.SubExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.XorExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Arith.XorExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(BitExpr e, Env env) {
+    public Expr visit(IndexExpr e, Env env) {
         Expr i = e.expr.accept(this, env);
-        Expr j = e.bit.accept(this, env);
-        if (i != e.expr || j != e.bit)
-            return new BitExpr(i, j);
-        else
-            return e;
+        Expr j = e.index.accept(this, env);
+        if (i != e.expr || j != e.index) return new IndexExpr(i, j);
+        return e;
     }
 
-    public Expr visit(BitRangeExpr e, Env env) {
+    public Expr visit(FixedRangeExpr e, Env env) {
         Expr o = e.operand.accept(this, env);
-        if (o != e.operand) return new BitRangeExpr(o, e.low_bit, e.high_bit);
+        if (o != e.operand) return new FixedRangeExpr(o, e.low_bit, e.high_bit);
         return e;
     }
 
@@ -174,6 +94,11 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
             return e;
     }
 
+    public Expr visit(ReadExpr e, Env env) {
+        // terminal node in the tree
+        return e;
+    }
+
     public Expr visit(ConversionExpr e, Env env) {
         Expr ne = e.expr.accept(this, env);
         if (ne != e.expr) return new ConversionExpr(ne, e.typename);
@@ -190,91 +115,18 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
         return e;
     }
 
-    public Expr visit(Logical.AndExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.AndExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.EquExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.EquExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.GreaterEquExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.GreaterEquExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.GreaterExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.GreaterExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.LessEquExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.LessEquExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.LessExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.LessExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.NequExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.NequExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.NotExpr e, Env env) {
+    public Expr visit(UnOpExpr e, Env env) {
         Expr ne = e.operand.accept(this, env);
-        if (ne != e.operand) return new Logical.NotExpr(ne);
+        return rebuild(e, ne);
+    }
+
+    protected Expr rebuild(UnOpExpr e, Expr ne) {
+        if (ne != e.operand) {
+            UnOpExpr unOpExpr = new UnOpExpr(e.operation, ne);
+            unOpExpr.setUnOp(e.getUnOp());
+            return unOpExpr;
+        }
         return e;
-    }
-
-    public Expr visit(Logical.OrExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.OrExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.XorExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
-        if (l != e.left || r != e.right)
-            return new Logical.XorExpr(l, r);
-        else
-            return e;
     }
 
     public Expr visit(MapExpr e, Env env) {

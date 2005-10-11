@@ -63,8 +63,10 @@ PARSER_BEGIN(ISDLParser)
 package jintgen.isdl.parser;
 import jintgen.jigir.*;
 import jintgen.isdl.*;
+import jintgen.types.*;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.HashMap;
 
 public class ISDLParser {
 
@@ -201,6 +203,7 @@ TOKEN :
   | < SUB: "-" >
   | < MUL: "*" >
   | < DIV: "/" >
+  | < MOD: "%" >
   | < B_AND: "&" >
   | < B_OR: "|" >
   | < B_XOR: "^" >
@@ -253,7 +256,7 @@ void Item() : {}
   | Subroutine()
   | AddrModeDecl()
   | AddrSetDecl()
-  | StateDecl()
+  | Global()
 }
 
 void Instruction() :
@@ -281,7 +284,7 @@ void Enum() : { Token n; SymbolMapping m; }
     "}" { arch.addEnum(new EnumDecl(n, m)); }
 }
 
-void EnumSubset() : { Token n; Type t; SymbolMapping m; }
+void EnumSubset() : { Token n; TypeRef t; SymbolMapping m; }
 {
     "enum-subset" n = <IDENTIFIER> ":" t = Type() { m = new SymbolMapping(n); }"{"
         MappingSetElem(m) ("," MappingSetElem(m))*
@@ -294,7 +297,7 @@ AddrModeUse AddrModeUse(Token n) : { List<AddrModeDecl.Operand> o; }
    |(o = Operands() { return new AddrModeUse(null, new AddrModeDecl(n, o)); })
 }
 
-Property Property(List<Property> pl) : { Property p; Token name, v; Type t; }
+Property Property(List<Property> pl) : { Property p; Token name, v; TypeRef t; }
 {
     "property" name = <IDENTIFIER> ":" t = Type() "=" v = Value() ";"
     { p = new Property(name, t, v);
@@ -311,20 +314,9 @@ Token Value() : { Token t = null; }
   { return t; }
 }
 
-void StateDecl() : {}
-{
-    Global()
-  | Memory()
-}
-
-void Global() : { Token n; Type t; }
+void Global() : { Token n; TypeRef t; }
 {
     "global" n = <IDENTIFIER> ":" t = Type() ";" { arch.addGlobal(n, t); }
-}
-
-void Memory() : { Token n; }
-{
-    "memory" <DOLLAR> n = <IDENTIFIER> "(" MapType() ")" ":" MapType() ";"
 }
 
 void AddrModeDecl() : {
@@ -377,7 +369,7 @@ void OperandTypeDecl() : { Token n; OperandTypeDecl d; }
     { arch.addOperand(d); }
 }
 
-OperandTypeDecl SimpleOperandType(Token n) : { Type t; Token b, l = null, h = null; OperandTypeDecl d; }
+OperandTypeDecl SimpleOperandType(Token n) : { TypeRef t; Token b, l = null, h = null; OperandTypeDecl d; }
 {
     "[" b = <INTEGER_LITERAL> "]" ":"
     t = Type() [ "[" l = <INTEGER_LITERAL> "," h = <INTEGER_LITERAL> "]" ]
@@ -479,7 +471,7 @@ void Subroutine() :
 {
     boolean i = false;
     Token m;
-    Type r;
+    TypeRef r;
     List<SubroutineDecl.Parameter> f;
     List<Stmt> l = new LinkedList<Stmt>();
 }
@@ -501,7 +493,7 @@ List<SubroutineDecl.Parameter> Params() :
     [ p = Param() { l.add(p); } ("," p = Param() { l.add(p); })* ] { return l; }
 }
 
-SubroutineDecl.Parameter Param() : { Token n; Type t; }
+SubroutineDecl.Parameter Param() : { Token n; TypeRef t; }
 {
     n = <IDENTIFIER> ":" t = Type() { return new SubroutineDecl.Parameter(n, t); }
 }
@@ -523,22 +515,17 @@ Expr Term() : { Expr e; }
     | LOOKAHEAD(2) e = DotExpr()
     | e = VarUse()
     | e = Literal()
-    | e = MapAccess()
+    | e = ReadExpr()
     | "(" e = Expr() ")"
     )
-    [e = BitRange(e)]
+    (e = Index(e))*
     [e = Conversion(e)]
     { return e; }
 }
 
-Expr Conversion(Expr e) : { Type t; }
+Expr Conversion(Expr e) : { TypeRef t; }
 {
   ":" t = Type() { return new ConversionExpr(e, t); }
-}
-
-Expr MapAccess() : { Expr e; Token t; }
-{
-  "$" t = <IDENTIFIER> "(" e = Expr() ")" { return new MapExpr(t, e); }
 }
 
 Expr VarUse() : { Token t; }
@@ -557,18 +544,14 @@ Expr Literal() : { Token t; }
  |(t = <BOOLEAN_LITERAL> { return new Literal.BoolExpr(t); })
 }
 
-Expr CallExpr() : { Token t; List<Expr> l; }
+Expr ReadExpr() : { Token r, o; TypeRef t = null; }
 {
-  t = Method() l = Parameters() { return new CallExpr(t, l); }
+  r = "read" [":" t = Type()] "(" o = <IDENTIFIER> ")" { return new ReadExpr(r, t, o); }
 }
 
-Token Method() : { Token m; }
+Expr CallExpr() : { Token t; List<Expr> l; }
 {
- (
-   m = <IDENTIFIER>
- | m = "read"
- | m = "write"
- ) { return m; }
+  t = <IDENTIFIER> l = Parameters() { return new CallExpr(t, l); }
 }
 
 List<Expr> Parameters() : { List<Expr> l = new LinkedList<Expr>(); }
@@ -582,13 +565,14 @@ Stmt Statement() : { Stmt s; }
   (
     s = LocalDecl()
   | s = IfStatement()
-  | LOOKAHEAD(2) s = Assignment()
+  | LOOKAHEAD(Expr() "=") s = Assignment()
   | s = CallStmt()
   | s = ReturnStmt()
+  | s = WriteStmt()
   ) { return s; }
 }
 
-DeclStmt LocalDecl() : { Token n; Type t; Expr e; }
+DeclStmt LocalDecl() : { Token n; TypeRef t; Expr e; }
 {
     "local" n = <IDENTIFIER> ":" t = Type() "=" e = Expr() ";"
     { return new DeclStmt(n, t, e); }
@@ -601,9 +585,21 @@ IfStmt IfStatement() : { Expr c; List<Stmt> t = new LinkedList<Stmt>(), f = new 
     { return new IfStmt(c, t, f); }
 }
 
+CallStmt CallStmt() : { Token t; List<Expr> l; }
+{
+  t = <IDENTIFIER> l = Parameters() ";" { return new CallStmt(t, l); }
+}
+
+
 ReturnStmt ReturnStmt() : { Expr e; }
 {
     "return" e = Expr() ";" { return new ReturnStmt(e); }
+}
+
+WriteStmt WriteStmt() : { Token w, o; TypeRef t = null; Expr e; }
+{
+  w = "write" [":" t = Type() ] "(" o = <IDENTIFIER> "," e = Expr() ")" ";"
+  { return new WriteStmt(w, t, o, e); }
 }
 
 void SingleStatement(List<Stmt> l) : { Stmt s; }
@@ -611,49 +607,10 @@ void SingleStatement(List<Stmt> l) : { Stmt s; }
     s = Statement() { l.add(s); } | (Block(l))
 }
 
-AssignStmt Assignment() : { AssignStmt s; }
+AssignStmt Assignment() : { Expr d; Expr e; }
 {
-    ( s = VarAssignment()
-    | s = MapAssignment()) ";"
-    { return s; }
-}
-
-CallStmt CallStmt() : { Token m; List<Expr> l; }
-{
-    m = Method() l = Parameters() ";" { return new CallStmt(m, l); }
-}
-
-AssignStmt VarAssignment() : { AssignStmt s; Token v, i, j; Expr e; }
-{
-    (v = <IDENTIFIER> s = VarAssignEnd(v))
-    { return s; }
-}
-
-AssignStmt VarAssignEnd(Token v) : { AssignStmt s; Token i, j; Expr e, b; }
-{
-    (("=" e = Expr() { s = new VarAssignStmt(v, e); })
-    | LOOKAHEAD(3) ("[" i = <INTEGER_LITERAL> ":" j = <INTEGER_LITERAL> "]"
-      "=" e = Expr() { s = new VarBitRangeAssignStmt(v, i, j, e); })
-    |("[" b = Expr() "]"
-      "=" e = Expr() { s = new VarBitAssignStmt(v, b, e); })
-    ) { return s; }
-}
-
-AssignStmt MapAssignment() : { AssignStmt s; Token v, i, j; Expr ind, e; }
-{
-    "$" v = <IDENTIFIER> "(" ind = Expr() ")" s = MapAssignmentEnd(v, ind)
-    { return s; }
-}
-
-AssignStmt MapAssignmentEnd(Token v, Expr ind) : { AssignStmt s; Token i, j; Expr e, b; }
-{
-    (
-     ("=" e = Expr() { s = new MapAssignStmt(v, ind, e); })
-    | LOOKAHEAD(3) ("[" i = <INTEGER_LITERAL> ":" j = <INTEGER_LITERAL> "]"
-      "=" e = Expr() { s = new MapBitRangeAssignStmt(v, ind, i, j, e); })
-    |("[" b = Expr() "]"
-      "=" e = Expr() { s = new MapBitAssignStmt(v, ind, b, e); })
-    ) { return s; }
+    d = Expr() "=" e = Expr() ";"
+    { return new AssignStmt(d, e); }
 }
 
 List<Stmt> Block(List<Stmt> l) : { Stmt s; }
@@ -662,13 +619,13 @@ List<Stmt> Block(List<Stmt> l) : { Stmt s; }
     { return l; }
 }
 
-Expr BitRange(Expr e) : { Expr et; Token t1, t2; }
+Expr Index(Expr e) : { Expr et; Token t1, t2; }
 {
     "["
     (LOOKAHEAD(2) (t1 = <INTEGER_LITERAL> ":" t2 = <INTEGER_LITERAL>
-     { e =  new BitRangeExpr(e, t1, t2); })
+     { e =  new FixedRangeExpr(e, t1, t2); })
    | (et = Expr()
-     { e = new BitExpr(e, et); }))
+     { e = new IndexExpr(e, et); }))
     "]"
     { return e; }
 }
@@ -678,7 +635,7 @@ Expr Cond_Or_Expr() : { Expr e, et; Token tok; }
 {
   e = Cond_Xor_Expr()
   ( tok = "or" et = Cond_Xor_Expr()
-    { e = new Logical.OrExpr(e, et); } )*
+    { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
@@ -686,7 +643,7 @@ Expr Cond_Xor_Expr() : { Expr e, et; Token tok; }
 {
   e = Cond_And_Expr()
   ( tok = "xor" et = Cond_And_Expr()
-    { e = new Logical.XorExpr(e, et); } )*
+    { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
@@ -694,7 +651,7 @@ Expr Cond_And_Expr() : { Expr e, et; Token tok; }
 {
   e = Or_Expr()
   ( tok = "and" et = Or_Expr()
-    { e = new Logical.AndExpr(e, et); } )*
+    { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
@@ -702,7 +659,7 @@ Expr Or_Expr() : { Expr e, et; Token tok; }
 {
   e = Xor_Expr()
   ( tok = "|" et = Xor_Expr()
-    { e = new Arith.OrExpr(e, et); } )*
+    { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
@@ -710,7 +667,7 @@ Expr Xor_Expr() : { Expr e, et; Token tok; }
 {
   e = And_Expr()
   ( tok = "^" et = And_Expr()
-    { e = new Arith.XorExpr(e, et); } )*
+    { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
@@ -718,77 +675,81 @@ Expr And_Expr() : { Expr e, et; Token tok; }
 {
   e = Equ_Expr()
   ( tok = "&" et = Equ_Expr()
-    { e = new Arith.AndExpr(e, et); } )*
+    { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
-Expr Equ_Expr() : { Expr e, et; }
+Expr Equ_Expr() : { Expr e, et; Token tok; }
 {
   e = Rel_Expr() (
-    ("==" et = Rel_Expr() { e = new Logical.EquExpr(e, et); })
-   |("!=" et = Rel_Expr() { e = new Logical.NequExpr(e, et); })
-  )*
+     (tok = "==" | tok = "!=")
+     et = Rel_Expr() { e = new BinOpExpr(e, tok, et); })*
   { return e; }
 }
 
 Expr Rel_Expr() : { Expr e, et; Token tok; }
 {
   e = Shift_Expr() (
-    ("<"  et = Shift_Expr() { e = new Logical.LessExpr(e, et); } )
-   |(">"  et = Shift_Expr() { e = new Logical.GreaterExpr(e, et); } )
-   |("<=" et = Shift_Expr() { e = new Logical.LessEquExpr(e, et); } )
-   |(">=" et = Shift_Expr() { e = new Logical.GreaterEquExpr(e, et); } )
-  )*
+     (tok = "<"  | tok = ">" | tok = "<=" | tok = ">=")
+     et = Shift_Expr() { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
 Expr Shift_Expr() : { Expr e, et; Token tok; }
 {
   e = Add_Expr() (
-    ("<<" et = Add_Expr() { e = new Arith.ShiftLeftExpr(e, et); } )
-   |(">>" et = Add_Expr() { e = new Arith.ShiftRightExpr(e, et); } )
-  )*
+    (tok = "<<" | tok = ">>" )
+    et = Add_Expr() { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
 Expr Add_Expr() : { Expr e, et; Token tok; }
 {
   e = Mul_Expr() (
-    ("+" et = Mul_Expr() { e = new Arith.AddExpr(e, et); } )
-   |("-" et = Mul_Expr() { e = new Arith.SubExpr(e, et); } )
-  )*
+    (tok = "+" | tok = "-" )
+    et = Mul_Expr() { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
 Expr Mul_Expr() : { Expr e, et; Token tok; }
 {
   e = Un_Expr() (
-    ("*" et = Un_Expr() { e = new Arith.MulExpr(e, et); } )
-   |("/" et = Un_Expr() { e = new Arith.DivExpr(e, et); } )
-  )*
+    (tok = "*" | tok = "/" | tok = "%")
+    et = Un_Expr() { e = new BinOpExpr(e, tok, et); } )*
   { return e; }
 }
 
-Expr Un_Expr() : { Expr e; }
+Expr Un_Expr() : { Expr e; Token tok; }
 {
    (
-    ("~" e = Term() { e = new Arith.CompExpr(e); })
-   |("!" e = Term() { e = new Logical.NotExpr(e); })
-   |("-" e = Term() { e = new Arith.NegExpr(e); })
-   |(e = Term())
+    ((tok = "~" | tok = "!" | tok = "-" | tok = "+") e = Term() { e = new UnOpExpr(tok, e); })
+   | (e = Term())
    )
   { return e; }
 }
 
-Type MapType() : { Type t; }
+TypeRef Type() : { Token t; HashMap<String, List> dims = new HashMap<String, List>(); }
 {
-    t = Type()
-    { return t; }
+    [SignDimension(dims)]
+    t = <IDENTIFIER>
+    [ SizeDimension(dims) ]
+    [ LOOKAHEAD(2) TypesDimension(dims, "types") ]
+    { return new TypeRef(t, dims); }
 }
 
-Type Type() : { Token t, s = null, w = null; }
+void SignDimension(HashMap<String, List> dims) : { Token s; }
 {
-    [s = "+" | s = "-"] t = <IDENTIFIER> [ "." w = <INTEGER_LITERAL> ] { return new Type(s, t, w); }
+    s = "+" | s = "-" { List l = new LinkedList(); l.add(s); dims.put("sign", l); }
+}
+
+void SizeDimension(HashMap<String, List> dims) : { Token w; }
+{
+    "." w = <INTEGER_LITERAL> { List l = new LinkedList(); l.add(w); dims.put("size", l); }
+}
+
+void TypesDimension(HashMap<String, List> dims, String n) : { List ty = new LinkedList(); TypeRef tr; }
+{
+   "<" [ tr = Type() { ty.add(tr); } ("," tr = Type() { ty.add(tr); })* ] ">" { dims.put(n, ty); }
 }
 
 Token OperandType() : { Token t; }

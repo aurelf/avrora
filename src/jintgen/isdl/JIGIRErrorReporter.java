@@ -32,42 +32,43 @@
 
 package jintgen.isdl;
 
+import cck.parser.AbstractToken;
+import cck.parser.ErrorReporter;
 import cck.text.StringUtil;
 import cck.util.Util;
-import cck.parser.ErrorReporter;
 import jintgen.isdl.parser.Token;
-import jintgen.jigir.*;
+import jintgen.jigir.Expr;
+import jintgen.jigir.Literal;
+import jintgen.jigir.ReturnStmt;
 import jintgen.types.Type;
+import jintgen.types.TypeErrorReporter;
+import jintgen.types.TypeRef;
 
 /**
  * @author Ben L. Titzer
  */
-public class JIGIRErrorReporter extends ErrorReporter {
+public class JIGIRErrorReporter extends TypeErrorReporter {
 
     public void ExtraOperandInAddressingModeUnification(Token addrSet, Token addrMode, Token operand) {
         String report = "Cannot unify addressing mode " + StringUtil.quote(addrMode) + " into set " + StringUtil.quote(addrSet) + " at " + pos(addrMode) + " because it defines an operand " + StringUtil.quote(operand) + " not in the other addressing modes";
-        error("ExtraOperandInAddressingModeUnification", addrMode.asSourcePoint(), report);
+        error("ExtraOperandInAddressingModeUnification", addrMode.getSourcePoint(), report);
     }
 
     public void MissingOperandInAddressingModeUnification(Token addrSet, Token addrMode, String operand) {
         String report = "Cannot unify addressing mode " + StringUtil.quote(addrMode) + " into set " + StringUtil.quote(addrSet) + " at " + pos(addrMode) + " because it does not define an operand " + StringUtil.quote(operand) + " present in the other addressing modes";
-        error("MissingOperandInAddressingModeUnification", addrMode.asSourcePoint(), report);
+        error("MissingOperandInAddressingModeUnification", addrMode.getSourcePoint(), report);
     }
 
     public void UnresolvedOperandType(Token t) {
         unresolved("OperandType", "operand type", t);
     }
 
-    public void UnresolvedEnum(Token t) {
+    public void UnresolvedEnum(AbstractToken t) {
         unresolved("Enum", "enumeration", t);
     }
 
     public void UnresolvedEncodingFormat(Token t) {
         unresolved("EncodingFormat", "encoding format", t);
-    }
-
-    public void UnresolvedType(Token t) {
-        unresolved("Type", "type", t);
     }
 
     public void UnresolvedAddressingMode(Token t) {
@@ -84,7 +85,7 @@ public class JIGIRErrorReporter extends ErrorReporter {
 
     public void ArityMismatch(Token t) {
         String report = "Argument count mismatch";
-        error("ArityMismatch", t.asSourcePoint(), report);
+        error("ArityMismatch", t.getSourcePoint(), report);
     }
 
     public void RedefinedInstruction(Token prevdecl, Token newdecl) {
@@ -129,7 +130,7 @@ public class JIGIRErrorReporter extends ErrorReporter {
 
     public void CannotComputeSizeOfVariable(Token t) {
         String report = "Cannot compute size of variable "+StringUtil.quote(t.image);
-        error("CannotComputeSizeOfVariable", t.asSourcePoint(), report);
+        error("CannotComputeSizeOfVariable", t.getSourcePoint(), report);
     }
 
     public void CannotComputeSizeOfExpression(Expr e) {
@@ -142,35 +143,44 @@ public class JIGIRErrorReporter extends ErrorReporter {
         error("CannotComputeSizeOfLiteral", l.getSourcePoint(), report);
     }
 
-    public void TypeMismatch(String what, Type exp, Expr e) {
-        String report = "Type mismatch in " + what + ": expected " + exp + ", found " + e.getType();
-        error("TypeMismatch", e.getSourcePoint(), report);
-    }
-
-    public void TypesCannotBeCompared(Type exp, Type got) {
-        String report = "Types cannot be compared: " + exp + " and " + got;
-        throw Util.failure(report);
-    }
-
     public void IntTypeExpected(String what, Expr e) {
         String report = "Integer type expected in " + what + ", found " + e.getType();
         error("IntTypeExpected", e.getSourcePoint(), report);
     }
 
-    void redefined(String type, String thing, Token prevdecl, Token newdecl) {
-        type = "Redefined"+type;
-        String report = thing + " " + StringUtil.quote(prevdecl.image) + " previously defined at " + pos(prevdecl);
-        error(type, newdecl.asSourcePoint(), report, prevdecl.image);
+    public void UnresolvedOperator(Token op, Type lt, Type rt) {
+        String report = "Unresolved operator "+StringUtil.quote(op)+ " on types ("+lt.getTypeCon()+","+rt.getTypeCon()+")";
+        error("UnresolvedOperator", op.getSourcePoint(), report);
     }
 
-    void unresolved(String type, String thing, Token where) {
-        type = "Unresolved"+type;
-        String report = "Unresolved " + thing + " " + StringUtil.quote(where.image);
-        error(type, where.asSourcePoint(), report, where.image);
+    public void UnresolvedOperator(Token op, Type lt) {
+        String report = "Unresolved operator "+StringUtil.quote(op)+ " on type ("+lt.getTypeCon()+")";
+        error("UnresolvedOperator", op.getSourcePoint(), report);
     }
 
-    private String pos(Token t) {
-        return t.beginLine+":"+t.beginColumn;
+    public void NotAnLvalue(Expr e) {
+        String report = "not an lvalue";
+        error("NotAnLvalue", e.getSourcePoint(), report);
     }
 
+    public void TypeDoesNotSupportIndex(Expr e) {
+        String report = "type "+e.getType()+" does not support index operation";
+        error("TypeDoesNotSupportIndex", e.getSourcePoint(), report);
+    }
+
+    public void ValueTypeExpected(TypeRef tr) {
+        AbstractToken token = tr.getToken();
+        String report = "Value type expected, found "+token;
+        error("ValueTypeExpected", token.getSourcePoint(), report);
+    }
+
+    public void ReturnStmtNotInSubroutine(ReturnStmt s) {
+        String report = "Return statment not in subroutine";
+        error("ReturnStmtNotInSubroutine", s.expr.getSourcePoint(), report);
+    }
+
+    public void OperandTypeExpected(Token o, Type t) {
+        String report = "Operand type expected, found "+t.toString();
+        error("OperandTypeExpected", o.getSourcePoint(), report);
+    }
 }

@@ -41,59 +41,23 @@ package jintgen.jigir;
  */
 public interface CodeVisitor {
 
-    public void visit(Arith.AddExpr e);
+    public void visit(BinOpExpr e);
 
-    public void visit(Arith.AndExpr e);
+    public void visit(UnOpExpr e);
 
-    public void visit(Arith.CompExpr e);
+    public void visit(IndexExpr e);
 
-    public void visit(Arith.DivExpr e);
-
-    public void visit(Arith.MulExpr e);
-
-    public void visit(Arith.NegExpr e);
-
-    public void visit(Arith.OrExpr e);
-
-    public void visit(Arith.ShiftLeftExpr e);
-
-    public void visit(Arith.ShiftRightExpr e);
-
-    public void visit(Arith.SubExpr e);
-
-    public void visit(Arith.XorExpr e);
-
-    public void visit(BitExpr e);
-
-    public void visit(BitRangeExpr e);
+    public void visit(FixedRangeExpr e);
 
     public void visit(CallExpr e);
+
+    public void visit(ReadExpr e);
 
     public void visit(ConversionExpr e);
 
     public void visit(Literal.BoolExpr e);
 
     public void visit(Literal.IntExpr e);
-
-    public void visit(Logical.AndExpr e);
-
-    public void visit(Logical.EquExpr e);
-
-    public void visit(Logical.GreaterEquExpr e);
-
-    public void visit(Logical.GreaterExpr e);
-
-    public void visit(Logical.LessEquExpr e);
-
-    public void visit(Logical.LessExpr e);
-
-    public void visit(Logical.NequExpr e);
-
-    public void visit(Logical.NotExpr e);
-
-    public void visit(Logical.OrExpr e);
-
-    public void visit(Logical.XorExpr e);
 
     public void visit(MapExpr e);
 
@@ -110,66 +74,17 @@ public interface CodeVisitor {
      */
     public class DepthFirst implements CodeVisitor {
 
-        public void visit(Arith.AddExpr e) {
+        public void visit(BinOpExpr e) {
             e.left.accept(this);
             e.right.accept(this);
         }
 
-        public void visit(Arith.AndExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Arith.CompExpr e) {
-            e.operand.accept(this);
-        }
-
-        public void visit(Arith.DivExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Arith.MulExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Arith.NegExpr e) {
-            e.operand.accept(this);
-        }
-
-        public void visit(Arith.OrExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Arith.ShiftLeftExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Arith.ShiftRightExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Arith.SubExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Arith.XorExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-
-        public void visit(BitExpr e) {
+        public void visit(IndexExpr e) {
             e.expr.accept(this);
-            e.bit.accept(this);
+            e.index.accept(this);
         }
 
-        public void visit(BitRangeExpr e) {
+        public void visit(FixedRangeExpr e) {
             e.operand.accept(this);
         }
 
@@ -177,6 +92,10 @@ public interface CodeVisitor {
             for ( Expr a : e.args ) {
                 a.accept(this);
             }
+        }
+
+        public void visit(ReadExpr e) {
+            // terminal node
         }
 
         public void visit(ConversionExpr e) {
@@ -191,55 +110,9 @@ public interface CodeVisitor {
             // terminal node in the tree
         }
 
-        public void visit(Logical.AndExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.EquExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.GreaterEquExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.GreaterExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.LessEquExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.LessExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.NequExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.NotExpr e) {
+        public void visit(UnOpExpr e) {
             e.operand.accept(this);
         }
-
-        public void visit(Logical.OrExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
-        public void visit(Logical.XorExpr e) {
-            e.left.accept(this);
-            e.right.accept(this);
-        }
-
 
         public void visit(MapExpr e) {
             e.index.accept(this);
@@ -264,60 +137,23 @@ public interface CodeVisitor {
 
         public abstract void error(Expr e);
 
-        public void visit(Arith.AddExpr e) {
+        public void visit(BinOpExpr e) {
             error(e);
         }
 
-        public void visit(Arith.AndExpr e) {
+        public void visit(IndexExpr e) {
             error(e);
         }
 
-        public void visit(Arith.CompExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.DivExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.MulExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.NegExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.OrExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.ShiftLeftExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.ShiftRightExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.SubExpr e) {
-            error(e);
-        }
-
-        public void visit(Arith.XorExpr e) {
-            error(e);
-        }
-
-
-        public void visit(BitExpr e) {
-            error(e);
-        }
-
-        public void visit(BitRangeExpr e) {
+        public void visit(FixedRangeExpr e) {
             error(e);
         }
 
         public void visit(CallExpr e) {
+            error(e);
+        }
+
+        public void visit(ReadExpr e) {
             error(e);
         }
 
@@ -333,46 +169,9 @@ public interface CodeVisitor {
             error(e);
         }
 
-        public void visit(Logical.AndExpr e) {
+        public void visit(UnOpExpr e) {
             error(e);
         }
-
-        public void visit(Logical.EquExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.GreaterEquExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.GreaterExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.LessEquExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.LessExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.NequExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.NotExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.OrExpr e) {
-            error(e);
-        }
-
-        public void visit(Logical.XorExpr e) {
-            error(e);
-        }
-
 
         public void visit(MapExpr e) {
             error(e);

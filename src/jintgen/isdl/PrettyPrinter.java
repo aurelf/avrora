@@ -77,32 +77,11 @@ public class PrettyPrinter extends StmtVisitor.DepthFirst {
         p.println(s.toString());
     }
 
-    public void visit(MapAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(MapBitAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(MapBitRangeAssignStmt s) {
+    public void visit(AssignStmt s) {
         p.println(s.toString());
     }
 
     public void visit(ReturnStmt s) {
         p.println(s.toString());
     }
-
-    public void visit(VarAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(VarBitAssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(VarBitRangeAssignStmt s) {
-        p.println(s.toString());
-    }
-
 }

@@ -52,23 +52,10 @@ public class Canonicalizer extends StmtRebuilder<Object> {
         return extractExpr(new CallExpr(e.method, ne));
     }
 
-    public Stmt visit(MapAssignStmt e, Object env) {
-        Expr ni = liftExpr(e.index, env);
+    public Stmt visit(AssignStmt e, Object env) {
+        Expr ni = liftExpr(e.dest, env);
         Expr nv = liftExpr(e.expr, env);
-        return new MapAssignStmt(e.mapname, ni, nv);
-    }
-
-    public Stmt visit(MapBitAssignStmt e, Object env) {
-        Expr ni = liftExpr(e.index, env);
-        Expr nb = liftExpr(e.bit, env);
-        Expr nv = liftExpr(e.expr, env);
-        return new MapBitAssignStmt(e.mapname, ni, nb, nv);
-    }
-
-    public Stmt visit(MapBitRangeAssignStmt e, Object env) {
-        Expr ni = liftExpr(e.index, env);
-        Expr nv = liftExpr(e.expr, env);
-        return new MapBitRangeAssignStmt(e.mapname, ni, e.low_bit, e.high_bit, nv);
+        return new AssignStmt(ni, nv);
     }
 
     protected Expr liftExpr(Expr e, Object env) {

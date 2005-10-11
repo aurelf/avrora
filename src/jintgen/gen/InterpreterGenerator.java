@@ -38,6 +38,8 @@ import cck.util.Util;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
+import jintgen.types.Type;
+import jintgen.types.TypeRef;
 import java.io.IOException;
 import java.util.*;
 
@@ -98,19 +100,19 @@ public class InterpreterGenerator extends Generator {
 
     public void visit(SubroutineDecl d) {
         if ( !d.code.hasBody()) {
-            print("protected abstract " + d.ret.getJavaType() + ' ' + d.name.image);
+            print("protected abstract " + javaType(d.ret) + ' ' + d.name.image);
             beginList("(");
             for (SubroutineDecl.Parameter p : d.getParams()) {
-                print(p.type.getJavaType() + ' ' + p.name.image);
+                print(javaType(p.type) + ' ' + p.name.image);
             }
             endListln(");");
             return;
         }
         if (d.inline) return;
-        print("public " + d.ret.getJavaType() + ' ' + d.name.image);
+        print("public " + javaType(d.ret) + ' ' + d.name.image);
         beginList("(");
         for (SubroutineDecl.Parameter p : d.getParams()) {
-            print(p.type.getJavaType() + ' ' + p.name.image);
+            print(javaType(p.type) + ' ' + p.name.image);
         }
         endList(") ");
         startblock();
@@ -304,25 +306,6 @@ public class InterpreterGenerator extends Generator {
             return mr;
         }
 
-        public void visit(VarBitAssignStmt s) {
-            String var = getVariable(s.variable);
-            print(var + " = ");
-            emitCall("Arithmetic.setBit", var, s.bit, s.expr);
-            println(";");
-        }
-
-        public void visit(VarBitRangeAssignStmt s) {
-            String var = getVariable(s.variable);
-            int mask = Arithmetic.getBitRangeMask(s.low_bit, s.high_bit);
-            int smask = mask << s.low_bit;
-            int imask = ~smask;
-            print(var + " = (" + var + andString(imask) + ')');
-            print(" | (");
-            emitAnd(s.expr, mask);
-            if (s.low_bit != 0) print(" << " + s.low_bit);
-            println(");");
-        }
-
         protected String getVariable(Token variable) {
             // TODO: get rid of direct register references
             String var = variableMap.get(variable.image);
@@ -369,30 +352,30 @@ public class InterpreterGenerator extends Generator {
         }
 
         public void visit(ConversionExpr e) {
-            print("("+e.typename.getJavaType()+")");
+            print("("+javaType(e.typename)+")");
             inner(e.expr, Expr.PREC_TERM);
         }
 
 
-        public void visit(BitExpr e) {
+        public void visit(IndexExpr e) {
             if (e.expr.isMap()) {
                 MapExpr me = (MapExpr) e.expr;
                 MapRep mr = getMapRep(me.mapname.image);
-                mr.generateBitRead(me.index, e.bit);
+                mr.generateBitRead(me.index, e.index);
             } else {
-                if (e.bit.isLiteral()) {
-                    int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr) e.bit).value);
+                if (e.index.isLiteral()) {
+                    int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr) e.index).value);
                     print("((");
                     inner(e.expr, Expr.PREC_A_AND);
                     print(" & " + mask + ") != 0");
                     print(")");
                 } else {
-                    emitCall("Arithmetic.getBit", e.expr, e.bit);
+                    emitCall("Arithmetic.getBit", e.expr, e.index);
                 }
             }
         }
 
-        public void visit(BitRangeExpr e) {
+        public void visit(FixedRangeExpr e) {
             int mask = Arithmetic.getBitRangeMask(e.low_bit, e.high_bit);
             int low = e.low_bit;
             if (low != 0) {
@@ -404,21 +387,18 @@ public class InterpreterGenerator extends Generator {
             }
         }
 
-        public void visit(Logical.AndExpr e) {
-            binop("&&", e.left, e.right, e.getPrecedence());
+        public void visit(BinOpExpr e) {
+            binop(e.operation.image, e.left, e.right, e.getPrecedence());
         }
 
-        public void visit(Logical.OrExpr e) {
-            binop("||", e.left, e.right, e.getPrecedence());
-        }
+    }
 
-        public void visit(Logical.XorExpr e) {
-            binop("!=", e.left, e.right, Logical.PREC_L_EQU);
-        }
+    protected String javaType(Type t) {
+        throw Util.unimplemented();
+    }
 
-        public void visit(Arith.XorExpr e) {
-            binop("^", e.left, e.right, e.getPrecedence());
-        }
+    protected String javaType(TypeRef t) {
+        throw Util.unimplemented();
     }
 
 }

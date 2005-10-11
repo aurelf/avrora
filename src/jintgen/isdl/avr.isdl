@@ -18,14 +18,13 @@ architecture avr {
 //---------------------------------------------------------------------------
 //  STATE USED IN THE SIMULATION
 //---------------------------------------------------------------------------
-    memory $regs(GPR): int.8;   // a "view" of the registers as bytes
-    memory $uregs(GPR): +int.8;   // a "view" of the registers as unsigned
-    memory $wregs(GPR): +int.16;   // a "view" of the registers as words
-    memory $aregs(ADR): +int.16;   // a "view" of the address registers
-    memory $sram(int): int.8;   // a "view" of the memory as bytes
-    memory $ioregs(int): int.8; // a "view" of the memory as bytes
-    memory $flash(int): int.8;  // the flash (program) memory
-    memory $isize(int): +int.16;   // size of instruction (used in skip)
+    global regs: map<GPR, int.8>;     // the register file: signed 8-bit quantities
+    global wregs: map<GPR, +int.16>;  // a "view" of the register file as words
+    global aregs: map<GPR, +int.16>;  // a "view" of the register file as words
+    global sram: map<int, int.8>;     // a "view" of the memory as signed 8-bit quantities
+    global ioregs: map<int, int.8>;   // a "view" of the IO registers as signed 8-bit quantites
+    global flash: map<int, int.8>;    // the flash (program) memory
+    global isize: map<int, +int.16>;  // size of instruction (used in skip)
 
     global I: boolean;         // global interrupts enabled flag
     global T: boolean;         // global T flag
@@ -36,6 +35,9 @@ architecture avr {
     global Z: boolean;         // global Z (zero) flag
     global V: boolean;         // global V (overflow) flag
 
+    global justReturnedFromInterrupt: boolean;
+
+    global SREG: int;            // status register number
     global nextpc: int;          // the next pc afer executing this instructiobn
     global cycles: int;          // cycles consumed by this instruction
     global RZ: GPR;              // reference to the Z register
@@ -46,7 +48,7 @@ architecture avr {
 //  OPERANDS ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    enum GPR {
+    enum GPRs {
         r0  = 0,  r1  = 1,  r2  = 2,  r3  = 3,
         r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,
         r8  = 8,  r9  = 9,  r10 = 10, r11 = 11,
@@ -57,76 +59,76 @@ architecture avr {
         r28 = 28, r29 = 29, r30 = 30, r31 = 31
     }
 
-    enum ADR {
+    enum ADRs {
         X = 26, Y = 28, Z = 30
     }
 
-    enum-subset HGPR: GPR {
+    enum-subset HGPRs: GPRs {
         r16 = 0,  r17 = 1,  r18 = 2,  r19 = 3,
         r20 = 4,  r21 = 5,  r22 = 6,  r23 = 7,
         r24 = 8,  r25 = 9,  r26 = 10, r27 = 11,
         r28 = 12, r29 = 13, r30 = 14, r31 = 15
     }
 
-    enum-subset EGPR: GPR {
+    enum-subset EGPRs: GPRs {
         r0  = 0,  r2  = 1,  r4  = 2,  r6  = 3,
         r8  = 4,  r10 = 5,  r12 = 6,  r14 = 7,
         r16 = 8,  r18 = 9,  r20 = 10, r22 = 11,
         r24 = 12, r26 = 13, r28 = 14, r30 = 15
     }
 
-    enum-subset MGPR: GPR {
+    enum-subset MGPRs: GPRs {
         r16 = 0, r17 = 1, r18 = 2, r19 = 3,
         r20 = 4, r21 = 5, r22 = 6, r23 = 7
     }
 
-    enum-subset YZ: ADR {
+    enum-subset YZs: ADRs {
         Y = 1, Z = 0
     }
 
-    enum-subset RDL: GPR {
+    enum-subset RDLs: GPRs {
         r24 = 0, r26 = 1, r28 = 2, r30 = 3
     }
 
-    operand-type GPR[5]: GPR { // all of the general purpose registers
-        read: int.8 { return $regs(this); }
-        write: int.8 { $regs(this) = value; }
+    operand-type GPR[5]: GPRs { // all of the general purpose registers
+        read: int.8 { return regs[this]; }
+        write: int.8 { regs[this] = value; }
     }
 
-    operand-type HGPR[4]: HGPR { // the "high" general purpose registers
-        read: int.8 { return $regs(this); }
-        write: int.8 { $regs(this) = value; }
+    operand-type HGPR[4]: HGPRs { // the "high" general purpose registers
+        read: int.8 { return regs[this]; }
+        write: int.8 { regs[this] = value; }
     }
 
-    operand-type MGPR[3]: MGPR { // the "mid-range" general purpose registers
-        read: int.8 { return $regs(this); }
-        write: int.8 { $regs(this) = value; }
+    operand-type MGPR[3]: MGPRs { // the "mid-range" general purpose registers
+        read: int.8 { return regs[this]; }
+        write: int.8 { regs[this] = value; }
     }
 
-    operand-type YZ[1]: YZ { // either the Y or Z address registers
-        read: +int.16 { return $aregs(this); }
-        write: +int.16 { $aregs(this) = value; }
+    operand-type YZ[1]: YZs { // either the Y or Z address registers
+        read: +int.16 { return aregs[this]; }
+        write: +int.16 { aregs[this] = value; }
     }
 
-    operand-type EGPR[4]: EGPR { // an "even" general purpose register
-        read: int.8 { return $regs(this); }
-        write: int.8 { $regs(this) = value; }
+    operand-type EGPR[4]: EGPRs { // an "even" general purpose register
+        read: int.8 { return regs[this]; }
+        write: int.8 { regs[this] = value; }
     }
 
-    operand-type RDL[2]: RDL { // a word register r24:r25, r26:r27, etc
-        read: +int.16 { return $regs(this); }
-        write: +int.16 { $regs(this) = value; }
+    operand-type RDL[2]: RDLs { // a word register r24:r25, r26:r27, etc
+        read: +int.16 { return regs[this]; }
+        write: +int.16 { regs[this] = value; }
     }
 
-    operand-type IMM3[3]: immediate [0, 7];
-    operand-type IMM5[5]: immediate [0, 31];
-    operand-type IMM6[6]: immediate [0, 63];
-    operand-type IMM7[7]: immediate [0, 127];
-    operand-type IMM8[8]: immediate [0, 255];
-    operand-type SREL[7]: relative [-64, 63];
-    operand-type LREL[11]: relative [-1024, 1023];
-    operand-type PADDR[16]: word [0, 65536]; // this is encoded as a word address
-    operand-type DADDR[16]: address [0, 65536];
+    operand-type IMM3[3]: int [0, 7];
+    operand-type IMM5[5]: int [0, 31];
+    operand-type IMM6[6]: int [0, 63];
+    operand-type IMM7[7]: int [0, 127];
+    operand-type IMM8[8]: int [0, 255];
+    operand-type SREL[7]: int /* address, relative */[-64, 63];
+    operand-type LREL[11]: int /* address, relative */[-1024, 1023];
+    operand-type PADDR[16]: int /* address, absolute, word */[0, 65536];
+    operand-type DADDR[16]: int /* address, absolute */[0, 65536];
 
 //---------------------------------------------------------------------------
 // ADDRESSING MODES
@@ -165,9 +167,21 @@ architecture avr {
     }
 
 
+
+
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
+    external subroutine bit(b: boolean): int;
+    external subroutine popByte(): int.8;
+    external subroutine pushByte(b: int.8): void;
+    external subroutine extended(addr: int): int;
+    external subroutine enableInterrupts(): void;
+    external subroutine disableInterrupts(): void;
+    external subroutine enterSleepMode(): void;
+    external subroutine storeProgramMemory(): void;
+    external subroutine stop(): void;
+
     inline subroutine performAddition(r1: int.8, r2: int.8, carry: int.1): int.8 {
         local result: int.10 = r1 + r2 + carry;
         local ral: +int.4 = r1[3:0];
@@ -294,7 +308,7 @@ architecture avr {
     }
 
     inline subroutine skip(): void {
-        local dist: int = $isize(nextpc);
+        local dist: int = isize[nextpc];
         nextpc = nextpc + dist;
         if ( dist == 4 ) cycles = cycles + 2;
         else cycles = cycles + 1;
@@ -312,19 +326,6 @@ architecture avr {
         return uword(low, high) * 2;
     }
 
-    inline subroutine get_wreg(r: Register): int {
-        return ($regs(r+1) << 8) | ($regs(r)[7:0]);
-    }
-
-    inline subroutine get_ureg(r: Register): int {
-        return $regs(r)[7:0];
-    }
-
-    inline subroutine set_wreg(r: Register, v: int.16): void {
-        $regs(r) = low(v);
-        $regs(r+1) = high(v);
-    }
-
     inline subroutine low(v: int): int.8 {
         return v:int.8;
     }
@@ -337,15 +338,6 @@ architecture avr {
         return ((high << 8) | low)[15:0];
     }
 
-    external subroutine bit(b: boolean): int;
-    external subroutine popByte(): int.8;
-    external subroutine pushByte(b: int.8): void;
-    external subroutine extended(addr: int): int;
-    external subroutine enableInterrupts(): void;
-    external subroutine disableInterrupts(): void;
-    external subroutine enterSleepMode(): void;
-    external subroutine storeProgramMemory(): void;
-
 
 //---------------------------------------------------------------------------
 //  BEGIN INSTRUCTION SET DESCRIPTION
@@ -355,7 +347,7 @@ architecture avr {
         property opcode: int = 0b000111;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performAddition($uregs(rd), $uregs(rr), bit(C));
+            regs[rd] = performAddition(+regs[rd], +regs[rr], bit(C));
         }
     }
 
@@ -363,7 +355,7 @@ architecture avr {
         property opcode: int = 0b000011;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performAddition($uregs(rd), $uregs(rr), 0);
+            regs[rd] = performAddition(+regs[rd], +regs[rr], 0);
         }
     }
 
@@ -371,8 +363,8 @@ architecture avr {
         encoding = { 0b10010110, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
-            local r1: int.16     = $wregs(rd);
-            local result: int.17 = r1 + imm;
+            local r1: int.16     = wregs[rd];
+            local result: int.17 = r1 + imm:+int.6;
             local R15: boolean   = result[15];
             local Rdh7: boolean  = r1[15];
 
@@ -382,7 +374,7 @@ architecture avr {
             Z = (result[15:0] == 0);
             S = (N xor V);
 
-            $wregs(rd) = result;
+            wregs[rd] = result;
         }
     }
 
@@ -390,7 +382,7 @@ architecture avr {
         property opcode: int = 0b001000;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performAnd($regs(rd), $regs(rr));
+            regs[rd] = performAnd(regs[rd], regs[rr]);
         }
     }
 
@@ -398,7 +390,7 @@ architecture avr {
         property opcode: int = 0b0111;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performAnd($regs(rd), imm);
+            regs[rd] = performAnd(regs[rd], imm);
         }
     }
 
@@ -407,8 +399,8 @@ architecture avr {
         property ext: int = 0b0101;
         property cycles: int = 1;
         execute {
-            local r1: int.8 = $regs(rd);
-            $regs(rd) = performRightShift(r1, r1[7]);
+            local r1: int.8 = regs[rd];
+            regs[rd] = performRightShift(r1, r1[7]);
         }
     }
 
@@ -418,7 +410,7 @@ architecture avr {
         encoding = CLR where { bit = bit }
         property cycles: int = 1;
         execute {
-            $ioregs(SREG)[bit] = false;
+            ioregs[SREG][bit:int] = false;
         }
     }
 
@@ -426,7 +418,7 @@ architecture avr {
         encoding = { 0b1111100, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            $regs(rr)[bit] = T;
+            regs[rr][bit:int] = T;
         }
     }
 
@@ -436,7 +428,7 @@ architecture avr {
         encoding = BRCLR where { bit = bit }
         property cycles: int = 1;
         execute {
-            if (!($ioregs(SREG)[bit]) ) relativeBranch(target);
+            if (!(ioregs[SREG][bit:int]) ) relativeBranch(target);
         }
     }
 
@@ -446,7 +438,7 @@ architecture avr {
         encoding = BRSET where { bit = bit }
         property cycles: int = 1;
         execute {
-            if ( $ioregs(SREG)[bit] ) relativeBranch(target);
+            if ( ioregs[SREG][bit:int] ) relativeBranch(target);
         }
     }
 
@@ -459,7 +451,7 @@ architecture avr {
         }
     }
 
-    // BRCS is equivalen to the BRLO instruction, thus this one is a pseudo instruction
+    // BRCS is equivalent to the BRLO instruction, thus this one is a pseudo instruction
     instruction "brcs": BRANCH {
         property bit: int = 0b000;
         property clear: int = 0;
@@ -628,7 +620,7 @@ architecture avr {
         encoding = SET where { bit = bit }
         property cycles: int = 1;
         execute {
-            $ioregs(SREG)[bit] = true;
+            ioregs[SREG][bit:int] = true;
         }
     }
 
@@ -636,7 +628,7 @@ architecture avr {
         encoding = { 0b1111101, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            T = $regs(rr)[bit];
+            T = regs[rr][bit:int];
         }
     }
 
@@ -653,7 +645,7 @@ architecture avr {
         encoding = { 0b10011000, ior[4:0], bit[2:0] }
         property cycles: int = 2;
         execute {
-            $ioregs(ior)[bit] = false;
+            ioregs[ior][bit:int] = false;
         }
     }
 
@@ -663,7 +655,7 @@ architecture avr {
         property opcode: int = 0b0111;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performAnd($regs(rd), ~imm);
+            regs[rd] = performAnd(regs[rd], ~(imm:int));
         }
     }
 
@@ -709,7 +701,7 @@ architecture avr {
             V = false;
             N = false;
             Z = true;
-            $regs(rd) = low(0);
+            regs[rd] = low(0);
         }
     }
 
@@ -750,7 +742,7 @@ architecture avr {
         property ext: int = 0b0000;
         property cycles: int = 1;
         execute {
-            local result: int = 0xff - $regs(rd);
+            local result: int = 0xff - regs[rd];
 
             C = true;
             N = result[7];
@@ -758,7 +750,7 @@ architecture avr {
             V = false;
             S = N xor V;
 
-            $regs(rd) = low(result);
+            regs[rd] = low(result);
         }
     }
 
@@ -767,7 +759,7 @@ architecture avr {
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
-            performSubtraction($regs(rd), $regs(rr), 0);
+            performSubtraction(regs[rd], regs[rr], 0);
         }
     }
 
@@ -776,7 +768,7 @@ architecture avr {
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
-            performSubtractionPZ($regs(rd), $regs(rr), bit(C));
+            performSubtractionPZ(regs[rd], regs[rr], bit(C));
         }
     }
 
@@ -785,7 +777,7 @@ architecture avr {
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
-            performSubtraction($regs(rd), imm, 0);
+            performSubtraction(regs[rd], imm, 0);
         }
     }
 
@@ -793,8 +785,8 @@ architecture avr {
         property opcode: int = 0b000100;
         property cycles: int = 1;
         execute {
-            local r1: int.8 = $regs(rd);
-            local r2: int.8 = $regs(rr);
+            local r1: int.8 = regs[rd];
+            local r2: int.8 = regs[rr];
             // perform subtraction for flag side effects.
             performSubtraction(r1, r2, 0);
             if (r1 == r2) skip();
@@ -806,7 +798,7 @@ architecture avr {
         property ext: int = 0b1010;
         property cycles: int = 1;
         execute {
-            local r1: +int.8 = $uregs(rd);
+            local r1: +int.8 = +regs[rd];
             local result: +int.8 = low(r1 - 1);
 
             N = result[7];
@@ -814,7 +806,7 @@ architecture avr {
             V = r1 == 0x80;
             S = N xor V;
 
-            $regs(rd) = result;
+            regs[rd] = result;
         }
     }
 
@@ -838,14 +830,14 @@ architecture avr {
         property opcode: int = 0b001001;
         property cycles: int = 1;
         execute {
-            local result: int.8 = low($regs(rd) ^ $regs(rr));
+            local result: int.8 = regs[rd] ^ regs[rr];
 
             N = result[7];
             Z = result == 0;
             V = false;
             S = N xor V;
 
-            $regs(rd) = result;
+            regs[rd] = result;
         }
     }
 
@@ -853,11 +845,11 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 0, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int.17 = ($uregs(rd) * $uregs(rr)) << 1;
+            local result: int.17 = (+regs[rd] * +regs[rr]) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            $regs(R0) = low(result);
-            $regs(R1) = high(result);
+            regs[R0] = low(result);
+            regs[R1] = high(result);
         }
     }
 
@@ -865,11 +857,11 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 0, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int.17 = ($regs(rd) * $regs(rr)) << 1;
+            local result: int.17 = (regs[rd] * regs[rr]) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            $regs(R0) = low(result);
-            $regs(R1) = high(result);
+            regs[R0] = low(result);
+            regs[R1] = high(result);
         }
     }
 
@@ -877,11 +869,11 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int.17 = ($regs(rd) * $uregs(rr)) << 1;
+            local result: int.17 = (regs[rd] * +regs[rr]) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            $regs(R0) = low(result);
-            $regs(R1) = high(result);
+            regs[R0] = low(result);
+            regs[R1] = high(result);
         }
     }
 
@@ -890,7 +882,7 @@ architecture avr {
         property cycles: int = 3;
         execute {
             pushPC(nextpc);
-            nextpc = absolute($wregs(RZ));
+            nextpc = absolute(wregs[RZ]);
         }
     }
 
@@ -898,7 +890,7 @@ architecture avr {
         encoding = { 0b10010100, 0b00001001 }
         property cycles: int = 2;
         execute {
-            nextpc = absolute($wregs(RZ));
+            nextpc = absolute(wregs[RZ]);
         }
     }
 
@@ -906,7 +898,7 @@ architecture avr {
         encoding = { 0b10110, imm[5:4], rd[4:0], imm[3:0] }
         property cycles: int = 1;
         execute {
-            $regs(rd) = $ioregs(imm);
+            regs[rd] = ioregs[imm];
         }
     }
 
@@ -915,7 +907,7 @@ architecture avr {
         property ext: int = 0b0011;
         property cycles: int = 1;
         execute {
-            local r1: +int.8 = $uregs(rd);
+            local r1: +int.8 = +regs[rd];
             local result: +int.8 = low(r1 + 1);
 
             N = result[7];
@@ -923,7 +915,7 @@ architecture avr {
             V = r1 == 0x7f;
             S = N xor V;
 
-            $regs(rd) = result;
+            regs[rd] = result;
         }
     }
 
@@ -940,7 +932,7 @@ architecture avr {
         property syntax: String = "%rd, %ar+%imm";
         property cycles: int = 2;
         execute {
-            $regs(rd) = $sram($aregs(ar) + imm);
+            regs[rd] = sram[aregs[ar] + imm:+int.6];
         }
     }
 
@@ -948,7 +940,7 @@ architecture avr {
         property opcode: int = 0b1110;
         property cycles: int = 1;
         execute {
-            $regs(rd) = low(imm);
+            regs[rd] = low(imm);
         }
     }
 
@@ -956,7 +948,7 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b0000, addr[15:0] }
         property cycles: int = 2;
         execute {
-            $regs(rd) = $sram(addr);
+            regs[rd] = sram[addr];
         }
     }
 
@@ -966,7 +958,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rd }
         property cycles: int = 1;
         execute {
-            $regs(rd) = performLeftShift($regs(rd), false);
+            regs[rd] = performLeftShift(regs[rd], false);
         }
     }
 
@@ -975,7 +967,7 @@ architecture avr {
         property ext: int = 0b110;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performRightShift($regs(rd), false);
+            regs[rd] = performRightShift(regs[rd], false);
         }
     }
 
@@ -983,7 +975,7 @@ architecture avr {
         property opcode: int = 0b001011;
         property cycles: int = 1;
         execute {
-            $regs(rd) = $regs(rr);
+            regs[rd] = regs[rr];
         }
     }
 
@@ -991,7 +983,7 @@ architecture avr {
         encoding = { 0b00000001, rd[3:0], rr[3:0] }
         property cycles: int = 1;
         execute {
-            $wregs(rd) = $wregs(rr);
+            wregs[rd] = wregs[rr];
         }
     }
 
@@ -999,10 +991,10 @@ architecture avr {
         property opcode: int = 0b100111;
         property cycles: int = 2;
         execute {
-            local result: +int.16 = $uregs(rd) * $uregs(rr);
+            local result: +int.16 = +regs[rd] * +regs[rr];
             C = result[15];
             Z = (result[15:0] == 0);
-            $wregs(R0) = result;
+            wregs[R0] = result;
         }
     }
 
@@ -1010,10 +1002,10 @@ architecture avr {
         encoding = { 0b00000010, rd[3:0], rr[3:0] }
         property cycles: int = 2;
         execute {
-            local result: -int.16 = $regs(rd) * $regs(rr);
+            local result: -int.16 = regs[rd] * regs[rr];
             C = result[15];
             Z = (result[15:0] == 0);
-            $wregs(R0) = result;
+            wregs[R0] = result;
         }
     }
 
@@ -1021,10 +1013,10 @@ architecture avr {
         encoding = { 0b00000011, 0b0, rd[2:0], 0b0, rr[2:0] }
         property cycles: int = 2;
         execute {
-            local result: -int.16 = $regs(rd) * $uregs(rr);
+            local result: -int.16 = regs[rd] * +regs[rr];
             C = result[15];
             Z = (result[15:0] == 0);
-            $wregs(R0) = result;
+            wregs[R0] = result;
         }
     }
 
@@ -1033,7 +1025,7 @@ architecture avr {
         property ext: int = 0b0001;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performSubtraction(0, $regs(rd), 0);
+            regs[rd] = performSubtraction(0, regs[rd], 0);
         }
     }
 
@@ -1049,7 +1041,7 @@ architecture avr {
         property opcode: int = 0b001010;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performOr($regs(rd), $regs(rr));
+            regs[rd] = performOr(regs[rd], regs[rr]);
         }
     }
 
@@ -1057,7 +1049,7 @@ architecture avr {
         property opcode: int = 0b0110;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performOr($regs(rd), imm);
+            regs[rd] = performOr(regs[rd], imm);
         }
     }
 
@@ -1065,7 +1057,7 @@ architecture avr {
         encoding = { 0b10111, ior[5:4], rr[4:0], ior[3:0] }
         property cycles: int = 1;
         execute {
-            $ioregs(ior) = $regs(rr);
+            ioregs[ior] = regs[rr];
         }
     }
 
@@ -1074,7 +1066,7 @@ architecture avr {
         property ext: int = 0b1111;
         property cycles: int = 2;
         execute {
-            $regs(rd) = popByte();
+            regs[rd] = popByte();
         }
     }
 
@@ -1083,7 +1075,7 @@ architecture avr {
         property ext: int = 0b1111;
         property cycles: int = 2;
         execute {
-            pushByte($regs(rd));
+            pushByte(regs[rd]);
         }
     }
 
@@ -1129,7 +1121,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rd }
         property cycles: int = 1;
         execute {
-            $regs(rd) = performLeftShift($uregs(rd), C);
+            regs[rd] = performLeftShift(+regs[rd], C);
         }
     }
 
@@ -1138,7 +1130,7 @@ architecture avr {
         property ext: int = 0b0111;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performRightShift($regs(rd), C);
+            regs[rd] = performRightShift(regs[rd], C);
         }
     }
 
@@ -1146,7 +1138,7 @@ architecture avr {
         property opcode: int = 0b000010;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performSubtractionPZ($regs(rd), $regs(rr), bit(C));
+            regs[rd] = performSubtractionPZ(regs[rd], regs[rr], bit(C));
         }
     }
 
@@ -1154,7 +1146,7 @@ architecture avr {
         property opcode: int = 0b0100;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performSubtractionPZ($regs(rd), imm, bit(C));
+            regs[rd] = performSubtractionPZ(regs[rd], imm, bit(C));
         }
     }
 
@@ -1162,7 +1154,7 @@ architecture avr {
         encoding = { 0b10011010, ior[4:0], bit[2:0] }
         property cycles: int = 2;
         execute {
-            $ioregs(ior)[bit] = true;
+            ioregs[ior][bit:int] = true;
         }
     }
 
@@ -1170,7 +1162,7 @@ architecture avr {
         encoding = { 0b10011001, ior[4:0], bit[2:0] }
         property cycles: int = 1;
         execute {
-            if (!($ioregs(ior)[bit])) skip();
+            if (!(ioregs[ior][bit:int])) skip();
         }
     }
 
@@ -1178,7 +1170,7 @@ architecture avr {
         encoding = { 0b10011011, ior[4:0], bit[2:0] }
         property cycles: int = 1;
         execute {
-            if ( $ioregs(ior)[bit] ) skip();
+            if ( ioregs[ior][bit:int] ) skip();
         }
     }
 
@@ -1186,8 +1178,8 @@ architecture avr {
         encoding = { 0b10010111, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
-            local val: +int.16 = $wregs(rd);
-            local result: -int.16 = val - imm;
+            local val: +int.16 = wregs[rd];
+            local result: -int.16 = val - (imm: +int.6);
 
             local Rdh7: boolean = val[15];
             local R15: boolean = result[15];
@@ -1198,7 +1190,7 @@ architecture avr {
             C = R15 and !Rdh7;
             S = N xor V;
 
-            $wregs(rd) = result;
+            wregs[rd] = result;
         }
     }
 
@@ -1207,7 +1199,7 @@ architecture avr {
         property opcode: int = 0b0110;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performOr($regs(rd), imm);
+            regs[rd] = performOr(regs[rd], imm);
         }
     }
 
@@ -1215,7 +1207,7 @@ architecture avr {
         encoding = { 0b1111110, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            if (!($regs(rr)[bit])) skip();
+            if (!(regs[rr][bit:int])) skip();
         }
     }
 
@@ -1223,7 +1215,7 @@ architecture avr {
         encoding = { 0b1111111, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            if ( $regs(rr)[bit] ) skip();
+            if ( regs[rr][bit:int] ) skip();
         }
     }
 
@@ -1263,7 +1255,7 @@ architecture avr {
         encoding = { 0b11101111, rd[4:1], 0b1111 }
         property cycles: int = 1;
         execute {
-            $regs(rd) = low(0xff);
+            regs[rd] = low(0xff);
         }
     }
 
@@ -1320,7 +1312,7 @@ architecture avr {
         property syntax: String = "%ar+%imm, %rr";
         property cycles: int = 2;
         execute {
-            $sram($aregs(ar) + imm) = $regs(rr);
+            sram[aregs[ar] + imm:int] = regs[rr];
         }
     }
 
@@ -1328,7 +1320,7 @@ architecture avr {
         encoding = { 0b1001001, rr[4:0], 0b0000, addr[15:0] }
         property cycles: int = 2;
         execute {
-            $sram(addr) = $regs(rr);
+            sram[addr] = regs[rr];
         }
     }
 
@@ -1336,7 +1328,7 @@ architecture avr {
         property opcode: int = 0b000110;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performSubtraction($regs(rd), $regs(rr), 0);
+            regs[rd] = performSubtraction(regs[rd], regs[rr], 0);
         }
     }
 
@@ -1344,7 +1336,7 @@ architecture avr {
         property opcode: int = 0b0101;
         property cycles: int = 1;
         execute {
-            $regs(rd) = performSubtraction($regs(rd), imm, 0);
+            regs[rd] = performSubtraction(regs[rd], imm, 0);
         }
     }
 
@@ -1353,11 +1345,11 @@ architecture avr {
         property ext: int = 0b0010;
         property cycles: int = 1;
         execute {
-            local val: +int.8 = $uregs(rd);
+            local val: +int.8 = +regs[rd];
             local result: +int.8 = 0;
             result[3:0] = val[7:4];
             result[7:4] = val[3:0];
-            $regs(rd) = low(result);
+            regs[rd] = low(result);
         }
     }
 
@@ -1367,7 +1359,7 @@ architecture avr {
         property opcode: int = 0b001000;
         property cycles: int = 1;
         execute {
-            local r1: int.8 = $regs(rd);
+            local r1: int.8 = regs[rd];
             V = false;
             Z = low(r1) == 0;
             N = r1[7];
@@ -1387,31 +1379,31 @@ architecture avr {
 // POLYMORPHIC INSTRUCTIONS SUPPORT: lpm, elpm, ld, ldd, st, std
 //------------------------------------------------------------------------
 
-    enum-subset R0: GPR {
+    enum-subset R0: GPRs {
         r0 = 0
     }
 
-    enum-subset RZ: ADR {
+    enum-subset RZ: ADRs {
         Z = 0
     }
 
     operand-type R0_B[0]: R0 {
-        read: int.8 { return $regs(r0); }
-        write: int.8 { $regs(r0) = value; }
+        read: int.8 { return regs[r0]; }
+        write: int.8 { regs[r0] = value; }
     }
 
     operand-type RZ_W[0]: RZ {
-        read: int { return $aregs(r30); }
-        write: short { $aregs(r30) = value; }
+        read: int { return aregs[r30]; }
+        write: short { aregs[r30] = value; }
     }
 
     operand-type AI_RZ_W[0]: RZ {
         read: int {
-            local temp: int = $aregs(r30);
-            $aregs(r30) = temp + 1;
+            local temp: int = aregs[r30];
+            aregs[r30] = temp + 1;
             return temp;
         }
-        write: short { $wregs(r30) = value; }
+        write: short { wregs[r30] = value; }
     }
 
     addr-mode XLPM_REG dest: R0_B, source: RZ_W { // load from flash at address Z into R0
@@ -1431,24 +1423,24 @@ architecture avr {
 
     addr-set XLPM { XLPM_REG, XLPM_D, XLPM_INC } // addressing modes for LPM, ELPM
 
-    operand-type XYZ[0]: ADR { // simply read from X, Y, or Z
-        read: int { return $aregs(this); }
+    operand-type XYZ[0]: ADRs { // simply read from X, Y, or Z
+        read: int { return aregs[this]; }
         write: int.8 { }
     }
 
-    operand-type AI_XYZ[0]: ADR { // read from X, Y, or Z and post increment
+    operand-type AI_XYZ[0]: ADRs { // read from X, Y, or Z and post increment
         read: int {
-            local tmp: int = $aregs(this);
-            $aregs(this) = tmp + 1;
+            local tmp: int = aregs[this];
+            aregs[this] = tmp + 1;
             return tmp;
         }
         write: int.8 { }
     }
 
-    operand-type PD_XYZ[0]: ADR { // read from X, Y, or Z with predecrement
+    operand-type PD_XYZ[0]: ADRs { // read from X, Y, or Z with predecrement
         read: int {
-            local tmp: int = $aregs(this) - 1;
-            $aregs(this) = tmp;
+            local tmp: int = aregs[this] - 1;
+            aregs[this] = tmp;
             return tmp;
         }
         write: int.8 { }
@@ -1485,8 +1477,8 @@ architecture avr {
         property cycles: int = 3;
         property extended: int = 1;
         execute {
-            local addr: int = extended(read(source));
-            write(dest, $flash(addr));
+            local addr: int = extended(source);
+            write(dest, flash[addr]);
         }
     }
 
@@ -1495,7 +1487,7 @@ architecture avr {
         property extended: int = 0;
         execute {
             local addr: int = read(source);
-            write(dest, $flash(addr));
+            write(dest, flash[addr]);
         }
     }
 
@@ -1504,7 +1496,7 @@ architecture avr {
         property store: boolean = false;
         execute {
             local addr: int = read(ar);
-            write(rd, $sram(addr));
+            write(rd, sram[addr]);
         }
     }
 
@@ -1514,7 +1506,7 @@ architecture avr {
         execute {
             local addr: int = read(ar);
             local val: int.8 = read(rd);
-            $sram(addr) = val;
+            sram[addr] = val;
         }
     }
 

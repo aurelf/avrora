@@ -32,11 +32,12 @@
 
 package jintgen.jigir;
 
+import cck.parser.SourcePoint;
 import cck.text.StringUtil;
 import cck.util.Util;
-import cck.parser.SourcePoint;
 import jintgen.isdl.parser.Token;
 import jintgen.types.Type;
+import jintgen.types.Typeable;
 
 /**
  * The <code>Expr</code> class represents an expression in the IR. Expressions are evaluated and produce a
@@ -44,7 +45,7 @@ import jintgen.types.Type;
  *
  * @author Ben L. Titzer
  */
-public abstract class Expr {
+public abstract class Expr implements Typeable {
 
     public static final int PREC_L_OR = 0;
     public static final int PREC_L_XOR = 1;
@@ -203,6 +204,10 @@ public abstract class Expr {
             return StringUtil.embed(e.toString());
         else
             return e.toString();
+    }
+
+    public boolean isLvalue() {
+        return false;
     }
 
     /**

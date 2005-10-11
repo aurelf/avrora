@@ -32,8 +32,8 @@
 
 package jintgen.jigir;
 
-import jintgen.isdl.parser.Token;
 import cck.parser.SourcePoint;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>DotExpr</code> class represents an access of a field of an operand

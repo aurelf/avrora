@@ -33,49 +33,76 @@
 package jintgen.jigir;
 
 import cck.parser.SourcePoint;
+import jintgen.isdl.parser.Token;
 
 /**
- * The <code>BitExpr</code> class represents an access of an individual bit within a value. In the IR,
- * individual bits of values can be addressed for both reading and writing.
+ * The <code>FixedRangeExpr</code> class represents an expression whose value is the result of extracting a
+ * range of the bits from another expression. In the IR, ranges of bits can be specified for reading and
+ * writing, allowing cleaner expression of sub-byte fields. The bounds of these ranges are static: the
+ * endpoints must be constants.
  *
  * @author Ben L. Titzer
  */
-public class BitExpr extends Expr {
-
+public class FixedRangeExpr extends Expr {
     /**
-     * The <code>expr</code> field stores a reference to the expression whose value the bit will be extracted
-     * from.
+     * The <code>operand</code> field stores a reference to the expression that is the operand of the bit
+     * range expression, i.e. the value from which the range of bits will be extracted.
      */
-    public final Expr expr;
+    public final Expr operand;
 
     /**
-     * The <code>bit</code> field stores a reference to an expression that when evaluated indicates which bit
-     * to read.
+     * The <code>low_bit</code> field represents the lowest bit in the range to be extracted, inclusive.
      */
-    public final Expr bit;
+    public final int low_bit;
 
     /**
-     * The constructor of the <code>BitExpr</code> class simply initializes the references to the expression
-     * and the bit.
+     * The <code>high_bit</code> field represents the highest bit in the range to be extracted, inclusive.
+     */
+    public final int high_bit;
+
+    /**
+     * The constructor of the <code>FixedRangeExpr</code> class simply initializes the references to the
+     * operands of the bit range expression.
      *
-     * @param e the expression representing the value to extract the bit from
-     * @param b the expression representing the number of the bit to extract
+     * @param o a reference to the expression operand
+     * @param l the lowest bit in the range, inclusive
+     * @param h the highest bit in the range, inclusive
      */
-    public BitExpr(Expr e, Expr b) {
-        expr = e;
-        bit = b;
+    public FixedRangeExpr(Expr o, Token l, Token h) {
+        operand = o;
+        int low = Expr.tokenToInt(l);
+        int high = Expr.tokenToInt(h);
+
+        low_bit = low < high ? low : high;
+        high_bit = low > high ? low : high;
+    }
+
+    /**
+     * The constructor of the <code>FixedRangeExpr</code> class simply initializes the references to the
+     * operands of the bit range expression.
+     *
+     * @param o a reference to the expression operand
+     * @param l the lowest bit in the range, inclusive
+     * @param h the highest bit in the range, inclusive
+     */
+    public FixedRangeExpr(Expr o, int l, int h) {
+        operand = o;
+        low_bit = l;
+        high_bit = h;
     }
 
     /**
      * The <code>getBitWidth()</code> method gets the number of bits needed to represent this value. This is
      * needed in the case of encoding formats, which need to compute the size of an instruction based on the
-     * width of its internal fields. For a <code>BitExpr</code>, only one bit is required, so this method
-     * returns 1.
+     * width of its internal fields. For a <code>FixedRangeExpr</code>, the number of bits required is
+     * statically known.
      *
-     * @return 1
+     * @return the number of bits that this expression occupies
      */
     public int getBitWidth() {
-        return 1;
+        int diff = (high_bit - low_bit);
+        if (diff < 0) diff = -diff;
+        return diff + 1;
     }
 
     /**
@@ -85,7 +112,17 @@ public class BitExpr extends Expr {
      * @return true if this expression can be evaluated to a constant; false otherwise
      */
     public boolean isConstantExpr() {
-        return expr.isConstantExpr() && bit.isConstantExpr();
+        return operand.isConstantExpr();
+    }
+
+    /**
+     * The <code>isBitRangeExpr()</code> method tests whether the expression is an access of a range of bits.
+     * This is used in pattern matching in some parts of the code.
+     *
+     * @return true
+     */
+    public boolean isBitRangeExpr() {
+        return true;
     }
 
     /**
@@ -118,7 +155,7 @@ public class BitExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return innerString(expr) + '[' + bit.toString() + ']';
+        return innerString(operand) + '[' + low_bit + ':' + high_bit + ']';
     }
 
     /**
@@ -133,7 +170,12 @@ public class BitExpr extends Expr {
         return PREC_TERM;
     }
 
+
     public SourcePoint getSourcePoint() {
-        return new SourcePoint(expr.getSourcePoint(), bit.getSourcePoint());
+        return operand.getSourcePoint();
+    }
+
+    public boolean isLvalue() {
+        return true;
     }
 }

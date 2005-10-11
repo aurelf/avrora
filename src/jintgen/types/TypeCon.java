@@ -36,7 +36,6 @@ package jintgen.types;
 
 import jintgen.isdl.HashList;
 import java.util.*;
-import cck.util.Util;
 
 /**
  * The <code>TypeCon</code> class represents a type constructor that given a list
@@ -61,8 +60,10 @@ import cck.util.Util;
  */
 public class TypeCon {
 
+    protected static final HashMap<String, List> EMPTY_DIMS = new HashMap<String, List>();
     protected final String name;
     protected final HashList<String, Dimension> dimensions;
+    protected final HashMap<HashMap<String, Object>, Type> types;
 
     /**
      * The <code>Dimension</code> class represents a new type dimension that applies
@@ -87,6 +88,16 @@ public class TypeCon {
         public abstract Object build(List params);
     }
 
+    public interface BinOp {
+        public Type typeCheck(TypeEnv env, Typeable left, Typeable right);
+        public String getOperation();
+    }
+
+    public interface UnOp {
+        public abstract Type typeCheck(TypeEnv env, Typeable inner);
+        public String getOperation();
+    }
+
     /**
      * The protected constructor for the <code>TypeCon</code> class initializes
      * the name field.
@@ -95,14 +106,39 @@ public class TypeCon {
     public TypeCon(String n) {
         name = n;
         dimensions = new HashList<String, Dimension>();
+        types = new HashMap<HashMap<String, Object>, Type>();
     }
 
     public Type newType(TypeEnv te) {
-        throw Util.unimplemented();
+        return newType(te, EMPTY_DIMS);
     }
 
     public Type newType(TypeEnv te, HashMap<String, List> dims) {
-        throw Util.unimplemented();
+        HashMap<String, Object> d = buildDimensions(dims);
+        Type type = types.get(d);
+        if ( type != null ) return type;
+        type = new Type(this, d);
+        types.put(d, type);
+        return type;
+    }
+
+    public boolean isAssignableFrom(TypeCon other) {
+        return other == this;
+    }
+
+    public boolean isComparableTo(TypeCon other) {
+        return other == this;
+    }
+
+    protected HashMap<String, Object> buildDimensions(HashMap<String, List> dims) {
+        HashMap<String, Object> m = new HashMap<String, Object>();
+        for ( Map.Entry<String, List> e : dims.entrySet() ) {
+            String name = e.getKey();
+            Dimension d = dimensions.get(name);
+            Object o = d.build(e.getValue());
+            m.put(name, o);
+        }
+        return m;
     }
 
     /**

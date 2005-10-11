@@ -35,9 +35,10 @@ package jintgen.gen;
 import cck.text.Printer;
 import cck.text.StringUtil;
 import cck.util.Option;
+import cck.util.Util;
 import jintgen.gen.disassembler.DGUtil;
 import jintgen.isdl.*;
-
+import jintgen.types.TypeRef;
 import java.io.IOException;
 import java.util.*;
 
@@ -344,7 +345,7 @@ public class InstrIRGenerator extends Generator {
             // this enumeration is a subset of another enumeration, but with possibly different
             // encoding
             EnumDecl.Subset sd = (EnumDecl.Subset)d;
-            startblock("public static class $enum extends $1", sd.ptype.getJavaType());
+            startblock("public static class $enum extends $1", javaType(sd.ptype));
             println("public final int encoding;");
             println("public int getEncodingValue() { return encoding; }");
             println("private static HashMap set = new HashMap();");
@@ -494,7 +495,7 @@ public class InstrIRGenerator extends Generator {
     }
 
     private String operandSuperClass(OperandTypeDecl.Value d) {
-        EnumDecl ed = arch.getEnum(d.kind.getBaseType().image);
+        EnumDecl ed = arch.getEnum(d.kind.getTypeConName());
         if ( ed != null ) return "Sym";
         else {
             if ( d.isRelative() ) return "Rel";
@@ -504,9 +505,9 @@ public class InstrIRGenerator extends Generator {
     }
 
     private void generateSimpleType(OperandTypeDecl.Value d) {
-        EnumDecl ed = arch.getEnum(d.kind.getBaseType().image);
+        EnumDecl ed = arch.getEnum(d.kind.getTypeConName());
         properties.setProperty("oname", d.name.image);
-        properties.setProperty("kind", d.kind.getBaseType().image);
+        properties.setProperty("kind", d.kind.getTypeConName());
         if ( ed != null ) {
             startblock("$oname(String s)");
             println("super($symbol.get_$kind(s));");
@@ -698,5 +699,9 @@ public class InstrIRGenerator extends Generator {
                 sep = "\", \"";
             }
         }
+    }
+
+    protected String javaType(TypeRef tr) {
+        throw Util.unimplemented();
     }
 }

@@ -54,6 +54,12 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
             return s;
     }
 
+    public Stmt visit(WriteStmt s, Env env) {
+        Expr ne = s.expr.accept(this, env);
+        if ( ne != s.expr ) return new WriteStmt(s.method, s.type, s.operand, ne);
+        return s;
+    }
+
     public Stmt visit(CommentStmt s, Env env) {
         return s;
     }
@@ -105,30 +111,11 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
         changed = true;
     }
 
-    public Stmt visit(MapAssignStmt s, Env env) {
-        Expr ni = s.index.accept(this, env);
+    public Stmt visit(AssignStmt s, Env env) {
+        Expr ni = s.dest.accept(this, env);
         Expr ne = s.expr.accept(this, env);
-        if (ni != s.index || ne != s.expr)
-            return new MapAssignStmt(s.mapname, ni, ne);
-        else
-            return s;
-    }
-
-    public Stmt visit(MapBitAssignStmt s, Env env) {
-        Expr ni = s.index.accept(this, env);
-        Expr nb = s.bit.accept(this, env);
-        Expr ne = s.expr.accept(this, env);
-        if (ni != s.index || nb != s.bit || ne != s.expr)
-            return new MapBitAssignStmt(s.mapname, ni, nb, ne);
-        else
-            return s;
-    }
-
-    public Stmt visit(MapBitRangeAssignStmt s, Env env) {
-        Expr ni = s.index.accept(this, env);
-        Expr ne = s.expr.accept(this, env);
-        if (ni != s.index || ne != s.expr)
-            return new MapBitRangeAssignStmt(s.mapname, ni, s.low_bit, s.high_bit, ne);
+        if (ni != s.dest || ne != s.expr)
+            return new AssignStmt(ni, ne);
         else
             return s;
     }
@@ -137,31 +124,6 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
         Expr ne = s.expr.accept(this, env);
         if (ne != s.expr)
             return new ReturnStmt(ne);
-        else
-            return s;
-    }
-
-    public Stmt visit(VarAssignStmt s, Env env) {
-        Expr ne = s.expr.accept(this, env);
-        if (ne != s.expr)
-            return new VarAssignStmt(s.variable, ne);
-        else
-            return s;
-    }
-
-    public Stmt visit(VarBitAssignStmt s, Env env) {
-        Expr ne = s.expr.accept(this, env);
-        Expr nb = s.bit.accept(this, env);
-        if (ne != s.expr || nb != s.bit)
-            return new VarBitAssignStmt(s.variable, nb, ne);
-        else
-            return s;
-    }
-
-    public Stmt visit(VarBitRangeAssignStmt s, Env env) {
-        Expr ne = s.expr.accept(this, env);
-        if (ne != s.expr)
-            return new VarBitRangeAssignStmt(s.variable, s.low_bit, s.high_bit, ne);
         else
             return s;
     }

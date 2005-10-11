@@ -33,53 +33,40 @@
 package jintgen.jigir;
 
 import cck.parser.SourcePoint;
+import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.types.TypeRef;
+
+import java.util.List;
 
 /**
- * The <code>VarExpr</code> class represents an expression in the IR that is a use of a local or global
- * variable.
+ * The <code>CallExpr</code> class represents a subroutine call within the IR. Subroutines can be called for
+ * side effects and produce results in the IR, allowing factoring of common pieces of code.
  *
  * @author Ben L. Titzer
  */
-public class VarExpr extends Expr {
+public class ReadExpr extends Expr {
 
     /**
-     * The <code>variable</code> field stores a reference to the token representing the name of the variable
-     * being accessed.
+     * The <code>method</code> field stores a string that represents the name of the subroutine being called.
      */
-    public final Token variable;
+    public final Token method;
+
+    public final TypeRef type;
+
+    public final Token operand;
+
 
     /**
-     * The constructor for the <code>VarExpr</code> class simply initializes the reference to the name of the
-     * variable.
+     * The constructor of the <code>ReadExpr</code> class simply initializes the references to the subroutine
+     * name and arguments.
      *
-     * @param v the string name of the variable as a token
+     * @param m the name of the subroutine as a string
      */
-    public VarExpr(Token v) {
-        variable = v;
-    }
-
-    /**
-     * The constructor for the <code>VarExpr</code> class simply initializes the reference to the name of the
-     * variable.
-     *
-     * @param v the string name of the variable as a token
-     */
-    public VarExpr(String v) {
-        Token t = new Token();
-        t.image = v;
-        variable = t;
-    }
-
-    /**
-     * The <code>isVariable()</code> method tests whether this expression is a direct variable use and is used
-     * in copy propagation. For instances of <code>VarExpr</code>, this method returns true. For all other
-     * instances, it returns false.
-     *
-     * @return true because this expression is the direct use of a variable
-     */
-    public boolean isVariable() {
-        return true;
+    public ReadExpr(Token m, TypeRef t, Token o) {
+        method = m;
+        type = t;
+        operand = o;
     }
 
     /**
@@ -112,7 +99,7 @@ public class VarExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return variable.image;
+        return "read : "+type+" ("+operand+")";
     }
 
     /**
@@ -128,10 +115,6 @@ public class VarExpr extends Expr {
     }
 
     public SourcePoint getSourcePoint() {
-        return variable.getSourcePoint();
-    }
-
-    public boolean isLvalue() {
-        return true;
+        return method.getSourcePoint();
     }
 }

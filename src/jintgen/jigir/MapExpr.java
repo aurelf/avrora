@@ -32,8 +32,8 @@
 
 package jintgen.jigir;
 
-import cck.text.StringUtil;
 import cck.parser.SourcePoint;
+import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
 
 /**
@@ -138,6 +138,6 @@ public class MapExpr extends Expr {
 
 
     public SourcePoint getSourcePoint() {
-        return mapname.asSourcePoint();
+        return mapname.getSourcePoint();
     }
 }

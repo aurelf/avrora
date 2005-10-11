@@ -33,6 +33,7 @@
 package jintgen.gen;
 
 import cck.util.Arithmetic;
+import cck.util.Util;
 import jintgen.jigir.*;
 import java.util.*;
 
@@ -177,104 +178,9 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
             return s;
     }
 
-    public Stmt visit(VarAssignStmt s, Environ cenv) {
-        Expr ne = update(s.variable.toString(), s.expr, cenv);
-        if (s.expr != ne)
-            return new VarAssignStmt(s.variable, ne);
-        else
-            return s;
+    public Stmt visit(AssignStmt s, Environ cenv) {
+        throw Util.unimplemented();
     }
-
-    public Stmt visit(VarBitRangeAssignStmt s, Environ cenv) {
-        Expr ne = s.expr.accept(this, cenv);
-
-        if (ne.isLiteral()) {
-            Expr ve = cenv.lookup(s.variable.toString());
-
-            if (ve != null && ve.isLiteral()) {
-                int eval = intValueOf(ne);
-                int vval = intValueOf(ve);
-                int mask = Arithmetic.getBitRangeMask(s.low_bit, s.high_bit);
-                int smask = mask << s.low_bit;
-                int imask = ~smask;
-
-                // TODO: make sure this is correct!
-                int nval = vval & imask | ((eval & mask) << s.low_bit);
-                cenv.put(s.variable.toString(), new Literal.IntExpr(nval));
-            } else {
-                cenv.remove(s.variable.toString());
-            }
-        } else {
-            cenv.remove(s.variable.toString());
-        }
-
-        if (ne != s.expr)
-            return new VarBitRangeAssignStmt(s.variable, s.low_bit, s.high_bit, ne);
-        else
-            return s;
-    }
-
-    public Stmt visit(VarBitAssignStmt s, Environ cenv) {
-        Expr ne = s.expr.accept(this, cenv);
-        Expr nb = s.bit.accept(this, cenv);
-
-        if (ne.isLiteral() && nb.isLiteral()) {
-            Expr ve = cenv.lookup(s.variable.toString());
-
-            if (ve != null && ve.isLiteral()) {
-                boolean eval = boolValueOf(ne);
-                int bval = intValueOf(nb);
-                int vval = intValueOf(ve);
-
-                cenv.put(s.variable.toString(), new Literal.IntExpr(Arithmetic.setBit(vval, bval, eval)));
-            } else {
-                cenv.remove(s.variable.toString());
-            }
-        } else {
-            cenv.remove(s.variable.toString());
-        }
-
-        if (ne != s.expr || nb != s.bit)
-            return new VarBitAssignStmt(s.variable, nb, ne);
-        else
-            return s;
-    }
-
-    public Stmt visit(MapAssignStmt s, Environ cenv) {
-        Expr ni = s.index.accept(this, cenv);
-        Expr ne = s.expr.accept(this, cenv);
-
-        String mapname = s.mapname.toString();
-        if (ni.isLiteral()) {
-            int index = intValueOf(ni);
-
-            if (ne.isVariable()) {
-                VarExpr ve = (VarExpr)ne;
-                Expr e = cenv.lookup(ve.variable.toString());
-                if (e != null) {
-                    // propagate the constant
-                    cenv.putMap(mapname, index, e);
-                } else {
-                    // propagate the copy
-                    cenv.putMap(mapname, index, ve);
-                }
-            } else if (ne.isLiteral()) {
-                // propagate this constant forward
-                cenv.putMap(mapname, index, ne);
-            } else {
-                cenv.removeMap(mapname, index);
-            }
-
-        } else {
-            cenv.removeAll(mapname);
-        }
-
-        if (ni != s.index || ne != s.expr)
-            return new MapAssignStmt(s.mapname, ni, ne);
-        else
-            return s;
-    }
-
 
     private Expr update(String name, Expr val, Environ cenv) {
         Expr ne = val.accept(this, cenv);
@@ -306,9 +212,9 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
             return e;
     }
 
-    public Expr visit(BitExpr e, Environ cenv) {
+    public Expr visit(IndexExpr e, Environ cenv) {
         Expr nexpr = e.expr.accept(this, cenv);
-        Expr nbit = e.bit.accept(this, cenv);
+        Expr nbit = e.index.accept(this, cenv);
 
         if (nexpr.isLiteral() && nbit.isLiteral()) {
             int eval = intValueOf(nexpr);
@@ -316,13 +222,13 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
             return new Literal.BoolExpr(Arithmetic.getBit(eval, bval));
         }
 
-        if (nexpr != e.expr || nbit != e.bit)
-            return new BitExpr(nexpr, nbit);
+        if (nexpr != e.expr || nbit != e.index)
+            return new IndexExpr(nexpr, nbit);
         else
             return e;
     }
 
-    public Expr visit(BitRangeExpr e, Environ cenv) {
+    public Expr visit(FixedRangeExpr e, Environ cenv) {
         Expr nexpr = e.operand.accept(this, cenv);
 
         if (nexpr.isLiteral()) {
@@ -332,178 +238,22 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
         }
 
         if (nexpr != e.operand)
-            return new BitRangeExpr(nexpr, e.low_bit, e.high_bit);
+            return new FixedRangeExpr(nexpr, e.low_bit, e.high_bit);
         else
             return e;
     }
 
     // --- binary operations ---
 
-    public Expr visit(Arith.AddExpr e, Environ cenv) {
+    public Expr visit(BinOpExpr e, Environ cenv) {
         Expr l = e.left.accept(this, cenv);
         Expr r = e.right.accept(this, cenv);
 
         if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval + rval);
+            return e.getBinOp().evaluate((Literal)l, (Literal)r);
         }
 
-        if (l != e.left || r != e.right)
-            return new Arith.AddExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.AndExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval & rval);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Arith.AndExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.CompExpr e, Environ cenv) {
-        Expr o = e.operand.accept(this, cenv);
-
-        if (o.isLiteral()) {
-            int lval = intValueOf(o);
-            return new Literal.IntExpr(~lval);
-        }
-
-        if (o != e.operand) return new Arith.CompExpr(o);
-        return e;
-    }
-
-    public Expr visit(Arith.DivExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval / rval);
-        }
-        if (l != e.left || r != e.right)
-            return new Arith.DivExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.MulExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval * rval);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Arith.MulExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.NegExpr e, Environ cenv) {
-        Expr o = e.operand.accept(this, cenv);
-
-        if (o.isLiteral()) {
-            int lval = intValueOf(o);
-            return new Literal.IntExpr(-lval);
-        }
-
-        if (o != e.operand) return new Arith.NegExpr(o);
-        return e;
-    }
-
-    public Expr visit(Arith.OrExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval | rval);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Arith.OrExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.ShiftLeftExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval << rval);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Arith.ShiftLeftExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.ShiftRightExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval >> rval);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Arith.ShiftRightExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.SubExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval - rval);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Arith.SubExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Arith.XorExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return new Literal.IntExpr(lval ^ rval);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Arith.XorExpr(l, r);
-        else
-            return e;
+        return rebuild(e, l, r);
     }
 
     public Expr visit(Literal.BoolExpr e, Environ cenv) {
@@ -522,169 +272,12 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
             return e;
     }
 
-    public Expr visit(Logical.AndExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l == FALSE) {
-            return FALSE;
-        } else if (l == TRUE) {
-            return r;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.AndExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.EquExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return lval == rval ? TRUE : FALSE;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.EquExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.GreaterEquExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return lval >= rval ? TRUE : FALSE;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.GreaterEquExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.GreaterExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return lval > rval ? TRUE : FALSE;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.GreaterExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.LessEquExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return lval <= rval ? TRUE : FALSE;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.LessEquExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.LessExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return lval < rval ? TRUE : FALSE;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.LessExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.NequExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            int lval = intValueOf(l);
-            int rval = intValueOf(r);
-            return lval != rval ? TRUE : FALSE;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.NequExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.NotExpr e, Environ cenv) {
+    public Expr visit(UnOpExpr e, Environ cenv) {
         Expr ne = e.operand.accept(this, cenv);
 
-        if (ne == TRUE) {
-            return FALSE;
-        } else if (ne == FALSE) {
-            return TRUE;
-        }
+        if ( ne.isLiteral() ) return e.getUnOp().evaluate((Literal)ne);
 
-        if (ne != e.operand) return new Logical.NotExpr(ne);
-        return e;
-    }
-
-    public Expr visit(Logical.OrExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l == TRUE) {
-            return TRUE;
-        } else if (l == FALSE) {
-            return r;
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.OrExpr(l, r);
-        else
-            return e;
-    }
-
-    public Expr visit(Logical.XorExpr e, Environ cenv) {
-        Expr l = e.left.accept(this, cenv);
-        Expr r = e.right.accept(this, cenv);
-
-        if (l.isLiteral() && r.isLiteral()) {
-            boolean lval = boolValueOf(l);
-            boolean rval = boolValueOf(r);
-            return lval != rval ? TRUE : FALSE;
-        } else if (l == FALSE) {
-            return r;
-        } else if (r == FALSE) {
-            return l;
-        } else if (l == TRUE) {
-            return new Logical.NotExpr(r);
-        } else if (r == TRUE) {
-            return new Logical.NotExpr(l);
-        }
-
-        if (l != e.left || r != e.right)
-            return new Logical.XorExpr(l, r);
-        else
-            return e;
+        return rebuild(e, ne);
     }
 
     public Expr visit(MapExpr e, Environ cenv) {

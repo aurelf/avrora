@@ -34,7 +34,11 @@ package jintgen.isdl;
 
 import cck.text.Verbose;
 import jintgen.isdl.parser.Token;
-import jintgen.types.Type;
+import jintgen.jigir.JIGIRTypeEnv;
+import jintgen.types.TypeRef;
+
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and
@@ -57,7 +61,11 @@ public class Architecture {
     public final HashList<String, AddrModeDecl> addrModes;
     public final HashList<String, AddrModeSetDecl> addrSets;
     public final HashList<String, EnumDecl> enums;
-    public final HashList<String, Type> globals;
+    public final HashList<String, TypeRef> globals;
+    public final List<Item> userTypes;
+
+    public final JIGIRTypeEnv typeEnv;
+    public final JIGIRErrorReporter ERROR;
 
     /**
      * The constructor for the <code>Architecture</code> class creates an instance with the specified
@@ -74,7 +82,11 @@ public class Architecture {
         addrModes = new HashList<String, AddrModeDecl>();
         addrSets = new HashList<String, AddrModeSetDecl>();
         enums = new HashList<String, EnumDecl>();
-        globals = new HashList<String, Type>();
+        globals = new HashList<String, TypeRef>();
+        userTypes = new LinkedList<Item>();
+        ERROR = new JIGIRErrorReporter();
+
+        typeEnv = new JIGIRTypeEnv(ERROR);
     }
 
     public String getName() {
@@ -93,6 +105,7 @@ public class Architecture {
 
     public void addOperand(OperandTypeDecl d) {
         printer.println("loading operand declaration " + d.name.image + "...");
+        userTypes.add(d);
         operandTypes.add(d.name.image, d);
     }
 
@@ -113,10 +126,11 @@ public class Architecture {
 
     public void addEnum(EnumDecl m) {
         printer.println("loading enum " + m + "...");
+        userTypes.add(m);
         enums.add(m.name.image, m);
     }
 
-    public void addGlobal(Token n, Type t) {
+    public void addGlobal(Token n, TypeRef t) {
         globals.add(n.image, t);
     }
 

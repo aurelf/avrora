@@ -37,6 +37,10 @@ import cck.util.Util;
 import jintgen.gen.Inliner;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
+import jintgen.types.TypeRef;
+import jintgen.types.TypeCon;
+import jintgen.types.Type;
+
 import java.util.*;
 
 /**
@@ -54,10 +58,11 @@ public class Verifier {
 
     public Verifier(Architecture a) {
         arch = a;
-        ERROR = new JIGIRErrorReporter();
+        ERROR = arch.ERROR;
     }
 
     public void verify() {
+        verifyUniqueness();
         verifyEnums();
         verifyEncodings();
         verifyOperands();
@@ -68,8 +73,17 @@ public class Verifier {
         typeCheck();
     }
 
+    private void verifyUniqueness() {
+        uniqueCheck("UserType", "User type", arch.userTypes);
+        uniqueCheck("Encoding", "Encoding", arch.encodings);
+        uniqueCheck("Subroutine", "Subroutine", arch.subroutines);
+        uniqueCheck("AddrMode", "Addressing mode", arch.addrModes);
+        uniqueCheck("AddrModeSet", "AddressingModeSet", arch.addrSets);
+        uniqueCheck("Instr", "Instruction", arch.instructions);
+    }
+
     private void typeCheck() {
-        TypeChecker tc = new TypeChecker(ERROR);
+        TypeChecker tc = new TypeChecker(ERROR, arch.typeEnv);
         Environment env = new Environment(arch);
 
         // typecheck all of the subroutine bodies
@@ -77,9 +91,11 @@ public class Verifier {
             if ( !d.code.hasBody() ) continue;
             Environment senv = new Environment(env);
             for ( SubroutineDecl.Parameter p : d.getParams() ) {
+                Type t = p.type.resolve(arch.typeEnv);
                 senv.addVariable(p.name.image, p.type);
             }
-            tc.typeCheck(d.code.getStmts(), senv);
+            Type t = d.ret.resolve(arch.typeEnv);
+            tc.typeCheck(d, senv);
         }
 
         // typecheck all of the instruction bodies
@@ -87,7 +103,7 @@ public class Verifier {
             if ( !d.code.hasBody() ) continue;
             Environment senv = new Environment(env);
             for ( AddrModeDecl.Operand p : d.getOperands() ) {
-                // senv.addVariable(p.name.image, p.type);
+                senv.addVariable(p.name.image, new TypeRef(p.type));
             }
             tc.typeCheck(d.code.getStmts(), senv);
         }
@@ -95,18 +111,11 @@ public class Verifier {
     }
 
     private void verifyEnums() {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
-
         for ( EnumDecl ed : arch.enums ) {
             if (printer.enabled) {
                 printer.print("verifying enum " + ed.name.image + ' ');
             }
-
-            if ( previous.containsKey(ed.name.image) )
-                ERROR.RedefinedEnum(previous.get(ed.name), ed.name);
-
-            previous.put(ed.name.image, ed.name);
-
+            arch.typeEnv.addEnum(ed);
             verifyEnum(ed);
         }
     }
@@ -114,90 +123,56 @@ public class Verifier {
     private void verifyEnum(EnumDecl ed) {
         if (ed instanceof EnumDecl.Subset) {
             EnumDecl.Subset dd = (EnumDecl.Subset)ed;
-            EnumDecl parent = arch.getEnum(dd.ptype.getBaseName());
+            EnumDecl parent = arch.getEnum(dd.ptype.getTypeConName());
             if ( parent == null )
-                ERROR.UnresolvedEnum(dd.ptype.getBaseType());
+                ERROR.UnresolvedEnum(dd.ptype.getToken());
             dd.setParent(parent);
         }
     }
 
     private void verifyEncodings() {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
 
         for ( EncodingDecl ed : arch.encodings ) {
             if (printer.enabled) {
                 printer.print("verifying encoding " + ed.name.image + ' ');
             }
 
-            if ( previous.containsKey(ed.name.image) )
-                ERROR.RedefinedEncoding(previous.get(ed.name), ed.name);
-
-            previous.put(ed.name.image, ed.name);
-
+            // TODO: what checks should be done for encodings?
             printer.println("-> result: " + ed.getBitWidth() + " bits");
         }
     }
 
     private void verifyOperands() {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
         for ( OperandTypeDecl od : arch.operandTypes ) {
-            if ( previous.containsKey(od.name.image) )
-                ERROR.RedefinedOperandType(previous.get(od.name), od.name);
-            previous.put(od.name.image, od.name);
-
+            arch.typeEnv.addOperandType(od);
             if ( od.isCompound() ) {
                 OperandTypeDecl.Compound cd = (OperandTypeDecl.Compound)od;
                 verifyOperands(cd.subOperands);
+            } else {
+                OperandTypeDecl.Value vd = (OperandTypeDecl.Value)od;
+                TypeCon tc = vd.kind.resolveTypeCon(arch.typeEnv);
+                if ( tc == null ) ERROR.UnresolvedType(vd.kind.getToken());
+                if ( tc instanceof JIGIRTypeEnv.TYPE_operand )
+                    ERROR.ValueTypeExpected(vd.kind);
             }
-            /*else if ( od.isSymbol() ) {
-                OperandTypeDecl.SymbolSet sd = (OperandTypeDecl.SymbolSet)od;
-                HashMap<String, Token> symbols = new HashMap<String, Token>();
-                HashMap<String, Token> values = new HashMap<String, Token>();
-                for ( SymbolMapping.Entry e : sd.map.getEntries() ) {
-                    if ( symbols.containsKey(e.ntoken) )
-                        ERROR.RedefinedSymbol(symbols.get(e.ntoken.image));
-                    if ( values.containsKey(""+e.value) )
-                        ERROR.RedefinedValue(values.get(e.vtoken.image));
-                    symbols.put(e.ntoken.image, e.ntoken);
-                    values.put(""+e.value, e.vtoken);
-                }
-            }*/
         }
     }
 
     private void verifySubroutines() {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
 
         for ( SubroutineDecl sd : arch.subroutines ) {
             printer.print("verifying subroutine " + sd.name + ' ');
 
-            if ( previous.containsKey(sd.name.image) )
-                ERROR.RedefinedSubroutine(previous.get(sd.name), sd.name);
-
-            previous.put(sd.name.image, sd.name);
-
-            // find operand decl
-            for ( SubroutineDecl.Parameter p : sd.getParams() ) {
-                // TODO: check the type of each parameter
-                // ERROR.UnresolvedType(od.type);
-            }
-
             if (printer.enabled) {
                 new PrettyPrinter(arch, printer).visitStmtList(sd.code.getStmts());
             }
-
         }
     }
 
     private void verifyAddrModes() {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
 
         for ( AddrModeDecl am : arch.addrModes ) {
             printer.println("verifying addressing mode " + am.name + ' ');
-            if ( previous.containsKey(am.name.image) )
-                ERROR.RedefinedAddressingMode(previous.get(am.name), am.name);
-
-            previous.put(am.name.image, am.name);
             verifyOperands(am.operands);
             verifyEncodings(am.encodings, am);
         }
@@ -217,14 +192,8 @@ public class Verifier {
     }
 
     private void verifyAddrSets() {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
 
         for ( AddrModeSetDecl as: arch.addrSets ) {
-            if ( previous.containsKey(as.name.image) )
-                ERROR.RedefinedAddressingModeSet(previous.get(as.name), as.name);
-
-            previous.put(as.name.image, as.name);
-
             HashMap<String, OperandTypeDecl.Union> unions = new HashMap<String, OperandTypeDecl.Union>();
             HashSet<String> alloperands = new HashSet<String>();
             for ( Token t : as.list ) {
@@ -267,6 +236,7 @@ public class Verifier {
                 ut.addType(d);
                 unions.put(o.name.image, ut);
                 alloperands.add(o.name.image);
+                arch.typeEnv.addOperandType(ut);
             }
         } else {
             // for each operand in this addressing mode, check that it exists and add
@@ -290,16 +260,11 @@ public class Verifier {
     }
 
     private void verifyInstructions() {
-        HashMap<String, Token> previous = new HashMap<String, Token>();
         for ( InstrDecl id : arch.instructions ) {
             printer.print("verifying instruction " + id.name + ' ');
-            if ( previous.containsKey(id.name.image) )
-                ERROR.RedefinedInstruction(previous.get(id.name), id.name);
-
-            previous.put(id.name.image, id.name);
-
-            verifyAddressingMode(id);
-            optimizeCode(id);
+            // verify the addressing mode use
+            verifyAddrModeUse(id.addrMode);
+            //optimizeCode(id);
 
             if (printer.enabled) {
                 new PrettyPrinter(arch, printer).visitStmtList(id.code.getStmts());
@@ -308,8 +273,7 @@ public class Verifier {
         }
     }
 
-    private void verifyAddressingMode(InstrDecl id) {
-        AddrModeUse am = id.addrMode;
+    private void verifyAddrModeUse(AddrModeUse am) {
         if ( am.ref != null ) {
             resolveAddressingModeRef(am);
         } else {
@@ -420,13 +384,13 @@ public class Verifier {
             }
         }
 
-        public void visit(BitRangeExpr e) {
+        public void visit(FixedRangeExpr e) {
             int diff = (e.high_bit - e.low_bit);
             if (diff < 0) diff = -diff;
             width = diff + 1;
         }
 
-        public void visit(BitExpr e) {
+        public void visit(IndexExpr e) {
             width = 1;
         }
 
@@ -470,4 +434,13 @@ public class Verifier {
         }
     }
 
+    private void uniqueCheck(String type, String name, Iterable<? extends Item> it) {
+        HashMap<String, Token> items = new HashMap<String, Token>();
+        for ( Item i : it ) {
+            String nm = i.name.image;
+            if ( items.containsKey(nm) )
+                ERROR.redefined(type, name, items.get(nm), i.name);
+            items.put(nm, i.name);
+        }
+    }
 }

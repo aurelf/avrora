@@ -32,7 +32,9 @@
 
 package jintgen.jigir;
 
-import cck.parser.SourcePoint;
+import cck.util.Arithmetic;
+import cck.util.Util;
+import jintgen.types.*;
 
 /**
  * The <code>Arith</code> class is a container for classes that represent integer arithmetic in the IR. For
@@ -42,509 +44,197 @@ import cck.parser.SourcePoint;
  *
  * @author Ben L. Titzer
  */
-public abstract class Arith extends Expr {
+public class Arith {
 
-    /**
-     * The <code>BinOp</code> inner class represents an operation on two integers with an infix binary
-     * operation. For example, addition, multiplication, bitwise and, and such operations are binary infix and
-     * therefore subclasses of this class.
-     */
-    public abstract static class BinOp extends Arith {
-        /**
-         * The <code>operation</code> field stores the string name of the operation of this binary operation.
-         * For example, '+' represents addition.
-         */
-        public final String operation;
-
-        /**
-         * The <code>left</code> field stores a reference to the expression that is the left operand of the
-         * binary operation.
-         */
-        public final Expr left;
-
-        /**
-         * The <code>left</code> field stores a reference to the expression that is the right operand of the
-         * binary operation.
-         */
-        public final Expr right;
-
-        /**
-         * The <code>precedence</code> field stores the precedence level of this binary operation. This is
-         * used to compute when to surround inner expressions with parentheses when printing code in infix
-         * notation.
-         */
-        public final int precedence;
-
-        /**
-         * The constructor of the <code>BinOp</code> class initializes the public final fields that form the
-         * structure of this expression.
-         *
-         * @param p the precedence of this expression
-         * @param l the left expression operand
-         * @param o the string name of the operation
-         * @param r the right expression operand
-         */
-        public BinOp(int p, Expr l, String o, Expr r) {
-            left = l;
-            right = r;
-            operation = o;
-            precedence = p;
+    protected abstract static class INTINT extends BinOpExpr.BinOpImpl {
+        protected INTINT(String op) {
+            super(op);
         }
-
-        /**
-         * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression
-         * (i.e. it is reducable to a constant and has no references to variables, maps, etc).
-         *
-         * @return true if this expression can be evaluated to a constant; false otherwise
-         */
-        public boolean isConstantExpr() {
-            return left.isConstantExpr() && right.isConstantExpr();
+        public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
+            JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
+            JIGIRTypeEnv.TYPE_int lt = (JIGIRTypeEnv.TYPE_int)left.getType();
+            JIGIRTypeEnv.TYPE_int rt = (JIGIRTypeEnv.TYPE_int)right.getType();
+            return typeCheck(jenv, lt, rt);
         }
-
-        /**
-         * The <code>toString()</code> method recursively converts this expression to a string. For binary
-         * operations, inner expressions will be nested within parentheses if their precedence is lower than
-         * the precedence of the parent expression.
-         *
-         * @return a string representation of this expression
-         */
-        public String toString() {
-            return innerString(left) + ' ' + operation + ' ' + innerString(right);
+        public Literal evaluate(Literal left, Literal right) {
+            int ll = ((Literal.IntExpr)left).value;
+            int lr = ((Literal.IntExpr)right).value;
+            return new Literal.IntExpr(evaluate(ll, lr));
         }
+        protected abstract Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt);
+        protected abstract int evaluate(int ll, int lr);
+    }
 
-        /**
-         * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is
-         * used to compute when inner expressions must be nested within parentheses in order to preserve the
-         * implied order of evaluation.
-         *
-         * @return an integer representing the precedence of this expression; higher numbers are higher
-         *         precedence
-         */
-        public int getPrecedence() {
-            return precedence;
+    public static class ADD extends INTINT {
+        public ADD() {
+            super("+");
         }
-
-        public SourcePoint getSourcePoint() {
-            return new SourcePoint(left.getSourcePoint(), right.getSourcePoint());
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            return jenv.newIntType(lt.isSigned() || rt.isSigned(), max(lt, rt) + 1);
+        }
+        public int evaluate(int ll, int lr) {
+            return ll + lr;
         }
     }
 
-    /**
-     * The <code>UnOp</code> inner class represents an operation on a single integer value. For example, the
-     * bitwise complement and the negation of an integer are operations on a single integer that produce a
-     * single integer result.
-     */
-    public abstract static class UnOp extends Arith {
-        /**
-         * The <code>operation</code> field stores the string name of the operation being performed on the
-         * expression. For example, '~' represents bitwise negation.
-         */
-        public final String operation;
-
-        /**
-         * The <code>operand</code> field stores a reference to the expression operand of this operation.
-         */
-        public final Expr operand;
-
-        /**
-         * The constructor of the <code>UnOp</code> class initializes the public final fields that form the
-         * structure of this expression.
-         *
-         * @param op the string name of the operation
-         * @param o  the operand of this operation
-         */
-        public UnOp(String op, Expr o) {
-            operand = o;
-            operation = op;
+    public static class SUB extends INTINT {
+        public SUB() {
+            super("-");
         }
-
-        /**
-         * The <code>isConstantExpr()</code> method tests whether this expression is a constant expression
-         * (i.e. it is reducable to a constant and has no references to variables, maps, etc).
-         *
-         * @return true if this expression can be evaluated to a constant; false otherwise
-         */
-        public boolean isConstantExpr() {
-            return operand.isConstantExpr();
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            return jenv.newIntType(true, max(lt, rt) + 1);
         }
-
-        /**
-         * The <code>toString()</code> method recursively converts this expression to a string. For binary
-         * operations, inner expressions will be nested within parentheses if their precedence is lower than
-         * the precedence of the parent expression.
-         *
-         * @return a string representation of this expression
-         */
-        public String toString() {
-            return operation + innerString(operand);
-        }
-
-        /**
-         * The <code>getPrecedence()</code> method gets the binding precedence for this expression. This is
-         * used to compute when inner expressions must be nested within parentheses in order to preserve the
-         * implied order of evaluation.
-         *
-         * @return an integer representing the precedence of this expression; higher numbers are higher
-         *         precedence
-         */
-        public int getPrecedence() {
-            return PREC_UN;
-        }
-
-        public SourcePoint getSourcePoint() {
-            return operand.getSourcePoint();
+        public int evaluate(int ll, int lr) {
+            return ll - lr;
         }
     }
 
-    /**
-     * The <code>AddExpr</code> inner class represents the addition of two integer values that produces a new
-     * integer value.
-     */
-    public static class AddExpr extends BinOp {
-        public AddExpr(Expr left, Expr right) {
-            super(PREC_A_ADD, left, "+", right);
+    public static class MUL extends INTINT {
+        public MUL() {
+            super("*");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            return jenv.newIntType(lt.isSigned() || rt.isSigned(), lt.getSize() + rt.getSize());
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll * lr;
         }
     }
 
-    /**
-     * The <code>SubExpr</code> inner class represents the subtraction of one integer value from another that
-     * results in a new integer value.
-     */
-    public static class SubExpr extends BinOp {
-        public SubExpr(Expr left, Expr right) {
-            super(PREC_A_ADD, left, "-", right);
+    public static class DIV extends INTINT {
+        public DIV() {
+            super("/");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            return jenv.newIntType(lt.isSigned() || rt.isSigned(), lt.getSize());
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll / lr;
         }
     }
 
-    /**
-     * The <code>MulExpr</code> inner class represents the multiplication of two integer values which produces
-     * a single integer result.
-     */
-    public static class MulExpr extends BinOp {
-        public MulExpr(Expr left, Expr right) {
-            super(PREC_A_MUL, left, "*", right);
+    public static class MOD extends INTINT {
+        public MOD() {
+            super("%");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            return jenv.newIntType(lt.isSigned() || rt.isSigned(), lt.getSize());
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll % lr;
         }
     }
 
-    /**
-     * The <code>DivExpr</code> inner class represents a division operation on two integer values which
-     * produces a single integer result.
-     */
-    public static class DivExpr extends BinOp {
-        public DivExpr(Expr left, Expr right) {
-            super(PREC_A_MUL, left, "/", right);
+    public static class AND extends INTINT {
+        public AND() {
+            super("&");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            // TODO: is this type rule reasonable?
+            return jenv.newIntType(false, max(lt, rt));
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll & lr;
         }
     }
 
-    /**
-     * The <code>AndExpr</code> class represents the bitwise and of two integer values that produces a single
-     * integer result.
-     */
-    public static class AndExpr extends BinOp {
-        public AndExpr(Expr left, Expr right) {
-            super(PREC_A_AND, left, "&", right);
+    public static class OR extends INTINT {
+        public OR() {
+            super("|");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            // TODO: is this type rule reasonable?
+            return jenv.newIntType(false, max(lt, rt));
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll | lr;
         }
     }
 
-    /**
-     * The <code>OrExpr</code> class represents the bitwise inclusive or of two integer values that produces a
-     * single integer result.
-     */
-    public static class OrExpr extends BinOp {
-        public OrExpr(Expr left, Expr right) {
-            super(PREC_A_OR, left, "|", right);
+    public static class XOR extends INTINT {
+        public XOR() {
+            super("^");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            // TODO: is this type rule reasonable?
+            return jenv.newIntType(false, max(lt, rt));
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll ^ lr;
         }
     }
 
-    /**
-     * The <code>XorExpr</code> class represents the bitwise exclusive or of two integer values that produces
-     * a single integer result.
-     */
-    public static class XorExpr extends BinOp {
-        public XorExpr(Expr left, Expr right) {
-            super(PREC_A_XOR, left, "^", right);
+    public static class SHL extends INTINT {
+        public SHL() {
+            super("<<");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            // TODO: is this type rule reasonable?
+            return jenv.newIntType(lt.isSigned(), lt.getSize());
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll << lr;
         }
     }
 
-    /**
-     * The <code>ShiftLeftExpr</code> class represents the shift left of an integer value that produces a
-     * single integer result.
-     */
-    public static class ShiftLeftExpr extends BinOp {
-        public ShiftLeftExpr(Expr left, Expr right) {
-            super(PREC_A_SHIFT, left, "<<", right);
+    public static class SHR extends INTINT {
+        public SHR() {
+            super(">>");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+            // TODO: is this type rule reasonable?
+            return jenv.newIntType(lt.isSigned(), lt.getSize());
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public int evaluate(int ll, int lr) {
+            return ll >> lr;
         }
     }
 
-    /**
-     * The <code>ShiftRightExpr</code> class represents the shift left of an integer value that produces a
-     * single integer result.
-     */
-    public static class ShiftRightExpr extends BinOp {
-        public ShiftRightExpr(Expr left, Expr right) {
-            super(PREC_A_SHIFT, left, ">>", right);
+    public static class COMP extends UnOpExpr.UnOpImpl {
+        public COMP() {
+            super("~");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(TypeEnv env, Typeable inner) {
+            // JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
+            JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)inner.getType();
+            return it;
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public Literal evaluate(Literal inner) {
+            int ll = ((Literal.IntExpr)inner).value;
+            return new Literal.IntExpr(~ll);
         }
     }
 
-    /**
-     * The <code>CompExpr</code> class represents the bitwise complement of an integer value that produces a
-     * single integer result.
-     */
-    public static class CompExpr extends UnOp {
-        public CompExpr(Expr l) {
-            super("~", l);
+    public static class NEG extends UnOpExpr.UnOpImpl {
+        public NEG() {
+            super("-");
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
+        public Type typeCheck(TypeEnv env, Typeable inner) {
+            JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
+            JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)inner.getType();
+            return jenv.newIntType(true, it.getSize() + 1);
         }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
+        public Literal evaluate(Literal inner) {
+            int ll = ((Literal.IntExpr)inner).value;
+            return new Literal.IntExpr(-ll);
         }
     }
 
-    /**
-     * The <code>NegExpr</code> class represents the negation (sign reversal) of an integer value that
-     * produces a single integer result.
-     */
-    public static class NegExpr extends UnOp {
-        public NegExpr(Expr l) {
-            super("-", l);
+    public static class UNSIGN extends UnOpExpr.UnOpImpl {
+        public UNSIGN() {
+            super("+");
         }
+        public Type typeCheck(TypeEnv env, Typeable inner) {
+            JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
+            JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)inner.getType();
+            return jenv.newIntType(false, it.getSize());
+        }
+        public Literal evaluate(Literal inner) {
+            throw Util.unimplemented();
+        }
+    }
 
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
-         * can traverse the syntax tree easily and in an extensible way.
-         *
-         * @param v the visitor to accept
-         */
-        public void accept(CodeVisitor v) {
-            v.visit(this);
-        }
-
-        /**
-         * The <code>accept()</code> method implements one half of the visitor pattern for rebuilding of
-         * expressions. This visitor allows code to be slightly modified while only writing visit methods for
-         * the parts of the syntax tree affected.
-         *
-         * @param r the rebuilder to accept
-         * @return the result of calling the appropriate <code>visit()</code> method of the rebuilder
-         */
-        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
-            return r.visit(this, env);
-        }
+    protected static int max(JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
+        return Arithmetic.max(lt.getSize(), rt.getSize());
     }
 }

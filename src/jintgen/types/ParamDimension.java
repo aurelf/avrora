@@ -61,6 +61,6 @@ public class ParamDimension extends TypeCon.Dimension {
     }
 
     public Object build(List params) {
-        return null;
+        return params;
     }
 }

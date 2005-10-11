@@ -32,8 +32,8 @@
 
 package jintgen.jigir;
 
-import cck.text.StringUtil;
 import cck.parser.SourcePoint;
+import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
 import java.util.List;
 
@@ -127,6 +127,6 @@ public class CallExpr extends Expr {
     }
 
     public SourcePoint getSourcePoint() {
-        return method.asSourcePoint();
+        return method.getSourcePoint();
     }
 }

@@ -32,9 +32,9 @@
 
 package jintgen.jigir;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.Type;
 import cck.util.Util;
+import jintgen.isdl.parser.Token;
+import jintgen.types.TypeRef;
 
 /**
  * The <code>DeclStmt</code> represents a declaration of a local, temporary value in the IR. A named temporary
@@ -52,7 +52,7 @@ public class DeclStmt extends Stmt {
     /**
      * The <code>type</code> field stores a reference to a token representing the type of the local.
      */
-    public final Type type;
+    public final TypeRef type;
 
     /**
      * The <code>init</code> field stores a reference to the expression which is evaluated to give an initial
@@ -68,7 +68,7 @@ public class DeclStmt extends Stmt {
      * @param t the type of the local as a token
      * @param i a reference to the expression evaluated to give the local an initial value
      */
-    public DeclStmt(Token n, Type t, Expr i) {
+    public DeclStmt(Token n, TypeRef t, Expr i) {
         name = n;
         type = t;
         init = i;
@@ -82,7 +82,7 @@ public class DeclStmt extends Stmt {
      * @param t the type of the local as a token
      * @param i a reference to the expression evaluated to give the local an initial value
      */
-    public DeclStmt(String n, Type t, Expr i) {
+    public DeclStmt(String n, TypeRef t, Expr i) {
         name = new Token();
         name.image = n;
         type = t;

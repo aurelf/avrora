@@ -93,7 +93,7 @@ public class SourceError extends Util.Error {
     public void report() {
         Terminal.printRed(point.file);
         Terminal.print(" ");
-        Terminal.printBrightBlue(point.beginLine + ":" + point.beginColumn);
+        Terminal.printBrightCyan(point.beginLine + ":" + point.beginColumn);
         Terminal.print(": ");
         if (REPORT_TYPE) Terminal.print(errorType + ": ");
         Terminal.print(message);

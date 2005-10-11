@@ -44,25 +44,17 @@ public interface StmtVisitor {
 
     public void visit(CallStmt s);
 
+    public void visit(WriteStmt s);
+
     public void visit(CommentStmt s);
 
     public void visit(DeclStmt s);
 
     public void visit(IfStmt s);
 
-    public void visit(MapAssignStmt s);
-
-    public void visit(MapBitAssignStmt s);
-
-    public void visit(MapBitRangeAssignStmt s);
+    public void visit(AssignStmt s);
 
     public void visit(ReturnStmt s);
-
-    public void visit(VarAssignStmt s);
-
-    public void visit(VarBitAssignStmt s);
-
-    public void visit(VarBitRangeAssignStmt s);
 
     /**
      * The <code>DepthFirst</code> class is a base implementation of the <code>StmtVisitor</code> interface
@@ -75,6 +67,9 @@ public interface StmtVisitor {
             // terminal node
         }
 
+        public void visit(WriteStmt s) {
+            // terminal node
+        }
         public void visit(CommentStmt s) {
             // terminal node
         }
@@ -92,31 +87,11 @@ public interface StmtVisitor {
             for ( Stmt t : l ) t.accept(this);
         }
 
-        public void visit(MapAssignStmt s) {
-            // terminal node
-        }
-
-        public void visit(MapBitAssignStmt s) {
-            // terminal node
-        }
-
-        public void visit(MapBitRangeAssignStmt s) {
+        public void visit(AssignStmt s) {
             // terminal node
         }
 
         public void visit(ReturnStmt s) {
-            // terminal node
-        }
-
-        public void visit(VarAssignStmt s) {
-            // terminal node
-        }
-
-        public void visit(VarBitAssignStmt s) {
-            // terminal node
-        }
-
-        public void visit(VarBitRangeAssignStmt s) {
             // terminal node
         }
 

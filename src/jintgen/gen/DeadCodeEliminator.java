@@ -34,6 +34,7 @@ package jintgen.gen;
 
 import jintgen.jigir.*;
 import java.util.*;
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer
@@ -153,13 +154,8 @@ public class DeadCodeEliminator extends StmtRebuilder<DeadCodeEliminator.DefUseE
         return s;
     }
 
-    public Stmt visit(VarAssignStmt s, DefUseEnvironment denv) {
-        if (denv.isDead(s.variable.toString())) return null;
-
-        denv.def(s.variable.toString());
-
-        s.expr.accept(this, denv);
-        return s;
+    public Stmt visit(AssignStmt s, DefUseEnvironment denv) {
+        throw Util.unimplemented();
     }
 
     public Expr visit(VarExpr e, DefUseEnvironment denv) {

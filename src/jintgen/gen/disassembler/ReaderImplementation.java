@@ -242,7 +242,7 @@ class ReaderImplementation extends GenBase {
         String getEnumType(OperandTypeDecl ot) {
             if ( ot.isValue() ) {
                 OperandTypeDecl.Value vt = (OperandTypeDecl.Value)ot;
-                EnumDecl ed = dGen.arch.getEnum(vt.kind.getBaseName());
+                EnumDecl ed = dGen.arch.getEnum(vt.kind.getTypeConName());
                 if ( ed != null ) return ed.name.image;
                 return null;
             }
@@ -270,7 +270,7 @@ class ReaderImplementation extends GenBase {
             if ( matches(e, name) ) {
                 for ( int cntr = 0; cntr < f.getWidth(); cntr++ ) result[cntr] = cntr + bit;
             } else if ( e.isBitRangeExpr() ) {
-                BitRangeExpr bre = (BitRangeExpr)e;
+                FixedRangeExpr bre = (FixedRangeExpr)e;
                 if ( matches(bre.operand, name) ) {
                     for ( int cntr = 0; cntr < f.getWidth(); cntr++ ) {
                         int indx = cntr+bre.low_bit;
@@ -279,10 +279,10 @@ class ReaderImplementation extends GenBase {
                             result[indx] = cntr + bit;
                     }
                 }
-            } else if ( e instanceof BitExpr ) {
-                BitExpr be = (BitExpr)e;
-                if ( matches(be.expr, name) && be.bit.isLiteral() ) {
-                    int value = ((Literal.IntExpr)be.bit).value;
+            } else if ( e instanceof IndexExpr ) {
+                IndexExpr be = (IndexExpr)e;
+                if ( matches(be.expr, name) && be.index.isLiteral() ) {
+                    int value = ((Literal.IntExpr)be.index).value;
                     result[value] = bit;
                 }
             }

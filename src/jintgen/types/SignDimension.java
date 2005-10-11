@@ -34,8 +34,8 @@
 
 package jintgen.types;
 
-import cck.util.Util;
 import cck.parser.AbstractToken;
+import cck.util.Util;
 import java.util.List;
 
 /**
@@ -59,7 +59,9 @@ public class SignDimension extends TypeCon.Dimension {
                 signed = isSigned(((AbstractToken)obj).image);
             else if ( obj instanceof String )
                 signed = isSigned((String)obj);
-            else throw Util.failure("sign type dimension expects AbstractToken or String");
+            else if ( obj instanceof Boolean )
+                signed = (Boolean)obj;
+            else throw Util.failure("sign type dimension expects AbstractToken, String or Boolean");
         }
         return signed;
     }

@@ -35,8 +35,7 @@ package jintgen.isdl;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
 import jintgen.jigir.Stmt;
-import jintgen.types.Type;
-
+import jintgen.types.TypeRef;
 import java.util.List;
 
 /**
@@ -50,9 +49,9 @@ public class SubroutineDecl extends Item {
 
     public static class Parameter {
         public final Token name;
-        public final Type type;
+        public final TypeRef type;
 
-        public Parameter(Token n, Type t) {
+        public Parameter(Token n, TypeRef t) {
             name = n;
             type = t;
         }
@@ -62,12 +61,12 @@ public class SubroutineDecl extends Item {
         }
     }
 
-    public final Type ret;
+    public final TypeRef ret;
     public final boolean inline;
     public final CodeRegion code;
     public final List<SubroutineDecl.Parameter> params;
 
-    public SubroutineDecl(boolean i, Token n, List<SubroutineDecl.Parameter> pl, Type r, List<Stmt> s) {
+    public SubroutineDecl(boolean i, Token n, List<SubroutineDecl.Parameter> pl, TypeRef r, List<Stmt> s) {
         super(n);
         inline = i;
         ret = r;

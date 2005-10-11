@@ -183,6 +183,10 @@ public class CodemapGenerator extends Generator {
             printer.println(");");
         }
 
+        public void visit(WriteStmt s) {
+            throw Util.unimplemented();
+        }
+
         public void visit(CommentStmt s) {
             printer.println(s.toString());
         }
@@ -197,52 +201,15 @@ public class CodemapGenerator extends Generator {
             generate("IfStmt", s.cond, ltrue, lfalse);
         }
 
-        public void visit(MapAssignStmt s) {
-            generate("MapAssignStmt", s.mapname, s.index, s.expr);
-        }
-
-        public void visit(MapBitAssignStmt s) {
-            generate("MapBitAssignStmt", s.mapname, s.index, s.bit, s.expr);
-        }
-
-        public void visit(MapBitRangeAssignStmt s) {
-            printer.print("stmt = new " + "MapBitRangeAssignStmt" + '(');
-            generate(s.mapname);
-            printer.print(", ");
-            generate(s.index);
-            printer.print(", ");
-            generate(s.low_bit);
-            printer.print(", ");
-            generate(s.high_bit);
-            printer.print(", ");
-            generate(s.expr);
-            printer.println(");");
-        }
-
         public void visit(ReturnStmt s) {
             printer.print("stmt = new ReturnStmt(");
             generate(s.expr);
             printer.println(");");
         }
 
-        public void visit(VarAssignStmt s) {
-            generate("VarAssignStmt", s.variable, s.expr);
-        }
-
-        public void visit(VarBitAssignStmt s) {
-            generate("VarBitAssignStmt", s.variable, s.bit, s.expr);
-        }
-
-        public void visit(VarBitRangeAssignStmt s) {
-            printer.print("stmt = new " + "VarBitRangeAssignStmt" + '(');
-            generate(s.variable);
-            printer.print(", ");
-            generate(s.low_bit);
-            printer.print(", ");
-            generate(s.high_bit);
-            printer.print(", ");
-            generate(s.expr);
-            printer.println(");");
+        public void visit(AssignStmt s) {
+            throw Util.unimplemented();
+            //generate("VarAssignStmt", s.variable, s.expr);
         }
 
         private void generate(String clname, Object o1, Object o2, Object o3, Object o4) {
@@ -292,90 +259,36 @@ public class CodemapGenerator extends Generator {
     protected class ExprGenerator implements CodeVisitor {
         HashMap<String, Operand> operands;
 
-        public void generate(Arith.BinOp e, String clname) {
-            printer.print("new Arith.BinOp." + clname + '(');
+        public void generate(BinOpExpr e, String clname) {
+            printer.print("new BinOpExpr(");
             e.left.accept(this);
             printer.print(", ");
             e.right.accept(this);
             printer.print(")");
         }
 
-        private void generate(Arith.UnOp e, String clname) {
-            printer.print("new Arith.UnOp." + clname + '(');
-            e.operand.accept(this);
-            printer.print(")");
-        }
-
-        public void generate(Logical.BinOp e, String clname) {
-            printer.print("new Logical.BinOp." + clname + '(');
-            e.left.accept(this);
-            printer.print(", ");
-            e.right.accept(this);
-            printer.print(")");
-        }
-
-        private void generate(Logical.UnOp e, String clname) {
-            printer.print("new Logical.UnOp." + clname + '(');
+        private void generate(UnOpExpr e, String clname) {
+            printer.print("new UnOpExpr(");
             e.operand.accept(this);
             printer.print(")");
         }
 
         //- Begin real visitor code
 
-        public void visit(Arith.AddExpr e) {
+        public void visit(BinOpExpr e) {
             generate(e, "AddExpr");
         }
 
-        public void visit(Arith.AndExpr e) {
-            generate(e, "AndExpr");
-        }
-
-        public void visit(Arith.CompExpr e) {
-            generate(e, "CompExpr");
-        }
-
-        public void visit(Arith.DivExpr e) {
-            generate(e, "DivExpr");
-        }
-
-        public void visit(Arith.MulExpr e) {
-            generate(e, "MulExpr");
-        }
-
-        public void visit(Arith.NegExpr e) {
-            generate(e, "NegExpr");
-        }
-
-        public void visit(Arith.OrExpr e) {
-            generate(e, "OrExpr");
-        }
-
-        public void visit(Arith.ShiftLeftExpr e) {
-            generate(e, "ShiftLeftExpr");
-        }
-
-        public void visit(Arith.ShiftRightExpr e) {
-            generate(e, "ShiftRightExpr");
-        }
-
-        public void visit(Arith.SubExpr e) {
-            generate(e, "SubExpr");
-        }
-
-        public void visit(Arith.XorExpr e) {
-            generate(e, "XorExpr");
-        }
-
-        public void visit(BitExpr e) {
-            printer.print("new BitExpr(");
+        public void visit(IndexExpr e) {
+            printer.print("new IndexExpr(");
             e.expr.accept(this);
             printer.print(", ");
-            e.bit.accept(this);
+            e.index.accept(this);
             printer.print(")");
         }
 
-        public void visit(BitRangeExpr e) {
-            printer.print("new BitRangeExpr(");
+        public void visit(FixedRangeExpr e) {
+            printer.print("new FixedRangeExpr(");
             e.operand.accept(this);
             printer.print(", " + e.low_bit + ", " + e.high_bit + ')');
         }
@@ -384,6 +297,10 @@ public class CodemapGenerator extends Generator {
             printer.print("new CallExpr(" + StringUtil.quote(e.method) + ", ");
             generateExprList(e.args);
             printer.print(")");
+        }
+
+        public void visit(ReadExpr e) {
+            throw Util.unimplemented();
         }
 
         public void visit(ConversionExpr e) {
@@ -401,44 +318,8 @@ public class CodemapGenerator extends Generator {
             printer.print("new Literal.IntExpr(" + e.value + ')');
         }
 
-        public void visit(Logical.AndExpr e) {
-            generate(e, "AndExpr");
-        }
-
-        public void visit(Logical.EquExpr e) {
-            generate(e, "EquExpr");
-        }
-
-        public void visit(Logical.GreaterEquExpr e) {
-            generate(e, "GreaterEquExpr");
-        }
-
-        public void visit(Logical.GreaterExpr e) {
-            generate(e, "GreaterExpr");
-        }
-
-        public void visit(Logical.LessEquExpr e) {
-            generate(e, "LessEquExpr");
-        }
-
-        public void visit(Logical.LessExpr e) {
-            generate(e, "LessExpr");
-        }
-
-        public void visit(Logical.NequExpr e) {
-            generate(e, "NequExpr");
-        }
-
-        public void visit(Logical.NotExpr e) {
-            generate(e, "NotExpr");
-        }
-
-        public void visit(Logical.OrExpr e) {
-            generate(e, "OrExpr");
-        }
-
-        public void visit(Logical.XorExpr e) {
-            generate(e, "XorExpr");
+        public void visit(UnOpExpr e) {
+            generate(e, "UnOpExpr");
         }
 
         public void visit(MapExpr e) {

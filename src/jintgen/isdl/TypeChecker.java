@@ -34,14 +34,13 @@
 
 package jintgen.isdl;
 
-import jintgen.jigir.*;
-import jintgen.types.Type;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Iterator;
-
 import cck.util.Arithmetic;
 import cck.util.Util;
+import jintgen.jigir.*;
+import jintgen.types.*;
+import jintgen.isdl.parser.Token;
+
+import java.util.*;
 
 /**
  * The <code>TypeChecker</code> implements typecheck of JIGIR code. It visits each
@@ -53,10 +52,19 @@ import cck.util.Util;
  */
 public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccumulator<Environment, Environment> {
 
+    final JIGIRTypeEnv typeEnv;
     final JIGIRErrorReporter ERROR;
+    SubroutineDecl currentDecl;
 
-    TypeChecker(JIGIRErrorReporter er) {
+    TypeChecker(JIGIRErrorReporter er, JIGIRTypeEnv env) {
         ERROR = er;
+        typeEnv = env;
+    }
+
+    public void typeCheck(SubroutineDecl d, Environment env) {
+        currentDecl = d;
+        for ( Stmt st : d.code.getStmts() ) typeCheck(st, env);
+        currentDecl = null;
     }
 
     public void typeCheck(List<Stmt> s, Environment env) {
@@ -68,7 +76,27 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Environment visit(CallStmt s, Environment env) {
+        typeCheckCall(env, s.method, s.args);
         return env;
+    }
+
+    public Environment visit(WriteStmt s, Environment env) {
+        OperandTypeDecl d = operandTypeOf(s.operand, env);
+        Type t = typeOf(s.expr, env);
+        return env;
+    }
+
+    private SubroutineDecl typeCheckCall(Environment env, Token method, List<Expr> args) {
+        SubroutineDecl d = env.resolveMethod(method.image);
+        if ( d == null ) ERROR.UnresolvedSubroutine(method);
+        Iterator<Expr> eiter = args.iterator();
+        if ( d.getParams().size() != args.size() )
+            ERROR.ArityMismatch(method);
+        for ( SubroutineDecl.Parameter p : d.getParams() ) {
+            Type t = p.type.resolve(typeEnv);
+            typeCheck("invocation", eiter.next(), t, env);
+        }
+        return d;
     }
 
     public Environment visit(CommentStmt s, Environment env) {
@@ -76,13 +104,13 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Environment visit(DeclStmt s, Environment env) {
-        typeCheck("initialization", s.init, s.type, env);
+        typeCheck("initialization", s.init, s.type.resolve(typeEnv), env);
         env.addVariable(s.name.image, s.type);
         return env;
     }
 
     public Environment visit(IfStmt s, Environment env) {
-        typeCheck("if condition", s.cond, Type.BOOLEAN, env);
+        typeCheck("if condition", s.cond, typeEnv.BOOLEAN, env);
         Environment te = new Environment(env);
         visitStmtList(s.trueBranch, te);
         Environment fe = new Environment(env);
@@ -95,117 +123,49 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         return null;
     }
 
-    public Environment visit(MapAssignStmt s, Environment env) {
-        return env;
-    }
-
-    public Environment visit(MapBitAssignStmt s, Environment env) {
-        return env;
-    }
-
-    public Environment visit(MapBitRangeAssignStmt s, Environment env) {
-        return env;
-    }
-
     public Environment visit(ReturnStmt s, Environment env) {
+        if ( currentDecl == null ) ERROR.ReturnStmtNotInSubroutine(s);
+        typeCheck("return", s.expr, currentDecl.ret.resolve(typeEnv), env);
         return env;
     }
 
-    public Environment visit(VarAssignStmt s, Environment env) {
-        Type t = env.resolveVariable(s.variable.image);
-        if ( t == null ) ERROR.UnresolvedVariable(s.variable);
-        typeCheck("assignment", s.expr, t, env);
+    public Environment visit(AssignStmt s, Environment env) {
+        if ( !s.dest.isLvalue() ) ERROR.NotAnLvalue(s.dest);
+        Type lt = typeOf(s.dest, env);
+        typeCheck("assignment", s.expr, lt, env);
         return env;
     }
 
-    public Environment visit(VarBitAssignStmt s, Environment env) {
-        Type t = env.resolveVariable(s.variable.image);
-        if ( t == null ) ERROR.UnresolvedVariable(s.variable);
-        typeCheck("bit assignment", s.expr, t, env);
-        // TODO: fix me
-        return env;
+    public Type visit(BinOpExpr e, Environment env) {
+        Type lt = typeOf(e.left, env);
+        Type rt = typeOf(e.right, env);
+        TypeCon.BinOp binop = typeEnv.resolveBinOp(lt, rt, e.operation.image);
+        if ( binop == null ) ERROR.UnresolvedOperator(e.operation, lt, rt);
+        return binop.typeCheck(typeEnv, e.left, e.right);
     }
 
-    public Environment visit(VarBitRangeAssignStmt s, Environment env) {
-        Type t = env.resolveVariable(s.variable.image);
-        if ( t == null ) ERROR.UnresolvedVariable(s.variable);
-        typeCheck("bit range assignment", s.expr, new Type(false, "int", s.high_bit - s.low_bit + 1), env);
-        return env;
+    public Type visit(IndexExpr e, Environment env) {
+        Type lt = typeOf(e.expr, env);
+        if ( lt.isBasedOn("int") ) {
+            Type rt = intTypeOf(e.index, env);
+            return typeEnv.BOOLEAN;
+        }
+        else if ( lt.isBasedOn("map") ) {
+            Type rt = typeOf(e.index, env);
+            List<TypeRef> pm = (List<TypeRef>)lt.getDimension("types");
+            Type it = pm.get(0).resolve(typeEnv);
+            Type et = pm.get(1).resolve(typeEnv);
+            typeCheck("indexing", e.index, it, env);
+            return et;
+        } else {
+            ERROR.TypeDoesNotSupportIndex(e.expr);
+            return null;
+        }
     }
 
-
-    public Type visit(Arith.AddExpr e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return new Type(lt.isSigned() || rt.isSigned(), "int", max(lt, rt) + 1);
-    }
-
-    public Type visit(Arith.AndExpr e, Environment env) {
-        return bitwise(e, env);
-    }
-
-    private Type bitwise(Arith.BinOp e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return new Type(false, "int", max(lt, rt));
-    }
-
-    public Type visit(Arith.CompExpr e, Environment env) {
-        return intTypeOf(e.operand, env);
-    }
-
-    public Type visit(Arith.DivExpr e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return lt;
-    }
-
-    public Type visit(Arith.MulExpr e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return new Type(lt.isSigned() || rt.isSigned(), "int", lt.getWidth() + rt.getWidth());
-    }
-
-    public Type visit(Arith.NegExpr e, Environment env) {
+    public Type visit(FixedRangeExpr e, Environment env) {
         Type lt = intTypeOf(e.operand, env);
-        return new Type(lt.isSigned(), "int", lt.getWidth() + 1);
-    }
-
-    public Type visit(Arith.OrExpr e, Environment env) {
-        return bitwise(e, env);
-    }
-
-    public Type visit(Arith.ShiftLeftExpr e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return null;
-    }
-
-    public Type visit(Arith.ShiftRightExpr e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return null;
-    }
-
-    public Type visit(Arith.SubExpr e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return new Type(true, "int", max(lt, rt) + 1);
-    }
-
-    public Type visit(Arith.XorExpr e, Environment env) {
-        return bitwise(e, env);
-    }
-
-    public Type visit(BitExpr e, Environment env) {
-        Type lt = intTypeOf(e.expr, env);
-        Type rt = intTypeOf(e.bit, env);
-        return Type.BOOLEAN;
-    }
-
-    public Type visit(BitRangeExpr e, Environment env) {
-        Type lt = intTypeOf(e.operand, env);
-        return new Type(false, "int", e.high_bit - e.low_bit + 1);
+        return typeEnv.newIntType(false, e.high_bit - e.low_bit + 1);
     }
 
     public List<Type> visitExprList(List<Expr> l, Environment env) {
@@ -215,88 +175,33 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(CallExpr e, Environment env) {
-        SubroutineDecl d = env.resolveMethod(e.method.image);
-        if ( d == null ) ERROR.UnresolvedSubroutine(e.method);
-        Iterator<Expr> eiter = e.args.iterator();
-        if ( d.getParams().size() != e.args.size() )
-            ERROR.ArityMismatch(e.method);
-        for ( SubroutineDecl.Parameter p : d.getParams() ) {
-            Type t = p.type;
-            typeCheck("invocation", eiter.next(), t, env);
-        }
-        return d.ret;
+        SubroutineDecl d = typeCheckCall(env, e.method, e.args);
+        return d.ret.resolve(typeEnv);
     }
 
-    public Type visit(ConversionExpr e, Environment env) { return e.typename; }
+    public Type visit(ReadExpr e, Environment env) {
+        OperandTypeDecl d = operandTypeOf(e.operand, env);
+        if ( e.type != null ) {
+            return e.type.resolve(typeEnv);
+        } else return typeEnv.newIntType(false, 16);
+    }
 
-    public Type visit(Literal.BoolExpr e, Environment env) { return Type.BOOLEAN; }
+    public Type visit(ConversionExpr e, Environment env) { return e.typename.resolve(typeEnv); }
+
+    public Type visit(Literal.BoolExpr e, Environment env) { return typeEnv.BOOLEAN; }
 
     public Type visit(Literal.IntExpr e, Environment env) {
         int val = e.value;
         boolean signed = val < 0;
         int width = Arithmetic.highestBit(val);
-        return new Type(signed, "int", width);
+        return typeEnv.newIntType(signed, width);
     }
 
-    public Type visit(Logical.AndExpr e, Environment env) {
-        typeCheck("logical and", e.left, Type.BOOLEAN, env);
-        typeCheck("logical and", e.right, Type.BOOLEAN, env);
-        return Type.BOOLEAN;
-    }
-
-    public Type visit(Logical.EquExpr e, Environment env) {
-        return equal(e, env);
-    }
-
-    private Type equal(Logical.BinOp e, Environment env) {
-        Type lt = typeOf(e.left, env);
-        Type rt = typeOf(e.right, env);
-        if ( !lt.isComparableTo(rt) )
-            ERROR.TypesCannotBeCompared(lt, rt);
-        return Type.BOOLEAN;
-    }
-
-    public Type visit(Logical.GreaterEquExpr e, Environment env) {
-        return compare(e, env);
-    }
-
-    private Type compare(Logical.BinOp e, Environment env) {
-        Type lt = intTypeOf(e.left, env);
-        Type rt = intTypeOf(e.right, env);
-        return Type.BOOLEAN;
-    }
-
-    public Type visit(Logical.GreaterExpr e, Environment env) {
-        return compare(e, env);
-    }
-
-    public Type visit(Logical.LessEquExpr e, Environment env) {
-        return compare(e, env);
-    }
-
-    public Type visit(Logical.LessExpr e, Environment env) {
-        return compare(e, env);
-    }
-
-    public Type visit(Logical.NequExpr e, Environment env) {
-        return equal(e, env);
-    }
-
-    public Type visit(Logical.NotExpr e, Environment env) {
-        typeCheck("logical not", e.operand, Type.BOOLEAN, env);
-        return Type.BOOLEAN;
-    }
-
-    public Type visit(Logical.OrExpr e, Environment env) {
-        typeCheck("logical or", e.left, Type.BOOLEAN, env);
-        typeCheck("logical or", e.right, Type.BOOLEAN, env);
-        return Type.BOOLEAN;
-    }
-
-    public Type visit(Logical.XorExpr e, Environment env) {
-        typeCheck("logical xor", e.left, Type.BOOLEAN, env);
-        typeCheck("logical xor", e.right, Type.BOOLEAN, env);
-        return Type.BOOLEAN;
+    public Type visit(UnOpExpr e, Environment env) {
+        Type lt = typeOf(e.operand, env);
+        TypeCon.UnOp unop = typeEnv.resolveUnOp(lt, e.operation.image);
+        if ( unop == null ) ERROR.UnresolvedOperator(e.operation, lt);
+        return unop.typeCheck(typeEnv, e.operand);
     }
 
     public Type visit(MapExpr e, Environment env) {
@@ -306,7 +211,9 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(VarExpr e, Environment env) {
-        Type t = env.resolveVariable(e.variable.image);
+        TypeRef ref = env.resolveVariable(e.variable.image);
+        if ( ref == null ) ERROR.UnresolvedVariable(e.variable);
+        Type t = ref.resolve(typeEnv);
         if ( t == null ) ERROR.UnresolvedVariable(e.variable);
         return t;
     }
@@ -332,18 +239,28 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         return t;
     }
 
+    protected OperandTypeDecl operandTypeOf(Token o, Environment env) {
+        TypeRef tr = env.resolveVariable(o.image);
+        if ( tr == null ) ERROR.UnresolvedVariable(o);
+        Type t = tr.resolve(typeEnv);
+        TypeCon tc = t.getTypeCon();
+        if (!(tc instanceof JIGIRTypeEnv.TYPE_operand))
+            ERROR.OperandTypeExpected(o, t);
+        return ((JIGIRTypeEnv.TYPE_operand)tc).decl;
+    }
+
     protected Type typeCheck(String what, Expr e, Type exp, Environment env) {
         Type t = typeOf(e, env);
-        if (!exp.isAssignableFrom(t))
-            ERROR.TypeMismatch("expression", exp, e);
+        if (!isAssignableTo(t, exp))
+            ERROR.TypeMismatch("expression", e, exp);
         return t;
+    }
+
+    private boolean isAssignableTo(Type t, Type exp) {
+        return typeEnv.ASSIGNABLE.contains(t.getTypeCon(), exp.getTypeCon());
     }
 
     int max(int a, int b) {
         return a > b ? a : b;
-    }
-
-    int max(Type at, Type bt) {
-        return max(at.getWidth(), bt.getWidth());
     }
 }
