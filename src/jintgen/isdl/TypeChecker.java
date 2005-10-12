@@ -54,21 +54,17 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     final JIGIRTypeEnv typeEnv;
     final JIGIRErrorReporter ERROR;
-    SubroutineDecl currentDecl;
+    Type retType;
 
     TypeChecker(JIGIRErrorReporter er, JIGIRTypeEnv env) {
         ERROR = er;
         typeEnv = env;
     }
 
-    public void typeCheck(SubroutineDecl d, Environment env) {
-        currentDecl = d;
-        for ( Stmt st : d.code.getStmts() ) typeCheck(st, env);
-        currentDecl = null;
-    }
-
-    public void typeCheck(List<Stmt> s, Environment env) {
+    public void typeCheck(List<Stmt> s, Type retType, Environment env) {
+        this.retType = retType;
         for ( Stmt st : s ) typeCheck(st, env);
+        this.retType = null;
     }
 
     public void typeCheck(Stmt s, Environment env) {
@@ -82,7 +78,8 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Environment visit(WriteStmt s, Environment env) {
         OperandTypeDecl d = operandTypeOf(s.operand, env);
-        Type t = typeOf(s.expr, env);
+        Type t = s.type.resolve(typeEnv);
+        typeCheck("write", s.expr, t, env);
         return env;
     }
 
@@ -104,8 +101,10 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Environment visit(DeclStmt s, Environment env) {
-        typeCheck("initialization", s.init, s.type.resolve(typeEnv), env);
-        env.addVariable(s.name.image, s.type);
+        if ( env.isDefinedLocally(s.name.image) ) ERROR.RedefinedLocal(s.name);
+        Type t = s.type.resolve(typeEnv);
+        typeCheck("initialization", s.init, t, env);
+        env.addVariable(s.name.image, t);
         return env;
     }
 
@@ -124,8 +123,8 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Environment visit(ReturnStmt s, Environment env) {
-        if ( currentDecl == null ) ERROR.ReturnStmtNotInSubroutine(s);
-        typeCheck("return", s.expr, currentDecl.ret.resolve(typeEnv), env);
+        if ( retType == null ) ERROR.ReturnStmtNotInSubroutine(s);
+        typeCheck("return", s.expr, retType, env);
         return env;
     }
 
@@ -204,16 +203,8 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         return unop.typeCheck(typeEnv, e.operand);
     }
 
-    public Type visit(MapExpr e, Environment env) {
-        Object o = env.resolveMap(e.mapname.image);
-        if ( o == null ) ERROR.UnresolvedVariable(e.mapname);
-        return null;
-    }
-
     public Type visit(VarExpr e, Environment env) {
-        TypeRef ref = env.resolveVariable(e.variable.image);
-        if ( ref == null ) ERROR.UnresolvedVariable(e.variable);
-        Type t = ref.resolve(typeEnv);
+        Type t = env.resolveVariable(e.variable.image);
         if ( t == null ) ERROR.UnresolvedVariable(e.variable);
         return t;
     }
@@ -240,9 +231,8 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     protected OperandTypeDecl operandTypeOf(Token o, Environment env) {
-        TypeRef tr = env.resolveVariable(o.image);
-        if ( tr == null ) ERROR.UnresolvedVariable(o);
-        Type t = tr.resolve(typeEnv);
+        Type t = env.resolveVariable(o.image);
+        if ( t == null ) ERROR.UnresolvedVariable(o);
         TypeCon tc = t.getTypeCon();
         if (!(tc instanceof JIGIRTypeEnv.TYPE_operand))
             ERROR.OperandTypeExpected(o, t);

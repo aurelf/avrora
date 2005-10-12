@@ -42,11 +42,6 @@ public class Canonicalizer extends StmtRebuilder<Object> {
 
     int tempcount;
 
-    public Expr visit(MapExpr e, Object env) {
-        Expr ni = liftExpr(e.index, env);
-        return extractExpr(new MapExpr(e.mapname, ni));
-    }
-
     public Expr visit(CallExpr e, Object env) {
         List<Expr> ne = visitExprList(e.args, env);
         return extractExpr(new CallExpr(e.method, ne));

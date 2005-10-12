@@ -86,28 +86,64 @@ public class Verifier {
         TypeChecker tc = new TypeChecker(ERROR, arch.typeEnv);
         Environment env = new Environment(arch);
 
+        typeCheckAccessMethods(env, tc);
+
         // typecheck all of the subroutine bodies
+        typeCheckSubroutines(env, tc);
+
+        // typecheck all of the instruction bodies
+        typeCheckInstrBodies(env, tc);
+
+    }
+
+    private void typeCheckAccessMethods(Environment env, TypeChecker tc ) {
+        // first step: resolve all read methods by type
+        JIGIRTypeEnv te = arch.typeEnv;
+        for ( OperandTypeDecl ot: arch.operandTypes ) {
+            for ( OperandTypeDecl.AccessMethod m : ot.readDecls )
+                ot.readMethods.put(m.type.resolve(te), m);
+            for ( OperandTypeDecl.AccessMethod m : ot.writeDecls )
+                ot.writeMethods.put(m.type.resolve(te), m);
+        }
+        // now typecheck the bodies
+        for ( OperandTypeDecl ot: arch.operandTypes ) {
+            for ( OperandTypeDecl.AccessMethod m : ot.readDecls ) {
+                Environment senv = new Environment(env);
+                senv.addVariable("this", arch.typeEnv.resolveOperandType(ot));
+                Type ret = m.type.resolve(arch.typeEnv);
+                tc.typeCheck(m.code.getStmts(), ret, senv);
+            }
+            for ( OperandTypeDecl.AccessMethod m : ot.writeDecls ) {
+                Environment senv = new Environment(env);
+                senv.addVariable("this", arch.typeEnv.resolveOperandType(ot));
+                senv.addVariable("value", m.type.resolve(arch.typeEnv));
+                tc.typeCheck(m.code.getStmts(), null, senv);
+            }
+        }
+    }
+
+    private void typeCheckInstrBodies(Environment env, TypeChecker tc) {
+        for ( InstrDecl d : arch.instructions ) {
+            if ( !d.code.hasBody() ) continue;
+            Environment senv = new Environment(env);
+            for ( AddrModeDecl.Operand p : d.getOperands() ) {
+                senv.addVariable(p.name.image, new TypeRef(p.type).resolve(arch.typeEnv));
+            }
+            tc.typeCheck(d.code.getStmts(), null, senv);
+        }
+    }
+
+    private void typeCheckSubroutines(Environment env, TypeChecker tc) {
         for ( SubroutineDecl d : arch.subroutines ) {
             if ( !d.code.hasBody() ) continue;
             Environment senv = new Environment(env);
             for ( SubroutineDecl.Parameter p : d.getParams() ) {
                 Type t = p.type.resolve(arch.typeEnv);
-                senv.addVariable(p.name.image, p.type);
+                senv.addVariable(p.name.image, p.type.resolve(arch.typeEnv));
             }
             Type t = d.ret.resolve(arch.typeEnv);
-            tc.typeCheck(d, senv);
+            tc.typeCheck(d.code.getStmts(), t, senv);
         }
-
-        // typecheck all of the instruction bodies
-        for ( InstrDecl d : arch.instructions ) {
-            if ( !d.code.hasBody() ) continue;
-            Environment senv = new Environment(env);
-            for ( AddrModeDecl.Operand p : d.getOperands() ) {
-                senv.addVariable(p.name.image, new TypeRef(p.type));
-            }
-            tc.typeCheck(d.code.getStmts(), senv);
-        }
-
     }
 
     private void verifyEnums() {
@@ -230,7 +266,7 @@ public class Verifier {
     }
 
     private void unifyAddressingMode(HashMap<String, OperandTypeDecl.Union> unions, AddrModeDecl am, AddrModeSetDecl as, HashSet<String> alloperands, Token t) {
-        if ( unions.size() == 0 ) {
+        if ( as.addrModes.size() == 1 ) {
             // for the first addressing mode, put the union types in the map
             for ( AddrModeDecl.Operand o : am.operands ) {
                 Token tok = new Token();
@@ -249,7 +285,7 @@ public class Verifier {
             for ( AddrModeDecl.Operand o : am.operands ) {
                 OperandTypeDecl.Union ut = unions.get(o.name.image);
                 if ( ut == null )
-                    ERROR.ExtraOperandInAddressingModeUnification(as.name, t, o.name);
+                    ERROR.ExtraOperandInAddrModeUnification(as.name, t, o.name);
 
                 OperandTypeDecl d = arch.getOperandDecl(o.type.image);
                 ut.addType(d);
@@ -258,7 +294,7 @@ public class Verifier {
             if ( !operands.containsAll(alloperands) ) {
                 alloperands.removeAll(operands);
                 String oneop = alloperands.iterator().next();
-                ERROR.MissingOperandInAddressingModeUnification(as.name, t, oneop);
+                ERROR.MissingOperandInAddrModeUnification(as.name, t, oneop);
             }
         }
     }
@@ -323,7 +359,7 @@ public class Verifier {
             FormatDecl.Derived dd = (FormatDecl.Derived)ed;
             FormatDecl parent = arch.getEncoding(dd.pname.image);
             if ( parent == null )
-                ERROR.UnresolvedEncodingFormat(dd.pname);
+                ERROR.UnresolvedFormat(dd.pname);
             dd.setParent(parent);
         }
 

@@ -358,21 +358,7 @@ public class InterpreterGenerator extends Generator {
 
 
         public void visit(IndexExpr e) {
-            if (e.expr.isMap()) {
-                MapExpr me = (MapExpr) e.expr;
-                MapRep mr = getMapRep(me.mapname.image);
-                mr.generateBitRead(me.index, e.index);
-            } else {
-                if (e.index.isLiteral()) {
-                    int mask = Arithmetic.getSingleBitMask(((Literal.IntExpr) e.index).value);
-                    print("((");
-                    inner(e.expr, Expr.PREC_A_AND);
-                    print(" & " + mask + ") != 0");
-                    print(")");
-                } else {
-                    emitCall("Arithmetic.getBit", e.expr, e.index);
-                }
-            }
+            throw Util.unimplemented();
         }
 
         public void visit(FixedRangeExpr e) {

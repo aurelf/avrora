@@ -37,7 +37,7 @@ import cck.text.StringUtil;
 import jintgen.types.TypeRef;
 
 /**
- * The <code>MapExpr</code> class represents an expression that is an access of an element within a map.
+ * The <code>ConversionExpr</code> class represents a conversion of a value from one type to another.
  *
  * @author Ben L. Titzer
  */
@@ -56,7 +56,7 @@ public class ConversionExpr extends Expr {
     public final Expr expr;
 
     /**
-     * The constructor of the <code>MapExpr</code> class initializes the publicly accessable fields that
+     * The constructor of the <code>ConversionExpr</code> class initializes the publicly accessable fields that
      * represent the members of this expression
      *
      * @param s the string name of the map as a token
@@ -110,17 +110,6 @@ public class ConversionExpr extends Expr {
      */
     public int getPrecedence() {
         return PREC_TERM;
-    }
-
-    /**
-     * The <code>isMap()</code> method tests whether this expression is a reference to an element of a map.
-     * This is used in pattern matching in some parts of the tools that work on abstract syntax trees. For
-     * instances of <code>MapExpr</code>, this method returns always true.
-     *
-     * @return true
-     */
-    public boolean isMap() {
-        return true;
     }
 
     public SourcePoint getSourcePoint() {

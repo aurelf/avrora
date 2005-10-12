@@ -59,8 +59,6 @@ public interface CodeVisitor {
 
     public void visit(Literal.IntExpr e);
 
-    public void visit(MapExpr e);
-
     public void visit(VarExpr e);
 
     public void visit(DotExpr e);
@@ -112,10 +110,6 @@ public interface CodeVisitor {
 
         public void visit(UnOpExpr e) {
             e.operand.accept(this);
-        }
-
-        public void visit(MapExpr e) {
-            e.index.accept(this);
         }
 
         public void visit(VarExpr e) {
@@ -170,10 +164,6 @@ public interface CodeVisitor {
         }
 
         public void visit(UnOpExpr e) {
-            error(e);
-        }
-
-        public void visit(MapExpr e) {
             error(e);
         }
 

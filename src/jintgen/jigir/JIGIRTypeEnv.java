@@ -76,7 +76,7 @@ public class JIGIRTypeEnv extends TypeEnv {
         }
 
         public Type newType(TypeEnv te, HashMap<String, List> dims) {
-            HashMap<String, Object> dimInst = buildDimensions(dims);
+            HashMap<String, Object> dimInst = buildDimensions(te, dims);
             Boolean sign = (Boolean) dimInst.get("sign");
             if ( sign == null ) sign = true;
             Integer len = (Integer) dimInst.get("size");
@@ -235,6 +235,11 @@ public class JIGIRTypeEnv extends TypeEnv {
         map.put("size", size_list);
         map.put("sign", sign_list);
         return INT.newType(this, map);
+    }
+
+    public Type resolveOperandType(OperandTypeDecl ot) {
+        TypeCon tc = resolveTypeCon(ot.name.image);
+        return tc.newType(this);
     }
 
     public void addOperandType(OperandTypeDecl ot) {

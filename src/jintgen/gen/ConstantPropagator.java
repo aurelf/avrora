@@ -280,19 +280,6 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
         return rebuild(e, ne);
     }
 
-    public Expr visit(MapExpr e, Environ cenv) {
-        Expr ne = e.index.accept(this, cenv);
-
-        if (ne.isLiteral()) {
-            int index = intValueOf(ne);
-            Expr v = cenv.lookupMap(e.mapname.toString(), index);
-            if (v != null) return v;
-        }
-
-        if (ne != e.index) return new MapExpr(e.mapname, ne);
-        return e;
-    }
-
     // --- utilities ---
 
     private int intValueOf(Expr nexpr) {

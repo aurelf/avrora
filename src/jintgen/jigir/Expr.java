@@ -111,16 +111,6 @@ public abstract class Expr implements Typeable {
     }
 
     /**
-     * The <code>isMap()</code> method tests whether this expression is a reference to an element of a map.
-     * This is used in pattern matching in some parts of the tools that work on abstract syntax trees.
-     *
-     * @return true if this expression is a reference to a map element; false otherwise
-     */
-    public boolean isMap() {
-        return false;
-    }
-
-    /**
      * The <code>isBitRangeExpr()</code> method tests whether the expression is an access of a range of bits.
      * This is used in pattern matching in some parts of the code.
      *

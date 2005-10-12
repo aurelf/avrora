@@ -129,12 +129,6 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
         return e;
     }
 
-    public Expr visit(MapExpr e, Env env) {
-        Expr ne = e.index.accept(this, env);
-        if (ne != e.index) return new MapExpr(e.mapname, ne);
-        return e;
-    }
-
     public Expr visit(VarExpr e, Env env) {
         // terminal node in the tree
         return e;

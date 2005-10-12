@@ -35,7 +35,6 @@ package jintgen.isdl;
 import cck.parser.AbstractToken;
 import cck.parser.ErrorReporter;
 import cck.text.StringUtil;
-import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.Expr;
 import jintgen.jigir.Literal;
@@ -49,14 +48,14 @@ import jintgen.types.TypeRef;
  */
 public class JIGIRErrorReporter extends TypeErrorReporter {
 
-    public void ExtraOperandInAddressingModeUnification(Token addrSet, Token addrMode, Token operand) {
+    public void ExtraOperandInAddrModeUnification(Token addrSet, Token addrMode, Token operand) {
         String report = "Cannot unify addressing mode " + StringUtil.quote(addrMode) + " into set " + StringUtil.quote(addrSet) + " at " + pos(addrMode) + " because it defines an operand " + StringUtil.quote(operand) + " not in the other addressing modes";
-        error("ExtraOperandInAddressingModeUnification", addrMode.getSourcePoint(), report);
+        error("ExtraOperandInAddrModeUnification", addrMode.getSourcePoint(), report);
     }
 
-    public void MissingOperandInAddressingModeUnification(Token addrSet, Token addrMode, String operand) {
+    public void MissingOperandInAddrModeUnification(Token addrSet, Token addrMode, String operand) {
         String report = "Cannot unify addressing mode " + StringUtil.quote(addrMode) + " into set " + StringUtil.quote(addrSet) + " at " + pos(addrMode) + " because it does not define an operand " + StringUtil.quote(operand) + " present in the other addressing modes";
-        error("MissingOperandInAddressingModeUnification", addrMode.getSourcePoint(), report);
+        error("MissingOperandInAddrModeUnification", addrMode.getSourcePoint(), report);
     }
 
     public void UnresolvedOperandType(Token t) {
@@ -67,12 +66,12 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         unresolved("Enum", "enumeration", t);
     }
 
-    public void UnresolvedEncodingFormat(Token t) {
-        unresolved("EncodingFormat", "encoding format", t);
+    public void UnresolvedFormat(Token t) {
+        unresolved("Format", "encoding format", t);
     }
 
     public void UnresolvedAddressingMode(Token t) {
-        unresolved("AddressingMode", "addressing mode", t);
+        unresolved("AddrMode", "addressing mode", t);
     }
 
     public void UnresolvedVariable(Token t) {
@@ -100,16 +99,17 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         redefined("Enum", "Enumeration", prevdecl, newdecl);
     }
 
-    public void RedefinedAddressingMode(Token prevdecl, Token newdecl) {
-        redefined("AddressingMode", "Addressing mode", prevdecl, newdecl);
+    public void RedefinedAddrMode(Token prevdecl, Token newdecl) {
+        redefined("AddrMode", "Addressing mode", prevdecl, newdecl);
     }
 
-    public void RedefinedAddressingModeSet(Token prevdecl, Token newdecl) {
-        redefined("AddressingModeSet", "Addressing mode set", prevdecl, newdecl);
+    public void RedefinedAddrModeSet(Token prevdecl, Token newdecl) {
+        redefined("AddrModeSet", "Addressing mode set", prevdecl, newdecl);
     }
 
-    public void RedefinedLocal(Token prevdecl, Token newdecl) {
-        redefined("Local", "Local variable", prevdecl, newdecl);
+    public void RedefinedLocal(Token var) {
+        String report = "Local variable" + " " + StringUtil.quote(var.image) + " already defined in this scope";
+        error("RedefinedLocal", var.getSourcePoint(), report, var.image);
     }
 
     public void RedefinedOperand(Token prevdecl, Token newdecl) {

@@ -37,8 +37,8 @@ import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
 import jintgen.types.TypeRef;
-import java.util.LinkedList;
-import java.util.List;
+import jintgen.types.Type;
+import java.util.*;
 
 /**
  * The <code>OperandDecl</code> class represents the declaration of a set of values (or registers) that can
@@ -51,12 +51,29 @@ import java.util.List;
 public abstract class OperandTypeDecl extends Item {
 
     public final List<AddrModeDecl.Operand> subOperands;
-    public CodeRegion readMethod;
-    public CodeRegion writeMethod;
+    public final List<AccessMethod> readDecls;
+    public final List<AccessMethod> writeDecls;
+    public final HashMap<Type, AccessMethod> readMethods;
+    public final HashMap<Type, AccessMethod> writeMethods;
+
+    public class AccessMethod {
+        public final Token which;
+        public final TypeRef type;
+        public final CodeRegion code;
+        AccessMethod(Token w, TypeRef t, CodeRegion c) {
+            which = w;
+            type = t;
+            code = c;
+        }
+    }
 
     protected OperandTypeDecl(Token n) {
         super(n);
         subOperands = new LinkedList<AddrModeDecl.Operand>();
+        readDecls = new LinkedList<AccessMethod>();
+        writeDecls = new LinkedList<AccessMethod>();
+        readMethods = new HashMap<Type, AccessMethod>();
+        writeMethods = new HashMap<Type, AccessMethod>();
     }
 
     /**
@@ -142,12 +159,12 @@ public abstract class OperandTypeDecl extends Item {
         }
     }
 
-    public CodeRegion getReadMethod() {
-        return readMethod;
+    public void addReadDecl(Token r, TypeRef tr, CodeRegion cr) {
+        readDecls.add(new AccessMethod(r, tr, cr));
     }
 
-    public CodeRegion getWriteMethod() {
-        return writeMethod;
+    public void addWriteDecl(Token r, TypeRef tr, CodeRegion cr) {
+        writeDecls.add(new AccessMethod(r, tr, cr));
     }
 
     public boolean isCompound() {

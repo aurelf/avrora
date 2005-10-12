@@ -60,7 +60,11 @@ public class ParamDimension extends TypeCon.Dimension {
         this.vars = var;
     }
 
-    public Object build(List params) {
+    public Object build(TypeEnv te, List params) {
+        for ( Object o : params ) {
+            TypeRef tr = (TypeRef)o;
+            tr.resolve(te);
+        }
         return params;
     }
 }

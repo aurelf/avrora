@@ -33,6 +33,7 @@
 package jintgen.gen;
 
 import cck.text.Printer;
+import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import java.util.List;
@@ -55,11 +56,6 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         printer.print("(");
         printer.print(e.operand.image);
         printer.print(")");
-    }
-
-    public void visit(MapExpr e) {
-        MapRep mr = getMapRep(e.mapname.image);
-        mr.generateRead(e.index);
     }
 
     public void visit(ConversionExpr e) {
@@ -245,22 +241,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(IndexExpr e) {
-        if (e.expr.isMap()) {
-            MapExpr me = (MapExpr)e.expr;
-            MapRep mr = getMapRep(me.mapname.image);
-            mr.generateBitRead(me.index, e.index);
-        } else {
-            if (e.expr.getPrecedence() < e.getPrecedence()) {
-                printer.print("(");
-                e.expr.accept(this);
-                printer.print(")");
-            } else {
-                e.expr.accept(this);
-            }
-            printer.print("[");
-            e.index.accept(this);
-            printer.print("]");
-        }
+        throw Util.unimplemented();
     }
 
     public void visit(FixedRangeExpr e) {

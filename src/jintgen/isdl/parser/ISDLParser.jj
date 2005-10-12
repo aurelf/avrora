@@ -402,14 +402,26 @@ void SubOperand(OperandTypeDecl td) : { AddrModeDecl.Operand o; }
     "sub-operand" o = Operand() { td.addSubOperand(o); } ";"
 }
 
-void ReadMethod(OperandTypeDecl td) : { List<Stmt> s = new LinkedList<Stmt>(); }
+void ReadMethod(OperandTypeDecl td) :
 {
-    "read" ":" Type() Block(s)
+  Token r;
+  TypeRef tr;
+  List<Stmt> s = new LinkedList<Stmt>();
+
+}
+{
+    r = "read" ":" tr = Type() Block(s) { td.addReadDecl(r, tr, new CodeRegion(s)); }
 }
 
-void WriteMethod(OperandTypeDecl td) : { List<Stmt> s = new LinkedList<Stmt>(); }
+void WriteMethod(OperandTypeDecl td) :
 {
-    "write" ":" Type() Block(s)
+  Token r;
+  TypeRef tr;
+  List<Stmt> s = new LinkedList<Stmt>();
+
+}
+{
+    r = "write" ":" tr = Type() Block(s)  { td.addWriteDecl(r, tr, new CodeRegion(s)); }
 }
 
 void MappingSetElem(SymbolMapping m) : { Token n, i; }

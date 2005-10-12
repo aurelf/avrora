@@ -322,12 +322,6 @@ public class CodemapGenerator extends Generator {
             generate(e, "UnOpExpr");
         }
 
-        public void visit(MapExpr e) {
-            printer.print("new MapExpr(" + StringUtil.quote(e.mapname) + ", ");
-            e.index.accept(this);
-            printer.print(")");
-        }
-
         public void visit(VarExpr e) {
             String name = e.variable.toString();
             Operand op = operands.get(name);
