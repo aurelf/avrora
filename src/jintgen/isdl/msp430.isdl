@@ -59,9 +59,9 @@ architecture msp430 {
 
     operand-type AIREG_B[4]: GPR {                    //Indirect AutoIncrement mode
 	    read: int.8 {
-	        local val: int.16 = regs[this];               //the value of val provides the address of contents to modify
-	        regs[this] = val + 1;                       //the original register's contents are incremented
-	        return val: int.8;
+	        local addr: int.16 = regs[this];
+	        regs[this] = addr + 1;
+	        return sram[addr];
 	    }
 	    write: int.8 {  }                              //valid only as a source operand
 	}
@@ -69,9 +69,8 @@ architecture msp430 {
     operand-type AIREG_W[4]: GPR {
 	    read: int.16 {
 	        local addr: int.16 = regs[this];
-	        local val: int.16 = sram[addr];
 	        regs[this] = addr + 2;
-	        return val;
+	        return sram[addr];
 	    }
 	    write: int.16 { }
 	}
@@ -79,13 +78,11 @@ architecture msp430 {
     operand-type IREG[4]: GPR {                    //Indirect register mode
 	    read: int.8 {
 	        local addr: int.16 = regs[this];
-	        local val: int.8 = sram[addr];
-	        return val: int.8;
+	        return sram[addr];
 	    }
 	    read: int.16 {
 	        local addr: int.16 = regs[this];
-	        local val: int.16 = wsram[addr];
-	        return val: int.8;
+	        return wsram[addr];
 	    }
 	    write: int.8 { }
 	    write: int.16 { }

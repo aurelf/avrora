@@ -1388,22 +1388,22 @@ architecture avr {
     }
 
     operand-type R0_B[0]: R0 {
-        read: int.8 { return regs[r0]; }
-        write: int.8 { regs[r0] = value; }
+        read: int.8 { return regs[R0]; }
+        write: int.8 { regs[R0] = value; }
     }
 
     operand-type RZ_W[0]: RZ {
-        read: int { return aregs[r30]; }
-        write: short { aregs[r30] = value; }
+        read: +int.16 { return aregs[RZ]; }
+        write: +int.16 { aregs[RZ] = value; }
     }
 
     operand-type AI_RZ_W[0]: RZ {
-        read: int {
-            local temp: int = aregs[r30];
-            aregs[r30] = temp + 1;
+        read: +int.16 {
+            local temp: int = aregs[RZ];
+            aregs[RZ] = temp + 1;
             return temp;
         }
-        write: short { wregs[r30] = value; }
+        write: +int.16 { aregs[RZ] = value; }
     }
 
     addr-mode XLPM_REG dest: R0_B, source: RZ_W { // load from flash at address Z into R0
@@ -1424,12 +1424,12 @@ architecture avr {
     addr-set XLPM { XLPM_REG, XLPM_D, XLPM_INC } // addressing modes for LPM, ELPM
 
     operand-type XYZ[0]: ADRs { // simply read from X, Y, or Z
-        read: int { return aregs[this]; }
+        read: +int.16 { return aregs[this]; }
         write: int.8 { }
     }
 
     operand-type AI_XYZ[0]: ADRs { // read from X, Y, or Z and post increment
-        read: int {
+        read: +int.16 {
             local tmp: int = aregs[this];
             aregs[this] = tmp + 1;
             return tmp;

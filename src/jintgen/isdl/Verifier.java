@@ -87,13 +87,8 @@ public class Verifier {
         Environment env = new Environment(arch);
 
         typeCheckAccessMethods(env, tc);
-
-        // typecheck all of the subroutine bodies
         typeCheckSubroutines(env, tc);
-
-        // typecheck all of the instruction bodies
         typeCheckInstrBodies(env, tc);
-
     }
 
     private void typeCheckAccessMethods(Environment env, TypeChecker tc ) {
@@ -107,15 +102,17 @@ public class Verifier {
         }
         // now typecheck the bodies
         for ( OperandTypeDecl ot: arch.operandTypes ) {
+            // add each of the sub operands to the environment
+            Environment oenv = new Environment(env);
+            oenv.addVariable("this", arch.typeEnv.resolveOperandType(ot));
+            for ( AddrModeDecl.Operand o : ot.subOperands )
+                oenv.addVariable(o.name.image, arch.typeEnv.resolveType(o.type));
+
             for ( OperandTypeDecl.AccessMethod m : ot.readDecls ) {
-                Environment senv = new Environment(env);
-                senv.addVariable("this", arch.typeEnv.resolveOperandType(ot));
-                Type ret = m.type.resolve(arch.typeEnv);
-                tc.typeCheck(m.code.getStmts(), ret, senv);
+                tc.typeCheck(m.code.getStmts(), m.type.resolve(arch.typeEnv), new Environment(oenv));
             }
             for ( OperandTypeDecl.AccessMethod m : ot.writeDecls ) {
-                Environment senv = new Environment(env);
-                senv.addVariable("this", arch.typeEnv.resolveOperandType(ot));
+                Environment senv = new Environment(oenv);
                 senv.addVariable("value", m.type.resolve(arch.typeEnv));
                 tc.typeCheck(m.code.getStmts(), null, senv);
             }

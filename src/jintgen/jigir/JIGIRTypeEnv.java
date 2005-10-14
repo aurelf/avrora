@@ -242,6 +242,12 @@ public class JIGIRTypeEnv extends TypeEnv {
         return tc.newType(this);
     }
 
+    public Type resolveType(Token tok) {
+        TypeCon tc = resolveTypeCon(tok.image);
+        if ( tc == null ) ERROR.UnresolvedType(tok);
+        return tc.newType(this);
+    }
+
     public void addOperandType(OperandTypeDecl ot) {
         TypeCon tycon = new TYPE_operand(ot);
         addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
