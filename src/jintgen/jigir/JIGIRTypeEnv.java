@@ -193,6 +193,7 @@ public class JIGIRTypeEnv extends TypeEnv {
         addBinOp(INT, INT, new Arith.ADD());
         addBinOp(INT, INT, new Arith.SUB());
         addBinOp(INT, INT, new Arith.DIV());
+        addBinOp(INT, INT, new Arith.MOD());
         addBinOp(INT, INT, new Arith.MUL());
         addBinOp(INT, INT, new Arith.AND());
         addBinOp(INT, INT, new Arith.OR());

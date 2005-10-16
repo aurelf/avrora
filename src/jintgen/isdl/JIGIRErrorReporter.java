@@ -183,4 +183,15 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         String report = "Operand type expected, found "+t.toString();
         error("OperandTypeExpected", o.getSourcePoint(), report);
     }
+
+    public void UnresolvedAccess(String access, OperandTypeDecl ot, Token w, Type t) {
+        String report = "Operand type "+StringUtil.quote(ot.name)+" has no "+w+" method";
+        if ( t != null ) report += " with type "+StringUtil.quote(t);
+        error("Unresolved"+access+"Method", w.getSourcePoint(), report);
+    }
+
+    public void AmbiguousAccess(String access, OperandTypeDecl ot, Token w) {
+        String report = "Operand type "+StringUtil.quote(ot.name)+" has multiple "+w+" methods";
+        error("Ambiguous"+access, w.getSourcePoint(), report);
+    }
 }

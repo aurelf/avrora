@@ -78,9 +78,23 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Environment visit(WriteStmt s, Environment env) {
         OperandTypeDecl d = operandTypeOf(s.operand, env);
-        Type t = s.type.resolve(typeEnv);
+        Type t = resolveMethod("Write", s.type, d, s.method);
         typeCheck("write", s.expr, t, env);
         return env;
+    }
+
+    private Type resolveMethod(String access, TypeRef wt, OperandTypeDecl d, Token m) {
+        Type t;
+        if ( wt != null ) {
+            t = wt.resolve(typeEnv);
+            OperandTypeDecl.AccessMethod meth = d.writeMethods.get(t);
+            if ( meth == null ) ERROR.UnresolvedAccess(access, d, m, t);
+        } else {
+            if ( d.writeDecls.size() == 0 ) ERROR.UnresolvedAccess(access, d, m, null);
+            if ( d.writeDecls.size() > 1 ) ERROR.AmbiguousAccess(access, d, m);
+            t = d.writeDecls.get(0).type.resolve(typeEnv);
+        }
+        return t;
     }
 
     private SubroutineDecl typeCheckCall(Environment env, Token method, List<Expr> args) {
@@ -180,9 +194,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Type visit(ReadExpr e, Environment env) {
         OperandTypeDecl d = operandTypeOf(e.operand, env);
-        if ( e.type != null ) {
-            return e.type.resolve(typeEnv);
-        } else return typeEnv.newIntType(false, 16);
+        return resolveMethod("Read", e.type, d, e.method);
     }
 
     public Type visit(ConversionExpr e, Environment env) { return e.typename.resolve(typeEnv); }
