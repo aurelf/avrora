@@ -77,12 +77,16 @@ public class JIGIRTypeEnv extends TypeEnv {
 
         public Type newType(TypeEnv te, HashMap<String, List> dims) {
             HashMap<String, Object> dimInst = buildDimensions(te, dims);
+            Type type = types.get(dimInst);
+            if ( type != null ) return type;
             Boolean sign = (Boolean) dimInst.get("sign");
             if ( sign == null ) sign = true;
             Integer len = (Integer) dimInst.get("size");
             // TODO: assuming 32 bit integers is a hack!
             if ( len == null ) len = 32;
-            return new TYPE_int(sign, len, dimInst);
+            TYPE_int type_int = new TYPE_int(sign, len, dimInst);
+            types.put(dimInst, type_int);
+            return type_int;
         }
 
     }

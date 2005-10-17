@@ -66,7 +66,7 @@ public class DisassemblerTestGenerator{
     }
 
     public void generate() {
-        for ( InstrDecl d : architecture.instructions ) visit(d);
+        for ( InstrDecl d : architecture.instructions.values() ) visit(d);
     }
 
     public void visit(InstrDecl d) {

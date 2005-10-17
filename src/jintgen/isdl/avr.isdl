@@ -1394,7 +1394,6 @@ architecture avr {
 
     operand-type RZ_W[0]: RZ {
         read: +int.16 { return aregs[RZ]; }
-        write: +int.16 { aregs[RZ] = value; }
     }
 
     operand-type AI_RZ_W[0]: RZ {
@@ -1403,7 +1402,6 @@ architecture avr {
             aregs[RZ] = temp + 1;
             return temp;
         }
-        write: +int.16 { aregs[RZ] = value; }
     }
 
     addr-mode XLPM_REG dest: R0_B, source: RZ_W { // load from flash at address Z into R0
@@ -1425,7 +1423,6 @@ architecture avr {
 
     operand-type XYZ[0]: ADRs { // simply read from X, Y, or Z
         read: +int.16 { return aregs[this]; }
-        write: int.8 { }
     }
 
     operand-type AI_XYZ[0]: ADRs { // read from X, Y, or Z and post increment
@@ -1434,16 +1431,14 @@ architecture avr {
             aregs[this] = tmp + 1;
             return tmp;
         }
-        write: int.8 { }
     }
 
     operand-type PD_XYZ[0]: ADRs { // read from X, Y, or Z with predecrement
-        read: int {
-            local tmp: int = aregs[this] - 1;
+        read: +int.16 {
+            local tmp: +int.16 = (aregs[this] - 1)[15:0];
             aregs[this] = tmp;
             return tmp;
         }
-        write: int.8 { }
     }
 
     addr-mode LD_ST_XYZ rd: GPR, ar: XYZ {

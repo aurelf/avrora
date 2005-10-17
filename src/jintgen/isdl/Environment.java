@@ -56,10 +56,10 @@ public class Environment {
         parent = null;
         varMap = new HashMap<String, Type>();
         methodMap = new HashMap<String, SubroutineDecl>();
-        for ( Map.Entry<String, TypeRef> e : a.globals.map.entrySet() ) {
+        for ( Map.Entry<String, TypeRef> e : a.globals.entrySet() ) {
             varMap.put(e.getKey(), e.getValue().resolve(a.typeEnv));
         }
-        for ( SubroutineDecl s : a.subroutines ) {
+        for ( SubroutineDecl s : a.subroutines.values() ) {
             methodMap.put(s.name.image, s);
         }
     }

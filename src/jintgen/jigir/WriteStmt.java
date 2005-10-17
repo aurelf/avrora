@@ -34,6 +34,7 @@ package jintgen.jigir;
 
 import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.OperandTypeDecl;
 import jintgen.types.TypeRef;
 
 import java.util.List;
@@ -56,6 +57,8 @@ public class WriteStmt extends Stmt {
 
     public final Expr expr;
 
+    protected OperandTypeDecl.Accessor accessor;
+    
     /**
      * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine
      * name and arguments.
@@ -98,5 +101,13 @@ public class WriteStmt extends Stmt {
      */
     public <Res, Env> Res accept(StmtAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
+    }
+
+    public void setAccessor(OperandTypeDecl.Accessor m) {
+        accessor = m;
+    }
+
+    public OperandTypeDecl.Accessor getAccessor() {
+        return accessor;
     }
 }

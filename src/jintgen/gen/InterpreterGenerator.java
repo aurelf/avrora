@@ -59,9 +59,9 @@ public class InterpreterGenerator extends Generator {
         impl.add(tr("$visitor"));
         setPrinter(newAbstractClassPrinter("interpreter", null, tr("$state"), impl, null));
         codeGen = new CodeGen();
-        for (SubroutineDecl d : arch.subroutines)
+        for (SubroutineDecl d : arch.subroutines.values())
             visit(d);
-        for (InstrDecl d : arch.instructions)
+        for (InstrDecl d : arch.instructions.values())
             visit(d);
         endblock();
         close();

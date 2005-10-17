@@ -253,7 +253,7 @@ public class DGUtil {
             DTNode child = e.getValue();
             DTNode nchild = removeAll(child, label);
             if ( nchild != null )
-                nc.put(new Integer(value), nchild);
+                nc.put(value, nchild);
         }
 
         // reset left and right bits for a terminal node
@@ -278,8 +278,8 @@ public class DGUtil {
 
     public static List<FormatDecl.BitField> initConstantEnviron(ConstantPropagator.Environ ce, InstrDecl id, AddrModeDecl am, FormatDecl ed) {
         List<FormatDecl.BitField> list = DGUtil.initConstantEnviron(ed, ce);
-        if ( am != null ) addProperties(am.properties, ce);
-        if ( id != null ) addProperties(id.properties, ce);
+        if ( am != null ) addProperties(am.properties.values(), ce);
+        if ( id != null ) addProperties(id.properties.values(), ce);
         return list;
     }
 

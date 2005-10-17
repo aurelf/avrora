@@ -53,17 +53,38 @@ public abstract class OperandTypeDecl extends Item {
     public final List<AddrModeDecl.Operand> subOperands;
     public final List<AccessMethod> readDecls;
     public final List<AccessMethod> writeDecls;
-    public final HashMap<Type, AccessMethod> readMethods;
-    public final HashMap<Type, AccessMethod> writeMethods;
+    public final HashMap<Type, Accessor> readAccessors;
+    public final HashMap<Type, Accessor> writeAccessors;
 
-    public class AccessMethod {
+    public static class Accessor {
+        public final boolean polymorphic;
+        public Type type;
+        Accessor(boolean p) {
+            polymorphic = p;
+        }
+    }
+
+    public class AccessMethod extends Accessor {
         public final Token which;
-        public final TypeRef type;
+        public final TypeRef typeRef;
         public final CodeRegion code;
         AccessMethod(Token w, TypeRef t, CodeRegion c) {
+            super(false);
+            typeRef = t;
             which = w;
-            type = t;
             code = c;
+        }
+    }
+
+    public static class PolymorphicAccessor extends Accessor {
+        public final List<AccessMethod> targets;
+        public PolymorphicAccessor(Type t) {
+            super(true);
+            type = t;
+            targets = new LinkedList<AccessMethod>();
+        }
+        public void addTarget(AccessMethod m) {
+            targets.add(m);
         }
     }
 
@@ -72,8 +93,8 @@ public abstract class OperandTypeDecl extends Item {
         subOperands = new LinkedList<AddrModeDecl.Operand>();
         readDecls = new LinkedList<AccessMethod>();
         writeDecls = new LinkedList<AccessMethod>();
-        readMethods = new HashMap<Type, AccessMethod>();
-        writeMethods = new HashMap<Type, AccessMethod>();
+        readAccessors = new HashMap<Type, Accessor>();
+        writeAccessors = new HashMap<Type, Accessor>();
     }
 
     /**
@@ -143,11 +164,11 @@ public abstract class OperandTypeDecl extends Item {
      * operand types.
      */
     public static class Union extends OperandTypeDecl {
-        public final List<OperandTypeDecl> types;
+        public final HashSet<OperandTypeDecl> types;
 
         public Union(Token n) {
             super(n);
-            types = new LinkedList<OperandTypeDecl>();
+            types = new HashSet<OperandTypeDecl>();
         }
 
         public boolean isUnion() {

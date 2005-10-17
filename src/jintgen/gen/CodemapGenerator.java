@@ -63,7 +63,7 @@ public class CodemapGenerator extends Generator {
 
         initializeRegisterMap();
         printer.indent();
-        for ( InstrDecl d : arch.instructions ) visit(d);
+        for ( InstrDecl d : arch.instructions.values() ) visit(d);
         generateHelperMethods();
         printer.unindent();
     }

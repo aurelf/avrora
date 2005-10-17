@@ -78,23 +78,25 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Environment visit(WriteStmt s, Environment env) {
         OperandTypeDecl d = operandTypeOf(s.operand, env);
-        Type t = resolveMethod("Write", s.type, d, s.method);
-        typeCheck("write", s.expr, t, env);
+        OperandTypeDecl.Accessor accessor = resolveMethod("Write", s.type, d, s.method, d.writeAccessors);
+        s.setAccessor(accessor);
+        typeCheck("write", s.expr, accessor.type, env);
         return env;
     }
 
-    private Type resolveMethod(String access, TypeRef wt, OperandTypeDecl d, Token m) {
-        Type t;
+    private OperandTypeDecl.Accessor resolveMethod(String access, TypeRef wt, OperandTypeDecl d, Token m, HashMap<Type, OperandTypeDecl.Accessor> accessors) {
         if ( wt != null ) {
-            t = wt.resolve(typeEnv);
-            OperandTypeDecl.AccessMethod meth = d.writeMethods.get(t);
+            // type given to the write; look up appropriate write method
+            Type t = wt.resolve(typeEnv);
+            OperandTypeDecl.Accessor meth = accessors.get(t);
             if ( meth == null ) ERROR.UnresolvedAccess(access, d, m, t);
+            return meth;
         } else {
-            if ( d.writeDecls.size() == 0 ) ERROR.UnresolvedAccess(access, d, m, null);
-            if ( d.writeDecls.size() > 1 ) ERROR.AmbiguousAccess(access, d, m);
-            t = d.writeDecls.get(0).type.resolve(typeEnv);
+            // no type given to the write; check that there is only one accessor available
+            if ( accessors.size() == 0 ) ERROR.UnresolvedAccess(access, d, m, null);
+            if ( accessors.size() > 1 ) ERROR.AmbiguousAccess(access, d, m);
+            return accessors.values().iterator().next();
         }
-        return t;
     }
 
     private SubroutineDecl typeCheckCall(Environment env, Token method, List<Expr> args) {
@@ -194,7 +196,9 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Type visit(ReadExpr e, Environment env) {
         OperandTypeDecl d = operandTypeOf(e.operand, env);
-        return resolveMethod("Read", e.type, d, e.method);
+        OperandTypeDecl.Accessor accessMethod = resolveMethod("Read", e.type, d, e.method, d.readAccessors);
+        e.setAccessor(accessMethod);
+        return accessMethod.type;
     }
 
     public Type visit(ConversionExpr e, Environment env) { return e.typename.resolve(typeEnv); }

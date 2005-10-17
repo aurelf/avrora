@@ -37,8 +37,7 @@ import jintgen.isdl.parser.Token;
 import jintgen.jigir.JIGIRTypeEnv;
 import jintgen.types.TypeRef;
 
-import java.util.List;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and
@@ -54,14 +53,14 @@ public class Architecture {
 
     public final Token name;
 
-    public final HashList<String, SubroutineDecl> subroutines;
-    public final HashList<String, InstrDecl> instructions;
-    public final HashList<String, OperandTypeDecl> operandTypes;
-    public final HashList<String, FormatDecl> formats;
-    public final HashList<String, AddrModeDecl> addrModes;
-    public final HashList<String, AddrModeSetDecl> addrSets;
-    public final HashList<String, EnumDecl> enums;
-    public final HashList<String, TypeRef> globals;
+    public final HashMap<String, SubroutineDecl> subroutines;
+    public final HashMap<String, InstrDecl> instructions;
+    public final HashMap<String, OperandTypeDecl> operandTypes;
+    public final HashMap<String, FormatDecl> formats;
+    public final HashMap<String, AddrModeDecl> addrModes;
+    public final HashMap<String, AddrModeSetDecl> addrSets;
+    public final HashMap<String, EnumDecl> enums;
+    public final HashMap<String, TypeRef> globals;
     public final List<Item> userTypes;
 
     public final JIGIRTypeEnv typeEnv;
@@ -75,14 +74,14 @@ public class Architecture {
     public Architecture(Token n) {
         name = n;
 
-        subroutines = new HashList<String, SubroutineDecl>();
-        instructions = new HashList<String, InstrDecl>();
-        operandTypes = new HashList<String, OperandTypeDecl>();
-        formats = new HashList<String, FormatDecl>();
-        addrModes = new HashList<String, AddrModeDecl>();
-        addrSets = new HashList<String, AddrModeSetDecl>();
-        enums = new HashList<String, EnumDecl>();
-        globals = new HashList<String, TypeRef>();
+        subroutines = new LinkedHashMap<String, SubroutineDecl>();
+        instructions = new LinkedHashMap<String, InstrDecl>();
+        operandTypes = new LinkedHashMap<String, OperandTypeDecl>();
+        formats = new LinkedHashMap<String, FormatDecl>();
+        addrModes = new LinkedHashMap<String, AddrModeDecl>();
+        addrSets = new LinkedHashMap<String, AddrModeSetDecl>();
+        enums = new LinkedHashMap<String, EnumDecl>();
+        globals = new LinkedHashMap<String, TypeRef>();
         userTypes = new LinkedList<Item>();
         ERROR = new JIGIRErrorReporter();
 
@@ -95,43 +94,43 @@ public class Architecture {
 
     public void addSubroutine(SubroutineDecl d) {
         printer.println("loading subroutine " + d.name.image + "...");
-        subroutines.add(d.name.image, d);
+        subroutines.put(d.name.image, d);
     }
 
     public void addInstruction(InstrDecl i) {
         printer.println("loading instruction " + i.name.image + "...");
-        instructions.add(i.name.image, i);
+        instructions.put(i.name.image, i);
     }
 
     public void addOperand(OperandTypeDecl d) {
         printer.println("loading operand declaration " + d.name.image + "...");
         userTypes.add(d);
-        operandTypes.add(d.name.image, d);
+        operandTypes.put(d.name.image, d);
     }
 
     public void addEncoding(FormatDecl d) {
         printer.println("loading encoding format " + d.name.image + "...");
-        formats.add(d.name.image, d);
+        formats.put(d.name.image, d);
     }
 
     public void addAddressingMode(AddrModeDecl d) {
         printer.println("loading addressing mode " + d + "...");
-        addrModes.add(d.name.image, d);
+        addrModes.put(d.name.image, d);
     }
 
     public void addAddressingModeSet(AddrModeSetDecl d) {
         printer.println("loading addressing mode set " + d + "...");
-        addrSets.add(d.name.image, d);
+        addrSets.put(d.name.image, d);
     }
 
     public void addEnum(EnumDecl m) {
         printer.println("loading enum " + m + "...");
         userTypes.add(m);
-        enums.add(m.name.image, m);
+        enums.put(m.name.image, m);
     }
 
     public void addGlobal(Token n, TypeRef t) {
-        globals.add(n.image, t);
+        globals.put(n.image, t);
     }
 
     public InstrDecl getInstruction(String name) {

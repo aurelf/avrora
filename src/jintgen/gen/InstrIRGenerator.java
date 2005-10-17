@@ -88,7 +88,7 @@ public class InstrIRGenerator extends Generator {
                 tr("The <code>$visitor</code> interface allows user code that implements " +
                 "the interface to easily dispatch on the type of an instruction without casting using " +
                 "the visitor pattern.")));
-        for (InstrDecl d : arch.instructions) emitVisitMethod(d);
+        for (InstrDecl d : arch.instructions.values() ) emitVisitMethod(d);
         p.endblock();
         close();
     }
@@ -168,7 +168,7 @@ public class InstrIRGenerator extends Generator {
 
         generateSuperClasses();
 
-        for (InstrDecl d : arch.instructions) emitClass(d);
+        for (InstrDecl d : arch.instructions.values()) emitClass(d);
         endblock();
         close();
     }
@@ -179,7 +179,7 @@ public class InstrIRGenerator extends Generator {
         HashSet<AddrModeSetDecl> usedSets = new HashSet<AddrModeSetDecl>();
 
         // only generate the classes that are used directly by instructions
-        for(InstrDecl d: arch.instructions) {
+        for(InstrDecl d: arch.instructions.values()) {
             if ( d.addrMode.ref != null ) {
                 AddrModeSetDecl as = arch.getAddressingModeSet(d.addrMode.ref.image);
                 if ( as != null ) usedSets.add(as);
@@ -319,7 +319,7 @@ public class InstrIRGenerator extends Generator {
                 "type-safe enumeration for such symbolic names.")));
         generateEnumHeader();
 
-        for ( EnumDecl d : arch.enums ) {
+        for ( EnumDecl d : arch.enums.values() ) {
             generateEnumClass(d);
         }
 
@@ -465,7 +465,7 @@ public class InstrIRGenerator extends Generator {
         endblock();
         println("");
         // generate all the explicitly declared operand types
-        for ( OperandTypeDecl d : arch.operandTypes )
+        for ( OperandTypeDecl d : arch.operandTypes.values() )
             generateOperandType(d, vprinter);
 
         endblock();
@@ -556,7 +556,7 @@ public class InstrIRGenerator extends Generator {
         println("return b;");
         endblock();
 
-        for ( InstrDecl d : arch.instructions ) {
+        for ( InstrDecl d : arch.instructions.values() ) {
             startblock("public static class $1_builder extends $builder", d.innerClassName);
             startblock("public $instr build(int size, $addr am)");
             if ( DGUtil.addrModeClassExists(d))
@@ -567,7 +567,7 @@ public class InstrIRGenerator extends Generator {
             endblock();
         }
 
-        for ( InstrDecl d : arch.instructions ) {
+        for ( InstrDecl d : arch.instructions.values() ) {
             println("public static final $builder $1 = add($2, new $1_builder());", d.innerClassName, d.name);
         }
 
@@ -591,7 +591,7 @@ public class InstrIRGenerator extends Generator {
 
         println("public void accept($instr i, $addrvisitor v);");
 
-        for ( AddrModeSetDecl as : arch.addrSets ) {
+        for ( AddrModeSetDecl as : arch.addrSets.values() ) {
             startblock("public interface $1 extends $addr", as.name);
             for ( AddrModeDecl.Operand o : as.unionOperands )
                 println("public $operand get_$1();", o.name);
@@ -599,8 +599,8 @@ public class InstrIRGenerator extends Generator {
         }
 
         List<AddrModeDecl> list = new LinkedList<AddrModeDecl>();
-        for ( AddrModeDecl am : arch.addrModes ) list.add(am);
-        for ( InstrDecl id : arch.instructions ) {
+        for ( AddrModeDecl am : arch.addrModes.values() ) list.add(am);
+        for ( InstrDecl id : arch.instructions.values() ) {
             // for each addressing mode declared locally
             if ( id.addrMode.localDecl != null && DGUtil.addrModeClassExists(id) )
                 list.add(id.addrMode.localDecl);

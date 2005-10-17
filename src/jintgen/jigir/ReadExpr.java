@@ -35,6 +35,7 @@ package jintgen.jigir;
 import cck.parser.SourcePoint;
 import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.OperandTypeDecl;
 import jintgen.types.TypeRef;
 
 import java.util.List;
@@ -56,6 +57,7 @@ public class ReadExpr extends Expr {
 
     public final Token operand;
 
+    protected OperandTypeDecl.Accessor accessor;
 
     /**
      * The constructor of the <code>ReadExpr</code> class simply initializes the references to the subroutine
@@ -116,5 +118,13 @@ public class ReadExpr extends Expr {
 
     public SourcePoint getSourcePoint() {
         return method.getSourcePoint();
+    }
+
+    public void setAccessor(OperandTypeDecl.Accessor m) {
+        accessor = m;
+    }
+
+    public OperandTypeDecl.Accessor getAccessor() {
+        return accessor;
     }
 }

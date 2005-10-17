@@ -33,6 +33,8 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * The <code>Item</code> class represents the base class of many different types of items
@@ -53,11 +55,11 @@ public class Item {
      * The <code>properties</code> field stores a reference to a hash map that can
      * retrieve the properties by their name.
      */
-    public final HashList<String, Property> properties;
+    public final HashMap<String, Property> properties;
 
     Item(Token n) {
         name = n;
-        properties = new HashList<String, Property>();
+        properties = new LinkedHashMap<String, Property>();
     }
 
     /**
@@ -66,7 +68,7 @@ public class Item {
      * @param p the property to add to this item
      */
     public void addProperty(Property p) {
-        properties.add(p.name.image, p);
+        properties.put(p.name.image, p);
     }
 
     /**

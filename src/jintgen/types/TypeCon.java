@@ -34,7 +34,6 @@
 
 package jintgen.types;
 
-import jintgen.isdl.HashList;
 import java.util.*;
 
 /**
@@ -62,7 +61,7 @@ public class TypeCon {
 
     protected static final HashMap<String, List> EMPTY_DIMS = new HashMap<String, List>();
     protected final String name;
-    protected final HashList<String, Dimension> dimensions;
+    protected final HashMap<String, Dimension> dimensions;
     protected final HashMap<HashMap<String, Object>, Type> types;
 
     /**
@@ -105,7 +104,7 @@ public class TypeCon {
      */
     public TypeCon(String n) {
         name = n;
-        dimensions = new HashList<String, Dimension>();
+        dimensions = new LinkedHashMap<String, Dimension>();
         types = new HashMap<HashMap<String, Object>, Type>();
     }
 
@@ -147,7 +146,7 @@ public class TypeCon {
      * @param d the new type dimension to add to this type constructor
      */
     public void addDimension(Dimension d) {
-        dimensions.add(d.name, d);
+        dimensions.put(d.name, d);
     }
 
     /**
@@ -174,7 +173,7 @@ public class TypeCon {
         buf.append(name);
         buf.append("(");
         boolean first = true;
-        for ( Dimension d : dimensions ) {
+        for ( Dimension d : dimensions.values() ) {
             if ( !first ) buf.append(", ");
             buf.append(d.name);
             first = false;
