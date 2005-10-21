@@ -156,6 +156,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         Type rt = typeOf(e.right, env);
         TypeCon.BinOp binop = typeEnv.resolveBinOp(lt, rt, e.operation.image);
         if ( binop == null ) ERROR.UnresolvedOperator(e.operation, lt, rt);
+        e.setBinOp((BinOpExpr.BinOpImpl)binop);
         return binop.typeCheck(typeEnv, e.left, e.right);
     }
 
@@ -207,6 +208,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Type visit(Literal.IntExpr e, Environment env) {
         int val = e.value;
+        if ( val == 0 ) return typeEnv.newIntType(false, 1);
         boolean signed = val < 0;
         int width = Arithmetic.highestBit(val);
         return typeEnv.newIntType(signed, width);
@@ -216,6 +218,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         Type lt = typeOf(e.operand, env);
         TypeCon.UnOp unop = typeEnv.resolveUnOp(lt, e.operation.image);
         if ( unop == null ) ERROR.UnresolvedOperator(e.operation, lt);
+        e.setUnOp((UnOpExpr.UnOpImpl)unop);
         return unop.typeCheck(typeEnv, e.operand);
     }
 
@@ -258,7 +261,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     protected Type typeCheck(String what, Expr e, Type exp, Environment env) {
         Type t = typeOf(e, env);
         if (!isAssignableTo(t, exp))
-            ERROR.TypeMismatch("expression", e, exp);
+            ERROR.TypeMismatch(what, e, exp);
         return t;
     }
 

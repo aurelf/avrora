@@ -133,7 +133,8 @@ public class BinOpExpr extends Expr {
      *         precedence
      */
     public int getPrecedence() {
-        throw Util.unimplemented();
+        if ( binop == null ) return -1;
+        return binop.prec;
     }
 
     /**
@@ -179,8 +180,11 @@ public class BinOpExpr extends Expr {
      */
     public abstract static class BinOpImpl implements TypeCon.BinOp {
         public final String operation;
-        protected BinOpImpl(String op) {
+        public final int prec;
+
+        protected BinOpImpl(String op, int p) {
             operation = op;
+            this.prec = p;
         }
 
         public String getOperation() {

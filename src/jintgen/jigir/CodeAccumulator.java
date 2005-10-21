@@ -54,7 +54,7 @@ public interface CodeAccumulator<Res, Env> {
 
     public Res visit(FixedRangeExpr e, Env env);
 
-    List<Res> visitExprList(List<Expr> l, Env env);
+    public List<Res> visitExprList(List<Expr> l, Env env);
 
     public Res visit(CallExpr e, Env env);
 

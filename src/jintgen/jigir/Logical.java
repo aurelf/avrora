@@ -47,7 +47,7 @@ public class Logical {
 
     public static class AND extends BinOpExpr.BinOpImpl {
         public AND() {
-            super("and");
+            super("and", Expr.PREC_L_AND);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -62,7 +62,7 @@ public class Logical {
 
     public static class OR extends BinOpExpr.BinOpImpl {
         public OR() {
-            super("or");
+            super("or", Expr.PREC_L_OR);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -77,7 +77,7 @@ public class Logical {
 
     public static class XOR extends BinOpExpr.BinOpImpl {
         public XOR() {
-            super("xor");
+            super("xor", Expr.PREC_L_XOR);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -92,7 +92,7 @@ public class Logical {
 
     public static class EQU extends BinOpExpr.BinOpImpl {
         public EQU() {
-            super("==");
+            super("==", Expr.PREC_L_EQU);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -108,7 +108,7 @@ public class Logical {
 
     public static class NEQU extends BinOpExpr.BinOpImpl {
         public NEQU() {
-            super("!=");
+            super("!=", Expr.PREC_L_EQU);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -123,7 +123,7 @@ public class Logical {
 
     public static class LESS extends BinOpExpr.BinOpImpl {
         public LESS() {
-            super("<");
+            super("<", Expr.PREC_L_REL);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             return ((JIGIRTypeEnv)env).BOOLEAN;
@@ -135,7 +135,7 @@ public class Logical {
 
     public static class LESSEQU extends BinOpExpr.BinOpImpl {
         public LESSEQU() {
-            super("<=");
+            super("<=", Expr.PREC_L_REL);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             return ((JIGIRTypeEnv)env).BOOLEAN;
@@ -147,7 +147,7 @@ public class Logical {
 
     public static class GR extends BinOpExpr.BinOpImpl {
         public GR() {
-            super(">");
+            super(">", Expr.PREC_L_REL);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             return ((JIGIRTypeEnv)env).BOOLEAN;
@@ -159,7 +159,7 @@ public class Logical {
 
     public static class GREQ extends BinOpExpr.BinOpImpl {
         public GREQ() {
-            super(">=");
+            super(">=", Expr.PREC_L_REL);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             return ((JIGIRTypeEnv)env).BOOLEAN;
@@ -172,7 +172,7 @@ public class Logical {
 
     public static class NOT extends UnOpExpr.UnOpImpl {
         public NOT() {
-            super("!");
+            super("!", Expr.PREC_UN);
         }
         public Type typeCheck(TypeEnv env, Typeable inner) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;

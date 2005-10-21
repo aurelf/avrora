@@ -95,7 +95,7 @@ public class JIGIRTypeEnv extends TypeEnv {
      * The <code>TYPE_int</code> class represents integer types that
      * include a sign and a size.
      */
-    protected class TYPE_int extends Type {
+    public class TYPE_int extends Type {
         protected final boolean signed;
         protected final int size;
 
@@ -117,6 +117,10 @@ public class JIGIRTypeEnv extends TypeEnv {
 
         public int getSize() {
             return size;
+        }
+
+        public String toString() {
+            return (signed ? "-int." : "+int.") + size;
         }
     }
 

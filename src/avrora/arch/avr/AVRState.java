@@ -37,6 +37,7 @@ package avrora.arch.avr;
 import avrora.sim.*;
 import avrora.sim.clock.DeltaQueue;
 import cck.util.Util;
+import cck.util.Arithmetic;
 
 /**
  * The <code>AVRState</code> class represents an instance of the internal state of
@@ -63,8 +64,8 @@ public class AVRState {
     protected int pc;
     protected int nextpc;
     protected boolean I, T, H, V, S, N, Z, C;
-    protected Segment data;
-    protected byte[] sram;
+    protected Segment sram;
+    protected byte[] regs;
     protected CodeSegment flash;
     protected ActiveRegister[] ioregs;
     protected DeltaQueue queue;
@@ -103,7 +104,7 @@ public class AVRState {
      * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid memory range
      */
     public byte getSRAM(int address) {
-        return data.get(address);
+        return sram.get(address);
     }
 
     /**
@@ -144,7 +145,7 @@ public class AVRState {
      * @return the current value of the specified register as a byte
      */
     public byte getRegister(AVRSymbol.GPR reg) {
-        return sram[reg.value];
+        return regs[reg.value];
     }
 
     /**
@@ -201,5 +202,43 @@ public class AVRState {
      */
     public Simulator getSimulator() {
         return simulator;
+    }
+
+    protected int read_regs(AVRSymbol.GPR indx) {
+        return regs[indx.value];
+    }
+
+    protected int read_aregs(AVRSymbol.ADR indx) {
+        int val = indx.value;
+        return Arithmetic.uword(regs[val], regs[val+1]);
+    }
+
+    protected int read_wregs(AVRSymbol.ADR indx) {
+        int val = indx.value;
+        return Arithmetic.uword(regs[val], regs[val+1]);
+    }
+
+    protected void write_regs(AVRSymbol.GPR indx, int val) {
+        regs[indx.value] = (byte)val;
+    }
+
+    protected void write_aregs(AVRSymbol.ADR indx, int val) {
+        int r = indx.value;
+        regs[r] = Arithmetic.low(val);
+        regs[r+1] = Arithmetic.high(val);
+    }
+
+    protected void write_wregs(AVRSymbol.GPR indx, int val) {
+        int r = indx.value;
+        regs[r] = Arithmetic.low(val);
+        regs[r+1] = Arithmetic.high(val);
+    }
+
+    protected byte read_sram(int indx) {
+        return sram.read(indx);
+    }
+
+    protected void write_sram(int indx, int val) {
+        sram.write(indx, (byte)val);
     }
 }

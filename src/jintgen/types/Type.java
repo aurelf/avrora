@@ -84,12 +84,15 @@ public class Type {
     public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append(typeCon.getName());
+        boolean first = true;
         if ( dimensions.size() > 0 ) {
             buf.append('(');
             for ( Map.Entry<String, Object> e : dimensions.entrySet() ) {
+                if ( !first ) buf.append(", ");
                 buf.append(e.getKey());
                 buf.append(": ");
                 buf.append(e.getValue());
+                first = false;
             }
             buf.append(')');
         }

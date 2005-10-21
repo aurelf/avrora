@@ -59,7 +59,7 @@ public class Environment {
         for ( Map.Entry<String, TypeRef> e : a.globals.entrySet() ) {
             varMap.put(e.getKey(), e.getValue().resolve(a.typeEnv));
         }
-        for ( SubroutineDecl s : a.subroutines.values() ) {
+        for ( SubroutineDecl s : a.subroutines ) {
             methodMap.put(s.name.image, s);
         }
     }

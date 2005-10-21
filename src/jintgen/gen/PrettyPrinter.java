@@ -36,6 +36,9 @@ import cck.text.Printer;
 import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
+import jintgen.types.TypeRef;
+import jintgen.types.Type;
+
 import java.util.List;
 
 /**
@@ -51,16 +54,16 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(ReadExpr e) {
-        printer.print("read : ");
-        printer.print(e.type.toString());
+        printer.print("read");
+        if ( e.type != null ) printer.print(" : "+ renderType(e.type));
         printer.print("(");
-        printer.print(e.operand.image);
+        printer.print(getVariable(e.operand));
         printer.print(")");
     }
 
     public void visit(ConversionExpr e) {
         inner(e.expr, Expr.PREC_TERM);
-        printer.print(':' + e.typename.toString());
+        printer.print(':' + renderType(e.typename));
     }
 
     public void visit(VarExpr e) {
@@ -84,67 +87,6 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         return s;
     }
 
-    protected abstract static class MapRep {
-        public abstract void generateWrite(Expr ind, Expr val);
-
-        public abstract void generateBitWrite(Expr ind, Expr b, Expr val);
-
-        public abstract void generateRead(Expr ind);
-
-        public abstract void generateBitRead(Expr ind, Expr b);
-
-        public abstract void generateBitRangeWrite(Expr ind, int l, int h, Expr val);
-    }
-
-    protected class DefaultMapRep extends MapRep {
-        String name;
-
-        DefaultMapRep(String n) {
-            name = n;
-        }
-
-        public void generateWrite(Expr ind, Expr val) {
-            printer.print('$' + name + '(');
-            ind.accept(PrettyPrinter.this);
-            printer.print(") = ");
-            val.accept(PrettyPrinter.this);
-            printer.println(";");
-        }
-
-        public void generateBitWrite(Expr ind, Expr b, Expr val) {
-            printer.print('$' + name + '(');
-            ind.accept(PrettyPrinter.this);
-            printer.print(")[");
-            b.accept(PrettyPrinter.this);
-            printer.print("] = ");
-            val.accept(PrettyPrinter.this);
-            printer.println(";");
-        }
-
-        public void generateRead(Expr ind) {
-            printer.print('$' + name + '(');
-            ind.accept(PrettyPrinter.this);
-            printer.print(")");
-        }
-
-        public void generateBitRead(Expr ind, Expr b) {
-            printer.print('$' + name + '(');
-            ind.accept(PrettyPrinter.this);
-            printer.print(")[");
-            b.accept(PrettyPrinter.this);
-            printer.print("]");
-        }
-
-        public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-            printer.print('$' + name + '(');
-            ind.accept(PrettyPrinter.this);
-            printer.print(")[" + l + ':' + h + "] = ");
-            val.accept(PrettyPrinter.this);
-            printer.println(";");
-        }
-    }
-
-
     public PrettyPrinter(Printer p) {
         printer = p;
     }
@@ -156,10 +98,10 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(WriteStmt s) {
-        printer.print("write : ");
-        printer.print(s.type.toString());
+        printer.print("write");
+        if ( s.type != null ) printer.print(" : "+ renderType(s.type));
         printer.print("(");
-        printer.print(s.operand.image);
+        printer.print(getVariable(s.operand));
         printer.print(", ");
         s.expr.accept(this);
         printer.println(");");
@@ -176,9 +118,11 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         printer.startblock();
         visitStmtList(s.trueBranch);
         printer.endblock();
-        printer.startblock("else");
-        visitStmtList(s.falseBranch);
-        printer.endblock();
+        if ( s.falseBranch.size() > 0 ) {
+            printer.startblock("else");
+            visitStmtList(s.falseBranch);
+            printer.endblock();
+        }
     }
 
     public void visit(ReturnStmt s) {
@@ -191,18 +135,15 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         return v.toString();
     }
 
-    protected MapRep getMapRep(String name) {
-        return new DefaultMapRep(name);
-    }
-
     public void visit(DeclStmt s) {
-        printer.print(s.type.toString() + ' ' + getVariable(s.name) + " = ");
+        printer.print(renderType(s.type) + ' ' + getVariable(s.name) + " = ");
         s.init.accept(this);
         printer.println(";");
     }
 
     protected void inner(Expr e, int outerPrecedence) {
-        if (e.getPrecedence() < outerPrecedence) {
+        int inprec = e.getPrecedence();
+        if (inprec == -1 || outerPrecedence == -1 || inprec < outerPrecedence) {
             printer.print("(");
             e.accept(this);
             printer.print(")");
@@ -241,18 +182,15 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(IndexExpr e) {
-        throw Util.unimplemented();
+        e.expr.accept(this);
+        printer.print("[");
+        e.index.accept(this);
+        printer.print("]");
     }
 
     public void visit(FixedRangeExpr e) {
-        if (e.operand.getPrecedence() < e.getPrecedence()) {
-            printer.print("(");
-            e.operand.accept(this);
-            printer.print(")");
-        } else {
-            e.operand.accept(this);
-        }
-        printer.print("[" + e.low_bit + ':' + e.high_bit + ']');
+        inner(e.operand, e.getPrecedence());
+        printer.print("[" + e.high_bit + ':' + e.low_bit + ']');
     }
 
     protected void visitExprList(List<Expr> l) {
@@ -263,5 +201,11 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
     }
 
+    public String renderType(TypeRef t) {
+        return t.toString();
+    }
 
+    public String renderType(Type t) {
+        return t.toString();
+    }
 }

@@ -56,9 +56,6 @@ public class SubroutineDecl extends Item {
             type = t;
         }
 
-        public String getType() {
-            return type.toString();
-        }
     }
 
     public final TypeRef ret;

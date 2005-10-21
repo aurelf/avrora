@@ -75,11 +75,11 @@ public class Verifier {
 
     private void verifyUniqueness() {
         uniqueCheck("UserType", "User type", arch.userTypes);
-        uniqueCheck("Format", "Encoding format", arch.formats.values());
-        uniqueCheck("Subroutine", "Subroutine", arch.subroutines.values());
-        uniqueCheck("AddrMode", "Addressing mode", arch.addrModes.values());
-        uniqueCheck("AddrModeSet", "AddressingModeSet", arch.addrSets.values());
-        uniqueCheck("Instr", "Instruction", arch.instructions.values());
+        uniqueCheck("Format", "Encoding format", arch.formats);
+        uniqueCheck("Subroutine", "Subroutine", arch.subroutines);
+        uniqueCheck("AddrMode", "Addressing mode", arch.addrModes);
+        uniqueCheck("AddrModeSet", "AddressingModeSet", arch.addrSets);
+        uniqueCheck("Instr", "Instruction", arch.instructions);
     }
 
     private void typeCheck() {
@@ -94,17 +94,17 @@ public class Verifier {
     private void typeCheckAccessMethods(Environment env, TypeChecker tc ) {
         // first step: resolve all read methods by type
         JIGIRTypeEnv te = arch.typeEnv;
-        for ( OperandTypeDecl ot: arch.operandTypes.values() ) {
+        for ( OperandTypeDecl ot: arch.operandTypes ) {
             for ( OperandTypeDecl.AccessMethod m : ot.readDecls )
                 ot.readAccessors.put(resolveAccessMethodType(m, te), m);
             for ( OperandTypeDecl.AccessMethod m : ot.writeDecls )
                 ot.writeAccessors.put(resolveAccessMethodType(m, te), m);
         }
         // now typecheck the bodies
-        for ( OperandTypeDecl ot: arch.operandTypes.values() ) {
+        for ( OperandTypeDecl ot: arch.operandTypes ) {
             // add each of the sub operands to the environment
             Environment oenv = new Environment(env);
-            oenv.addVariable("this", arch.typeEnv.resolveOperandType(ot));
+            oenv.addVariable("this", operandRepresentationType(ot));
             for ( AddrModeDecl.Operand o : ot.subOperands )
                 oenv.addVariable(o.name.image, arch.typeEnv.resolveType(o.type));
 
@@ -119,11 +119,19 @@ public class Verifier {
         }
 
         // build the accessor methods for unions
-        for ( AddrModeSetDecl as : arch.addrSets.values() ) {
+        for ( AddrModeSetDecl as : arch.addrSets ) {
             for ( AddrModeDecl.Operand o : as.unionOperands )
                 computeAccessorUnion((OperandTypeDecl.Union)o.operandType);
         }
 
+    }
+
+    private Type operandRepresentationType(OperandTypeDecl ot) {
+        if ( ot.isValue() ) {
+            TypeRef kind = ((OperandTypeDecl.Value)ot).kind;
+            return kind.resolve(arch.typeEnv);
+        } else
+            return arch.typeEnv.resolveOperandType(ot);
     }
 
     private Type resolveAccessMethodType(OperandTypeDecl.AccessMethod m, JIGIRTypeEnv te) {
@@ -133,7 +141,7 @@ public class Verifier {
     }
 
     private void typeCheckInstrBodies(Environment env, TypeChecker tc) {
-        for ( InstrDecl d : arch.instructions.values() ) {
+        for ( InstrDecl d : arch.instructions ) {
             if ( !d.code.hasBody() ) continue;
             Environment senv = new Environment(env);
             for ( AddrModeDecl.Operand p : d.getOperands() ) {
@@ -144,11 +152,10 @@ public class Verifier {
     }
 
     private void typeCheckSubroutines(Environment env, TypeChecker tc) {
-        for ( SubroutineDecl d : arch.subroutines.values() ) {
+        for ( SubroutineDecl d : arch.subroutines ) {
             if ( !d.code.hasBody() ) continue;
             Environment senv = new Environment(env);
             for ( SubroutineDecl.Parameter p : d.getParams() ) {
-                Type t = p.type.resolve(arch.typeEnv);
                 senv.addVariable(p.name.image, p.type.resolve(arch.typeEnv));
             }
             Type t = d.ret.resolve(arch.typeEnv);
@@ -157,11 +164,13 @@ public class Verifier {
     }
 
     private void verifyEnums() {
-        for ( EnumDecl ed : arch.enums.values() ) {
+        for ( EnumDecl ed : arch.enums )
+            arch.typeEnv.addEnum(ed);
+
+        for ( EnumDecl ed : arch.enums ) {
             if (printer.enabled) {
                 printer.print("verifying enum " + ed.name.image + ' ');
             }
-            arch.typeEnv.addEnum(ed);
             verifyEnum(ed);
         }
     }
@@ -173,12 +182,17 @@ public class Verifier {
             if ( parent == null )
                 ERROR.UnresolvedEnum(dd.ptype.getToken());
             dd.setParent(parent);
+            TypeCon tc = arch.typeEnv.resolveTypeCon(ed.name.image);
+            TypeCon ptc = arch.typeEnv.resolveTypeCon(parent.name.image);
+            arch.typeEnv.ASSIGNABLE.add(tc, ptc);
+            arch.typeEnv.COMPARABLE.add(tc, ptc);
+            arch.typeEnv.COMPARABLE.add(ptc, tc);
         }
     }
 
     private void verifyEncodings() {
 
-        for ( FormatDecl ed : arch.formats.values() ) {
+        for ( FormatDecl ed : arch.formats ) {
             if (printer.enabled) {
                 printer.print("verifying encoding " + ed.name.image + ' ');
             }
@@ -189,7 +203,7 @@ public class Verifier {
     }
 
     private void verifyOperands() {
-        for ( OperandTypeDecl od : arch.operandTypes.values() ) {
+        for ( OperandTypeDecl od : arch.operandTypes ) {
             arch.typeEnv.addOperandType(od);
             if ( od.isCompound() ) {
                 OperandTypeDecl.Compound cd = (OperandTypeDecl.Compound)od;
@@ -206,7 +220,7 @@ public class Verifier {
 
     private void verifySubroutines() {
 
-        for ( SubroutineDecl sd : arch.subroutines.values() ) {
+        for ( SubroutineDecl sd : arch.subroutines ) {
             printer.print("verifying subroutine " + sd.name + ' ');
 
             if (printer.enabled) {
@@ -217,7 +231,7 @@ public class Verifier {
 
     private void verifyAddrModes() {
 
-        for ( AddrModeDecl am : arch.addrModes.values() ) {
+        for ( AddrModeDecl am : arch.addrModes ) {
             printer.println("verifying addressing mode " + am.name + ' ');
             verifyOperands(am.operands);
             verifyEncodings(am.encodings, am);
@@ -243,7 +257,7 @@ public class Verifier {
 
     private void verifyAddrSets() {
 
-        for ( AddrModeSetDecl as: arch.addrSets.values() ) {
+        for ( AddrModeSetDecl as: arch.addrSets ) {
             HashMap<String, OperandTypeDecl.Union> unions = new HashMap<String, OperandTypeDecl.Union>();
             HashSet<String> alloperands = new HashSet<String>();
             for ( Token t : as.list ) {
@@ -346,7 +360,7 @@ public class Verifier {
     }
 
     private void verifyInstructions() {
-        for ( InstrDecl id : arch.instructions.values() ) {
+        for ( InstrDecl id : arch.instructions ) {
             printer.print("verifying instruction " + id.name + ' ');
             // verify the addressing mode use
             verifyAddrModeUse(id.addrMode);

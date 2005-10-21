@@ -18,9 +18,9 @@ architecture avr {
 //---------------------------------------------------------------------------
 //  STATE USED IN THE SIMULATION
 //---------------------------------------------------------------------------
-    global regs: map<GPR, int.8>;     // the register file: signed 8-bit quantities
-    global wregs: map<GPR, +int.16>;  // a "view" of the register file as words
-    global aregs: map<GPR, +int.16>;  // a "view" of the register file as words
+    global regs: map<GPRs, int.8>;    // the register file: signed 8-bit quantities
+    global wregs: map<EGPRs, +int.16>; // a "view" of the register file as words
+    global aregs: map<ADRs, +int.16>; // a "view" of the register file as words
     global sram: map<int, int.8>;     // a "view" of the memory as signed 8-bit quantities
     global ioregs: map<int, int.8>;   // a "view" of the IO registers as signed 8-bit quantites
     global flash: map<int, int.8>;    // the flash (program) memory
@@ -40,9 +40,9 @@ architecture avr {
     global SREG: int;            // status register number
     global nextpc: int;          // the next pc afer executing this instructiobn
     global cycles: int;          // cycles consumed by this instruction
-    global RZ: GPR;              // reference to the Z register
-    global R0: GPR;              // reference to the R0 register
-    global R1: GPR;              // reference to the R1 register
+    global RZ: ADRs;             // reference to the Z register
+    global R0: GPRs;             // reference to the R0 register
+    global R1: GPRs;             // reference to the R1 register
 
 //---------------------------------------------------------------------------
 //  OPERANDS ALLOWED TO INSTRUCTIONS
@@ -86,7 +86,7 @@ architecture avr {
         Y = 1, Z = 0
     }
 
-    enum-subset RDLs: GPRs {
+    enum-subset RDLs: EGPRs {
         r24 = 0, r26 = 1, r28 = 2, r30 = 3
     }
 
@@ -111,13 +111,13 @@ architecture avr {
     }
 
     operand-type EGPR[4]: EGPRs { // an "even" general purpose register
-        read: int.8 { return regs[this]; }
-        write: int.8 { regs[this] = value; }
+        read: +int.16 { return wregs[this]; }
+        write: +int.16 { wregs[this] = value; }
     }
 
     operand-type RDL[2]: RDLs { // a word register r24:r25, r26:r27, etc
-        read: +int.16 { return regs[this]; }
-        write: +int.16 { regs[this] = value; }
+        read: +int.16 { return wregs[this]; }
+        write: +int.16 { wregs[this] = value; }
     }
 
     operand-type IMM3[3]: int [0, 7];
@@ -166,13 +166,10 @@ architecture avr {
         encoding = { 0b10010100, clear[0], bit[2:0], 0b1000 }
     }
 
-
-
-
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
-    external subroutine bit(b: boolean): int;
+
     external subroutine popByte(): int.8;
     external subroutine pushByte(b: int.8): void;
     external subroutine extended(addr: int): int;
@@ -181,6 +178,11 @@ architecture avr {
     external subroutine enterSleepMode(): void;
     external subroutine storeProgramMemory(): void;
     external subroutine stop(): void;
+
+    inline subroutine bit(b: boolean): +int.1 {
+        if ( b ) return 1;
+        else return 0;
+    }
 
     inline subroutine performAddition(r1: int.8, r2: int.8, carry: int.1): int.8 {
         local result: int.10 = r1 + r2 + carry;
@@ -294,8 +296,8 @@ architecture avr {
         return low(result);
     }
 
-    inline subroutine relativeBranch(target: int): void {
-        nextpc = relative(target);
+    inline subroutine relativeBranch(target: SREL): void {
+        nextpc = relative(target: int);
         cycles = cycles + 1;
     }
 
@@ -347,7 +349,7 @@ architecture avr {
         property opcode: int = 0b000111;
         property cycles: int = 1;
         execute {
-            regs[rd] = performAddition(+regs[rd], +regs[rr], bit(C));
+            write(rd, performAddition(+read(rd), +read(rr), bit(C)));
         }
     }
 
@@ -355,7 +357,7 @@ architecture avr {
         property opcode: int = 0b000011;
         property cycles: int = 1;
         execute {
-            regs[rd] = performAddition(+regs[rd], +regs[rr], 0);
+            write(rd, performAddition(+read(rd), +read(rr), 0));
         }
     }
 
@@ -363,7 +365,7 @@ architecture avr {
         encoding = { 0b10010110, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
-            local r1: int.16     = wregs[rd];
+            local r1: +int.16     = read(rd);
             local result: int.17 = r1 + imm:+int.6;
             local R15: boolean   = result[15];
             local Rdh7: boolean  = r1[15];
@@ -374,7 +376,7 @@ architecture avr {
             Z = (result[15:0] == 0);
             S = (N xor V);
 
-            wregs[rd] = result;
+            write(rd, result);
         }
     }
 
@@ -382,7 +384,7 @@ architecture avr {
         property opcode: int = 0b001000;
         property cycles: int = 1;
         execute {
-            regs[rd] = performAnd(regs[rd], regs[rr]);
+            write(rd, performAnd(read(rd), read(rr)));
         }
     }
 
@@ -390,7 +392,7 @@ architecture avr {
         property opcode: int = 0b0111;
         property cycles: int = 1;
         execute {
-            regs[rd] = performAnd(regs[rd], imm);
+            write(rd, performAnd(read(rd), imm:int.8));
         }
     }
 
@@ -399,8 +401,8 @@ architecture avr {
         property ext: int = 0b0101;
         property cycles: int = 1;
         execute {
-            local r1: int.8 = regs[rd];
-            regs[rd] = performRightShift(r1, r1[7]);
+            local r1: int.8 = read(rd);
+            write(rd, performRightShift(r1, r1[7]));
         }
     }
 
@@ -418,7 +420,9 @@ architecture avr {
         encoding = { 0b1111100, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            regs[rr][bit:int] = T;
+            local val: int.8 = read(rr);
+            val[bit:int] = T;
+            write(rr, val);
         }
     }
 
@@ -628,7 +632,7 @@ architecture avr {
         encoding = { 0b1111101, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            T = regs[rr][bit:int];
+            T = read(rr)[bit:int];
         }
     }
 
@@ -637,7 +641,7 @@ architecture avr {
         property cycles: int = 4;
         execute {
             pushPC(nextpc);
-            nextpc = absolute(target);
+            nextpc = absolute(target:int);
         }
     }
 
@@ -645,7 +649,7 @@ architecture avr {
         encoding = { 0b10011000, ior[4:0], bit[2:0] }
         property cycles: int = 2;
         execute {
-            ioregs[ior][bit:int] = false;
+            ioregs[ior:int][bit:int] = false;
         }
     }
 
@@ -655,7 +659,7 @@ architecture avr {
         property opcode: int = 0b0111;
         property cycles: int = 1;
         execute {
-            regs[rd] = performAnd(regs[rd], ~(imm:int));
+            write(rd, performAnd(read(rd), ~(imm:int)));
         }
     }
 
@@ -701,7 +705,7 @@ architecture avr {
             V = false;
             N = false;
             Z = true;
-            regs[rd] = low(0);
+            write(rd, low(0));
         }
     }
 
@@ -742,7 +746,7 @@ architecture avr {
         property ext: int = 0b0000;
         property cycles: int = 1;
         execute {
-            local result: int = 0xff - regs[rd];
+            local result: int = 0xff - read(rd);
 
             C = true;
             N = result[7];
@@ -750,7 +754,7 @@ architecture avr {
             V = false;
             S = N xor V;
 
-            regs[rd] = low(result);
+            write(rd, low(result));
         }
     }
 
@@ -759,7 +763,7 @@ architecture avr {
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
-            performSubtraction(regs[rd], regs[rr], 0);
+            performSubtraction(read(rd), read(rr), 0);
         }
     }
 
@@ -768,7 +772,7 @@ architecture avr {
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
-            performSubtractionPZ(regs[rd], regs[rr], bit(C));
+            performSubtractionPZ(read(rd), read(rr), bit(C));
         }
     }
 
@@ -777,7 +781,7 @@ architecture avr {
         property cycles: int = 1;
         execute {
             // perform subtraction for flag side effects.
-            performSubtraction(regs[rd], imm, 0);
+            performSubtraction(read(rd), imm:int.8, 0);
         }
     }
 
@@ -785,8 +789,8 @@ architecture avr {
         property opcode: int = 0b000100;
         property cycles: int = 1;
         execute {
-            local r1: int.8 = regs[rd];
-            local r2: int.8 = regs[rr];
+            local r1: int.8 = read(rd);
+            local r2: int.8 = read(rr);
             // perform subtraction for flag side effects.
             performSubtraction(r1, r2, 0);
             if (r1 == r2) skip();
@@ -798,7 +802,7 @@ architecture avr {
         property ext: int = 0b1010;
         property cycles: int = 1;
         execute {
-            local r1: +int.8 = +regs[rd];
+            local r1: +int.8 = +read(rd);
             local result: +int.8 = low(r1 - 1);
 
             N = result[7];
@@ -806,7 +810,7 @@ architecture avr {
             V = r1 == 0x80;
             S = N xor V;
 
-            regs[rd] = result;
+            write(rd, result);
         }
     }
 
@@ -830,14 +834,14 @@ architecture avr {
         property opcode: int = 0b001001;
         property cycles: int = 1;
         execute {
-            local result: int.8 = regs[rd] ^ regs[rr];
+            local result: int.8 = read(rd) ^ read(rr);
 
             N = result[7];
             Z = result == 0;
             V = false;
             S = N xor V;
 
-            regs[rd] = result;
+            write(rd, result);
         }
     }
 
@@ -845,7 +849,7 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 0, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int.17 = (+regs[rd] * +regs[rr]) << 1;
+            local result: int.17 = (+read(rd) * +read(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
             regs[R0] = low(result);
@@ -857,7 +861,7 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 0, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int.17 = (regs[rd] * regs[rr]) << 1;
+            local result: int.17 = (read(rd) * read(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
             regs[R0] = low(result);
@@ -869,7 +873,7 @@ architecture avr {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
-            local result: int.17 = (regs[rd] * +regs[rr]) << 1;
+            local result: int.17 = (read(rd) * +read(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
             regs[R0] = low(result);
@@ -882,7 +886,7 @@ architecture avr {
         property cycles: int = 3;
         execute {
             pushPC(nextpc);
-            nextpc = absolute(wregs[RZ]);
+            nextpc = absolute(aregs[RZ]);
         }
     }
 
@@ -890,7 +894,7 @@ architecture avr {
         encoding = { 0b10010100, 0b00001001 }
         property cycles: int = 2;
         execute {
-            nextpc = absolute(wregs[RZ]);
+            nextpc = absolute(aregs[RZ]);
         }
     }
 
@@ -898,7 +902,7 @@ architecture avr {
         encoding = { 0b10110, imm[5:4], rd[4:0], imm[3:0] }
         property cycles: int = 1;
         execute {
-            regs[rd] = ioregs[imm];
+            write(rd, ioregs[imm:int]);
         }
     }
 
@@ -907,7 +911,7 @@ architecture avr {
         property ext: int = 0b0011;
         property cycles: int = 1;
         execute {
-            local r1: +int.8 = +regs[rd];
+            local r1: +int.8 = +read(rd);
             local result: +int.8 = low(r1 + 1);
 
             N = result[7];
@@ -915,7 +919,7 @@ architecture avr {
             V = r1 == 0x7f;
             S = N xor V;
 
-            regs[rd] = result;
+            write(rd, result);
         }
     }
 
@@ -923,7 +927,7 @@ architecture avr {
         encoding = ABS4 where { opcode = 0b1001010110 }
         property cycles: int = 3;
         execute {
-            nextpc = absolute(target);
+            nextpc = absolute(target:int);
         }
     }
 
@@ -932,7 +936,7 @@ architecture avr {
         property syntax: String = "%rd, %ar+%imm";
         property cycles: int = 2;
         execute {
-            regs[rd] = sram[aregs[ar] + imm:+int.6];
+            write(rd, sram[read(ar) + imm:+int.6]);
         }
     }
 
@@ -940,7 +944,7 @@ architecture avr {
         property opcode: int = 0b1110;
         property cycles: int = 1;
         execute {
-            regs[rd] = low(imm);
+            write(rd, imm:int.8);
         }
     }
 
@@ -948,7 +952,7 @@ architecture avr {
         encoding = { 0b1001000, rd[4:0], 0b0000, addr[15:0] }
         property cycles: int = 2;
         execute {
-            regs[rd] = sram[addr];
+            write(rd, sram[addr:+int.16]);
         }
     }
 
@@ -958,7 +962,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rd }
         property cycles: int = 1;
         execute {
-            regs[rd] = performLeftShift(regs[rd], false);
+            write(rd, performLeftShift(read(rd), false));
         }
     }
 
@@ -967,7 +971,7 @@ architecture avr {
         property ext: int = 0b110;
         property cycles: int = 1;
         execute {
-            regs[rd] = performRightShift(regs[rd], false);
+            write(rd, performRightShift(read(rd), false));
         }
     }
 
@@ -975,7 +979,7 @@ architecture avr {
         property opcode: int = 0b001011;
         property cycles: int = 1;
         execute {
-            regs[rd] = regs[rr];
+            write(rd, read(rr));
         }
     }
 
@@ -983,7 +987,7 @@ architecture avr {
         encoding = { 0b00000001, rd[3:0], rr[3:0] }
         property cycles: int = 1;
         execute {
-            wregs[rd] = wregs[rr];
+            write(rd, read(rr));
         }
     }
 
@@ -991,10 +995,11 @@ architecture avr {
         property opcode: int = 0b100111;
         property cycles: int = 2;
         execute {
-            local result: +int.16 = +regs[rd] * +regs[rr];
+            local result: +int.16 = +read(rd) * +read(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            wregs[R0] = result;
+            regs[R0] = low(result);
+            regs[R1] = high(result);
         }
     }
 
@@ -1002,10 +1007,11 @@ architecture avr {
         encoding = { 0b00000010, rd[3:0], rr[3:0] }
         property cycles: int = 2;
         execute {
-            local result: -int.16 = regs[rd] * regs[rr];
+            local result: -int.16 = read(rd) * read(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            wregs[R0] = result;
+            regs[R0] = low(result);
+            regs[R1] = high(result);
         }
     }
 
@@ -1013,10 +1019,11 @@ architecture avr {
         encoding = { 0b00000011, 0b0, rd[2:0], 0b0, rr[2:0] }
         property cycles: int = 2;
         execute {
-            local result: -int.16 = regs[rd] * +regs[rr];
+            local result: -int.16 = read(rd) * +read(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            wregs[R0] = result;
+            regs[R0] = low(result);
+            regs[R1] = high(result);
         }
     }
 
@@ -1025,7 +1032,7 @@ architecture avr {
         property ext: int = 0b0001;
         property cycles: int = 1;
         execute {
-            regs[rd] = performSubtraction(0, regs[rd], 0);
+            write(rd, performSubtraction(0, read(rd), 0));
         }
     }
 
@@ -1041,7 +1048,7 @@ architecture avr {
         property opcode: int = 0b001010;
         property cycles: int = 1;
         execute {
-            regs[rd] = performOr(regs[rd], regs[rr]);
+            write(rd, performOr(read(rd), read(rr)));
         }
     }
 
@@ -1049,7 +1056,7 @@ architecture avr {
         property opcode: int = 0b0110;
         property cycles: int = 1;
         execute {
-            regs[rd] = performOr(regs[rd], imm);
+            write(rd, performOr(read(rd), imm:int.8));
         }
     }
 
@@ -1057,7 +1064,7 @@ architecture avr {
         encoding = { 0b10111, ior[5:4], rr[4:0], ior[3:0] }
         property cycles: int = 1;
         execute {
-            ioregs[ior] = regs[rr];
+            ioregs[ior:int] = read(rr);
         }
     }
 
@@ -1066,7 +1073,7 @@ architecture avr {
         property ext: int = 0b1111;
         property cycles: int = 2;
         execute {
-            regs[rd] = popByte();
+            write(rd, popByte());
         }
     }
 
@@ -1075,7 +1082,7 @@ architecture avr {
         property ext: int = 0b1111;
         property cycles: int = 2;
         execute {
-            pushByte(regs[rd]);
+            pushByte(read(rd));
         }
     }
 
@@ -1084,7 +1091,7 @@ architecture avr {
         property cycles: int = 3;
         execute {
             pushPC(nextpc);
-            nextpc = relative(target);
+            nextpc = relative(target:int);
         }
     }
 
@@ -1111,7 +1118,7 @@ architecture avr {
         encoding = { 0b1100, target[11:0] }
         property cycles: int = 2;
         execute {
-            nextpc = relative(target);
+            nextpc = relative(target:int);
         }
     }
 
@@ -1121,7 +1128,7 @@ architecture avr {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rd }
         property cycles: int = 1;
         execute {
-            regs[rd] = performLeftShift(+regs[rd], C);
+            write(rd, performLeftShift(+read(rd), C));
         }
     }
 
@@ -1130,7 +1137,7 @@ architecture avr {
         property ext: int = 0b0111;
         property cycles: int = 1;
         execute {
-            regs[rd] = performRightShift(regs[rd], C);
+            write(rd, performRightShift(read(rd), C));
         }
     }
 
@@ -1138,7 +1145,7 @@ architecture avr {
         property opcode: int = 0b000010;
         property cycles: int = 1;
         execute {
-            regs[rd] = performSubtractionPZ(regs[rd], regs[rr], bit(C));
+            write(rd, performSubtractionPZ(read(rd), read(rr), bit(C)));
         }
     }
 
@@ -1146,7 +1153,7 @@ architecture avr {
         property opcode: int = 0b0100;
         property cycles: int = 1;
         execute {
-            regs[rd] = performSubtractionPZ(regs[rd], imm, bit(C));
+            write(rd, performSubtractionPZ(read(rd), imm:int.8, bit(C)));
         }
     }
 
@@ -1154,7 +1161,7 @@ architecture avr {
         encoding = { 0b10011010, ior[4:0], bit[2:0] }
         property cycles: int = 2;
         execute {
-            ioregs[ior][bit:int] = true;
+            ioregs[ior:int][bit:int] = true;
         }
     }
 
@@ -1162,7 +1169,7 @@ architecture avr {
         encoding = { 0b10011001, ior[4:0], bit[2:0] }
         property cycles: int = 1;
         execute {
-            if (!(ioregs[ior][bit:int])) skip();
+            if (!(ioregs[ior:int][bit:int])) skip();
         }
     }
 
@@ -1170,7 +1177,7 @@ architecture avr {
         encoding = { 0b10011011, ior[4:0], bit[2:0] }
         property cycles: int = 1;
         execute {
-            if ( ioregs[ior][bit:int] ) skip();
+            if ( ioregs[ior:int][bit:int] ) skip();
         }
     }
 
@@ -1178,7 +1185,7 @@ architecture avr {
         encoding = { 0b10010111, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
-            local val: +int.16 = wregs[rd];
+            local val: +int.16 = read(rd);
             local result: -int.16 = val - (imm: +int.6);
 
             local Rdh7: boolean = val[15];
@@ -1190,7 +1197,7 @@ architecture avr {
             C = R15 and !Rdh7;
             S = N xor V;
 
-            wregs[rd] = result;
+            write(rd, result);
         }
     }
 
@@ -1199,7 +1206,7 @@ architecture avr {
         property opcode: int = 0b0110;
         property cycles: int = 1;
         execute {
-            regs[rd] = performOr(regs[rd], imm);
+            write(rd, performOr(read(rd), imm:int.8));
         }
     }
 
@@ -1207,7 +1214,7 @@ architecture avr {
         encoding = { 0b1111110, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            if (!(regs[rr][bit:int])) skip();
+            if (!(read(rr)[bit:int])) skip();
         }
     }
 
@@ -1215,7 +1222,7 @@ architecture avr {
         encoding = { 0b1111111, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
-            if ( regs[rr][bit:int] ) skip();
+            if ( read(rr)[bit:int] ) skip();
         }
     }
 
@@ -1255,7 +1262,7 @@ architecture avr {
         encoding = { 0b11101111, rd[4:1], 0b1111 }
         property cycles: int = 1;
         execute {
-            regs[rd] = low(0xff);
+            write(rd, low(0xff));
         }
     }
 
@@ -1312,7 +1319,7 @@ architecture avr {
         property syntax: String = "%ar+%imm, %rr";
         property cycles: int = 2;
         execute {
-            sram[aregs[ar] + imm:int] = regs[rr];
+            sram[read(ar) + imm:int] = read(rr);
         }
     }
 
@@ -1320,7 +1327,7 @@ architecture avr {
         encoding = { 0b1001001, rr[4:0], 0b0000, addr[15:0] }
         property cycles: int = 2;
         execute {
-            sram[addr] = regs[rr];
+            sram[addr:int] = read(rr);
         }
     }
 
@@ -1328,7 +1335,7 @@ architecture avr {
         property opcode: int = 0b000110;
         property cycles: int = 1;
         execute {
-            regs[rd] = performSubtraction(regs[rd], regs[rr], 0);
+            write(rd, performSubtraction(read(rd), read(rr), 0));
         }
     }
 
@@ -1336,7 +1343,7 @@ architecture avr {
         property opcode: int = 0b0101;
         property cycles: int = 1;
         execute {
-            regs[rd] = performSubtraction(regs[rd], imm, 0);
+            write(rd, performSubtraction(read(rd), imm:int.8, 0));
         }
     }
 
@@ -1345,11 +1352,11 @@ architecture avr {
         property ext: int = 0b0010;
         property cycles: int = 1;
         execute {
-            local val: +int.8 = +regs[rd];
+            local val: +int.8 = +read(rd);
             local result: +int.8 = 0;
             result[3:0] = val[7:4];
             result[7:4] = val[3:0];
-            regs[rd] = low(result);
+            write(rd, low(result));
         }
     }
 
@@ -1359,7 +1366,7 @@ architecture avr {
         property opcode: int = 0b001000;
         property cycles: int = 1;
         execute {
-            local r1: int.8 = regs[rd];
+            local r1: int.8 = read(rd);
             V = false;
             Z = low(r1) == 0;
             N = r1[7];
@@ -1472,7 +1479,7 @@ architecture avr {
         property cycles: int = 3;
         property extended: int = 1;
         execute {
-            local addr: int = extended(source);
+            local addr: int = extended(read(source));
             write(dest, flash[addr]);
         }
     }

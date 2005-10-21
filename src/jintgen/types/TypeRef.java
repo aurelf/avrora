@@ -37,6 +37,7 @@ package jintgen.types;
 import cck.parser.AbstractToken;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The <code>TypeRef</code> class represents a reference to a type within
@@ -89,7 +90,7 @@ public class TypeRef {
      */
     public TypeRef(AbstractToken n, HashMap<String, List> dimensions) {
         tcName = n;
-        this.dimensions = (HashMap<String, List>)dimensions.clone(); 
+        this.dimensions = (HashMap<String, List>)dimensions.clone();
     }
 
     public void addDimension(String name, List val) {
@@ -106,6 +107,24 @@ public class TypeRef {
             type = typeCon.newType(te, dimensions);
         }
         return type;
+    }
+
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append(tcName.image);
+        boolean first = true;
+        if ( dimensions.size() > 0 ) {
+            buf.append('(');
+            for ( Map.Entry<String, List> e : dimensions.entrySet() ) {
+                if ( !first ) buf.append(", ");
+                buf.append(e.getKey());
+                buf.append(": ");
+                buf.append(e.getValue());
+                first = false;
+            }
+            buf.append(')');
+        }
+        return buf.toString();
     }
 
     public TypeCon resolveTypeCon(TypeEnv te) {

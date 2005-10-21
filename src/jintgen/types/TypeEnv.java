@@ -122,7 +122,7 @@ public abstract class TypeEnv {
         public boolean contains(TypeCon a, TypeCon b) {
             TypeEnv.Relation.Node n = nodes.get(a);
             if ( n == null ) return false;
-            TypeEnv.Relation.Node m = nodes.get(a);
+            TypeEnv.Relation.Node m = nodes.get(b);
             if ( m == null ) return false;
             return search(n, n.neighbors, m);
         }

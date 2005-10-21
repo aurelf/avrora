@@ -47,8 +47,8 @@ import jintgen.types.*;
 public class Arith {
 
     protected abstract static class INTINT extends BinOpExpr.BinOpImpl {
-        protected INTINT(String op) {
-            super(op);
+        protected INTINT(String op, int p) {
+            super(op, p);
         }
         public Type typeCheck(TypeEnv env, Typeable left, Typeable right) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -67,7 +67,7 @@ public class Arith {
 
     public static class ADD extends INTINT {
         public ADD() {
-            super("+");
+            super("+", Expr.PREC_A_ADD);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             return jenv.newIntType(lt.isSigned() || rt.isSigned(), max(lt, rt) + 1);
@@ -79,7 +79,7 @@ public class Arith {
 
     public static class SUB extends INTINT {
         public SUB() {
-            super("-");
+            super("-", Expr.PREC_A_ADD);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             return jenv.newIntType(true, max(lt, rt) + 1);
@@ -91,7 +91,7 @@ public class Arith {
 
     public static class MUL extends INTINT {
         public MUL() {
-            super("*");
+            super("*", Expr.PREC_A_MUL);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             return jenv.newIntType(lt.isSigned() || rt.isSigned(), lt.getSize() + rt.getSize());
@@ -103,7 +103,7 @@ public class Arith {
 
     public static class DIV extends INTINT {
         public DIV() {
-            super("/");
+            super("/", Expr.PREC_A_MUL);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             return jenv.newIntType(lt.isSigned() || rt.isSigned(), lt.getSize());
@@ -115,7 +115,7 @@ public class Arith {
 
     public static class MOD extends INTINT {
         public MOD() {
-            super("%");
+            super("%", Expr.PREC_A_MUL);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             return jenv.newIntType(lt.isSigned() || rt.isSigned(), lt.getSize());
@@ -127,7 +127,7 @@ public class Arith {
 
     public static class AND extends INTINT {
         public AND() {
-            super("&");
+            super("&", Expr.PREC_A_AND);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
@@ -140,7 +140,7 @@ public class Arith {
 
     public static class OR extends INTINT {
         public OR() {
-            super("|");
+            super("|", Expr.PREC_A_OR);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
@@ -153,7 +153,7 @@ public class Arith {
 
     public static class XOR extends INTINT {
         public XOR() {
-            super("^");
+            super("^", Expr.PREC_A_XOR);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
@@ -166,7 +166,7 @@ public class Arith {
 
     public static class SHL extends INTINT {
         public SHL() {
-            super("<<");
+            super("<<", Expr.PREC_A_SHIFT);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
@@ -179,7 +179,7 @@ public class Arith {
 
     public static class SHR extends INTINT {
         public SHR() {
-            super(">>");
+            super(">>", Expr.PREC_A_SHIFT);
         }
         public Type typeCheck(JIGIRTypeEnv jenv, JIGIRTypeEnv.TYPE_int lt, JIGIRTypeEnv.TYPE_int rt) {
             // TODO: is this type rule reasonable?
@@ -192,7 +192,7 @@ public class Arith {
 
     public static class COMP extends UnOpExpr.UnOpImpl {
         public COMP() {
-            super("~");
+            super("~", Expr.PREC_UN);
         }
         public Type typeCheck(TypeEnv env, Typeable inner) {
             // JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -207,7 +207,7 @@ public class Arith {
 
     public static class NEG extends UnOpExpr.UnOpImpl {
         public NEG() {
-            super("-");
+            super("-", Expr.PREC_UN);
         }
         public Type typeCheck(TypeEnv env, Typeable inner) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;
@@ -222,7 +222,7 @@ public class Arith {
 
     public static class UNSIGN extends UnOpExpr.UnOpImpl {
         public UNSIGN() {
-            super("+");
+            super("+", Expr.PREC_UN);
         }
         public Type typeCheck(TypeEnv env, Typeable inner) {
             JIGIRTypeEnv jenv = (JIGIRTypeEnv)env;

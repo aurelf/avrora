@@ -34,12 +34,12 @@ package jintgen.gen;
 
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
-import cck.util.Util;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
-import jintgen.types.Type;
-import jintgen.types.TypeRef;
+import jintgen.types.*;
+import jintgen.Main;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -59,9 +59,10 @@ public class InterpreterGenerator extends Generator {
         impl.add(tr("$visitor"));
         setPrinter(newAbstractClassPrinter("interpreter", null, tr("$state"), impl, null));
         codeGen = new CodeGen();
-        for (SubroutineDecl d : arch.subroutines.values())
+        generateUtilities();
+        for (SubroutineDecl d : arch.subroutines)
             visit(d);
-        for (InstrDecl d : arch.instructions.values())
+        for (InstrDecl d : arch.instructions)
             visit(d);
         endblock();
         close();
@@ -79,13 +80,35 @@ public class InterpreterGenerator extends Generator {
         properties.setProperty("state", className("State"));
     }
 
+    void generateUtilities() {
+        startblock("boolean bit_get(int v, int bit)");
+        println("return (v & (1 << bit)) != 0;");
+        endblock();
 
+        startblock("int bit_set(int v, int bit, boolean value)");
+        println("if ( value ) return v | (1 << bit);");
+        println("else return v & ~(1 << bit);");
+        endblock();
+
+        startblock("int map_get(int[] m, int ind)");
+        println("return m[ind];");
+        endblock();
+
+        startblock("void map_set(int[] m, int ind, int v)");
+        println("m[ind] = v;");
+        endblock();
+
+        startblock("int map_get(byte[] m, int ind)");
+        println("return m[ind];");
+        endblock();
+
+        startblock("void map_set(byte[] m, int ind, int v)");
+        println("m[ind] = (byte)v;");
+        endblock();
+    }
 
     public void visit(InstrDecl d) {
         startblock("public void visit($instr.$1 i) ", d.innerClassName);
-        // emit the default next pc computation
-        //println("nextpc = pc + " + (d.getEncodingSize() / 8) + ';');
-
         // initialize the map of local variables to operands
         codeGen.variableMap = new HashMap<String, String>();
         for (AddrModeDecl.Operand o : d.getOperands()) {
@@ -93,26 +116,24 @@ public class InterpreterGenerator extends Generator {
         }
         // emit the code of the body
         generateCode(d.code.getStmts());
-        // emit the cycle count update
-        println("cycles += " + d.getCycles() + ';');
         endblock();
     }
 
     public void visit(SubroutineDecl d) {
         if ( !d.code.hasBody()) {
-            print("protected abstract " + javaType(d.ret) + ' ' + d.name.image);
+            print("protected abstract " + codeGen.renderType(d.ret) + ' ' + d.name.image);
             beginList("(");
             for (SubroutineDecl.Parameter p : d.getParams()) {
-                print(javaType(p.type) + ' ' + p.name.image);
+                print(codeGen.renderType(p.type) + ' ' + p.name.image);
             }
             endListln(");");
             return;
         }
-        if (d.inline) return;
-        print("public " + javaType(d.ret) + ' ' + d.name.image);
+        if (d.inline && Main.INLINE.get()) return;
+        print("public " + codeGen.renderType(d.ret) + ' ' + d.name.image);
         beginList("(");
         for (SubroutineDecl.Parameter p : d.getParams()) {
-            print(javaType(p.type) + ' ' + p.name.image);
+            print(codeGen.renderType(p.type) + ' ' + p.name.image);
         }
         endList(") ");
         startblock();
@@ -127,187 +148,18 @@ public class InterpreterGenerator extends Generator {
     }
 
     void generateCode(List<Stmt> stmts) {
-        ConstantPropagator cp = new ConstantPropagator();
-        stmts = cp.process(stmts);
         codeGen.visitStmtList(stmts);
     }
 
     protected class CodeGen extends PrettyPrinter {
 
-        protected final HashMap<String, PrettyPrinter.MapRep> mapMap;
         protected HashMap<String, String> variableMap;
 
         CodeGen() {
             super(p);
-            mapMap = new HashMap<String, PrettyPrinter.MapRep>();
-            mapMap.put("regs", new ArrayMap("sram"));
-            mapMap.put("uregs", new GetterSetterMap("getRegisterUnsigned", "writeRegisterByte"));
-            mapMap.put("wregs", new GetterSetterMap("getRegisterWord", "writeRegisterWord"));
-            mapMap.put("aregs", new GetterSetterMap("getRegisterWord", "writeRegisterWord"));
-            mapMap.put("sram", new GetterSetterMap("data.read", "data.write"));
-            mapMap.put("ioregs", new IORegMap());
-            mapMap.put("flash", new GetterSetterMap("getFlash", "---"));
-            mapMap.put("isize", new GetterSetterMap("getInstrSize", "---"));
-        }
-
-        protected class GetterSetterMap extends PrettyPrinter.MapRep {
-
-            public final String readMeth;
-            public final String writeMeth;
-
-            GetterSetterMap(String r, String w) {
-                readMeth = r;
-                writeMeth = w;
-            }
-
-            public void generateWrite(Expr ind, Expr val) {
-                emitCall(getMethod(writeMeth), ind, val);
-                println(";");
-            }
-
-            public void generateBitWrite(Expr ind, Expr b, Expr val) {
-                // TODO: extract out expr value if it is not a simple expression
-                print(getMethod(writeMeth) + '(');
-                ind.accept(codeGen);
-                print(", Arithmetic.setBit(" + readMeth + '(');
-                ind.accept(codeGen);
-                print("), ");
-                b.accept(codeGen);
-                print(", ");
-                val.accept(codeGen);
-                println("));");
-            }
-
-            public void generateRead(Expr ind) {
-                emitCall(getMethod(readMeth), ind);
-            }
-
-            public void generateBitRead(Expr ind, Expr b) {
-                print("Arithmetic.getBit(" + getMethod(readMeth) + '(');
-                ind.accept(codeGen);
-                print("), ");
-                b.accept(codeGen);
-                print(")");
-            }
-
-            public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-                if (ind.isVariable() || ind.isLiteral()) {
-                    String var = variableMap.get(ind.toString());
-                    if (var == null) var = ind.toString();
-                    print(writeMeth + '(' + var + ", ");
-                    int mask = Arithmetic.getBitRangeMask(l, h);
-                    int smask = mask << l;
-                    int imask = ~smask;
-                    print('(' + readMeth + '(' + var + ')' + andString(imask) + ')');
-                    print(" | (");
-                    emitAnd(val, mask);
-                    if (l != 0) print(" << " + l);
-                    println(");");
-                } else {
-                    throw Util.failure("non-constant expr into map in bit-range assignment");
-                }
-            }
-        }
-
-        protected class ArrayMap extends PrettyPrinter.MapRep {
-            public final String varname;
-            public final Token token;
-
-            ArrayMap(String v) {
-                varname = v;
-                token = new Token();
-                token.image = varname;
-            }
-
-            public void generateWrite(Expr ind, Expr val) {
-                print(getVariable(token) + '[');
-                ind.accept(codeGen);
-                print("] = ");
-                val.accept(codeGen);
-                println(";");
-            }
-
-            public void generateBitWrite(Expr ind, Expr b, Expr val) {
-                // TODO: extract out expr value if it is not a simple expression
-                print(getVariable(token) + '[');
-                ind.accept(codeGen);
-                print("] = Arithmetic.getBit(" + getVariable(token) + '[');
-                ind.accept(codeGen);
-                print("], ");
-                b.accept(codeGen);
-                print(", ");
-                val.accept(codeGen);
-                println("));");
-            }
-
-            public void generateRead(Expr ind) {
-                print(getVariable(token) + '[');
-                ind.accept(codeGen);
-                print("]");
-            }
-
-            public void generateBitRead(Expr ind, Expr b) {
-                print("Arithmetic.getBit(" + getVariable(token) + '[');
-                ind.accept(codeGen);
-                print("], ");
-                b.accept(codeGen);
-                print(")");
-            }
-
-            public void generateBitRangeWrite(Expr ind, int l, int h, Expr val) {
-                if (ind.isVariable() || ind.isLiteral()) {
-                    Token t = new Token();
-                    t.image = ind.toString();
-                    String var = getVariable(t);
-                    if (var == null) var = ind.toString();
-                    print(getVariable(token) + '[' + var + "] = ");
-                    int mask = Arithmetic.getBitRangeMask(l, h);
-                    int smask = mask << l;
-                    int imask = ~smask;
-                    print(getVariable(token) + '[' + var + ']' + andString(imask) + ')');
-                    print(" | (");
-                    emitAnd(val, mask);
-                    if (l != 0) print(" << " + l);
-                    println(");");
-                } else {
-                    throw Util.failure("non-constant expr into map in bit-range assignment");
-                }
-            }
-        }
-
-        protected class IORegMap extends GetterSetterMap {
-            IORegMap() {
-                super("getIORegisterByte", "writeIORegisterByte");
-            }
-
-            public void generateBitWrite(Expr ind, Expr b, Expr val) {
-                print(getMethod("getIOReg") + '(');
-                ind.accept(codeGen);
-                print(").writeBit(");
-                b.accept(codeGen);
-                print(", ");
-                val.accept(codeGen);
-                println(");");
-            }
-
-            public void generateBitRead(Expr ind, Expr b) {
-                print(getMethod("getIOReg") + '(');
-                ind.accept(codeGen);
-                print(").readBit(");
-                b.accept(codeGen);
-                print(")");
-            }
-        }
-
-
-        protected MapRep getMapRep(String n) {
-            MapRep mr = mapMap.get(n);
-            if (mr == null) throw Util.failure("unknown map " + StringUtil.quote(n));
-            return mr;
         }
 
         protected String getVariable(Token variable) {
-            // TODO: get rid of direct register references
             String var = variableMap.get(variable.image);
             if (var == null) var = variable.image;
             return var;
@@ -319,27 +171,14 @@ public class InterpreterGenerator extends Generator {
             print(' ' + op + ' ' + val + ')');
         }
 
-        protected String andString(int mask) {
-            return " & " + StringUtil.to0xHex(mask, 8);
-        }
-
-        protected void emitAnd(Expr e, int val) {
-            print("(");
-            this.inner(e, Expr.PREC_A_AND);
-            print(andString(val) + ')');
-        }
-
-        protected void emitCall(String s, Expr e) {
+        protected void emitCall(String s, Expr... exprs) {
             print(s + '(');
-            e.accept(this);
-            print(")");
-        }
-
-        protected void emitCall(String s, Expr e1, Expr e2) {
-            print(s + '(');
-            e1.accept(this);
-            print(", ");
-            e2.accept(this);
+            boolean first = true;
+            for ( Expr e : exprs ) {
+                if ( !first ) print(", ");
+                e.accept(this);
+                first = false;
+            }
             print(")");
         }
 
@@ -352,13 +191,19 @@ public class InterpreterGenerator extends Generator {
         }
 
         public void visit(ConversionExpr e) {
-            print("("+javaType(e.typename)+")");
+            print("("+renderType(e.typename)+")");
             inner(e.expr, Expr.PREC_TERM);
         }
 
 
         public void visit(IndexExpr e) {
-            throw Util.unimplemented();
+            Expr expr = e.expr;
+            if ( isMap(expr) ) emitCall("map_get", expr, e.index);
+            else emitCall("bit_get", expr, e.index);
+        }
+
+        private boolean isMap(Expr expr) {
+            return expr.getType().isBasedOn("map");
         }
 
         public void visit(FixedRangeExpr e) {
@@ -369,22 +214,131 @@ public class InterpreterGenerator extends Generator {
                 emitBinOp(e.operand, ">>", Expr.PREC_A_SHIFT, low);
                 print(" & " + StringUtil.to0xHex(mask, 8) + ')');
             } else {
-                emitAnd(e.operand, mask);
+                print("(");
+                inner(e.operand, Expr.PREC_A_AND);
+                print(" & " + StringUtil.to0xHex(mask, 8) + ')');
             }
         }
 
         public void visit(BinOpExpr e) {
-            binop(e.operation.image, e.left, e.right, e.getPrecedence());
+            String operation = e.operation.image;
+            if ( e.getBinOp() instanceof Logical.AND ) operation = "&&";
+            if ( e.getBinOp() instanceof Logical.OR ) operation = "||";
+            if ( e.getBinOp() instanceof Logical.XOR ) operation = "!=";
+            binop(operation, e.left, e.right, e.getPrecedence());
+        }
+
+        public void visit(UnOpExpr e) {
+            if ( e.getUnOp() instanceof Arith.UNSIGN ) {
+                JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int) e.operand.getType();
+                int size = it.getSize();
+                int mask = 0xffffffff >>> (32-size);
+                printer.print("(");
+                inner(e.operand, Expr.PREC_A_AND);
+                printer.print("& "+StringUtil.to0xHex(mask, 8)+")");
+            } else {
+                printer.print(e.operation.image);
+                inner(e.operand, e.getPrecedence());
+            }
+        }
+
+        public String renderType(Type t) {
+            // TODO: compute the correct java type depending on the situation
+            return renderTypeCon(t.getTypeCon());
+        }
+
+        private String renderTypeCon(TypeCon tc) {
+            if ( tc instanceof JIGIRTypeEnv.TYPE_enum )
+                return tr("$symbol.$1", tc.getName());
+            else if ( tc instanceof JIGIRTypeEnv.TYPE_operand )
+                return tr("$operand.$1", tc.getName());
+            else return tc.toString();
+        }
+
+        public String renderType(TypeRef t) {
+            // TODO: compute the correct java type depending on the situation
+            return renderTypeCon(t.resolveTypeCon(arch.typeEnv));
+        }
+
+        public void visit(AssignStmt s) {
+            if ( s.dest instanceof IndexExpr ) {
+                IndexExpr ind = (IndexExpr)s.dest;
+                if ( isMap(ind.expr)) {
+                    emitCall("map_set", ind.expr, ind.index, s.expr);
+                    println(";");
+                } else {
+                    // TODO: of course this is not correct!
+                    emitCall("bit_set", ind.expr, ind.index, s.expr);
+                    println(";");
+                }
+            } else if ( s.dest instanceof FixedRangeExpr ) {
+
+            } else if ( s.dest instanceof VarExpr ) {
+                s.dest.accept(this);
+                print(" = ");
+                s.expr.accept(this);
+                println(";");
+            }
+        }
+    }
+
+    protected class NCodeGen implements CodeAccumulator<Type, Type> {
+        public Type visit(BinOpExpr e, Type expect) {
+            return expect;
+        }
+
+        public Type visit(UnOpExpr e, Type expect) {
+            return expect;
+        }
+
+        public Type visit(IndexExpr e, Type expect) {
+            return expect;
+        }
+
+        public Type visit(FixedRangeExpr e, Type expect) {
+            return expect;
+        }
+
+        public List<Type> visitExprList(List<Expr> l, Type expect) {
+            return null;
+        }
+
+        public Type visit(CallExpr e, Type expect) {
+            return expect;
+        }
+
+        public Type visit(ReadExpr e, Type expect) {
+            return expect;
+        }
+
+        public Type visit(ConversionExpr e, Type expect) {
+            Type t = e.expr.accept(this, expect);
+            return expect;
+        }
+
+        public Type visit(Literal.BoolExpr e, Type expect) {
+            if ( e.value ) print("1");
+            else print("0");
+            return expect;
+        }
+
+        public Type visit(Literal.IntExpr e, Type expect) {
+            return expect;
+        }
+
+        public Type visit(VarExpr e, Type expect) {
+            return expect;
+        }
+
+        public Type visit(DotExpr e, Type expect) {
+            return expect;
+        }
+
+        protected void convert_int(Expr e, JIGIRTypeEnv.TYPE_int from, JIGIRTypeEnv.TYPE_int to) {
+
         }
 
     }
 
-    protected String javaType(Type t) {
-        throw Util.unimplemented();
-    }
-
-    protected String javaType(TypeRef t) {
-        throw Util.unimplemented();
-    }
 
 }

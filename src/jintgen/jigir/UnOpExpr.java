@@ -167,8 +167,11 @@ public class UnOpExpr extends Expr {
      */
     public abstract static class UnOpImpl implements TypeCon.UnOp {
         public final String operation;
-        protected UnOpImpl(String op) {
+        public final int prec;
+
+        protected UnOpImpl(String op, int p) {
             operation = op;
+            prec = p;
         }
 
         public String getOperation() {

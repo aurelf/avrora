@@ -159,7 +159,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
 
     public ConstantPropagator() {
         trackedMaps = new HashSet<String>();
-        trackedMaps.add("$regs"); // this is all for now
+        trackedMaps.add("regs"); // this is all for now
     }
 
     public Environ createEnvironment() {

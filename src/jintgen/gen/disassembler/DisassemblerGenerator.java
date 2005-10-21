@@ -157,7 +157,7 @@ public class DisassemblerGenerator extends Generator {
 
     private int getMaxPriority() {
         int maxprio = 0;
-        for ( InstrDecl d : arch.instructions.values() ) {
+        for ( InstrDecl d : arch.instructions ) {
             if (!d.pseudo) {
                 for ( AddrModeDecl am : d.addrMode.addrModes ) {
                     for ( FormatDecl ed : am.encodings ) {
@@ -171,7 +171,7 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private void visitInstructions() {
-        for ( InstrDecl d : arch.instructions.values() ) {
+        for ( InstrDecl d : arch.instructions ) {
             if ( d.pseudo ) {
                 pseudoInstrs++;
             } else {
@@ -228,7 +228,7 @@ public class DisassemblerGenerator extends Generator {
     }
 
     private void generateDecodeTables() {
-        for ( EnumDecl d : arch.enums.values() ) {
+        for ( EnumDecl d : arch.enums ) {
             generateEnumDecodeTable(d);
         }
     }
