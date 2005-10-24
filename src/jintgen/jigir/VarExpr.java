@@ -49,6 +49,8 @@ public class VarExpr extends Expr {
      */
     public final Token variable;
 
+    protected Decl decl;
+
     /**
      * The constructor for the <code>VarExpr</code> class simply initializes the reference to the name of the
      * variable.
@@ -133,5 +135,13 @@ public class VarExpr extends Expr {
 
     public boolean isLvalue() {
         return true;
+    }
+
+    public void setDecl(Decl d) {
+        decl = d;
+    }
+
+    public Decl getDecl() {
+        return decl;
     }
 }

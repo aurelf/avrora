@@ -34,6 +34,8 @@ package jintgen.jigir;
 
 import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.SubroutineDecl;
+
 import java.util.List;
 
 /**
@@ -53,6 +55,8 @@ public class CallStmt extends Stmt {
      * as arguments to the subroutine.
      */
     public final List<Expr> args;
+
+    protected SubroutineDecl decl;
 
     /**
      * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine
@@ -108,5 +112,13 @@ public class CallStmt extends Stmt {
      */
     public <Res, Env> Res accept(StmtAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
+    }
+
+    public void setDecl(SubroutineDecl d) {
+        decl = d;
+    }
+
+    public SubroutineDecl getDecl() {
+        return decl;
     }
 }

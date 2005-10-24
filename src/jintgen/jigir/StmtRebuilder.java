@@ -55,7 +55,7 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
     }
 
     public Stmt visit(WriteStmt s, Env env) {
-        Expr ne = s.expr.accept(this, env);
+        Expr ne = visitExpr(s.expr, env);
         if ( ne != s.expr ) return new WriteStmt(s.method, s.type, s.operand, ne);
         return s;
     }
@@ -65,7 +65,7 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
     }
 
     public Stmt visit(DeclStmt s, Env env) {
-        Expr ni = s.init.accept(this, env);
+        Expr ni = visitExpr(s.init, env);
         if (ni != s.init)
             return new DeclStmt(s.name, s.type, ni);
         else
@@ -73,7 +73,7 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
     }
 
     public Stmt visit(IfStmt s, Env env) {
-        Expr nc = s.cond.accept(this, env);
+        Expr nc = visitExpr(s.cond, env);
         List<Stmt> nt = visitStmtList(s.trueBranch, env);
         List<Stmt> nf = visitStmtList(s.falseBranch, env);
 
@@ -112,8 +112,8 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
     }
 
     public Stmt visit(AssignStmt s, Env env) {
-        Expr ni = s.dest.accept(this, env);
-        Expr ne = s.expr.accept(this, env);
+        Expr ni = visitExpr(s.dest, env);
+        Expr ne = visitExpr(s.expr, env);
         if (ni != s.dest || ne != s.expr)
             return new AssignStmt(ni, ne);
         else
@@ -121,7 +121,7 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
     }
 
     public Stmt visit(ReturnStmt s, Env env) {
-        Expr ne = s.expr.accept(this, env);
+        Expr ne = visitExpr(s.expr, env);
         if (ne != s.expr)
             return new ReturnStmt(ne);
         else

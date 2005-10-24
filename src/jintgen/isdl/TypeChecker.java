@@ -72,7 +72,8 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Environment visit(CallStmt s, Environment env) {
-        typeCheckCall(env, s.method, s.args);
+        SubroutineDecl d = typeCheckCall(env, s.method, s.args);
+        s.setDecl(d);
         return env;
     }
 
@@ -192,6 +193,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Type visit(CallExpr e, Environment env) {
         SubroutineDecl d = typeCheckCall(env, e.method, e.args);
+        e.setDecl(d);
         return d.ret.resolve(typeEnv);
     }
 
@@ -202,7 +204,10 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         return accessMethod.type;
     }
 
-    public Type visit(ConversionExpr e, Environment env) { return e.typename.resolve(typeEnv); }
+    public Type visit(ConversionExpr e, Environment env) {
+        Type t = typeOf(e.expr, env);
+        return e.typename.resolve(typeEnv);
+    }
 
     public Type visit(Literal.BoolExpr e, Environment env) { return typeEnv.BOOLEAN; }
 

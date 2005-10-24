@@ -58,9 +58,16 @@ public abstract class OperandTypeDecl extends Item {
 
     public static class Accessor {
         public final boolean polymorphic;
+        protected SubroutineDecl subroutine;
         public Type type;
         Accessor(boolean p) {
             polymorphic = p;
+        }
+        public SubroutineDecl getSubroutine() {
+            return subroutine;
+        }
+        public void setSubroutine(SubroutineDecl d) {
+            subroutine = d;
         }
     }
 

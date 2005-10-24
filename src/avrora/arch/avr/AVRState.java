@@ -69,7 +69,8 @@ public class AVRState {
     protected CodeSegment flash;
     protected ActiveRegister[] ioregs;
     protected DeltaQueue queue;
-    protected ActiveRegister SREG;
+    protected ActiveRegister SREG_reg;
+    protected int SREG;
     protected int cycles;
 
     /**
@@ -165,7 +166,7 @@ public class AVRState {
      * @return the value of the status register as a byte.
      */
     public byte getSREG() {
-        return SREG.read();
+        return SREG_reg.read();
     }
 
     /**
@@ -204,41 +205,48 @@ public class AVRState {
         return simulator;
     }
 
-    protected int read_regs(AVRSymbol.GPR indx) {
-        return regs[indx.value];
+    protected static int map_get(byte[] a, AVRSymbol.GPR indx) {
+        return a[indx.value];
     }
 
-    protected int read_aregs(AVRSymbol.ADR indx) {
-        int val = indx.value;
-        return Arithmetic.uword(regs[val], regs[val+1]);
+    protected static int map_get(byte[] a, AVRSymbol.EGPR indx) {
+        int ind = indx.value;
+        return Arithmetic.uword(a[ind], a[ind+1]);
     }
 
-    protected int read_wregs(AVRSymbol.ADR indx) {
-        int val = indx.value;
-        return Arithmetic.uword(regs[val], regs[val+1]);
+    protected static int map_get(byte[] a, AVRSymbol.ADR indx) {
+        int ind = indx.value;
+        return Arithmetic.uword(a[ind], a[ind+1]);
     }
 
-    protected void write_regs(AVRSymbol.GPR indx, int val) {
-        regs[indx.value] = (byte)val;
+    protected static void map_set(byte[] a, AVRSymbol.GPR indx, int val) {
+        a[indx.value] = (byte)val;
     }
 
-    protected void write_aregs(AVRSymbol.ADR indx, int val) {
-        int r = indx.value;
-        regs[r] = Arithmetic.low(val);
-        regs[r+1] = Arithmetic.high(val);
+    protected static void map_set(byte[] a, AVRSymbol.EGPR indx, int val) {
+        int ind = indx.value;
+        a[ind] = Arithmetic.low(val);
+        a[ind+1] = Arithmetic.high(val);
     }
 
-    protected void write_wregs(AVRSymbol.GPR indx, int val) {
-        int r = indx.value;
-        regs[r] = Arithmetic.low(val);
-        regs[r+1] = Arithmetic.high(val);
+    protected static void map_set(byte[] a, AVRSymbol.ADR indx, int val) {
+        int ind = indx.value;
+        a[ind] = Arithmetic.low(val);
+        a[ind+1] = Arithmetic.high(val);
+    }
+    protected static int map_get(Segment s, int addr) {
+        return s.read(addr);
     }
 
-    protected byte read_sram(int indx) {
-        return sram.read(indx);
+    protected static void map_set(Segment s, int addr, int val) {
+        s.write(addr, (byte)val);
     }
 
-    protected void write_sram(int indx, int val) {
-        sram.write(indx, (byte)val);
+    protected static int map_get(ActiveRegister[] s, int addr) {
+        return s[addr].read();
+    }
+
+    protected static void map_set(ActiveRegister[] s, int addr, int val) {
+        s[addr].write((byte)val);
     }
 }

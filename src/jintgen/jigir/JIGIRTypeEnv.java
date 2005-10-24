@@ -58,6 +58,9 @@ public class JIGIRTypeEnv extends TypeEnv {
     public final Relation ASSIGNABLE;
     public final Relation COMPARABLE;
     public final Relation PROMOTABLE;
+    public Arith.SHL SHL;
+    public Arith.SHR SHR;
+    public Arith.AND AND;
 
     /**
      * The <code>TYPECON_int</code> class represents the type constructor for types
@@ -203,11 +206,14 @@ public class JIGIRTypeEnv extends TypeEnv {
         addBinOp(INT, INT, new Arith.DIV());
         addBinOp(INT, INT, new Arith.MOD());
         addBinOp(INT, INT, new Arith.MUL());
-        addBinOp(INT, INT, new Arith.AND());
+        AND = new Arith.AND();
+        addBinOp(INT, INT, AND);
         addBinOp(INT, INT, new Arith.OR());
         addBinOp(INT, INT, new Arith.XOR());
-        addBinOp(INT, INT, new Arith.SHL());
-        addBinOp(INT, INT, new Arith.SHR());
+        SHL = new Arith.SHL();
+        addBinOp(INT, INT, SHL);
+        SHR = new Arith.SHR();
+        addBinOp(INT, INT, SHR);
 
         // add logical not operator
         addUnOp(BOOL, new Logical.NOT());

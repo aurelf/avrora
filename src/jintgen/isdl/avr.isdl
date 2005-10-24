@@ -178,6 +178,8 @@ architecture avr {
     external subroutine enterSleepMode(): void;
     external subroutine storeProgramMemory(): void;
     external subroutine stop(): void;
+    external subroutine getIORbit(ior: int, bit: int): boolean;
+    external subroutine setIORbit(ior: int, bit: int, v: boolean): void;
 
     inline subroutine bit(b: boolean): +int.1 {
         if ( b ) return 1;
@@ -412,7 +414,7 @@ architecture avr {
         encoding = CLR where { bit = bit }
         property cycles: int = 1;
         execute {
-            ioregs[SREG][bit:int] = false;
+            setIORbit(SREG, bit:int, false);
         }
     }
 
@@ -432,7 +434,7 @@ architecture avr {
         encoding = BRCLR where { bit = bit }
         property cycles: int = 1;
         execute {
-            if (!(ioregs[SREG][bit:int]) ) relativeBranch(target);
+            if (!getIORbit(SREG, bit:int) ) relativeBranch(target);
         }
     }
 
@@ -442,7 +444,7 @@ architecture avr {
         encoding = BRSET where { bit = bit }
         property cycles: int = 1;
         execute {
-            if ( ioregs[SREG][bit:int] ) relativeBranch(target);
+            if ( getIORbit(SREG, bit:int) ) relativeBranch(target);
         }
     }
 
@@ -624,7 +626,7 @@ architecture avr {
         encoding = SET where { bit = bit }
         property cycles: int = 1;
         execute {
-            ioregs[SREG][bit:int] = true;
+            setIORbit(SREG, bit:int, true);
         }
     }
 
@@ -649,7 +651,7 @@ architecture avr {
         encoding = { 0b10011000, ior[4:0], bit[2:0] }
         property cycles: int = 2;
         execute {
-            ioregs[ior:int][bit:int] = false;
+            setIORbit(ior:int, bit:int, false);
         }
     }
 
@@ -1161,7 +1163,7 @@ architecture avr {
         encoding = { 0b10011010, ior[4:0], bit[2:0] }
         property cycles: int = 2;
         execute {
-            ioregs[ior:int][bit:int] = true;
+            setIORbit(ior:int, bit:int, true);
         }
     }
 
@@ -1169,7 +1171,7 @@ architecture avr {
         encoding = { 0b10011001, ior[4:0], bit[2:0] }
         property cycles: int = 1;
         execute {
-            if (!(ioregs[ior:int][bit:int])) skip();
+            if (!getIORbit(ior:int, bit:int)) skip();
         }
     }
 
@@ -1177,7 +1179,7 @@ architecture avr {
         encoding = { 0b10011011, ior[4:0], bit[2:0] }
         property cycles: int = 1;
         execute {
-            if ( ioregs[ior:int][bit:int] ) skip();
+            if ( getIORbit(ior:int, bit:int) ) skip();
         }
     }
 

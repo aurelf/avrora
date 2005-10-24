@@ -35,6 +35,7 @@ package jintgen.jigir;
 import cck.parser.SourcePoint;
 import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.SubroutineDecl;
 import java.util.List;
 
 /**
@@ -49,6 +50,8 @@ public class CallExpr extends Expr {
      * The <code>method</code> field stores a string that represents the name of the subroutine being called.
      */
     public final Token method;
+
+    protected SubroutineDecl decl;
 
     /**
      * The <code>args</code> fields stores a reference to a list of expressions that are evaluated and passed
@@ -128,5 +131,13 @@ public class CallExpr extends Expr {
 
     public SourcePoint getSourcePoint() {
         return method.getSourcePoint();
+    }
+
+    public void setDecl(SubroutineDecl d) {
+        decl = d;
+    }
+
+    public SubroutineDecl getDecl() {
+        return decl;
     }
 }

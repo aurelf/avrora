@@ -45,8 +45,9 @@ import java.util.List;
 public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
 
     public Expr visit(BinOpExpr e, Env env) {
-        Expr l = e.left.accept(this, env);
-        Expr r = e.right.accept(this, env);
+        Expr left = e.left;
+        Expr l = visitExpr(left, env);
+        Expr r = visitExpr(e.right, env);
         return rebuild(e, l, r);
     }
 
@@ -60,14 +61,14 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     }
 
     public Expr visit(IndexExpr e, Env env) {
-        Expr i = e.expr.accept(this, env);
-        Expr j = e.index.accept(this, env);
+        Expr i = visitExpr(e.expr, env);
+        Expr j = visitExpr(e.index, env);
         if (i != e.expr || j != e.index) return new IndexExpr(i, j);
         return e;
     }
 
     public Expr visit(FixedRangeExpr e, Env env) {
-        Expr o = e.operand.accept(this, env);
+        Expr o = visitExpr(e.operand, env);
         if (o != e.operand) return new FixedRangeExpr(o, e.low_bit, e.high_bit);
         return e;
     }
@@ -77,7 +78,7 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
         boolean changed = false;
 
         for ( Expr a : l ) {
-            Expr na = a.accept(this, env);
+            Expr na = visitExpr(a, env);
             if (na != a) changed = true;
             nl.add(na);
         }
@@ -88,8 +89,15 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
 
     public Expr visit(CallExpr e, Env env) {
         List<Expr> nargs = visitExprList(e.args, env);
-        if (nargs != e.args)
-            return new CallExpr(e.method, nargs);
+        return rebuild(e, nargs);
+    }
+
+    protected Expr rebuild(CallExpr e, List<Expr> nargs) {
+        if (nargs != e.args) {
+            CallExpr callExpr = new CallExpr(e.method, nargs);
+            callExpr.setDecl(e.getDecl());
+            return callExpr;
+        }
         else
             return e;
     }
@@ -100,7 +108,7 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     }
 
     public Expr visit(ConversionExpr e, Env env) {
-        Expr ne = e.expr.accept(this, env);
+        Expr ne = visitExpr(e.expr, env);
         if (ne != e.expr) return new ConversionExpr(ne, e.typename);
         return e;
     }
@@ -116,7 +124,7 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     }
 
     public Expr visit(UnOpExpr e, Env env) {
-        Expr ne = e.operand.accept(this, env);
+        Expr ne = visitExpr(e.operand, env);
         return rebuild(e, ne);
     }
 
@@ -137,6 +145,10 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     public Expr visit(DotExpr e, Env env) {
         // terminal node in the tree
         return e;
+    }
+
+    protected Expr visitExpr(Expr e, Env env) {
+        return e.accept(this, env);
     }
 
 
