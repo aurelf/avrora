@@ -32,7 +32,6 @@
 
 package jintgen.gen;
 
-import cck.util.Util;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
@@ -50,14 +49,15 @@ import java.util.*;
  */
 public class InterpreterGenerator extends Generator {
 
-    protected CodeGen codeGen;
+    protected JavaCodePrinter javaCodePrinter;
+    jintgen.gen.CodeSimplifier ncg;
 
     public void generate() throws IOException {
         initStatics();
         List<String> impl = new LinkedList<String>();
         impl.add(tr("$visitor"));
         setPrinter(newAbstractClassPrinter("interpreter", null, tr("$state"), impl, null));
-        codeGen = new CodeGen();
+        javaCodePrinter = new JavaCodePrinter();
         generateUtilities();
         for (SubroutineDecl d : arch.subroutines) visit(d);
         for (InstrDecl d : arch.instructions) visit(d);
@@ -75,6 +75,7 @@ public class InterpreterGenerator extends Generator {
         properties.setProperty("symbol", className("Symbol"));
         properties.setProperty("interpreter", className("Interpreter"));
         properties.setProperty("state", className("State"));
+        ncg = new jintgen.gen.CodeSimplifier(arch);
     }
 
     void generateUtilities() {
@@ -87,14 +88,18 @@ public class InterpreterGenerator extends Generator {
         println("else return v & ~(1 << bit);");
         endblock();
 
+        startblock("int bit_update(int v, int mask, int e)");
+        println("return (v & ~mask) | (e & mask);");
+        endblock();
+
     }
 
     public void visit(InstrDecl d) {
         startblock("public void visit($instr.$1 i) ", d.innerClassName);
         // initialize the map of local variables to operands
-        codeGen.variableMap = new HashMap<String, String>();
+        javaCodePrinter.variableMap = new HashMap<String, String>();
         for (AddrModeDecl.Operand o : d.getOperands()) {
-            codeGen.variableMap.put(o.name.image, "i." + o.name.image);
+            javaCodePrinter.variableMap.put(o.name.image, "i." + o.name.image);
         }
         // emit the code of the body
         generateCode(d.code.getStmts());
@@ -103,43 +108,43 @@ public class InterpreterGenerator extends Generator {
 
     public void visit(SubroutineDecl d) {
         if ( !d.code.hasBody()) {
-            print("protected abstract " + codeGen.renderType(d.ret) + ' ' + d.name.image);
+            print("protected abstract " + javaCodePrinter.renderType(d.ret) + ' ' + d.name.image);
             beginList("(");
             for (SubroutineDecl.Parameter p : d.getParams()) {
-                print(codeGen.renderType(p.type) + ' ' + p.name.image);
+                print(javaCodePrinter.renderType(p.type) + ' ' + p.name.image);
             }
             endListln(");");
             return;
         }
         if (d.inline && Main.INLINE.get()) return;
-        print("public " + codeGen.renderType(d.ret) + ' ' + d.name.image);
+        print("public " + javaCodePrinter.renderType(d.ret) + ' ' + d.name.image);
         beginList("(");
         for (SubroutineDecl.Parameter p : d.getParams()) {
-            print(codeGen.renderType(p.type) + ' ' + p.name.image);
+            print(javaCodePrinter.renderType(p.type) + ' ' + p.name.image);
         }
         endList(") ");
         startblock();
         // initialize the map of local variables to operands
-        codeGen.variableMap = new HashMap<String, String>();
+        javaCodePrinter.variableMap = new HashMap<String, String>();
         for (SubroutineDecl.Parameter p : d.getParams()) {
             String image = p.name.image;
-            codeGen.variableMap.put(image, image);
+            javaCodePrinter.variableMap.put(image, image);
         }
         generateCode(d.code.getStmts());
         endblock();
     }
 
     void generateCode(List<Stmt> stmts) {
-        NCodeGen ncg = new NCodeGen();
-        stmts = ncg.visitStmtList(stmts, new CGEnv());
-        codeGen.visitStmtList(stmts);
+        jintgen.gen.CodeSimplifier ncg = new jintgen.gen.CodeSimplifier(arch);
+        stmts = ncg.visitStmtList(stmts, new CGEnv(null, 0));
+        javaCodePrinter.visitStmtList(stmts);
     }
 
-    protected class CodeGen extends PrettyPrinter {
+    protected class JavaCodePrinter extends PrettyPrinter {
 
         protected HashMap<String, String> variableMap;
 
-        CodeGen() {
+        JavaCodePrinter() {
             super(p);
         }
 
@@ -147,17 +152,6 @@ public class InterpreterGenerator extends Generator {
             String var = variableMap.get(variable.image);
             if (var == null) var = variable.image;
             return var;
-        }
-
-        protected void emitCall(String s, Expr... exprs) {
-            print(s + '(');
-            boolean first = true;
-            for ( Expr e : exprs ) {
-                if ( !first ) print(", ");
-                e.accept(this);
-                first = false;
-            }
-            print(")");
         }
 
         public void visit(ConversionExpr e) {
@@ -191,217 +185,9 @@ public class InterpreterGenerator extends Generator {
             return renderTypeCon(t.resolveTypeCon(arch.typeEnv));
         }
 
-        public void visit(AssignStmt s) {
-            if ( s.dest instanceof IndexExpr ) {
-                IndexExpr ind = (IndexExpr)s.dest;
-                if ( isMap(ind.expr)) {
-                    emitCall("map_set", ind.expr, ind.index, s.expr);
-                    println(";");
-                } else {
-                    // TODO: of course this is not correct!
-                    emitCall("bit_set", ind.expr, ind.index, s.expr);
-                    println(";");
-                }
-            } else if ( s.dest instanceof FixedRangeExpr ) {
-
-            } else if ( s.dest instanceof VarExpr ) {
-                s.dest.accept(this);
-                print(" = ");
-                s.expr.accept(this);
-                println(";");
-            }
-        }
     }
 
-    class CGEnv {
-        Type expect;
-        int shift;
-    }
-
-    protected class NCodeGen extends StmtRebuilder<CGEnv> {
-        protected Type INT = arch.typeEnv.newIntType(true, 32);
-        protected Type LONG = arch.typeEnv.newIntType(true, 64);
-
-        public Expr visit(BinOpExpr e, CGEnv env) {
-            BinOpExpr.BinOpImpl b = e.getBinOp();
-            // TODO: catch special cases of shifting, masking, etc
-            // TODO: transform boolean operations to Java operations
-            Expr nl = promoteToMachineWidth(e.left, e.left.getType(), 0);
-            Expr nr = promoteToMachineWidth(e.right, e.right.getType(), 0);
-            return shift(rebuild(e, nl, nr), env.shift);
-        }
-
-        public Expr visit(UnOpExpr e, CGEnv env) {
-            Expr no = promoteToMachineWidth(e.operand, env.expect, 0);
-            // TODO: transform UNSIGN operation
-            return shift(rebuild(e, no), env.shift);
-        }
-
-        public Expr visit(IndexExpr e, CGEnv env) {
-            if ( isMap(e.expr) ) {
-                // translate map access into a call to map_get
-                List<Expr> l = new LinkedList<Expr>();
-                l.add(promoteToMachineWidth(e.expr, e.expr.getType(), 0));
-                l.add(promoteToMachineWidth(e.index, e.index.getType(), 0));
-                CallExpr ce = new CallExpr(token("map_get"), l);
-                return shift(ce, env.shift);
-            } else {
-                // translate bit access into a mask and shift
-                // TODO: transform bit access
-                List<Expr> l = new LinkedList<Expr>();
-                l.add(promoteToMachineWidth(e.expr, e.expr.getType(), 0));
-                l.add(promoteToMachineWidth(e.index, e.index.getType(), 0));
-                CallExpr ce = new CallExpr(token("bit_get"), l);
-                return shift(ce, env.shift);
-            }
-        }
-
-        public Expr visit(FixedRangeExpr e, CGEnv env) {
-            JIGIRTypeEnv.TYPE_int t = (JIGIRTypeEnv.TYPE_int)env.expect;
-            int width = e.high_bit - e.low_bit + 1;
-            if ( t.getSize() < width ) width = t.getSize();
-            int mask = (-1 >>> (32 - width)) << env.shift;
-            Expr ne = shift(e.operand, e.low_bit - env.shift);
-            return newAnd(ne, mask, e.getType());
-        }
-
-        private BinOpExpr newAnd(Expr l, int mask, Type t) {
-            BinOpExpr binop = new BinOpExpr(l, token("&"), new Literal.IntExpr(mask));
-            binop.setBinOp(arch.typeEnv.AND);
-            binop.setType(t);
-            return binop;
-        }
-    
-        public List<Expr> visitExprList(List<Expr> l, CGEnv env) {
-            // TODO: transform expression lists
-            return l;
-        }
-
-        public Expr visit(CallExpr e, CGEnv env) {
-            List<Expr> na = new LinkedList<Expr>();
-            List<SubroutineDecl.Parameter> params = e.getDecl().params;
-            Iterator<SubroutineDecl.Parameter> pi = params.iterator();
-            for ( Expr a : e.args ) {
-                SubroutineDecl.Parameter p = pi.next();
-                na.add(promoteToMachineWidth(a, p.type.resolve(arch.typeEnv), 0));
-            }
-            return shift(rebuild(e, na), env.shift);
-        }
-
-        public Expr visit(ReadExpr e, CGEnv env) {
-            SubroutineDecl s = e.getAccessor().getSubroutine();
-            List<Expr> l = new LinkedList<Expr>();
-            l.add(new VarExpr(e.operand));
-            Token name = s == null ? token("read_XXX") : s.name;
-            CallExpr ce = new CallExpr(name, l);
-            ce.setDecl(s);
-            return ce;
-        }
-
-        public Expr visit(ConversionExpr e, CGEnv env) {
-            // TODO: fix narrowing / widening conversions
-            return promoteToMachineWidth(e.expr, e.getType(), env.shift);
-        }
-
-        public Expr visit(Literal.BoolExpr e, CGEnv env) {
-            if ( env.expect == arch.typeEnv.BOOLEAN ) {
-                if ( env.shift != 0 ) throw Util.failure("invalid expected shift of boolean at "+e.getSourcePoint());
-                return e;
-            }
-            else if ( env.expect.isBasedOn("int") ) {
-                Literal.IntExpr ne = new Literal.IntExpr(1 << env.shift);
-                ne.setType(env.expect);
-                return ne;
-            } else
-                throw Util.failure("unexpected promotion type for boolean literal at "+e.getSourcePoint());
-        }
-
-        public Expr visit(Literal.IntExpr e, CGEnv env) {
-            if ( env.expect.isBasedOn("int") ) {
-                Literal.IntExpr ne = new Literal.IntExpr(e.value << env.shift);
-                ne.setType(env.expect);
-                return ne;
-            } else
-                throw Util.failure("unexpected promotion type for int literal at "+e.getSourcePoint());        }
-
-        public Expr visit(VarExpr e, CGEnv env) {
-            return shift(e, env.shift);
-        }
-
-        public Expr visit(DotExpr e, CGEnv env) {
-            return shift(e, env.shift);
-        }
-
-        public Expr shift(Expr e, int shift) {
-            if ( shift == 0 ) return e;
-            else {
-                Token t = token(shift < 0 ? "<<" : ">>");
-                BinOpExpr.BinOpImpl impl = shift < 0 ? arch.typeEnv.SHL : arch.typeEnv.SHR;
-                int dist = shift < 0 ? -shift : shift;
-                BinOpExpr ne = new BinOpExpr(e, t, new Literal.IntExpr(dist));
-                ne.setBinOp(impl);
-                ne.setType(e.getType());
-                return ne;
-            }
-        }
-
-        public Stmt visit(WriteStmt s, CGEnv env) {
-            OperandTypeDecl.Accessor accessor = s.getAccessor();
-            SubroutineDecl sub = accessor.getSubroutine();
-            List<Expr> l = new LinkedList<Expr>();
-            l.add(new VarExpr(s.operand));
-            l.add(promoteToMachineWidth(s.expr, machineType(accessor.type), 0));
-            Token method = sub == null ? token("write_XXX") : sub.name;
-            CallStmt cs = new CallStmt(method, l);
-            cs.setDecl(sub);
-            return cs;
-        }
-
-        public Stmt visit(AssignStmt s) {
-            // TODO: deal with assignments
-            return s;
-        }
-
-        private Expr promoteToMachineWidth(Expr e, Type t, int shift) {
-            CGEnv env = new CGEnv();
-            env.expect = machineType(t);
-            env.shift = shift;
-            return e.accept(this, env);
-        }
-
-        private Type machineType(Type t) {
-            if ( t instanceof JIGIRTypeEnv.TYPE_int ) {
-                JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)t;
-                if ( it.getSize() > 32 )
-                    return LONG;
-                else return INT;
-            } else {
-                return t;
-            }
-        }
-
-        protected Expr visitExpr(Expr e, CGEnv env) {
-            Expr ne;
-            if ( env.expect == null ) {
-                env.expect = e.getType();
-                ne = e.accept(this, env);
-                env.expect = null;
-            } else {
-                ne = e.accept(this, env);
-            }
-            return ne;
-        }
-
-        private Token token(String s) {
-            Token t = new Token();
-            t.image = s;
-            return t;
-        }
-    }
-
-    private static boolean isMap(Expr expr) {
+    public static boolean isMap(Expr expr) {
         return expr.getType().isBasedOn("map");
     }
-
-
 }

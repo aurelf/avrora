@@ -48,16 +48,26 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
 
     public Stmt visit(CallStmt s, Env env) {
         List<Expr> na = visitExprList(s.args, env);
-        if (na != s.args)
-            return new CallStmt(s.method, na);
-        else
-            return s;
+        if (na != s.args) return rebuild(s, na);
+        else return s;
+    }
+
+    protected Stmt rebuild(CallStmt s, List<Expr> na) {
+        CallStmt callStmt = new CallStmt(s.method, na);
+        callStmt.setDecl(s.getDecl());
+        return callStmt;
     }
 
     public Stmt visit(WriteStmt s, Env env) {
         Expr ne = visitExpr(s.expr, env);
-        if ( ne != s.expr ) return new WriteStmt(s.method, s.type, s.operand, ne);
+        if ( ne != s.expr ) return rebuild(s, ne);
         return s;
+    }
+
+    protected WriteStmt rebuild(WriteStmt s, Expr ne) {
+        WriteStmt writeStmt = new WriteStmt(s.method, s.type, s.operand, ne);
+        writeStmt.setAccessor(s.getAccessor());
+        return writeStmt;
     }
 
     public Stmt visit(CommentStmt s, Env env) {
@@ -116,6 +126,44 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
         Expr ne = visitExpr(s.expr, env);
         if (ni != s.dest || ne != s.expr)
             return new AssignStmt(ni, ne);
+        else
+            return s;
+    }
+
+    public Stmt visit(AssignStmt.Var s, Env env) {
+        VarExpr ni = (VarExpr)visitExpr(s.dest, env);
+        Expr ne = visitExpr(s.expr, env);
+        if (ni != s.dest || ne != s.expr)
+            return new AssignStmt.Var(ni, ne);
+        else
+            return s;
+    }
+
+    public Stmt visit(AssignStmt.Map s, Env env) {
+        VarExpr nm = (VarExpr)visitExpr(s.map, env);
+        Expr ni = visitExpr(s.index, env);
+        Expr ne = visitExpr(s.expr, env);
+        if (nm != s.map || ni != s.index || ne != s.expr)
+            return new AssignStmt.Map(nm, ni, ne);
+        else
+            return s;
+    }
+
+    public Stmt visit(AssignStmt.Bit s, Env env) {
+        VarExpr ni = (VarExpr)visitExpr(s.dest, env);
+        Expr nb = visitExpr(s.bit, env);
+        Expr ne = visitExpr(s.expr, env);
+        if (ni != s.dest || nb != s.bit || ne != s.expr)
+            return new AssignStmt.Bit(ni, nb, ne);
+        else
+            return s;
+    }
+
+    public Stmt visit(AssignStmt.FixedRange s, Env env) {
+        VarExpr ni = (VarExpr)visitExpr(s.dest, env);
+        Expr ne = visitExpr(s.expr, env);
+        if (ni != s.dest || ne != s.expr)
+            return new AssignStmt.FixedRange(ni, s.low_bit, s.high_bit, ne);
         else
             return s;
     }

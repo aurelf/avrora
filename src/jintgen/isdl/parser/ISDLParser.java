@@ -814,7 +814,7 @@ public class ISDLParser implements ISDLParserConstants {
     o = jj_consume_token(IDENTIFIER);
     jj_consume_token(82);
     f = jj_consume_token(IDENTIFIER);
-                                            {if (true) return new DotExpr(o, f);}
+                                            {if (true) return new DotExpr(new VarExpr(o), f);}
     throw new Error("Missing return statement in function");
   }
 

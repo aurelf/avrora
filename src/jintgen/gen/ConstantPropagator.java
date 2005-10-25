@@ -229,7 +229,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
     }
 
     public Expr visit(FixedRangeExpr e, Environ cenv) {
-        Expr nexpr = e.operand.accept(this, cenv);
+        Expr nexpr = e.expr.accept(this, cenv);
 
         if (nexpr.isLiteral()) {
             int eval = intValueOf(nexpr);
@@ -237,7 +237,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
             return new Literal.IntExpr((eval >> e.low_bit) & mask);
         }
 
-        if (nexpr != e.operand)
+        if (nexpr != e.expr)
             return new FixedRangeExpr(nexpr, e.low_bit, e.high_bit);
         else
             return e;
@@ -273,7 +273,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
     }
 
     public Expr visit(UnOpExpr e, Environ cenv) {
-        Expr ne = e.operand.accept(this, cenv);
+        Expr ne = e.expr.accept(this, cenv);
 
         if ( ne.isLiteral() ) return e.getUnOp().evaluate((Literal)ne);
 

@@ -33,7 +33,6 @@
 package jintgen.gen;
 
 import cck.text.Printer;
-import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.types.TypeRef;
@@ -71,7 +70,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(DotExpr e) {
-        printer.print(getVariable(e.operand));
+        e.expr.accept(this);
         printer.print(".");
         printer.print(e.field.image);
     }
@@ -79,6 +78,38 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     public void visit(AssignStmt s) {
         s.dest.accept(this);
         printer.print(" = ");
+        s.expr.accept(this);
+        printer.println(";");
+    }
+
+    public void visit(AssignStmt.Var s) {
+        s.dest.accept(this);
+        printer.print(" = ");
+        s.expr.accept(this);
+        printer.println(";");
+    }
+
+    public void visit(AssignStmt.Map s) {
+        s.map.accept(this);
+        printer.print("[");
+        s.index.accept(this);
+        printer.print("] = ");
+        s.expr.accept(this);
+        printer.println(";");
+    }
+
+    public void visit(AssignStmt.Bit s) {
+        s.dest.accept(this);
+        printer.print("[");
+        s.bit.accept(this);
+        printer.print("] = ");
+        s.expr.accept(this);
+        printer.println(";");
+    }
+
+    public void visit(AssignStmt.FixedRange s) {
+        s.dest.accept(this);
+        printer.print("["+s.high_bit+":"+s.low_bit+"] = ");
         s.expr.accept(this);
         printer.println(";");
     }
@@ -172,7 +203,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(UnOpExpr e) {
         printer.print(e.operation.image);
-        inner(e.operand, e.getPrecedence());
+        inner(e.expr, e.getPrecedence());
     }
 
     public void visitStmtList(List<Stmt> l) {
@@ -189,7 +220,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(FixedRangeExpr e) {
-        inner(e.operand, e.getPrecedence());
+        inner(e.expr, e.getPrecedence());
         printer.print("[" + e.high_bit + ':' + e.low_bit + ']');
     }
 

@@ -38,6 +38,7 @@ import cck.parser.AbstractToken;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>TypeRef</code> class represents a reference to a type within
@@ -91,6 +92,15 @@ public class TypeRef {
     public TypeRef(AbstractToken n, HashMap<String, List> dimensions) {
         tcName = n;
         this.dimensions = (HashMap<String, List>)dimensions.clone();
+    }
+
+    public TypeRef(Type t) {
+        Token tok = new Token();
+        typeCon = t.getTypeCon();
+        tok.image = typeCon.getName();
+        tcName = tok;
+        dimensions = new HashMap<String, List>();
+        type = t;
     }
 
     public void addDimension(String name, List val) {

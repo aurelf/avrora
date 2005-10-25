@@ -83,8 +83,142 @@ public class AssignStmt extends Stmt {
      * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
      */
     public <Res, Env> Res accept(StmtAccumulator<Res,Env> v, Env env) {
-            return v.visit(this, env);
+        return v.visit(this, env);
     }
 
+    public static class Var extends Stmt {
+        public final VarExpr dest;
+        public final Expr expr;
 
+        public Var(VarExpr d, Expr e) {
+            dest = d;
+            expr = e;
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(StmtVisitor v) {
+            v.visit(this);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine. The
+         * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
+         *
+         * @param v the visitor to accept
+         * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
+         */
+        public <Res, Env> Res accept(StmtAccumulator<Res,Env> v, Env env) {
+            return v.visit(this, env);
+        }
+    }
+
+    public static class Map extends Stmt {
+        public final Expr map;
+        public final Expr index;
+        public final Expr expr;
+
+        public Map(Expr m, Expr i, Expr e) {
+            map = m;
+            index = i;
+            expr = e;
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(StmtVisitor v) {
+            v.visit(this);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine. The
+         * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
+         *
+         * @param v the visitor to accept
+         * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
+         */
+        public <Res, Env> Res accept(StmtAccumulator<Res,Env> v, Env env) {
+            return v.visit(this, env);
+        }
+    }
+
+    public static class Bit extends Stmt {
+        public final VarExpr dest;
+        public final Expr bit;
+        public final Expr expr;
+
+        public Bit(VarExpr d, Expr b, Expr e) {
+            dest = d;
+            bit = b;
+            expr = e;
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(StmtVisitor v) {
+            v.visit(this);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine. The
+         * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
+         *
+         * @param v the visitor to accept
+         * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
+         */
+        public <Res, Env> Res accept(StmtAccumulator<Res,Env> v, Env env) {
+            return v.visit(this, env);
+        }
+    }
+
+    public static class FixedRange extends Stmt {
+        public final VarExpr dest;
+        public final int low_bit;
+        public final int high_bit;
+        public final Expr expr;
+
+        public FixedRange(VarExpr d, int l, int h, Expr e) {
+            dest = d;
+            low_bit = l;
+            high_bit = h;
+            expr = e;
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(StmtVisitor v) {
+            v.visit(this);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern for visiting the abstract
+         * syntax trees representing the code of a particular instruction or subroutine. The
+         * <code>StmtRebuilder</code> interface allows visitors to rearrange and rebuild the statements.
+         *
+         * @param v the visitor to accept
+         * @return the result of calling the appropriate <code>visit()</code> of the rebuilder passed
+         */
+        public <Res, Env> Res accept(StmtAccumulator<Res,Env> v, Env env) {
+            return v.visit(this, env);
+        }
+    }
 }

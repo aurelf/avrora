@@ -83,7 +83,7 @@ public interface CodeVisitor {
         }
 
         public void visit(FixedRangeExpr e) {
-            e.operand.accept(this);
+            e.expr.accept(this);
         }
 
         public void visit(CallExpr e) {
@@ -109,7 +109,7 @@ public interface CodeVisitor {
         }
 
         public void visit(UnOpExpr e) {
-            e.operand.accept(this);
+            e.expr.accept(this);
         }
 
         public void visit(VarExpr e) {
@@ -117,7 +117,7 @@ public interface CodeVisitor {
         }
 
         public void visit(DotExpr e) {
-            // terminal node in the tree
+            e.expr.accept(this);
         }
     }
 

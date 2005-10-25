@@ -33,7 +33,9 @@
 package jintgen.gen;
 
 import jintgen.jigir.*;
+import jintgen.types.TypeRef;
 import java.util.List;
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer
@@ -42,19 +44,56 @@ public class Canonicalizer extends StmtRebuilder<Object> {
 
     int tempcount;
 
+    /*
     public Expr visit(CallExpr e, Object env) {
         List<Expr> ne = visitExprList(e.args, env);
-        return extractExpr(new CallExpr(e.method, ne));
+        return extractExpr(rebuild(e, ne));
+    }
+    */
+
+    public Stmt visit(AssignStmt s, Object env) {
+        Expr expr = s.expr;
+        if ( s.dest instanceof IndexExpr ) {
+            return transformIndexAssign((IndexExpr)s.dest, expr, env);
+        } else if ( s.dest instanceof FixedRangeExpr ) {
+            return transformFixedRangeAssign((FixedRangeExpr)s.dest, expr, env);
+        } else if ( s.dest instanceof VarExpr ) {
+            return new AssignStmt.Var((VarExpr)s.dest, expr);
+        } else {
+            throw Util.failure("cannot canonicalize assign to "+s.dest.getClass());
+        }
     }
 
-    public Stmt visit(AssignStmt e, Object env) {
-        Expr ni = liftExpr(e.dest, env);
-        Expr nv = liftExpr(e.expr, env);
-        return new AssignStmt(ni, nv);
+    private Stmt transformFixedRangeAssign(FixedRangeExpr fre, Expr expr, Object env) {
+        if ( fre.expr instanceof IndexExpr) {
+            IndexExpr ind = (IndexExpr)fre.expr;
+            if ( ind.expr.getType().isBasedOn("map") ) {
+                VarExpr vmap = liftVar(ind.expr);
+                VarExpr vind = liftVar(ind.index);
+                IndexExpr index = new IndexExpr(vmap, vind);
+                index.setType(ind.getType());
+                VarExpr velem = extractExpr(index);
+                addStmt(new AssignStmt.FixedRange(velem, fre.low_bit, fre.high_bit, expr));
+                return new AssignStmt.Map(vmap, vind, velem);
+            } else {
+                throw Util.failure("cannot canonicalize fixed-range assign to bit access");
+            }
+        } else if ( fre.expr instanceof VarExpr ) {
+            return new AssignStmt.FixedRange((VarExpr)fre.expr, fre.low_bit, fre.high_bit, expr);
+        } else {
+            throw Util.failure("cannot canonicalize fixed-range assign to "+fre.expr.getClass());
+        }
     }
 
-    protected Expr liftExpr(Expr e, Object env) {
-        Expr ne = e.accept(this, env);
+    private Stmt transformIndexAssign(IndexExpr ind, Expr expr, Object env) {
+        if ( ind.expr.getType().isBasedOn("map") )
+            return new AssignStmt.Map(ind.expr, ind.index, expr);
+        else
+            return new AssignStmt.Bit(liftVar(ind.expr), ind.index, expr);
+    }
+
+    protected Expr liftExpr(Expr e) {
+        Expr ne = e.accept(this, null);
 
         if (ne.isVariable()) return ne;
         if (ne.isLiteral()) return ne;
@@ -63,17 +102,24 @@ public class Canonicalizer extends StmtRebuilder<Object> {
 
     }
 
-    private Expr extractExpr(Expr ne) {
-        String tmpname = "_canon_tmp_" + (tempcount++);
+    protected VarExpr liftVar(Expr e) {
+        Expr ne = e.accept(this, null);
 
-        // TODO: get correct type!
-        addStmt(new DeclStmt(tmpname, "int", ne));
-        return new VarExpr(tmpname);
+        if (ne.isVariable()) return (VarExpr)ne;
+        else return extractExpr(ne);
+    }
+
+    private VarExpr extractExpr(Expr ne) {
+        String tmpname = "$ct_" + (tempcount++);
+
+        addStmt(new DeclStmt(tmpname, new TypeRef(ne.getType()), ne));
+        VarExpr ve = new VarExpr(tmpname);
+        ve.setType(ne.getType());
+        return ve;
     }
 
     public List<Stmt> process(List<Stmt> stmts) {
         return visitStmtList(stmts, null);
     }
-
 
 }

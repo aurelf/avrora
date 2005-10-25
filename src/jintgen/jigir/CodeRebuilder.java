@@ -55,6 +55,7 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
         if (l != e.left || r != e.right) {
             BinOpExpr binOpExpr = new BinOpExpr(l, e.operation, r);
             binOpExpr.setBinOp(e.getBinOp());
+            binOpExpr.setType(e.getType());
             return binOpExpr;
         }
         return e;
@@ -68,8 +69,8 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     }
 
     public Expr visit(FixedRangeExpr e, Env env) {
-        Expr o = visitExpr(e.operand, env);
-        if (o != e.operand) return new FixedRangeExpr(o, e.low_bit, e.high_bit);
+        Expr o = visitExpr(e.expr, env);
+        if (o != e.expr) return new FixedRangeExpr(o, e.low_bit, e.high_bit);
         return e;
     }
 
@@ -80,6 +81,7 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
         for ( Expr a : l ) {
             Expr na = visitExpr(a, env);
             if (na != a) changed = true;
+
             nl.add(na);
         }
 
@@ -96,6 +98,7 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
         if (nargs != e.args) {
             CallExpr callExpr = new CallExpr(e.method, nargs);
             callExpr.setDecl(e.getDecl());
+            callExpr.setType(e.getType());
             return callExpr;
         }
         else
@@ -124,14 +127,15 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     }
 
     public Expr visit(UnOpExpr e, Env env) {
-        Expr ne = visitExpr(e.operand, env);
+        Expr ne = visitExpr(e.expr, env);
         return rebuild(e, ne);
     }
 
     protected Expr rebuild(UnOpExpr e, Expr ne) {
-        if (ne != e.operand) {
+        if (ne != e.expr) {
             UnOpExpr unOpExpr = new UnOpExpr(e.operation, ne);
             unOpExpr.setUnOp(e.getUnOp());
+            unOpExpr.setType(e.getType());
             return unOpExpr;
         }
         return e;
@@ -148,7 +152,9 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     }
 
     protected Expr visitExpr(Expr e, Env env) {
-        return e.accept(this, env);
+        Expr expr = e.accept(this, env);
+        if ( expr.getType() == null ) expr.setType(e.getType());
+        return expr;
     }
 
 

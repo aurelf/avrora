@@ -271,7 +271,7 @@ class ReaderImplementation extends GenBase {
                 for ( int cntr = 0; cntr < f.getWidth(); cntr++ ) result[cntr] = cntr + bit;
             } else if ( e.isBitRangeExpr() ) {
                 FixedRangeExpr bre = (FixedRangeExpr)e;
-                if ( matches(bre.operand, name) ) {
+                if ( matches(bre.expr, name) ) {
                     for ( int cntr = 0; cntr < f.getWidth(); cntr++ ) {
                         int indx = cntr+bre.low_bit;
                          // we don't care about bits beyond the end of our declared operand
@@ -294,7 +294,7 @@ class ReaderImplementation extends GenBase {
                 return name.equals(ve.variable.image);
             } else if ( e instanceof DotExpr ) {
                 DotExpr de = (DotExpr)e;
-                return name.equals(de.operand+"."+de.field);
+                return name.equals(de.expr +"."+de.field);
             }
             return false;
         }

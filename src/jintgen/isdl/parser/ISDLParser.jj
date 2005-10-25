@@ -546,7 +546,7 @@ Expr VarUse() : { Token t; }
 
 Expr DotExpr() : { Token o, f; }
 {
-    o = <IDENTIFIER> "." f = <IDENTIFIER> { return new DotExpr(o, f); }
+    o = <IDENTIFIER> "." f = <IDENTIFIER> { return new DotExpr(new VarExpr(o), f); }
 }
 
 Expr Literal() : { Token t; }

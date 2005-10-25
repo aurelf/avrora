@@ -209,7 +209,22 @@ public class CodemapGenerator extends Generator {
 
         public void visit(AssignStmt s) {
             throw Util.unimplemented();
-            //generate("VarAssignStmt", s.variable, s.expr);
+        }
+
+        public void visit(AssignStmt.Var s) {
+            throw Util.unimplemented();
+        }
+
+        public void visit(AssignStmt.Map s) {
+            throw Util.unimplemented();
+        }
+
+        public void visit(AssignStmt.Bit s) {
+            throw Util.unimplemented();
+        }
+
+        public void visit(AssignStmt.FixedRange s) {
+            throw Util.unimplemented();
         }
 
         private void generate(String clname, Object o1, Object o2, Object o3, Object o4) {
@@ -269,7 +284,7 @@ public class CodemapGenerator extends Generator {
 
         private void generate(UnOpExpr e, String clname) {
             printer.print("new UnOpExpr(");
-            e.operand.accept(this);
+            e.expr.accept(this);
             printer.print(")");
         }
 
@@ -289,7 +304,7 @@ public class CodemapGenerator extends Generator {
 
         public void visit(FixedRangeExpr e) {
             printer.print("new FixedRangeExpr(");
-            e.operand.accept(this);
+            e.expr.accept(this);
             printer.print(", " + e.low_bit + ", " + e.high_bit + ')');
         }
 

@@ -152,6 +152,22 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         return env;
     }
 
+    public Environment visit(AssignStmt.Var s, Environment env) {
+        throw Util.unimplemented();
+    }
+
+    public Environment visit(AssignStmt.Map s, Environment env) {
+        throw Util.unimplemented();
+    }
+
+    public Environment visit(AssignStmt.Bit s, Environment env) {
+        throw Util.unimplemented();
+    }
+
+    public Environment visit(AssignStmt.FixedRange s, Environment env) {
+        throw Util.unimplemented();
+    }
+
     public Type visit(BinOpExpr e, Environment env) {
         Type lt = typeOf(e.left, env);
         Type rt = typeOf(e.right, env);
@@ -181,7 +197,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(FixedRangeExpr e, Environment env) {
-        Type lt = intTypeOf(e.operand, env);
+        Type lt = intTypeOf(e.expr, env);
         return typeEnv.newIntType(false, e.high_bit - e.low_bit + 1);
     }
 
@@ -220,11 +236,11 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(UnOpExpr e, Environment env) {
-        Type lt = typeOf(e.operand, env);
+        Type lt = typeOf(e.expr, env);
         TypeCon.UnOp unop = typeEnv.resolveUnOp(lt, e.operation.image);
         if ( unop == null ) ERROR.UnresolvedOperator(e.operation, lt);
         e.setUnOp((UnOpExpr.UnOpImpl)unop);
-        return unop.typeCheck(typeEnv, e.operand);
+        return unop.typeCheck(typeEnv, e.expr);
     }
 
     public Type visit(VarExpr e, Environment env) {
@@ -234,9 +250,8 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(DotExpr e, Environment env) {
-        Object o = env.resolveVariable(e.operand.image);
-        if ( o == null ) ERROR.UnresolvedVariable(e.operand);
-        return null;
+        Type t = typeOf(e.expr, env);
+        throw Util.unimplemented();
     }
 
     protected Type typeOf(Expr e, Environment env) {

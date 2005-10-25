@@ -47,15 +47,15 @@ public class DotExpr extends Expr {
      * The <code>operand</code> field stores a reference to the name of the operand
      * or variable that has the field.
      */
-    public final Token operand;
+    public final Expr expr;
 
     /**
      * The <code>field</code> field stores the name of the field being accessed.
      */
     public final Token field;
 
-    public DotExpr(Token o, Token f) {
-        operand = o;
+    public DotExpr(Expr e, Token f) {
+        expr = e;
         field = f;
     }
 
@@ -92,6 +92,6 @@ public class DotExpr extends Expr {
     }
 
     public SourcePoint getSourcePoint() {
-        return new SourcePoint(operand, field);
+        return new SourcePoint(expr.getSourcePoint(), field.getSourcePoint());
     }
 }

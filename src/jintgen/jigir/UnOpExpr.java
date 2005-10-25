@@ -53,7 +53,7 @@ public class UnOpExpr extends Expr {
     /**
      * The <code>operand</code> field stores a reference to the expression operand of this operation.
      */
-    public final Expr operand;
+    public final Expr expr;
 
     /**
      * The <code>unop</code> field stores a reference to the actual unary operator implementation.
@@ -68,7 +68,7 @@ public class UnOpExpr extends Expr {
      * @param o  the operand of this operation
      */
     public UnOpExpr(Token op, Expr o) {
-        operand = o;
+        expr = o;
         operation = op;
     }
 
@@ -79,7 +79,7 @@ public class UnOpExpr extends Expr {
      * @return true if this expression can be evaluated to a constant; false otherwise
      */
     public boolean isConstantExpr() {
-        return operand.isConstantExpr();
+        return expr.isConstantExpr();
     }
 
     /**
@@ -90,7 +90,7 @@ public class UnOpExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return operation + innerString(operand);
+        return operation + innerString(expr);
     }
 
     /**
@@ -116,7 +116,7 @@ public class UnOpExpr extends Expr {
     }
 
     public SourcePoint getSourceRange() {
-        return new SourcePoint(operation.getSourcePoint(), operand.getSourcePoint());
+        return new SourcePoint(operation.getSourcePoint(), expr.getSourcePoint());
     }
 
     /**

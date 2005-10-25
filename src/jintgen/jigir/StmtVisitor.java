@@ -54,6 +54,11 @@ public interface StmtVisitor {
 
     public void visit(AssignStmt s);
 
+    public void visit(AssignStmt.Var s);
+    public void visit(AssignStmt.Map s);
+    public void visit(AssignStmt.Bit s);
+    public void visit(AssignStmt.FixedRange s);
+
     public void visit(ReturnStmt s);
 
     /**
@@ -88,6 +93,22 @@ public interface StmtVisitor {
         }
 
         public void visit(AssignStmt s) {
+            // terminal node
+        }
+
+        public void visit(AssignStmt.Var s) {
+            // terminal node
+        }
+
+        public void visit(AssignStmt.Map s) {
+            // terminal node
+        }
+
+        public void visit(AssignStmt.Bit s) {
+            // terminal node
+        }
+
+        public void visit(AssignStmt.FixedRange s) {
             // terminal node
         }
 

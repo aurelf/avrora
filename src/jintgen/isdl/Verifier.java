@@ -35,6 +35,7 @@ package jintgen.isdl;
 import cck.text.Verbose;
 import cck.util.Util;
 import jintgen.gen.Inliner;
+import jintgen.gen.Canonicalizer;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.types.TypeRef;
@@ -71,6 +72,7 @@ public class Verifier {
         verifySubroutines();
         verifyInstructions();
         typeCheck();
+        canonicalize();
     }
 
     private void verifyUniqueness() {
@@ -89,6 +91,18 @@ public class Verifier {
         typeCheckAccessMethods(env, tc);
         typeCheckSubroutines(env, tc);
         typeCheckInstrBodies(env, tc);
+    }
+
+    private void canonicalize() {
+        Canonicalizer canon = new Canonicalizer();
+        for ( SubroutineDecl d : arch.subroutines ) {
+            if ( !d.code.hasBody() ) continue;
+            d.code.setStmts(canon.process(d.code.getStmts()));
+        }
+        for ( InstrDecl d : arch.instructions ) {
+            if ( !d.code.hasBody() ) continue;
+            d.code.setStmts(canon.process(d.code.getStmts()));
+        }
     }
 
     private void typeCheckAccessMethods(Environment env, TypeChecker tc ) {
@@ -521,7 +535,7 @@ public class Verifier {
         }
 
         public void visit(DotExpr e) {
-            String str = e.operand+"."+e.field;
+            String str = e.expr +"."+e.field;
             Integer i = operandWidthMap.get(str);
             if ( i != null )
                 width = i.intValue();

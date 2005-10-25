@@ -48,7 +48,7 @@ public class FixedRangeExpr extends Expr {
      * The <code>operand</code> field stores a reference to the expression that is the operand of the bit
      * range expression, i.e. the value from which the range of bits will be extracted.
      */
-    public final Expr operand;
+    public final Expr expr;
 
     /**
      * The <code>low_bit</code> field represents the lowest bit in the range to be extracted, inclusive.
@@ -69,7 +69,7 @@ public class FixedRangeExpr extends Expr {
      * @param h the highest bit in the range, inclusive
      */
     public FixedRangeExpr(Expr o, Token l, Token h) {
-        operand = o;
+        expr = o;
         int low = Expr.tokenToInt(l);
         int high = Expr.tokenToInt(h);
 
@@ -86,7 +86,7 @@ public class FixedRangeExpr extends Expr {
      * @param h the highest bit in the range, inclusive
      */
     public FixedRangeExpr(Expr o, int l, int h) {
-        operand = o;
+        expr = o;
         low_bit = l;
         high_bit = h;
     }
@@ -98,7 +98,7 @@ public class FixedRangeExpr extends Expr {
      * @return true if this expression can be evaluated to a constant; false otherwise
      */
     public boolean isConstantExpr() {
-        return operand.isConstantExpr();
+        return expr.isConstantExpr();
     }
 
     /**
@@ -141,7 +141,7 @@ public class FixedRangeExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return innerString(operand) + '[' + low_bit + ':' + high_bit + ']';
+        return innerString(expr) + '[' + low_bit + ':' + high_bit + ']';
     }
 
     /**
@@ -158,7 +158,7 @@ public class FixedRangeExpr extends Expr {
 
 
     public SourcePoint getSourcePoint() {
-        return operand.getSourcePoint();
+        return expr.getSourcePoint();
     }
 
     public boolean isLvalue() {

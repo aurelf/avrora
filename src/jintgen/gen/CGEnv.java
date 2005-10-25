@@ -29,35 +29,22 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Sep 22, 2005
+ * Creation date: Oct 24, 2005
  */
 
-package jintgen.jigir;
+package jintgen.gen;
 
-import java.util.List;
+import jintgen.types.Type;
 
 /**
  * @author Ben L. Titzer
  */
-public interface StmtAccumulator<Res, Env> {
+public class CGEnv {
+    public Type expect;
+    public int shift;
 
-    public Res visit(CallStmt s, Env env);
-
-    public Res visit(WriteStmt s, Env env);
-
-    public Res visit(CommentStmt s, Env env);
-
-    public Res visit(DeclStmt s, Env env);
-
-    public Res visit(IfStmt s, Env env);
-
-    public List<Res> visitStmtList(List<Stmt> l, Env env);
-
-    public Res visit(AssignStmt s, Env env);
-    public Res visit(AssignStmt.Var s, Env env);
-    public Res visit(AssignStmt.Map s, Env env);
-    public Res visit(AssignStmt.Bit s, Env env);
-    public Res visit(AssignStmt.FixedRange s, Env env);
-
-    public Res visit(ReturnStmt s, Env env);
+    public CGEnv(Type e, int s) {
+        expect = e;
+        shift = s;
+    }
 }

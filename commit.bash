@@ -114,7 +114,7 @@ for m in $MODULES; do
     checkSuccess 'Version.java exists.' 'Version.java does not exist' 'echo'
 
     cp $VERSION_JAVA /tmp/${m}Version.java
-    awk '{ if ( $1 == "public" && $3 == "int" && $4 == "commit" ) printf("    public final int commit = %d;\n",($6+1)); else print }' /tmp/${m}Version.java > $VERSION_JAVA
+    awk '{ if ( $1 == "public" && $4 == "int" && $5 == "commit" ) printf("    public static final int commit = %d;\n",($6+1)); else print }' /tmp/${m}Version.java > $VERSION_JAVA
     fi
 
     echo "> Making $m..."
