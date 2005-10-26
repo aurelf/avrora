@@ -35,6 +35,8 @@ package jintgen.gen;
 import cck.text.Printer;
 import cck.text.StringUtil;
 import jintgen.isdl.AddrModeDecl;
+import jintgen.types.*;
+import jintgen.jigir.JIGIRTypeEnv;
 import java.util.*;
 
 /**
@@ -146,7 +148,7 @@ public class GenBase {
 
     protected LinkedList<String> nameTypeList(List<AddrModeDecl.Operand> ol) {
         LinkedList<String> list = new LinkedList<String>();
-        for ( AddrModeDecl.Operand o : ol ) list.add("$operand."+o.type.image+' '+o.name.image);
+        for ( AddrModeDecl.Operand o : ol ) list.add("$operand."+o.typeRef.getTypeConName()+' '+o.name.image);
         return list;
     }
 
@@ -160,7 +162,7 @@ public class GenBase {
     protected LinkedList<String> nameTypeList(String t, String n, List<AddrModeDecl.Operand> ol) {
         LinkedList<String> list = new LinkedList<String>();
         list.add(t+" "+n);
-        for ( AddrModeDecl.Operand o : ol ) list.add("$operand."+o.type.image+' '+o.name.image);
+        for ( AddrModeDecl.Operand o : ol ) list.add("$operand."+o.typeRef.getTypeConName()+' '+o.name.image);
         return list;
     }
 
@@ -169,5 +171,24 @@ public class GenBase {
         for ( String str : list ) print(str);
         endList(")");
     }
+
+    public String renderType(Type t) {
+        // TODO: compute the correct java type depending on the situation
+        return renderTypeCon(t.getTypeCon());
+    }
+
+    public String renderTypeCon(TypeCon tc) {
+        if ( tc instanceof JIGIRTypeEnv.TYPE_enum )
+            return tr("$symbol.$1", tc.getName());
+        else if ( tc instanceof JIGIRTypeEnv.TYPE_operand )
+            return tr("$operand.$1", tc.getName());
+        else return tc.toString();
+    }
+
+    public String renderType(TypeRef t) {
+        // TODO: compute the correct java type depending on the situation
+        return renderTypeCon(t.getType().getTypeCon());
+    }
+
 
 }

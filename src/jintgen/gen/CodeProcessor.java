@@ -29,17 +29,36 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Oct 21, 2005
+ * Created Oct 25, 2005
  */
+package jintgen.gen;
 
-package jintgen.jigir;
+import jintgen.jigir.*;
 
-import jintgen.types.Type;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer
  */
-public interface Decl {
-    public String getName();
-    public Type getType();
+public abstract class CodeProcessor<Env> extends StmtRebuilder<Env> {
+
+    protected final VarRenamer renamer;
+
+    public CodeProcessor(VarRenamer rn) {
+        renamer = rn;
+    }
+
+    public Expr visit(VarExpr e, Env env) {
+        return renamer.getVarExpr(e);
+    }
+
+    public Stmt visit(DeclStmt s, Env env) {
+        return renamer.getDecl((DeclStmt)super.visit(s, env));
+    }
+
+    public abstract List<Stmt> process(List<Stmt> l);
+
+    public void renameVariable(String orig, String n) {
+        renamer.addVariable(orig, n);
+    }
 }

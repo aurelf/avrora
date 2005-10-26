@@ -1,4 +1,7 @@
 package avrora.arch.avr;
+import avrora.arch.*;
+import java.util.HashMap;
+
 /**
  * The <code>AVROperand</code> interface represents operands that are
  * allowed to instructions in this architecture. Inner classes of this
@@ -17,37 +20,37 @@ public interface AVROperand {
             return Integer.toString(value);
         }
     }
-
+    
     abstract static class Sym implements AVROperand {
-        public final AVRSymbol symbol;
+        public final AVRSymbol value;
         Sym(AVRSymbol sym) {
             if ( sym == null ) throw new Error();
-            this.symbol = sym;
+            this.value = sym;
         }
         public String toString() {
-            return symbol.symbol;
+            return value.symbol;
         }
     }
-
+    
     abstract static class Addr implements AVROperand {
-        public final int address;
+        public final int value;
         Addr(int addr) {
-            this.address = addr;
+            this.value = addr;
         }
         public String toString() {
-            String hs = Integer.toHexString(address);
+            String hs = Integer.toHexString(value);
             StringBuffer buf = new StringBuffer("0x");
             for ( int cntr = hs.length(); cntr < 4; cntr++ ) buf.append('0');
             buf.append(hs);
             return buf.toString();
         }
     }
-
+    
     abstract static class Rel implements AVROperand {
-        public final int address;
+        public final int value;
         public final int relative;
         Rel(int addr, int rel) {
-            this.address = addr;
+            this.value = addr;
             this.relative = rel;
         }
         public String toString() {
@@ -55,79 +58,79 @@ public interface AVROperand {
             else return "."+relative;
         }
     }
-
-    public class GPR extends Sym {
-        GPR(String s) {
+    
+    public class op_GPR extends Sym {
+        op_GPR(String s) {
             super(AVRSymbol.get_GPR(s));
         }
-        GPR(AVRSymbol.GPR sym) {
+        op_GPR(AVRSymbol.GPR sym) {
             super(sym);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
-    public class HGPR extends Sym {
-        HGPR(String s) {
+    
+    public class op_HGPR extends Sym {
+        op_HGPR(String s) {
             super(AVRSymbol.get_HGPR(s));
         }
-        HGPR(AVRSymbol.HGPR sym) {
+        op_HGPR(AVRSymbol.HGPR sym) {
             super(sym);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
-    public class MGPR extends Sym {
-        MGPR(String s) {
+    
+    public class op_MGPR extends Sym {
+        op_MGPR(String s) {
             super(AVRSymbol.get_MGPR(s));
         }
-        MGPR(AVRSymbol.MGPR sym) {
+        op_MGPR(AVRSymbol.MGPR sym) {
             super(sym);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
-    public class YZ extends Sym {
-        YZ(String s) {
+    
+    public class op_YZ extends Sym {
+        op_YZ(String s) {
             super(AVRSymbol.get_YZ(s));
         }
-        YZ(AVRSymbol.YZ sym) {
+        op_YZ(AVRSymbol.YZ sym) {
             super(sym);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
-    public class EGPR extends Sym {
-        EGPR(String s) {
+    
+    public class op_EGPR extends Sym {
+        op_EGPR(String s) {
             super(AVRSymbol.get_EGPR(s));
         }
-        EGPR(AVRSymbol.EGPR sym) {
+        op_EGPR(AVRSymbol.EGPR sym) {
             super(sym);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
-    public class RDL extends Sym {
-        RDL(String s) {
+    
+    public class op_RDL extends Sym {
+        op_RDL(String s) {
             super(AVRSymbol.get_RDL(s));
         }
-        RDL(AVRSymbol.RDL sym) {
+        op_RDL(AVRSymbol.RDL sym) {
             super(sym);
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
+    
     public class IMM3 extends Int {
         public static final int low = 0;
         public static final int high = 7;
@@ -138,7 +141,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class IMM5 extends Int {
         public static final int low = 0;
         public static final int high = 31;
@@ -149,7 +152,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class IMM6 extends Int {
         public static final int low = 0;
         public static final int high = 63;
@@ -160,7 +163,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class IMM7 extends Int {
         public static final int low = 0;
         public static final int high = 127;
@@ -171,7 +174,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class IMM8 extends Int {
         public static final int low = 0;
         public static final int high = 255;
@@ -182,29 +185,29 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
-    public class SREL extends Rel {
+    
+    public class SREL extends Int {
         public static final int low = -64;
         public static final int high = 63;
-        SREL(int pc, int rel) {
-            super(pc + 2 + 2 * rel, AVRInstrBuilder.checkValue(rel, low, high));
+        SREL(int val) {
+            super(AVRInstrBuilder.checkValue(val, low, high));
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
-    public class LREL extends Rel {
+    
+    public class LREL extends Int {
         public static final int low = -1024;
         public static final int high = 1023;
-        LREL(int pc, int rel) {
-            super(pc + 2 + 2 * rel, AVRInstrBuilder.checkValue(rel, low, high));
+        LREL(int val) {
+            super(AVRInstrBuilder.checkValue(val, low, high));
         }
         public void accept(AVROperandVisitor v) {
             v.visit(this);
         }
     }
-
+    
     public class PADDR extends Int {
         public static final int low = 0;
         public static final int high = 65536;
@@ -215,8 +218,8 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
-    public class DADDR extends Addr {
+    
+    public class DADDR extends Int {
         public static final int low = 0;
         public static final int high = 65536;
         DADDR(int val) {
@@ -226,7 +229,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class R0_B extends Sym {
         R0_B(String s) {
             super(AVRSymbol.get_R0(s));
@@ -238,7 +241,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class RZ_W extends Sym {
         RZ_W(String s) {
             super(AVRSymbol.get_RZ(s));
@@ -250,7 +253,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class AI_RZ_W extends Sym {
         AI_RZ_W(String s) {
             super(AVRSymbol.get_RZ(s));
@@ -262,7 +265,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class XYZ extends Sym {
         XYZ(String s) {
             super(AVRSymbol.get_ADR(s));
@@ -274,7 +277,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class AI_XYZ extends Sym {
         AI_XYZ(String s) {
             super(AVRSymbol.get_ADR(s));
@@ -286,7 +289,7 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
     public class PD_XYZ extends Sym {
         PD_XYZ(String s) {
             super(AVRSymbol.get_ADR(s));
@@ -298,5 +301,5 @@ public interface AVROperand {
             v.visit(this);
         }
     }
-
+    
 }

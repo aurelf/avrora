@@ -1,4 +1,7 @@
 package avrora.arch.avr;
+import avrora.arch.*;
+import java.util.HashMap;
+
 /**
  * The <code>AVRAddrMode</code> class represents an addressing mode for
  * this architecture. An addressing mode fixes the number and type of
@@ -15,9 +18,9 @@ public interface AVRAddrMode {
         public AVROperand get_ar();
     }
     public static class GPRGPR implements AVRAddrMode {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
-        public GPRGPR(AVROperand.GPR rd, AVROperand.GPR rr)  {
+        public final AVROperand.op_GPR rd;
+        public final AVROperand.op_GPR rr;
+        public GPRGPR(AVROperand.op_GPR rd, AVROperand.op_GPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -31,9 +34,9 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class MGPRMGPR implements AVRAddrMode {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        public MGPRMGPR(AVROperand.MGPR rd, AVROperand.MGPR rr)  {
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
+        public MGPRMGPR(AVROperand.op_MGPR rd, AVROperand.op_MGPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -47,8 +50,8 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class GPR implements AVRAddrMode {
-        public final AVROperand.GPR rd;
-        public GPR(AVROperand.GPR rd)  {
+        public final AVROperand.op_GPR rd;
+        public GPR(AVROperand.op_GPR rd)  {
             this.rd = rd;
         }
         public void accept(AVRInstr i, AVRAddrModeVisitor v) {
@@ -60,9 +63,9 @@ public interface AVRAddrMode {
         public AVROperand get_rd() { return rd; }
     }
     public static class HGPRIMM8 implements AVRAddrMode {
-        public final AVROperand.HGPR rd;
+        public final AVROperand.op_HGPR rd;
         public final AVROperand.IMM8 imm;
-        public HGPRIMM8(AVROperand.HGPR rd, AVROperand.IMM8 imm)  {
+        public HGPRIMM8(AVROperand.op_HGPR rd, AVROperand.IMM8 imm)  {
             this.rd = rd;
             this.imm = imm;
         }
@@ -141,9 +144,9 @@ public interface AVRAddrMode {
         public AVROperand get_source() { return source; }
     }
     public static class XLPM_D implements AVRAddrMode, XLPM {
-        public final AVROperand.GPR dest;
+        public final AVROperand.op_GPR dest;
         public final AVROperand.RZ_W source;
-        public XLPM_D(AVROperand.GPR dest, AVROperand.RZ_W source)  {
+        public XLPM_D(AVROperand.op_GPR dest, AVROperand.RZ_W source)  {
             this.dest = dest;
             this.source = source;
         }
@@ -157,9 +160,9 @@ public interface AVRAddrMode {
         public AVROperand get_source() { return source; }
     }
     public static class XLPM_INC implements AVRAddrMode, XLPM {
-        public final AVROperand.GPR dest;
+        public final AVROperand.op_GPR dest;
         public final AVROperand.AI_RZ_W source;
-        public XLPM_INC(AVROperand.GPR dest, AVROperand.AI_RZ_W source)  {
+        public XLPM_INC(AVROperand.op_GPR dest, AVROperand.AI_RZ_W source)  {
             this.dest = dest;
             this.source = source;
         }
@@ -173,9 +176,9 @@ public interface AVRAddrMode {
         public AVROperand get_source() { return source; }
     }
     public static class LD_ST_XYZ implements AVRAddrMode, LD_ST {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         public final AVROperand.XYZ ar;
-        public LD_ST_XYZ(AVROperand.GPR rd, AVROperand.XYZ ar)  {
+        public LD_ST_XYZ(AVROperand.op_GPR rd, AVROperand.XYZ ar)  {
             this.rd = rd;
             this.ar = ar;
         }
@@ -189,9 +192,9 @@ public interface AVRAddrMode {
         public AVROperand get_ar() { return ar; }
     }
     public static class LD_ST_AI_XYZ implements AVRAddrMode, LD_ST {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         public final AVROperand.AI_XYZ ar;
-        public LD_ST_AI_XYZ(AVROperand.GPR rd, AVROperand.AI_XYZ ar)  {
+        public LD_ST_AI_XYZ(AVROperand.op_GPR rd, AVROperand.AI_XYZ ar)  {
             this.rd = rd;
             this.ar = ar;
         }
@@ -205,9 +208,9 @@ public interface AVRAddrMode {
         public AVROperand get_ar() { return ar; }
     }
     public static class LD_ST_PD_XYZ implements AVRAddrMode, LD_ST {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         public final AVROperand.PD_XYZ ar;
-        public LD_ST_PD_XYZ(AVROperand.GPR rd, AVROperand.PD_XYZ ar)  {
+        public LD_ST_PD_XYZ(AVROperand.op_GPR rd, AVROperand.PD_XYZ ar)  {
             this.rd = rd;
             this.ar = ar;
         }
@@ -221,9 +224,9 @@ public interface AVRAddrMode {
         public AVROperand get_ar() { return ar; }
     }
     public static class $adiw$ implements AVRAddrMode {
-        public final AVROperand.RDL rd;
+        public final AVROperand.op_RDL rd;
         public final AVROperand.IMM6 imm;
-        public $adiw$(AVROperand.RDL rd, AVROperand.IMM6 imm)  {
+        public $adiw$(AVROperand.op_RDL rd, AVROperand.IMM6 imm)  {
             this.rd = rd;
             this.imm = imm;
         }
@@ -250,9 +253,9 @@ public interface AVRAddrMode {
         public AVROperand get_bit() { return bit; }
     }
     public static class $bld$ implements AVRAddrMode {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
-        public $bld$(AVROperand.GPR rr, AVROperand.IMM3 bit)  {
+        public $bld$(AVROperand.op_GPR rr, AVROperand.IMM3 bit)  {
             this.rr = rr;
             this.bit = bit;
         }
@@ -311,9 +314,9 @@ public interface AVRAddrMode {
         public AVROperand get_bit() { return bit; }
     }
     public static class $bst$ implements AVRAddrMode {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
-        public $bst$(AVROperand.GPR rr, AVROperand.IMM3 bit)  {
+        public $bst$(AVROperand.op_GPR rr, AVROperand.IMM3 bit)  {
             this.rr = rr;
             this.bit = bit;
         }
@@ -356,8 +359,8 @@ public interface AVRAddrMode {
         public AVROperand get_bit() { return bit; }
     }
     public static class $clr$ implements AVRAddrMode {
-        public final AVROperand.GPR rd;
-        public $clr$(AVROperand.GPR rd)  {
+        public final AVROperand.op_GPR rd;
+        public $clr$(AVROperand.op_GPR rd)  {
             this.rd = rd;
         }
         public void accept(AVRInstr i, AVRAddrModeVisitor v) {
@@ -369,9 +372,9 @@ public interface AVRAddrMode {
         public AVROperand get_rd() { return rd; }
     }
     public static class $fmul$ implements AVRAddrMode {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        public $fmul$(AVROperand.MGPR rd, AVROperand.MGPR rr)  {
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
+        public $fmul$(AVROperand.op_MGPR rd, AVROperand.op_MGPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -385,9 +388,9 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class $fmuls$ implements AVRAddrMode {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        public $fmuls$(AVROperand.MGPR rd, AVROperand.MGPR rr)  {
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
+        public $fmuls$(AVROperand.op_MGPR rd, AVROperand.op_MGPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -401,9 +404,9 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class $fmulsu$ implements AVRAddrMode {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        public $fmulsu$(AVROperand.MGPR rd, AVROperand.MGPR rr)  {
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
+        public $fmulsu$(AVROperand.op_MGPR rd, AVROperand.op_MGPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -417,9 +420,9 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class $in$ implements AVRAddrMode {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         public final AVROperand.IMM6 imm;
-        public $in$(AVROperand.GPR rd, AVROperand.IMM6 imm)  {
+        public $in$(AVROperand.op_GPR rd, AVROperand.IMM6 imm)  {
             this.rd = rd;
             this.imm = imm;
         }
@@ -446,10 +449,10 @@ public interface AVRAddrMode {
         public AVROperand get_target() { return target; }
     }
     public static class $ldd$ implements AVRAddrMode {
-        public final AVROperand.GPR rd;
-        public final AVROperand.YZ ar;
+        public final AVROperand.op_GPR rd;
+        public final AVROperand.op_YZ ar;
         public final AVROperand.IMM6 imm;
-        public $ldd$(AVROperand.GPR rd, AVROperand.YZ ar, AVROperand.IMM6 imm)  {
+        public $ldd$(AVROperand.op_GPR rd, AVROperand.op_YZ ar, AVROperand.IMM6 imm)  {
             this.rd = rd;
             this.ar = ar;
             this.imm = imm;
@@ -465,9 +468,9 @@ public interface AVRAddrMode {
         public AVROperand get_imm() { return imm; }
     }
     public static class $lds$ implements AVRAddrMode {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         public final AVROperand.DADDR addr;
-        public $lds$(AVROperand.GPR rd, AVROperand.DADDR addr)  {
+        public $lds$(AVROperand.op_GPR rd, AVROperand.DADDR addr)  {
             this.rd = rd;
             this.addr = addr;
         }
@@ -481,8 +484,8 @@ public interface AVRAddrMode {
         public AVROperand get_addr() { return addr; }
     }
     public static class $lsl$ implements AVRAddrMode {
-        public final AVROperand.GPR rd;
-        public $lsl$(AVROperand.GPR rd)  {
+        public final AVROperand.op_GPR rd;
+        public $lsl$(AVROperand.op_GPR rd)  {
             this.rd = rd;
         }
         public void accept(AVRInstr i, AVRAddrModeVisitor v) {
@@ -494,9 +497,9 @@ public interface AVRAddrMode {
         public AVROperand get_rd() { return rd; }
     }
     public static class $movw$ implements AVRAddrMode {
-        public final AVROperand.EGPR rd;
-        public final AVROperand.EGPR rr;
-        public $movw$(AVROperand.EGPR rd, AVROperand.EGPR rr)  {
+        public final AVROperand.op_EGPR rd;
+        public final AVROperand.op_EGPR rr;
+        public $movw$(AVROperand.op_EGPR rd, AVROperand.op_EGPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -510,9 +513,9 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class $muls$ implements AVRAddrMode {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.HGPR rr;
-        public $muls$(AVROperand.HGPR rd, AVROperand.HGPR rr)  {
+        public final AVROperand.op_HGPR rd;
+        public final AVROperand.op_HGPR rr;
+        public $muls$(AVROperand.op_HGPR rd, AVROperand.op_HGPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -526,9 +529,9 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class $mulsu$ implements AVRAddrMode {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
-        public $mulsu$(AVROperand.MGPR rd, AVROperand.MGPR rr)  {
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
+        public $mulsu$(AVROperand.op_MGPR rd, AVROperand.op_MGPR rr)  {
             this.rd = rd;
             this.rr = rr;
         }
@@ -543,8 +546,8 @@ public interface AVRAddrMode {
     }
     public static class $out$ implements AVRAddrMode {
         public final AVROperand.IMM6 ior;
-        public final AVROperand.GPR rr;
-        public $out$(AVROperand.IMM6 ior, AVROperand.GPR rr)  {
+        public final AVROperand.op_GPR rr;
+        public $out$(AVROperand.IMM6 ior, AVROperand.op_GPR rr)  {
             this.ior = ior;
             this.rr = rr;
         }
@@ -584,8 +587,8 @@ public interface AVRAddrMode {
         public AVROperand get_target() { return target; }
     }
     public static class $rol$ implements AVRAddrMode {
-        public final AVROperand.GPR rd;
-        public $rol$(AVROperand.GPR rd)  {
+        public final AVROperand.op_GPR rd;
+        public $rol$(AVROperand.op_GPR rd)  {
             this.rd = rd;
         }
         public void accept(AVRInstr i, AVRAddrModeVisitor v) {
@@ -645,9 +648,9 @@ public interface AVRAddrMode {
         public AVROperand get_bit() { return bit; }
     }
     public static class $sbiw$ implements AVRAddrMode {
-        public final AVROperand.RDL rd;
+        public final AVROperand.op_RDL rd;
         public final AVROperand.IMM6 imm;
-        public $sbiw$(AVROperand.RDL rd, AVROperand.IMM6 imm)  {
+        public $sbiw$(AVROperand.op_RDL rd, AVROperand.IMM6 imm)  {
             this.rd = rd;
             this.imm = imm;
         }
@@ -661,9 +664,9 @@ public interface AVRAddrMode {
         public AVROperand get_imm() { return imm; }
     }
     public static class $sbrc$ implements AVRAddrMode {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
-        public $sbrc$(AVROperand.GPR rr, AVROperand.IMM3 bit)  {
+        public $sbrc$(AVROperand.op_GPR rr, AVROperand.IMM3 bit)  {
             this.rr = rr;
             this.bit = bit;
         }
@@ -677,9 +680,9 @@ public interface AVRAddrMode {
         public AVROperand get_bit() { return bit; }
     }
     public static class $sbrs$ implements AVRAddrMode {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
-        public $sbrs$(AVROperand.GPR rr, AVROperand.IMM3 bit)  {
+        public $sbrs$(AVROperand.op_GPR rr, AVROperand.IMM3 bit)  {
             this.rr = rr;
             this.bit = bit;
         }
@@ -693,8 +696,8 @@ public interface AVRAddrMode {
         public AVROperand get_bit() { return bit; }
     }
     public static class $ser$ implements AVRAddrMode {
-        public final AVROperand.HGPR rd;
-        public $ser$(AVROperand.HGPR rd)  {
+        public final AVROperand.op_HGPR rd;
+        public $ser$(AVROperand.op_HGPR rd)  {
             this.rd = rd;
         }
         public void accept(AVRInstr i, AVRAddrModeVisitor v) {
@@ -706,10 +709,10 @@ public interface AVRAddrMode {
         public AVROperand get_rd() { return rd; }
     }
     public static class $std$ implements AVRAddrMode {
-        public final AVROperand.YZ ar;
+        public final AVROperand.op_YZ ar;
         public final AVROperand.IMM6 imm;
-        public final AVROperand.GPR rr;
-        public $std$(AVROperand.YZ ar, AVROperand.IMM6 imm, AVROperand.GPR rr)  {
+        public final AVROperand.op_GPR rr;
+        public $std$(AVROperand.op_YZ ar, AVROperand.IMM6 imm, AVROperand.op_GPR rr)  {
             this.ar = ar;
             this.imm = imm;
             this.rr = rr;
@@ -726,8 +729,8 @@ public interface AVRAddrMode {
     }
     public static class $sts$ implements AVRAddrMode {
         public final AVROperand.DADDR addr;
-        public final AVROperand.GPR rr;
-        public $sts$(AVROperand.DADDR addr, AVROperand.GPR rr)  {
+        public final AVROperand.op_GPR rr;
+        public $sts$(AVROperand.DADDR addr, AVROperand.op_GPR rr)  {
             this.addr = addr;
             this.rr = rr;
         }
@@ -741,8 +744,8 @@ public interface AVRAddrMode {
         public AVROperand get_rr() { return rr; }
     }
     public static class $tst$ implements AVRAddrMode {
-        public final AVROperand.GPR rd;
-        public $tst$(AVROperand.GPR rd)  {
+        public final AVROperand.op_GPR rd;
+        public $tst$(AVROperand.op_GPR rd)  {
             this.rd = rd;
         }
         public void accept(AVRInstr i, AVRAddrModeVisitor v) {

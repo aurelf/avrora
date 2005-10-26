@@ -34,22 +34,21 @@ package jintgen.gen;
 
 import jintgen.jigir.*;
 import jintgen.types.TypeRef;
+import jintgen.types.Type;
+
 import java.util.List;
 import cck.util.Util;
 
 /**
  * @author Ben L. Titzer
  */
-public class Canonicalizer extends StmtRebuilder<Object> {
+public class Canonicalizer extends CodeProcessor<Object> {
 
     int tempcount;
 
-    /*
-    public Expr visit(CallExpr e, Object env) {
-        List<Expr> ne = visitExprList(e.args, env);
-        return extractExpr(rebuild(e, ne));
+    public Canonicalizer() {
+        super(new VarRenamer());
     }
-    */
 
     public Stmt visit(AssignStmt s, Object env) {
         Expr expr = s.expr;
@@ -58,10 +57,15 @@ public class Canonicalizer extends StmtRebuilder<Object> {
         } else if ( s.dest instanceof FixedRangeExpr ) {
             return transformFixedRangeAssign((FixedRangeExpr)s.dest, expr, env);
         } else if ( s.dest instanceof VarExpr ) {
-            return new AssignStmt.Var((VarExpr)s.dest, expr);
+            expr = visitExpr(expr, null);
+            return new AssignStmt.Var(getVarExpr(s.dest), expr);
         } else {
             throw Util.failure("cannot canonicalize assign to "+s.dest.getClass());
         }
+    }
+
+    private VarExpr getVarExpr(Expr e) {
+        return renamer.getVarExpr((VarExpr)e);
     }
 
     private Stmt transformFixedRangeAssign(FixedRangeExpr fre, Expr expr, Object env) {
@@ -73,53 +77,50 @@ public class Canonicalizer extends StmtRebuilder<Object> {
                 IndexExpr index = new IndexExpr(vmap, vind);
                 index.setType(ind.getType());
                 VarExpr velem = extractExpr(index);
+                expr = visitExpr(expr, null);
                 addStmt(new AssignStmt.FixedRange(velem, fre.low_bit, fre.high_bit, expr));
                 return new AssignStmt.Map(vmap, vind, velem);
             } else {
                 throw Util.failure("cannot canonicalize fixed-range assign to bit access");
             }
         } else if ( fre.expr instanceof VarExpr ) {
-            return new AssignStmt.FixedRange((VarExpr)fre.expr, fre.low_bit, fre.high_bit, expr);
+            expr = visitExpr(expr, null);
+            return new AssignStmt.FixedRange(getVarExpr(fre.expr), fre.low_bit, fre.high_bit, expr);
         } else {
             throw Util.failure("cannot canonicalize fixed-range assign to "+fre.expr.getClass());
         }
     }
 
     private Stmt transformIndexAssign(IndexExpr ind, Expr expr, Object env) {
-        if ( ind.expr.getType().isBasedOn("map") )
-            return new AssignStmt.Map(ind.expr, ind.index, expr);
-        else
-            return new AssignStmt.Bit(liftVar(ind.expr), ind.index, expr);
-    }
-
-    protected Expr liftExpr(Expr e) {
-        Expr ne = e.accept(this, null);
-
-        if (ne.isVariable()) return ne;
-        if (ne.isLiteral()) return ne;
-
-        return extractExpr(ne);
-
+        if ( ind.expr.getType().isBasedOn("map") ) {
+            Expr inde = visitExpr(ind.expr, null);
+            Expr indi = visitExpr(ind.index, null);
+            expr = visitExpr(expr, null);
+            return new AssignStmt.Map(inde, indi, expr);
+        } else {
+            VarExpr inde = liftVar(ind.expr);
+            Expr indi = visitExpr(ind.index, null);
+            expr = visitExpr(expr, null);
+            return new AssignStmt.Bit(inde, indi, expr);
+        }
     }
 
     protected VarExpr liftVar(Expr e) {
-        Expr ne = e.accept(this, null);
+        Expr ne = visitExpr(e, null);
 
-        if (ne.isVariable()) return (VarExpr)ne;
+        if (ne.isVariable()) return getVarExpr(ne);
         else return extractExpr(ne);
     }
 
     private VarExpr extractExpr(Expr ne) {
-        String tmpname = "$ct_" + (tempcount++);
-
-        addStmt(new DeclStmt(tmpname, new TypeRef(ne.getType()), ne));
-        VarExpr ve = new VarExpr(tmpname);
-        ve.setType(ne.getType());
+        ne = visitExpr(ne, null);
+        Type type = ne.getType();
+        VarExpr ve = renamer.newTemp(type);
+        addStmt(new DeclStmt(ve.variable, new TypeRef(type), ne));
         return ve;
     }
 
     public List<Stmt> process(List<Stmt> stmts) {
         return visitStmtList(stmts, null);
     }
-
 }

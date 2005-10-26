@@ -192,7 +192,7 @@ public class CodemapGenerator extends Generator {
         }
 
         public void visit(DeclStmt s) {
-            generate("DeclStmt", s.name, s.type, s.init);
+            generate("DeclStmt", s.name, s.typeRef, s.init);
         }
 
         public void visit(IfStmt s) {
@@ -321,7 +321,7 @@ public class CodemapGenerator extends Generator {
         public void visit(ConversionExpr e) {
             printer.print("new ConversionExpr(");
             e.expr.accept(this);
-            printer.print(", " + StringUtil.quote(e.typename) + ", ");
+            printer.print(", " + StringUtil.quote(e.typeRef) + ", ");
             printer.print(")");
         }
 
@@ -331,6 +331,10 @@ public class CodemapGenerator extends Generator {
 
         public void visit(Literal.IntExpr e) {
             printer.print("new Literal.IntExpr(" + e.value + ')');
+        }
+
+        public void visit(Literal.EnumVal e) {
+            throw Util.unimplemented();
         }
 
         public void visit(UnOpExpr e) {

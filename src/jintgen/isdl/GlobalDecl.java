@@ -28,60 +28,34 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Created Oct 25, 2005
  */
-
 package jintgen.isdl;
 
-import cck.text.Printer;
-import jintgen.jigir.*;
-import java.util.List;
+import jintgen.isdl.parser.Token;
+import jintgen.types.TypeRef;
+import jintgen.types.Type;
+import jintgen.jigir.Decl;
 
 /**
  * @author Ben L. Titzer
  */
-public class PrettyPrinter extends StmtVisitor.DepthFirst {
+public class GlobalDecl implements Decl {
 
-    final Printer p;
-    private Architecture arch;
+    public final Token name;
+    public final TypeRef typeRef;
 
-    PrettyPrinter(Architecture arch, Printer p) {
-        this.arch = arch;
-        this.p = p;
+    public GlobalDecl(Token n, TypeRef t) {
+        name = n;
+        typeRef = t;
     }
 
-    public void visitStmtList(List<Stmt> s) {
-        p.startblock();
-        if (s == null) {
-            p.println(" // empty body");
-        } else {
-            for ( Stmt st : s ) st.accept(this);
-
-        }
-        p.endblock();
+    public String getName() {
+        return name.image;
     }
 
-    public void visit(IfStmt s) {
-        p.print("if ( ");
-        p.print(s.cond.toString());
-        p.print(" ) ");
-        visitStmtList(s.trueBranch);
-        p.print("else ");
-        visitStmtList(s.falseBranch);
-    }
-
-    public void visit(CallStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(DeclStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(AssignStmt s) {
-        p.println(s.toString());
-    }
-
-    public void visit(ReturnStmt s) {
-        p.println(s.toString());
+    public Type getType() {
+        return typeRef.getType();
     }
 }

@@ -60,10 +60,11 @@ public class Architecture {
     public final HashList<String, AddrModeDecl> addrModes;
     public final HashList<String, AddrModeSetDecl> addrSets;
     public final HashList<String, EnumDecl> enums;
-    public final HashList<String, TypeRef> globals;
+    public final HashList<String, GlobalDecl> globals;
     public final List<Item> userTypes;
 
     public final JIGIRTypeEnv typeEnv;
+    public final Environment globalEnv;
     public final JIGIRErrorReporter ERROR;
 
     /**
@@ -81,11 +82,12 @@ public class Architecture {
         addrModes = new HashList<String, AddrModeDecl>();
         addrSets = new HashList<String, AddrModeSetDecl>();
         enums = new HashList<String, EnumDecl>();
-        globals = new HashList<String, TypeRef>();
+        globals = new HashList<String, GlobalDecl>();
         userTypes = new LinkedList<Item>();
         ERROR = new JIGIRErrorReporter();
 
         typeEnv = new JIGIRTypeEnv(ERROR);
+        globalEnv = new Environment(null);
     }
 
     public String getName() {
@@ -95,6 +97,7 @@ public class Architecture {
     public void addSubroutine(SubroutineDecl d) {
         printer.println("loading subroutine " + d.name.image + "...");
         subroutines.put(d.name.image, d);
+        globalEnv.addSubroutine(d);
     }
 
     public void addInstruction(InstrDecl i) {
@@ -106,6 +109,7 @@ public class Architecture {
         printer.println("loading operand declaration " + d.name.image + "...");
         userTypes.add(d);
         operandTypes.put(d.name.image, d);
+        typeEnv.addOperandType(d);
     }
 
     public void addEncoding(FormatDecl d) {
@@ -127,10 +131,17 @@ public class Architecture {
         printer.println("loading enum " + m + "...");
         userTypes.add(m);
         enums.put(m.name.image, m);
+        JIGIRTypeEnv.TYPE_enum_kind tc = typeEnv.addEnum(m);
+        Token tok = new Token();
+        tok.image = tc.getName();
+        TypeRef tr = new TypeRef(tok);
+        globalEnv.addDecl(new GlobalDecl(m.name, tr));
     }
 
     public void addGlobal(Token n, TypeRef t) {
-        globals.put(n.image, t);
+        GlobalDecl decl = new GlobalDecl(n, t);
+        globals.put(n.image, decl);
+        globalEnv.addDecl(decl);
     }
 
     public InstrDecl getInstruction(String name) {

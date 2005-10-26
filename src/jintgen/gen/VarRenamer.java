@@ -29,17 +29,69 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Oct 21, 2005
+ * Created Oct 25, 2005
  */
+package jintgen.gen;
 
-package jintgen.jigir;
-
+import jintgen.jigir.VarExpr;
+import jintgen.jigir.Decl;
+import jintgen.jigir.DeclStmt;
 import jintgen.types.Type;
+import jintgen.types.TypeRef;
+import jintgen.isdl.parser.Token;
+import jintgen.isdl.GlobalDecl;
+
+import java.util.HashMap;
+
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer
  */
-public interface Decl {
-    public String getName();
-    public Type getType();
+public class VarRenamer {
+
+    protected final HashMap<String, String> varMap;
+    int tmpcount;
+
+    VarRenamer() {
+        varMap = new HashMap<String, String>();
+    }
+
+    public VarExpr getVarExpr(VarExpr e) {
+        Decl decl = e.getDecl();
+        if ( decl == null || !(decl instanceof GlobalDecl) ) {
+            String orig = e.variable.image;
+            String nn = varMap.get(orig);
+            if ( nn != null && !orig.equals(nn) ) {
+                VarExpr ne = new VarExpr(nn);
+                ne.setDecl(decl);
+                ne.setType(e.getType());
+                return ne;
+            }
+        }
+        return e;
+    }
+
+    public VarExpr visit(String v) {
+        String nn = varMap.get(v);
+        if ( !v.equals(nn) ) v = nn;
+        return new VarExpr(v);
+    }
+
+    public void addVariable(String v, String nv) {
+        varMap.put(v, nv);
+    }
+
+    public DeclStmt getDecl(DeclStmt s) {
+        // default: do nothing
+        return s;
+    }
+
+    public VarExpr newTemp(Type t) {
+        Token tok = new Token();
+        tok.image = "$tmp_" + (tmpcount++);
+        VarExpr varExpr = new VarExpr(tok);
+        varExpr.setType(t);
+        return varExpr;
+    }
 }

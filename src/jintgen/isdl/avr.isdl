@@ -14,13 +14,12 @@ architecture avr {
     format ABS4 = { opcode[9:3], target[21:17], opcode[2:0], target[16:0] }
     format MGPRMGPR = { opcode[7:0], s1[0], r1[2:0], s2[0], r2[2:0] }
 
-
 //---------------------------------------------------------------------------
 //  STATE USED IN THE SIMULATION
 //---------------------------------------------------------------------------
-    global regs: map<GPRs, int.8>;    // the register file: signed 8-bit quantities
-    global wregs: map<EGPRs, +int.16>; // a "view" of the register file as words
-    global aregs: map<ADRs, +int.16>; // a "view" of the register file as words
+    global regs: map<GPR, int.8>;    // the register file: signed 8-bit quantities
+    global wregs: map<EGPR, +int.16>; // a "view" of the register file as words
+    global aregs: map<ADR, +int.16>; // a "view" of the register file as words
     global sram: map<int, int.8>;     // a "view" of the memory as signed 8-bit quantities
     global ioregs: map<int, int.8>;   // a "view" of the IO registers as signed 8-bit quantites
     global flash: map<int, int.8>;    // the flash (program) memory
@@ -40,15 +39,12 @@ architecture avr {
     global SREG: int;            // status register number
     global nextpc: int;          // the next pc afer executing this instructiobn
     global cycles: int;          // cycles consumed by this instruction
-    global RZ: ADRs;             // reference to the Z register
-    global R0: GPRs;             // reference to the R0 register
-    global R1: GPRs;             // reference to the R1 register
 
 //---------------------------------------------------------------------------
 //  OPERANDS ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
 
-    enum GPRs {
+    enum GPR {
         r0  = 0,  r1  = 1,  r2  = 2,  r3  = 3,
         r4  = 4,  r5  = 5,  r6  = 6,  r7  = 7,
         r8  = 8,  r9  = 9,  r10 = 10, r11 = 11,
@@ -59,63 +55,63 @@ architecture avr {
         r28 = 28, r29 = 29, r30 = 30, r31 = 31
     }
 
-    enum ADRs {
+    enum ADR {
         X = 26, Y = 28, Z = 30
     }
 
-    enum-subset HGPRs: GPRs {
+    enum-subset HGPR: GPR {
         r16 = 0,  r17 = 1,  r18 = 2,  r19 = 3,
         r20 = 4,  r21 = 5,  r22 = 6,  r23 = 7,
         r24 = 8,  r25 = 9,  r26 = 10, r27 = 11,
         r28 = 12, r29 = 13, r30 = 14, r31 = 15
     }
 
-    enum-subset EGPRs: GPRs {
+    enum-subset EGPR: GPR {
         r0  = 0,  r2  = 1,  r4  = 2,  r6  = 3,
         r8  = 4,  r10 = 5,  r12 = 6,  r14 = 7,
         r16 = 8,  r18 = 9,  r20 = 10, r22 = 11,
         r24 = 12, r26 = 13, r28 = 14, r30 = 15
     }
 
-    enum-subset MGPRs: GPRs {
+    enum-subset MGPR: GPR {
         r16 = 0, r17 = 1, r18 = 2, r19 = 3,
         r20 = 4, r21 = 5, r22 = 6, r23 = 7
     }
 
-    enum-subset YZs: ADRs {
+    enum-subset YZ: ADR {
         Y = 1, Z = 0
     }
 
-    enum-subset RDLs: EGPRs {
+    enum-subset RDL: EGPR {
         r24 = 0, r26 = 1, r28 = 2, r30 = 3
     }
 
-    operand-type GPR[5]: GPRs { // all of the general purpose registers
+    operand-type op_GPR[5]: GPR { // all of the general purpose registers
         read: int.8 { return regs[this]; }
         write: int.8 { regs[this] = value; }
     }
 
-    operand-type HGPR[4]: HGPRs { // the "high" general purpose registers
+    operand-type op_HGPR[4]: HGPR { // the "high" general purpose registers
         read: int.8 { return regs[this]; }
         write: int.8 { regs[this] = value; }
     }
 
-    operand-type MGPR[3]: MGPRs { // the "mid-range" general purpose registers
+    operand-type op_MGPR[3]: MGPR { // the "mid-range" general purpose registers
         read: int.8 { return regs[this]; }
         write: int.8 { regs[this] = value; }
     }
 
-    operand-type YZ[1]: YZs { // either the Y or Z address registers
+    operand-type op_YZ[1]: YZ { // either the Y or Z address registers
         read: +int.16 { return aregs[this]; }
         write: +int.16 { aregs[this] = value; }
     }
 
-    operand-type EGPR[4]: EGPRs { // an "even" general purpose register
+    operand-type op_EGPR[4]: EGPR { // an "even" general purpose register
         read: +int.16 { return wregs[this]; }
         write: +int.16 { wregs[this] = value; }
     }
 
-    operand-type RDL[2]: RDLs { // a word register r24:r25, r26:r27, etc
+    operand-type op_RDL[2]: RDL { // a word register r24:r25, r26:r27, etc
         read: +int.16 { return wregs[this]; }
         write: +int.16 { wregs[this] = value; }
     }
@@ -134,19 +130,19 @@ architecture avr {
 // ADDRESSING MODES
 //---------------------------------------------------------------------------
 
-    addr-mode GPRGPR rd: GPR, rr: GPR { // two general purpose registers
+    addr-mode GPRGPR rd: op_GPR, rr: op_GPR { // two general purpose registers
         encoding = { opcode[5:0], rr[4:4], rd[4:4], rd[3:0], rr[3:0] }
     }
 
-    addr-mode MGPRMGPR rd: MGPR, rr: MGPR { // two midrange general purpose registers
+    addr-mode MGPRMGPR rd: op_MGPR, rr: op_MGPR { // two midrange general purpose registers
         encoding = { opcode[7:0], s1[0], rd[2:0], s2[0], rr[2:0] }
     }
 
-    addr-mode GPR rd: GPR { // one general purpose register
+    addr-mode GPR rd: op_GPR { // one general purpose register
         encoding = { opcode[6:0], rd[4:4], rd[3:0], ext[3:0] }
     }
 
-    addr-mode HGPRIMM8 rd: HGPR, imm: IMM8 { // a high general purpose register and an 8-bit immediate
+    addr-mode HGPRIMM8 rd: op_HGPR, imm: IMM8 { // a high general purpose register and an 8-bit immediate
         encoding = { opcode[3:0], imm[7:4], rd[3:0], imm[3:0] }
     }
 
@@ -363,7 +359,7 @@ architecture avr {
         }
     }
 
-    instruction "adiw" rd: RDL, imm: IMM6 { // add immediate to word register
+    instruction "adiw" rd: op_RDL, imm: IMM6 { // add immediate to word register
         encoding = { 0b10010110, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
@@ -418,7 +414,7 @@ architecture avr {
         }
     }
 
-    instruction "bld" rr: GPR, bit: IMM3 {
+    instruction "bld" rr: op_GPR, bit: IMM3 {
         encoding = { 0b1111100, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
@@ -630,7 +626,7 @@ architecture avr {
         }
     }
 
-    instruction "bst" rr: GPR, bit: IMM3 {
+    instruction "bst" rr: op_GPR, bit: IMM3 {
         encoding = { 0b1111101, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
@@ -698,7 +694,7 @@ architecture avr {
     }
 
     // CLR (clear register A) is equivalent to EOR A, A (exclusive-or A with itself)
-    pseudo instruction "clr" rd: GPR {
+    pseudo instruction "clr" rd: op_GPR {
         // note that this is equivalent to eor rd, rd
         encoding = GPRGPR where { opcode = 0b001001, r1 = rd, r2 = rr }
         property cycles: int = 1;
@@ -847,39 +843,39 @@ architecture avr {
         }
     }
 
-    instruction "fmul" rd: MGPR, rr: MGPR {
+    instruction "fmul" rd: op_MGPR, rr: op_MGPR {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 0, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
             local result: int.17 = (+read(rd) * +read(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            regs[R0] = low(result);
-            regs[R1] = high(result);
+            regs[GPR.r0] = low(result);
+            regs[GPR.r1] = high(result);
         }
     }
 
-    instruction "fmuls" rd: MGPR, rr: MGPR {
+    instruction "fmuls" rd: op_MGPR, rr: op_MGPR {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 0, r2 = rr }
         property cycles: int = 2;
         execute {
             local result: int.17 = (read(rd) * read(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            regs[R0] = low(result);
-            regs[R1] = high(result);
+            regs[GPR.r0] = low(result);
+            regs[GPR.r1] = high(result);
         }
     }
 
-    instruction "fmulsu" rd: MGPR, rr: MGPR {
+    instruction "fmulsu" rd: op_MGPR, rr: op_MGPR {
         encoding = MGPRMGPR where { opcode = 0b0000011, s1 = 1, r1 = rd, s2 = 1, r2 = rr }
         property cycles: int = 2;
         execute {
             local result: int.17 = (read(rd) * +read(rr)) << 1;
             Z = result[15:0] == 0;
             C = result[16];
-            regs[R0] = low(result);
-            regs[R1] = high(result);
+            regs[GPR.r0] = low(result);
+            regs[GPR.r1] = high(result);
         }
     }
 
@@ -888,7 +884,7 @@ architecture avr {
         property cycles: int = 3;
         execute {
             pushPC(nextpc);
-            nextpc = absolute(aregs[RZ]);
+            nextpc = absolute(aregs[RZ.Z]);
         }
     }
 
@@ -896,11 +892,11 @@ architecture avr {
         encoding = { 0b10010100, 0b00001001 }
         property cycles: int = 2;
         execute {
-            nextpc = absolute(aregs[RZ]);
+            nextpc = absolute(aregs[RZ.Z]);
         }
     }
 
-    instruction "in" rd: GPR, imm: IMM6 {
+    instruction "in" rd: op_GPR, imm: IMM6 {
         encoding = { 0b10110, imm[5:4], rd[4:0], imm[3:0] }
         property cycles: int = 1;
         execute {
@@ -933,7 +929,7 @@ architecture avr {
         }
     }
 
-    instruction "ldd" rd: GPR, ar: YZ, imm: IMM6 {
+    instruction "ldd" rd: op_GPR, ar: op_YZ, imm: IMM6 {
         encoding = priority 1 { 0b10, imm[5], 0b0, imm[4:3], 0b0, rd[4:0], ar[0], imm[2:0] }
         property syntax: String = "%rd, %ar+%imm";
         property cycles: int = 2;
@@ -950,7 +946,7 @@ architecture avr {
         }
     }
 
-    instruction "lds" rd: GPR, addr: DADDR {
+    instruction "lds" rd: op_GPR, addr: DADDR {
         encoding = { 0b1001000, rd[4:0], 0b0000, addr[15:0] }
         property cycles: int = 2;
         execute {
@@ -960,7 +956,7 @@ architecture avr {
 
     // LSL (logical shift left by 1) is encoded as an ADD instruction where
     // the register is simply added to itself
-    pseudo instruction "lsl" rd: GPR {
+    pseudo instruction "lsl" rd: op_GPR {
         encoding = GPRGPR where { opcode = 0b000011, r1 = rd, r2 = rd }
         property cycles: int = 1;
         execute {
@@ -985,7 +981,7 @@ architecture avr {
         }
     }
 
-    instruction "movw" rd: EGPR, rr: EGPR {
+    instruction "movw" rd: op_EGPR, rr: op_EGPR {
         encoding = { 0b00000001, rd[3:0], rr[3:0] }
         property cycles: int = 1;
         execute {
@@ -1000,32 +996,32 @@ architecture avr {
             local result: +int.16 = +read(rd) * +read(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            regs[R0] = low(result);
-            regs[R1] = high(result);
+            regs[GPR.r0] = low(result);
+            regs[GPR.r1] = high(result);
         }
     }
 
-    instruction "muls" rd: HGPR, rr: HGPR {
+    instruction "muls" rd: op_HGPR, rr: op_HGPR {
         encoding = { 0b00000010, rd[3:0], rr[3:0] }
         property cycles: int = 2;
         execute {
             local result: -int.16 = read(rd) * read(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            regs[R0] = low(result);
-            regs[R1] = high(result);
+            regs[GPR.r0] = low(result);
+            regs[GPR.r1] = high(result);
         }
     }
 
-    instruction "mulsu" rd: MGPR, rr: MGPR {
+    instruction "mulsu" rd: op_MGPR, rr: op_MGPR {
         encoding = { 0b00000011, 0b0, rd[2:0], 0b0, rr[2:0] }
         property cycles: int = 2;
         execute {
             local result: -int.16 = read(rd) * +read(rr);
             C = result[15];
             Z = (result[15:0] == 0);
-            regs[R0] = low(result);
-            regs[R1] = high(result);
+            regs[GPR.r0] = low(result);
+            regs[GPR.r1] = high(result);
         }
     }
 
@@ -1062,7 +1058,7 @@ architecture avr {
         }
     }
 
-    instruction "out" ior: IMM6, rr: GPR {
+    instruction "out" ior: IMM6, rr: op_GPR {
         encoding = { 0b10111, ior[5:4], rr[4:0], ior[3:0] }
         property cycles: int = 1;
         execute {
@@ -1126,7 +1122,7 @@ architecture avr {
 
     // ROL (rotate left by 1) is encoded an ADC (add with carry instruction)
     // where the register is simply added to itself
-    pseudo instruction "rol" rd: GPR {
+    pseudo instruction "rol" rd: op_GPR {
         encoding = GPRGPR where { opcode = 0b000111, r1 = rd, r2 = rd }
         property cycles: int = 1;
         execute {
@@ -1183,7 +1179,7 @@ architecture avr {
         }
     }
 
-    instruction "sbiw" rd: RDL, imm: IMM6 {
+    instruction "sbiw" rd: op_RDL, imm: IMM6 {
         encoding = { 0b10010111, imm[5:4], rd[1:0], imm[3:0] }
         property cycles: int = 2;
         execute {
@@ -1212,7 +1208,7 @@ architecture avr {
         }
     }
 
-    instruction "sbrc" rr: GPR, bit: IMM3 {
+    instruction "sbrc" rr: op_GPR, bit: IMM3 {
         encoding = { 0b1111110, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
@@ -1220,7 +1216,7 @@ architecture avr {
         }
     }
 
-    instruction "sbrs" rr: GPR, bit: IMM3 {
+    instruction "sbrs" rr: op_GPR, bit: IMM3 {
         encoding = { 0b1111111, rr[4:0], 0b0, bit[2:0] }
         property cycles: int = 1;
         execute {
@@ -1260,7 +1256,7 @@ architecture avr {
         }
     }
 
-    pseudo instruction "ser" rd: HGPR {
+    pseudo instruction "ser" rd: op_HGPR {
         encoding = { 0b11101111, rd[4:1], 0b1111 }
         property cycles: int = 1;
         execute {
@@ -1316,7 +1312,7 @@ architecture avr {
         }
     }
 
-    instruction "std" ar: YZ, imm: IMM6, rr: GPR {
+    instruction "std" ar: op_YZ, imm: IMM6, rr: op_GPR {
         encoding = priority 1 { 0b10, imm[5], 0b0, imm[4:3], 0b1, rr[4:0], ar[0], imm[2:0] }
         property syntax: String = "%ar+%imm, %rr";
         property cycles: int = 2;
@@ -1325,7 +1321,7 @@ architecture avr {
         }
     }
 
-    instruction "sts" addr: DADDR, rr: GPR {
+    instruction "sts" addr: DADDR, rr: op_GPR {
         encoding = { 0b1001001, rr[4:0], 0b0000, addr[15:0] }
         property cycles: int = 2;
         execute {
@@ -1363,7 +1359,7 @@ architecture avr {
     }
 
     // TST (test) is encoded as an AND instruction
-    pseudo instruction "tst" rd: GPR {
+    pseudo instruction "tst" rd: op_GPR {
         encoding = GPRGPR where { rr = rd }
         property opcode: int = 0b001000;
         property cycles: int = 1;
@@ -1388,27 +1384,27 @@ architecture avr {
 // POLYMORPHIC INSTRUCTIONS SUPPORT: lpm, elpm, ld, ldd, st, std
 //------------------------------------------------------------------------
 
-    enum-subset R0: GPRs {
+    enum-subset R0: GPR {
         r0 = 0
     }
 
-    enum-subset RZ: ADRs {
+    enum-subset RZ: ADR {
         Z = 0
     }
 
     operand-type R0_B[0]: R0 {
-        read: int.8 { return regs[R0]; }
-        write: int.8 { regs[R0] = value; }
+        read: int.8 { return regs[GPR.r0]; }
+        write: int.8 { regs[GPR.r0] = value; }
     }
 
     operand-type RZ_W[0]: RZ {
-        read: +int.16 { return aregs[RZ]; }
+        read: +int.16 { return aregs[RZ.Z]; }
     }
 
     operand-type AI_RZ_W[0]: RZ {
         read: +int.16 {
-            local temp: int = aregs[RZ];
-            aregs[RZ] = temp + 1;
+            local temp: int = aregs[RZ.Z];
+            aregs[RZ.Z] = temp + 1;
             return temp;
         }
     }
@@ -1418,23 +1414,23 @@ architecture avr {
         property syntax: String = "";
     }
 
-    addr-mode XLPM_D dest: GPR, source: RZ_W { // load from flash at address Z into rd
+    addr-mode XLPM_D dest: op_GPR, source: RZ_W { // load from flash at address Z into rd
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b0 }
         property syntax: String = "%dest, %source";
     }
 
-    addr-mode XLPM_INC dest: GPR, source: AI_RZ_W { // load from flash at address Z into rd and increment Z
+    addr-mode XLPM_INC dest: op_GPR, source: AI_RZ_W { // load from flash at address Z into rd and increment Z
         encoding = { 0b1001000, dest[4:0], 0b01, extended[0], 0b1 }
         property syntax: String = "%dest, %source+";
     }
 
     addr-set XLPM { XLPM_REG, XLPM_D, XLPM_INC } // addressing modes for LPM, ELPM
 
-    operand-type XYZ[0]: ADRs { // simply read from X, Y, or Z
+    operand-type XYZ[0]: ADR { // simply read from X, Y, or Z
         read: +int.16 { return aregs[this]; }
     }
 
-    operand-type AI_XYZ[0]: ADRs { // read from X, Y, or Z and post increment
+    operand-type AI_XYZ[0]: ADR { // read from X, Y, or Z and post increment
         read: +int.16 {
             local tmp: int = aregs[this];
             aregs[this] = tmp + 1;
@@ -1442,7 +1438,7 @@ architecture avr {
         }
     }
 
-    operand-type PD_XYZ[0]: ADRs { // read from X, Y, or Z with predecrement
+    operand-type PD_XYZ[0]: ADR { // read from X, Y, or Z with predecrement
         read: +int.16 {
             local tmp: +int.16 = (aregs[this] - 1)[15:0];
             aregs[this] = tmp;
@@ -1450,21 +1446,21 @@ architecture avr {
         }
     }
 
-    addr-mode LD_ST_XYZ rd: GPR, ar: XYZ {
+    addr-mode LD_ST_XYZ rd: op_GPR, ar: XYZ {
         encoding = { 0b100100, store[0], rd[4:0], 0b1100 } when ar == X
         encoding = { 0b100000, store[0], rd[4:0], 0b1000 } when ar == Y
         encoding = { 0b100000, store[0], rd[4:0], 0b0000 } when ar == Z
         property syntax: String = "%rd, %ar";
     }
 
-    addr-mode LD_ST_AI_XYZ rd: GPR, ar: AI_XYZ {
+    addr-mode LD_ST_AI_XYZ rd: op_GPR, ar: AI_XYZ {
         encoding = { 0b100100, store[0], rd[4:0], 0b1101 } when ar == X
         encoding = { 0b100100, store[0], rd[4:0], 0b1001 } when ar == Y
         encoding = { 0b100100, store[0], rd[4:0], 0b0001 } when ar == Z
         property syntax: String = "%rd, %ar+";
     }
 
-    addr-mode LD_ST_PD_XYZ rd: GPR, ar: PD_XYZ {
+    addr-mode LD_ST_PD_XYZ rd: op_GPR, ar: PD_XYZ {
         encoding = { 0b100100, store[0], rd[4:0], 0b1110 } when ar == X
         encoding = { 0b100100, store[0], rd[4:0], 0b1010 } when ar == Y
         encoding = { 0b100100, store[0], rd[4:0], 0b0010 } when ar == Z

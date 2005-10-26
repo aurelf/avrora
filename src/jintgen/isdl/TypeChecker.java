@@ -52,13 +52,99 @@ import java.util.*;
  */
 public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccumulator<Environment, Environment> {
 
+    final Architecture arch;
     final JIGIRTypeEnv typeEnv;
     final JIGIRErrorReporter ERROR;
     Type retType;
 
-    TypeChecker(JIGIRErrorReporter er, JIGIRTypeEnv env) {
+    TypeChecker(JIGIRErrorReporter er, Architecture a) {
         ERROR = er;
-        typeEnv = env;
+        arch = a;
+        typeEnv = a.typeEnv;
+    }
+
+    public void typeCheck() {
+        for ( Decl d : arch.globalEnv.getDecls() ) {
+            if ( d instanceof GlobalDecl )
+                ((GlobalDecl)d).typeRef.resolve(typeEnv);
+        }
+        typeCheckAccessMethods();
+        typeCheckSubroutines();
+        typeCheckInstrBodies();
+    }
+
+    private void typeCheckAccessMethods() {
+        Environment env = arch.globalEnv;
+        // first step: resolve all read methods by type
+        JIGIRTypeEnv te = arch.typeEnv;
+        for ( OperandTypeDecl ot: arch.operandTypes ) {
+            for ( OperandTypeDecl.AccessMethod m : ot.readDecls )
+                ot.readAccessors.put(resolveAccessMethodType(m, te), m);
+            for ( OperandTypeDecl.AccessMethod m : ot.writeDecls )
+                ot.writeAccessors.put(resolveAccessMethodType(m, te), m);
+        }
+        // now typecheck the bodies
+        for ( OperandTypeDecl ot: arch.operandTypes ) {
+            // add each of the sub operands to the environment
+            Environment oenv = new Environment(env);
+            oenv.addVariable("this", operandRepresentationType(ot));
+            for ( AddrModeDecl.Operand o : ot.subOperands ) {
+                o.typeRef.resolve(arch.typeEnv);
+                oenv.addDecl(o);
+            }
+
+            for ( OperandTypeDecl.AccessMethod m : ot.readDecls ) {
+                typeCheck(m.code.getStmts(), resolveAccessMethodType(m, arch.typeEnv), new Environment(oenv));
+            }
+            for ( OperandTypeDecl.AccessMethod m : ot.writeDecls ) {
+                Environment senv = new Environment(oenv);
+                senv.addVariable("value", resolveAccessMethodType(m, arch.typeEnv));
+                typeCheck(m.code.getStmts(), null, senv);
+            }
+        }
+
+    }
+
+    private Type operandRepresentationType(OperandTypeDecl ot) {
+        if ( ot.isValue() ) {
+            TypeRef kind = ((OperandTypeDecl.Value)ot).typeRef;
+            return kind.resolve(arch.typeEnv);
+        } else
+            return arch.typeEnv.resolveOperandType(ot);
+    }
+
+    private Type resolveAccessMethodType(OperandTypeDecl.AccessMethod m, JIGIRTypeEnv te) {
+        if ( m.type != null ) return m.type;
+        Type type = m.typeRef.resolve(te);
+        m.type = type;
+        return m.type;
+    }
+
+    private void typeCheckInstrBodies() {
+        Environment env = arch.globalEnv;
+        for ( InstrDecl d : arch.instructions ) {
+            if ( !d.code.hasBody() ) continue;
+            Environment senv = new Environment(env);
+            for ( AddrModeDecl.Operand p : d.getOperands() ) {
+                p.typeRef.resolve(typeEnv);
+                senv.addDecl(p);
+            }
+            typeCheck(d.code.getStmts(), null, senv);
+        }
+    }
+
+    private void typeCheckSubroutines() {
+        Environment env = arch.globalEnv;
+        for ( SubroutineDecl d : arch.subroutines ) {
+            Environment senv = new Environment(env);
+            for ( SubroutineDecl.Parameter p : d.getParams() ) {
+                p.type.resolve(typeEnv);
+                senv.addDecl(p);
+            }
+            Type t = d.ret.resolve(arch.typeEnv);
+            if ( d.code.hasBody() )
+                typeCheck(d.code.getStmts(), t, senv);
+        }
     }
 
     public void typeCheck(List<Stmt> s, Type retType, Environment env) {
@@ -79,7 +165,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Environment visit(WriteStmt s, Environment env) {
         OperandTypeDecl d = operandTypeOf(s.operand, env);
-        OperandTypeDecl.Accessor accessor = resolveMethod("Write", s.type, d, s.method, d.writeAccessors);
+        OperandTypeDecl.Accessor accessor = resolveMethod("Write", s.typeRef, d, s.method, d.writeAccessors);
         s.setAccessor(accessor);
         typeCheck("write", s.expr, accessor.type, env);
         return env;
@@ -101,7 +187,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     private SubroutineDecl typeCheckCall(Environment env, Token method, List<Expr> args) {
-        SubroutineDecl d = env.resolveMethod(method.image);
+        SubroutineDecl d = env.resolveSubroutine(method.image);
         if ( d == null ) ERROR.UnresolvedSubroutine(method);
         Iterator<Expr> eiter = args.iterator();
         if ( d.getParams().size() != args.size() )
@@ -119,9 +205,9 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Environment visit(DeclStmt s, Environment env) {
         if ( env.isDefinedLocally(s.name.image) ) ERROR.RedefinedLocal(s.name);
-        Type t = s.type.resolve(typeEnv);
+        Type t = s.typeRef.resolve(typeEnv);
         typeCheck("initialization", s.init, t, env);
-        env.addVariable(s.name.image, t);
+        env.addDecl(s);
         return env;
     }
 
@@ -215,17 +301,19 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     public Type visit(ReadExpr e, Environment env) {
         OperandTypeDecl d = operandTypeOf(e.operand, env);
-        OperandTypeDecl.Accessor accessMethod = resolveMethod("Read", e.type, d, e.method, d.readAccessors);
+        OperandTypeDecl.Accessor accessMethod = resolveMethod("Read", e.typeRef, d, e.method, d.readAccessors);
         e.setAccessor(accessMethod);
         return accessMethod.type;
     }
 
     public Type visit(ConversionExpr e, Environment env) {
         Type t = typeOf(e.expr, env);
-        return e.typename.resolve(typeEnv);
+        return e.typeRef.resolve(typeEnv);
     }
 
-    public Type visit(Literal.BoolExpr e, Environment env) { return typeEnv.BOOLEAN; }
+    public Type visit(Literal.BoolExpr e, Environment env) {
+        return typeEnv.BOOLEAN;
+    }
 
     public Type visit(Literal.IntExpr e, Environment env) {
         int val = e.value;
@@ -233,6 +321,10 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
         boolean signed = val < 0;
         int width = Arithmetic.highestBit(val);
         return typeEnv.newIntType(signed, width);
+    }
+
+    public Type visit(Literal.EnumVal e, Environment env) {
+        return typeEnv.resolveType(e.enumDecl.name);
     }
 
     public Type visit(UnOpExpr e, Environment env) {
@@ -244,13 +336,19 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(VarExpr e, Environment env) {
-        Type t = env.resolveVariable(e.variable.image);
-        if ( t == null ) ERROR.UnresolvedVariable(e.variable);
-        return t;
+        Decl d = env.resolveDecl(e.variable.image);
+        if ( d == null ) ERROR.UnresolvedVariable(e.variable);
+        e.setDecl(d);
+        return d.getType();
     }
 
     public Type visit(DotExpr e, Environment env) {
         Type t = typeOf(e.expr, env);
+        TypeCon typecon = t.getTypeCon();
+        if ( typecon instanceof JIGIRTypeEnv.TYPE_enum_kind ) {
+            return typeEnv.resolveType(((JIGIRTypeEnv.TYPE_enum_kind)typecon).decl.name);
+        } else if ( typecon instanceof JIGIRTypeEnv.TYPE_operand ) {
+        }
         throw Util.unimplemented();
     }
 
@@ -270,8 +368,9 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     protected OperandTypeDecl operandTypeOf(Token o, Environment env) {
-        Type t = env.resolveVariable(o.image);
-        if ( t == null ) ERROR.UnresolvedVariable(o);
+        Decl d = env.resolveDecl(o.image);
+        if ( d == null ) ERROR.UnresolvedVariable(o);
+        Type t = d.getType();
         TypeCon tc = t.getTypeCon();
         if (!(tc instanceof JIGIRTypeEnv.TYPE_operand))
             ERROR.OperandTypeExpected(o, t);

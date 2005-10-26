@@ -173,7 +173,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
     public Stmt visit(DeclStmt s, Environ cenv) {
         Expr ne = update(s.name.toString(), s.init, cenv);
         if (s.init != ne)
-            return new DeclStmt(s.name, s.type, ne);
+            return new DeclStmt(s.name, s.typeRef, ne);
         else
             return s;
     }

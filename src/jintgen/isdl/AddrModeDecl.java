@@ -33,22 +33,28 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
+import jintgen.types.Type;
+import jintgen.types.TypeRef;
+import jintgen.jigir.Decl;
+
 import java.util.LinkedList;
 import java.util.List;
+
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer
  */
 public class AddrModeDecl extends Item {
 
-    public static class Operand {
+    public static class Operand implements Decl {
         public final Token name;
-        public final Token type;
+        public final TypeRef typeRef;
         protected OperandTypeDecl operandType;
 
-        public Operand(Token n, Token t) {
+        public Operand(Token n, TypeRef t) {
             name = n;
-            type = t;
+            typeRef = t;
         }
 
         public void setOperandType(OperandTypeDecl d) {
@@ -57,6 +63,14 @@ public class AddrModeDecl extends Item {
 
         public OperandTypeDecl getOperandType() {
             return operandType;
+        }
+
+        public String getName() {
+            return name.image;
+        }
+
+        public Type getType() {
+            return typeRef.getType();
         }
     }
 

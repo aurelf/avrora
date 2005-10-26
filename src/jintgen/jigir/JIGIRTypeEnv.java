@@ -135,6 +135,14 @@ public class JIGIRTypeEnv extends TypeEnv {
         }
     }
 
+    public class TYPE_enum_kind extends TypeCon {
+        public final EnumDecl decl;
+        protected TYPE_enum_kind(EnumDecl decl) {
+            super(decl.name.image+"$kind");
+            this.decl = decl;
+        }
+    }
+
     public class TYPE_operand extends TypeCon {
         public final OperandTypeDecl decl;
         protected TYPE_operand(OperandTypeDecl decl) {
@@ -268,8 +276,10 @@ public class JIGIRTypeEnv extends TypeEnv {
         addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
     }
 
-    public void addEnum(EnumDecl ot) {
-        TypeCon tycon = new TYPE_enum(ot);
-        addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
+    public TYPE_enum_kind addEnum(EnumDecl ot) {
+        addTypeCon(new TYPE_enum(ot), ASSIGNABLE, COMPARABLE);
+        TYPE_enum_kind tc = new TYPE_enum_kind(ot);
+        addTypeCon(tc);
+        return tc;
     }
 }

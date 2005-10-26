@@ -35,7 +35,6 @@ package jintgen.gen;
 import cck.text.Printer;
 import cck.text.StringUtil;
 import cck.util.Option;
-import cck.util.Util;
 import jintgen.gen.disassembler.DGUtil;
 import jintgen.isdl.*;
 import jintgen.types.TypeRef;
@@ -198,7 +197,7 @@ public class InstrIRGenerator extends Generator {
     private void emitAddrInstrClass(AddrModeDecl d) {
         startblock("public abstract static class $1_Instr extends $instr", d.name);
         for (AddrModeDecl.Operand o : d.operands)
-            println("public final $operand.$1 $2;", o.type, o.name);
+            println("public final $operand.$1 $2;", o.typeRef, o.name);
         startblock("protected $1_Instr(String name, int size, $addr.$1 am)", d.name);
 
         println("super(name, size);");
@@ -275,7 +274,7 @@ public class InstrIRGenerator extends Generator {
         // emit the declaration of the fields
         if ( !hasSuper ) {
             for (AddrModeDecl.Operand o : d.getOperands())
-                println("public final $operand.$1 $2;", o.type, o.name);
+                println("public final $operand.$1 $2;", o.typeRef, o.name);
         }
     }
 
@@ -425,24 +424,24 @@ public class InstrIRGenerator extends Generator {
         println("");
 
         startblock("abstract static class Sym implements $operand");
-        println("public final $symbol symbol;");
+        println("public final $symbol value;");
         startblock("Sym($symbol sym)");
         println("if ( sym == null ) throw new Error();");
-        println("this.symbol = sym;");
+        println("this.value = sym;");
         endblock();
         startblock("public String toString()");
-        println("return symbol.symbol;");
+        println("return value.symbol;");
         endblock();
         endblock();
         println("");
 
         startblock("abstract static class Addr implements $operand");
-        println("public final int address;");
+        println("public final int value;");
         startblock("Addr(int addr)");
-        println("this.address = addr;");
+        println("this.value = addr;");
         endblock();
         startblock("public String toString()");
-        println("String hs = Integer.toHexString(address);");
+        println("String hs = Integer.toHexString(value);");
         println("StringBuffer buf = new StringBuffer(\"0x\");");
         println("for ( int cntr = hs.length(); cntr < 4; cntr++ ) buf.append('0');");
         println("buf.append(hs);");
@@ -452,10 +451,10 @@ public class InstrIRGenerator extends Generator {
         println("");
 
         startblock("abstract static class Rel implements $operand");
-        println("public final int address;");
+        println("public final int value;");
         println("public final int relative;");
         startblock("Rel(int addr, int rel)");
-        println("this.address = addr;");
+        println("this.value = addr;");
         println("this.relative = rel;");
         endblock();
         startblock("public String toString()");
@@ -495,7 +494,7 @@ public class InstrIRGenerator extends Generator {
     }
 
     private String operandSuperClass(OperandTypeDecl.Value d) {
-        EnumDecl ed = arch.getEnum(d.kind.getTypeConName());
+        EnumDecl ed = arch.getEnum(d.typeRef.getTypeConName());
         if ( ed != null ) return "Sym";
         else {
             if ( d.isRelative() ) return "Rel";
@@ -505,9 +504,9 @@ public class InstrIRGenerator extends Generator {
     }
 
     private void generateSimpleType(OperandTypeDecl.Value d) {
-        EnumDecl ed = arch.getEnum(d.kind.getTypeConName());
+        EnumDecl ed = arch.getEnum(d.typeRef.getTypeConName());
         properties.setProperty("oname", d.name.image);
-        properties.setProperty("kind", d.kind.getTypeConName());
+        properties.setProperty("kind", d.typeRef.getTypeConName());
         if ( ed != null ) {
             startblock("$oname(String s)");
             println("super($symbol.get_$kind(s));");
@@ -702,6 +701,6 @@ public class InstrIRGenerator extends Generator {
     }
 
     protected String javaType(TypeRef tr) {
-        throw Util.unimplemented();
+        return renderType(tr);
     }
 }

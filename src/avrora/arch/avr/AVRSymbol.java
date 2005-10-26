@@ -1,4 +1,5 @@
 package avrora.arch.avr;
+import avrora.arch.*;
 import java.util.HashMap;
 
 /**
@@ -79,7 +80,7 @@ public class AVRSymbol {
         return (ADR)ADR.set.get(name);
     }
     
-    public static class HGPR extends GPR {
+    public static class HGPR extends AVRSymbol.GPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
         private static HashMap set = new HashMap();
@@ -111,7 +112,7 @@ public class AVRSymbol {
         return (HGPR)HGPR.set.get(name);
     }
     
-    public static class EGPR extends GPR {
+    public static class EGPR extends AVRSymbol.GPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
         private static HashMap set = new HashMap();
@@ -143,7 +144,7 @@ public class AVRSymbol {
         return (EGPR)EGPR.set.get(name);
     }
     
-    public static class MGPR extends GPR {
+    public static class MGPR extends AVRSymbol.GPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
         private static HashMap set = new HashMap();
@@ -167,7 +168,7 @@ public class AVRSymbol {
         return (MGPR)MGPR.set.get(name);
     }
     
-    public static class YZ extends ADR {
+    public static class YZ extends AVRSymbol.ADR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
         private static HashMap set = new HashMap();
@@ -185,7 +186,7 @@ public class AVRSymbol {
         return (YZ)YZ.set.get(name);
     }
     
-    public static class RDL extends GPR {
+    public static class RDL extends AVRSymbol.EGPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
         private static HashMap set = new HashMap();
@@ -194,18 +195,18 @@ public class AVRSymbol {
             set.put(n, obj);
             return obj;
         }
-        RDL(String sym, int v, int ev) { super(sym, v); encoding = ev; }
-        public static final RDL R24 = newRDL("r24", 24, 0);
-        public static final RDL R26 = newRDL("r26", 26, 1);
-        public static final RDL R28 = newRDL("r28", 28, 2);
-        public static final RDL R30 = newRDL("r30", 30, 3);
+        RDL(String sym, int v, int ev) { super(sym, v, ev); encoding = ev; }
+        public static final RDL R24 = newRDL("r24", 12, 0);
+        public static final RDL R26 = newRDL("r26", 13, 1);
+        public static final RDL R28 = newRDL("r28", 14, 2);
+        public static final RDL R30 = newRDL("r30", 15, 3);
     }
     
     public static RDL get_RDL(String name) {
         return (RDL)RDL.set.get(name);
     }
     
-    public static class R0 extends GPR {
+    public static class R0 extends AVRSymbol.GPR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
         private static HashMap set = new HashMap();
@@ -222,7 +223,7 @@ public class AVRSymbol {
         return (R0)R0.set.get(name);
     }
     
-    public static class RZ extends ADR {
+    public static class RZ extends AVRSymbol.ADR {
         public final int encoding;
         public int getEncodingValue() { return encoding; }
         private static HashMap set = new HashMap();

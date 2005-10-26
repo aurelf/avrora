@@ -66,6 +66,8 @@ public interface CodeAccumulator<Res, Env> {
 
     public Res visit(Literal.IntExpr e, Env env);
 
+    public Res visit(Literal.EnumVal e, Env env);
+
     public Res visit(VarExpr e, Env env);
 
     public Res visit(DotExpr e, Env env);

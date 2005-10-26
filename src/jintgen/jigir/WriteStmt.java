@@ -32,12 +32,9 @@
 
 package jintgen.jigir;
 
-import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.types.TypeRef;
-
-import java.util.List;
 
 /**
  * The <code>CallStmt</code> class represents a call to a subroutine that does not produce a value.
@@ -51,14 +48,14 @@ public class WriteStmt extends Stmt {
      */
     public final Token method;
 
-    public final TypeRef type;
+    public final TypeRef typeRef;
 
     public final Token operand;
 
     public final Expr expr;
 
     protected OperandTypeDecl.Accessor accessor;
-    
+
     /**
      * The constructor of the <code>CallStmt</code> class simply initializes the references to the subroutine
      * name and arguments.
@@ -67,7 +64,7 @@ public class WriteStmt extends Stmt {
      */
     public WriteStmt(Token m, TypeRef t, Token o, Expr e) {
         method = m;
-        type = t;
+        typeRef = t;
         operand = o;
         expr = e;
     }
@@ -88,7 +85,7 @@ public class WriteStmt extends Stmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return "write : "+type+" ("+operand+", "+expr.toString()+");";
+        return "write : "+typeRef +" ("+operand+", "+expr.toString()+");";
     }
 
     /**

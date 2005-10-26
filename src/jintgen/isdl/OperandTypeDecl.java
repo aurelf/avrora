@@ -112,13 +112,13 @@ public abstract class OperandTypeDecl extends Item {
 
         public final int low;
         public final int high;
-        public final TypeRef kind;
+        public final TypeRef typeRef;
         public final int size;
         final boolean signed;
 
         public Value(Token n, Token b, TypeRef k, Token l, Token h) {
             super(n);
-            kind = k;
+            typeRef = k;
             size = StringUtil.evaluateIntegerLiteral(b.image);
             if (l == null) {
                 low = -1;
@@ -139,7 +139,7 @@ public abstract class OperandTypeDecl extends Item {
         }
 
         public boolean isRelative() {
-            return kind.isBasedOn("relative");
+            return typeRef.isBasedOn("relative");
         }
 
         public boolean isSigned() {
@@ -147,7 +147,7 @@ public abstract class OperandTypeDecl extends Item {
         }
 
         public boolean isAddress() {
-            return kind.isBasedOn("address");
+            return typeRef.isBasedOn("address");
         }
     }
 

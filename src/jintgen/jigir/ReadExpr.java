@@ -33,12 +33,9 @@
 package jintgen.jigir;
 
 import cck.parser.SourcePoint;
-import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.types.TypeRef;
-
-import java.util.List;
 
 /**
  * The <code>CallExpr</code> class represents a subroutine call within the IR. Subroutines can be called for
@@ -53,7 +50,7 @@ public class ReadExpr extends Expr {
      */
     public final Token method;
 
-    public final TypeRef type;
+    public final TypeRef typeRef;
 
     public final Token operand;
 
@@ -67,7 +64,7 @@ public class ReadExpr extends Expr {
      */
     public ReadExpr(Token m, TypeRef t, Token o) {
         method = m;
-        type = t;
+        typeRef = t;
         operand = o;
     }
 
@@ -101,7 +98,7 @@ public class ReadExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return "read : "+type+" ("+operand+")";
+        return "read : "+typeRef +" ("+operand+")";
     }
 
     /**

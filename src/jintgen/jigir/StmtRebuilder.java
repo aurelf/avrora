@@ -65,7 +65,7 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
     }
 
     protected WriteStmt rebuild(WriteStmt s, Expr ne) {
-        WriteStmt writeStmt = new WriteStmt(s.method, s.type, s.operand, ne);
+        WriteStmt writeStmt = new WriteStmt(s.method, s.typeRef, s.operand, ne);
         writeStmt.setAccessor(s.getAccessor());
         return writeStmt;
     }
@@ -77,7 +77,7 @@ public class StmtRebuilder<Env> extends CodeRebuilder<Env> implements StmtAccumu
     public Stmt visit(DeclStmt s, Env env) {
         Expr ni = visitExpr(s.init, env);
         if (ni != s.init)
-            return new DeclStmt(s.name, s.type, ni);
+            return new DeclStmt(s.name, s.typeRef, ni);
         else
             return s;
     }

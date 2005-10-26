@@ -35,8 +35,8 @@ package jintgen.gen;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
-import jintgen.types.*;
 import jintgen.Main;
+import jintgen.types.TypeRef;
 
 import java.io.IOException;
 import java.util.*;
@@ -76,6 +76,7 @@ public class InterpreterGenerator extends Generator {
         properties.setProperty("interpreter", className("Interpreter"));
         properties.setProperty("state", className("State"));
         ncg = new jintgen.gen.CodeSimplifier(arch);
+        ncg.genAccessMethods();
     }
 
     void generateUtilities() {
@@ -108,19 +109,19 @@ public class InterpreterGenerator extends Generator {
 
     public void visit(SubroutineDecl d) {
         if ( !d.code.hasBody()) {
-            print("protected abstract " + javaCodePrinter.renderType(d.ret) + ' ' + d.name.image);
+            print("protected abstract " + renderType(d.ret) + ' ' + d.name.image);
             beginList("(");
             for (SubroutineDecl.Parameter p : d.getParams()) {
-                print(javaCodePrinter.renderType(p.type) + ' ' + p.name.image);
+                print(renderType(p.type) + ' ' + p.name.image);
             }
             endListln(");");
             return;
         }
         if (d.inline && Main.INLINE.get()) return;
-        print("public " + javaCodePrinter.renderType(d.ret) + ' ' + d.name.image);
+        print("public $1 $2", renderType(d.ret), d.name.image);
         beginList("(");
         for (SubroutineDecl.Parameter p : d.getParams()) {
-            print(javaCodePrinter.renderType(p.type) + ' ' + p.name.image);
+            print(renderType(p.type) + ' ' + p.name.image);
         }
         endList(") ");
         startblock();
@@ -155,7 +156,7 @@ public class InterpreterGenerator extends Generator {
         }
 
         public void visit(ConversionExpr e) {
-            print("("+renderType(e.typename)+")");
+            print("("+renderType(e.typeRef)+")");
             inner(e.expr, Expr.PREC_TERM);
         }
 
@@ -167,22 +168,8 @@ public class InterpreterGenerator extends Generator {
             binop(operation, e.left, e.right, e.getPrecedence());
         }
 
-        public String renderType(Type t) {
-            // TODO: compute the correct java type depending on the situation
-            return renderTypeCon(t.getTypeCon());
-        }
-
-        private String renderTypeCon(TypeCon tc) {
-            if ( tc instanceof JIGIRTypeEnv.TYPE_enum )
-                return tr("$symbol.$1", tc.getName());
-            else if ( tc instanceof JIGIRTypeEnv.TYPE_operand )
-                return tr("$operand.$1", tc.getName());
-            else return tc.toString();
-        }
-
-        public String renderType(TypeRef t) {
-            // TODO: compute the correct java type depending on the situation
-            return renderTypeCon(t.resolveTypeCon(arch.typeEnv));
+        protected String renderType(TypeRef tr) {
+            return InterpreterGenerator.this.renderType(tr);
         }
 
     }

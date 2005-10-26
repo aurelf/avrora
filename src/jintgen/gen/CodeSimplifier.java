@@ -36,6 +36,7 @@ package jintgen.gen;
 
 import jintgen.jigir.*;
 import jintgen.types.Type;
+import jintgen.types.TypeRef;
 import jintgen.isdl.SubroutineDecl;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.isdl.parser.Token;
@@ -60,6 +61,53 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         arch = a;
         INT = arch.typeEnv.newIntType(true, 32);
         LONG = arch.typeEnv.newIntType(true, 64);
+    }
+
+    public void genAccessMethods() {
+        for ( OperandTypeDecl ot : arch.operandTypes ) {
+            for ( OperandTypeDecl.AccessMethod m : ot.readDecls ) {
+                List<SubroutineDecl.Parameter> p = new LinkedList<SubroutineDecl.Parameter>();
+                Canonicalizer canon = new Canonicalizer();
+                p.add(new SubroutineDecl.Parameter(token("_this"), newTypeRef(ot)));
+                canon.renameVariable("this", "_this.value");
+                Token name = token("$read_" + getTypeString(m.type));
+                List<Stmt> stmts = canon.process(m.code.getStmts());
+                SubroutineDecl d = new SubroutineDecl(true, name, p, m.typeRef, stmts);
+                arch.addSubroutine(d);
+                m.setSubroutine(d);
+            }
+            for ( OperandTypeDecl.AccessMethod m : ot.writeDecls ) {
+                List<SubroutineDecl.Parameter> p = new LinkedList<SubroutineDecl.Parameter>();
+                Canonicalizer canon = new Canonicalizer();
+                canon.renameVariable("this", "_this.value");
+                p.add(new SubroutineDecl.Parameter(token("_this"), newTypeRef(ot)));
+                p.add(new SubroutineDecl.Parameter(token("value"), m.typeRef));
+                Token name = token("$write_" + getTypeString(m.type));
+                List<Stmt> stmts = canon.process(m.code.getStmts());
+                SubroutineDecl d = new SubroutineDecl(true, name, p, newTypeRef(token("void")), stmts);
+                arch.addSubroutine(d);
+                m.setSubroutine(d);
+            }
+        }
+    }
+
+    private TypeRef newTypeRef(OperandTypeDecl ot) {
+        Token name = ot.name;
+        return newTypeRef(name);
+    }
+
+    private TypeRef newTypeRef(Token name) {
+        TypeRef ref = new TypeRef(name);
+        ref.resolve(arch.typeEnv);
+        return ref;
+    }
+
+    protected String getTypeString(Type t) {
+        if ( t instanceof JIGIRTypeEnv.TYPE_int ) {
+            JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)t;
+            String base = it.isSigned() ? "int" : "uint";
+            return base+it.getSize();
+        } else return t.getTypeCon().getName();
     }
 
     public Expr visit(BinOpExpr e, CGEnv env) {

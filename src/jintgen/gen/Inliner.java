@@ -110,7 +110,7 @@ public class Inliner extends StmtRebuilder<Object> {
 
     public Stmt visit(DeclStmt s, Object env) {
         String nv = newTemp(s.name.image);
-        return (new DeclStmt(newToken(nv), s.type, s.init.accept(this, env)));
+        return (new DeclStmt(newToken(nv), s.typeRef, s.init.accept(this, env)));
     }
 
     public Stmt visit(ReturnStmt s, Object env) {

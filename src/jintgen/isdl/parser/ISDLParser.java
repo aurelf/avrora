@@ -618,7 +618,7 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public AddrModeDecl.Operand Operand() throws ParseException {
-                                   Token n, t;
+                                   Token n; TypeRef t;
     n = jj_consume_token(IDENTIFIER);
     jj_consume_token(78);
     t = OperandType();
@@ -1533,10 +1533,10 @@ public class ISDLParser implements ISDLParserConstants {
                                                                                 dims.put(n, ty);
   }
 
-  final public Token OperandType() throws ParseException {
-                        Token t;
+  final public TypeRef OperandType() throws ParseException {
+                          Token t;
     t = jj_consume_token(IDENTIFIER);
-                       {if (true) return t;}
+                       {if (true) return new TypeRef(t);}
     throw new Error("Missing return statement in function");
   }
 

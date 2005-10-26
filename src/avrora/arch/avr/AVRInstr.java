@@ -1,6 +1,5 @@
 package avrora.arch.avr;
-import avrora.arch.AbstractArchitecture;
-import avrora.arch.AbstractInstr;
+import avrora.arch.*;
 
 /**
  * The <code>AVRInstr</code> class is a container (almost a namespace)
@@ -90,6 +89,20 @@ public abstract class AVRInstr implements AbstractInstr {
         this.size = size;
     }
     
+    public abstract static class GPR_Instr extends AVRInstr {
+        public final AVROperand.op_GPR rd;
+        protected GPR_Instr(String name, int size, AVRAddrMode.GPR am) {
+            super(name, size);
+            this.rd = am.rd;
+        }
+        public void accept(AVRAddrModeVisitor v) {
+            v.visit_GPR(this, rd);
+        }
+        public String toString() {
+            return name + ' ' + rd;
+        }
+    }
+    
     public abstract static class BRANCH_Instr extends AVRInstr {
         public final AVROperand.SREL target;
         protected BRANCH_Instr(String name, int size, AVRAddrMode.BRANCH am) {
@@ -105,7 +118,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public abstract static class HGPRIMM8_Instr extends AVRInstr {
-        public final AVROperand.HGPR rd;
+        public final AVROperand.op_HGPR rd;
         public final AVROperand.IMM8 imm;
         protected HGPRIMM8_Instr(String name, int size, AVRAddrMode.HGPRIMM8 am) {
             super(name, size);
@@ -120,23 +133,9 @@ public abstract class AVRInstr implements AbstractInstr {
         }
     }
     
-    public abstract static class GPR_Instr extends AVRInstr {
-        public final AVROperand.GPR rd;
-        protected GPR_Instr(String name, int size, AVRAddrMode.GPR am) {
-            super(name, size);
-            this.rd = am.rd;
-        }
-        public void accept(AVRAddrModeVisitor v) {
-            v.visit_GPR(this, rd);
-        }
-        public String toString() {
-            return name + ' ' + rd;
-        }
-    }
-    
     public abstract static class GPRGPR_Instr extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rd;
+        public final AVROperand.op_GPR rr;
         protected GPRGPR_Instr(String name, int size, AVRAddrMode.GPRGPR am) {
             super(name, size);
             this.rd = am.rd;
@@ -201,7 +200,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class ADIW extends AVRInstr {
-        public final AVROperand.RDL rd;
+        public final AVROperand.op_RDL rd;
         public final AVROperand.IMM6 imm;
         ADIW(int size, AVRAddrMode.$adiw$ am) {
             super("adiw", size);
@@ -254,7 +253,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class BLD extends AVRInstr {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
         BLD(int size, AVRAddrMode.$bld$ am) {
             super("bld", size);
@@ -456,7 +455,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class BST extends AVRInstr {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
         BST(int size, AVRAddrMode.$bst$ am) {
             super("bst", size);
@@ -552,7 +551,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class CLR extends AVRInstr {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         CLR(int size, AVRAddrMode.$clr$ am) {
             super("clr", size);
             this.rd = am.rd;
@@ -676,8 +675,8 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class FMUL extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
         FMUL(int size, AVRAddrMode.$fmul$ am) {
             super("fmul", size);
             this.rd = am.rd;
@@ -693,8 +692,8 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class FMULS extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
         FMULS(int size, AVRAddrMode.$fmuls$ am) {
             super("fmuls", size);
             this.rd = am.rd;
@@ -710,8 +709,8 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class FMULSU extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
         FMULSU(int size, AVRAddrMode.$fmulsu$ am) {
             super("fmulsu", size);
             this.rd = am.rd;
@@ -747,7 +746,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class IN extends AVRInstr {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         public final AVROperand.IMM6 imm;
         IN(int size, AVRAddrMode.$in$ am) {
             super("in", size);
@@ -786,8 +785,8 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class LDD extends AVRInstr {
-        public final AVROperand.GPR rd;
-        public final AVROperand.YZ ar;
+        public final AVROperand.op_GPR rd;
+        public final AVROperand.op_YZ ar;
         public final AVROperand.IMM6 imm;
         LDD(int size, AVRAddrMode.$ldd$ am) {
             super("ldd", size);
@@ -812,7 +811,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class LDS extends AVRInstr {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         public final AVROperand.DADDR addr;
         LDS(int size, AVRAddrMode.$lds$ am) {
             super("lds", size);
@@ -829,7 +828,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class LSL extends AVRInstr {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         LSL(int size, AVRAddrMode.$lsl$ am) {
             super("lsl", size);
             this.rd = am.rd;
@@ -858,8 +857,8 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class MOVW extends AVRInstr {
-        public final AVROperand.EGPR rd;
-        public final AVROperand.EGPR rr;
+        public final AVROperand.op_EGPR rd;
+        public final AVROperand.op_EGPR rr;
         MOVW(int size, AVRAddrMode.$movw$ am) {
             super("movw", size);
             this.rd = am.rd;
@@ -882,8 +881,8 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class MULS extends AVRInstr {
-        public final AVROperand.HGPR rd;
-        public final AVROperand.HGPR rr;
+        public final AVROperand.op_HGPR rd;
+        public final AVROperand.op_HGPR rr;
         MULS(int size, AVRAddrMode.$muls$ am) {
             super("muls", size);
             this.rd = am.rd;
@@ -899,8 +898,8 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class MULSU extends AVRInstr {
-        public final AVROperand.MGPR rd;
-        public final AVROperand.MGPR rr;
+        public final AVROperand.op_MGPR rd;
+        public final AVROperand.op_MGPR rr;
         MULSU(int size, AVRAddrMode.$mulsu$ am) {
             super("mulsu", size);
             this.rd = am.rd;
@@ -948,7 +947,7 @@ public abstract class AVRInstr implements AbstractInstr {
     
     public static class OUT extends AVRInstr {
         public final AVROperand.IMM6 ior;
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         OUT(int size, AVRAddrMode.$out$ am) {
             super("out", size);
             this.ior = am.ior;
@@ -1028,7 +1027,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class ROL extends AVRInstr {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         ROL(int size, AVRAddrMode.$rol$ am) {
             super("rol", size);
             this.rd = am.rd;
@@ -1115,7 +1114,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class SBIW extends AVRInstr {
-        public final AVROperand.RDL rd;
+        public final AVROperand.op_RDL rd;
         public final AVROperand.IMM6 imm;
         SBIW(int size, AVRAddrMode.$sbiw$ am) {
             super("sbiw", size);
@@ -1139,7 +1138,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class SBRC extends AVRInstr {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
         SBRC(int size, AVRAddrMode.$sbrc$ am) {
             super("sbrc", size);
@@ -1156,7 +1155,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class SBRS extends AVRInstr {
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         public final AVROperand.IMM3 bit;
         SBRS(int size, AVRAddrMode.$sbrs$ am) {
             super("sbrs", size);
@@ -1213,7 +1212,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class SER extends AVRInstr {
-        public final AVROperand.HGPR rd;
+        public final AVROperand.op_HGPR rd;
         SER(int size, AVRAddrMode.$ser$ am) {
             super("ser", size);
             this.rd = am.rd;
@@ -1288,9 +1287,9 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class STD extends AVRInstr {
-        public final AVROperand.YZ ar;
+        public final AVROperand.op_YZ ar;
         public final AVROperand.IMM6 imm;
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         STD(int size, AVRAddrMode.$std$ am) {
             super("std", size);
             this.ar = am.ar;
@@ -1308,7 +1307,7 @@ public abstract class AVRInstr implements AbstractInstr {
     
     public static class STS extends AVRInstr {
         public final AVROperand.DADDR addr;
-        public final AVROperand.GPR rr;
+        public final AVROperand.op_GPR rr;
         STS(int size, AVRAddrMode.$sts$ am) {
             super("sts", size);
             this.addr = am.addr;
@@ -1345,7 +1344,7 @@ public abstract class AVRInstr implements AbstractInstr {
     }
     
     public static class TST extends AVRInstr {
-        public final AVROperand.GPR rd;
+        public final AVROperand.op_GPR rd;
         TST(int size, AVRAddrMode.$tst$ am) {
             super("tst", size);
             this.rd = am.rd;

@@ -112,7 +112,7 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
 
     public Expr visit(ConversionExpr e, Env env) {
         Expr ne = visitExpr(e.expr, env);
-        if (ne != e.expr) return new ConversionExpr(ne, e.typename);
+        if (ne != e.expr) return new ConversionExpr(ne, e.typeRef);
         return e;
     }
 
@@ -122,6 +122,11 @@ public class CodeRebuilder<Env> implements CodeAccumulator<Expr, Env> {
     }
 
     public Expr visit(Literal.IntExpr e, Env env) {
+        // terminal node in the tree
+        return e;
+    }
+
+    public Expr visit(Literal.EnumVal e, Env env) {
         // terminal node in the tree
         return e;
     }

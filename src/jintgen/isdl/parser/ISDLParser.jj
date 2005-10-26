@@ -473,7 +473,7 @@ List<AddrModeDecl.Operand> Operands() :
     [ o = Operand() { l.add(o); } ("," o = Operand() { l.add(o); })* ] { return l; }
 }
 
-AddrModeDecl.Operand Operand() : { Token n, t; }
+AddrModeDecl.Operand Operand() : { Token n; TypeRef t; }
 {
     n = <IDENTIFIER> ":" t = OperandType() { return new AddrModeDecl.Operand(n, t); }
 }
@@ -763,7 +763,7 @@ void TypesDimension(HashMap<String, List> dims, String n) : { List ty = new Link
    "<" [ tr = Type() { ty.add(tr); } ("," tr = Type() { ty.add(tr); })* ] ">" { dims.put(n, ty); }
 }
 
-Token OperandType() : { Token t; }
+TypeRef OperandType() : { Token t; }
 {
-    t = <IDENTIFIER> { return t; }
+    t = <IDENTIFIER> { return new TypeRef(t); }
 }

@@ -32,9 +32,9 @@
 
 package jintgen.jigir;
 
-import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.types.TypeRef;
+import jintgen.types.Type;
 
 /**
  * The <code>DeclStmt</code> represents a declaration of a local, temporary value in the IR. A named temporary
@@ -43,7 +43,7 @@ import jintgen.types.TypeRef;
  *
  * @author Ben L. Titzer
  */
-public class DeclStmt extends Stmt {
+public class DeclStmt extends Stmt implements Decl {
     /**
      * The <code>name</code> field stores a reference to the name of the local.
      */
@@ -52,7 +52,7 @@ public class DeclStmt extends Stmt {
     /**
      * The <code>type</code> field stores a reference to a token representing the type of the local.
      */
-    public final TypeRef type;
+    public final TypeRef typeRef;
 
     /**
      * The <code>init</code> field stores a reference to the expression which is evaluated to give an initial
@@ -70,7 +70,7 @@ public class DeclStmt extends Stmt {
      */
     public DeclStmt(Token n, TypeRef t, Expr i) {
         name = n;
-        type = t;
+        typeRef = t;
         init = i;
     }
 
@@ -85,7 +85,7 @@ public class DeclStmt extends Stmt {
     public DeclStmt(String n, TypeRef t, Expr i) {
         name = new Token();
         name.image = n;
-        type = t;
+        typeRef = t;
         init = i;
     }
 
@@ -102,7 +102,7 @@ public class DeclStmt extends Stmt {
         name.image = n;
         Token tok = new Token();
         tok.image = t;
-        type = new TypeRef(tok);
+        typeRef = new TypeRef(tok);
         init = i;
     }
 
@@ -122,7 +122,7 @@ public class DeclStmt extends Stmt {
      * @return a string representation of this statement
      */
     public String toString() {
-        return "local " + name.image + " : " + type + " = " + init.toString() + ';';
+        return "local " + name.image + " : " + typeRef + " = " + init.toString() + ';';
     }
 
     /**
@@ -135,5 +135,13 @@ public class DeclStmt extends Stmt {
      */
     public <Res, Env> Res accept(StmtAccumulator<Res, Env> r, Env env) {
         return r.visit(this, env);
+    }
+
+    public String getName() {
+        return name.image;
+    }
+
+    public Type getType() {
+        return typeRef.getType();
     }
 }

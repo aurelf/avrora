@@ -1,4 +1,5 @@
 package avrora.arch.avr;
+import avrora.arch.*;
 import java.util.HashMap;
 public abstract class AVRInstrBuilder {
     public abstract AVRInstr build(int size, AVRAddrMode am);

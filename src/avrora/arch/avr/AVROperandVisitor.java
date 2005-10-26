@@ -1,15 +1,18 @@
 package avrora.arch.avr;
+import avrora.arch.*;
+import java.util.HashMap;
+
 /**
  * The <code>AVROperandVisitor</code> interface allows clients to use the
  * Visitor pattern to resolve the types of operands to instructions.
  */
 public interface AVROperandVisitor {
-    public void visit(AVROperand.GPR o);
-    public void visit(AVROperand.HGPR o);
-    public void visit(AVROperand.MGPR o);
-    public void visit(AVROperand.YZ o);
-    public void visit(AVROperand.EGPR o);
-    public void visit(AVROperand.RDL o);
+    public void visit(AVROperand.op_GPR o);
+    public void visit(AVROperand.op_HGPR o);
+    public void visit(AVROperand.op_MGPR o);
+    public void visit(AVROperand.op_YZ o);
+    public void visit(AVROperand.op_EGPR o);
+    public void visit(AVROperand.op_RDL o);
     public void visit(AVROperand.IMM3 o);
     public void visit(AVROperand.IMM5 o);
     public void visit(AVROperand.IMM6 o);

@@ -36,7 +36,6 @@ import cck.text.Printer;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.types.TypeRef;
-import jintgen.types.Type;
 
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(ReadExpr e) {
         printer.print("read");
-        if ( e.type != null ) printer.print(" : "+ renderType(e.type));
+        if ( e.typeRef != null ) printer.print(" : "+ renderType(e.typeRef));
         printer.print("(");
         printer.print(getVariable(e.operand));
         printer.print(")");
@@ -62,7 +61,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(ConversionExpr e) {
         inner(e.expr, Expr.PREC_TERM);
-        printer.print(':' + renderType(e.typename));
+        printer.print(':' + renderType(e.typeRef));
     }
 
     public void visit(VarExpr e) {
@@ -130,7 +129,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
 
     public void visit(WriteStmt s) {
         printer.print("write");
-        if ( s.type != null ) printer.print(" : "+ renderType(s.type));
+        if ( s.typeRef != null ) printer.print(" : "+ renderType(s.typeRef));
         printer.print("(");
         printer.print(getVariable(s.operand));
         printer.print(", ");
@@ -167,7 +166,7 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(DeclStmt s) {
-        printer.print(renderType(s.type) + ' ' + getVariable(s.name) + " = ");
+        printer.print(renderType(s.typeRef) + ' ' + getVariable(s.name) + " = ");
         s.init.accept(this);
         printer.println(";");
     }
@@ -198,6 +197,10 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
     }
 
     public void visit(Literal.IntExpr e) {
+        printer.print(e.toString());
+    }
+
+    public void visit(Literal.EnumVal e) {
         printer.print(e.toString());
     }
 
@@ -232,11 +235,8 @@ public class PrettyPrinter implements StmtVisitor, CodeVisitor {
         }
     }
 
-    public String renderType(TypeRef t) {
-        return t.toString();
+    protected String renderType(TypeRef tr) {
+        return tr.toString();
     }
 
-    public String renderType(Type t) {
-        return t.toString();
-    }
 }

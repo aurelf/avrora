@@ -38,9 +38,9 @@ import jintgen.gen.Inliner;
 import jintgen.gen.Canonicalizer;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
-import jintgen.types.TypeRef;
 import jintgen.types.TypeCon;
 import jintgen.types.Type;
+import jintgen.types.TypeRef;
 
 import java.util.*;
 
@@ -71,7 +71,7 @@ public class Verifier {
         verifyAddrSets();
         verifySubroutines();
         verifyInstructions();
-        typeCheck();
+        new TypeChecker(ERROR, arch).typeCheck();
         canonicalize();
     }
 
@@ -82,15 +82,6 @@ public class Verifier {
         uniqueCheck("AddrMode", "Addressing mode", arch.addrModes);
         uniqueCheck("AddrModeSet", "AddressingModeSet", arch.addrSets);
         uniqueCheck("Instr", "Instruction", arch.instructions);
-    }
-
-    private void typeCheck() {
-        TypeChecker tc = new TypeChecker(ERROR, arch.typeEnv);
-        Environment env = new Environment(arch);
-
-        typeCheckAccessMethods(env, tc);
-        typeCheckSubroutines(env, tc);
-        typeCheckInstrBodies(env, tc);
     }
 
     private void canonicalize() {
@@ -105,82 +96,8 @@ public class Verifier {
         }
     }
 
-    private void typeCheckAccessMethods(Environment env, TypeChecker tc ) {
-        // first step: resolve all read methods by type
-        JIGIRTypeEnv te = arch.typeEnv;
-        for ( OperandTypeDecl ot: arch.operandTypes ) {
-            for ( OperandTypeDecl.AccessMethod m : ot.readDecls )
-                ot.readAccessors.put(resolveAccessMethodType(m, te), m);
-            for ( OperandTypeDecl.AccessMethod m : ot.writeDecls )
-                ot.writeAccessors.put(resolveAccessMethodType(m, te), m);
-        }
-        // now typecheck the bodies
-        for ( OperandTypeDecl ot: arch.operandTypes ) {
-            // add each of the sub operands to the environment
-            Environment oenv = new Environment(env);
-            oenv.addVariable("this", operandRepresentationType(ot));
-            for ( AddrModeDecl.Operand o : ot.subOperands )
-                oenv.addVariable(o.name.image, arch.typeEnv.resolveType(o.type));
-
-            for ( OperandTypeDecl.AccessMethod m : ot.readDecls ) {
-                tc.typeCheck(m.code.getStmts(), resolveAccessMethodType(m, arch.typeEnv), new Environment(oenv));
-            }
-            for ( OperandTypeDecl.AccessMethod m : ot.writeDecls ) {
-                Environment senv = new Environment(oenv);
-                senv.addVariable("value", resolveAccessMethodType(m, arch.typeEnv));
-                tc.typeCheck(m.code.getStmts(), null, senv);
-            }
-        }
-
-        // build the accessor methods for unions
-        for ( AddrModeSetDecl as : arch.addrSets ) {
-            for ( AddrModeDecl.Operand o : as.unionOperands )
-                computeAccessorUnion((OperandTypeDecl.Union)o.operandType);
-        }
-
-    }
-
-    private Type operandRepresentationType(OperandTypeDecl ot) {
-        if ( ot.isValue() ) {
-            TypeRef kind = ((OperandTypeDecl.Value)ot).kind;
-            return kind.resolve(arch.typeEnv);
-        } else
-            return arch.typeEnv.resolveOperandType(ot);
-    }
-
-    private Type resolveAccessMethodType(OperandTypeDecl.AccessMethod m, JIGIRTypeEnv te) {
-        Type type = m.typeRef.resolve(te);
-        m.type = type;
-        return type;
-    }
-
-    private void typeCheckInstrBodies(Environment env, TypeChecker tc) {
-        for ( InstrDecl d : arch.instructions ) {
-            if ( !d.code.hasBody() ) continue;
-            Environment senv = new Environment(env);
-            for ( AddrModeDecl.Operand p : d.getOperands() ) {
-                senv.addVariable(p.name.image, new TypeRef(p.type).resolve(arch.typeEnv));
-            }
-            tc.typeCheck(d.code.getStmts(), null, senv);
-        }
-    }
-
-    private void typeCheckSubroutines(Environment env, TypeChecker tc) {
-        for ( SubroutineDecl d : arch.subroutines ) {
-            if ( !d.code.hasBody() ) continue;
-            Environment senv = new Environment(env);
-            for ( SubroutineDecl.Parameter p : d.getParams() ) {
-                senv.addVariable(p.name.image, p.type.resolve(arch.typeEnv));
-            }
-            Type t = d.ret.resolve(arch.typeEnv);
-            tc.typeCheck(d.code.getStmts(), t, senv);
-        }
-    }
 
     private void verifyEnums() {
-        for ( EnumDecl ed : arch.enums )
-            arch.typeEnv.addEnum(ed);
-
         for ( EnumDecl ed : arch.enums ) {
             if (printer.enabled) {
                 printer.print("verifying enum " + ed.name.image + ' ');
@@ -201,6 +118,7 @@ public class Verifier {
             arch.typeEnv.ASSIGNABLE.add(tc, ptc);
             arch.typeEnv.COMPARABLE.add(tc, ptc);
             arch.typeEnv.COMPARABLE.add(ptc, tc);
+            dd.ptype.resolve(arch.typeEnv);
         }
     }
 
@@ -218,16 +136,16 @@ public class Verifier {
 
     private void verifyOperands() {
         for ( OperandTypeDecl od : arch.operandTypes ) {
-            arch.typeEnv.addOperandType(od);
             if ( od.isCompound() ) {
                 OperandTypeDecl.Compound cd = (OperandTypeDecl.Compound)od;
                 verifyOperands(cd.subOperands);
             } else {
                 OperandTypeDecl.Value vd = (OperandTypeDecl.Value)od;
-                TypeCon tc = vd.kind.resolveTypeCon(arch.typeEnv);
-                if ( tc == null ) ERROR.UnresolvedType(vd.kind.getToken());
+                TypeCon tc = vd.typeRef.resolveTypeCon(arch.typeEnv);
+                if ( tc == null ) ERROR.UnresolvedType(vd.typeRef.getToken());
                 if ( tc instanceof JIGIRTypeEnv.TYPE_operand )
-                    ERROR.ValueTypeExpected(vd.kind);
+                    ERROR.ValueTypeExpected(vd.typeRef);
+                vd.typeRef.resolve(arch.typeEnv);
             }
         }
     }
@@ -238,7 +156,7 @@ public class Verifier {
             printer.print("verifying subroutine " + sd.name + ' ');
 
             if (printer.enabled) {
-                new PrettyPrinter(arch, printer).visitStmtList(sd.code.getStmts());
+                //new PrettyPrinter(arch, printer).visitStmtList(sd.code.getStmts());
             }
         }
     }
@@ -257,13 +175,13 @@ public class Verifier {
         for ( AddrModeDecl.Operand o : operands ) {
             if ( o.getOperandType() == null ) {
                 // if the operand type has not been resolved yet
-                String tname = o.type.image;
+                String tname = o.typeRef.getTypeConName();
                 if ( set.containsKey(o.name.image) )
                     ERROR.RedefinedOperand(o.name, set.get(o.name.image));
                 set.put(o.name.image, o.name);
                 OperandTypeDecl td = arch.getOperandDecl(tname);
                 if ( td == null )
-                    ERROR.UnresolvedOperandType(o.type);
+                    ERROR.UnresolvedOperandType(o.typeRef.getToken());
                 o.setOperandType(td);
             }
         }
@@ -285,6 +203,13 @@ public class Verifier {
 
             buildOperandList(unions, as);
         }
+
+
+        // build the accessor methods for unions
+        for ( AddrModeSetDecl as : arch.addrSets ) {
+            for ( AddrModeDecl.Operand o : as.unionOperands )
+                computeAccessorUnion((OperandTypeDecl.Union)o.operandType);
+        }
     }
 
     private void buildOperandList(HashMap<String, OperandTypeDecl.Union> unions, AddrModeSetDecl as) {
@@ -295,7 +220,7 @@ public class Verifier {
             Token n = new Token();
             n.image = e.getKey();
             OperandTypeDecl.Union unionType = e.getValue();
-            AddrModeDecl.Operand operand = new AddrModeDecl.Operand(n, unionType.name);
+            AddrModeDecl.Operand operand = new AddrModeDecl.Operand(n, new TypeRef(unionType.name));
             operand.setOperandType(unionType);
             operands.add(operand);
         }
@@ -329,7 +254,8 @@ public class Verifier {
 
     private void addAccessorMethods(List<OperandTypeDecl.AccessMethod> entries, HashMap<Type, HashSet<OperandTypeDecl.AccessMethod>> rmeths) {
         for ( OperandTypeDecl.AccessMethod m : entries ) {
-            Type key = m.type;
+            Type key = m.typeRef.resolve(arch.typeEnv);
+            m.type = key;
             HashSet<OperandTypeDecl.AccessMethod> set = rmeths.get(key);
             if ( set == null ) {
                 set = new HashSet<OperandTypeDecl.AccessMethod>();
@@ -346,7 +272,7 @@ public class Verifier {
                 Token tok = new Token();
                 tok.image = as.name.image+"_"+o.name.image+"_union";
                 OperandTypeDecl.Union ut = new OperandTypeDecl.Union(tok);
-                OperandTypeDecl d = arch.getOperandDecl(o.type.image);
+                OperandTypeDecl d = arch.getOperandDecl(o.typeRef.getTypeConName());
                 ut.addType(d);
                 unions.put(o.name.image, ut);
                 alloperands.add(o.name.image);
@@ -361,7 +287,7 @@ public class Verifier {
                 if ( ut == null )
                     ERROR.ExtraOperandInAddrModeUnification(as.name, t, o.name);
 
-                OperandTypeDecl d = arch.getOperandDecl(o.type.image);
+                OperandTypeDecl d = arch.getOperandDecl(o.typeRef.getTypeConName());
                 ut.addType(d);
                 operands.add(o.name.image);
             }
@@ -381,7 +307,7 @@ public class Verifier {
             //optimizeCode(id);
 
             if (printer.enabled) {
-                new PrettyPrinter(arch, printer).visitStmtList(id.code.getStmts());
+                //new PrettyPrinter(arch, printer).visitStmtList(id.code.getStmts());
             }
 
         }
@@ -485,7 +411,7 @@ public class Verifier {
 
         void addSubOperands(AddrModeDecl.Operand op, String prefix) {
             OperandTypeDecl ot = op.getOperandType();
-            if ( ot == null ) ERROR.UnresolvedOperandType(op.type);
+            if ( ot == null ) ERROR.UnresolvedOperandType(op.typeRef.getToken());
             if ( ot.isCompound() ) {
                 OperandTypeDecl.Compound cd = (OperandTypeDecl.Compound)ot;
                 for ( AddrModeDecl.Operand o : cd.subOperands )

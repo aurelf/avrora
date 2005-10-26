@@ -33,7 +33,11 @@
 package jintgen.jigir;
 
 import cck.parser.SourcePoint;
+import cck.util.Util;
+import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.EnumDecl;
+import jintgen.isdl.SymbolMapping;
 
 /**
  * The <code>Literal</code> class represents a literal (constant value) as part of an expression. Literals
@@ -181,6 +185,41 @@ public abstract class Literal extends Expr {
 
         public String toString() {
             return value ? "true" : "false";
+        }
+
+        public int getPrecedence() {
+            return PREC_TERM;
+        }
+    }
+
+    public static class EnumVal extends Literal {
+        public final EnumDecl enumDecl;
+        public final SymbolMapping.Entry entry;
+
+        public EnumVal(EnumDecl d, Token m) {
+            super(m);
+            enumDecl = d;
+            entry = enumDecl.map.get(m.image);
+            if ( entry == null )
+                throw Util.failure("Unresolved member "+ StringUtil.quote(m.image)+" of enum "+d.name);
+        }
+
+        /**
+         * The <code>accept()</code> method implements one half of the visitor pattern so that client visitors
+         * can traverse the syntax tree easily and in an extensible way.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(CodeVisitor v) {
+            v.visit(this);
+        }
+
+        public <Res, Env> Res accept(CodeAccumulator<Res, Env> r, Env env) {
+            return r.visit(this, env);
+        }
+
+        public String toString() {
+            return enumDecl.name.image+"."+token;
         }
 
         public int getPrecedence() {

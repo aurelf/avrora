@@ -206,7 +206,7 @@ class ReaderImplementation extends GenBase {
         void computeDecoders(String prefix, Iterable<AddrModeDecl.Operand> operands) {
             List<FormatDecl.BitField> nl = DGUtil.reduceEncoding(decl, null, addrMode);
             for ( AddrModeDecl.Operand o : operands ) {
-                OperandTypeDecl ot = dGen.arch.getOperandDecl(o.type.image);
+                OperandTypeDecl ot = dGen.arch.getOperandDecl(o.typeRef.getTypeConName());
                 FormatDecl.Cond cond = decl.getCond();
                 String opname = prefix+o.name.image;
                 String et = getEnumType(ot);
@@ -242,7 +242,7 @@ class ReaderImplementation extends GenBase {
         String getEnumType(OperandTypeDecl ot) {
             if ( ot.isValue() ) {
                 OperandTypeDecl.Value vt = (OperandTypeDecl.Value)ot;
-                EnumDecl ed = dGen.arch.getEnum(vt.kind.getTypeConName());
+                EnumDecl ed = dGen.arch.getEnum(vt.typeRef.getTypeConName());
                 if ( ed != null ) return ed.name.image;
                 return null;
             }
@@ -321,7 +321,7 @@ class ReaderImplementation extends GenBase {
             String oname = o.name.image;
             String vname = prefix+oname;
             String vn = javaName(vname);
-            OperandTypeDecl td = dGen.arch.getOperandDecl(o.type.image);
+            OperandTypeDecl td = dGen.arch.getOperandDecl(o.typeRef.getTypeConName());
             if ( td.isCompound() ) {
                 generateCompound(td, vname);
             } else if ( td.isValue() ) {

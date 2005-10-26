@@ -58,7 +58,7 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         error("MissingOperandInAddrModeUnification", addrMode.getSourcePoint(), report);
     }
 
-    public void UnresolvedOperandType(Token t) {
+    public void UnresolvedOperandType(AbstractToken t) {
         unresolved("OperandType", "operand type", t);
     }
 
@@ -66,23 +66,23 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         unresolved("Enum", "enumeration", t);
     }
 
-    public void UnresolvedFormat(Token t) {
+    public void UnresolvedFormat(AbstractToken t) {
         unresolved("Format", "encoding format", t);
     }
 
-    public void UnresolvedAddressingMode(Token t) {
+    public void UnresolvedAddressingMode(AbstractToken t) {
         unresolved("AddrMode", "addressing mode", t);
     }
 
-    public void UnresolvedVariable(Token t) {
+    public void UnresolvedVariable(AbstractToken t) {
         unresolved("Variable", "variable", t);
     }
 
-    public void UnresolvedSubroutine(Token t) {
+    public void UnresolvedSubroutine(AbstractToken t) {
         unresolved("Subroutine", "subroutine", t);
     }
 
-    public void ArityMismatch(Token t) {
+    public void ArityMismatch(AbstractToken t) {
         String report = "Argument count mismatch";
         error("ArityMismatch", t.getSourcePoint(), report);
     }

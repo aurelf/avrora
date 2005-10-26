@@ -47,7 +47,7 @@ public class ConversionExpr extends Expr {
      * The <code>typename</code> field stores a reference to the name of the map whose element is being
      * accessed.
      */
-    public final TypeRef typename;
+    public final TypeRef typeRef;
 
     /**
      * The <code>expr</code> field stores a references to the expression which is evaluated to yield the expr
@@ -63,7 +63,7 @@ public class ConversionExpr extends Expr {
      * @param i an expression representing the expr into the map
      */
     public ConversionExpr(Expr i, TypeRef s) {
-        typename = s;
+        typeRef = s;
         expr = i;
     }
 
@@ -97,7 +97,7 @@ public class ConversionExpr extends Expr {
      * @return a string representation of this expression
      */
     public String toString() {
-        return StringUtil.embed("$" + typename, expr);
+        return StringUtil.embed("$" + typeRef, expr);
     }
 
     /**

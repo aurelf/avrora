@@ -59,6 +59,8 @@ public interface CodeVisitor {
 
     public void visit(Literal.IntExpr e);
 
+    public void visit(Literal.EnumVal e);
+
     public void visit(VarExpr e);
 
     public void visit(DotExpr e);
@@ -105,6 +107,10 @@ public interface CodeVisitor {
         }
 
         public void visit(Literal.IntExpr e) {
+            // terminal node in the tree
+        }
+
+        public void visit(Literal.EnumVal e) {
             // terminal node in the tree
         }
 
@@ -160,6 +166,10 @@ public interface CodeVisitor {
         }
 
         public void visit(Literal.IntExpr e) {
+            error(e);
+        }
+
+        public void visit(Literal.EnumVal e) {
             error(e);
         }
 

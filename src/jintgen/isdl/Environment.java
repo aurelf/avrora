@@ -34,57 +34,72 @@
 package jintgen.isdl;
 
 import jintgen.types.*;
+import jintgen.jigir.Decl;
+
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Ben L. Titzer
  */
 public class Environment {
 
-    final Environment parent;
-    final HashMap<String, Type> varMap;
-    final HashMap<String, SubroutineDecl> methodMap;
+    protected final Environment parent;
+    protected final HashMap<String, Decl> varMap;
+    protected final HashMap<String, SubroutineDecl> methodMap;
 
     public Environment(Environment p) {
         parent = p;
-        varMap = new HashMap<String, Type>();
+        varMap = new HashMap<String, Decl>();
         methodMap = new HashMap<String, SubroutineDecl>();
     }
 
-    public Environment(Architecture a) {
-        parent = null;
-        varMap = new HashMap<String, Type>();
-        methodMap = new HashMap<String, SubroutineDecl>();
-        for ( Map.Entry<String, TypeRef> e : a.globals.entrySet() ) {
-            varMap.put(e.getKey(), e.getValue().resolve(a.typeEnv));
-        }
-        for ( SubroutineDecl s : a.subroutines ) {
-            methodMap.put(s.name.image, s);
-        }
+    public Decl resolveDecl(String name) {
+        Decl decl = varMap.get(name);
+        if ( decl != null ) return decl;
+        return parent != null ? parent.resolveDecl(name) : null;
     }
 
-    public Type resolveVariable(String name) {
-        Type type = varMap.get(name);
-        if ( type != null ) return type;
-        return parent != null ? parent.resolveVariable(name) : null;
-    }
-
-    public SubroutineDecl resolveMethod(String name) {
+    public SubroutineDecl resolveSubroutine(String name) {
         SubroutineDecl type = methodMap.get(name);
         if ( type != null ) return type;
-        return parent != null ? parent.resolveMethod(name) : null;
+        return parent != null ? parent.resolveSubroutine(name) : null;
+    }
+
+    public void addDecl(Decl d) {
+        varMap.put(d.getName(), d);
     }
 
     public void addVariable(String name, Type t) {
-        varMap.put(name, t);
+        varMap.put(name, new VarDecl(name, t));
     }
 
-    public void addMethod(String name, SubroutineDecl d) {
-        methodMap.put(name, d);
+    public void addSubroutine(SubroutineDecl d) {
+        methodMap.put(d.name.image, d);
     }
 
     public boolean isDefinedLocally(String name) {
         return varMap.containsKey(name);
+    }
+
+    public Iterable<Decl> getDecls() {
+        return varMap.values();
+    }
+
+    protected class VarDecl implements Decl {
+        protected final String name;
+        protected final Type type;
+
+        protected VarDecl(String n, Type t) {
+            name = n;
+            type = t;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Type getType() {
+            return type;
+        }
     }
 }

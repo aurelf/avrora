@@ -35,6 +35,8 @@
 package jintgen.types;
 
 import cck.parser.AbstractToken;
+import cck.util.Util;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,5 +154,10 @@ public class TypeRef {
 
     public AbstractToken getToken() {
         return tcName;
+    }
+
+    public Type getType() {
+        if ( type == null ) throw Util.failure("Unresolved type reference at "+tcName.getSourcePoint());
+        return type;
     }
 }
