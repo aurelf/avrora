@@ -115,8 +115,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
 
     private Type resolveAccessMethodType(OperandTypeDecl.AccessMethod m, JIGIRTypeEnv te) {
         if ( m.type != null ) return m.type;
-        Type type = m.typeRef.resolve(te);
-        m.type = type;
+        m.type = m.typeRef.resolve(te);
         return m.type;
     }
 
@@ -270,7 +269,6 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
             return typeEnv.BOOLEAN;
         }
         else if ( lt.isBasedOn("map") ) {
-            Type rt = typeOf(e.index, env);
             List<TypeRef> pm = (List<TypeRef>)lt.getDimension("types");
             Type it = pm.get(0).resolve(typeEnv);
             Type et = pm.get(1).resolve(typeEnv);
@@ -307,6 +305,7 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(ConversionExpr e, Environment env) {
+        // TODO: check that conversion is possible
         Type t = typeOf(e.expr, env);
         return e.typeRef.resolve(typeEnv);
     }
