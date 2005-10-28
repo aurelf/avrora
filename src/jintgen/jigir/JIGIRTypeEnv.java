@@ -276,10 +276,10 @@ public class JIGIRTypeEnv extends TypeEnv {
         addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
     }
 
-    public TYPE_enum_kind addEnum(EnumDecl ot) {
+    public Type addEnum(EnumDecl ot) {
         addTypeCon(new TYPE_enum(ot), ASSIGNABLE, COMPARABLE);
         TYPE_enum_kind tc = new TYPE_enum_kind(ot);
         addTypeCon(tc);
-        return tc;
+        return tc.newType(this);
     }
 }

@@ -17,13 +17,13 @@ architecture avr {
 //---------------------------------------------------------------------------
 //  STATE USED IN THE SIMULATION
 //---------------------------------------------------------------------------
+
     global regs: map<GPR, int.8>;    // the register file: signed 8-bit quantities
     global wregs: map<EGPR, +int.16>; // a "view" of the register file as words
     global aregs: map<ADR, +int.16>; // a "view" of the register file as words
     global sram: map<int, int.8>;     // a "view" of the memory as signed 8-bit quantities
     global ioregs: map<int, int.8>;   // a "view" of the IO registers as signed 8-bit quantites
     global flash: map<int, int.8>;    // the flash (program) memory
-    global isize: map<int, +int.16>;  // size of instruction (used in skip)
 
     global I: boolean;         // global interrupts enabled flag
     global T: boolean;         // global T flag
@@ -174,6 +174,7 @@ architecture avr {
     external subroutine enterSleepMode(): void;
     external subroutine storeProgramMemory(): void;
     external subroutine stop(): void;
+    external subroutine skip(): void;
     external subroutine getIORbit(ior: int, bit: int): boolean;
     external subroutine setIORbit(ior: int, bit: int, v: boolean): void;
 
@@ -299,19 +300,12 @@ architecture avr {
         cycles = cycles + 1;
     }
 
-    inline subroutine relative(target: int): int {
+    inline subroutine relative(target: +int.16): int {
         return (target * 2) + nextpc;
     }
 
-    inline subroutine absolute(target: int): int {
+    inline subroutine absolute(target: +int.16): int {
         return target * 2;
-    }
-
-    inline subroutine skip(): void {
-        local dist: int = isize[nextpc];
-        nextpc = nextpc + dist;
-        if ( dist == 4 ) cycles = cycles + 2;
-        else cycles = cycles + 1;
     }
 
     inline subroutine pushPC(npc: +int.17): void {
@@ -1317,7 +1311,7 @@ architecture avr {
         property syntax: String = "%ar+%imm, %rr";
         property cycles: int = 2;
         execute {
-            sram[read(ar) + imm:int] = read(rr);
+            sram[read(ar) + imm:+int.6] = read(rr);
         }
     }
 
@@ -1403,7 +1397,7 @@ architecture avr {
 
     operand-type AI_RZ_W[0]: RZ {
         read: +int.16 {
-            local temp: int = aregs[RZ.Z];
+            local temp: +int.16 = aregs[RZ.Z];
             aregs[RZ.Z] = temp + 1;
             return temp;
         }
@@ -1432,7 +1426,7 @@ architecture avr {
 
     operand-type AI_XYZ[0]: ADR { // read from X, Y, or Z and post increment
         read: +int.16 {
-            local tmp: int = aregs[this];
+            local tmp: +int.16 = aregs[this];
             aregs[this] = tmp + 1;
             return tmp;
         }

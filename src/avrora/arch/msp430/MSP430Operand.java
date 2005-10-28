@@ -1,4 +1,7 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
+import java.util.HashMap;
+
 /**
  * The <code>MSP430Operand</code> interface represents operands that are
  * allowed to instructions in this architecture. Inner classes of this
@@ -17,37 +20,37 @@ public interface MSP430Operand {
             return Integer.toString(value);
         }
     }
-
+    
     abstract static class Sym implements MSP430Operand {
-        public final MSP430Symbol symbol;
+        public final MSP430Symbol value;
         Sym(MSP430Symbol sym) {
             if ( sym == null ) throw new Error();
-            this.symbol = sym;
+            this.value = sym;
         }
         public String toString() {
-            return symbol.symbol;
+            return value.symbol;
         }
     }
-
+    
     abstract static class Addr implements MSP430Operand {
-        public final int address;
+        public final int value;
         Addr(int addr) {
-            this.address = addr;
+            this.value = addr;
         }
         public String toString() {
-            String hs = Integer.toHexString(address);
+            String hs = Integer.toHexString(value);
             StringBuffer buf = new StringBuffer("0x");
             for ( int cntr = hs.length(); cntr < 4; cntr++ ) buf.append('0');
             buf.append(hs);
             return buf.toString();
         }
     }
-
+    
     abstract static class Rel implements MSP430Operand {
-        public final int address;
+        public final int value;
         public final int relative;
         Rel(int addr, int rel) {
-            this.address = addr;
+            this.value = addr;
             this.relative = rel;
         }
         public String toString() {
@@ -55,7 +58,7 @@ public interface MSP430Operand {
             else return "."+relative;
         }
     }
-
+    
     public class SREG extends Sym {
         SREG(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -67,7 +70,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-
+    
     public class AIREG_B extends Sym {
         AIREG_B(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -79,7 +82,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-
+    
     public class AIREG_W extends Sym {
         AIREG_W(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -91,7 +94,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-
+    
     public class IREG extends Sym {
         IREG(String s) {
             super(MSP430Symbol.get_GPR(s));
@@ -103,7 +106,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-
+    
     public class IMM extends Int {
         public static final int low = -32768;
         public static final int high = 65536;
@@ -114,7 +117,7 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-
+    
     public class INDX implements MSP430Operand {
         public final MSP430Operand.SREG reg;
         public final MSP430Operand.IMM index;
@@ -126,19 +129,19 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-
-    public class SYM extends Rel {
+    
+    public class SYM extends Int {
         public static final int low = -32768;
         public static final int high = 32767;
-        SYM(int pc, int rel) {
-            super(pc + 2 + 2 * rel, MSP430InstrBuilder.checkValue(rel, low, high));
+        SYM(int val) {
+            super(MSP430InstrBuilder.checkValue(val, low, high));
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-
-    public class ABSO extends Addr {
+    
+    public class ABSO extends Int {
         public static final int low = 0;
         public static final int high = 65535;
         ABSO(int val) {
@@ -148,16 +151,16 @@ public interface MSP430Operand {
             v.visit(this);
         }
     }
-
-    public class JUMP extends Rel {
+    
+    public class JUMP extends Int {
         public static final int low = -512;
         public static final int high = 511;
-        JUMP(int pc, int rel) {
-            super(pc + 2 + 2 * rel, MSP430InstrBuilder.checkValue(rel, low, high));
+        JUMP(int val) {
+            super(MSP430InstrBuilder.checkValue(val, low, high));
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-
+    
 }

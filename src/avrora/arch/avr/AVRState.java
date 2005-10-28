@@ -72,6 +72,7 @@ public class AVRState {
     protected ActiveRegister SREG_reg;
     protected int SREG;
     protected int cycles;
+    protected boolean justReturnedFromInterrupt;
 
     /**
      * The <code>getPC()</code> retrieves the current program counter.

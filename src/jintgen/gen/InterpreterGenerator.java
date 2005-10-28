@@ -93,6 +93,10 @@ public class InterpreterGenerator extends Generator {
         println("return (v & ~mask) | (e & mask);");
         endblock();
 
+        startblock("int b2i(boolean v, int val)");
+        println("if ( v ) return val;");
+        println("else return 0;");
+        endblock();
     }
 
     public void visit(InstrDecl d) {
@@ -166,6 +170,10 @@ public class InterpreterGenerator extends Generator {
             if ( e.getBinOp() instanceof Logical.OR ) operation = "||";
             if ( e.getBinOp() instanceof Logical.XOR ) operation = "!=";
             binop(operation, e.left, e.right, e.getPrecedence());
+        }
+
+        public void visit(Literal.EnumVal e) {
+            print("$symbol.$1.$2", e.token, e.entry.name);
         }
 
         protected String renderType(TypeRef tr) {

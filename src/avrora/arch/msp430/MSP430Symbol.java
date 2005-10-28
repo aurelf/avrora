@@ -1,4 +1,5 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
 import java.util.HashMap;
 
 /**

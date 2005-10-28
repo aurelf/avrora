@@ -34,13 +34,17 @@ package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
 import jintgen.types.TypeRef;
+import jintgen.types.Type;
+import jintgen.jigir.Decl;
 
 /**
  * @author Ben L. Titzer
  */
-public class EnumDecl extends Item {
+public class EnumDecl extends Item implements Decl {
 
     public final SymbolMapping map;
+
+    public Type kind;
 
     public EnumDecl(Token n, SymbolMapping m) {
         super(n);
@@ -59,5 +63,13 @@ public class EnumDecl extends Item {
         public void setParent(EnumDecl d) {
             parent = d;
         }
+    }
+
+    public Type getType() {
+        return kind;
+    }
+
+    public String getName() {
+        return name.image;
     }
 }

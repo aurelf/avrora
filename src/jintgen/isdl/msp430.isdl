@@ -28,7 +28,7 @@ architecture msp430 {
     global V: boolean;
     global sreg: int.16;
 
-    global nextPC: int;
+    global nextpc: int;
     global cyclesConsumed: int;
 
 //----------------------------------------------------------------------------------
@@ -96,10 +96,10 @@ architecture msp430 {
     operand-type INDX {
         sub-operand reg: SREG;
         sub-operand index: IMM;
-	    read: int.8 { return sram[read:int.16(reg) + index:int]; }
-	    write: int.8 { sram[read:int.16(reg) + index:int] = value; }
-	    read: int.16 { return wsram[read:int.16(reg) + index:int]; }
-	    write: int.16 { wsram[read:int.16(reg) + index:int] = value; }
+	    read: int.8 { return sram[read:int.16(reg) + index:int.16]; }
+	    write: int.8 { sram[read:int.16(reg) + index:int.16] = value; }
+	    read: int.16 { return wsram[read:int.16(reg) + index:int.16]; }
+	    write: int.16 { wsram[read:int.16(reg) + index:int.16] = value; }
     }
 
     // TODO: this is encoded as relative to the pc
@@ -492,10 +492,8 @@ architecture msp430 {
 //---------------------------------------------------------------------------
 //  SUBROUTINES
 //---------------------------------------------------------------------------
-    inline subroutine performAddition(r1: int, r2: int, carry: int): int.8 {
+    inline subroutine performAddition(r1: int.8, r2: int.8, carry: +int.1): int.8 {
         local result: int = r1 + r2 + carry;
-        local ral: int = r1[3:0];
-        local rbl: int = r2[3:0];
 
         local Rd7: boolean = r1[7];
         local Rr7: boolean = r2[7];
@@ -510,10 +508,8 @@ architecture msp430 {
         return low(result);
     }
 
-    inline subroutine performAdditionW(r1: int, r2: int, carry: int): +int.16 {
+    inline subroutine performAdditionW(r1: +int.16, r2: +int.16, carry: +int.1): +int.16 {
         local result: int = r1 + r2 + carry;
-        local ral: int = r1[7:0];
-        local rbl: int = r2[7:0];
 
         local Rd15: boolean = r1[15];
         local Rr15: boolean = r2[15];
@@ -528,15 +524,12 @@ architecture msp430 {
     }
 	
 
-    inline subroutine performSubtraction(r1: int, r2: int, carry: int): int.8 {
+    inline subroutine performSubtraction(r1: int.8, r2: int.8, carry: +int.1): int.8 {
         local result: int = r1 - r2 - carry;
 
         local Rd7: boolean = r1[7];
         local Rr7: boolean = r2[7];
         local R7:  boolean = result[7];
-        local Rd3: boolean = r1[3];
-        local Rr3: boolean = r2[3];
-        local R3:  boolean = result[3];
 
         // set the flags as per instruction set documentation.
         C = (!Rd7 and Rr7) or (Rr7 and R7) or (R7 and !Rd7);
@@ -546,15 +539,13 @@ architecture msp430 {
 
         return low(result);
     }
-    inline subroutine performSubtractionW(r1: int, r2: int, carry: int): +int.16 {
+
+    inline subroutine performSubtractionW(r1: +int.16, r2: +int.16, carry: +int.1): +int.16 {
         local result: int = r1 - r2 - carry;
 
         local Rd15: boolean = r1[15];
         local Rr15: boolean = r2[15];
         local R15:  boolean = result[15];
-        local Rd7: boolean = r1[7];
-        local Rr7: boolean = r2[7];
-        local R7:  boolean = result[7];
 
         // set the flags as per instruction set documentation.
 
@@ -584,7 +575,9 @@ architecture msp430 {
         N = result[15];
         C = !N;
         Z = (result == 0);
-        V = 0;
+        V = false;
+
+        return result;
     }
 
     subroutine performDeciAddCW(r1: int, r2: int, carry: int): +int.16 {
@@ -612,7 +605,7 @@ architecture msp430 {
         result[15:12] = reg1[15:12] + reg2[15:12];
         if (result[15:12] > 10) {
             result[15:12] = result[15:12] - 10;
-            C = 1;
+            C = true;
         }
         N = result[15];
         Z = result == 0;
@@ -633,7 +626,7 @@ architecture msp430 {
         result[7:4] = reg1[7:4] + reg2[7:4];
         if (result[7:4] > 10) {
             result[7:4] = result[7:4] - 10;
-            C = 1;
+            C = true;
         }
         N = result[7];
         Z = result == 0;
@@ -834,7 +827,7 @@ architecture msp430 {
 	    property opcode: int = 0b0100;                     //operand to Program counter
 	    execute {
 		    // emulated by MOV instruction
-	        nextPC = +read:int.16(source);
+	        nextpc = +read:int.16(source);
 	    }
     }
 
@@ -844,8 +837,8 @@ architecture msp430 {
 	    property opcode: int = 0b000100101;          //stores old pc on TOS while jumping to subroutine
 	    execute {
             local temp: int = +read:int.16(source);  //r1 is the SP, r0 is the PC
-            pushPC(nextPC);
-            nextPC = temp;
+            pushPC(nextpc);
+            nextpc = temp;
         }
     }
 
@@ -952,7 +945,7 @@ architecture msp430 {
 	        local original: int.16 = read:int.16(source);
 	        write:int.16(source, performSubtractionW(original, 1, 0));
  	        if (original == 1)
- 	            N = 1;    // if original value of dest was 1, set N bit
+ 	            N = true;    // if original value of dest was 1, set N bit
         }
     }
 
@@ -963,7 +956,7 @@ architecture msp430 {
 	        local original: int.8 = read:int.8(source);
 	        write:int.8(source, performSubtraction(original, 1, 0));
  	        if (original == 1)
- 	            N = 1;    // if original value of dest was 1, set N bit
+ 	            N = true;    // if original value of dest was 1, set N bit
         }
     }
 
@@ -974,7 +967,7 @@ architecture msp430 {
  	        local original: int.16 = read:int.16(source);
             write:int.16(source, performSubtractionW(original, 2, 0));
 	        if (original == 2)
-	            N = 1;    //if original value of dest was 2, set N bit
+	            N = true;    //if original value of dest was 2, set N bit
 	    }
     }
 
@@ -985,7 +978,7 @@ architecture msp430 {
  	        local original: int.8 = read:int.8(source);
             write:int.8(source, performSubtraction(original, 2, 0));
 	        if (original == 2)
-	            N = 1;    //if original value of dest was 2, set N bit
+	            N = true;    //if original value of dest was 2, set N bit
 	    }
     }
 
@@ -1068,7 +1061,7 @@ architecture msp430 {
 	    property opcode: int = 0b001011;
 	    execute {
  	        if ( C ) {
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
 	        }
         }
     }
@@ -1077,7 +1070,7 @@ architecture msp430 {
 	    property opcode: int = 0b001011;
 	    execute {
  	        if ( C ) {
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
 	        }
         }
     }
@@ -1086,7 +1079,7 @@ architecture msp430 {
 	    property opcode: int = 0b001001;
 	    execute {
 	        if ( Z ) {
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
             }
         }
     }
@@ -1095,7 +1088,7 @@ architecture msp430 {
 	    property opcode: int = 0b001001;
 	    execute {
 	        if ( Z ) {
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
             }
         }
     }
@@ -1104,7 +1097,7 @@ architecture msp430 {
 	    property opcode: int = 0b001101;
 	    execute {
 	        if ( Z xor N ) {
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
 	        }
 	    }
     }
@@ -1113,7 +1106,7 @@ architecture msp430 {
         property opcode: int = 0b001110;
         execute {
              if ( N xor V ) {
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
              }
     	 }
     }
@@ -1122,7 +1115,7 @@ architecture msp430 {
 	    property opcode: int = 0b001111;
 	    execute {
             //jump to address listed by 10 bit offset, unconditionally
- 	        nextPC = read(target);
+ 	        nextpc = read(target);
 	    }
     }
 
@@ -1131,7 +1124,7 @@ architecture msp430 {
 	    execute {
 	        if ( N ) {
 			    //if N = 1, jump to address listed by 10 bit offset
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
 	        }
         }
     }
@@ -1141,7 +1134,7 @@ architecture msp430 {
 	    execute {
 	        if ( !C ) {
 			    //if C != 0, jump to address listed by 10 bit offset
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
 	        }
         }
     }
@@ -1151,7 +1144,7 @@ architecture msp430 {
 	    execute {
             if ( !C ) {
                 //if C != 0, jump to address listed by 10 bit offset
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
             }
         }
     }
@@ -1161,7 +1154,7 @@ architecture msp430 {
         execute {
             if ( !Z ) {
                 //if Z != 0, jump to address listed by 10 bit offset
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
             }
         }
     }
@@ -1171,7 +1164,7 @@ architecture msp430 {
 	    execute {
 	        if ( !Z ) {
 			    //if Z != 0, jump to address listed by 10 bit offset
- 	            nextPC = read(target);
+ 	            nextpc = read(target);
 	        }
 	    }
     }
@@ -1233,7 +1226,7 @@ architecture msp430 {
     instruction "ret" {    //return from subroutine
         property opcode: int = 0b0100;
         execute {
-            nextPC = popWord();
+            nextpc = popWord();
         }
     }
 
@@ -1241,7 +1234,7 @@ architecture msp430 {
         encoding = { 0b00010011, 0b00000000 } // encodes 0x1300
         execute {
             sreg = popWord();
-            nextPC = popWord();
+            nextpc = popWord();
         }
     }
 
@@ -1312,7 +1305,7 @@ architecture msp430 {
             temp = temp >> 1;        // shift 1 right ( i think)
             N = temp[15];
             Z = (temp == 0);
-            V = 0;                   // reset overflow bit
+            V = false;                   // reset overflow bit
             write:int.16(source, temp);
 	    }
     }
@@ -1326,7 +1319,7 @@ architecture msp430 {
             temp = temp >> 1;        // shift 1 right ( i think)
             N = temp[7];
             Z = (temp == 0);
-            V = 0;                   // reset overflow bit
+            V = false;                   // reset overflow bit
             write:int.8(source, temp);
         }
     }

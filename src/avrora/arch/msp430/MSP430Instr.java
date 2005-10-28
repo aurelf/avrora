@@ -1,6 +1,5 @@
 package avrora.arch.msp430;
-import avrora.arch.AbstractArchitecture;
-import avrora.arch.AbstractInstr;
+import avrora.arch.*;
 
 /**
  * The <code>MSP430Instr</code> class is a container (almost a namespace)
@@ -104,27 +103,11 @@ public abstract class MSP430Instr implements AbstractInstr {
         }
     }
     
-    public abstract static class SINGLE_B_Instr extends MSP430Instr {
-        public final MSP430AddrMode.SINGLE_B am;
-        public final MSP430Operand source;
-        protected SINGLE_B_Instr(String name, int size, MSP430AddrMode.SINGLE_B am) {
-            super(name, size);
-            this.am = am;
-            this.source = am.get_source();
-        }
-        public void accept(MSP430AddrModeVisitor v) {
-            am.accept(this, v);
-        }
-        public String toString() {
-            return name+am.toString();
-        }
-    }
-    
-    public abstract static class DOUBLE_B_Instr extends MSP430Instr {
-        public final MSP430AddrMode.DOUBLE_B am;
+    public abstract static class DOUBLE_W_Instr extends MSP430Instr {
+        public final MSP430AddrMode.DOUBLE_W am;
         public final MSP430Operand source;
         public final MSP430Operand dest;
-        protected DOUBLE_B_Instr(String name, int size, MSP430AddrMode.DOUBLE_B am) {
+        protected DOUBLE_W_Instr(String name, int size, MSP430AddrMode.DOUBLE_W am) {
             super(name, size);
             this.am = am;
             this.source = am.get_source();
@@ -154,11 +137,27 @@ public abstract class MSP430Instr implements AbstractInstr {
         }
     }
     
-    public abstract static class DOUBLE_W_Instr extends MSP430Instr {
-        public final MSP430AddrMode.DOUBLE_W am;
+    public abstract static class SINGLE_B_Instr extends MSP430Instr {
+        public final MSP430AddrMode.SINGLE_B am;
+        public final MSP430Operand source;
+        protected SINGLE_B_Instr(String name, int size, MSP430AddrMode.SINGLE_B am) {
+            super(name, size);
+            this.am = am;
+            this.source = am.get_source();
+        }
+        public void accept(MSP430AddrModeVisitor v) {
+            am.accept(this, v);
+        }
+        public String toString() {
+            return name+am.toString();
+        }
+    }
+    
+    public abstract static class DOUBLE_B_Instr extends MSP430Instr {
+        public final MSP430AddrMode.DOUBLE_B am;
         public final MSP430Operand source;
         public final MSP430Operand dest;
-        protected DOUBLE_W_Instr(String name, int size, MSP430AddrMode.DOUBLE_W am) {
+        protected DOUBLE_B_Instr(String name, int size, MSP430AddrMode.DOUBLE_B am) {
             super(name, size);
             this.am = am;
             this.source = am.get_source();

@@ -68,6 +68,8 @@ public class MSP430State {
     protected Segment data;
     protected CodeSegment code;
 
+    protected boolean C, N, Z, V;
+
     protected MainClock clock;
 
     /**

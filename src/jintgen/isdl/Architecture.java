@@ -131,11 +131,8 @@ public class Architecture {
         printer.println("loading enum " + m + "...");
         userTypes.add(m);
         enums.put(m.name.image, m);
-        JIGIRTypeEnv.TYPE_enum_kind tc = typeEnv.addEnum(m);
-        Token tok = new Token();
-        tok.image = tc.getName();
-        TypeRef tr = new TypeRef(tok);
-        globalEnv.addDecl(new GlobalDecl(m.name, tr));
+        m.kind = typeEnv.addEnum(m);
+        globalEnv.addDecl(m);
     }
 
     public void addGlobal(Token n, TypeRef t) {

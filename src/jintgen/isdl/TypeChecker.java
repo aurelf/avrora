@@ -318,9 +318,11 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     public Type visit(Literal.IntExpr e, Environment env) {
         int val = e.value;
         if ( val == 0 ) return typeEnv.newIntType(false, 1);
-        boolean signed = val < 0;
-        int width = Arithmetic.highestBit(val);
-        return typeEnv.newIntType(signed, width);
+        if ( val < 0 ) {
+            return typeEnv.newIntType(true, Arithmetic.highestBit(~val)+1);
+        } else {
+            return typeEnv.newIntType(false, Arithmetic.highestBit(val)+1);
+        }
     }
 
     public Type visit(Literal.EnumVal e, Environment env) {
