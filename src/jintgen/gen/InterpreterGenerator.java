@@ -37,6 +37,7 @@ import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.Main;
 import jintgen.types.TypeRef;
+import jintgen.types.Type;
 
 import java.io.IOException;
 import java.util.*;
@@ -59,6 +60,7 @@ public class InterpreterGenerator extends Generator {
         setPrinter(newAbstractClassPrinter("interpreter", null, tr("$state"), impl, null));
         javaCodePrinter = new JavaCodePrinter();
         generateUtilities();
+        generatePolyMethods();
         for (SubroutineDecl d : arch.subroutines) visit(d);
         for (InstrDecl d : arch.instructions) visit(d);
         endblock();
@@ -73,7 +75,7 @@ public class InterpreterGenerator extends Generator {
         properties.setProperty("visitor", className("InstrVisitor"));
         properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
-        properties.setProperty("interpreter", className("Interpreter"));
+        properties.setProperty("interpreter", className("InstrInterpreter"));
         properties.setProperty("state", className("State"));
         ncg = new jintgen.gen.CodeSimplifier(arch);
         ncg.genAccessMethods();
@@ -96,6 +98,60 @@ public class InterpreterGenerator extends Generator {
         startblock("int b2i(boolean v, int val)");
         println("if ( v ) return val;");
         println("else return 0;");
+        endblock();
+    }
+
+    void generatePolyMethods() {
+        HashMap<Type, HashSet<OperandTypeDecl.AccessMethod>> readPolys =
+                new HashMap<Type, HashSet<OperandTypeDecl.AccessMethod>>();
+        HashMap<Type, HashSet<OperandTypeDecl.AccessMethod>> writePolys =
+                new HashMap<Type, HashSet<OperandTypeDecl.AccessMethod>>();
+        for ( OperandTypeDecl ot : arch.operandTypes ) {
+            addPolyMethods(readPolys, ot.readDecls);
+            addPolyMethods(writePolys, ot.writeDecls);
+        }
+        for ( Map.Entry<Type, HashSet<OperandTypeDecl.AccessMethod>> e : readPolys.entrySet() ) {
+            generatePolyRead(e.getKey(), e.getValue());
+        }
+        for ( Map.Entry<Type, HashSet<OperandTypeDecl.AccessMethod>> e : writePolys.entrySet() ) {
+            generatePolyWrite(e.getKey(), e.getValue());
+        }
+    }
+
+    void addPolyMethods(HashMap<Type, HashSet<OperandTypeDecl.AccessMethod>> polys, Iterable<OperandTypeDecl.AccessMethod> meths) {
+        for ( OperandTypeDecl.AccessMethod m : meths ) {
+            if ( !m.usedPolymorphically ) continue;
+            HashSet<OperandTypeDecl.AccessMethod> set = polys.get(m.type);
+            if ( set == null ) {
+                set = new HashSet<OperandTypeDecl.AccessMethod>();
+                polys.put(m.type, set);
+            }
+            set.add(m);
+        }
+    }
+    void generatePolyRead(Type t, HashSet<OperandTypeDecl.AccessMethod> meths) {
+        String typeString = CodeSimplifier.getTypeString(t);
+        startblock("int $1_$2($operand o)", "$read_poly", typeString);
+        startblock("switch ( o.op_type )");
+        for ( OperandTypeDecl.AccessMethod m : meths ) {
+            OperandTypeDecl ot = m.getOperandType();
+            println("case $operand.$1_val: return $2_$3(($operand.$1)o);", ot.name, "$read", typeString);
+        }
+        endblock();
+        println("throw cck.util.Util.failure(\"invalid operand type in read\");");
+        endblock();
+    }
+
+    void generatePolyWrite(Type t, HashSet<OperandTypeDecl.AccessMethod> meths) {
+        String typeString = CodeSimplifier.getTypeString(t);
+        startblock("void $1_$2($operand o, int value)", "$write_poly", typeString);
+        startblock("switch ( o.op_type )");
+        for ( OperandTypeDecl.AccessMethod m : meths ) {
+            OperandTypeDecl ot = m.getOperandType();
+            println("case $operand.$1_val: $2_$3(($operand.$1)o, value); return;", ot.name, "$write", typeString);
+        }
+        endblock();
+        println("throw cck.util.Util.failure(\"invalid operand type in write\");");
         endblock();
     }
 
@@ -182,7 +238,4 @@ public class InterpreterGenerator extends Generator {
 
     }
 
-    public static boolean isMap(Expr expr) {
-        return expr.getType().isBasedOn("map");
-    }
 }

@@ -1,583 +1,816 @@
 package avrora.arch.avr;
-import avrora.arch.*;
+
 import java.util.HashMap;
+
 public abstract class AVRInstrBuilder {
+
     public abstract AVRInstr build(int size, AVRAddrMode am);
+
     static final HashMap builders = new HashMap();
+
     static AVRInstrBuilder add(String name, AVRInstrBuilder b) {
         builders.put(name, b);
         return b;
     }
+
     public static class ADC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ADC(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class ADD_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ADD(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class ADIW_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ADIW(size, (AVRAddrMode.$adiw$)am);
         }
     }
+
     public static class AND_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.AND(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class ANDI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ANDI(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class ASR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ASR(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class BCLR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BCLR(size, (AVRAddrMode.$bclr$)am);
         }
     }
+
     public static class BLD_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BLD(size, (AVRAddrMode.$bld$)am);
         }
     }
+
     public static class BRBC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRBC(size, (AVRAddrMode.$brbc$)am);
         }
     }
+
     public static class BRBS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRBS(size, (AVRAddrMode.$brbs$)am);
         }
     }
+
     public static class BRCC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRCC(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRCS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRCS(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BREAK_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BREAK(size);
         }
     }
+
     public static class BREQ_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BREQ(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRGE_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRGE(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRHC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRHC(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRHS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRHS(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRID_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRID(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRIE_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRIE(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRLO_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRLO(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRLT_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRLT(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRMI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRMI(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRNE_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRNE(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRPL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRPL(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRSH_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRSH(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRTC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRTC(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRTS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRTS(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRVC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRVC(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BRVS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BRVS(size, (AVRAddrMode.BRANCH)am);
         }
     }
+
     public static class BSET_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BSET(size, (AVRAddrMode.$bset$)am);
         }
     }
+
     public static class BST_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.BST(size, (AVRAddrMode.$bst$)am);
         }
     }
+
     public static class CALL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CALL(size, (AVRAddrMode.$call$)am);
         }
     }
+
     public static class CBI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CBI(size, (AVRAddrMode.$cbi$)am);
         }
     }
+
     public static class CBR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CBR(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class CLC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLC(size);
         }
     }
+
     public static class CLH_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLH(size);
         }
     }
+
     public static class CLI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLI(size);
         }
     }
+
     public static class CLN_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLN(size);
         }
     }
+
     public static class CLR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLR(size, (AVRAddrMode.$clr$)am);
         }
     }
+
     public static class CLS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLS(size);
         }
     }
+
     public static class CLT_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLT(size);
         }
     }
+
     public static class CLV_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLV(size);
         }
     }
+
     public static class CLZ_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CLZ(size);
         }
     }
+
     public static class COM_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.COM(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class CP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CP(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class CPC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CPC(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class CPI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CPI(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class CPSE_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.CPSE(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class DEC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.DEC(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class EICALL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.EICALL(size);
         }
     }
+
     public static class EIJMP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.EIJMP(size);
         }
     }
+
     public static class EOR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.EOR(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class FMUL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.FMUL(size, (AVRAddrMode.$fmul$)am);
         }
     }
+
     public static class FMULS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.FMULS(size, (AVRAddrMode.$fmuls$)am);
         }
     }
+
     public static class FMULSU_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.FMULSU(size, (AVRAddrMode.$fmulsu$)am);
         }
     }
+
     public static class ICALL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ICALL(size);
         }
     }
+
     public static class IJMP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.IJMP(size);
         }
     }
+
     public static class IN_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.IN(size, (AVRAddrMode.$in$)am);
         }
     }
+
     public static class INC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.INC(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class JMP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.JMP(size, (AVRAddrMode.$jmp$)am);
         }
     }
+
     public static class LDD_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.LDD(size, (AVRAddrMode.$ldd$)am);
         }
     }
+
     public static class LDI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.LDI(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class LDS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.LDS(size, (AVRAddrMode.$lds$)am);
         }
     }
+
     public static class LSL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.LSL(size, (AVRAddrMode.$lsl$)am);
         }
     }
+
     public static class LSR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.LSR(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class MOV_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.MOV(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class MOVW_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.MOVW(size, (AVRAddrMode.$movw$)am);
         }
     }
+
     public static class MUL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.MUL(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class MULS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.MULS(size, (AVRAddrMode.$muls$)am);
         }
     }
+
     public static class MULSU_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.MULSU(size, (AVRAddrMode.$mulsu$)am);
         }
     }
+
     public static class NEG_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.NEG(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class NOP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.NOP(size);
         }
     }
+
     public static class OR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.OR(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class ORI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ORI(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class OUT_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.OUT(size, (AVRAddrMode.$out$)am);
         }
     }
+
     public static class POP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.POP(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class PUSH_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.PUSH(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class RCALL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.RCALL(size, (AVRAddrMode.$rcall$)am);
         }
     }
+
     public static class RET_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.RET(size);
         }
     }
+
     public static class RETI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.RETI(size);
         }
     }
+
     public static class RJMP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.RJMP(size, (AVRAddrMode.$rjmp$)am);
         }
     }
+
     public static class ROL_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ROL(size, (AVRAddrMode.$rol$)am);
         }
     }
+
     public static class ROR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ROR(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class SBC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBC(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class SBCI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBCI(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class SBI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBI(size, (AVRAddrMode.$sbi$)am);
         }
     }
+
     public static class SBIC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBIC(size, (AVRAddrMode.$sbic$)am);
         }
     }
+
     public static class SBIS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBIS(size, (AVRAddrMode.$sbis$)am);
         }
     }
+
     public static class SBIW_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBIW(size, (AVRAddrMode.$sbiw$)am);
         }
     }
+
     public static class SBR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBR(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class SBRC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBRC(size, (AVRAddrMode.$sbrc$)am);
         }
     }
+
     public static class SBRS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SBRS(size, (AVRAddrMode.$sbrs$)am);
         }
     }
+
     public static class SEC_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SEC(size);
         }
     }
+
     public static class SEH_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SEH(size);
         }
     }
+
     public static class SEI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SEI(size);
         }
     }
+
     public static class SEN_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SEN(size);
         }
     }
+
     public static class SER_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SER(size, (AVRAddrMode.$ser$)am);
         }
     }
+
     public static class SES_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SES(size);
         }
     }
+
     public static class SET_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SET(size);
         }
     }
+
     public static class SEV_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SEV(size);
         }
     }
+
     public static class SEZ_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SEZ(size);
         }
     }
+
     public static class SLEEP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SLEEP(size);
         }
     }
+
     public static class SPM_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SPM(size);
         }
     }
+
     public static class STD_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.STD(size, (AVRAddrMode.$std$)am);
         }
     }
+
     public static class STS_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.STS(size, (AVRAddrMode.$sts$)am);
         }
     }
+
     public static class SUB_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SUB(size, (AVRAddrMode.GPRGPR)am);
         }
     }
+
     public static class SUBI_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SUBI(size, (AVRAddrMode.HGPRIMM8)am);
         }
     }
+
     public static class SWAP_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.SWAP(size, (AVRAddrMode.GPR)am);
         }
     }
+
     public static class TST_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.TST(size, (AVRAddrMode.$tst$)am);
         }
     }
+
     public static class WDR_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.WDR(size);
         }
     }
+
     public static class ELPM_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ELPM(size, (AVRAddrMode.XLPM)am);
         }
     }
+
     public static class LPM_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.LPM(size, (AVRAddrMode.XLPM)am);
         }
     }
+
     public static class LD_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.LD(size, (AVRAddrMode.LD_ST)am);
         }
     }
+
     public static class ST_builder extends AVRInstrBuilder {
+
         public AVRInstr build(int size, AVRAddrMode am) {
             return new AVRInstr.ST(size, (AVRAddrMode.LD_ST)am);
         }
     }
+
     public static final AVRInstrBuilder ADC = add("adc", new ADC_builder());
     public static final AVRInstrBuilder ADD = add("add", new ADD_builder());
     public static final AVRInstrBuilder ADIW = add("adiw", new ADIW_builder());
@@ -692,8 +925,9 @@ public abstract class AVRInstrBuilder {
     public static final AVRInstrBuilder LPM = add("lpm", new LPM_builder());
     public static final AVRInstrBuilder LD = add("ld", new LD_builder());
     public static final AVRInstrBuilder ST = add("st", new ST_builder());
+
     public static int checkValue(int val, int low, int high) {
-        if ( val < low || val > high ) {
+        if (val < low || val > high) {
             throw new Error();
         }
         return val;

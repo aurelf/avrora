@@ -73,7 +73,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
         }
     }
 
-    private final static Frame frames[] = new Frame[256];
+    private final static Frame[] frames = new Frame[256];
     public final static Frame ZERO_FRAME;
     public final static Frame FF_FRAME;
 
@@ -341,7 +341,7 @@ public class SPI extends AtmelInternalDevice implements SPIDevice, InterruptTabl
             interpreter.setEnabled(interruptNum, spie);
             if (spie && !SPIEnable) {
                 SPIEnable = true;
-                SPSR_reg.writeBit(SPSR_reg.SPIF, false);
+                SPSR_reg.writeBit(SPSReg.SPIF, false);
             }
             if (!spie && SPIEnable)
                 SPIEnable = false;

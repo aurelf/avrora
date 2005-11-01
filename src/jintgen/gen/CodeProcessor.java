@@ -52,8 +52,16 @@ public abstract class CodeProcessor<Env> extends StmtRebuilder<Env> {
         return renamer.getVarExpr(e);
     }
 
+    public Expr visit(ReadExpr e, Env env) {
+        return renamer.getReadExpr(e);
+    }
+
     public Stmt visit(DeclStmt s, Env env) {
         return renamer.getDecl((DeclStmt)super.visit(s, env));
+    }
+
+    public Stmt visit(WriteStmt s, Env env) {
+        return renamer.getWrite((WriteStmt)super.visit(s, env));
     }
 
     public abstract List<Stmt> process(List<Stmt> l);

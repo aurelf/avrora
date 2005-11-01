@@ -33,9 +33,7 @@
  */
 package jintgen.gen;
 
-import jintgen.jigir.VarExpr;
-import jintgen.jigir.Decl;
-import jintgen.jigir.DeclStmt;
+import jintgen.jigir.*;
 import jintgen.types.Type;
 import jintgen.types.TypeRef;
 import jintgen.isdl.parser.Token;
@@ -72,6 +70,20 @@ public class VarRenamer {
         return e;
     }
 
+    public ReadExpr getReadExpr(ReadExpr e) {
+        String orig = e.operand.image;
+        String nn = varMap.get(orig);
+        if ( nn != null && !orig.equals(nn) ) {
+            Token tok = new Token();
+            tok.image = nn;
+            ReadExpr ne = new ReadExpr(e.method, e.typeRef, tok);
+            ne.setType(e.getType());
+            ne.setAccessor(e.getAccessor());
+            return ne;
+        }
+        return e;
+    }
+
     public VarExpr visit(String v) {
         String nn = varMap.get(v);
         if ( !v.equals(nn) ) v = nn;
@@ -84,6 +96,19 @@ public class VarRenamer {
 
     public DeclStmt getDecl(DeclStmt s) {
         // default: do nothing
+        return s;
+    }
+
+    public WriteStmt getWrite(WriteStmt s) {
+        String orig = s.operand.image;
+        String nn = varMap.get(orig);
+        if ( nn != null && !orig.equals(nn) ) {
+            Token tok = new Token();
+            tok.image = nn;
+            WriteStmt writeStmt = new WriteStmt(s.method, s.typeRef, tok, s.expr);
+            writeStmt.setAccessor(s.getAccessor());
+            return writeStmt;
+        }
         return s;
     }
 

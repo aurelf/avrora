@@ -1,166 +1,257 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
-import java.util.HashMap;
 
 /**
- * The <code>MSP430Operand</code> interface represents operands that are
- * allowed to instructions in this architecture. Inner classes of this
- * interface enumerate the possible operand types to instructions and
- * their constructors allow for dynamic checking of correctness
- * constraints as expressed in the instruction set description.
+ * The <code>MSP430Operand</code> interface represents operands that are allowed to instructions in this architecture.
+ * Inner classes of this interface enumerate the possible operand types to instructions and their constructors allow for
+ * dynamic checking of correctness constraints as expressed in the instruction set description.
  */
-public interface MSP430Operand {
-    public void accept(MSP430OperandVisitor v);
-    abstract static class Int implements MSP430Operand {
+public abstract class MSP430Operand {
+
+    public static final byte SREG_val = 1;
+    public static final byte AIREG_B_val = 2;
+    public static final byte AIREG_W_val = 3;
+    public static final byte IREG_val = 4;
+    public static final byte IMM_val = 5;
+    public static final byte INDX_val = 6;
+    public static final byte SYM_val = 7;
+    public static final byte ABSO_val = 8;
+    public static final byte JUMP_val = 9;
+
+    /**
+     * The <code>op_type</code> field stores a code that determines the type of the operand. This code can be used to
+     * dispatch on the type of the operand by switching on the code.
+     */
+    public final byte op_type;
+
+    /**
+     * The <code>accept()</code> method implements the visitor pattern for operand types, allowing a user to
+     * double-dispatch on the type of an operand.
+     */
+    public abstract void accept(MSP430OperandVisitor v);
+
+    /**
+     * The default constructor for the <code>$operand</code> class simply stores the type of the operand in a final
+     * field.
+     */
+    protected MSP430Operand(byte t) {
+        op_type = t;
+    }
+
+    /**
+     * The <code>MSP430Operand.Int</code> class is the super class of operands that can take on integer values. It
+     * implements rendering the operand as an integer literal.
+     */
+    abstract static class Int extends MSP430Operand {
+
         public final int value;
-        Int(int val) {
+
+        Int(byte t, int val) {
+            super(t);
             this.value = val;
         }
+
         public String toString() {
             return Integer.toString(value);
         }
     }
-    
-    abstract static class Sym implements MSP430Operand {
+
+
+    /**
+     * The <code>MSP430Operand.Sym</code> class is the super class of operands that can take on symbolic (enumerated)
+     * values. It implements rendering the operand as the name of the corresponding enumeration type.
+     */
+    abstract static class Sym extends MSP430Operand {
+
         public final MSP430Symbol value;
-        Sym(MSP430Symbol sym) {
-            if ( sym == null ) throw new Error();
+
+        Sym(byte t, MSP430Symbol sym) {
+            super(t);
+            if (sym == null) throw new Error();
             this.value = sym;
         }
+
         public String toString() {
             return value.symbol;
         }
     }
-    
-    abstract static class Addr implements MSP430Operand {
+
+
+    /**
+     * The <code>MSP430Operand.Addr</code> class is the super class of operands that represent an address. It implements
+     * rendering the operand as a hexadecimal number.
+     */
+    abstract static class Addr extends MSP430Operand {
+
         public final int value;
-        Addr(int addr) {
+
+        Addr(byte t, int addr) {
+            super(t);
             this.value = addr;
         }
+
         public String toString() {
             String hs = Integer.toHexString(value);
             StringBuffer buf = new StringBuffer("0x");
-            for ( int cntr = hs.length(); cntr < 4; cntr++ ) buf.append('0');
+            for (int cntr = hs.length(); cntr < 4; cntr++)
+                buf.append('0');
             buf.append(hs);
             return buf.toString();
         }
     }
-    
-    abstract static class Rel implements MSP430Operand {
+
+
+    /**
+     * The <code>MSP430Operand.Rel</code> class is the super class of operands that represent an address that is
+     * computed relative to the program counter. It implements rendering the operand as the PC plus an offset.
+     */
+    abstract static class Rel extends MSP430Operand {
+
         public final int value;
         public final int relative;
-        Rel(int addr, int rel) {
+
+        Rel(byte t, int addr, int rel) {
+            super(t);
             this.value = addr;
             this.relative = rel;
         }
+
         public String toString() {
-            if ( relative >= 0 ) return ".+"+relative;
-            else return "."+relative;
+            if (relative >= 0) return ".+" + relative;
+            else
+                return "." + relative;
         }
     }
-    
-    public class SREG extends Sym {
+
+    public static class SREG extends Sym {
+
         SREG(String s) {
-            super(MSP430Symbol.get_GPR(s));
+            super(SREG_val, MSP430Symbol.get_GPR(s));
         }
+
         SREG(MSP430Symbol.GPR sym) {
-            super(sym);
+            super(SREG_val, sym);
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class AIREG_B extends Sym {
+
+    public static class AIREG_B extends Sym {
+
         AIREG_B(String s) {
-            super(MSP430Symbol.get_GPR(s));
+            super(AIREG_B_val, MSP430Symbol.get_GPR(s));
         }
+
         AIREG_B(MSP430Symbol.GPR sym) {
-            super(sym);
+            super(AIREG_B_val, sym);
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class AIREG_W extends Sym {
+
+    public static class AIREG_W extends Sym {
+
         AIREG_W(String s) {
-            super(MSP430Symbol.get_GPR(s));
+            super(AIREG_W_val, MSP430Symbol.get_GPR(s));
         }
+
         AIREG_W(MSP430Symbol.GPR sym) {
-            super(sym);
+            super(AIREG_W_val, sym);
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class IREG extends Sym {
+
+    public static class IREG extends Sym {
+
         IREG(String s) {
-            super(MSP430Symbol.get_GPR(s));
+            super(IREG_val, MSP430Symbol.get_GPR(s));
         }
+
         IREG(MSP430Symbol.GPR sym) {
-            super(sym);
+            super(IREG_val, sym);
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class IMM extends Int {
+
+    public static class IMM extends Int {
+
         public static final int low = -32768;
         public static final int high = 65536;
+
         IMM(int val) {
-            super(MSP430InstrBuilder.checkValue(val, low, high));
+            super(IMM_val, MSP430InstrBuilder.checkValue(val, low, high));
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class INDX implements MSP430Operand {
+
+    public static class INDX extends MSP430Operand {
+
         public final MSP430Operand.SREG reg;
         public final MSP430Operand.IMM index;
-        public INDX(MSP430Operand.SREG reg, MSP430Operand.IMM index)  {
+
+        public INDX(MSP430Operand.SREG reg, MSP430Operand.IMM index) {
+            super(IMM_val);
             this.reg = reg;
             this.index = index;
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class SYM extends Int {
+
+    public static class SYM extends Int {
+
         public static final int low = -32768;
         public static final int high = 32767;
+
         SYM(int val) {
-            super(MSP430InstrBuilder.checkValue(val, low, high));
+            super(SYM_val, MSP430InstrBuilder.checkValue(val, low, high));
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class ABSO extends Int {
+
+    public static class ABSO extends Int {
+
         public static final int low = 0;
         public static final int high = 65535;
+
         ABSO(int val) {
-            super(MSP430InstrBuilder.checkValue(val, low, high));
+            super(ABSO_val, MSP430InstrBuilder.checkValue(val, low, high));
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
-    public class JUMP extends Int {
+
+    public static class JUMP extends Int {
+
         public static final int low = -512;
         public static final int high = 511;
+
         JUMP(int val) {
-            super(MSP430InstrBuilder.checkValue(val, low, high));
+            super(JUMP_val, MSP430InstrBuilder.checkValue(val, low, high));
         }
+
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);
         }
     }
-    
+
 }

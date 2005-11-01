@@ -140,7 +140,7 @@ public class InterruptTable {
      * any probes for the interrupt.
      * @param inum the interrupt number to disable
      */
-    void disable(int inum) {
+    public void disable(int inum) {
         enabled = Arithmetic.setBit(enabled, inum, false);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
@@ -152,7 +152,7 @@ public class InterruptTable {
      * The <code>enableAll()</code> method is called by the interpreter when the all of
      * the interrupts are enabled by setting the global interrupt enable bit.
      */
-    void enableAll() {
+    public void enableAll() {
         interpreter.innerLoop = false;
         if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter.state, 0);
     }
@@ -161,7 +161,7 @@ public class InterruptTable {
      * The <code>disableAll()</code> method is called by the interpreter when the all of
      * the interrupts are disabled by clearing the global interrupt enable bit.
      */
-    void disableAll() {
+    public void disableAll() {
         if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter.state, 0);
     }
 
@@ -170,7 +170,7 @@ public class InterruptTable {
      * invokes an interrupt handler.
      * @param inum the interrupt number about to be invoked
      */
-    void beforeInvoke(int inum) {
+    public void beforeInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
         if ( globalProbe != null ) globalProbe.fireBeforeInvoke(interpreter.state, inum);
         if ( probe != null ) probe.fireBeforeInvoke(interpreter.state, inum);
@@ -183,7 +183,7 @@ public class InterruptTable {
      * invokes an interrupt handler.
      * @param inum the interrupt number that was just invoked
      */
-    void afterInvoke(int inum) {
+    public void afterInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
         if ( globalProbe != null ) globalProbe.fireAfterInvoke(interpreter.state, inum);
         if ( probe != null ) probe.fireAfterInvoke(interpreter.state, inum);

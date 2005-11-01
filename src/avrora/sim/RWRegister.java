@@ -42,7 +42,7 @@ import cck.util.Arithmetic;
  */
 public class RWRegister implements ActiveRegister {
 
-    protected byte value;
+    public byte value;
 
     /**
      * The <code>read()</code> method reads the 8-bit value of the IO register as a byte. For simple

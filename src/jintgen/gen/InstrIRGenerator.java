@@ -400,21 +400,38 @@ public class InstrIRGenerator extends Generator {
     // CODE TO EMIT OPERAND TYPES
     //=========================================================================================
     private void generateOperandClasses() throws IOException {
-        setPrinter(newInterfacePrinter("operand", hashMapImport, null,
+        setPrinter(newAbstractClassPrinter("operand", hashMapImport, null, null,
                 tr("The <code>$operand</code> interface represents operands that are allowed to " +
                 "instructions in this architecture. Inner classes of this interface enumerate the possible " +
                 "operand types to instructions and their constructors allow for dynamic checking of " +
                 "correctness constraints as expressed in the instruction set description.")));
 
-        p.println(tr("public void accept($opvisitor v);"));
+        int cntr = 1;
+        for ( OperandTypeDecl d : arch.operandTypes ) {
+            println("public static final byte $1_val = $2;", d.name, cntr++);
+        }
 
-        Printer vprinter = newInterfacePrinter("opvisitor", hashMapImport, null,
-                tr("The <code>$opvisitor</code> interface allows clients to use the Visitor pattern to " +
-                "resolve the types of operands to instructions."));
+        generateJavaDoc("The <code>op_type</code> field stores a code that determines the type of " +
+                "the operand. This code can be used to dispatch on the type of the operand by switching " +
+                "on the code.");
+        println("public final byte op_type;");
 
-        startblock("abstract static class Int implements $operand");
+        generateJavaDoc("The <code>accept()</code> method implements the visitor pattern for operand " +
+                "types, allowing a user to double-dispatch on the type of an operand.");
+        p.println(tr("public abstract void accept($opvisitor v);"));
+
+        generateJavaDoc("The default constructor for the <code>$operand</code> class simply stores the " +
+                "type of the operand in a final field.");
+        startblock("protected $operand(byte t)");
+        println("op_type = t;");
+        endblock();
+
+        generateJavaDoc(tr("The <code>$operand.Int</code> class is the super class of operands that can " +
+                "take on integer values. It implements rendering the operand as an integer literal."));
+        startblock("abstract static class Int extends $operand");
         println("public final int value;");
-        startblock("Int(int val)");
+        startblock("Int(byte t, int val)");
+        println("super(t);");
         println("this.value = val;");
         endblock();
         startblock("public String toString()");
@@ -423,9 +440,13 @@ public class InstrIRGenerator extends Generator {
         endblock();
         println("");
 
-        startblock("abstract static class Sym implements $operand");
+        generateJavaDoc(tr("The <code>$operand.Sym</code> class is the super class of operands that can " +
+                "take on symbolic (enumerated) values. It implements rendering the operand as " +
+                "the name of the corresponding enumeration type."));
+        startblock("abstract static class Sym extends $operand");
         println("public final $symbol value;");
-        startblock("Sym($symbol sym)");
+        startblock("Sym(byte t, $symbol sym)");
+        println("super(t);");
         println("if ( sym == null ) throw new Error();");
         println("this.value = sym;");
         endblock();
@@ -435,9 +456,12 @@ public class InstrIRGenerator extends Generator {
         endblock();
         println("");
 
-        startblock("abstract static class Addr implements $operand");
+        generateJavaDoc(tr("The <code>$operand.Addr</code> class is the super class of operands that represent " +
+                "an address. It implements rendering the operand as a hexadecimal number."));
+        startblock("abstract static class Addr extends $operand");
         println("public final int value;");
-        startblock("Addr(int addr)");
+        startblock("Addr(byte t, int addr)");
+        println("super(t);");
         println("this.value = addr;");
         endblock();
         startblock("public String toString()");
@@ -450,10 +474,14 @@ public class InstrIRGenerator extends Generator {
         endblock();
         println("");
 
-        startblock("abstract static class Rel implements $operand");
+        generateJavaDoc(tr("The <code>$operand.Rel</code> class is the super class of operands that represent " +
+                "an address that is computed relative to the program counter. It implements rendering " +
+                "the operand as the PC plus an offset."));
+        startblock("abstract static class Rel extends $operand");
         println("public final int value;");
         println("public final int relative;");
-        startblock("Rel(int addr, int rel)");
+        startblock("Rel(byte t, int addr, int rel)");
+        println("super(t);");
         println("this.value = addr;");
         println("this.relative = rel;");
         endblock();
@@ -463,26 +491,35 @@ public class InstrIRGenerator extends Generator {
         endblock();
         endblock();
         println("");
-        // generate all the explicitly declared operand types
+
         for ( OperandTypeDecl d : arch.operandTypes )
-            generateOperandType(d, vprinter);
+            generateOperandType(d);
 
         endblock();
         close();
+
+        // generate visitor class
+        Printer vprinter = newInterfacePrinter("opvisitor", hashMapImport, null,
+                tr("The <code>$opvisitor</code> interface allows clients to use the Visitor pattern to " +
+                        "resolve the types of operands to instructions."));
+
+        // generate the visit methods explicitly declared operand types
+        for ( OperandTypeDecl d : arch.operandTypes )
+            vprinter.println(tr("public void visit($operand.$1 o);", d.name));
+
         vprinter.endblock();
         vprinter.close();
     }
 
-    private void generateOperandType(OperandTypeDecl d, Printer vprinter) {
+    private void generateOperandType(OperandTypeDecl d) {
         String otname = d.name.image;
         // generate visit method inside visitor
-        vprinter.println(tr("public void visit($operand.$1 o);", otname));
         if ( d.isValue() ) {
             OperandTypeDecl.Value vd = (OperandTypeDecl.Value)d;
-            startblock("public class $1 extends $2", otname, operandSuperClass(vd));
+            startblock("public static class $1 extends $2", otname, operandSuperClass(vd));
             generateSimpleType(vd);
         } else if ( d.isCompound() ) {
-            startblock("public class $1 implements $operand", otname);
+            startblock("public static class $1 extends $operand", otname);
             generateCompoundType((OperandTypeDecl.Compound)d);
         }
         // generate accept method in operand class
@@ -509,20 +546,20 @@ public class InstrIRGenerator extends Generator {
         properties.setProperty("kind", d.typeRef.getTypeConName());
         if ( ed != null ) {
             startblock("$oname(String s)");
-            println("super($symbol.get_$kind(s));");
+            println("super($oname_val, $symbol.get_$kind(s));");
             endblock();
             startblock("$oname($symbol.$kind sym)");
-            println("super(sym);");
+            println("super($oname_val, sym);");
             endblock();
         } else {
             println("public static final int low = "+d.low+";");
             println("public static final int high = "+d.high+";");
             if ( d.isRelative() ) {
                 startblock("$oname(int pc, int rel)");
-                println("super(pc + 2 + 2 * rel, $builder.checkValue(rel, low, high));");
+                println("super($oname_val, pc + 2 + 2 * rel, $builder.checkValue(rel, low, high));");
             } else {
                 startblock("$oname(int val)");
-                println("super($builder.checkValue(val, low, high));");
+                println("super($oname_val, $builder.checkValue(val, low, high));");
             }
             endblock();
         }
@@ -535,6 +572,7 @@ public class InstrIRGenerator extends Generator {
         print("public $1", d.name.image);
         printParams(nameTypeList(d.subOperands));
         startblock(" ");
+        println("super($oname_val);");
         initFields("this.$1 = $1;", d.subOperands);
         endblock();
     }

@@ -39,18 +39,14 @@ import avrora.sim.clock.MainClock;
 import cck.util.Util;
 
 /**
- * The <code>MSP430State</code> class represents an instance of the internal state of
- * a <code>MSP430Interpreter</code> instance. This class allows access to the state of the interpreter
- * without exposing the details of the implementation or jeopardizing the soundness
- * of the simulation.
- *
- * </p>
- * A <code>MSP430State</code> instance contains the state of registers, memory, the code
- * segment, and the IO registers, as well as the interrupt table and
- * <code>MainClock</code> instance. It provides a public interface through the
- * <code>get_XXX()</code> methods and a protected interface used
- * in <code>MSP430Interpreter</code> that allows direct access to the fields representing
- * the actual state.
+ * The <code>MSP430State</code> class represents an instance of the internal state of a <code>MSP430Interpreter</code>
+ * instance. This class allows access to the state of the interpreter without exposing the details of the implementation
+ * or jeopardizing the soundness of the simulation.
+ * <p/>
+ * </p> A <code>MSP430State</code> instance contains the state of registers, memory, the code segment, and the IO
+ * registers, as well as the interrupt table and <code>MainClock</code> instance. It provides a public interface through
+ * the <code>get_XXX()</code> methods and a protected interface used in <code>MSP430Interpreter</code> that allows
+ * direct access to the fields representing the actual state.
  *
  * @author Ben L. Titzer
  */
@@ -62,10 +58,11 @@ public class MSP430State {
 
     protected int pc;
     protected int nextpc;
+    protected int sreg;
 
     protected char[] regs;
     protected ActiveRegister[] ioregs;
-    protected Segment data;
+    protected Segment sram;
     protected CodeSegment code;
 
     protected boolean C, N, Z, V;
@@ -82,22 +79,23 @@ public class MSP430State {
     }
 
     /**
-     * The <code>getSP()</code> method reads the current value of the stack pointer. Since the stack pointer
-     * is stored in two IO registers, this method will cause the invocation of the <code>.read()</code> method
-     * on each of the <code>IOReg</code> objects that store these values.
+     * The <code>getSP()</code> method reads the current value of the stack pointer. Since the stack pointer is stored
+     * in two IO registers, this method will cause the invocation of the <code>.read()</code> method on each of the
+     * <code>IOReg</code> objects that store these values.
      *
      * @return the value of the stack pointer as a byte address
      */
     public int getSP() {
-        throw Util.unimplemented();
+        // register 1 is the stack pointer
+        return regs[1];
     }
 
     /**
-     * The <code>getSRAM()</code> method reads a byte value from the data memory (SRAM) at the specified
-     * address. This method is intended for use by probes and watches; thus, it does not trigger any
-     * watches that may be installed at the memory address specified, since doing so could lead to
-     * infinite recursion (if a watch attempts to get the value of the byte at the location where it itself
-     * is installed) or alter the metrics being measured by the instrumentation at that address.
+     * The <code>getSRAM()</code> method reads a byte value from the data memory (SRAM) at the specified address. This
+     * method is intended for use by probes and watches; thus, it does not trigger any watches that may be installed at
+     * the memory address specified, since doing so could lead to infinite recursion (if a watch attempts to get the
+     * value of the byte at the location where it itself is installed) or alter the metrics being measured by the
+     * instrumentation at that address.
      *
      * @param address the byte address to read
      * @return the value of the data memory at the specified address
@@ -108,12 +106,11 @@ public class MSP430State {
     }
 
     /**
-     * The <code>getFlash()</code> method reads a byte value from the program (Flash) memory. The flash
-     * memory generally stores read-only values and the instructions of the program. This method is intended
-     * for use by probes and watches; thus, it does not trigger any watches or probes that may be installed
-     * at the memory address specified, since doing so could lead to
-     * infinite recursion (if a watch attempts to get the value of the byte at the location where it itself
-     * is installed) or alter the metrics being measured by the instrumentation at that address.
+     * The <code>getFlash()</code> method reads a byte value from the program (Flash) memory. The flash memory generally
+     * stores read-only values and the instructions of the program. This method is intended for use by probes and
+     * watches; thus, it does not trigger any watches or probes that may be installed at the memory address specified,
+     * since doing so could lead to infinite recursion (if a watch attempts to get the value of the byte at the location
+     * where it itself is installed) or alter the metrics being measured by the instrumentation at that address.
      *
      * @param address the byte address at which to read
      * @return the byte value of the program memory at the specified address
@@ -124,11 +121,10 @@ public class MSP430State {
     }
 
     /**
-     * The <code>getIOReg()</code> method reads the value of an IO register as a byte. Invocation of this
-     * method causes an invocation of the <code>.read()</code> method on the corresponding internal
-     * <code>IOReg</code> object, and its value returned. Very few devices have behavior that is triggered
-     * by a read from an IO register, but care should be taken when calling this method for one of those
-     * IO registers.
+     * The <code>getIOReg()</code> method reads the value of an IO register as a byte. Invocation of this method causes
+     * an invocation of the <code>.read()</code> method on the corresponding internal <code>IOReg</code> object, and its
+     * value returned. Very few devices have behavior that is triggered by a read from an IO register, but care should
+     * be taken when calling this method for one of those IO registers.
      *
      * @param ior the IO register number
      * @return the value of the IO register
@@ -138,8 +134,7 @@ public class MSP430State {
     }
 
     /**
-     * The <code>getRegister()</code> method reads a general purpose register's current
-     * value as a byte.
+     * The <code>getRegister()</code> method reads a general purpose register's current value as a byte.
      *
      * @param reg the register to read
      * @return the current value of the specified register as a byte
@@ -149,8 +144,7 @@ public class MSP430State {
     }
 
     /**
-     * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the
-     * simulation.
+     * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the simulation.
      *
      * @return the number of clock cycles elapsed in the simulation
      */
@@ -159,8 +153,8 @@ public class MSP430State {
     }
 
     /**
-     * The <code>getSREG()</code> method reads the value of the status register. The status register contains
-     * the I, T, H, S, V, N, Z, and C flags, in order from highest-order to lowest-order.
+     * The <code>getSREG()</code> method reads the value of the status register. The status register contains the I, T,
+     * H, S, V, N, Z, and C flags, in order from highest-order to lowest-order.
      *
      * @return the value of the status register as a byte.
      */
@@ -170,6 +164,7 @@ public class MSP430State {
 
     /**
      * The <code>isEnabled()</code> method checks whether the specified interrupt is currently enabled.
+     *
      * @param inum the interrupt number to check
      * @return true if the specified interrupt is currently enabled; false otherwise
      */
@@ -179,6 +174,7 @@ public class MSP430State {
 
     /**
      * The <code>isPosted()</code> method checks whether the specified interrupt is currently posted.
+     *
      * @param inum the interrupt number to check
      * @return true if the specified interrupt is currently posted; false otherwise
      */
@@ -188,6 +184,7 @@ public class MSP430State {
 
     /**
      * The <code>isPending()</code> method checks whether the specified interrupt is currently pending.
+     *
      * @param inum the interrupt number to check
      * @return true if the specified interrupt is currently pending; false otherwise
      */
@@ -196,12 +193,27 @@ public class MSP430State {
     }
 
     /**
-     * The <code>getSimulator()</code> method returns the simulator associated with this state
-     * instance.
+     * The <code>getSimulator()</code> method returns the simulator associated with this state instance.
+     *
      * @return a reference to the simulator associated with this state instance.
      */
     public Simulator getSimulator() {
         return simulator;
     }
 
+    protected int map_get(char[] array, int ind) {
+        return array[ind];
+    }
+
+    protected void map_set(char[] array, int ind, int val) {
+        array[ind] = (char)val;
+    }
+
+    protected int map_get(Segment s, int addr) {
+        return s.read(addr);
+    }
+
+    protected void map_set(Segment s, int addr, int val) {
+        s.write(addr, (byte)val);
+    }
 }

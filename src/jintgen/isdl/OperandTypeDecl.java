@@ -75,11 +75,15 @@ public abstract class OperandTypeDecl extends Item {
         public final Token which;
         public final TypeRef typeRef;
         public final CodeRegion code;
+        public boolean usedPolymorphically;
         AccessMethod(Token w, TypeRef t, CodeRegion c) {
             super(false);
             typeRef = t;
             which = w;
             code = c;
+        }
+        public OperandTypeDecl getOperandType() {
+            return OperandTypeDecl.this;
         }
     }
 

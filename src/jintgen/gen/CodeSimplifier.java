@@ -36,10 +36,8 @@ package jintgen.gen;
 
 import jintgen.jigir.*;
 import jintgen.types.*;
-import jintgen.isdl.SubroutineDecl;
-import jintgen.isdl.OperandTypeDecl;
 import jintgen.isdl.parser.Token;
-import jintgen.isdl.Architecture;
+import jintgen.isdl.*;
 import java.util.*;
 import cck.util.Util;
 
@@ -64,12 +62,12 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
 
     public void genAccessMethods() {
         for ( OperandTypeDecl ot : arch.operandTypes ) {
+
             for ( OperandTypeDecl.AccessMethod m : ot.readDecls ) {
                 List<SubroutineDecl.Parameter> p = new LinkedList<SubroutineDecl.Parameter>();
-                Canonicalizer canon = new Canonicalizer();
-                p.add(new SubroutineDecl.Parameter(token("_this"), newTypeRef(ot)));
-                canon.renameVariable("this", "_this.value");
+                Canonicalizer canon = addRenames(ot);
                 Token name = token("$read_" + getTypeString(m.type));
+                p.add(new SubroutineDecl.Parameter(token("_this"), newTypeRef(ot)));
                 List<Stmt> stmts = canon.process(m.code.getStmts());
                 SubroutineDecl d = new SubroutineDecl(true, name, p, m.typeRef, stmts);
                 arch.addSubroutine(d);
@@ -77,8 +75,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             }
             for ( OperandTypeDecl.AccessMethod m : ot.writeDecls ) {
                 List<SubroutineDecl.Parameter> p = new LinkedList<SubroutineDecl.Parameter>();
-                Canonicalizer canon = new Canonicalizer();
-                canon.renameVariable("this", "_this.value");
+                Canonicalizer canon = addRenames(ot);
                 p.add(new SubroutineDecl.Parameter(token("_this"), newTypeRef(ot)));
                 p.add(new SubroutineDecl.Parameter(token("value"), m.typeRef));
                 Token name = token("$write_" + getTypeString(m.type));
@@ -88,6 +85,14 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
                 m.setSubroutine(d);
             }
         }
+    }
+
+    private Canonicalizer addRenames(OperandTypeDecl ot) {
+        Canonicalizer canon = new Canonicalizer();
+        for ( AddrModeDecl.Operand o : ot.subOperands)
+            canon.renameVariable(o.name.image, "_this."+o.name);
+        canon.renameVariable("this", "_this.value");
+        return canon;
     }
 
     private TypeRef newTypeRef(OperandTypeDecl ot) {
@@ -101,7 +106,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         return ref;
     }
 
-    protected String getTypeString(Type t) {
+    public static String getTypeString(Type t) {
         if ( t instanceof JIGIRTypeEnv.TYPE_int ) {
             JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)t;
             String base = it.isSigned() ? "int" : "uint";
@@ -132,15 +137,15 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
     }
 
     public Expr visit(IndexExpr e, CGEnv env) {
-        if ( InterpreterGenerator.isMap(e.expr) ) {
+        if ( isMap(e.expr) ) {
             // translate map access into a call to map_get
-            CallExpr ce = newCall(token("map_get"), promote(e.expr), promote(e.index));
+            CallExpr ce = newCallExpr(token("map_get"), promote(e.expr), promote(e.index));
             ce.setType(e.getType());
             return convert(ce, env.expect, env.shift);
         } else {
             // translate bit access into a mask and shift
             // TODO: transform bit access more efficiently
-            CallExpr ce = newCall(token("bit_get"), promote(e.expr), promote(e.index));
+            CallExpr ce = newCallExpr(token("bit_get"), promote(e.expr), promote(e.index));
             ce.setType(e.getType());
             return convert(ce, env.expect, env.shift);
         }
@@ -151,8 +156,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         int width = e.high_bit - e.low_bit + 1;
         if ( t.getSize() < width ) width = t.getSize();
         int mask = (-1 >>> (32 - width)) << env.shift;
-        // TODO: is this correct? does not recurse
-        Expr ne = convert(e.expr, INT, e.low_bit - env.shift);
+        Expr ne = promote(e.expr, INT, e.low_bit - env.shift);
         return newAnd(ne, mask, e.getType());
     }
 
@@ -183,39 +187,40 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
     }
 
     public Expr visit(ReadExpr e, CGEnv env) {
-        SubroutineDecl s = e.getAccessor().getSubroutine();
-        List<Expr> l = new LinkedList<Expr>();
-        l.add(new VarExpr(e.operand));
-        Token name = s == null ? token("read_XXX") : s.name;
-        CallExpr ce = new CallExpr(name, l);
-        ce.setDecl(s);
-        return ce;
+        OperandTypeDecl.Accessor accessor = e.getAccessor();
+        if ( !accessor.polymorphic ) {
+            SubroutineDecl s = accessor.getSubroutine();
+            CallExpr ce = newCallExpr(s, new VarExpr(e.operand));
+            ce.setDecl(s);
+            return ce;
+        } else {
+            CallExpr ce = newCallExpr(token("$read_poly_"+ getTypeString(accessor.type)), new VarExpr(e.operand));
+            return ce;
+        }
     }
 
     public Expr visit(ConversionExpr e, CGEnv env) {
         Type rt = env.expect;
 
-        Expr inner1;
-        TypeCon typecon = e.expr.getType().getTypeCon();
+        Expr inner = promote(e.expr);
+        TypeCon typecon = inner.getType().getTypeCon();
         if ( typecon instanceof JIGIRTypeEnv.TYPE_enum ) {
             if ( e.getType() instanceof JIGIRTypeEnv.TYPE_int ) {
-                inner1 = new DotExpr(e.expr, token("value"));
-                inner1.setType(INT);
+                inner = new DotExpr(inner, token("value"));
+                inner.setType(INT);
             } else throw Util.failure("cannot convert enum to type other than int");
         } else if ( typecon instanceof JIGIRTypeEnv.TYPE_operand ) {
             OperandTypeDecl decl = ((JIGIRTypeEnv.TYPE_operand)typecon).decl;
             if ( decl.isValue() ) {
                 OperandTypeDecl.Value vt = (OperandTypeDecl.Value)decl;
                 Type ovt = vt.typeRef.getType();
-                inner1 = new DotExpr(e.expr, token("value"));
-                inner1.setType(ovt);
+                inner = new DotExpr(e.expr, token("value"));
+                inner.setType(ovt);
             } else throw Util.failure("cannot convert complex operand to any other type");
         } else {
-            inner1 = convert(e.expr, e.getType(), env.shift);
+            inner = convert(inner, e.getType(), env.shift);
             env.shift = 0;
         }
-        Expr inner = inner1;
-
 
         return convert(inner, rt, env.shift);
     }
@@ -262,7 +267,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             // conversion between types is necessary
             if ( ft.isBasedOn("boolean") ) {
                 if ( tt.isBasedOn("int") ) {
-                    CallExpr ce = newCall(token("b2i"), e, newLiteralInt(1 << shift));
+                    CallExpr ce = newCallExpr(token("b2i"), e, newLiteralInt(1 << shift));
                     ce.setType(tt);
                     return ce;
                 } else {
@@ -304,7 +309,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         if ( k2 == -8 ) { }  // (byte)e
         if ( k2 == -16 ) { } // (short)e
         if ( k2 == 16 ) { }  // (char)e
-        if ( k2 == -32 ) { return e; }  // (int)e
+        if ( k2 == -32 ) { return shift(e, shift); }  // (int)e
         if ( k1 < 0 && k1 >= -32 ) {
             if ( k2 < 0 && abs(k2) >= abs(k1) ) { return shift(e, shift); } // e
             if ( k2 < 0 && abs(k2) < abs(k1)) { return SE(e, k2, shift); } // SE(e, k2)
@@ -348,14 +353,17 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
 
     public Stmt visit(WriteStmt s, CGEnv env) {
         OperandTypeDecl.Accessor accessor = s.getAccessor();
-        SubroutineDecl sub = accessor.getSubroutine();
-        List<Expr> l = new LinkedList<Expr>();
-        l.add(new VarExpr(s.operand));
-        l.add(promote(s.expr, machineType(accessor.type), 0));
-        Token method = sub == null ? token("write_XXX") : sub.name;
-        CallStmt cs = new CallStmt(method, l);
-        cs.setDecl(sub);
-        return cs;
+        if ( !accessor.polymorphic ) {
+            SubroutineDecl sub = accessor.getSubroutine();
+            if ( sub == null )
+                throw Util.failure("Unresolved write at "+s.method.getSourcePoint());
+            CallStmt cs = newCallStmt(sub.name, new VarExpr(s.operand), promote(s.expr, machineType(accessor.type), 0));
+            cs.setDecl(sub);
+            return cs;
+        } else {
+            CallStmt cs = newCallStmt(token("$write_poly_"+ getTypeString(accessor.type)), new VarExpr(s.operand), promote(s.expr, machineType(accessor.type), 0));
+            return cs;
+        }
     }
 
     public Stmt visit(CallStmt s, CGEnv env) {
@@ -391,18 +399,18 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         if ( nb.isLiteral() ) {
             int shift = ((Literal.IntExpr)nb).value;
             Expr ne = promote(s.expr, INT, shift);
-            CallExpr ce = newCall(token("bit_update"), s.dest, mask(shift, shift), ne);
+            CallExpr ce = newCallExpr(token("bit_update"), s.dest, mask(shift, shift), ne);
             return new AssignStmt.Var(s.dest, ce);
         } else {
             Expr ne = promote(s.expr, arch.typeEnv.BOOLEAN, 0);
-            CallExpr ce = newCall(token("bit_set"), s.dest, nb, ne);
+            CallExpr ce = newCallExpr(token("bit_set"), s.dest, nb, ne);
             return new AssignStmt.Var(s.dest, ce);
         }
     }
 
     public Stmt visit(AssignStmt.FixedRange s, CGEnv env) {
         Expr ne = promote(s.expr, INT, s.low_bit);
-        CallExpr ce = newCall(token("bit_update"), s.dest, mask(s.low_bit, s.high_bit), ne);
+        CallExpr ce = newCallExpr(token("bit_update"), s.dest, mask(s.low_bit, s.high_bit), ne);
         return new AssignStmt.Var(s.dest, ce);
     }
 
@@ -440,17 +448,23 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         return t;
     }
 
-    private CallExpr newCall(SubroutineDecl d, Expr... e) {
+    private CallExpr newCallExpr(SubroutineDecl d, Expr... e) {
         Token name = d.name;
-        CallExpr ce = newCall(name, e);
+        CallExpr ce = newCallExpr(name, e);
         ce.setDecl(d);
         return ce;
     }
 
-    private CallExpr newCall(Token name, Expr... e) {
+    private CallExpr newCallExpr(Token name, Expr... e) {
         List<Expr> l = new LinkedList<Expr>();
         for ( Expr a : e ) l.add(a);
         return new CallExpr(name, l);
+    }
+
+    private CallStmt newCallStmt(Token name, Expr... e) {
+        List<Expr> l = new LinkedList<Expr>();
+        for ( Expr a : e ) l.add(a);
+        return new CallStmt(name, l);
     }
 
     private Literal.IntExpr mask(int low_bit, int high_bit) {
@@ -463,5 +477,9 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         int width = (high_bit - low_bit + 1);
         int val = (-1 >>> (32 - width)) << low_bit;
         return val;
+    }
+
+    public static boolean isMap(Expr expr) {
+        return expr.getType().isBasedOn("map");
     }
 }

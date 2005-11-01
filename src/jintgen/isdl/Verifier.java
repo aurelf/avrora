@@ -262,6 +262,7 @@ public class Verifier {
                 rmeths.put(key, set);
             }
             set.add(m);
+            m.usedPolymorphically = true;
         }
     }
 
