@@ -274,7 +274,6 @@ public class ReprogrammableCodeSegment extends CodeSegment {
         mainClock.removeEvent(SPMCSR.reset);
         SPMCSR.setBusy();
         mainClock.insertEvent(new EraseEvent(pagenum), ERASE_CYCLES);
-        resetBuffer();
     }
 
     private void pageWrite(int pagenum, int pageoffset) {
@@ -290,6 +289,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
             SPMCSR.clearBusy();
             SPMCSR.reset();
         }
+	    resetBuffer();
     }
 
     private void fillBuffer(int pagenum, int pageoffset) {
