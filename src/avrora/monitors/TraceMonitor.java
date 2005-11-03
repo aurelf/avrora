@@ -54,13 +54,17 @@ public class TraceMonitor extends MonitorFactory {
             "to enable the tracing. The tracing will be enabled when the first point is entered " +
             "and be disabled when the second point is reached. Nesting of multiple point pairs " +
             "is handled correctly.");
+    final Option.Long TIME = options.newOption("trace-start", 0,
+            "The \"trace-start\" option specifies the time to start the instruction trace, in " +
+            "clock cycles. This option can be useful for diagnosing problems in long simulations " +
+            "that happens after a given time is reached.");
 
     /**
      * The <code>Monitor</code> class implements the monitor for the profiler. It contains a
      * <code>ProgramProfiler</code> instance which is a probe that is executed after every instruction that
      * collects execution counts for every instruction in the program.
      */
-    public class Monitor implements avrora.monitors.Monitor {
+    public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
         public final GlobalProbe PROBE;
@@ -88,7 +92,6 @@ public class TraceMonitor extends MonitorFactory {
                 pair = StringUtil.addrToString(s)+":"+ StringUtil.addrToString(e);
             }
 
-
             public void fireBefore(State s, int addr) {
                 traceNum++;
                 if ( nesting == 0 ) {
@@ -99,6 +102,12 @@ public class TraceMonitor extends MonitorFactory {
                     print("nested ("+pair+") begin: "+traceNum+" --------------------------");
                 }
                 nesting++;
+            }
+        }
+
+        public class StartEvent implements Simulator.Event {
+            public void fire() {
+                simulator.insertProbe(PROBE);
             }
         }
 
@@ -127,14 +136,17 @@ public class TraceMonitor extends MonitorFactory {
         int nextPc;
 
         private void print(State s, Instr i) {
-            String idstr = SimUtil.getIDTimeString(simulator);
-            Terminal.print(idstr);
+            //"#k{%x}: #k{%s} %s", color, pc, color, i.getVariant(), i.getOperands()
+            StringBuffer buf = new StringBuffer(100);
+            SimUtil.getIDTimeString(buf, simulator);
             int pc = s.getPC();
             int color = pc == nextPc ? Terminal.COLOR_BLUE : Terminal.COLOR_RED;
-            Terminal.printBrightCyan(StringUtil.toHex(pc, 4) + ": ");
-            Terminal.print(color, i.getVariant() + ' ');
-            Terminal.print(i.getOperands());
-            Terminal.nextln();
+            Terminal.append(color, buf, StringUtil.to0xHex(pc, 4));
+            buf.append(": ");
+            buf.append(i.getVariant());
+            buf.append(' ');
+            buf.append(i.getOperands());
+            Terminal.println(buf.toString());
             nextPc = pc + i.getSize();
         }
 
@@ -143,16 +155,21 @@ public class TraceMonitor extends MonitorFactory {
             Terminal.println(idstr+s);
         }
 
-        Monitor(Simulator s) {
+        Mon(Simulator s) {
             simulator = s;
             program = s.getProgram();
             PROBE = new GlobalProbe();
-            // insert the global probe
-            if ( FROMTO.get().isEmpty() ){
+            long time = TIME.get();
+            if ( time > 0 ) {
+                // if start time is specified, add an event to start the global probe
+                s.insertEvent(new StartEvent(), time);
+            } else if ( FROMTO.get().isEmpty() ){
+                // if there are no fromt/to pairs, insert the global probe
                 s.insertProbe(PROBE);
-            }
-            else
+            } else {
+                // if there are from/to pairs, insert the start and end probes
                 addPairs();
+            }
         }
 
         private void addPairs() {
@@ -221,7 +238,7 @@ public class TraceMonitor extends MonitorFactory {
      * @return an instance of the <code>Monitor</code> interface that tracks performance information from the
      *         program
      */
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return new Monitor(s);
+    public Monitor newMonitor(Simulator s) {
+        return new Mon(s);
     }
 }

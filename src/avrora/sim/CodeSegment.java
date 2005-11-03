@@ -51,15 +51,11 @@ public class CodeSegment extends Segment {
      */
     protected void replaceInstr(int address, Instr i) {
         Instr instr = getInstr(address);
-        if ( instr == null )
+        if ( instr == null || !(instr instanceof ProbedInstr) ) {
             writeInstr(address, i);
-        else {
-            if ( instr instanceof ProbedInstr ) {
-                ProbedInstr pi = new ProbedInstr(i, (ProbedInstr)instr);
-                writeInstr(address, pi);
-            } else {
-                writeInstr(address, i);
-            }
+        } else {
+            ProbedInstr pi = new ProbedInstr(i, (ProbedInstr)instr);
+            writeInstr(address, pi);
         }
     }
 

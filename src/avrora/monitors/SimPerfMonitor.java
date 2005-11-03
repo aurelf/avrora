@@ -51,13 +51,13 @@ public class SimPerfMonitor extends MonitorFactory {
             "This option is used in the simulator profiling monitor to determine how many " +
             "times per simulated second to sample the simulator's performance.");
 
-    public class Monitor implements avrora.monitors.Monitor {
+    public class Mon implements Monitor {
         final Simulator simulator;
         final TimedMeasurements data;
         long start;
         long interval;
 
-        Monitor(Simulator s) {
+        Mon(Simulator s) {
             simulator = s;
             data = new TimedMeasurements();
             start = System.currentTimeMillis();
@@ -134,7 +134,7 @@ public class SimPerfMonitor extends MonitorFactory {
      * @return an instance of the <code>Monitor</code> interface that tracks performance information from the
      *         program
      */
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return new Monitor(s);
+    public Monitor newMonitor(Simulator s) {
+        return new Mon(s);
     }
 }

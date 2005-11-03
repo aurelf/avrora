@@ -51,23 +51,23 @@ import cck.util.Util;
  */
 public class CallMonitor extends MonitorFactory {
 
+    public static final int MAX_STACK_DEPTH = 256;
+
     class Mon implements Monitor {
 
-        Simulator simulator;
-        BaseInterpreter interpreter;
-        MicrocontrollerProperties props;
-        SourceMapping sm;
-        int depth = 0;
-        String[] stack;
-        public static final int MAX_STACK_DEPTH = 256;
-        int maxdepth = 0;
-        protected int interruptBase;
+        private final Simulator simulator;
+        private final MicrocontrollerProperties props;
+        private final SourceMapping sourceMap;
+
+        private String[] stack;
+
+        private int depth = 0;
+        private int maxdepth = 0;
 
         Mon(Simulator s) {
             this.simulator = s;
             props = simulator.getMicrocontroller().getProperties();
-            interpreter = s.getInterpreter();
-            interruptBase = interpreter.getInterruptBase();
+            BaseInterpreter interpreter = s.getInterpreter();
             InterruptTable itable = interpreter.getInterruptTable();
             itable.insertProbe(new InterruptProbe());
 
@@ -75,25 +75,15 @@ public class CallMonitor extends MonitorFactory {
             stack[0] = "";
 
             Program p = s.getProgram();
-            sm = p.getSourceMapping();
+            sourceMap = p.getSourceMapping();
             for ( int pc = 0; pc < p.program_end; pc = p.getNextPC(pc)) {
                 Instr i = p.readInstr(pc);
                 if ( i != null ) {
-                    if ( i instanceof Instr.CALL ) {
-                        s.insertProbe(new CallProbe("CALL"), pc);
-                    }
-                    else if ( i instanceof Instr.ICALL ) {
-                        s.insertProbe(new CallProbe("ICALL"), pc);
-                    }
-                    else if ( i instanceof Instr.RCALL) {
-                        s.insertProbe(new CallProbe("RCALL"), pc);
-                    }
-                    else if ( i instanceof Instr.RET ) {
-                        s.insertProbe(new ReturnProbe("RET"), pc);
-                    }
-                    else if ( i instanceof Instr.RETI ) {
-                        s.insertProbe(new ReturnProbe("RETI"), pc);
-                    }
+                    if ( i instanceof Instr.CALL ) s.insertProbe(new CallProbe("CALL"), pc);
+                    else if ( i instanceof Instr.ICALL ) s.insertProbe(new CallProbe("ICALL"), pc);
+                    else if ( i instanceof Instr.RCALL) s.insertProbe(new CallProbe("RCALL"), pc);
+                    else if ( i instanceof Instr.RET ) s.insertProbe(new ReturnProbe("RET"), pc);
+                    else if ( i instanceof Instr.RETI ) s.insertProbe(new ReturnProbe("RETI"), pc);
                 }
             }
         }
@@ -101,22 +91,6 @@ public class CallMonitor extends MonitorFactory {
         public void report() {
             TermUtil.reportQuantity("Maximum stack depth", maxdepth, "frames");
             // do nothing
-        }
-
-        class CallProbe extends Simulator.Probe.Empty {
-            String itype;
-
-            CallProbe(String itype) {
-                this.itype = itype;
-            }
-
-            public void fireAfter(State s, int addr) {
-                int npc = s.getPC();
-                String caddr = StringUtil.addrToString(addr);
-                String daddr = sm.getName(npc);
-                push(caddr, daddr, itype);
-            }
-
         }
 
         private void push(String caller, String dest, String edge) {
@@ -160,6 +134,22 @@ public class CallMonitor extends MonitorFactory {
             stack[depth] = null;
             depth--;
             if ( depth < 0 ) depth = 0;
+        }
+
+        class CallProbe extends Simulator.Probe.Empty {
+            String itype;
+
+            CallProbe(String itype) {
+                this.itype = itype;
+            }
+
+            public void fireAfter(State s, int addr) {
+                int npc = s.getPC();
+                String caddr = StringUtil.addrToString(addr);
+                String daddr = sourceMap.getName(npc);
+                push(caddr, daddr, itype);
+            }
+
         }
 
         class InterruptProbe extends Simulator.InterruptProbe.Empty {

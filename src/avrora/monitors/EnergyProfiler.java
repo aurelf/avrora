@@ -120,7 +120,7 @@ public class EnergyProfiler extends MonitorFactory {
             //startup values
             lastChange = 0;
             currentMode = nearestLabel(0);
-            //scan each basic block and fine the corresponding label, e.g. procedure
+            //scan each basic block and find the corresponding label, e.g. procedure
             Iterator it = program.getCFG().getSortedBlockIterator();
             int address;
             int size;

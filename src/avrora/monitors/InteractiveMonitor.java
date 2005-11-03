@@ -37,10 +37,8 @@
 package avrora.monitors;
 
 import avrora.actions.SimAction;
-import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.*;
-import avrora.sim.mcu.MicrocontrollerProperties;
 import cck.util.Option;
 import cck.util.Util;
 import java.util.Iterator;
@@ -62,26 +60,15 @@ public class InteractiveMonitor extends MonitorFactory {
     class Mon implements Monitor {
 
         Simulator simulator;
-        BaseInterpreter interpreter;
-        MicrocontrollerProperties props;
-        SourceMapping sm;
-        int depth = 0;
-        String[] stack;
-        public static final int MAX_STACK_DEPTH = 256;
-        int maxdepth = 0;
-        protected int interruptBase;
+        SourceMapping sourceMap;
 
         Mon(Simulator s) {
             this.simulator = s;
-            props = simulator.getMicrocontroller().getProperties();
-            interpreter = s.getInterpreter();
-            interruptBase = interpreter.getInterruptBase();
-            Program p = s.getProgram();
-            sm = p.getSourceMapping();
+            this.sourceMap = s.getProgram().getSourceMapping();
             Iterator i = BREAKPOINTS.get().iterator();
             while ( i.hasNext() ) {
                 String str = (String)i.next();
-                SourceMapping.Location l = sm.getLocation(str);
+                SourceMapping.Location l = sourceMap.getLocation(str);
                 if ( l == null ) Util.userError("Label not found", str);
                 simulator.insertProbe(new BreakPointProbe(), l.address);
             }

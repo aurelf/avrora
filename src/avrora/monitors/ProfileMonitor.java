@@ -51,9 +51,6 @@ public class ProfileMonitor extends MonitorFactory {
     public final Option.Bool CYCLES = options.newOption("record-cycles", true,
             "This option controls whether this monitor will record " +
             "the cycles consumed by each instruction or basic block. ");
-    public final Option.Bool EMPTY = options.newOption("empty-probe", false,
-            "This option is used to test the overhead of adding an empty probe to every " +
-            "instruction. ");
     public final Option.Long PERIOD = options.newOption("period", 0,
             "This option specifies whether the profiling will be exact or periodic. When " +
             "this option is set to non-zero, then a sample of the program counter is taken at " +
@@ -66,7 +63,7 @@ public class ProfileMonitor extends MonitorFactory {
      * The <code>Monitor</code> inner class contains the probes and formatting code that
      * can report the profile for the program after it has finished executing.
      */
-    public class Monitor implements avrora.monitors.Monitor {
+    public class Mon implements avrora.monitors.Monitor {
         public final Simulator simulator;
         public final Program program;
         public final CCProbe ccprobe;
@@ -75,7 +72,7 @@ public class ProfileMonitor extends MonitorFactory {
         public final long[] icount;
         public final long[] itime;
 
-        Monitor(Simulator s) {
+        Mon(Simulator s) {
             simulator = s;
             program = s.getProgram();
             icount = new long[program.program_end];
@@ -89,10 +86,6 @@ public class ProfileMonitor extends MonitorFactory {
         }
 
         private void insertInstrumentation(Simulator s) {
-            if ( EMPTY.get() ) {
-                s.insertProbe(new Simulator.Probe.Empty());
-                return;
-            }
             long period = PERIOD.get();
             if ( period > 0 ) {
                 s.insertEvent(new PeriodicProfile(period), period);
@@ -318,6 +311,6 @@ public class ProfileMonitor extends MonitorFactory {
     }
 
     public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return new Monitor(s);
+        return new Mon(s);
     }
 }

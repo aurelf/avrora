@@ -739,26 +739,6 @@ public class Simulator {
     }
 
     /**
-     * The <code>insertInterruptProbe()</code> method inserts an interrupt probe on an interrupt.
-     * The probe will then be notified when the interrupt is executed, masked, or posted.
-     * @param p the interrupt probe to insert
-     * @param inum the interrupt number to insert the probe on
-     */
-    public void insertInterruptProbe(InterruptProbe p, int inum) {
-
-    }
-
-    /**
-     * The <code>removeInterruptProbe()</code> method removes an interrupt probe from an interrupt.
-     * The probe will then no longer be notified when the interrupt is executed, masked, or posted.
-     * @param p the interrupt probe to remove
-     * @param inum the interrupt number to remove the probe from
-     */
-    public void removeInterruptProbe(InterruptProbe p, int inum) {
-
-    }
-
-    /**
      * The <code>insertWatch()</code> method allows a watch to be inserted at a memory location. The probe
      * will be executed before every read or write to that memory location.
      *

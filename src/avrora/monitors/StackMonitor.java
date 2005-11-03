@@ -33,10 +33,13 @@
 package avrora.monitors;
 
 import avrora.core.Program;
+import avrora.core.Instr;
 import avrora.sim.Simulator;
 import avrora.sim.State;
+import avrora.sim.mcu.MicrocontrollerProperties;
 import cck.text.StringUtil;
 import cck.text.TermUtil;
+import cck.text.Terminal;
 
 /**
  * The <code>StackMonitor</code> class is a monitor that tracks the height of the program's stack over the
@@ -50,46 +53,40 @@ public class StackMonitor extends MonitorFactory {
      * The <code>Monitor</code> class implements a monitor for the stack height that inserts a probe after
      * every instruction in the program and checks the stack height after each instruction is executed.
      */
-    public class Monitor extends Simulator.Probe.Empty implements avrora.monitors.Monitor {
-        public final Simulator simulator;
-        public final Program program;
+    public class Mon implements Monitor {
+        private final SPWatch SPH_watch;
+        private final SPWatch SPL_watch;
 
-        int minStack1 = Integer.MAX_VALUE;
-        int minStack2 = Integer.MAX_VALUE;
-        int minStack3 = Integer.MAX_VALUE;
-        int maxStack = Integer.MIN_VALUE;
+        private boolean SPinit;
+        private int minSP = 0;
+        private int maxSP = 0;
 
-        final Simulator.Printer printer;
+        Mon(Simulator sim) {
+            SPH_watch = new SPWatch();
+            SPL_watch = new SPWatch();
 
-        public void fireAfter(State s, int pc) {
-            int newStack = s.getSP();
-            if (newStack == minStack1) return;
+            SPProbe probe = new SPProbe();
 
-            if (printer.enabled)
-                printer.println("new stack: " + newStack);
+            // insert watches for SP registers
+            MicrocontrollerProperties props = sim.getMicrocontroller().getProperties();
+            sim.insertWatch(SPH_watch, props.getIOReg("SPH"));
+            sim.insertWatch(SPL_watch, props.getIOReg("SPL"));
+            sim.getInterpreter().getInterruptTable().insertProbe(new IntProbe());
 
-            if (newStack < minStack1) {
-                minStack3 = minStack2;
-                minStack2 = minStack1;
-                minStack1 = newStack;
-            } else if (newStack < minStack2) {
-                minStack3 = minStack2;
-                minStack2 = newStack;
-            } else if (newStack == minStack2)
-                return;
-            else if (newStack < minStack3) {
-                minStack3 = newStack;
+            // insert probes to catch "implicit" updates to SP for certain instructions
+            Program program = sim.getProgram();
+            for ( int pc = 0; pc < program.program_end; pc = program.getNextPC(pc)) {
+                Instr i = program.readInstr(pc);
+                if ( i != null ) {
+                    if ( i instanceof Instr.CALL ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof Instr.ICALL ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof Instr.RCALL) sim.insertProbe(probe, pc);
+                    else if ( i instanceof Instr.RET ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof Instr.RETI ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof Instr.PUSH ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof Instr.POP ) sim.insertProbe(probe, pc);
+                }
             }
-
-            if (newStack > maxStack) maxStack = newStack;
-        }
-
-        Monitor(Simulator s) {
-            simulator = s;
-            program = s.getProgram();
-            printer = simulator.getPrinter("monitor.stack");
-            // insert the global probe
-            s.insertProbe(this);
         }
 
         /**
@@ -98,15 +95,57 @@ public class StackMonitor extends MonitorFactory {
          * because the stack pointer begins at 0 and then is initialized one byte at a time).
          */
         public void report() {
-            TermUtil.reportQuantity("Minimum stack pointer #1", StringUtil.addrToString(minStack1), "");
-            TermUtil.reportQuantity("Minimum stack pointer #2", StringUtil.addrToString(minStack2), "");
-            TermUtil.reportQuantity("Minimum stack pointer #3", StringUtil.addrToString(minStack3), "");
-            TermUtil.reportQuantity("Maximum stack pointer", StringUtil.addrToString(maxStack), "");
-            TermUtil.reportQuantity("Maximum stack size #1", (maxStack - minStack1), "bytes");
-            TermUtil.reportQuantity("Maximum stack size #2", (maxStack - minStack2), "bytes");
-            TermUtil.reportQuantity("Maximum stack size #3", (maxStack - minStack3), "bytes");
+            if ( SPinit ) {
+                TermUtil.reportQuantity("Maximum stack pointer", StringUtil.addrToString(maxSP), "");
+                TermUtil.reportQuantity("Minimum stack pointer", StringUtil.addrToString(minSP), "");
+                TermUtil.reportQuantity("Maximum stack size", (maxSP - minSP), "bytes");
+            } else {
+                Terminal.println("No stack pointer information.");
+            }
         }
 
+        class SPWatch extends Simulator.Watch.Empty {
+            boolean written;
+            // fire when either SPH or SPL is written
+            public void fireAfterWrite(State state, int data_addr, byte value) {
+                written = true;
+                checkSPWrite(state);
+            }
+        }
+
+        class IntProbe extends Simulator.InterruptProbe.Empty {
+            // fire when any interrupt is invoked
+            public void fireAfterInvoke(State s, int inum) {
+                newSP(s.getSP());
+            }
+        }
+
+        class SPProbe extends Simulator.Probe.Empty {
+            // fire after a call, push, pop, or ret instruction
+            public void fireAfter(State state, int pc) {
+                newSP(state.getSP());
+            }
+        }
+
+        void checkSPWrite(State state) {
+            // only record SP values after both SPH and SPL written
+            if ( SPH_watch.written && SPL_watch.written ) {
+                newSP(state.getSP());
+                SPH_watch.written = false;
+                SPL_watch.written = false;
+            }
+        }
+
+        void newSP(int sp) {
+            // record a new stack pointer value
+            if ( !SPinit ) {
+                maxSP = sp;
+                minSP = sp;
+                SPinit = true;
+            }
+            else if ( sp > maxSP ) maxSP = sp;
+            else if ( sp < minSP ) minSP = sp;
+        }
     }
 
     /**
@@ -126,7 +165,7 @@ public class StackMonitor extends MonitorFactory {
      * @param s the simulator to create a monitor for
      * @return an instance of the <code>Monitor</code> interface for the specified simulator
      */
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return new Monitor(s);
+    public Monitor newMonitor(Simulator s) {
+        return new Mon(s);
     }
 }

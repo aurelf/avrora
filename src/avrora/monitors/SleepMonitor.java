@@ -48,19 +48,16 @@ import cck.text.*;
  */
 public class SleepMonitor extends MonitorFactory {
 
-    public static class Monitor implements avrora.monitors.Monitor, FiniteStateMachine.Probe {
+    public static class Mon implements Monitor, FiniteStateMachine.Probe {
         public final Simulator simulator;
         public final Program program;
-
-        protected long sleepCycles;
-        protected long awakeCycles;
 
         long[] times;
         long lastTransition;
         final FiniteStateMachine fsm;
         final Clock clock;
 
-        Monitor(Simulator s) {
+        Mon(Simulator s) {
             simulator = s;
             program = s.getProgram();
             fsm = ((AtmelMicrocontroller)s.getMicrocontroller()).getFSM();
@@ -111,7 +108,7 @@ public class SleepMonitor extends MonitorFactory {
                 "cycles awake and the total number of cycles asleep during the simulation.");
     }
 
-    public avrora.monitors.Monitor newMonitor(Simulator s) {
-        return new Monitor(s);
+    public Monitor newMonitor(Simulator s) {
+        return new Mon(s);
     }
 }

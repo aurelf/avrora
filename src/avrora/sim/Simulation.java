@@ -527,8 +527,7 @@ public abstract class Simulation extends HelpCategory {
             MicrocontrollerFactory mcf = Defaults.getMicrocontroller(MCU.get());
             return new DefaultPlatform.Factory(hz, exthz, mcf);
         } else {
-            PlatformFactory pff = Defaults.getPlatform(pfs);
-            return pff;
+            return Defaults.getPlatform(pfs);
         }
     }
 
