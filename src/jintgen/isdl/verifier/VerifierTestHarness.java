@@ -29,28 +29,41 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Created Oct 25, 2005
+ * Creation date: Oct 11, 2005
  */
-package jintgen.isdl;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.TypeRef;
-import jintgen.types.Type;
-import jintgen.jigir.Decl;
+package jintgen.isdl.verifier;
+
+import cck.test.TestHarness;
+import java.util.Properties;
+import java.io.File;
+import java.io.FileInputStream;
+import jintgen.isdl.parser.ISDLParser;
+import jintgen.isdl.verifier.Verifier;
+import jintgen.isdl.Architecture;
+import cck.test.TestCase;
 
 /**
  * @author Ben L. Titzer
  */
-public class GlobalDecl extends Item implements Decl {
+public class VerifierTestHarness implements TestHarness {
 
-    public final TypeRef typeRef;
+    class VerifierTest extends TestCase.ExpectSourceError {
 
-    public GlobalDecl(Token n, TypeRef t) {
-        super(n);
-        typeRef = t;
+        VerifierTest(String fname, Properties props) {
+            super(fname, props);
+        }
+
+        public void run() throws Exception {
+            File archfile = new File(filename);
+            FileInputStream fis = new FileInputStream(archfile);
+            ISDLParser parser = new ISDLParser(fis);
+            Architecture a = parser.Architecture();
+            new Verifier(a).verify();
+        }
     }
 
-    public Type getType() {
-        return typeRef.getType();
+    public TestCase newTestCase(String fname, Properties props) throws Exception {
+        return new VerifierTest(fname, props);
     }
 }

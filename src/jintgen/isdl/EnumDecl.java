@@ -33,7 +33,6 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
-import jintgen.types.TypeRef;
 import jintgen.types.Type;
 import jintgen.jigir.Decl;
 
@@ -45,6 +44,7 @@ public class EnumDecl extends Item implements Decl {
     public final SymbolMapping map;
 
     public Type kind;
+    protected Type repType;
 
     public EnumDecl(Token n, SymbolMapping m) {
         super(n);
@@ -52,16 +52,15 @@ public class EnumDecl extends Item implements Decl {
     }
 
     public static class Subset extends EnumDecl {
-        public final TypeRef ptype;
-        public EnumDecl parent;
+        public final EnumTypeRef parentRef;
 
-        public Subset(Token n, TypeRef t, SymbolMapping m) {
+        public Subset(Token n, EnumTypeRef t, SymbolMapping m) {
             super(n, m);
-            ptype = t;
+            parentRef = t;
         }
 
-        public void setParent(EnumDecl d) {
-            parent = d;
+        public EnumDecl getParent() {
+            return parentRef.getEnumDecl();
         }
     }
 
@@ -69,7 +68,12 @@ public class EnumDecl extends Item implements Decl {
         return kind;
     }
 
-    public String getName() {
-        return name.image;
+    public void setRepType(Type t) {
+        repType = t;
     }
+
+    public Type getRepType() {
+        return repType;
+    }
+
 }

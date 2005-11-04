@@ -35,6 +35,7 @@
 package jintgen.types;
 
 import cck.parser.AbstractToken;
+import cck.parser.SourcePoint;
 import cck.util.Util;
 
 import java.util.HashMap;
@@ -48,7 +49,7 @@ import jintgen.isdl.parser.Token;
  *
  * @author Ben L. Titzer
  */
-public class TypeRef {
+public class TypeRef implements Typeable {
 
     /**
      * The <code>tcName</code> field stores a reference to the token in the source program
@@ -159,5 +160,9 @@ public class TypeRef {
     public Type getType() {
         if ( type == null ) throw Util.failure("Unresolved type reference at "+tcName.getSourcePoint());
         return type;
+    }
+
+    public SourcePoint getSourcePoint() {
+        return tcName.getSourcePoint();
     }
 }

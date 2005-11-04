@@ -29,36 +29,51 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Oct 3, 2005
+ * Creation date: Nov 3, 2005
  */
 
 package jintgen.isdl;
 
+import jintgen.types.*;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.JIGIRTypeEnv;
+import cck.util.Util;
+
 /**
- * The <code>Tuple3</code> class represents a tuple of three objects.
- * This class is used in hash maps, hash sets, etc.
- *
  * @author Ben L. Titzer
  */
-public class Tuple3<A, B, C> {
-    public final A a;
-    public final B b;
-    public final C c;
+public class EnumTypeRef extends TypeRef {
 
-    public Tuple3(A a, B b, C c) {
-        this.a = a;
-        this.b = b;
-        this.c = c;
+    EnumDecl decl;
+
+    public EnumTypeRef(Token t) {
+        super(t);
     }
 
-    public boolean equals(Object o) {
-        if ( this == o ) return true;
-        if ( !(o instanceof Tuple3) ) return false;
-        Tuple3 to = (Tuple3)o;
-        return to.a.equals(a) && to.b.equals(b) && to.c.equals(c);
+    public EnumTypeRef(Type t) {
+        super(t);
+        TypeCon tc = t.getTypeCon();
+        if ( tc instanceof JIGIRTypeEnv.TYPE_enum ) {
+            decl = ((JIGIRTypeEnv.TYPE_enum)tc).decl;
+        } else {
+            throw Util.failure("Cannot create enum type reference to type "+t);
+        }
     }
 
-    public int hashCode() {
-        return a.hashCode() + b.hashCode() * 61 + c.hashCode() * 123;
+    public Type resolve(TypeEnv te) {
+        Type t = super.resolve(te);
+        TypeCon tc = t.getTypeCon();
+        if ( tc instanceof JIGIRTypeEnv.TYPE_enum ) {
+            decl = ((JIGIRTypeEnv.TYPE_enum)tc).decl;
+            return t;
+        }
+        // default case: not the right type class
+        te.ERROR.ExpectedTypeClass(this, "enum");
+        return t;
+    }
+
+    public EnumDecl getEnumDecl() {
+        if ( decl == null ) throw Util.failure("Enum type reference not resolved at "+tcName.getSourcePoint());
+        return decl;
     }
 }

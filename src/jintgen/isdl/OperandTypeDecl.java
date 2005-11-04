@@ -36,6 +36,7 @@ import cck.text.StringUtil;
 import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
+import jintgen.jigir.JIGIRTypeEnv;
 import jintgen.types.TypeRef;
 import jintgen.types.Type;
 import java.util.*;
@@ -143,7 +144,11 @@ public abstract class OperandTypeDecl extends Item {
         }
 
         public boolean isRelative() {
-            return typeRef.isBasedOn("relative");
+            Type t = typeRef.getType();
+            if ( t instanceof JIGIRTypeEnv.TYPE_addr ) {
+                return ((JIGIRTypeEnv.TYPE_addr)t).isRelative();                
+            }
+            return false;
         }
 
         public boolean isSigned() {

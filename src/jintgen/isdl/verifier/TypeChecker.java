@@ -32,13 +32,14 @@
  * Creation date: Sep 21, 2005
  */
 
-package jintgen.isdl;
+package jintgen.isdl.verifier;
 
 import cck.util.Arithmetic;
 import cck.util.Util;
 import jintgen.jigir.*;
 import jintgen.types.*;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.*;
 
 import java.util.*;
 
@@ -50,24 +51,17 @@ import java.util.*;
  *
  * @author Ben L. Titzer
  */
-public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccumulator<Environment, Environment> {
+public class TypeChecker extends VerifierPass implements CodeAccumulator<Type, Environment>, StmtAccumulator<Environment, Environment> {
 
-    final Architecture arch;
-    final JIGIRTypeEnv typeEnv;
     final JIGIRErrorReporter ERROR;
     Type retType;
 
     TypeChecker(JIGIRErrorReporter er, Architecture a) {
+        super(a);
         ERROR = er;
-        arch = a;
-        typeEnv = a.typeEnv;
     }
 
-    public void typeCheck() {
-        for ( Decl d : arch.globalEnv.getDecls() ) {
-            if ( d instanceof GlobalDecl )
-                ((GlobalDecl)d).typeRef.resolve(typeEnv);
-        }
+    public void verify() {
         typeCheckAccessMethods();
         typeCheckSubroutines();
         typeCheckInstrBodies();
@@ -305,9 +299,12 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(ConversionExpr e, Environment env) {
-        // TODO: check that conversion is possible
-        Type t = typeOf(e.expr, env);
-        return e.typeRef.resolve(typeEnv);
+        Type ft = typeOf(e.expr, env);
+        Type tt = e.typeRef.resolve(typeEnv);
+        if ( !typeEnv.CONVERTIBLE.contains(ft.getTypeCon(), tt.getTypeCon())) {
+            ERROR.TypeCannotBeConverted(e.expr, tt);
+        }
+        return tt;
     }
 
     public Type visit(Literal.BoolExpr e, Environment env) {
@@ -315,7 +312,10 @@ public class TypeChecker implements CodeAccumulator<Type, Environment>, StmtAccu
     }
 
     public Type visit(Literal.IntExpr e, Environment env) {
-        int val = e.value;
+        return getTypeOfLiteral(typeEnv, e.value);
+    }
+
+    public static JIGIRTypeEnv.TYPE_int getTypeOfLiteral(JIGIRTypeEnv typeEnv, int val) {
         if ( val == 0 ) return typeEnv.newIntType(false, 1);
         if ( val < 0 ) {
             return typeEnv.newIntType(true, Arithmetic.highestBit(~val)+1);

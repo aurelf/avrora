@@ -62,6 +62,10 @@ public class Item {
         properties = new LinkedHashMap<String, Property>();
     }
 
+    public String getName() {
+        return name.image;
+    }
+
     /**
      * The <code>addProperty()</code> method adds a property to this syntactic item. The
      * property can be retrieved by its name as a string.

@@ -284,9 +284,9 @@ void Enum() : { Token n; SymbolMapping m; }
     "}" { arch.addEnum(new EnumDecl(n, m)); }
 }
 
-void EnumSubset() : { Token n; TypeRef t; SymbolMapping m; }
+void EnumSubset() : { Token n; EnumTypeRef t; SymbolMapping m; }
 {
-    "enum-subset" n = <IDENTIFIER> ":" t = Type() { m = new SymbolMapping(n); }"{"
+    "enum-subset" n = <IDENTIFIER> ":" t = EnumType() { m = new SymbolMapping(n); }"{"
         MappingSetElem(m) ("," MappingSetElem(m))*
     "}" { arch.addEnum(new EnumDecl.Subset(n, t, m)); }
 }
@@ -473,7 +473,7 @@ List<AddrModeDecl.Operand> Operands() :
     [ o = Operand() { l.add(o); } ("," o = Operand() { l.add(o); })* ] { return l; }
 }
 
-AddrModeDecl.Operand Operand() : { Token n; TypeRef t; }
+AddrModeDecl.Operand Operand() : { Token n; OperandTypeRef t; }
 {
     n = <IDENTIFIER> ":" t = OperandType() { return new AddrModeDecl.Operand(n, t); }
 }
@@ -763,7 +763,12 @@ void TypesDimension(HashMap<String, List> dims, String n) : { List ty = new Link
    "<" [ tr = Type() { ty.add(tr); } ("," tr = Type() { ty.add(tr); })* ] ">" { dims.put(n, ty); }
 }
 
-TypeRef OperandType() : { Token t; }
+OperandTypeRef OperandType() : { Token t; }
 {
-    t = <IDENTIFIER> { return new TypeRef(t); }
+    t = <IDENTIFIER> { return new OperandTypeRef(t); }
+}
+
+EnumTypeRef EnumType() : { Token t; }
+{
+    t = <IDENTIFIER> { return new EnumTypeRef(t); }
 }

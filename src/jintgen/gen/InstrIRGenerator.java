@@ -344,7 +344,7 @@ public class InstrIRGenerator extends Generator {
             // this enumeration is a subset of another enumeration, but with possibly different
             // encoding
             EnumDecl.Subset sd = (EnumDecl.Subset)d;
-            startblock("public static class $enum extends $1", javaType(sd.ptype));
+            startblock("public static class $enum extends $1", javaType(sd.parentRef));
             println("public final int encoding;");
             println("public int getEncodingValue() { return encoding; }");
             println("private static HashMap set = new HashMap();");
@@ -359,7 +359,7 @@ public class InstrIRGenerator extends Generator {
             for ( SymbolMapping.Entry e : m.getEntries() ) {
                 String en = e.name;
                 String EN = en.toUpperCase();
-                SymbolMapping.Entry se = sd.parent.map.get(e.name);
+                SymbolMapping.Entry se = sd.getParent().map.get(e.name);
                 println("public static final $enum "+EN+" = new"+n+"(\""+en+"\", "+se.value+", "+e.value+");");
             }
         } else {

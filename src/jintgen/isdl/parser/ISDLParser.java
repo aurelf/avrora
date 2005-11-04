@@ -167,12 +167,12 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public void EnumSubset() throws ParseException {
-                      Token n; TypeRef t; SymbolMapping m;
+                      Token n; EnumTypeRef t; SymbolMapping m;
     jj_consume_token(ENUM_SUB);
     n = jj_consume_token(IDENTIFIER);
     jj_consume_token(78);
-    t = Type();
-                                                    m = new SymbolMapping(n);
+    t = EnumType();
+                                                        m = new SymbolMapping(n);
     jj_consume_token(LBRACKET);
     MappingSetElem(m);
     label_5:
@@ -618,7 +618,7 @@ public class ISDLParser implements ISDLParserConstants {
   }
 
   final public AddrModeDecl.Operand Operand() throws ParseException {
-                                   Token n; TypeRef t;
+                                   Token n; OperandTypeRef t;
     n = jj_consume_token(IDENTIFIER);
     jj_consume_token(78);
     t = OperandType();
@@ -1533,10 +1533,17 @@ public class ISDLParser implements ISDLParserConstants {
                                                                                 dims.put(n, ty);
   }
 
-  final public TypeRef OperandType() throws ParseException {
-                          Token t;
+  final public OperandTypeRef OperandType() throws ParseException {
+                                 Token t;
     t = jj_consume_token(IDENTIFIER);
-                       {if (true) return new TypeRef(t);}
+                       {if (true) return new OperandTypeRef(t);}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public EnumTypeRef EnumType() throws ParseException {
+                           Token t;
+    t = jj_consume_token(IDENTIFIER);
+                       {if (true) return new EnumTypeRef(t);}
     throw new Error("Missing return statement in function");
   }
 

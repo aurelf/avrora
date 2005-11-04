@@ -34,6 +34,7 @@ package jintgen.isdl;
 
 import cck.text.Verbose;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.verifier.JIGIRErrorReporter;
 import jintgen.jigir.JIGIRTypeEnv;
 import jintgen.types.TypeRef;
 
@@ -97,7 +98,6 @@ public class Architecture {
     public void addSubroutine(SubroutineDecl d) {
         printer.println("loading subroutine " + d.name.image + "...");
         subroutines.put(d.name.image, d);
-        globalEnv.addSubroutine(d);
     }
 
     public void addInstruction(InstrDecl i) {
@@ -109,7 +109,6 @@ public class Architecture {
         printer.println("loading operand declaration " + d.name.image + "...");
         userTypes.add(d);
         operandTypes.put(d.name.image, d);
-        typeEnv.addOperandType(d);
     }
 
     public void addEncoding(FormatDecl d) {
@@ -131,14 +130,11 @@ public class Architecture {
         printer.println("loading enum " + m + "...");
         userTypes.add(m);
         enums.put(m.name.image, m);
-        m.kind = typeEnv.addEnum(m);
-        globalEnv.addDecl(m);
     }
 
     public void addGlobal(Token n, TypeRef t) {
         GlobalDecl decl = new GlobalDecl(n, t);
         globals.put(n.image, decl);
-        globalEnv.addDecl(decl);
     }
 
     public InstrDecl getInstruction(String name) {

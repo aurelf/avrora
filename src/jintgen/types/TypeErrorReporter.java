@@ -63,4 +63,10 @@ public class TypeErrorReporter extends ErrorReporter {
         SourcePoint sp = new SourcePoint(t1.getSourcePoint(), t2.getSourcePoint());
         error("TypesCannotBeCompared", sp, report);
     }
+
+    public void ExpectedTypeClass(Typeable t, String tc) {
+        String report = "Expect "+tc+" type, found: "+t.getType();
+        error("ExpectedTypeClass", t.getSourcePoint(), report, tc);
+
+    }
 }

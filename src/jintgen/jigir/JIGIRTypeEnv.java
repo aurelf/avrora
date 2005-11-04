@@ -34,9 +34,8 @@
 
 package jintgen.jigir;
 
-import cck.util.Util;
 import jintgen.isdl.parser.Token;
-import jintgen.isdl.JIGIRErrorReporter;
+import jintgen.isdl.verifier.JIGIRErrorReporter;
 import jintgen.isdl.OperandTypeDecl;
 import jintgen.isdl.EnumDecl;
 import jintgen.types.*;
@@ -55,9 +54,11 @@ public class JIGIRTypeEnv extends TypeEnv {
     public final TypeCon INT;
     public final TypeCon MAP;
     public final TypeCon FUNCTION;
+    public final TypeCon ADDRESS;
     public final Relation ASSIGNABLE;
     public final Relation COMPARABLE;
     public final Relation PROMOTABLE;
+    public final Relation CONVERTIBLE;
     public Arith.SHL SHL;
     public Arith.SHR SHR;
     public Arith.AND AND;
@@ -82,17 +83,56 @@ public class JIGIRTypeEnv extends TypeEnv {
             HashMap<String, Object> dimInst = buildDimensions(te, dims);
             Type type = types.get(dimInst);
             if ( type != null ) return type;
+            else return buildIntType(dimInst);
+        }
+
+        private Type buildIntType(HashMap<String, Object> dimInst) {
             Boolean sign = (Boolean) dimInst.get("sign");
-            if ( sign == null ) sign = true;
+            if ( sign == null ) sign = true; // signed by default
             Integer len = (Integer) dimInst.get("size");
-            // TODO: assuming 32 bit integers is a hack!
-            if ( len == null ) len = 32;
+            if ( len == null ) len = 32; // default size is 32 bits
             TYPE_int type_int = new TYPE_int(sign, len, dimInst);
             types.put(dimInst, type_int);
             return type_int;
         }
 
     }
+
+    /**
+     * The <code>TYPECON_int</code> class represents the type constructor for types
+     * based on "int". In JIGIR, such types have both a sign and a size.
+     */
+    protected class TYPECON_addr extends TypeCon {
+        final SignDimension relative;
+        final SizeDimension align;
+
+        TYPECON_addr() {
+            super("address");
+            relative = new SignDimension();
+            align = new SizeDimension();
+            addDimension(relative);
+            addDimension(align);
+        }
+
+        public Type newType(TypeEnv te, HashMap<String, List> dims) {
+            HashMap<String, Object> dimInst = buildDimensions(te, dims);
+            Type type = types.get(dimInst);
+            if ( type != null ) return type;
+            else return buildAddrType(dimInst);
+        }
+
+        private Type buildAddrType(HashMap<String, Object> dimInst) {
+            Boolean rel = (Boolean) dimInst.get("sign");
+            if ( rel == null ) rel = false; // absolute by  default
+            Integer align = (Integer) dimInst.get("size");
+            if ( align == null ) align = 1; // default alignment is 1 unit
+            TYPE_addr type_addr = new TYPE_addr(rel, align, dimInst);
+            types.put(dimInst, type_addr);
+            return type_addr;
+        }
+
+    }
+
 
     /**
      * The <code>TYPE_int</code> class represents integer types that
@@ -127,6 +167,40 @@ public class JIGIRTypeEnv extends TypeEnv {
         }
     }
 
+    /**
+     * The <code>TYPE_addr</code> class represents integer types that
+     * include a sign and a size.
+     */
+    public class TYPE_addr extends Type {
+        protected final boolean relative;
+        protected final int align;
+
+        protected TYPE_addr(boolean sign, int len, HashMap<String, Object> dims) {
+            super(ADDRESS, dims);
+            relative = sign;
+            align = len;
+        }
+
+        protected TYPE_addr(boolean sign, int len) {
+            super(ADDRESS, new HashMap<String, Object>());
+            relative = sign;
+            align = len;
+        }
+
+        public boolean isRelative() {
+            return relative;
+        }
+
+        public int getAlign() {
+            return align;
+        }
+
+        public String toString() {
+            return (relative ? "-address." : "address.") + align;
+        }
+    }
+
+
     public class TYPE_enum extends TypeCon {
         public final EnumDecl decl;
         protected TYPE_enum(EnumDecl decl) {
@@ -157,6 +231,7 @@ public class JIGIRTypeEnv extends TypeEnv {
         ASSIGNABLE = new TransitiveRelation("assignable");
         COMPARABLE = new TransitiveRelation("comparable");
         PROMOTABLE = new Relation("promotable");
+        CONVERTIBLE = new Relation("convertible");
 
         // initialize the boolean type constructor
         TypeCon VTC = new TypeCon("void");
@@ -167,6 +242,9 @@ public class JIGIRTypeEnv extends TypeEnv {
 
         // initialize the integer type constructor
         INT = new TYPECON_int();
+
+        // initialize the address type constructor
+        ADDRESS = new TYPECON_addr();
 
         // initialize the map type constructor
         MAP = new TypeCon("map");
@@ -179,8 +257,9 @@ public class JIGIRTypeEnv extends TypeEnv {
 
         // add the global type constructors
         addTypeCon(VTC);
-        addTypeCon(BOOL, COMPARABLE, ASSIGNABLE, PROMOTABLE);
-        addTypeCon(INT, COMPARABLE, ASSIGNABLE, PROMOTABLE);
+        addTypeCon(BOOL, COMPARABLE, ASSIGNABLE, PROMOTABLE, CONVERTIBLE);
+        addTypeCon(INT, COMPARABLE, ASSIGNABLE, PROMOTABLE, CONVERTIBLE);
+        addTypeCon(ADDRESS, COMPARABLE, ASSIGNABLE, PROMOTABLE);
         addTypeCon(MAP, ASSIGNABLE);
         addTypeCon(FUNCTION);
 
@@ -230,6 +309,11 @@ public class JIGIRTypeEnv extends TypeEnv {
         addUnOp(INT, new Arith.NEG());
         addUnOp(INT, new Arith.COMP());
         addUnOp(INT, new Arith.UNSIGN());
+
+        // add convertibility relations
+        CONVERTIBLE.add(BOOL, INT);
+        CONVERTIBLE.add(ADDRESS, INT);
+        CONVERTIBLE.add(INT, ADDRESS);
     }
 
     List<Integer> variance(int... i) {
@@ -249,7 +333,7 @@ public class JIGIRTypeEnv extends TypeEnv {
         return ref;
     }
 
-    public Type newIntType(boolean sign, int size) {
+    public TYPE_int newIntType(boolean sign, int size) {
         List sign_list = new LinkedList();
         sign_list.add(sign);
         List size_list = new LinkedList();
@@ -257,7 +341,7 @@ public class JIGIRTypeEnv extends TypeEnv {
         HashMap<String, List> map = new HashMap<String, List>();
         map.put("size", size_list);
         map.put("sign", sign_list);
-        return INT.newType(this, map);
+        return (TYPE_int)INT.newType(this, map);
     }
 
     public Type resolveOperandType(OperandTypeDecl ot) {
@@ -274,6 +358,7 @@ public class JIGIRTypeEnv extends TypeEnv {
     public void addOperandType(OperandTypeDecl ot) {
         TypeCon tycon = new TYPE_operand(ot);
         addTypeCon(tycon, ASSIGNABLE, COMPARABLE);
+
     }
 
     public Type addEnum(EnumDecl ot) {

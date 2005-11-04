@@ -49,20 +49,15 @@ public class AddrModeDecl extends Item {
 
     public static class Operand implements Decl {
         public final Token name;
-        public final TypeRef typeRef;
-        protected OperandTypeDecl operandType;
+        public final OperandTypeRef typeRef;
 
-        public Operand(Token n, TypeRef t) {
+        public Operand(Token n, OperandTypeRef t) {
             name = n;
             typeRef = t;
         }
 
-        public void setOperandType(OperandTypeDecl d) {
-            operandType = d;
-        }
-
         public OperandTypeDecl getOperandType() {
-            return operandType;
+            return typeRef.getOperandTypeDecl();
         }
 
         public String getName() {

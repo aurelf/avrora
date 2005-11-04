@@ -38,6 +38,8 @@ import cck.util.*;
 import jintgen.gen.*;
 import jintgen.gen.disassembler.DisassemblerGenerator;
 import jintgen.isdl.*;
+import jintgen.isdl.verifier.Verifier;
+import jintgen.isdl.verifier.VerifierTestHarness;
 import jintgen.isdl.parser.ISDLParser;
 import jintgen.isdl.parser.ParseException;
 import java.io.*;

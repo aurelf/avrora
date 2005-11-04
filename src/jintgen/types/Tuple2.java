@@ -29,39 +29,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Oct 11, 2005
+ * Creation date: Oct 3, 2005
  */
 
-package jintgen.isdl;
-
-import cck.test.TestHarness;
-import java.util.Properties;
-import java.io.File;
-import java.io.FileInputStream;
-import jintgen.isdl.parser.ISDLParser;
-import cck.test.TestCase;
+package jintgen.types;
 
 /**
+ * The <code>Tuple2</code> represents a tuple of two elements for use
+ * in a hash map, hash set, etc.
+ *
  * @author Ben L. Titzer
  */
-public class VerifierTestHarness implements TestHarness {
+public class Tuple2<A, B> {
+    public final A a;
+    public final B b;
 
-    class VerifierTest extends TestCase.ExpectSourceError {
-
-        VerifierTest(String fname, Properties props) {
-            super(fname, props);
-        }
-
-        public void run() throws Exception {
-            File archfile = new File(filename);
-            FileInputStream fis = new FileInputStream(archfile);
-            ISDLParser parser = new ISDLParser(fis);
-            Architecture a = parser.Architecture();
-            new Verifier(a).verify();
-        }
+    public Tuple2(A a, B b) {
+        this.a = a;
+        this.b = b;
     }
 
-    public TestCase newTestCase(String fname, Properties props) throws Exception {
-        return new VerifierTest(fname, props);
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof Tuple2) ) return false;
+        Tuple2 to = (Tuple2)o;
+        return to.a.equals(a) && to.b.equals(b);
+    }
+
+    public int hashCode() {
+        return a.hashCode() + b.hashCode() * 61;
     }
 }

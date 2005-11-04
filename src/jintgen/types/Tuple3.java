@@ -29,28 +29,36 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Created Oct 25, 2005
+ * Creation date: Oct 3, 2005
  */
-package jintgen.isdl;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.TypeRef;
-import jintgen.types.Type;
-import jintgen.jigir.Decl;
+package jintgen.types;
 
 /**
+ * The <code>Tuple3</code> class represents a tuple of three objects.
+ * This class is used in hash maps, hash sets, etc.
+ *
  * @author Ben L. Titzer
  */
-public class GlobalDecl extends Item implements Decl {
+public class Tuple3<A, B, C> {
+    public final A a;
+    public final B b;
+    public final C c;
 
-    public final TypeRef typeRef;
-
-    public GlobalDecl(Token n, TypeRef t) {
-        super(n);
-        typeRef = t;
+    public Tuple3(A a, B b, C c) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
     }
 
-    public Type getType() {
-        return typeRef.getType();
+    public boolean equals(Object o) {
+        if ( this == o ) return true;
+        if ( !(o instanceof Tuple3) ) return false;
+        Tuple3 to = (Tuple3)o;
+        return to.a.equals(a) && to.b.equals(b) && to.c.equals(c);
+    }
+
+    public int hashCode() {
+        return a.hashCode() + b.hashCode() * 61 + c.hashCode() * 123;
     }
 }

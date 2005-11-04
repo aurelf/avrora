@@ -29,28 +29,50 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Created Oct 25, 2005
+ * Creation date: Nov 3, 2005
  */
+
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
-import jintgen.types.TypeRef;
-import jintgen.types.Type;
-import jintgen.jigir.Decl;
+import jintgen.types.*;
+import jintgen.jigir.JIGIRTypeEnv;
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer
  */
-public class GlobalDecl extends Item implements Decl {
+public class OperandTypeRef extends TypeRef {
+    OperandTypeDecl decl;
 
-    public final TypeRef typeRef;
-
-    public GlobalDecl(Token n, TypeRef t) {
-        super(n);
-        typeRef = t;
+    public OperandTypeRef(Token t) {
+        super(t);
     }
 
-    public Type getType() {
-        return typeRef.getType();
+    public OperandTypeRef(Type t) {
+        super(t);
+        TypeCon tc = t.getTypeCon();
+        if ( tc instanceof JIGIRTypeEnv.TYPE_operand ) {
+            decl = ((JIGIRTypeEnv.TYPE_operand)tc).decl;
+        } else {
+            throw Util.failure("Cannot create operand type reference to type "+t);
+        }
+    }
+
+    public Type resolve(TypeEnv te) {
+        Type t = super.resolve(te);
+        TypeCon tc = t.getTypeCon();
+        if ( tc instanceof JIGIRTypeEnv.TYPE_operand ) {
+            decl = ((JIGIRTypeEnv.TYPE_operand)tc).decl;
+            return t;
+        }
+        // default case: not the right type class
+        te.ERROR.ExpectedTypeClass(this, "operand");
+        return t;
+    }
+
+    public OperandTypeDecl getOperandTypeDecl() {
+        if ( decl == null ) throw Util.failure("Operand type reference not resolved at "+tcName.getSourcePoint());
+        return decl;
     }
 }

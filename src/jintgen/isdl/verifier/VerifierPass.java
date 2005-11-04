@@ -29,34 +29,40 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Oct 3, 2005
+ * Creation date: Nov 3, 2005
  */
 
-package jintgen.isdl;
+package jintgen.isdl.verifier;
+
+import jintgen.isdl.*;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.JIGIRTypeEnv;
+import java.util.HashMap;
 
 /**
- * The <code>Tuple2</code> represents a tuple of two elements for use
- * in a hash map, hash set, etc.
- *
  * @author Ben L. Titzer
  */
-public class Tuple2<A, B> {
-    public final A a;
-    public final B b;
+public abstract class VerifierPass {
 
-    public Tuple2(A a, B b) {
-        this.a = a;
-        this.b = b;
+    protected final Architecture arch;
+    protected final JIGIRErrorReporter ERROR;
+    protected final JIGIRTypeEnv typeEnv;
+
+    protected VerifierPass(Architecture a) {
+        arch = a;
+        ERROR = a.ERROR;
+        typeEnv = a.typeEnv;
     }
 
-    public boolean equals(Object o) {
-        if ( this == o ) return true;
-        if ( !(o instanceof Tuple2) ) return false;
-        Tuple2 to = (Tuple2)o;
-        return to.a.equals(a) && to.b.equals(b);
-    }
+    public abstract void verify();
 
-    public int hashCode() {
-        return a.hashCode() + b.hashCode() * 61;
+    protected void uniqueCheck(String type, String name, Iterable<? extends Item> it) {
+        HashMap<String, Token> items = new HashMap<String, Token>();
+        for ( Item i : it ) {
+            String nm = i.name.image;
+            if ( items.containsKey(nm) )
+                ERROR.redefined(type, name, items.get(nm), i.name);
+            items.put(nm, i.name);
+        }
     }
 }

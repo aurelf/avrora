@@ -30,12 +30,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jintgen.isdl;
+package jintgen.isdl.verifier;
 
 import cck.parser.AbstractToken;
 import cck.parser.ErrorReporter;
 import cck.text.StringUtil;
 import jintgen.isdl.parser.Token;
+import jintgen.isdl.OperandTypeDecl;
 import jintgen.jigir.Expr;
 import jintgen.jigir.Literal;
 import jintgen.jigir.ReturnStmt;
@@ -193,6 +194,11 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
     public void AmbiguousAccess(String access, OperandTypeDecl ot, Token w) {
         String report = operandName(ot) +" has multiple "+w+" methods";
         error("Ambiguous"+access, w.getSourcePoint(), report);
+    }
+
+    public void TypeCannotBeConverted(Expr e, Type t) {
+        String report = "expression of type "+e.getType()+" cannot be converted to type "+t;
+        error("TypeCannotBeConverted", e.getSourcePoint(), report);
     }
 
     private String operandName(OperandTypeDecl ot) {

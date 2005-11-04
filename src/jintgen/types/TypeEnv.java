@@ -34,8 +34,6 @@
 
 package jintgen.types;
 
-import jintgen.isdl.Tuple2;
-import jintgen.isdl.Tuple3;
 import java.util.*;
 
 /**
@@ -92,7 +90,7 @@ public abstract class TypeEnv {
         public boolean contains(TypeCon a, TypeCon b) {
             TypeEnv.Relation.Node n = nodes.get(a);
             if ( n == null ) return false;
-            TypeEnv.Relation.Node m = nodes.get(a);
+            TypeEnv.Relation.Node m = nodes.get(b);
             if ( m == null ) return false;
             return n.neighbors.contains(m);
         }
