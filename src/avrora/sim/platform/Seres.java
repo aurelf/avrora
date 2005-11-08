@@ -41,23 +41,31 @@ import avrora.sim.mcu.Microcontroller;
 import cck.text.Terminal;
 
 /**
- * The <code>Seres</code> class is an implementation of the <code>Platform</code> interface that represents
- * both a specific microcontroller and the devices connected to it.
+ * The <code>Seres</code> class is an implementation of the <code>Platform</code> interface that represents both a
+ * specific microcontroller and the devices connected to it.
  *
  * @author Jacob Everist
  */
 public class Seres extends Platform {
 
+    protected final Microcontroller mcu;
     protected final Simulator sim;
     protected PinConnect pinConnect;
 
     private Seres(Microcontroller m) {
         super(m);
+        mcu = m;
         sim = m.getSimulator();
         addDevices();
+
+    }
+
+    public Microcontroller getMicrocontroller() {
+        return mcu;
     }
 
     public static class Factory implements PlatformFactory {
+
         public Platform newPlatform(int id, InterpreterFactory f, Program p) {
             ClockDomain cd = new ClockDomain(7372800);
             cd.newClock("external", 32768);
@@ -67,8 +75,7 @@ public class Seres extends Platform {
     }
 
     /**
-     * The <code>addDevices()</code> method is used to add the external (off-chip) devices to the
-     * platform.
+     * The <code>addDevices()</code> method is used to add the external (off-chip) devices to the platform.
      */
     protected void addDevices() {
 
@@ -79,7 +86,7 @@ public class Seres extends Platform {
         PinWire westPinTx = new PinWire(sim, Terminal.COLOR_BLUE, "West Tx");
 
         // connect transmit pins to physical pins
-           mcu.getPin("PC0").connect(northPinTx.wireInput);
+        mcu.getPin("PC0").connect(northPinTx.wireInput);
         mcu.getPin("PC0").connect(northPinTx.wireOutput);
         mcu.getPin("PC1").connect(eastPinTx.wireInput);
         mcu.getPin("PC1").connect(eastPinTx.wireOutput);
@@ -101,7 +108,7 @@ public class Seres extends Platform {
         PinWire westPinRx = new PinWire(sim, Terminal.COLOR_BLUE, "West Rx");
 
         // connect receive pins to physical pins
-           mcu.getPin("PD1").connect(northPinRx.wireInput);
+        mcu.getPin("PD1").connect(northPinRx.wireInput);
         mcu.getPin("PD1").connect(northPinRx.wireOutput);
         mcu.getPin("PF2").connect(eastPinRx.wireInput);
         mcu.getPin("PF2").connect(eastPinRx.wireOutput);
@@ -117,13 +124,13 @@ public class Seres extends Platform {
         westPinRx.enableConnect();
 
         // receive interrupt pins
-        PinWire northPinInt = new PinWire(sim, Terminal.COLOR_YELLOW, "North Int", 1+2, mcu);
-        PinWire eastPinInt = new PinWire(sim, Terminal.COLOR_GREEN, "East Int", 2+2, mcu);
-        PinWire southPinInt = new PinWire(sim, Terminal.COLOR_RED, "South Int", 0+2, mcu);
-        PinWire westPinInt = new PinWire(sim, Terminal.COLOR_BLUE, "West Int", 6+2, mcu);
+        PinWire northPinInt = new PinWire(sim, Terminal.COLOR_YELLOW, "North Int", 1 + 2, mcu);
+        PinWire eastPinInt = new PinWire(sim, Terminal.COLOR_GREEN, "East Int", 2 + 2, mcu);
+        PinWire southPinInt = new PinWire(sim, Terminal.COLOR_RED, "South Int", 2, mcu);
+        PinWire westPinInt = new PinWire(sim, Terminal.COLOR_BLUE, "West Int", 6 + 2, mcu);
 
         // connect receive interrupt pins to physical pins
-           mcu.getPin("INT1").connect(northPinInt.wireInput);
+        mcu.getPin("INT1").connect(northPinInt.wireInput);
         mcu.getPin("INT1").connect(northPinInt.wireOutput);
         mcu.getPin("INT2").connect(eastPinInt.wireInput);
         mcu.getPin("INT2").connect(eastPinInt.wireOutput);
@@ -141,9 +148,7 @@ public class Seres extends Platform {
         // pin management device
         pinConnect = PinConnect.pinConnect;
 
-        pinConnect.addSeresNode(mcu, northPinTx, eastPinTx, southPinTx, westPinTx,
-                northPinRx, eastPinRx, southPinRx, westPinRx, northPinInt, eastPinInt,
-                southPinInt, westPinInt);
+        pinConnect.addSeresNode(mcu, northPinTx, eastPinTx, southPinTx, westPinTx, northPinRx, eastPinRx, southPinRx, westPinRx, northPinInt, eastPinInt, southPinInt, westPinInt);
     }
 
 }

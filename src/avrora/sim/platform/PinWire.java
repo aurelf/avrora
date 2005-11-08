@@ -35,10 +35,10 @@ package avrora.sim.platform;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.sim.mcu.ATMegaFamily;
-import avrora.sim.mcu.Microcontroller;
+import avrora.sim.mcu.*;
 import avrora.sim.util.SimUtil;
 import cck.text.Terminal;
+
 
 /**
  * The <code>PinWire</code> class is the interface for making wire connections
@@ -83,6 +83,9 @@ public class PinWire {
     // probe of the PinWire activity
     protected final PinWireProbe probe;
 
+    // propagation delay in cycles
+    protected final long propDelay;
+
     protected PinWire(Simulator s, int colorNum, String pinName) {
 
         sim = s;
@@ -101,6 +104,9 @@ public class PinWire {
         isInterruptPin = false;
         interruptNum = 0;
         atmel = null;
+        
+        AtmelMicrocontroller mcu = (AtmelMicrocontroller)sim.getMicrocontroller();
+       	propDelay = mcu.millisToCycles(0.0014);
 
     }
 
@@ -122,8 +128,15 @@ public class PinWire {
         atmel = (ATMegaFamily) mcu;
         isInterruptPin = true;
         this.interruptNum = interruptNum;
+        
+       	propDelay = mcu.millisToCycles(0.0014);
+
     }
 
+    public String readName() {
+    	return pinName;
+    }
+    
     public void enableConnect() {
         state.insertProbe(probe);
     }
@@ -152,7 +165,7 @@ public class PinWire {
 
         public void fireAfterTransition(int beforeState, int afterState) {
             if (beforeState == afterState) return;
-
+            
             // print the status of the PinWire
             synchronized (Terminal.class) {
                 // synchronize on the terminal to prevent interleaved output
@@ -160,7 +173,7 @@ public class PinWire {
                 Terminal.print(colorNum, pinName);
                 Terminal.println(": " + modeName[afterState]);
             }
-
+            
             // if this is an interrupt pin, and the transition triggers an interrupt
             // post an interrupt
             if (isInterruptPin) {
@@ -257,13 +270,34 @@ public class PinWire {
          * @param level a boolean representing the logical level of the write
          */
         public void write(boolean level) {
-            //System.out.println("Writing");
-            //int snum = level ? 0 : 1;
+
+        	// propagate signal after 1.4 uS = 
+        	//sim.insertEvent(new WirePropagationEvent(level), propDelay);
+        	
+        	
             if (level)
                 state.transition(1);
             else
                 state.transition(0);
+
         }
+        
+        protected class WirePropagationEvent implements Simulator.Event {
+        	private boolean value;
+        	
+			public WirePropagationEvent(boolean value) {
+				this.value = value;
+			}
+			
+			// propagate signal to the pin finally
+			public void fire() {
+		        if (value)
+	                state.transition(1);
+	            else
+	                state.transition(0);
+			}
+        }
+
     }
 
 }

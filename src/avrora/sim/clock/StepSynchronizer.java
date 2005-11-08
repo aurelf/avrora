@@ -182,6 +182,10 @@ public class StepSynchronizer extends Synchronizer {
                     }
                 }
             }
+            
+            // Execute the event if there is one.
+            if ( action != null) 
+            	action.fire();
         }
 
         public void pause() {

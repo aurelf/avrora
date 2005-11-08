@@ -42,6 +42,7 @@ import avrora.sim.mcu.*;
 import avrora.sim.platform.*;
 import avrora.sim.types.SensorSimulation;
 import avrora.sim.types.SingleSimulation;
+import avrora.sim.types.WiredSimulation;
 import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.elf.ELFLoader;
 import avrora.syntax.gas.GASProgramReader;
@@ -182,6 +183,7 @@ public class Defaults {
             //-- DEFAULT ACTIONS
             simMap.addClass("single", SingleSimulation.class);
             simMap.addClass("sensor-network", SensorSimulation.class);
+            simMap.addClass("wired", WiredSimulation.class);
 
             // plug in a new help category for simulations accesible with "-help simulations"
             HelpCategory hc = new HelpCategory("simulations", "Help for supported simulation types.");
@@ -202,6 +204,7 @@ public class Defaults {
             //-- DEFAULT PLATFORMS
             platforms.addClass("mica2", Mica2.Factory.class);
             platforms.addClass("seres", Seres.Factory.class);
+            platforms.addClass("superbot", Superbot.Factory.class);
         }
     }
 

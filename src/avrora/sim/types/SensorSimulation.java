@@ -207,7 +207,7 @@ public class SensorSimulation extends Simulation {
 
     /**
      * The <code>newNode()</code> method creates a new node in the simulation. In this implementation,
-     * a <code>SensorNode</code> is created that contains, in addition to the simulator, ID, program, etc,
+     * a <code>WiredNode</code> is created that contains, in addition to the simulator, ID, program, etc,
      * a reference to the <code>Radio</code> instance for the node and a <code>SimulatorThread</code> for
      * the node.
      * @param id the integer identifier for the node
