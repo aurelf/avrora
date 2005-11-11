@@ -67,6 +67,7 @@ public class Verifier {
         runVerifierPass("Building type environment", new TypeEnvBuilder(arch));
         runVerifierPass("Verifying operand types and addressing modes", new AddrModeVerifier(arch));
         runVerifierPass("Verifying addressing mode sets", new AddrSetVerifier(arch));
+        runVerifierPass("Verifying instructions", new InstrVerifier(arch));
         runVerifierPass("Computing encoding sizes", new EncodingVerifier(arch));
         runVerifierPass("Typechecking", new TypeChecker(ERROR, arch));
         canonicalize();

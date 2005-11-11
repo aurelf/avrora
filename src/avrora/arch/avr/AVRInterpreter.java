@@ -147,8 +147,6 @@ public class AVRInterpreter extends AVRInstrInterpreter {
     }
 
     protected int RAMPZ; // location of the RAMPZ IO register
-    protected final int sram_start; // beginning of SRAM (end of IO registers)
-    protected final int sram_max; // end of SRAM
     protected final MainClock clock;
     protected final RegisterSet registers;
     protected final AVRInstr[] shared_instr;
@@ -171,44 +169,41 @@ public class AVRInterpreter extends AVRInstrInterpreter {
         // set up the reference to the simulator
         this.simulator = simulator;
 
+        // set up reference to the main clock
         this.clock = simulator.getClock();
 
-        MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
+        // get the number of the status register
+        SREG = pr.getIOReg("SREG");
 
-        SREG = props.getIOReg("SREG");
-
-        // only look for the RAMPZ register if the flash is more than 64kb
-        if ( props.hasIOReg("RAMPZ") )
-            RAMPZ = props.getIOReg("RAMPZ");
-        else
-            RAMPZ = -1;
+        // look for the RAMPZ register
+        if ( pr.hasIOReg("RAMPZ") ) RAMPZ = pr.getIOReg("RAMPZ");
+        else RAMPZ = -1;
 
         // if program will not fit onto hardware, error
         if (p.program_end > pr.flash_size)
             throw Util.failure("program will not fit into " + pr.flash_size + " bytes");
 
-        // beginning address of SRAM array
-        sram_start = pr.ioreg_size + NUM_REGS;
-
-        // maximum data address
-        sram_max = NUM_REGS + pr.ioreg_size + pr.sram_size;
-
-        // allocate SRAM
-        sram = new Segment("sram", sram_max, (byte)0, null, null);
-
-        // set reference to registers
-        regs = sram.share(null);
-
-        // initialize IO registers to default values
+        // initialize IO register set to default values
         registers = simulator.getMicrocontroller().getRegisterSet();
 
-        // for performance, we share a reference to the ActiveRegister[] array
+        // get a reference to the ioregs array
         ioregs = registers.share();
+
+        // compute the total size of SRAM
+        int sram_total = NUM_REGS + pr.ioreg_size + pr.sram_size;
+
+        // allocate SRAM
+        sram = new AVRDataSegment(sram_total, ioregs);
+
+        // set reference to registers
+        regs = sram.exposeRegisters();
+
+        // allocate the status register
         SREG_reg = ioregs[SREG] = new SREG_reg();
 
         // get references to stack pointer registers
-        SPL_reg = (RWRegister) ioregs[props.getIOReg("SPL")];
-        SPH_reg = (RWRegister) ioregs[props.getIOReg("SPH")];
+        SPL_reg = (RWRegister) ioregs[pr.getIOReg("SPL")];
+        SPH_reg = (RWRegister) ioregs[pr.getIOReg("SPH")];
 
         // TODO: 1. allocate code space (flash)
         // TODO: 2. set up correct error reporter for SRAM, flash

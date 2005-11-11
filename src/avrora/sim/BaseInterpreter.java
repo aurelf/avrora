@@ -508,13 +508,11 @@ public abstract class BaseInterpreter implements InstrVisitor {
 
         this.clock = simulator.clock;
 
-        MicrocontrollerProperties props = simulator.getMicrocontroller().getProperties();
-
-        SREG = props.getIOReg("SREG");
+        SREG = pr.getIOReg("SREG");
 
         // only look for the RAMPZ register if the flash is more than 64kb
-        if ( props.hasIOReg("RAMPZ") )
-            RAMPZ = props.getIOReg("RAMPZ");
+        if ( pr.hasIOReg("RAMPZ") )
+            RAMPZ = pr.getIOReg("RAMPZ");
         else
             RAMPZ = -1;
 
@@ -541,17 +539,17 @@ public abstract class BaseInterpreter implements InstrVisitor {
 
         // allocate FLASH
         ErrorReporter reporter = new ErrorReporter();
-        flash = props.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
+        flash = pr.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
         reporter.segment = flash;
         // for performance, we share a reference to the Instr[] array representing flash
         // TODO: implement share() method
         shared_instr = flash.shareCode(null);
 
         // initialize the interrupt table
-        interrupts = new InterruptTable(this, props.num_interrupts);
+        interrupts = new InterruptTable(this, pr.num_interrupts);
 
-        SPL_reg = (RWRegister) ioregs[props.getIOReg("SPL")];
-        SPH_reg = (RWRegister) ioregs[props.getIOReg("SPH")];
+        SPL_reg = (RWRegister) ioregs[pr.getIOReg("SPL")];
+        SPH_reg = (RWRegister) ioregs[pr.getIOReg("SPH")];
     }
 
     protected void start() {
@@ -884,18 +882,14 @@ public abstract class BaseInterpreter implements InstrVisitor {
     }
 
     protected void readError(String segment, int address) {
-        String idstr = SimUtil.getIDTimeString(simulator);
-        Terminal.print(idstr);
-        Terminal.printYellow(StringUtil.toHex(pc, 4));
-        Terminal.println(": illegal read from " + segment + " at address " + StringUtil.addrToString(address));
+        String msg = ": illegal read from " + segment + " at address " + StringUtil.addrToString(address);
+        SimUtil.warning(simulator, StringUtil.toHex(pc, 4), msg);
         exceptionWatch.invalidRead(segment, address);
     }
 
     protected void writeError(String segment, int address, byte value) {
-        String idstr = SimUtil.getIDTimeString(simulator);
-        Terminal.print(idstr);
-        Terminal.printYellow(StringUtil.toHex(pc, 4));
-        Terminal.println(": illegal write to " + segment + " at address " + StringUtil.addrToString(address));
+        String msg = ": illegal write to " + segment + " at address " + StringUtil.addrToString(address);
+        SimUtil.warning(simulator, StringUtil.toHex(pc, 4), msg);
         exceptionWatch.invalidWrite(segment, address, value);
     }
 

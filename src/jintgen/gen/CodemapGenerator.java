@@ -55,10 +55,9 @@ public class CodemapGenerator extends Generator {
             "code map.");
 
     public void generate() throws Exception {
-        String fname = CODEMAP_FILE.get();
-        if ( "".equals(fname) )
+        if ( CODEMAP_FILE.isBlank() )
             Util.userError("No template file specified");
-        SectionFile sf = createSectionFile(fname, "CODEMAP GENERATOR");
+        SectionFile sf = createSectionFile(CODEMAP_FILE.get(), "CODEMAP GENERATOR");
         printer = new Printer(new PrintStream(sf));
 
         initializeRegisterMap();

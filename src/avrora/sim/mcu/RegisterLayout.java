@@ -205,6 +205,11 @@ public class RegisterLayout {
         return new RegisterSet(this);
     }
 
+    public String getRegisterName(int ior) {
+        RegisterInfo registerInfo = info[ior];
+        return registerInfo != null ? registerInfo.name : "";
+    }
+
     private SubField[] parseSubFields(String name, int ior, String desc) {
         int totalbits = 0;
         int count = 0;

@@ -37,6 +37,7 @@ package avrora.sim.util;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
 import cck.text.StringUtil;
+import cck.text.Terminal;
 
 /**
  * The <code>SimUtil</code> class encapsulates a set of utility methods that are used in
@@ -78,5 +79,14 @@ public class SimUtil {
 
     public static void getIDTimeString(StringBuffer buf, Simulator s) {
         toIDTimeString(buf, s.getID(), s.getClock());
+    }
+
+    public static void warning(Simulator s, String w, String m) {
+        StringBuffer buf = new StringBuffer(40 + w.length() + m.length());
+        SimUtil.getIDTimeString(buf, s);
+        Terminal.append(Terminal.WARN_COLOR, buf, w);
+        buf.append(": ");
+        buf.append(m);
+        Terminal.println(buf.toString());
     }
 }

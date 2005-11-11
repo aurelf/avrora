@@ -29,51 +29,57 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Nov 3, 2005
+ * Creation date: Nov 11, 2005
  */
 
 package jintgen.isdl.verifier;
 
 import jintgen.isdl.*;
-import jintgen.isdl.parser.Token;
-import jintgen.jigir.JIGIRTypeEnv;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 
 /**
+ * The <code>InstrVerifier</code> class verifies that each of the instructions is well formed.
+ * 
  * @author Ben L. Titzer
  */
-public abstract class VerifierPass {
+public class InstrVerifier extends VerifierPass {
 
-    protected final Architecture arch;
-    protected final JIGIRErrorReporter ERROR;
-    protected final JIGIRTypeEnv typeEnv;
-
-    protected VerifierPass(Architecture a) {
-        arch = a;
-        ERROR = a.ERROR;
-        typeEnv = a.typeEnv;
+    public InstrVerifier(Architecture arch) {
+        super(arch);
     }
 
-    public abstract void verify();
+    public void verify() {
+        uniqueCheck("Instr", "Instruction", arch.instructions);
+        verifyInstructions();
+    }
 
-    protected void uniqueCheck(String type, String name, Iterable<? extends Item> it) {
-        HashMap<String, Token> items = new HashMap<String, Token>();
-        for ( Item i : it ) {
-            String nm = i.name.image;
-            if ( items.containsKey(nm) )
-                ERROR.redefined(type, name, items.get(nm), i.name);
-            items.put(nm, i.name);
+
+    void verifyInstructions() {
+        for ( InstrDecl id : arch.instructions ) {
+            // verify the addressing mode use
+            if ( id.addrMode.ref != null ) {
+                resolveAddressingModeRef(id.addrMode);
+            } else {
+                resolveOperandTypes(id.addrMode.localDecl.operands);
+            }
         }
     }
 
-    protected void resolveOperandTypes(List<AddrModeDecl.Operand> operands) {
-        HashMap<String, Token> set = new HashMap<String, Token>();
-        for ( AddrModeDecl.Operand o : operands ) {
-            if ( set.containsKey(o.name.image) )
-                ERROR.RedefinedOperand(o.name, set.get(o.name.image));
-            set.put(o.name.image, o.name);
-            o.typeRef.resolve(typeEnv);
+    private void resolveAddressingModeRef(AddrModeUse am) {
+        AddrModeSetDecl asd = arch.getAddressingModeSet(am.ref.image);
+        if ( asd == null ) {
+            AddrModeDecl amd = arch.getAddressingMode(am.ref.image);
+            if ( amd == null ) {
+                ERROR.UnresolvedAddressingMode(am.ref);
+            } else {
+                am.operands = amd.operands;
+                am.addrModes = new LinkedList<AddrModeDecl>();
+                am.addrModes.add(amd);
+            }
+        } else {
+            am.operands = asd.unionOperands;
+            am.addrModes = asd.addrModes;
         }
     }
+
 }

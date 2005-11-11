@@ -181,9 +181,8 @@ public abstract class Simulation extends HelpCategory {
 
         private void processInterruptSched() {
             if ( id != 0 ) return;
-            String isched = SCHEDULE.get();
-            if ( !"".equals(isched) ) {
-                InterruptScheduler s = new InterruptScheduler(isched, simulator);
+            if ( !SCHEDULE.isBlank() ) {
+                InterruptScheduler s = new InterruptScheduler(SCHEDULE.get(), simulator);
             }
         }
 
@@ -517,8 +516,7 @@ public abstract class Simulation extends HelpCategory {
      * @return an instance of the <code>PlatformFactory</code> interface
      */
     protected PlatformFactory getPlatform() {
-        String pfs = PLATFORM.get();
-        if ( "".equals(pfs) ) {
+        if ( PLATFORM.isBlank() ) {
             long hz = CLOCKSPEED.get();
             long exthz = EXTCLOCKSPEED.get();
             if ( exthz == 0 ) exthz = hz;
@@ -527,6 +525,7 @@ public abstract class Simulation extends HelpCategory {
             MicrocontrollerFactory mcf = Defaults.getMicrocontroller(MCU.get());
             return new DefaultPlatform.Factory(hz, exthz, mcf);
         } else {
+            String pfs = PLATFORM.get();
             return Defaults.getPlatform(pfs);
         }
     }

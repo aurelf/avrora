@@ -139,6 +139,7 @@ public final class Terminal {
     }
 
     public static final int ERROR_COLOR = COLOR_RED;
+    public static final int WARN_COLOR = COLOR_YELLOW;
 
     public static void print(int colors[], String s[]) {
         for (int cntr = 0; cntr < s.length; cntr++) {

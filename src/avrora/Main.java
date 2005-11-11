@@ -102,7 +102,7 @@ public class Main {
             // parse the command line options
             parseOptions(args);
 
-            if ( !"".equals(CONFIGFILE.get()) ) {
+            if ( !CONFIGFILE.isBlank() ) {
                 // if the config-file option is specified, load config file and then re-parse
                 // the arguments specified on the command line
                 loadFile(CONFIGFILE.get());

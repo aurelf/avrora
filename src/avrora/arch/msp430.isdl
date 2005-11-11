@@ -94,13 +94,13 @@ architecture msp430 {
     operand-type INDX {
         sub-operand reg: SREG;
         sub-operand index: IMM;
-	    read: int.8 { return sram[read:+int.16(reg) + index:+int.16]; }
-	    write: int.8 { sram[read:+int.16(reg) + index:+int.16] = value; }
+	    read: int.8 { return sram[read:+int.16(reg) + read:+int.16(index)]; }
+	    write: int.8 { sram[read:+int.16(reg) + read:+int.16(index)] = value; }
 	    read: +int.16 {
-	        return get_word(read:+int.16(reg) + index:+int.16);
+	        return get_word(read:+int.16(reg) + read:+int.16(index));
 	    }
 	    write: +int.16 {
-	        set_word(read:+int.16(reg) + index:+int.16, value);
+	        set_word(read:+int.16(reg) + read:+int.16(index), value);
 	    }
     }
 

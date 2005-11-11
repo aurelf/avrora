@@ -61,7 +61,7 @@ public abstract class AVRState {
     protected int pc;
     protected int nextpc;
     protected boolean I, T, H, V, S, N, Z, C;
-    protected Segment sram;
+    protected AVRDataSegment sram;
     protected byte[] regs;
     protected CodeSegment flash;
     protected ActiveRegister[] ioregs;

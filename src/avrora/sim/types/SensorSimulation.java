@@ -317,7 +317,7 @@ public class SensorSimulation extends Simulation {
     }
 
     private RadioAir getRadioAir() throws IOException {
-        if ( "".equals(TOPOLOGY.get()) ) {
+        if ( TOPOLOGY.isBlank() ) {
             return new SimpleAir();
         } else {
             return new FreeSpaceAir(new Topology(TOPOLOGY.get()));

@@ -42,8 +42,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * The <code>SerialForwarder</code> class implements a serial forwarder that takes traffic
- * to and from a socket and directs it into the UART chip of a simulated device.
+ * The <code>SerialForwarder</code> class implements a serial forwarder that takes traffic to and from a socket and
+ * directs it into the UART chip of a simulated device.
  *
  * @author Olaf Landsiedel
  * @author Ben L. Titzer
@@ -69,38 +69,94 @@ public class SerialForwarder implements USART.USARTDevice {
         ticker = new SFTicker(usart.getClock(), BPS);
         ticker.start();
         data = new byte[1];
-        try{
+        try {
             serverSocket = new ServerSocket(portNumber);
-            Terminal.print("Waiting for serial connection on port "+portNumber+"...");
+            Terminal.print("Waiting for serial connection on port " + portNumber + "...");
             Terminal.flush();
             socket = serverSocket.accept();
-            Terminal.println("connected to "+socket.getRemoteSocketAddress());
+            Terminal.println("connected to " + socket.getRemoteSocketAddress());
             out = socket.getOutputStream();
             in = socket.getInputStream();
-        } catch( IOException e ){
+        } catch (IOException e) {
             throw Util.unexpected(e);
         }
     }
 
+    /**
+     * Connect the traffic of an USART device to a device in the host system.
+     *
+     * @param usart  USART device to redirect
+     * @param infile the name of the file (which could be a UNIX device) that specifies the input file
+     * @param outfile the name of the file (which could be a UNIX device) taht specifies the output file
+     */
+    public SerialForwarder(USART usart, String infile, String outfile) {
+        this.usart = usart;
+        this.portNumber = 0;
+        data = new byte[1];
+
+        try {
+            if (!infile.equals(outfile) ) {
+                in = new FileInputStream(infile);
+                out = new FileOutputStream(outfile);
+            } else {
+                RandomAccessFile handle = new RandomAccessFile(infile, "rw");
+                in = new FileInputStream(handle.getFD());
+                out = new FileOutputStream(handle.getFD());
+            }
+        } catch (IOException e) {
+            throw Util.unexpected(e);
+        }
+
+        ticker = new SFTicker(usart.getClock(), BPS);
+        ticker.start();
+        usart.connect(this);
+    }
+
+    /**
+     * Connect the traffic of an USART device to an external process.
+     *
+     * @param usart   USART device to redirect
+     * @param command Command line tokens
+     */
+    public SerialForwarder(USART usart, String[] command) {
+        this.usart = usart;
+        this.portNumber = 0;
+        data = new byte[1];
+
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+            in = p.getInputStream();
+            out = p.getOutputStream();
+        } catch (IOException e) {
+            throw Util.unexpected(e);
+        }
+
+        ticker = new SFTicker(usart.getClock(), BPS);
+        ticker.start();
+        usart.connect(this);
+    }
+
+
     public USART.Frame transmitFrame() {
-        try{
-            in.read(data, 0, 1);
+        try {
+            int len = in.read(data, 0, 1);
             return new USART.Frame(data[0], false, 8);
-        } catch( IOException e){
+        } catch (IOException e) {
             throw Util.unexpected(e);
         }
     }
 
 
     public void receiveFrame(USART.Frame frame) {
-        try{
+        try {
             out.write((byte)frame.value);
-        } catch( IOException e){
+        } catch (IOException e) {
             throw Util.unexpected(e);
         }
     }
 
     private class SFTicker implements Simulator.Event {
+
         private final long delta;
         private final Clock clock;
 
@@ -110,11 +166,11 @@ public class SerialForwarder implements USART.USARTDevice {
         }
 
         public void fire() {
-            try{
-                if( in.available() >= 1 ) {
+            try {
+                if (in.available() >= 1) {
                     usart.startReceive();
                 }
-            } catch( IOException e){
+            } catch (IOException e) {
                 throw Util.unexpected(e);
             }
             clock.insertEvent(this, delta);

@@ -312,8 +312,10 @@ public class Program {
         eeprom_start = estart;
         eeprom_end = eend;
 
-        flash_data = new byte[program_end - program_start];
-        flash_instrs = new Instr[program_end - program_start];
+        int size = program_end - program_start;
+        flash_data = new byte[size];
+        flash_instrs = new Instr[size];
+        Arrays.fill(flash_data, (byte)0xff);
 
         labels = new HashMap();
         indirectEdges = new HashMap();

@@ -87,7 +87,7 @@ public class DisassembleAction extends Action {
         if ( EXHAUSTIVE.get() ) {
             // run the exhaustive disassembler
             exhaustive(da);
-        } else if ( !"".equals(FILE.get())) {
+        } else if ( !FILE.isBlank() ) {
             // load and disassemble a complete file
             disassembleFile(da);
         } else {

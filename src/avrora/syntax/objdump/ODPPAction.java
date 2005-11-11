@@ -73,10 +73,9 @@ public class ODPPAction extends Action {
     }
 
     public void run(String[] args) throws Exception {
-        String fname = FILE.get();
         ObjDumpReformatter rf = new ObjDumpReformatter(SECTIONS.get());
-        if ( !"".equals(fname) ) {
-            FileOutputStream outf = new FileOutputStream(fname);
+        if ( !FILE.isBlank() ) {
+            FileOutputStream outf = new FileOutputStream(FILE.get());
             PrintWriter p = new PrintWriter(outf);
             p.write(rf.cleanCode(args[0]).toString());
             p.close();

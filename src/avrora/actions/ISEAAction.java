@@ -59,7 +59,7 @@ public class ISEAAction extends Action {
     public void run(String[] args) throws Exception {
         Program p = Main.loadProgram(args);
         ISEAnalyzer a = new ISEAnalyzer(p);
-        if ( !"".equals(START.get())) {
+        if ( !START.isBlank() ) {
             SourceMapping.Location location = p.getSourceMapping().getLocation(START.get());
             if ( location == null )
                 Util.userError("Cannot find program location "+START.get());

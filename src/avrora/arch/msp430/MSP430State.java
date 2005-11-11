@@ -52,6 +52,14 @@ import cck.util.Util;
  */
 public class MSP430State {
 
+    public static final int NUM_REGS = 16;
+    public static final int PC_REG = 0;
+    public static final int SP_REG = 1;
+    public static final int SREG_REG = 2;
+    public static final int _1kb = 1024;
+    public static final int _1mb = _1kb * _1kb;
+    public static final int DATA_SIZE = 64 * _1kb;
+
     protected Simulator simulator;
 
     protected InterruptTable interrupts;
@@ -87,7 +95,7 @@ public class MSP430State {
      */
     public int getSP() {
         // register 1 is the stack pointer
-        return regs[1];
+        return regs[PC_REG];
     }
 
     /**

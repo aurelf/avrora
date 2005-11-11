@@ -172,10 +172,22 @@ public class Segment {
      */
     private byte checked_read(int address) {
         try {
-            return segment_data[address];
+            return direct_read(address);
         } catch ( ArrayIndexOutOfBoundsException e ) {
             return errorReporter.readError(address);
         }
+    }
+
+    /**
+     * The <code>direct_read()</code> method accesses the actual values stored in the segment, after
+     * watches and instrumentation have been applied. It is intended to be used ONLY internally to the
+     * segment. It is protected to allow architecture-specific implementations such as sparse memories
+     * or memory mapped IO.
+     * @param address the address in the segment to read
+     * @return the value of the of segment at the specified address
+     */
+    protected byte direct_read(int address) {
+        return segment_data[address];
     }
 
     /**
@@ -189,7 +201,7 @@ public class Segment {
      */
     public byte get(int address) {
         try {
-            return segment_data[address];
+            return direct_read(address);
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new AddressOutOfBoundsException(address);
         }
@@ -235,10 +247,22 @@ public class Segment {
      */
     private void checked_write(int address, byte val) {
         try {
-            segment_data[address] = val;
+            direct_write(address, val);
         } catch (ArrayIndexOutOfBoundsException e) {
             errorReporter.writeError(address, val);
         }
+    }
+
+    /**
+     * The <code>direct_write()</code> method writes the value directly into the array. This
+     * method is protected and is ONLY used internally. It is protected to allow architecture-
+     * specific implementations such as segments that are not contiguous, contain active register
+     * ranges, etc.
+     * @param address the address to write
+     * @param val the value to write into the segment
+     */
+    protected void direct_write(int address, byte val) {
+        segment_data[address] = val;
     }
 
     /**
@@ -252,7 +276,7 @@ public class Segment {
      */
     public void set(int address, byte val) {
         try {
-            segment_data[address] = val;
+            direct_write(address, val);
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new AddressOutOfBoundsException(address);
         }

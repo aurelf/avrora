@@ -57,7 +57,6 @@ public class AddrModeVerifier extends VerifierPass {
 
         verifyOperands();
         verifyAddrModes();
-        verifyInstructions();
     }
 
     void verifyOperands() {
@@ -75,51 +74,9 @@ public class AddrModeVerifier extends VerifierPass {
         }
     }
 
-    void resolveOperandTypes(List<AddrModeDecl.Operand> operands) {
-        HashMap<String, Token> set = new HashMap<String, Token>();
-        for ( AddrModeDecl.Operand o : operands ) {
-            if ( set.containsKey(o.name.image) )
-                ERROR.RedefinedOperand(o.name, set.get(o.name.image));
-            set.put(o.name.image, o.name);
-            o.typeRef.resolve(typeEnv);
-        }
-    }
-
     void verifyAddrModes() {
         for ( AddrModeDecl am : arch.addrModes ) {
             resolveOperandTypes(am.operands);
-        }
-    }
-
-    void verifyInstructions() {
-        for ( InstrDecl id : arch.instructions ) {
-            // verify the addressing mode use
-            verifyAddrModeUse(id.addrMode);
-        }
-    }
-
-    void verifyAddrModeUse(AddrModeUse am) {
-        if ( am.ref != null ) {
-            resolveAddressingModeRef(am);
-        } else {
-            resolveOperandTypes(am.localDecl.operands);
-        }
-    }
-
-    private void resolveAddressingModeRef(AddrModeUse am) {
-        AddrModeSetDecl asd = arch.getAddressingModeSet(am.ref.image);
-        if ( asd == null ) {
-            AddrModeDecl amd = arch.getAddressingMode(am.ref.image);
-            if ( amd == null ) {
-                ERROR.UnresolvedAddressingMode(am.ref);
-            } else {
-                am.operands = amd.operands;
-                am.addrModes = new LinkedList<AddrModeDecl>();
-                am.addrModes.add(amd);
-            }
-        } else {
-            am.operands = asd.unionOperands;
-            am.addrModes = asd.addrModes;
         }
     }
 

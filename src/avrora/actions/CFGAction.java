@@ -132,12 +132,11 @@ public class CFGAction extends Action {
     }
 
     private void dumpDotCFG(ControlFlowGraph cfg) throws java.io.IOException {
-        String fname;
         Printer p;
-        if ("".equals(fname = FILE.get()))
+        if (FILE.isBlank())
             p = Printer.STDOUT;
         else
-            p = new Printer(new PrintStream(new FileOutputStream(fname)));
+            p = new Printer(new PrintStream(new FileOutputStream(FILE.get())));
 
         p.startblock("digraph G");
 

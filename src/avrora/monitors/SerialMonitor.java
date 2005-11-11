@@ -39,70 +39,157 @@ import avrora.sim.Simulator;
 import avrora.sim.mcu.AtmelMicrocontroller;
 import avrora.sim.mcu.USART;
 import avrora.sim.platform.SerialForwarder;
-import cck.util.Option;
+import cck.util.*;
+import java.util.*;
 
 
 /**
- * The <code>SerialMonitor</code> class is a monitor that that is capable
- * of setting up a virtual usart connection to the pc. You can
- * connect the TinyOS serial forwarder to the port 2390.
+ * The <code>SerialMonitor</code> class is a monitor that that is capable of setting up a virtual
+ * usart connection to the pc. You can connect the TinyOS serial forwarder to the port 2390.
  *
  * @author Olaf Landsiedel
+ * @author Torsten Landschoff
  */
 public class SerialMonitor extends MonitorFactory {
 
-    protected final Option.Long PORT = options.newOption("port", 2390,
-            "The \"port\" option specifies the server port on which the serial forwarder will " +
-            "accept a connection for the serial port.");
-    protected final Option.Long NODE = options.newOption("node", 0,
-            "The \"node\" option specifies which node's serial port the socket will be connected to.");
+    protected final Option.List PORTS = options.newOptionList("ports", "0:0:2390",
+            "The \"ports\" option specifies a list of server ports that the simulator will listen on " +
+            "to connect to the serial forwarder for each node. The format is to first give " +
+            "the node number, the UART number, and then the port number " +
+            "($node:$uart:$port,$node:$uart:$port).");
+    protected final Option.List DEVICE = options.newOptionList("devices", "",
+            "The \"device\" option can be used to specify the devices (represented as file names) " +
+            "to connect to each of the nodes' serial port. The format is to first give " +
+            "the node number, the UART number, and then a file name for the input file, and (optionally) " +
+            "a file name for the output ($node:$uart:$in[:$out],$node:$uart:$in[:$out]).");
+    protected final Option.Str COMMAND = options.newOption("command", "",
+            "The \"command\" option defines an external command to connect to the serial " +
+            "port of the simulated system.");
+
+    HashMap portMap;
+
+    abstract class Connection {
+        int usart;
+        abstract void connect(USART usart);
+    }
+
+    class SocketConnection extends Connection {
+        int port;
+        void connect(USART usart) {
+            new SerialForwarder(usart, port);
+        }
+    }
+
+    class FileConnection extends Connection {
+        String infile;
+        String outfile;
+        void connect(USART usart) {
+            new SerialForwarder(usart, infile, outfile);
+        }
+    }
+
+    class CommandConnection extends Connection {
+        String[] command;
+        void connect(USART usart) {
+            new SerialForwarder(usart, command);
+        }
+    }
 
     /**
-     * The <code>SerialMonitor</code> class is a monitor that connects the USART
-     * of a node to a socket that allows data to be read and written from the simulation.
+     * The <code>SerialMonitor</code> class is a monitor that connects the USART of a node to a socket that allows data
+     * to be read and written from the simulation.
      */
-    public class Monitor implements avrora.monitors.Monitor{
- 
-        /** construct a new monitor
+    public class Monitor implements avrora.monitors.Monitor {
+
+        /**
+         * construct a new monitor
+         *
          * @param s Simulator
          */
         Monitor(Simulator s) {
-            if( s.getID() == NODE.get()) {
+            Connection conn = (Connection)portMap.get(new Integer(s.getID()));
+            if ( conn != null ) {
                 AtmelMicrocontroller mcu = (AtmelMicrocontroller)s.getMicrocontroller();
-                USART usart = (USART)mcu.getDevice("usart0");
-                new SerialForwarder(usart, (int)PORT.get());
+                USART usart = (USART)mcu.getDevice("usart" + conn.usart);
+                conn.connect(usart);
             }
         }
-                
-	public void report() {
+
+        public void report() {
             //no report
         }
-        
+
     }
 
     /**
-     * The constructor for the <code>SerialMonitor</code> class builds a
-     * new <code>MonitorFactory</code> capable of creating monitors for
-     * each <code>Simulator</code> instance passed to the <code>newMonitor()</code>
-     * method.
+     * The constructor for the <code>SerialMonitor</code> class builds a new <code>MonitorFactory</code> capable of
+     * creating monitors for each <code>Simulator</code> instance passed to the <code>newMonitor()</code> method.
      */
     public SerialMonitor() {
-        super("The \"serial\" monitor allows the serial port (UART) of a node in the simulation to be connected " +
-                "to a socket so that data from the program running in the simulation can be outputted, and " +
-                "external data can be fed into the serial port of the simulated node.");
+        super("The \"serial\" monitor allows the serial port (UART) of a node in the simulation to be " +
+                "connected to a socket so that data from the program running in the simulation can be " +
+                "outputted, and external data can be fed into the serial port of the simulated node.");
+        portMap = new HashMap();
+    }
+
+    public void processOptions(Options o) {
+        super.processOptions(o);
+        processSocketConnections();
+        processDeviceConnections();
+    }
+
+    private void processSocketConnections() {
+        Iterator i = PORTS.get().iterator();
+        while ( i.hasNext() ) {
+            String pid = (String)i.next();
+            String[] str = pid.split(":");
+            if ( str.length < 3 ) Util.userError("Format error in \"ports\" option");
+            int nid = Integer.parseInt(str[0]);
+            int uart = Integer.parseInt(str[1]);
+            int port = Integer.parseInt(str[2]);
+            SocketConnection conn = new SocketConnection();
+            conn.usart = uart;
+            conn.port = port;
+            portMap.put(new Integer(nid), conn);
+        }
+    }
+
+    private void processDeviceConnections() {
+        Iterator i = DEVICE.get().iterator();
+        while ( i.hasNext() ) {
+            String pid = (String)i.next();
+            String[] str = pid.split(":");
+            if ( str.length < 3 ) Util.userError("Format error in \"device\" option");
+            int nid = Integer.parseInt(str[0]);
+            int uart = Integer.parseInt(str[1]);
+            String inf = str[2];
+            String outf = (str.length > 3) ? str[3] : inf;
+            FileConnection conn = new FileConnection();
+            conn.usart = uart;
+            conn.infile = inf;
+            conn.outfile = outf;
+            portMap.put(new Integer(nid), conn);
+        }
     }
 
     /**
-     * The <code>newMonitor()</code> method creates a new monitor that is capable
-     * of setting up a virtual usart connection to the pc. You can connect the TinyOS
-     * serial forwarder to the port 2390.
+     * The <code>newMonitor()</code> method creates a new monitor that is capable of setting up a virtual usart
+     * connection to the pc. You can connect the TinyOS serial forwarder to the port 2390.
+     *
      * @param s the simulator to create a monitor for
-     * @return an instance of the <code>Monitor</code> interface for the
-     * specified simulator
+     * @return an instance of the <code>Monitor</code> interface for the specified simulator
      */
     public avrora.monitors.Monitor newMonitor(Simulator s) {
         return new Monitor(s);
-    }    
+    }
+
+    static private String[] tokenize(String string) {
+        ArrayList list = new ArrayList();
+        StringTokenizer st = new StringTokenizer(string);
+        while (st.hasMoreTokens()) list.add(st.nextToken());
+        return (String[])list.toArray(new String[1]);
+    }
+
 }
 
 

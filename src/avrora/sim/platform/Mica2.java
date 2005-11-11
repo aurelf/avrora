@@ -81,7 +81,7 @@ public class Mica2 extends Platform {
     protected ExternalFlash externalFlash;
     protected LightSensor lightSensor;
 
-    private Mica2(Microcontroller m) {
+    protected Mica2(Microcontroller m) {
         super(m);
         sim = m.getSimulator();
         addDevices();

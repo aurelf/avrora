@@ -467,6 +467,10 @@ public abstract class Option {
             printHeader("string", "" + defvalue);
             printDescription();
         }
+
+        public boolean isBlank() {
+            return value.equals("");
+        }
     }
 
     /**
