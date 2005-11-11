@@ -130,7 +130,7 @@ public class Arithmetic {
     public static int lowestBit(long value) {
         int low = 0;
 
-        if ((value & 0xFFFFFFFF) == 0) {
+        if ( ((int)value) == 0) {
             low += 32;
             value = value >> 32;
         }
@@ -210,7 +210,7 @@ public class Arithmetic {
 
     // bit patterns for reversing the order of bits of a 4 bit quantity.
     private static final int[] reverseKey = {
-        0, 4, 8, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15
+        0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15
     };
 
     public static byte reverseBits(byte value) {

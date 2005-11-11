@@ -202,7 +202,7 @@ public class AVRInterpreter extends AVRInstrInterpreter {
         // initialize IO registers to default values
         registers = simulator.getMicrocontroller().getRegisterSet();
 
-        // for performance, we share a refernce to the ActiveRegister[] array
+        // for performance, we share a reference to the ActiveRegister[] array
         ioregs = registers.share();
         SREG_reg = ioregs[SREG] = new SREG_reg();
 
@@ -284,7 +284,6 @@ public class AVRInterpreter extends AVRInstrInterpreter {
         if ( size == 2 ) cycles += 1;
         else cycles += 2;
         nextpc += size;
-        throw Util.unimplemented();
     }
 
     protected boolean getIORbit(int ior, int bit) {

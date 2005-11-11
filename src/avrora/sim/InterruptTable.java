@@ -126,7 +126,6 @@ public class InterruptTable {
      * @param inum the interrupt number to enable
      */
     void enable(int inum) {
-        interpreter.innerLoop = false;
         enabled = Arithmetic.setBit(enabled, inum, true);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
@@ -153,7 +152,6 @@ public class InterruptTable {
      * the interrupts are enabled by setting the global interrupt enable bit.
      */
     public void enableAll() {
-        interpreter.innerLoop = false;
         if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter.state, 0);
     }
 

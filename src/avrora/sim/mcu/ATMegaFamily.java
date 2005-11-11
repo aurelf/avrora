@@ -45,26 +45,26 @@ import cck.util.Arithmetic;
 public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     public static class FlagBit implements InterruptTable.Notification {
-        final InterruptTable it;
+        final BaseInterpreter interpreter;
         final boolean autoclear;
         final int inum;
         boolean val;
 
-        public FlagBit(InterruptTable i, boolean auto, int in) {
-            it = i;
+        public FlagBit(BaseInterpreter i, boolean auto, int in) {
+            interpreter = i;
             autoclear = auto;
             inum = in;
-            it.registerInternalNotification(this, inum);
+            interpreter.getInterruptTable().registerInternalNotification(this, inum);
         }
 
         public void flag() {
             val = true;
-            it.post(inum);
+            interpreter.setPosted(inum, true);
         }
 
         public void unflag() {
             val = false;
-            it.unpost(inum);
+            interpreter.setPosted(inum, false);
         }
 
         public boolean get() {
@@ -73,13 +73,13 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
         public void force(int inum) {
             val = true;
-            it.post(inum);
+            interpreter.setPosted(inum, true);
         }
 
         public void invoke(int inum) {
             if ( autoclear ) {
                 val = false;
-                it.unpost(inum);
+                interpreter.setPosted(inum, false);
             }
         }
     }

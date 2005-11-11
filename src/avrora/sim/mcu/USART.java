@@ -421,10 +421,9 @@ public class USART extends AtmelInternalDevice {
         byte value;
 
         public ControlRegisterA() {
-            InterruptTable it = USART.this.interpreter.getInterruptTable();
-            UDRE_flag = new ATMegaFamily.FlagBit(it, false, properties.USART_UDRE_inum);
-            TXC_flag = new ATMegaFamily.FlagBit(it, true, properties.USART_TX_inum);
-            RXC_flag = new ATMegaFamily.FlagBit(it, false, properties.USART_RX_inum);
+            UDRE_flag = new ATMegaFamily.FlagBit(interpreter, false, properties.USART_UDRE_inum);
+            TXC_flag = new ATMegaFamily.FlagBit(interpreter, true, properties.USART_TX_inum);
+            RXC_flag = new ATMegaFamily.FlagBit(interpreter, false, properties.USART_RX_inum);
             // user data register is empty initially
             UDRE_flag.flag();
         }

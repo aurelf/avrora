@@ -82,6 +82,9 @@ public class AutomatedTester {
      * @throws java.io.IOException if there is a problem loading the test cases
      */
     public void runTests(String[] fnames) throws java.io.IOException {
+        // turn off status reporting while running tests
+        Status.ENABLED = false;
+
         List slist = new LinkedList();
         List flist = new LinkedList();
         List ilist = new LinkedList();

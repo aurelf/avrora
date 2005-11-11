@@ -609,8 +609,10 @@ public abstract class BaseInterpreter implements InstrVisitor {
      * @param enabled true if the interrupt should be enabled; false if the interrupt should be disabled
      */
     public void setEnabled(int inum, boolean enabled) {
-        if ( enabled ) interrupts.enable(inum);
-        else interrupts.disable(inum);
+        if ( enabled ) {
+            innerLoop = false;
+            interrupts.enable(inum);
+        } else interrupts.disable(inum);
     }
 
     /**
@@ -872,24 +874,16 @@ public abstract class BaseInterpreter implements InstrVisitor {
         Segment segment;
 
         public byte readError(int address) {
-            String idstr = SimUtil.getIDTimeString(simulator);
-            Terminal.print(idstr);
-            Terminal.printYellow(StringUtil.toHex(pc, 4));
-            Terminal.println(": illegal read from " + segment.name + " at address " + StringUtil.addrToString(address));
-            exceptionWatch.invalidRead(segment.name, address);
+            BaseInterpreter.this.readError(segment.name, address);
             return segment.value;
         }
 
         public void writeError(int address, byte value) {
-            String idstr = SimUtil.getIDTimeString(simulator);
-            Terminal.print(idstr);
-            Terminal.printYellow(StringUtil.toHex(pc, 4));
-            Terminal.println(": illegal write to " + segment.name + " at address " + StringUtil.addrToString(address));
-            exceptionWatch.invalidWrite(segment.name, address, value);
+            BaseInterpreter.this.writeError(segment.name, address, value);
         }
     }
 
-    private void readError(String segment, int address) {
+    protected void readError(String segment, int address) {
         String idstr = SimUtil.getIDTimeString(simulator);
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
@@ -897,7 +891,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
         exceptionWatch.invalidRead(segment, address);
     }
 
-    private void writeError(String segment, int address, byte value) {
+    protected void writeError(String segment, int address, byte value) {
         String idstr = SimUtil.getIDTimeString(simulator);
         Terminal.print(idstr);
         Terminal.printYellow(StringUtil.toHex(pc, 4));
@@ -1218,6 +1212,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
      */
     public void enableInterrupts() {
         I = true;
+        innerLoop = false;
         interrupts.enableAll();
     }
 
