@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
+import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 
 /**
  * The <code>BranchCounter</code> class is a profiling probe that can be inserted at a branch instruction to
@@ -68,7 +68,7 @@ public class BranchCounter extends Simulator.Probe.Empty {
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireAfter(State state, int pc) {
+    public void fireAfter(LegacyState state, int pc) {
         int nextaddr = pc + state.getInstr(pc).getSize();
         if (state.getPC() == nextaddr)
             nottakenCount++;

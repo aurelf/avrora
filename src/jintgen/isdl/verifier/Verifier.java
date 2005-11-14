@@ -32,18 +32,10 @@
 
 package jintgen.isdl.verifier;
 
-import cck.text.Verbose;
 import cck.text.Status;
-import cck.util.Util;
-import jintgen.gen.Inliner;
+import cck.text.Verbose;
 import jintgen.gen.Canonicalizer;
-import jintgen.isdl.parser.Token;
 import jintgen.isdl.*;
-import jintgen.jigir.*;
-import jintgen.types.TypeCon;
-import jintgen.types.Type;
-
-import java.util.*;
 
 /**
  * The <code>Verifier</code> class performs some consistency checks on an architecture description

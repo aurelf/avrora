@@ -37,8 +37,9 @@
 package avrora.monitors;
 
 import avrora.actions.SimAction;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.SourceMapping;
-import avrora.sim.*;
+import avrora.sim.Simulator;
 import cck.util.Option;
 import cck.util.Util;
 import java.util.Iterator;
@@ -102,7 +103,7 @@ public class InteractiveMonitor extends MonitorFactory {
     }
 
     public static class BreakPointProbe extends Simulator.Probe.Empty {
-        public void fireBefore(State s, int pc) {
+        public void fireBefore(LegacyState s, int pc) {
             throw new SimAction.BreakPointException(pc, s);
         }
     }

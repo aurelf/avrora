@@ -32,7 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.core.InstrPrototype;
+import avrora.arch.legacy.LegacyInstrProto;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.platform.Platform;
@@ -265,7 +265,7 @@ public interface Microcontroller {
      * @param i the instruction prototype of the instruction
      * @return true if the specified instruction is supported on this device; false otherwise
      */
-    boolean isSupported(InstrPrototype i);
+    boolean isSupported(LegacyInstrProto i);
 
     /**
      * The <code>getPinNumber()</code> method looks up the named pin and returns its number. Names of pins

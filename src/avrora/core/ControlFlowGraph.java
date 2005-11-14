@@ -32,6 +32,7 @@
 
 package avrora.core;
 
+import avrora.arch.legacy.LegacyInstr;
 import cck.util.Util;
 import java.util.*;
 
@@ -150,7 +151,7 @@ public class ControlFlowGraph {
          *
          * @param i the instruction to add to this basic block
          */
-        public void addInstr(Instr i) {
+        public void addInstr(LegacyInstr i) {
             instructions.add(i);
 
             last_address = address + size;

@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.core.InstrPrototype;
+import avrora.arch.legacy.LegacyInstrProto;
 import cck.parser.AbstractToken;
 import cck.util.Util;
 
@@ -119,9 +119,9 @@ public abstract class Item {
         protected final String variant;
         protected final AbstractToken name;
         protected final SyntacticOperand[] operands;
-        protected final InstrPrototype proto;
+        protected final LegacyInstrProto proto;
 
-        Instruction(Module.Seg s, String v, AbstractToken n, InstrPrototype p, SyntacticOperand[] ops) {
+        Instruction(Module.Seg s, String v, AbstractToken n, LegacyInstrProto p, SyntacticOperand[] ops) {
             super(s);
             variant = v;
             name = n;

@@ -48,7 +48,7 @@ public class StateCache {
     private long uidCount;
 
     /**
-     * The <code>State</code> class represents an immutable state within the state space of the program. Such
+     * The <code>LegacyState</code> class represents an immutable state within the state space of the program. Such
      * a state is cached and cannot be modified. It contains a unique identifier, a mark for graph traversals,
      * and a list of outgoing edges.
      */
@@ -265,7 +265,7 @@ public class StateCache {
      * and inserted.
      *
      * @param s the state to search for
-     * @return an instance of the <code>StateSpace.State</code> immutable state that corresponds to the given
+     * @return an instance of the <code>StateSpace.LegacyState</code> immutable state that corresponds to the given
      *         mutable state
      */
     public State getStateFor(MutableState s) {

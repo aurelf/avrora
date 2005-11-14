@@ -43,7 +43,7 @@ import java.util.*;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
- * architecture. It will generate an outer class <code>Instr</code> that contains as inner classes, the
+ * architecture. It will generate an outer class <code>LegacyInstr</code> that contains as inner classes, the
  * individual instructions contained in the architecture description.
  *
  * @author Ben L. Titzer
@@ -52,18 +52,18 @@ public class InstrIRGenerator extends Generator {
 
     LinkedList<String> hashMapImport;
 
-    protected final Option.Str CLASS_FILE = options.newOption("class-template", "Instr.java",
+    protected final Option.Str CLASS_FILE = options.newOption("class-template", "LegacyInstr.java",
             "This option specifies the name of the file that contains a template for generating the " +
             "instruction classes.");
 
     public void generate() throws Exception {
 
-        properties.setProperty("instr", className("Instr"));
+        properties.setProperty("instr", className("LegacyInstr"));
         properties.setProperty("addr", className("AddrMode"));
         properties.setProperty("addrvisitor", className("AddrModeVisitor"));
-        properties.setProperty("operand", className("Operand"));
+        properties.setProperty("operand", className("LegacyOperand"));
         properties.setProperty("opvisitor", className("OperandVisitor"));
-        properties.setProperty("visitor", className("InstrVisitor"));
+        properties.setProperty("visitor", className("LegacyInstrVisitor"));
         properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
 

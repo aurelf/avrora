@@ -32,7 +32,9 @@
 
 package avrora.syntax;
 
-import avrora.core.*;
+import avrora.arch.legacy.*;
+import avrora.core.LabelMapping;
+import avrora.core.Program;
 import avrora.syntax.atmel.AtmelParser;
 import cck.parser.AbstractParseException;
 import cck.parser.AbstractToken;
@@ -112,7 +114,7 @@ public class Module implements Context {
                 newprogram.writeProgramByte(b, baddr);
         }
 
-        public void writeInstr(AbstractToken loc, int baddr, Instr i) {
+        public void writeInstr(AbstractToken loc, int baddr, LegacyInstr i) {
             if (!acceptsInstrs)
                 ERROR.InstructionCannotBeInSegment(name, loc);
             else
@@ -301,7 +303,7 @@ public class Module implements Context {
     }
 
     private void makeInstr(String variant, AbstractToken name, SyntacticOperand[] o) {
-        InstrPrototype proto = InstructionSet.getPrototype(variant);
+        LegacyInstrProto proto = LegacyInstrSet.getPrototype(variant);
         addItem(new Item.Instruction(segment, variant, name, proto, o));
     }
 
@@ -330,15 +332,15 @@ public class Module implements Context {
 
             i.simplify();
 
-        } catch (Instr.ImmediateRequired e) {
+        } catch (LegacyInstr.ImmediateRequired e) {
             ERROR.ConstantExpected((SyntacticOperand)e.operand);
-        } catch (Instr.InvalidImmediate e) {
+        } catch (LegacyInstr.InvalidImmediate e) {
             ERROR.ConstantOutOfRange(instr.operands[e.number - 1], e.value, StringUtil.interval(e.low, e.high));
-        } catch (Instr.InvalidRegister e) {
+        } catch (LegacyInstr.InvalidRegister e) {
             ERROR.IncorrectRegister(instr.operands[e.number - 1], e.register, e.set.toString());
-        } catch (Instr.RegisterRequired e) {
+        } catch (LegacyInstr.RegisterRequired e) {
             ERROR.RegisterExpected((SyntacticOperand)e.operand);
-        } catch (Instr.WrongNumberOfOperands e) {
+        } catch (LegacyInstr.WrongNumberOfOperands e) {
             ERROR.WrongNumberOfOperands(instr.name, e.found, e.expected);
         }
     }
@@ -348,18 +350,18 @@ public class Module implements Context {
     }
 
     public void addRegisterName(String name, AbstractToken reg) {
-        Register register = Register.getRegisterByName(reg.image);
+        LegacyRegister register = LegacyRegister.getRegisterByName(reg.image);
         if ( register == null )
             ERROR.UnknownRegister(reg);
 
         definitions.put(labelName(name), register);
     }
 
-    public Register getRegister(AbstractToken tok) {
+    public LegacyRegister getRegister(AbstractToken tok) {
         String name = labelName(tok);
-        Register reg = Register.getRegisterByName(name);
+        LegacyRegister reg = LegacyRegister.getRegisterByName(name);
         if (reg == null)
-            reg = (Register)definitions.get(name);
+            reg = (LegacyRegister)definitions.get(name);
 
         if (reg == null) ERROR.UnknownRegister(tok);
         return reg;

@@ -41,6 +41,13 @@ package avrora.arch;
  */
 public interface AbstractArchitecture {
 
+    /**
+     * The <code>getDisassembler()</code> method returns an instance of the appropriate
+     * disassembler for the architecture. The disassembler can be used to decode binary
+     * instructions into <code>AbstractInstr</code> instances of the appropriate type.
+     * @return an instance of the <code>AbstractDisassembler</code> interface appropriate
+     * for this architecture
+     */
     public AbstractDisassembler getDisassembler();
 
     public AbstractAssembler getAssembler();

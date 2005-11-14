@@ -30,95 +30,95 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core;
+package avrora.arch.legacy;
 
 import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * The <code>Register</code> class represents a register available on the AVR instruction set. All registers
+ * The <code>LegacyRegister</code> class represents a register available on the AVR instruction set. All registers
  * in the instruction set architecture are represented as objects that have a name and a number. Those objects
  * are singletons and are public static final fields of this class.<br><br>
  * <p/>
- * Additionally, the <code>Register</code> class contains sets of registers that are used in verifying the
+ * Additionally, the <code>LegacyRegister</code> class contains sets of registers that are used in verifying the
  * operand constraints of each individual instruction as defined in the AVR instruction set reference. An
  * example of an operand constraint is that ldi (load immediate) takes as operands one of the general purpose
  * registers {r17...r31} and an immediate. Other instructions take certain subsets of the instructions. Those
  * register sets are allocated once here and are exposed as static fields in this class.
  *
  * @author Ben L. Titzer
- * @see Operand
- * @see Instr
+ * @see avrora.arch.legacy.LegacyOperand
+ * @see avrora.arch.legacy.LegacyInstr
  */
-public class Register {
+public class LegacyRegister {
 
     private static final HashMap registers = initializeRegisterMap();
 
-    public static final Register R0 = getRegisterByNumber(0);
-    public static final Register R1 = getRegisterByNumber(1);
-    public static final Register R2 = getRegisterByNumber(2);
-    public static final Register R3 = getRegisterByNumber(3);
-    public static final Register R4 = getRegisterByNumber(4);
-    public static final Register R5 = getRegisterByNumber(5);
-    public static final Register R6 = getRegisterByNumber(6);
-    public static final Register R7 = getRegisterByNumber(7);
-    public static final Register R8 = getRegisterByNumber(8);
-    public static final Register R9 = getRegisterByNumber(9);
-    public static final Register R10 = getRegisterByNumber(10);
-    public static final Register R11 = getRegisterByNumber(11);
-    public static final Register R12 = getRegisterByNumber(12);
-    public static final Register R13 = getRegisterByNumber(13);
-    public static final Register R14 = getRegisterByNumber(14);
-    public static final Register R15 = getRegisterByNumber(15);
-    public static final Register R16 = getRegisterByNumber(16);
-    public static final Register R17 = getRegisterByNumber(17);
-    public static final Register R18 = getRegisterByNumber(18);
-    public static final Register R19 = getRegisterByNumber(19);
-    public static final Register R20 = getRegisterByNumber(20);
-    public static final Register R21 = getRegisterByNumber(21);
-    public static final Register R22 = getRegisterByNumber(22);
-    public static final Register R23 = getRegisterByNumber(23);
-    public static final Register R24 = getRegisterByNumber(24);
-    public static final Register R25 = getRegisterByNumber(25);
-    public static final Register R26 = getRegisterByNumber(26);
-    public static final Register R27 = getRegisterByNumber(27);
-    public static final Register R28 = getRegisterByNumber(28);
-    public static final Register R29 = getRegisterByNumber(29);
-    public static final Register R30 = getRegisterByNumber(30);
-    public static final Register R31 = getRegisterByNumber(31);
+    public static final LegacyRegister R0 = getRegisterByNumber(0);
+    public static final LegacyRegister R1 = getRegisterByNumber(1);
+    public static final LegacyRegister R2 = getRegisterByNumber(2);
+    public static final LegacyRegister R3 = getRegisterByNumber(3);
+    public static final LegacyRegister R4 = getRegisterByNumber(4);
+    public static final LegacyRegister R5 = getRegisterByNumber(5);
+    public static final LegacyRegister R6 = getRegisterByNumber(6);
+    public static final LegacyRegister R7 = getRegisterByNumber(7);
+    public static final LegacyRegister R8 = getRegisterByNumber(8);
+    public static final LegacyRegister R9 = getRegisterByNumber(9);
+    public static final LegacyRegister R10 = getRegisterByNumber(10);
+    public static final LegacyRegister R11 = getRegisterByNumber(11);
+    public static final LegacyRegister R12 = getRegisterByNumber(12);
+    public static final LegacyRegister R13 = getRegisterByNumber(13);
+    public static final LegacyRegister R14 = getRegisterByNumber(14);
+    public static final LegacyRegister R15 = getRegisterByNumber(15);
+    public static final LegacyRegister R16 = getRegisterByNumber(16);
+    public static final LegacyRegister R17 = getRegisterByNumber(17);
+    public static final LegacyRegister R18 = getRegisterByNumber(18);
+    public static final LegacyRegister R19 = getRegisterByNumber(19);
+    public static final LegacyRegister R20 = getRegisterByNumber(20);
+    public static final LegacyRegister R21 = getRegisterByNumber(21);
+    public static final LegacyRegister R22 = getRegisterByNumber(22);
+    public static final LegacyRegister R23 = getRegisterByNumber(23);
+    public static final LegacyRegister R24 = getRegisterByNumber(24);
+    public static final LegacyRegister R25 = getRegisterByNumber(25);
+    public static final LegacyRegister R26 = getRegisterByNumber(26);
+    public static final LegacyRegister R27 = getRegisterByNumber(27);
+    public static final LegacyRegister R28 = getRegisterByNumber(28);
+    public static final LegacyRegister R29 = getRegisterByNumber(29);
+    public static final LegacyRegister R30 = getRegisterByNumber(30);
+    public static final LegacyRegister R31 = getRegisterByNumber(31);
 
-    public static final Register X = getRegisterByName("x");
-    public static final Register Y = getRegisterByName("y");
-    public static final Register Z = getRegisterByName("z");
+    public static final LegacyRegister X = getRegisterByName("x");
+    public static final LegacyRegister Y = getRegisterByName("y");
+    public static final LegacyRegister Z = getRegisterByName("z");
 
-    private static final Register[] REGS_0_31 = {
+    private static final LegacyRegister[] REGS_0_31 = {
         R0, R1, R2, R3, R4, R5, R6, R7,
         R8, R9, R10, R11, R12, R13, R14, R15,
         R16, R17, R18, R19, R20, R21, R22, R23,
         R24, R25, R26, R27, R28, R29, R30, R31
     };
-    private static final Register[] EREGS = {
+    private static final LegacyRegister[] EREGS = {
         R0, R2, R4, R6, R8, R10, R12, R14,
         R16, R18, R20, R22, R24, R26, R28, R30,
     };
-    private static final Register[] REGS_16_31 = {
+    private static final LegacyRegister[] REGS_16_31 = {
         R16, R17, R18, R19, R20, R21, R22, R23,
         R24, R25, R26, R27, R28, R29, R30, R31
     };
-    private static final Register[] REGS_16_23 = {
+    private static final LegacyRegister[] REGS_16_23 = {
         R16, R17, R18, R19,
         R20, R21, R22, R23,
     };
-    private static final Register[] REGS_XYZ = {
+    private static final LegacyRegister[] REGS_XYZ = {
         X, Y, Z
     };
-    private static final Register[] REGS_YZ = {
+    private static final LegacyRegister[] REGS_YZ = {
         Y, Z
     };
-    private static final Register[] REGS_Z = {
+    private static final LegacyRegister[] REGS_Z = {
         Z
     };
-    private static final Register[] REGS_RDL = {
+    private static final LegacyRegister[] REGS_RDL = {
         R24, R26, R28, R30
     };
 
@@ -135,20 +135,20 @@ public class Register {
         HashMap map = new HashMap();
 
         for (int cntr = 0; cntr < 32; cntr++) {
-            Register reg = new Register("r" + cntr, cntr, 8);
+            LegacyRegister reg = new LegacyRegister("r" + cntr, cntr, 8);
             map.put("r" + cntr, reg);
             map.put("R" + cntr, reg);
         }
 
-        Register reg = new Register("X", 26, 16);
+        LegacyRegister reg = new LegacyRegister("X", 26, 16);
         map.put("x", reg);
         map.put("X", reg);
 
-        reg = new Register("Y", 28, 16);
+        reg = new LegacyRegister("Y", 28, 16);
         map.put("y", reg);
         map.put("Y", reg);
 
-        reg = new Register("Z", 30, 16);
+        reg = new LegacyRegister("Z", 30, 16);
         map.put("z", reg);
         map.put("Z", reg);
 
@@ -156,25 +156,25 @@ public class Register {
     }
 
     /**
-     * The <code>getRegisterByName()</code> method retrieves a reference to the <code>Register</code> instance
+     * The <code>getRegisterByName()</code> method retrieves a reference to the <code>LegacyRegister</code> instance
      * with the given string name. This method is not case sensitive.
      *
      * @param name the name of the register as a string
-     * @return a reference to the <code>Register</code> object representing the register if a register of that
+     * @return a reference to the <code>LegacyRegister</code> object representing the register if a register of that
      *         name exists; null otherwise
      */
-    public static Register getRegisterByName(String name) {
-        return (Register)registers.get(name);
+    public static LegacyRegister getRegisterByName(String name) {
+        return (LegacyRegister)registers.get(name);
     }
 
     /**
-     * The <code>getRegisterByNumber()</code> method retrieves a reference to the <code>Register</code>
+     * The <code>getRegisterByNumber()</code> method retrieves a reference to the <code>LegacyRegister</code>
      * instance with the given offset in the register file.
      *
      * @param num the integer number of the register to retrieve
-     * @return a reference to the <code>Register</code> object representing the chosen register
+     * @return a reference to the <code>LegacyRegister</code> object representing the chosen register
      */
-    public static Register getRegisterByNumber(int num) {
+    public static LegacyRegister getRegisterByNumber(int num) {
         return getRegisterByName("r" + num);
     }
 
@@ -183,7 +183,7 @@ public class Register {
     private final int number;
     private final int width;
 
-    private Register(String nm, int num, int w) {
+    private LegacyRegister(String nm, int num, int w) {
         name = nm;
         number = num;
         width = w;
@@ -245,7 +245,7 @@ public class Register {
      *
      * @return the register immediately following this register in the register file
      */
-    public Register nextRegister() {
+    public LegacyRegister nextRegister() {
         return REGS_0_31[number + 1];
     }
 
@@ -274,7 +274,7 @@ public class Register {
          *
          * @param regs an array of registers that are members of this set
          */
-        Set(Register[] regs) {
+        Set(LegacyRegister[] regs) {
             registerSet = new HashSet(2 * regs.length);
             for (int cntr = 0; cntr < regs.length; cntr++) {
                 registerSet.add(regs[cntr]);
@@ -302,7 +302,7 @@ public class Register {
          * @param reg the register to test membership of
          * @return true if the specified register is a member of this set; false otherwise
          */
-        public boolean contains(Register reg) {
+        public boolean contains(LegacyRegister reg) {
             return registerSet.contains(reg);
         }
 

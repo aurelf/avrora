@@ -34,12 +34,12 @@
 
 package jintgen.gen;
 
+import cck.util.Util;
+import jintgen.isdl.*;
+import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.types.*;
-import jintgen.isdl.parser.Token;
-import jintgen.isdl.*;
 import java.util.*;
-import cck.util.Util;
 
 /**
  * The <code>CodeSimplifier</code> class simplifies ISDL code by translating code that has

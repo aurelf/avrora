@@ -35,11 +35,9 @@
 package jintgen.isdl.verifier;
 
 import jintgen.isdl.*;
-import jintgen.isdl.parser.Token;
-import jintgen.types.TypeCon;
-import jintgen.types.Type;
 import jintgen.jigir.JIGIRTypeEnv;
-import java.util.*;
+import jintgen.types.Type;
+import jintgen.types.TypeCon;
 
 /**
  * @author Ben L. Titzer
@@ -53,7 +51,7 @@ public class AddrModeVerifier extends VerifierPass {
     public void verify() {
         uniqueCheck("AddrMode", "Addressing mode", arch.addrModes);
         uniqueCheck("AddrModeSet", "AddressingModeSet", arch.addrSets);
-        uniqueCheck("Instr", "Instruction", arch.instructions);
+        uniqueCheck("LegacyInstr", "Instruction", arch.instructions);
 
         verifyOperands();
         verifyAddrModes();

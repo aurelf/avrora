@@ -1,5 +1,4 @@
 package avrora.arch.avr;
-import avrora.arch.*;
 public abstract class AVRInstrInterpreter extends AVRState implements AVRInstrVisitor {
     boolean bit_get(int v, int bit) {
         return (v & (1 << bit)) != 0;

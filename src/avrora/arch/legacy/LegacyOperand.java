@@ -30,11 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core;
+package avrora.arch.legacy;
 
 
 /**
- * The <code>Operand</code> class encapsulates the notion of an operand to an instruction. An operand can be
+ * The <code>LegacyOperand</code> class encapsulates the notion of an operand to an instruction. An operand can be
  * either a register or a constant integer. Whether the register is a source or destination register depends
  * on the particular instruction. Likewise, whether the integer represents an immediate, an offset, or an
  * address depends on the instruction.
@@ -42,45 +42,45 @@ package avrora.core;
  * Operands are used as the arguments to the constructors of instructions.
  *
  * @author Ben L. Titzer
- * @see InstrPrototype
+ * @see avrora.arch.legacy.LegacyInstrProto
  */
-public interface Operand {
+public interface LegacyOperand {
 
     /**
      * The <code>asRegister()</code> method uses virtual dispatch to avoid a cast. If this operand is an
-     * instance of <code>Operand.Register</code> it will return itself. Otherwise, it will return null.
+     * instance of <code>LegacyOperand.LegacyRegister</code> it will return itself. Otherwise, it will return null.
      *
-     * @return this if this is an instance of <code>Operand.Register</code>; null otherwise
+     * @return this if this is an instance of <code>LegacyOperand.LegacyRegister</code>; null otherwise
      */
-    public Operand.Register asRegister();
+    public LegacyOperand.Register asRegister();
 
     /**
      * The <code>asConstant()</code> method uses virtual dispatch to avoid a cast. If this operand is an
-     * instance of <code>Operand.Constant</code> it will return itself. Otherwise, it will return null.
+     * instance of <code>LegacyOperand.Constant</code> it will return itself. Otherwise, it will return null.
      *
-     * @return this if this is an instance of <code>Operand.Constant</code>; null otherwise
+     * @return this if this is an instance of <code>LegacyOperand.Constant</code>; null otherwise
      */
-    public Operand.Constant asConstant();
+    public LegacyOperand.Constant asConstant();
 
     /**
-     * The <code>Operand.Register</code> class encapsulates the notion of a register operand to an
+     * The <code>LegacyOperand.LegacyRegister</code> class encapsulates the notion of a register operand to an
      * instruction.
      */
-    public interface Register extends Operand {
+    public interface Register extends LegacyOperand {
 
         /**
          * The <code>getRegister()</code> method returns a reference to the register represented
          * by this operand.
          * @return a reference to the register that this operand refers to
          */
-        public avrora.core.Register getRegister();
+        public avrora.arch.legacy.LegacyRegister getRegister();
     }
 
     /**
-     * The <code>Operand.Constant</code> class encapsulates the notion of a constant operand to an
+     * The <code>LegacyOperand.Constant</code> class encapsulates the notion of a constant operand to an
      * instruction.
      */
-    public interface Constant extends Operand {
+    public interface Constant extends LegacyOperand {
 
         /**
          * The <code>getvalue()</code> method returns the integer value of this constant operand.

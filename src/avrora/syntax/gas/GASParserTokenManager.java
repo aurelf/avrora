@@ -1413,7 +1413,7 @@ public class GASParserTokenManager implements GASParserConstants {
 
     public void SwitchTo(int lexState) {
         if (lexState >= 4 || lexState < 0)
-            throw new TokenMgrError("Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.", TokenMgrError.INVALID_LEXICAL_STATE);
+            throw new TokenMgrError("Error: Ignoring invalid lexical state : " + lexState + ". LegacyState unchanged.", TokenMgrError.INVALID_LEXICAL_STATE);
         else
             curLexState = lexState;
     }

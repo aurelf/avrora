@@ -47,7 +47,7 @@ public class Databank {
     private static Vector visitors = new Vector(4);
 
     /**
-     * Register a database with the databank
+     * LegacyRegister a database with the databank
      *
      * @param d - the database object to register
      */
@@ -56,7 +56,7 @@ public class Databank {
     }
 
     /**
-     * Register a database with the databank
+     * LegacyRegister a database with the databank
      *
      * @param v - the visitor object to register
      */

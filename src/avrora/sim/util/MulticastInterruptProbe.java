@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
+import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 
 /**
  * The <code>MulticastInterruptProbe</code> is a wrapper around multiple probes that allows them to act as a single
@@ -51,7 +51,7 @@ public class MulticastInterruptProbe extends TransactionalList implements Simula
      * @param s the state of the simulator
      * @param inum the number of the interrupt being entered
      */
-    public void fireBeforeInvoke(State s, int inum) {
+    public void fireBeforeInvoke(LegacyState s, int inum) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.InterruptProbe)pos.object).fireBeforeInvoke(s, inum);
@@ -66,7 +66,7 @@ public class MulticastInterruptProbe extends TransactionalList implements Simula
      * @param s the state of the simulator
      * @param inum the number of the interrupt being entered
      */
-    public void fireAfterInvoke(State s, int inum) {
+    public void fireAfterInvoke(LegacyState s, int inum) {
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.InterruptProbe)pos.object).fireAfterInvoke(s, inum);
         endTransaction();
@@ -80,7 +80,7 @@ public class MulticastInterruptProbe extends TransactionalList implements Simula
      * @param s the state of the simulator
      * @param inum the number of the interrupt being masked out
      */
-    public void fireWhenDisabled(State s, int inum) {
+    public void fireWhenDisabled(LegacyState s, int inum) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.InterruptProbe)pos.object).fireWhenDisabled(s, inum);
@@ -94,7 +94,7 @@ public class MulticastInterruptProbe extends TransactionalList implements Simula
      * @param s the state of the simulator
      * @param inum the number of the interrupt being unmasked
      */
-    public void fireWhenEnabled(State s, int inum) {
+    public void fireWhenEnabled(LegacyState s, int inum) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.InterruptProbe)pos.object).fireWhenEnabled(s, inum);
@@ -110,7 +110,7 @@ public class MulticastInterruptProbe extends TransactionalList implements Simula
      * @param s the state of the simulator
      * @param inum the number of the interrupt being posted
      */
-    public void fireWhenPosted(State s, int inum) {
+    public void fireWhenPosted(LegacyState s, int inum) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.InterruptProbe)pos.object).fireWhenPosted(s, inum);
@@ -126,7 +126,7 @@ public class MulticastInterruptProbe extends TransactionalList implements Simula
      * @param s the state of the simulator
      * @param inum the number of the interrupt being unposted
      */
-    public void fireWhenUnposted(State s, int inum) {
+    public void fireWhenUnposted(LegacyState s, int inum) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.InterruptProbe)pos.object).fireWhenUnposted(s, inum);

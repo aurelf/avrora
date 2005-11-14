@@ -32,10 +32,9 @@
 
 package cck.test;
 
+import cck.parser.SourceError;
 import cck.text.StringUtil;
 import cck.util.Util;
-import cck.parser.SourceError;
-
 import java.util.Properties;
 
 /**

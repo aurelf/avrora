@@ -33,7 +33,6 @@
  */
 package jintgen.types;
 
-import cck.util.Util;
 import java.util.HashMap;
 import java.util.Map;
 

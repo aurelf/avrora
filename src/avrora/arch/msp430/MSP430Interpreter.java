@@ -34,11 +34,11 @@
 
 package avrora.arch.msp430;
 
+import avrora.core.Program;
+import avrora.sim.Segment;
+import avrora.sim.Simulator;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.RegisterSet;
-import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.sim.*;
-import avrora.core.Program;
 import cck.util.Util;
 
 /**
@@ -105,7 +105,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         //Segment.ErrorReporter reporter = new Segment.ErrorReporter();
         //flash = props.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
         //reporter.segment = flash;
-        // for performance, we share a reference to the Instr[] array representing flash
+        // for performance, we share a reference to the LegacyInstr[] array representing flash
         //shared_instr = flash.shareCode(null);
         // initialize the interrupt table
         //interrupts = new InterruptTable(this, props.num_interrupts);

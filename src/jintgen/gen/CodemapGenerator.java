@@ -74,9 +74,9 @@ public class CodemapGenerator extends Generator {
         }
         throw Util.unimplemented();
         /*
-        registerMap.put("RX", new Integer(Register.X.getNumber()));
-        registerMap.put("RY", new Integer(Register.Y.getNumber()));
-        registerMap.put("RZ", new Integer(Register.Z.getNumber()));
+        registerMap.put("RX", new Integer(LegacyRegister.X.getNumber()));
+        registerMap.put("RY", new Integer(LegacyRegister.Y.getNumber()));
+        registerMap.put("RZ", new Integer(LegacyRegister.Z.getNumber()));
         */
     }
 

@@ -32,7 +32,8 @@
 
 package avrora.stack.isea;
 
-import avrora.core.*;
+import avrora.arch.legacy.*;
+import avrora.core.Program;
 import cck.text.*;
 import cck.util.Util;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ import java.util.Iterator;
  *
  * @author Ben L. Titzer
  */
-public class ISEInterpreter implements InstrVisitor {
+public class ISEInterpreter implements LegacyInstrVisitor {
 
     protected final Verbose.Printer printer = Verbose.getVerbosePrinter("analysis.isea.interpreter");
 
@@ -56,15 +57,15 @@ public class ISEInterpreter implements InstrVisitor {
 
     protected final Program program;
 
-    protected byte readRegister(Register r) {
+    protected byte readRegister(LegacyRegister r) {
         return state.readRegister(r);
     }
 
-    protected byte getRegister(Register r) {
+    protected byte getRegister(LegacyRegister r) {
         return state.getRegister(r);
     }
 
-    protected void writeRegister(Register r, byte val) {
+    protected void writeRegister(LegacyRegister r, byte val) {
         state.writeRegister(r, val);
     }
 
@@ -233,7 +234,7 @@ public class ISEInterpreter implements InstrVisitor {
 
             pc = i.pc;
             state = i.state.dup();
-            Instr instr = program.readInstr(i.pc);
+            LegacyInstr instr = program.readInstr(i.pc);
             printItem(instr);
             int npc = program.getNextPC(i.pc);
             nextPC = npc;
@@ -246,7 +247,7 @@ public class ISEInterpreter implements InstrVisitor {
         }
     }
 
-    private void printItem(Instr instr) {
+    private void printItem(LegacyInstr instr) {
         if ( !printer.enabled ) return;
         TermUtil.printSeparator();
         printState(state, pc);
@@ -255,37 +256,37 @@ public class ISEInterpreter implements InstrVisitor {
         TermUtil.printThinSeparator(Terminal.MAXLINE);
     }
 
-    private void mult(Register r1, Register r2) {
+    private void mult(LegacyRegister r1, LegacyRegister r2) {
         readRegister(r1);
         readRegister(r2);
         writeSREG(ISEValue.UNKNOWN);
-        writeRegister(Register.R0, ISEValue.UNKNOWN);
-        writeRegister(Register.R1, ISEValue.UNKNOWN);
+        writeRegister(LegacyRegister.R0, ISEValue.UNKNOWN);
+        writeRegister(LegacyRegister.R1, ISEValue.UNKNOWN);
     }
 
 
-    void binop(Register r1, Register r2) {
+    void binop(LegacyRegister r1, LegacyRegister r2) {
         readRegister(r1);
         readRegister(r2);
         writeSREG(ISEValue.UNKNOWN);
         writeRegister(r1, ISEValue.UNKNOWN);
     }
 
-    void unop(Register r1) {
+    void unop(LegacyRegister r1) {
         readRegister(r1);
         writeSREG(ISEValue.UNKNOWN);
         writeRegister(r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.ADC i) {
+    public void visit(LegacyInstr.ADC i) {
         binop(i.r1, i.r2);
     }
 
-    public void visit(Instr.ADD i) {
+    public void visit(LegacyInstr.ADD i) {
         binop(i.r1, i.r2);
     }
 
-    public void visit(Instr.ADIW i) {
+    public void visit(LegacyInstr.ADIW i) {
         readRegister(i.r1);
         readRegister(i.r1.nextRegister());
         writeSREG(ISEValue.UNKNOWN);
@@ -293,125 +294,125 @@ public class ISEInterpreter implements InstrVisitor {
         writeRegister(i.r1.nextRegister(), ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.AND i) {
+    public void visit(LegacyInstr.AND i) {
         binop(i.r1, i.r2);
     }
 
-    public void visit(Instr.ANDI i) {
+    public void visit(LegacyInstr.ANDI i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.ASR i) {
+    public void visit(LegacyInstr.ASR i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.BCLR i) {
+    public void visit(LegacyInstr.BCLR i) {
         writeIORegister(i.imm1, ISEValue.UNKNOWN);
         //getIOReg(SREG).writeBit(i.imm1, false);
     }
 
-    public void visit(Instr.BLD i) {
+    public void visit(LegacyInstr.BLD i) {
         readRegister(i.r1);
         writeRegister(i.r1, ISEValue.UNKNOWN);
         //writeRegister(i.r1, Arithmetic.setBit(readRegister(i.r1), i.imm1, T));
     }
 
-    public void visit(Instr.BRBC i) {
+    public void visit(LegacyInstr.BRBC i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRBS i) {
+    public void visit(LegacyInstr.BRBS i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRCC i) {
+    public void visit(LegacyInstr.BRCC i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRCS i) {
+    public void visit(LegacyInstr.BRCS i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BREAK i) {
+    public void visit(LegacyInstr.BREAK i) {
         end();
     }
 
-    public void visit(Instr.BREQ i) {
+    public void visit(LegacyInstr.BREQ i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRGE i) {
+    public void visit(LegacyInstr.BRGE i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRHC i) {
+    public void visit(LegacyInstr.BRHC i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRHS i) {
+    public void visit(LegacyInstr.BRHS i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRID i) {
+    public void visit(LegacyInstr.BRID i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRIE i) {
+    public void visit(LegacyInstr.BRIE i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRLO i) {
+    public void visit(LegacyInstr.BRLO i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRLT i) {
+    public void visit(LegacyInstr.BRLT i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRMI i) {
+    public void visit(LegacyInstr.BRMI i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRNE i) {
+    public void visit(LegacyInstr.BRNE i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRPL i) {
+    public void visit(LegacyInstr.BRPL i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRSH i) {
+    public void visit(LegacyInstr.BRSH i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRTC i) {
+    public void visit(LegacyInstr.BRTC i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRTS i) {
+    public void visit(LegacyInstr.BRTS i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRVC i) {
+    public void visit(LegacyInstr.BRVC i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BRVS i) {
+    public void visit(LegacyInstr.BRVS i) {
         branch(relative(i.imm1));
     }
 
-    public void visit(Instr.BSET i) {
+    public void visit(LegacyInstr.BSET i) {
         writeIORegister(i.imm1, ISEValue.UNKNOWN);
         // getIOReg(SREG).writeBit(i.imm1, true);
     }
 
-    public void visit(Instr.BST i) {
+    public void visit(LegacyInstr.BST i) {
         byte tmp0 = readRegister(i.r1);
         writeSREG(ISEValue.UNKNOWN);
         //T = Arithmetic.getBit(tmp0, i.imm1);
     }
 
-    public void visit(Instr.CALL i) {
+    public void visit(LegacyInstr.CALL i) {
         int target = absolute(i.imm1);
         ISEState rs = cache.getProcedureSummary(target);
         ISEState fs = processReturnState(state, rs);
@@ -419,121 +420,121 @@ public class ISEInterpreter implements InstrVisitor {
         end();
     }
 
-    public void visit(Instr.CBI i) {
+    public void visit(LegacyInstr.CBI i) {
         writeIORegister(i.imm1, ISEValue.UNKNOWN);
         //getIOReg(i.imm1).writeBit(i.imm2, false);
     }
 
-    public void visit(Instr.CBR i) {
+    public void visit(LegacyInstr.CBR i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.CLC i) {
+    public void visit(LegacyInstr.CLC i) {
         writeSREG(ISEValue.UNKNOWN);
         // C = false;
     }
 
-    public void visit(Instr.CLH i) {
+    public void visit(LegacyInstr.CLH i) {
         writeSREG(ISEValue.UNKNOWN);
         // H = false;
     }
 
-    public void visit(Instr.CLI i) {
+    public void visit(LegacyInstr.CLI i) {
         writeSREG(ISEValue.UNKNOWN);
         // disableInterrupts();
     }
 
-    public void visit(Instr.CLN i) {
+    public void visit(LegacyInstr.CLN i) {
         writeSREG(ISEValue.UNKNOWN);
         // N = false;
     }
 
-    public void visit(Instr.CLR i) {
+    public void visit(LegacyInstr.CLR i) {
         writeSREG(ISEValue.UNKNOWN);
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.CLS i) {
+    public void visit(LegacyInstr.CLS i) {
         writeSREG(ISEValue.UNKNOWN);
         // S = false;
     }
 
-    public void visit(Instr.CLT i) {
+    public void visit(LegacyInstr.CLT i) {
         writeSREG(ISEValue.UNKNOWN);
         // T = false;
     }
 
-    public void visit(Instr.CLV i) {
+    public void visit(LegacyInstr.CLV i) {
         writeSREG(ISEValue.UNKNOWN);
         // V = false;
     }
 
-    public void visit(Instr.CLZ i) {
+    public void visit(LegacyInstr.CLZ i) {
         writeSREG(ISEValue.UNKNOWN);
         // Z = false;
     }
 
-    public void visit(Instr.COM i) {
+    public void visit(LegacyInstr.COM i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.CP i) {
+    public void visit(LegacyInstr.CP i) {
         readRegister(i.r1);
         readRegister(i.r2);
         writeSREG(ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.CPC i) {
+    public void visit(LegacyInstr.CPC i) {
         readRegister(i.r1);
         readRegister(i.r2);
         writeSREG(ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.CPI i) {
+    public void visit(LegacyInstr.CPI i) {
         readRegister(i.r1);
         writeSREG(ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.CPSE i) {
+    public void visit(LegacyInstr.CPSE i) {
         readRegister(i.r1);
         readRegister(i.r2);
         writeSREG(ISEValue.UNKNOWN);
         skip();
     }
 
-    public void visit(Instr.DEC i) {
+    public void visit(LegacyInstr.DEC i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.EICALL i) {
+    public void visit(LegacyInstr.EICALL i) {
         throw Util.unimplemented();
     }
 
-    public void visit(Instr.EIJMP i) {
+    public void visit(LegacyInstr.EIJMP i) {
         throw Util.unimplemented();
     }
 
-    public void visit(Instr.ELPM i) {
-        readRegister(Register.Z);
-        readRegister(Register.Z.nextRegister());
-        writeRegister(Register.R0, ISEValue.UNKNOWN);
+    public void visit(LegacyInstr.ELPM i) {
+        readRegister(LegacyRegister.Z);
+        readRegister(LegacyRegister.Z.nextRegister());
+        writeRegister(LegacyRegister.R0, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.ELPMD i) {
-        readRegister(Register.Z);
-        readRegister(Register.Z.nextRegister());
+    public void visit(LegacyInstr.ELPMD i) {
+        readRegister(LegacyRegister.Z);
+        readRegister(LegacyRegister.Z.nextRegister());
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.ELPMPI i) {
-        readRegister(Register.Z);
-        readRegister(Register.Z.nextRegister());
+    public void visit(LegacyInstr.ELPMPI i) {
+        readRegister(LegacyRegister.Z);
+        readRegister(LegacyRegister.Z.nextRegister());
         writeRegister(i.r1, ISEValue.UNKNOWN);
-        writeRegister(Register.Z, ISEValue.UNKNOWN);
-        writeRegister(Register.Z.nextRegister(), ISEValue.UNKNOWN);
+        writeRegister(LegacyRegister.Z, ISEValue.UNKNOWN);
+        writeRegister(LegacyRegister.Z.nextRegister(), ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.EOR i) {
+    public void visit(LegacyInstr.EOR i) {
         if ( i.r1 == i.r2 ) {
             // special case: clear the register
             writeSREG(ISEValue.UNKNOWN);
@@ -543,19 +544,19 @@ public class ISEInterpreter implements InstrVisitor {
         }
     }
 
-    public void visit(Instr.FMUL i) {
+    public void visit(LegacyInstr.FMUL i) {
         mult(i.r1, i.r2);
     }
 
-    public void visit(Instr.FMULS i) {
+    public void visit(LegacyInstr.FMULS i) {
         mult(i.r1, i.r2);
     }
 
-    public void visit(Instr.FMULSU i) {
+    public void visit(LegacyInstr.FMULSU i) {
         mult(i.r1, i.r2);
     }
 
-    public void visit(Instr.ICALL i) {
+    public void visit(LegacyInstr.ICALL i) {
         java.util.List iedges = program.getIndirectEdges(pc);
         if (iedges == null)
             throw Util.failure("No control flow information for indirect call at: " +
@@ -570,7 +571,7 @@ public class ISEInterpreter implements InstrVisitor {
         end();
     }
 
-    public void visit(Instr.IJMP i) {
+    public void visit(LegacyInstr.IJMP i) {
         java.util.List iedges = program.getIndirectEdges(pc);
         if (iedges == null)
             throw Util.failure("No control flow information for indirect call at: " +
@@ -582,124 +583,124 @@ public class ISEInterpreter implements InstrVisitor {
         }
     }
 
-    public void visit(Instr.IN i) {
+    public void visit(LegacyInstr.IN i) {
         writeRegister(i.r1, readIORegister(i.imm1));
     }
 
-    public void visit(Instr.INC i) {
+    public void visit(LegacyInstr.INC i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.JMP i) {
+    public void visit(LegacyInstr.JMP i) {
         jump(absolute(i.imm1));
     }
 
-    public void visit(Instr.LD i) {
+    public void visit(LegacyInstr.LD i) {
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LDD i) {
+    public void visit(LegacyInstr.LDD i) {
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LDI i) {
+    public void visit(LegacyInstr.LDI i) {
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LDPD i) {
-        writeRegister(i.r1, ISEValue.UNKNOWN);
-        writeRegister(i.r2, ISEValue.UNKNOWN);
-        writeRegister(i.r2.nextRegister(), ISEValue.UNKNOWN);
-    }
-
-    public void visit(Instr.LDPI i) {
+    public void visit(LegacyInstr.LDPD i) {
         writeRegister(i.r1, ISEValue.UNKNOWN);
         writeRegister(i.r2, ISEValue.UNKNOWN);
         writeRegister(i.r2.nextRegister(), ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LDS i) {
+    public void visit(LegacyInstr.LDPI i) {
+        writeRegister(i.r1, ISEValue.UNKNOWN);
+        writeRegister(i.r2, ISEValue.UNKNOWN);
+        writeRegister(i.r2.nextRegister(), ISEValue.UNKNOWN);
+    }
+
+    public void visit(LegacyInstr.LDS i) {
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LPM i) {
-        readRegister(Register.Z);
-        readRegister(Register.Z.nextRegister());
-        writeRegister(Register.R0, ISEValue.UNKNOWN);
+    public void visit(LegacyInstr.LPM i) {
+        readRegister(LegacyRegister.Z);
+        readRegister(LegacyRegister.Z.nextRegister());
+        writeRegister(LegacyRegister.R0, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LPMD i) {
-        readRegister(Register.Z);
-        readRegister(Register.Z.nextRegister());
+    public void visit(LegacyInstr.LPMD i) {
+        readRegister(LegacyRegister.Z);
+        readRegister(LegacyRegister.Z.nextRegister());
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LPMPI i) {
-        readRegister(Register.Z);
-        readRegister(Register.Z.nextRegister());
+    public void visit(LegacyInstr.LPMPI i) {
+        readRegister(LegacyRegister.Z);
+        readRegister(LegacyRegister.Z.nextRegister());
         writeRegister(i.r1, ISEValue.UNKNOWN);
-        writeRegister(Register.Z, ISEValue.UNKNOWN);
-        writeRegister(Register.Z.nextRegister(), ISEValue.UNKNOWN);
+        writeRegister(LegacyRegister.Z, ISEValue.UNKNOWN);
+        writeRegister(LegacyRegister.Z.nextRegister(), ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.LSL i) {
+    public void visit(LegacyInstr.LSL i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.LSR i) {
+    public void visit(LegacyInstr.LSR i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.MOV i) {
+    public void visit(LegacyInstr.MOV i) {
         writeRegister(i.r1, getRegister(i.r2));
     }
 
-    public void visit(Instr.MOVW i) {
+    public void visit(LegacyInstr.MOVW i) {
         writeRegister(i.r1, getRegister(i.r2));
         writeRegister(i.r1.nextRegister(), getRegister(i.r2.nextRegister()));
     }
 
-    public void visit(Instr.MUL i) {
+    public void visit(LegacyInstr.MUL i) {
         mult(i.r1, i.r2);
     }
 
-    public void visit(Instr.MULS i) {
+    public void visit(LegacyInstr.MULS i) {
         mult(i.r1, i.r2);
     }
 
-    public void visit(Instr.MULSU i) {
+    public void visit(LegacyInstr.MULSU i) {
         mult(i.r1, i.r2);
     }
 
-    public void visit(Instr.NEG i) {
+    public void visit(LegacyInstr.NEG i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.NOP i) {
+    public void visit(LegacyInstr.NOP i) {
         // do nothing.
     }
 
-    public void visit(Instr.OR i) {
+    public void visit(LegacyInstr.OR i) {
         binop(i.r1, i.r2);
     }
 
-    public void visit(Instr.ORI i) {
+    public void visit(LegacyInstr.ORI i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.OUT i) {
+    public void visit(LegacyInstr.OUT i) {
         writeIORegister(i.imm1, readRegister(i.r1));
     }
 
-    public void visit(Instr.POP i) {
+    public void visit(LegacyInstr.POP i) {
         writeRegister(i.r1, popByte());
     }
 
-    public void visit(Instr.PUSH i) {
+    public void visit(LegacyInstr.PUSH i) {
         pushByte(getRegister(i.r1));
     }
 
-    public void visit(Instr.RCALL i) {
+    public void visit(LegacyInstr.RCALL i) {
         int target = relative(i.imm1);
         ISEState rs = cache.getProcedureSummary(target);
         ISEState fs = processReturnState(state, rs);
@@ -711,52 +712,52 @@ public class ISEInterpreter implements InstrVisitor {
         nextPC = -1;
     }
 
-    public void visit(Instr.RET i) {
+    public void visit(LegacyInstr.RET i) {
         postReturn(state);
         end();
     }
 
-    public void visit(Instr.RETI i) {
+    public void visit(LegacyInstr.RETI i) {
         postReturnFromInterrupt(state);
         end();
     }
 
-    public void visit(Instr.RJMP i) {
+    public void visit(LegacyInstr.RJMP i) {
         jump(relative(i.imm1));
     }
 
-    public void visit(Instr.ROL i) {
+    public void visit(LegacyInstr.ROL i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.ROR i) {
+    public void visit(LegacyInstr.ROR i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.SBC i) {
+    public void visit(LegacyInstr.SBC i) {
         binop(i.r1, i.r2);
     }
 
-    public void visit(Instr.SBCI i) {
+    public void visit(LegacyInstr.SBCI i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.SBI i) {
+    public void visit(LegacyInstr.SBI i) {
         writeIORegister(i.imm1, ISEValue.UNKNOWN);
         //getIOReg(i.imm1).writeBit(i.imm2, true);
     }
 
-    public void visit(Instr.SBIC i) {
+    public void visit(LegacyInstr.SBIC i) {
         readIORegister(i.imm1);
         skip();
     }
 
-    public void visit(Instr.SBIS i) {
+    public void visit(LegacyInstr.SBIS i) {
         readIORegister(i.imm1);
         skip();
     }
 
-    public void visit(Instr.SBIW i) {
+    public void visit(LegacyInstr.SBIW i) {
         readRegister(i.r1);
         readRegister(i.r1.nextRegister());
         writeSREG(ISEValue.UNKNOWN);
@@ -764,96 +765,88 @@ public class ISEInterpreter implements InstrVisitor {
         writeRegister(i.r1.nextRegister(), ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.SBR i) {
+    public void visit(LegacyInstr.SBR i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.SBRC i) {
+    public void visit(LegacyInstr.SBRC i) {
         readRegister(i.r1);
         skip();
     }
 
-    public void visit(Instr.SBRS i) {
+    public void visit(LegacyInstr.SBRS i) {
         readRegister(i.r1);
         skip();
     }
 
-    public void visit(Instr.SEC i) {
+    public void visit(LegacyInstr.SEC i) {
         writeSREG(ISEValue.UNKNOWN);
         // C = true;
     }
 
-    public void visit(Instr.SEH i) {
+    public void visit(LegacyInstr.SEH i) {
         writeSREG(ISEValue.UNKNOWN);
         // H = true;
     }
 
-    public void visit(Instr.SEI i) {
+    public void visit(LegacyInstr.SEI i) {
         writeSREG(ISEValue.UNKNOWN);
         // enableInterrupts();
     }
 
-    public void visit(Instr.SEN i) {
+    public void visit(LegacyInstr.SEN i) {
         writeSREG(ISEValue.UNKNOWN);
         // N = true;
     }
 
-    public void visit(Instr.SER i) {
+    public void visit(LegacyInstr.SER i) {
         writeRegister(i.r1, ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.SES i) {
+    public void visit(LegacyInstr.SES i) {
         writeSREG(ISEValue.UNKNOWN);
         // S = true;
     }
 
-    public void visit(Instr.SET i) {
+    public void visit(LegacyInstr.SET i) {
         writeSREG(ISEValue.UNKNOWN);
         // T = true;
     }
 
-    public void visit(Instr.SEV i) {
+    public void visit(LegacyInstr.SEV i) {
         writeSREG(ISEValue.UNKNOWN);
         // V = true;
     }
 
-    public void visit(Instr.SEZ i) {
+    public void visit(LegacyInstr.SEZ i) {
         writeSREG(ISEValue.UNKNOWN);
         // Z = true;
     }
 
-    public void visit(Instr.SLEEP i) {
+    public void visit(LegacyInstr.SLEEP i) {
         // do nothing.
     }
 
-    public void visit(Instr.SPM i) {
-        readRegister(Register.R0);
-        readRegister(Register.R1);
-        readRegister(Register.Z);
-        readRegister(Register.Z.nextRegister());
+    public void visit(LegacyInstr.SPM i) {
+        readRegister(LegacyRegister.R0);
+        readRegister(LegacyRegister.R1);
+        readRegister(LegacyRegister.Z);
+        readRegister(LegacyRegister.Z.nextRegister());
     }
 
-    public void visit(Instr.ST i) {
+    public void visit(LegacyInstr.ST i) {
         readRegister(i.r1);
         readRegister(i.r1.nextRegister());
         readRegister(i.r2);
     }
 
-    public void visit(Instr.STD i) {
+    public void visit(LegacyInstr.STD i) {
         readRegister(i.r1);
         readRegister(i.r1.nextRegister());
         readRegister(i.r2);
     }
 
-    public void visit(Instr.STPD i) {
-        readRegister(i.r1);
-        readRegister(i.r1.nextRegister());
-        readRegister(i.r2);
-        writeRegister(i.r1, ISEValue.UNKNOWN);
-        writeRegister(i.r1.nextRegister(), ISEValue.UNKNOWN);
-    }
-
-    public void visit(Instr.STPI i) {
+    public void visit(LegacyInstr.STPD i) {
         readRegister(i.r1);
         readRegister(i.r1.nextRegister());
         readRegister(i.r2);
@@ -861,28 +854,36 @@ public class ISEInterpreter implements InstrVisitor {
         writeRegister(i.r1.nextRegister(), ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.STS i) {
+    public void visit(LegacyInstr.STPI i) {
+        readRegister(i.r1);
+        readRegister(i.r1.nextRegister());
+        readRegister(i.r2);
+        writeRegister(i.r1, ISEValue.UNKNOWN);
+        writeRegister(i.r1.nextRegister(), ISEValue.UNKNOWN);
+    }
+
+    public void visit(LegacyInstr.STS i) {
         readRegister(i.r1);
     }
 
-    public void visit(Instr.SUB i) {
+    public void visit(LegacyInstr.SUB i) {
         binop(i.r1, i.r2);
     }
 
-    public void visit(Instr.SUBI i) {
+    public void visit(LegacyInstr.SUBI i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.SWAP i) {
+    public void visit(LegacyInstr.SWAP i) {
         unop(i.r1);
     }
 
-    public void visit(Instr.TST i) {
+    public void visit(LegacyInstr.TST i) {
         readRegister(i.r1);
         writeSREG(ISEValue.UNKNOWN);
     }
 
-    public void visit(Instr.WDR i) {
+    public void visit(LegacyInstr.WDR i) {
         // do nothing.
     }
 }

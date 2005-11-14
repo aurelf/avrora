@@ -34,8 +34,8 @@
 
 package avrora.arch.avr;
 
-import avrora.sim.Segment;
 import avrora.sim.ActiveRegister;
+import avrora.sim.Segment;
 
 /**
  * The <code>AVRDataSegment</code> class implements a data segment corresponding to the SRAM

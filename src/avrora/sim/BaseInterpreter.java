@@ -32,13 +32,13 @@
 
 package avrora.sim;
 
-import avrora.core.*;
+import avrora.arch.legacy.*;
+import avrora.core.Program;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.*;
 import cck.text.StringUtil;
-import cck.text.Terminal;
 import cck.util.Arithmetic;
 import cck.util.Util;
 
@@ -48,7 +48,7 @@ import cck.util.Util;
  *
  * @author Ben L. Titzer
  */
-public abstract class BaseInterpreter implements InstrVisitor {
+public abstract class BaseInterpreter implements LegacyInstrVisitor {
 
     public static final int NUM_REGS = 32; // number of general purpose registers
 
@@ -94,7 +94,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
     protected RWRegister SPH_reg;
 
     protected final CodeSegment flash;
-    protected Instr[] shared_instr; // shared for performance reasons only
+    protected LegacyInstr[] shared_instr; // shared for performance reasons only
 
     protected final InterruptTable interrupts;
     protected final RegisterSet registers;
@@ -174,7 +174,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
      */
     protected final MainClock clock;
 
-    public class StateImpl implements State {
+    public class StateImpl implements LegacyState {
 
         /**
          * The <code>getSimulator()</code> method returns the simulator associated with this state
@@ -201,7 +201,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
          * @param reg the register to read
          * @return the current value of the register
          */
-        public byte getRegisterByte(Register reg) {
+        public byte getRegisterByte(LegacyRegister reg) {
             return sram[reg.getNumber()];
         }
 
@@ -211,7 +211,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
          * @param reg the register to read
          * @return the current unsigned value of the register
          */
-        public int getRegisterUnsigned(Register reg) {
+        public int getRegisterUnsigned(LegacyRegister reg) {
             return sram[reg.getNumber()] & 0xff;
         }
 
@@ -224,7 +224,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
          * @param reg the low register of the pair to read
          * @return the current unsigned word value of the register pair
          */
-        public int getRegisterWord(Register reg)  {
+        public int getRegisterWord(LegacyRegister reg)  {
             int number = reg.getNumber();
             return Arithmetic.uword(sram[number], sram[number+1]);
         }
@@ -356,17 +356,17 @@ public abstract class BaseInterpreter implements InstrVisitor {
         }
 
         /**
-         * The <code>getInstr()</code> can be used to retrieve a reference to the <code>Instr</code> object
+         * The <code>getInstr()</code> can be used to retrieve a reference to the <code>LegacyInstr</code> object
          * representing the instruction at the specified program address. Care should be taken that the address in
          * program memory specified does not contain data. This is because Avrora does have a functioning
-         * disassembler and assumes that the <code>Instr</code> objects for each instruction in the program are
+         * disassembler and assumes that the <code>LegacyInstr</code> objects for each instruction in the program are
          * known a priori.
          *
          * @param address the byte address from which to read the instruction
-         * @return a reference to the <code>Instr</code> object representing the instruction at that address in
+         * @return a reference to the <code>LegacyInstr</code> object representing the instruction at that address in
          *         the program
          */
-        public Instr getInstr(int address) {
+        public LegacyInstr getInstr(int address) {
             return flash.readInstr(address);
         }
 
@@ -541,7 +541,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
         ErrorReporter reporter = new ErrorReporter();
         flash = pr.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
         reporter.segment = flash;
-        // for performance, we share a reference to the Instr[] array representing flash
+        // for performance, we share a reference to the LegacyInstr[] array representing flash
         // TODO: implement share() method
         shared_instr = flash.shareCode(null);
 
@@ -763,7 +763,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
      * @param reg the register to read
      * @return the current value of the register
      */
-    public byte getRegisterByte(Register reg) {
+    public byte getRegisterByte(LegacyRegister reg) {
         return sram[reg.getNumber()];
     }
 
@@ -777,7 +777,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
      * @param reg the register to read
      * @return the current unsigned value of the register
      */
-    public int getRegisterUnsigned(Register reg) {
+    public int getRegisterUnsigned(LegacyRegister reg) {
         return sram[reg.getNumber()] & 0xff;
     }
 
@@ -799,7 +799,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
      * @param reg the low register of the pair to read
      * @return the current unsigned word value of the register pair
      */
-    public int getRegisterWord(Register reg) {
+    public int getRegisterWord(LegacyRegister reg) {
         byte low = getRegisterByte(reg);
         byte high = getRegisterByte(reg.nextRegister());
         return Arithmetic.uword(low, high);
@@ -960,7 +960,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
      * @param reg the register to write the value to
      * @param val the value to write to the register
      */
-    protected void writeRegisterByte(Register reg, byte val) {
+    protected void writeRegisterByte(LegacyRegister reg, byte val) {
         sram[reg.getNumber()] = val;
     }
 
@@ -974,7 +974,7 @@ public abstract class BaseInterpreter implements InstrVisitor {
      * @param reg the low register of the pair to write
      * @param val the word value to write to the register pair
      */
-    protected void writeRegisterWord(Register reg, int val) {
+    protected void writeRegisterWord(LegacyRegister reg, int val) {
         byte low = Arithmetic.low(val);
         byte high = Arithmetic.high(val);
         writeRegisterByte(reg, low);
@@ -1174,17 +1174,17 @@ public abstract class BaseInterpreter implements InstrVisitor {
     }
 
     /**
-     * The <code>getInstr()</code> can be used to retrieve a reference to the <code>Instr</code> object
+     * The <code>getInstr()</code> can be used to retrieve a reference to the <code>LegacyInstr</code> object
      * representing the instruction at the specified program address. Care should be taken that the address in
      * program memory specified does not contain data. This is because Avrora does have a functioning
-     * disassembler and assumes that the <code>Instr</code> objects for each instruction in the program are
+     * disassembler and assumes that the <code>LegacyInstr</code> objects for each instruction in the program are
      * known a priori.
      *
      * @param address the byte address from which to read the instruction
-     * @return a reference to the <code>Instr</code> object representing the instruction at that address in
+     * @return a reference to the <code>LegacyInstr</code> object representing the instruction at that address in
      *         the program; null if there is no instruction at the specified address
      */
-    public Instr getInstr(int address) {
+    public LegacyInstr getInstr(int address) {
         return flash.readInstr(address);
     }
 

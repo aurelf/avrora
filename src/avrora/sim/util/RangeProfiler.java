@@ -32,9 +32,8 @@
 
 package avrora.sim.util;
 
-import avrora.core.Instr;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
-import avrora.sim.State;
 import avrora.sim.Simulator;
 
 /**
@@ -94,7 +93,7 @@ public class RangeProfiler extends Simulator.Probe.Empty {
      * @param state   the state of the simulation
      * @param address the address at which this instruction resides
      */
-    public void fireBefore(State state, int address) {
+    public void fireBefore(LegacyState state, int address) {
         if (address < low_addr) return;
         if (address >= high_addr) return;
         icount[address - low_addr]++;

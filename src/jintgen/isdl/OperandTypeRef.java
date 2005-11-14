@@ -34,10 +34,10 @@
 
 package jintgen.isdl;
 
-import jintgen.isdl.parser.Token;
-import jintgen.types.*;
-import jintgen.jigir.JIGIRTypeEnv;
 import cck.util.Util;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.JIGIRTypeEnv;
+import jintgen.types.*;
 
 /**
  * @author Ben L. Titzer
@@ -72,7 +72,7 @@ public class OperandTypeRef extends TypeRef {
     }
 
     public OperandTypeDecl getOperandTypeDecl() {
-        if ( decl == null ) throw Util.failure("Operand type reference not resolved at "+tcName.getSourcePoint());
+        if ( decl == null ) throw Util.failure("LegacyOperand type reference not resolved at "+tcName.getSourcePoint());
         return decl;
     }
 }

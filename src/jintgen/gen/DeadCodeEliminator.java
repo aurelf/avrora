@@ -32,9 +32,9 @@
 
 package jintgen.gen;
 
+import cck.util.Util;
 import jintgen.jigir.*;
 import java.util.*;
-import cck.util.Util;
 
 /**
  * @author Ben L. Titzer

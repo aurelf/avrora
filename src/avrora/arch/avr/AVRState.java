@@ -36,7 +36,6 @@ package avrora.arch.avr;
 
 import avrora.sim.*;
 import avrora.sim.clock.DeltaQueue;
-import cck.util.Util;
 
 /**
  * The <code>AVRState</code> class represents an instance of the internal state of an <code>AVRInstrInterpreter</code>

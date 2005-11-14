@@ -36,7 +36,10 @@
 
 package avrora.monitors;
 
-import avrora.core.*;
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyState;
+import avrora.core.Program;
+import avrora.core.SourceMapping;
 import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.util.SimUtil;
@@ -77,13 +80,13 @@ public class CallMonitor extends MonitorFactory {
             Program p = s.getProgram();
             sourceMap = p.getSourceMapping();
             for ( int pc = 0; pc < p.program_end; pc = p.getNextPC(pc)) {
-                Instr i = p.readInstr(pc);
+                LegacyInstr i = p.readInstr(pc);
                 if ( i != null ) {
-                    if ( i instanceof Instr.CALL ) s.insertProbe(new CallProbe("CALL"), pc);
-                    else if ( i instanceof Instr.ICALL ) s.insertProbe(new CallProbe("ICALL"), pc);
-                    else if ( i instanceof Instr.RCALL) s.insertProbe(new CallProbe("RCALL"), pc);
-                    else if ( i instanceof Instr.RET ) s.insertProbe(new ReturnProbe("RET"), pc);
-                    else if ( i instanceof Instr.RETI ) s.insertProbe(new ReturnProbe("RETI"), pc);
+                    if ( i instanceof LegacyInstr.CALL ) s.insertProbe(new CallProbe("CALL"), pc);
+                    else if ( i instanceof LegacyInstr.ICALL ) s.insertProbe(new CallProbe("ICALL"), pc);
+                    else if ( i instanceof LegacyInstr.RCALL) s.insertProbe(new CallProbe("RCALL"), pc);
+                    else if ( i instanceof LegacyInstr.RET ) s.insertProbe(new ReturnProbe("RET"), pc);
+                    else if ( i instanceof LegacyInstr.RETI ) s.insertProbe(new ReturnProbe("RETI"), pc);
                 }
             }
         }
@@ -143,7 +146,7 @@ public class CallMonitor extends MonitorFactory {
                 this.itype = itype;
             }
 
-            public void fireAfter(State s, int addr) {
+            public void fireAfter(LegacyState s, int addr) {
                 int npc = s.getPC();
                 String caddr = StringUtil.addrToString(addr);
                 String daddr = sourceMap.getName(npc);
@@ -153,7 +156,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         class InterruptProbe extends Simulator.InterruptProbe.Empty {
-            public void fireBeforeInvoke(State s, int inum) {
+            public void fireBeforeInvoke(LegacyState s, int inum) {
                 String istr;
                 if ( inum == 1) {
                     istr = "RESET";
@@ -173,7 +176,7 @@ public class CallMonitor extends MonitorFactory {
                 this.itype = itype;
             }
 
-            public void fireAfter(State s, int addr) {
+            public void fireAfter(LegacyState s, int addr) {
                 int npc = s.getPC();
                 String daddr = StringUtil.addrToString(npc);
                 pop(daddr, itype);

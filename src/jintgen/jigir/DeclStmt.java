@@ -33,8 +33,8 @@
 package jintgen.jigir;
 
 import jintgen.isdl.parser.Token;
-import jintgen.types.TypeRef;
 import jintgen.types.Type;
+import jintgen.types.TypeRef;
 
 /**
  * The <code>DeclStmt</code> represents a declaration of a local, temporary value in the IR. A named temporary

@@ -37,11 +37,8 @@ package jintgen.types;
 import cck.parser.AbstractToken;
 import cck.parser.SourcePoint;
 import cck.util.Util;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import jintgen.isdl.parser.Token;
+import java.util.*;
 
 /**
  * The <code>TypeRef</code> class represents a reference to a type within

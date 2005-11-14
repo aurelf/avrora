@@ -28,16 +28,42 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 14, 2005
  */
 
-package jintgen.arch;
+package avrora.arch.avr;
+
+import avrora.arch.*;
+import cck.util.Util;
 
 /**
+ * The <code>AVRArchitecture</code> class implements an architecture for use in Avrora.
+ * An instance of this class allows access to important architectural tools such as
+ * an assembler, disassembler, etc.
+ *
  * @author Ben L. Titzer
  */
-public interface BuilderErrorReporter {
+public class AVRArchitecture implements AbstractArchitecture {
 
-    public void ValueOutOfRange(int val, int low, int high);
+    public static final AVRArchitecture INSTANCE = new AVRArchitecture();
+    
+    /**
+     * The <code>getDisassembler()</code> method returns an instance of the appropriate
+     * disassembler for the architecture. The disassembler can be used to decode binary
+     * instructions into <code>AbstractInstr</code> instances of the appropriate type.
+     * @return an instance of the <code>AbstractDisassembler</code> interface appropriate
+     * for this architecture
+     */
+    public AbstractDisassembler getDisassembler() {
+        return new AVRDisassembler();
+    }
 
-    public void ExpectedSymbolInSet(String sym, String set);
+    public AbstractAssembler getAssembler() {
+        throw Util.unimplemented();
+    }
+
+    public AbstractParser getParser() {
+        throw Util.unimplemented();
+    }
 }

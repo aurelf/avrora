@@ -43,7 +43,7 @@ abstract public class Database {
     }
 
     /**
-     * Register a data item into this database.
+     * LegacyRegister a data item into this database.
      */
     public void registerDataItem(DataItem d) {
         items.add(d);

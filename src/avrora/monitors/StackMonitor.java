@@ -32,14 +32,12 @@
 
 package avrora.monitors;
 
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
-import avrora.core.Instr;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.mcu.MicrocontrollerProperties;
-import cck.text.StringUtil;
-import cck.text.TermUtil;
-import cck.text.Terminal;
+import cck.text.*;
 
 /**
  * The <code>StackMonitor</code> class is a monitor that tracks the height of the program's stack over the
@@ -76,15 +74,15 @@ public class StackMonitor extends MonitorFactory {
             // insert probes to catch "implicit" updates to SP for certain instructions
             Program program = sim.getProgram();
             for ( int pc = 0; pc < program.program_end; pc = program.getNextPC(pc)) {
-                Instr i = program.readInstr(pc);
+                LegacyInstr i = program.readInstr(pc);
                 if ( i != null ) {
-                    if ( i instanceof Instr.CALL ) sim.insertProbe(probe, pc);
-                    else if ( i instanceof Instr.ICALL ) sim.insertProbe(probe, pc);
-                    else if ( i instanceof Instr.RCALL) sim.insertProbe(probe, pc);
-                    else if ( i instanceof Instr.RET ) sim.insertProbe(probe, pc);
-                    else if ( i instanceof Instr.RETI ) sim.insertProbe(probe, pc);
-                    else if ( i instanceof Instr.PUSH ) sim.insertProbe(probe, pc);
-                    else if ( i instanceof Instr.POP ) sim.insertProbe(probe, pc);
+                    if ( i instanceof LegacyInstr.CALL ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof LegacyInstr.ICALL ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof LegacyInstr.RCALL) sim.insertProbe(probe, pc);
+                    else if ( i instanceof LegacyInstr.RET ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof LegacyInstr.RETI ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof LegacyInstr.PUSH ) sim.insertProbe(probe, pc);
+                    else if ( i instanceof LegacyInstr.POP ) sim.insertProbe(probe, pc);
                 }
             }
         }
@@ -107,7 +105,7 @@ public class StackMonitor extends MonitorFactory {
         class SPWatch extends Simulator.Watch.Empty {
             boolean written;
             // fire when either SPH or SPL is written
-            public void fireAfterWrite(State state, int data_addr, byte value) {
+            public void fireAfterWrite(LegacyState state, int data_addr, byte value) {
                 written = true;
                 checkSPWrite(state);
             }
@@ -115,19 +113,19 @@ public class StackMonitor extends MonitorFactory {
 
         class IntProbe extends Simulator.InterruptProbe.Empty {
             // fire when any interrupt is invoked
-            public void fireAfterInvoke(State s, int inum) {
+            public void fireAfterInvoke(LegacyState s, int inum) {
                 newSP(s.getSP());
             }
         }
 
         class SPProbe extends Simulator.Probe.Empty {
             // fire after a call, push, pop, or ret instruction
-            public void fireAfter(State state, int pc) {
+            public void fireAfter(LegacyState state, int pc) {
                 newSP(state.getSP());
             }
         }
 
-        void checkSPWrite(State state) {
+        void checkSPWrite(LegacyState state) {
             // only record SP values after both SPH and SPL written
             if ( SPH_watch.written && SPL_watch.written ) {
                 newSP(state.getSP());

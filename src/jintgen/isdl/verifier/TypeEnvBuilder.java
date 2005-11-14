@@ -35,9 +35,9 @@
 package jintgen.isdl.verifier;
 
 import jintgen.isdl.*;
-import jintgen.types.TypeCon;
-import jintgen.types.Type;
 import jintgen.jigir.JIGIRTypeEnv;
+import jintgen.types.Type;
+import jintgen.types.TypeCon;
 
 /**
  * @author Ben L. Titzer

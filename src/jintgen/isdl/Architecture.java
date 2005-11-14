@@ -37,8 +37,8 @@ import jintgen.isdl.parser.Token;
 import jintgen.isdl.verifier.JIGIRErrorReporter;
 import jintgen.jigir.JIGIRTypeEnv;
 import jintgen.types.TypeRef;
-
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The <code>Architecture</code> class represents a collection of instructions, encodings, operands, and

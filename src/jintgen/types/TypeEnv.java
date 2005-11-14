@@ -34,7 +34,8 @@
 
 package jintgen.types;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The <code>TypeEnv</code> class represents a type environment that contains a

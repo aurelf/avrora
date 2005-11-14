@@ -32,13 +32,12 @@
 
 package jintgen.gen;
 
+import jintgen.Main;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
-import jintgen.Main;
-import jintgen.types.TypeRef;
 import jintgen.types.Type;
-
+import jintgen.types.TypeRef;
 import java.io.IOException;
 import java.util.*;
 
@@ -69,14 +68,14 @@ public class InterpreterGenerator extends Generator {
 
     private void initStatics() {
         properties.setProperty("addr", className("AddrMode"));
-        properties.setProperty("instr", className("Instr"));
-        properties.setProperty("operand", className("Operand"));
+        properties.setProperty("instr", className("LegacyInstr"));
+        properties.setProperty("operand", className("LegacyOperand"));
         properties.setProperty("opvisitor", className("OperandVisitor"));
-        properties.setProperty("visitor", className("InstrVisitor"));
+        properties.setProperty("visitor", className("LegacyInstrVisitor"));
         properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
         properties.setProperty("interpreter", className("InstrInterpreter"));
-        properties.setProperty("state", className("State"));
+        properties.setProperty("state", className("LegacyState"));
         ncg = new jintgen.gen.CodeSimplifier(arch);
         ncg.genAccessMethods();
     }

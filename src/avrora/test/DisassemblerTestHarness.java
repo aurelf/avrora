@@ -32,11 +32,14 @@
 
 package avrora.test;
 
-import avrora.core.*;
+import avrora.arch.legacy.LegacyDisassembler;
+import avrora.arch.legacy.LegacyInstr;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
 import avrora.syntax.Module;
 import avrora.syntax.objdump.ObjDump2ProgramReader;
-import cck.text.StringUtil;
 import cck.test.*;
+import cck.text.StringUtil;
 import java.util.Properties;
 
 /**
@@ -51,12 +54,12 @@ public class DisassemblerTestHarness implements TestHarness {
 
         Module module;
         Program program;
-        Disassembler disassembler;
-        Instr instrs[];
+        LegacyDisassembler disassembler;
+        LegacyInstr[] instrs;
 
         DisassemblerTest(String fname, Properties props) {
             super(fname, props);
-            disassembler = new Disassembler();
+            disassembler = new LegacyDisassembler();
         }
 
         public void run() throws Exception {
@@ -64,28 +67,28 @@ public class DisassemblerTestHarness implements TestHarness {
             String[] args = { filename };
             program = r.read(args);
 
-            byte data[] = new byte[program.program_end];
-            instrs = new Instr[program.program_end];
+            byte[] data = new byte[program.program_end];
+            instrs = new LegacyInstr[program.program_end];
 
             for ( int cntr = 0; cntr < program.program_end; cntr++ ) {
                 data[cntr] = program.readProgramByte(cntr);
             }
 
             for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) ) {
-                Instr i = program.readInstr(cntr);
+                LegacyInstr i = program.readInstr(cntr);
                 if ( i == null ) continue;
 
-                instrs[cntr] = disassembler.disassemble(0, data, cntr);
+                instrs[cntr] = disassembler.disassembleLegacy(data, 0, cntr);
             }
         }
 
         public TestResult match(Throwable t) {
             
             for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) ) {
-                Instr i = program.readInstr(cntr);
+                LegacyInstr i = program.readInstr(cntr);
                 if ( i == null ) continue;
 
-                Instr id = instrs[cntr];
+                LegacyInstr id = instrs[cntr];
                 if ( !i.equals(id) ) {
                     return new TestResult.TestFailure("disassembler error at "+StringUtil.addrToString(cntr)
                             +", expected: "+i+" received: "+id);

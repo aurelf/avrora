@@ -32,8 +32,8 @@
 
 package avrora.monitors;
 
+import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import cck.text.StringUtil;
@@ -113,7 +113,7 @@ public class IORegMonitor extends MonitorFactory {
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              */
-            public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value) {
+            public void fireAfterBitRead(LegacyState state, int ioreg_num, int bit, boolean value) {
                 printer.println(name+"["+bit+"]   -> "+value);
             }
 
@@ -126,7 +126,7 @@ public class IORegMonitor extends MonitorFactory {
              * @param ioreg_num the number of the IO register being read
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value) {
+            public void fireBeforeBitWrite(LegacyState state, int ioreg_num, int bit, boolean value) {
                 printer.println(name+"["+bit+"] <=   "+value);
             }
 
@@ -139,7 +139,7 @@ public class IORegMonitor extends MonitorFactory {
              * @param data_addr the address of the data being referenced
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeWrite(State state, int data_addr, byte value) {
+            public void fireBeforeWrite(LegacyState state, int data_addr, byte value) {
                 printer.println(name+"    <=   "+render(value));
             }
 
@@ -155,7 +155,7 @@ public class IORegMonitor extends MonitorFactory {
              * @param data_addr the address of the data being referenced
              * @param value     the value of the memory location being read
              */
-            public void fireAfterRead(State state, int data_addr, byte value) {
+            public void fireAfterRead(LegacyState state, int data_addr, byte value) {
                 printer.println(name+"      -> "+render(value));
             }
 

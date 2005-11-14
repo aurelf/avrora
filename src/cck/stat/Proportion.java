@@ -99,7 +99,7 @@ public class Proportion extends DataItem {
     }
 
     /**
-     * Register a counter object with this proportion.
+     * LegacyRegister a counter object with this proportion.
      */
     public Share createShare(String name) {
         Share s = new Share(name);
@@ -108,7 +108,7 @@ public class Proportion extends DataItem {
     }
 
     /**
-     * Register an integer count with this proportion object and return a Counter object.
+     * LegacyRegister an integer count with this proportion object and return a Counter object.
      */
     public Share registerCount(String str, int count) {
         Share s = new Share(str, count);

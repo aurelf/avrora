@@ -33,8 +33,8 @@
 package jintgen.jigir;
 
 import cck.parser.SourcePoint;
-import jintgen.isdl.parser.Token;
 import jintgen.isdl.OperandTypeDecl;
+import jintgen.isdl.parser.Token;
 import jintgen.types.TypeRef;
 
 /**

@@ -32,10 +32,8 @@
 
 package avrora.syntax;
 
-import avrora.core.Register;
-import cck.parser.AbstractToken;
-import cck.parser.SourcePoint;
-import cck.parser.ErrorReporter;
+import avrora.arch.legacy.LegacyRegister;
+import cck.parser.*;
 import cck.text.StringUtil;
 
 /**
@@ -78,7 +76,7 @@ public class AVRErrorReporter extends ErrorReporter {
         error("RegisterExpected", point(o), report);
     }
 
-    public void IncorrectRegister(SyntacticOperand o, Register reg, String expect) {
+    public void IncorrectRegister(SyntacticOperand o, LegacyRegister reg, String expect) {
         String report = "incorrected register " + StringUtil.quote(reg) + ", expected one of " + expect;
         error("IncorrectRegister", point(o), report);
     }

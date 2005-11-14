@@ -33,7 +33,10 @@
 package avrora.syntax.elf;
 
 import avrora.Main;
-import avrora.core.*;
+import avrora.arch.legacy.LegacyDisassembler;
+import avrora.arch.legacy.LegacyInstr;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
 import cck.text.*;
 import cck.util.Option;
 import cck.util.Util;
@@ -83,7 +86,11 @@ public class ELFLoader extends ProgramReader {
         RandomAccessFile fis = new RandomAccessFile(fname, "r");
 
         // read the ELF header
-        readHeader(fis);
+        try {
+            readHeader(fis);
+        } catch ( ELFHeader.FormatError e) {
+            Util.userError(fname, "invalid ELF header");
+        }
 
         // read the program header table (if it exists)
         readProgramHeader(fis);
@@ -128,14 +135,10 @@ public class ELFLoader extends ProgramReader {
     }
 
     private void disassembleSection(byte[] sect, ELFProgramHeaderTable.Entry32 e, Program p) {
-        Disassembler d = new Disassembler();
+        LegacyDisassembler d = new LegacyDisassembler();
         for ( int off = 0; off < sect.length; off += 2 ) {
-            try {
-                Instr i = d.disassemble(e.p_paddr, sect, off);
-                p.writeInstr(i, e.p_paddr + off);
-            } catch (Disassembler.InvalidInstruction invalidInstruction) {
-                // do nothing
-            }
+            LegacyInstr i = d.disassembleLegacy(sect, e.p_paddr, off);
+            if ( i != null ) p.writeInstr(i, e.p_paddr + off);
         }
     }
 
@@ -182,7 +185,7 @@ public class ELFLoader extends ProgramReader {
         if ( DUMP.get() ) printPHT();
     }
 
-    private void readHeader(RandomAccessFile fis) throws IOException {
+    private void readHeader(RandomAccessFile fis) throws IOException, ELFHeader.FormatError {
         header = new ELFHeader();
         header.read(fis);
 

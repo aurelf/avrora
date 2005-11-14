@@ -32,8 +32,8 @@
 
 package avrora.actions;
 
-import cck.test.AutomatedTester;
 import avrora.Defaults;
+import cck.test.AutomatedTester;
 import cck.text.Status;
 import cck.util.Option;
 

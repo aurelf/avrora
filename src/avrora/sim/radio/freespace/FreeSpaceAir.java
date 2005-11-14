@@ -65,7 +65,7 @@ public class FreeSpaceAir implements RadioAir {
     final Topology topology;
 
     /**
-     * State for maintaining RSSI wait for neighbors
+     * LegacyState for maintaining RSSI wait for neighbors
      */
     int rssi_count;
     int meet_count;

@@ -32,7 +32,9 @@
 
 package avrora.stack;
 
-import avrora.core.*;
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyRegister;
+import avrora.core.Program;
 import avrora.stack.isea.*;
 import cck.stat.Distribution;
 import cck.text.*;
@@ -386,7 +388,7 @@ public class Analyzer {
 
     private void mergeReturnStateIntoCaller(StateCache.State caller, MutableState rstate, ISEState rs) {
         for ( int cntr = 0; cntr < MutableState.NUM_REGS; cntr++ ) {
-            Register reg = Register.getRegisterByNumber(cntr);
+            LegacyRegister reg = LegacyRegister.getRegisterByNumber(cntr);
             // get the value that is in the return state
             char retval = rstate.getRegisterAV(reg);
             // interpret the ISE abstract value: is it a new value or an old value?
@@ -407,7 +409,7 @@ public class Analyzer {
 
     private char interpret(StateCache.State caller, byte rsval, char defval) {
         // if the ISE value refers to the value of a register before the call, return it from the caller state
-        Register reg = ISEValue.asRegister(rsval);
+        LegacyRegister reg = ISEValue.asRegister(rsval);
         if ( reg != null ) return caller.getRegisterAV(reg);
         // if the ISE value refers to the value of an IO register before the call, return it from the caller state
         int ior = ISEValue.asIORegister(rsval);
@@ -614,7 +616,7 @@ public class Analyzer {
 
     private void maskIrrelevantState(MutableState s, ISEState rs) {
         for ( int cntr = 0; cntr < MutableState.NUM_REGS; cntr++ ) {
-            Register reg = Register.getRegisterByNumber(cntr);
+            LegacyRegister reg = LegacyRegister.getRegisterByNumber(cntr);
             if ( !rs.isRegisterRead(reg) )
                 s.setRegisterAV(reg, AbstractArithmetic.UNKNOWN);
         }
@@ -896,7 +898,7 @@ public class Analyzer {
         Terminal.print(head + ' ');
         StatePrinter.printStateName(s);
         Terminal.nextln();
-        Instr instr = program.readInstr(s.getPC());
+        LegacyInstr instr = program.readInstr(s.getPC());
         String str = StringUtil.leftJustify(instr.toString(), 14);
         StatePrinter.printState(str, s);
     }

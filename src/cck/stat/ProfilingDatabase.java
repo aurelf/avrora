@@ -50,7 +50,7 @@ public class ProfilingDatabase {
     static boolean created = false;
 
     /**
-     * Register a ProfilingData object
+     * LegacyRegister a ProfilingData object
      */
     public static void register(ProfilingData d) {
         datalist.add(d);

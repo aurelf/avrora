@@ -57,7 +57,7 @@ public class CC2420Radio implements Radio {
     //sent back during addressing byte of most trnasfers, during all command strobes,
     // and first byte of transmit
     /**
-     * Register addresses.
+     * LegacyRegister addresses.
      */
     public static final int MAIN = 0x10;
     public static final int MDMCTRL0 = 0x11;
@@ -94,7 +94,7 @@ public class CC2420Radio implements Radio {
     public static final int TXFIFO = 0x3e;
     public static final int RXFIFO = 0x3f;
     /**
-     * Command Strobe Register Addresses (instuctions that take actions when conditions are met)
+     * Command Strobe LegacyRegister Addresses (instuctions that take actions when conditions are met)
      */
     public static final int SNOP = 0x00;
     public static final int SXOSCON = 0x01;
@@ -538,7 +538,7 @@ public class CC2420Radio implements Radio {
     }
 
     /**
-     * Transmit Control Register controls TX mixer currents, wait time required after STXON before transmitting,
+     * Transmit Control LegacyRegister controls TX mixer currents, wait time required after STXON before transmitting,
      * and PA output level and current programming.
      */
     protected class TxCtrlRegister extends RadioRegister {
@@ -557,7 +557,7 @@ public class CC2420Radio implements Radio {
         boolean reserved;
 
         TxCtrlRegister() {
-            super("Transmit Control Register", 0xa0ff);
+            super("Transmit Control LegacyRegister", 0xa0ff);
             decode(value);
         }
 
@@ -577,7 +577,7 @@ public class CC2420Radio implements Radio {
     }
 
     /**
-     * Receive Control Register 0 controls the rx mixer current as well as current compensation and main current
+     * Receive Control LegacyRegister 0 controls the rx mixer current as well as current compensation and main current
      * for the LNA in the AGC high, med, and low gain modes
      */
     protected class RxCtrl0Register extends RadioRegister {
@@ -593,7 +593,7 @@ public class CC2420Radio implements Radio {
         int low_lna_cur = 1;
 
         RxCtrl0Register() {
-            super("RX Control Register 0", 0x12e5);
+            super("RX Control LegacyRegister 0", 0x12e5);
             decode(value);
         }
 
@@ -613,7 +613,7 @@ public class CC2420Radio implements Radio {
     }
 
     /**
-     * Receive Control Register 1 controls settings of RX mixers, LNA modes, controls current to RX bandpass filters,
+     * Receive Control LegacyRegister 1 controls settings of RX mixers, LNA modes, controls current to RX bandpass filters,
      * receiver mixers output, and the RX mixer.  Also controls VCM level.
      */
     protected class RxCtrl1Register extends RadioRegister {
@@ -640,7 +640,7 @@ public class CC2420Radio implements Radio {
         int rxmix_current = 900;
 
         RxCtrl1Register() {
-            super("RX Control Register 1", 0x0a56);
+            super("RX Control LegacyRegister 1", 0x0a56);
             decode(value);
         }
 
@@ -704,7 +704,7 @@ public class CC2420Radio implements Radio {
     }
 
     /**
-     * I/O Configuration Register 0 configures the polarity of the SFD, CCA, FIFO, FIFOP pins, beacon frames,
+     * I/O Configuration LegacyRegister 0 configures the polarity of the SFD, CCA, FIFO, FIFOP pins, beacon frames,
      * and the FIFOP threshold required to go high
      */
     protected class IORegister0 extends RadioRegister {
@@ -721,7 +721,7 @@ public class CC2420Radio implements Radio {
         boolean cca_polarity;
 
         IORegister0() {
-            super("I/O Config Register 0", 0x0040);
+            super("I/O Config LegacyRegister 0", 0x0040);
             decode(value);
         }
 
@@ -740,7 +740,7 @@ public class CC2420Radio implements Radio {
     }
 
     /**
-     * I/O Configuration Register 1 configures the HSSD module as well as adjusting multiplexer settings of the
+     * I/O Configuration LegacyRegister 1 configures the HSSD module as well as adjusting multiplexer settings of the
      * SFD and CCA pins
      */
     protected class IORegister1 extends RadioRegister {
@@ -749,7 +749,7 @@ public class CC2420Radio implements Radio {
         int ccamux = 0;
 
         IORegister1() {
-            super("I/O Config Register 1", 0x0000);
+            super("I/O Config LegacyRegister 1", 0x0000);
             decode(value);
         }
 
@@ -766,7 +766,7 @@ public class CC2420Radio implements Radio {
 
     protected class TXFIFORegister extends RadioRegister {
         TXFIFORegister() {
-            super("TXFIFO Register", 0x0000);
+            super("TXFIFO LegacyRegister", 0x0000);
         }
 
         protected void decode(int val) {
@@ -785,7 +785,7 @@ public class CC2420Radio implements Radio {
 
     protected class RXFIFORegister extends RadioRegister {
         RXFIFORegister() {
-            super("RXFIFO Register", 0x0000);
+            super("RXFIFO LegacyRegister", 0x0000);
         }
 
         protected void decode(int val) {
@@ -1484,7 +1484,7 @@ public class CC2420Radio implements Radio {
         }
 
         /**
-         * The <code>ReadReg</code> event is used when a Register Read instruction is issused and sends either the
+         * The <code>ReadReg</code> event is used when a LegacyRegister Read instruction is issused and sends either the
          * first or second data bytes in the given address  back to the MCU across the SPI
          */
         private class ReadReg implements Simulator.Event {
@@ -1512,12 +1512,12 @@ public class CC2420Radio implements Radio {
             public void fire() {
                 //means low byte
                 spiDevice.receiveFrame(SPI.newFrame(Arithmetic.low(registers[regAdd].value)));
-                //sends lower byte of Register contents back to MCU
+                //sends lower byte of LegacyRegister contents back to MCU
             }
         }
 
         /**
-         * The <code>WriteReg</code> event is used when a Register Write instruction is issued and writes either the
+         * The <code>WriteReg</code> event is used when a LegacyRegister Write instruction is issued and writes either the
          * first or second data byte to the register from data received through the SPI
          */
         private class WriteReg implements Simulator.Event {

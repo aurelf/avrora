@@ -34,7 +34,6 @@ package jintgen.jigir;
 
 import cck.parser.SourcePoint;
 import cck.text.StringUtil;
-import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.types.Type;
 import jintgen.types.Typeable;

@@ -33,14 +33,16 @@
 package avrora.test;
 
 import avrora.Defaults;
-import avrora.core.*;
+import avrora.arch.legacy.LegacyRegister;
+import avrora.arch.legacy.LegacyState;
+import avrora.core.Program;
+import avrora.core.ProgramReader;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.syntax.Module;
+import cck.test.*;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 import cck.util.Arithmetic;
-import cck.test.*;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;
@@ -90,22 +92,22 @@ public class SimulatorTestHarness implements TestHarness {
         map.put("r30", new ReadRegister("r30"));
         map.put("r31", new ReadRegister("r31"));
         map.put("pc", new ProcessorState("pc") {
-            public int evaluate(Program p, State s) {
+            public int evaluate(Program p, LegacyState s) {
                 return s.getPC();
             }
         });
         map.put("cc", new ProcessorState("cc") {
-            public int evaluate(Program p, State s) {
+            public int evaluate(Program p, LegacyState s) {
                 return (int)s.getCycles();
             }
         });
         map.put("sp", new ProcessorState("sp") {
-            public int evaluate(Program p, State s) {
+            public int evaluate(Program p, LegacyState s) {
                 return s.getSP();
             }
         });
         map.put("sreg", new ProcessorState("sreg") {
-            public int evaluate(Program p, State s) {
+            public int evaluate(Program p, LegacyState s) {
                 return s.getSREG();
             }
         });
@@ -125,7 +127,7 @@ public class SimulatorTestHarness implements TestHarness {
     }
 
     abstract static class Expr {
-        public abstract int evaluate(Program p, State s);
+        public abstract int evaluate(Program p, LegacyState s);
     }
 
     abstract static class ProcessorState extends Expr {
@@ -142,14 +144,14 @@ public class SimulatorTestHarness implements TestHarness {
     }
 
     static class ReadRegister extends ProcessorState {
-        Register register;
+        LegacyRegister register;
 
         ReadRegister(String n) {
             super(n);
-            register = Register.getRegisterByName(n);
+            register = LegacyRegister.getRegisterByName(n);
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             return s.getRegisterByte(register);
         }
     }
@@ -162,20 +164,20 @@ public class SimulatorTestHarness implements TestHarness {
             flag = f;
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             return Arithmetic.getBit(s.getSREG(), flag) ? 1 : 0;
         }
     }
 
     static class ReadRegisterWord extends ProcessorState {
-        Register register;
+        LegacyRegister register;
 
         ReadRegisterWord(String n) {
             super(n);
-            register = Register.getRegisterByName(n);
+            register = LegacyRegister.getRegisterByName(n);
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             return s.getRegisterWord(register);
         }
     }
@@ -187,7 +189,7 @@ public class SimulatorTestHarness implements TestHarness {
             name = n;
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             Program.Location l = p.getLabel(name);
             if (l == null)
                 throw new UnknownLabel(name);
@@ -206,7 +208,7 @@ public class SimulatorTestHarness implements TestHarness {
             value = v;
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             return value;
         }
 
@@ -222,7 +224,7 @@ public class SimulatorTestHarness implements TestHarness {
             expr = e;
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             return s.getDataByte(expr.evaluate(p, s));
         }
 
@@ -252,7 +254,7 @@ public class SimulatorTestHarness implements TestHarness {
             super(l, r, "+");
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             int lval = left.evaluate(p, s);
             int rval = right.evaluate(p, s);
             return lval + rval;
@@ -265,7 +267,7 @@ public class SimulatorTestHarness implements TestHarness {
             super(l, r, "-");
         }
 
-        public int evaluate(Program p, State s) {
+        public int evaluate(Program p, LegacyState s) {
             int lval = left.evaluate(p, s);
             int rval = right.evaluate(p, s);
             return lval - rval;
@@ -307,7 +309,7 @@ public class SimulatorTestHarness implements TestHarness {
         public TestResult match(Throwable t) {
             if (t != null) return super.match(t);
 
-            State state = simulator.getState();
+            LegacyState state = simulator.getState();
             Iterator i = predicates.iterator();
 
             try {
@@ -430,9 +432,9 @@ public class SimulatorTestHarness implements TestHarness {
 
     static class StateMismatch extends TestResult.TestFailure {
         StatePredicate predicate;
-        State state;
+        LegacyState state;
 
-        StateMismatch(StatePredicate pred, State st) {
+        StateMismatch(StatePredicate pred, LegacyState st) {
             super("incorrect result: (" + pred.left + " -> " + pred.leftvalue + ") != ("
                     + pred.right + " -> " + pred.rightvalue + ')');
             state = st;
@@ -464,7 +466,7 @@ public class SimulatorTestHarness implements TestHarness {
             right = r;
         }
 
-        public boolean check(Program p, State s) {
+        public boolean check(Program p, LegacyState s) {
             leftvalue = left.evaluate(p, s);
             rightvalue = right.evaluate(p, s);
             return leftvalue == rightvalue;

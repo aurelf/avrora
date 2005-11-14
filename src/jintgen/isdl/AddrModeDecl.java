@@ -33,14 +33,10 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
-import jintgen.types.Type;
-import jintgen.types.TypeRef;
 import jintgen.jigir.Decl;
-
+import jintgen.types.Type;
 import java.util.LinkedList;
 import java.util.List;
-
-import cck.util.Util;
 
 /**
  * @author Ben L. Titzer

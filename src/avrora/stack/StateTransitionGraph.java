@@ -147,7 +147,7 @@ public class StateTransitionGraph {
      * the given mutable state. If there is no cached state yet, it will create and return a new one.
      *
      * @param s the mutable state to look for
-     * @return an instance of the <code>StateCache.State</code> class
+     * @return an instance of the <code>StateCache.LegacyState</code> class
      */
     public StateCache.State getCachedState(MutableState s) {
         StateCache.State ns = cache.getStateFor(s);
@@ -187,7 +187,7 @@ public class StateTransitionGraph {
 
         StateCache.State state = l.state;
         if (state.info == null)
-            throw Util.failure("State on frontier has no edge info: " + state.getUniqueName());
+            throw Util.failure("LegacyState on frontier has no edge info: " + state.getUniqueName());
 
         state.onFrontier = false;
         frontierCount--;

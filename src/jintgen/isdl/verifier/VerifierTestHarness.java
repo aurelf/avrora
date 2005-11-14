@@ -34,14 +34,13 @@
 
 package jintgen.isdl.verifier;
 
+import cck.test.TestCase;
 import cck.test.TestHarness;
-import java.util.Properties;
+import jintgen.isdl.Architecture;
+import jintgen.isdl.parser.ISDLParser;
 import java.io.File;
 import java.io.FileInputStream;
-import jintgen.isdl.parser.ISDLParser;
-import jintgen.isdl.verifier.Verifier;
-import jintgen.isdl.Architecture;
-import cck.test.TestCase;
+import java.util.Properties;
 
 /**
  * @author Ben L. Titzer

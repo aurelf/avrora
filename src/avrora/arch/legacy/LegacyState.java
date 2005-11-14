@@ -30,18 +30,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.arch.legacy;
 
-import avrora.core.Instr;
-import avrora.core.Register;
+import avrora.sim.*;
 
 /**
- * The <code>State</code> class represents the state of the simulator, including the contents of registers and
+ * The <code>LegacyState</code> class represents the state of the simulator, including the contents of registers and
  * memory.
  *
  * @author Ben L. Titzer
  */
-public interface State {
+public interface LegacyState {
 
     /**
      * The <code>getInterruptTable()</code> method gets a reference to the interrupt table,
@@ -57,7 +56,7 @@ public interface State {
      * @param reg the register to read
      * @return the current value of the register
      */
-    public byte getRegisterByte(Register reg);
+    public byte getRegisterByte(LegacyRegister reg);
 
     /**
      * Read a general purpose register's current value as an integer, without any sign extension.
@@ -65,7 +64,7 @@ public interface State {
      * @param reg the register to read
      * @return the current unsigned value of the register
      */
-    public int getRegisterUnsigned(Register reg);
+    public int getRegisterUnsigned(LegacyRegister reg);
 
     /**
      * Read a general purpose register pair as an unsigned word. This method will read the value of the
@@ -76,7 +75,7 @@ public interface State {
      * @param reg the low register of the pair to read
      * @return the current unsigned word value of the register pair
      */
-    public int getRegisterWord(Register reg);
+    public int getRegisterWord(LegacyRegister reg);
 
 
     /**
@@ -178,17 +177,17 @@ public interface State {
     public int getPC();
 
     /**
-     * The <code>getInstr()</code> can be used to retrieve a reference to the <code>Instr</code> object
+     * The <code>getInstr()</code> can be used to retrieve a reference to the <code>LegacyInstr</code> object
      * representing the instruction at the specified program address. Care should be taken that the address in
      * program memory specified does not contain data. This is because Avrora does have a functioning
-     * disassembler and assumes that the <code>Instr</code> objects for each instruction in the program are
+     * disassembler and assumes that the <code>LegacyInstr</code> objects for each instruction in the program are
      * known a priori.
      *
      * @param address the byte address from which to read the instruction
-     * @return a reference to the <code>Instr</code> object representing the instruction at that address in
+     * @return a reference to the <code>LegacyInstr</code> object representing the instruction at that address in
      *         the program
      */
-    public Instr getInstr(int address);
+    public LegacyInstr getInstr(int address);
 
     /**
      * The <code>getDataByte()</code> method reads a byte value from the data memory (SRAM) at the specified

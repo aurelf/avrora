@@ -32,7 +32,7 @@
 
 package avrora.stack.isea;
 
-import avrora.core.Register;
+import avrora.arch.legacy.LegacyRegister;
 import cck.util.Util;
 
 /**
@@ -72,22 +72,22 @@ public class ISEState extends ISEAbstractState {
         super(r.elements, r.stack, r.depth);
     }
 
-    public byte readRegister(Register r) {
+    public byte readRegister(LegacyRegister r) {
         byte value = getElement(r.getNumber());
         int off = getElemOffset(value);
         if ( off != -1 ) elements[off].read = true;
         return value;
     }
 
-    public byte getRegister(Register r) {
+    public byte getRegister(LegacyRegister r) {
         return getElement(r.getNumber());
     }
 
-    public void writeRegister(Register r, byte val) {
+    public void writeRegister(LegacyRegister r, byte val) {
         writeElement(r.getNumber(), val);
     }
 
-    public boolean isRegisterRead(Register reg) {
+    public boolean isRegisterRead(LegacyRegister reg) {
         return elements[reg.getNumber()].read;
     }
 

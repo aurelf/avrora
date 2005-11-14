@@ -32,11 +32,11 @@
 
 package avrora.gui;
 
+import avrora.arch.legacy.LegacyRegister;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
-import avrora.core.Register;
 import avrora.monitors.MonitorFactory;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.util.ProgramProfiler;
 import javax.swing.*;
 import java.awt.*;
@@ -100,12 +100,12 @@ public class VisualRegMonitor extends MonitorFactory {
             visualOptionsPanel.validate();
         }
 
-        public void fireBefore(State s, int address) {
+        public void fireBefore(LegacyState s, int address) {
             // do nothing
         }
 
-        public void fireAfter(State s, int address) {
-            int regvalue = s.getRegisterUnsigned(Register.R26);
+        public void fireAfter(LegacyState s, int address) {
+            int regvalue = s.getRegisterUnsigned(LegacyRegister.R26);
             //add regvalue to our vector
             theGraph.recordNumber(regvalue);
         }

@@ -33,20 +33,20 @@
 package jintgen;
 
 import cck.help.HelpCategory;
+import cck.test.AutomatedTester;
+import cck.test.TestHarness;
 import cck.text.*;
 import cck.util.*;
 import jintgen.gen.*;
 import jintgen.gen.disassembler.DisassemblerGenerator;
-import jintgen.isdl.*;
-import jintgen.isdl.verifier.Verifier;
-import jintgen.isdl.verifier.VerifierTestHarness;
+import jintgen.isdl.Architecture;
 import jintgen.isdl.parser.ISDLParser;
 import jintgen.isdl.parser.ParseException;
+import jintgen.isdl.verifier.Verifier;
+import jintgen.isdl.verifier.VerifierTestHarness;
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
-import cck.test.AutomatedTester;
-import cck.test.TestHarness;
 
 /**
  * This is the main entrypoint to Jintgen. It is responsible for parsing the options to the main program and

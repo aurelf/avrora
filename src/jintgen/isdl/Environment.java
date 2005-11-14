@@ -33,9 +33,8 @@
  */
 package jintgen.isdl;
 
-import jintgen.types.*;
 import jintgen.jigir.Decl;
-
+import jintgen.types.Type;
 import java.util.HashMap;
 
 /**

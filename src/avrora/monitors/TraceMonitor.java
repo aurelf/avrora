@@ -32,9 +32,10 @@
 
 package avrora.monitors;
 
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.*;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.util.SimUtil;
 import cck.text.*;
 import cck.util.Option;
@@ -72,11 +73,11 @@ public class TraceMonitor extends MonitorFactory {
         int nesting;
 
         public class GlobalProbe implements Simulator.Probe {
-            public void fireBefore(State s, int addr) {
+            public void fireBefore(LegacyState s, int addr) {
                 print(s, s.getInstr(addr));
             }
 
-            public void fireAfter(State s, int addr) {
+            public void fireAfter(LegacyState s, int addr) {
                 count++;
             }
         }
@@ -92,7 +93,7 @@ public class TraceMonitor extends MonitorFactory {
                 pair = StringUtil.addrToString(s)+":"+ StringUtil.addrToString(e);
             }
 
-            public void fireBefore(State s, int addr) {
+            public void fireBefore(LegacyState s, int addr) {
                 traceNum++;
                 if ( nesting == 0 ) {
                     print("trace ("+pair+") begin: "+traceNum+" --------------------------");
@@ -121,7 +122,7 @@ public class TraceMonitor extends MonitorFactory {
                 pair = StringUtil.addrToString(s)+":"+StringUtil.addrToString(e);
             }
 
-            public void fireAfter(State s, int addr) {
+            public void fireAfter(LegacyState s, int addr) {
                 nesting--;
                 if ( nesting == 0 ) {
                     print("trace ("+pair+") end --------------------------");
@@ -135,7 +136,7 @@ public class TraceMonitor extends MonitorFactory {
 
         int nextPc;
 
-        private void print(State s, Instr i) {
+        private void print(LegacyState s, LegacyInstr i) {
             //"#k{%x}: #k{%s} %s", color, pc, color, i.getVariant(), i.getOperands()
             StringBuffer buf = new StringBuffer(100);
             SimUtil.getIDTimeString(buf, simulator);

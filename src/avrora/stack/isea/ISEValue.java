@@ -32,7 +32,7 @@
 
 package avrora.stack.isea;
 
-import avrora.core.Register;
+import avrora.arch.legacy.LegacyRegister;
 
 /**
  * The <code>ISEValue</code> class contains a collection of constants and methods relating to
@@ -93,9 +93,9 @@ public class ISEValue {
         return "???";
     }
 
-    public static Register asRegister(byte val) {
+    public static LegacyRegister asRegister(byte val) {
         if ( val >= R0 && val <= R31 )
-            return Register.getRegisterByNumber(val - R0);
+            return LegacyRegister.getRegisterByNumber(val - R0);
         return null;
     }
 

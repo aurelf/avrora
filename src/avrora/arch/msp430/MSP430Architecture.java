@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,42 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 14, 2005
  */
 
-package avrora.core;
+package avrora.arch.msp430;
+
+import avrora.arch.*;
+import cck.util.Util;
 
 /**
- * The <code>InstrProperties</code> represents a grab bag of the properties of an instruction. The fields are
- * public and final, which allows fast access from the interpreter.
+ * The <code>MSP430Architecture</code> class implements an architecture for use in Avrora.
+ * An instance of this class allows access to important architectural tools such as
+ * an assembler, disassembler, etc.
  *
  * @author Ben L. Titzer
- * @see Instr
  */
-public class InstrProperties {
+public class MSP430Architecture {
+
+    public static final MSP430Architecture INSTANCE = new MSP430Architecture();
 
     /**
-     * The <code>name</code> field stores an immutable reference to the name of the instruction as a string.
+     * The <code>getDisassembler()</code> method returns an instance of the appropriate
+     * disassembler for the architecture. The disassembler can be used to decode binary
+     * instructions into <code>AbstractInstr</code> instances of the appropriate type.
+     * @return an instance of the <code>AbstractDisassembler</code> interface appropriate
+     * for this architecture
      */
-    public final String name;
+    public AbstractDisassembler getDisassembler() {
+        return new MSP430Disassembler();
+    }
 
-    /**
-     * The <code>variant</code> field stores an immutable reference to the variant of the instruction as a
-     * string.
-     */
-    public final String variant;
+    public AbstractAssembler getAssembler() {
+        throw Util.unimplemented();
+    }
 
-    /**
-     * The <code>size</code> field stores the size of the instruction in bytes.
-     */
-    public final int size;
-
-    /**
-     * The <code>cycles</code> field stores the minimum number of cycles required to invoke this
-     * instruction.
-     */
-    public final int cycles;
-
-    /**
-     * The constructor for the <code>InstrProperties</code> class simply initializes the final fields of this
-     * class based on the input parameters.
-     *
-     * @param n the name of the instruction as a string
-     * @param v the variant of the instruction as a string
-     * @param s the size of the instruction in bytes
-     * @param c the minimum number of cycles required to execute this instruction
-     */
-    public InstrProperties(String n, String v, int s, int c) {
-        name = n;
-        variant = v;
-        size = s;
-        cycles = c;
+    public AbstractParser getParser() {
+        throw Util.unimplemented();
     }
 }

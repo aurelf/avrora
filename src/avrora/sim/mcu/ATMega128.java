@@ -32,7 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.core.InstrPrototype;
+import avrora.arch.legacy.LegacyInstrProto;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
@@ -378,7 +378,7 @@ public class ATMega128 extends ATMegaFamily {
         
     }
 
-    public boolean isSupported(InstrPrototype i) {
+    public boolean isSupported(LegacyInstrProto i) {
         // ATMega128 supports all instructions (AFAIK)
         return true;
     }

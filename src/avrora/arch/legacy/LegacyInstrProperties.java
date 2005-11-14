@@ -30,30 +30,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core;
-
-import cck.util.Util;
+package avrora.arch.legacy;
 
 /**
- * The <code>Assembler</code> class represents an assembler that is capable of
- * encoding AVR assembly instructions into binary machine code.
+ * The <code>LegacyInstrProperties</code> represents a grab bag of the properties of an instruction. The fields are
+ * public and final, which allows fast access from the interpreter.
  *
  * @author Ben L. Titzer
+ * @see avrora.arch.legacy.LegacyInstr
  */
-public class Assembler {
+public class LegacyInstrProperties {
 
     /**
-     * The <code>encode()</code> method translates an assembly instruction into
-     * a sequence of bytes and writes them into an array. This method returns the
-     * number of bytes written into the array, which depends on the size of the
-     * instruction.
-     * @param i the instruction to encode into the array
-     * @param buffer an array of bytes into which to encode the instruction
-     * @param offset the offset in the buffer to which to write the bytes
-     * @return the number of bytes written into the array, which is equal to the
-     * size of the instruction
+     * The <code>name</code> field stores an immutable reference to the name of the instruction as a string.
      */
-    public int encode(Instr i, byte[] buffer, int offset) {
-        throw Util.unimplemented();
+    public final String name;
+
+    /**
+     * The <code>variant</code> field stores an immutable reference to the variant of the instruction as a
+     * string.
+     */
+    public final String variant;
+
+    /**
+     * The <code>size</code> field stores the size of the instruction in bytes.
+     */
+    public final int size;
+
+    /**
+     * The <code>cycles</code> field stores the minimum number of cycles required to invoke this
+     * instruction.
+     */
+    public final int cycles;
+
+    /**
+     * The constructor for the <code>LegacyInstrProperties</code> class simply initializes the final fields of this
+     * class based on the input parameters.
+     *
+     * @param n the name of the instruction as a string
+     * @param v the variant of the instruction as a string
+     * @param s the size of the instruction in bytes
+     * @param c the minimum number of cycles required to execute this instruction
+     */
+    public LegacyInstrProperties(String n, String v, int s, int c) {
+        name = n;
+        variant = v;
+        size = s;
+        cycles = c;
     }
 }

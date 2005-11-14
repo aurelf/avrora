@@ -51,7 +51,7 @@ import cck.util.Util;
 public class CC1000Radio implements Radio {
 
     /**
-     * Register addresses.
+     * LegacyRegister addresses.
      */
     public static final int MAIN = 0x00;      //1
     public static final int FREQ_2A = 0x01;   //2

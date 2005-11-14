@@ -33,15 +33,11 @@
  */
 package jintgen.gen;
 
+import jintgen.isdl.GlobalDecl;
+import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.types.Type;
-import jintgen.types.TypeRef;
-import jintgen.isdl.parser.Token;
-import jintgen.isdl.GlobalDecl;
-
 import java.util.HashMap;
-
-import cck.util.Util;
 
 /**
  * @author Ben L. Titzer

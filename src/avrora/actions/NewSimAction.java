@@ -28,20 +28,45 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 14, 2005
  */
 
-package jintgen.arch;
+package avrora.actions;
+
+import avrora.Defaults;
+import avrora.Main;
+import avrora.arch.AbstractArchitecture;
+import avrora.arch.AbstractDisassembler;
+import avrora.syntax.elf.ELFLoader;
+import cck.util.Option;
+import cck.util.Util;
 
 /**
  * @author Ben L. Titzer
  */
-public interface Architecture {
+public class NewSimAction extends Action {
 
-    public Disassembler getDisassembler();
+    public static String HELP = "This action is an experimental testbed for developing and refining the " +
+            "infrastructure surrounding the new simulation framework that allows multiple different " +
+            "instruction architectures to be simulated.";
 
-    public Assembler getAssembler();
+    protected final Option.Str ARCH = options.newOption("arch", "avr",
+            "This option specifies the name of the instruction set architecture for the " +
+            "specified program. This architecture option is used to retrieve an appropriate " +
+            "disassembler and interpreter for the program.");
 
-    public Loader getLoader();
+    public NewSimAction() {
+        super(HELP);
+    }
 
-    public Interpreter getInterpreter();
+    public void run(String[] args) throws Exception {
+        if ( args.length != 1 )
+            Util.userError("no simulation file specified");
+        String fn = args[0];
+        Main.checkFileExists(fn);
+        AbstractArchitecture arch = Defaults.getArchitecture(ARCH.get());
+        AbstractDisassembler d = arch.getDisassembler();
+        ELFLoader loader = new ELFLoader();
+    }
 }

@@ -36,7 +36,6 @@ import cck.text.Printer;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.types.TypeRef;
-
 import java.util.List;
 
 /**

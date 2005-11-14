@@ -32,19 +32,21 @@
 
 package avrora.core;
 
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyInstrVisitor;
 import cck.text.StringUtil;
 import cck.text.Verbose;
 import cck.util.Util;
 
 /**
  * The <code>CFGBuilder</code> class is a visitor that builds a representation of the control flow graph for a
- * given program. It uses the visitor pattern, (the <code>InstrVisitor</code> interface), to visit each
+ * given program. It uses the visitor pattern, (the <code>LegacyInstrVisitor</code> interface), to visit each
  * instruction in the program and construct and instance of the <code>ControlFlowGraph</code> class
  * representing the control flow graph of the given program.
  *
  * @author Ben L. Titzer
  */
-class CFGBuilder implements InstrVisitor {
+class CFGBuilder implements LegacyInstrVisitor {
 
     final Program program;
 
@@ -77,7 +79,7 @@ class CFGBuilder implements InstrVisitor {
         boolean reti;
         boolean call;
         boolean indirect;
-        Instr instr;
+        LegacyInstr instr;
         int branchTo;
 
         InstrInfo() {
@@ -193,7 +195,7 @@ class CFGBuilder implements InstrVisitor {
             if (printer.enabled)
                 printer.print(StringUtil.addrToString(pc) + ": ");
 
-            Instr i = program.readInstr(pc);
+            LegacyInstr i = program.readInstr(pc);
             if (i == null) {
                 if (printer.enabled)
                     printer.println("(invalid)");
@@ -224,13 +226,13 @@ class CFGBuilder implements InstrVisitor {
         info[byteAddress].start = true;
     }
 
-    private void add(Instr i) {
+    private void add(LegacyInstr i) {
         info[pc].instr = i;
         if (printer.enabled)
             printer.println("    -> add");
     }
 
-    private void branch(Instr i, int byteAddress) {
+    private void branch(LegacyInstr i, int byteAddress) {
         info[pc].instr = i;
         info[pc].branchTo = byteAddress;
         if (printer.enabled)
@@ -240,7 +242,7 @@ class CFGBuilder implements InstrVisitor {
         enter(byteAddress);
     }
 
-    private void call(Instr i, int byteAddress) {
+    private void call(LegacyInstr i, int byteAddress) {
         info[pc].call = true;
         info[pc].instr = i;
         info[pc].branchTo = byteAddress;
@@ -251,7 +253,7 @@ class CFGBuilder implements InstrVisitor {
         enter(byteAddress);
     }
 
-    private void end(Instr i) {
+    private void end(LegacyInstr i) {
         info[pc].instr = i;
         info[pc].fallthrough = false;
         if (printer.enabled)
@@ -259,7 +261,7 @@ class CFGBuilder implements InstrVisitor {
         enter(pc + i.getSize());
     }
 
-    private void jump(Instr i, int byteAddress) {
+    private void jump(LegacyInstr i, int byteAddress) {
         info[pc].instr = i;
         info[pc].fallthrough = false;
         info[pc].branchTo = byteAddress;
@@ -277,505 +279,505 @@ class CFGBuilder implements InstrVisitor {
         return i * 2;
     }
 
-    private void skip(Instr i) {
+    private void skip(LegacyInstr i) {
         int npc = pc + i.getSize();
-        Instr next = program.readInstr(npc);
+        LegacyInstr next = program.readInstr(npc);
         branch(i, npc + next.getSize());
     }
 
 
-    public final void visit(Instr.ADC i) { // add register to register with carry
+    public final void visit(LegacyInstr.ADC i) { // add register to register with carry
         add(i);
     }
 
-    public void visit(Instr.ADD i) { // add register to register
+    public void visit(LegacyInstr.ADD i) { // add register to register
         add(i);
     }
 
-    public void visit(Instr.ADIW i) { // add immediate to word register
+    public void visit(LegacyInstr.ADIW i) { // add immediate to word register
         add(i);
     }
 
-    public void visit(Instr.AND i) { // and register with register
+    public void visit(LegacyInstr.AND i) { // and register with register
         add(i);
     }
 
-    public void visit(Instr.ANDI i) { // and register with immediate
+    public void visit(LegacyInstr.ANDI i) { // and register with immediate
         add(i);
     }
 
-    public void visit(Instr.ASR i) { // arithmetic shift right
+    public void visit(LegacyInstr.ASR i) { // arithmetic shift right
         add(i);
     }
 
-    public void visit(Instr.BCLR i) { // clear bit in status register
+    public void visit(LegacyInstr.BCLR i) { // clear bit in status register
         add(i);
     }
 
-    public void visit(Instr.BLD i) { // load bit from T flag into register
+    public void visit(LegacyInstr.BLD i) { // load bit from T flag into register
         add(i);
     }
 
-    public void visit(Instr.BRBC i) { // branch if bit in status register is clear
+    public void visit(LegacyInstr.BRBC i) { // branch if bit in status register is clear
         branch(i, relative(i.imm2));
     }
 
-    public void visit(Instr.BRBS i) { // branch if bit in status register is set
+    public void visit(LegacyInstr.BRBS i) { // branch if bit in status register is set
         branch(i, relative(i.imm2));
     }
 
-    public void visit(Instr.BRCC i) { // branch if carry flag is clear
+    public void visit(LegacyInstr.BRCC i) { // branch if carry flag is clear
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRCS i) { // branch if carry flag is set
+    public void visit(LegacyInstr.BRCS i) { // branch if carry flag is set
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BREAK i) { // break
+    public void visit(LegacyInstr.BREAK i) { // break
         end(i);
     }
 
-    public void visit(Instr.BREQ i) { // branch if equal
+    public void visit(LegacyInstr.BREQ i) { // branch if equal
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRGE i) { // branch if greater or equal (signed)
+    public void visit(LegacyInstr.BRGE i) { // branch if greater or equal (signed)
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRHC i) { // branch if H flag is clear
+    public void visit(LegacyInstr.BRHC i) { // branch if H flag is clear
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRHS i) { // branch if H flag is set
+    public void visit(LegacyInstr.BRHS i) { // branch if H flag is set
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRID i) { // branch if interrupts are disabled
+    public void visit(LegacyInstr.BRID i) { // branch if interrupts are disabled
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRIE i) { // branch if interrupts are enabled
+    public void visit(LegacyInstr.BRIE i) { // branch if interrupts are enabled
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRLO i) { // branch if lower
+    public void visit(LegacyInstr.BRLO i) { // branch if lower
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRLT i) { // branch if less than zero (signed)
+    public void visit(LegacyInstr.BRLT i) { // branch if less than zero (signed)
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRMI i) { // branch if minus
+    public void visit(LegacyInstr.BRMI i) { // branch if minus
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRNE i) { // branch if not equal
+    public void visit(LegacyInstr.BRNE i) { // branch if not equal
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRPL i) { // branch if positive
+    public void visit(LegacyInstr.BRPL i) { // branch if positive
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRSH i) { // branch if same or higher
+    public void visit(LegacyInstr.BRSH i) { // branch if same or higher
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRTC i) { // branch if T flag is clear
+    public void visit(LegacyInstr.BRTC i) { // branch if T flag is clear
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRTS i) { // branch if T flag is set
+    public void visit(LegacyInstr.BRTS i) { // branch if T flag is set
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRVC i) { // branch if V flag is clear
+    public void visit(LegacyInstr.BRVC i) { // branch if V flag is clear
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BRVS i) { // branch if V flag is set
+    public void visit(LegacyInstr.BRVS i) { // branch if V flag is set
         branch(i, relative(i.imm1));
     }
 
-    public void visit(Instr.BSET i) { // set flag in status register
+    public void visit(LegacyInstr.BSET i) { // set flag in status register
         add(i);
     }
 
-    public void visit(Instr.BST i) { // store bit in register into T flag
+    public void visit(LegacyInstr.BST i) { // store bit in register into T flag
         add(i);
     }
 
-    public void visit(Instr.CALL i) { // call absolute address
+    public void visit(LegacyInstr.CALL i) { // call absolute address
         call(i, absolute(i.imm1));
     }
 
-    public void visit(Instr.CBI i) { // clear bit in IO register
+    public void visit(LegacyInstr.CBI i) { // clear bit in IO register
         add(i);
     }
 
-    public void visit(Instr.CBR i) { // clear bits in register
+    public void visit(LegacyInstr.CBR i) { // clear bits in register
         add(i);
     }
 
-    public void visit(Instr.CLC i) { // clear C flag
+    public void visit(LegacyInstr.CLC i) { // clear C flag
         add(i);
     }
 
-    public void visit(Instr.CLH i) { // clear H flag
+    public void visit(LegacyInstr.CLH i) { // clear H flag
         add(i);
     }
 
-    public void visit(Instr.CLI i) { // clear I flag
+    public void visit(LegacyInstr.CLI i) { // clear I flag
         add(i);
     }
 
-    public void visit(Instr.CLN i) { // clear N flag
+    public void visit(LegacyInstr.CLN i) { // clear N flag
         add(i);
     }
 
-    public void visit(Instr.CLR i) { // clear register (set to zero)
+    public void visit(LegacyInstr.CLR i) { // clear register (set to zero)
         add(i);
     }
 
-    public void visit(Instr.CLS i) { // clear S flag
+    public void visit(LegacyInstr.CLS i) { // clear S flag
         add(i);
     }
 
-    public void visit(Instr.CLT i) { // clear T flag
+    public void visit(LegacyInstr.CLT i) { // clear T flag
         add(i);
     }
 
-    public void visit(Instr.CLV i) { // clear V flag
+    public void visit(LegacyInstr.CLV i) { // clear V flag
         add(i);
     }
 
-    public void visit(Instr.CLZ i) { // clear Z flag
+    public void visit(LegacyInstr.CLZ i) { // clear Z flag
         add(i);
     }
 
-    public void visit(Instr.COM i) { // one's compliment register
+    public void visit(LegacyInstr.COM i) { // one's compliment register
         add(i);
     }
 
-    public void visit(Instr.CP i) { // compare registers
+    public void visit(LegacyInstr.CP i) { // compare registers
         add(i);
     }
 
-    public void visit(Instr.CPC i) { // compare registers with carry
+    public void visit(LegacyInstr.CPC i) { // compare registers with carry
         add(i);
     }
 
-    public void visit(Instr.CPI i) { // compare register with immediate
+    public void visit(LegacyInstr.CPI i) { // compare register with immediate
         add(i);
     }
 
-    public void visit(Instr.CPSE i) { // compare registers and skip if equal
+    public void visit(LegacyInstr.CPSE i) { // compare registers and skip if equal
         add(i);
     }
 
-    public void visit(Instr.DEC i) { // decrement register by one
+    public void visit(LegacyInstr.DEC i) { // decrement register by one
         add(i);
     }
 
-    public void visit(Instr.EICALL i) { // extended indirect call
+    public void visit(LegacyInstr.EICALL i) { // extended indirect call
         info[pc].indirect = true;
         call(i, 0);
     }
 
-    public void visit(Instr.EIJMP i) { // extended indirect jump
+    public void visit(LegacyInstr.EIJMP i) { // extended indirect jump
         info[pc].indirect = true;
         branch(i, 0);
     }
 
-    public void visit(Instr.ELPM i) { // extended load program memory to r0
+    public void visit(LegacyInstr.ELPM i) { // extended load program memory to r0
         add(i);
     }
 
-    public void visit(Instr.ELPMD i) { // extended load program memory to register
+    public void visit(LegacyInstr.ELPMD i) { // extended load program memory to register
         add(i);
     }
 
-    public void visit(Instr.ELPMPI i) { // extended load program memory to register and post-increment
+    public void visit(LegacyInstr.ELPMPI i) { // extended load program memory to register and post-increment
         add(i);
     }
 
-    public void visit(Instr.EOR i) { // exclusive or register with register
+    public void visit(LegacyInstr.EOR i) { // exclusive or register with register
         add(i);
     }
 
-    public void visit(Instr.FMUL i) { // fractional multiply register with register to r0
+    public void visit(LegacyInstr.FMUL i) { // fractional multiply register with register to r0
         add(i);
     }
 
-    public void visit(Instr.FMULS i) { // signed fractional multiply register with register to r0
+    public void visit(LegacyInstr.FMULS i) { // signed fractional multiply register with register to r0
         add(i);
     }
 
-    public void visit(Instr.FMULSU i) { // signed/unsigned fractional multiply register with register to r0
+    public void visit(LegacyInstr.FMULSU i) { // signed/unsigned fractional multiply register with register to r0
         add(i);
     }
 
-    public void visit(Instr.ICALL i) { // indirect call through Z register
+    public void visit(LegacyInstr.ICALL i) { // indirect call through Z register
         info[pc].indirect = true;
         call(i, 0);
     }
 
-    public void visit(Instr.IJMP i) { // indirect jump through Z register
+    public void visit(LegacyInstr.IJMP i) { // indirect jump through Z register
         info[pc].indirect = true;
         info[pc].branchTo = 0;
         end(i);
     }
 
-    public void visit(Instr.IN i) { // read from IO register into register
+    public void visit(LegacyInstr.IN i) { // read from IO register into register
         add(i);
     }
 
-    public void visit(Instr.INC i) { // increment register by one
+    public void visit(LegacyInstr.INC i) { // increment register by one
         add(i);
     }
 
-    public void visit(Instr.JMP i) { // absolute jump
+    public void visit(LegacyInstr.JMP i) { // absolute jump
         jump(i, absolute(i.imm1));
     }
 
-    public void visit(Instr.LD i) { // load from SRAM
+    public void visit(LegacyInstr.LD i) { // load from SRAM
         add(i);
     }
 
-    public void visit(Instr.LDD i) { // load from SRAM with displacement
+    public void visit(LegacyInstr.LDD i) { // load from SRAM with displacement
         add(i);
     }
 
-    public void visit(Instr.LDI i) { // load immediate into register
+    public void visit(LegacyInstr.LDI i) { // load immediate into register
         add(i);
     }
 
-    public void visit(Instr.LDPD i) { // load from SRAM with pre-decrement
+    public void visit(LegacyInstr.LDPD i) { // load from SRAM with pre-decrement
         add(i);
     }
 
-    public void visit(Instr.LDPI i) { // load from SRAM with post-increment
+    public void visit(LegacyInstr.LDPI i) { // load from SRAM with post-increment
         add(i);
     }
 
-    public void visit(Instr.LDS i) { // load direct from SRAM
+    public void visit(LegacyInstr.LDS i) { // load direct from SRAM
         add(i);
     }
 
-    public void visit(Instr.LPM i) { // load program memory into r0
+    public void visit(LegacyInstr.LPM i) { // load program memory into r0
         add(i);
     }
 
-    public void visit(Instr.LPMD i) { // load program memory into register
+    public void visit(LegacyInstr.LPMD i) { // load program memory into register
         add(i);
     }
 
-    public void visit(Instr.LPMPI i) { // load program memory into register and post-increment
+    public void visit(LegacyInstr.LPMPI i) { // load program memory into register and post-increment
         add(i);
     }
 
-    public void visit(Instr.LSL i) { // logical shift left
+    public void visit(LegacyInstr.LSL i) { // logical shift left
         add(i);
     }
 
-    public void visit(Instr.LSR i) { // logical shift right
+    public void visit(LegacyInstr.LSR i) { // logical shift right
         add(i);
     }
 
-    public void visit(Instr.MOV i) { // copy register to register
+    public void visit(LegacyInstr.MOV i) { // copy register to register
         add(i);
     }
 
-    public void visit(Instr.MOVW i) { // copy two registers to two registers
+    public void visit(LegacyInstr.MOVW i) { // copy two registers to two registers
         add(i);
     }
 
-    public void visit(Instr.MUL i) { // multiply register with register to r0
+    public void visit(LegacyInstr.MUL i) { // multiply register with register to r0
         add(i);
     }
 
-    public void visit(Instr.MULS i) { // signed multiply register with register to r0
+    public void visit(LegacyInstr.MULS i) { // signed multiply register with register to r0
         add(i);
     }
 
-    public void visit(Instr.MULSU i) { // signed/unsigned multiply register with register to r0
+    public void visit(LegacyInstr.MULSU i) { // signed/unsigned multiply register with register to r0
         add(i);
     }
 
-    public void visit(Instr.NEG i) { // two's complement register
+    public void visit(LegacyInstr.NEG i) { // two's complement register
         add(i);
     }
 
-    public void visit(Instr.NOP i) { // do nothing operation
+    public void visit(LegacyInstr.NOP i) { // do nothing operation
         add(i);
     }
 
-    public void visit(Instr.OR i) { // or register with register
+    public void visit(LegacyInstr.OR i) { // or register with register
         add(i);
     }
 
-    public void visit(Instr.ORI i) { // or register with immediate
+    public void visit(LegacyInstr.ORI i) { // or register with immediate
         add(i);
     }
 
-    public void visit(Instr.OUT i) { // write from register to IO register
+    public void visit(LegacyInstr.OUT i) { // write from register to IO register
         add(i);
     }
 
-    public void visit(Instr.POP i) { // pop from the stack to register
+    public void visit(LegacyInstr.POP i) { // pop from the stack to register
         add(i);
     }
 
-    public void visit(Instr.PUSH i) { // push register to the stack
+    public void visit(LegacyInstr.PUSH i) { // push register to the stack
         add(i);
     }
 
-    public void visit(Instr.RCALL i) { // relative call
+    public void visit(LegacyInstr.RCALL i) { // relative call
         call(i, relative(i.imm1));
     }
 
-    public void visit(Instr.RET i) { // return to caller
+    public void visit(LegacyInstr.RET i) { // return to caller
         info[pc].ret = true;
         end(i);
     }
 
-    public void visit(Instr.RETI i) { // return from interrupt
+    public void visit(LegacyInstr.RETI i) { // return from interrupt
         info[pc].reti = true;
         end(i);
     }
 
-    public void visit(Instr.RJMP i) { // relative jump
+    public void visit(LegacyInstr.RJMP i) { // relative jump
         jump(i, relative(i.imm1));
     }
 
-    public void visit(Instr.ROL i) { // rotate left through carry flag
+    public void visit(LegacyInstr.ROL i) { // rotate left through carry flag
         add(i);
     }
 
-    public void visit(Instr.ROR i) { // rotate right through carry flag
+    public void visit(LegacyInstr.ROR i) { // rotate right through carry flag
         add(i);
     }
 
-    public void visit(Instr.SBC i) { // subtract register from register with carry
+    public void visit(LegacyInstr.SBC i) { // subtract register from register with carry
         add(i);
     }
 
-    public void visit(Instr.SBCI i) { // subtract immediate from register with carry
+    public void visit(LegacyInstr.SBCI i) { // subtract immediate from register with carry
         add(i);
     }
 
-    public void visit(Instr.SBI i) { // set bit in IO register
+    public void visit(LegacyInstr.SBI i) { // set bit in IO register
         add(i);
     }
 
-    public void visit(Instr.SBIC i) { // skip if bit in IO register is clear
+    public void visit(LegacyInstr.SBIC i) { // skip if bit in IO register is clear
         skip(i);
     }
 
-    public void visit(Instr.SBIS i) { // skip if bit in IO register is set
+    public void visit(LegacyInstr.SBIS i) { // skip if bit in IO register is set
         skip(i);
     }
 
-    public void visit(Instr.SBIW i) { // subtract immediate from word
+    public void visit(LegacyInstr.SBIW i) { // subtract immediate from word
         add(i);
     }
 
-    public void visit(Instr.SBR i) { // set bits in register
+    public void visit(LegacyInstr.SBR i) { // set bits in register
         add(i);
     }
 
-    public void visit(Instr.SBRC i) { // skip if bit in register cleared
+    public void visit(LegacyInstr.SBRC i) { // skip if bit in register cleared
         skip(i);
     }
 
-    public void visit(Instr.SBRS i) { // skip if bit in register set
+    public void visit(LegacyInstr.SBRS i) { // skip if bit in register set
         skip(i);
     }
 
-    public void visit(Instr.SEC i) { // set C (carry) flag
+    public void visit(LegacyInstr.SEC i) { // set C (carry) flag
         add(i);
     }
 
-    public void visit(Instr.SEH i) { // set H (half carry) flag
+    public void visit(LegacyInstr.SEH i) { // set H (half carry) flag
         add(i);
     }
 
-    public void visit(Instr.SEI i) { // set I (interrupt enable) flag
+    public void visit(LegacyInstr.SEI i) { // set I (interrupt enable) flag
         add(i);
     }
 
-    public void visit(Instr.SEN i) { // set N (negative) flag
+    public void visit(LegacyInstr.SEN i) { // set N (negative) flag
         add(i);
     }
 
-    public void visit(Instr.SER i) { // set bits in register
+    public void visit(LegacyInstr.SER i) { // set bits in register
         add(i);
     }
 
-    public void visit(Instr.SES i) { // set S (signed) flag
+    public void visit(LegacyInstr.SES i) { // set S (signed) flag
         add(i);
     }
 
-    public void visit(Instr.SET i) { // set T flag
+    public void visit(LegacyInstr.SET i) { // set T flag
         add(i);
     }
 
-    public void visit(Instr.SEV i) { // set V (overflow) flag
+    public void visit(LegacyInstr.SEV i) { // set V (overflow) flag
         add(i);
     }
 
-    public void visit(Instr.SEZ i) { // set Z (zero) flag
+    public void visit(LegacyInstr.SEZ i) { // set Z (zero) flag
         add(i);
     }
 
-    public void visit(Instr.SLEEP i) { // invoke sleep mode
+    public void visit(LegacyInstr.SLEEP i) { // invoke sleep mode
         add(i);
     }
 
-    public void visit(Instr.SPM i) { // store to program memory from r0
+    public void visit(LegacyInstr.SPM i) { // store to program memory from r0
         add(i);
     }
 
-    public void visit(Instr.ST i) { // store from register to SRAM
+    public void visit(LegacyInstr.ST i) { // store from register to SRAM
         add(i);
     }
 
-    public void visit(Instr.STD i) { // store from register to SRAM with displacement
+    public void visit(LegacyInstr.STD i) { // store from register to SRAM with displacement
         add(i);
     }
 
-    public void visit(Instr.STPD i) { // store from register to SRAM with pre-decrement
+    public void visit(LegacyInstr.STPD i) { // store from register to SRAM with pre-decrement
         add(i);
     }
 
-    public void visit(Instr.STPI i) { // store from register to SRAM with post-increment
+    public void visit(LegacyInstr.STPI i) { // store from register to SRAM with post-increment
         add(i);
     }
 
-    public void visit(Instr.STS i) { // store direct to SRAM
+    public void visit(LegacyInstr.STS i) { // store direct to SRAM
         add(i);
     }
 
-    public void visit(Instr.SUB i) { // subtract register from register
+    public void visit(LegacyInstr.SUB i) { // subtract register from register
         add(i);
     }
 
-    public void visit(Instr.SUBI i) { // subtract immediate from register
+    public void visit(LegacyInstr.SUBI i) { // subtract immediate from register
         add(i);
     }
 
-    public void visit(Instr.SWAP i) { // swap nibbles in register
+    public void visit(LegacyInstr.SWAP i) { // swap nibbles in register
         add(i);
     }
 
-    public void visit(Instr.TST i) { // test for zero or minus
+    public void visit(LegacyInstr.TST i) { // test for zero or minus
         add(i);
     }
 
-    public void visit(Instr.WDR i) { // watchdog timer reset
+    public void visit(LegacyInstr.WDR i) { // watchdog timer reset
         add(i);
     }
 

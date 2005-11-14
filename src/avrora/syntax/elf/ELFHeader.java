@@ -32,7 +32,6 @@
 
 package avrora.syntax.elf;
 
-import cck.util.Util;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -80,6 +79,10 @@ public class ELFHeader {
 
     boolean bigEndian;
 
+    public class FormatError extends Exception {
+
+    }
+
     /**
      * The default constructor for the <code>ELFHeader</code> class simply creates a new, unitialized
      * instance of this class that is ready to load.
@@ -95,7 +98,7 @@ public class ELFHeader {
      * @param fs the input stream from which to read the ELF header
      * @throws IOException if there is a problem reading from the input stream
      */
-    public void read(RandomAccessFile fs) throws IOException {
+    public void read(RandomAccessFile fs) throws IOException, FormatError {
         // read the indentification string
         for ( int index = 0; index < EI_NIDENT; )
             index += fs.read(e_ident, index, EI_NIDENT - index);
@@ -116,7 +119,7 @@ public class ELFHeader {
         e_shstrndx  = is.read_Elf32_Half();
     }
 
-    private void checkIdent() {
+    private void checkIdent() throws FormatError {
         checkIndentByte(0, 0x7f);
         checkIndentByte(1, 'E');
         checkIndentByte(2, 'L');
@@ -124,8 +127,8 @@ public class ELFHeader {
         bigEndian = isBigEndian();
     }
 
-    private void checkIndentByte(int ind, int val) {
-        if ( e_ident[ind] != val ) throw Util.failure("ELF Magic mismatch at byte "+ind);
+    private void checkIndentByte(int ind, int val) throws FormatError {
+        if ( e_ident[ind] != val ) throw new FormatError();
     }
 
     /**

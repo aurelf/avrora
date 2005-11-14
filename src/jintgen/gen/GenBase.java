@@ -35,8 +35,8 @@ package jintgen.gen;
 import cck.text.Printer;
 import cck.text.StringUtil;
 import jintgen.isdl.AddrModeDecl;
-import jintgen.types.*;
 import jintgen.jigir.JIGIRTypeEnv;
+import jintgen.types.*;
 import java.util.*;
 
 /**

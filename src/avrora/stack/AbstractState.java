@@ -32,7 +32,7 @@
 
 package avrora.stack;
 
-import avrora.core.Register;
+import avrora.arch.legacy.LegacyRegister;
 import cck.text.StringUtil;
 
 /**
@@ -194,7 +194,7 @@ public abstract class AbstractState implements IORegisterConstants {
      * @param r the register to read
      * @return the abstract value of the register
      */
-    public char getRegisterAV(Register r) {
+    public char getRegisterAV(LegacyRegister r) {
         return av_REGISTERS[r.getNumber()];
     }
 

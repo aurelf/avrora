@@ -34,10 +34,10 @@
 
 package jintgen.jigir;
 
+import jintgen.isdl.EnumDecl;
+import jintgen.isdl.OperandTypeDecl;
 import jintgen.isdl.parser.Token;
 import jintgen.isdl.verifier.JIGIRErrorReporter;
-import jintgen.isdl.OperandTypeDecl;
-import jintgen.isdl.EnumDecl;
 import jintgen.types.*;
 import java.util.*;
 

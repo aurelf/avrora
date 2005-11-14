@@ -32,6 +32,7 @@
 
 package avrora.core;
 
+import avrora.arch.legacy.LegacyInstr;
 import cck.text.StringUtil;
 import cck.util.Util;
 import java.util.*;
@@ -43,7 +44,7 @@ import java.util.*;
  * can be either case sensitive (GAS style) or case insensitive (Atmel style).
  *
  * @author Ben L. Titzer
- * @see Instr
+ * @see LegacyInstr
  * @see ControlFlowGraph
  * @see ProcedureMap
  */
@@ -283,7 +284,7 @@ public class Program {
      * representations of the program segment. NO EFFORT IS MADE IN THIS CLASS TO KEEP THIS CONSISTENT WITH
      * THE RAW DATA OF THE PROGRAM SEGMENT.
      */
-    protected final Instr[] flash_instrs;
+    protected final LegacyInstr[] flash_instrs;
 
     /**
      * The <code>caseSensitive</code> field controls whether label searching is case sensitive or not. Some
@@ -314,7 +315,7 @@ public class Program {
 
         int size = program_end - program_start;
         flash_data = new byte[size];
-        flash_instrs = new Instr[size];
+        flash_instrs = new LegacyInstr[size];
         Arrays.fill(flash_data, (byte)0xff);
 
         labels = new HashMap();
@@ -331,7 +332,7 @@ public class Program {
      * @throws cck.util.Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
-    public void writeInstr(Instr i, int address) {
+    public void writeInstr(LegacyInstr i, int address) {
         int size = i.getSize();
         checkAddress(address);
         checkAddress(address + size - 1);
@@ -348,13 +349,13 @@ public class Program {
      * null.
      *
      * @param address the byte address in the program
-     * @return the <code>Instr</code> instance at that address if that address is valid code from creation of
+     * @return the <code>LegacyInstr</code> instance at that address if that address is valid code from creation of
      *         the <code>Program</code> instance; null if the instruction is misaligned or only raw data is
      *         present at that location.
      * @throws cck.util.Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
-    public Instr readInstr(int address) {
+    public LegacyInstr readInstr(int address) {
         checkAddress(address);
         return flash_instrs[address - program_start];
     }
@@ -511,7 +512,7 @@ public class Program {
         // TODO: better error checking
         if (pc > program_end)
             throw Util.failure("no next PC after: " + StringUtil.addrToString(pc));
-        Instr i = readInstr(pc);
+        LegacyInstr i = readInstr(pc);
         if (i == null) return pc + 2;
         return pc + i.getSize();
     }

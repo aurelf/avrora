@@ -32,7 +32,8 @@
 
 package avrora.sim;
 
-import avrora.core.*;
+import avrora.arch.legacy.*;
+import avrora.core.Program;
 import avrora.sim.util.MulticastProbe;
 import cck.util.Util;
 
@@ -49,12 +50,12 @@ public class CodeSegment extends Segment {
      * @param address the address in the code segment of the instruction
      * @param i the new instruction to place at this location in the flash
      */
-    protected void replaceInstr(int address, Instr i) {
-        Instr instr = getInstr(address);
-        if ( instr == null || !(instr instanceof ProbedInstr) ) {
+    protected void replaceInstr(int address, LegacyInstr i) {
+        LegacyInstr instr = getInstr(address);
+        if ( instr == null || !(instr instanceof ProbedLegacyInstr) ) {
             writeInstr(address, i);
         } else {
-            ProbedInstr pi = new ProbedInstr(i, (ProbedInstr)instr);
+            ProbedLegacyInstr pi = new ProbedLegacyInstr(i, (ProbedLegacyInstr)instr);
             writeInstr(address, pi);
         }
     }
@@ -92,10 +93,10 @@ public class CodeSegment extends Segment {
      * The <code>segment_instr</code> field stores a reference to an array that contains the
      * disassembled instructions that correspond to the machine code.
      */
-    protected Instr[] segment_instr;
+    protected LegacyInstr[] segment_instr;
 
-    protected final NoInstr NO_INSTR = new NoInstr();
-    protected final MisalignedInstr MISALIGNED_INSTR = new MisalignedInstr();
+    protected final NoLegacyInstr NO_INSTR = new NoLegacyInstr();
+    protected final MisalignedLegacyInstr MISALIGNED_INSTR = new MisalignedLegacyInstr();
 
     protected CodeSharer codeSharer;
 
@@ -106,7 +107,7 @@ public class CodeSegment extends Segment {
      * update its reference.
      */
     public interface CodeSharer {
-        public void update(Instr[] segment);
+        public void update(LegacyInstr[] segment);
     }
 
     /**
@@ -119,7 +120,7 @@ public class CodeSegment extends Segment {
      */
     public CodeSegment(String name, int size, BaseInterpreter bi, ErrorReporter er) {
         super(name, size, DEFAULT_VALUE, bi, er);
-        segment_instr = new Instr[size];
+        segment_instr = new LegacyInstr[size];
     }
 
     /**
@@ -131,7 +132,7 @@ public class CodeSegment extends Segment {
         throw Util.failure("Update of flash memory not supported for this segment");
     }
 
-    public Instr[] shareCode(CodeSharer s) {
+    public LegacyInstr[] shareCode(CodeSharer s) {
         codeSharer = s;
         return segment_instr;
     }
@@ -144,7 +145,7 @@ public class CodeSegment extends Segment {
      */
     public void load(Program p) {
         for (int cntr = 0; cntr < p.program_end;) {
-            Instr i = p.readInstr(cntr);
+            LegacyInstr i = p.readInstr(cntr);
             if (i != null) {
                 segment_instr[cntr] = i;
                 for (int s = 1; s < i.getSize(); s++)
@@ -163,17 +164,17 @@ public class CodeSegment extends Segment {
     }
 
     /**
-     * The <code>readInstr()</code> method reads an Instr from the specified address in
+     * The <code>readInstr()</code> method reads an LegacyInstr from the specified address in
      * the flash. For misaligned accesses and accesses to places in the flash where there
      * are no valid instructions, this method returns <code>null</code>. This method does
-     * not return <code>ProbedInstr</code> or <code>DisassembleInstr</code> objects which
+     * not return <code>ProbedLegacyInstr</code> or <code>DisassembleLegacyInstr</code> objects which
      * are used internally to accomplish probing and dynamically updated code.
      *
      * @param address the address in the flash from which to read the instruction
-     * @return a reference to the <code>Instr</code> object at this address in the flash;
+     * @return a reference to the <code>LegacyInstr</code> object at this address in the flash;
      * <code>null</code> if there is no instruction at this address.
      */
-    public Instr readInstr(int address) {
+    public LegacyInstr readInstr(int address) {
         try {
             return segment_instr[address].asInstr();
         } catch ( ArrayIndexOutOfBoundsException e) {
@@ -182,18 +183,18 @@ public class CodeSegment extends Segment {
     }
 
     /**
-     * The <code>getInstr()</code> method reads an Instr from the specified address in
+     * The <code>getInstr()</code> method reads an LegacyInstr from the specified address in
      * the flash. For misaligned accesses and accesses to places in the flash where there
-     * are no valid instructions, this method may return instances of <code>MisalignedInstr</code>
-     * or <code>DisassembleInstr</code> objects which are used internally to check for errors
+     * are no valid instructions, this method may return instances of <code>MisalignedLegacyInstr</code>
+     * or <code>DisassembleLegacyInstr</code> objects which are used internally to check for errors
      * and support dynamically updated code. Additionally, this method may return instances of
-     * <code>ProbedInstr</code> that are used internally to support probing of instructions.
+     * <code>ProbedLegacyInstr</code> that are used internally to support probing of instructions.
      *
      * @param address the address in the flash from which to read the instruction
-     * @return a reference to the <code>Instr</code> object at this address in the flash;
+     * @return a reference to the <code>LegacyInstr</code> object at this address in the flash;
      * <code>null</code> if there is no instruction at this address.
      */
-    public Instr getInstr(int address) {
+    public LegacyInstr getInstr(int address) {
         try {
             return segment_instr[address];
         } catch ( ArrayIndexOutOfBoundsException e) {
@@ -210,12 +211,12 @@ public class CodeSegment extends Segment {
      * @param p the probe to insert on this instruction
      */
     public void insertProbe(int address, Simulator.Probe p) {
-        Instr instr = getInstr(address);
-        if ( instr instanceof ProbedInstr ) {
-            ProbedInstr pri = (ProbedInstr)instr;
+        LegacyInstr instr = getInstr(address);
+        if ( instr instanceof ProbedLegacyInstr ) {
+            ProbedLegacyInstr pri = (ProbedLegacyInstr)instr;
             pri.add(p);
         } else {
-            ProbedInstr pri = new ProbedInstr(instr, address);
+            ProbedLegacyInstr pri = new ProbedLegacyInstr(instr, address);
             pri.add(p);
             writeInstr(address, pri);
         }
@@ -230,36 +231,36 @@ public class CodeSegment extends Segment {
      * @param p the probe to isnert on this instruction
      */
     public void removeProbe(int address, Simulator.Probe p) {
-        Instr instr = getInstr(address);
-        if ( instr instanceof ProbedInstr ) {
-            ProbedInstr pri = (ProbedInstr)instr;
+        LegacyInstr instr = getInstr(address);
+        if ( instr instanceof ProbedLegacyInstr ) {
+            ProbedLegacyInstr pri = (ProbedLegacyInstr)instr;
             pri.remove(p);
         }
     }
 
-    protected void writeInstr(int address, Instr i) {
+    protected void writeInstr(int address, LegacyInstr i) {
         segment_instr[address] = i;
     }
 
     /**
-     * The ProbedInstr class represents a wrapper around an instruction in the program that executes the
+     * The ProbedLegacyInstr class represents a wrapper around an instruction in the program that executes the
      * probes before executing the instruction and after the instruction. For most methods on the
-     * <code>Instr</code> class, it simply forwards the call to the original instruction.
+     * <code>LegacyInstr</code> class, it simply forwards the call to the original instruction.
      */
-    protected class ProbedInstr extends Instr {
+    protected class ProbedLegacyInstr extends LegacyInstr {
         protected final int address;
-        protected final Instr instr;
+        protected final LegacyInstr instr;
         protected final MulticastProbe probe;
 
-        public ProbedInstr(Instr i, int a) {
-            super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
+        public ProbedLegacyInstr(LegacyInstr i, int a) {
+            super(new LegacyInstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
             instr = i;
             address = a;
             probe = new MulticastProbe();
         }
 
-        public ProbedInstr(Instr i, ProbedInstr prev) {
-            super(new InstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
+        public ProbedLegacyInstr(LegacyInstr i, ProbedLegacyInstr prev) {
+            super(new LegacyInstrProperties(i.properties.name, i.properties.variant, i.properties.size, 0));
             instr = i;
             address = prev.address;
             probe = prev.probe;
@@ -277,7 +278,7 @@ public class CodeSegment extends Segment {
             return probe.isEmpty();
         }
 
-        public void accept(InstrVisitor v) {
+        public void accept(LegacyInstrVisitor v) {
             probe.fireBefore(interpreter.state, address);
             instr.accept(interpreter);
             interpreter.commit();
@@ -289,24 +290,24 @@ public class CodeSegment extends Segment {
             }
         }
 
-        public Instr build(int address, Operand[] ops) {
-            throw Util.failure("ProbedInstr should be confined to BaseInterpreter");
+        public LegacyInstr build(int address, LegacyOperand[] ops) {
+            throw Util.failure("ProbedLegacyInstr should be confined to BaseInterpreter");
         }
 
         public String getOperands() {
             return instr.getOperands();
         }
 
-        public Instr asInstr() {
+        public LegacyInstr asInstr() {
             return instr;
         }
     }
 
-    static InstrProperties NO_INSTR_PROPS = new InstrProperties("<none>", "<none>", 2, 1);
+    static LegacyInstrProperties NO_INSTR_PROPS = new LegacyInstrProperties("<none>", "<none>", 2, 1);
 
-    private class NoInstr extends Instr {
+    private class NoLegacyInstr extends LegacyInstr {
 
-        NoInstr() {
+        NoLegacyInstr() {
             super(NO_INSTR_PROPS);
         }
 
@@ -328,34 +329,34 @@ public class CodeSegment extends Segment {
          *
          * @param v the visitor to accept
          */
-        public void accept(InstrVisitor v) {
+        public void accept(LegacyInstrVisitor v) {
             throw new InterpreterError.NoSuchInstructionException(interpreter.getPC());
         }
 
         /**
-         * The <code>build()</code> method constructs a new <code>Instr</code> instance with the given
+         * The <code>build()</code> method constructs a new <code>LegacyInstr</code> instance with the given
          * operands, checking the operands against the constraints that are specific to each instruction.
          *
          * @param pc  the address at which the instruction will be located
          * @param ops the operands to the instruction
-         * @return a new <code>Instr</code> instance representing the instruction with the given operands
+         * @return a new <code>LegacyInstr</code> instance representing the instruction with the given operands
          */
-        public Instr build(int pc, Operand[] ops) {
+        public LegacyInstr build(int pc, LegacyOperand[] ops) {
             throw Util.failure("no instruction here");
         }
 
-        public Instr asInstr() {
+        public LegacyInstr asInstr() {
             return null;
         }
     }
 
     /**
-     * The <code>MisalignedInstr</code> class is used for instructions that are not aligned in the flash
+     * The <code>MisalignedLegacyInstr</code> class is used for instructions that are not aligned in the flash
      * memory correctly.
      */
-    private class MisalignedInstr extends Instr {
+    private class MisalignedLegacyInstr extends LegacyInstr {
 
-        MisalignedInstr() {
+        MisalignedLegacyInstr() {
             super(NO_INSTR_PROPS);
         }
 
@@ -377,23 +378,23 @@ public class CodeSegment extends Segment {
          *
          * @param v the visitor to accept
          */
-        public void accept(InstrVisitor v) {
+        public void accept(LegacyInstrVisitor v) {
             throw new InterpreterError.PCAlignmentException(interpreter.getPC());
         }
 
         /**
-         * The <code>build()</code> method constructs a new <code>Instr</code> instance with the given
+         * The <code>build()</code> method constructs a new <code>LegacyInstr</code> instance with the given
          * operands, checking the operands against the constraints that are specific to each instruction.
          *
          * @param pc  the address at which the instruction will be located
          * @param ops the operands to the instruction
-         * @return a new <code>Instr</code> instance representing the instruction with the given operands
+         * @return a new <code>LegacyInstr</code> instance representing the instruction with the given operands
          */
-        public Instr build(int pc, Operand[] ops) {
+        public LegacyInstr build(int pc, LegacyOperand[] ops) {
             throw Util.failure("no instruction here");
         }
 
-        public Instr asInstr() {
+        public LegacyInstr asInstr() {
             return null;
         }
 

@@ -34,10 +34,10 @@
 
 package jintgen.isdl;
 
-import jintgen.types.*;
+import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.JIGIRTypeEnv;
-import cck.util.Util;
+import jintgen.types.*;
 
 /**
  * @author Ben L. Titzer

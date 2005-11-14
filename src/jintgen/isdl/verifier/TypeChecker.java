@@ -36,11 +36,10 @@ package jintgen.isdl.verifier;
 
 import cck.util.Arithmetic;
 import cck.util.Util;
+import jintgen.isdl.*;
+import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
 import jintgen.types.*;
-import jintgen.isdl.parser.Token;
-import jintgen.isdl.*;
-
 import java.util.*;
 
 /**

@@ -32,12 +32,11 @@
 
 package jintgen.gen;
 
-import jintgen.jigir.*;
-import jintgen.types.TypeRef;
-import jintgen.types.Type;
-
-import java.util.List;
 import cck.util.Util;
+import jintgen.jigir.*;
+import jintgen.types.Type;
+import jintgen.types.TypeRef;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer

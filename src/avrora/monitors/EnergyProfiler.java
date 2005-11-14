@@ -35,11 +35,11 @@
 
 package avrora.monitors;
 
+import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.legacy.LegacyState;
 import avrora.core.ControlFlowGraph.Block;
-import avrora.core.Instr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import cck.text.Terminal;
 import java.util.*;
 
@@ -171,7 +171,7 @@ public class EnergyProfiler extends MonitorFactory {
         private void findSleep() {
             int i = 0;
             while (i < program.program_length) {
-                Instr instr = program.readInstr(i);
+                LegacyInstr instr = program.readInstr(i);
                 if (instr != null) {
                     if ("sleep".equals(instr.properties.name)) {
                         simulator.insertProbe(sleepProbe, i);
@@ -225,9 +225,9 @@ public class EnergyProfiler extends MonitorFactory {
             /**
              * fired before the basic block is entered, it logs the previos state
              *
-             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.sim.State,int)
+             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.arch.legacy.LegacyState,int)
              */
-            public void fireBefore(State s, int pc) {
+            public void fireBefore(LegacyState s, int pc) {
                 long cycles = simulator.getState().getCycles() - lastChange;
                 if (cycles > 0) {
                     if (currentMode != null) {
@@ -254,9 +254,9 @@ public class EnergyProfiler extends MonitorFactory {
             /**
              * fired before a sleep mode is entered, it logs the previos state
              *
-             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.sim.State,int)
+             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.arch.legacy.LegacyState,int)
              */
-            public void fireBefore(State s, int pc) {
+            public void fireBefore(LegacyState s, int pc) {
                 long cycles = simulator.getState().getCycles() - lastChange;
                 if (cycles > 0) {
                     if (currentMode != null) {

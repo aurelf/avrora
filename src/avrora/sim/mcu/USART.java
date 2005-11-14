@@ -303,7 +303,7 @@ public class USART extends AtmelInternalDevice {
     }
 
     /**
-     * The <code>DataRegister</code> class represents a Transmit Data Buffer Register for a USART. It
+     * The <code>DataRegister</code> class represents a Transmit Data Buffer LegacyRegister for a USART. It
      * is really two registers, a transmit register and a receive register. The transmit register is
      * the destination of data written to the register at this address. The receive register is the
      * source of data read from this address.

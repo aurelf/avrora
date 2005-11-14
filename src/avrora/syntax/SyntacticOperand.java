@@ -32,22 +32,22 @@
 
 package avrora.syntax;
 
-import avrora.core.Operand;
+import avrora.arch.legacy.LegacyOperand;
 import cck.parser.AbstractToken;
 import cck.util.Util;
 
 /**
- * The <code>SyntacticOperand</code> class is an implementation of the <code>avrora.core.Operand</code>
+ * The <code>SyntacticOperand</code> class is an implementation of the <code>avrora.core.LegacyOperand</code>
  * interface that corresponds to source assembly programs. Therefore instances of this class contain Tokens
  * that tie them back to their original locations in the source assembly. This is useful for reporting
  * assembly errors when the prototype fails to build an instruction because the operands do not meet the
  * constraints specified in the Atmel instruction set reference.
  *
  * @author Ben L. Titzer
- * @see avrora.core.Operand
- * @see avrora.core.InstrPrototype
+ * @see avrora.arch.legacy.LegacyOperand
+ * @see avrora.arch.legacy.LegacyInstrProto
  */
-public abstract class SyntacticOperand extends ASTNode implements Operand {
+public abstract class SyntacticOperand extends ASTNode implements LegacyOperand {
 
     public abstract void simplify(int nextByteAddress, Context c);
 
@@ -67,34 +67,34 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
         return right;
     }
 
-    public Operand.Register asRegister() {
+    public LegacyOperand.Register asRegister() {
         return null;
     }
 
-    public Operand.Constant asConstant() {
+    public LegacyOperand.Constant asConstant() {
         return null;
     }
 
     /**
-     * The <code>SyntacticOperand.Register</code> class represents a register operand at the source level.
+     * The <code>SyntacticOperand.LegacyRegister</code> class represents a register operand at the source level.
      * This may be an actual register name (e.g. "r21") or it could be a symbolic name for a register that has
      * been renamed by an assembler directive.
      */
-    public static class Register extends SyntacticOperand implements Operand.Register {
+    public static class Register extends SyntacticOperand implements LegacyOperand.Register {
         public final AbstractToken name;
         private boolean simplified;
-        private avrora.core.Register register;
+        private avrora.arch.legacy.LegacyRegister register;
 
         public Register(AbstractToken n) {
             super(n, n);
             name = n;
         }
 
-        public Operand.Register asRegister() {
+        public LegacyOperand.Register asRegister() {
             return this;
         }
 
-        public avrora.core.Register getRegister() {
+        public avrora.arch.legacy.LegacyRegister getRegister() {
             // sanity check to avoid possibly hard to find bugs in the future
             if (!simplified) throw Util.failure("register operand not yet simplified: " + name);
             return register;
@@ -116,7 +116,7 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
      * source assembly as an expression. This expression might be compound and need to be evaluated before its
      * actual value is known.
      */
-    public static class Expr extends SyntacticOperand implements Operand.Constant {
+    public static class Expr extends SyntacticOperand implements LegacyOperand.Constant {
         public final avrora.syntax.Expr expr;
         private boolean simplified;
         private boolean useByteAddress;
@@ -128,7 +128,7 @@ public abstract class SyntacticOperand extends ASTNode implements Operand {
             useByteAddress = b;
         }
 
-        public Operand.Constant asConstant() {
+        public LegacyOperand.Constant asConstant() {
             return this;
         }
 

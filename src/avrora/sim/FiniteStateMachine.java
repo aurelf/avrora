@@ -71,7 +71,7 @@ public class FiniteStateMachine {
     }
 
     /**
-     * The <code>State</code> class represents a state of the finite state machine, including its
+     * The <code>LegacyState</code> class represents a state of the finite state machine, including its
      * name as a String, the transition time to each of the other states, and a list of any
      * probes attached to this state.
      */

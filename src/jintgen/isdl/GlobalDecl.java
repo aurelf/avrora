@@ -34,9 +34,9 @@
 package jintgen.isdl;
 
 import jintgen.isdl.parser.Token;
-import jintgen.types.TypeRef;
-import jintgen.types.Type;
 import jintgen.jigir.Decl;
+import jintgen.types.Type;
+import jintgen.types.TypeRef;
 
 /**
  * @author Ben L. Titzer

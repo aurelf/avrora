@@ -36,7 +36,8 @@ import avrora.core.Program;
 import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
-import avrora.sim.mcu.*;
+import avrora.sim.mcu.ATMega128;
+import avrora.sim.mcu.Microcontroller;
 import cck.text.Terminal;
 
 /**

@@ -67,7 +67,7 @@ public class ExternalFlash {
     private int dfPageAddress;
     private int dfByteOffset;
     private int dfTempByte;
-    private short dfStatus;		// Dataflash Status Register
+    private short dfStatus;		// Dataflash Status LegacyRegister
     private long dfDelay;			// delay while busy in cycles
     private double delay;		// delay while busy in ms
     private boolean so, si;		// serial output, serial input
@@ -76,7 +76,7 @@ public class ExternalFlash {
     private short step;
     private byte i;
 
-    //	DataFlash Status Register
+    //	DataFlash Status LegacyRegister
     //	bits 5, 4, 3
     public static final int DF_STATUS_REGISTER_DENSITY = 0x18;
     public static final int DF_STATUS_READY = 0x80;
@@ -240,8 +240,8 @@ public class ExternalFlash {
                     case 0xD4:  // Buffer1 Read
                     case 0x56:  // Buffer2 Read
                     case 0xD6:  // Buffer2 Read
-                    case 0x57:  // Status Register Read
-                    case 0xD7:  // Status Register Read
+                    case 0x57:  // Status LegacyRegister Read
+                    case 0xD7:  // Status LegacyRegister Read
                         break;
 
                         // Program and Erase Commands
@@ -443,7 +443,7 @@ public class ExternalFlash {
                     temp = getBuffer2(dfByteOffset);
                     break;
 
-                    // Status Register Read
+                    // Status LegacyRegister Read
                 case 0x57:
                 case 0xD7:
                     temp = dfStatus;
@@ -464,7 +464,7 @@ public class ExternalFlash {
                     //	get opcode
                     dfOpcode = dfTempByte;
                     echo("Recieved Opcode: " + dfOpcode);
-                    // Status Register Read?
+                    // Status LegacyRegister Read?
                     if ((dfOpcode == 0x57) || (dfOpcode == 0xD7)) {
                         isReading = true;
                     }
@@ -541,7 +541,7 @@ public class ExternalFlash {
                     }
                     break;
 
-                    //	Status Register Read
+                    //	Status LegacyRegister Read
                 case 0x57:
                 case 0xD7:
 

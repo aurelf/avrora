@@ -32,7 +32,7 @@
 
 package avrora.syntax;
 
-import avrora.core.Register;
+import avrora.arch.legacy.LegacyRegister;
 import cck.parser.AbstractToken;
 
 /**
@@ -49,10 +49,10 @@ public interface Context {
      * program.
      *
      * @param ident the string name of the register or register alias
-     * @return a reference to the <code>Register</code> instance representing the register with the specified
+     * @return a reference to the <code>LegacyRegister</code> instance representing the register with the specified
      *         name or alias
      */
-    public Register getRegister(AbstractToken ident);
+    public LegacyRegister getRegister(AbstractToken ident);
 
     /**
      * The <code>getVariable()</code> method looks up the value of a named constant within the current

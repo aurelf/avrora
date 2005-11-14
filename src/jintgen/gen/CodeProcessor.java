@@ -34,7 +34,6 @@
 package jintgen.gen;
 
 import jintgen.jigir.*;
-
 import java.util.List;
 
 /**

@@ -30,26 +30,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.core;
-
+package avrora.arch.legacy;
 
 /**
- * The <code>InstrPrototype</code> interface represents an object that is capable of building
- * <code>Instr</code> instances given an array of <code>Operand</code> instances. It also contains methods
+ * The <code>LegacyInstrProto</code> interface represents an object that is capable of building
+ * <code>LegacyInstr</code> instances given an array of <code>LegacyOperand</code> instances. It also contains methods
  * that describe the instructions such as their name, their variant name, and their size in bytes.
  *
  * @author Ben L. Titzer
  */
-public interface InstrPrototype {
+public interface LegacyInstrProto {
     /**
-     * The <code>build()</code> method constructs a new <code>Instr</code> instance with the given operands,
+     * The <code>build()</code> method constructs a new <code>LegacyInstr</code> instance with the given operands,
      * checking the operands against the constraints that are specific to each instruction.
      *
      * @param pc  the address at which the instruction will be located
      * @param ops the operands to the instruction
-     * @return a new <code>Instr</code> instance representing the instruction with the given operands
+     * @return a new <code>LegacyInstr</code> instance representing the instruction with the given operands
      */
-    public Instr build(int pc, Operand[] ops);
+    public LegacyInstr build(int pc, LegacyOperand[] ops);
 
     /**
      * The <code>getSize()</code> method returns the size of the instruction in bytes. Since each prototype

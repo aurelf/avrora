@@ -32,8 +32,8 @@
 
 package avrora.actions;
 
+import avrora.arch.legacy.LegacyState;
 import avrora.core.*;
-import avrora.sim.State;
 import cck.text.*;
 import cck.util.Option;
 import cck.util.Util;
@@ -123,9 +123,9 @@ public abstract class SimAction extends Action {
          * The <code>state</code> field stores a reference to the state of the simulator when the breakpoint
          * occurred, before executing the instruction.
          */
-        public final State state;
+        public final LegacyState state;
 
-        public BreakPointException(int a, State s) {
+        public BreakPointException(int a, LegacyState s) {
             super("breakpoint @ " + StringUtil.addrToString(a) + " reached");
             address = a;
             state = s;
@@ -154,14 +154,14 @@ public abstract class SimAction extends Action {
          * The <code>state</code> field stores the state of the simulation at the point at which the timeout
          * occurred.
          */
-        public final State state;
+        public final LegacyState state;
 
         /**
          * The <code>timeout</code> field stores the value (in clock cycles) of the timeout that occurred.
          */
         public final long timeout;
 
-        public TimeoutException(int a, State s, long t, String l) {
+        public TimeoutException(int a, LegacyState s, long t, String l) {
             super("timeout @ " + StringUtil.addrToString(a) + " reached after " + t + ' ' + l);
             address = a;
             state = s;

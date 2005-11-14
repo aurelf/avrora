@@ -142,13 +142,13 @@ public class DisassemblerGenerator extends Generator {
 
     private void initStatics() {
         properties.setProperty("addr", className("AddrMode"));
-        properties.setProperty("instr", className("Instr"));
-        properties.setProperty("operand", className("Operand"));
+        properties.setProperty("instr", className("LegacyInstr"));
+        properties.setProperty("operand", className("LegacyOperand"));
         properties.setProperty("opvisitor", className("OperandVisitor"));
-        properties.setProperty("visitor", className("InstrVisitor"));
+        properties.setProperty("visitor", className("LegacyInstrVisitor"));
         properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
-        properties.setProperty("disassembler", className("Disassembler"));
+        properties.setProperty("disassembler", className("LegacyDisassembler"));
 
         WORD_SIZE = (int)WORD.get();
         LITTLE_ENDIAN = "little".equals(ENDIAN.get());

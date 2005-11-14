@@ -33,16 +33,11 @@
 package jintgen.isdl.verifier;
 
 import cck.parser.AbstractToken;
-import cck.parser.ErrorReporter;
 import cck.text.StringUtil;
-import jintgen.isdl.parser.Token;
 import jintgen.isdl.OperandTypeDecl;
-import jintgen.jigir.Expr;
-import jintgen.jigir.Literal;
-import jintgen.jigir.ReturnStmt;
-import jintgen.types.Type;
-import jintgen.types.TypeErrorReporter;
-import jintgen.types.TypeRef;
+import jintgen.isdl.parser.Token;
+import jintgen.jigir.*;
+import jintgen.types.*;
 
 /**
  * @author Ben L. Titzer
@@ -114,11 +109,11 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
     }
 
     public void RedefinedOperand(Token prevdecl, Token newdecl) {
-        redefined("Operand", "Operand", prevdecl, newdecl);
+        redefined("LegacyOperand", "LegacyOperand", prevdecl, newdecl);
     }
 
     public void RedefinedOperandType(Token prevdecl, Token newdecl) {
-        redefined("OperandType", "Operand Type", prevdecl, newdecl);
+        redefined("OperandType", "LegacyOperand Type", prevdecl, newdecl);
     }
 
     public void RedefinedSubroutine(Token prevdecl, Token newdecl) {
@@ -181,7 +176,7 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
     }
 
     public void OperandTypeExpected(Token o, Type t) {
-        String report = "Operand type expected, found "+t.toString();
+        String report = "LegacyOperand type expected, found "+t.toString();
         error("OperandTypeExpected", o.getSourcePoint(), report);
     }
 
@@ -205,6 +200,6 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         if ( ot.isUnion() )
             return "Polymorphic operand type "+ StringUtil.quote(ot.name);
         else
-            return "Operand type "+ StringUtil.quote(ot.name);
+            return "LegacyOperand type "+ StringUtil.quote(ot.name);
     }
 }

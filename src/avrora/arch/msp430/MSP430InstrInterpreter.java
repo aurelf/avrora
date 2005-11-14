@@ -1,5 +1,4 @@
 package avrora.arch.msp430;
-import avrora.arch.*;
 public abstract class MSP430InstrInterpreter extends MSP430State implements MSP430InstrVisitor {
     boolean bit_get(int v, int bit) {
         return (v & (1 << bit)) != 0;

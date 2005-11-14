@@ -32,7 +32,7 @@
 
 package avrora.stack;
 
-import avrora.core.Register;
+import avrora.arch.legacy.LegacyRegister;
 import cck.util.Util;
 
 /**
@@ -231,7 +231,7 @@ public class MutableState extends AbstractState implements IORegisterConstants {
      * @param r   the register to write
      * @param val the new abstract value of the register
      */
-    public void setRegisterAV(Register r, char val) {
+    public void setRegisterAV(LegacyRegister r, char val) {
         av_REGISTERS[r.getNumber()] = AbstractArithmetic.canon(val);
     }
 

@@ -31,8 +31,8 @@
  */
 package avrora.test.probes;
 
+import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 import avrora.sim.clock.DeltaQueue;
 import cck.text.StringUtil;
 import java.util.*;
@@ -89,12 +89,12 @@ public class ProbeTest {
             afterStmts = a;
         }
 
-        public void fireBefore(State s, int addr) {
+        public void fireBefore(LegacyState s, int addr) {
             recordEvent(name+".before");
             execute(beforeStmts);
         }
 
-        public void fireAfter(State s, int addr) {
+        public void fireAfter(LegacyState s, int addr) {
             recordEvent(name+".after");
             execute(afterStmts);
         }
@@ -122,22 +122,22 @@ public class ProbeTest {
             afterWriteStmts = a2;
         }
 
-        public void fireBeforeRead(State state, int data_addr) {
+        public void fireBeforeRead(LegacyState state, int data_addr) {
             recordEvent(name+".beforeRead");
             execute(beforeReadStmts);
         }
 
-        public void fireBeforeWrite(State state, int data_addr, byte value) {
+        public void fireBeforeWrite(LegacyState state, int data_addr, byte value) {
             recordEvent(name+".beforeWrite");
             execute(beforeWriteStmts);
         }
 
-        public void fireAfterRead(State state, int data_addr, byte value) {
+        public void fireAfterRead(LegacyState state, int data_addr, byte value) {
             recordEvent(name+".afterRead");
             execute(afterReadStmts);
         }
 
-        public void fireAfterWrite(State state, int data_addr, byte value) {
+        public void fireAfterWrite(LegacyState state, int data_addr, byte value) {
             recordEvent(name+".afterWrite");
             execute(afterWriteStmts);
         }

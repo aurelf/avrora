@@ -165,7 +165,7 @@ public class DGUtil {
         Terminal.println(": the following encodings are ambiguous:");
         for ( EncodingInst el : set )
             el.print(0, Printer.STDOUT);
-        throw Util.failure("Disassembler generator cannot continue");
+        throw Util.failure("LegacyDisassembler generator cannot continue");
     }
 
     public static void printDotTree(String title, DTNode dt, Printer p) {

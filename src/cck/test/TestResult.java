@@ -32,9 +32,9 @@
 
 package cck.test;
 
+import cck.parser.SourceError;
 import cck.text.Terminal;
 import cck.util.Util;
-import cck.parser.SourceError;
 
 /**
  * The <code>TestResult</code> class represents the result of running a test cases. The test run could

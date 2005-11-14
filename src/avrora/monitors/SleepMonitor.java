@@ -70,7 +70,7 @@ public class SleepMonitor extends MonitorFactory {
             recordCycles(fsm.getCurrentState());
 
             TermUtil.printSeparator(Terminal.MAXLINE, "Sleep Monitor Results");
-            Terminal.printGreen("State                      Cycles  Percent");
+            Terminal.printGreen("LegacyState                      Cycles  Percent");
             Terminal.nextln();
             TermUtil.printThinSeparator(Terminal.MAXLINE);
             long total = clock.getCount();

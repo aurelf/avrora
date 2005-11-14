@@ -33,6 +33,7 @@
 package avrora.actions;
 
 import avrora.Main;
+import avrora.arch.legacy.LegacyInstr;
 import avrora.core.*;
 import cck.text.*;
 import cck.util.Option;
@@ -121,7 +122,7 @@ public class CFGAction extends Action {
             Terminal.println(":" + block.getSize() + ']');
             Iterator iiter = block.getInstrIterator();
             while (iiter.hasNext()) {
-                Instr instr = (Instr)iiter.next();
+                LegacyInstr instr = (LegacyInstr)iiter.next();
                 Terminal.printBrightBlue("    " + instr.getName());
                 Terminal.println(' ' + instr.getOperands());
             }

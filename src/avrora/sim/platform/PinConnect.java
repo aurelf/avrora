@@ -37,7 +37,6 @@ import avrora.sim.SimulatorThread;
 import avrora.sim.clock.StepSynchronizer;
 import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.Microcontroller;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 

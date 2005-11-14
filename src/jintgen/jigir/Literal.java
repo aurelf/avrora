@@ -33,11 +33,11 @@
 package jintgen.jigir;
 
 import cck.parser.SourcePoint;
-import cck.util.Util;
 import cck.text.StringUtil;
-import jintgen.isdl.parser.Token;
+import cck.util.Util;
 import jintgen.isdl.EnumDecl;
 import jintgen.isdl.SymbolMapping;
+import jintgen.isdl.parser.Token;
 
 /**
  * The <code>Literal</code> class represents a literal (constant value) as part of an expression. Literals

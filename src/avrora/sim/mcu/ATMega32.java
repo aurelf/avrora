@@ -32,7 +32,7 @@
 
 package avrora.sim.mcu;
 
-import avrora.core.InstrPrototype;
+import avrora.arch.legacy.LegacyInstrProto;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
@@ -285,7 +285,7 @@ public class ATMega32 extends ATMegaFamily {
         installDevices();
     }
 
-    public boolean isSupported(InstrPrototype i) {
+    public boolean isSupported(LegacyInstrProto i) {
         return true;
     }
 

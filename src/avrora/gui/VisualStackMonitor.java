@@ -32,7 +32,9 @@
 
 package avrora.gui;
 
-import avrora.sim.*;
+import avrora.arch.legacy.LegacyState;
+import avrora.sim.Simulation;
+import avrora.sim.Simulator;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +60,7 @@ public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.
 
         class InitWatch extends Simulator.IORWatch.Empty {
             boolean init;
-            public void fireAfterWrite(State s, int addr, byte val) {
+            public void fireAfterWrite(LegacyState s, int addr, byte val) {
                 init = true;
                 if ( spl.init && sph.init ) {
                     spinit = true;

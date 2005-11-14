@@ -32,7 +32,8 @@
 
 package avrora.sim.mcu;
 
-import avrora.core.*;
+import avrora.arch.legacy.*;
+import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.MainClock;
 import cck.text.StringUtil;
@@ -163,7 +164,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
      * The <code>disassembler</code> field stores a reference to a disassembler for this segment.
      * This is needed because disassemblers are currently not re-entrant.
      */
-    Disassembler disassembler = new Disassembler();
+    LegacyDisassembler disassembler = new LegacyDisassembler();
 
     /**
      * The <code>buffer</code> field stores a reference to the bytes in the temporary page buffer
@@ -235,7 +236,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
     public void update() {
         // TODO: check that PC is in the bootloader section
         int pc = interpreter.getPC();
-        int Z = interpreter.getRegisterWord(Register.Z);
+        int Z = interpreter.getRegisterWord(LegacyRegister.Z);
         int pageoffset = (Z & addressMask);
         int pagenum = Z >> (pagesize + 1);
         // do not update the ReprogrammableCodeSegment register yet
@@ -294,8 +295,8 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
     private void fillBuffer(int pagenum, int pageoffset) {
         // write the word in R0:R1 into the buffer
-        byte r0 = interpreter.getRegisterByte(Register.R0);
-        byte r1 = interpreter.getRegisterByte(Register.R1);
+        byte r0 = interpreter.getRegisterByte(LegacyRegister.R0);
+        byte r1 = interpreter.getRegisterByte(LegacyRegister.R1);
         SPMCSR.reset();
         buffer[pageoffset] = r0;
         buffer[pageoffset+1] = r1;
@@ -324,7 +325,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
                 int baddr = addr + offset;
                 write(baddr, DEFAULT_VALUE);
                 if ( (offset & 1) == 0)
-                    replaceInstr(baddr, new DisassembleInstr(baddr));
+                    replaceInstr(baddr, new DisassembleLegacyInstr(baddr));
             }
             SPMCSR.reset();
         }
@@ -355,7 +356,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
                 int baddr = addr + offset;
                 write(baddr, buffer[offset]);
                 if ( (offset & 1) == 0)
-                    replaceInstr(baddr, new DisassembleInstr(baddr));
+                    replaceInstr(baddr, new DisassembleLegacyInstr(baddr));
             }
             SPMCSR.reset();
         }
@@ -384,41 +385,35 @@ public class ReprogrammableCodeSegment extends CodeSegment {
      * attempts to execute the instruction, it will first be disassembled and then it will
      * be executed.
      */
-    public class DisassembleInstr extends Instr {
+    public class DisassembleLegacyInstr extends LegacyInstr {
 
         protected final int address;
 
-        DisassembleInstr(int addr) {
+        DisassembleLegacyInstr(int addr) {
             super(null);
             address = addr;
         }
 
-        public void accept(InstrVisitor v) {
-            try {
-                Instr i = disassembler.disassemble(0, segment_data, address);
-                replaceInstr(address, i);
-                i.accept(v);
-            } catch (Disassembler.InvalidInstruction e) {
-                throw Util.failure("invalid instruction at "+ StringUtil.addrToString(address));
-            }
+        public void accept(LegacyInstrVisitor v) {
+            LegacyInstr i = disassembler.disassembleLegacy(segment_data, 0, address);
+            if ( i == null ) throw Util.failure("invalid instruction at "+ StringUtil.addrToString(address));
+            replaceInstr(address, i);
+            i.accept(v);
         }
 
-        public Instr build(int address, Operand[] ops) {
-            throw Util.failure("DisassembleInstr should be confined to BaseInterpreter");
+        public LegacyInstr build(int address, LegacyOperand[] ops) {
+            throw Util.failure("DisassembleLegacyInstr should be confined to BaseInterpreter");
         }
 
         public String getOperands() {
-            throw Util.failure("DisassembleInstr has no operands");
+            throw Util.failure("DisassembleLegacyInstr has no operands");
         }
 
-        public Instr asInstr() {
-            try {
-                Instr i = disassembler.disassemble(0, segment_data, address);
-                replaceInstr(address, i);
-                return i;
-            } catch (Disassembler.InvalidInstruction e) {
-                return null;
-            }
+        public LegacyInstr asInstr() {
+            LegacyInstr i = disassembler.disassembleLegacy(segment_data, 0, address);
+            if ( i == null ) return null;
+            replaceInstr(address, i);
+            return i;
         }
     }
 

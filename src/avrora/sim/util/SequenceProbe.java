@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
+import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
-import avrora.sim.State;
 
 /**
  * The <code>SequenceProbe</code> is a probe composer that allows a probe to be fired for every instruction
@@ -97,7 +97,7 @@ public class SequenceProbe implements Simulator.Probe {
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireBefore(State state, int pc) {
+    public void fireBefore(LegacyState state, int pc) {
         if (pc == entry_addr) nesting++;
         if (nesting > 0) probe.fireBefore(state, pc);
     }
@@ -111,7 +111,7 @@ public class SequenceProbe implements Simulator.Probe {
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireAfter(State state, int pc) {
+    public void fireAfter(LegacyState state, int pc) {
         if (nesting > 0) probe.fireAfter(state, pc);
         if (pc == exit_addr)
             nesting = (nesting - 1) <= 0 ? 0 : nesting - 1;

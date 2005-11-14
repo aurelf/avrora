@@ -34,11 +34,11 @@
 
 package jintgen.isdl.verifier;
 
+import cck.util.Util;
 import jintgen.isdl.*;
 import jintgen.jigir.*;
-import cck.util.Util;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author Ben L. Titzer

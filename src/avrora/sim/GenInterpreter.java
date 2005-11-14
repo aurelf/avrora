@@ -32,7 +32,8 @@
 
 package avrora.sim;
 
-import avrora.core.*;
+import avrora.arch.legacy.*;
+import avrora.core.Program;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import cck.util.Arithmetic;
 
@@ -43,7 +44,7 @@ import cck.util.Arithmetic;
  *
  * @author Ben L. Titzer
  */
-public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
+public class GenInterpreter extends BaseInterpreter implements LegacyInstrVisitor {
 
     /**
      * The <code>Factory()</code> class implements an interpreter factory that can create
@@ -55,42 +56,42 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         }
     }
 
-    public static final Register R0 = Register.R0;
-    public static final Register R1 = Register.R1;
-    public static final Register R2 = Register.R2;
-    public static final Register R3 = Register.R3;
-    public static final Register R4 = Register.R4;
-    public static final Register R5 = Register.R5;
-    public static final Register R6 = Register.R6;
-    public static final Register R7 = Register.R7;
-    public static final Register R8 = Register.R8;
-    public static final Register R9 = Register.R9;
-    public static final Register R10 = Register.R10;
-    public static final Register R11 = Register.R11;
-    public static final Register R12 = Register.R12;
-    public static final Register R13 = Register.R13;
-    public static final Register R14 = Register.R14;
-    public static final Register R15 = Register.R15;
-    public static final Register R16 = Register.R16;
-    public static final Register R17 = Register.R17;
-    public static final Register R18 = Register.R18;
-    public static final Register R19 = Register.R19;
-    public static final Register R20 = Register.R20;
-    public static final Register R21 = Register.R21;
-    public static final Register R22 = Register.R22;
-    public static final Register R23 = Register.R23;
-    public static final Register R24 = Register.R24;
-    public static final Register R25 = Register.R25;
-    public static final Register R26 = Register.R26;
-    public static final Register R27 = Register.R27;
-    public static final Register R28 = Register.R28;
-    public static final Register R29 = Register.R29;
-    public static final Register R30 = Register.R30;
-    public static final Register R31 = Register.R31;
+    public static final LegacyRegister R0 = LegacyRegister.R0;
+    public static final LegacyRegister R1 = LegacyRegister.R1;
+    public static final LegacyRegister R2 = LegacyRegister.R2;
+    public static final LegacyRegister R3 = LegacyRegister.R3;
+    public static final LegacyRegister R4 = LegacyRegister.R4;
+    public static final LegacyRegister R5 = LegacyRegister.R5;
+    public static final LegacyRegister R6 = LegacyRegister.R6;
+    public static final LegacyRegister R7 = LegacyRegister.R7;
+    public static final LegacyRegister R8 = LegacyRegister.R8;
+    public static final LegacyRegister R9 = LegacyRegister.R9;
+    public static final LegacyRegister R10 = LegacyRegister.R10;
+    public static final LegacyRegister R11 = LegacyRegister.R11;
+    public static final LegacyRegister R12 = LegacyRegister.R12;
+    public static final LegacyRegister R13 = LegacyRegister.R13;
+    public static final LegacyRegister R14 = LegacyRegister.R14;
+    public static final LegacyRegister R15 = LegacyRegister.R15;
+    public static final LegacyRegister R16 = LegacyRegister.R16;
+    public static final LegacyRegister R17 = LegacyRegister.R17;
+    public static final LegacyRegister R18 = LegacyRegister.R18;
+    public static final LegacyRegister R19 = LegacyRegister.R19;
+    public static final LegacyRegister R20 = LegacyRegister.R20;
+    public static final LegacyRegister R21 = LegacyRegister.R21;
+    public static final LegacyRegister R22 = LegacyRegister.R22;
+    public static final LegacyRegister R23 = LegacyRegister.R23;
+    public static final LegacyRegister R24 = LegacyRegister.R24;
+    public static final LegacyRegister R25 = LegacyRegister.R25;
+    public static final LegacyRegister R26 = LegacyRegister.R26;
+    public static final LegacyRegister R27 = LegacyRegister.R27;
+    public static final LegacyRegister R28 = LegacyRegister.R28;
+    public static final LegacyRegister R29 = LegacyRegister.R29;
+    public static final LegacyRegister R30 = LegacyRegister.R30;
+    public static final LegacyRegister R31 = LegacyRegister.R31;
 
-    public static final Register RX = Register.X;
-    public static final Register RY = Register.Y;
-    public static final Register RZ = Register.Z;
+    public static final LegacyRegister RX = LegacyRegister.X;
+    public static final LegacyRegister RY = LegacyRegister.Y;
+    public static final LegacyRegister RZ = LegacyRegister.Z;
 
     /**
      * The constructor for the <code>Interpreter</code> class builds the internal data structures needed to
@@ -189,7 +190,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         int cycles;
         // global probes?
         if ( globalProbe.isEmpty() ) {
-            Instr i = shared_instr[nextPC];
+            LegacyInstr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
             i.accept(this);
@@ -199,7 +200,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         } else {
             // get the current instruction
             int curPC = nextPC; // at this point pc == nextPC
-            Instr i = shared_instr[nextPC];
+            LegacyInstr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
             globalProbe.fireBefore(state, curPC);
@@ -282,7 +283,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     private void fastLoop() {
         innerLoop = true;
         while (innerLoop) {
-            Instr i = shared_instr[nextPC];
+            LegacyInstr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
             i.accept(this);
@@ -296,7 +297,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         while (innerLoop) {
             // get the current instruction
             int curPC = nextPC; // at this point pc == nextPC
-            Instr i = shared_instr[nextPC];
+            LegacyInstr i = shared_instr[nextPC];
 
             // visit the actual instruction (or probe)
             globalProbe.fireBefore(state, curPC);
@@ -307,7 +308,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
     }
 
 //--BEGIN INTERPRETER GENERATOR--
-    public void visit(Instr.ADC i) {
+    public void visit(LegacyInstr.ADC i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1);
         int tmp_1 = getRegisterUnsigned(i.r2);
@@ -329,7 +330,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.ADD i) {
+    public void visit(LegacyInstr.ADD i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1);
         int tmp_1 = getRegisterUnsigned(i.r2);
@@ -351,7 +352,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.ADIW i) {
+    public void visit(LegacyInstr.ADIW i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r1);
         int tmp_1 = tmp_0 + i.imm1;
@@ -366,7 +367,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.AND i) {
+    public void visit(LegacyInstr.AND i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = getRegisterByte(i.r2);
@@ -380,7 +381,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.ANDI i) {
+    public void visit(LegacyInstr.ANDI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = i.imm1;
@@ -394,7 +395,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.ASR i) {
+    public void visit(LegacyInstr.ASR i) {
         nextPC = pc + 2;
         byte tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = tmp_0;
@@ -411,19 +412,19 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BCLR i) {
+    public void visit(LegacyInstr.BCLR i) {
         nextPC = pc + 2;
         getIOReg(SREG).writeBit(i.imm1, false);
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BLD i) {
+    public void visit(LegacyInstr.BLD i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, Arithmetic.setBit(getRegisterByte(i.r1), i.imm1, T));
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRBC i) {
+    public void visit(LegacyInstr.BRBC i) {
         nextPC = pc + 2;
         if (!getIOReg(SREG).readBit(i.imm1)) {
             int tmp_0 = i.imm2;
@@ -436,7 +437,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRBS i) {
+    public void visit(LegacyInstr.BRBS i) {
         nextPC = pc + 2;
         if (getIOReg(SREG).readBit(i.imm1)) {
             int tmp_0 = i.imm2;
@@ -449,7 +450,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRCC i) {
+    public void visit(LegacyInstr.BRCC i) {
         nextPC = pc + 2;
         if (!C) {
             int tmp_0 = i.imm1;
@@ -462,7 +463,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRCS i) {
+    public void visit(LegacyInstr.BRCS i) {
         nextPC = pc + 2;
         if (C) {
             int tmp_0 = i.imm1;
@@ -475,13 +476,13 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BREAK i) {
+    public void visit(LegacyInstr.BREAK i) {
         nextPC = pc + 2;
         stop();
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BREQ i) {
+    public void visit(LegacyInstr.BREQ i) {
         nextPC = pc + 2;
         if (Z) {
             int tmp_0 = i.imm1;
@@ -494,7 +495,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRGE i) {
+    public void visit(LegacyInstr.BRGE i) {
         nextPC = pc + 2;
         if (!S) {
             int tmp_0 = i.imm1;
@@ -507,7 +508,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRHC i) {
+    public void visit(LegacyInstr.BRHC i) {
         nextPC = pc + 2;
         if (!H) {
             int tmp_0 = i.imm1;
@@ -520,7 +521,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRHS i) {
+    public void visit(LegacyInstr.BRHS i) {
         nextPC = pc + 2;
         if (H) {
             int tmp_0 = i.imm1;
@@ -533,7 +534,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRID i) {
+    public void visit(LegacyInstr.BRID i) {
         nextPC = pc + 2;
         if (!I) {
             int tmp_0 = i.imm1;
@@ -546,7 +547,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRIE i) {
+    public void visit(LegacyInstr.BRIE i) {
         nextPC = pc + 2;
         if (I) {
             int tmp_0 = i.imm1;
@@ -559,7 +560,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRLO i) {
+    public void visit(LegacyInstr.BRLO i) {
         nextPC = pc + 2;
         if (C) {
             int tmp_0 = i.imm1;
@@ -572,7 +573,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRLT i) {
+    public void visit(LegacyInstr.BRLT i) {
         nextPC = pc + 2;
         if (S) {
             int tmp_0 = i.imm1;
@@ -585,7 +586,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRMI i) {
+    public void visit(LegacyInstr.BRMI i) {
         nextPC = pc + 2;
         if (N) {
             int tmp_0 = i.imm1;
@@ -598,7 +599,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRNE i) {
+    public void visit(LegacyInstr.BRNE i) {
         nextPC = pc + 2;
         if (!Z) {
             int tmp_0 = i.imm1;
@@ -611,7 +612,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRPL i) {
+    public void visit(LegacyInstr.BRPL i) {
         nextPC = pc + 2;
         if (!N) {
             int tmp_0 = i.imm1;
@@ -624,7 +625,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRSH i) {
+    public void visit(LegacyInstr.BRSH i) {
         nextPC = pc + 2;
         if (!C) {
             int tmp_0 = i.imm1;
@@ -637,7 +638,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRTC i) {
+    public void visit(LegacyInstr.BRTC i) {
         nextPC = pc + 2;
         if (!T) {
             int tmp_0 = i.imm1;
@@ -650,7 +651,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRTS i) {
+    public void visit(LegacyInstr.BRTS i) {
         nextPC = pc + 2;
         if (T) {
             int tmp_0 = i.imm1;
@@ -663,7 +664,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRVC i) {
+    public void visit(LegacyInstr.BRVC i) {
         nextPC = pc + 2;
         if (!V) {
             int tmp_0 = i.imm1;
@@ -676,7 +677,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BRVS i) {
+    public void visit(LegacyInstr.BRVS i) {
         nextPC = pc + 2;
         if (V) {
             int tmp_0 = i.imm1;
@@ -689,19 +690,19 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BSET i) {
+    public void visit(LegacyInstr.BSET i) {
         nextPC = pc + 2;
         getIOReg(SREG).writeBit(i.imm1, true);
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.BST i) {
+    public void visit(LegacyInstr.BST i) {
         nextPC = pc + 2;
         T = Arithmetic.getBit(getRegisterByte(i.r1), i.imm1);
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CALL i) {
+    public void visit(LegacyInstr.CALL i) {
         nextPC = pc + 4;
         int tmp_0 = nextPC;
         tmp_0 = tmp_0 / 2;
@@ -713,13 +714,13 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 4;
     }
 
-    public void visit(Instr.CBI i) {
+    public void visit(LegacyInstr.CBI i) {
         nextPC = pc + 2;
         getIOReg(i.imm1).writeBit(i.imm2, false);
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.CBR i) {
+    public void visit(LegacyInstr.CBR i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = ~i.imm1;
@@ -733,31 +734,31 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLC i) {
+    public void visit(LegacyInstr.CLC i) {
         nextPC = pc + 2;
         C = false;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLH i) {
+    public void visit(LegacyInstr.CLH i) {
         nextPC = pc + 2;
         H = false;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLI i) {
+    public void visit(LegacyInstr.CLI i) {
         nextPC = pc + 2;
         disableInterrupts();
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLN i) {
+    public void visit(LegacyInstr.CLN i) {
         nextPC = pc + 2;
         N = false;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLR i) {
+    public void visit(LegacyInstr.CLR i) {
         nextPC = pc + 2;
         S = false;
         V = false;
@@ -767,31 +768,31 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLS i) {
+    public void visit(LegacyInstr.CLS i) {
         nextPC = pc + 2;
         S = false;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLT i) {
+    public void visit(LegacyInstr.CLT i) {
         nextPC = pc + 2;
         T = false;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLV i) {
+    public void visit(LegacyInstr.CLV i) {
         nextPC = pc + 2;
         V = false;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CLZ i) {
+    public void visit(LegacyInstr.CLZ i) {
         nextPC = pc + 2;
         Z = false;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.COM i) {
+    public void visit(LegacyInstr.COM i) {
         nextPC = pc + 2;
         int tmp_0 = 255 - getRegisterByte(i.r1);
         C = true;
@@ -803,7 +804,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CP i) {
+    public void visit(LegacyInstr.CP i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = getRegisterByte(i.r2);
@@ -825,7 +826,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CPC i) {
+    public void visit(LegacyInstr.CPC i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = getRegisterByte(i.r2);
@@ -847,7 +848,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CPI i) {
+    public void visit(LegacyInstr.CPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = i.imm1;
@@ -869,7 +870,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.CPSE i) {
+    public void visit(LegacyInstr.CPSE i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = getRegisterByte(i.r2);
@@ -903,7 +904,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.DEC i) {
+    public void visit(LegacyInstr.DEC i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1);
         byte tmp_1 = low(tmp_0 - 1);
@@ -915,31 +916,31 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.EICALL i) {
+    public void visit(LegacyInstr.EICALL i) {
         nextPC = pc + 2;
         cyclesConsumed += 4;
     }
 
-    public void visit(Instr.EIJMP i) {
+    public void visit(LegacyInstr.EIJMP i) {
         nextPC = pc + 2;
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.ELPM i) {
+    public void visit(LegacyInstr.ELPM i) {
         nextPC = pc + 2;
         int tmp_0 = extended(getRegisterWord(RZ));
         writeRegisterByte(R0, getProgramByte(tmp_0));
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.ELPMD i) {
+    public void visit(LegacyInstr.ELPMD i) {
         nextPC = pc + 2;
         int tmp_0 = extended(getRegisterWord(RZ));
         writeRegisterByte(i.r1, getProgramByte(tmp_0));
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.ELPMPI i) {
+    public void visit(LegacyInstr.ELPMPI i) {
         nextPC = pc + 2;
         int tmp_0 = extended(getRegisterWord(RZ));
         writeRegisterByte(i.r1, getProgramByte(tmp_0));
@@ -947,7 +948,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.EOR i) {
+    public void visit(LegacyInstr.EOR i) {
         nextPC = pc + 2;
         byte tmp_0 = low(getRegisterByte(i.r1) ^ getRegisterByte(i.r2));
         N = ((tmp_0 & 128) != 0);
@@ -958,7 +959,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.FMUL i) {
+    public void visit(LegacyInstr.FMUL i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1) * getRegisterUnsigned(i.r2) << 1;
         Z = (tmp_0 & 0x0000FFFF) == 0;
@@ -968,7 +969,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.FMULS i) {
+    public void visit(LegacyInstr.FMULS i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1) * getRegisterByte(i.r2) << 1;
         Z = (tmp_0 & 0x0000FFFF) == 0;
@@ -978,7 +979,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.FMULSU i) {
+    public void visit(LegacyInstr.FMULSU i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1) * getRegisterUnsigned(i.r2) << 1;
         Z = (tmp_0 & 0x0000FFFF) == 0;
@@ -988,7 +989,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.ICALL i) {
+    public void visit(LegacyInstr.ICALL i) {
         nextPC = pc + 2;
         int tmp_0 = nextPC;
         tmp_0 = tmp_0 / 2;
@@ -1000,7 +1001,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.IJMP i) {
+    public void visit(LegacyInstr.IJMP i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(RZ);
         int tmp_1 = tmp_0 * 2;
@@ -1008,13 +1009,13 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.IN i) {
+    public void visit(LegacyInstr.IN i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, getIORegisterByte(i.imm1));
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.INC i) {
+    public void visit(LegacyInstr.INC i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1);
         byte tmp_1 = low(tmp_0 + 1);
@@ -1026,7 +1027,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.JMP i) {
+    public void visit(LegacyInstr.JMP i) {
         nextPC = pc + 4;
         int tmp_0 = i.imm1;
         int tmp_1 = tmp_0 * 2;
@@ -1034,25 +1035,25 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.LD i) {
+    public void visit(LegacyInstr.LD i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, getDataByte(getRegisterWord(i.r2)));
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.LDD i) {
+    public void visit(LegacyInstr.LDD i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, getDataByte(getRegisterWord(i.r2) + i.imm1));
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.LDI i) {
+    public void visit(LegacyInstr.LDI i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, low(i.imm1));
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.LDPD i) {
+    public void visit(LegacyInstr.LDPD i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r2) - 1;
         writeRegisterByte(i.r1, getDataByte(tmp_0));
@@ -1060,7 +1061,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.LDPI i) {
+    public void visit(LegacyInstr.LDPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r2);
         writeRegisterByte(i.r1, getDataByte(tmp_0));
@@ -1068,25 +1069,25 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.LDS i) {
+    public void visit(LegacyInstr.LDS i) {
         nextPC = pc + 4;
         writeRegisterByte(i.r1, getDataByte(i.imm1));
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.LPM i) {
+    public void visit(LegacyInstr.LPM i) {
         nextPC = pc + 2;
         writeRegisterByte(R0, getProgramByte(getRegisterWord(RZ)));
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.LPMD i) {
+    public void visit(LegacyInstr.LPMD i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, getProgramByte(getRegisterWord(RZ)));
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.LPMPI i) {
+    public void visit(LegacyInstr.LPMPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(RZ);
         writeRegisterByte(i.r1, getProgramByte(tmp_0));
@@ -1094,7 +1095,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.LSL i) {
+    public void visit(LegacyInstr.LSL i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         boolean tmp_1 = false;
@@ -1111,7 +1112,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.LSR i) {
+    public void visit(LegacyInstr.LSR i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         boolean tmp_1 = false;
@@ -1127,19 +1128,19 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.MOV i) {
+    public void visit(LegacyInstr.MOV i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, getRegisterByte(i.r2));
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.MOVW i) {
+    public void visit(LegacyInstr.MOVW i) {
         nextPC = pc + 2;
         writeRegisterWord(i.r1, getRegisterWord(i.r2));
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.MUL i) {
+    public void visit(LegacyInstr.MUL i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1) * getRegisterUnsigned(i.r2);
         C = ((tmp_0 & 32768) != 0);
@@ -1148,7 +1149,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.MULS i) {
+    public void visit(LegacyInstr.MULS i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1) * getRegisterByte(i.r2);
         C = ((tmp_0 & 32768) != 0);
@@ -1157,7 +1158,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.MULSU i) {
+    public void visit(LegacyInstr.MULSU i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1) * getRegisterUnsigned(i.r2);
         C = ((tmp_0 & 32768) != 0);
@@ -1166,7 +1167,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.NEG i) {
+    public void visit(LegacyInstr.NEG i) {
         nextPC = pc + 2;
         int tmp_0 = 0;
         int tmp_1 = getRegisterByte(i.r1);
@@ -1189,12 +1190,12 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.NOP i) {
+    public void visit(LegacyInstr.NOP i) {
         nextPC = pc + 2;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.OR i) {
+    public void visit(LegacyInstr.OR i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = getRegisterByte(i.r2);
@@ -1208,7 +1209,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.ORI i) {
+    public void visit(LegacyInstr.ORI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = i.imm1;
@@ -1222,25 +1223,25 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.OUT i) {
+    public void visit(LegacyInstr.OUT i) {
         nextPC = pc + 2;
         writeIORegisterByte(i.imm1, getRegisterByte(i.r1));
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.POP i) {
+    public void visit(LegacyInstr.POP i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, popByte());
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.PUSH i) {
+    public void visit(LegacyInstr.PUSH i) {
         nextPC = pc + 2;
         pushByte(getRegisterByte(i.r1));
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.RCALL i) {
+    public void visit(LegacyInstr.RCALL i) {
         nextPC = pc + 2;
         int tmp_0 = nextPC;
         tmp_0 = tmp_0 / 2;
@@ -1252,7 +1253,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 3;
     }
 
-    public void visit(Instr.RET i) {
+    public void visit(LegacyInstr.RET i) {
         nextPC = pc + 2;
         byte tmp_0 = popByte();
         byte tmp_1 = popByte();
@@ -1261,7 +1262,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 4;
     }
 
-    public void visit(Instr.RETI i) {
+    public void visit(LegacyInstr.RETI i) {
         nextPC = pc + 2;
         byte tmp_0 = popByte();
         byte tmp_1 = popByte();
@@ -1272,7 +1273,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 4;
     }
 
-    public void visit(Instr.RJMP i) {
+    public void visit(LegacyInstr.RJMP i) {
         nextPC = pc + 2;
         int tmp_0 = i.imm1;
         int tmp_1 = tmp_0 * 2 + nextPC;
@@ -1280,7 +1281,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.ROL i) {
+    public void visit(LegacyInstr.ROL i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1);
         boolean tmp_1 = C;
@@ -1297,7 +1298,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.ROR i) {
+    public void visit(LegacyInstr.ROR i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         boolean tmp_1 = C;
@@ -1313,7 +1314,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SBC i) {
+    public void visit(LegacyInstr.SBC i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = getRegisterByte(i.r2);
@@ -1336,7 +1337,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SBCI i) {
+    public void visit(LegacyInstr.SBCI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = i.imm1;
@@ -1359,13 +1360,13 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SBI i) {
+    public void visit(LegacyInstr.SBI i) {
         nextPC = pc + 2;
         getIOReg(i.imm1).writeBit(i.imm2, true);
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.SBIC i) {
+    public void visit(LegacyInstr.SBIC i) {
         nextPC = pc + 2;
         if (!getIOReg(i.imm1).readBit(i.imm2)) {
             int tmp_0 = getInstrSize(nextPC);
@@ -1380,7 +1381,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SBIS i) {
+    public void visit(LegacyInstr.SBIS i) {
         nextPC = pc + 2;
         if (getIOReg(i.imm1).readBit(i.imm2)) {
             int tmp_0 = getInstrSize(nextPC);
@@ -1395,7 +1396,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SBIW i) {
+    public void visit(LegacyInstr.SBIW i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r1);
         int tmp_1 = tmp_0 - i.imm1;
@@ -1410,7 +1411,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.SBR i) {
+    public void visit(LegacyInstr.SBR i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = i.imm1;
@@ -1424,7 +1425,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SBRC i) {
+    public void visit(LegacyInstr.SBRC i) {
         nextPC = pc + 2;
         if (!Arithmetic.getBit(getRegisterByte(i.r1), i.imm1)) {
             int tmp_0 = getInstrSize(nextPC);
@@ -1439,7 +1440,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SBRS i) {
+    public void visit(LegacyInstr.SBRS i) {
         nextPC = pc + 2;
         if (Arithmetic.getBit(getRegisterByte(i.r1), i.imm1)) {
             int tmp_0 = getInstrSize(nextPC);
@@ -1454,85 +1455,85 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SEC i) {
+    public void visit(LegacyInstr.SEC i) {
         nextPC = pc + 2;
         C = true;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SEH i) {
+    public void visit(LegacyInstr.SEH i) {
         nextPC = pc + 2;
         H = true;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SEI i) {
+    public void visit(LegacyInstr.SEI i) {
         nextPC = pc + 2;
         enableInterrupts();
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SEN i) {
+    public void visit(LegacyInstr.SEN i) {
         nextPC = pc + 2;
         N = true;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SER i) {
+    public void visit(LegacyInstr.SER i) {
         nextPC = pc + 2;
         writeRegisterByte(i.r1, low(255));
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SES i) {
+    public void visit(LegacyInstr.SES i) {
         nextPC = pc + 2;
         S = true;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SET i) {
+    public void visit(LegacyInstr.SET i) {
         nextPC = pc + 2;
         T = true;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SEV i) {
+    public void visit(LegacyInstr.SEV i) {
         nextPC = pc + 2;
         V = true;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SEZ i) {
+    public void visit(LegacyInstr.SEZ i) {
         nextPC = pc + 2;
         Z = true;
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SLEEP i) {
+    public void visit(LegacyInstr.SLEEP i) {
         nextPC = pc + 2;
         enterSleepMode();
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SPM i) {
+    public void visit(LegacyInstr.SPM i) {
         nextPC = pc + 2;
         storeProgramMemory();
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.ST i) {
+    public void visit(LegacyInstr.ST i) {
         nextPC = pc + 2;
         writeDataByte(getRegisterWord(i.r1), getRegisterByte(i.r2));
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.STD i) {
+    public void visit(LegacyInstr.STD i) {
         nextPC = pc + 2;
         writeDataByte(getRegisterWord(i.r1) + i.imm1, getRegisterByte(i.r2));
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.STPD i) {
+    public void visit(LegacyInstr.STPD i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r1) - 1;
         writeDataByte(tmp_0, getRegisterByte(i.r2));
@@ -1540,7 +1541,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.STPI i) {
+    public void visit(LegacyInstr.STPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(i.r1);
         writeDataByte(tmp_0, getRegisterByte(i.r2));
@@ -1548,13 +1549,13 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.STS i) {
+    public void visit(LegacyInstr.STS i) {
         nextPC = pc + 4;
         writeDataByte(i.imm1, getRegisterByte(i.r1));
         cyclesConsumed += 2;
     }
 
-    public void visit(Instr.SUB i) {
+    public void visit(LegacyInstr.SUB i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = getRegisterByte(i.r2);
@@ -1577,7 +1578,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SUBI i) {
+    public void visit(LegacyInstr.SUBI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         int tmp_1 = i.imm1;
@@ -1600,7 +1601,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.SWAP i) {
+    public void visit(LegacyInstr.SWAP i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterUnsigned(i.r1);
         int tmp_1 = 0;
@@ -1610,7 +1611,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.TST i) {
+    public void visit(LegacyInstr.TST i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterByte(i.r1);
         V = false;
@@ -1620,7 +1621,7 @@ public class GenInterpreter extends BaseInterpreter implements InstrVisitor {
         cyclesConsumed += 1;
     }
 
-    public void visit(Instr.WDR i) {
+    public void visit(LegacyInstr.WDR i) {
         nextPC = pc + 2;
         cyclesConsumed += 1;
     }

@@ -32,7 +32,6 @@
 
 package cck.test;
 
-import cck.test.TestCase;
 import java.util.Properties;
 
 /**

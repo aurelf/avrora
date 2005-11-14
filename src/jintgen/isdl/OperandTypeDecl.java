@@ -37,8 +37,8 @@ import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
 import jintgen.jigir.JIGIRTypeEnv;
-import jintgen.types.TypeRef;
 import jintgen.types.Type;
+import jintgen.types.TypeRef;
 import java.util.*;
 
 /**
