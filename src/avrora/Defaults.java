@@ -465,6 +465,7 @@ public class Defaults {
 
             // TODO: this is a hack; all inherited options should be available
             reader.INDIRECT_EDGES.set(INDIRECT_EDGES.stringValue());
+            reader.ARCH.set(ARCH.stringValue());
             reader.options.process(options);
             return reader.read(args);
         }

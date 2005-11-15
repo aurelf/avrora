@@ -40,7 +40,7 @@ import avrora.sim.*;
  *
  * @author Ben L. Titzer
  */
-public interface LegacyState {
+public interface LegacyState extends State {
 
     /**
      * The <code>getInterruptTable()</code> method gets a reference to the interrupt table,
@@ -161,22 +161,6 @@ public interface LegacyState {
     public byte getStackByte();
 
     /**
-     * The <code>getSP()</code> method reads the current value of the stack pointer. Since the stack pointer
-     * is stored in two IO registers, this method will cause the invocation of the <code>.read()</code> method
-     * on each of the <code>IOReg</code> objects that store these values.
-     *
-     * @return the value of the stack pointer as a byte address
-     */
-    public int getSP();
-
-    /**
-     * The <code>getPC()</code> retrieves the current program counter.
-     *
-     * @return the program counter as a byte address
-     */
-    public int getPC();
-
-    /**
      * The <code>getInstr()</code> can be used to retrieve a reference to the <code>LegacyInstr</code> object
      * representing the instruction at the specified program address. Care should be taken that the address in
      * program memory specified does not contain data. This is because Avrora does have a functioning
@@ -233,13 +217,6 @@ public interface LegacyState {
     public ActiveRegister getIOReg(int ioreg);
 
     /**
-     * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the simulation.
-     *
-     * @return the number of clock cycles elapsed in the simulation
-     */
-    public long getCycles();
-
-    /**
      * The <code>getSleepMode()</code> method returns an integer code describing which sleep mode the
      * microcontroller is currently in.
      *
@@ -247,10 +224,4 @@ public interface LegacyState {
      */
     public int getSleepMode();
 
-    /**
-     * The <code>getSimulator()</code> method returns the simulator associated with this state
-     * instance.
-     * @return a reference to the simulator associated with this state instance.
-     */
-    Simulator getSimulator();
 }

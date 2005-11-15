@@ -32,9 +32,9 @@
 
 package avrora.sim.util;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>ProgramProfiler</code> class implements a probe that can be used to profile pieces of the program
@@ -80,7 +80,7 @@ public class ProgramTimeProfiler implements Simulator.Probe {
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireBefore(LegacyState state, int pc) {
+    public void fireBefore(State state, int pc) {
         timeBegan = state.getCycles();
     }
 
@@ -92,7 +92,7 @@ public class ProgramTimeProfiler implements Simulator.Probe {
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireAfter(LegacyState state, int pc) {
+    public void fireAfter(State state, int pc) {
         itime[pc] += state.getCycles() - timeBegan;
     }
 }

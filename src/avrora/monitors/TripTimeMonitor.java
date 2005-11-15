@@ -31,9 +31,9 @@
  */
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.core.*;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import cck.stat.Distribution;
 import cck.text.*;
 import cck.util.Option;
@@ -228,7 +228,7 @@ public class TripTimeMonitor extends MonitorFactory {
         }
 
         protected class PTPProbe extends Simulator.Probe.Empty {
-            public void fireBefore(LegacyState state, int pc) {
+            public void fireBefore(State state, int pc) {
                 long time = state.getCycles();
 
                 for ( Pair p = endArray[pc]; p != null; p = p.startLink ) {

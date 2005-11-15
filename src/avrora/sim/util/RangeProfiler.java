@@ -32,9 +32,9 @@
 
 package avrora.sim.util;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>RangeProfiler</code> class implements a probe that can be used to profile a range of addresses in
@@ -93,7 +93,7 @@ public class RangeProfiler extends Simulator.Probe.Empty {
      * @param state   the state of the simulation
      * @param address the address at which this instruction resides
      */
-    public void fireBefore(LegacyState state, int address) {
+    public void fireBefore(State state, int address) {
         if (address < low_addr) return;
         if (address >= high_addr) return;
         icount[address - low_addr]++;

@@ -211,7 +211,7 @@ public class Simulator {
          * @param state   the state of the simulation
          * @param pc the address at which this instruction resides
          */
-        public void fireBefore(LegacyState state, int pc);
+        public void fireBefore(State state, int pc);
 
         /**
          * The <code>fireAfter()</code> method is called after the probed instruction executes.
@@ -219,7 +219,7 @@ public class Simulator {
          * @param state   the state of the simulation
          * @param pc the address at which this instruction resides
          */
-        public void fireAfter(LegacyState state, int pc);
+        public void fireAfter(State state, int pc);
 
         /**
          * The <code>Simulator.Probe.Empty</code> class is a simple base class for probes that do
@@ -234,7 +234,7 @@ public class Simulator {
              * @param state   the state of the simulation
              * @param pc the address at which this instruction resides
              */
-            public void fireBefore(LegacyState state, int pc) {
+            public void fireBefore(State state, int pc) {
                 // do nothing
             }
 
@@ -245,7 +245,7 @@ public class Simulator {
              * @param state   the state of the simulation
              * @param pc the address at which this instruction resides
              */
-            public void fireAfter(LegacyState state, int pc) {
+            public void fireAfter(State state, int pc) {
                 // do nothing
             }
         }
@@ -265,7 +265,7 @@ public class Simulator {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being entered
          */
-        public void fireBeforeInvoke(LegacyState s, int inum);
+        public void fireBeforeInvoke(State s, int inum);
 
         /**
          * The <code>fireAfterInvoke()</code> method of an interrupt probe will be called by the
@@ -275,7 +275,7 @@ public class Simulator {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being entered
          */
-        public void fireAfterInvoke(LegacyState s, int inum);
+        public void fireAfterInvoke(State s, int inum);
 
         /**
          * The <code>fireWhenDisabled()</code> method of an interrupt probe will be called by the
@@ -283,7 +283,7 @@ public class Simulator {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being masked out
          */
-        public void fireWhenDisabled(LegacyState s, int inum);
+        public void fireWhenDisabled(State s, int inum);
 
         /**
          * The <code>fireWhenEnabled()</code> method of an interrupt probe will be called by the
@@ -291,7 +291,7 @@ public class Simulator {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being unmasked
          */
-        public void fireWhenEnabled(LegacyState s, int inum);
+        public void fireWhenEnabled(State s, int inum);
 
         /**
          * The <code>fireWhenPosted()</code> method of an interrupt probe will be called by the
@@ -300,7 +300,7 @@ public class Simulator {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being posted
          */
-        public void fireWhenPosted(LegacyState s, int inum);
+        public void fireWhenPosted(State s, int inum);
 
         /**
          * The <code>fireWhenUnposted()</code> method of an interrupt probe will be called by the
@@ -310,7 +310,7 @@ public class Simulator {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being unposted
          */
-        public void fireWhenUnposted(LegacyState s, int inum);
+        public void fireWhenUnposted(State s, int inum);
 
         /**
          * The <code>Empty</code> class represents a default implementation of the
@@ -324,7 +324,7 @@ public class Simulator {
              * @param s the state of the simulator
              * @param inum the number of the interrupt being entered
              */
-            public void fireBeforeInvoke(LegacyState s, int inum) {
+            public void fireBeforeInvoke(State s, int inum) {
                 // do nothing.
             }
 
@@ -336,7 +336,7 @@ public class Simulator {
              * @param s the state of the simulator
              * @param inum the number of the interrupt being entered
              */
-            public void fireAfterInvoke(LegacyState s, int inum) {
+            public void fireAfterInvoke(State s, int inum) {
                 // do nothing.
             }
 
@@ -347,7 +347,7 @@ public class Simulator {
              * @param s the state of the simulator
              * @param inum the number of the interrupt being masked out
              */
-            public void fireWhenDisabled(LegacyState s, int inum) {
+            public void fireWhenDisabled(State s, int inum) {
                 // do nothing.
             }
 
@@ -358,7 +358,7 @@ public class Simulator {
              * @param s the state of the simulator
              * @param inum the number of the interrupt being unmasked
              */
-            public void fireWhenEnabled(LegacyState s, int inum) {
+            public void fireWhenEnabled(State s, int inum) {
                 // do nothing.
             }
 
@@ -370,7 +370,7 @@ public class Simulator {
              * @param s the state of the simulator
              * @param inum the number of the interrupt being posted
              */
-            public void fireWhenPosted(LegacyState s, int inum) {
+            public void fireWhenPosted(State s, int inum) {
                 // do nothing.
             }
 
@@ -382,7 +382,7 @@ public class Simulator {
              * @param s the state of the simulator
              * @param inum the number of the interrupt being unposted
              */
-            public void fireWhenUnposted(LegacyState s, int inum) {
+            public void fireWhenUnposted(State s, int inum) {
                 // do nothing.
             }
 
@@ -414,7 +414,7 @@ public class Simulator {
          * @param state     the state of the simulation
          * @param data_addr the address of the data being referenced
          */
-        public void fireBeforeRead(LegacyState state, int data_addr);
+        public void fireBeforeRead(State state, int data_addr);
 
         /**
          * The <code>fireBeforeWrite()</code> method is called before the data address is written by the
@@ -424,7 +424,7 @@ public class Simulator {
          * @param data_addr the address of the data being referenced
          * @param value     the value being written to the memory location
          */
-        public void fireBeforeWrite(LegacyState state, int data_addr, byte value);
+        public void fireBeforeWrite(State state, int data_addr, byte value);
 
         /**
          * The <code>fireAfterRead()</code> method is called after the data address is read by the program.
@@ -433,7 +433,7 @@ public class Simulator {
          * @param data_addr the address of the data being referenced
          * @param value     the value of the memory location being read
          */
-        public void fireAfterRead(LegacyState state, int data_addr, byte value);
+        public void fireAfterRead(State state, int data_addr, byte value);
 
         /**
          * The <code>fireAfterWrite()</code> method is called after the data address is written by the
@@ -443,7 +443,7 @@ public class Simulator {
          * @param data_addr the address of the data being referenced
          * @param value     the value being written to the memory location
          */
-        public void fireAfterWrite(LegacyState state, int data_addr, byte value);
+        public void fireAfterWrite(State state, int data_addr, byte value);
 
         /**
          * The <code>Simulator.Watch.Empty</code> class acts as a base class with empty methods for
@@ -459,7 +459,7 @@ public class Simulator {
              * @param state     the state of the simulation
              * @param data_addr the address of the data being referenced
              */
-            public void fireBeforeRead(LegacyState state, int data_addr) {
+            public void fireBeforeRead(State state, int data_addr) {
                 // do nothing.
             }
 
@@ -472,7 +472,7 @@ public class Simulator {
              * @param data_addr the address of the data being referenced
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeWrite(LegacyState state, int data_addr, byte value) {
+            public void fireBeforeWrite(State state, int data_addr, byte value) {
                 // do nothing.
             }
 
@@ -484,7 +484,7 @@ public class Simulator {
              * @param data_addr the address of the data being referenced
              * @param value     the value of the memory location being read
              */
-            public void fireAfterRead(LegacyState state, int data_addr, byte value) {
+            public void fireAfterRead(State state, int data_addr, byte value) {
                 // do nothing.
             }
 
@@ -497,7 +497,7 @@ public class Simulator {
              * @param data_addr the address of the data being referenced
              * @param value     the value being written to the memory location
              */
-            public void fireAfterWrite(LegacyState state, int data_addr, byte value) {
+            public void fireAfterWrite(State state, int data_addr, byte value) {
                 // do nothing.
             }
         }
@@ -521,7 +521,7 @@ public class Simulator {
          * @param state     the state of the simulation
          * @param ioreg_num the number of the IO register being read
          */
-        public void fireBeforeBitRead(LegacyState state, int ioreg_num, int bit);
+        public void fireBeforeBitRead(State state, int ioreg_num, int bit);
 
         /**
          * The <code>fireBeforeBitWrite()</code> method is called before the data address is written by the
@@ -531,7 +531,7 @@ public class Simulator {
          * @param ioreg_num the number of the IO register being read
          * @param value     the value being written to the memory location
          */
-        public void fireBeforeBitWrite(LegacyState state, int ioreg_num, int bit, boolean value);
+        public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value);
 
         /**
          * The <code>fireAfterBitRead()</code> method is called after the data address is read by the program.
@@ -540,7 +540,7 @@ public class Simulator {
          * @param ioreg_num the number of the IO register being read
          * @param value     the value of the memory location being read
          */
-        public void fireAfterBitRead(LegacyState state, int ioreg_num, int bit, boolean value);
+        public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value);
 
         /**
          * The <code>fireAfterBitWrite()</code> method is called after the data address is written by the
@@ -550,7 +550,7 @@ public class Simulator {
          * @param ioreg_num the number of the IO register being read
          * @param value     the value being written to the memory location
          */
-        public void fireAfterBitWrite(LegacyState state, int ioreg_num, int bit, boolean value);
+        public void fireAfterBitWrite(State state, int ioreg_num, int bit, boolean value);
 
         /**
          * The <code>Simulator.IORWatch.Empty</code> class acts as a base class with empty methods for
@@ -565,7 +565,7 @@ public class Simulator {
              * @param state     the state of the simulation
              * @param ioreg_num the number of the IO register being read
              */
-            public void fireBeforeBitRead(LegacyState state, int ioreg_num, int bit) {
+            public void fireBeforeBitRead(State state, int ioreg_num, int bit) {
                 // do nothing.
             }
 
@@ -578,7 +578,7 @@ public class Simulator {
              * @param ioreg_num the number of the IO register being read
              * @param value     the value being written to the memory location
              */
-            public void fireBeforeBitWrite(LegacyState state, int ioreg_num, int bit, boolean value) {
+            public void fireBeforeBitWrite(State state, int ioreg_num, int bit, boolean value) {
                 // do nothing.
             }
 
@@ -590,7 +590,7 @@ public class Simulator {
              * @param ioreg_num the number of the IO register being read
              * @param value     the value of the memory location being read
              */
-            public void fireAfterBitRead(LegacyState state, int ioreg_num, int bit, boolean value) {
+            public void fireAfterBitRead(State state, int ioreg_num, int bit, boolean value) {
                 // do nothing.
             }
 
@@ -603,7 +603,7 @@ public class Simulator {
              * @param ioreg_num the number of the IO register being read
              * @param value     the value being written to the memory location
              */
-            public void fireAfterBitWrite(LegacyState state, int ioreg_num, int bit, boolean value) {
+            public void fireAfterBitWrite(State state, int ioreg_num, int bit, boolean value) {
                 // do nothing.
             }
         }

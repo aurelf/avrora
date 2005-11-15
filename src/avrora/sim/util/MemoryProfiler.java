@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * @author Ben L. Titzer
@@ -48,12 +48,12 @@ public class MemoryProfiler extends Simulator.Watch.Empty {
         wcount = new long[size];
     }
 
-    public void fireBeforeRead(LegacyState state, int data_addr) {
+    public void fireBeforeRead(State state, int data_addr) {
         if (data_addr < rcount.length)
             rcount[data_addr]++;
     }
 
-    public void fireBeforeWrite(LegacyState state, int data_addr, byte value) {
+    public void fireBeforeWrite(State state, int data_addr, byte value) {
         if (data_addr < wcount.length)
             wcount[data_addr]++;
     }

@@ -35,6 +35,7 @@ package avrora.monitors;
 import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 import cck.util.Option;
@@ -330,7 +331,7 @@ public class GDBServer extends MonitorFactory {
             sendPacketOK(buf.toString());
         }
 
-        private void appendPC(LegacyState s, StringBuffer buf) {
+        private void appendPC(State s, StringBuffer buf) {
             int pc = s.getPC();
             buf.append(StringUtil.toHex(pc & 0xff, 2));
             buf.append(StringUtil.toHex((pc >> 8) & 0xff, 2));
@@ -338,7 +339,7 @@ public class GDBServer extends MonitorFactory {
             buf.append(StringUtil.toHex((pc >> 24) & 0xff, 2));
         }
 
-        private void appendSP(LegacyState s, StringBuffer buf) {
+        private void appendSP(State s, StringBuffer buf) {
             buf.append(StringUtil.toHex(s.getSP() & 0xff, 2));
             buf.append(StringUtil.toHex((s.getSP() >> 8) & 0xff, 2));
         }
@@ -511,7 +512,7 @@ public class GDBServer extends MonitorFactory {
          * will stop the simulation in order to wait for GDB to connect to Avrora.
          */
         protected class StartupProbe implements Simulator.Probe {
-            public void fireBefore(LegacyState s, int pc) {
+            public void fireBefore(State s, int pc) {
                 if ( printer.enabled ) {
                     printer.println("--IN STARTUP PROBE @ "+StringUtil.addrToString(pc)+"--");
                 }
@@ -531,7 +532,7 @@ public class GDBServer extends MonitorFactory {
                 commandLoop(null);
             }
 
-            public void fireAfter(LegacyState s, int pc) {
+            public void fireAfter(State s, int pc) {
                 // remove ourselves from the beginning of the program after it has started
                 simulator.removeProbe(this, pc);
             }
@@ -543,7 +544,7 @@ public class GDBServer extends MonitorFactory {
          * implementing a breakpoint.
          */
         protected class BreakpointProbe extends Simulator.Probe.Empty {
-            public void fireBefore(LegacyState s, int pc) {
+            public void fireBefore(State s, int pc) {
                 if ( printer.enabled )
                     printer.println("--IN BREAKPOINT PROBE @ "+StringUtil.addrToString(pc)+"--");
                 commandLoop("T05");
@@ -556,12 +557,12 @@ public class GDBServer extends MonitorFactory {
          * executes, thus stepping by only a single instruction.
          */
         protected class StepProbe implements Simulator.Probe {
-            public void fireBefore(LegacyState s, int pc) {
+            public void fireBefore(State s, int pc) {
                 if ( printer.enabled )
                     printer.println("--IN STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
             }
 
-            public void fireAfter(LegacyState s, int pc) {
+            public void fireAfter(State s, int pc) {
                 if ( printer.enabled )
                     printer.println("--AFTER STEP PROBE @ "+StringUtil.addrToString(pc)+"--");
                 commandLoop("T05");

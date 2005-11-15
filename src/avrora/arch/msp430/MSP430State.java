@@ -50,7 +50,7 @@ import cck.util.Util;
  *
  * @author Ben L. Titzer
  */
-public class MSP430State {
+public class MSP430State implements State {
 
     public static final int NUM_REGS = 16;
     public static final int PC_REG = 0;

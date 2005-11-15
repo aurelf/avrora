@@ -33,8 +33,8 @@
 package avrora.sim.util;
 
 import avrora.arch.legacy.LegacyInstr;
-import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
+import avrora.sim.State;
 
 /**
  * The <code>MemoryMatrixProfiler</code> class collects information about a program's usage of memory. For
@@ -92,7 +92,7 @@ public class MemoryMatrixProfiler {
      * @param data_addr the address of the data being referenced
      * @param value     the value of the memory location being read
      */
-    public void fireBeforeRead(LegacyInstr i, int address, LegacyState state, int data_addr, byte value) {
+    public void fireBeforeRead(LegacyInstr i, int address, State state, int data_addr, byte value) {
         if (data_addr < ramSize) {
             if (rcount[address] == null) rcount[address] = new long[ramSize];
             rcount[address][data_addr]++;
@@ -110,7 +110,7 @@ public class MemoryMatrixProfiler {
      * @param data_addr the address of the data being referenced
      * @param value     the value being written to the memory location
      */
-    public void fireBeforeWrite(LegacyInstr i, int address, LegacyState state, int data_addr, byte value) {
+    public void fireBeforeWrite(LegacyInstr i, int address, State state, int data_addr, byte value) {
         if (data_addr < ramSize) {
             if (wcount[address] == null) wcount[address] = new long[ramSize];
             wcount[address][data_addr]++;
@@ -127,7 +127,7 @@ public class MemoryMatrixProfiler {
      * @param data_addr the address of the data being referenced
      * @param value     the value of the memory location being read
      */
-    public void fireAfterRead(LegacyInstr i, int address, LegacyState state, int data_addr, byte value) {
+    public void fireAfterRead(LegacyInstr i, int address, State state, int data_addr, byte value) {
         // do nothing
     }
 
@@ -141,7 +141,7 @@ public class MemoryMatrixProfiler {
      * @param data_addr the address of the data being referenced
      * @param value     the value being written to the memory location
      */
-    public void fireAfterWrite(LegacyInstr i, int address, LegacyState state, int data_addr, byte value) {
+    public void fireAfterWrite(LegacyInstr i, int address, State state, int data_addr, byte value) {
         // do nothing
     }
 

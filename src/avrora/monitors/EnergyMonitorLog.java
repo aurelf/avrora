@@ -37,8 +37,8 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.energy.Energy;
 import avrora.sim.energy.EnergyObserver;
 import cck.util.Options;
@@ -75,7 +75,7 @@ public class EnergyMonitorLog extends EnergyMonitor {
         // file for data logging
         private BufferedWriter file;
         // the simulator state
-        protected LegacyState state;
+        protected State state;
 
 
         /**

@@ -35,6 +35,7 @@ package avrora.syntax.gas;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.syntax.Module;
+import avrora.arch.legacy.LegacyArchitecture;
 import cck.util.Util;
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,6 +64,9 @@ public class GASProgramReader extends ProgramReader {
         // TODO: handle multiple GAS files and link them
         if (args.length != 1)
             Util.userError("input type \"gas\" accepts only one file at a time.");
+
+        if ( getArchitecture() != LegacyArchitecture.INSTANCE )
+            Util.userError("input type  \"gas\" parses only the \"legacy\" architecture.");
 
         File f = new File(args[0]);
         Module module = new Module(true, true);

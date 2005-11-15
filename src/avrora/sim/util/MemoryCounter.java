@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>MemoryCounter</code> is the simplest example of memory profiling functionality. When inserted as
@@ -64,7 +64,7 @@ public class MemoryCounter extends Simulator.Watch.Empty {
      * @param state     the state of the simulation
      * @param data_addr the address of the data being referenced
      */
-    public void fireBeforeRead(LegacyState state, int data_addr) {
+    public void fireBeforeRead(State state, int data_addr) {
         rcount++;
     }
 
@@ -76,7 +76,7 @@ public class MemoryCounter extends Simulator.Watch.Empty {
      * @param data_addr the address of the data being referenced
      * @param value     the value being written to the memory location
      */
-    public void fireBeforeWrite(LegacyState state, int data_addr, byte value) {
+    public void fireBeforeWrite(State state, int data_addr, byte value) {
         wcount++;
     }
 

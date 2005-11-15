@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,36 +28,44 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 14, 2005
  */
 
-package avrora;
-
-import cck.util.VersionTag;
+package avrora.sim;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
- *
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
- *
  * @author Ben L. Titzer
  */
-public class Version {
+public interface State {
 
     /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
+     * The <code>getSP()</code> method reads the current value of the stack pointer. Since the stack pointer
+     * is stored in two IO registers, this method will cause the invocation of the <code>.read()</code> method
+     * on each of the <code>IOReg</code> objects that store these values.
+     *
+     * @return the value of the stack pointer as a byte address
      */
-    public static final int commit = 41;
+    int getSP();
 
     /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
+     * The <code>getPC()</code> retrieves the current program counter.
+     *
+     * @return the program counter as a byte address
      */
-    public static final VersionTag TAG = new VersionTag("avrora", "Beta", 1, 7, commit);
+    int getPC();
 
+    /**
+     * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the simulation.
+     *
+     * @return the number of clock cycles elapsed in the simulation
+     */
+    long getCycles();
+
+    /**
+     * The <code>getSimulator()</code> method returns the simulator associated with this state
+     * instance.
+     * @return a reference to the simulator associated with this state instance.
+     */
+    Simulator getSimulator();
 }

@@ -49,7 +49,7 @@ import avrora.sim.clock.DeltaQueue;
  *
  * @author Ben L. Titzer
  */
-public abstract class AVRState {
+public abstract class AVRState implements State {
 
     public static int NUM_REGS = 32;
 

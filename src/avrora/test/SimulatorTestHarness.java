@@ -38,6 +38,7 @@ import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.syntax.Module;
 import cck.test.*;
 import cck.text.StringUtil;
@@ -432,9 +433,9 @@ public class SimulatorTestHarness implements TestHarness {
 
     static class StateMismatch extends TestResult.TestFailure {
         StatePredicate predicate;
-        LegacyState state;
+        State state;
 
-        StateMismatch(StatePredicate pred, LegacyState st) {
+        StateMismatch(StatePredicate pred, State st) {
             super("incorrect result: (" + pred.left + " -> " + pred.leftvalue + ") != ("
                     + pred.right + " -> " + pred.rightvalue + ')');
             state = st;

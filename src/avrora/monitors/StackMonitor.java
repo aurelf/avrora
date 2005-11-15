@@ -33,9 +33,9 @@
 package avrora.monitors;
 
 import avrora.arch.legacy.LegacyInstr;
-import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import cck.text.*;
 
@@ -105,7 +105,7 @@ public class StackMonitor extends MonitorFactory {
         class SPWatch extends Simulator.Watch.Empty {
             boolean written;
             // fire when either SPH or SPL is written
-            public void fireAfterWrite(LegacyState state, int data_addr, byte value) {
+            public void fireAfterWrite(State state, int data_addr, byte value) {
                 written = true;
                 checkSPWrite(state);
             }
@@ -113,19 +113,19 @@ public class StackMonitor extends MonitorFactory {
 
         class IntProbe extends Simulator.InterruptProbe.Empty {
             // fire when any interrupt is invoked
-            public void fireAfterInvoke(LegacyState s, int inum) {
+            public void fireAfterInvoke(State s, int inum) {
                 newSP(s.getSP());
             }
         }
 
         class SPProbe extends Simulator.Probe.Empty {
             // fire after a call, push, pop, or ret instruction
-            public void fireAfter(LegacyState state, int pc) {
+            public void fireAfter(State state, int pc) {
                 newSP(state.getSP());
             }
         }
 
-        void checkSPWrite(LegacyState state) {
+        void checkSPWrite(State state) {
             // only record SP values after both SPH and SPL written
             if ( SPH_watch.written && SPL_watch.written ) {
                 newSP(state.getSP());

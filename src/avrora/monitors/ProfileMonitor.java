@@ -33,9 +33,9 @@
 package avrora.monitors;
 
 import avrora.arch.legacy.LegacyInstr;
-import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 import cck.text.*;
 import cck.util.Option;
 import java.util.*;
@@ -133,12 +133,12 @@ public class ProfileMonitor extends MonitorFactory {
                 time = it;
             }
 
-            public void fireBefore(LegacyState state, int pc) {
+            public void fireBefore(State state, int pc) {
                 count[pc]++;
                 timeBegan = state.getCycles();
             }
 
-            public void fireAfter(LegacyState state, int pc) {
+            public void fireAfter(State state, int pc) {
                 time[pc] += state.getCycles() - timeBegan;
             }
         }
@@ -155,7 +155,7 @@ public class ProfileMonitor extends MonitorFactory {
                 count = ic;
             }
 
-            public void fireBefore(LegacyState state, int pc) {
+            public void fireBefore(State state, int pc) {
                 count[pc]++;
             }
         }

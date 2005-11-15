@@ -37,7 +37,6 @@
 package avrora.monitors;
 
 import avrora.arch.legacy.LegacyInstr;
-import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.*;
@@ -146,7 +145,7 @@ public class CallMonitor extends MonitorFactory {
                 this.itype = itype;
             }
 
-            public void fireAfter(LegacyState s, int addr) {
+            public void fireAfter(State s, int addr) {
                 int npc = s.getPC();
                 String caddr = StringUtil.addrToString(addr);
                 String daddr = sourceMap.getName(npc);
@@ -156,7 +155,7 @@ public class CallMonitor extends MonitorFactory {
         }
 
         class InterruptProbe extends Simulator.InterruptProbe.Empty {
-            public void fireBeforeInvoke(LegacyState s, int inum) {
+            public void fireBeforeInvoke(State s, int inum) {
                 String istr;
                 if ( inum == 1) {
                     istr = "RESET";
@@ -176,7 +175,7 @@ public class CallMonitor extends MonitorFactory {
                 this.itype = itype;
             }
 
-            public void fireAfter(LegacyState s, int addr) {
+            public void fireAfter(State s, int addr) {
                 int npc = s.getPC();
                 String daddr = StringUtil.addrToString(npc);
                 pop(daddr, itype);

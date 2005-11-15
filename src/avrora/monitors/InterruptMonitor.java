@@ -32,9 +32,7 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyState;
-import avrora.sim.InterruptTable;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.util.SimUtil;
 import cck.stat.MinMaxMean;
@@ -115,7 +113,7 @@ public class InterruptMonitor extends MonitorFactory {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being entered
          */
-        public void fireBeforeInvoke(LegacyState s, int inum) {
+        public void fireBeforeInvoke(State s, int inum) {
             if ( show ) {
                 print("invoke interrupt", inum);
             }
@@ -138,7 +136,7 @@ public class InterruptMonitor extends MonitorFactory {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being entered
          */
-        public void fireAfterInvoke(LegacyState s, int inum) {
+        public void fireAfterInvoke(State s, int inum) {
             long time = s.getCycles();
             if ( lastInvoke[inum] > 0 ) {
                 meanWake[inum].record((int)(time - lastInvoke[inum]));
@@ -151,7 +149,7 @@ public class InterruptMonitor extends MonitorFactory {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being masked out
          */
-        public void fireWhenDisabled(LegacyState s, int inum) {
+        public void fireWhenDisabled(State s, int inum) {
             if (show && !invokeOnly) {
                 if ( inum != 0 )
                     print("disable interrupt", inum);
@@ -166,7 +164,7 @@ public class InterruptMonitor extends MonitorFactory {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being unmasked
          */
-        public void fireWhenEnabled(LegacyState s, int inum) {
+        public void fireWhenEnabled(State s, int inum) {
             if (show && !invokeOnly) {
                 if ( inum != 0 )
                     print("enable interrupt", inum);
@@ -182,7 +180,7 @@ public class InterruptMonitor extends MonitorFactory {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being posted
          */
-        public void fireWhenPosted(LegacyState s, int inum) {
+        public void fireWhenPosted(State s, int inum) {
             if (show && !invokeOnly) {
                 print("post interrupt", inum);
             }
@@ -197,7 +195,7 @@ public class InterruptMonitor extends MonitorFactory {
          * @param s the state of the simulator
          * @param inum the number of the interrupt being unposted
          */
-        public void fireWhenUnposted(LegacyState s, int inum) {
+        public void fireWhenUnposted(State s, int inum) {
             if (show && !invokeOnly) {
                 print("unpost interrupt", inum);
             }

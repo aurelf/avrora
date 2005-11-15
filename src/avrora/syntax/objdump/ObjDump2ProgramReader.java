@@ -34,6 +34,7 @@ package avrora.syntax.objdump;
 
 import avrora.core.Program;
 import avrora.core.ProgramReader;
+import avrora.arch.legacy.LegacyArchitecture;
 import cck.util.Util;
 import java.io.File;
 import java.io.FileReader;
@@ -61,7 +62,9 @@ public class ObjDump2ProgramReader extends ProgramReader {
         if (args.length == 0)
             Util.userError("no input files");
         if (args.length != 1)
-            Util.userError("input type \"objdump2\" accepts only one file at a time.");
+            Util.userError("input type \"odpp\" accepts only one file at a time.");
+        if ( getArchitecture() != LegacyArchitecture.INSTANCE )
+            Util.userError("input type  \"odpp\" parses only the \"legacy\" architecture.");
 
         File f = new File(args[0]);
         RawModule module = new RawModule(true, true);

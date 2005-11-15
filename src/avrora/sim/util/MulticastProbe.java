@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>MulticastProbe</code> is a wrapper around multiple probes that allows them to act as a single
@@ -52,7 +52,7 @@ public class MulticastProbe extends TransactionalList implements Simulator.Probe
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireBefore(LegacyState state, int pc) {
+    public void fireBefore(State state, int pc) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Probe)pos.object).fireBefore(state, pc);
@@ -66,7 +66,7 @@ public class MulticastProbe extends TransactionalList implements Simulator.Probe
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireAfter(LegacyState state, int pc) {
+    public void fireAfter(State state, int pc) {
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Probe)pos.object).fireAfter(state, pc);
         endTransaction();

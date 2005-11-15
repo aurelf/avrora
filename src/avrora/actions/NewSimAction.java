@@ -51,11 +51,6 @@ public class NewSimAction extends Action {
             "infrastructure surrounding the new simulation framework that allows multiple different " +
             "instruction architectures to be simulated.";
 
-    protected final Option.Str ARCH = options.newOption("arch", "avr",
-            "This option specifies the name of the instruction set architecture for the " +
-            "specified program. This architecture option is used to retrieve an appropriate " +
-            "disassembler and interpreter for the program.");
-
     public NewSimAction() {
         super(HELP);
     }
@@ -65,8 +60,9 @@ public class NewSimAction extends Action {
             Util.userError("no simulation file specified");
         String fn = args[0];
         Main.checkFileExists(fn);
-        AbstractArchitecture arch = Defaults.getArchitecture(ARCH.get());
-        AbstractDisassembler d = arch.getDisassembler();
         ELFLoader loader = new ELFLoader();
+        loader.options.process(options);
+        AbstractArchitecture arch = loader.getArchitecture();
+        AbstractDisassembler d = arch.getDisassembler();
     }
 }

@@ -44,7 +44,7 @@ import cck.util.Util;
  *
  * @author Ben L. Titzer
  */
-public class MSP430Architecture {
+public class MSP430Architecture implements AbstractArchitecture {
 
     public static final MSP430Architecture INSTANCE = new MSP430Architecture();
 

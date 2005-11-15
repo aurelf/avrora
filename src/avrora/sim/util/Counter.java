@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>Counter</code> class is a utility for profiling programs. It simply increments an internal
@@ -57,7 +57,7 @@ public class Counter extends Simulator.Probe.Empty {
      * @param state   the state of the simulation
      * @param pc the address at which this instruction resides
      */
-    public void fireBefore(LegacyState state, int pc) {
+    public void fireBefore(State state, int pc) {
         count++;
     }
 

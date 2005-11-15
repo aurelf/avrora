@@ -36,6 +36,8 @@ import cck.help.HelpCategory;
 import cck.text.StringUtil;
 import cck.util.*;
 import java.util.Iterator;
+import avrora.arch.AbstractArchitecture;
+import avrora.Defaults;
 
 /**
  * The <code>ProgramReader</code> class represents an object capable of reading a program given the special
@@ -49,6 +51,10 @@ public abstract class ProgramReader extends HelpCategory {
      */
     public final Options options = new Options();
 
+    public final Option.Str ARCH = options.newOption("arch", "legacy",
+            "This option specifies the name of the instruction set architecture for the " +
+            "specified program. This architecture option is used to retrieve an appropriate " +
+            "disassembler and interpreter for the program.");
     public final Option.List INDIRECT_EDGES = options.newOptionList("indirect-edges", "",
             "This option can be used to specify the possible targets of indirect calls and " +
             "jumps within a program, which may be needed in performing stack analysis or " +
@@ -96,6 +102,17 @@ public abstract class ProgramReader extends HelpCategory {
             SourceMapping.Location tar = sm.getLocation(s.substring(ind + 1));
             p.addIndirectEdge(loc.address, tar.address);
         }
+    }
+
+    /**
+     * The <code>getArchitecture()</code> method returns a reference to the architecture specified
+     * at the command line. It uses the values in <code>Defaults</code> to translate a string name
+     * specified as the option's value to an <code>AbstractArchitecture</code> instance.
+     *
+     * @return a reference to the architecture instance specified as an option
+     */
+    public AbstractArchitecture getArchitecture() {
+        return Defaults.getArchitecture(ARCH.get());
     }
 
 }

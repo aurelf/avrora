@@ -32,8 +32,8 @@
 
 package avrora.sim.util;
 
-import avrora.arch.legacy.LegacyState;
 import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
  * The <code>MulticastProbe</code> is a wrapper around multiple watches that allows them to act as a single
@@ -51,7 +51,7 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      *
      * @param state   the state of the simulation
      */
-    public void fireBeforeRead(LegacyState state, int data_addr) {
+    public void fireBeforeRead(State state, int data_addr) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Watch)pos.object).fireBeforeRead(state, data_addr);
@@ -65,7 +65,7 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      * @param state   the state of the simulation
      * @param val     the value of the memory location being read
      */
-    public void fireAfterRead(LegacyState state, int data_addr, byte val) {
+    public void fireAfterRead(State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Watch)pos.object).fireAfterRead(state, data_addr, val);
         endTransaction();
@@ -80,7 +80,7 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      * @param state   the state of the simulation
      * @param val     the value being written to the memory location
      */
-    public void fireBeforeWrite(LegacyState state, int data_addr, byte val) {
+    public void fireBeforeWrite(State state, int data_addr, byte val) {
         beginTransaction();
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Watch)pos.object).fireBeforeWrite(state, data_addr, val);
@@ -94,7 +94,7 @@ public class MulticastWatch extends TransactionalList implements Simulator.Watch
      * @param state   the state of the simulation
      * @param val     the value being written to the memory location
      */
-    public void fireAfterWrite(LegacyState state, int data_addr, byte val) {
+    public void fireAfterWrite(State state, int data_addr, byte val) {
         for (Link pos = head; pos != null; pos = pos.next)
             ((Simulator.Watch)pos.object).fireAfterWrite(state, data_addr, val);
         endTransaction();

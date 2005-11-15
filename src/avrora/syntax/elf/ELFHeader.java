@@ -62,7 +62,7 @@ public class ELFHeader {
     protected static final int ELFDATA2LSB = 1;
     protected static final int ELFDATA2MSB = 2;
 
-    public final byte e_ident[];
+    public final byte[] e_ident;
     public short e_type;
     public short e_machine;
     public int e_version;
@@ -100,6 +100,7 @@ public class ELFHeader {
      */
     public void read(RandomAccessFile fs) throws IOException, FormatError {
         // read the indentification string
+        if ( fs.length() < EI_NIDENT ) throw new FormatError();
         for ( int index = 0; index < EI_NIDENT; )
             index += fs.read(e_ident, index, EI_NIDENT - index);
         checkIdent();
