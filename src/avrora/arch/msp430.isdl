@@ -19,7 +19,7 @@ architecture msp430 {
 //  MEMORY ALLOWED TO INSTRUCTIONS
 //---------------------------------------------------------------------------
     global regs: map<int, +int.16>;
-    global sram: map<+int.16, +int.8>; // a "view" of the memory as bytes
+    global data: map<+int.16, +int.8>; // a "view" of the memory as bytes
 
     global C: boolean;
     global N: boolean;
@@ -54,7 +54,7 @@ architecture msp430 {
 	    read: int.8 {
 	        local addr: +int.16 = regs[this:int];
 	        regs[this:int] = addr + 1;
-	        return sram[addr];
+	        return data[addr];
 	    }
 	    write: int.8 { }
 	}
@@ -63,7 +63,7 @@ architecture msp430 {
 	    read: +int.16 {
 	        local addr: +int.16 = regs[this:int];
 	        regs[this:int] = addr + 2;
-	        return sram[addr];
+	        return data[addr];
 	    }
 	    write: +int.16 { }
 	}
@@ -71,7 +71,7 @@ architecture msp430 {
     operand-type IREG[4]: GPR {                    //Indirect register mode
 	    read: int.8 {
 	        local addr: +int.16 = regs[this:int];
-	        return sram[addr];
+	        return data[addr];
 	    }
 	    read: +int.16 {
 	        return get_word(regs[this:int]);
@@ -94,8 +94,8 @@ architecture msp430 {
     operand-type INDX {
         sub-operand reg: SREG;
         sub-operand index: IMM;
-	    read: int.8 { return sram[read:+int.16(reg) + read:+int.16(index)]; }
-	    write: int.8 { sram[read:+int.16(reg) + read:+int.16(index)] = value; }
+	    read: int.8 { return data[read:+int.16(reg) + read:+int.16(index)]; }
+	    write: int.8 { data[read:+int.16(reg) + read:+int.16(index)] = value; }
 	    read: +int.16 {
 	        return get_word(read:+int.16(reg) + read:+int.16(index));
 	    }
@@ -106,8 +106,8 @@ architecture msp430 {
 
     // TODO: this is encoded as relative to the pc
     operand-type SYM[16]: int /* address, relative */[-32768,32767] {
-        read: int.8 { return sram[this:int]; }
-        write: int.8 { sram[this:int] = value; }
+        read: int.8 { return data[this:int]; }
+        write: int.8 { data[this:int] = value; }
         read: +int.16 {
             return get_word(this:int);
         }
@@ -117,8 +117,8 @@ architecture msp430 {
     }
 
     operand-type ABSO[16]: int /* address, absolute */[0,0xFFFF] {
-	    read: int.8 { return sram[this:int]; }
-	    write: int.8 { sram[this:int] = value; }
+	    read: int.8 { return data[this:int]; }
+	    write: int.8 { data[this:int] = value; }
         read: +int.16 {
             return get_word(this:int);
         }
@@ -134,12 +134,12 @@ architecture msp430 {
     }
 
     inline subroutine get_word(addr: +int.17): +int.16 {
-	     return uword(sram[addr], sram[addr+1]);
+	     return uword(data[addr], data[addr+1]);
     }
 
     inline subroutine set_word(addr: +int.17, value: +int.16): void {
-	     sram[addr] = low(value);
-	     sram[addr+1] = high(value);
+	     data[addr] = low(value);
+	     data[addr+1] = high(value);
     }
 
 //-------------------------------------------------------------------------- 

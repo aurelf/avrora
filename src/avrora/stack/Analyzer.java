@@ -898,7 +898,7 @@ public class Analyzer {
         Terminal.print(head + ' ');
         StatePrinter.printStateName(s);
         Terminal.nextln();
-        LegacyInstr instr = program.readInstr(s.getPC());
+        LegacyInstr instr = (LegacyInstr)program.readInstr(s.getPC());
         String str = StringUtil.leftJustify(instr.toString(), 14);
         StatePrinter.printState(str, s);
     }

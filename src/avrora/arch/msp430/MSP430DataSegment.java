@@ -50,6 +50,7 @@ public class MSP430DataSegment extends Segment {
     private final int sram_end;
     private final int flash_start;
     private final ActiveRegister[] ioregs;
+    private final MSP430Instr[] code;
     public static final int _1kb = 1024;
     public static final int DATA_SIZE = 64 * _1kb;
 
@@ -59,6 +60,7 @@ public class MSP430DataSegment extends Segment {
         flash_start = fs;
         ioregs = ior;
         ioreg_end = ior.length;
+        code = new MSP430Instr[DATA_SIZE];
     }
 
     /**
@@ -96,5 +98,9 @@ public class MSP430DataSegment extends Segment {
             segment_data[address] = val;
         else // attempt to write beyond RAM
             errorReporter.writeError(address, val);
+    }
+
+    protected MSP430Instr[] shareInstr() {
+        return code;
     }
 }

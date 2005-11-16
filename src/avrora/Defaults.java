@@ -33,10 +33,7 @@
 package avrora;
 
 import avrora.actions.*;
-import avrora.arch.AbstractArchitecture;
-import avrora.arch.avr.AVRArchitecture;
-import avrora.arch.legacy.LegacyArchitecture;
-import avrora.arch.msp430.MSP430Architecture;
+import avrora.arch.ArchitectureRegistry;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.monitors.*;
@@ -73,7 +70,6 @@ public class Defaults {
     private static ClassMap harnessMap;
     private static ClassMap monitorMap;
     private static ClassMap simMap;
-    private static ClassMap archMap;
 
     private static void addAll() {
         addMicrocontrollers();
@@ -83,7 +79,7 @@ public class Defaults {
         addTestHarnesses();
         addMonitors();
         addSimulations();
-        addArchitectures();
+        ArchitectureRegistry.addArchitectures();
     }
 
     private static void addMonitors() {
@@ -202,26 +198,6 @@ public class Defaults {
         }
     }
 
-    private static void addArchitectures() {
-        if (archMap == null) {
-            archMap = new ClassMap("Architecture", AbstractArchitecture.class);
-            //-- DEFAULT ACTIONS
-            archMap.addInstance("legacy", LegacyArchitecture.INSTANCE);
-            archMap.addInstance("avr", AVRArchitecture.INSTANCE);
-            archMap.addInstance("msp430", MSP430Architecture.INSTANCE);
-
-            // plug in a new help category for simulations accesible with "-help simulations"
-            HelpCategory hc = new HelpCategory("architectures", "Help for supported instruction set architectures.");
-            addOptionSection(hc, "ARCHITECTURES",
-                    "When running a simulation or other program analysis tool, Avrora derives information " +
-                    "about the CPU architecture from an internal specification. In order to select the appropriate " +
-                    "architecture, each one is named and can be selected with command line options.",
-                    "-arch", archMap);
-            addMainCategory(hc);
-            addSubCategories(archMap);
-        }
-    }
-
     private static void addPlatforms() {
         if (platforms == null) {
             platforms = new ClassMap("Platform", PlatformFactory.class);
@@ -312,11 +288,6 @@ public class Defaults {
         return (MonitorFactory) monitorMap.getObjectOfClass(s);
     }
 
-    public static AbstractArchitecture getArchitecture(String s) {
-        addArchitectures();
-        return (AbstractArchitecture)archMap.getObjectOfClass(s);
-    }
-
     public static Simulation getSimulation(String s) {
         addSimulations();
         // TODO: add a simulation factory
@@ -356,7 +327,7 @@ public class Defaults {
         return inputs.getSortedList();
     }
 
-    private static void addSubCategories(ClassMap vals) {
+    public static void addSubCategories(ClassMap vals) {
         List l = vals.getSortedList();
         Iterator i = l.iterator();
         while (i.hasNext()) {
@@ -372,7 +343,7 @@ public class Defaults {
         mainCategories.put(cat.name, cat);
     }
 
-    private static void addOptionSection(HelpCategory hc, String title, String para, String optname, ClassMap optvals) {
+    public static void addOptionSection(HelpCategory hc, String title, String para, String optname, ClassMap optvals) {
         LinkedList list = new LinkedList();
         Iterator i = optvals.getSortedList().iterator();
         while (i.hasNext()) {

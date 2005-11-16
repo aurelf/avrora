@@ -66,4 +66,8 @@ public class AVRArchitecture implements AbstractArchitecture {
     public AbstractParser getParser() {
         throw Util.unimplemented();
     }
+
+    public AbstractInstr[] newInstrArray(int len) {
+        return new AVRInstr[len];
+    }
 }

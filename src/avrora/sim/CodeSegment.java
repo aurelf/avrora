@@ -149,7 +149,7 @@ public class CodeSegment extends Segment {
      */
     public void load(Program p) {
         for (int cntr = 0; cntr < p.program_end;) {
-            LegacyInstr i = p.readInstr(cntr);
+            LegacyInstr i = (LegacyInstr)p.readInstr(cntr);
             if (i != null) {
                 segment_instr[cntr] = i;
                 for (int s = 1; s < i.getSize(); s++)

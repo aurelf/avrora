@@ -35,8 +35,8 @@
 package avrora.arch.msp430;
 
 import avrora.core.Program;
-import avrora.sim.Segment;
 import avrora.sim.Simulator;
+import avrora.sim.InterruptTable;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.RegisterSet;
 import cck.util.Util;
@@ -80,12 +80,9 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         registers = simulator.getMicrocontroller().getRegisterSet();
 
         // allocate SRAM
-        sram = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this);
+        data = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this);
 
-
-        // TODO: 1. allocate code space (flash)
         // TODO: 2. set up correct error reporter for SRAM, flash
-        // TODO: 3. share instr array correctly (for performance)
         // TODO: 4. allocate interrupt table
         // allocate FLASH
         //Segment.ErrorReporter reporter = new Segment.ErrorReporter();
@@ -94,17 +91,31 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         // for performance, we share a reference to the LegacyInstr[] array representing flash
         //shared_instr = flash.shareCode(null);
         // initialize the interrupt table
-        //interrupts = new InterruptTable(this, props.num_interrupts);
-        shared_instr = null;
+        // interrupts = new InterruptTable(this, pr.num_interrupts);
+        shared_instr = data.shareInstr();
     }
 
+    protected void runLoop() {
+        while ( shouldRun ) {
+            fastLoop();
+        }
+    }
+
+    private void fastLoop() {
+        while ( innerLoop ) {
+            MSP430Instr i = shared_instr[pc];
+            nextpc = pc + 2;
+            i.accept(this);
+            pc = nextpc;
+        }
+    }
 
     protected int bit(boolean b) {
         return b ? 1 : 0;
     }
     protected int popByte() {
         int sp = getSP();
-        byte b = sram.read(sp);
+        byte b = data.read(sp);
         regs[SP_REG] = (char)(sp + 1);
         return b;
     }
@@ -112,7 +123,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
     protected void pushByte(int b) {
         int sp = getSP();
         int nsp = sp - 1;
-        sram.write(nsp, (byte)b);
+        data.write(nsp, (byte)b);
         regs[SP_REG] = (char)nsp;
     }
 

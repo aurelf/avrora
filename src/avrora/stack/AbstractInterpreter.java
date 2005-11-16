@@ -106,7 +106,7 @@ public class AbstractInterpreter extends AbstractArithmetic implements LegacyIns
     private LegacyInstr readInstr(int pc) {
         if (pc >= program.program_end)
             throw Util.failure("PC beyond end of program: " + StringUtil.addrToString(pc));
-        LegacyInstr i = program.readInstr(pc);
+        LegacyInstr i = (LegacyInstr)program.readInstr(pc);
         if (i == null)
             throw Util.failure("Misaligned instruction access at PC: " + StringUtil.addrToString(pc));
         return i;

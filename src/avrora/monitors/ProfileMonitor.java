@@ -33,6 +33,7 @@
 package avrora.monitors;
 
 import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.AbstractInstr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
@@ -283,9 +284,9 @@ public class ProfileMonitor extends MonitorFactory {
 
             for ( int cntr = 0; cntr < icount.length; cntr++ ) {
                 if ( icount[cntr] == 0 ) continue;
-                LegacyInstr i = program.readInstr(cntr);
+                AbstractInstr i = program.readInstr(cntr);
                 if ( i == null ) continue;
-                String variant = i.getVariant();
+                String variant = i.getName();
                 InstrProfileEntry entry = (InstrProfileEntry)cmap.get(variant);
                 if  ( entry == null ) {
                     entry = new InstrProfileEntry();

@@ -1370,11 +1370,16 @@ public class MSP430Disassembler implements AbstractDisassembler {
      *         valid instruction exists here; null otherwise
      */
     public MSP430Instr decode(int base, int index, byte[] code) {
-        word0 = ((code[index + 0] & 0xFF) << 0) | ((code[index + 1] & 0xFF) << 8);
-        word1 = ((code[index + 2] & 0xFF) << 0) | ((code[index + 3] & 0xFF) << 8);
-        word2 = ((code[index + 4] & 0xFF) << 0) | ((code[index + 5] & 0xFF) << 8);
-        pc = base + index * 1;
+        word0 = word(index, code);
+        word1 = word(index + 2, code);
+        word2 = word(index + 4, code);
+        pc = base + index;
         return decode_root();
+    }
+
+    private int word(int index, byte[] code) {
+        if ( index > code.length - 2 ) return 0;
+        return code[index] & 0xff | (code[index+1] << 8);
     }
 
     /**
@@ -1389,11 +1394,16 @@ public class MSP430Disassembler implements AbstractDisassembler {
      *         valid instruction exists here; null otherwise
      */
     public MSP430Instr decode(int base, int index, char[] code) {
-        word0 = (code[index + 0] << 0);
-        word1 = (code[index + 1] << 0);
-        word2 = (code[index + 2] << 0);
+        word0 = word(index, code);
+        word1 = word(index + 1, code);
+        word2 = word(index + 2, code);
         pc = base + index * 2;
         return decode_root();
+    }
+
+    private int word(int index, char[] code) {
+        if ( index > code.length - 1 ) return 0;
+        return code[index];
     }
 
     /**
@@ -1408,11 +1418,16 @@ public class MSP430Disassembler implements AbstractDisassembler {
      *         valid instruction exists here; null otherwise
      */
     public MSP430Instr decode(int base, int index, short[] code) {
-        word0 = ((code[index + 0] & 0xFFFF) << 0);
-        word1 = ((code[index + 1] & 0xFFFF) << 0);
-        word2 = ((code[index + 2] & 0xFFFF) << 0);
+        word0 = word(index, code);
+        word1 = word(index + 1, code);
+        word2 = word(index + 2, code);
         pc = base + index * 2;
         return decode_root();
+    }
+
+    private int word(int index, short[] code) {
+        if ( index > code.length - 1 ) return 0;
+        return code[index];
     }
 
     /**

@@ -50,7 +50,33 @@ public interface AbstractArchitecture {
      */
     public AbstractDisassembler getDisassembler();
 
+    /**
+     * The <code>getAssembler()</code> method returns an instance of the appropriate
+     * assembler for the architecture. The assembler can be used to translate an instruction
+     * instance into its binary encoding.
+     * @return an instance of the <code>AbstractAssembler</code> interface appropriate
+     * for this architecture
+     */
     public AbstractAssembler getAssembler();
 
+    /**
+     * The <code>getParser()</code> method returns an instance of the appropriate source-assembly
+     * parser for this architecture. The parser can be used to convert text assembly (i.e.
+     * a source file) into instances of the appropriate instruction class.
+     * @return an instance of the <code>AbstractParser</code> interface appropriate
+     * for this architecture
+     */
     public AbstractParser getParser();
+
+    /**
+     * The <code>newInstrArray()</code> method returns a new array for holding references
+     * to instruction instances. Because of Java's covariant array types, implementations of
+     * this method can allocate an array of their appropriate architecture-specific instruction
+     * class implementation. Stores into the array are automatically checked by the Java VM
+     * to ensure that only instruction objects of the appropriate class are stored into the
+     * array.
+     * @param len the length of the array to allocation
+     * @return a reference to a new array that can be used to store instructions
+     */
+    public AbstractInstr[] newInstrArray(int len);
 }

@@ -234,7 +234,7 @@ public class ISEInterpreter implements LegacyInstrVisitor {
 
             pc = i.pc;
             state = i.state.dup();
-            LegacyInstr instr = program.readInstr(i.pc);
+            LegacyInstr instr = (LegacyInstr)program.readInstr(i.pc);
             printItem(instr);
             int npc = program.getNextPC(i.pc);
             nextPC = npc;

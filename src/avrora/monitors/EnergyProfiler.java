@@ -173,7 +173,7 @@ public class EnergyProfiler extends MonitorFactory {
         private void findSleep() {
             int i = 0;
             while (i < program.program_length) {
-                LegacyInstr instr = program.readInstr(i);
+                LegacyInstr instr = (LegacyInstr)program.readInstr(i);
                 if (instr != null) {
                     if ("sleep".equals(instr.properties.name)) {
                         simulator.insertProbe(sleepProbe, i);

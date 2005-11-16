@@ -67,7 +67,7 @@ public class MSP430State implements State {
 
     protected char[] regs;
     protected ActiveRegister[] ioregs;
-    protected MSP430DataSegment sram;
+    protected MSP430DataSegment data;
 
     protected boolean C, N, Z, V;
 

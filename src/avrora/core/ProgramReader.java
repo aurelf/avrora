@@ -37,7 +37,7 @@ import cck.text.StringUtil;
 import cck.util.*;
 import java.util.Iterator;
 import avrora.arch.AbstractArchitecture;
-import avrora.Defaults;
+import avrora.arch.ArchitectureRegistry;
 
 /**
  * The <code>ProgramReader</code> class represents an object capable of reading a program given the special
@@ -51,7 +51,7 @@ public abstract class ProgramReader extends HelpCategory {
      */
     public final Options options = new Options();
 
-    public final Option.Str ARCH = options.newOption("arch", "legacy",
+    public final Option.Str ARCH = options.newOption("arch", "avr",
             "This option specifies the name of the instruction set architecture for the " +
             "specified program. This architecture option is used to retrieve an appropriate " +
             "disassembler and interpreter for the program.");
@@ -112,7 +112,7 @@ public abstract class ProgramReader extends HelpCategory {
      * @return a reference to the architecture instance specified as an option
      */
     public AbstractArchitecture getArchitecture() {
-        return Defaults.getArchitecture(ARCH.get());
+        return ArchitectureRegistry.getArchitecture(ARCH.get());
     }
 
 }

@@ -33,8 +33,7 @@
 package avrora.syntax.elf;
 
 import avrora.Main;
-import avrora.arch.legacy.LegacyDisassembler;
-import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.*;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import cck.text.*;
@@ -58,6 +57,7 @@ public class ELFLoader extends ProgramReader {
     ELFSectionHeaderTable sht;
     List symbolTables;
     ELFStringTable shstrtab;
+    AbstractArchitecture arch;
 
     protected final Option.Bool DUMP = options.newOption("dump", false,
             "This option causes the ELF loader to dump information about the ELF file being loaded, " +
@@ -92,6 +92,8 @@ public class ELFLoader extends ProgramReader {
             Util.userError(fname, "invalid ELF header");
         }
 
+        arch = getArchitecture();
+
         // read the program header table (if it exists)
         readProgramHeader(fis);
 
@@ -105,22 +107,19 @@ public class ELFLoader extends ProgramReader {
         return loadSections(fis);
     }
 
+    public AbstractArchitecture getArchitecture() {
+        String specarch = ARCH.get();
+        String filearch = header.getArchitecture();
+        AbstractArchitecture farch = ArchitectureRegistry.getArchitecture(filearch);
+        if ( !"".equals(specarch) && farch != ArchitectureRegistry.getArchitecture(specarch))
+            Util.userError("ELF Error", "expected "+StringUtil.quote(specarch)+" architecture, but header reports "+StringUtil.quote(filearch));
+        return farch;
+    }
+
     private Program loadSections(RandomAccessFile fis) throws IOException {
-        int minp = Integer.MAX_VALUE;
-        int maxp = 0;
-        // find the dimensions of the program
-        for ( int cntr = 0; cntr < pht.entries.length; cntr++ ) {
-            ELFProgramHeaderTable.Entry32 e = pht.entries[cntr];
-            if ( e.isLoadable()  && e.p_filesz > 0 ) {
-                int start = e.p_paddr;
-                int end = start + e.p_filesz;
-                if ( start < minp ) minp = start;
-                if ( end > maxp ) maxp = end;
-            }
-        }
         // load each section
         ELFDataInputStream is = new ELFDataInputStream(header, fis);
-        Program p = new Program(minp, maxp, 0, 0, 0, 0);
+        Program p = createProgram();
         for ( int cntr = 0; cntr < pht.entries.length; cntr++ ) {
             ELFProgramHeaderTable.Entry32 e = pht.entries[cntr];
             if ( e.isLoadable() && e.p_filesz > 0 ) {
@@ -134,10 +133,26 @@ public class ELFLoader extends ProgramReader {
         return p;
     }
 
+    private Program createProgram() {
+        // find the dimensions of the program by searching loadable sections
+        int minp = Integer.MAX_VALUE;
+        int maxp = 0;
+        for ( int cntr = 0; cntr < pht.entries.length; cntr++ ) {
+            ELFProgramHeaderTable.Entry32 e = pht.entries[cntr];
+            if ( e.isLoadable()  && e.p_filesz > 0 ) {
+                int start = e.p_paddr;
+                int end = start + e.p_filesz;
+                if ( start < minp ) minp = start;
+                if ( end > maxp ) maxp = end;
+            }
+        }
+        return new Program(arch, minp, maxp);
+    }
+
     private void disassembleSection(byte[] sect, ELFProgramHeaderTable.Entry32 e, Program p) {
-        LegacyDisassembler d = new LegacyDisassembler();
+        AbstractDisassembler d = arch.getDisassembler();
         for ( int off = 0; off < sect.length; off += 2 ) {
-            LegacyInstr i = d.disassembleLegacy(sect, e.p_paddr, off);
+            AbstractInstr i = d.disassemble(e.p_paddr, off, sect);
             if ( i != null ) p.writeInstr(i, e.p_paddr + off);
         }
     }

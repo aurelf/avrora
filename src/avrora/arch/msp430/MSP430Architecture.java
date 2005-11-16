@@ -66,4 +66,9 @@ public class MSP430Architecture implements AbstractArchitecture {
     public AbstractParser getParser() {
         throw Util.unimplemented();
     }
+
+    public AbstractInstr[] newInstrArray(int len) {
+        return new MSP430Instr[len];
+    }
+
 }

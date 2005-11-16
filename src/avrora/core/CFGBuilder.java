@@ -195,7 +195,7 @@ class CFGBuilder implements LegacyInstrVisitor {
             if (printer.enabled)
                 printer.print(StringUtil.addrToString(pc) + ": ");
 
-            LegacyInstr i = program.readInstr(pc);
+            LegacyInstr i = (LegacyInstr)program.readInstr(pc);
             if (i == null) {
                 if (printer.enabled)
                     printer.println("(invalid)");
@@ -281,7 +281,7 @@ class CFGBuilder implements LegacyInstrVisitor {
 
     private void skip(LegacyInstr i) {
         int npc = pc + i.getSize();
-        LegacyInstr next = program.readInstr(npc);
+        LegacyInstr next = (LegacyInstr)program.readInstr(npc);
         branch(i, npc + next.getSize());
     }
 

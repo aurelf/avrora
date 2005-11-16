@@ -29,9 +29,9 @@
     1     devs  USART frame sizes
     1      sim  RAMPZ usage for with more than 128k of flash
     1  jintgen  DisassemblerGenerator: split fields that span word boundaries
-    1      sim  Nullpointer in updateNodeID() when loading from ELF file
 
 ----------------------------------- Completed -----------------------------------------
+    1      sim  Nullpointer in updateNodeID() when loading from ELF file      1.7.40
     1    input  Fixed processing of -sections option                         1.5.118
     1    probe  Recursion in State.getDataByte() from within watch           1.5.102
     2     devs  Interrupt mappings for devices on ATMega32                   1.5.102
@@ -67,7 +67,6 @@
     2      gdb  Support state update in gdb monitor
     2     prof  Profile monitor (diagnos, CFG, funcs, labels)
     3       ui  Interactive simulation monitor
-    1      out  Improve program dumping format
     2     devs  Implement watchdog timer
     2    radio  Implement all radio frequency registers
     1     util  Implement cck.text.Columnifier class
@@ -76,7 +75,6 @@
     2      sim  Unified warning system for program errors
     1    probe  Indirect call / jump monitor
     3    radio  Implement partial preamble loss
-    1    probe  Implement stack change probe that uses probes, watches
     2      sim  Implement warning system for bad program behavior
     1     devs  WARN: SPI, serial write collisions
     1     devs  WARN: EEPROM delay timeouts
@@ -88,6 +86,7 @@
     1   energy  Report energy counts in amp-hours
 
 ----------------------------------- Completed -----------------------------------------
+    1    probe  Implement stack change probe that uses probes, watches       1.7.38
   2-3    input  ELF format reader                                            1.7.xx
     1    probe  Added simplest interactive monitor                           1.5.118
     1      sim  Automatically patch node ID for TinyOS and SOS               1.5.116
@@ -133,13 +132,13 @@
   2-3    radio  RadioPacket refactoring, optimization
     3      sim  Implement one thread per processor model
     1     util  migrate to StringUtil.*
-    1    probe  migrate to SourceMapping, remove Program.Location
     2      sim  Move sram representation to use a Segment
     2    probe  Collapse ExceptionWatch with Watch for all segments
     1      sim  Inline SimulateAction into superclass
     2     devs  Introduce Channel class to simplify SPI and USART implem.
 
 ----------------------------------- Completed -----------------------------------------
+    1    probe  migrate to SourceMapping, remove Program.Location            1.7.42
     2     util  Extracted util.* into cck repository                         1.7.xx
     2      sim  Introduce Simulation class                                   1.5.104
     2      sim  read/write vs get/set for State                              1.5.102
@@ -182,7 +181,6 @@
     2      sim  Probing functionality for IO registers and lower memory
     2   energy  Automated energy count tests
     2    input  Program loader and layout tests
-    3  jintgen  ISDL errors
     3  jintgen  ISDL code manipulation and optimizations
     3     dbbc  test that DBBC simulation behavior matches interpreted
     2      cfg  Control flow graph construction and usage
@@ -191,6 +189,7 @@
     1      sim  Probes for skip instructions (instr. size calculation)
 
 ----------------------------------- Completed -----------------------------------------
+    3  jintgen  ISDL errors                                                  1.7.3x
     1     test  Moved testcases from source directory to test dir            1.7.1
     1      sim  First interrupt schedule testcases added                     1.5.101
     1    probe  Fixed probe testcases to reflect transactional list          1.5.85

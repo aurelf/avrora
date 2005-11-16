@@ -63,11 +63,11 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         throw cck.util.Util.failure("invalid operand type in write");
     }
     public int get_word(int addr) {
-        return uword(map_get(sram, addr), map_get(sram, addr + 1));
+        return uword(map_get(data, addr), map_get(data, addr + 1));
     }
     public void set_word(int addr, int value) {
-        map_set(sram, addr, low(value));
-        map_set(sram, addr + 1, high(value));
+        map_set(data, addr, low(value));
+        map_set(data, addr + 1, high(value));
     }
     public int performAddition(int r1, int r2, int carry) {
         int result = r1 + r2 + carry;
@@ -221,20 +221,20 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
     public int $read_int8(MSP430Operand.AIREG_B _this) {
         int addr = map_get(regs, _this.value.value);
         map_set(regs, _this.value.value, addr + 1);
-        return map_get(sram, addr);
+        return map_get(data, addr);
     }
     public void $write_int8(MSP430Operand.AIREG_B _this, int value) {
     }
     public int $read_uint16(MSP430Operand.AIREG_W _this) {
         int addr = map_get(regs, _this.value.value);
         map_set(regs, _this.value.value, addr + 2);
-        return map_get(sram, addr);
+        return map_get(data, addr);
     }
     public void $write_uint16(MSP430Operand.AIREG_W _this, int value) {
     }
     public int $read_int8(MSP430Operand.IREG _this) {
         int addr = map_get(regs, _this.value.value);
-        return map_get(sram, addr);
+        return map_get(data, addr);
     }
     public int $read_uint16(MSP430Operand.IREG _this) {
         return get_word(map_get(regs, _this.value.value));
@@ -254,37 +254,37 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
     public void $write_uint16(MSP430Operand.IMM _this, int value) {
     }
     public int $read_int8(MSP430Operand.INDX _this) {
-        return map_get(sram, $read_uint16(_this.reg) + $read_uint16(_this.index));
+        return map_get(data, $read_uint16(_this.reg) + $read_uint16(_this.index));
     }
     public int $read_uint16(MSP430Operand.INDX _this) {
         return get_word($read_uint16(_this.reg) + $read_uint16(_this.index));
     }
     public void $write_int8(MSP430Operand.INDX _this, int value) {
-        map_set(sram, $read_uint16(_this.reg) + $read_uint16(_this.index), value);
+        map_set(data, $read_uint16(_this.reg) + $read_uint16(_this.index), value);
     }
     public void $write_uint16(MSP430Operand.INDX _this, int value) {
         set_word($read_uint16(_this.reg) + $read_uint16(_this.index), value);
     }
     public int $read_int8(MSP430Operand.SYM _this) {
-        return map_get(sram, _this.value);
+        return map_get(data, _this.value);
     }
     public int $read_uint16(MSP430Operand.SYM _this) {
         return get_word(_this.value);
     }
     public void $write_int8(MSP430Operand.SYM _this, int value) {
-        map_set(sram, _this.value, value);
+        map_set(data, _this.value, value);
     }
     public void $write_uint16(MSP430Operand.SYM _this, int value) {
         set_word(_this.value, value);
     }
     public int $read_int8(MSP430Operand.ABSO _this) {
-        return map_get(sram, _this.value);
+        return map_get(data, _this.value);
     }
     public int $read_uint16(MSP430Operand.ABSO _this) {
         return get_word(_this.value);
     }
     public void $write_int8(MSP430Operand.ABSO _this, int value) {
-        map_set(sram, _this.value, value);
+        map_set(data, _this.value, value);
     }
     public void $write_uint16(MSP430Operand.ABSO _this, int value) {
         set_word(_this.value, value);

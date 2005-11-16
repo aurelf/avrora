@@ -33,15 +33,15 @@
 package avrora.core;
 
 import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.AbstractArchitecture;
+import avrora.arch.AbstractInstr;
 import cck.text.StringUtil;
 import cck.util.Util;
 import java.util.*;
 
 /**
  * The <code>Program</code> class represents a complete program of AVR instructions. It stores the actual
- * instructions and initialized data of the program in one instr4 segment, as well as storing the data space
- * and eeprom space requirements for the program. It contains a map of labels (strings) to addresses, which
- * can be either case sensitive (GAS style) or case insensitive (Atmel style).
+ * instructions and initialized data of the program.
  *
  * @author Ben L. Titzer
  * @see LegacyInstr
@@ -50,9 +50,13 @@ import java.util.*;
  */
 public class Program {
 
+    private final AbstractArchitecture arch;
+
     private final HashMap indirectEdges;
 
     private SourceMapping sourceMapping;
+
+    private ControlFlowGraph cfg;
 
     /**
      * The <code>program_start</code> field records the lowest address in the program segment that contains
@@ -73,30 +77,6 @@ public class Program {
     public final int program_length;
 
     /**
-     * The <code>data_start</code> field records the lowest address of declared, labelled memory in the data
-     * segment.
-     */
-    public final int data_start;
-
-    /**
-     * The <code>data_end</code> field records the address following the highest address in the program with
-     * declared, labelled memory in the data segment.
-     */
-    public final int data_end;
-
-    /**
-     * The <code>eeprom_start</code> field records the lowest address of declared, labelled memory in the
-     * eepromiwswcbimh segment.
-     */
-    public final int eeprom_start;
-
-    /**
-     * The <code>eeprom_end</code> field records the address following the highest address in the program with
-     * declared, labelled memory in the eeprom segment.
-     */
-    public final int eeprom_end;
-
-    /**
      * The <code>flash_data</code> field stores a reference to the array that contains the raw data (bytes) of the
      * program segment. NO EFFORT IS MADE IN THIS CLASS TO KEEP THIS CONSISTENT WITH THE INSTRUCTION
      * REPRESENTATIONS.
@@ -108,38 +88,27 @@ public class Program {
      * representations of the program segment. NO EFFORT IS MADE IN THIS CLASS TO KEEP THIS CONSISTENT WITH
      * THE RAW DATA OF THE PROGRAM SEGMENT.
      */
-    protected final LegacyInstr[] flash_instrs;
-
-    /**
-     * The <code>caseSensitive</code> field controls whether label searching is case sensitive or not. Some
-     * program representations use case sensitive labels, and some do not.
-     */
-    public boolean caseSensitive;
+    protected final AbstractInstr[] flash_instrs;
 
     /**
      * The constructor of the <code>Program</code> class builds an internal representation of the program that
      * is initially empty, but has the given parameters in terms of how big segments are and where they
      * start.
      *
+     * @param a a reference to the <code>AbstractArchitecture</code> class that represents the
+     * instruction set architecture for this program
      * @param pstart the start of the program segment
      * @param pend   the end of the program segment
-     * @param dstart the start of the data segment
-     * @param dend   the end of the data segment
-     * @param estart the start of the eeprom segment
-     * @param eend   the end of the eeprom segment
      */
-    public Program(int pstart, int pend, int dstart, int dend, int estart, int eend) {
+    public Program(AbstractArchitecture a, int pstart, int pend) {
+        arch = a;
         program_start = pstart;
         program_end = pend;
         program_length = pend - pstart;
-        data_start = dstart;
-        data_end = dend;
-        eeprom_start = estart;
-        eeprom_end = eend;
 
         int size = program_end - program_start;
         flash_data = new byte[size];
-        flash_instrs = new LegacyInstr[size];
+        flash_instrs = arch.newInstrArray(size);
         Arrays.fill(flash_data, (byte)0xff);
 
         indirectEdges = new HashMap();
@@ -155,7 +124,7 @@ public class Program {
      * @throws cck.util.Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
-    public void writeInstr(LegacyInstr i, int address) {
+    public void writeInstr(AbstractInstr i, int address) {
         int size = i.getSize();
         checkAddress(address);
         checkAddress(address + size - 1);
@@ -178,8 +147,8 @@ public class Program {
      * @throws cck.util.Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
-    public LegacyInstr readInstr(int address) {
-        checkAddress(address);
+    public AbstractInstr readInstr(int address) {
+        if ( address < program_start || address >= program_end ) return null;
         return flash_instrs[address - program_start];
     }
 
@@ -256,7 +225,7 @@ public class Program {
         // TODO: better error checking
         if (pc > program_end)
             throw Util.failure("no next PC after: " + StringUtil.addrToString(pc));
-        LegacyInstr i = readInstr(pc);
+        AbstractInstr i = readInstr(pc);
         if (i == null) return pc + 2;
         return pc + i.getSize();
     }
@@ -298,15 +267,33 @@ public class Program {
 
     }
 
+    /**
+     * The <code>getArchitecture()</code> method returns a reference to the <code>AbstractArchitecture</code>
+     * object that represents the instruction set architecture for this program.
+     * @return a reference to the abstract architecture for this program
+     */
+    public AbstractArchitecture getArchitecture() {
+        return arch;
+    }
+
+    /**
+     * The <code>getSourceMapping()</code> method returns a reference to the <code>SourceMapping</code>
+     * class that contains information about mapping the machine code program back to the source code,
+     * either a high-level language such as C, or a source-assembly program.
+     * @return a reference to the source mapping for this program
+     */
     public SourceMapping getSourceMapping() {
         return sourceMapping;
     }
 
+    /**
+     * The <code>setSourceMapping()</code> method updates the reference to the <code>SourceMapping</code>
+     * for this program.
+     * @param s the new source mapping for this program
+     */
     public void setSourceMapping(SourceMapping s) {
         sourceMapping = s;
     }
-
-    private ControlFlowGraph cfg;
 
     /**
      * The <code>getCFG()</code> method returns a reference to the control flow graph of the program. This is

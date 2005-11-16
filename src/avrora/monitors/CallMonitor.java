@@ -79,7 +79,7 @@ public class CallMonitor extends MonitorFactory {
             Program p = s.getProgram();
             sourceMap = p.getSourceMapping();
             for ( int pc = 0; pc < p.program_end; pc = p.getNextPC(pc)) {
-                LegacyInstr i = p.readInstr(pc);
+                LegacyInstr i = (LegacyInstr)p.readInstr(pc);
                 if ( i != null ) {
                     if ( i instanceof LegacyInstr.CALL ) s.insertProbe(new CallProbe("CALL"), pc);
                     else if ( i instanceof LegacyInstr.ICALL ) s.insertProbe(new CallProbe("ICALL"), pc);

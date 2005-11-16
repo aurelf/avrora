@@ -303,9 +303,8 @@ public class Module implements Context {
 
 
     public Program build() {
-        newprogram = new Program(programSegment.lowest_address, programSegment.highest_address,
-                dataSegment.lowest_address, dataSegment.highest_address,
-                eepromSegment.lowest_address, eepromSegment.highest_address);
+        newprogram = new Program(LegacyArchitecture.INSTANCE, programSegment.lowest_address, programSegment.highest_address
+        );
 
         labelMapping = new LabelMapping(newprogram);
         newprogram.setSourceMapping(labelMapping);

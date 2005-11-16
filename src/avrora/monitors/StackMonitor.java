@@ -74,7 +74,7 @@ public class StackMonitor extends MonitorFactory {
             // insert probes to catch "implicit" updates to SP for certain instructions
             Program program = sim.getProgram();
             for ( int pc = 0; pc < program.program_end; pc = program.getNextPC(pc)) {
-                LegacyInstr i = program.readInstr(pc);
+                LegacyInstr i = (LegacyInstr)program.readInstr(pc);
                 if ( i != null ) {
                     if ( i instanceof LegacyInstr.CALL ) sim.insertProbe(probe, pc);
                     else if ( i instanceof LegacyInstr.ICALL ) sim.insertProbe(probe, pc);

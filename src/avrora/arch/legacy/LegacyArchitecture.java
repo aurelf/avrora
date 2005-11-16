@@ -65,4 +65,9 @@ public class LegacyArchitecture implements AbstractArchitecture {
     public AbstractParser getParser() {
         throw Util.unimplemented();
     }
+
+    public AbstractInstr[] newInstrArray(int len) {
+        return new LegacyInstr[len];
+    }
+
 }

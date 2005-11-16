@@ -75,7 +75,7 @@ public class DisassemblerTestHarness implements TestHarness {
             }
 
             for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) ) {
-                LegacyInstr i = program.readInstr(cntr);
+                LegacyInstr i = (LegacyInstr)program.readInstr(cntr);
                 if ( i == null ) continue;
 
                 instrs[cntr] = disassembler.disassembleLegacy(data, 0, cntr);
@@ -85,7 +85,7 @@ public class DisassemblerTestHarness implements TestHarness {
         public TestResult match(Throwable t) {
             
             for ( int cntr = 0; cntr < program.program_end; cntr = program.getNextPC(cntr) ) {
-                LegacyInstr i = program.readInstr(cntr);
+                LegacyInstr i = (LegacyInstr)program.readInstr(cntr);
                 if ( i == null ) continue;
 
                 LegacyInstr id = instrs[cntr];
