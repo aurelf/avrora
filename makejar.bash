@@ -9,8 +9,6 @@ fi
 RELEASE=$1
 JARFILE=avrora-$RELEASE.jar
 
-rm -rf bin/* $JARFILE
-
 echo "# Running make clean..."
 make clean
 echo "  --> done."
