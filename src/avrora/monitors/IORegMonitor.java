@@ -87,7 +87,7 @@ public class IORegMonitor extends MonitorFactory {
             while ( i.hasNext() ) {
                 String str = (String)i.next();
                 int ior;
-                if ( str.startsWith("0x"))
+                if ( StringUtil.isHex(str) )
                     ior = StringUtil.evaluateIntegerLiteral(str);
                 else
                     ior = m.getProperties().getIOReg(str);

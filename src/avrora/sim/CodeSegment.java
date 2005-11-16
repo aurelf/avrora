@@ -44,6 +44,9 @@ import cck.util.Util;
  * @author Ben L. Titzer
  */
 public class CodeSegment extends Segment {
+
+    protected final BaseInterpreter interpreter;
+
     /**
      * The <code>replaceInstr()</code> method is used internally to update an instruction in the flash segment
      * without losing all of its attached instrumentation (i.e. probes and watches).
@@ -119,7 +122,8 @@ public class CodeSegment extends Segment {
      * @param er the error reporter consulted on accesses out of bounds
      */
     public CodeSegment(String name, int size, BaseInterpreter bi, ErrorReporter er) {
-        super(name, size, DEFAULT_VALUE, bi, er);
+        super(name, size, DEFAULT_VALUE, bi.state, er);
+        interpreter = bi;
         segment_instr = new LegacyInstr[size];
     }
 

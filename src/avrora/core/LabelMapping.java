@@ -34,6 +34,7 @@ package avrora.core;
 
 import cck.text.StringUtil;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * The <code>LabelMapping</code> class is a simple implementation of the <code>SourceMapping</code>
@@ -73,29 +74,6 @@ public class LabelMapping extends SourceMapping {
     }
 
     /**
-     * The <code>getAddress()</code> method translates a source level name into a machine-code level
-     * address. In this implementation, the name is considered to be a label within the assembly program.
-     * If the name is not known in the program, this method will return -1.
-     * @param name the name of some program label as a string
-     * @return the address of that program entity as a byte address in the code of the program; -1 if
-     * the name is not present in this program
-     */
-    public int getAddress(String name) {
-        if ( isHexInteger(name) )
-            return StringUtil.evaluateIntegerLiteral(name);
-        Location l = (Location)labels.get(name);
-        return l == null ? -1 : l.address;
-    }
-
-    private boolean isHexInteger(String name) {
-        if ( name.length() < 2 ) return false;
-        if ( name.charAt(0) != '0' ) return false;
-        char c = name.charAt(1);
-        if ( c == 'x' || c == 'X') return true;
-        return false;
-    }
-
-    /**
      * The <code>getLocation()</cdoe> method retrieves an object that represents a location for the given name,
      * if the name exists in the program. If the name does not exist in the program, this method will return null.
      * For strings beginning with "0x", this method will evaluate them as hexadecimal literals and return a
@@ -105,21 +83,25 @@ public class LabelMapping extends SourceMapping {
      * specified label is not contained in the program
      */
     public Location getLocation(String name) {
-        if ( isHexInteger(name) )
-            return new Location(null, StringUtil.evaluateIntegerLiteral(name));
+        if ( StringUtil.isHex(name) )
+            return new Location(null, null, StringUtil.evaluateIntegerLiteral(name));
         return (Location)labels.get(name);
     }
 
     /**
      * The <code>newLocatiobn()</code> method creates a new program location with the specified label name that
      * is stored internally.
+     * @param section
      * @param name the name of the label
      * @param address the address in the program for which to create and store a new location
      */
-    public void newLocation(String name, int address) {
-        Location l = new Location(name, address);
+    public void newLocation(String section, String name, int address) {
+        Location l = new Location(section, name, address);
         labels.put(name, l);
         reverseMap.put(new Integer(address), name);
     }
 
+    public Iterator getIterator() {
+        return labels.values().iterator();
+    }
 }

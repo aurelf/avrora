@@ -38,6 +38,7 @@ package avrora.monitors;
 import avrora.arch.legacy.LegacyInstr;
 import avrora.core.ControlFlowGraph.Block;
 import avrora.core.Program;
+import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import cck.text.Terminal;
@@ -139,11 +140,12 @@ public class EnergyProfiler extends MonitorFactory {
          * scan all labels and put them in the list
          */
         private void setupLabels() {
-            Iterator it = program.getLabels().entrySet().iterator();
+            Iterator it = program.getSourceMapping().getIterator();
             while (it.hasNext()) {
                 Map.Entry entry = (Map.Entry)it.next();
-                Program.Location tempLoc = (Program.Location)entry.getValue();
-                profiles.add(new EnergyProfile(tempLoc));
+                SourceMapping.Location tempLoc = (SourceMapping.Location)entry.getValue();
+                if ( tempLoc.segment.equals(".text") )
+                    profiles.add(new EnergyProfile(tempLoc));
             }
         }
 
@@ -309,14 +311,14 @@ public class EnergyProfiler extends MonitorFactory {
         /**
          * <code>location</code>: name and address of this procedure
          */
-        public Program.Location location;
+        public SourceMapping.Location location;
 
         /**
          * construct a new energy profile
          *
          * @param loc Location, e.g. name and address, of the profile
          */
-        public EnergyProfile(Program.Location loc) {
+        public EnergyProfile(SourceMapping.Location loc) {
             cycles = 0;
             location = loc;
         }

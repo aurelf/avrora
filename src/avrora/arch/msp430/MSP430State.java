@@ -56,9 +56,6 @@ public class MSP430State implements State {
     public static final int PC_REG = 0;
     public static final int SP_REG = 1;
     public static final int SREG_REG = 2;
-    public static final int _1kb = 1024;
-    public static final int _1mb = _1kb * _1kb;
-    public static final int DATA_SIZE = 64 * _1kb;
 
     protected Simulator simulator;
 
@@ -70,8 +67,7 @@ public class MSP430State implements State {
 
     protected char[] regs;
     protected ActiveRegister[] ioregs;
-    protected Segment sram;
-    protected CodeSegment code;
+    protected MSP430DataSegment sram;
 
     protected boolean C, N, Z, V;
 
@@ -110,21 +106,6 @@ public class MSP430State implements State {
      * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid memory range
      */
     public byte getSRAM(int address) {
-        throw Util.unimplemented();
-    }
-
-    /**
-     * The <code>getFlash()</code> method reads a byte value from the program (Flash) memory. The flash memory generally
-     * stores read-only values and the instructions of the program. This method is intended for use by probes and
-     * watches; thus, it does not trigger any watches or probes that may be installed at the memory address specified,
-     * since doing so could lead to infinite recursion (if a watch attempts to get the value of the byte at the location
-     * where it itself is installed) or alter the metrics being measured by the instrumentation at that address.
-     *
-     * @param address the byte address at which to read
-     * @return the byte value of the program memory at the specified address
-     * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid program memory range
-     */
-    public byte getFlash(int address) {
         throw Util.unimplemented();
     }
 

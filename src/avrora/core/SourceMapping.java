@@ -34,6 +34,7 @@ package avrora.core;
 
 import cck.text.StringUtil;
 import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * The <code>SourceMapping</code> class embodies the concept of mapping machine code level
@@ -75,22 +76,32 @@ public abstract class SourceMapping {
      * or eeprom segments.
      */
     public class Location {
+
         /**
-         * The <code>address</code> field records the address of this label as a byte address.
+         * The <code>segment</code> field records the name of the segment that this label refers to,
+         * such as ".text" or ".data".
          */
-        public final int address;
+        public final String segment;
+
         /**
          * The <code>name</code> field records the name of this label.
          */
         public final String name;
 
         /**
+         * The <code>address</code> field records the address of this label as a byte address.
+         */
+        public final int address;
+
+        /**
          * The constructor for the <code>Location</code> class creates a new location for the
          * specified lable and address. It is used internally to create labels.
+         * @param s the name of the segment as a string
          * @param n the name of the label as a string
          * @param addr the integer address of the location
          */
-        Location(String n, int addr) {
+        Location(String s, String n, int addr) {
+            segment = s;
             if ( n == null ) name = StringUtil.addrToString(addr);
             else name = n;
             address = addr;
@@ -136,16 +147,6 @@ public abstract class SourceMapping {
     public abstract String getName(int address);
 
     /**
-     * The <code>getAddress()</code> method translates a source level name into a machine-code level
-     * address. For example, the name might represent the beginning of a method or a label in an
-     * assembly program. If the name is not known in the program, this method should return -1.
-     * @param name the name of some program entity as a string
-     * @return the address of that program entity as a byte address in the code of the program; -1 if
-     * the name is not present in this program
-     */
-    public abstract int getAddress(String name);
-
-    /**
      * The constructor for the <code>SourceMapping</code> base class creates a new instance of source mapping
      * information for the specified program. The mapping is tied to the program throughout its lifetime.
      * @param p the program to create the source mapping for
@@ -164,4 +165,6 @@ public abstract class SourceMapping {
     }
 
     public abstract Location getLocation(String name);
+
+    public abstract Iterator getIterator();
 }

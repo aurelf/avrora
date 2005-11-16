@@ -170,12 +170,14 @@ public class SensorSimulation extends Simulation {
             if ( UPDATE_NODE_ID.get() ) {
                 Program p = path.getProgram();
                 SourceMapping smap = p.getSourceMapping();
-                SourceMapping.Location location = smap.getLocation("TOS_LOCAL_ADDRESS");
-                if ( location == null ) location = smap.getLocation("node_address");
-                if ( location != null ) {
-                    BaseInterpreter bi = simulator.getInterpreter();
-                    bi.writeFlashByte(location.address, Arithmetic.low(id));
-                    bi.writeFlashByte(location.address+1, Arithmetic.high(id));
+                if ( smap != null ) {
+                    SourceMapping.Location location = smap.getLocation("TOS_LOCAL_ADDRESS");
+                    if ( location == null ) location = smap.getLocation("node_address");
+                    if ( location != null ) {
+                        BaseInterpreter bi = simulator.getInterpreter();
+                        bi.writeFlashByte(location.address, Arithmetic.low(id));
+                        bi.writeFlashByte(location.address+1, Arithmetic.high(id));
+                    }
                 }
             }
         }

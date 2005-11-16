@@ -68,7 +68,7 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
     private static final int SREG_V_MASK = 1 << SREG_V;
     private static final int SREG_N_MASK = 1 << SREG_N;
     private static final int SREG_Z_MASK = 1 << SREG_Z;
-    private static final int SREG_C_MASK = 1 << SREG_C;
+    private static final int SREG_C_MASK = 1;
 
     protected final int SREG; // location of the SREG IO register
     protected final int RAMPZ; // location of the RAMPZ IO register
@@ -525,7 +525,6 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
 
         // maximum data address
         sram_max = NUM_REGS + pr.ioreg_size + pr.sram_size;
-
 
         // allocate SRAM
         sram = new byte[sram_max];

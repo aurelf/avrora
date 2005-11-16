@@ -202,6 +202,32 @@ public class StringUtil {
     }
 
     /**
+     * The <code>isHex()</code> method checks whether the specifed string represents a hexadecimal
+     * integer. This method only checks the first two characters. If they match "0x" or "0X", then
+     * this method returns true, otherwise, it returns false.
+     * @param s the string to check whether it begins with a hexadecimal sequence
+     * @return true if the string begins with "0x" or "0X"; false otherwise
+     */
+    public static boolean isHex(String s) {
+        if ( s.length() < 2 ) return false;
+        char c = s.charAt(1);
+        return s.charAt(0) == '0' && (c == 'x' || c == 'X');
+    }
+
+    /**
+     * The <code>isHex()</code> method checks whether the specifed string represents a binary
+     * integer. This method only checks the first two characters. If they match "0b" or "0B", then
+     * this method returns true, otherwise, it returns false.
+     * @param s the string to check whether it begins with a hexadecimal sequence
+     * @return true if the string begins with "0b" or "0B"; false otherwise
+     */
+    public static boolean isBin(String s) {
+        if ( s.length() < 2 ) return false;
+        char c = s.charAt(1);
+        return s.charAt(0) == '0' && (c == 'b' || c == 'B');
+    }
+
+    /**
      * The <code>isHexDigit()</code> method tests whether the given character corresponds to one of the
      * characters used in the hexadecimal representation (i.e. is '0'-'9' or 'a'-'b', case insensitive. This
      * method is generally used in parsing and lexing of input.
@@ -403,7 +429,7 @@ public class StringUtil {
      *         length specified
      */
     public static String toHex(long value, int width) {
-        char result[] = new char[width];
+        char[] result = new char[width];
         return convertToHex(value, width, 0, result);
     }
 
@@ -424,14 +450,14 @@ public class StringUtil {
     }
 
     public static String to0xHex(long value, int width) {
-        char result[] = new char[width+2];
+        char[] result = new char[width+2];
         result[0] = '0';
         result[1] = 'x';
         return convertToHex(value, width, 2, result);
     }
 
     public static String toBin(long value, int width) {
-        char result[] = new char[width];
+        char[] result = new char[width];
 
         for (int cntr = 0; cntr < width; cntr++)
             result[width - cntr - 1] = (value & (0x1 << cntr)) == 0 ? '0' : '1';
@@ -449,7 +475,7 @@ public class StringUtil {
             buf.append(HEX_CHARS[(int)(value >> (cntr * 4)) & 0xf]);
     }
 
-    public static String splice(String a[], String b[]) {
+    public static String splice(String[] a, String[] b) {
         StringBuffer buf = new StringBuffer();
         int cntr = 0;
         for (; cntr < a.length; cntr++) {
@@ -561,12 +587,12 @@ public class StringUtil {
     }
 
     public static int evaluateIntegerLiteral(String val) {
-        if (val.startsWith("0x") || val.startsWith("0X")) // hexadecimal
+        if (StringUtil.isHex(val) )// hexadecimal
             return Integer.parseInt(val.substring(2), 16);
         if (val.startsWith("$"))                          // hexadecimal
             return Integer.parseInt(val.substring(1), 16);
 
-        if (val.startsWith("0b") || val.startsWith("0B")) // binary
+        if (StringUtil.isBin(val)) // binary
             return Integer.parseInt(val.substring(2), 2);
 
         if (val.startsWith("0"))                          // octal

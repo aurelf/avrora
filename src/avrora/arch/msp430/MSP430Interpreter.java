@@ -47,9 +47,6 @@ import cck.util.Util;
 public class MSP430Interpreter extends MSP430InstrInterpreter {
 
     protected int RAMPZ; // location of the RAMPZ IO register
-    protected final int sram_start; // end of SRAM
-    protected final int sram_end; // end of SRAM
-    protected final int code_start; // beginning of code
     protected final MainClock clock;
     protected final RegisterSet registers;
     protected final MSP430Instr[] shared_instr;
@@ -73,20 +70,8 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         this.clock = simulator.getClock();
 
         // if program will not fit onto hardware, error
-        if (p.program_end > DATA_SIZE)
-            throw Util.failure("program will not fit into " + DATA_SIZE + " bytes");
-
-        // beginning address of SRAM array
-        sram_start = pr.ioreg_size;
-
-        // maximum data address
-        sram_end = pr.sram_size;
-
-        // beginning of code segment
-        code_start = pr.code_start;
-
-        // allocate SRAM
-        sram = new Segment("data", DATA_SIZE, (byte)0, null, null);
+        if (p.program_end > MSP430DataSegment.DATA_SIZE)
+            throw Util.failure("program will not fit into " + MSP430DataSegment.DATA_SIZE + " bytes");
 
         // allocate register file
         regs = new char[NUM_REGS];
@@ -94,8 +79,9 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         // initialize IO registers to default values
         registers = simulator.getMicrocontroller().getRegisterSet();
 
-        // for performance, we share a reference to the ActiveRegister[] array
-        ioregs = registers.share();
+        // allocate SRAM
+        sram = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this);
+
 
         // TODO: 1. allocate code space (flash)
         // TODO: 2. set up correct error reporter for SRAM, flash

@@ -48,7 +48,7 @@ public class Segment {
 
     public final int length;
 
-    protected final BaseInterpreter interpreter;
+    protected final State state;
     protected final String name;
     protected final byte value;
     protected byte[] segment_data;
@@ -63,21 +63,19 @@ public class Segment {
      * @param name the name of the segment as a string
      * @param size the size of the segment in bytes
      * @param defvalue the default value of bytes in this segment
+     * @param st the state object to pass to watches when fired
      * @param er an object that is notified when an attempt is made to read or write outside of the bounds
-     * of this segment
      */
-    public Segment(String name, int size, byte defvalue, BaseInterpreter bi, ErrorReporter er) {
+    public Segment(String name, int size, byte defvalue, State st, ErrorReporter er) {
         this.name = name;
         this.length = size;
         this.value = defvalue;
         this.errorReporter = er;
         this.segment_data = new byte[size];
-        this.interpreter = bi;
+        this.state = st;
 
         // if the default value is something other than zero, initialize the array
-        if ( defvalue != 0 ) {
-            Arrays.fill(segment_data, defvalue);
-        }
+        if ( defvalue != 0 ) Arrays.fill(segment_data, defvalue);
     }
 
     /**
@@ -155,9 +153,9 @@ public class Segment {
         }
 
         // SLOW PATH: consult with memory watches
-        p.fireBeforeRead(interpreter.state, address);
+        p.fireBeforeRead(state, address);
         byte val = checked_read(address);
-        p.fireAfterRead(interpreter.state, address, val);
+        p.fireAfterRead(state, address, val);
         return val;
     }
 
@@ -233,9 +231,9 @@ public class Segment {
         }
 
         // SLOW PATH: consult with memory watches
-        p.fireBeforeWrite(interpreter.state, address, val);
+        p.fireBeforeWrite(state, address, val);
         checked_write(address, val);
-        p.fireAfterWrite(interpreter.state, address, val);
+        p.fireAfterWrite(state, address, val);
     }
 
     /**

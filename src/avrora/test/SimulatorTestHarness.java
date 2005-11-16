@@ -35,8 +35,7 @@ package avrora.test;
 import avrora.Defaults;
 import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
-import avrora.core.Program;
-import avrora.core.ProgramReader;
+import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.syntax.Module;
@@ -191,9 +190,9 @@ public class SimulatorTestHarness implements TestHarness {
         }
 
         public int evaluate(Program p, LegacyState s) {
-            Program.Location l = p.getLabel(name);
-            if (l == null)
-                throw new UnknownLabel(name);
+            SourceMapping smap = p.getSourceMapping();
+            SourceMapping.Location l = smap.getLocation(name);
+            if (l == null) throw new UnknownLabel(name);
             return l.address;
         }
 

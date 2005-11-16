@@ -35,6 +35,7 @@
 package jintgen.isdl.verifier;
 
 import cck.util.Util;
+import cck.text.StringUtil;
 import jintgen.isdl.*;
 import jintgen.jigir.*;
 import java.util.HashMap;
@@ -165,8 +166,7 @@ public class EncodingVerifier extends VerifierPass {
         }
 
         private boolean isHex(Literal.IntExpr e) {
-            char ch = e.token.image.charAt(1);
-            return ch == 'x' || ch == 'X';
+            return StringUtil.isHex(e.token.image);
         }
 
         private boolean isBinary(Literal.IntExpr e) {

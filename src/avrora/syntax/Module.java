@@ -122,13 +122,7 @@ public class Module implements Context {
         }
 
         public void addLabel(int baddr, String labelname) {
-            if ("program".equals(name)) {
-                newprogram.newProgramLabel(labelname, baddr);
-                // TODO: this is a hack; eventually everything should be transitioned to SourceMapping
-                labelMapping.newLocation(labelname, baddr);
-            }
-            if ("eeprom".equals(name)) newprogram.newEEPromLabel(labelname, baddr);
-            if ("data".equals(name)) newprogram.newDataLabel(labelname, baddr);
+            labelMapping.newLocation(name, labelname, baddr);
         }
 
         public void setOrigin(int org) {
@@ -156,9 +150,9 @@ public class Module implements Context {
         constants = new HashMap();
         labels = new HashMap();
 
-        programSegment = new Seg("program", 2, 0, true, true);
-        dataSegment = new Seg("data", 1, 32, false, false);
-        eepromSegment = new Seg("eeprom", 1, 0, false, false);
+        programSegment = new Seg(".text", 2, 0, true, true);
+        dataSegment = new Seg(".data", 1, 32, false, false);
+        eepromSegment = new Seg(".eeprom", 1, 0, false, false);
 
         segment = programSegment;
         itemList = new LinkedList();

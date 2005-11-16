@@ -193,7 +193,7 @@ public class AVRInterpreter extends AVRInstrInterpreter {
         int sram_total = NUM_REGS + pr.ioreg_size + pr.sram_size;
 
         // allocate SRAM
-        sram = new AVRDataSegment(sram_total, ioregs);
+        sram = new AVRDataSegment(sram_total, ioregs, this);
 
         // set reference to registers
         regs = sram.exposeRegisters();

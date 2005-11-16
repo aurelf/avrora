@@ -29,38 +29,36 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Nov 11, 2005
+ * Creation date: Nov 15, 2005
  */
 
-package avrora.arch.avr;
+package avrora.arch.msp430;
 
-import avrora.sim.*;
+import avrora.sim.ActiveRegister;
+import avrora.sim.Segment;
+import avrora.arch.avr.AVRState;
 
 /**
- * The <code>AVRDataSegment</code> class implements a data segment corresponding to the SRAM
- * on the AVR series microcontrollers. This segment implementation is special in that the first 32 bytes
- * are mapped to the register file, the next 64-224 bytes are active registers (IO registers),
- * and the remaining bytes are read and write RAM.
+ * The <code>MSP430DataSegment</code> class represents a data segment on the MSP430
+ * microcontroller, which consists of IO registers, RAM, and flash (which contains
+ * both initialized data and executable instructions).
  *
  * @author Ben L. Titzer
  */
-public class AVRDataSegment extends Segment {
-
-    private final int sram_start;
+public class MSP430DataSegment extends Segment {
+    private final int ioreg_end;
+    private final int sram_end;
+    private final int flash_start;
     private final ActiveRegister[] ioregs;
+    public static final int _1kb = 1024;
+    public static final int DATA_SIZE = 64 * _1kb;
 
-    /**
-     * The constructor for the <code>AVRDataSegment</code> class creates a new data segment
-     * initialized to zero, with the specified total size (including registers and IORs) and
-     * the specified active register set positioned after the register file.
-     * @param sz the total size of the segment, including the size of the register file and IORs
-     * @param ior the IO registers that are positioned after the register file in memory
-     * @param st
-     */
-    public AVRDataSegment(int sz, ActiveRegister[] ior, State st) {
-        super("sram", sz, (byte)0, st, null);
-        sram_start = AVRState.NUM_REGS + ior.length;
+    public MSP430DataSegment(int se, int fs, ActiveRegister[] ior, MSP430State st) {
+        super("data", DATA_SIZE, (byte)0, st, null);
+        sram_end = se;
+        flash_start = fs;
         ioregs = ior;
+        ioreg_end = ior.length;
     }
 
     /**
@@ -73,10 +71,12 @@ public class AVRDataSegment extends Segment {
      * @return the value of the of segment at the specified address
      */
     protected byte direct_read(int address) {
-        if (address >= sram_start)
+        if (address < ioreg_end)
+            return ioregs[address].read();
+        if (address < sram_end)
             return segment_data[address];
-        if (address >= AVRState.NUM_REGS)
-            return ioregs[address - AVRState.NUM_REGS].read();
+        if (address < flash_start)
+            return errorReporter.readError(address);
         return segment_data[address];
     }
 
@@ -90,21 +90,11 @@ public class AVRDataSegment extends Segment {
      * @param val the value to write into the segment
      */
     protected void direct_write(int address, byte val) {
-        if (address >= sram_start)
+        if (address < ioreg_end)
+            ioregs[address].write(val);
+        else if (address < sram_end)
             segment_data[address] = val;
-        else if (address >= AVRState.NUM_REGS)
-            ioregs[address - AVRState.NUM_REGS].write(val);
-        else segment_data[address] = val;
-    }
-
-    /**
-     * The <code>exposeRegisters()</code> class allows direct access to the underlying array which
-     * represents the register file. This is a performance tweak that is intended for use only by the
-     * AVR interpreter. Accessing the underlying array directly circumvents instrumentation and
-     * therefore should not be done except by the interpreter itself.
-     * @return a reference to the byte array that is used internally to store the values of the registers
-     */
-    protected byte[] exposeRegisters() {
-        return segment_data;
+        else // attempt to write beyond RAM
+            errorReporter.writeError(address, val);
     }
 }
