@@ -109,11 +109,11 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
     }
 
     public void RedefinedOperand(Token prevdecl, Token newdecl) {
-        redefined("LegacyOperand", "LegacyOperand", prevdecl, newdecl);
+        redefined("Operand", "Operand", prevdecl, newdecl);
     }
 
     public void RedefinedOperandType(Token prevdecl, Token newdecl) {
-        redefined("OperandType", "LegacyOperand Type", prevdecl, newdecl);
+        redefined("OperandType", "Operand Type", prevdecl, newdecl);
     }
 
     public void RedefinedSubroutine(Token prevdecl, Token newdecl) {
@@ -176,7 +176,7 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
     }
 
     public void OperandTypeExpected(Token o, Type t) {
-        String report = "LegacyOperand type expected, found "+t.toString();
+        String report = "Operand type expected, found "+t.toString();
         error("OperandTypeExpected", o.getSourcePoint(), report);
     }
 
@@ -200,6 +200,6 @@ public class JIGIRErrorReporter extends TypeErrorReporter {
         if ( ot.isUnion() )
             return "Polymorphic operand type "+ StringUtil.quote(ot.name);
         else
-            return "LegacyOperand type "+ StringUtil.quote(ot.name);
+            return "Operand type "+ StringUtil.quote(ot.name);
     }
 }

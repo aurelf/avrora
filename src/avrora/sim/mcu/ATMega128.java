@@ -32,7 +32,8 @@
 
 package avrora.sim.mcu;
 
-import avrora.arch.legacy.LegacyInstrProto;
+import avrora.arch.legacy.LegacyInterpreter;
+import avrora.arch.avr.AVRProperties;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
@@ -105,7 +106,7 @@ public class ATMega128 extends ATMegaFamily {
      * object shared by all of the instances of this microcontroller. This object
      * stores the IO register size, SRAM size, pin assignments, etc.
      */
-    public static final MicrocontrollerProperties props;
+    public static final AVRProperties props;
 
     static {
         // statically initialize the pin assignments for this microcontroller
@@ -334,7 +335,7 @@ public class ATMega128 extends ATMegaFamily {
         addInterrupt(interruptAssignments, "TWI", 34);
         addInterrupt(interruptAssignments, "SPM READY", 35);
 
-        props = new MicrocontrollerProperties(ATMEGA128_IOREG_SIZE, // number of io registers
+        props = new AVRProperties(ATMEGA128_IOREG_SIZE, // number of io registers
                 ATMEGA128_SRAM_SIZE, // size of sram in bytes
                 ATMEGA128_FLASH_SIZE, // size of flash in bytes
                 ATMEGA128_EEPROM_SIZE, // size of eeprom in bytes
@@ -358,16 +359,16 @@ public class ATMega128 extends ATMegaFamily {
          * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
          *         program loaded onto it
          */
-        public Microcontroller newMicrocontroller(int id, ClockDomain cd, InterpreterFactory f, Program p) {
-            return new ATMega128(id, cd, f, p);
+        public Microcontroller newMicrocontroller(int id, ClockDomain cd, Program p) {
+            return new ATMega128(id, cd, p);
         }
 
     }
 
-    public ATMega128(int id, ClockDomain cd, InterpreterFactory f, Program p) {
+    public ATMega128(int id, ClockDomain cd, Program p) {
         super(cd, props, new FiniteStateMachine(cd.getMainClock(), MODE_ACTIVE, idleModeNames, transitionTimeMatrix));
-        simulator = new Simulator(id, f, this, p);
-        interpreter = simulator.getInterpreter();
+        simulator = new Simulator(id, LegacyInterpreter.FACTORY, this, p);
+        interpreter = (AtmelInterpreter)simulator.getInterpreter();
         MCUCR_reg = getIOReg("MCUCR");
         installPins();
         installDevices();
@@ -376,11 +377,6 @@ public class ATMega128 extends ATMegaFamily {
         // Jacob's temporary addition for bootloader
         //interpreter.setBootPC(0x1E000);
         
-    }
-
-    public boolean isSupported(LegacyInstrProto i) {
-        // ATMega128 supports all instructions (AFAIK)
-        return true;
     }
 
     protected void installPins() {
@@ -394,7 +390,7 @@ public class ATMega128 extends ATMegaFamily {
 
         // set up the timer mask and flag registers and interrupt range
         TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 17, 8);
-        TIMSK_reg = (MaskRegister)interpreter.getIOReg(props.getIOReg("TIMSK"));
+        TIMSK_reg = (MaskRegister)getIOReg("TIMSK");
 
         int[] ETIFR_mapping = {25, 29, 30, 28, 27, 26, -1, -1};
         ETIFR_reg = new FlagRegister(interpreter, ETIFR_mapping);

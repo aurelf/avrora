@@ -234,7 +234,7 @@ public class ConstantPropagator extends StmtRebuilder<ConstantPropagator.Environ
         if (nexpr.isLiteral()) {
             int eval = intValueOf(nexpr);
             int mask = Arithmetic.getBitRangeMask(e.low_bit, e.high_bit);
-            return new Literal.IntExpr((eval >> e.low_bit) & mask);
+            return new Literal.IntExpr((eval & mask) >> e.low_bit);
         }
 
         if (nexpr != e.expr)

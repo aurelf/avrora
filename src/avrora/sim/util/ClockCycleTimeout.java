@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,31 +28,48 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 22, 2005
  */
 
-package avrora.sim.mcu;
+package avrora.sim.util;
 
-import avrora.core.Program;
-import avrora.sim.InterpreterFactory;
-import avrora.sim.clock.ClockDomain;
+import avrora.actions.SimAction;
+import avrora.sim.Simulator;
+import avrora.sim.State;
 
 /**
- * The <code>MicrocontrollerFactory</code> interface is implemented by a class that is capable of making
- * repeated copies of a particular microcontroller for use in simulation.
+ * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws an
+ * exception when the count reaches zero. It is useful for ensuring termination of the simulator, for
+ * performance testing, or for profiling and stopping after a specified number of invocations.
  *
  * @author Ben L. Titzer
  */
-public interface MicrocontrollerFactory {
+public class ClockCycleTimeout implements Simulator.Event {
+    public final long timeout;
+    private final Simulator simulator;
 
     /**
-     * The <code>newMicrocontroller()</code> method is used to instantiate a microcontroller instance for the
-     * particular program. It will construct an instance of the <code>Simulator</code> class that has all the
-     * properties of this hardware device and has been initialized with the specified program.
+     * The constructor for <code>InstructionCountTimeout</code> creates a timeout event with the specified
+     * initial value.
      *
-     * @param p the program to load onto the microcontroller
-     * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
-     *         program loaded onto it
+     * @param sim the simulator to terminate after the specified time
+     * @param t the number of cycles in the future
      */
-    public Microcontroller newMicrocontroller(int id, ClockDomain cd, Program p);
+    public ClockCycleTimeout(Simulator sim, long t) {
+        simulator = sim;
+        timeout = t;
+    }
+
+    /**
+     * The <code>fire()</code> method is called when the timeout is up. It gathers the state from the
+     * simulator and throws an instance of <code>Simulator.TimeoutException</code> that signals that the
+     * timeout has been reached. This exception then falls through the <code>run()</code> method of the
+     * caller of the simulator.
+     */
+    public void fire() {
+        State state = simulator.getState();
+        throw new SimAction.TimeoutException(state.getPC(), state, timeout, "clock cycles");
+    }
 
 }

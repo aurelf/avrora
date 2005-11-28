@@ -63,7 +63,7 @@ architecture msp430 {
 	    read: +int.16 {
 	        local addr: +int.16 = regs[this:int];
 	        regs[this:int] = addr + 2;
-	        return data[addr];
+	        return get_word(addr);
 	    }
 	    write: +int.16 { }
 	}
@@ -91,12 +91,31 @@ architecture msp430 {
 	    write: +int.16 { }
     }
 
+    operand-type IMML[16]: int [-32768, 65536] {
+	    read: int.8 {
+            bumpPC();
+	        return this:int.8;
+	    }
+	    read: +int.16 {
+            bumpPC();
+	        return this:+int.16;
+	    }
+	    write: int.8 { }
+	    write: +int.16 { }
+    }
+
     operand-type INDX {
         sub-operand reg: SREG;
         sub-operand index: IMM;
-	    read: int.8 { return data[read:+int.16(reg) + read:+int.16(index)]; }
-	    write: int.8 { data[read:+int.16(reg) + read:+int.16(index)] = value; }
+	    read: int.8 {
+            bumpPC();
+	        return data[read:+int.16(reg) + read:+int.16(index)];
+	    }
+	    write: int.8 {
+	        data[read:+int.16(reg) + read:+int.16(index)] = value;
+	    }
 	    read: +int.16 {
+            bumpPC();
 	        return get_word(read:+int.16(reg) + read:+int.16(index));
 	    }
 	    write: +int.16 {
@@ -104,11 +123,16 @@ architecture msp430 {
 	    }
     }
 
-    // TODO: this is encoded as relative to the pc
-    operand-type SYM[16]: int /* address, relative */[-32768,32767] {
-        read: int.8 { return data[this:int]; }
-        write: int.8 { data[this:int] = value; }
+    operand-type SYMB[16]: -address.1 [-32768,65535] {
+        read: int.8 {
+            bumpPC();
+            return data[this:int];
+        }
+        write: int.8 {
+            data[this:int] = value;
+        }
         read: +int.16 {
+            bumpPC();
             return get_word(this:int);
         }
         write: +int.16 {
@@ -116,10 +140,16 @@ architecture msp430 {
         }
     }
 
-    operand-type ABSO[16]: int /* address, absolute */[0,0xFFFF] {
-	    read: int.8 { return data[this:int]; }
-	    write: int.8 { data[this:int] = value; }
+    operand-type ABSO[16]: address.1 [-32768,65535] {
+	    read: int.8 {
+            bumpPC();
+	        return data[this:int];
+	    }
+	    write: int.8 {
+	        data[this:int] = value;
+	    }
         read: +int.16 {
+            bumpPC();
             return get_word(this:int);
         }
         write: +int.16 {
@@ -127,7 +157,7 @@ architecture msp430 {
         }
     }
 
-    operand-type JUMP[10]: int /* address, relative */[-512,511] {
+    operand-type JUMP[10]: -address.2 [-512,511] {
         read: +int.16 {
             return this:+int.16;
         }
@@ -163,7 +193,7 @@ architecture msp430 {
 	    property cycles: int = 4;
     }
 
-    addr-mode REGSYM source: SREG, dest: SYM {
+    addr-mode REGSYM source: SREG, dest: SYMB {
         // SYMolic mode is encoded as indexing off of the PC register
         encoding = priority 4 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
 	    property syntax: String = "%source, %dest";
@@ -195,19 +225,19 @@ architecture msp430 {
         property cycles: int = 6;
     }
 
-    addr-mode SYM source: SYM {
+    addr-mode SYM source: SYMB {
         encoding = priority 2 SINGLE_OP_X where { As = 0b01, sreg = 0b0000, X = source }
         property syntax: String = "%source";
         property cycles: int = 4;
     }
 
-    addr-mode SYMREG source: SYM, dest: SREG {
+    addr-mode SYMREG source: SYMB, dest: SREG {
         encoding = priority 3 DOUBLE_OP_X where { As = 0b01, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
         property syntax: String = "%source, %dest";
         property cycles: int = 3;
     }
 
-    addr-mode INDSYM source: INDX, dest: SYM {
+    addr-mode INDSYM source: INDX, dest: SYMB {
         encoding = priority 4 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = source.reg, dreg = 0b0000, X = source.index, Y = dest }
         property syntax: String = "%source.index(%source.reg), %dest";
         property cycles: int = 6;
@@ -219,25 +249,25 @@ architecture msp430 {
         property cycles: int = 6;
     }
 
-    addr-mode SYMABS source: SYM, dest: ABSO {
+    addr-mode SYMABS source: SYMB, dest: ABSO {
         encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
         property syntax: String = "%source, &%dest";
         property cycles: int = 6;
     }
 
-    addr-mode SYMIND source: SYM, dest: INDX {
+    addr-mode SYMIND source: SYMB, dest: INDX {
         encoding = priority 3 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
         property syntax: String = "%source, %dest.index(%dest.reg)";
         property cycles: int = 6;
     }
 
-    addr-mode SYMSYM source : SYM, dest: SYM {
+    addr-mode SYMSYM source : SYMB, dest: SYMB {
         encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
         property syntax: String = "%source, %dest";
         property cycles: int = 6;
     }
 
-    addr-mode ABSSYM source: ABSO, dest: SYM {
+    addr-mode ABSSYM source: ABSO, dest: SYMB {
         encoding = priority 2 DOUBLE_OP_XY where { As = 0b01, Ad = 1, sreg = 0b0010, dreg = 0b0000, X = source, Y = dest }
         property syntax: String = "&%source, %dest";
         property cycles: int = 6;
@@ -267,7 +297,7 @@ architecture msp430 {
         property cycles: int = 6;
     }
 
-    addr-mode IREGSYM source: IREG, dest: SYM {
+    addr-mode IREGSYM source: IREG, dest: SYMB {
         encoding = priority 4 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source, %dest";
         property cycles: int = 5;
@@ -298,7 +328,6 @@ architecture msp430 {
     }
 
     addr-mode IMM source: IMM {
-        encoding = priority 1 SINGLE_OP_X where { As = 0b11, sreg = 0b0000, X = source }
         encoding = priority 0 SINGLE_OP where { As = 0b11, sreg = 0b0011 } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 SINGLE_OP where { As = 0b00, sreg = 0b0011 } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 0 SINGLE_OP where { As = 0b01, sreg = 0b0011 } when source == 1  // encodes as R3, As = 0b01
@@ -310,7 +339,6 @@ architecture msp430 {
     }
 
     addr-mode IMMREG source: IMM, dest: SREG {
-        encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
         encoding = priority 1 DOUBLE_OP where { As = 0b11, Ad = 0, sreg = 0b0011, dreg = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 1 DOUBLE_OP where { As = 0b00, Ad = 0, sreg = 0b0011, dreg = dest } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 1 DOUBLE_OP where { As = 0b01, Ad = 0, sreg = 0b0011, dreg = dest } when source == 1  // encodes as R3, As = 0b01
@@ -322,7 +350,6 @@ architecture msp430 {
     }
 
     addr-mode IMMIND source: IMM, dest: INDX {
-        encoding = priority 1 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
         encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 1 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 1 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = dest.reg, X = dest.index } when source == 1  // encodes as R3, As = 0b01
@@ -333,8 +360,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode IMMSYM source: IMM, dest: SYM {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
+    addr-mode IMMSYM source: IMM, dest: SYMB {
         encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 0 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = 0b0000, X = dest } when source == 1  // encodes as R3, As = 0b01
@@ -346,13 +372,42 @@ architecture msp430 {
     }
 
     addr-mode IMMABS source: IMM, dest: ABSO {
-        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
         encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == -1 // encodes as R3, As = 0b11
         encoding = priority 0 DOUBLE_OP_X where { As = 0b00, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 0  // encodes as R2, As = 0b10
         encoding = priority 0 DOUBLE_OP_X where { As = 0b01, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 1  // encodes as R3, As = 0b01
         encoding = priority 0 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0011, dreg = 0b0010, X = dest } when source == 2
         encoding = priority 0 DOUBLE_OP_X where { As = 0b10, Ad = 1, sreg = 0b0010, dreg = 0b0010, X = dest } when source == 4
         encoding = priority 0 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = 0b0010, dreg = 0b0010, X = dest } when source == 8
+        property syntax: String = "#%source, &%dest";
+        property cycles: int = 5;
+    }
+
+    addr-mode IMML source: IMML {
+        encoding = priority 1 SINGLE_OP_X where { As = 0b11, sreg = 0b0000, X = source }
+        property syntax: String = "#%source";
+        property cycles: int = 4;
+    }
+
+    addr-mode IMMLREG source: IMML, dest: SREG {
+        encoding = priority 1 DOUBLE_OP_X where { As = 0b11, Ad = 0, sreg = 0b0000, dreg = dest, X = source }
+        property syntax: String = "#%source, %dest";
+        property cycles: int = 2;
+    }
+
+    addr-mode IMMLIND source: IMML, dest: INDX {
+        encoding = priority 1 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = dest.reg, X = source, Y = dest.index }
+        property syntax: String = "#%source, %dest.index(%dest.reg)";
+        property cycles: int = 5;
+    }
+
+    addr-mode IMMLSYM source: IMML, dest: SYMB {
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0000, X = source, Y = dest }
+        property syntax: String = "#%source, %dest";
+        property cycles: int = 5;
+    }
+
+    addr-mode IMMLABS source: IMML, dest: ABSO {
+        encoding = priority 0 DOUBLE_OP_XY where { As = 0b11, Ad = 1, sreg = 0b0000, dreg = 0b0010, X = source, Y = dest }
         property syntax: String = "#%source, &%dest";
         property cycles: int = 5;
     }
@@ -375,7 +430,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode AUTOSYM_B source: AIREG_B, dest: SYM {
+    addr-mode AUTOSYM_B source: AIREG_B, dest: SYMB {
         encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
@@ -405,7 +460,7 @@ architecture msp430 {
         property cycles: int = 5;
     }
 
-    addr-mode AUTOSYM_W source: AIREG_W, dest: SYM {
+    addr-mode AUTOSYM_W source: AIREG_W, dest: SYMB {
         encoding = priority 4 DOUBLE_OP_X where { As = 0b11, Ad = 1, sreg = source, dreg = 0b0000, X = dest }
         property syntax: String = "@%source+, %dest";
         property cycles: int = 5;
@@ -454,7 +509,11 @@ architecture msp430 {
         IMMREG,
         IMMIND,
         IMMSYM,
-        IMMABS
+        IMMABS,
+        IMMLREG,
+        IMMLIND,
+        IMMLSYM,
+        IMMLABS
     }
 
     addr-set SINGLE_W {
@@ -464,7 +523,8 @@ architecture msp430 {
         ABS,
         IREG,
         AUTO_W,
-        IMM
+        IMM,
+        IMML
     }
 
     addr-set DOUBLE_B {
@@ -495,7 +555,11 @@ architecture msp430 {
         IMMREG,
         IMMIND,
         IMMSYM,
-        IMMABS
+        IMMABS,
+        IMMLREG,
+        IMMLIND,
+        IMMLSYM,
+        IMMLABS
     }
 
     addr-set SINGLE_B {
@@ -505,7 +569,8 @@ architecture msp430 {
         ABS,
         IREG,
         AUTO_B,
-        IMM
+        IMM,
+        IMML
     }
 
 //---------------------------------------------------------------------------
@@ -544,7 +609,7 @@ architecture msp430 {
 	
 
     inline subroutine performSubtraction(r1: int.8, r2: int.8, carry: +int.1): int.8 {
-        local result: int = r1 - r2 - carry;
+        local result: int = r2 - r1 - carry;
 
         local Rd7: boolean = r1[7];
         local Rr7: boolean = r2[7];
@@ -560,7 +625,7 @@ architecture msp430 {
     }
 
     inline subroutine performSubtractionW(r1: +int.16, r2: +int.16, carry: +int.1): +int.16 {
-        local result: int = r1 - r2 - carry;
+        local result: int = r2 - r1 - carry;
 
         local Rd15: boolean = r1[15];
         local Rr15: boolean = r2[15];
@@ -652,18 +717,6 @@ architecture msp430 {
         return result[7:0];
     }
 
-    inline subroutine pushPC(npc: int): void {
-        npc = npc / 2;
-        pushByte(low(npc));
-        pushByte(high(npc));
-    }
-
-    inline subroutine popPC(): int {
-        local high: int.8 = popByte();
-        local low: int.8 = popByte();
-        return uword(low, high) * 2;
-    }
-
     inline subroutine low(v: int): int.8 {
         return v: int.8;
     }
@@ -673,7 +726,7 @@ architecture msp430 {
     }
 
     inline subroutine uword(low: int.8, high: int.8): int {
-        return ((high << 8) | low)[15:0];
+        return ((high << 8) | +low)[15:0];
     }
 
     external subroutine bit(b: boolean): int;
@@ -683,6 +736,7 @@ architecture msp430 {
     external subroutine enableInterrupts(): void;
     external subroutine popWord(): +int.16;
     external subroutine pushWord(b: +int.16): void;
+    external subroutine bumpPC(): void;
 
 
 //---------------------------------------------------------------------------
@@ -856,7 +910,7 @@ architecture msp430 {
 	    property opcode: int = 0b000100101;          //stores old pc on TOS while jumping to subroutine
 	    execute {
             local temp: int = +read:+int.16(source);  //r1 is the SP, r0 is the PC
-            pushPC(nextpc);
+            pushWord(nextpc);
             nextpc = temp;
         }
     }
@@ -1228,7 +1282,7 @@ architecture msp430 {
 
     instruction "push": SINGLE_W {  //push +int.16 onto stack
 	    property bw: int = 0;
-        property opcode: int = 0b00010010;
+        property opcode: int = 0b000100100;
         execute {
             pushWord(read:+int.16(source));
         }
@@ -1236,7 +1290,7 @@ architecture msp430 {
 
     instruction "push.b": SINGLE_B {  //push int.8 onto stack
 	    property bw: int = 1;
-        property opcode: int = 0b00010010;
+        property opcode: int = 0b000100100;
         execute {
             pushByte(read:int.8(source));
         }
@@ -1317,7 +1371,7 @@ architecture msp430 {
 
     instruction "rra": SINGLE_W  {     //rotate right arithmetically
 	    property bw: int = 0;
-        property opcode: int = 0b00010001;
+        property opcode: int = 0b000100010;
         execute {
             local temp: +int.16 = read:+int.16(source);
             C = temp[0];             // move LSB into Carry

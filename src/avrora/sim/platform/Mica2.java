@@ -33,7 +33,6 @@
 package avrora.sim.platform;
 
 import avrora.core.Program;
-import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.*;
@@ -55,22 +54,22 @@ import cck.text.Terminal;
 public class Mica2 extends Platform {
 
     protected static final int MAIN_HZ = 7372800;
+    protected static final int EXT_HZ = 32768;
+    protected static final int RADIO_HZ = MAIN_HZ * 2;
 
     public static class Factory implements PlatformFactory {
-
         /**
          * The <code>newPlatform()</code> method is a factory method used to create new instances of the
          * <code>Mica2</code> class.
          * @param id the integer ID of the node
-         * @param f the interpreter factory for the node
          * @param p the program to load onto the node
          * @return a new instance of the <code>Mica2</code> platform
          */
-        public Platform newPlatform(int id, InterpreterFactory f, Program p) {
+        public Platform newPlatform(int id, Program p) {
             ClockDomain cd = new ClockDomain(MAIN_HZ);
-            cd.newClock("external", 32768);
+            cd.newClock("external", EXT_HZ);
 
-            return new Mica2(new ATMega128(id, cd, f, p));
+            return new Mica2(new ATMega128(id, cd, p));
         }
     }
 
@@ -105,7 +104,7 @@ public class Mica2 extends Platform {
         mcu.getPin("PA2").connect(red);
 
         // radio
-        radio = new CC1000Radio(mcu, MAIN_HZ * 2);
+        radio = new CC1000Radio(mcu, RADIO_HZ);
         addDevice("radio", radio);
         // sensor board
         sensorboard = new SensorBoard(sim);

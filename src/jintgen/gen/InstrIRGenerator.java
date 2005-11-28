@@ -38,12 +38,13 @@ import cck.util.Option;
 import jintgen.gen.disassembler.DGUtil;
 import jintgen.isdl.*;
 import jintgen.types.TypeRef;
+import jintgen.jigir.JIGIRTypeEnv;
 import java.io.IOException;
 import java.util.*;
 
 /**
  * The <code>ClassGenerator</code> class generates a set of classes that represent instructions in an
- * architecture. It will generate an outer class <code>LegacyInstr</code> that contains as inner classes, the
+ * architecture. It will generate an outer class <code>Instr</code> that contains as inner classes, the
  * individual instructions contained in the architecture description.
  *
  * @author Ben L. Titzer
@@ -52,18 +53,18 @@ public class InstrIRGenerator extends Generator {
 
     LinkedList<String> hashMapImport;
 
-    protected final Option.Str CLASS_FILE = options.newOption("class-template", "LegacyInstr.java",
+    protected final Option.Str CLASS_FILE = options.newOption("class-template", "Instr.java",
             "This option specifies the name of the file that contains a template for generating the " +
             "instruction classes.");
 
     public void generate() throws Exception {
 
-        properties.setProperty("instr", className("LegacyInstr"));
+        properties.setProperty("instr", className("Instr"));
         properties.setProperty("addr", className("AddrMode"));
         properties.setProperty("addrvisitor", className("AddrModeVisitor"));
-        properties.setProperty("operand", className("LegacyOperand"));
+        properties.setProperty("operand", className("Operand"));
         properties.setProperty("opvisitor", className("OperandVisitor"));
-        properties.setProperty("visitor", className("LegacyInstrVisitor"));
+        properties.setProperty("visitor", className("InstrVisitor"));
         properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
 
@@ -555,8 +556,21 @@ public class InstrIRGenerator extends Generator {
             println("public static final int low = "+d.low+";");
             println("public static final int high = "+d.high+";");
             if ( d.isRelative() ) {
+                JIGIRTypeEnv.TYPE_addr a = ((JIGIRTypeEnv.TYPE_addr)d.typeRef.getType());
                 startblock("$oname(int pc, int rel)");
-                println("super($oname_val, pc + 2 + 2 * rel, $builder.checkValue(rel, low, high));");
+                int align = a.getAlign();
+                if ( align > 1 )
+                    println("super($oname_val, pc + $1 + $1 * rel, $builder.checkValue(rel, low, high));", align);
+                else
+                    println("super($oname_val, pc + 1 + rel, $builder.checkValue(rel, low, high));");
+            } else if ( d.isAddress() ) {
+                JIGIRTypeEnv.TYPE_addr a = ((JIGIRTypeEnv.TYPE_addr)d.typeRef.getType());
+                startblock("$oname(int addr)");
+                int align = a.getAlign();
+                if ( align > 1 )
+                    println("super($oname_val, $1 * $builder.checkValue(addr, low, high));", align);
+                else
+                    println("super($oname_val, $builder.checkValue(addr, low, high));");
             } else {
                 startblock("$oname(int val)");
                 println("super($oname_val, $builder.checkValue(val, low, high));");
@@ -572,6 +586,7 @@ public class InstrIRGenerator extends Generator {
         print("public $1", d.name.image);
         printParams(nameTypeList(d.subOperands));
         startblock(" ");
+        properties.setProperty("oname", d.name.image);
         println("super($oname_val);");
         initFields("this.$1 = $1;", d.subOperands);
         endblock();

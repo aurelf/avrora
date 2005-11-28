@@ -33,8 +33,7 @@
 package avrora.actions;
 
 import avrora.Main;
-import avrora.arch.AbstractDisassembler;
-import avrora.arch.AbstractInstr;
+import avrora.arch.*;
 import avrora.arch.avr.AVRDisassembler;
 import avrora.arch.msp430.MSP430Disassembler;
 import cck.text.StringUtil;
@@ -63,13 +62,8 @@ public class DisassembleAction extends Action {
             "When this option is specified, this action will test the disassembler by loading the " +
             "specified file and disassembling the data contained inside.");
 
-    final ClassMap disassemblerMap;
-
     public DisassembleAction() {
         super("The \"disassemble\" action disassembles a binary file into source level instructions.");
-        disassemblerMap = new ClassMap("Architecture", AbstractDisassembler.class);
-        disassemblerMap.addClass("avr", AVRDisassembler.class);
-        disassemblerMap.addClass("msp430", MSP430Disassembler.class);
     }
 
     /**
@@ -83,7 +77,8 @@ public class DisassembleAction extends Action {
     public void run(String[] args) throws Exception {
         byte[] buf = new byte[128];
 
-        AbstractDisassembler da = (AbstractDisassembler)disassemblerMap.getObjectOfClass(ARCH.get());
+        AbstractArchitecture arch = ArchitectureRegistry.getArchitecture(ARCH.get());
+        AbstractDisassembler da = arch.getDisassembler();
         if ( EXHAUSTIVE.get() ) {
             // run the exhaustive disassembler
             exhaustive(da);

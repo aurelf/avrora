@@ -40,6 +40,7 @@ import jintgen.types.Type;
 import jintgen.types.TypeRef;
 import java.io.IOException;
 import java.util.*;
+import cck.text.Printer;
 
 /**
  * The <code>InterpreterGenerator</code> class is a visitor over the code of an instruction declaration or
@@ -56,7 +57,11 @@ public class InterpreterGenerator extends Generator {
         initStatics();
         List<String> impl = new LinkedList<String>();
         impl.add(tr("$visitor"));
-        setPrinter(newAbstractClassPrinter("interpreter", null, tr("$state"), impl, null));
+        Printer printer = newAbstractClassPrinter("interpreter", null, tr("$state"), impl,
+                tr("The <code>$interpreter</code> class contains the code for executing each of the " +
+                        "instructions for the \"$1\" architecture. It extends the $state class, which " +
+                        "is code written by the user that defines the state associated with the interpreter. ", arch.name));
+        setPrinter(printer);
         javaCodePrinter = new JavaCodePrinter();
         generateUtilities();
         generatePolyMethods();
@@ -68,14 +73,14 @@ public class InterpreterGenerator extends Generator {
 
     private void initStatics() {
         properties.setProperty("addr", className("AddrMode"));
-        properties.setProperty("instr", className("LegacyInstr"));
-        properties.setProperty("operand", className("LegacyOperand"));
+        properties.setProperty("instr", className("Instr"));
+        properties.setProperty("operand", className("Operand"));
         properties.setProperty("opvisitor", className("OperandVisitor"));
-        properties.setProperty("visitor", className("LegacyInstrVisitor"));
+        properties.setProperty("visitor", className("InstrVisitor"));
         properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
         properties.setProperty("interpreter", className("InstrInterpreter"));
-        properties.setProperty("state", className("LegacyState"));
+        properties.setProperty("state", className("State"));
         ncg = new jintgen.gen.CodeSimplifier(arch);
         ncg.genAccessMethods();
     }
@@ -84,20 +89,24 @@ public class InterpreterGenerator extends Generator {
         startblock("boolean bit_get(int v, int bit)");
         println("return (v & (1 << bit)) != 0;");
         endblock();
+        println("");
 
         startblock("int bit_set(int v, int bit, boolean value)");
         println("if ( value ) return v | (1 << bit);");
         println("else return v & ~(1 << bit);");
         endblock();
+        println("");
 
         startblock("int bit_update(int v, int mask, int e)");
         println("return (v & ~mask) | (e & mask);");
         endblock();
+        println("");
 
         startblock("int b2i(boolean v, int val)");
         println("if ( v ) return val;");
         println("else return 0;");
         endblock();
+        println("");
     }
 
     void generatePolyMethods() {
@@ -139,6 +148,7 @@ public class InterpreterGenerator extends Generator {
         endblock();
         println("throw cck.util.Util.failure(\"invalid operand type in read\");");
         endblock();
+        println("");
     }
 
     void generatePolyWrite(Type t, HashSet<OperandTypeDecl.AccessMethod> meths) {
@@ -152,6 +162,7 @@ public class InterpreterGenerator extends Generator {
         endblock();
         println("throw cck.util.Util.failure(\"invalid operand type in write\");");
         endblock();
+        println("");
     }
 
     public void visit(InstrDecl d) {
@@ -164,6 +175,7 @@ public class InterpreterGenerator extends Generator {
         // emit the code of the body
         generateCode(d.code.getStmts());
         endblock();
+        println("");
     }
 
     public void visit(SubroutineDecl d) {
@@ -192,6 +204,7 @@ public class InterpreterGenerator extends Generator {
         }
         generateCode(d.code.getStmts());
         endblock();
+        println("");
     }
 
     void generateCode(List<Stmt> stmts) {

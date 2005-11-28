@@ -33,7 +33,7 @@
 package avrora.sim;
 
 import avrora.core.Program;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.mcu.MCUProperties;
 
 /**
  * The <code>InterpreterFactory</code> class represents a factory for creating interpreters. This
@@ -50,7 +50,7 @@ public abstract class InterpreterFactory {
      * @param s the simulator for which the interpreter is being created
      * @param p the program to load into the interpreter
      * @param pr the properties of the microcontroller
-     * @return a new instance of the <code>BaseInterpreter</code> class for the program
+     * @return a new instance of the <code>Interpreter</code> class for the program
      */
-    public abstract BaseInterpreter newInterpreter(Simulator s, Program p, MicrocontrollerProperties pr);
+    public abstract Interpreter newInterpreter(Simulator s, Program p, MCUProperties pr);
 }

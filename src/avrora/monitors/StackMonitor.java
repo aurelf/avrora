@@ -36,7 +36,7 @@ import avrora.arch.legacy.LegacyInstr;
 import avrora.core.Program;
 import avrora.sim.Simulator;
 import avrora.sim.State;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.mcu.MCUProperties;
 import cck.text.*;
 
 /**
@@ -66,7 +66,7 @@ public class StackMonitor extends MonitorFactory {
             SPProbe probe = new SPProbe();
 
             // insert watches for SP registers
-            MicrocontrollerProperties props = sim.getMicrocontroller().getProperties();
+            MCUProperties props = sim.getMicrocontroller().getProperties();
             sim.insertWatch(SPH_watch, props.getIOReg("SPH"));
             sim.insertWatch(SPL_watch, props.getIOReg("SPL"));
             sim.getInterpreter().getInterruptTable().insertProbe(new IntProbe());

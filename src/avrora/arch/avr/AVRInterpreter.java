@@ -37,8 +37,8 @@ package avrora.arch.avr;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.MainClock;
-import avrora.sim.mcu.MicrocontrollerProperties;
 import avrora.sim.mcu.RegisterSet;
+import avrora.arch.AbstractInstr;
 import cck.util.Arithmetic;
 import cck.util.Util;
 
@@ -161,7 +161,7 @@ public class AVRInterpreter extends AVRInstrInterpreter {
      * and initializes all of the state. This includes allocating memory and segments to
      * represent the SRAM, flash, interrupt table, IO registers, etc.
      */
-    public AVRInterpreter(Simulator simulator, Program p, MicrocontrollerProperties pr) {
+    public AVRInterpreter(Simulator simulator, Program p, AVRProperties pr) {
         // this class and its methods are performance critical
         // observed speedup with this call on Hotspot
         Compiler.compileClass(this.getClass());
@@ -224,6 +224,10 @@ public class AVRInterpreter extends AVRInstrInterpreter {
         byte low = SPL_reg.value;
         byte high = SPH_reg.value;
         return Arithmetic.uword(low, high);
+    }
+
+    public AbstractInstr getInstr(int address) {
+        throw Util.unimplemented();
     }
 
     protected void setSP(int val) {

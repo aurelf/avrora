@@ -37,6 +37,8 @@ package avrora.arch.msp430;
 import avrora.sim.ActiveRegister;
 import avrora.sim.Segment;
 import avrora.arch.avr.AVRState;
+import avrora.core.Program;
+import cck.util.Util;
 
 /**
  * The <code>MSP430DataSegment</code> class represents a data segment on the MSP430
@@ -54,8 +56,8 @@ public class MSP430DataSegment extends Segment {
     public static final int _1kb = 1024;
     public static final int DATA_SIZE = 64 * _1kb;
 
-    public MSP430DataSegment(int se, int fs, ActiveRegister[] ior, MSP430State st) {
-        super("data", DATA_SIZE, (byte)0, st, null);
+    public MSP430DataSegment(int se, int fs, ActiveRegister[] ior, MSP430State st, ErrorReporter reporter) {
+        super("data", DATA_SIZE, (byte)0, st, reporter);
         sram_end = se;
         flash_start = fs;
         ioregs = ior;
@@ -100,7 +102,20 @@ public class MSP430DataSegment extends Segment {
             errorReporter.writeError(address, val);
     }
 
+    public void loadProgram(Program p) {
+        int start = flash_start;
+        if ( p.program_start > start ) start = p.program_start;
+        int max = DATA_SIZE;
+        if ( p.program_end < DATA_SIZE ) max = p.program_end;
+        for ( int pos = start; pos < max; pos += 2 )
+            code[pos] = (MSP430Instr)p.readInstr(pos);
+    }
+
     protected MSP430Instr[] shareInstr() {
         return code;
+    }
+
+    public MSP430Instr readInstr(int address) {
+        return code[address];
     }
 }

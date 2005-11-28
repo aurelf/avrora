@@ -33,7 +33,7 @@
 package avrora.monitors;
 
 import avrora.sim.*;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.mcu.MCUProperties;
 import avrora.sim.util.SimUtil;
 import cck.stat.MinMaxMean;
 import cck.text.*;
@@ -59,7 +59,7 @@ public class InterruptMonitor extends MonitorFactory {
 
     class Mon implements Monitor, Simulator.InterruptProbe {
 
-        final MicrocontrollerProperties props;
+        final MCUProperties props;
         final Simulator simulator;
         final InterruptTable interrupts;
         final long[] invocations;

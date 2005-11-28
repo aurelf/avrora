@@ -47,7 +47,7 @@ public class TransactionalList {
      * The <code>Link</code> class is used internally to represent links for the list of objects and
      * updates.
      */
-    protected static class Link {
+    public static class Link {
         public boolean addTransaction; // used for transactions; true if the transaction was an add, false if it was a remove
         public final Object object;
         public Link next;

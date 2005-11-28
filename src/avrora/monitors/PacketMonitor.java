@@ -70,7 +70,7 @@ public class PacketMonitor extends MonitorFactory {
         int bytesTransmitted;
         int packetsTransmitted;
         PacketEndEvent packetEnd;
-        Simulator.Printer printer;
+        SimUtil.SimPrinter printer;
         boolean showPackets;
         boolean discardFirst;
         boolean showPreamble;
@@ -81,7 +81,7 @@ public class PacketMonitor extends MonitorFactory {
             Radio radio = (Radio)platform.getDevice("radio");
             radio.insertProbe(this);
             packetEnd = new PacketEndEvent();
-            printer = simulator.getPrinter("monitor.packet");
+            printer = SimUtil.getPrinter(simulator, "monitor.packet");
             printer.enabled = true;
             showPackets = PACKETS.get();
             discardFirst = DISCARD.get();

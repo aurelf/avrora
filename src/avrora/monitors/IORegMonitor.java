@@ -32,10 +32,10 @@
 
 package avrora.monitors;
 
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
+import avrora.sim.util.SimUtil;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.arch.avr.AVRProperties;
 import cck.text.StringUtil;
 import cck.util.Option;
 import java.util.Iterator;
@@ -56,10 +56,10 @@ public class IORegMonitor extends MonitorFactory {
             "IO registers will be monitored.");
 
     class Monitor implements avrora.monitors.Monitor {
-        Simulator.Printer printer;
+        SimUtil.SimPrinter printer;
 
         Monitor(Simulator s) {
-            printer = s.getPrinter("monitors.ioregs");
+            printer = SimUtil.getPrinter(s, "monitors.ioregs");
             insertWatches(s);
             printer.enabled = true;
         }
@@ -73,7 +73,7 @@ public class IORegMonitor extends MonitorFactory {
         }
 
         private void insertAllWatches(Microcontroller m, Simulator s) {
-            MicrocontrollerProperties props = m.getProperties();
+            AVRProperties props = (AVRProperties)m.getProperties();
             int size = props.ioreg_size;
             for ( int cntr = 0; cntr < size; cntr++ ) {
                 String name = props.getIORegName(cntr);

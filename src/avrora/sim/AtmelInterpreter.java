@@ -32,13 +32,12 @@
 
 package avrora.sim;
 
+import avrora.arch.AbstractInstr;
 import avrora.arch.legacy.*;
 import avrora.core.Program;
-import avrora.sim.clock.MainClock;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.arch.avr.AVRProperties;
 import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.*;
-import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;
 
@@ -48,27 +47,7 @@ import cck.util.Util;
  *
  * @author Ben L. Titzer
  */
-public abstract class BaseInterpreter implements LegacyInstrVisitor {
-
-    public static final int NUM_REGS = 32; // number of general purpose registers
-
-    public static final int SREG_I = 7;
-    public static final int SREG_T = 6;
-    public static final int SREG_H = 5;
-    public static final int SREG_S = 4;
-    public static final int SREG_V = 3;
-    public static final int SREG_N = 2;
-    public static final int SREG_Z = 1;
-    public static final int SREG_C = 0;
-
-    private static final int SREG_I_MASK = 1 << SREG_I;
-    private static final int SREG_T_MASK = 1 << SREG_T;
-    private static final int SREG_H_MASK = 1 << SREG_H;
-    private static final int SREG_S_MASK = 1 << SREG_S;
-    private static final int SREG_V_MASK = 1 << SREG_V;
-    private static final int SREG_N_MASK = 1 << SREG_N;
-    private static final int SREG_Z_MASK = 1 << SREG_Z;
-    private static final int SREG_C_MASK = 1;
+public abstract class AtmelInterpreter extends Interpreter implements LegacyInstrVisitor {
 
     protected final int SREG; // location of the SREG IO register
     protected final int RAMPZ; // location of the RAMPZ IO register
@@ -96,7 +75,6 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
     protected final CodeSegment flash;
     protected LegacyInstr[] shared_instr; // shared for performance reasons only
 
-    protected final InterruptTable interrupts;
     protected final RegisterSet registers;
 
     protected final StateImpl state;
@@ -113,13 +91,6 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
      * that contains all of the exception watches currently registered.
      */
     protected MulticastExceptionWatch exceptionWatch;
-
-    /**
-     * The <code>innerLoop</code> field is a boolean that is used internally in the implementation of the
-     * interpreter. When something in the simulation changes (e.g. an interrupt is posted), this field is set
-     * to false, and the execution loop (e.g. an interpretation or sleep loop) is broken out of.
-     */
-    protected boolean innerLoop;
 
     /**
      * The <code>nextPC</code> field is used internally in maintaining the correct execution order of the
@@ -159,20 +130,6 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
      * before another interrupt can be processed.
      */
     public boolean justReturnedFromInterrupt;
-
-    /**
-     * The <code>simulator</code> field stores a reference to the simulator that this interpreter instance
-     * corresponds to. There should be a one-to-one mapping between instances of the <code>Simulator</code>
-     * class and instances of the <code>BaseInterpreter</code> class.
-     */
-    protected final Simulator simulator;
-
-    /**
-     * The <code>clock</code> field stores a reference to the main clock of the simulator. This is
-     * the same instance shared between the <code>Simulator</code>, <code>Microcontroller</code>, and
-     * any devices that are attached directly to the main clock or to a derived clock.
-     */
-    protected final MainClock clock;
 
     public class StateImpl implements LegacyState {
 
@@ -366,7 +323,7 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
          * @return a reference to the <code>LegacyInstr</code> object representing the instruction at that address in
          *         the program
          */
-        public LegacyInstr getInstr(int address) {
+        public AbstractInstr getInstr(int address) {
             return flash.readInstr(address);
         }
 
@@ -455,35 +412,6 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
     }
 
     /**
-     * The <code>getSimulator()</code> method gets a reference to the simulator which encapsulates this
-     * interpreter.
-     * @return a reference to the simulator containing to this interpreter
-     */
-    public Simulator getSimulator() {
-        return simulator;
-    }
-
-    /**
-     * The <code>getMainClock()</code> method returns a reference to the main clock for this interpreter.
-     * The main clock keeps track of time for this microcontroller and contains an event queue that allows
-     * events to be inserted to be executed in the future.
-     * @return a reference to the main clock for this interpreter.
-     */
-    public MainClock getMainClock() {
-        return clock;
-    }
-
-    /**
-     * The <code>getInterruptTable()</code> method returns a reference to the interrupt table for this
-     * interpreter. The interrupt table contains the status information about what interrupts are posted,
-     * enabled, disabled, etc.
-     * @return a reference to the interrupt table for this interpreter
-     */
-    public InterruptTable getInterruptTable() {
-        return interrupts;
-    }
-
-    /**
      * The constructor for the <code>BaseInterpreter</code> class initializes the node's flash,
      * SRAM, general purpose registers, IO registers, and loads the program onto the flash. It
      * uses the <code>MicrocontrollerProperties</code> instance to configure the interpreter
@@ -492,8 +420,8 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
      * @param p the program to load onto this interpreter instance
      * @param pr the properties of the microcontroller being simulated
      */
-    public BaseInterpreter(Simulator simulator, Program p, MicrocontrollerProperties pr) {
-
+    public AtmelInterpreter(Simulator simulator, Program p, AVRProperties pr) {
+        super(simulator);
         // this class and its methods are performance critical
         // observed speedup with this call on Hotspot
         Compiler.compileClass(this.getClass());
@@ -502,11 +430,6 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
 
         globalProbe = new MulticastProbe();
         exceptionWatch = new MulticastExceptionWatch();
-
-        // set up the reference to the simulator
-        this.simulator = simulator;
-
-        this.clock = simulator.clock;
 
         SREG = pr.getIOReg("SREG");
 
@@ -521,10 +444,10 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
             throw Util.failure("program will not fit into " + pr.flash_size + " bytes");
 
         // beginning address of SRAM array
-        sram_start = pr.ioreg_size + NUM_REGS;
+        sram_start = pr.ioreg_size + LegacyState.NUM_REGS;
 
         // maximum data address
-        sram_max = NUM_REGS + pr.ioreg_size + pr.sram_size;
+        sram_max = LegacyState.NUM_REGS + pr.ioreg_size + pr.sram_size;
 
         // allocate SRAM
         sram = new byte[sram_max];
@@ -551,26 +474,18 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
         SPH_reg = (RWRegister) ioregs[pr.getIOReg("SPH")];
     }
 
-    protected void start() {
+    public void start() {
         shouldRun = true;
         runLoop();
     }
 
-    /**
-     * The <code>step()</code> method steps this node forward one instruction or one clock cycle. The node may
-     * execute an instruction, execute events, wake from sleep, take an interrupt, etc. In the case of multi-cycle
-     * instructions, the node will execute until the end of the instruction. The number of cycles consumed is
-     * returned by this method.
-     * @return the number of cycles consumed in executing one instruction or waking from an interrupt, etc
-     */
-    public abstract int step();
-
-    /**
-     * The <code>stop()</code> method terminates the execution of the simulation.
-     */
     public void stop() {
         shouldRun = false;
         innerLoop = false;
+    }
+
+    public State getState() {
+        return state;
     }
 
     protected abstract void runLoop();
@@ -851,7 +766,7 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
                 return getSRAM(address);
         } catch (ArrayIndexOutOfBoundsException e) {
             // ERROR: program tried to read memory that is not present
-            readError("sram", address);
+            SimUtil.readError(simulator, "sram", address);
             return 0;
         }
 
@@ -871,32 +786,22 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
         Segment segment;
 
         public byte readError(int address) {
-            BaseInterpreter.this.readError(segment.name, address);
+            SimUtil.readError(simulator, segment.name, address);
+            exceptionWatch.invalidRead(segment.name, address);
             return segment.value;
         }
 
         public void writeError(int address, byte value) {
-            BaseInterpreter.this.writeError(segment.name, address, value);
+            SimUtil.writeError(simulator, segment.name, address, value);
+            exceptionWatch.invalidWrite(segment.name, address, value);
         }
-    }
-
-    protected void readError(String segment, int address) {
-        String msg = ": illegal read from " + segment + " at address " + StringUtil.addrToString(address);
-        SimUtil.warning(simulator, StringUtil.toHex(pc, 4), msg);
-        exceptionWatch.invalidRead(segment, address);
-    }
-
-    protected void writeError(String segment, int address, byte value) {
-        String msg = ": illegal write to " + segment + " at address " + StringUtil.addrToString(address);
-        SimUtil.warning(simulator, StringUtil.toHex(pc, 4), msg);
-        exceptionWatch.invalidWrite(segment, address, value);
     }
 
     private byte getSRAM(int address) {
         if (address >= sram_start)
             return sram[address];
-        if (address >= NUM_REGS)
-            return ioregs[address - NUM_REGS].read();
+        if (address >= LegacyState.NUM_REGS)
+            return ioregs[address - LegacyState.NUM_REGS].read();
         return sram[address];
 
     }
@@ -1043,7 +948,7 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
                 return;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            writeError("sram", address, val);
+            SimUtil.writeError(simulator, "sram", address, val);
             return;
         }
 
@@ -1069,8 +974,8 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
     private void setSRAM(int address, byte val) {
         if (address >= sram_start)
             sram[address] = val;
-        else if (address >= NUM_REGS)
-            ioregs[address - NUM_REGS].write(val);
+        else if (address >= LegacyState.NUM_REGS)
+            ioregs[address - LegacyState.NUM_REGS].write(val);
         else
             sram[address] = val;
     }
@@ -1164,15 +1069,6 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
     }
 
     /**
-     * The <code>getPC()</code> retrieves the current program counter.
-     *
-     * @return the program counter as a byte address
-     */
-    public int getPC() {
-        return pc;
-    }
-
-    /**
      * The <code>getInstr()</code> can be used to retrieve a reference to the <code>LegacyInstr</code> object
      * representing the instruction at the specified program address. Care should be taken that the address in
      * program memory specified does not contain data. This is because Avrora does have a functioning
@@ -1237,14 +1133,14 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
          */
         public byte read() {
             int value = 0;
-            if (I) value |= BaseInterpreter.SREG_I_MASK;
-            if (T) value |= BaseInterpreter.SREG_T_MASK;
-            if (H) value |= BaseInterpreter.SREG_H_MASK;
-            if (S) value |= BaseInterpreter.SREG_S_MASK;
-            if (V) value |= BaseInterpreter.SREG_V_MASK;
-            if (N) value |= BaseInterpreter.SREG_N_MASK;
-            if (Z) value |= BaseInterpreter.SREG_Z_MASK;
-            if (C) value |= BaseInterpreter.SREG_C_MASK;
+            if (I) value |= LegacyState.SREG_I_MASK;
+            if (T) value |= LegacyState.SREG_T_MASK;
+            if (H) value |= LegacyState.SREG_H_MASK;
+            if (S) value |= LegacyState.SREG_S_MASK;
+            if (V) value |= LegacyState.SREG_V_MASK;
+            if (N) value |= LegacyState.SREG_N_MASK;
+            if (Z) value |= LegacyState.SREG_Z_MASK;
+            if (C) value |= LegacyState.SREG_C_MASK;
             return (byte) value;
         }
 
@@ -1255,14 +1151,14 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
          * @param val the value to write
          */
         public void write(byte val) {
-            I = (val & BaseInterpreter.SREG_I_MASK) != 0;
-            T = (val & BaseInterpreter.SREG_T_MASK) != 0;
-            H = (val & BaseInterpreter.SREG_H_MASK) != 0;
-            S = (val & BaseInterpreter.SREG_S_MASK) != 0;
-            V = (val & BaseInterpreter.SREG_V_MASK) != 0;
-            N = (val & BaseInterpreter.SREG_N_MASK) != 0;
-            Z = (val & BaseInterpreter.SREG_Z_MASK) != 0;
-            C = (val & BaseInterpreter.SREG_C_MASK) != 0;
+            I = (val & LegacyState.SREG_I_MASK) != 0;
+            T = (val & LegacyState.SREG_T_MASK) != 0;
+            H = (val & LegacyState.SREG_H_MASK) != 0;
+            S = (val & LegacyState.SREG_S_MASK) != 0;
+            V = (val & LegacyState.SREG_V_MASK) != 0;
+            N = (val & LegacyState.SREG_N_MASK) != 0;
+            Z = (val & LegacyState.SREG_Z_MASK) != 0;
+            C = (val & LegacyState.SREG_C_MASK) != 0;
         }
 
         /**
@@ -1273,21 +1169,21 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
          */
         public boolean readBit(int num) {
             switch (num) {
-                case SREG_I:
+                case LegacyState.SREG_I:
                     return I;
-                case SREG_T:
+                case LegacyState.SREG_T:
                     return T;
-                case SREG_H:
+                case LegacyState.SREG_H:
                     return H;
-                case SREG_S:
+                case LegacyState.SREG_S:
                     return S;
-                case SREG_V:
+                case LegacyState.SREG_V:
                     return V;
-                case SREG_N:
+                case LegacyState.SREG_N:
                     return N;
-                case SREG_Z:
+                case LegacyState.SREG_Z:
                     return Z;
-                case SREG_C:
+                case LegacyState.SREG_C:
                     return C;
             }
             throw Util.failure("bit out of range: " + num);
@@ -1295,31 +1191,31 @@ public abstract class BaseInterpreter implements LegacyInstrVisitor {
 
         public void writeBit(int num, boolean value) {
             switch (num) {
-                case SREG_I:
+                case LegacyState.SREG_I:
                     if (value)
                         enableInterrupts();
                     else
                         disableInterrupts();
                     break;
-                case SREG_T:
+                case LegacyState.SREG_T:
                     T = value;
                     break;
-                case SREG_H:
+                case LegacyState.SREG_H:
                     H = value;
                     break;
-                case SREG_S:
+                case LegacyState.SREG_S:
                     S = value;
                     break;
-                case SREG_V:
+                case LegacyState.SREG_V:
                     V = value;
                     break;
-                case SREG_N:
+                case LegacyState.SREG_N:
                     N = value;
                     break;
-                case SREG_Z:
+                case LegacyState.SREG_Z:
                     Z = value;
                     break;
-                case SREG_C:
+                case LegacyState.SREG_C:
                     C = value;
                     break;
                 default:

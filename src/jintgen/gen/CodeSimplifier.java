@@ -35,6 +35,7 @@
 package jintgen.gen;
 
 import cck.util.Util;
+import cck.util.Arithmetic;
 import jintgen.isdl.*;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.*;
@@ -126,10 +127,9 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
     public Expr visit(UnOpExpr e, CGEnv env) {
         UnOpExpr.UnOpImpl unop = e.getUnOp();
         if ( unop instanceof Arith.UNSIGN ) {
-            Expr no = promote(e.expr, INT, env.shift);
             JIGIRTypeEnv.TYPE_int it = (JIGIRTypeEnv.TYPE_int)e.expr.getType();
-            int mask = mask_val(env.shift, it.getSize() + env.shift - 1);
-            return newAnd(no, mask, env.expect);
+            Expr inner = convert(promote(e.expr), arch.typeEnv.newIntType(false, it.getSize()), env.shift);
+            return convert(inner, env.expect, 0);
         } else {
             Expr no = promote(e.expr, env.expect, 0);
             return convert(rebuild(e, no), env.expect, env.shift);
@@ -155,7 +155,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         JIGIRTypeEnv.TYPE_int t = (JIGIRTypeEnv.TYPE_int)env.expect;
         int width = e.high_bit - e.low_bit + 1;
         if ( t.getSize() < width ) width = t.getSize();
-        int mask = (-1 >>> (32 - width)) << env.shift;
+        int mask = Arithmetic.getBitRangeMask(env.shift, env.shift + width - 1);
         Expr ne = promote(e.expr, INT, e.low_bit - env.shift);
         return newAnd(ne, mask, e.getType());
     }
@@ -277,6 +277,13 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
                 Expr ne = intConversion(e, intSizeOf(ft), intSizeOf(tt), shift);
                 ne.setType(tt);
                 return ne;
+            } else if ( ft.isBasedOn("address") && tt.isBasedOn("int") ) {
+                JIGIRTypeEnv.TYPE_addr it = ((JIGIRTypeEnv.TYPE_addr)ft);
+                int size = it.getAlign();
+                int ftsize = it.isRelative() ? -size : size;
+                Expr ne = intConversion(e, ftsize, intSizeOf(tt), shift);
+                ne.setType(tt);
+                return ne;
             } else {
                 throw Util.failure("cannot convert from "+ft+" to "+tt);
             }
@@ -342,7 +349,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
 
     protected Expr ZE(Expr e, int k2, int shift) {
         assert k2 > 0;
-        int val = mask_val(0, k2);
+        int val = mask_val(0, k2 - 1);
         Expr ne = newAnd(e, val, INT);
         return shift(ne, shift);
     }
@@ -415,7 +422,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
     }
 
     private Expr promote(Expr e, Type t, int shift) {
-        return e.accept(this, new CGEnv(machineType(t), shift));
+        return visitExpr(e, new CGEnv(machineType(t), shift));
     }
 
     private Type machineType(Type t) {
@@ -474,9 +481,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
 
     private int mask_val(int low_bit, int high_bit) {
         if ( low_bit < 0 ) low_bit = 0;
-        int width = (high_bit - low_bit + 1);
-        int val = (-1 >>> (32 - width)) << low_bit;
-        return val;
+        return Arithmetic.getBitRangeMask(low_bit, high_bit);
     }
 
     public static boolean isMap(Expr expr) {

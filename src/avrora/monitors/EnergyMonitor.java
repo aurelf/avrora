@@ -38,6 +38,7 @@
 package avrora.monitors;
 
 import avrora.sim.Simulator;
+import avrora.sim.clock.Clock;
 import avrora.sim.energy.Energy;
 import avrora.sim.energy.EnergyControl;
 import avrora.sim.platform.Platform;
@@ -115,8 +116,9 @@ public class EnergyMonitor extends MonitorFactory {
             //simulation will end
             //provide component energy breakdown
             Terminal.printCyan("\nEnergy Consumption Component Breakdown:\n\n");
-            long cycles = simulator.getState().getCycles();
-            Terminal.println("Node lifetime: " + cycles + " cycles,  " + simulator.getMicrocontroller().cyclesToMillis(cycles) / 1000.0+ " seconds\n");
+            Clock clock = simulator.getClock();
+            long cycles = clock.getCount();
+            Terminal.println("Node lifetime: " + cycles + " cycles,  " + clock.cyclesToMillis(cycles) / 1000.0+ " seconds\n");
             // get energy information for each device
             Iterator it = instance.consumer.iterator();
             while( it.hasNext() ){

@@ -49,7 +49,7 @@ public class InstrVerifier extends VerifierPass {
     }
 
     public void verify() {
-        uniqueCheck("LegacyInstr", "Instruction", arch.instructions);
+        uniqueCheck("Instr", "Instruction", arch.instructions);
         verifyInstructions();
     }
 

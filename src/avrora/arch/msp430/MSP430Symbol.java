@@ -1,44 +1,30 @@
 package avrora.arch.msp430;
-
+import avrora.arch.*;
 import java.util.HashMap;
 
 /**
- * The <code>MSP430Symbol</code> class represents a symbol (or an enumeration as declared in the instruction set
- * description) relevant to the instruction set architecture. For example register names, status bit names, etc are
- * given here. This class provides a type-safe enumeration for such symbolic names.
+ * The <code>MSP430Symbol</code> class represents a symbol (or an
+ * enumeration as declared in the instruction set description) relevant
+ * to the instruction set architecture. For example register names,
+ * status bit names, etc are given here. This class provides a type-safe
+ * enumeration for such symbolic names.
  */
 public class MSP430Symbol {
-
     public final String symbol;
     public final int value;
-
-    MSP430Symbol(String sym, int v) {
-        symbol = sym;
-        value = v;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    public int getEncodingValue() {
-        return value;
-    }
-
+    
+    MSP430Symbol(String sym, int v) { symbol = sym;  value = v; }
+    public int getValue() { return value; }
+    public int getEncodingValue() { return value; }
+    
     public static class GPR extends MSP430Symbol {
-
         private static HashMap set = new HashMap();
-
         private static GPR newGPR(String n, int v) {
             GPR obj = new GPR(n, v);
             set.put(n, obj);
             return obj;
         }
-
-        GPR(String sym, int v) {
-            super(sym, v);
-        }
-
+        GPR(String sym, int v) { super(sym, v); }
         public static final GPR PC = newGPR("pc", 0);
         public static final GPR SP = newGPR("sp", 1);
         public static final GPR SR = newGPR("sr", 2);
@@ -59,9 +45,9 @@ public class MSP430Symbol {
         public static final GPR R14 = newGPR("r14", 14);
         public static final GPR R15 = newGPR("r15", 15);
     }
-
+    
     public static GPR get_GPR(String name) {
         return (GPR)GPR.set.get(name);
     }
-
+    
 }

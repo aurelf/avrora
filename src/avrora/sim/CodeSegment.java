@@ -45,7 +45,7 @@ import cck.util.Util;
  */
 public class CodeSegment extends Segment {
 
-    protected final BaseInterpreter interpreter;
+    protected final AtmelInterpreter interpreter;
 
     /**
      * The <code>replaceInstr()</code> method is used internally to update an instruction in the flash segment
@@ -67,7 +67,7 @@ public class CodeSegment extends Segment {
      * The <code>CodeSegment.Factory</code> class is used to create a new code segment for a new interpreter.
      */
     public interface Factory {
-        public CodeSegment newCodeSegment(String name, BaseInterpreter bi, ErrorReporter er, Program p);
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p);
     }
 
     /**
@@ -81,7 +81,7 @@ public class CodeSegment extends Segment {
             size = s;
         }
 
-        public CodeSegment newCodeSegment(String name, BaseInterpreter bi, ErrorReporter er, Program p) {
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p) {
             return new CodeSegment(name, size, bi, er);
         }
     }
@@ -121,7 +121,7 @@ public class CodeSegment extends Segment {
      * @param bi the interpreter that will use this segment
      * @param er the error reporter consulted on accesses out of bounds
      */
-    public CodeSegment(String name, int size, BaseInterpreter bi, ErrorReporter er) {
+    public CodeSegment(String name, int size, AtmelInterpreter bi, ErrorReporter er) {
         super(name, size, DEFAULT_VALUE, bi.state, er);
         interpreter = bi;
         segment_instr = new LegacyInstr[size];
@@ -334,7 +334,7 @@ public class CodeSegment extends Segment {
          * @param v the visitor to accept
          */
         public void accept(LegacyInstrVisitor v) {
-            throw new InterpreterError.NoSuchInstructionException(interpreter.getPC());
+            throw new InterpreterError.NoSuchInstructionException(interpreter.getState().getPC());
         }
 
         /**
@@ -383,7 +383,7 @@ public class CodeSegment extends Segment {
          * @param v the visitor to accept
          */
         public void accept(LegacyInstrVisitor v) {
-            throw new InterpreterError.PCAlignmentException(interpreter.getPC());
+            throw new InterpreterError.PCAlignmentException(interpreter.getState().getPC());
         }
 
         /**

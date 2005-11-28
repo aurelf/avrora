@@ -32,17 +32,10 @@
 
 package avrora.sim;
 
-import avrora.actions.SimAction;
 import avrora.arch.legacy.LegacyInstr;
-import avrora.arch.legacy.LegacyState;
 import avrora.core.Program;
 import avrora.sim.clock.MainClock;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.mcu.MicrocontrollerProperties;
-import avrora.sim.util.SimUtil;
-import cck.text.Terminal;
-import cck.text.Verbose;
-import cck.util.Util;
 
 /**
  * The <code>Simulator</code> class implements a full processor simulator for the AVR instruction set. It is
@@ -51,63 +44,9 @@ import cck.util.Util;
  * @author Ben L. Titzer
  * @see Program
  * @see LegacyInstr
- * @see BaseInterpreter
+ * @see AtmelInterpreter
  */
 public class Simulator {
-
-    /**
-     * The <code>Simulator.Printer</code> class is a printer that is tied to a specific <code>Simulator</code>
-     * instance. Being tied to this instance, it will always report the node ID and time before printing
-     * anything. This simple mechanism allows the output to be much cleaner to track the output
-     * of multiple nodes at once.
-     */
-    public class Printer {
-
-        /**
-         * The <code>enabled</code> field is true when this printer is enabled. When this printer
-         * is not enabled, the <code>println()</code> method SHOULD NOT BE CALLED.
-         */
-        public boolean enabled;
-
-        Printer(String category) {
-            Verbose.Printer p = Verbose.getVerbosePrinter(category);
-            enabled = p.enabled;
-        }
-
-        /**
-         * The <code>println()</code> method prints the node ID, the time, and a message to the
-         * console, synchronizing with other threads so that output is not interleaved. This method
-         * SHOULD ONLY BE CALLED WHEN <code>enabled</code> IS TRUE! This is done to prevent
-         * performance bugs created by string construction inside printing (and debugging code).
-         * @param s the string to print
-         */
-        public void println(String s) {
-            if (enabled) {
-                synchronized ( Terminal.class ) {
-                    // synchronize on the terminal to prevent interleaved output
-                    StringBuffer buf = new StringBuffer(s.length()+30);
-                    SimUtil.getIDTimeString(buf, Simulator.this);
-                    buf.append(s);
-                    Terminal.println(buf.toString());
-                }
-            } else {
-                throw Util.failure("Disabled printer: performance bug!");
-            }
-        }
-    }
-
-    /**
-     * The <code>getPrinter()</code> method returns a <code>Simulator.Printer</code> instance
-     * for the named verbose channel. The verbose channel is either enabled or disabled.
-     * @param c the name of the verbose channel
-     * @return a <code>Simulator.Printer</code> instance for this channel tied to this
-     * <code>Simulator</code> instance
-     */
-    public Simulator.Printer getPrinter(String c) {
-        return new Printer(c);
-    }
-
-    Simulator.Printer eventPrinter = getPrinter("sim.event");
 
     /**
      * The <code>program</code> field allows descendants of the <code>Simulator</code> class to access the
@@ -123,7 +62,7 @@ public class Simulator {
     /**
      * The <code>interpreter</code> field stores a reference to the instruction set interpreter.
      */
-    protected BaseInterpreter interpreter;
+    protected Interpreter interpreter;
 
     /**
      * The <code>clock</code> field stores a reference to the <code>MainClock</code> instance that tracks the
@@ -138,13 +77,6 @@ public class Simulator {
     protected final int id;
 
     /**
-     * The <code>factory</code> field stores a reference to the <code>InterpreterFactory</code> which
-     * should be used to build an interpreter for this simulator. This interpreter factory will create
-     * an interpreter with the correct options that were specified on the command line.
-     */
-    protected final InterpreterFactory factory;
-
-    /**
      * The constructor creates the internal data structures and initial state of the processor. It constructs
      * an instance of the simulator that is ready to have devices attached, IO registers probed, and probes
      * and events inserted. Users should not create <code>Simulator</code> instances directly, but instead
@@ -157,12 +89,9 @@ public class Simulator {
         microcontroller = mcu;
         program = p;
 
-        factory = f;
-
         // reset the state of the simulation
         clock = mcu.getClockDomain().getMainClock();
-        MicrocontrollerProperties props = microcontroller.getProperties();
-        interpreter = factory.newInterpreter(this, program, props);
+        interpreter = f.newInterpreter(this, program, microcontroller.getProperties());
     }
 
     /**
@@ -651,7 +580,7 @@ public class Simulator {
      * to this simulator.
      * @return the current interpreter
      */
-    public BaseInterpreter getInterpreter() {
+    public Interpreter getInterpreter() {
         return interpreter;
     }
 
@@ -662,8 +591,8 @@ public class Simulator {
      *
      * @return a reference to the current state of the simulation
      */
-    public LegacyState getState() {
-        return interpreter.state;
+    public State getState() {
+        return interpreter.getState();
     }
 
     /**
@@ -807,20 +736,7 @@ public class Simulator {
      * @param cycles the number of cycles in the future at which to fire
      */
     public void insertEvent(Event e, long cycles) {
-        if (eventPrinter.enabled)
-            eventPrinter.println("INSERT EVENT: " + e + " + " + cycles);
         clock.insertEvent(e, cycles);
-    }
-
-    /**
-     * The <code>insertTimeout()</code> method inserts an event into the event queue of the simulator that
-     * causes it to stop execution and throw a <code>Simulator.TimeoutException</code> when the specified
-     * number of clock cycles have expired.
-     *
-     * @param cycles the number of cycles to run before timing out
-     */
-    public void insertTimeout(long cycles) {
-        insertEvent(new ClockCycleTimeout(cycles), cycles);
     }
 
     /**
@@ -830,8 +746,6 @@ public class Simulator {
      * @param e the event to remove
      */
     public void removeEvent(Event e) {
-        if (eventPrinter.enabled)
-            eventPrinter.println("REMOVE EVENT: " + e);
         clock.removeEvent(e);
     }
 
@@ -854,39 +768,6 @@ public class Simulator {
      */
     public void delay(long cycles) {
         interpreter.delay(cycles);
-    }
-
-    /**
-     * The <code>InstructionCountTimeout</code> class is a probe that simply counts down and throws an
-     * exception when the count reaches zero. It is useful for ensuring termination of the simulator, for
-     * performance testing, or for profiling and stopping after a specified number of invocations.
-     *
-     * @author Ben L. Titzer
-     */
-    public class ClockCycleTimeout implements Event {
-        public final long timeout;
-
-        /**
-         * The constructor for <code>InstructionCountTimeout</code> creates a timeout event with the specified
-         * initial value.
-         *
-         * @param t the number of cycles in the future
-         */
-        public ClockCycleTimeout(long t) {
-            timeout = t;
-        }
-
-        /**
-         * The <code>fire()</code> method is called when the timeout is up. It gathers the state from the
-         * simulator and throws an instance of <code>Simulator.TimeoutException</code> that signals that the
-         * timeout has been reached. This exception then falls through the <code>run()</code> method of the
-         * caller of the simulator.
-         */
-        public void fire() {
-            int pc = interpreter.getPC();
-            throw new SimAction.TimeoutException(pc, interpreter.state, timeout, "clock cycles");
-        }
-
     }
 
 }

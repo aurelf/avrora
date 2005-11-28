@@ -193,7 +193,7 @@ public class ProfileMonitor extends MonitorFactory {
                 int nextpc;
                 for (; cntr < imax - 2; cntr = nextpc) {
                     nextpc = program.getNextPC(cntr);
-                    if (icount[nextpc] != curcount) break;
+                    if (nextpc >= icount.length || icount[nextpc] != curcount) break;
                     runlength++;
                     cumulcycles += itime[nextpc];
                 }

@@ -235,7 +235,7 @@ public class Arithmetic {
     }
 
     public static int getBitRangeMask(int low, int high) {
-        return (0xffffffff >>> (31 - (high - low)));
+        return (0xffffffff >>> (31 - (high - low))) << low;
     }
 
     public static int getInverseBitRangeMask(int low, int high) {

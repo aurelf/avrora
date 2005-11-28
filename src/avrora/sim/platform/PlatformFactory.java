@@ -48,10 +48,9 @@ public interface PlatformFactory {
      * ID number, using the interpreter created by the given interpreter factory, containing the specified
      * progarm.
      * @param id the ID number of the platform to create
-     * @param f the interpreter factory capable of creating a new interpreter for this platform
      * @param p the program to load into the platform
      * @return a new instance of the <code>Platform</code> interface for this platform
      */
-    public Platform newPlatform(int id, InterpreterFactory f, Program p);
+    public Platform newPlatform(int id, Program p);
 
 }

@@ -309,7 +309,7 @@ public class SimulatorTestHarness implements TestHarness {
         public TestResult match(Throwable t) {
             if (t != null) return super.match(t);
 
-            LegacyState state = simulator.getState();
+            LegacyState state = (LegacyState)simulator.getState();
             Iterator i = predicates.iterator();
 
             try {

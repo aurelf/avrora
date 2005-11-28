@@ -32,10 +32,10 @@
 
 package avrora.sim.mcu;
 
-import avrora.arch.legacy.LegacyInstrProto;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.platform.Platform;
+import avrora.arch.avr.AVRProperties;
 
 /**
  * The <code>Microcontroller</code> interface corresponds to a hardware device that implements the AVR
@@ -195,59 +195,12 @@ public interface Microcontroller {
     public int wakeup();
 
     /**
-     * get the current mode of the mcu
-     *
-     * @return current mode
-     * @deprecated this method should no longer be used; eventually this state information should be exposed
-     * through a FiniteStateMachine object
-     */
-    public byte getMode();
-
-    /**
-     * get the name of the current mode
-     *
-     * @return name of the current mode
-     * @deprecated this method should no longer be used; eventually this state information should be exposed
-     * through a FiniteStateMachine object
-     */
-    public String getModeName();
-
-    /**
-     * The <code>getHZ()</code> method returns the number of cycles per second at which this hardware device
-     * is designed to run.
-     *
-     * @return the number of cycles per second on this device
-     */
-    public long getHZ();
-
-    /**
      * The <code>getClockDomain()</code> method returns the clock domain for this microcontroller. The clock
      * domain contains all of the clocks attached to the microcontroller and platform, including the main clock.
      * @return an instance of the <code>ClockDomain</code> class representing the clock domain for this
      * microcontroller
      */
     public ClockDomain getClockDomain();
-
-    /**
-     * The <code>millisToCycles()</code> method converts the specified number of milliseconds to a cycle
-     * count. The conversion factor used is the number of cycles per second of this device. This method serves
-     * as a utility so that clients need not do repeated work in converting milliseconds to cycles and back.
-     *
-     * @param ms a time quantity in milliseconds as a double
-     * @return the same time quantity in clock cycles, rounded up to the nearest integer
-     */
-    long millisToCycles(double ms);
-
-    /**
-     * The <code>cyclesToMillis()</code> method converts the specified number of cycles to a time quantity in
-     * milliseconds. The conversion factor used is the number of cycles per second of this device. This method
-     * serves as a utility so that clients need not do repeated work in converting milliseconds to cycles and
-     * back.
-     *
-     * @param cycles the number of cycles
-     * @return the same time quantity in milliseconds
-     */
-    double cyclesToMillis(long cycles);
 
     /**
      * The <code>getRegisterSet()</code> method returns the register set containing all of the IO registers
@@ -258,31 +211,11 @@ public interface Microcontroller {
     public RegisterSet getRegisterSet();
 
     /**
-     * The <code>isSupported()</code> method allows a client to query whether a particular instruction is
-     * implemented on this hardware device. Older implementations of the AVR instruction set preceded the
-     * introduction of certain instructions, and therefore did not support the new instructions.
-     *
-     * @param i the instruction prototype of the instruction
-     * @return true if the specified instruction is supported on this device; false otherwise
-     */
-    boolean isSupported(LegacyInstrProto i);
-
-    /**
-     * The <code>getPinNumber()</code> method looks up the named pin and returns its number. Names of pins
-     * should be UPPERCASE. The intended users of this method are external device implementors which connect
-     * their devices to the microcontroller through the pins.
-     *
-     * @param name the name of the pin; for example "PA0" or "OC1A"
-     * @return the number of the pin if it exists; -1 otherwise
-     */
-    int getPinNumber(String name);
-
-    /**
      * The <code>getProperties()</code> method gets an object that describes the microcontroller
      * including the size of the RAM, EEPROM, flash, etc.
      * @return an instance of the <code>MicrocontrollerProperties</code> class that contains all
      * the relevant information about this microcontroller
      */
-    public MicrocontrollerProperties getProperties();
+    public MCUProperties getProperties();
 
 }

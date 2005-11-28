@@ -31,8 +31,8 @@
  */
 package avrora.test.probes;
 
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
+import avrora.sim.util.SimUtil;
 import avrora.sim.clock.DeltaQueue;
 import cck.text.StringUtil;
 import java.util.*;
@@ -45,7 +45,7 @@ public class ProbeTest {
     final HashMap entities;
 
     Simulator simulator;
-    Simulator.Printer printer;
+    SimUtil.SimPrinter printer;
     DeltaQueue eventqueue;
 
     List mainCode;
@@ -285,7 +285,7 @@ public class ProbeTest {
 
     public void run(Simulator s) throws Exception {
         simulator = s;
-        printer = s.getPrinter("test.probes");
+        printer = SimUtil.getPrinter(s, "test.probes");
         eventqueue = null;
         recordedEvents = new LinkedList();
         execute(mainCode);

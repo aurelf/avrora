@@ -32,8 +32,8 @@
 
 package avrora.monitors;
 
-import avrora.arch.legacy.LegacyInstr;
 import avrora.arch.legacy.LegacyState;
+import avrora.arch.AbstractInstr;
 import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
@@ -75,7 +75,7 @@ public class TraceMonitor extends MonitorFactory {
 
         public class GlobalProbe implements Simulator.Probe {
             public void fireBefore(State s, int addr) {
-                print(s, ((LegacyState)s).getInstr(addr));
+                print(s, s.getInstr(addr));
             }
 
             public void fireAfter(State s, int addr) {
@@ -135,21 +135,19 @@ public class TraceMonitor extends MonitorFactory {
             }
         }
 
-        int nextPc;
+        int nextpc;
 
-        private void print(State s, LegacyInstr i) {
+        private void print(State s, AbstractInstr i) {
             //"#k{%x}: #k{%s} %s", color, pc, color, i.getVariant(), i.getOperands()
             StringBuffer buf = new StringBuffer(100);
             SimUtil.getIDTimeString(buf, simulator);
             int pc = s.getPC();
-            int color = pc == nextPc ? Terminal.COLOR_BLUE : Terminal.COLOR_RED;
+            int color = pc == nextpc ? Terminal.COLOR_BLUE : Terminal.COLOR_CYAN;
             Terminal.append(color, buf, StringUtil.to0xHex(pc, 4));
             buf.append(": ");
-            buf.append(i.getVariant());
-            buf.append(' ');
-            buf.append(i.getOperands());
+            buf.append(i.toString());
             Terminal.println(buf.toString());
-            nextPc = pc + i.getSize();
+            nextpc = pc + i.getSize();
         }
 
         private void print(String s) {

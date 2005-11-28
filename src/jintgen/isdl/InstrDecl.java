@@ -72,7 +72,7 @@ public class InstrDecl extends Item {
         addrMode = am;
         for ( Property p : pl ) addProperty(p);
         innerClassName = makeInnerClassName(name);
-        className = "LegacyInstr." + innerClassName;
+        className = "Instr." + innerClassName;
     }
 
     private String makeInnerClassName(Token str) {

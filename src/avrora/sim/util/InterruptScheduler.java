@@ -84,7 +84,7 @@ public class InterruptScheduler {
                     throw Util.failure("interrupt schedule contains out-of-bounds interrupt vector " +
                             vec + " in line " + currentLine + " of " + schedFile);
                 }
-                if (tokens.nextToken() != tokens.TT_NUMBER) {
+                if (tokens.nextToken() != StreamTokenizer.TT_NUMBER) {
                     throw Util.failure("interrupt schedule format expected integer in field 2, line " +
                             currentLine + " of " + schedFile);
                 }

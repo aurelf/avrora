@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import java.util.LinkedList;
@@ -103,7 +104,7 @@ public class USART extends AtmelInternalDevice {
     }
 
     static USARTProperties getUSARTProperties(String subID, Microcontroller m) {
-        MicrocontrollerProperties mp = m.getProperties();
+        MCUProperties mp = m.getProperties();
         USARTProperties props = new USARTProperties();
 
         props.subID = subID;
@@ -619,7 +620,7 @@ public class USART extends AtmelInternalDevice {
      */
     protected class SerialPrinter implements USARTDevice {
 
-        Simulator.Printer serialPrinter = simulator.getPrinter("atmel.usart.printer");
+        SimUtil.SimPrinter serialPrinter = SimUtil.getPrinter(simulator, "atmel.usart.printer");
 
         char[] stream = {'h', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd'};
 

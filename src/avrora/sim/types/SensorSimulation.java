@@ -174,7 +174,7 @@ public class SensorSimulation extends Simulation {
                     SourceMapping.Location location = smap.getLocation("TOS_LOCAL_ADDRESS");
                     if ( location == null ) location = smap.getLocation("node_address");
                     if ( location != null ) {
-                        BaseInterpreter bi = simulator.getInterpreter();
+                        AtmelInterpreter bi = (AtmelInterpreter)simulator.getInterpreter();
                         bi.writeFlashByte(location.address, Arithmetic.low(id));
                         bi.writeFlashByte(location.address+1, Arithmetic.high(id));
                     }

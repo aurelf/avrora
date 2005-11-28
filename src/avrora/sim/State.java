@@ -34,6 +34,8 @@
 
 package avrora.sim;
 
+import avrora.arch.AbstractInstr;
+
 /**
  * @author Ben L. Titzer
  */
@@ -68,4 +70,14 @@ public interface State {
      * @return a reference to the simulator associated with this state instance.
      */
     Simulator getSimulator();
+
+    /**
+     * The <code>getInstr()</code> can be used to retrieve a reference to the <code>AbstractInstr</code> object
+     * representing the instruction at the specified program address.
+     *
+     * @param address the byte address from which to read the instruction
+     * @return a reference to the <code>AbstractInstr</code> object representing the instruction at that address in
+     *         the program
+     */
+    public AbstractInstr getInstr(int address);
 }

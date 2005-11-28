@@ -45,10 +45,10 @@ public class ProbedActiveRegister implements ActiveRegister {
     protected final int ioreg_num;
     protected final ActiveRegister ioreg;
     protected final MulticastIORWatch watches;
-    private BaseInterpreter interpreter;
+    private final State state;
 
-    protected ProbedActiveRegister(BaseInterpreter interpreter, ActiveRegister ar, int inum) {
-        this.interpreter = interpreter;
+    protected ProbedActiveRegister(Interpreter interpreter, ActiveRegister ar, int inum) {
+        this.state = interpreter.getState();
         ioreg_num = inum;
         ioreg = ar;
         watches = new MulticastIORWatch();
@@ -58,7 +58,7 @@ public class ProbedActiveRegister implements ActiveRegister {
      * The <code>add()</code> method adds another watch to the list of watches for this active register.
      * @param w the watch to add to this active register
      */
-    void add(Simulator.IORWatch w) {
+    public void add(Simulator.IORWatch w) {
         watches.add(w);
     }
 
@@ -66,7 +66,7 @@ public class ProbedActiveRegister implements ActiveRegister {
      * The <code>remove()</code> method removes a watch from the list of watches for this active register.
      * @param w the watch to remove from this active register
      */
-    void remove(Simulator.IORWatch w) {
+    public void remove(Simulator.IORWatch w) {
         watches.remove(w);
     }
 
@@ -74,7 +74,7 @@ public class ProbedActiveRegister implements ActiveRegister {
      * The <code>isEmpty()</code> method checks whether there are any watches for this active register.
      * @return true if there is at least one watch on this active register; false otherwise
      */
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return watches.isEmpty();
     }
 
@@ -87,9 +87,9 @@ public class ProbedActiveRegister implements ActiveRegister {
      * @param value the value to write
      */
     public void write(byte value) {
-        watches.fireBeforeWrite(interpreter.state, ioreg_num, value);
+        watches.fireBeforeWrite(state, ioreg_num, value);
         ioreg.write(value);
-        watches.fireAfterWrite(interpreter.state, ioreg_num, value);
+        watches.fireAfterWrite(state, ioreg_num, value);
     }
 
     /**
@@ -101,9 +101,9 @@ public class ProbedActiveRegister implements ActiveRegister {
      * @param val the value of the bit to write
      */
     public void writeBit(int bit, boolean val) {
-        watches.fireBeforeBitWrite(interpreter.state, ioreg_num, bit, val);
+        watches.fireBeforeBitWrite(state, ioreg_num, bit, val);
         ioreg.writeBit(bit, val);
-        watches.fireAfterBitWrite(interpreter.state, ioreg_num, bit, val);
+        watches.fireAfterBitWrite(state, ioreg_num, bit, val);
     }
 
     /**
@@ -115,9 +115,9 @@ public class ProbedActiveRegister implements ActiveRegister {
      * @return the value of the register as a byte
      */
     public byte read() {
-        watches.fireBeforeRead(interpreter.state, ioreg_num);
+        watches.fireBeforeRead(state, ioreg_num);
         byte value = ioreg.read();
-        watches.fireAfterRead(interpreter.state, ioreg_num, value);
+        watches.fireAfterRead(state, ioreg_num, value);
         return value;
     }
 
@@ -130,9 +130,9 @@ public class ProbedActiveRegister implements ActiveRegister {
      * @return the value of the bit as a boolean
      */
     public boolean readBit(int bit) {
-        watches.fireBeforeBitRead(interpreter.state, ioreg_num, bit);
+        watches.fireBeforeBitRead(state, ioreg_num, bit);
         boolean value = ioreg.readBit(bit);
-        watches.fireAfterBitRead(interpreter.state, ioreg_num, bit, value);
+        watches.fireAfterBitRead(state, ioreg_num, bit, value);
         return value;
     }
 }

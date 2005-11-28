@@ -101,4 +101,31 @@ public abstract class Clock {
      * @param e the event to remove
      */
     public abstract void removeEvent(Simulator.Event e);
+
+    /**
+     * The <code>millisToCycles()</code> method converts the specified number of milliseconds to a cycle
+     * count. The conversion factor used is the number of cycles per second of this clock. This method serves
+     * as a utility so that clients need not do repeated work in converting milliseconds to cycles and back.
+     *
+     * @param ms a time quantity in milliseconds as a double
+     * @return the same time quantity in clock cycles, rounded up to the nearest integer
+     */
+    public long millisToCycles(double ms) {
+        return (long)(ms * hz / 1000);
+    }
+
+    /**
+     * The <code>cyclesToMillis()</code> method converts the specified number of cycles to a time quantity in
+     * milliseconds. The conversion factor used is the number of cycles per second of this clock. This method
+     * serves as a utility so that clients need not do repeated work in converting milliseconds to cycles and
+     * back.
+     *
+     * @param cycles the number of cycles
+     * @return the same time quantity in milliseconds
+     */
+    public double cyclesToMillis(long cycles) {
+        return 1000 * ((double)cycles) / hz;
+    }
+
+
 }

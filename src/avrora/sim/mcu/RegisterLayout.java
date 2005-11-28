@@ -34,6 +34,7 @@ package avrora.sim.mcu;
 
 import cck.text.StringUtil;
 import cck.util.Util;
+import cck.util.Arithmetic;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;
@@ -315,7 +316,7 @@ public class RegisterLayout {
             i.next();
         }
         sf.ior_low_bit = hbit - sf.length + 1;
-        sf.mask = 0xff >> (8 - sf.length);
+        sf.mask = Arithmetic.getBitRangeMask(0, sf.length - 1);
         ior_hbit -= sf.length;
         return ior_hbit;
     }

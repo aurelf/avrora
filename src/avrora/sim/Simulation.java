@@ -39,6 +39,7 @@ import avrora.sim.clock.Synchronizer;
 import avrora.sim.mcu.MicrocontrollerFactory;
 import avrora.sim.platform.*;
 import avrora.sim.util.InterruptScheduler;
+import avrora.sim.util.ClockCycleTimeout;
 import cck.help.HelpCategory;
 import cck.util.*;
 import java.util.*;
@@ -146,7 +147,7 @@ public abstract class Simulation extends HelpCategory {
          */
         protected void instantiate() {
             // create the simulator object
-            platform = platformFactory.newPlatform(id, Defaults.getInterpreterFactory(), path.getProgram());
+            platform = platformFactory.newPlatform(id, path.getProgram());
             simulator = platform.getMicrocontroller().getSimulator();
             processTimeout();
             processInterruptSched();
@@ -175,7 +176,7 @@ public abstract class Simulation extends HelpCategory {
             double secs = SECONDS.get();
             if ( secs > 0 ) {
                 long cycles = (long)(secs * simulator.getClock().getHZ());
-                simulator.insertTimeout(cycles);
+                simulator.insertEvent(new ClockCycleTimeout(simulator, cycles), cycles);
             }
         }
 

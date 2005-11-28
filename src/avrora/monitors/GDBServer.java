@@ -34,8 +34,8 @@ package avrora.monitors;
 
 import avrora.arch.legacy.LegacyRegister;
 import avrora.arch.legacy.LegacyState;
-import avrora.sim.Simulator;
-import avrora.sim.State;
+import avrora.sim.*;
+import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 import cck.util.Option;
@@ -87,13 +87,13 @@ public class GDBServer extends MonitorFactory {
         final int port;
         BreakpointProbe BREAKPROBE = new BreakpointProbe();
         StepProbe STEPPROBE = new StepProbe();
-        Simulator.Printer printer;
+        SimUtil.SimPrinter printer;
 
 
         GDBMonitor(Simulator s, int p) {
             simulator = s;
             port = p;
-            printer = simulator.getPrinter("monitor.gdb");
+            printer = SimUtil.getPrinter(simulator, "monitor.gdb");
             try {
                 serverSocket = new ServerSocket(port);
             } catch ( IOException e ) {
@@ -321,7 +321,7 @@ public class GDBServer extends MonitorFactory {
          */
         void readAllRegisters() throws IOException {
             StringBuffer buf = new StringBuffer(84);
-            LegacyState s = simulator.getState();
+            LegacyState s = (LegacyState)simulator.getState();
             for ( int cntr = 0; cntr < 32; cntr++ ) {
                 appendGPR(s, cntr, buf);
             }
@@ -360,7 +360,7 @@ public class GDBServer extends MonitorFactory {
          */
         void readOneRegister(CharacterIterator i) throws IOException {
             StringBuffer buf = new StringBuffer(8);
-            LegacyState s = simulator.getState();
+            LegacyState s = (LegacyState)simulator.getState();
 
             int num = StringUtil.readHexValue(i, 2);
 
@@ -400,7 +400,7 @@ public class GDBServer extends MonitorFactory {
             int length = 1;
             if ( StringUtil.peekAndEat(i, ',') )
                 length = StringUtil.readHexValue(i, 8);
-            LegacyState s = simulator.getState();
+            LegacyState s = (LegacyState)simulator.getState();
             StringBuffer buf = new StringBuffer(length*2);
 
             if ( (addr & MEMMASK) == MEMBEGIN ) {

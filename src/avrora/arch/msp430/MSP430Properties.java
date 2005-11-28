@@ -36,13 +36,13 @@ package avrora.arch.msp430;
 
 import avrora.sim.CodeSegment;
 import avrora.sim.mcu.RegisterLayout;
-import cck.text.StringUtil;
+import avrora.sim.mcu.MCUProperties;
 import java.util.*;
 
 /**
  * @author Ben L. Titzer
  */
-public class MSP430Properties {
+public class MSP430Properties extends MCUProperties {
     /**
      * The <code>ioreg_size</code> field stores the number of IO registers on this microcontroller.
      */
@@ -65,20 +65,6 @@ public class MSP430Properties {
     public final int num_pins;
 
     /**
-     * The <code>num_interrupts</code> field stores the number of interrupts supported on this
-     * microcontroller.
-     */
-    public final int num_interrupts;
-
-    public final CodeSegment.Factory codeSegmentFactory;
-
-    protected final HashMap pinAssignments;
-    protected final RegisterLayout layout;
-    protected final HashMap interruptAssignments;
-    protected final String[] ioreg_name;
-    protected final String[] interrupt_name;
-
-    /**
      * The constructor for the <code>MicrocontrollerProperties</code> class creates a new
      * instance with the specified register size, flash size, etc. All such fields are immutable,
      * and the pin assignments and IO register assignments cannot be changed.
@@ -92,111 +78,12 @@ public class MSP430Properties {
      * indexes for the pins
      * @param rl a <code>RegisterLayout</code> instance mapping string names to IO register addresses
      * @param inta a <code>HashMap</code> instance mapping string names to <code>Integer</code>
-     * indexes for each type of interrupt
      */
-    public MSP430Properties(int is, int ss, int fs, int np, int ni, CodeSegment.Factory csf, HashMap pa, RegisterLayout rl, HashMap inta) {
+    public MSP430Properties(int is, int ss, int fs, int np, int ni, HashMap pa, RegisterLayout rl, HashMap inta) {
+        super(pa, rl, inta, ni);
         ioreg_size = is;
         sram_size = ss;
         code_start = fs;
         num_pins = np;
-        num_interrupts = ni;
-
-        codeSegmentFactory = csf;
-
-        ioreg_name = new String[is];
-        interrupt_name = new String[ni];
-
-        pinAssignments = pa;
-        layout = rl;
-        interruptAssignments = inta;
-
-        initIORNames();
-        initInterruptNames();
-    }
-
-    public RegisterLayout getRegisterLayout() {
-        return layout;
-    }
-
-    private void initInterruptNames() {
-        Iterator i = interruptAssignments.keySet().iterator();
-        while ( i.hasNext() ) {
-            String s = (String)i.next();
-            Integer iv = (Integer)interruptAssignments.get(s);
-            interrupt_name[iv.intValue()] = s;
-        }
-    }
-
-    private void initIORNames() {
-        for ( int cntr = 0; cntr < layout.ioreg_size; cntr++ )
-            ioreg_name[cntr] = layout.getRegisterName(cntr);
-    }
-
-    /**
-     * The <code>getPin()</code> method retrieves the pin number for the given pin name for this
-     * microcontroller.
-     * @param n the name of the pin such as "OC0"
-     * @return an integer representing the physical pin number if it exists;
-     * @throws java.util.NoSuchElementException if the specified pin name does not have an assignment
-     */
-    public int getPin(String n) {
-        Integer i = (Integer)pinAssignments.get(n);
-        if ( i == null )
-            throw new NoSuchElementException(StringUtil.quote(n)+" pin not found");
-        return i.intValue();
-    }
-
-    /**
-     * The <code>getIOReg()</code> method retrieves the IO register number for the given IO
-     * LegacyRegister name for this microcontroller.
-     * @param n the name of the IO register such as "TCNT0"
-     * @return an integer representing the IO register number if it exists
-     * @throws NoSuchElementException if the specified IO register name does not have an assignment
-     */
-    public int getIOReg(String n) {
-        return layout.getIOReg(n);
-    }
-
-    /**
-     * The <code>hasIOReg()</code> method queries whether the IO register exists on this device.
-     * @param n the name of the IO register
-     * @return true if the IO register exists on this device; false otherwise
-     */
-    public boolean hasIOReg(String n) {
-        return layout.hasIOReg(n);
-    }
-
-    /**
-     * The <code>getInterrupt()</code> method retrieves the interrupt number for the given interrupt
-     * name for this microcontroller
-     * @param n the name of the interrupt such as "RESET"
-     * @return an integer representing the interrupt number if it exists
-     * @throws NoSuchElementException if the specified interrupt name does not have an assignment
-     */
-    public int getInterrupt(String n) {
-        Integer i = (Integer)interruptAssignments.get(n);
-        if ( i == null )
-            throw new NoSuchElementException(StringUtil.quote(n)+" interrupt not found");
-        return i.intValue();
-    }
-
-    /**
-     * The <code>getIORegName()</code> method returns the name of the IO register specified by
-     * the given number.
-     * @param ioreg the io register number for which to get a string name
-     * @return the string name of the IO register if there is such a name
-     */
-    public String getIORegName(int ioreg) {
-        return ioreg_name[ioreg];
-    }
-
-    /**
-     * The <code>getInterruptName()</code> method returns the name of an interrupt specified by
-     * the given number.
-     * @param inum the interrupt number for which to get a string name
-     * @return the string name of the interrupt if there is such a name
-     */
-    public String getInterruptName(int inum) {
-        return interrupt_name[inum];
     }
 }

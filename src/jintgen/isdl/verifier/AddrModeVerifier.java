@@ -51,7 +51,7 @@ public class AddrModeVerifier extends VerifierPass {
     public void verify() {
         uniqueCheck("AddrMode", "Addressing mode", arch.addrModes);
         uniqueCheck("AddrModeSet", "AddressingModeSet", arch.addrSets);
-        uniqueCheck("LegacyInstr", "Instruction", arch.instructions);
+        uniqueCheck("Instr", "Instruction", arch.instructions);
 
         verifyOperands();
         verifyAddrModes();

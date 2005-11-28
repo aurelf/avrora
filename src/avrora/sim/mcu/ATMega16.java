@@ -32,7 +32,8 @@
 
 package avrora.sim.mcu;
 
-import avrora.arch.legacy.LegacyInstrProto;
+import avrora.arch.legacy.LegacyInterpreter;
+import avrora.arch.avr.AVRProperties;
 import avrora.core.Program;
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
@@ -96,7 +97,7 @@ public class ATMega16 extends ATMegaFamily {
      * object shared by all of the instances of this microcontroller. This object
      * stores the IO register size, SRAM size, pin assignments, etc.
      */
-    public static final MicrocontrollerProperties props;
+    public static final AVRProperties props;
 
     static {
         // statically initialize the pin assignments for this microcontroller
@@ -144,7 +145,6 @@ public class ATMega16 extends ATMegaFamily {
         addPin(pinAssignments, 38, "ADC2", "PA2");
         addPin(pinAssignments, 39, "ADC1", "PA1");
         addPin(pinAssignments, 40, "ADC0", "PA0");
-
 
         // lower 64 IO registers
         rl.addIOReg("SREG", 0x3F);
@@ -238,7 +238,7 @@ public class ATMega16 extends ATMegaFamily {
         addInterrupt(interruptAssignments, "TWI", 18);
         addInterrupt(interruptAssignments, "SPM READY", 21);
 
-        props = new MicrocontrollerProperties(ATMEGA16_IOREG_SIZE, // number of io registers
+        props = new AVRProperties(ATMEGA16_IOREG_SIZE, // number of io registers
                 ATMEGA16_SRAM_SIZE, // size of sram in bytes
                 ATMEGA16_FLASH_SIZE, // size of flash in bytes
                 ATMEGA16_EEPROM_SIZE, // size of eeprom in bytes
@@ -262,23 +262,19 @@ public class ATMega16 extends ATMegaFamily {
          * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
          *         program loaded onto it
          */
-        public Microcontroller newMicrocontroller(int id, ClockDomain cd, InterpreterFactory f, Program p) {
-            return new ATMega16(id, cd, f, p);
+        public Microcontroller newMicrocontroller(int id, ClockDomain cd, Program p) {
+            return new ATMega16(id, cd, p);
         }
 
     }
 
-    public ATMega16(int id, ClockDomain cd, InterpreterFactory f, Program p) {
+    public ATMega16(int id, ClockDomain cd, Program p) {
         super(cd, props, new FiniteStateMachine(cd.getMainClock(), MODE_ACTIVE, idleModeNames, transitionTimeMatrix));
-        simulator = new Simulator(id, f, this, p);
-        interpreter = simulator.getInterpreter();
+        simulator = new Simulator(id, LegacyInterpreter.FACTORY, this, p);
+        interpreter = (AtmelInterpreter)simulator.getInterpreter();
         MCUCR_reg = getIOReg("MCUCR");
         installPins();
         installDevices();
-    }
-
-    public boolean isSupported(LegacyInstrProto i) {
-        return true;
     }
 
     protected void installPins() {
@@ -297,7 +293,7 @@ public class ATMega16 extends ATMegaFamily {
 
         // set up the timer mask and flag registers and interrupt range
         TIFR_reg = buildInterruptRange(false, "TIMSK", "TIFR", 12, 8);
-        TIMSK_reg = (MaskRegister)interpreter.getIOReg(props.getIOReg("TIMSK"));
+        TIMSK_reg = (MaskRegister)getIOReg("TIMSK");
 
 
         addDevice(new Timer0());

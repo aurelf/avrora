@@ -34,6 +34,7 @@ package avrora.sim.mcu;
 
 import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
+import avrora.arch.avr.AVRProperties;
 import cck.util.Arithmetic;
 
 /**
@@ -45,12 +46,12 @@ import cck.util.Arithmetic;
 public abstract class ATMegaFamily extends AtmelMicrocontroller {
 
     public static class FlagBit implements InterruptTable.Notification {
-        final BaseInterpreter interpreter;
+        final AtmelInterpreter interpreter;
         final boolean autoclear;
         final int inum;
         boolean val;
 
-        public FlagBit(BaseInterpreter i, boolean auto, int in) {
+        public FlagBit(AtmelInterpreter i, boolean auto, int in) {
             interpreter = i;
             autoclear = auto;
             inum = in;
@@ -109,9 +110,9 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
          * for calculating the posted interrupts.
          */
         protected final int[] mapping;
-        protected final BaseInterpreter interpreter;
+        protected final AtmelInterpreter interpreter;
 
-        public FlagRegister(BaseInterpreter interp, int[] map) {
+        public FlagRegister(AtmelInterpreter interp, int[] map) {
             mapping = map;
             interpreter = interp;
             InterruptTable it = interpreter.getInterruptTable();
@@ -159,9 +160,9 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
          * for calculating the posted interrupts.
          */
         protected final int[] mapping;
-        protected final BaseInterpreter interpreter;
+        protected final AtmelInterpreter interpreter;
 
-        public MaskRegister(BaseInterpreter interp, int[] map) {
+        public MaskRegister(AtmelInterpreter interp, int[] map) {
             mapping = map;
             interpreter = interp;
         }
@@ -268,18 +269,8 @@ public abstract class ATMegaFamily extends AtmelMicrocontroller {
         }
     }
 
-    protected ATMegaFamily(ClockDomain cd, MicrocontrollerProperties p, FiniteStateMachine fsm) {
+    protected ATMegaFamily(ClockDomain cd, AVRProperties p, FiniteStateMachine fsm) {
         super(cd, p, fsm);
-    }
-
-    /**
-     * The <code>getHZ()</code> method returns the number of cycles per second at which this hardware device
-     * is designed to run.
-     *
-     * @return the number of cycles per second on this device
-     */
-    public long getHZ() {
-        return HZ;
     }
 
     protected static final int[] periods0 = {0, 1, 8, 32, 64, 128, 256, 1024};

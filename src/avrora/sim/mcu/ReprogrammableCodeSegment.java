@@ -35,6 +35,7 @@ package avrora.sim.mcu;
 import avrora.arch.legacy.*;
 import avrora.core.Program;
 import avrora.sim.*;
+import avrora.sim.util.SimUtil;
 import avrora.sim.clock.MainClock;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
@@ -68,7 +69,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
 
     private static final byte DEFAULT_VALUE = (byte)0xff;
 
-    final Simulator.Printer flashPrinter;
+    final SimUtil.SimPrinter flashPrinter;
 
     /**
      * The <code>ReprogrammableCodeSegment.Factory</code> class represents a class capable of creating a new
@@ -83,7 +84,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
             this.pagesize = pagesize;
         }
 
-        public CodeSegment newCodeSegment(String name, BaseInterpreter bi, ErrorReporter er, Program p) {
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p) {
             CodeSegment cs;
             if ( p != null ) {
                 cs = new ReprogrammableCodeSegment(name, p.program_end, bi, er, pagesize);
@@ -213,20 +214,20 @@ public class ReprogrammableCodeSegment extends CodeSegment {
      * @param er the error reporter consulted for out of bounds accesses
      * @param pagesize the size of the page offset field of an address into the flash
      */
-    public ReprogrammableCodeSegment(String name, int size, BaseInterpreter bi, ErrorReporter er, int pagesize) {
+    public ReprogrammableCodeSegment(String name, int size, AtmelInterpreter bi, ErrorReporter er, int pagesize) {
         super(name, size, bi, er);
         SPMCSR = new SPMCSR_reg();
         mainClock = bi.getMainClock();
         this.pagesize = pagesize;
-        this.addressMask = Arithmetic.getBitRangeMask(0, pagesize) << 1;
+        this.addressMask = Arithmetic.getBitRangeMask(1, pagesize + 1);
         resetBuffer();
-        MicrocontrollerProperties props = bi.getSimulator().getMicrocontroller().getProperties();
+        MCUProperties props = bi.getSimulator().getMicrocontroller().getProperties();
         bi.installIOReg(props.getIOReg("SPMCSR"), SPMCSR);
 
         ERASE_CYCLES = (int)((mainClock.getHZ() * ERASE_MS_MAX / 1000));
         WRITE_CYCLES = (int)((mainClock.getHZ() * WRITE_MS_MAX / 1000));
 
-        flashPrinter = bi.getSimulator().getPrinter("atmel.flash");
+        flashPrinter = SimUtil.getPrinter(bi.getSimulator(), "atmel.flash");
     }
 
     /**
@@ -235,7 +236,7 @@ public class ReprogrammableCodeSegment extends CodeSegment {
      */
     public void update() {
         // TODO: check that PC is in the bootloader section
-        int pc = interpreter.getPC();
+        //int pc = interpreter.getState().getPC();
         int Z = interpreter.getRegisterWord(LegacyRegister.Z);
         int pageoffset = (Z & addressMask);
         int pagenum = Z >> (pagesize + 1);

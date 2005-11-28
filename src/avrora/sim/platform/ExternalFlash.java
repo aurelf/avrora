@@ -38,6 +38,7 @@ package avrora.sim.platform;
 
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
+import avrora.sim.clock.Clock;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.util.SimUtil;
@@ -59,7 +60,8 @@ import cck.text.Verbose;
  */
 public class ExternalFlash {
 
-    protected Simulator sim;
+    protected final Simulator sim;
+    protected final Clock clock;
     protected Microcontroller mcu;
     private boolean isSelected;	// true if PA3 is 0
     private boolean isReading;		// mcu is reading from so of dataflash?
@@ -133,12 +135,13 @@ public class ExternalFlash {
         memory = new Memory();
         mcu = mcunit;
         sim = mcu.getSimulator();
+        clock = sim.getClock();
         dfStatus = DF_STATUS_REGISTER_DENSITY | DF_STATUS_READY;
         tick = false;
         i = 0;
         step = 0;
 
-        stateMachine = new FiniteStateMachine(sim.getClock(), startMode, modeName, 0);
+        stateMachine = new FiniteStateMachine(clock, startMode, modeName, 0);
         // connect Pins
         // output
         mcu.getPin("PA3").connect(new PA3Output());
@@ -217,13 +220,13 @@ public class ExternalFlash {
         public void write(boolean level) {
             if (!level && !isSelected) {
                 // falling edge, so instruction starts
-                if (sim.getClock().getCount() > 1500) {
+                if (clock.getCount() > 1500) {
                     echo("Instruction started");
                 }
                 isSelected = true;
             } else if (level && isSelected) {
                 // rising edge, so instruction terminates
-                if (sim.getClock().getCount() < 1500) {
+                if (clock.getCount() < 1500) {
                     echo("initialized");
                 } else {
                     echo("Instruction finished");
@@ -335,8 +338,8 @@ public class ExternalFlash {
 
                 // Dataflash is busy
                 dfStatus &= ~DF_STATUS_READY;
-                dfDelay = mcu.millisToCycles(delay / 1000);  //cycles until access is finished
-                sim.insertEvent(new Delay(), dfDelay);
+                dfDelay = clock.millisToCycles(delay / 1000);  //cycles until access is finished
+                clock.insertEvent(new Delay(), dfDelay);
 
                 // reset values
                 dfOpcode = 0;

@@ -35,11 +35,11 @@ package avrora.monitors;
 import avrora.actions.SimAction;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
-import avrora.sim.BaseInterpreter;
 import avrora.sim.Simulator;
 import avrora.sim.mcu.Microcontroller;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.arch.avr.AVRProperties;
 import avrora.sim.util.MemoryProfiler;
+import avrora.arch.legacy.LegacyState;
 import cck.text.*;
 import cck.util.Option;
 import java.util.Iterator;
@@ -76,12 +76,12 @@ public class MemoryMonitor extends MonitorFactory {
             simulator = s;
             microcontroller = simulator.getMicrocontroller();
             program = simulator.getProgram();
-            MicrocontrollerProperties p = microcontroller.getProperties();
-            ramsize = p.sram_size + p.ioreg_size + BaseInterpreter.NUM_REGS;
+            AVRProperties p = (AVRProperties)microcontroller.getProperties();
+            ramsize = p.sram_size + p.ioreg_size + LegacyState.NUM_REGS;
             if ( LOWER_ADDRESS.get() ) {
                 memstart = 0;
             } else {
-                memstart = BaseInterpreter.NUM_REGS + p.ioreg_size;
+                memstart = LegacyState.NUM_REGS + p.ioreg_size;
             }
             memprofile = new MemoryProfiler(ramsize);
 

@@ -33,7 +33,7 @@
 package avrora.gui;
 
 import avrora.sim.*;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.mcu.MCUProperties;
 import javax.swing.*;
 import java.awt.*;
 
@@ -103,7 +103,7 @@ public class VisualStackMonitor extends SingleNodeMonitor implements Simulation.
             spl = new InitWatch();
             sph = new InitWatch();
 
-            MicrocontrollerProperties mp = simulator.getMicrocontroller().getProperties();
+            MCUProperties mp = simulator.getMicrocontroller().getProperties();
             SPL_REG = mp.getIOReg("SPL");
             SPH_REG = mp.getIOReg("SPH");
 

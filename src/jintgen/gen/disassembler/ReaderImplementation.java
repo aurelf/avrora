@@ -34,6 +34,7 @@ package jintgen.gen.disassembler;
 
 import cck.text.StringUtil;
 import cck.util.Util;
+import cck.util.Arithmetic;
 import jintgen.gen.GenBase;
 import jintgen.isdl.*;
 import jintgen.jigir.*;
@@ -127,7 +128,7 @@ class ReaderImplementation extends GenBase {
             } else {
                 int low_bit = DisassemblerGenerator.nativeBitOrder(logical_start, length);
                 int off = low_bit % wsize;
-                int mask = ((1 << length)-1);
+                int mask = Arithmetic.getBitRangeMask(0, length - 1);
                 String mstr = StringUtil.to0xHex(mask, wsize / 4);
                 if ( off == 0 )
                     print("(d.word$1 & $2)", word, mstr);

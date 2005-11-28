@@ -40,7 +40,7 @@ import avrora.arch.legacy.LegacyInstr;
 import avrora.core.Program;
 import avrora.core.SourceMapping;
 import avrora.sim.*;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.sim.mcu.MCUProperties;
 import avrora.sim.util.SimUtil;
 import cck.text.*;
 import cck.util.Util;
@@ -58,7 +58,7 @@ public class CallMonitor extends MonitorFactory {
     class Mon implements Monitor {
 
         private final Simulator simulator;
-        private final MicrocontrollerProperties props;
+        private final MCUProperties props;
         private final SourceMapping sourceMap;
 
         private String[] stack;
@@ -69,7 +69,7 @@ public class CallMonitor extends MonitorFactory {
         Mon(Simulator s) {
             this.simulator = s;
             props = simulator.getMicrocontroller().getProperties();
-            BaseInterpreter interpreter = s.getInterpreter();
+            Interpreter interpreter = s.getInterpreter();
             InterruptTable itable = interpreter.getInterruptTable();
             itable.insertProbe(new InterruptProbe());
 

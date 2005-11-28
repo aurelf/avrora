@@ -35,24 +35,43 @@
 package avrora.arch.msp430;
 
 import avrora.core.Program;
-import avrora.sim.Simulator;
-import avrora.sim.InterruptTable;
-import avrora.sim.clock.MainClock;
+import avrora.sim.*;
+import avrora.sim.util.MulticastProbe;
+import avrora.sim.util.SimUtil;
 import avrora.sim.mcu.RegisterSet;
+import avrora.sim.mcu.MCUProperties;
 import cck.util.Util;
+import cck.text.StringUtil;
 
 /**
  * @author Ben L. Titzer
  */
 public class MSP430Interpreter extends MSP430InstrInterpreter {
 
+    public static Factory FACTORY = new Factory();
+
+    public static class Factory extends InterpreterFactory {
+        /**
+         * The <code>newInterpreter()</code> method creates a new interpreter given the simulator, the
+         * program, and the properties of the microcontroller.
+         * @param s the simulator for which the interpreter is being created
+         * @param p the program to load into the interpreter
+         * @param pr the properties of the microcontroller
+         * @return a new instance of the <code>BaseInterpreter</code> class for the program
+         */
+        public Interpreter newInterpreter(Simulator s, Program p, MCUProperties pr) {
+            return new MSP430Interpreter(s, p, (MSP430Properties)pr);
+        }
+    }
+
     protected int RAMPZ; // location of the RAMPZ IO register
-    protected final MainClock clock;
     protected final RegisterSet registers;
     protected final MSP430Instr[] shared_instr;
     protected boolean innerLoop;
     protected boolean shouldRun;
     protected boolean sleeping;
+
+    protected MulticastProbe globalProbe;
 
     /**
      * The constructor for the <code>AVRInterpreter</code> class creates a new interpreter
@@ -60,14 +79,10 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
      * represent the SRAM, flash, interrupt table, IO registers, etc.
      */
     public MSP430Interpreter(Simulator simulator, Program p, MSP430Properties pr) {
+        super(simulator);
         // this class and its methods are performance critical
         // observed speedup with this call on Hotspot
         Compiler.compileClass(this.getClass());
-
-        // set up the reference to the simulator
-        this.simulator = simulator;
-
-        this.clock = simulator.getClock();
 
         // if program will not fit onto hardware, error
         if (p.program_end > MSP430DataSegment.DATA_SIZE)
@@ -79,40 +94,92 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         // initialize IO registers to default values
         registers = simulator.getMicrocontroller().getRegisterSet();
 
+        // instantiate error reporter
+        ErrorReporter reporter = new ErrorReporter();
         // allocate SRAM
-        data = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this);
+        data = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this, reporter);
 
-        // TODO: 2. set up correct error reporter for SRAM, flash
-        // TODO: 4. allocate interrupt table
-        // allocate FLASH
-        //Segment.ErrorReporter reporter = new Segment.ErrorReporter();
-        //flash = props.codeSegmentFactory.newCodeSegment("flash", this, reporter, p);
-        //reporter.segment = flash;
-        // for performance, we share a reference to the LegacyInstr[] array representing flash
-        //shared_instr = flash.shareCode(null);
         // initialize the interrupt table
-        // interrupts = new InterruptTable(this, pr.num_interrupts);
+        interrupts = new InterruptTable(this, pr.num_interrupts);
+
+        // share the instruction array
         shared_instr = data.shareInstr();
+
+        // load the program into the data segment
+        data.loadProgram(p);
+
+        // set up the initial program counter
+        pc = pr.code_start;
+
+        globalProbe = new MulticastProbe();
     }
+
+    /**
+     * The <code>ErrorReporter</code> class is used to report errors accessing segments.
+     * @see Segment.ErrorReporter
+     */
+    protected class ErrorReporter implements Segment.ErrorReporter {
+
+        public byte readError(int address) {
+            SimUtil.readError(simulator, data.name, address);
+            return data.value;
+        }
+
+        public void writeError(int address, byte value) {
+            SimUtil.writeError(simulator, data.name, address, value);
+        }
+    }
+
 
     protected void runLoop() {
         while ( shouldRun ) {
-            fastLoop();
+            if ( globalProbe.isEmpty() ) fastLoop();
+            else instrumentedLoop();
         }
     }
 
     private void fastLoop() {
+        innerLoop = true;
         while ( innerLoop ) {
-            MSP430Instr i = shared_instr[pc];
-            nextpc = pc + 2;
-            i.accept(this);
-            pc = nextpc;
+            int curpc = pc;
+            execute(fetch(curpc));
         }
+    }
+
+    private void instrumentedLoop() {
+        innerLoop = true;
+        while ( innerLoop ) {
+            int curpc = pc;
+            globalProbe.fireBefore(this, curpc);
+            execute(fetch(curpc));
+            globalProbe.fireAfter(this, curpc);
+        }
+    }
+
+    private MSP430Instr fetch(int curpc) {
+        MSP430Instr i = shared_instr[curpc];
+        if ( i == null ) {
+            SimUtil.warning(simulator, StringUtil.to0xHex(curpc, 4), "invalid instruction");
+        }
+        regs[PC_REG] = (char)(curpc + 2);
+        nextpc = pc + i.getSize();
+        return i;
+    }
+
+    private void execute(MSP430Instr i) {
+        i.accept(this);
+        pc = regs[PC_REG] = (char)nextpc;
+        clock.advance(1);
+    }
+
+    protected void bumpPC() {
+        regs[PC_REG] += 2;
     }
 
     protected int bit(boolean b) {
         return b ? 1 : 0;
     }
+
     protected int popByte() {
         int sp = getSP();
         byte b = data.read(sp);
@@ -142,7 +209,124 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
     }
 
     protected void pushWord(int b) {
-        pushByte(high(b));
-        pushByte(low(b));
+        int sp = getSP();
+        int nsp = sp - 2;
+        data.write(nsp, (byte)b);
+        data.write(nsp + 1, (byte)(b >> 8));
+        regs[SP_REG] = (char)nsp;
     }
+
+    public State getState() {
+        return this;
+    }
+
+    public void start() {
+        shouldRun = true;
+        runLoop();
+    }
+
+    public int step() {
+        throw Util.unimplemented();
+    }
+
+    public void stop() {
+        shouldRun = false;
+    }
+
+    /**
+     * The <code>insertProbe()</code> method is used internally to insert a probe on a particular instruction.
+     * @param p the probe to insert on an instruction
+     * @param addr the address of the instruction on which to insert the probe
+     */
+    protected void insertProbe(Simulator.Probe p, int addr) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>insertExceptionWatch()</code> method registers an </code>ExceptionWatch</code> to listen for
+     * exceptional conditions in the machine.
+     *
+     * @param watch The <code>ExceptionWatch</code> instance to add.
+     */
+    protected void insertExceptionWatch(Simulator.ExceptionWatch watch) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>insertProbe()</code> method allows a probe to be inserted that is executed before and after
+     * every instruction that is executed by the simulator
+     *
+     * @param p the probe to insert
+     */
+    protected void insertProbe(Simulator.Probe p) {
+        globalProbe.add(p);
+        innerLoop = false;
+    }
+
+    /**
+     * The <code>removeProbe()</code> method is used internally to remove a probe from a particular instruction.
+     * @param p the probe to remove from an instruction
+     * @param addr the address of the instruction from which to remove the probe
+     */
+    protected void removeProbe(Simulator.Probe p, int addr) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>removeProbe()</code> method removes a probe from the global probe table (the probes executed
+     * before and after every instruction). The comparison used is reference equality, not
+     * <code>.equals()</code>.
+     *
+     * @param b the probe to remove
+     */
+    public void removeProbe(Simulator.Probe b) {
+        globalProbe.remove(b);
+    }
+
+    /**
+     * The <code>insertWatch()</code> method is used internally to insert a watch on a particular memory location.
+     * @param p the watch to insert on a memory location
+     * @param data_addr the address of the memory location on which to insert the watch
+     */
+    protected void insertWatch(Simulator.Watch p, int data_addr) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>removeWatch()</code> method is used internally to remove a watch from a particular memory location.
+     * @param p the watch to remove from the memory location
+     * @param data_addr the address of the memory location from which to remove the watch
+     */
+    protected void removeWatch(Simulator.Watch p, int data_addr) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>insertIORWatch()</code> method is used internally to insert a watch on an IO register.
+     * @param p the watch to add to the IO register
+     * @param ioreg_num the number of the IO register for which to insert the watch
+     */
+    protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>removeIORWatch()</code> method is used internally to remove a watch on an IO register.
+     * @param p the watch to remove from the IO register
+     * @param ioreg_num the number of the IO register for which to remove the watch
+     */
+    protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>delay()</code> method is used to add some delay cycles before the next instruction is executed.
+     * This is necessary because some devices such as the EEPROM actually delay execution of instructions while
+     * they are working
+     * @param cycles the number of cycles to delay the execution
+     */
+    protected void delay(long cycles) {
+        throw Util.unimplemented();
+    }
+
 }

@@ -19,7 +19,7 @@ for t in $TESTS; do
     checkSuccess "test/$t exists." "test/$t does not exist." ''
 
     cd test/$t
-    java avrora.Main -action=test *.tst &> /tmp/test.log
+    java avrora.Main -action=test -detail *.tst &> /tmp/test.log
     checkSuccess 'All tests passed.' 'There were test case failures.' 'cat /tmp/test.log'
     cd ../..
 done

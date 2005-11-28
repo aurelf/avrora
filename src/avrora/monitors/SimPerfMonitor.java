@@ -61,7 +61,7 @@ public class SimPerfMonitor extends MonitorFactory {
             simulator = s;
             data = new TimedMeasurements();
             start = System.currentTimeMillis();
-            interval = (long)(simulator.getMicrocontroller().getHZ() / FREQUENCY.get());
+            interval = (long)(simulator.getClock().getHZ() / FREQUENCY.get());
             simulator.insertEvent(new Event(), interval);
         }
 

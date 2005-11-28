@@ -36,6 +36,7 @@ package avrora.arch.msp430;
 
 import avrora.sim.*;
 import avrora.sim.clock.MainClock;
+import avrora.arch.AbstractInstr;
 import cck.util.Util;
 
 /**
@@ -50,16 +51,12 @@ import cck.util.Util;
  *
  * @author Ben L. Titzer
  */
-public class MSP430State implements State {
+public abstract class MSP430State extends Interpreter implements State {
 
     public static final int NUM_REGS = 16;
     public static final int PC_REG = 0;
     public static final int SP_REG = 1;
     public static final int SREG_REG = 2;
-
-    protected Simulator simulator;
-
-    protected InterruptTable interrupts;
 
     protected int pc;
     protected int nextpc;
@@ -71,7 +68,9 @@ public class MSP430State implements State {
 
     protected boolean C, N, Z, V;
 
-    protected MainClock clock;
+    protected MSP430State(Simulator sim) {
+        super(sim);
+    }
 
     /**
      * The <code>getPC()</code> retrieves the current program counter.
@@ -91,7 +90,7 @@ public class MSP430State implements State {
      */
     public int getSP() {
         // register 1 is the stack pointer
-        return regs[PC_REG];
+        return regs[SP_REG];
     }
 
     /**
@@ -190,11 +189,16 @@ public class MSP430State implements State {
         return simulator;
     }
 
+    public AbstractInstr getInstr(int address) {
+        return data.readInstr(address);
+    }
+
     protected int map_get(char[] array, int ind) {
         return array[ind];
     }
 
     protected void map_set(char[] array, int ind, int val) {
+        if ( ind == PC_REG ) nextpc = val;
         array[ind] = (char)val;
     }
 

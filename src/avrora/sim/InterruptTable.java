@@ -52,7 +52,8 @@ public class InterruptTable {
     protected MulticastInterruptProbe globalProbe;
     protected final MulticastInterruptProbe[] probes;
     protected final Notification[] notify;
-    protected final BaseInterpreter interpreter;
+    protected final Interpreter interpreter;
+    protected final State state;
 
     /**
      * The <code>Notification</code> interface serves a very specific role in simulation;
@@ -71,10 +72,11 @@ public class InterruptTable {
         public void invoke(int inum);
     }
 
-    InterruptTable(BaseInterpreter interp, int numInterrupts) {
+    public InterruptTable(Interpreter interp, int numInterrupts) {
         interpreter = interp;
         probes = new MulticastInterruptProbe[numInterrupts];
         notify = new Notification[numInterrupts];
+        state = interpreter.getState();
         this.numInterrupts = numInterrupts;
     }
 
@@ -89,8 +91,8 @@ public class InterruptTable {
         posted = Arithmetic.setBit(posted, inum, true);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenPosted(interpreter.state, inum);
-        if ( probe != null ) probe.fireWhenPosted(interpreter.state, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenPosted(state, inum);
+        if ( probe != null ) probe.fireWhenPosted(state, inum);
     }
 
     /**
@@ -115,8 +117,8 @@ public class InterruptTable {
         posted = Arithmetic.setBit(posted, inum, false);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenUnposted(interpreter.state, inum);
-        if ( probe != null ) probe.fireWhenUnposted(interpreter.state, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenUnposted(state, inum);
+        if ( probe != null ) probe.fireWhenUnposted(state, inum);
     }
 
     /**
@@ -129,8 +131,8 @@ public class InterruptTable {
         enabled = Arithmetic.setBit(enabled, inum, true);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter.state, inum);
-        if ( probe != null ) probe.fireWhenEnabled(interpreter.state, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenEnabled(state, inum);
+        if ( probe != null ) probe.fireWhenEnabled(state, inum);
     }
 
     /**
@@ -143,8 +145,8 @@ public class InterruptTable {
         enabled = Arithmetic.setBit(enabled, inum, false);
         pending = posted & enabled;
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter.state, inum);
-        if ( probe != null ) probe.fireWhenDisabled(interpreter.state, inum);
+        if ( globalProbe != null ) globalProbe.fireWhenDisabled(state, inum);
+        if ( probe != null ) probe.fireWhenDisabled(state, inum);
     }
 
     /**
@@ -152,7 +154,7 @@ public class InterruptTable {
      * the interrupts are enabled by setting the global interrupt enable bit.
      */
     public void enableAll() {
-        if ( globalProbe != null ) globalProbe.fireWhenEnabled(interpreter.state, 0);
+        if ( globalProbe != null ) globalProbe.fireWhenEnabled(state, 0);
     }
 
     /**
@@ -160,7 +162,7 @@ public class InterruptTable {
      * the interrupts are disabled by clearing the global interrupt enable bit.
      */
     public void disableAll() {
-        if ( globalProbe != null ) globalProbe.fireWhenDisabled(interpreter.state, 0);
+        if ( globalProbe != null ) globalProbe.fireWhenDisabled(state, 0);
     }
 
     /**
@@ -170,8 +172,8 @@ public class InterruptTable {
      */
     public void beforeInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireBeforeInvoke(interpreter.state, inum);
-        if ( probe != null ) probe.fireBeforeInvoke(interpreter.state, inum);
+        if ( globalProbe != null ) globalProbe.fireBeforeInvoke(state, inum);
+        if ( probe != null ) probe.fireBeforeInvoke(state, inum);
         Notification n = notify[inum];
         if ( n != null ) n.invoke(inum);
     }
@@ -183,8 +185,8 @@ public class InterruptTable {
      */
     public void afterInvoke(int inum) {
         MulticastInterruptProbe probe = probes[inum];
-        if ( globalProbe != null ) globalProbe.fireAfterInvoke(interpreter.state, inum);
-        if ( probe != null ) probe.fireAfterInvoke(interpreter.state, inum);
+        if ( globalProbe != null ) globalProbe.fireAfterInvoke(state, inum);
+        if ( probe != null ) probe.fireAfterInvoke(state, inum);
     }
 
     /**

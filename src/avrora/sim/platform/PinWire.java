@@ -89,8 +89,8 @@ public class PinWire {
     protected PinWire(Simulator s, int colorNum, String pinName) {
 
         sim = s;
-        Clock clk = sim.getClock();
-        state = new FiniteStateMachine(clk, startMode, modeName, 0);
+        Clock clock = sim.getClock();
+        state = new FiniteStateMachine(clock, startMode, modeName, 0);
         wireOutput = new WireOutput();
         wireInput = new WireInput();
 
@@ -105,16 +105,15 @@ public class PinWire {
         interruptNum = 0;
         atmel = null;
         
-        AtmelMicrocontroller mcu = (AtmelMicrocontroller)sim.getMicrocontroller();
-       	propDelay = mcu.millisToCycles(0.0014);
+       	propDelay = clock.millisToCycles(0.0014);
 
     }
 
     protected PinWire(Simulator s, int colorNum, String pinName, int interruptNum, Microcontroller mcu) {
 
         sim = s;
-        Clock clk = sim.getClock();
-        state = new FiniteStateMachine(clk, startMode, modeName, 0);
+        Clock clock = sim.getClock();
+        state = new FiniteStateMachine(clock, startMode, modeName, 0);
         wireOutput = new WireOutput();
         wireInput = new WireInput();
 
@@ -129,7 +128,7 @@ public class PinWire {
         isInterruptPin = true;
         this.interruptNum = interruptNum;
         
-       	propDelay = mcu.millisToCycles(0.0014);
+       	propDelay = clock.millisToCycles(0.0014);
 
     }
 

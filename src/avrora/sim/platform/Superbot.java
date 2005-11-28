@@ -33,7 +33,6 @@
 package avrora.sim.platform;
 
 import avrora.core.Program;
-import avrora.sim.InterpreterFactory;
 import avrora.sim.Simulator;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.ATMega128;
@@ -65,11 +64,11 @@ public class Superbot extends Platform {
     }
 
     public static class Factory implements PlatformFactory {
-        public Platform newPlatform(int id, InterpreterFactory f, Program p) {
+        public Platform newPlatform(int id, Program p) {
             ClockDomain cd = new ClockDomain(7372800);
             cd.newClock("external", 32768);
 
-            return new Superbot(new ATMega128(id, cd, f, p));
+            return new Superbot(new ATMega128(id, cd, p));
         }
     }
     

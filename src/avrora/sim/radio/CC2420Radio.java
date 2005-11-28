@@ -32,11 +32,11 @@
 
 package avrora.sim.radio;
 
-import avrora.sim.FiniteStateMachine;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.util.TransactionalList;
+import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;
@@ -147,7 +147,7 @@ public class CC2420Radio implements Radio {
     protected final SaesCommand SAES_cmd;
     protected static final String[] allModeNames = RadioEnergy.allModeNames();
     protected static final int[][] ttm = FiniteStateMachine.buildSparseTTM(allModeNames.length, 0);
-    protected final Simulator.Printer radioPrinter;
+    protected final SimUtil.SimPrinter radioPrinter;
     protected final ProbeList probes;
     protected final long xoscFrequency;
     /**
@@ -216,7 +216,7 @@ public class CC2420Radio implements Radio {
         probes = new ProbeList();
         this.mcu = mcu;
         this.sim = mcu.getSimulator();
-        radioPrinter = sim.getPrinter("radio.cc2420");
+        radioPrinter = SimUtil.getPrinter(sim, "radio.cc2420");
         for (int i = 0x14; i < registers.length; i++) {
             registers[i] = new DummyRegister(i);
         }
@@ -1178,7 +1178,7 @@ public class CC2420Radio implements Radio {
     public class ATMegaController implements Radio.RadioController, ADC.ADCInput, SPIDevice {
         public CC2420Radio.PinInterface pinReader;
         private SPIDevice spiDevice;
-        private final Simulator.Printer printer;
+        private final SimUtil.SimPrinter printer;
         private int bytesToCome;
         private int regAdd;
         private int ramBank;
@@ -1227,7 +1227,7 @@ public class CC2420Radio implements Radio {
         }
 
         ATMegaController() {
-            printer = sim.getPrinter("radio.cc2420.data");
+            printer = SimUtil.getPrinter(sim, "radio.cc2420.data");
             bytesToCome = 3;
             highByte = 0;
             //CSnOld = true;
@@ -1668,10 +1668,10 @@ public class CC2420Radio implements Radio {
         boolean SCLK;
         boolean MOSI;
         boolean MISO;
-        Simulator.Printer readerPrinter;
+        SimUtil.SimPrinter readerPrinter;
 
         PinInterface(Microcontroller mcu) {
-            readerPrinter = sim.getPrinter("radio.cc2420.pinconfig");
+            readerPrinter = SimUtil.getPrinter(sim, "radio.cc2420.pinconfig");
             mcu.getPin(11).connect(new SCLKOutput());
             mcu.getPin(12).connect(new MOSIOutput());
             mcu.getPin(13).connect(new MISOInput());

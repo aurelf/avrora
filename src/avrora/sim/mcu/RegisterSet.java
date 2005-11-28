@@ -384,4 +384,11 @@ public class RegisterSet {
         return fo;
     }
 
+    public ActiveRegister getReg(int ior) {
+        return registers[ior];
+    }
+
+    public void setReg(int ior, ActiveRegister ar) {
+        registers[ior] = ar;
+    }
 }

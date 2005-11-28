@@ -142,13 +142,13 @@ public class DisassemblerGenerator extends Generator {
 
     private void initStatics() {
         properties.setProperty("addr", className("AddrMode"));
-        properties.setProperty("instr", className("LegacyInstr"));
-        properties.setProperty("operand", className("LegacyOperand"));
+        properties.setProperty("instr", className("Instr"));
+        properties.setProperty("operand", className("Operand"));
         properties.setProperty("opvisitor", className("OperandVisitor"));
-        properties.setProperty("visitor", className("LegacyInstrVisitor"));
+        properties.setProperty("visitor", className("InstrVisitor"));
         properties.setProperty("builder", className("InstrBuilder"));
         properties.setProperty("symbol", className("Symbol"));
-        properties.setProperty("disassembler", className("LegacyDisassembler"));
+        properties.setProperty("disassembler", className("Disassembler"));
 
         WORD_SIZE = (int)WORD.get();
         LITTLE_ENDIAN = "little".equals(ENDIAN.get());
@@ -281,7 +281,7 @@ public class DisassemblerGenerator extends Generator {
             def = d;
             length = dt.right_bit - dt.left_bit + 1;
             left = DisassemblerGenerator.nativeBitOrder(dt.left_bit, length);
-            mask = -1 >>> (32 - length);
+            mask = Arithmetic.getBitRangeMask(0, length - 1);
             action = act;
         }
         abstract void add(int value, String nname);

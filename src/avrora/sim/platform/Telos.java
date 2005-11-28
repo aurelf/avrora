@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,58 +28,53 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 22, 2005
  */
 
 package avrora.sim.platform;
 
-import avrora.core.Program;
-import avrora.sim.Simulator;
+import cck.text.Terminal;
 import avrora.sim.clock.ClockDomain;
-import avrora.sim.mcu.*;
+import avrora.sim.mcu.Microcontroller;
 import avrora.sim.platform.sensors.LightSensor;
 import avrora.sim.platform.sensors.SensorBoard;
-import avrora.sim.radio.CC2420Radio;
+import avrora.sim.Simulator;
 import avrora.sim.radio.Radio;
-import cck.text.Terminal;
+import avrora.sim.radio.CC2420Radio;
+import avrora.core.Program;
+import avrora.arch.msp430.mcu.F1611;
 
 /**
- * The <code>Mica2</code> class is an implementation of the <code>Platform</code> interface that represents
- * both a specific microcontroller and the devices connected to it. This implementation therefore uses the
- * ATMega128L microcontroller and uses LED and Radio devices, etc. The Mica2 class differs from Mica in that
- * it runs the ATMega128L not in compatibility mode. In addition, the CC1000 radio implementation is installed
- * on the Mica2.
- *
- * @author Ben L. Titzer, Daniel Lee
+ * @author Ben L. Titzer
  */
-public class MicaZ extends Platform {
+public class Telos extends Platform {
 
-    protected static final int MAIN_HZ = 7372800;
+    protected static final int MAIN_HZ = 8000000;
+    protected static final int EXT_HZ = 32768;
+    protected static final int RADIO_HZ = 7372800 * 2;
 
     public static class Factory implements PlatformFactory {
-
         /**
          * The <code>newPlatform()</code> method is a factory method used to create new instances of the
-         * <code>Mica2</code> class.
+         * <code>Telos</code> class.
          * @param id the integer ID of the node
          * @param p the program to load onto the node
          * @return a new instance of the <code>Mica2</code> platform
          */
         public Platform newPlatform(int id, Program p) {
             ClockDomain cd = new ClockDomain(MAIN_HZ);
-            cd.newClock("external", 32768);
+            cd.newClock("external", EXT_HZ);
 
-            return new MicaZ(new ATMega128(id, cd, p));
+            return new Telos(new F1611(id, cd, p));
         }
     }
 
     protected final Simulator sim;
 
     protected Radio radio;
-    protected SensorBoard sensorboard;
-    protected ExternalFlash externalFlash;
-    protected LightSensor lightSensor;
 
-    private MicaZ(Microcontroller m) {
+    protected Telos(Microcontroller m) {
         super(m);
         sim = m.getSimulator();
         addDevices();
@@ -98,21 +93,23 @@ public class MicaZ extends Platform {
         green.enablePrinting();
         red.enablePrinting();
 
-        mcu.getPin("PA0").connect(yellow);
-        mcu.getPin("PA1").connect(green);
-        mcu.getPin("PA2").connect(red);
+        // TODO: these pin assignments are not correct!
+        //mcu.getPin(30).connect(yellow);
+        //mcu.getPin(31).connect(green);
+        //mcu.getPin(32).connect(red);
 
         // radio
-        radio = new CC2420Radio(mcu, MAIN_HZ * 2);
-        addDevice("radio", radio);
+        //radio = new CC2420Radio(mcu, RADIO_HZ);
+        //addDevice("radio", radio);
         // sensor board
-        sensorboard = new SensorBoard(sim);
+        //sensorboard = new SensorBoard(sim);
         // external flash
-        externalFlash = new ExternalFlash(mcu);
+        //externalFlash = new ExternalFlash(mcu);
         // light sensor
-        AtmelMicrocontroller amcu = (AtmelMicrocontroller)mcu;
-        lightSensor = new LightSensor(amcu, 1, "PC2", "PE5");
-        addDevice("light-sensor", lightSensor);
+        //AtmelMicrocontroller amcu = (AtmelMicrocontroller)mcu;
+        //lightSensor = new LightSensor(mcu, 1, "PC2", "PE5");
+        //addDevice("light-sensor", lightSensor);
     }
 
 }
+

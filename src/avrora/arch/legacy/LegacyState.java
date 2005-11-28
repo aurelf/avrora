@@ -33,6 +33,7 @@
 package avrora.arch.legacy;
 
 import avrora.sim.*;
+import avrora.arch.AbstractInstr;
 
 /**
  * The <code>LegacyState</code> class represents the state of the simulator, including the contents of registers and
@@ -41,6 +42,24 @@ import avrora.sim.*;
  * @author Ben L. Titzer
  */
 public interface LegacyState extends State {
+
+    int NUM_REGS = 32; // number of general purpose registers
+    int SREG_I = 7;
+    int SREG_T = 6;
+    int SREG_H = 5;
+    int SREG_S = 4;
+    int SREG_V = 3;
+    int SREG_N = 2;
+    int SREG_Z = 1;
+    int SREG_C = 0;
+    int SREG_I_MASK = 1 << SREG_I;
+    int SREG_T_MASK = 1 << SREG_T;
+    int SREG_H_MASK = 1 << SREG_H;
+    int SREG_S_MASK = 1 << SREG_S;
+    int SREG_V_MASK = 1 << SREG_V;
+    int SREG_N_MASK = 1 << SREG_N;
+    int SREG_Z_MASK = 1 << SREG_Z;
+    int SREG_C_MASK = 1;
 
     /**
      * The <code>getInterruptTable()</code> method gets a reference to the interrupt table,
@@ -159,19 +178,6 @@ public interface LegacyState extends State {
      * @return the value on the top of the stack
      */
     public byte getStackByte();
-
-    /**
-     * The <code>getInstr()</code> can be used to retrieve a reference to the <code>LegacyInstr</code> object
-     * representing the instruction at the specified program address. Care should be taken that the address in
-     * program memory specified does not contain data. This is because Avrora does have a functioning
-     * disassembler and assumes that the <code>LegacyInstr</code> objects for each instruction in the program are
-     * known a priori.
-     *
-     * @param address the byte address from which to read the instruction
-     * @return a reference to the <code>LegacyInstr</code> object representing the instruction at that address in
-     *         the program
-     */
-    public LegacyInstr getInstr(int address);
 
     /**
      * The <code>getDataByte()</code> method reads a byte value from the data memory (SRAM) at the specified

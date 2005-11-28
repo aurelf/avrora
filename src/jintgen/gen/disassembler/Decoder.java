@@ -541,29 +541,39 @@ abstract class Decoder extends GenBase {
                 "instruction at this address if a valid instruction exists here; null otherwise", type));
         startblock("public $instr decode(int base, int index, $1[] code)", type);
         int num = DisassemblerGenerator.WORD_SIZE / elemSize;
+        String off = "";
         for ( int cntr = 0; cntr < dGen.maxInstrLength - 1; cntr += DisassemblerGenerator.WORD_SIZE ) {
             int word = cntr / DisassemblerGenerator.WORD_SIZE;
-            generateWordLoad(word, num, elemSize, signed);
+            println("word$1 = word(code, index$2);", word, off);
+            off = " + "+(word*num + num);
         }
-        println("pc = base + index * "+(elemSize/8)+";");
+        int i = (elemSize / 8);
+        String scale = i > 1 ? " * "+i : "";
+        println("pc = base + index"+scale+";");
         println("return decode_root();");
         endblock();
+        println("");
+        generateWordMethod(type, num, elemSize, signed);
     }
 
-    void generateWordLoad(int word, int num, int bits, boolean signed) {
+    void generateWordMethod(String type, int num, int bits, boolean signed) {
+        startblock("int word($1[] code, int index)", type);
         String mask = StringUtil.to0xHex((1 << bits) - 1, bits / 4);
-        print("word$1 = ", word);
+        println("if ( index > code.length - $1 ) return 0;", num);
+        print("else return ");
         for ( int cntr = 0; cntr < num; cntr++ ) {
             int ind;
-            if ( DisassemblerGenerator.LITTLE_ENDIAN ) ind = cntr + word * num;
-            else ind = num * (word+1) - cntr - 1;
-            if ( signed )
-                print("((code[index + $1] & $2) << $3)", ind, mask, cntr * bits);
+            if ( DisassemblerGenerator.LITTLE_ENDIAN ) ind = cntr;
+            else ind = num - cntr - 1;
+            String indx = add("index", ind);
+            if ( signed && cntr < num - 1 )
+                print(shift("(code[$1] & $2)", cntr * bits), indx, mask);
             else
-                print("(code[index + $1] << $2)", ind, cntr * bits);
+                print(shift("code[$1]", cntr * bits), indx);
             if ( cntr < num - 1 ) print(" | ");
         }
         println(";");
+        endblock();
     }
 
     void generateDecodingTree(String treeName, ActionGetter ag, DTNode dt, String def) {
@@ -584,6 +594,16 @@ abstract class Decoder extends GenBase {
                 "a decoding tree. It is the starting point for decoding a bit pattern.", treeName));
         println("private static final DTNode $1 = make_$1();", treeName);
 
+    }
+
+    String add(String str, int a) {
+        if ( a == 0 ) return str;
+        else return str+" + "+a;
+    }
+
+    String shift(String str, int s) {
+        if ( s == 0 ) return str;
+        else return "("+str+" << "+s+")";
     }
 
     String generateDecodingNode(DTNode n, ActionGetter ag, String def) {

@@ -33,6 +33,7 @@
 package avrora.sim.mcu;
 
 import avrora.sim.*;
+import avrora.sim.util.SimUtil;
 import avrora.sim.clock.Clock;
 import cck.util.Util;
 import java.util.Iterator;
@@ -48,8 +49,8 @@ public abstract class AtmelInternalDevice {
     public final String name;
     protected final AtmelMicrocontroller microcontroller;
     protected final Simulator simulator;
-    protected final BaseInterpreter interpreter;
-    protected final Simulator.Printer devicePrinter;
+    protected final AtmelInterpreter interpreter;
+    protected final SimUtil.SimPrinter devicePrinter;
     protected final Clock mainClock;
 
     public AtmelInternalDevice(String n, AtmelMicrocontroller m) {
@@ -57,8 +58,8 @@ public abstract class AtmelInternalDevice {
         microcontroller = m;
         simulator = m.getSimulator();
         mainClock = simulator.getClock();
-        interpreter = simulator.getInterpreter();
-        devicePrinter = m.getSimulator().getPrinter("atmel."+n);
+        interpreter = (AtmelInterpreter)simulator.getInterpreter();
+        devicePrinter = SimUtil.getPrinter(m.getSimulator(), "atmel." + n);
     }
 
     public Iterator getIORegs() {

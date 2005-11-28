@@ -49,8 +49,8 @@ public class Segment {
     public final int length;
 
     protected final State state;
-    protected final String name;
-    protected final byte value;
+    public final String name;
+    public final byte value;
     protected byte[] segment_data;
     protected final ErrorReporter errorReporter;
     protected MulticastWatch[] segment_watches;

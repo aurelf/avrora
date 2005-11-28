@@ -136,10 +136,10 @@ architecture avr {
     operand-type IMM6[6]: int [0, 63];
     operand-type IMM7[7]: int [0, 127];
     operand-type IMM8[8]: int [0, 255];
-    operand-type SREL[7]: int /* -address.2 */[-64, 63];
-    operand-type LREL[11]: int /* -address.2 */[-1024, 1023];
-    operand-type PADDR[16]: int /* address.2 */[0, 65536];
-    operand-type DADDR[16]: int /* address */[0, 65536];
+    operand-type SREL[7]: -address.2 [-64, 63];
+    operand-type LREL[11]: -address.2 [-1024, 1023];
+    operand-type PADDR[16]: address.2 [0, 65536];
+    operand-type DADDR[16]: address [0, 65536];
 
 //---------------------------------------------------------------------------
 // ADDRESSING MODES
@@ -344,7 +344,7 @@ architecture avr {
     }
 
     inline subroutine uword(low: int.8, high: int.8): int {
-        return ((high << 8) | low)[15:0];
+        return ((high << 8) | low[7:0])[15:0];
     }
 
 

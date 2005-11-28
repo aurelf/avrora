@@ -33,7 +33,6 @@
 package avrora.sim.platform;
 
 import avrora.core.Program;
-import avrora.sim.InterpreterFactory;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.Microcontroller;
 import avrora.sim.mcu.MicrocontrollerFactory;
@@ -84,14 +83,13 @@ public class DefaultPlatform extends Platform {
          * ID number, using the interpreter created by the given interpreter factory, containing the specified
          * progarm.
          * @param id the ID number of the platform to create
-         * @param f the interpreter factory capable of creating a new interpreter for this platform
          * @param p the program to load into the platform
          * @return a new instance of the <code>Platform</code> interface for this platform
          */
-        public Platform newPlatform(int id, InterpreterFactory f, Program p) {
+        public Platform newPlatform(int id, Program p) {
             ClockDomain cd = new ClockDomain(mainClockSpeed);
             cd.newClock("external", extClockSpeed);
-            return new DefaultPlatform(id, mcf.newMicrocontroller(id, cd, f, p));
+            return new DefaultPlatform(id, mcf.newMicrocontroller(id, cd, p));
         }
     }
 

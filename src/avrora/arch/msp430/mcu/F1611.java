@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,31 +28,60 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 22, 2005
  */
 
-package avrora.sim.mcu;
+package avrora.arch.msp430.mcu;
 
-import avrora.core.Program;
-import avrora.sim.InterpreterFactory;
+import avrora.sim.mcu.*;
 import avrora.sim.clock.ClockDomain;
+import avrora.sim.Simulator;
+import avrora.sim.Interpreter;
+import avrora.arch.msp430.MSP430Interpreter;
+import avrora.arch.msp430.MSP430Properties;
+import avrora.core.Program;
+import java.util.HashMap;
 
 /**
- * The <code>MicrocontrollerFactory</code> interface is implemented by a class that is capable of making
- * repeated copies of a particular microcontroller for use in simulation.
- *
  * @author Ben L. Titzer
  */
-public interface MicrocontrollerFactory {
+public class F1611 extends DefaultMCU {
 
-    /**
-     * The <code>newMicrocontroller()</code> method is used to instantiate a microcontroller instance for the
-     * particular program. It will construct an instance of the <code>Simulator</code> class that has all the
-     * properties of this hardware device and has been initialized with the specified program.
-     *
-     * @param p the program to load onto the microcontroller
-     * @return a <code>Microcontroller</code> instance that represents the specific hardware device with the
-     *         program loaded onto it
-     */
-    public Microcontroller newMicrocontroller(int id, ClockDomain cd, Program p);
+    protected static final MSP430Properties PROPS = initProps();
+    protected static final int IOREG_SIZE = 256;
+    protected static final int _1kb = 1024;
+    protected static final int SRAM_SIZE = 10 * _1kb;
+    protected static final int CODE_START = 16 * _1kb;
 
+    static MSP430Properties initProps() {
+        HashMap pins = new HashMap();
+        RegisterLayout layout = new RegisterLayout(IOREG_SIZE, 16);
+        HashMap ints = new HashMap();
+        return new MSP430Properties(IOREG_SIZE, SRAM_SIZE, CODE_START, 40, 64, pins, layout, ints);
+    }
+
+    protected final Interpreter interpreter;
+
+    public F1611(int id, ClockDomain cd, Program p) {
+        super(cd, 60, PROPS.getRegisterLayout().instantiate(), null);
+        simulator = new Simulator(id, MSP430Interpreter.FACTORY, this, p);
+        interpreter = simulator.getInterpreter();
+    }
+
+    public void sleep() {
+        // do nothing.
+    }
+
+    public int wakeup() {
+        return 0;
+    }
+
+    public Microcontroller.Pin getPin(String n) {
+        return getPin(PROPS.getPin(n));
+    }
+
+    public MCUProperties getProperties() {
+        return PROPS;
+    }
 }

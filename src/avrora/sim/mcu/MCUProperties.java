@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,57 +28,19 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 22, 2005
  */
 
 package avrora.sim.mcu;
 
-import avrora.sim.CodeSegment;
 import cck.text.StringUtil;
 import java.util.*;
 
 /**
- * The <code>MicrocontrollerProperties</code> class is simply a wrapper class around several
- * properties of a microcontroller including the size of the IO registers, the size of SRAM,
- * flash, and EEPROM, as well as the mapping between names of pins and their physical pin
- * number.
- *
  * @author Ben L. Titzer
  */
-public class MicrocontrollerProperties {
-
-    /**
-     * The <code>ioreg_size</code> field stores the number of IO registers on this microcontroller.
-     */
-    public final int ioreg_size;
-
-    /**
-     * The <code>sram_size</code> field stores the size of the SRAM (excluding the general purpose
-     * registers and IO registers) on this microcontroller.
-     */
-    public final int sram_size;
-
-    /**
-     * The <code>flash_size</code> field stores the size of the code segment (flash) on this microcontroller.
-     */
-    public final int flash_size;
-
-    /**
-     * The <code>eeprom_size</code> field stores the size of the EEPROM on this microcontroller.
-     */
-    public final int eeprom_size;
-
-    /**
-     * The <code>num_pins</code> field stores the number of physical pins on this microcontroller.
-     */
-    public final int num_pins;
-
-    /**
-     * The <code>num_interrupts</code> field stores the number of interrupts supported on this
-     * microcontroller.
-     */
-    public final int num_interrupts;
-
-    public final CodeSegment.Factory codeSegmentFactory;
+public class MCUProperties {
 
     protected final HashMap pinAssignments;
     protected final RegisterLayout layout;
@@ -86,63 +48,53 @@ public class MicrocontrollerProperties {
     protected final String[] ioreg_name;
     protected final String[] interrupt_name;
 
-    /**
-     * The constructor for the <code>MicrocontrollerProperties</code> class creates a new
-     * instance with the specified register size, flash size, etc. All such fields are immutable,
-     * and the pin assignments and IO register assignments cannot be changed.
-     *
-     * @param is the number of IO registers on this microcontroller
-     * @param ss the size of the SRAM in bytes
-     * @param fs the size of the flash in bytes
-     * @param es the size of the EEPROM in bytes
-     * @param np the number of physical pins on the microcontroller
-     * @param ni the number of interrupts on the microcontroller
-     * @param pa a <code>HashMap</code> instance mapping string names to <code>Integer</code>
-     * indexes for the pins
-     * @param rl a <code>RegisterLayout</code> instance mapping string names to IO register addresses
-     * @param inta a <code>HashMap</code> instance mapping string names to <code>Integer</code>
-     * indexes for each type of interrupt
-     */
-    public MicrocontrollerProperties(int is, int ss, int fs, int es, int np, int ni, CodeSegment.Factory csf, HashMap pa, RegisterLayout rl, HashMap inta) {
-        ioreg_size = is;
-        sram_size = ss;
-        flash_size = fs;
-        eeprom_size = es;
-        num_pins = np;
-        num_interrupts = ni;
+    public final int num_interrupts;
 
-        codeSegmentFactory = csf;
-
-        ioreg_name = new String[is];
-        interrupt_name = new String[ni];
-
+    protected MCUProperties(HashMap pa, RegisterLayout rl, HashMap inta, int ni) {
         pinAssignments = pa;
         layout = rl;
         interruptAssignments = inta;
 
-        initIORNames();
-        initInterruptNames();
+        ioreg_name = initIORNames();
+        interrupt_name = initInterruptNames();
+        num_interrupts = ni;
     }
 
     public RegisterLayout getRegisterLayout() {
         return layout;
     }
 
-    private void initInterruptNames() {
+    protected String[] initInterruptNames() {
+        int max = getMax();
+        String[] interrupt_name = new String[max+1];
         Iterator i = interruptAssignments.keySet().iterator();
         while ( i.hasNext() ) {
             String s = (String)i.next();
             Integer iv = (Integer)interruptAssignments.get(s);
             interrupt_name[iv.intValue()] = s;
         }
+        return interrupt_name;
     }
 
-    private void initIORNames() {
+    private int getMax() {
+        int max = 0;
+        Iterator i = interruptAssignments.keySet().iterator();
+        while ( i.hasNext() ) {
+            String s = (String)i.next();
+            int v = ((Integer)interruptAssignments.get(s)).intValue();
+            if ( max < v ) max = v;
+        }
+        return max;
+    }
+
+    protected String[] initIORNames() {
+        String[] ioreg_name = new String[layout.ioreg_size];
         for ( int cntr = 0; cntr < layout.ioreg_size; cntr++ ) {
             RegisterLayout.RegisterInfo registerInfo = layout.info[cntr];
             if ( registerInfo != null )
                 ioreg_name[cntr] = registerInfo.name;
         }
+        return ioreg_name;
     }
 
     /**
@@ -150,7 +102,7 @@ public class MicrocontrollerProperties {
      * microcontroller.
      * @param n the name of the pin such as "OC0"
      * @return an integer representing the physical pin number if it exists;
-     * @throws NoSuchElementException if the specified pin name does not have an assignment
+     * @throws java.util.NoSuchElementException if the specified pin name does not have an assignment
      */
     public int getPin(String n) {
         Integer i = (Integer)pinAssignments.get(n);
@@ -164,7 +116,7 @@ public class MicrocontrollerProperties {
      * LegacyRegister name for this microcontroller.
      * @param n the name of the IO register such as "TCNT0"
      * @return an integer representing the IO register number if it exists
-     * @throws NoSuchElementException if the specified IO register name does not have an assignment
+     * @throws java.util.NoSuchElementException if the specified IO register name does not have an assignment
      */
     public int getIOReg(String n) {
         return layout.getIOReg(n);
@@ -184,7 +136,7 @@ public class MicrocontrollerProperties {
      * name for this microcontroller
      * @param n the name of the interrupt such as "RESET"
      * @return an integer representing the interrupt number if it exists
-     * @throws NoSuchElementException if the specified interrupt name does not have an assignment
+     * @throws java.util.NoSuchElementException if the specified interrupt name does not have an assignment
      */
     public int getInterrupt(String n) {
         Integer i = (Integer)interruptAssignments.get(n);

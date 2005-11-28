@@ -36,7 +36,7 @@ import avrora.core.Program;
 import avrora.sim.FiniteStateMachine;
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import avrora.sim.mcu.AtmelMicrocontroller;
+import avrora.sim.mcu.DefaultMCU;
 import cck.text.*;
 
 /**
@@ -60,7 +60,7 @@ public class SleepMonitor extends MonitorFactory {
         Mon(Simulator s) {
             simulator = s;
             program = s.getProgram();
-            fsm = ((AtmelMicrocontroller)s.getMicrocontroller()).getFSM();
+            fsm = ((DefaultMCU)s.getMicrocontroller()).getFSM();
             clock = fsm.getClock();
             times = new long[fsm.getNumberOfStates()];
             fsm.insertProbe(this);

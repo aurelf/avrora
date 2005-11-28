@@ -36,8 +36,8 @@ package avrora.sim.util;
 
 import avrora.sim.Simulator;
 import avrora.sim.clock.Clock;
-import cck.text.StringUtil;
-import cck.text.Terminal;
+import cck.text.*;
+import cck.util.Util;
 
 /**
  * The <code>SimUtil</code> class encapsulates a set of utility methods that are used in
@@ -46,6 +46,65 @@ import cck.text.Terminal;
  * @author Ben L. Titzer
  */
 public class SimUtil {
+
+    public static void readError(Simulator sim, String segment, int address) {
+        String msg = "illegal read from " + segment + " at address " + StringUtil.addrToString(address);
+        int npc = sim.getState().getPC();
+        warning(sim, StringUtil.to0xHex(npc, 4), msg);
+    }
+
+    public static void writeError(Simulator sim, String segment, int address, byte value) {
+        String msg = "illegal write to " + segment + " at address " + StringUtil.addrToString(address);
+        int npc = sim.getState().getPC();
+        warning(sim, StringUtil.to0xHex(npc, 4), msg);
+    }
+
+    /**
+     * The <code>Simulator.Printer</code> class is a printer that is tied to a specific <code>Simulator</code>
+     * instance. Being tied to this instance, it will always report the node ID and time before printing
+     * anything. This simple mechanism allows the output to be much cleaner to track the output
+     * of multiple nodes at once.
+     */
+    public static class SimPrinter {
+
+        /**
+         * The <code>enabled</code> field is true when this printer is enabled. When this printer
+         * is not enabled, the <code>println()</code> method SHOULD NOT BE CALLED.
+         */
+        public boolean enabled;
+        private Simulator simulator;
+
+        protected SimPrinter(Simulator simulator, String category) {
+            this.simulator = simulator;
+            Verbose.Printer p = Verbose.getVerbosePrinter(category);
+            enabled = p.enabled;
+        }
+
+        /**
+         * The <code>println()</code> method prints the node ID, the time, and a message to the
+         * console, synchronizing with other threads so that output is not interleaved. This method
+         * SHOULD ONLY BE CALLED WHEN <code>enabled</code> IS TRUE! This is done to prevent
+         * performance bugs created by string construction inside printing (and debugging code).
+         * @param s the string to print
+         */
+        public void println(String s) {
+            if (enabled) {
+                synchronized ( Terminal.class ) {
+                    // synchronize on the terminal to prevent interleaved output
+                    StringBuffer buf = new StringBuffer(s.length()+30);
+                    SimUtil.getIDTimeString(buf, simulator);
+                    buf.append(s);
+                    Terminal.println(buf.toString());
+                }
+            } else {
+                throw Util.failure("Disabled printer: performance bug!");
+            }
+        }
+    }
+
+    public static SimPrinter getPrinter(Simulator s, String str) {
+        return new SimPrinter(s, str);
+    }
 
     public static void toIDTimeString(StringBuffer buf, int id, Clock clk) {
         buf.append(StringUtil.rightJustify(id, StringUtil.ID_LENGTH));
@@ -89,4 +148,7 @@ public class SimUtil {
         buf.append(m);
         Terminal.println(buf.toString());
     }
+
+
+
 }

@@ -32,11 +32,12 @@
 
 package avrora.sim.radio;
 
-import avrora.sim.FiniteStateMachine;
-import avrora.sim.Simulator;
+import avrora.sim.*;
+import avrora.sim.clock.Clock;
 import avrora.sim.energy.Energy;
 import avrora.sim.mcu.*;
 import avrora.sim.util.TransactionalList;
+import avrora.sim.util.SimUtil;
 import cck.text.StringUtil;
 import cck.util.Arithmetic;
 import cck.util.Util;
@@ -108,7 +109,7 @@ public class CC1000Radio implements Radio {
     protected final FSCTRLRegister FSCTRL_reg;
     protected final PrescalerRegister PRESCALER_reg;
 
-    protected final Simulator.Printer radioPrinter;
+    protected final SimUtil.SimPrinter radioPrinter;
 
     protected final Receiver receiver = new Receiver();
     protected final Transmitter transmitter = new Transmitter();
@@ -123,6 +124,7 @@ public class CC1000Radio implements Radio {
      */
     protected final Microcontroller mcu;
     protected final Simulator sim;
+    protected final Clock clock;
     protected final FiniteStateMachine stateMachine;
 
     protected Radio.RadioController controller;
@@ -179,8 +181,9 @@ public class CC1000Radio implements Radio {
 
         this.mcu = mcu;
         this.sim = mcu.getSimulator();
+        this.clock = sim.getClock();
 
-        radioPrinter = sim.getPrinter("radio.cc1000");
+        radioPrinter = SimUtil.getPrinter(sim, "radio.cc1000");
 
         MAIN_reg = new MainRegister();
 
@@ -795,7 +798,7 @@ public class CC1000Radio implements Radio {
                 //resulting in a delay of a little more than 32ms 
                 //Reference: CC1000 datasheet (rev 2.1) pages 20 and 22
                 double calMs = (34.0 * 1000000.0 / 14745600.0) * PLL_reg.refDiv;
-                sim.insertEvent(calibrate, mcu.millisToCycles(calMs));
+                clock.insertEvent(calibrate, clock.millisToCycles(calMs));
             }
 
         }
@@ -1002,11 +1005,11 @@ public class CC1000Radio implements Radio {
 
         private SPIDevice spiDevice;
         private final TransferTicker ticker;
-        private final Simulator.Printer printer;
+        private final SimUtil.SimPrinter printer;
 
         ATMegaController() {
             ticker = new TransferTicker();
-            printer = sim.getPrinter("radio.cc1000.data");
+            printer = SimUtil.getPrinter(sim, "radio.cc1000.data");
         }
 
         public void enable() {
@@ -1036,13 +1039,13 @@ public class CC1000Radio implements Radio {
                     //as TinyOS itself waits 250us via TOSH_uwait(250) before it
                     //sends or reads data
                     //Based on this, probably Radio.TRANSFER_TIME fits best
-                    sim.insertEvent(ticker, Radio.TRANSFER_TIME);
+                    clock.insertEvent(ticker, Radio.TRANSFER_TIME);
                 }
             }
 
             public void deactivateTicker() {
                 tickerOn = false;
-                sim.removeEvent(this);
+                clock.removeEvent(this);
             }
 
             public void fire() {
@@ -1056,7 +1059,7 @@ public class CC1000Radio implements Radio {
                 spiDevice.receiveFrame(transmitFrame());
 
                 if (tickerOn) {
-                    sim.insertEvent(this, Radio.TRANSFER_TIME);
+                    clock.insertEvent(this, Radio.TRANSFER_TIME);
 
                 }
             }
@@ -1070,7 +1073,7 @@ public class CC1000Radio implements Radio {
 
             // data, frequency, origination
             if (!MAIN_reg.txPd && MAIN_reg.rxtx) {
-                long currentTime = sim.getState().getCycles();
+                long currentTime = clock.getCount();
                 new Transmit(new Transmission(frame.data, 0, currentTime));
             } else {
                 if (printer.enabled) {
@@ -1088,7 +1091,7 @@ public class CC1000Radio implements Radio {
 
             Transmit(Radio.Transmission packet) {
                 this.packet = packet;
-                sim.insertEvent(this, Radio.TRANSFER_TIME / 8);
+                clock.insertEvent(this, Radio.TRANSFER_TIME / 8);
             }
 
             public void fire() {
@@ -1297,13 +1300,13 @@ public class CC1000Radio implements Radio {
 
         int bitsRead;
 
-        Simulator.Printer readerPrinter;
+        SimUtil.SimPrinter readerPrinter;
 
         Microcontroller.Pin.Input paleInput;
 
         SerialConfigurationInterface(Microcontroller mcu) {
 
-            readerPrinter = sim.getPrinter("radio.cc1000.pinconfig");
+            readerPrinter = SimUtil.getPrinter(sim, "radio.cc1000.pinconfig");
 
             //install outputs
             mcu.getPin(31).connect(new PCLKOutput());

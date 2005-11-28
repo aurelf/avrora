@@ -30,29 +30,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.sim;
+package avrora.arch.legacy;
 
-import avrora.arch.legacy.*;
 import avrora.core.Program;
-import avrora.sim.mcu.MicrocontrollerProperties;
+import avrora.arch.avr.AVRProperties;
+import avrora.sim.*;
+import avrora.sim.mcu.MCUProperties;
 import cck.util.Arithmetic;
 
 /**
- * The <code>GenInterpreter</code> class is largely generated from the instruction specification. The
+ * The <code>LegacyInterpreter</code> class is largely generated from the instruction specification. The
  * framework around the generated code (utilities) has been written by hand, but most of the code for each
  * instruction is generated. Therefore it is not recommended to edit this code extensively.
  *
  * @author Ben L. Titzer
  */
-public class GenInterpreter extends BaseInterpreter implements LegacyInstrVisitor {
+public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVisitor {
 
-    /**
-     * The <code>Factory()</code> class implements an interpreter factory that can create
-     * a new interpreter for a new simulator instance with the given program.
-     */
-    public static final class Factory extends InterpreterFactory {
-        public BaseInterpreter newInterpreter(Simulator s, Program p, MicrocontrollerProperties pr) {
-            return new GenInterpreter(s, p, pr);
+    public static final Factory FACTORY = new Factory();
+
+    public static class Factory extends InterpreterFactory {
+        public Interpreter newInterpreter(Simulator s, Program p, MCUProperties pr) {
+            return new LegacyInterpreter(s, p, (AVRProperties)pr);
         }
     }
 
@@ -103,7 +102,7 @@ public class GenInterpreter extends BaseInterpreter implements LegacyInstrVisito
      * @param p the program to construct the state for
      * @param pr the properties of the microcontroller being simulated
      */
-    protected GenInterpreter(Simulator s, Program p, MicrocontrollerProperties pr) {
+    protected LegacyInterpreter(Simulator s, Program p, AVRProperties pr) {
         super(s, p, pr);
         // this class and its methods are performance critical
         // observed speedup with this call on Hotspot

@@ -73,11 +73,6 @@ public class CodemapGenerator extends Generator {
             registerMap.put("R" + cntr, cntr);
         }
         throw Util.unimplemented();
-        /*
-        registerMap.put("RX", new Integer(LegacyRegister.X.getNumber()));
-        registerMap.put("RY", new Integer(LegacyRegister.Y.getNumber()));
-        registerMap.put("RZ", new Integer(LegacyRegister.Z.getNumber()));
-        */
     }
 
     static class Operand {
