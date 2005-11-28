@@ -7,7 +7,6 @@ checkSuccess() {
     else
 	echo "*** STOP: $2 ***"
 	$3
-	cat /tmp/commit.reason
 	exit 1
     fi
 }
@@ -17,7 +16,7 @@ for t in $TESTS; do
 
     echo Running tests in test/$t...
     test -d test/$t
-    checkSuccess "test/$t exists." "test/$t does not exist." 'cat > /tmp/commit.reason'
+    checkSuccess "test/$t exists." "test/$t does not exist." ''
 
     cd test/$t
     java avrora.Main -action=test *.tst &> /tmp/test.log
