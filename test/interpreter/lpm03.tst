@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the LPM (load program memory) instruction"
-; @Result: "r2 = 42, z = data + 1"
+; @Result: "r2 = 42, z = @data + 1"
 
 start:
     ldi r30, data * 2

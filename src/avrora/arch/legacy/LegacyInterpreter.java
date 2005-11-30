@@ -928,21 +928,21 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
     public void visit(LegacyInstr.ELPM i) {
         nextPC = pc + 2;
         int tmp_0 = extended(getRegisterWord(RZ));
-        writeRegisterByte(R0, getProgramByte(tmp_0));
+        writeRegisterByte(R0, getFlashByte(tmp_0));
         cyclesConsumed += 3;
     }
 
     public void visit(LegacyInstr.ELPMD i) {
         nextPC = pc + 2;
         int tmp_0 = extended(getRegisterWord(RZ));
-        writeRegisterByte(i.r1, getProgramByte(tmp_0));
+        writeRegisterByte(i.r1, getFlashByte(tmp_0));
         cyclesConsumed += 3;
     }
 
     public void visit(LegacyInstr.ELPMPI i) {
         nextPC = pc + 2;
         int tmp_0 = extended(getRegisterWord(RZ));
-        writeRegisterByte(i.r1, getProgramByte(tmp_0));
+        writeRegisterByte(i.r1, getFlashByte(tmp_0));
         writeRegisterWord(RZ, tmp_0 + 1);
         cyclesConsumed += 3;
     }
@@ -1076,20 +1076,20 @@ public class LegacyInterpreter extends AtmelInterpreter implements LegacyInstrVi
 
     public void visit(LegacyInstr.LPM i) {
         nextPC = pc + 2;
-        writeRegisterByte(R0, getProgramByte(getRegisterWord(RZ)));
+        writeRegisterByte(R0, getFlashByte(getRegisterWord(RZ)));
         cyclesConsumed += 3;
     }
 
     public void visit(LegacyInstr.LPMD i) {
         nextPC = pc + 2;
-        writeRegisterByte(i.r1, getProgramByte(getRegisterWord(RZ)));
+        writeRegisterByte(i.r1, getFlashByte(getRegisterWord(RZ)));
         cyclesConsumed += 3;
     }
 
     public void visit(LegacyInstr.LPMPI i) {
         nextPC = pc + 2;
         int tmp_0 = getRegisterWord(RZ);
-        writeRegisterByte(i.r1, getProgramByte(tmp_0));
+        writeRegisterByte(i.r1, getFlashByte(tmp_0));
         writeRegisterWord(RZ, tmp_0 + 1);
         cyclesConsumed += 3;
     }

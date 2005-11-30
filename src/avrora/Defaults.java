@@ -47,6 +47,7 @@ import avrora.syntax.elf.ELFLoader;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.*;
 import avrora.test.*;
+import avrora.test.sim.SimTestHarness;
 import cck.help.*;
 import cck.test.TestHarness;
 import cck.text.StringUtil;
@@ -120,7 +121,7 @@ public class Defaults {
         if (harnessMap == null) {
             harnessMap = new ClassMap("Test Harness", TestHarness.class);
             //-- DEFAULT TEST HARNESSES
-            harnessMap.addClass("simulator", SimulatorTestHarness.class);
+            harnessMap.addClass("simulator", SimTestHarness.class);
             harnessMap.addClass("simplifier", SimplifierTestHarness.class);
             harnessMap.addClass("probes", ProbeTestHarness.class);
             harnessMap.addClass("disassembler", DisassemblerTestHarness.class);

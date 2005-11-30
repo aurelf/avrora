@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test instructions for reading/writing to IO registers"
-; @Result: "r17 = 42, $(95) = 42, r18 = 42, $(0) = 0"
+; @Result: "r17 = 42, sram[95] = 42, r18 = 42, sram[0] = 0"
 
 start:
     ldi r17, 42

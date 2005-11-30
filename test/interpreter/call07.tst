@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the branch instructions for correct conditions and target"
-; @Result: "target = 14, r16 = 0, r17 = 0, r18 = 3, r19 = 4, sp = 255"
+; @Result: "@target = 14, r16 = 0, r17 = 0, r18 = 3, r19 = 4, sp = 255"
 
 setstack:
     ldi r21, 255

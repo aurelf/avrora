@@ -1,7 +1,7 @@
 ; @Harness: simulator
 ; @Purpose: "Test the LDD (load from SRAM with displacement) instruction"
-; @Initial: "[memory + 2] = 42"
-; @Result: "r16 = 42, z = memory"
+; @Initial: "[@memory + 2] = 42"
+; @Result: "r16 = 42, z = @memory"
 
 start:
     ldi r17, 42

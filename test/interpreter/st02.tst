@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the variants of the ST instruction"
-; @Result: "$(memory) = 42, x = memory + 1"
+; @Result: "sram[@memory] = 42, x = @memory + 1"
 
 start:
     ldi r16, 42

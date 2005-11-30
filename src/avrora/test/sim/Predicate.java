@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2005, Regents of the University of California
+ * Copyright (c) 2005, Regents of the University of California
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,36 +28,36 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Creation date: Nov 29, 2005
  */
 
-package avrora;
-
-import cck.util.VersionTag;
+package avrora.test.sim;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
- *
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
+ * The <code>Predicate</code> class represents a predicate (or an initializer) consisting
+ * of expressions over the state that must be equal.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class Predicate {
+    protected SimTestExpr left, right;
+    protected int leftvalue;
+    protected int rightvalue;
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public static final int commit = 45;
+    protected Predicate(SimTestExpr l, SimTestExpr r) {
+        left = l;
+        right = r;
+    }
 
-    /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
-     */
-    public static final VersionTag TAG = new VersionTag("avrora", "Beta", 1, 7, commit);
+    public boolean check(StateAccessor access) {
+        leftvalue = left.evaluate(access);
+        rightvalue = right.evaluate(access);
+        return leftvalue == rightvalue;
+    }
 
+    public void init(StateAccessor access) {
+        int val = right.evaluate(access);
+        left.set(access, val);
+    }
 }

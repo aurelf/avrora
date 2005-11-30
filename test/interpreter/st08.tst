@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the STS (store direct to SRAM) instruction"
-; @Result: "$(memory) = 42"
+; @Result: "sram[@memory] = 42"
 
 start:
     ldi r16, 42

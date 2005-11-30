@@ -193,7 +193,7 @@ public class StringUtil {
         return false;
     }
 
-    private void expectChar(CharacterIterator i, char c) throws Exception {
+    public static void expectChar(CharacterIterator i, char c) throws Exception {
         char r = i.current();
         i.next();
         if (r != c)

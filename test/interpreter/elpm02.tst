@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the ELPM (extended load program memory) instruction"
-; @Result: "r2 = 42, z = data"
+; @Result: "r2 = 42, z = @data"
 
 start:
     ldi r30, data * 2

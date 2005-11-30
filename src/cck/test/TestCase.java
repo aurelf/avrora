@@ -135,5 +135,22 @@ public abstract class TestCase {
         }
     }
 
+    public static class InitFailure extends TestCase {
+        final Throwable thrown;
+
+        public InitFailure(String fname, Throwable t) {
+            super(fname, null);
+            thrown = t;
+        }
+
+        public void run() {
+            // do nothing.
+        }
+
+        public TestResult match(Throwable t) {
+            return new TestResult.Malformed(thrown.toString());
+        }
+    }
+
 
 }

@@ -1,7 +1,7 @@
 ; @Harness: simulator
 ; @Purpose: "Test the LD (load from SRAM) instruction"
-; @Initial: "[memory] = 42"
-; @Result: "r16 = 42, y = memory"
+; @Initial: "[@memory] = 42"
+; @Result: "r16 = 42, y = @memory"
 
 start:
     ldi r17, 42

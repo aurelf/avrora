@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the behavior of the software stack"
-; @Result: "$(sp+1) = 43, sp = 254, r18 = 42"
+; @Result: "sram[sp+1] = 43, sp = 254, r18 = 42"
 
 start:
     ldi r17, 255

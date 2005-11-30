@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the STD (store with displacement) instruction"
-; @Result: "$(memory + 2) = 42, y = memory"
+; @Result: "sram[@memory + 2] = 42, y = @memory"
 
 start:
     ldi r16, 42

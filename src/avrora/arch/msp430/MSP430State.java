@@ -132,6 +132,16 @@ public abstract class MSP430State extends Interpreter implements State {
     }
 
     /**
+     * The <code>getRegister()</code> method reads a general purpose register's current value as a byte.
+     *
+     * @param reg the register to read
+     * @return the current value of the specified register as a byte
+     */
+    public char getRegister(int reg) {
+        return regs[reg];
+    }
+
+    /**
      * The <code>getCycles()</code> method returns the clock cycle count recorded so far in the simulation.
      *
      * @return the number of clock cycles elapsed in the simulation

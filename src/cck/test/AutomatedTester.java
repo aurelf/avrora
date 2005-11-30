@@ -200,8 +200,7 @@ public class AutomatedTester {
             TestHarness harness = (TestHarness)harnessMap.getObjectOfClass(hname);
             return harness.newTestCase(fname, vars);
         } catch (Throwable t) {
-            // TODO: better error messages for failure to find test harness
-            return new TestCase.Malformed(fname, "exception in test case initialization");
+            return new TestCase.InitFailure(fname, t);
         }
     }
 

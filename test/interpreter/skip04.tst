@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the skip instructions for correct conditions and target"
-; @Result: "$(59) = 1, r18 = 1, r19 = 2"
+; @Result: "sram[59] = 1, r18 = 1, r19 = 2"
 
 start:
     ldi r17, 1

@@ -68,7 +68,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
     public boolean N;
     public boolean Z;
     public boolean C;
-    protected ActiveRegister SREG_reg;
+    public ActiveRegister SREG_reg;
     protected RWRegister SPL_reg;
     protected RWRegister SPH_reg;
 
@@ -841,7 +841,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      * @return the byte value of the program memory at the specified address
      * @throws avrora.sim.InterpreterError.AddressOutOfBoundsException if the specified address is not the valid program memory range
      */
-    public byte getProgramByte(int address) {
+    public byte getFlashByte(int address) {
         return flash.read(address);
     }
 
@@ -1038,7 +1038,7 @@ public abstract class AtmelInterpreter extends Interpreter implements LegacyInst
      *
      * @param val
      */
-    protected void setSP(int val) {
+    public void setSP(int val) {
         SPL_reg.value = (Arithmetic.low(val));
         SPH_reg.value = (Arithmetic.high(val));
     }

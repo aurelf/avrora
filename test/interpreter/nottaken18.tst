@@ -1,6 +1,6 @@
 ; @Harness: simulator
 ; @Purpose: "Test the branch instructions for correct conditions and target"
-; @Result: "target = 8, r16 = 1, r17 = 2, r18 = 3, r19 = 4"
+; @Result: "@target = 8, r16 = 1, r17 = 2, r18 = 3, r19 = 4"
 
 start:
     seh
