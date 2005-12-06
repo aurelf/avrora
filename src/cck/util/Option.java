@@ -34,17 +34,17 @@ package cck.util;
 
 import cck.text.StringUtil;
 import cck.text.Terminal;
-
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedList;
 
 /**
  * The <code>Option</code> class represents an option that has been given on the command line. The inner
  * classes represent specific types of options such as integers, booleans, and strings.
  *
  * @author Ben L. Titzer
- * @see Options
+ * @see cck.util.Options
  */
 public abstract class Option {
     /**
@@ -64,8 +64,8 @@ public abstract class Option {
      */
     public static final Comparator COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
-            Option opt1 = (Option) o1;
-            Option opt2 = (Option) o2;
+            Option opt1 = (Option)o1;
+            Option opt2 = (Option)o2;
             return String.CASE_INSENSITIVE_ORDER.compare(opt1.getName(), opt2.getName());
         }
     };
@@ -149,7 +149,8 @@ public abstract class Option {
      * @param val  the (invalid) value passed
      */
     protected void parseError(String name, String type, String val) {
-        Util.userError("Option Error", "invalid value for " + type + " option " + StringUtil.quote(name) + " = " + StringUtil.quote(val));
+        Util.userError("Option Error", "invalid value for " + type + " option " +
+                StringUtil.quote(name) + " = " + StringUtil.quote(val));
     }
 
     /**
@@ -207,7 +208,7 @@ public abstract class Option {
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return String.valueOf(value);
+            return "" + value;
         }
 
         /**
@@ -215,7 +216,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            printHeader("long", String.valueOf(defvalue));
+            printHeader("long", "" + defvalue);
             printDescription();
         }
     }
@@ -275,7 +276,7 @@ public abstract class Option {
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return String.valueOf(value);
+            return "" + value;
         }
 
         /**
@@ -283,7 +284,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            printHeader("double", String.valueOf(defvalue));
+            printHeader("double", "" + defvalue);
             printDescription();
         }
     }
@@ -331,19 +332,22 @@ public abstract class Option {
             CharacterIterator iter = new StringCharacterIterator(val);
             try {
                 // check for leading [
-                if (!StringUtil.peekAndEat(iter, '[')) parseError(name, "interval", val);
+                if (!StringUtil.peekAndEat(iter, '['))
+                    parseError(name, "interval", val);
 
                 String lstr = StringUtil.readDecimalString(iter, 12);
                 low = java.lang.Long.parseLong(lstr);
 
                 // check for ',' separator
-                if (!StringUtil.peekAndEat(iter, ',')) parseError(name, "interval", val);
+                if (!StringUtil.peekAndEat(iter, ','))
+                    parseError(name, "interval", val);
 
                 String hstr = StringUtil.readDecimalString(iter, 12);
                 high = java.lang.Long.parseLong(hstr);
 
                 // check for trailing ]
-                if (!StringUtil.peekAndEat(iter, ']')) parseError(name, "interval", val);
+                if (!StringUtil.peekAndEat(iter, ']'))
+                    parseError(name, "interval", val);
 
             } catch (NumberFormatException e) {
                 // in case of NumberFormatException
@@ -429,7 +433,6 @@ public abstract class Option {
          * The <code>setNewDefault()</code> method sets a new default value for this option. This is useful
          * for inherited options that might have a different default value for different actions or different
          * simulations.
-         *
          * @param val the new default value for this option
          */
         public void setNewDefault(String val) {
@@ -466,7 +469,7 @@ public abstract class Option {
         }
 
         public boolean isBlank() {
-            return "".equals(value);
+            return value.equals("");
         }
     }
 
@@ -501,17 +504,6 @@ public abstract class Option {
         }
 
         /**
-         * The <code>setNewDefault()</code> method sets a new default value for this option. This is useful
-         * for inherited options that might have a different default value for different actions or different
-         * simulations.
-         *
-         * @param val the new default value for this option
-         */
-        public void setNewDefault(String val) {
-            parseString(val);
-        }
-
-        /**
          * The <code>get()</code> method returns the current value of the option.
          *
          * @return the value of the option as a <code>java.util.List</code>.
@@ -532,17 +524,22 @@ public abstract class Option {
 
         private void parseString(String val) {
             orig = val;
-            value = StringUtil.toList(val);
-        }
+            value = new LinkedList();
 
-        public String[] toArray() {
-            String[] result = new String[value.size()];
-            Iterator i = value.iterator();
-            int cntr = 0;
-            while ( i.hasNext() ) {
-                result[cntr++] = (String)i.next();
+            if (val.equals("")) return;
+
+            CharacterIterator i = new StringCharacterIterator(val);
+            StringBuffer buf = new StringBuffer(32);
+            while (i.current() != CharacterIterator.DONE) {
+                if (i.current() == ',') {
+                    value.add(buf.toString().trim());
+                    buf = new StringBuffer(32);
+                } else {
+                    buf.append(i.current());
+                }
+                i.next();
             }
-            return result;
+            value.add(buf.toString().trim());
         }
 
         /**
@@ -550,8 +547,8 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            String defvalue = "".equals(orig) ? "(null)" : orig;
-            printHeader("list", defvalue);
+            String defvalue = orig.equals("") ? "(null)" : orig;
+            printHeader("list", "" + defvalue);
             printDescription();
         }
     }
@@ -588,11 +585,12 @@ public abstract class Option {
          * @param val a string representation of the new value of the option.
          */
         public void set(String val) {
-            if ("true".equals(val) || "".equals(val)) {
+            if (val.equals("true") || val.equals("")) {
                 value = true;
-            } else if ("false".equals(val)) {
+            } else if (val.equals("false")) {
                 value = false;
-            } else parseError(name, "boolean", val);
+            } else
+                parseError(name, "boolean", val);
         }
 
         /**
@@ -611,7 +609,7 @@ public abstract class Option {
          * @return a string representation of the value of the option.
          */
         public String stringValue() {
-            return String.valueOf(value);
+            return "" + value;
         }
 
         /**
@@ -619,7 +617,7 @@ public abstract class Option {
          * to the terminal.
          */
         public void printHelp() {
-            printHeader("boolean", String.valueOf(defvalue));
+            printHeader("boolean", "" + defvalue);
             printDescription();
         }
     }

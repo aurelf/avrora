@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the STD (store with displacement) instruction"
 ; @Result: "sram[@memory + 2] = 42, z = @memory"
 

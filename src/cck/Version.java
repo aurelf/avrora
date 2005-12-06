@@ -40,7 +40,7 @@ import cck.util.VersionTag;
  * The <code>Version</code> class records the version information for this module.
  * It has a single static method called <code>getVersion()</code> to retrieve the
  * version for this module in a <code>VersionTag</code> object.
- * <p/>
+ *
  * </p>
  * This file is automatically updated by CVS commit scripts that increment the
  * commit number each time code is committed to CVS. This guarantees that the
@@ -54,11 +54,12 @@ public class Version {
      * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
      * CVS since the last release).
      */
-    public static final int commit = 83;
+    public static final int commit = 7;
 
     /**
      * The <code>TAG</code> field stores a reference to the version tag for the current
      * release and commit number.
      */
     public static final VersionTag TAG = new VersionTag("cck", "Stable", 0, 1, commit);
+
 }

@@ -32,6 +32,7 @@
 
 package avrora.syntax;
 
+import avrora.syntax.*;
 import avrora.syntax.objdump.Token;
 import cck.parser.AbstractToken;
 import cck.text.StringUtil;
@@ -47,7 +48,6 @@ import java.util.HashMap;
 public class RawModule extends Module {
 
     private class Section {
-
         final AbstractToken name;
         final int vma_start;
         final int lma_start;
@@ -101,9 +101,8 @@ public class RawModule extends Module {
 
     public void addQuotedLabelAt(Token val, Token label) {
         label.image = StringUtil.trimquotes(label.image);
-        int vma_addr = StringUtil.evaluateIntegerLiteral(val.image);
-        int lma_addr = vma_addr - section.vma_start + section.lma_start;
-        RawLabel li = new RawLabel(segment, label, vma_addr, lma_addr);
+        int address = StringUtil.evaluateIntegerLiteral(val.image) - section.vma_start + section.lma_start;
+        RawLabel li = new RawLabel(segment, label, address);
         addItem(li);
         labels.put(label.image.toLowerCase(), li);
     }
@@ -113,28 +112,25 @@ public class RawModule extends Module {
      * can appear in program, data, or eeprom sections.
      */
     public static class RawLabel extends Item {
-
         private final AbstractToken name;
-        private final int vma_addr;
-        private final int lma_addr;
+        private final int byteAddress;
 
-        RawLabel(Module.Seg s, AbstractToken name, int vma_addr, int lma_addr) {
+        RawLabel(Module.Seg s, AbstractToken n, int a) {
             super(s);
-            this.name = name;
-            this.vma_addr = vma_addr;
-            this.lma_addr = lma_addr;
+            name = n;
+            byteAddress = a;
         }
 
         public void simplify() {
-            segment.addLabel(name.image, vma_addr, lma_addr);
+            segment.addLabel(byteAddress, name.image);
         }
 
         public int getByteAddress() {
-            return lma_addr;
+            return byteAddress;
         }
 
         public String toString() {
-            return "label: " + name + " in " + segment.getName() + " @ " + lma_addr;
+            return "label: " + name + " in " + segment.getName() + " @ " + byteAddress;
         }
     }
 

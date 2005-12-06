@@ -40,54 +40,54 @@ package cck.util;
  */
 public class Arithmetic {
     public static short word(byte b1, byte b2) {
-        return (short) ((b1 & 0xff) | (b2 << 8));
+        return (short)((b1 & 0xff) | (b2 << 8));
     }
 
     public static char uword(byte b1, byte b2) {
-        return (char) ((b1 & 0xff) | ((b2 & 0xff) << 8));
+        return (char)((b1 & 0xff) | ((b2 & 0xff) << 8));
     }
 
     public static int signExtend(int value, int signbit) {
-        if (getBit(value, signbit)) {
+        if (getBit(value, signbit) ) {
             return value | 0xffffffff << signbit;
         }
         return value;
     }
 
     public static char ubyte(byte b1) {
-        return (char) (b1 & 0xff);
+        return (char)(b1 & 0xff);
     }
 
     public static byte low(short val) {
-        return (byte) val;
+        return (byte)val;
     }
 
     public static byte high(short val) {
-        return (byte) (val >> 8);
+        return (byte)(val >> 8);
     }
 
     public static byte low(int val) {
-        return (byte) val;
+        return (byte)val;
     }
 
     public static byte high(int val) {
-        return (byte) ((val & 0xff00) >> 8);
+        return (byte)((val & 0xff00) >> 8);
     }
 
     public static char ulow(char val) {
-        return (char) (val & 0xff);
+        return (char)(val & 0xff);
     }
 
     public static char uhigh(char val) {
-        return (char) (val >> 8);
+        return (char)(val >> 8);
     }
 
     public static char ulow(short val) {
-        return (char) (val & 0xff);
+        return (char)(val & 0xff);
     }
 
     public static char uhigh(short val) {
-        return (char) ((val & 0xff00) >> 8);
+        return (char)((val & 0xff00) >> 8);
     }
 
     public static boolean getBit(byte val, int bit) {
@@ -95,7 +95,7 @@ public class Arithmetic {
     }
 
     public static boolean getBit(long val, int bit) {
-        return (val & (((long) 1) << bit)) != 0;
+        return (val & (((long)1) << bit)) != 0;
     }
 
     public static boolean getBit(int val, int bit) {
@@ -103,12 +103,14 @@ public class Arithmetic {
     }
 
     public static byte setBit(byte val, int bit) {
-        return (byte) (val | (1 << bit));
+        return (byte)(val | (1 << bit));
     }
 
     public static byte setBit(byte val, int bit, boolean on) {
-        if (on) return setBit(val, bit);
-        else return clearBit(val, bit);
+        if (on)
+            return setBit(val, bit);
+        else
+            return clearBit(val, bit);
     }
 
     public static int setBit(int val, int bit, boolean on) {
@@ -117,18 +119,18 @@ public class Arithmetic {
     }
 
     public static long setBit(long val, int bit, boolean on) {
-        long mask = (((long) 1) << bit);
+        long mask = (((long)1) << bit);
         return on ? (val | mask) : (val & ~mask);
     }
 
     public static byte clearBit(byte val, int bit) {
-        return (byte) (val & ~(1 << bit));
+        return (byte)(val & ~(1 << bit));
     }
 
     public static int lowestBit(long value) {
         int low = 0;
 
-        if (((int) value) == 0) {
+        if ( ((int)value) == 0) {
             low += 32;
             value = value >> 32;
         }
@@ -183,44 +185,42 @@ public class Arithmetic {
         return (value == 0) ? -1 : high;
     }
 
-    public static int log(int value) {
-        if ( value == 0 ) return 0;
-        return 1 + highestBit(value - 1);
-    }
-
     /**
      * The <code>getBitField()</code> method reads a bit field from a value where the bits of the field
      * are not consecutive or in order. This method accepts an array of integers that denotes the permutation
      * of the bit field within the given value from highest order bits to lowest order bits
-     *
-     * @param value       the integer value to extract the bit field from
+     * @param value the integer value to extract the bit field from
      * @param permutation the permutation of the bits for which to extract the bit field from highest order bit to
-     *                    lowest order bit
+     * lowest order bit
      * @return the integer value resulting from concatentating the bits: <code>value[permutation[0]]</code>,
-     *         <code>value[permutation[1]]</code>, etc into a single integer value
+     * <code>value[permutation[1]]</code>, etc into a single integer value
      */
     public static int getBitField(int value, int[] permutation) {
         int result = 0;
-        for (int cntr = 0; cntr < permutation.length; cntr++) {
+        for ( int cntr = 0; cntr < permutation.length; cntr++ ) {
             result = result << 1;
-            if (getBit(value, permutation[cntr])) result |= 1;
+            if ( getBit(value, permutation[cntr]) ) result |= 1;
         }
         return result;
     }
 
     public static int getBitField(int value, int lowbit, int length) {
-        return value >> lowbit & (0xffffffff >>> (32 - length));
+        return value >> lowbit & (0xffffffff >>> (32-length));
     }
 
     // bit patterns for reversing the order of bits of a 4 bit quantity.
-    private static final int[] reverseKey = {0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+    private static final int[] reverseKey = {
+        0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15
+    };
 
     public static byte reverseBits(byte value) {
-        return (byte) (reverseKey[value & 0x0f] << 4 | reverseKey[(value >> 4) & 0x0f]);
+        return (byte)(reverseKey[value & 0x0f] << 4 | reverseKey[(value >> 4) & 0x0f]);
     }
 
     // key for the number of bits set to one in a 4 bit quantity
-    private static final int[] bitcountKey = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+    private static final int[] bitcountKey = {
+        0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4
+    };
 
     public static int bitCount(byte value) {
         return bitcountKey[value & 0x0f] + bitcountKey[(value >> 4) & 0x0f];
@@ -236,14 +236,6 @@ public class Arithmetic {
 
     public static int getBitRangeMask(int low, int high) {
         return (0xffffffff >>> (31 - (high - low))) << low;
-    }
-
-    public static int getBitMask(int width) {
-        return (0xffffffff >>> (31 - (width - 1)));
-    }
-
-    public static long getLongBitRangeMask(int low, int high) {
-        return (-1L >>> (63 - (high - low))) << low;
     }
 
     public static int getInverseBitRangeMask(int low, int high) {
@@ -264,48 +256,36 @@ public class Arithmetic {
     public static long mult(long[] vals, int[] denom) {
         long accum = 0;
         int radix = 1;
-        assert (vals.length - 1 == denom.length);
-        for (int cntr = 0; cntr < vals.length - 1; cntr++) {
+        if ( vals.length -1 != denom.length ) {
+            throw Util.failure("Expected value array of length 1 greater than denom");
+        }
+        for ( int cntr = 0; cntr < vals.length-1; cntr++ ) {
             accum += vals[cntr] * radix;
             radix = radix * denom[cntr];
         }
-        accum += vals[vals.length - 1] * radix;
+        accum += vals[vals.length-1] * radix;
         return accum;
     }
 
     public static void inc(long[] vals, int[] denom, int pos) {
-        assert (vals.length - 1 == denom.length);
+        if ( vals.length -1 != denom.length ) {
+            throw Util.failure("Expected value array of length 1 greater than denom");
+        }
 
-        for (int cntr = pos; cntr < vals.length; cntr++) {
+        for ( int cntr = pos; cntr < vals.length; cntr++ ) {
             vals[cntr]++;
             // is there a carry out?
-            if (vals[cntr] < denom[cntr]) break;
+            if ( vals[cntr] < denom[cntr] ) break;
         }
     }
 
     public static int max(int m1, int m2) {
-        return m1 > m2 ? m1 : m2;
+        if ( m1 > m2 ) return m1;
+        return m2;
     }
 
     public static int min(int m1, int m2) {
-        return m1 < m2 ? m1 : m2;
-    }
-
-    public static byte packBits(boolean b0, boolean b1, boolean b2, boolean b3,
-                                boolean b4, boolean b5, boolean b6, boolean b7) {
-        int val = 0;
-        if ( b0 ) val |= 0x1;
-        if ( b1 ) val |= (0x1 << 1);
-        if ( b2 ) val |= (0x1 << 2);
-        if ( b3 ) val |= (0x1 << 3);
-        if ( b4 ) val |= (0x1 << 4);
-        if ( b5 ) val |= (0x1 << 5);
-        if ( b6 ) val |= (0x1 << 6);
-        if ( b7 ) val |= (0x1 << 7);
-        return (byte)val;
-    }
-
-    public static int roundup(int val, int den) {
-        return (val + den - 1) / 8;
+        if ( m1 < m2 ) return m1;
+        return m2;
     }
 }

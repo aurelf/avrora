@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the BST (bit store to register T) instruction"
 ; @Result: "flags.t = 0, r17 = 11"
 

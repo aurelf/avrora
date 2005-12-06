@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the ANDI (and register with immediate) instruction"
 ; @Result: "r16 = -128, flags.z = 0, flags.v = 0, flags.n = 1, flags.s = 1"
 

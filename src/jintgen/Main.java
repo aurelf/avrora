@@ -33,7 +33,8 @@
 package jintgen;
 
 import cck.help.HelpCategory;
-import cck.test.TestEngine;
+import cck.test.AutomatedTester;
+import cck.test.TestHarness;
 import cck.text.*;
 import cck.util.*;
 import jintgen.gen.*;
@@ -109,9 +110,9 @@ public class Main {
             parseOptions(args);
 
             if ( TEST.get() ) {
-                ClassMap harnessMap = new ClassMap("Test Harness", TestEngine.Harness.class);
+                ClassMap harnessMap = new ClassMap("Test Harness", TestHarness.class);
                 harnessMap.addClass("verifier", VerifierTestHarness.class);
-                new TestEngine(harnessMap).runTests(mainOptions.getArguments());
+                new AutomatedTester(harnessMap).runTests(mainOptions.getArguments());
             } else if (args.length == 0 || HELP.get()) {
                 // print the help if there are no arguments or -help is specified
                 printHelp(mainOptions.getArguments());
@@ -307,7 +308,7 @@ public class Main {
         Terminal.print("[");
         Terminal.printBrightBlue(Version.TAG.toString());
         Terminal.print("]");
-        Terminal.print(" - (c) 2005-2007 UCLA Compilers Group\n\n");
+        Terminal.print(" - (c) 2005 UCLA Compilers Group\n\n");
     }
 
     /**

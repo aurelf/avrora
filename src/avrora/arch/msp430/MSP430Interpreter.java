@@ -36,12 +36,12 @@ package avrora.arch.msp430;
 
 import avrora.core.Program;
 import avrora.sim.*;
-import avrora.sim.mcu.MCUProperties;
-import avrora.sim.mcu.RegisterSet;
 import avrora.sim.util.MulticastProbe;
 import avrora.sim.util.SimUtil;
-import cck.text.StringUtil;
+import avrora.sim.mcu.RegisterSet;
+import avrora.sim.mcu.MCUProperties;
 import cck.util.Util;
+import cck.text.StringUtil;
 
 /**
  * @author Ben L. Titzer
@@ -64,9 +64,9 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         }
     }
 
+    protected int RAMPZ; // location of the RAMPZ IO register
     protected final RegisterSet registers;
     protected final MSP430Instr[] shared_instr;
-    protected final STOP_instr STOP;
     protected boolean innerLoop;
     protected boolean shouldRun;
     protected boolean sleeping;
@@ -94,8 +94,10 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         // initialize IO registers to default values
         registers = simulator.getMicrocontroller().getRegisterSet();
 
+        // instantiate error reporter
+        ErrorReporter reporter = new ErrorReporter();
         // allocate SRAM
-        data = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this);
+        data = new MSP430DataSegment(pr.sram_size, pr.code_start, registers.share(), this, reporter);
 
         // initialize the interrupt table
         interrupts = new InterruptTable(this, pr.num_interrupts);
@@ -110,8 +112,22 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         pc = pr.code_start;
 
         globalProbe = new MulticastProbe();
+    }
 
-        STOP = new STOP_instr();
+    /**
+     * The <code>ErrorReporter</code> class is used to report errors accessing segments.
+     * @see Segment.ErrorReporter
+     */
+    protected class ErrorReporter implements Segment.ErrorReporter {
+
+        public byte readError(int address) {
+            SimUtil.readError(simulator, data.name, address);
+            return data.value;
+        }
+
+        public void writeError(int address, byte value) {
+            SimUtil.writeError(simulator, data.name, address, value);
+        }
     }
 
 
@@ -144,7 +160,6 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         MSP430Instr i = shared_instr[curpc];
         if ( i == null ) {
             SimUtil.warning(simulator, StringUtil.to0xHex(curpc, 4), "invalid instruction");
-            i = STOP;
         }
         regs[PC_REG] = (char)(curpc + 2);
         nextpc = curpc + i.getSize();
@@ -216,7 +231,6 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
 
     public void stop() {
         shouldRun = false;
-        innerLoop = false;
     }
 
     /**
@@ -234,7 +248,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
      *
      * @param watch The <code>ExceptionWatch</code> instance to add.
      */
-    protected void insertErrorWatch(Simulator.Watch watch) {
+    protected void insertExceptionWatch(Simulator.ExceptionWatch watch) {
         throw Util.unimplemented();
     }
 
@@ -288,6 +302,24 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
     }
 
     /**
+     * The <code>insertIORWatch()</code> method is used internally to insert a watch on an IO register.
+     * @param p the watch to add to the IO register
+     * @param ioreg_num the number of the IO register for which to insert the watch
+     */
+    protected void insertIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        throw Util.unimplemented();
+    }
+
+    /**
+     * The <code>removeIORWatch()</code> method is used internally to remove a watch on an IO register.
+     * @param p the watch to remove from the IO register
+     * @param ioreg_num the number of the IO register for which to remove the watch
+     */
+    protected void removeIORWatch(Simulator.IORWatch p, int ioreg_num) {
+        throw Util.unimplemented();
+    }
+
+    /**
      * The <code>delay()</code> method is used to add some delay cycles before the next instruction is executed.
      * This is necessary because some devices such as the EEPROM actually delay execution of instructions while
      * they are working
@@ -297,52 +329,4 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         throw Util.unimplemented();
     }
 
-    /**
-     * The <code>setRegister()</code> method reads a general purpose register's current value as a byte.
-     *
-     * @param reg the register to read
-     * @param val the character value to write to the register
-     */
-    public void setRegister(MSP430Symbol.GPR reg, char val) {
-        regs[reg.value] = val;
-    }
-
-    /**
-     * The <code>setData()</code> method sets the value of the data segment at the specified
-     * address.
-     *
-     * @param address the address at which to write the memory
-     * @param val the character value to write to the register
-     */
-    public void setData(int address, char val) {
-        data.set(address, (byte)val);
-        data.set(address+1, (byte)(val>>8));
-    }
-
-    class STOP_instr extends MSP430Instr {
-
-        STOP_instr() {
-            super("stop", 0);
-        }
-        /**
-         * The <code>accept()</code> method accepts an instruction visitor and
-         * calls the appropriate <code>visit()</code> method for this
-         * instruction.
-         * @param v the instruction visitor to accept
-         */
-        public void accept(MSP430InstrVisitor v) {
-            stop();
-        }
-
-        /**
-         * The <code>accept()</code> method accepts an addressing mode visitor
-         * and calls the appropriate <code>visit_*()</code> method for this
-         * instruction's addressing mode.
-         * @param v the addressing mode visitor to accept
-         */
-        public void accept(MSP430AddrModeVisitor v) {
-            // the default implementation of accept() is empty
-        }
-
-    }
 }

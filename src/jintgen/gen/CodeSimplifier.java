@@ -156,7 +156,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         int width = e.high_bit - e.low_bit + 1;
         if ( t.getSize() < width ) width = t.getSize();
         int mask = Arithmetic.getBitRangeMask(env.shift, env.shift + width - 1);
-        Expr ne = promote(e.expr, INT, env.shift - e.low_bit);
+        Expr ne = promote(e.expr, INT, e.low_bit - env.shift);
         return newAnd(ne, mask, e.getType());
     }
 
@@ -194,7 +194,8 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             ce.setDecl(s);
             return ce;
         } else {
-            return newCallExpr(token("$read_poly_"+ getTypeString(accessor.type)), new VarExpr(e.operand));
+            CallExpr ce = newCallExpr(token("$read_poly_"+ getTypeString(accessor.type)), new VarExpr(e.operand));
+            return ce;
         }
     }
 
@@ -215,14 +216,6 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
                 Type ovt = vt.typeRef.getType();
                 inner = new DotExpr(e.expr, token("value"));
                 inner.setType(ovt);
-
-		if (ovt.getTypeCon() instanceof JIGIRTypeEnv.TYPE_enum) {
-		    // Enums need to retain the conversion expression to
-		    // generate the explicit type cast when generating 
-		    // java code.
-		    inner = new ConversionExpr(inner, vt.typeRef);
-		    inner.setType(ovt);
-		}
             } else throw Util.failure("cannot convert complex operand to any other type");
         } else {
             inner = convert(inner, e.getType(), env.shift);
@@ -335,8 +328,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             if ( k2 < 0 && abs(k2) <= abs(k1) ) { return SE(e, k2, shift); } // SE(e, k2)
             if ( k2 < 0 && abs(k2) > abs(k1) ) { return shift(e, shift); } // e
         }
-	return e;
-        //throw Util.failure("cannot convert integer type "+k1+" to "+k2+" at "+e.getSourcePoint());
+        throw Util.failure("cannot convert integer type "+k1+" to "+k2+" at "+e.getSourcePoint());
     }
 
     protected Expr SE(Expr e, int k2, int shift) {
@@ -376,7 +368,8 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
             cs.setDecl(sub);
             return cs;
         } else {
-            return newCallStmt(token("$write_poly_"+ getTypeString(accessor.type)), new VarExpr(s.operand), promote(s.expr, machineType(accessor.type), 0));
+            CallStmt cs = newCallStmt(token("$write_poly_"+ getTypeString(accessor.type)), new VarExpr(s.operand), promote(s.expr, machineType(accessor.type), 0));
+            return cs;
         }
     }
 

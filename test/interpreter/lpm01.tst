@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the LPM (load program memory) instruction"
 ; @Result: "r0 = 42, z = @data"
 

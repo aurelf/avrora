@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the AND (and two registers) instruction"
 ; @Result: "r16 = -128, flags.z = 0, flags.v = 0, flags.n = 1, flags.s = 1"
 

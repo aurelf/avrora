@@ -37,20 +37,20 @@ import avrora.arch.ArchitectureRegistry;
 import avrora.core.Program;
 import avrora.core.ProgramReader;
 import avrora.monitors.*;
-import avrora.sim.Simulation;
-import avrora.sim.Simulator;
+import avrora.sim.*;
 import avrora.sim.clock.ClockDomain;
 import avrora.sim.mcu.*;
 import avrora.sim.platform.*;
 import avrora.sim.types.*;
 import avrora.syntax.atmel.AtmelProgramReader;
-import avrora.syntax.elf.ELFParser;
+import avrora.syntax.elf.ELFLoader;
+import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.*;
 import avrora.syntax.raw.RAWReader;
 import avrora.test.*;
 import avrora.test.sim.SimTestHarness;
 import cck.help.*;
-import cck.test.TestEngine;
+import cck.test.TestHarness;
 import cck.text.StringUtil;
 import cck.util.ClassMap;
 import cck.util.Util;
@@ -73,7 +73,7 @@ public class Defaults {
     private static ClassMap monitorMap;
     private static ClassMap simMap;
 
-    private static synchronized void addAll() {
+    private static void addAll() {
         addMicrocontrollers();
         addPlatforms();
         addActions();
@@ -84,20 +84,17 @@ public class Defaults {
         ArchitectureRegistry.addArchitectures();
     }
 
-    private static synchronized void addMonitors() {
+    private static void addMonitors() {
         if (monitorMap == null) {
             monitorMap = new ClassMap("Monitor", MonitorFactory.class);
             //-- DEFAULT MONITORS AVAILABLE
             monitorMap.addClass("calls", CallMonitor.class);
-            monitorMap.addClass("break", BreakMonitor.class);
-            monitorMap.addClass("c-print", PrintMonitor.class);
-            monitorMap.addClass("c-timer", TimerMonitor.class);
             monitorMap.addClass("profile", ProfileMonitor.class);
             monitorMap.addClass("memory", MemoryMonitor.class);
             monitorMap.addClass("sleep", SleepMonitor.class);
-            monitorMap.addClass("leds", LEDMonitor.class);
             monitorMap.addClass("stack", StackMonitor.class);
             monitorMap.addClass("energy", EnergyMonitor.class);
+            monitorMap.addClass("energy-log", EnergyMonitorLog.class);
             monitorMap.addClass("interrupts", InterruptMonitor.class);
             monitorMap.addClass("interactive", InteractiveMonitor.class);
             monitorMap.addClass("trace", TraceMonitor.class);
@@ -106,15 +103,12 @@ public class Defaults {
             monitorMap.addClass("gdb", GDBServer.class);
             monitorMap.addClass("simperf", SimPerfMonitor.class);
             monitorMap.addClass("serial", SerialMonitor.class);
-            monitorMap.addClass("spi", SPIMonitor.class);
-            monitorMap.addClass("call-time", CallTimeMonitor.class);
             monitorMap.addClass("trip-time", TripTimeMonitor.class);
             monitorMap.addClass("ioregs", IORegMonitor.class);
-            monitorMap.addClass("virgil", VirgilMonitor.class);
             monitorMap.addClass("real-time", RealTimeMonitor.class);
 
             HelpCategory hc = new HelpCategory("monitors", "Help for the supported simulation monitors.");
-            hc.addOptionValueSection("SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
+            addOptionSection(hc, "SIMULATION MONITORS", "Avrora's simulator offers the ability to install execution " +
                     "monitors that instrument the program in order to study and analyze its behavior. The " +
                     "\"simulate\" action supports this option that allows a monitor class " +
                     "to be loaded which will instrument the program before it is run and then generate a report " +
@@ -124,9 +118,9 @@ public class Defaults {
         }
     }
 
-    private static synchronized void addTestHarnesses() {
+    private static void addTestHarnesses() {
         if (harnessMap == null) {
-            harnessMap = new ClassMap("Test Harness", TestEngine.Harness.class);
+            harnessMap = new ClassMap("Test Harness", TestHarness.class);
             //-- DEFAULT TEST HARNESSES
             harnessMap.addClass("simulator", SimTestHarness.class);
             harnessMap.addClass("simplifier", SimplifierTestHarness.class);
@@ -136,19 +130,20 @@ public class Defaults {
         }
     }
 
-    private static synchronized void addInputFormats() {
+    private static void addInputFormats() {
         if (inputs == null) {
             inputs = new ClassMap("Input Format", ProgramReader.class);
             //-- DEFAULT INPUT FORMATS
             inputs.addClass("auto", AutoProgramReader.class);
             inputs.addClass("raw", RAWReader.class);
+            inputs.addClass("gas", GASProgramReader.class);
             inputs.addClass("atmel", AtmelProgramReader.class);
             inputs.addClass("objdump", ObjDumpProgramReader.class);
             inputs.addClass("odpp", ObjDump2ProgramReader.class);
-            inputs.addClass("elf", ELFParser.class);
+            inputs.addClass("elf", ELFLoader.class);
 
             HelpCategory hc = new HelpCategory("inputs", "Help for the supported program input formats.");
-            hc.addOptionValueSection("INPUT FORMATS", "The input format of the program is specified with the \"-input\" " +
+            addOptionSection(hc, "INPUT FORMATS", "The input format of the program is specified with the \"-input\" " +
                 "option supplied at the command line. This input format is used by " +
                 "actions that operate on programs to determine how to interpret the " +
                 "input and build a program from the files specified. For example, the input format might " +
@@ -159,23 +154,22 @@ public class Defaults {
         }
     }
 
-    private static synchronized void addActions() {
+    private static void addActions() {
         if (actions == null) {
             actions = new ClassMap("Action", Action.class);
             //-- DEFAULT ACTIONS
             actions.addClass("disassemble", DisassembleAction.class);
-            actions.addClass("simulate", SimAction.class);
+            actions.addClass("simulate", SimulateAction.class);
             actions.addClass("analyze-stack", AnalyzeStackAction.class);
             actions.addClass("test", TestAction.class);
             actions.addClass("cfg", CFGAction.class);
             actions.addClass("gui", GUIAction.class);
             actions.addClass("isea", ISEAAction.class);
             actions.addClass("odpp", ODPPAction.class);
-            actions.addClass("elf-dump", ELFDumpAction.class);
 
             // plug in a new help category for actions accesible with "-help actions"
             HelpCategory hc = new HelpCategory("actions", "Help for Avrora actions.");
-            hc.addOptionValueSection("ACTIONS", "Avrora accepts the \"-action\" command line option " +
+            addOptionSection(hc, "ACTIONS", "Avrora accepts the \"-action\" command line option " +
                     "that you can use to select from the available functionality that Avrora " +
                     "provides. This action might be to assemble the file, " +
                     "print a listing, perform a simulation, or run an analysis tool. This " +
@@ -186,7 +180,7 @@ public class Defaults {
         }
     }
 
-    private static synchronized void addSimulations() {
+    private static void addSimulations() {
         if (simMap == null) {
             simMap = new ClassMap("Simulation", Simulation.class);
             //-- DEFAULT ACTIONS
@@ -196,7 +190,7 @@ public class Defaults {
 
             // plug in a new help category for simulations accesible with "-help simulations"
             HelpCategory hc = new HelpCategory("simulations", "Help for supported simulation types.");
-            hc.addOptionValueSection("SIMULATION TYPES",
+            addOptionSection(hc, "SIMULATION TYPES",
                     "When running a simulation, Avrora accepts the \"-simulation\" command line option " +
                     "that selects the simulation type from multiple different types provided, or a " +
                     "user-supplied Java class of your own. For example, a simulation might be for a " +
@@ -207,19 +201,18 @@ public class Defaults {
         }
     }
 
-    private static synchronized void addPlatforms() {
+    private static void addPlatforms() {
         if (platforms == null) {
             platforms = new ClassMap("Platform", PlatformFactory.class);
             //-- DEFAULT PLATFORMS
             platforms.addClass("mica2", Mica2.Factory.class);
-            platforms.addClass("micaz", MicaZ.Factory.class);
             platforms.addClass("seres", Seres.Factory.class);
             platforms.addClass("superbot", Superbot.Factory.class);
             platforms.addClass("telos", Telos.Factory.class);
         }
     }
 
-    private static synchronized void addMicrocontrollers() {
+    private static void addMicrocontrollers() {
         if (microcontrollers == null) {
             microcontrollers = new ClassMap("Microcontroller", MicrocontrollerFactory.class);
             //-- DEFAULT MICROCONTROLLERS
@@ -354,6 +347,17 @@ public class Defaults {
         mainCategories.put(cat.name, cat);
     }
 
+    public static void addOptionSection(HelpCategory hc, String title, String para, String optname, ClassMap optvals) {
+        LinkedList list = new LinkedList();
+        Iterator i = optvals.getSortedList().iterator();
+        while (i.hasNext()) {
+            String s = (String) i.next();
+            list.addLast(new ClassMapValueItem(4, optname, s, optvals));
+        }
+
+        hc.addListSection(title, para, list);
+    }
+
     public static HelpCategory getHelpCategory(String name) {
         addAll();
         return HelpSystem.getCategory(name);
@@ -405,7 +409,7 @@ public class Defaults {
                 Util.userError("input type \"auto\" accepts only one file at a time.");
 
             String n = args[0];
-            int offset = n.lastIndexOf('.');
+            int offset = n.lastIndexOf(".");
             if (offset < 0)
                 Util.userError("file " + StringUtil.quote(n) + " does not have an extension");
 
@@ -414,12 +418,14 @@ public class Defaults {
             ProgramReader reader = null;
             if (".asm".equals(extension))
                 reader = new AtmelProgramReader();
+            else if (".s".equals(extension))
+                reader = new GASProgramReader();
             else if (".od".equals(extension))
                 reader = new ObjDumpProgramReader();
             else if (".odpp".equals(extension))
                 reader = new ObjDump2ProgramReader();
             else if (".elf".equals(extension))
-                reader = new ELFParser();
+                reader = new ELFLoader();
 
             if ( reader == null ) {
                 Util.userError("file extension " + StringUtil.quote(extension) + " unknown");

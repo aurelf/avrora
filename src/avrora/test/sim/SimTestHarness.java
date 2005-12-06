@@ -33,16 +33,15 @@
 package avrora.test.sim;
 
 import avrora.Defaults;
-import avrora.core.Program;
-import avrora.core.ProgramReader;
+import avrora.arch.legacy.LegacyState;
+import avrora.core.*;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import avrora.syntax.Module;
-import avrora.test.sim.legacy.LegacyTester;
-import avrora.test.sim.msp430.MSP430Tester;
 import cck.test.*;
+import cck.text.StringUtil;
 import cck.text.Terminal;
-import cck.util.ClassMap;
+import cck.util.Util;
 import java.util.*;
 
 /**
@@ -51,15 +50,7 @@ import java.util.*;
  *
  * @author Ben L. Titzer
  */
-public class SimTestHarness implements TestEngine.Harness {
-
-    protected static final ClassMap testerMap;
-
-    static {
-        testerMap = new ClassMap("Simulation Tester", Tester.class);
-        testerMap.addClass("avr", LegacyTester.class);
-        testerMap.addClass("msp430", MSP430Tester.class);
-    }
+public class SimTestHarness implements TestHarness {
 
     static class SimulatorTest extends TestCase {
 
@@ -67,7 +58,6 @@ public class SimTestHarness implements TestEngine.Harness {
         Simulator simulator;
         List predicates;
         List inits;
-        Tester tester;
         StateAccessor access;
 
         SimulatorTest(String fname, Properties props) throws Exception {
@@ -77,8 +67,10 @@ public class SimTestHarness implements TestEngine.Harness {
             predicates = pp.parseResult(result);
             String init = props.getProperty("Init");
             if ( init != null ) inits = pp.parseInitializers(trimString(init));
-            String arch = expectProperty("Arch");
-            tester = (Tester)testerMap.getObjectOfClass(arch);
+        }
+
+        private String trimString(String str) {
+            return StringUtil.trimquotes(str.trim());
         }
 
         public void run() throws Exception {
@@ -88,25 +80,32 @@ public class SimTestHarness implements TestEngine.Harness {
         }
 
         private Program readProgram() throws Exception {
-            String format = expectProperty("Format");
+            String format = properties.getProperty("Format");
+            if (format == null) Util.userError("program format not specified");
             ProgramReader r = Defaults.getProgramReader(format);
-            String arch = expectProperty("Arch");
-            r.ARCH.set(arch);
+            String arch = properties.getProperty("Arch");
+            if ( arch != null ) r.ARCH.set(arch);
             String[] args = {filename};
             return r.read(args);
         }
 
         private Simulator initSimulator(Program program) {
-            Simulator sim = tester.newSimulator(program);
-            access = tester.getAccessor(sim);
-            if ( inits != null ) access.init(inits);
+            Simulator sim = Defaults.newSimulator(0, program);
+            access = new LegacyStateAccessor(program, sim);
+            if ( inits != null ) {
+                Iterator i = inits.iterator();
+                while ( i.hasNext() ) {
+                    Predicate p = (Predicate)i.next();
+                    p.init(access);
+                }
+            }
             return sim;
         }
 
         public TestResult match(Throwable t) {
             if (t != null) return super.match(t);
 
-            State state = simulator.getState();
+            LegacyState state = (LegacyState)simulator.getState();
             Iterator i = predicates.iterator();
 
             try {
@@ -115,7 +114,7 @@ public class SimTestHarness implements TestEngine.Harness {
                     if (!p.check(access))
                         return new StateMismatch(p, state);
                 }
-            } catch (TestExpr.UnknownLabel l) {
+            } catch (SimTestExpr.UnknownLabel l) {
                 return new TestResult.TestFailure("unknown label specified in predicate: " + l.name);
             }
             return new TestResult.TestSuccess();
@@ -131,6 +130,10 @@ public class SimTestHarness implements TestEngine.Harness {
                     + pred.right + " -> " + pred.rightvalue + ')');
             state = st;
             predicate = pred;
+        }
+
+        public void shortReport() {
+            Terminal.print(message);
         }
 
         public void longReport() {

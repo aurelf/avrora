@@ -32,8 +32,8 @@
 
 package avrora.core;
 
-import avrora.arch.*;
 import avrora.arch.legacy.LegacyInstr;
+import avrora.arch.*;
 import cck.text.StringUtil;
 import cck.util.Util;
 import java.util.*;
@@ -120,7 +120,7 @@ public class Program {
      *
      * @param i       the instruction to write
      * @param address the byte address to write the instruction to that must be aligned on a 2-byte boundary.
-     * @throws Util.InternalError if the address is not within the limits put on the program instance when
+     * @throws cck.util.Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
     public void writeInstr(AbstractInstr i, int address) {
@@ -143,7 +143,7 @@ public class Program {
      * @return the <code>LegacyInstr</code> instance at that address if that address is valid code from creation of
      *         the <code>Program</code> instance; null if the instruction is misaligned or only raw data is
      *         present at that location.
-     * @throws Util.InternalError if the address is not within the limits put on the program instance when
+     * @throws cck.util.Util.InternalError if the address is not within the limits put on the program instance when
      *                              it was created.
      */
     public AbstractInstr readInstr(int address) {
@@ -212,7 +212,7 @@ public class Program {
      * throws an error if the address is not within the bounds.
      *
      * @param addr the byte address to check
-     * @throws Util.InternalError if the address is not within the limits of the program segment
+     * @throws cck.util.Util.InternalError if the address is not within the limits of the program segment
      */
     protected void checkAddress(int addr) {
         // TODO: throw correct error type

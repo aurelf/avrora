@@ -172,7 +172,7 @@ public class TypeChecker extends VerifierPass implements CodeAccumulator<Type, E
             return meth;
         } else {
             // no type given to the write; check that there is only one accessor available
-            if (accessors.isEmpty() ) ERROR.UnresolvedAccess(access, d, m, null);
+            if ( accessors.size() == 0 ) ERROR.UnresolvedAccess(access, d, m, null);
             if ( accessors.size() > 1 ) ERROR.AmbiguousAccess(access, d, m);
             return accessors.values().iterator().next();
         }
@@ -275,15 +275,6 @@ public class TypeChecker extends VerifierPass implements CodeAccumulator<Type, E
 
     public Type visit(FixedRangeExpr e, Environment env) {
         Type lt = intTypeOf(e.expr, env);
-
-	int size = ((JIGIRTypeEnv.TYPE_int) lt).getSize();
-	if ((e.low_bit < 0) || (e.high_bit >= size)) {
-	    ERROR.RangeOutOfBounds(e, e.low_bit, e.high_bit, size);
-	} else if (e.low_bit >= e.high_bit) {
-	    // Only invalid range is where low_bit == high_bit, because
-	    // they are set such that low_bit is always <= high_bit
-	    ERROR.InvalidRange(e, e.low_bit, e.high_bit);
-	}
         return typeEnv.newIntType(false, e.high_bit - e.low_bit + 1);
     }
 
@@ -357,33 +348,6 @@ public class TypeChecker extends VerifierPass implements CodeAccumulator<Type, E
         if ( typecon instanceof JIGIRTypeEnv.TYPE_enum_kind ) {
             return typeEnv.resolveType(((JIGIRTypeEnv.TYPE_enum_kind)typecon).decl.name);
         } else if ( typecon instanceof JIGIRTypeEnv.TYPE_operand ) {
-	    OperandTypeDecl decl = ((JIGIRTypeEnv.TYPE_operand) typecon).decl;
-	    if (decl.isCompound()) {
-		OperandTypeDecl.Compound operand = 
-		    (OperandTypeDecl.Compound) decl;
-		AddrModeDecl.Operand subOperand = null;
-		for (AddrModeDecl.Operand op : operand.subOperands) {
-		    if (op.name.image.equals(e.field.image)) {
-			subOperand = op;
-			break;
-		    }
-		}
-		
-		if (subOperand == null) {
-		    ERROR.UnresolvedSubOperand(e.field);
-		}
-		
-		Type rt = subOperand.typeRef.resolve(arch.typeEnv);
-		
-		// Redundant check?
-		if (t == null) {
-		    ERROR.UnresolvedSubOperand(e.field);
-		}
-		return rt;
-	    } else {
-		// Can only apply dot operator to compound operands.
-		ERROR.CompoundTypeExpected(e.expr);
-	    }
         }
         throw Util.unimplemented();
     }
@@ -415,27 +379,8 @@ public class TypeChecker extends VerifierPass implements CodeAccumulator<Type, E
 
     protected Type typeCheck(String what, Expr e, Type exp, Environment env) {
         Type t = typeOf(e, env);
-        if (!isAssignableTo(t, exp)) {
+        if (!isAssignableTo(t, exp))
             ERROR.TypeMismatch(what, e, exp);
-	}
-
-	if (exp.isBasedOn("int") && t.isBasedOn("int")) {
-	    JIGIRTypeEnv.TYPE_int i1 = (JIGIRTypeEnv.TYPE_int) t;
-	    JIGIRTypeEnv.TYPE_int i2 = (JIGIRTypeEnv.TYPE_int) exp;
-	    
-	    int size1 = i1.getSize();
-	    int size2 = i2.getSize();
-	    boolean sign1 = i1.isSigned();
-	    boolean sign2 = i2.isSigned();
-
-	    if (size1 > size2) {
-		ERROR.IntTypeTooLarge(e, size2, size1);
-	    } else if (size1 == size2 && (sign1 ^ sign2)) {
-		ERROR.SignMismatch(e, sign2, sign1);
-	    } else if (size1 < size2 && !sign2 && sign1) {
-		ERROR.SignMismatch(e, sign2, sign1);
-	    }
-	}
         return t;
     }
 

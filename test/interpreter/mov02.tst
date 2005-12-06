@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the MOV (move between registers) instruction"
 ; @Result: "r16 = 42"
 

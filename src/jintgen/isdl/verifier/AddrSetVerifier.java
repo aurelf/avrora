@@ -134,7 +134,7 @@ public class AddrSetVerifier extends VerifierPass {
             // for the first addressing mode, put the union types in the map
             for ( AddrModeDecl.Operand o : am.operands ) {
                 Token tok = new Token();
-                tok.image = as.name.image+ '_' +o.name.image+"_union";
+                tok.image = as.name.image+"_"+o.name.image+"_union";
                 OperandTypeDecl.Union ut = new OperandTypeDecl.Union(tok);
                 ut.addType(o.typeRef.getOperandTypeDecl());
                 unions.put(o.name.image, ut);

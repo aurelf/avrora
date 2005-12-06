@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the skip instructions for correct conditions and target"
 ; @Result: "sram[59] = 1, r18 = 0, r19 = 2"
 

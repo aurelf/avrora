@@ -1,6 +1,5 @@
 ; @Harness: simulator
 ; @Format: atmel
-; @Arch: avr
 ; @Purpose: "Test the variants of the ST instruction"
 ; @Result: "sram[@memory] = 42, x = @memory"
 

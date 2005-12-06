@@ -90,7 +90,7 @@ public class EncodingVerifier extends VerifierPass {
         int encodingSize = computeEncodingSize(ed, am);
         if (encodingSize <= 0 || encodingSize % 16 != 0)
             throw Util.failure("encoding not word aligned: " + ed.name + " is " + encodingSize + " bits, at:  "
-                    +ed.name.beginLine+ ':' +ed.name.beginColumn);
+                    +ed.name.beginLine+":"+ed.name.beginColumn);
     }
 
     private int computeEncodingSize(FormatDecl encoding, AddrModeDecl am) {
@@ -139,7 +139,7 @@ public class EncodingVerifier extends VerifierPass {
             if ( ot.isCompound() ) {
                 OperandTypeDecl.Compound cd = (OperandTypeDecl.Compound)ot;
                 for ( AddrModeDecl.Operand o : cd.subOperands )
-                    addSubOperands(o, prefix+ '.' +o.name.image);
+                    addSubOperands(o, prefix+"."+o.name.image);
             } else if ( ot.isValue() ) {
                 OperandTypeDecl.Value sd = (OperandTypeDecl.Value)ot;
                 operandWidthMap.put(prefix, sd.size);
