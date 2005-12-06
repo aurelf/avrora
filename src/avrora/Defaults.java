@@ -46,6 +46,7 @@ import avrora.syntax.atmel.AtmelProgramReader;
 import avrora.syntax.elf.ELFLoader;
 import avrora.syntax.gas.GASProgramReader;
 import avrora.syntax.objdump.*;
+import avrora.syntax.raw.RAWReader;
 import avrora.test.*;
 import avrora.test.sim.SimTestHarness;
 import cck.help.*;
@@ -134,6 +135,7 @@ public class Defaults {
             inputs = new ClassMap("Input Format", ProgramReader.class);
             //-- DEFAULT INPUT FORMATS
             inputs.addClass("auto", AutoProgramReader.class);
+            inputs.addClass("raw", RAWReader.class);
             inputs.addClass("gas", GASProgramReader.class);
             inputs.addClass("atmel", AtmelProgramReader.class);
             inputs.addClass("objdump", ObjDumpProgramReader.class);

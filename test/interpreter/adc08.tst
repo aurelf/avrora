@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the ADC (add two registers with carry) instruction"
 ; @Result: "flags.h=0, flags.s=1, flags.v=1, flags.n=0, flags.z=0, flags.c=1, r16 = 1"
 

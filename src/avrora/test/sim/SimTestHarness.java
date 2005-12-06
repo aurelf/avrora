@@ -41,6 +41,7 @@ import avrora.syntax.Module;
 import cck.test.*;
 import cck.text.StringUtil;
 import cck.text.Terminal;
+import cck.util.Util;
 import java.util.*;
 
 /**
@@ -54,26 +55,51 @@ public class SimTestHarness implements TestHarness {
     static class SimulatorTest extends TestCase {
 
         Module module;
-        Program program;
         Simulator simulator;
         List predicates;
+        List inits;
         StateAccessor access;
 
         SimulatorTest(String fname, Properties props) throws Exception {
             super(fname, props);
-            String result = StringUtil.trimquotes(props.getProperty("Result").trim());
-            predicates = new PredicateParser().parseResult(result);
+            String result = trimString(props.getProperty("Result"));
+            PredicateParser pp = new PredicateParser();
+            predicates = pp.parseResult(result);
+            String init = props.getProperty("Init");
+            if ( init != null ) inits = pp.parseInitializers(trimString(init));
+        }
+
+        private String trimString(String str) {
+            return StringUtil.trimquotes(str.trim());
         }
 
         public void run() throws Exception {
-            String input = properties.getProperty("input");
-            if (input == null) input = "atmel";
-            ProgramReader r = Defaults.getProgramReader(input);
-            String[] args = {filename};
-            program = r.read(args);
-            simulator = Defaults.newSimulator(0, program);
-            access = new LegacyStateAccessor(program, simulator);
+            Program p = readProgram();
+            simulator = initSimulator(p);
             simulator.start();
+        }
+
+        private Program readProgram() throws Exception {
+            String format = properties.getProperty("Format");
+            if (format == null) Util.userError("program format not specified");
+            ProgramReader r = Defaults.getProgramReader(format);
+            String arch = properties.getProperty("Arch");
+            if ( arch != null ) r.ARCH.set(arch);
+            String[] args = {filename};
+            return r.read(args);
+        }
+
+        private Simulator initSimulator(Program program) {
+            Simulator sim = Defaults.newSimulator(0, program);
+            access = new LegacyStateAccessor(program, sim);
+            if ( inits != null ) {
+                Iterator i = inits.iterator();
+                while ( i.hasNext() ) {
+                    Predicate p = (Predicate)i.next();
+                    p.init(access);
+                }
+            }
+            return sim;
         }
 
         public TestResult match(Throwable t) {

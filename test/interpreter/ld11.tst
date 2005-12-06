@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the LD (load from SRAM) instruction"
 ; @Initial: "[@memory] = 42"
 ; @Result: "r16 = 42, z = @memory"

@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the SWAP (swap nibbles in register) instruction"
 ; @Result: "r16 = 112"
 

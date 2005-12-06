@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the MULSU (multiply signed and unsigned registers) instruction"
 ; @Result: "r16 = -1, r17 = -64, r0 = 64, r1 = -1, flags.z = 0, flags.c = 1"
 

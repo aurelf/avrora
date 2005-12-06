@@ -39,7 +39,7 @@ import cck.text.*;
 import cck.util.*;
 import jintgen.gen.*;
 import jintgen.gen.disassembler.DisassemblerGenerator;
-import jintgen.isdl.Architecture;
+import jintgen.isdl.ArchDecl;
 import jintgen.isdl.parser.ISDLParser;
 import jintgen.isdl.parser.ParseException;
 import jintgen.isdl.verifier.Verifier;
@@ -135,10 +135,10 @@ public class Main {
         if (args.length < 1)
             Util.userError("Usage: jintgen <arch.isdl>");
 
-        Architecture.INLINE = INLINE.get();
+        ArchDecl.INLINE = INLINE.get();
 
         try {
-            Architecture a = loadArchitecture(args[0]);
+            ArchDecl a = loadArchitecture(args[0]);
             runGenerators(a);
         } catch ( Util.Error t) {
             Status.error(t);
@@ -149,13 +149,13 @@ public class Main {
         }
     }
 
-    private static Architecture loadArchitecture(String fname) throws FileNotFoundException, ParseException {
+    private static ArchDecl loadArchitecture(String fname) throws FileNotFoundException, ParseException {
         Status.begin("Loading architecture description "+fname);
         checkFileExists(fname);
         File archfile = new File(fname);
         FileInputStream fis = new FileInputStream(archfile);
         ISDLParser parser = new ISDLParser(fis);
-        Architecture a = parser.Architecture();
+        ArchDecl a = parser.ArchDecl();
         Status.success();
         Status.begin("Verifying "+fname);
         new Verifier(a).verify();
@@ -163,7 +163,7 @@ public class Main {
         return a;
     }
 
-    private static void runGenerators(Architecture a) throws Exception {
+    private static void runGenerators(ArchDecl a) throws Exception {
         for ( Object o : GENERATORS.get() ) {
             String str = (String)o;
             Status.begin("Running "+str+" generator");
@@ -300,7 +300,7 @@ public class Main {
                     "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE " +
                     "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n";
 
-        Terminal.print(StringUtil.makeParagraphs(notice, 0, 0, Terminal.MAXLINE));
+        Terminal.print(StringUtil.formatParagraphs(notice, 0, 0, Terminal.MAXLINE));
     }
 
     static void title() {

@@ -44,7 +44,7 @@ import jintgen.types.TypeCon;
  */
 public class AddrModeVerifier extends VerifierPass {
 
-    public AddrModeVerifier(Architecture arch) {
+    public AddrModeVerifier(ArchDecl arch) {
         super(arch);
     }
 

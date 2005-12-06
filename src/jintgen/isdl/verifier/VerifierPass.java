@@ -45,11 +45,11 @@ import java.util.List;
  */
 public abstract class VerifierPass {
 
-    protected final Architecture arch;
+    protected final ArchDecl arch;
     protected final JIGIRErrorReporter ERROR;
     protected final JIGIRTypeEnv typeEnv;
 
-    protected VerifierPass(Architecture a) {
+    protected VerifierPass(ArchDecl a) {
         arch = a;
         ERROR = a.ERROR;
         typeEnv = a.typeEnv;

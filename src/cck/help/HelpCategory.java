@@ -78,7 +78,7 @@ public class HelpCategory implements HelpItem {
                 Terminal.println("\n");
             }
 
-            Terminal.println(StringUtil.makeParagraphs(para, 0, 4, Terminal.MAXLINE));
+            Terminal.println(StringUtil.formatParagraphs(para, 0, 4, Terminal.MAXLINE));
             Terminal.println("");
         }
     }
@@ -96,7 +96,7 @@ public class HelpCategory implements HelpItem {
             Terminal.printBrightBlue("OPTIONS");
             Terminal.println("\n");
 
-            Terminal.println(StringUtil.makeParagraphs(para, 0, 4, Terminal.MAXLINE));
+            Terminal.println(StringUtil.formatParagraphs(para, 0, 4, Terminal.MAXLINE));
             Terminal.println("");
 
             Collection c = options.getAllOptions();
@@ -130,7 +130,7 @@ public class HelpCategory implements HelpItem {
                 Terminal.println("\n");
             }
 
-            Terminal.println(StringUtil.makeParagraphs(para, 0, 4, Terminal.MAXLINE));
+            Terminal.println(StringUtil.formatParagraphs(para, 0, 4, Terminal.MAXLINE));
             Terminal.println("");
 
             Iterator i = list.iterator();

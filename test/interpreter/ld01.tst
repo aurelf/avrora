@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the LDI (load immediate) instruction"
 ; @Result: "r16 = 42"
 

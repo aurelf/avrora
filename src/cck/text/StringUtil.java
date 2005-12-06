@@ -692,7 +692,7 @@ public class StringUtil {
             return "";
     }
 
-    public static String makeParagraphs(String s, int leftJust, int indent, int width) {
+    public static String formatParagraphs(String s, int leftJust, int indent, int width) {
         int len = s.length();
         indent += leftJust;
         int consumed = indent + leftJust;

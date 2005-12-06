@@ -79,7 +79,7 @@ public class ValueItem implements HelpItem {
         Terminal.print(StringUtil.dup(' ', indent));
         Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, optname, "=", optvalue);
         Terminal.nextln();
-        Terminal.println(StringUtil.makeParagraphs(help, indent+4, 0, Terminal.MAXLINE));
+        Terminal.println(StringUtil.formatParagraphs(help, indent+4, 0, Terminal.MAXLINE));
     }
 
 }

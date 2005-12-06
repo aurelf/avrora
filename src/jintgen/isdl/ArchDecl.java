@@ -46,7 +46,7 @@ import java.util.List;
  *
  * @author Ben L. Titzer
  */
-public class Architecture {
+public class ArchDecl {
 
     public static boolean INLINE = true;
 
@@ -73,7 +73,7 @@ public class Architecture {
      * name that is empty and ready to receive new instruction declarations, encodings, etc.
      * @param n
      */
-    public Architecture(Token n) {
+    public ArchDecl(Token n) {
         name = n;
 
         subroutines = new HashList<String, SubroutineDecl>();

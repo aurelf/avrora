@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the MOV (move between registers) instruction"
 ; @Result: "r0 = 42, r31 = 42"
 

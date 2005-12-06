@@ -55,7 +55,7 @@ public class TypeChecker extends VerifierPass implements CodeAccumulator<Type, E
     final JIGIRErrorReporter ERROR;
     Type retType;
 
-    TypeChecker(JIGIRErrorReporter er, Architecture a) {
+    TypeChecker(JIGIRErrorReporter er, ArchDecl a) {
         super(a);
         ERROR = er;
     }

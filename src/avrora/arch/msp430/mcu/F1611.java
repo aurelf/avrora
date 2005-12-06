@@ -48,11 +48,12 @@ import java.util.HashMap;
  */
 public class F1611 extends DefaultMCU {
 
-    protected static final MSP430Properties PROPS = initProps();
-    protected static final int IOREG_SIZE = 256;
+    protected static final int IOREG_SIZE = 512;
     protected static final int _1kb = 1024;
     protected static final int SRAM_SIZE = 10 * _1kb;
     protected static final int CODE_START = 16 * _1kb;
+
+    protected static final MSP430Properties PROPS = initProps();
 
     static MSP430Properties initProps() {
         HashMap pins = new HashMap();

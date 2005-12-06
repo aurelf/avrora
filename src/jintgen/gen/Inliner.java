@@ -33,7 +33,7 @@
 package jintgen.gen;
 
 import cck.util.Util;
-import jintgen.isdl.Architecture;
+import jintgen.isdl.ArchDecl;
 import jintgen.isdl.SubroutineDecl;
 import jintgen.isdl.parser.ISDLParserConstants;
 import jintgen.isdl.parser.Token;
@@ -54,7 +54,7 @@ import java.util.*;
 public class Inliner extends StmtRebuilder<Object> {
     int tmpCount;
 
-    private Architecture architecture;
+    private ArchDecl archDecl;
 
     Context context;
 
@@ -85,8 +85,8 @@ public class Inliner extends StmtRebuilder<Object> {
     }
 
 
-    public Inliner(Architecture architecture) {
-        this.architecture = architecture;
+    public Inliner(ArchDecl archDecl) {
+        this.archDecl = archDecl;
         context = new Context(null);
     }
 
@@ -95,7 +95,7 @@ public class Inliner extends StmtRebuilder<Object> {
     }
 
     public Stmt visit(CallStmt s, Object env) {
-        SubroutineDecl d = architecture.getSubroutine(s.method.image);
+        SubroutineDecl d = archDecl.getSubroutine(s.method.image);
         if (shouldNotInline(d)) {
             return super.visit(s, env);
         } else {
@@ -156,7 +156,7 @@ public class Inliner extends StmtRebuilder<Object> {
 
 
     public Expr visit(CallExpr v, Object env) {
-        SubroutineDecl d = architecture.getSubroutine(v.method.image);
+        SubroutineDecl d = archDecl.getSubroutine(v.method.image);
         if (shouldNotInline(d)) {
             return super.visit(v, null);
         } else {
@@ -166,7 +166,7 @@ public class Inliner extends StmtRebuilder<Object> {
     }
 
     protected boolean shouldNotInline(SubroutineDecl d) {
-        return !Architecture.INLINE || d == null || !d.inline || !d.code.hasBody();
+        return !ArchDecl.INLINE || d == null || !d.inline || !d.code.hasBody();
     }
 
     public Expr visit(VarExpr v, Object env) {

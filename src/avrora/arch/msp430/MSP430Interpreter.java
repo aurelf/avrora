@@ -162,7 +162,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
             SimUtil.warning(simulator, StringUtil.to0xHex(curpc, 4), "invalid instruction");
         }
         regs[PC_REG] = (char)(curpc + 2);
-        nextpc = pc + i.getSize();
+        nextpc = curpc + i.getSize();
         return i;
     }
 

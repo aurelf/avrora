@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the FMULSU (fractional multiply signed and unsigned registers) instruction"
 ; @Result: "r16 = 2, r17 = 42, r0 = -88, r1 = 0, flags.z = 0, flags.c = 0"
 

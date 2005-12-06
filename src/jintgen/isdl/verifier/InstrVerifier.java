@@ -44,7 +44,7 @@ import java.util.LinkedList;
  */
 public class InstrVerifier extends VerifierPass {
 
-    public InstrVerifier(Architecture arch) {
+    public InstrVerifier(ArchDecl arch) {
         super(arch);
     }
 

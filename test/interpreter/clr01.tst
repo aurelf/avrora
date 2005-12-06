@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the CLR (clear register) instruction"
 ; @Result: "flags.s=0, flags.v=0, flags.n=0, flags.z=1, r16 = 0"
 

@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the BLD (bit load from register T) instruction"
 ; @Result: "flags.t = 0, r17 = 11"
 

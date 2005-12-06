@@ -45,12 +45,12 @@ import jintgen.isdl.*;
  */
 public class Verifier {
 
-    public final Architecture arch;
+    public final ArchDecl arch;
     public final JIGIRErrorReporter ERROR;
 
     Verbose.Printer printer = Verbose.getVerbosePrinter("jintgen.verifier");
 
-    public Verifier(Architecture a) {
+    public Verifier(ArchDecl a) {
         arch = a;
         ERROR = arch.ERROR;
     }

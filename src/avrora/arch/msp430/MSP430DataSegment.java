@@ -36,9 +36,8 @@ package avrora.arch.msp430;
 
 import avrora.sim.ActiveRegister;
 import avrora.sim.Segment;
-import avrora.arch.avr.AVRState;
 import avrora.core.Program;
-import cck.util.Util;
+import cck.util.Arithmetic;
 
 /**
  * The <code>MSP430DataSegment</code> class represents a data segment on the MSP430
@@ -102,19 +101,48 @@ public class MSP430DataSegment extends Segment {
             errorReporter.writeError(address, val);
     }
 
+    /**
+     * The <code>loadProgram()</code> method loads a program into this data segment. This method
+     * loads the initialized portion of the program corresponding to the flash section (i.e.
+     * <code>flash_start</code> - </code>DATA_SIZE</code>.
+     * @param p the program to load into this data segment
+     */
     public void loadProgram(Program p) {
-        int start = flash_start;
-        if ( p.program_start > start ) start = p.program_start;
-        int max = DATA_SIZE;
-        if ( p.program_end < DATA_SIZE ) max = p.program_end;
+        int start = Arithmetic.max(p.program_start, flash_start);
+        int max = Arithmetic.min(p.program_end, DATA_SIZE);
+        loadCode(p, start, max);
+        loadData(p, start, max);
+    }
+
+    private void loadData(Program p, int start, int max) {
+        for ( int pos = start; pos < max; pos++ )
+            segment_data[pos] = p.readProgramByte(pos);
+    }
+
+    private void loadCode(Program p, int start, int max) {
         for ( int pos = start; pos < max; pos += 2 )
             code[pos] = (MSP430Instr)p.readInstr(pos);
     }
 
+    /**
+     * The <code>shareInstr()</code> method is used to share an internal reference to the code
+     * array. This is needed in the interpreter in order to achieve better performance and update
+     * instructions as they are disassembled.
+     * @return a reference to the internal array used to store the instruction objects
+     */
     protected MSP430Instr[] shareInstr() {
         return code;
     }
 
+    /**
+     * The <code>readInstr()</code> reads an instruction from the specified address in the program.
+     * This method makes no attempt to disassemble the instruction at the location; reading an
+     * instruction from a RAM location that has changed may return a stale instruction, or no
+     * instruction at all.
+     * @param address the address in the data segment from which to read the instruction
+     * @return a reference to a <code>MSP430Instr</code> object that corresponds to the instruction
+     * at the specified memory location, if one exists
+     */
     public MSP430Instr readInstr(int address) {
         return code[address];
     }

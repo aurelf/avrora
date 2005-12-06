@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the NEG (two's complement register) instruction"
 ; @Result: "r16 = -15, flags.z = 0, flags.v = 0, flags.n = 1, flags.s = 1, flags.c = 1"
 

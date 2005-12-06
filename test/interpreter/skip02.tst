@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the skip instructions for correct conditions and target"
 ; @Result: "r17 = 1, r18 = 1, r19 = 2"
 

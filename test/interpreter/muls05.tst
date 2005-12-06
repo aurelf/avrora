@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the MULS (multiply signed registers) instruction"
 ; @Result: "r16 = -1, r17 = -64, r0 = 64, r1 = 0, flags.z = 0, flags.c = 0"
 

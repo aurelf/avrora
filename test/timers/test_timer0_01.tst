@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the functionality of timer0 in generating interrupts"
 ; @Result: "r16 = 42, r17 = 42"
 

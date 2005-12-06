@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class EncodingVerifier extends VerifierPass {
 
-    public EncodingVerifier(Architecture arch) {
+    public EncodingVerifier(ArchDecl arch) {
         super(arch);
     }
 

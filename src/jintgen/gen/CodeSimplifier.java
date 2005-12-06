@@ -51,11 +51,11 @@ import java.util.*;
  */
 public class CodeSimplifier extends StmtRebuilder<CGEnv> {
 
-    protected final Architecture arch;
+    protected final ArchDecl arch;
     protected final Type INT;
     protected final Type LONG;
 
-    public CodeSimplifier(Architecture a) {
+    public CodeSimplifier(ArchDecl a) {
         arch = a;
         INT = arch.typeEnv.newIntType(true, 32);
         LONG = arch.typeEnv.newIntType(true, 64);

@@ -44,7 +44,7 @@ import java.util.*;
  */
 public class AddrSetVerifier extends VerifierPass {
 
-    public AddrSetVerifier(Architecture arch) {
+    public AddrSetVerifier(ArchDecl arch) {
         super(arch);
     }
 

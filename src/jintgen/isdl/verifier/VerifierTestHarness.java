@@ -36,7 +36,7 @@ package jintgen.isdl.verifier;
 
 import cck.test.TestCase;
 import cck.test.TestHarness;
-import jintgen.isdl.Architecture;
+import jintgen.isdl.ArchDecl;
 import jintgen.isdl.parser.ISDLParser;
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +57,7 @@ public class VerifierTestHarness implements TestHarness {
             File archfile = new File(filename);
             FileInputStream fis = new FileInputStream(archfile);
             ISDLParser parser = new ISDLParser(fis);
-            Architecture a = parser.Architecture();
+            ArchDecl a = parser.ArchDecl();
             new Verifier(a).verify();
         }
     }

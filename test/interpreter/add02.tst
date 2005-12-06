@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the ADD (add two registers) instruction"
 ; @Result: "flags.h=0, flags.s=1, flags.v=0, flags.n=1, flags.z=0, flags.c=0, r16 = -128"
 

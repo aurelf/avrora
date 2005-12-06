@@ -35,7 +35,7 @@ package jintgen.gen;
 import cck.text.*;
 import cck.util.*;
 import jintgen.Main;
-import jintgen.isdl.Architecture;
+import jintgen.isdl.ArchDecl;
 import java.io.*;
 import java.util.List;
 
@@ -48,7 +48,7 @@ import java.util.List;
  */
 public abstract class Generator extends GenBase {
 
-    public Architecture arch;
+    public ArchDecl arch;
     protected final Options options = new Options();
 
     public final Option.Str DEST_PACKAGE = options.newOption("package", "",
@@ -61,7 +61,7 @@ public abstract class Generator extends GenBase {
             "This option specifies the name of the java package that contains the abstract " +
             "versions of the instructions and architecture.");
 
-    public void setArchitecture(Architecture a) {
+    public void setArchitecture(ArchDecl a) {
         arch = a;
     }
 

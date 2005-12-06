@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the LPM (load program memory) instruction"
 ; @Result: "r0 = 42, z = @data"
 

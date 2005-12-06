@@ -98,7 +98,7 @@ public class ClassMapValueItem implements HelpItem {
         }
         Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, optname, "=", name);
         Terminal.nextln();
-        Terminal.println(StringUtil.makeParagraphs(h, indent+4, 0, Terminal.MAXLINE));
+        Terminal.println(StringUtil.formatParagraphs(h, indent+4, 0, Terminal.MAXLINE));
     }
 
     /**

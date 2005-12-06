@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the TST (test for zero or minus) instruction"
 ; @Result: "flags.s=1, flags.v=0, flags.n=1, flags.z=0, r16 = -128"
 

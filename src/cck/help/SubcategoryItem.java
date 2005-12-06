@@ -82,6 +82,6 @@ public class SubcategoryItem implements HelpItem {
         }
         Terminal.printPair(Terminal.COLOR_GREEN, Terminal.COLOR_YELLOW, "-help", " ", name);
         Terminal.nextln();
-        Terminal.println(StringUtil.makeParagraphs(h, indent+4, 0, Terminal.MAXLINE));
+        Terminal.println(StringUtil.formatParagraphs(h, indent+4, 0, Terminal.MAXLINE));
     }
 }

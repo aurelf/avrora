@@ -30,9 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package avrora.syntax.objdump;
+package avrora.syntax;
 
 import avrora.syntax.*;
+import avrora.syntax.objdump.Token;
 import cck.parser.AbstractToken;
 import cck.text.StringUtil;
 import java.util.HashMap;

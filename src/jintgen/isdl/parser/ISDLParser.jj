@@ -70,7 +70,7 @@ import java.util.HashMap;
 
 public class ISDLParser {
 
-    Architecture arch;
+    ArchDecl arch;
 
 }
 
@@ -239,9 +239,9 @@ TOKEN :
 /* Begin GRAMMAR */
 
 
-Architecture Architecture() : { Token n; }
+ArchDecl ArchDecl() : { Token n; }
 {
-    "architecture" n = <IDENTIFIER> { arch = new Architecture(n); }"{"
+    "architecture" n = <IDENTIFIER> { arch = new ArchDecl(n); }"{"
         (Item())*
     "}" { return arch; }
 }
@@ -441,7 +441,7 @@ FormatDecl DerivedFormat(Token pr, Token n) :
     List<FormatDecl.Substitution> l = new LinkedList<FormatDecl.Substitution>();
 }
 {
-    p = <IDENTIFIER> ["where" l = SubstitutionList()]
+    p = <IDENTIFIER> ("where" l = SubstitutionList() | ";" )
     { return new FormatDecl.Derived(n, pr, p, l); }
 }
 

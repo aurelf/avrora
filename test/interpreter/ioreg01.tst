@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test instructions for reading/writing to IO registers"
 ; @Result: "r17 = 1, flags.c = 1"
 

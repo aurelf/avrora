@@ -306,7 +306,7 @@ public class Main {
                     "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE " +
                     "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\n";
 
-        Terminal.print(StringUtil.makeParagraphs(notice, 0, 0, Terminal.MAXLINE));
+        Terminal.print(StringUtil.formatParagraphs(notice, 0, 0, Terminal.MAXLINE));
     }
 
     static void title() {

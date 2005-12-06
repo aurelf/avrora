@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the behavior of the software stack"
 ; @Result: "r17 = 42, sp = 255"
 

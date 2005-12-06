@@ -283,4 +283,9 @@ public class Arithmetic {
         if ( m1 > m2 ) return m1;
         return m2;
     }
+
+    public static int min(int m1, int m2) {
+        if ( m1 < m2 ) return m1;
+        return m2;
+    }
 }

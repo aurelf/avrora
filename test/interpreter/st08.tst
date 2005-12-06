@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the STS (store direct to SRAM) instruction"
 ; @Result: "sram[@memory] = 42"
 

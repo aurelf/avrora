@@ -33,8 +33,7 @@
 package avrora.core;
 
 import avrora.arch.legacy.LegacyInstr;
-import avrora.arch.AbstractArchitecture;
-import avrora.arch.AbstractInstr;
+import avrora.arch.*;
 import cck.text.StringUtil;
 import cck.util.Util;
 import java.util.*;
@@ -150,6 +149,15 @@ public class Program {
     public AbstractInstr readInstr(int address) {
         if ( address < program_start || address >= program_end ) return null;
         return flash_instrs[address - program_start];
+    }
+
+    public AbstractInstr disassembleInstr(int address) {
+        if ( address < program_start || address >= program_end ) return null;
+        AbstractDisassembler d = arch.getDisassembler();
+        int offset = address - program_start;
+        AbstractInstr instr = d.disassemble(program_start, offset, flash_data);
+        if ( instr != null ) flash_instrs[offset] = instr; 
+        return instr;
     }
 
     /**

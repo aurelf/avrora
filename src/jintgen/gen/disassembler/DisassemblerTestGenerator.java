@@ -33,265 +33,149 @@
 package jintgen.gen.disassembler;
 
 import cck.text.Printer;
-import cck.text.StringUtil;
 import cck.util.Util;
 import jintgen.isdl.*;
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * @author Ben L. Titzer
  */
 public class DisassemblerTestGenerator{
 
-    Architecture architecture;
+    ArchDecl archDecl;
     File directory;
     String dname;
     Printer printer;
-    HashMap<String, OperandGenerator> operandGenerators;
+    HashMap<OperandTypeDecl, ValueSet> operandValues;
 
-    public DisassemblerTestGenerator(Architecture a, File dir) {
-        architecture = a;
+    public abstract class ValueSet {
+
+        abstract void getRepresentative(String name, HashMap<String, String> props);
+        abstract void enumerate(InstrDecl d, String syntax, String name, HashMap<String, String> props);
+    }
+
+    class SimpleValues extends ValueSet {
+        final List<String> list;
+        SimpleValues() {
+            list = new LinkedList<String>();
+        }
+        void getRepresentative(String name, HashMap<String, String> props) {
+            props.put(name, list.iterator().next());
+        }
+        void enumerate(InstrDecl d, String syntax, String name, HashMap<String, String> props) {
+            for ( String str : list ) {
+                props.put(name, str);
+                generate(d, syntax, props);
+            }
+        }
+    }
+
+    class CompoundValues extends ValueSet {
+        List<HashMap<String, String>> values;
+        CompoundValues() {
+            values = new LinkedList<HashMap<String, String>>();
+        }
+        void getRepresentative(String name, HashMap<String, String> props) {
+            HashMap<String, String> map = values.iterator().next();
+            putSubValues(map, props, name);
+        }
+
+        private void putSubValues(HashMap<String, String> map, HashMap<String, String> props, String name) {
+            for ( Map.Entry<String, String> e: map.entrySet() ) {
+                props.put(name+"."+e.getKey(), e.getValue());
+            }
+        }
+
+        void enumerate(InstrDecl d, String syntax, String name, HashMap<String, String> props) {
+            for ( HashMap<String, String> map : values ) {
+                putSubValues(map, props, name);
+                generate(d, syntax, props);
+            }
+        }
+    }
+
+    public DisassemblerTestGenerator(ArchDecl a, File dir) {
+        archDecl = a;
         if ( !dir.isDirectory() )
             Util.userError("must specify directory for testcases");
         dname = dir.getAbsolutePath();
         directory = dir;
-        operandGenerators = new HashMap<String, OperandGenerator>();
-        operandGenerators.put("immediate", new ImmediateGenerator());
-        operandGenerators.put("address", new ImmediateGenerator());
-        operandGenerators.put("symbol", new SymbolGenerator());
-        operandGenerators.put("relative", new RelativeGenerator());
-        operandGenerators.put("word", new WordGenerator());
     }
 
     public void generate() {
-        for ( InstrDecl d : architecture.instructions ) visit(d);
+        for ( OperandTypeDecl d : archDecl.operandTypes ) getOperandValueSet(d);
+        for ( InstrDecl d : archDecl.instructions ) visit(d);
+    }
+
+    ValueSet getOperandValueSet(OperandTypeDecl o) {
+        ValueSet vs = operandValues.get(o);
+        if ( vs != null ) return vs;
+        if ( o.isCompound() ) {
+            CompoundValues cv = new CompoundValues();
+            operandValues.put(o, cv);
+            OperandTypeDecl.Compound ct = (OperandTypeDecl.Compound)o;
+            return cv;
+        } else {
+            SimpleValues sv = new SimpleValues();
+            operandValues.put(o, sv);
+            sv.list.add("0");
+            sv.list.add("11");
+            return sv;
+        }
     }
 
     public void visit(InstrDecl d) {
-        if ( getSyntax(d) != null ) {
-            new SyntaxGenerator(d).generate();
-        } else {
-            new SimpleGenerator(d).generate();
-        }
-    }
-
-    private String getSyntax(InstrDecl d) {
-        throw Util.unimplemented();
-    }
-
-    abstract class OperandGenerator {
-        abstract void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep);
-        abstract String getSomeMember(OperandTypeDecl decl);
-    }
-
-    class SymbolGenerator extends OperandGenerator {
-        void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep) {
-            // generate a test case for each possible register value of this operand,
-            // substituting representative members for the rest of the operands
-            /*
-            OperandTypeDecl.SymbolSet r = (OperandTypeDecl.SymbolSet)od;
-            for ( SymbolMapping.Entry re : r.map.getEntries() ) {
-                g.output(op, re.name, rep);
-            }
-            */
-        }
-        String getSomeMember(OperandTypeDecl decl) {
-            /*
-            OperandTypeDecl.SymbolSet r = (OperandTypeDecl.SymbolSet)decl;
-            SymbolMapping.Entry enc = r.map.getEntries().iterator().next();
-            return enc.name;
-            */
-            return "";
-        }
-    }
-
-    class ImmediateGenerator extends OperandGenerator {
-        void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep) {
-            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)od;
-            HashSet<String> hs = new HashSet<String>();
-            outputImm(g, imm.high,  imm, hs, op,rep);
-            outputImm(g, imm.low,  imm, hs, op,rep);
-            outputImmediate(g, 0xffffffff, hs, imm, op, rep);
-            outputImmediate(g, 0xff00ff00, hs, imm, op, rep);
-            outputImmediate(g, 0xf0f0f0f0, hs, imm, op, rep);
-            outputImmediate(g, 0xcccccccc, hs, imm, op, rep);
-            outputImmediate(g, 0xaaaaaaaa, hs, imm, op, rep);
-        }
-
-        protected void outputImmediate(Generator g, int value_l, HashSet<String> hs, OperandTypeDecl.Value imm, int cntr, String[] rep) {
-            int value_h = value_l;
-            for ( int bit = 0; bit < 32; bit++) {
-                outputImm(g, value_l, imm, hs, cntr, rep);
-                outputImm(g, value_h, imm, hs, cntr, rep);
-                value_l = value_l >>> 1;
-                value_h = value_h << 1;
+        for ( AddrModeDecl am : d.addrMode.addrModes ) {
+            Property p = am.getProperty("syntax");
+            if ( p == null ) p = d.getProperty("syntax");
+            String syntax = p != null ? p.value.image : generateSyntax(am);
+            for ( AddrModeDecl.Operand o : am.operands ) {
+                HashMap<String, String> map = new HashMap<String, String>();
+                for ( AddrModeDecl.Operand ot : am.operands) {
+                    if ( o != ot ) {
+                        ValueSet values = operandValues.get(ot.getOperandType());
+                        values.getRepresentative(ot.name.image, map);
+                    }
+                }
+                ValueSet values = operandValues.get(o.getOperandType());
+                values.enumerate(d, syntax, o.name.image, null);
             }
         }
+    }
 
-        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet<String> hs, int cntr, String[] rep) {
-            if ( val <= imm.high && val >= imm.low ) {
-                String value = StringUtil.to0xHex(val,2);
-                if ( !hs.contains(value)) {
-                    g.output(cntr, value, rep);
-                    hs.add(value);
+    public void visit(InstrDecl d, AddrModeDecl am) {
+        Property p = am.getProperty("syntax");
+        if ( p == null ) p = d.getProperty("syntax");
+        String syntax = p != null ? p.value.image : generateSyntax(am);
+        for ( AddrModeDecl.Operand o : am.operands ) {
+            HashMap<String, String> map = new HashMap<String, String>();
+            for ( AddrModeDecl.Operand ot : am.operands) {
+                if ( o != ot ) {
+                    ValueSet values = operandValues.get(ot.getOperandType());
+                    values.getRepresentative(ot.name.image, map);
                 }
             }
-        }
-
-        String getSomeMember(OperandTypeDecl decl) {
-            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)decl;
-            // return the average value
-            return StringUtil.to0xHex((imm.low+((imm.high-imm.low)/2)), 2);
+            ValueSet values = operandValues.get(o.getOperandType());
+            values.enumerate(d, syntax, o.name.image, null);
         }
     }
 
-    class RelativeGenerator extends OperandGenerator {
-        void generate(Generator g, InstrDecl decl, OperandTypeDecl od, int op, String[] rep) {
-            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)od;
-            int pc = 0;
-            // for relative, we will dumbly generate all possibilities.
-            for ( int cntr = imm.high; cntr >= imm.low; cntr-- ) {
-                g.output(op, ".+"+cntr*2, rep);
-                pc += decl.getEncodingSize() / 8;
-            }
-//            throw Avrora.unimplemented();
+    private String generateSyntax(AddrModeDecl am) {
+        StringBuffer buf = new StringBuffer();
+        for ( AddrModeDecl.Operand o : am.operands ) {
+            if ( buf.length() == 0 ) buf.append(", ");
+            buf.append("%");
+            buf.append(o.name.image);
         }
-
-        String getSomeMember(OperandTypeDecl decl) {
-            return "0x00";
-        }
+        return buf.toString();
     }
 
-    class WordGenerator extends ImmediateGenerator {
-        protected void outputImm(Generator g, int val, OperandTypeDecl.Value imm, HashSet<String> hs, int cntr, String[] rep) {
-            if ( val <= imm.high && val >= imm.low ) {
-                val = val * 2;
-                String value = StringUtil.to0xHex(val,2);
-                if ( !hs.contains(value)) {
-                    g.output(cntr, value, rep);
-                    hs.add(value);
-                }
-            }
+    void generate(InstrDecl d, String syntax, HashMap<String, String> props) {
+        for ( Map.Entry<String, String> e : props.entrySet() ) {
+            syntax = syntax.replaceAll("%"+e.getKey(), e.getValue());
         }
-
-        String getSomeMember(OperandTypeDecl decl) {
-            OperandTypeDecl.Value imm = (OperandTypeDecl.Value)decl;
-            // return the average value
-            int avg = (imm.low+((imm.high-imm.low)/2));
-            return StringUtil.to0xHex(avg * 2, 2);
-        }
-    }
-
-    abstract class Generator {
-        InstrDecl decl;
-        String name;
-        Printer printer;
-
-        Generator(InstrDecl decl) {
-            this.name = StringUtil.trimquotes(decl.name.toString());
-            this.decl = decl;
-            printer = createPrinter(name);
-        }
-
-        void generate() {
-            if ( decl.getOperands().size() == 0 ) {
-                output(0, "", StringUtil.EMPTY_STRING_ARRAY);
-            }
-
-            String[] rep = getRepresentatives(decl);
-
-            // for each operand, generate many different test cases, with the rest of
-            // the operands set to "representative" values
-            int cntr = 0;
-            for ( AddrModeDecl.Operand op : decl.getOperands() ) {
-                OperandTypeDecl decl = op.getOperandType();
-                OperandGenerator g = getOperandGenerator(decl);
-                g.generate(this, this.decl, decl, cntr, rep);
-                cntr++;
-            }
-        }
-
-        abstract void output(int op, String v, String[] rep);
-    }
-
-    class SimpleGenerator extends Generator {
-        SimpleGenerator(InstrDecl decl) {
-            super(decl);
-        }
-
-        void output(int op, String v, String[] rep) {
-            printer.print(name+" ");
-            for ( int cntr = 0; cntr < rep.length; cntr++ ) {
-                if ( cntr == op )
-                    printer.print(v);
-                else
-                    printer.print(rep[cntr]);
-                if ( cntr != rep.length-1 )
-                    printer.print(", ");
-            }
-            printer.nextln();
-        }
-    }
-
-    class SyntaxGenerator extends Generator {
-        String[] opnames;
-        String syntax;
-
-        SyntaxGenerator(InstrDecl decl) {
-            super(decl);
-
-            syntax = getSyntax(decl);
-
-            int numops = decl.getOperands().size();
-            opnames = new String[numops];
-            int cntr = 0;
-            for ( AddrModeDecl.Operand op : decl.getOperands() ) {
-                opnames[cntr++] = op.name.image;
-            }
-        }
-
-        void output(int op, String v, String[] rep) {
-            String result = syntax;
-            result = result.replaceAll("%"+opnames[op], v);
-            for ( int cntr = 0; cntr < opnames.length; cntr++ )
-                result = result.replaceAll("%"+opnames[cntr], rep[cntr]);
-            printer.println(result);
-        }
-    }
-
-    private Printer createPrinter(String name) {
-        String fname = dname + File.separatorChar +name+".instr";
-        Printer p = null;
-        try {
-            File file = new File(fname);
-            p = new Printer(new PrintStream(new FileOutputStream(file)));
-        } catch ( IOException e) {
-            Util.userError("Cannot create test file", fname);
-        }
-        return p;
-    }
-
-    private String[] getRepresentatives(InstrDecl d) {
-        String[] rep = new String[d.getOperands().size()];
-        int cntr = 0;
-        for ( AddrModeDecl.Operand op : d.getOperands() ) {
-            OperandTypeDecl decl = op.getOperandType();
-            OperandGenerator g = getOperandGenerator(decl);
-            rep[cntr++] = g.getSomeMember(decl);
-        }
-        return rep;
-    }
-
-    private OperandGenerator getOperandGenerator(OperandTypeDecl decl) {
-        throw Util.unimplemented();
-/*
-        OperandGenerator g = (OperandGenerator)operandGenerators.get(decl.kind.image);
-        if ( g == null )
-            throw Util.failure("cannot generate representative values for operand of type "+decl.kind.image);
-        return g;
-*/
+        printer.print(d.name+" "+syntax);
     }
 
 }

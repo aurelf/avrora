@@ -44,7 +44,7 @@ import jintgen.types.TypeCon;
  */
 public class TypeEnvBuilder extends VerifierPass {
 
-    public TypeEnvBuilder(Architecture arch) {
+    public TypeEnvBuilder(ArchDecl arch) {
         super(arch);
     }
 

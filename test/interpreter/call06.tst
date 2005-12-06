@@ -1,4 +1,5 @@
 ; @Harness: simulator
+; @Format: atmel
 ; @Purpose: "Test the branch instructions for correct conditions and target"
 ; @Result: "@target = 12, r17 = 0, r18 = 3, sp = 253, sram[sp+2] = 10, sram[sp+1] = 0"
 
