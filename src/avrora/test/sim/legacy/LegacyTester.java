@@ -34,13 +34,13 @@
 
 package avrora.test.sim.legacy;
 
-import avrora.Defaults;
+import avrora.test.sim.Tester;
+import avrora.test.sim.StateAccessor;
+import avrora.sim.Simulator;
+import avrora.core.Program;
 import avrora.arch.AbstractArchitecture;
 import avrora.arch.legacy.LegacyArchitecture;
-import avrora.core.Program;
-import avrora.sim.Simulator;
-import avrora.test.sim.StateAccessor;
-import avrora.test.sim.Tester;
+import avrora.Defaults;
 
 /**
  * @author Ben L. Titzer

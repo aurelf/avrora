@@ -1,5 +1,6 @@
 ; @Harness: simulator
 ; @Format: atmel
+; @Arch: avr
 ; @Purpose: "Test the OR (or two registers) instruction"
 ; @Result: "r16 = -113, flags.z = 0, flags.v = 0, flags.n = 1, flags.s = 1"
 

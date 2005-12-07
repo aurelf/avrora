@@ -1,5 +1,6 @@
 ; @Harness: simulator
 ; @Format: atmel
+; @Arch: avr
 ; @Purpose: "Test the LDD (load from SRAM with displacement) instruction"
 ; @Initial: "[@memory + 2] = 42"
 ; @Result: "r16 = 42, y = @memory"

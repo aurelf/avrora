@@ -35,10 +35,10 @@
 package avrora.test.sim;
 
 import cck.text.StringUtil;
+import java.util.List;
+import java.util.LinkedList;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * The <code>PredicateParser</code> class implements a simple recursive-descent parser for the
@@ -170,7 +170,8 @@ public class PredicateParser {
 
     // number
     private TestExpr readConst(CharacterIterator i) {
-        return new TestExpr.Const(StringUtil.readIntegerValue(i));
+        int value = StringUtil.readDecimalValue(i, 9);
+        return new TestExpr.Const(value);
     }
 
 }

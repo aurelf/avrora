@@ -34,8 +34,8 @@
 
 package avrora.test.sim;
 
-import avrora.core.Program;
 import avrora.core.SourceMapping;
+import avrora.core.Program;
 
 /**
  * @author Ben L. Titzer
@@ -94,7 +94,7 @@ abstract class TestExpr {
             SourceMapping smap = p.getSourceMapping();
             SourceMapping.Location l = smap.getLocation(name);
             if (l == null) throw new UnknownLabel(name);
-            return l.lma_addr;
+            return l.address;
         }
 
         public String toString() {

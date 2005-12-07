@@ -1,5 +1,6 @@
 ; @Harness: simulator
 ; @Format: atmel
+; @Arch: avr
 ; @Purpose: "Test the functionality of timer3 in generating interrupts"
 ; @Result: "r16 = 42, r17 = 42"
 

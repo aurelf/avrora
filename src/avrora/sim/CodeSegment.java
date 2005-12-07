@@ -68,7 +68,7 @@ public class CodeSegment extends Segment {
      * The <code>CodeSegment.Factory</code> class is used to create a new code segment for a new interpreter.
      */
     public interface Factory {
-        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, Program p);
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p);
     }
 
     /**
@@ -82,8 +82,8 @@ public class CodeSegment extends Segment {
             size = s;
         }
 
-        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, Program p) {
-            return new CodeSegment(name, size, bi);
+        public CodeSegment newCodeSegment(String name, AtmelInterpreter bi, ErrorReporter er, Program p) {
+            return new CodeSegment(name, size, bi, er);
         }
     }
 
@@ -100,6 +100,7 @@ public class CodeSegment extends Segment {
     protected LegacyInstr[] segment_instr;
 
     protected final NoLegacyInstr NO_INSTR = new NoLegacyInstr();
+    protected final MisalignedLegacyInstr MISALIGNED_INSTR = new MisalignedLegacyInstr();
 
     protected CodeSharer codeSharer;
 
@@ -119,9 +120,10 @@ public class CodeSegment extends Segment {
      * @param name the name of the segment as a string
      * @param size the size of the segment in bytes
      * @param bi the interpreter that will use this segment
+     * @param er the error reporter consulted on accesses out of bounds
      */
-    public CodeSegment(String name, int size, AtmelInterpreter bi) {
-        super(name, size, DEFAULT_VALUE, bi.state);
+    public CodeSegment(String name, int size, AtmelInterpreter bi, ErrorReporter er) {
+        super(name, size, DEFAULT_VALUE, bi.state, er);
         interpreter = bi;
         segment_instr = new LegacyInstr[size];
     }
@@ -348,6 +350,56 @@ public class CodeSegment extends Segment {
         public LegacyInstr asInstr() {
             return null;
         }
+    }
+
+    /**
+     * The <code>MisalignedLegacyInstr</code> class is used for instructions that are not aligned in the flash
+     * memory correctly.
+     */
+    private class MisalignedLegacyInstr extends LegacyInstr {
+
+        MisalignedLegacyInstr() {
+            super(NO_INSTR_PROPS);
+        }
+
+        /**
+         * The <code>getOperands()</code> method returns a string representation of the operands of the
+         * instruction. This is useful for printing and tracing of instructions as well as generating
+         * listings.
+         *
+         * @return a string representing the operands of the instruction
+         */
+        public String getOperands() {
+            throw Util.failure("no instruction here");
+        }
+
+        /**
+         * The <code>accept()</code> method is part of the visitor pattern for instructions. The visitor
+         * pattern uses two virtual dispatches combined with memory overloading to achieve dispatching on
+         * multiple types. The result is clean and modular code.
+         *
+         * @param v the visitor to accept
+         */
+        public void accept(LegacyInstrVisitor v) {
+            throw new InterpreterError.PCAlignmentException(interpreter.getState().getPC());
+        }
+
+        /**
+         * The <code>build()</code> method constructs a new <code>LegacyInstr</code> instance with the given
+         * operands, checking the operands against the constraints that are specific to each instruction.
+         *
+         * @param pc  the address at which the instruction will be located
+         * @param ops the operands to the instruction
+         * @return a new <code>LegacyInstr</code> instance representing the instruction with the given operands
+         */
+        public LegacyInstr build(int pc, LegacyOperand[] ops) {
+            throw Util.failure("no instruction here");
+        }
+
+        public LegacyInstr asInstr() {
+            return null;
+        }
+
     }
 
 }

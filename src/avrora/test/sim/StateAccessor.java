@@ -34,10 +34,10 @@
 
 package avrora.test.sim;
 
-import avrora.core.Program;
-import avrora.sim.Simulator;
 import cck.util.Arithmetic;
 import cck.util.Util;
+import avrora.core.Program;
+import avrora.sim.Simulator;
 import java.util.*;
 
 /**

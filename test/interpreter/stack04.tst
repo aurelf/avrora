@@ -1,5 +1,6 @@
 ; @Harness: simulator
 ; @Format: atmel
+; @Arch: avr
 ; @Purpose: "Test the behavior of the software stack"
 ; @Result: "sram[sp+1] = 43, sp = 254, r18 = 42"
 
