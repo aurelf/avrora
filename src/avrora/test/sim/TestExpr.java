@@ -34,23 +34,22 @@
 
 package avrora.test.sim;
 
-import cck.util.Util;
 import avrora.core.SourceMapping;
 import avrora.core.Program;
 
 /**
  * @author Ben L. Titzer
  */
-abstract class SimTestExpr {
+abstract class TestExpr {
     public abstract int evaluate(StateAccessor access);
     public void set(StateAccessor access, int val) {
         // do nothing.
     }
 
-    static class Index extends SimTestExpr {
+    static class Index extends TestExpr {
         final String name;
-        final SimTestExpr index;
-        Index(String name, SimTestExpr i) {
+        final TestExpr index;
+        Index(String name, TestExpr i) {
             this.name = name;
             this.index = i;
         }
@@ -67,7 +66,7 @@ abstract class SimTestExpr {
         }
     }
 
-    static class Var extends SimTestExpr {
+    static class Var extends TestExpr {
         final String name;
         Var(String name) {
             this.name = name;
@@ -83,7 +82,7 @@ abstract class SimTestExpr {
         }
     }
 
-    static class Label extends SimTestExpr {
+    static class Label extends TestExpr {
         String name;
 
         Label(String n) {
@@ -103,7 +102,7 @@ abstract class SimTestExpr {
         }
     }
 
-    static class Const extends SimTestExpr {
+    static class Const extends TestExpr {
         int value;
 
         Const(int v) {
@@ -119,11 +118,11 @@ abstract class SimTestExpr {
         }
     }
 
-    abstract static class BinOp extends SimTestExpr {
-        SimTestExpr left, right;
+    abstract static class BinOp extends TestExpr {
+        TestExpr left, right;
         String op;
 
-        BinOp(SimTestExpr l, SimTestExpr r, String o) {
+        BinOp(TestExpr l, TestExpr r, String o) {
             left = l;
             right = r;
             op = o;
@@ -136,7 +135,7 @@ abstract class SimTestExpr {
 
     static class Add extends BinOp {
 
-        Add(SimTestExpr l, SimTestExpr r) {
+        Add(TestExpr l, TestExpr r) {
             super(l, r, "+");
         }
 
@@ -149,7 +148,7 @@ abstract class SimTestExpr {
 
     static class Subtract extends BinOp {
 
-        Subtract(SimTestExpr l, SimTestExpr r) {
+        Subtract(TestExpr l, TestExpr r) {
             super(l, r, "-");
         }
 

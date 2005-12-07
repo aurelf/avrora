@@ -36,6 +36,7 @@ import avrora.arch.legacy.*;
 import avrora.core.Program;
 import avrora.sim.util.MulticastProbe;
 import cck.util.Util;
+import java.util.Arrays;
 
 /**
  * The <code>CodeSegment</code> class represents a segment of memory that stores executable
@@ -148,22 +149,19 @@ public class CodeSegment extends Segment {
      * @param p the program to be loaded into the flash memory
      */
     public void load(Program p) {
-        for (int cntr = 0; cntr < p.program_end;) {
+        Arrays.fill(segment_instr, NO_INSTR);
+        for (int cntr = p.program_start; cntr < p.program_end;) {
             LegacyInstr i = (LegacyInstr)p.readInstr(cntr);
             if (i != null) {
                 segment_instr[cntr] = i;
-                for (int s = 1; s < i.getSize(); s++)
-                    segment_instr[cntr + s] = NO_INSTR;
                 cntr += i.getSize();
             } else {
-                segment_instr[cntr] = NO_INSTR;
-                segment_instr[cntr + 1] = MISALIGNED_INSTR;
                 cntr += 2;
             }
         }
 
         // now initialize the flash data
-        for (int cntr = 0; cntr < p.program_end; cntr++)
+        for (int cntr = p.program_start; cntr < p.program_end; cntr++)
             segment_data[cntr] = p.readProgramByte(cntr);
     }
 

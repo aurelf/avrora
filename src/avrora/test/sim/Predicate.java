@@ -41,11 +41,11 @@ package avrora.test.sim;
  * @author Ben L. Titzer
  */
 public class Predicate {
-    protected SimTestExpr left, right;
+    protected TestExpr left, right;
     protected int leftvalue;
     protected int rightvalue;
 
-    protected Predicate(SimTestExpr l, SimTestExpr r) {
+    protected Predicate(TestExpr l, TestExpr r) {
         left = l;
         right = r;
     }

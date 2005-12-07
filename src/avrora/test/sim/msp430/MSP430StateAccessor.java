@@ -32,91 +32,57 @@
  * Creation date: Nov 29, 2005
  */
 
-package avrora.test.sim;
+package avrora.test.sim.msp430;
 
 import avrora.core.Program;
 import avrora.sim.Simulator;
-import avrora.arch.legacy.*;
+import avrora.arch.msp430.MSP430Interpreter;
+import avrora.arch.msp430.MSP430Symbol;
+import avrora.test.sim.StateAccessor;
+import cck.util.Util;
 
 /**
- * The <code>LegacyStateAccessor</code> class provides access to the state of the AVR simulator
+ * The <code>MSP430StateAccessor</code> class provides access to the state of the MSP430 simulator
  * for the purpose of the automated simulation tester. It provides a number of names such
  * "r1" and "pc" that correspond to values in the simulation. Test cases can specify
  * an initial state, a sequence of instructions to execute, and the expected final state.
  *
  * @author Ben L. Titzer
  */
-public class LegacyStateAccessor extends StateAccessor {
+public class MSP430StateAccessor extends StateAccessor {
+    final MSP430Interpreter interpreter;
 
-    final LegacyInterpreter interpreter;
-
-    public LegacyStateAccessor(Program p, Simulator s) {
+    public MSP430StateAccessor(Program p, Simulator s) {
         super(p, s);
-        interpreter = (LegacyInterpreter)simulator.getInterpreter();
+        interpreter = (MSP430Interpreter)simulator.getInterpreter();
 
         // install the general purpose registers
-        for ( int cntr = 0; cntr < 32; cntr++ ) {
+        for ( int cntr = 0; cntr < 16; cntr++ ) {
             accessors.put("r"+cntr, newRegister(cntr));
         }
-        // install the word registers
-        for ( int cntr = 0; cntr < 32; cntr += 2 ) {
-            WordRegister register = new WordRegister();
-            register.reg = LegacyRegister.getRegisterByNumber(cntr);
-            accessors.put("r"+cntr+":r"+(cntr+1), register);
-        }
-
-        // install the address registers
-        installAR("x");
-        installAR("y");
-        installAR("z");
 
         // install accessors for PC, SRAM, SP, and FLASH
-        accessors.put("sram", new SRAM());
+        accessors.put("data", new DATA());
+        accessors.put("regs", new REGS());
         accessors.put("pc", new PC());
         accessors.put("sp", new SP());
-        accessors.put("flash", new FLASH());
         accessors.put("cycles", new Cycles());
 
-        // install accessors for I, T, H, S, V, N, Z, C
-        accessors.put("flags.i", new Flag(LegacyState.SREG_I));
-        accessors.put("flags.t", new Flag(LegacyState.SREG_T));
-        accessors.put("flags.h", new Flag(LegacyState.SREG_H));
-        accessors.put("flags.s", new Flag(LegacyState.SREG_S));
-        accessors.put("flags.v", new Flag(LegacyState.SREG_V));
-        accessors.put("flags.n", new Flag(LegacyState.SREG_N));
-        accessors.put("flags.z", new Flag(LegacyState.SREG_Z));
-        accessors.put("flags.c", new Flag(LegacyState.SREG_C));
     }
 
-    private void installAR(String name) {
-        WordRegister register = new WordRegister();
-        register.reg = LegacyRegister.getRegisterByName(name);
-        accessors.put(name, register);
-    }
-
-    private Register newRegister(int cntr) {
-        Register register = new Register();
-        register.reg = LegacyRegister.getRegisterByNumber(cntr);
-        return register;
+    Register newRegister(int cntr) {
+        Register r = new Register();
+        r.reg = MSP430Symbol.get_GPR("r"+cntr);
+        return r;
     }
 
     class Register extends Accessor {
-        LegacyRegister reg;
+        MSP430Symbol.GPR reg;
         protected int get() {
-            return interpreter.getRegisterByte(reg);
+            return interpreter.getRegister(reg);
         }
         protected void set(int val) {
-            interpreter.writeRegisterByte(reg.getNumber(), (byte)val);
-        }
-    }
-
-    class WordRegister extends Accessor {
-        LegacyRegister reg;
-        protected int get() {
-            return interpreter.getRegisterWord(reg);
-        }
-        protected void set(int val) {
-            interpreter.writeRegisterWord(reg.getNumber(), val);
+            interpreter.setRegister(reg, (char)val);
         }
     }
 
@@ -125,7 +91,7 @@ public class LegacyStateAccessor extends StateAccessor {
             return interpreter.getState().getPC();
         }
         protected void set(int val) {
-            interpreter.setBootPC(val);
+            throw Util.unimplemented();
         }
     }
 
@@ -134,11 +100,11 @@ public class LegacyStateAccessor extends StateAccessor {
             return interpreter.getState().getSP();
         }
         protected void set(int val) {
-            interpreter.setSP(val);
+            throw Util.unimplemented();
         }
     }
 
-    class SRAM extends Accessor {
+    class DATA extends Accessor {
         protected int get() {
             return 0;
         }
@@ -146,14 +112,14 @@ public class LegacyStateAccessor extends StateAccessor {
             // do nothing.
         }
         protected int getIndex(int ind) {
-            return interpreter.getDataByte(ind);
+            return interpreter.getSRAM(ind);
         }
         protected void setIndex(int ind, int val) {
-            interpreter.writeDataByte(ind, (byte)val);
+            throw Util.unimplemented();
         }
     }
 
-    class FLASH extends Accessor {
+    class REGS extends Accessor {
         protected int get() {
             return 0;
         }
@@ -161,23 +127,10 @@ public class LegacyStateAccessor extends StateAccessor {
             // do nothing.
         }
         protected int getIndex(int ind) {
-            return interpreter.getFlashByte(ind);
+            return interpreter.getRegister(ind);
         }
         protected void setIndex(int ind, int val) {
-            interpreter.writeFlashByte(ind, (byte)val);
-        }
-    }
-
-    class Flag extends Accessor {
-        final int bit;
-        Flag(int b) {
-            bit = b;
-        }
-        protected int get() {
-            return interpreter.SREG_reg.readBit(bit) ? 1 : 0;
-        }
-        protected void set(int val) {
-            interpreter.SREG_reg.writeBit(bit, val != 0);
+            throw Util.unimplemented();
         }
     }
 

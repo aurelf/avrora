@@ -72,6 +72,17 @@ public abstract class TestCase {
         return new TestResult.UnexpectedException(t);
     }
 
+    protected String expectProperty(String prop) {
+        String value = properties.getProperty(prop);
+        if ( value == null )
+            Util.userError("Property "+ StringUtil.quote("Arch")+" not found in testcase");
+        return trimString(value);
+    }
+
+    protected String trimString(String str) {
+        return StringUtil.trimquotes(str.trim());
+    }
+
     public abstract static class ExpectSourceError extends TestCase {
 
         boolean shouldPass;

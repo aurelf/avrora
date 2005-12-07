@@ -38,7 +38,7 @@ import cck.util.Arithmetic;
 import cck.util.Util;
 import avrora.core.Program;
 import avrora.sim.Simulator;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * The <code>StateAccessor</code> class separates the simulation test engine from the details of
@@ -149,5 +149,13 @@ public abstract class StateAccessor {
 
     public Simulator getSimulator() {
         return simulator;
+    }
+
+    public void init(List inits) {
+        Iterator i = inits.iterator();
+        while ( i.hasNext() ) {
+            Predicate p = (Predicate)i.next();
+            p.init(this);
+        }
     }
 }

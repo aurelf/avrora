@@ -1,5 +1,6 @@
 ; @Harness: simulator
 ; @Format: atmel
+; @Arch: avr
 ; @Purpose: "Test the LDS (load direct from SRAM) instruction"
 ; @Initial: "[memory] = 42"
 ; @Result: "r16 = 42"

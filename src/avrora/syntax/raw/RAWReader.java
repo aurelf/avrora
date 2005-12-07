@@ -89,19 +89,26 @@ public class RAWReader extends ProgramReader {
             String line = reader.readLine();
             if ( line == null ) break;
             Record r = parse(line);
-            records.add(r);
+            if ( r != null ) records.add(r);
         }
         return records;
     }
 
     private Program createProgram(AbstractArchitecture arch, List records) {
+        boolean init = false;
         int min = 0;
         int max = 0;
         Iterator i = records.iterator();
         while ( i.hasNext() ) {
             Record r = (Record)i.next();
-            min = Arithmetic.min(min, r.addr);
-            max = Arithmetic.max(max, r.addr + r.bytes.size());
+            if ( !init ) {
+                init = true;
+                min = r.addr;
+                max = r.addr + r.bytes.size();
+            } else {
+                min = Arithmetic.min(min, r.addr);
+                max = Arithmetic.max(max, r.addr + r.bytes.size());
+            }
         }
         return new Program(arch, min, max);
     }
@@ -139,8 +146,8 @@ public class RAWReader extends ProgramReader {
         if ( ch == CharacterIterator.DONE ) return null; // empty line
         if ( ch == ';' ) return null; // line consists of comment only
         if ( ch != '0' ) Util.userError("syntax error");
-
-        StringUtil.peekAndEat(i, 'x'); // read the 0x of the address
+        i.next();
+        StringUtil.expectChar(i, 'x'); // read the 0x of the address
         int addr = StringUtil.readHexValue(i, 8); // read in the address
         Record record = new Record(addr);
 
@@ -166,7 +173,7 @@ public class RAWReader extends ProgramReader {
         char ch;
         StringBuffer buf = new StringBuffer();
         while ( (ch = i.next()) != CharacterIterator.DONE ) {
-            if ( ch == '"' ) break;
+            if ( ch == '"' ) { i.next(); break; }
             buf.append(ch);
         }
         record.strings.add(buf.toString());

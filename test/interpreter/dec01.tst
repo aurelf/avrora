@@ -1,5 +1,6 @@
 ; @Harness: simulator
 ; @Format: atmel
+; @Arch: avr
 ; @Purpose: "Test the DEC (decrement register) instruction"
 ; @Result: "r16 = 14, flags.z = 0, flags.v = 0, flags.n = 0, flags.s = 0"
 

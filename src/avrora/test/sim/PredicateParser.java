@@ -52,6 +52,7 @@ public class PredicateParser {
         List inits = new LinkedList();
         CharacterIterator i = new StringCharacterIterator(init);
         while (true) {
+            StringUtil.skipWhiteSpace(i);
             Predicate s = readInit(i);
             // verboseln("parsed: "+s.left+" = "+s.right);
             StringUtil.skipWhiteSpace(i);
@@ -83,10 +84,11 @@ public class PredicateParser {
     // expr = expr
     private Predicate readPredicate(CharacterIterator i) throws Exception {
         // verboseln("Predicate @ "+i.getIndex()+" > '"+i.current()+"'");
-        SimTestExpr left = readExpr(i);
+        StringUtil.skipWhiteSpace(i);
+        TestExpr left = readExpr(i);
         StringUtil.skipWhiteSpace(i);
         StringUtil.expectChar(i, '=');
-        SimTestExpr right = readExpr(i);
+        TestExpr right = readExpr(i);
 
         return new Predicate(left, right);
     }
@@ -94,25 +96,26 @@ public class PredicateParser {
     // term = expr
     private Predicate readInit(CharacterIterator i) throws Exception {
         // verboseln("Predicate @ "+i.getIndex()+" > '"+i.current()+"'");
-        SimTestExpr left = readTerm(i);
+        StringUtil.skipWhiteSpace(i);
+        TestExpr left = readTerm(i);
         StringUtil.skipWhiteSpace(i);
         StringUtil.expectChar(i, '=');
-        SimTestExpr right = readExpr(i);
+        TestExpr right = readExpr(i);
 
         return new Predicate(left, right);
     }
 
     // term (+/- term)*
-    private SimTestExpr readExpr(CharacterIterator i) throws Exception {
+    private TestExpr readExpr(CharacterIterator i) throws Exception {
         // verboseln("Expr @ "+i.getIndex()+" > '"+i.current()+"'");
         StringUtil.skipWhiteSpace(i);
-        SimTestExpr t = readTerm(i);
+        TestExpr t = readTerm(i);
 
         StringUtil.skipWhiteSpace(i);
         if (StringUtil.peekAndEat(i, '+'))
-            t = new SimTestExpr.Add(t, readExpr(i));
+            t = new TestExpr.Add(t, readExpr(i));
         else if (StringUtil.peekAndEat(i, '-'))
-            t = new SimTestExpr.Subtract(t, readExpr(i));
+            t = new TestExpr.Subtract(t, readExpr(i));
 
         return t;
     }
@@ -121,20 +124,20 @@ public class PredicateParser {
     // ident
     // ident[expr]
     // const
-    private SimTestExpr readTerm(CharacterIterator i) throws Exception {
+    private TestExpr readTerm(CharacterIterator i) throws Exception {
         // verboseln("Term @ "+i.getIndex()+" > '"+i.current()+"'");
-        SimTestExpr e;
+        TestExpr e;
         char c = i.current();
 
         if ( c == '@' ) { // label
             i.next();
-            SimTestExpr.Var v = readIdent(i);
-            return new SimTestExpr.Label(v.name);
+            TestExpr.Var v = readIdent(i);
+            return new TestExpr.Label(v.name);
         } else if (Character.isLetter(c)) {
-            SimTestExpr.Var v = readIdent(i);
+            TestExpr.Var v = readIdent(i);
             if ( StringUtil.peekAndEat(i, '[') ) {
-                SimTestExpr ind = readExpr(i);
-                e = new SimTestExpr.Index(v.name, ind);
+                TestExpr ind = readExpr(i);
+                e = new TestExpr.Index(v.name, ind);
                 StringUtil.expectChar(i, ']');
             } else e = v;
         } else if (Character.isDigit(c))
@@ -148,7 +151,7 @@ public class PredicateParser {
     }
 
     // ident
-    private SimTestExpr.Var readIdent(CharacterIterator i) {
+    private TestExpr.Var readIdent(CharacterIterator i) {
         StringBuffer buf = new StringBuffer(32);
 
         while (true) {
@@ -162,13 +165,13 @@ public class PredicateParser {
         }
 
         String name = buf.toString();
-        return new SimTestExpr.Var(name);
+        return new TestExpr.Var(name);
     }
 
     // number
-    private SimTestExpr readConst(CharacterIterator i) {
+    private TestExpr readConst(CharacterIterator i) {
         int value = StringUtil.readDecimalValue(i, 9);
-        return new SimTestExpr.Const(value);
+        return new TestExpr.Const(value);
     }
 
 }

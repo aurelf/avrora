@@ -67,6 +67,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
     protected int RAMPZ; // location of the RAMPZ IO register
     protected final RegisterSet registers;
     protected final MSP430Instr[] shared_instr;
+    protected final STOP_instr STOP;
     protected boolean innerLoop;
     protected boolean shouldRun;
     protected boolean sleeping;
@@ -112,6 +113,8 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         pc = pr.code_start;
 
         globalProbe = new MulticastProbe();
+
+        STOP = new STOP_instr();
     }
 
     /**
@@ -160,6 +163,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         MSP430Instr i = shared_instr[curpc];
         if ( i == null ) {
             SimUtil.warning(simulator, StringUtil.to0xHex(curpc, 4), "invalid instruction");
+            i = STOP;
         }
         regs[PC_REG] = (char)(curpc + 2);
         nextpc = curpc + i.getSize();
@@ -231,6 +235,7 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
 
     public void stop() {
         shouldRun = false;
+        innerLoop = false;
     }
 
     /**
@@ -329,4 +334,40 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
         throw Util.unimplemented();
     }
 
+    /**
+     * The <code>getRegister()</code> method reads a general purpose register's current value as a byte.
+     *
+     * @param reg the register to read
+     * @param val the character value to write to the register
+     */
+    public void setRegister(MSP430Symbol.GPR reg, char val) {
+        regs[reg.value] = val;
+    }
+
+    class STOP_instr extends MSP430Instr {
+
+        STOP_instr() {
+            super("stop", 0);
+        }
+        /**
+         * The <code>accept()</code> method accepts an instruction visitor and
+         * calls the appropriate <code>visit()</code> method for this
+         * instruction.
+         * @param v the instruction visitor to accept
+         */
+        public void accept(MSP430InstrVisitor v) {
+            stop();
+        }
+
+        /**
+         * The <code>accept()</code> method accepts an addressing mode visitor
+         * and calls the appropriate <code>visit_*()</code> method for this
+         * instruction's addressing mode.
+         * @param v the addressing mode visitor to accept
+         */
+        public void accept(MSP430AddrModeVisitor v) {
+            // the default implementation of accept() is empty
+        }
+
+    }
 }

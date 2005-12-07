@@ -1,5 +1,6 @@
 ; @Harness: simulator
 ; @Format: atmel
+; @Arch: avr
 ; @Purpose: "Test the SER (set register) instruction"
 ; @Result: "r16 = -1"
 

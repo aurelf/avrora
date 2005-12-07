@@ -33,6 +33,9 @@
 package avrora.test.sim;
 
 import avrora.Defaults;
+import avrora.test.sim.legacy.LegacyStateAccessor;
+import avrora.test.sim.legacy.LegacyTester;
+import avrora.test.sim.msp430.MSP430Tester;
 import avrora.arch.legacy.LegacyState;
 import avrora.core.*;
 import avrora.sim.Simulator;
@@ -42,6 +45,7 @@ import cck.test.*;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 import cck.util.Util;
+import cck.util.ClassMap;
 import java.util.*;
 
 /**
@@ -52,12 +56,21 @@ import java.util.*;
  */
 public class SimTestHarness implements TestHarness {
 
+    protected static final ClassMap testerMap;
+
+    static {
+        testerMap = new ClassMap("Simulation Tester", Tester.class);
+        testerMap.addClass("avr", LegacyTester.class);
+        testerMap.addClass("msp430", MSP430Tester.class);
+    }
+
     static class SimulatorTest extends TestCase {
 
         Module module;
         Simulator simulator;
         List predicates;
         List inits;
+        Tester tester;
         StateAccessor access;
 
         SimulatorTest(String fname, Properties props) throws Exception {
@@ -67,10 +80,8 @@ public class SimTestHarness implements TestHarness {
             predicates = pp.parseResult(result);
             String init = props.getProperty("Init");
             if ( init != null ) inits = pp.parseInitializers(trimString(init));
-        }
-
-        private String trimString(String str) {
-            return StringUtil.trimquotes(str.trim());
+            String arch = expectProperty("Arch");
+            tester = (Tester)testerMap.getObjectOfClass(arch);
         }
 
         public void run() throws Exception {
@@ -80,32 +91,25 @@ public class SimTestHarness implements TestHarness {
         }
 
         private Program readProgram() throws Exception {
-            String format = properties.getProperty("Format");
-            if (format == null) Util.userError("program format not specified");
+            String format = expectProperty("Format");
             ProgramReader r = Defaults.getProgramReader(format);
-            String arch = properties.getProperty("Arch");
-            if ( arch != null ) r.ARCH.set(arch);
+            String arch = expectProperty("Arch");
+            r.ARCH.set(arch);
             String[] args = {filename};
             return r.read(args);
         }
 
         private Simulator initSimulator(Program program) {
-            Simulator sim = Defaults.newSimulator(0, program);
-            access = new LegacyStateAccessor(program, sim);
-            if ( inits != null ) {
-                Iterator i = inits.iterator();
-                while ( i.hasNext() ) {
-                    Predicate p = (Predicate)i.next();
-                    p.init(access);
-                }
-            }
+            Simulator sim = tester.newSimulator(program);
+            access = tester.getAccessor(sim);
+            if ( inits != null ) access.init(inits);
             return sim;
         }
 
         public TestResult match(Throwable t) {
             if (t != null) return super.match(t);
 
-            LegacyState state = (LegacyState)simulator.getState();
+            State state = simulator.getState();
             Iterator i = predicates.iterator();
 
             try {
@@ -114,7 +118,7 @@ public class SimTestHarness implements TestHarness {
                     if (!p.check(access))
                         return new StateMismatch(p, state);
                 }
-            } catch (SimTestExpr.UnknownLabel l) {
+            } catch (TestExpr.UnknownLabel l) {
                 return new TestResult.TestFailure("unknown label specified in predicate: " + l.name);
             }
             return new TestResult.TestSuccess();

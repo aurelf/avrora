@@ -55,6 +55,7 @@ public class Util {
         public static boolean STACKTRACES;
 
         public Error(String p) {
+            super(p);
             message = "Error";
             param = p;
         }
