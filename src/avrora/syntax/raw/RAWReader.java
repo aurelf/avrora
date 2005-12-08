@@ -88,7 +88,7 @@ public class RAWReader extends ProgramReader {
         while ( true ) {
             String line = reader.readLine();
             if ( line == null ) break;
-            Record r = parse(line);
+            Record r = parse(0, line);
             if ( r != null ) records.add(r);
         }
         return records;
@@ -138,18 +138,17 @@ public class RAWReader extends ProgramReader {
     }
 
     // parses lines such as: 0x0000: 01 02 "instr" ; comment
-    protected Record parse(String line) throws Exception {
+    protected Record parse(int lineno, String line) throws Exception {
         CharacterIterator i = new StringCharacterIterator(line);
         StringUtil.skipWhiteSpace(i);
         char ch = i.current();
 
         if ( ch == CharacterIterator.DONE ) return null; // empty line
         if ( ch == ';' ) return null; // line consists of comment only
-        if ( ch != '0' ) Util.userError("syntax error");
-        i.next();
-        StringUtil.expectChar(i, 'x'); // read the 0x of the address
-        int addr = StringUtil.readHexValue(i, 8); // read in the address
-        Record record = new Record(addr);
+        if ( !StringUtil.isHexDigit(ch) )
+            Util.userError("syntax error @ "+lineno+":"+i.getIndex());
+
+        Record record = new Record(readAddress(i, ch));
 
         StringUtil.expectChar(i, ':'); // expect a colon
 
@@ -157,11 +156,20 @@ public class RAWReader extends ProgramReader {
             StringUtil.skipWhiteSpace(i);
             ch = i.current();
             if ( StringUtil.isHexDigit(ch) ) readByte(record, i);
-            else if ( ch == '"') readString(record, i);
-            else if ( ch == ';') break;
+            else if ( ch == '"' ) readString(record, i);
+            else if ( ch == ';' ) break;
+            else if ( ch == CharacterIterator.DONE ) break;
             else Util.userError("syntax error");
         }
         return record;
+    }
+
+    private int readAddress(CharacterIterator i, char ch) {
+        if ( ch == '0' ) {
+            i.next();
+            StringUtil.peekAndEat(i, 'x');
+        }
+        return StringUtil.readHexValue(i, 8);
     }
 
     private void readByte(Record record, CharacterIterator i) {
