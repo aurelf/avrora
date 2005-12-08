@@ -105,7 +105,7 @@ public abstract class MSP430State extends Interpreter implements State {
      * @throws ArrayIndexOutOfBoundsException if the specified address is not the valid memory range
      */
     public byte getSRAM(int address) {
-        throw Util.unimplemented();
+        return data.get(address);
     }
 
     /**
@@ -154,10 +154,10 @@ public abstract class MSP430State extends Interpreter implements State {
      * The <code>getSREG()</code> method reads the value of the status register. The status register contains the I, T,
      * H, S, V, N, Z, and C flags, in order from highest-order to lowest-order.
      *
-     * @return the value of the status register as a byte.
+     * @return the value of the status register as a char
      */
-    public byte getSREG() {
-        throw Util.unimplemented();
+    public char getSREG() {
+        return regs[SREG_REG];
     }
 
     /**

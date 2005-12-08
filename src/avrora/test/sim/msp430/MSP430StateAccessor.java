@@ -40,6 +40,7 @@ import avrora.arch.msp430.MSP430Interpreter;
 import avrora.arch.msp430.MSP430Symbol;
 import avrora.test.sim.StateAccessor;
 import cck.util.Util;
+import cck.util.Arithmetic;
 
 /**
  * The <code>MSP430StateAccessor</code> class provides access to the state of the MSP430 simulator
@@ -67,7 +68,10 @@ public class MSP430StateAccessor extends StateAccessor {
         accessors.put("pc", new PC());
         accessors.put("sp", new SP());
         accessors.put("cycles", new Cycles());
-
+        accessors.put("C", new Flag(0));
+        accessors.put("Z", new Flag(1));
+        accessors.put("N", new Flag(2));
+        accessors.put("V", new Flag(8));
     }
 
     Register newRegister(int cntr) {
@@ -100,7 +104,7 @@ public class MSP430StateAccessor extends StateAccessor {
             return interpreter.getState().getSP();
         }
         protected void set(int val) {
-            throw Util.unimplemented();
+            interpreter.setRegister(MSP430Symbol.GPR.SP, (char)val);
         }
     }
 
@@ -131,6 +135,21 @@ public class MSP430StateAccessor extends StateAccessor {
         }
         protected void setIndex(int ind, int val) {
             throw Util.unimplemented();
+        }
+    }
+
+    class Flag extends Accessor {
+        final int bit;
+        Flag(int b) {
+            bit = b;
+        }
+        protected int get() {
+            return (interpreter.getSREG() >> bit) & 1;
+        }
+        protected void set(int val) {
+            int reg = interpreter.getSREG();
+            reg = Arithmetic.setBit(reg, bit, val != 0);
+            interpreter.setRegister(MSP430Symbol.GPR.SR, (char)reg);
         }
     }
 
