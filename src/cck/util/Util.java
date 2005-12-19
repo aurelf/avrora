@@ -146,6 +146,16 @@ public class Util {
     }
 
     /**
+     * The <code>warning()</code> method writes a warning to the terminal. It does not
+     * produce an exception or a stack trace.
+     * @param s the warning to report
+     */
+    public static void warning(String s) {
+        Terminal.print(Terminal.WARN_COLOR, "Internal Warning");
+        Terminal.print(": " + s + '\n');
+    }
+
+    /**
      * The <code>unexpected()</code> method is a utility method that wraps an unexpected exception
      * so that it can be throw again and reported later. This is useful for code that does IO but does
      * not want to handle IO exceptions, for example.

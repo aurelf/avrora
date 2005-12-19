@@ -42,8 +42,6 @@ import avrora.core.SourceMapping;
 import avrora.sim.Simulator;
 import avrora.sim.State;
 import cck.text.Terminal;
-import cck.text.TermUtil;
-
 import java.util.*;
 
 
@@ -145,7 +143,7 @@ public class EnergyProfiler extends MonitorFactory {
             Iterator it = program.getSourceMapping().getIterator();
             while (it.hasNext()) {
                 SourceMapping.Location tempLoc = (SourceMapping.Location)it.next();
-                if (".text".equals(tempLoc.section) )
+                if ( tempLoc.segment.equals(".text") )
                     profiles.add(new EnergyProfile(tempLoc));
             }
         }
@@ -161,7 +159,7 @@ public class EnergyProfiler extends MonitorFactory {
             EnergyProfile match = null;
             while (it.hasNext()) {
                 EnergyProfile temp = (EnergyProfile)it.next();
-                if ((temp.location.lma_addr <= address) && ((match == null) || (temp.location.lma_addr > match.location.lma_addr))) {
+                if ((temp.location.address <= address) && ((match == null) || (temp.location.address > match.location.address))) {
                     match = temp;
                 }
             }
@@ -204,13 +202,13 @@ public class EnergyProfiler extends MonitorFactory {
                 }
             }
             //display data
-            TermUtil.printSeparator("Energy breakdown for node "+simulator.getID());
+            Terminal.printCyan("\nEnergy Consumption Procedure Breakdown:\n\n");
             Terminal.printCyan("notation: procedureName@Address: cycles\n");
             Iterator it = profiles.iterator();
             while (it.hasNext()) {
                 EnergyProfile profile = (EnergyProfile)it.next();
                 if (profile.cycles > 0) {
-                    Terminal.println("   " + profile.location.name + '@' + profile.location.lma_addr + ": " + profile.cycles);
+                    Terminal.println("   " + profile.location.name + '@' + profile.location.address + ": " + profile.cycles);
                 }
             }
             if (sleepCycles > 0)
@@ -228,7 +226,7 @@ public class EnergyProfiler extends MonitorFactory {
             /**
              * fired before the basic block is entered, it logs the previos state
              *
-             * @see Simulator.Probe#fireBefore(State,int)
+             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.sim.State,int)
              */
             public void fireBefore(State s, int pc) {
                 long cycles = simulator.getState().getCycles() - lastChange;
@@ -257,7 +255,7 @@ public class EnergyProfiler extends MonitorFactory {
             /**
              * fired before a sleep mode is entered, it logs the previos state
              *
-             * @see Simulator.Probe#fireBefore(State,int)
+             * @see avrora.sim.Simulator.Probe#fireBefore(avrora.sim.State,int)
              */
             public void fireBefore(State s, int pc) {
                 long cycles = simulator.getState().getCycles() - lastChange;
