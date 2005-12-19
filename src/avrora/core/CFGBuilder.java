@@ -132,7 +132,7 @@ class CFGBuilder implements LegacyInstrVisitor {
             // check for any jumps into the middle of this instruction
             for (int cntr = 1; cntr < size; cntr++) {
                 if (info[pc + cntr].start || info[pc + cntr].instr != null) {
-                    throw Util.failure("misaligned branch target at " + (pc + cntr));
+                    Util.warning("misaligned branch target at " + StringUtil.addrToString(pc + cntr));
                 }
             }
 

@@ -142,8 +142,7 @@ public class EnergyProfiler extends MonitorFactory {
         private void setupLabels() {
             Iterator it = program.getSourceMapping().getIterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                SourceMapping.Location tempLoc = (SourceMapping.Location)entry.getValue();
+                SourceMapping.Location tempLoc = (SourceMapping.Location)it.next();
                 if ( tempLoc.segment.equals(".text") )
                     profiles.add(new EnergyProfile(tempLoc));
             }
