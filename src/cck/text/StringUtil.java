@@ -527,15 +527,15 @@ public class StringUtil {
     }
 
     public static String embed(Object lead, Object arg1, Object arg2) {
-        return lead + LPAREN + arg1 + COMMA + arg2 + RPAREN;
+        return lead + LPAREN + arg1 + COMMA_SPACE + arg2 + RPAREN;
     }
 
     public static String embed(Object lead, Object arg1, Object arg2, Object arg3) {
-        return lead + LPAREN + arg1 + COMMA + arg2 + COMMA + arg3 + RPAREN;
+        return lead + LPAREN + arg1 + COMMA_SPACE + arg2 + COMMA_SPACE + arg3 + RPAREN;
     }
 
     public static String embed(Object lead, Object arg1, Object arg2, Object arg3, Object arg4) {
-        return lead + LPAREN + arg1 + COMMA + arg2 + COMMA + arg3 + COMMA + arg4 + RPAREN;
+        return lead + LPAREN + arg1 + COMMA_SPACE + arg2 + COMMA_SPACE + arg3 + COMMA_SPACE + arg4 + RPAREN;
     }
 
     public static String commalist(List l) {
@@ -606,9 +606,11 @@ public class StringUtil {
         CharacterIterator i = new StringCharacterIterator(literal);
 
         while (true) {
-            char c = i.next();
+            char c = i.current();
+            i.next();
 
             if (c == CharacterIterator.DONE) break;
+            if (c == '"' ) continue; // remove all (unescaped) quotes
             if (c == '\\') c = escapeChar(i);
 
             buffer.append(c);
