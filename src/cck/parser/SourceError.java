@@ -91,11 +91,14 @@ public class SourceError extends Util.Error {
      * and column number where this error occurred.
      */
     public void report() {
-        Terminal.printRed(point.file);
-        Terminal.print(" ");
-        Terminal.printBrightCyan(point.beginLine + ":" + point.beginColumn);
+        SourcePoint pt = point == null ? new SourcePoint("*unknown*",0,0,0,0) : point;
+        Terminal.print("[");
+        Terminal.printBrightBlue(pt.file);
+        Terminal.print(" @ ");
+        Terminal.printBrightCyan(pt.beginLine + ":" + pt.beginColumn);
+        Terminal.print("] ");
+        Terminal.printRed(errorType);
         Terminal.print(": ");
-        if (REPORT_TYPE) Terminal.print(errorType + ": ");
         Terminal.print(message);
         Terminal.print("\n");
         if (STACKTRACES) {
