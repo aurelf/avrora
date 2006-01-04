@@ -35,6 +35,8 @@ package cck.util;
 import cck.text.StringUtil;
 import cck.text.Terminal;
 
+import java.io.File;
+
 /**
  * The <code>Util</code> class contains several utilities relating to exceptions and errors
  * that are useful.
@@ -42,7 +44,6 @@ import cck.text.Terminal;
  * @author Ben L. Titzer
  */
 public class Util {
-
     /**
      * The <code>Error</code> class is the base class of errors that contains some
      * extra helper methods to generate a report. It provides a few extra utility
@@ -183,6 +184,38 @@ public class Util {
      */
     public static void userError(String s, String p) {
         throw new Error(s, p);
+    }
+
+    /**
+     * The <code>verifyFilesExist()</code> method verifies that each of the specified
+     * files exists and is readable. If one of the files does not exist, it will report
+     * an error to the user.
+     * @param files the files to verify the existence of
+     * @return true if all of the files exist and are readable
+     */
+    public static boolean verifyFilesExist(String[] files) {
+        boolean success = true;
+        for (int cntr = 0; cntr < files.length; cntr++) {
+            String file = files[cntr];
+            if ( !verifyFileExists(file) ) success = false;
+        }
+        return success;
+    }
+
+    /**
+     * The <code>verifyFileExists()</code> method verifies that the specified file
+     * exists and is readable. If the file does not exist, it will report an error
+     * to the user and return <code>false</code>.
+     * @param file the name of the file
+     * @return true if the file exists and is readable; false otherwise
+     */
+    public static boolean verifyFileExists(String file) {
+        File f = new File(file);
+        if (!f.exists()) {
+            userError("File not found", file);
+            return false;
+        }
+        return true;
     }
 
 
