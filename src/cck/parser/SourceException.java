@@ -34,6 +34,7 @@
 package cck.parser;
 
 import cck.text.Terminal;
+import cck.util.Util;
 
 /**
  * The <code>SourceError</code> class represents an error that occurs in a source file,
@@ -43,7 +44,7 @@ import cck.text.Terminal;
  *
  * @author Ben L. Titzer
  */
-public class SourceException extends SourceError {
+public class SourceException extends Util.Error {
 
     /**
      * The <code>trace</code> field stores a reference to the stack trace corresponding
@@ -52,21 +53,36 @@ public class SourceException extends SourceError {
     public final StackTrace trace;
 
     /**
+     * The <code>errorType</code> field stores a string representing the type
+     * of the error.
+     */
+    protected final String errorType;
+
+    /**
+     * The <code>errparams</code> field stores a list of parameters to the error
+     * that might represent the name of the missing variable, expected types, etc.
+     */
+    protected final String[] errparams;
+
+    public static boolean REPORT_TYPE = false;
+
+    /**
      * The default constructor for a source error accepts an error type, a program
      * point which indicates the location in a file where the error occured, a message,
      * and a list of parameters to the error (such as the name of a class or method
      * where the error occurred).
-     *
      * @param type a string that indicates the type of error that occured such as
-     *             "Undefined Variable"
-     * @param p    the point in the file where the error occurred
-     * @param msg  a short message reported to the user that explains the error
-     * @param ps   a list of parameters to the error such as the name of the variable
-     *             that is undeclared, etc.
+     * "Undefined Variable"
+     * @param p the point in the file where the error occurred
+     * @param msg a short message reported to the user that explains the error
+     * @param ps a list of parameters to the error such as the name of the variable
+     * that is undeclared, etc.
      */
     public SourceException(String type, StackTrace p, String msg, String[] ps) {
-        super(type, p == null ? null : p.getSourcePoint(), msg, null);
+        super(msg, null);
+        errorType = type;
         trace = p;
+        errparams = ps;
     }
 
     /**
@@ -77,15 +93,39 @@ public class SourceException extends SourceError {
     public void report() {
         Terminal.print("");
         Terminal.printRed(errorType);
-        Terminal.println(": " + message + ' ');
-        for (StackTrace tr = trace; tr != null; tr = tr.prev) {
+        Terminal.println(": "+message+" ");
+        for ( StackTrace tr = trace; tr != null; tr = tr.prev ) {
             Terminal.print("\t");
-            Terminal.print("in ");
-            Terminal.printGreen(tr.getMethod() + ' ');
+            Terminal.print("@ "+tr.getMethod());
             SourcePoint p = tr.getSourcePoint();
-            if (p != null) p.report();
+            if ( p != null ) Terminal.print("in "+p.file+"@"+p.beginLine);
             Terminal.nextln();
         }
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o instanceof String) {
+            return errorType.equals(o);
+        }
+        return false;
+    }
+
+    /**
+     * The <code>getErrorType()</code> method returns a string representing the type of the
+     * error.
+     * @return a string that represents the type of the error
+     */
+    public String getErrorType() {
+        return errorType;
+    }
+
+    /**
+     * The <code>getErrorParams()</code> method returns a reference to the parameters to
+     * the error.
+     * @return a reference to an array that contains the parameters to the error, if any
+     */
+    public String[] getErrorParams() {
+        return errparams;
+    }
 }

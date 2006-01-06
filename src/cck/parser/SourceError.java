@@ -78,7 +78,7 @@ public class SourceError extends Util.Error {
      * @param ps a list of parameters to the error such as the name of the variable
      * that is undeclared, etc.
      */
-    public SourceError(String type, SourcePoint p, String msg, String ps[]) {
+    public SourceError(String type, SourcePoint p, String msg, String[] ps) {
         super(msg, null);
         errorType = type;
         point = p;
