@@ -44,13 +44,13 @@ import cck.util.Util;
  *
  * @author Ben L. Titzer
  */
-public class SourceError extends Util.Error {
+public class SourceException extends Util.Error {
 
     /**
-     * The <code>point</code> field stores a reference to the point in the file
-     * where the error occured.
+     * The <code>trace</code> field stores a reference to the stack trace corresponding
+     * to where the source exception ocurred.
      */
-    public final SourcePoint point;
+    public final StackTrace trace;
 
     /**
      * The <code>errorType</code> field stores a string representing the type
@@ -78,10 +78,10 @@ public class SourceError extends Util.Error {
      * @param ps a list of parameters to the error such as the name of the variable
      * that is undeclared, etc.
      */
-    public SourceError(String type, SourcePoint p, String msg, String[] ps) {
+    public SourceException(String type, StackTrace p, String msg, String[] ps) {
         super(msg, null);
         errorType = type;
-        point = p;
+        trace = p;
         errparams = ps;
     }
 
@@ -91,18 +91,15 @@ public class SourceError extends Util.Error {
      * and column number where this error occurred.
      */
     public void report() {
-        SourcePoint pt = point == null ? new SourcePoint("*unknown*",0,0,0,0) : point;
-        Terminal.print("[");
-        Terminal.printBrightBlue(pt.file);
-        Terminal.print(" @ ");
-        Terminal.printBrightCyan(pt.beginLine + ":" + pt.beginColumn);
-        Terminal.print("] ");
+        Terminal.print("");
         Terminal.printRed(errorType);
-        Terminal.print(": ");
-        Terminal.print(message);
-        Terminal.print("\n");
-        if (STACKTRACES) {
-            printStackTrace();
+        Terminal.println(": "+message+" ");
+        for ( StackTrace tr = trace; tr != null; tr = tr.prev ) {
+            Terminal.print("\t");
+            Terminal.print("@ "+tr.getMethod());
+            SourcePoint p = tr.getSourcePoint();
+            if ( p != null ) Terminal.print("in "+p.file+"@"+p.beginLine);
+            Terminal.nextln();
         }
     }
 
