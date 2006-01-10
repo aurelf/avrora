@@ -949,4 +949,9 @@ public class StringUtil {
         return pos;
     }
 
+    public static char[] getStringChars(String str) {
+        char[] val = new char[str.length()];
+        str.getChars(0, val.length, val, 0);
+        return val;
+    }
 }
