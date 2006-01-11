@@ -96,9 +96,10 @@ public class SourceException extends Util.Error {
         Terminal.println(": "+message+" ");
         for ( StackTrace tr = trace; tr != null; tr = tr.prev ) {
             Terminal.print("\t");
-            Terminal.print("in "+tr.getMethod());
+            Terminal.print("in ");
+            Terminal.printGreen(tr.getMethod()+" ");
             SourcePoint p = tr.getSourcePoint();
-            if ( p != null ) Terminal.print(" at "+p.file+":"+p.beginLine);
+            if ( p != null ) p.report();
             Terminal.nextln();
         }
     }

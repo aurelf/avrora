@@ -92,11 +92,8 @@ public class SourceError extends Util.Error {
      */
     public void report() {
         SourcePoint pt = point == null ? new SourcePoint("*unknown*",0,0,0,0) : point;
-        Terminal.print("[");
-        Terminal.printBrightBlue(pt.file);
-        Terminal.print(" @ ");
-        Terminal.printBrightCyan(pt.beginLine + ":" + pt.beginColumn);
-        Terminal.print("] ");
+        pt.report();
+        Terminal.print(" ");
         Terminal.printRed(errorType);
         Terminal.print(": ");
         Terminal.print(message);

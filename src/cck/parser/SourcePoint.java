@@ -32,6 +32,8 @@
 
 package cck.parser;
 
+import cck.text.Terminal;
+
 /**
  * The <code>SourcePoint</code> class represents a location within a program for the purposes of tracking
  * error messages and debug information. It encapsulates the module (file) contents, the line, the beginning
@@ -85,5 +87,13 @@ public class SourcePoint {
 
     public String toShortString() {
         return beginLine + ":" + beginColumn;
+    }
+
+    public void report() {
+        Terminal.print("[");
+        Terminal.printBrightBlue(file);
+        Terminal.print(" @ ");
+        Terminal.printBrightCyan(beginLine + ":" + beginColumn);
+        Terminal.print("]");
     }
 }
