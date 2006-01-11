@@ -85,8 +85,8 @@ public abstract class TestCase {
 
     public abstract static class ExpectSourceError extends TestCase {
 
-        boolean shouldPass;
-        String error;
+        protected boolean shouldPass;
+        protected String error;
 
         public ExpectSourceError(String fname, Properties props) {
             super(fname, props);
@@ -105,28 +105,36 @@ public abstract class TestCase {
 
         public TestResult match(Throwable t) {
 
+            TestResult result = super.match(t);
+
             if (shouldPass) {
                 if (t == null) // no exceptions encountered, passed.
-                    return new TestResult.TestSuccess();
-                if (t instanceof SourceError) { // encountered compilation error.
+                    result = new TestResult.TestSuccess();
+                else if (t instanceof SourceError) { // encountered compilation error.
                     SourceError ce = (SourceError)t;
-                    return new TestResult.ExpectedPass(ce);
+                    result = new TestResult.ExpectedPass(ce);
                 }
             } else {
-                if (t == null) // expected a compilation error, but passed.
-                    return new TestResult.ExpectedError(error);
-
-                if (t instanceof SourceError) {
-                    SourceError ce = (SourceError)t;
-                    if (ce.getErrorType().equals(error)) // correct error encountered.
-                        return new TestResult.TestSuccess();
-                    else // incorrect compilation error.
-                        return new TestResult.IncorrectError(error, ce);
-                }
+                TestResult res = matchSourceError(t, error);
+                if ( res != null ) result = res;
             }
 
-            return super.match(t);
+            return result;
         }
+    }
+
+    protected TestResult matchSourceError(Throwable t, String error) {
+        if (t == null) // expected a compilation error, but passed.
+            return new TestResult.ExpectedError(error);
+
+        if (t instanceof SourceError) {
+            SourceError ce = (SourceError)t;
+            if (ce.getErrorType().equals(error)) // correct error encountered.
+                return new TestResult.TestSuccess();
+            else // incorrect compilation error.
+                return new TestResult.IncorrectError(error, ce);
+        }
+        return null;
     }
 
     public static class Malformed extends TestCase {

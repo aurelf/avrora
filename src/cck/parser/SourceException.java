@@ -34,7 +34,6 @@
 package cck.parser;
 
 import cck.text.Terminal;
-import cck.util.Util;
 
 /**
  * The <code>SourceError</code> class represents an error that occurs in a source file,
@@ -44,27 +43,13 @@ import cck.util.Util;
  *
  * @author Ben L. Titzer
  */
-public class SourceException extends Util.Error {
+public class SourceException extends SourceError {
 
     /**
      * The <code>trace</code> field stores a reference to the stack trace corresponding
      * to where the source exception ocurred.
      */
     public final StackTrace trace;
-
-    /**
-     * The <code>errorType</code> field stores a string representing the type
-     * of the error.
-     */
-    protected final String errorType;
-
-    /**
-     * The <code>errparams</code> field stores a list of parameters to the error
-     * that might represent the name of the missing variable, expected types, etc.
-     */
-    protected final String[] errparams;
-
-    public static boolean REPORT_TYPE = false;
 
     /**
      * The default constructor for a source error accepts an error type, a program
@@ -79,10 +64,8 @@ public class SourceException extends Util.Error {
      * that is undeclared, etc.
      */
     public SourceException(String type, StackTrace p, String msg, String[] ps) {
-        super(msg, null);
-        errorType = type;
+        super(type, p == null ? null : p.getSourcePoint(), msg, null);
         trace = p;
-        errparams = ps;
     }
 
     /**
@@ -110,23 +93,5 @@ public class SourceException extends Util.Error {
             return errorType.equals(o);
         }
         return false;
-    }
-
-    /**
-     * The <code>getErrorType()</code> method returns a string representing the type of the
-     * error.
-     * @return a string that represents the type of the error
-     */
-    public String getErrorType() {
-        return errorType;
-    }
-
-    /**
-     * The <code>getErrorParams()</code> method returns a reference to the parameters to
-     * the error.
-     * @return a reference to an array that contains the parameters to the error, if any
-     */
-    public String[] getErrorParams() {
-        return errparams;
     }
 }
