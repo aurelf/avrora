@@ -44,53 +44,9 @@ package cck.parser.mini;
  */
 public class MiniParser {
 
-    //=========================================================================================
-    //========================== B A S I C = L I B R A R Y ====================================
-    //=========================================================================================
-
-    // INT-pos: int "{ldigit:[1-9]}{ival:[0-9]*}" -> evalDecimal(lval,ival)
-    // INT-neg: int "-{ival:INT-pos}"             -> -(ival)
-    // INT-hex: int "0x{hval:[0-9,a-f,A-F]*}"     -> evalHexadecimal(hval)
-    // INT-oct: int "0{oval:[0-7]*}"              -> evalOctal(oval);
-
-    // BOOL-true: boolean "true" -> true
-    // BOOL-false: boolean "false" -> false
-
-    // IDENT: String "{lchar:[a-z,A-z,_]}{tchar:[a-z,A-z,_,0-9]*}" -> literal(lchar, tchar)
-
-    // STRING: String "{DQUOTE}{ch:StrChar*}{DQUOTE}"  -> new Symbol(ch)
-    // StrChar-slash: "{BSLASH}{BSLASH}"               -> '\\'
-    // StrChar-nl:    "{BSLASH}n"                      -> '\n'
-    // StrChar-tab:   "{BSLASH}t"                      -> '\t'
-    // StrChar-tab:   "{BSLASH}{DQUOTE}"               -> '"'
-    // StrChar-octal: "{BSLASH}{ch:[0-3]}{chl:[0-7]*}" -> (char)evalOctal(ch, chl)
-
-    //=========================================================================================
-    //============================== M I N I = P A R S E R ====================================
-    //=========================================================================================
-
-    // Rule: "{case:Case} : {type:Type?} {pat:Pattern} -> {expr:Expr}\n" -> new Rule(case, type, pat, expr)
-    // Case: "{cid:IDENT}{scid:SubCase?}" -> new Case(cid, scid)
-    // SubCase: "-{id:IDENT}"                    -> id
-    // Pattern: "\"{i:Item*}\""                  -> i
-    // Item-prod: "\{i:Inner\}"                  -> i
-    // Item-lbesc: "\\\{"                        -> LBRACKET
-    // Item-rbesc: "\\\}"                        -> RBRACKET
-    // Item-qesc: "\\\""                         -> QUOTE
-    // Item-char: "{ch:CHAR}"                    -> ch
-    // Inner: "{name:Var?} {prod:Prod} {mod:Mod*}" -> new Production(name, prod, mod)
-    // Var: "{nm:IDENT} :"                        -> nm
-    // Prod-id: "{prod:IDENT}"                   -> new ProdRef(prod)
-    // Prod-range: "[{s:Set list}]"              -> new Set(merge(s))
-
-    // Set-range: "{cl:CHAR}{en:End?}" -> new Range(cl, en)
-    // End: "-{ch:CHAR}"               -> ch
-
-    // Mod-q: "?"    -> QUEST
-    // Mod-s: "*"    -> STAR
-    // Mod-l: "list" -> LIST
-    // Mod-s: "+"    -> PLUS
+    
 
     public MiniParser(String fname) {
+
     }
 }
