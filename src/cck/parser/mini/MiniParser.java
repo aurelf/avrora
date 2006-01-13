@@ -29,37 +29,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Sep 12, 2005
+ * Creation date: Jan 12, 2006
  */
 
-package cck;
-
-import cck.util.VersionTag;
+package cck.parser.mini;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
- *
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
+ * The <code>MiniParser</code> class implements the base functionality of a parser
+ * that can build lexical tokens from a file. It does not manage the lexical state,
+ * but rather deals with loading the individual characters from a file while
+ * remembering their position in the file (for debugging).
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class MiniParser {
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public static final int commit = 17;
+    
 
-    /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
-     */
-    public static final VersionTag TAG = new VersionTag("cck", "Stable", 0, 1, commit);
+    public MiniParser(String fname) {
 
+    }
 }

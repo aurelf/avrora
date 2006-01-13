@@ -29,37 +29,53 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Creation date: Sep 12, 2005
+ * Creation date: Jan 12, 2006
  */
 
-package cck;
+package cck.parser.mini;
 
-import cck.util.VersionTag;
+import cck.util.Util;
 
 /**
- * The <code>Version</code> class records the version information for this module.
- * It has a single static method called <code>getVersion()</code> to retrieve the
- * version for this module in a <code>VersionTag</code> object.
- *
- * </p>
- * This file is automatically updated by CVS commit scripts that increment the
- * commit number each time code is committed to CVS. This guarantees that the
- * version number uniquely determines the version of the software.
+ * The <code>CharStream</code> class represents a character stream that
+ * supplies character to a parser. The stream records the position (in terms
+ * of line / column) and allows peeking ahead in the stream.
  *
  * @author Ben L. Titzer
  */
-public class Version {
+public class CharStream {
 
-    /**
-     * The <code>commit</code> field stores the commit number (i.e. the number of code revisions committed to
-     * CVS since the last release).
-     */
-    public static final int commit = 17;
+    public static class Position {
+        public int line;
+        public int column;
+    }
 
-    /**
-     * The <code>TAG</code> field stores a reference to the version tag for the current
-     * release and commit number.
-     */
-    public static final VersionTag TAG = new VersionTag("cck", "Stable", 0, 1, commit);
 
+    public char consume() {
+        throw Util.unimplemented();
+    }
+
+    public Position getPosition() {
+        throw Util.unimplemented();
+    }
+
+    public Position getPosition(int relative) {
+        throw Util.unimplemented();
+    }
+
+    public Position getPosition(Position dest) {
+        throw Util.unimplemented();
+    }
+
+    public Position getPosition(Position dest, int relative) {
+        throw Util.unimplemented();
+    }
+
+    public char peek(int relative) {
+        throw Util.unimplemented();
+    }
+
+    public void peek(char[] ch, int relative, int len) {
+        throw Util.unimplemented();
+    }
 }
