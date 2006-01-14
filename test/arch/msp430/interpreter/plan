@@ -1,12 +1,12 @@
 
-Instr	Operands		CNZV
+Instr	Operands		VNZC
 ----------------------------------------------------------------
 ADD	src,dst			xxxx
 ADDC	src,dst			xxxx
-AND	src,dst			xxx0
+AND	src,dst			0xxx
 BIC	src,dst			....
 BIS	src,dst			....
-BIT	src,dst			xxx0
+BIT	src,dst			0xxx
 CALL	src			....
 CMP	src,dst			xxxx
 DADD	src,dst			xxxx
@@ -21,12 +21,12 @@ JNE	label			....
 MOV	src,dst			....
 PUSH	src			....
 RETI				xxxx
-RRA	dst			xxx0
+RRA	dst			0xxx
 RRC	dst			xxxx
 SUB	src,dst			xxxx
 SUBC	src,dst			xxxx
 SWPB	dst			....
-SXT	dst			xxx0
+SXT	dst			0xxx
 XOR	src,dst			xxxx
 
 

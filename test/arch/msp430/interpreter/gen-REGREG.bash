@@ -12,6 +12,7 @@ gen_REGREG() {
     gen_header $1    
     echo "; @Init: \"r4 = $A, r5 = $B, C = $C\"" >> $1
     echo "; @Result: \"r4 = $Ap, r5 = $Bp, C = $Cp, N = $Np, Z = $Zp, V = $Vp\" " >> $1
+    echo "; ./gen-REGREG.bash $1 $A $B $C $Ap $Bp $Cp $Np $Zp $Vp"
     echo >> $1
     echo "; code" >> $1
     echo $2 >> $1
