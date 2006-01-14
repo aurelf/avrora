@@ -12,6 +12,7 @@ gen_ABSREG() {
     gen_header $1    
     echo "; @Init: \"data[$ABS] = $A, r5 = $B, C = $C\"" >> $1
     echo "; @Result: \"r5 = $Bp, C = $Cp, N = $Np, Z = $Zp, V = $Vp\" " >> $1
+    echo "; ./gen-ABSREG.bash $1 $ABS $A $B $C $Bp $Cp $Np $Zp $Vp"
     echo >> $1
     echo "; code" >> $1
     echo $2 >> $1

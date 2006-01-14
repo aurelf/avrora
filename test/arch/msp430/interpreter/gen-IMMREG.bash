@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" -lt 8 ]; then
-    echo "Usage: gen-REGREG.bash <instr> <IMM> <B> <C> <B'> <C'> <N'> <Z'> <V'>"
+    echo "Usage: gen-IMMREG.bash <instr> <IMM> <B> <C> <B'> <C'> <N'> <Z'> <V'>"
     exit
 fi
 
@@ -12,6 +12,7 @@ gen_IMMREG() {
     gen_header $1    
     echo "; @Init: \"r5 = $B, C = $C\"" >> $1
     echo "; @Result: \"r5 = $Bp, C = $Cp, N = $Np, Z = $Zp, V = $Vp\" " >> $1
+    echo "; ./gen-IMMREG.bash $1 $IMM $B $C $Bp $Cp $Np $Zp $Vp"
     echo >> $1
     echo "; code" >> $1
     echo $2 >> $1
