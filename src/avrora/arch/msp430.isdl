@@ -473,7 +473,7 @@ architecture msp430 {
     }
 
     addr-mode JMP target: JUMP {
-        encoding = JUMP_OP;
+        encoding = JUMP_OP
         property cycles: int = 2;
     }
 
@@ -743,6 +743,44 @@ architecture msp430 {
 //  BEGIN INSTRUCTION SET DESCRIPTION
 //---------------------------------------------------------------------------
 	
+    instruction "adc": SINGLE_W {
+	    property bw: int = 0;
+        property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
+        execute {
+            local r1: int       = read:+int.16(source);
+            local result: int   = r1 + bit(C);
+                                    //+int.16 operation
+            local R15: boolean  = result[15];
+            local Rdh7: boolean = r1[15];
+            C = (!R15 and Rdh7);
+            N = (R15);
+            V = (!Rdh7 and R15);
+            Z = (result[15:0]  == 0);
+
+            write:+int.16(source, result: +int.16);
+        }
+    }
+
+    instruction "adc.b": SINGLE_B {
+	    property bw: int = 1;
+        property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
+        execute {
+            local r1: int       = read:int.8(source);
+            local result: int   = r1 + bit(C);
+
+            //int.8 operation
+            local R7: boolean   = result[7];
+            local Rdh1: boolean = r1[7];
+            C = (!R7 and Rdh1);
+            N = (R7);
+            V = (!Rdh1 and R7);
+            Z = (result[7:0]  == 0);
+
+            write:int.8(source, result: int.8);
+        }
+    }
+
+
     instruction "add": DOUBLE_W {
 	    property bw: int = 0;
 	    property opcode: int = 0b0101;
@@ -857,6 +895,15 @@ architecture msp430 {
         }
     }
 
+    pseudo instruction "br": SINGLE_W {  //uncondtional branch emulated by moving
+	    property bw: int = 0;
+	    property opcode: int = 0b0100;                     //operand to Program counter
+	    execute {
+		    // emulated by MOV instruction
+	        nextpc = +read:+int.16(source);
+	    }
+    }
+
     instruction "call": SINGLE_W {     //calls a subroutine from 64k address space
         // TODO: double check this opcode
 	    property bw: int = 0;
@@ -866,6 +913,54 @@ architecture msp430 {
             pushWord(nextpc);
             nextpc = temp;
         }
+    }
+
+    pseudo instruction "clr": SINGLE_W {             //emulated by MOV instruction
+	    property bw: int = 0;
+    	property opcode: int = 0b0100;
+        execute {
+            // note: the read is necessary for the auto-increment operands
+            local b: int = read:+int.16(source);
+            write:+int.16(source, 0);
+        }
+    }
+
+    pseudo instruction "clr.b": SINGLE_B {           //emulated by MOV instruction
+	    property bw: int = 1;
+	    property opcode: int = 0b0100;
+	    execute {
+            // note: the read is necessary for the auto-increment operands
+            local b: int = read:int.8(source);
+            write:int.8(source, 0);
+	    }
+    }
+
+
+    pseudo instruction "clrc" {               //clear carry bit by anding with #1
+	    property bw: int = 0;
+	    property opcode: int = 0b1100;
+        execute {
+		    //emulated by BIC instruction
+            C = false;
+	    }
+    }
+
+    pseudo instruction "clrn" {             //clear neg. bit by anding with #4
+	    property bw: int = 0;
+	    property opcode: int = 0b1100;
+        execute {
+       		//emulated by BIC instruction
+            N = false;
+	    }
+    }
+
+    pseudo instruction "clrz" {
+	    property bw: int = 0;
+        property opcode: int = 0b1100;
+        execute {
+    		//emulated by BIC instruction
+            Z = false;
+	    }
     }
 
     instruction "cmp": DOUBLE_W {      // compares 2 operands by
@@ -884,6 +979,22 @@ architecture msp430 {
         }
     }
 
+    pseudo instruction "dadc": SINGLE_W {   // add carry decimally to dest
+	    property bw: int = 0;
+	    property opcode: int = 0b1010;                 // emulated by DADD instruction
+	    execute {
+	        write:+int.16(source, performDeciAddCW(0, read:+int.16(source), bit(C)));
+	    }
+    }
+
+    pseudo instruction "dadc.b": SINGLE_B {   // add carry decimally to dest
+	    property bw: int = 1;
+	    property opcode: int = 0b1010;                   // emulated by DADD instruction
+	    execute {
+	        write:int.8(source, performDeciAddC(0, read:int.8(source), bit(C)));
+	    }
+    }
+
     instruction "dadd": DOUBLE_W {  //source and carry added decimally to dest
 	    property bw: int = 0;
 	    property opcode: int = 0b1010;
@@ -897,6 +1008,125 @@ architecture msp430 {
 	    property opcode: int = 0b1010;
 	    execute {
 	        write:int.8(dest, performDeciAddC(read:int.8(source), read:int.8(dest), bit(C)));
+	    }
+    }
+
+    pseudo instruction "dec": SINGLE_W  {
+	    property bw: int = 0;
+	    property opcode: int = 0b1000;        // emulated by subtraction operation
+	    execute {
+	        local original: +int.16 = read:+int.16(source);
+	        write:+int.16(source, performSubtractionW(original, 1, 0));
+ 	        if (original == 1)
+ 	            N = true;    // if original value of dest was 1, set N bit
+        }
+    }
+
+    pseudo instruction "dec.b": SINGLE_B  {
+	    property bw: int = 1;
+	    property opcode: int = 0b1000;        //emulated by subtraction operation
+	    execute {
+	        local original: int.8 = read:int.8(source);
+	        write:int.8(source, performSubtraction(original, 1, 0));
+ 	        if (original == 1)
+ 	            N = true;    // if original value of dest was 1, set N bit
+        }
+    }
+
+    pseudo instruction "decd": SINGLE_W {
+	    property bw: int = 0;
+	    property opcode: int = 0b1000;         //emulated by subtraction  operation
+	    execute {
+ 	        local original: +int.16 = read:+int.16(source);
+            write:+int.16(source, performSubtractionW(original, 2, 0));
+	        if (original == 2)
+	            N = true;    //if original value of dest was 2, set N bit
+	    }
+    }
+
+    pseudo instruction "decd.b": SINGLE_B {
+	    property bw: int = 1;
+	    property opcode: int = 0b1000;         //emulated by subtraction  operation
+	    execute {
+ 	        local original: int.8 = read:int.8(source);
+            write:int.8(source, performSubtraction(original, 2, 0));
+	        if (original == 2)
+	            N = true;    //if original value of dest was 2, set N bit
+	    }
+    }
+
+    pseudo instruction "dint" {       // disable general interrupts
+	    property bw: int = 0;
+        property opcode: int = 0b1100;       // emulated by BIC operation
+	    execute {
+	        disableInterrupts();
+	    }
+    }
+
+    pseudo instruction "eint" {       // enable general interrupts
+	    property bw: int = 0;
+	    property opcode: int = 0b1101;       // emulated by BIS operation
+	    execute {
+	        enableInterrupts();
+	    }
+    }
+
+    pseudo instruction "inc": SINGLE_W {     // increment dest
+	    property bw: int = 0;
+	    property opcode: int = 0b0101;                  // emulated by ADD operation
+	    execute {
+	        write:+int.16(source, performAdditionW(read:+int.16(source), 1, 0));
+ 	    }
+    }
+
+    pseudo instruction "inc.b": SINGLE_B {     // increment dest
+	    property bw: int = 1;
+	    property opcode: int = 0b0101;                    // emulated by ADD operation
+	    execute {
+	        write:int.8(source, performAdditionW(read:int.8(source), 1, 0));
+ 	    }
+    }
+
+    pseudo instruction "incd": SINGLE_W {      //double increment dest
+	    property opcode: int = 0b0101;	    //emulated by ADD operation
+	    execute {
+	        write:+int.16(source, performAdditionW(read:+int.16(source), 2, 0));
+	    }
+    }
+
+    pseudo instruction "incd.b": SINGLE_B {      //double increment dest
+	    property bw: int = 1;
+	    property opcode: int = 0b0101;	    //emulated by ADD operation
+	    execute {
+	        write:int.8(source, performAdditionW(read:int.8(source), 2, 0));
+	    }
+    }
+
+    pseudo instruction "inv": SINGLE_W  {       //invert dest
+	    property bw: int = 0;
+	    property opcode: int = 0b1110;    //emulated by XOR operation
+	    execute {
+	        local val: int = read:+int.16(source);
+   	        local result: int = ~val;
+	        N = result[15];             //set if neg.
+	        Z = (result == 0xFFFF);  //set if contains 0FFFFh
+	        C = !(result == 0);      //set if result not 0
+	        V = (val < 0);     //set if original contents neg.
+	        write:+int.16(source, result:+int.16);
+	    }
+    }
+
+    pseudo instruction "inv.b": SINGLE_B  {       //invert dest
+	    property bw: int = 1;
+	    property opcode: int = 0b1110;    //emulated by XOR operation
+	    execute {
+	        local val: int = read:int.8(source);
+   	        local result: int = ~val;
+	        N = result[7];             //set if neg.
+	        Z = (result == 0xFF);  //set if contains 0FFh
+	        C = !(result == 0);      //set if result not 0
+	        V = (val < 0);     //set if original contents neg.
+	        write:int.8(source, low(result));
 	    }
     }
 
@@ -1028,6 +1258,28 @@ architecture msp430 {
         }
     }
 
+    pseudo instruction "nop" {   //no operation
+        property opcode: int = 0b0100;     //emulated by MOV operation
+        execute {
+        }
+    }
+
+    pseudo instruction "pop": SINGLE_W  {  // pop +int.16 from stack to dest
+	    property bw: int = 0;
+        property opcode: int = 0b0100;   // emulated by MOV operation
+        execute {
+            write:+int.16(source, popWord());         // move temp to dest
+        }
+    }
+
+    pseudo instruction "pop.b": SINGLE_B  {  //pop int.8 from stack to dest
+	    property bw: int = 1;
+        property opcode: int = 0b0100;   //emulated by MOV operation
+        execute {
+            write:int.8(source, popByte());         // move temp to dest
+        }
+    }
+
     instruction "push": SINGLE_W {  //push +int.16 onto stack
 	    property bw: int = 0;
         property opcode: int = 0b000100100;
@@ -1044,6 +1296,13 @@ architecture msp430 {
         }
     }
 
+    instruction "ret" {    //return from subroutine
+        property opcode: int = 0b0100;
+        execute {
+            nextpc = popWord();
+        }
+    }
+
     instruction "reti" {    //return from interrupt
         encoding = { 0b00010011, 0b00000000 } // encodes 0x1300
         execute {
@@ -1051,6 +1310,64 @@ architecture msp430 {
             nextpc = popWord();
         }
     }
+
+    pseudo instruction "rla": SINGLE_W {    // rotate left arithmetically
+	    property bw: int = 0;
+        property opcode: int = 0b0101;            // emulated by add instruction (add dst, dst)
+        execute {
+            local dest: +int.16 = read:+int.16(source);
+            C = dest[15];        // move MSB into carry
+            V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
+            dest = dest << 1;    // shifting left 1 position
+            N = dest[15];        // setting Neg. bit
+            Z = (dest == 0);     // set Z bit if equal to zero
+            write:+int.16(source, dest);
+        }
+    }
+
+    pseudo instruction "rla.b": SINGLE_B {    // rotate left arithmetically
+	    property bw: int = 1;
+        property opcode: int = 0b0101;                   // emulated by add instruction (add dst, dst)
+        execute {
+            local dest: int = read:int.8(source);
+            C = dest[7];        // move MSB into carry
+            V = (dest > 0x3F and dest < 0xC0);  //overflow if >= 40h and less than C0h
+            dest = dest << 1;   // shifting left 1 position
+            N = dest[7];        // setting Neg. bit
+            Z = (dest == 0);    // set Z bit if equal to zero
+            write:int.8(source, low(dest));
+        }
+    }
+
+    pseudo instruction "rlc": SINGLE_W {    //rotate left through carry
+	    property bw: int = 0;
+        property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
+        execute {
+            local dest: +int.16 = read:+int.16(source);
+            local tempC: int = bit(C);
+            C = dest[15];      // move MSB into carry
+            V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
+            dest = dest << 1 | tempC;    //shifting left 1 position
+            N = dest[15];      // setting Neg. bit
+            Z = (dest == 0);   // set Z bit if equal to zero
+            write:+int.16(source, dest);
+        }
+     }
+
+    pseudo instruction "rlc.b": SINGLE_B {    //rotate left through carry
+	    property bw: int = 1;
+        property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
+        execute {
+            local dest: int = read:int.8(source);
+            local tempC: int = bit(C);
+            C = dest[7];       // move MSB into carry
+            V = (dest > 0x3F and dest < 0xC0);  //overflow if >= 40h and less than C0h
+            dest = dest << 1 | tempC;    //shifting left 1 position
+            N = dest[7];       // setting Neg. bit
+            Z = (dest == 0);   // set Z bit if equal to zero
+            write:int.8(source, low(dest));
+        }
+     }
 
     instruction "rra": SINGLE_W  {     //rotate right arithmetically
 	    property bw: int = 0;
@@ -1110,6 +1427,57 @@ architecture msp430 {
         }
     }
 
+    pseudo instruction "sbc": SINGLE_W {    // subtract source and borrow/.NOT. carry from dest
+	    property bw: int = 0;
+        property opcode: int = 0b0111;                 // emulated by SUBC instruction
+        execute {
+            local dest: +int.16 = read:+int.16(source);
+            local highbit: boolean = dest[15];
+            // TODO: why not emulate this with the performSubtraction method?
+            dest = dest + 0xFFFF + bit(C);  //carry bit is added to dest minus one
+            N = dest[15];
+            Z = (dest == 0);
+            C = ((highbit != dest[15]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
+            V = (dest > 0xFFFF);   //set overflow if arithmetic overflow occurs
+            write:+int.16(source, dest);
+	    }
+    }
+
+    pseudo instruction "sbc.b": SINGLE_B {    //subtract source and borrow/.NOT. carry from dest
+	    property bw: int = 1;
+        property opcode: int = 0b0111;      //emulated by SUBC instruction
+        execute {
+            local dest: int.8 = read:int.8(source);
+            local highbit: boolean = dest[7];
+            dest = dest + 0xFF + bit(C);  //carry bit is added to dest minus one
+            N = dest[7];
+            Z = (dest == 0);
+            C = ((highbit != dest[7]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
+            V = (dest > 0xFF);   //set overflow if arithmetic overflow occurs
+            write:int.8(source, dest);
+        }
+    }
+
+    pseudo instruction "setc"    {     //set carry bit
+        property opcode: int = 0b1101;    //emulated by the BIS operation
+        execute {
+            C = true;
+        }
+    }
+
+    pseudo instruction "setn"   {   //set Negative bit
+        property opcode: int = 0b1101;   //emulated by the BIS operation
+        execute {
+            N = true;
+        }
+    }
+
+    pseudo instruction "setz"  {   // set zero bit
+        property opcode: int = 0b1101;   //emulated by the BIS operation
+        execute {
+            Z = true;
+        }
+    }
 
     instruction "sub": DOUBLE_W {   //subtract source from dest
 	    property bw: int = 0;
@@ -1147,6 +1515,28 @@ architecture msp430 {
     instruction "subc.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
 	    property bw: int = 1;
         property opcode: int = 0b0111;
+        execute {
+            local r1: int.8 = read:int.8(source);
+            local r2: int.8 = read:int.8(dest);
+            local results: int = performSubtraction(r1, r2, bit(C));
+            write:int.8(dest, low(results));
+ 	    }
+    }
+
+    pseudo instruction "sbb" : DOUBLE_W  {    //sub source and borrow/.NOT. carry from dest
+	    property bw: int = 0;
+	    property opcode: int = 0b0111;                         //same operation as SUBC, different syntax
+	    execute {
+            local r1: +int.16 = read:+int.16(source);
+            local r2: +int.16 = read:+int.16(dest);
+	        local results: int = performSubtractionW(r1, r2, bit(C));
+            write:+int.16(dest, results: +int.16);
+	    }
+    }
+
+    pseudo instruction "sbb.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
+	    property bw: int = 1;
+        property opcode: int = 0b0111;                            //same operation as SUBC, different syntax
         execute {
             local r1: int.8 = read:int.8(source);
             local r2: int.8 = read:int.8(dest);
@@ -1234,468 +1624,4 @@ architecture msp430 {
         }
     }
 
-/***************** EMULATED INSTRUCTIONS **************************
-
-    instruction "adc": SINGLE_W {
-	    property bw: int = 0;
-        property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
-        execute {
-            local r1: int       = read:+int.16(source);
-            local result: int   = r1 + bit(C);
-                                    //+int.16 operation
-            local R15: boolean  = result[15];
-            local Rdh7: boolean = r1[15];
-            C = (!R15 and Rdh7);
-            N = (R15);
-            V = (!Rdh7 and R15);
-            Z = (result[15:0]  == 0);
-
-            write:+int.16(source, result: +int.16);
-        }
-    }
-
-    instruction "adc.b": SINGLE_B {
-	    property bw: int = 1;
-        property opcode: int = 0b0110;                     //opcode for ADDC (6) emulated to ADC
-        execute {
-            local r1: int       = read:int.8(source);
-            local result: int   = r1 + bit(C);
-
-            //int.8 operation
-            local R7: boolean   = result[7];
-            local Rdh1: boolean = r1[7];
-            C = (!R7 and Rdh1);
-            N = (R7);
-            V = (!Rdh1 and R7);
-            Z = (result[7:0]  == 0);
-
-            write:int.8(source, result: int.8);
-        }
-    }
-
-    pseudo instruction "br": SINGLE_W {  //uncondtional branch emulated by moving
-	    property bw: int = 0;
-	    property opcode: int = 0b0100;                     //operand to Program counter
-	    execute {
-		    // emulated by MOV instruction
-	        nextpc = +read:+int.16(source);
-	    }
-    }
-
-    pseudo instruction "clr": SINGLE_W {             //emulated by MOV instruction
-	    property bw: int = 0;
-    	property opcode: int = 0b0100;
-        execute {
-            // note: the read is necessary for the auto-increment operands
-            local b: int = read:+int.16(source);
-            write:+int.16(source, 0);
-        }
-    }
-
-    pseudo instruction "clr.b": SINGLE_B {           //emulated by MOV instruction
-	    property bw: int = 1;
-	    property opcode: int = 0b0100;
-	    execute {
-            // note: the read is necessary for the auto-increment operands
-            local b: int = read:int.8(source);
-            write:int.8(source, 0);
-	    }
-    }
-
-
-    pseudo instruction "clrc" {               //clear carry bit by anding with #1
-	    property bw: int = 0;
-	    property opcode: int = 0b1100;
-        execute {
-		    //emulated by BIC instruction
-            C = false;
-	    }
-    }
-
-    pseudo instruction "clrn" {             //clear neg. bit by anding with #4
-	    property bw: int = 0;
-	    property opcode: int = 0b1100;
-        execute {
-       		//emulated by BIC instruction
-            N = false;
-	    }
-    }
-
-    pseudo instruction "clrz" {
-	    property bw: int = 0;
-        property opcode: int = 0b1100;
-        execute {
-    		//emulated by BIC instruction
-            Z = false;
-	    }
-    }
-
-    pseudo instruction "dadc": SINGLE_W {   // add carry decimally to dest
-	    property bw: int = 0;
-	    property opcode: int = 0b1010;                 // emulated by DADD instruction
-	    execute {
-	        write:+int.16(source, performDeciAddCW(0, read:+int.16(source), bit(C)));
-	    }
-    }
-
-    pseudo instruction "dadc.b": SINGLE_B {   // add carry decimally to dest
-	    property bw: int = 1;
-	    property opcode: int = 0b1010;                   // emulated by DADD instruction
-	    execute {
-	        write:int.8(source, performDeciAddC(0, read:int.8(source), bit(C)));
-	    }
-    }
-
-    pseudo instruction "dec": SINGLE_W  {
-	    property bw: int = 0;
-	    property opcode: int = 0b1000;        // emulated by subtraction operation
-	    execute {
-	        local original: +int.16 = read:+int.16(source);
-	        write:+int.16(source, performSubtractionW(original, 1, 0));
- 	        if (original == 1)
- 	            N = true;    // if original value of dest was 1, set N bit
-        }
-    }
-
-    pseudo instruction "dec.b": SINGLE_B  {
-	    property bw: int = 1;
-	    property opcode: int = 0b1000;        //emulated by subtraction operation
-	    execute {
-	        local original: int.8 = read:int.8(source);
-	        write:int.8(source, performSubtraction(original, 1, 0));
- 	        if (original == 1)
- 	            N = true;    // if original value of dest was 1, set N bit
-        }
-    }
-
-    pseudo instruction "decd": SINGLE_W {
-	    property bw: int = 0;
-	    property opcode: int = 0b1000;         //emulated by subtraction  operation
-	    execute {
- 	        local original: +int.16 = read:+int.16(source);
-            write:+int.16(source, performSubtractionW(original, 2, 0));
-	        if (original == 2)
-	            N = true;    //if original value of dest was 2, set N bit
-	    }
-    }
-
-    pseudo instruction "decd.b": SINGLE_B {
-	    property bw: int = 1;
-	    property opcode: int = 0b1000;         //emulated by subtraction  operation
-	    execute {
- 	        local original: int.8 = read:int.8(source);
-            write:int.8(source, performSubtraction(original, 2, 0));
-	        if (original == 2)
-	            N = true;    //if original value of dest was 2, set N bit
-	    }
-    }
-
-    pseudo instruction "dint" {       // disable general interrupts
-	    property bw: int = 0;
-        property opcode: int = 0b1100;       // emulated by BIC operation
-	    execute {
-	        disableInterrupts();
-	    }
-    }
-
-    pseudo instruction "eint" {       // enable general interrupts
-	    property bw: int = 0;
-	    property opcode: int = 0b1101;       // emulated by BIS operation
-	    execute {
-	        enableInterrupts();
-	    }
-    }
-
-    pseudo instruction "inc": SINGLE_W {     // increment dest
-	    property bw: int = 0;
-	    property opcode: int = 0b0101;                  // emulated by ADD operation
-	    execute {
-	        write:+int.16(source, performAdditionW(read:+int.16(source), 1, 0));
- 	    }
-    }
-
-    pseudo instruction "inc.b": SINGLE_B {     // increment dest
-	    property bw: int = 1;
-	    property opcode: int = 0b0101;                    // emulated by ADD operation
-	    execute {
-	        write:int.8(source, performAdditionW(read:int.8(source), 1, 0));
- 	    }
-    }
-
-    pseudo instruction "incd": SINGLE_W {      //double increment dest
-	    property opcode: int = 0b0101;	    //emulated by ADD operation
-	    execute {
-	        write:+int.16(source, performAdditionW(read:+int.16(source), 2, 0));
-	    }
-    }
-
-    pseudo instruction "incd.b": SINGLE_B {      //double increment dest
-	    property bw: int = 1;
-	    property opcode: int = 0b0101;	    //emulated by ADD operation
-	    execute {
-	        write:int.8(source, performAdditionW(read:int.8(source), 2, 0));
-	    }
-    }
-
-    pseudo instruction "inv": SINGLE_W  {       //invert dest
-	    property bw: int = 0;
-	    property opcode: int = 0b1110;    //emulated by XOR operation
-	    execute {
-	        local val: int = read:+int.16(source);
-   	        local result: int = ~val;
-	        N = result[15];             //set if neg.
-	        Z = (result == 0xFFFF);  //set if contains 0FFFFh
-	        C = !(result == 0);      //set if result not 0
-	        V = (val < 0);     //set if original contents neg.
-	        write:+int.16(source, result:+int.16);
-	    }
-    }
-
-    pseudo instruction "inv.b": SINGLE_B  {       //invert dest
-	    property bw: int = 1;
-	    property opcode: int = 0b1110;    //emulated by XOR operation
-	    execute {
-	        local val: int = read:int.8(source);
-   	        local result: int = ~val;
-	        N = result[7];             //set if neg.
-	        Z = (result == 0xFF);  //set if contains 0FFh
-	        C = !(result == 0);      //set if result not 0
-	        V = (val < 0);     //set if original contents neg.
-	        write:int.8(source, low(result));
-	    }
-    }
-
-    pseudo instruction "nop" {   //no operation
-        property opcode: int = 0b0100;     //emulated by MOV operation
-        execute {
-        }
-    }
-
-    pseudo instruction "pop": SINGLE_W  {  // pop +int.16 from stack to dest
-	    property bw: int = 0;
-        property opcode: int = 0b0100;   // emulated by MOV operation
-        execute {
-            write:+int.16(source, popWord());         // move temp to dest
-        }
-    }
-
-    pseudo instruction "pop.b": SINGLE_B  {  //pop int.8 from stack to dest
-	    property bw: int = 1;
-        property opcode: int = 0b0100;   //emulated by MOV operation
-        execute {
-            write:int.8(source, popByte());         // move temp to dest
-        }
-    }
-
-    instruction "ret" {    //return from subroutine
-        property opcode: int = 0b0100;
-        execute {
-            nextpc = popWord();
-        }
-    }
-
-    pseudo instruction "rla": SINGLE_W {    // rotate left arithmetically
-	    property bw: int = 0;
-        property opcode: int = 0b0101;            // emulated by add instruction (add dst, dst)
-        execute {
-            local dest: +int.16 = read:+int.16(source);
-            C = dest[15];        // move MSB into carry
-            V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
-            dest = dest << 1;    // shifting left 1 position
-            N = dest[15];        // setting Neg. bit
-            Z = (dest == 0);     // set Z bit if equal to zero
-            write:+int.16(source, dest);
-        }
-    }
-
-    pseudo instruction "rla.b": SINGLE_B {    // rotate left arithmetically
-	    property bw: int = 1;
-        property opcode: int = 0b0101;                   // emulated by add instruction (add dst, dst)
-        execute {
-            local dest: int = read:int.8(source);
-            C = dest[7];        // move MSB into carry
-            V = (dest > 0x3F and dest < 0xC0);  //overflow if >= 40h and less than C0h
-            dest = dest << 1;   // shifting left 1 position
-            N = dest[7];        // setting Neg. bit
-            Z = (dest == 0);    // set Z bit if equal to zero
-            write:int.8(source, low(dest));
-        }
-    }
-
-    pseudo instruction "rlc": SINGLE_W {    //rotate left through carry
-	    property bw: int = 0;
-        property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
-        execute {
-            local dest: +int.16 = read:+int.16(source);
-            local tempC: int = bit(C);
-            C = dest[15];      // move MSB into carry
-            V = (dest > 0x3FFF and dest < 0xC000);  //overflow if >= 4000h and less than C000h
-            dest = dest << 1 | tempC;    //shifting left 1 position
-            N = dest[15];      // setting Neg. bit
-            Z = (dest == 0);   // set Z bit if equal to zero
-            write:+int.16(source, dest);
-        }
-     }
-
-    pseudo instruction "rlc.b": SINGLE_B {    //rotate left through carry
-	    property bw: int = 1;
-        property opcode: int = 0b0110;       // emulated by addc instruction (addc dst, dst)
-        execute {
-            local dest: int = read:int.8(source);
-            local tempC: int = bit(C);
-            C = dest[7];       // move MSB into carry
-            V = (dest > 0x3F and dest < 0xC0);  //overflow if >= 40h and less than C0h
-            dest = dest << 1 | tempC;    //shifting left 1 position
-            N = dest[7];       // setting Neg. bit
-            Z = (dest == 0);   // set Z bit if equal to zero
-            write:int.8(source, low(dest));
-        }
-     }
-
-    pseudo instruction "sbc": SINGLE_W {    // subtract source and borrow/.NOT. carry from dest
-	    property bw: int = 0;
-        property opcode: int = 0b0111;                 // emulated by SUBC instruction
-        execute {
-            local dest: +int.16 = read:+int.16(source);
-            local highbit: boolean = dest[15];
-            // TODO: why not emulate this with the performSubtraction method?
-            dest = dest + 0xFFFF + bit(C);  //carry bit is added to dest minus one
-            N = dest[15];
-            Z = (dest == 0);
-            C = ((highbit != dest[15]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
-            V = (dest > 0xFFFF);   //set overflow if arithmetic overflow occurs
-            write:+int.16(source, dest);
-	    }
-    }
-
-    pseudo instruction "sbc.b": SINGLE_B {    //subtract source and borrow/.NOT. carry from dest
-	    property bw: int = 1;
-        property opcode: int = 0b0111;      //emulated by SUBC instruction
-        execute {
-            local dest: int.8 = read:int.8(source);
-            local highbit: boolean = dest[7];
-            dest = dest + 0xFF + bit(C);  //carry bit is added to dest minus one
-            N = dest[7];
-            Z = (dest == 0);
-            C = ((highbit != dest[7]) and (bit(C) == 0));  //if and overflow occured in MSB, set carry
-            V = (dest > 0xFF);   //set overflow if arithmetic overflow occurs
-            write:int.8(source, dest);
-        }
-    }
-
-    pseudo instruction "sbb" : DOUBLE_W  {    //sub source and borrow/.NOT. carry from dest
-	    property bw: int = 0;
-	    property opcode: int = 0b0111;                         //same operation as SUBC, different syntax
-	    execute {
-            local r1: +int.16 = read:+int.16(source);
-            local r2: +int.16 = read:+int.16(dest);
-	        local results: int = performSubtractionW(r1, r2, bit(C));
-            write:+int.16(dest, results: +int.16);
-	    }
-    }
-
-    pseudo instruction "sbb.b": DOUBLE_B {    //sub source and borrow/.NOT. carry from dest
-	    property bw: int = 1;
-        property opcode: int = 0b0111;                            //same operation as SUBC, different syntax
-        execute {
-            local r1: int.8 = read:int.8(source);
-            local r2: int.8 = read:int.8(dest);
-            local results: int = performSubtraction(r1, r2, bit(C));
-            write:int.8(dest, low(results));
- 	    }
-    }
-
-    pseudo instruction "setc"    {     //set carry bit
-        property opcode: int = 0b1101;    //emulated by the BIS operation
-        execute {
-            C = true;
-        }
-    }
-
-    pseudo instruction "setn"   {   //set Negative bit
-        property opcode: int = 0b1101;   //emulated by the BIS operation
-        execute {
-            N = true;
-        }
-    }
-
-    pseudo instruction "setz"  {   // set zero bit
-        property opcode: int = 0b1101;   //emulated by the BIS operation
-        execute {
-            Z = true;
-        }
-    }
-
----------- the mythical match language ----------------------
-
-    type word = +int.16;
-    type byte = +int.8;
-
-    match operands(src: @REG, dst: *) =
-        (READ_REG(src.val), dest(dst, $pc+2))
-
-    match operands(src: @REG = r0, dst: *) =
-        (CONST($pc), dest(dst, $pc+2))
-
-    match operands(src: @INDX, dst: *) =
-        (READ_INDX(src.reg, src.index), dest(dst, $pc+4))
-
-    match operands(src: @ABS, dst: *) =
-        (READ_ADDR(src:word), dest(dst, $pc+4))
-
-    match operands(src: @SYM, dst: *) =
-        (READ_ADDR((src+pc+2):word, dest(dst, $pc+4))
-
-    match operands(src: @IREG, dst: *) =
-        (READ_INDX(src, 0), dest(dst, $pc+2))
-
-    match operands(src: @AUTO_W, dst: *) =
-        (READ_AUTO(src, 1), dest(dst, $pc+2))
-
-    match operands(src: @AUTO_B, dst: *) =
-        (READ_AUTO(src, 2), dest(dst, $pc+2))
-
-    match operands(src: @IMM in {-1, 0, 1, 2, 4, 8 }, dst: *) =
-        (CONST(src.val), dest(dst, $pc+2))
-
-    match operands(src: @IMM, dst: *) =
-        (CONST(src.val), dest(dst, $pc+4))
-
-
-    match dest(dst: @REG, vpc: int) =
-        (READ_REG(dst.val), WRITE_REG(dst.val))
-
-    match dest(dst: @INDX, vpc: int) =
-        (READ_INDX(dst.reg, dst.index), WRITE_INDX(dst.reg, dst.index))
-
-    match dest(dst: @SYM, vpc: int) =
-        (READ_ADDR((dst+vpc):word), WRITE_ADDR((dst+vpc):word))
-
-    match dest(dst: @ABS, vpc: int) =
-        (READ_ADDR(dst), WRITE_ADDR(dst))
-
-    match dest(dst: @REG = REG.r0, vpc: int) =
-        (CONST(vpc), WRITE_PC())
-
-    match dest(dst: @REG = REG.r2, vpc: int) =
-        (READ_REG(REG.r2), WRITE_SR())
-
-    CONST(c: word) = c
-    READ_REG(r: REG) = regs[r]
-    READ_ADDR(a: word) = data[a]
-    READ_INDX(r: REG, off: word) = data[(regs[r] + off): word]
-    READ_AUTO(r: REG, inc: int) = {
-        local v: word = regs[r];
-        regs[r] = regs[r] + inc;
-        return v;
-    }
-
-    WRITE_REG(r: REG) = regs[r] = val
-    WRITE_ADDR(a: word) = data[a] = val
-    WRITE_INDX(r: REG, off: word) = data[(regs[r] + off): word] = val
-    WRITE_PC() = nextpc = val
-    WRITE_SR() = writeSR(val)
-
-
-************************ END EMULATED INSTRUCTIONS *********************/
 }

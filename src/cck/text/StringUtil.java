@@ -170,6 +170,16 @@ public class StringUtil {
         return buf.toString();
     }
 
+    public static int readIntegerValue(CharacterIterator i) {
+        char ch = i.current();
+        if ( ch == '-' ) return readDecimalValue(i, 12);
+        if ( ch == '0' ) {
+            ch = i.next();
+            if ( ch == 'x' || ch == 'X' ) return readHexValue(i, 8);
+            else return readOctalValue(i, 8);
+        } else return readDecimalValue(i, 11);
+    }
+
     public static void skipWhiteSpace(CharacterIterator i) {
         while (true) {
             char c = i.current();
