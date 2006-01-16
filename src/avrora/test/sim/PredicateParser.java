@@ -170,8 +170,7 @@ public class PredicateParser {
 
     // number
     private TestExpr readConst(CharacterIterator i) {
-        int value = StringUtil.readDecimalValue(i, 9);
-        return new TestExpr.Const(value);
+        return new TestExpr.Const(StringUtil.readIntegerValue(i));
     }
 
 }

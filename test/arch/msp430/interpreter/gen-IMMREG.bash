@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" -lt 8 ]; then
+if [ "$#" -lt 9 ]; then
     echo "Usage: gen-IMMREG.bash <instr> <IMM> <B> <C> <B'> <C'> <N'> <Z'> <V'>"
     exit
 fi

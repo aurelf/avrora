@@ -1561,8 +1561,7 @@ architecture msp430 {
 	    property bw: int = 0;
         property opcode: int = 0b000100011;
         execute {
-            local r1: +int.16 = read:+int.16(source);
-            r1 = (r1 << 8) >> 8;
+            local r1: +int.16 = read:+int.16(source) : -int.8;
             N = r1[15];      // set if result is negative
             Z = (r1 == 0);   // set if result is zero
             C = !Z;          // set if result not zero
