@@ -119,7 +119,7 @@ public class MSP430StateAccessor extends StateAccessor {
             return interpreter.getSRAM(ind);
         }
         protected void setIndex(int ind, int val) {
-            throw Util.unimplemented();
+            interpreter.setData(ind, (char)val);
         }
     }
 
