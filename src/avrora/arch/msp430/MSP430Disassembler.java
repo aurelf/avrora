@@ -1,6 +1,5 @@
 package avrora.arch.msp430;
-import avrora.arch.AbstractDisassembler;
-import avrora.arch.AbstractInstr;
+import avrora.arch.*;
 import java.util.Arrays;
 
 /**
@@ -318,8 +317,8 @@ public class MSP430Disassembler implements AbstractDisassembler {
     static class INDIND_0_reader extends OperandReader {
         MSP430AddrMode read(MSP430Disassembler d) {
             d.size = 6;
-            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(GPR_table[readop_3(d)]);
-            MSP430Operand.IMM source_index = new MSP430Operand.IMM(signExtend(readop_0(d), 16));
+            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(GPR_table[readop_1(d)]);
+            MSP430Operand.IMM source_index = new MSP430Operand.IMM(signExtend(readop_2(d), 16));
             MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
             MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(GPR_table[readop_1(d)]);
             MSP430Operand.IMM dest_index = new MSP430Operand.IMM(signExtend(readop_2(d), 16));
@@ -681,7 +680,7 @@ public class MSP430Disassembler implements AbstractDisassembler {
      * addressing mode or instruction) that is executed when the node is
      * reached. Actions on the root node are not executed.
      */
-    abstract static class DTNode {
+    static abstract class DTNode {
         final int left_bit;
         final int mask;
         final Action action;
@@ -756,7 +755,7 @@ public class MSP430Disassembler implements AbstractDisassembler {
      * when the decoder reaches a particular node in the tree. The action may
      * be to fix the instruction or addressing mode, or to signal an error.
      */
-    abstract static class Action {
+    static abstract class Action {
         abstract void execute(MSP430Disassembler d);
     }
     
@@ -834,7 +833,7 @@ public class MSP430Disassembler implements AbstractDisassembler {
      * will fire that sets the operand reader which is used to read the
      * operands from the bit pattern.
      */
-    abstract static class OperandReader {
+    static abstract class OperandReader {
         abstract MSP430AddrMode read(MSP430Disassembler d);
     }
     

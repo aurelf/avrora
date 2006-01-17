@@ -17,7 +17,7 @@ gen_final() {
 gen_comm() {
     echo "; $1" >> $fname
     echo >> $fname
-    echo "; code " >> $fname
+    echo ".code " >> $fname
 }
 
 get_fname() {
@@ -136,7 +136,7 @@ gen-REGABS() {
     AMODE=REGABS
     checkParams $# 10 "<ABS> <A> <B> <C> <B'> <C'> <N'> <Z'> <V'>"
     ABS=$2; A=$3; B=$4; C=$5; Bp=$6; Cp=$7; Np=$8; Zp=$9; Vp=${10}
-    SYNTAX="$1 &$ABS, r5"
+    SYNTAX="$1 r4, &$ABS"
     INIT="r4 = $A, data[$ABS] = $B, C = $C"
     RESULT="data[$ABS] = $Bp, C = $Cp, N = $Np, Z = $Zp, V = $Vp"
     
@@ -242,7 +242,7 @@ gen-IREGREG() {
     checkParams $# 10 "<ADDR> <A> <B> <C> <B'> <C'> <N'> <Z'> <V'>"
     ADDR=$2; A=$3; B=$4; C=$5; Bp=$6; Cp=$7; Np=$8; Zp=$9; Vp=${10}
     SYNTAX="$1 @r4, r5"
-    INIT="data[$ADDR] = $A, r5 = $B, C = $C"
+    INIT="r4 = $ADDR, data[$ADDR] = $A, r5 = $B, C = $C"
     RESULT="r5 = $Bp, C = $Cp, N = $Np, Z = $Zp, V = $Vp"
     
     gen-test $1 "$*"
@@ -309,7 +309,7 @@ gen-INDABS() {
     checkParams $# 12 "<OFFA> <BASEA> <ABSB> <A> <B> <C> <B'> <C'> <N'> <Z'> <V'>"
     OFFA=$2; BASEA=$3; ABSB=$4; A=$5; B=$6; C=$7; Bp=$8; Cp=$9; Np=${10}; Zp=${11}; Vp=${12}
     ADDRA=$(($BASEA + $OFFA))
-    SYNTAX="$1 $OFFA(r4), $ABSB"
+    SYNTAX="$1 $OFFA(r4), &$ABSB"
     INIT="r4 = $BASEA, data[$ADDRA] = $A, data[$ABSB] = $B, C = $C"
     RESULT="data[$ABSB] = $Bp, C = $Cp, N = $Np, Z = $Zp, V = $Vp"
     

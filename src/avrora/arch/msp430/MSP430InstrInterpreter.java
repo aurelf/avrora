@@ -1,6 +1,6 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
 import avrora.sim.Simulator;
-import cck.util.Util;
 
 /**
  * The <code>MSP430InstrInterpreter</code> class contains the code for
@@ -41,7 +41,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.SYMB_val: return $read_int8((MSP430Operand.SYMB)o);
             case MSP430Operand.IMML_val: return $read_int8((MSP430Operand.IMML)o);
         }
-        throw Util.failure("invalid operand type in read");
+        throw cck.util.Util.failure("invalid operand type in read");
     }
 
     int $read_poly_uint16(MSP430Operand o) {
@@ -55,7 +55,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.SREG_val: return $read_uint16((MSP430Operand.SREG)o);
             case MSP430Operand.SYMB_val: return $read_uint16((MSP430Operand.SYMB)o);
         }
-        throw Util.failure("invalid operand type in read");
+        throw cck.util.Util.failure("invalid operand type in read");
     }
 
     void $write_poly_int8(MSP430Operand o, int value) {
@@ -69,7 +69,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.SREG_val: $write_int8((MSP430Operand.SREG)o, value); return;
             case MSP430Operand.IMM_val: $write_int8((MSP430Operand.IMM)o, value); return;
         }
-        throw Util.failure("invalid operand type in write");
+        throw cck.util.Util.failure("invalid operand type in write");
     }
 
     void $write_poly_uint16(MSP430Operand o, int value) {
@@ -83,7 +83,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.ABSO_val: $write_uint16((MSP430Operand.ABSO)o, value); return;
             case MSP430Operand.SYMB_val: $write_uint16((MSP430Operand.SYMB)o, value); return;
         }
-        throw Util.failure("invalid operand type in write");
+        throw cck.util.Util.failure("invalid operand type in write");
     }
 
     public int get_word(int addr) {

@@ -93,7 +93,7 @@ gen-IMMREG        mov     1 0   0     1 0 0 0 0
 gen-IMMREG        mov     2 0   0     2 0 0 0 0
 gen-IMMREG        mov     4 0   0     4 0 0 0 0
 gen-IMMREG        mov     8 0   0     8 0 0 0 0
-gen-IMMREG        mov    -1 0   0 65536 0 0 0 0
+gen-IMMREG        mov    -1 0   0 65535 0 0 0 0
 gen-IMMREG        mov   290 0   0   290 0 0 0 0
 gen-IMMREG        mov.b 290 0   0    34 0 0 0 0
 
@@ -112,10 +112,10 @@ gen-IMMABS        add 30 0x400 4 0 34 0 0 0 0
 gen-IMMABS        mov  1 0x400 4 0  1 0 0 0 0
 gen-IMMABS        mov 30 0x400 4 0 30 0 0 0 0
 
-gen-REGABS        add  1 0x400 4 0  5 0 0 0 0
-gen-REGABS        add  8 0x400 4 0 12 0 0 0 0
-gen-REGABS        add 30 0x400 4 0 34 0 0 0 0
-gen-REGABS        mov 30 0x400 4 0 30 0 0 0 0
+gen-REGABS        add 0x400  1 4 0  5 0 0 0 0
+gen-REGABS        add 0x400  8 4 0 12 0 0 0 0
+gen-REGABS        add 0x400 30 4 0 34 0 0 0 0
+gen-REGABS        mov 0x400 30 4 0 30 0 0 0 0
 
 
 # SYM (relative) addressing mode

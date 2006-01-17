@@ -210,9 +210,15 @@ public class StringUtil {
         char r = i.current();
         i.next();
         if (r != c)
-            throw new Exception("expected " + squote(c) + " @ "
-                    + (i.getIndex() - 1) + ", found " + squote(r));
+            Util.failure("parse error at "+i.getIndex()+", expected character "+squote(c));
     }
+
+    public static void expectKeyword(CharacterIterator i, String kw) {
+        String str = StringUtil.readIdentifier(i);
+        if ( !str.equals(kw) )
+            Util.failure("parse error at "+i.getIndex()+", expected keyword "+StringUtil.quote(kw));
+    }
+
 
     /**
      * The <code>isHex()</code> method checks whether the specifed string represents a hexadecimal

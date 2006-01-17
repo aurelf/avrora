@@ -156,7 +156,7 @@ public class CodeSimplifier extends StmtRebuilder<CGEnv> {
         int width = e.high_bit - e.low_bit + 1;
         if ( t.getSize() < width ) width = t.getSize();
         int mask = Arithmetic.getBitRangeMask(env.shift, env.shift + width - 1);
-        Expr ne = promote(e.expr, INT, e.low_bit - env.shift);
+        Expr ne = promote(e.expr, INT, env.shift - e.low_bit);
         return newAnd(ne, mask, e.getType());
     }
 
