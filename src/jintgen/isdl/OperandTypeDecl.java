@@ -37,8 +37,7 @@ import cck.util.Util;
 import jintgen.isdl.parser.Token;
 import jintgen.jigir.CodeRegion;
 import jintgen.jigir.JIGIRTypeEnv;
-import jintgen.types.Type;
-import jintgen.types.TypeRef;
+import jintgen.types.*;
 import java.util.*;
 
 /**
@@ -151,6 +150,11 @@ public abstract class OperandTypeDecl extends Item {
             return false;
         }
 
+        public boolean isEnum() {
+            TypeCon typeCon = typeRef.getType().getTypeCon();
+            return typeCon instanceof JIGIRTypeEnv.TYPE_enum;
+        }
+
         public boolean isSigned() {
             return signed;
         }
@@ -213,6 +217,10 @@ public abstract class OperandTypeDecl extends Item {
     }
 
     public boolean isUnion() {
+        return false;
+    }
+
+    public boolean isEnum() {
         return false;
     }
 

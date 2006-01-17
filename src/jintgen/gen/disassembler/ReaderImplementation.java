@@ -170,9 +170,10 @@ class ReaderImplementation extends GenBase {
     ReadMethod getReadMethod(int[] d) {
         String dc = getDecoderString(d);
         ReadMethod rm = operandDecodeMethods.get(dc);
-        if ( rm != null ) return rm;
-        rm = new ReadMethod(d);
-        operandDecodeMethods.put(dc, rm);
+        if ( rm == null ) {
+            rm = new ReadMethod(d);
+            operandDecodeMethods.put(dc, rm);
+        }
         return rm;
     }
 
@@ -190,14 +191,14 @@ class ReaderImplementation extends GenBase {
         final InstrDecl instr;
         final FormatDecl decl;
         final AddrModeDecl addrMode;
-        final HashMap<AddrModeDecl.Operand, String> operandDecodeString;
+        final HashMap<String, String> operandDecodeString;
 
         EncodingReader(String n, InstrDecl i, FormatDecl ed, AddrModeDecl addr) {
             name = n;
             instr = i;
             decl = ed;
             addrMode = addr;
-            operandDecodeString = new HashMap<AddrModeDecl.Operand, String>();
+            operandDecodeString = new HashMap<String, String>();
         }
 
         void computeDecoders() {
@@ -211,28 +212,34 @@ class ReaderImplementation extends GenBase {
                 FormatDecl.Cond cond = decl.getCond();
                 String opname = prefix+o.name.image;
                 String et = getEnumType(ot);
-                if ( cond != null && cond.name.image.equals(opname) ) {
-                    if ( et != null )
-                        operandDecodeString.put(o, tr("$symbol.$1.$2", et, cond.expr));
-                    else
-                        operandDecodeString.put(o, cond.expr.toString());
-                    continue;
-                }
-                if ( ot.isValue() ) {
-                    OperandTypeDecl.Value vt = (OperandTypeDecl.Value)ot;
-                    int[] decoder = computeScatter(opname, vt, nl);
-                    ReadMethod rm = getReadMethod(decoder);
-                    if ( et != null )
-                        operandDecodeString.put(o, tr("$1_table[$2]", et, rm));
-                    else if (ot.isRelative() ) {
-                        operandDecodeString.put(o, "d.pc, "+getReadExpr(rm, vt));
-                    } else {
-                        operandDecodeString.put(o, getReadExpr(rm, vt));
-                    }
-                } else if ( ot.isCompound() ) {
+                if ( cond != null && cond.name.image.equals(opname) )
+                    computeConditional(opname, et, cond);
+                else if ( ot.isValue() )
+                    computeValue(opname, ot, nl, et);
+                else if ( ot.isCompound() ) {
                     computeDecoders(prefix+opname+".", ot.subOperands);
                 }
             }
+        }
+
+        private void computeValue(String opname, OperandTypeDecl ot, List<FormatDecl.BitField> nl, String et) {
+            OperandTypeDecl.Value vt = (OperandTypeDecl.Value)ot;
+            int[] decoder = computeScatter(opname, vt, nl);
+            ReadMethod rm = getReadMethod(decoder);
+            if ( et != null )
+                operandDecodeString.put(opname, tr("$1_table[$2]", et, rm));
+            else if (ot.isRelative() ) {
+                operandDecodeString.put(opname, "d.pc, "+getReadExpr(rm, vt));
+            } else {
+                operandDecodeString.put(opname, getReadExpr(rm, vt));
+            }
+        }
+
+        private void computeConditional(String opname, String et, FormatDecl.Cond cond) {
+            if ( et != null )
+                operandDecodeString.put(opname, tr("$symbol.$1.$2", et, cond.expr));
+            else
+                operandDecodeString.put(opname, cond.expr.toString());
         }
 
         String getReadExpr(ReadMethod rm, OperandTypeDecl.Value ot) {
@@ -329,7 +336,7 @@ class ReaderImplementation extends GenBase {
                 OperandTypeDecl.Value vtd = (OperandTypeDecl.Value)td;
                 // not a conditional encoding; load bits and generate tables
                 print("$operand.$1 $2 = new $operand.$1(", vtd.name, vn);
-                generateRawRead(o);
+                generateRawRead(vname);
                 println(");");
             }
         }
@@ -346,8 +353,8 @@ class ReaderImplementation extends GenBase {
             nextln();
         }
 
-        private void generateRawRead(AddrModeDecl.Operand o) {
-            String str = operandDecodeString.get(o);
+        private void generateRawRead(String oname) {
+            String str = operandDecodeString.get(oname);
             assert str != null;
             print(str);
         }
