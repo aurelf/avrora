@@ -317,8 +317,8 @@ public class MSP430Disassembler implements AbstractDisassembler {
     static class INDIND_0_reader extends OperandReader {
         MSP430AddrMode read(MSP430Disassembler d) {
             d.size = 6;
-            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(GPR_table[readop_1(d)]);
-            MSP430Operand.IMM source_index = new MSP430Operand.IMM(signExtend(readop_2(d), 16));
+            MSP430Operand.SREG source_reg = new MSP430Operand.SREG(GPR_table[readop_3(d)]);
+            MSP430Operand.IMM source_index = new MSP430Operand.IMM(signExtend(readop_0(d), 16));
             MSP430Operand.INDX source = new MSP430Operand.INDX(source_reg, source_index);
             MSP430Operand.SREG dest_reg = new MSP430Operand.SREG(GPR_table[readop_1(d)]);
             MSP430Operand.IMM dest_index = new MSP430Operand.IMM(signExtend(readop_2(d), 16));

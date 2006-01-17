@@ -102,7 +102,7 @@ class ReaderImplementation extends GenBase {
 
         void generate() {
             startblock("static int readop_$1($disassembler d)", number);
-            if (fields.isEmpty() ) {
+            if ( fields.size() == 0 ) {
                 println("return 0;");
             } else {
                 int offset = 0;
@@ -217,7 +217,7 @@ class ReaderImplementation extends GenBase {
                 else if ( ot.isValue() )
                     computeValue(opname, ot, nl, et);
                 else if ( ot.isCompound() ) {
-                    computeDecoders(prefix+opname+ '.', ot.subOperands);
+                    computeDecoders(prefix+opname+".", ot.subOperands);
                 }
             }
         }
@@ -243,7 +243,7 @@ class ReaderImplementation extends GenBase {
         }
 
         String getReadExpr(ReadMethod rm, OperandTypeDecl.Value ot) {
-            if ( ot.isSigned() ) return "signExtend("+rm+", "+ot.size+ ')';
+            if ( ot.isSigned() ) return "signExtend("+rm+", "+ot.size+")";
             else return rm.toString();
         }
 
@@ -343,11 +343,11 @@ class ReaderImplementation extends GenBase {
 
         private void generateCompound(OperandTypeDecl td, String vname) {
             for ( AddrModeDecl.Operand so : td.subOperands )
-                generateOperandRead(vname+ '.', so);
+                generateOperandRead(vname+".", so);
             String vn = javaName(vname);
             beginList("$operand.$1 $2 = new $operand.$1(", td.name, vn);
             for ( AddrModeDecl.Operand so : td.subOperands ) {
-                print(vname+ '_' +so.name);
+                print(vname+"_"+so.name);
             }
             endList(");");
             nextln();
