@@ -103,15 +103,13 @@ public abstract class MSP430Instr implements AbstractInstr {
         }
     }
     
-    public abstract static class DOUBLE_W_Instr extends MSP430Instr {
-        public final MSP430AddrMode.DOUBLE_W am;
+    public abstract static class SINGLE_W_Instr extends MSP430Instr {
+        public final MSP430AddrMode.SINGLE_W am;
         public final MSP430Operand source;
-        public final MSP430Operand dest;
-        protected DOUBLE_W_Instr(String name, int size, MSP430AddrMode.DOUBLE_W am) {
+        protected SINGLE_W_Instr(String name, int size, MSP430AddrMode.SINGLE_W am) {
             super(name, size);
             this.am = am;
             this.source = am.get_source();
-            this.dest = am.get_dest();
         }
         public void accept(MSP430AddrModeVisitor v) {
             am.accept(this, v);
@@ -121,13 +119,15 @@ public abstract class MSP430Instr implements AbstractInstr {
         }
     }
     
-    public abstract static class SINGLE_W_Instr extends MSP430Instr {
-        public final MSP430AddrMode.SINGLE_W am;
+    public abstract static class DOUBLE_W_Instr extends MSP430Instr {
+        public final MSP430AddrMode.DOUBLE_W am;
         public final MSP430Operand source;
-        protected SINGLE_W_Instr(String name, int size, MSP430AddrMode.SINGLE_W am) {
+        public final MSP430Operand dest;
+        protected DOUBLE_W_Instr(String name, int size, MSP430AddrMode.DOUBLE_W am) {
             super(name, size);
             this.am = am;
             this.source = am.get_source();
+            this.dest = am.get_dest();
         }
         public void accept(MSP430AddrModeVisitor v) {
             am.accept(this, v);
@@ -169,20 +169,6 @@ public abstract class MSP430Instr implements AbstractInstr {
         public String toString() {
             return name+am.toString();
         }
-    }
-    
-    public static class ADC extends SINGLE_W_Instr {
-        ADC(int size, MSP430AddrMode.SINGLE_W am) {
-            super("adc", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class ADC_B extends SINGLE_B_Instr {
-        ADC_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("adc.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class ADD extends DOUBLE_W_Instr {
@@ -269,62 +255,11 @@ public abstract class MSP430Instr implements AbstractInstr {
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
-    public static class BR extends SINGLE_W_Instr {
-        BR(int size, MSP430AddrMode.SINGLE_W am) {
-            super("br", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
     public static class CALL extends SINGLE_W_Instr {
         CALL(int size, MSP430AddrMode.SINGLE_W am) {
             super("call", size, am);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class CLR extends SINGLE_W_Instr {
-        CLR(int size, MSP430AddrMode.SINGLE_W am) {
-            super("clr", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class CLR_B extends SINGLE_B_Instr {
-        CLR_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("clr.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class CLRC extends MSP430Instr {
-        CLRC(int size) {
-            super("clrc", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static class CLRN extends MSP430Instr {
-        CLRN(int size) {
-            super("clrn", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static class CLRZ extends MSP430Instr {
-        CLRZ(int size) {
-            super("clrz", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
     }
     
     public static class CMP extends DOUBLE_W_Instr {
@@ -341,20 +276,6 @@ public abstract class MSP430Instr implements AbstractInstr {
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
-    public static class DADC extends SINGLE_W_Instr {
-        DADC(int size, MSP430AddrMode.SINGLE_W am) {
-            super("dadc", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class DADC_B extends SINGLE_B_Instr {
-        DADC_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("dadc.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
     public static class DADD extends DOUBLE_W_Instr {
         DADD(int size, MSP430AddrMode.DOUBLE_W am) {
             super("dadd", size, am);
@@ -365,96 +286,6 @@ public abstract class MSP430Instr implements AbstractInstr {
     public static class DADD_B extends DOUBLE_B_Instr {
         DADD_B(int size, MSP430AddrMode.DOUBLE_B am) {
             super("dadd.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class DEC extends SINGLE_W_Instr {
-        DEC(int size, MSP430AddrMode.SINGLE_W am) {
-            super("dec", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class DEC_B extends SINGLE_B_Instr {
-        DEC_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("dec.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class DECD extends SINGLE_W_Instr {
-        DECD(int size, MSP430AddrMode.SINGLE_W am) {
-            super("decd", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class DECD_B extends SINGLE_B_Instr {
-        DECD_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("decd.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class DINT extends MSP430Instr {
-        DINT(int size) {
-            super("dint", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static class EINT extends MSP430Instr {
-        EINT(int size) {
-            super("eint", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static class INC extends SINGLE_W_Instr {
-        INC(int size, MSP430AddrMode.SINGLE_W am) {
-            super("inc", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class INC_B extends SINGLE_B_Instr {
-        INC_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("inc.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class INCD extends SINGLE_W_Instr {
-        INCD(int size, MSP430AddrMode.SINGLE_W am) {
-            super("incd", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class INCD_B extends SINGLE_B_Instr {
-        INCD_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("incd.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class INV extends SINGLE_W_Instr {
-        INV(int size, MSP430AddrMode.SINGLE_W am) {
-            super("inv", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class INV_B extends SINGLE_B_Instr {
-        INV_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("inv.b", size, am);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
@@ -557,30 +388,6 @@ public abstract class MSP430Instr implements AbstractInstr {
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
-    public static class NOP extends MSP430Instr {
-        NOP(int size) {
-            super("nop", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static class POP extends SINGLE_W_Instr {
-        POP(int size, MSP430AddrMode.SINGLE_W am) {
-            super("pop", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class POP_B extends SINGLE_B_Instr {
-        POP_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("pop.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
     public static class PUSH extends SINGLE_W_Instr {
         PUSH(int size, MSP430AddrMode.SINGLE_W am) {
             super("push", size, am);
@@ -595,16 +402,6 @@ public abstract class MSP430Instr implements AbstractInstr {
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
-    public static class RET extends MSP430Instr {
-        RET(int size) {
-            super("ret", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
     public static class RETI extends MSP430Instr {
         RETI(int size) {
             super("reti", size);
@@ -613,34 +410,6 @@ public abstract class MSP430Instr implements AbstractInstr {
         public String toString() {
             return name;
         }
-    }
-    
-    public static class RLA extends SINGLE_W_Instr {
-        RLA(int size, MSP430AddrMode.SINGLE_W am) {
-            super("rla", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class RLA_B extends SINGLE_B_Instr {
-        RLA_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("rla.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class RLC extends SINGLE_W_Instr {
-        RLC(int size, MSP430AddrMode.SINGLE_W am) {
-            super("rlc", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class RLC_B extends SINGLE_B_Instr {
-        RLC_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("rlc.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
     public static class RRA extends SINGLE_W_Instr {
@@ -671,50 +440,6 @@ public abstract class MSP430Instr implements AbstractInstr {
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }
     
-    public static class SBC extends SINGLE_W_Instr {
-        SBC(int size, MSP430AddrMode.SINGLE_W am) {
-            super("sbc", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class SBC_B extends SINGLE_B_Instr {
-        SBC_B(int size, MSP430AddrMode.SINGLE_B am) {
-            super("sbc.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class SETC extends MSP430Instr {
-        SETC(int size) {
-            super("setc", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static class SETN extends MSP430Instr {
-        SETN(int size) {
-            super("setn", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
-    public static class SETZ extends MSP430Instr {
-        SETZ(int size) {
-            super("setz", size);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-        public String toString() {
-            return name;
-        }
-    }
-    
     public static class SUB extends DOUBLE_W_Instr {
         SUB(int size, MSP430AddrMode.DOUBLE_W am) {
             super("sub", size, am);
@@ -739,20 +464,6 @@ public abstract class MSP430Instr implements AbstractInstr {
     public static class SUBC_B extends DOUBLE_B_Instr {
         SUBC_B(int size, MSP430AddrMode.DOUBLE_B am) {
             super("subc.b", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class SBB extends DOUBLE_W_Instr {
-        SBB(int size, MSP430AddrMode.DOUBLE_W am) {
-            super("sbb", size, am);
-        }
-        public void accept(MSP430InstrVisitor v) { v.visit(this); }
-    }
-    
-    public static class SBB_B extends DOUBLE_B_Instr {
-        SBB_B(int size, MSP430AddrMode.DOUBLE_B am) {
-            super("sbb.b", size, am);
         }
         public void accept(MSP430InstrVisitor v) { v.visit(this); }
     }

@@ -17,7 +17,7 @@ public abstract class MSP430Operand {
     public static final byte IMM_val = 5;
     public static final byte IMML_val = 6;
     public static final byte INDX_val = 7;
-    public static final byte SYM_val = 8;
+    public static final byte SYMB_val = 8;
     public static final byte ABSO_val = 9;
     public static final byte JUMP_val = 10;
     
@@ -207,7 +207,7 @@ public abstract class MSP430Operand {
         public static final int low = -32768;
         public static final int high = 65535;
         SYMB(int pc, int rel) {
-            super(SYM_val, pc + 1 + rel, MSP430InstrBuilder.checkValue(rel, low, high));
+            super(SYMB_val, pc + 1 + rel, MSP430InstrBuilder.checkValue(rel, low, high));
         }
         public void accept(MSP430OperandVisitor v) {
             v.visit(this);

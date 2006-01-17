@@ -53,6 +53,7 @@ public class RAWReader extends ProgramReader {
 
     protected class Record {
         protected final int addr;
+        protected boolean code;
         protected List bytes;
         protected List strings;
 
@@ -62,6 +63,8 @@ public class RAWReader extends ProgramReader {
             strings = new ArrayList(1);
         }
     }
+
+    boolean inCode;
 
     public RAWReader() {
         super("The \"raw\" program format reader reads programs that consist of small records of " +
@@ -132,8 +135,9 @@ public class RAWReader extends ProgramReader {
     }
 
     private void loadInstr(Record r, Program p) {
-        if ( r.strings.size() > 0 ) {
-            p.disassembleInstr(r.addr);
+        if ( r.code ) {
+            for ( int pos = r.addr; pos < r.addr + r.bytes.size(); pos += 2 )
+                p.disassembleInstr(pos);
         }
     }
 
@@ -145,10 +149,16 @@ public class RAWReader extends ProgramReader {
 
         if ( ch == CharacterIterator.DONE ) return null; // empty line
         if ( ch == ';' ) return null; // line consists of comment only
+        if ( ch == '.' ) return readDirective(i);
+        else return readRecord(ch, lineno, i);
+    }
+
+    private Record readRecord(char ch, int lineno, CharacterIterator i) throws Exception {
         if ( !StringUtil.isHexDigit(ch) )
             Util.userError("syntax error @ "+lineno+":"+i.getIndex());
 
         Record record = new Record(readAddress(i, ch));
+        record.code = inCode;
 
         StringUtil.expectChar(i, ':'); // expect a colon
 
@@ -159,9 +169,18 @@ public class RAWReader extends ProgramReader {
             else if ( ch == '"' ) readString(record, i);
             else if ( ch == ';' ) break;
             else if ( ch == CharacterIterator.DONE ) break;
-            else Util.userError("syntax error");
+            else Util.userError("syntax error at "+i.getIndex());
         }
         return record;
+    }
+
+    private Record readDirective(CharacterIterator i) {
+        // line consists of a directive
+        i.next();
+        String dir = StringUtil.readIdentifier(i);
+        if ( "code".equals(dir) ) inCode = true;
+        else if ( "data".equals(dir) ) inCode = false;
+        return null;
     }
 
     private int readAddress(CharacterIterator i, char ch) {
@@ -173,8 +192,10 @@ public class RAWReader extends ProgramReader {
     }
 
     private void readByte(Record record, CharacterIterator i) {
-        record.bytes.add(new Byte((byte)StringUtil.readHexValue(i, 2)));
-        if ( !Character.isWhitespace(i.current()) ) Util.userError("constant too long");
+        int readByte = StringUtil.readHexValue(i, 2);
+        record.bytes.add(new Byte((byte)readByte));
+        if ( StringUtil.isHexDigit(i.current()) )
+            Util.userError("constant too long");
     }
 
     private void readString(Record record, CharacterIterator i) {

@@ -1,4 +1,5 @@
 package avrora.arch.msp430;
+import avrora.arch.*;
 import avrora.sim.Simulator;
 
 /**
@@ -11,7 +12,6 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
     public MSP430InstrInterpreter(Simulator s) {
         super(s);
     }
-
     boolean bit_get(int v, int bit) {
         return (v & (1 << bit)) != 0;
     }
@@ -38,7 +38,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.IMM_val: return $read_int8((MSP430Operand.IMM)o);
             case MSP430Operand.SREG_val: return $read_int8((MSP430Operand.SREG)o);
             case MSP430Operand.ABSO_val: return $read_int8((MSP430Operand.ABSO)o);
-            case MSP430Operand.SYM_val: return $read_int8((MSP430Operand.SYMB)o);
+            case MSP430Operand.SYMB_val: return $read_int8((MSP430Operand.SYMB)o);
             case MSP430Operand.IMML_val: return $read_int8((MSP430Operand.IMML)o);
         }
         throw cck.util.Util.failure("invalid operand type in read");
@@ -53,7 +53,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.AIREG_W_val: return $read_uint16((MSP430Operand.AIREG_W)o);
             case MSP430Operand.ABSO_val: return $read_uint16((MSP430Operand.ABSO)o);
             case MSP430Operand.SREG_val: return $read_uint16((MSP430Operand.SREG)o);
-            case MSP430Operand.SYM_val: return $read_uint16((MSP430Operand.SYMB)o);
+            case MSP430Operand.SYMB_val: return $read_uint16((MSP430Operand.SYMB)o);
         }
         throw cck.util.Util.failure("invalid operand type in read");
     }
@@ -64,7 +64,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.INDX_val: $write_int8((MSP430Operand.INDX)o, value); return;
             case MSP430Operand.AIREG_B_val: $write_int8((MSP430Operand.AIREG_B)o, value); return;
             case MSP430Operand.IREG_val: $write_int8((MSP430Operand.IREG)o, value); return;
-            case MSP430Operand.SYM_val: $write_int8((MSP430Operand.SYMB)o, value); return;
+            case MSP430Operand.SYMB_val: $write_int8((MSP430Operand.SYMB)o, value); return;
             case MSP430Operand.IMML_val: $write_int8((MSP430Operand.IMML)o, value); return;
             case MSP430Operand.SREG_val: $write_int8((MSP430Operand.SREG)o, value); return;
             case MSP430Operand.IMM_val: $write_int8((MSP430Operand.IMM)o, value); return;
@@ -81,7 +81,7 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
             case MSP430Operand.INDX_val: $write_uint16((MSP430Operand.INDX)o, value); return;
             case MSP430Operand.IREG_val: $write_uint16((MSP430Operand.IREG)o, value); return;
             case MSP430Operand.ABSO_val: $write_uint16((MSP430Operand.ABSO)o, value); return;
-            case MSP430Operand.SYM_val: $write_uint16((MSP430Operand.SYMB)o, value); return;
+            case MSP430Operand.SYMB_val: $write_uint16((MSP430Operand.SYMB)o, value); return;
         }
         throw cck.util.Util.failure("invalid operand type in write");
     }
@@ -169,21 +169,21 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         result = bit_update(result, 15, (reg1 & 15) + (reg2 & 15));
         if ( (result & 15) > 10 ) {
             result = bit_update(result, 15, (result & 15) - 10);
-            reg1 = bit_update(reg1, 240, (reg1 << 4 & 15) + 1 << 4);
+            reg1 = bit_update(reg1, 240, (reg1 >> 4 & 15) + 1 << 4);
         }
-        result = bit_update(result, 240, (reg1 << 4 & 15) + (reg2 << 4 & 15) << 4);
-        if ( (result << 4 & 15) > 10 ) {
-            result = bit_update(result, 240, (result << 4 & 15) - 10 << 4);
-            reg1 = bit_update(reg1, 3840, (reg1 << 8 & 15) + 1 << 8);
+        result = bit_update(result, 240, (reg1 >> 4 & 15) + (reg2 >> 4 & 15) << 4);
+        if ( (result >> 4 & 15) > 10 ) {
+            result = bit_update(result, 240, (result >> 4 & 15) - 10 << 4);
+            reg1 = bit_update(reg1, 3840, (reg1 >> 8 & 15) + 1 << 8);
         }
-        result = bit_update(result, 3840, (reg1 << 8 & 15) + (reg2 << 8 & 15) << 8);
-        if ( (result << 8 & 15) > 10 ) {
-            result = bit_update(result, 3840, (result << 8 & 15) - 10 << 8);
-            reg1 = bit_update(reg1, 61440, (reg1 << 12 & 15) + 1 << 12);
+        result = bit_update(result, 3840, (reg1 >> 8 & 15) + (reg2 >> 8 & 15) << 8);
+        if ( (result >> 8 & 15) > 10 ) {
+            result = bit_update(result, 3840, (result >> 8 & 15) - 10 << 8);
+            reg1 = bit_update(reg1, 61440, (reg1 >> 12 & 15) + 1 << 12);
         }
-        result = bit_update(result, 61440, (reg1 << 12 & 15) + (reg2 << 12 & 15) << 12);
-        if ( (result << 12 & 15) > 10 ) {
-            result = bit_update(result, 61440, (result << 12 & 15) - 10 << 12);
+        result = bit_update(result, 61440, (reg1 >> 12 & 15) + (reg2 >> 12 & 15) << 12);
+        if ( (result >> 12 & 15) > 10 ) {
+            result = bit_update(result, 61440, (result >> 12 & 15) - 10 << 12);
             C = true;
         }
         N = bit_get(result, 15);
@@ -199,11 +199,11 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         result = bit_update(result, 15, (reg1 & 15) + (reg2 & 15));
         if ( (result & 15) > 10 ) {
             result = bit_update(result, 15, (result & 15) - 10);
-            reg1 = bit_update(reg1, 240, (reg1 << 4 & 15) + 1 << 4);
+            reg1 = bit_update(reg1, 240, (reg1 >> 4 & 15) + 1 << 4);
         }
-        result = bit_update(result, 240, (reg1 << 4 & 15) + (reg2 << 4 & 15) << 4);
-        if ( (result << 4 & 15) > 10 ) {
-            result = bit_update(result, 240, (result << 4 & 15) - 10 << 4);
+        result = bit_update(result, 240, (reg1 >> 4 & 15) + (reg2 >> 4 & 15) << 4);
+        if ( (result >> 4 & 15) > 10 ) {
+            result = bit_update(result, 240, (result >> 4 & 15) - 10 << 4);
             C = true;
         }
         N = bit_get(result, 7);
@@ -371,30 +371,6 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         return _this.value & 65535;
     }
 
-    public void visit(MSP430Instr.ADC i)  {
-        int r1 = $read_poly_uint16(i.source);
-        int result = r1 + bit(C);
-        boolean R15 = bit_get(result, 15);
-        boolean Rdh7 = bit_get(r1, 15);
-        C = !R15 && Rdh7;
-        N = R15;
-        V = !Rdh7 && R15;
-        Z = (result & 65535) == 0;
-        $write_poly_uint16(i.source, result & 65535);
-    }
-
-    public void visit(MSP430Instr.ADC_B i)  {
-        int r1 = $read_poly_int8(i.source);
-        int result = r1 + bit(C);
-        boolean R7 = bit_get(result, 7);
-        boolean Rdh1 = bit_get(r1, 7);
-        C = !R7 && Rdh1;
-        N = R7;
-        V = !Rdh1 && R7;
-        Z = (result & 255) == 0;
-        $write_poly_int8(i.source, result << 24 >> 24);
-    }
-
     public void visit(MSP430Instr.ADD i)  {
         int r1 = $read_poly_uint16(i.source);
         int r2 = $read_poly_uint16(i.dest);
@@ -461,36 +437,10 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         performAndW($read_poly_int8(i.source), $read_poly_int8(i.dest));
     }
 
-    public void visit(MSP430Instr.BR i)  {
-        nextpc = $read_poly_uint16(i.source);
-    }
-
     public void visit(MSP430Instr.CALL i)  {
         int temp = $read_poly_uint16(i.source);
         pushWord(nextpc);
         nextpc = temp;
-    }
-
-    public void visit(MSP430Instr.CLR i)  {
-        int b = $read_poly_uint16(i.source);
-        $write_poly_uint16(i.source, 0);
-    }
-
-    public void visit(MSP430Instr.CLR_B i)  {
-        int b = $read_poly_int8(i.source);
-        $write_poly_int8(i.source, 0);
-    }
-
-    public void visit(MSP430Instr.CLRC i)  {
-        C = false;
-    }
-
-    public void visit(MSP430Instr.CLRN i)  {
-        N = false;
-    }
-
-    public void visit(MSP430Instr.CLRZ i)  {
-        Z = false;
     }
 
     public void visit(MSP430Instr.CMP i)  {
@@ -501,96 +451,12 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         performAddition($read_poly_int8(i.source), ~$read_poly_int8(i.dest), 1);
     }
 
-    public void visit(MSP430Instr.DADC i)  {
-        $write_poly_uint16(i.source, performDeciAddCW(0, $read_poly_uint16(i.source), bit(C)));
-    }
-
-    public void visit(MSP430Instr.DADC_B i)  {
-        $write_poly_int8(i.source, performDeciAddC(0, $read_poly_int8(i.source), bit(C)));
-    }
-
     public void visit(MSP430Instr.DADD i)  {
         $write_poly_uint16(i.dest, performDeciAddCW($read_poly_uint16(i.source), $read_poly_uint16(i.dest), bit(C)));
     }
 
     public void visit(MSP430Instr.DADD_B i)  {
         $write_poly_int8(i.dest, performDeciAddC($read_poly_int8(i.source), $read_poly_int8(i.dest), bit(C)));
-    }
-
-    public void visit(MSP430Instr.DEC i)  {
-        int original = $read_poly_uint16(i.source);
-        $write_poly_uint16(i.source, performSubtractionW(original, 1, 0));
-        if ( original == 1 ) {
-            N = true;
-        }
-    }
-
-    public void visit(MSP430Instr.DEC_B i)  {
-        int original = $read_poly_int8(i.source);
-        $write_poly_int8(i.source, performSubtraction(original, 1, 0));
-        if ( original == 1 ) {
-            N = true;
-        }
-    }
-
-    public void visit(MSP430Instr.DECD i)  {
-        int original = $read_poly_uint16(i.source);
-        $write_poly_uint16(i.source, performSubtractionW(original, 2, 0));
-        if ( original == 2 ) {
-            N = true;
-        }
-    }
-
-    public void visit(MSP430Instr.DECD_B i)  {
-        int original = $read_poly_int8(i.source);
-        $write_poly_int8(i.source, performSubtraction(original, 2, 0));
-        if ( original == 2 ) {
-            N = true;
-        }
-    }
-
-    public void visit(MSP430Instr.DINT i)  {
-        disableInterrupts();
-    }
-
-    public void visit(MSP430Instr.EINT i)  {
-        enableInterrupts();
-    }
-
-    public void visit(MSP430Instr.INC i)  {
-        $write_poly_uint16(i.source, performAdditionW($read_poly_uint16(i.source), 1, 0));
-    }
-
-    public void visit(MSP430Instr.INC_B i)  {
-        $write_poly_int8(i.source, performAdditionW($read_poly_int8(i.source), 1, 0));
-    }
-
-    public void visit(MSP430Instr.INCD i)  {
-        $write_poly_uint16(i.source, performAdditionW($read_poly_uint16(i.source), 2, 0));
-    }
-
-    public void visit(MSP430Instr.INCD_B i)  {
-        $write_poly_int8(i.source, performAdditionW($read_poly_int8(i.source), 2, 0));
-    }
-
-    public void visit(MSP430Instr.INV i)  {
-        int val = $read_poly_uint16(i.source);
-        int result = ~val;
-        N = bit_get(result, 15);
-        Z = result == 65535;
-        C = !(result == 0);
-        V = val < 0;
-        $write_poly_uint16(i.source, result & 65535);
-    }
-
-    public void visit(MSP430Instr.INV_B i)  {
-        int val = $read_poly_int8(i.source);
-        int result = ~val;
-        N = bit_get(result, 7);
-        Z = result == 255;
-        C = !(result == 0);
-        V = val < 0;
-        $write_poly_int8(i.source, low(result));
     }
 
     public void visit(MSP430Instr.JC i)  {
@@ -671,17 +537,6 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         $write_poly_int8(i.dest, $read_poly_int8(i.source));
     }
 
-    public void visit(MSP430Instr.NOP i)  {
-    }
-
-    public void visit(MSP430Instr.POP i)  {
-        $write_poly_uint16(i.source, popWord());
-    }
-
-    public void visit(MSP430Instr.POP_B i)  {
-        $write_poly_int8(i.source, popByte());
-    }
-
     public void visit(MSP430Instr.PUSH i)  {
         pushWord($read_poly_uint16(i.source));
     }
@@ -690,55 +545,9 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         pushByte($read_poly_int8(i.source));
     }
 
-    public void visit(MSP430Instr.RET i)  {
-        nextpc = popWord();
-    }
-
     public void visit(MSP430Instr.RETI i)  {
         sreg = popWord();
         nextpc = popWord();
-    }
-
-    public void visit(MSP430Instr.RLA i)  {
-        int dest = $read_poly_uint16(i.source);
-        C = bit_get(dest, 15);
-        V = dest > 16383 && dest < 49152;
-        dest = dest << 1;
-        N = bit_get(dest, 15);
-        Z = dest == 0;
-        $write_poly_uint16(i.source, dest);
-    }
-
-    public void visit(MSP430Instr.RLA_B i)  {
-        int dest = $read_poly_int8(i.source);
-        C = bit_get(dest, 7);
-        V = dest > 63 && dest < 192;
-        dest = dest << 1;
-        N = bit_get(dest, 7);
-        Z = dest == 0;
-        $write_poly_int8(i.source, low(dest));
-    }
-
-    public void visit(MSP430Instr.RLC i)  {
-        int dest = $read_poly_uint16(i.source);
-        int tempC = bit(C);
-        C = bit_get(dest, 15);
-        V = dest > 16383 && dest < 49152;
-        dest = dest << 1 | tempC;
-        N = bit_get(dest, 15);
-        Z = dest == 0;
-        $write_poly_uint16(i.source, dest);
-    }
-
-    public void visit(MSP430Instr.RLC_B i)  {
-        int dest = $read_poly_int8(i.source);
-        int tempC = bit(C);
-        C = bit_get(dest, 7);
-        V = dest > 63 && dest < 192;
-        dest = dest << 1 | tempC;
-        N = bit_get(dest, 7);
-        Z = dest == 0;
-        $write_poly_int8(i.source, low(dest));
     }
 
     public void visit(MSP430Instr.RRA i)  {
@@ -783,40 +592,6 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         $write_poly_int8(i.source, temp);
     }
 
-    public void visit(MSP430Instr.SBC i)  {
-        int dest = $read_poly_uint16(i.source);
-        boolean highbit = bit_get(dest, 15);
-        dest = dest + 65535 + bit(C);
-        N = bit_get(dest, 15);
-        Z = dest == 0;
-        C = highbit != bit_get(dest, 15) && bit(C) == 0;
-        V = dest > 65535;
-        $write_poly_uint16(i.source, dest);
-    }
-
-    public void visit(MSP430Instr.SBC_B i)  {
-        int dest = $read_poly_int8(i.source);
-        boolean highbit = bit_get(dest, 7);
-        dest = dest + 255 + bit(C);
-        N = bit_get(dest, 7);
-        Z = dest == 0;
-        C = highbit != bit_get(dest, 7) && bit(C) == 0;
-        V = dest > 255;
-        $write_poly_int8(i.source, dest);
-    }
-
-    public void visit(MSP430Instr.SETC i)  {
-        C = true;
-    }
-
-    public void visit(MSP430Instr.SETN i)  {
-        N = true;
-    }
-
-    public void visit(MSP430Instr.SETZ i)  {
-        Z = true;
-    }
-
     public void visit(MSP430Instr.SUB i)  {
         int r1 = $read_poly_uint16(i.source);
         int r2 = $read_poly_uint16(i.dest);
@@ -845,31 +620,16 @@ public abstract class MSP430InstrInterpreter extends MSP430State implements MSP4
         $write_poly_int8(i.dest, low(results));
     }
 
-    public void visit(MSP430Instr.SBB i)  {
-        int r1 = $read_poly_uint16(i.source);
-        int r2 = $read_poly_uint16(i.dest);
-        int results = performSubtractionW(r1, r2, bit(C));
-        $write_poly_uint16(i.dest, results & 65535);
-    }
-
-    public void visit(MSP430Instr.SBB_B i)  {
-        int r1 = $read_poly_int8(i.source);
-        int r2 = $read_poly_int8(i.dest);
-        int results = performSubtraction(r1, r2, bit(C));
-        $write_poly_int8(i.dest, low(results));
-    }
-
     public void visit(MSP430Instr.SWPB i)  {
         int temp1 = $read_poly_uint16(i.source);
         int temp2 = temp1;
-        temp2 = bit_update(temp2, 65280, temp1 >> 8 & 65280);
-        temp2 = bit_update(temp2, 255, temp1 << 8 & 255);
+        temp2 = bit_update(temp2, 65280, temp1 << 8 & 65280);
+        temp2 = bit_update(temp2, 255, temp1 >> 8 & 255);
         $write_poly_uint16(i.source, temp2);
     }
 
     public void visit(MSP430Instr.SXT i)  {
-        int r1 = $read_poly_uint16(i.source);
-        r1 = r1 << 8 >> 8;
+        int r1 = $read_poly_uint16(i.source) << 24 >> 24;
         N = bit_get(r1, 15);
         Z = r1 == 0;
         C = !Z;
