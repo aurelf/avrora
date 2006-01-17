@@ -335,13 +335,25 @@ public class MSP430Interpreter extends MSP430InstrInterpreter {
     }
 
     /**
-     * The <code>getRegister()</code> method reads a general purpose register's current value as a byte.
+     * The <code>setRegister()</code> method reads a general purpose register's current value as a byte.
      *
      * @param reg the register to read
      * @param val the character value to write to the register
      */
     public void setRegister(MSP430Symbol.GPR reg, char val) {
         regs[reg.value] = val;
+    }
+
+    /**
+     * The <code>setData()</code> method sets the value of the data segment at the specified
+     * address.
+     *
+     * @param address the address at which to write the memory
+     * @param val the character value to write to the register
+     */
+    public void setData(int address, char val) {
+        data.set(address, (byte)val);
+        data.set(address+1, (byte)(val>>8));
     }
 
     class STOP_instr extends MSP430Instr {

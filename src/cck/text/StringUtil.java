@@ -172,12 +172,15 @@ public class StringUtil {
 
     public static int readIntegerValue(CharacterIterator i) {
         char ch = i.current();
-        if ( ch == '-' ) return readDecimalValue(i, 12);
+        if ( ch == '-' ) return readDecimalValue(i, 10);
         if ( ch == '0' ) {
             ch = i.next();
-            if ( ch == 'x' || ch == 'X' ) return readHexValue(i, 8);
-            else return readOctalValue(i, 8);
-        } else return readDecimalValue(i, 11);
+            if ( ch == 'x' || ch == 'X' ) {
+                i.next();
+                return readHexValue(i, 8);
+            }
+            else return readOctalValue(i, 11);
+        } else return readDecimalValue(i, 10);
     }
 
     public static void skipWhiteSpace(CharacterIterator i) {
