@@ -206,11 +206,27 @@ public class StringUtil {
         return false;
     }
 
+    public static boolean peekAndEat(CharacterIterator i, String s) {
+        int ind = i.getIndex();
+        for ( int cntr = 0; cntr < s.length(); cntr++ ) {
+            if ( i.current() == s.charAt(cntr) ) i.next();
+            else {
+                i.setIndex(ind);
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static void expectChar(CharacterIterator i, char c) throws Exception {
         char r = i.current();
         i.next();
         if (r != c)
             Util.failure("parse error at "+i.getIndex()+", expected character "+squote(c));
+    }
+
+    public static void expectChars(CharacterIterator i, String s) throws Exception {
+        for ( int cntr = 0; cntr < s.length(); cntr++ ) expectChar(i, s.charAt(cntr));
     }
 
     public static void expectKeyword(CharacterIterator i, String kw) {
