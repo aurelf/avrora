@@ -1626,6 +1626,76 @@ architecture msp430 {
         }
     }
 
+---------- the mythical match language ----------------------
+
+    type word = +int.16;
+    type byte = +int.8;
+
+    match operands(src: @REG, dst: *) =
+        (READ_REG(src.val), dest(dst, $pc+2))
+
+    match operands(src: @REG = r0, dst: *) =
+        (CONST($pc), dest(dst, $pc+2))
+
+    match operands(src: @INDX, dst: *) =
+        (READ_INDX(src.reg, src.index), dest(dst, $pc+4))
+
+    match operands(src: @ABS, dst: *) =
+        (READ_ADDR(src:word), dest(dst, $pc+4))
+
+    match operands(src: @SYM, dst: *) =
+        (READ_ADDR((src+pc+2):word, dest(dst, $pc+4))
+
+    match operands(src: @IREG, dst: *) =
+        (READ_INDX(src, 0), dest(dst, $pc+2))
+
+    match operands(src: @AUTO_W, dst: *) =
+        (READ_AUTO(src, 1), dest(dst, $pc+2))
+
+    match operands(src: @AUTO_B, dst: *) =
+        (READ_AUTO(src, 2), dest(dst, $pc+2))
+
+    match operands(src: @IMM in {-1, 0, 1, 2, 4, 8 }, dst: *) =
+        (CONST(src.val), dest(dst, $pc+2))
+
+    match operands(src: @IMM, dst: *) =
+        (CONST(src.val), dest(dst, $pc+4))
+
+
+    match dest(dst: @REG, vpc: int) =
+        (READ_REG(dst.val), WRITE_REG(dst.val))
+
+    match dest(dst: @INDX, vpc: int) =
+        (READ_INDX(dst.reg, dst.index), WRITE_INDX(dst.reg, dst.index))
+
+    match dest(dst: @SYM, vpc: int) =
+        (READ_ADDR((dst+vpc):word), WRITE_ADDR((dst+vpc):word))
+
+    match dest(dst: @ABS, vpc: int) =
+        (READ_ADDR(dst), WRITE_ADDR(dst))
+
+    match dest(dst: @REG = REG.r0, vpc: int) =
+        (CONST(vpc), WRITE_PC())
+
+    match dest(dst: @REG = REG.r2, vpc: int) =
+        (READ_REG(REG.r2), WRITE_SR())
+
+    CONST(c: word) = c
+    READ_REG(r: REG) = regs[r]
+    READ_ADDR(a: word) = data[a]
+    READ_INDX(r: REG, off: word) = data[(regs[r] + off): word]
+    READ_AUTO(r: REG, inc: int) = {
+        local v: word = regs[r];
+        regs[r] = regs[r] + inc;
+        return v;
+    }
+
+    WRITE_REG(r: REG) = regs[r] = val
+    WRITE_ADDR(a: word) = data[a] = val
+    WRITE_INDX(r: REG, off: word) = data[(regs[r] + off): word] = val
+    WRITE_PC() = nextpc = val
+    WRITE_SR() = writeSR(val)
+
 
 ************************ END EMULATED INSTRUCTIONS *********************/
 }

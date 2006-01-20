@@ -349,8 +349,13 @@ public abstract class Expr extends ASTNode {
         private static int evaluateLiteral(String val) {
             if (val.charAt(0) == '$')                          // hexadecimal
                 return Integer.parseInt(val.substring(1), 16);
-            else
-                return StringUtil.evaluateIntegerLiteral(val);
+            else {
+		try {
+		    return StringUtil.evaluateIntegerLiteral(val);
+		} catch ( Exception e ) {
+		    throw Util.unexpected(e);
+		}
+	    }
         }
     }
 
@@ -363,7 +368,11 @@ public abstract class Expr extends ASTNode {
 
         public CharLiteral(AbstractToken tok) {
             super(tok);
-            value = StringUtil.evaluateCharLiteral(tok.image);
+	    try {
+		value = StringUtil.evaluateCharLiteral(tok.image);
+	    } catch ( Exception e ) {
+		throw Util.unexpected(e);
+	    }
         }
 
         /**
@@ -390,7 +399,11 @@ public abstract class Expr extends ASTNode {
 
         public StringLiteral(AbstractToken tok) {
             super(tok);
-            value = StringUtil.evaluateStringLiteral(tok.image);
+	    try {
+		value = StringUtil.evaluateStringLiteral(tok.image);
+	    } catch ( Exception e ) {
+		throw Util.unexpected(e);
+	    }
         }
 
         /**
