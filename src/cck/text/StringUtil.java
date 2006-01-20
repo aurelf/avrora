@@ -56,6 +56,9 @@ public class StringUtil {
     public static final String[] EMPTY_STRING_ARRAY = {};
     public static final int[] DENOM = { 24, 60, 60, 1000 };
     public static final int[] DAYSECS = { 60, 60 };
+    public static final char SQUOTE_CHAR = '\'';
+    public static final char BACKSLASH = '\\';
+    public static final char QUOTE_CHAR = '"';
 
     /**
      * The <code>addToString()</code> method converts a numerical address (represented as a signed 32-bit
@@ -131,6 +134,20 @@ public class StringUtil {
         return accumul;
     }
 
+    public static int readBinaryValue(CharacterIterator i, int max_chars) {
+        int accumul = 0;
+
+        for (int cntr = 0; cntr < max_chars; cntr++) {
+            char ch = i.current();
+            i.next();
+            if (ch == '0') accumul <<= 1;
+            else if (ch == '1') accumul = (accumul << 1) | 1;
+            else break;
+        }
+
+        return accumul;
+    }
+
     public static int readDecimalValue(CharacterIterator i, int max_chars) {
         StringBuffer buf = new StringBuffer();
 
@@ -178,6 +195,9 @@ public class StringUtil {
             if ( ch == 'x' || ch == 'X' ) {
                 i.next();
                 return readHexValue(i, 8);
+            } else if ( ch == 'b' || ch == 'B' ) {
+                i.next();
+                return readBinaryValue(i, 32);
             }
             else return readOctalValue(i, 11);
         } else return readDecimalValue(i, 10);
@@ -622,91 +642,69 @@ public class StringUtil {
     }
 
     public static int evaluateIntegerLiteral(String val) {
-        if (StringUtil.isHex(val) )// hexadecimal
-            return Integer.parseInt(val.substring(2), 16);
-        if (val.startsWith("$"))                          // hexadecimal
-            return Integer.parseInt(val.substring(1), 16);
-
-        if (StringUtil.isBin(val)) // binary
-            return Integer.parseInt(val.substring(2), 2);
-
-        if (val.startsWith("0"))                          // octal
-            return Integer.parseInt(val, 8);
-
-        return Integer.parseInt(val);
+        return readIntegerValue(new StringCharacterIterator(val));
     }
 
-    public static String evaluateStringLiteral(String literal) {
+    public static String evaluateStringLiteral(String literal) throws Exception {
         StringBuffer buffer = new StringBuffer(literal.length());
         CharacterIterator i = new StringCharacterIterator(literal);
 
+        expectChar(i, QUOTE_CHAR);
         while (true) {
+            if ( peekAndEat(i, QUOTE_CHAR) ) break;
             char c = i.current();
             i.next();
 
             if (c == CharacterIterator.DONE) break;
-            if (c == '"' ) continue; // remove all (unescaped) quotes
-            if (c == '\\') c = escapeChar(i);
+            if (c == BACKSLASH) c = escapeChar(i);
 
             buffer.append(c);
         }
 
+        expectChar(i, CharacterIterator.DONE);
+
         return buffer.toString();
     }
 
-    public static char evaluateCharLiteral(String literal) {
+    public static char evaluateCharLiteral(String literal) throws Exception {
         CharacterIterator i = new StringCharacterIterator(literal);
 
-        if (!peekAndEat(i, '\''))
-            throw invalidCharLiteral(literal);
+        expectChar(i, SQUOTE_CHAR);
 
-        char c = i.next();
-        if (c == '\\') c = escapeChar(i);
+        char ch;
+        if ( peekAndEat(i, BACKSLASH) ) {
+            ch = escapeChar(i);
+        } else {
+            ch = i.current();
+            i.next();
+        }
 
-        if (i.next() != '\'')
-            throw invalidCharLiteral(literal);
+        expectChar(i, SQUOTE_CHAR);
+        expectChar(i, CharacterIterator.DONE);
 
-        if (i.next() != CharacterIterator.DONE)
-            throw invalidCharLiteral(literal);
-
-        return c;
+        return ch;
     }
 
     private static char escapeChar(CharacterIterator i) {
-        char c = i.next();
+        char c = i.current();
         switch (c) {
-            case 'f':
-                return '\f';
-            case 'b':
-                return '\b';
-            case 'n':
-                return '\n';
-            case 'r':
-                return '\r';
-            case '\\':
-                return '\\';
-            case '\'':
-                return '\'';
-            case 't':
-                return '\t';
-            case 'x':
-                { /* hexadecimal constant */
-                    int value = readHexValue(i, 4);
-                    return (char)value;
-                }
-            case '0': /* octal constant */
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-                {
-                    i.previous();
-                    int value = readOctalValue(i, 3);
-                    return (char)value;
-                }
+            case 'f': i.next(); return '\f';
+            case 'b': i.next(); return '\b';
+            case 'n': i.next(); return '\n';
+            case 'r': i.next(); return '\r';
+            case BACKSLASH: i.next(); return BACKSLASH;
+            case SQUOTE_CHAR: i.next(); return SQUOTE_CHAR;
+            case QUOTE_CHAR: i.next(); return QUOTE_CHAR;
+            case 't': i.next(); return '\t';
+            case 'x':  return (char)readHexValue(i, 4);
+            case '0': // fall through
+            case '1': // fall through
+            case '2': // fall through
+            case '3': // fall through
+            case '4': // fall through
+            case '5': // fall through
+            case '6': // fall through
+            case '7': return (char)readOctalValue(i, 3);
 
         }
         return c;
@@ -978,9 +976,9 @@ public class StringUtil {
         StringBuffer var = new StringBuffer(10);
         pos = scanAhead(pos, '%', max, template, buf, var);
         String result = getProperty(var, p);
-        buf.append('"');
+        buf.append(QUOTE_CHAR);
         buf.append(result);
-        buf.append('"');
+        buf.append(QUOTE_CHAR);
         return pos;
     }
 
