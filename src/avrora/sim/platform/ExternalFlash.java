@@ -69,7 +69,7 @@ public class ExternalFlash {
     private int dfPageAddress;
     private int dfByteOffset;
     private int dfTempByte;
-    private short dfStatus;		// Dataflash Status Register
+    private short dfStatus;		// Dataflash Status LegacyRegister
     private long dfDelay;			// delay while busy in cycles
     private double delay;		// delay while busy in ms
     private boolean so, si;		// serial output, serial input
@@ -78,7 +78,7 @@ public class ExternalFlash {
     private short step;
     private byte i;
 
-    //	DataFlash Status Register
+    //	DataFlash Status LegacyRegister
     //	bits 5, 4, 3
     public static final int DF_STATUS_REGISTER_DENSITY = 0x18;
     public static final int DF_STATUS_READY = 0x80;
@@ -150,11 +150,11 @@ public class ExternalFlash {
         stateMachine = new FiniteStateMachine(clock, startMode, modeName, 0);
         // connect Pins
         // output
-        mcu.getPin("PA3").connectOutput(new PA3Output());
-        mcu.getPin("PD3").connectOutput(new PD3Output());
-        mcu.getPin("PD5").connectOutput(new PD5Output());
+        mcu.getPin("PA3").connect(new PA3Output());
+        mcu.getPin("PD3").connect(new PD3Output());
+        mcu.getPin("PD5").connect(new PD5Output());
         // input
-        mcu.getPin("PD2").connectInput(new PD2Input());
+        mcu.getPin("PD2").connect(new PD2Input());
 
         //setup energy recording
         new Energy("flash", modeAmpere, stateMachine);
@@ -222,7 +222,7 @@ public class ExternalFlash {
     }
 
     // Flash_CS as output pin
-    protected class PA3Output implements Microcontroller.Pin.Output {
+    protected class PA3Output extends Microcontroller.OutputPin {
         // Flash_CS is connected inverted
         public void write(boolean level) {
             if (!level && !isSelected) {
@@ -250,8 +250,8 @@ public class ExternalFlash {
                     case 0xD4:  // Buffer1 Read
                     case 0x56:  // Buffer2 Read
                     case 0xD6:  // Buffer2 Read
-                    case 0x57:  // Status Register Read
-                    case 0xD7:  // Status Register Read
+                    case 0x57:  // Status LegacyRegister Read
+                    case 0xD7:  // Status LegacyRegister Read
                         break;
 
                         // Program and Erase Commands
@@ -360,7 +360,7 @@ public class ExternalFlash {
     }
 
     // USART1_TXD as output pin connected to SI
-    protected class PD3Output implements Microcontroller.Pin.Output {
+    protected class PD3Output extends Microcontroller.OutputPin {
 
         public void write(boolean level) {
             si = level;
@@ -368,7 +368,7 @@ public class ExternalFlash {
     }
 
     // USART1_CLK as output pin connected to SCK
-    protected class PD5Output implements Microcontroller.Pin.Output {
+    protected class PD5Output extends Microcontroller.OutputPin {
         private short temp;
 
         public void write(boolean level) {
@@ -410,7 +410,7 @@ public class ExternalFlash {
                         // first starts here with step 1: get opcode
                         if (!isReading) {
                             // get SI bytewise
-                            dfTempByte |= (si ? 1 : 0) << (7 - i);  // MSB first
+                            dfTempByte |= ((si) ? 1 : 0) << (7 - i);  // MSB first
 
                             i++;
 
@@ -454,7 +454,7 @@ public class ExternalFlash {
                     temp = getBuffer2(dfByteOffset);
                     break;
 
-                    // Status Register Read
+                    // Status LegacyRegister Read
                 case 0x57:
                 case 0xD7:
                     temp = dfStatus;
@@ -465,7 +465,7 @@ public class ExternalFlash {
             }
 
             // write relevant bit to so
-            so = (temp & 1 << 7 - i) > 0; // MSB first
+            so = ((temp & (1 << (7 - i))) > 0); // MSB first
 
         }
 
@@ -475,21 +475,21 @@ public class ExternalFlash {
                     //	get opcode
                     dfOpcode = dfTempByte;
                     echo("Recieved Opcode: " + dfOpcode);
-                    // Status Register Read?
-                    if (dfOpcode == 0x57 || dfOpcode == 0xD7) {
+                    // Status LegacyRegister Read?
+                    if ((dfOpcode == 0x57) || (dfOpcode == 0xD7)) {
                         isReading = true;
                     }
                     break;
 
                 case 2:
                     // get first part of adressing sequence
-                    dfPageAddress = dfTempByte << 7 & 0x0780;
+                    dfPageAddress = (dfTempByte << 7) & 0x0780;
                     echo("Received Address byte 1: " + dfTempByte);
                     break;
 
                 case 3:
                     // get second part of adressing sequence
-                    dfPageAddress |= dfTempByte >> 1;
+                    dfPageAddress |= (dfTempByte >> 1);
                     // and first part of byte offset
                     dfByteOffset = dfTempByte & 0x0100;
                     echo("Received Address byte 2: " + dfTempByte);
@@ -521,7 +521,7 @@ public class ExternalFlash {
                 case 0x68:
                 case 0xE8:
                     // Additional Don't cares Required: 4 Bytes
-                    if (step == 4 + 4) {
+                    if (step == (4 + 4)) {
                         isReading = true;
                     }
                     break;
@@ -530,7 +530,7 @@ public class ExternalFlash {
                 case 0x52:
                 case 0xD2:
                     // Additional Don't cares Required: 4 Bytes
-                    if (step == 4 + 4) {
+                    if (step == (4 + 4)) {
                         isReading = true;
                     }
                     break;
@@ -539,7 +539,7 @@ public class ExternalFlash {
                 case 0x54:
                 case 0xD4:
                     // Additional Don't cares Required: 1 Byte
-                    if (step == 4 + 1) {
+                    if (step == (4 + 1)) {
                         isReading = true;
                     }
                     break;
@@ -547,12 +547,12 @@ public class ExternalFlash {
                     // Buffer 2 Read
                 case 0x56:
                 case 0xD6:
-                    if (step == 4 + 1) {
+                    if (step == (4 + 1)) {
                         isReading = true;
                     }
                     break;
 
-                    //	Status Register Read
+                    //	Status LegacyRegister Read
                 case 0x57:
                 case 0xD7:
 
@@ -562,14 +562,14 @@ public class ExternalFlash {
                     //	Buffer 1 Write
                 case 0x84:
                     setBuffer1(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 1 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
+                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
 
                     //	Buffer 2 Write
                 case 0x87:
                     setBuffer2(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 2 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
+                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
 
@@ -607,7 +607,7 @@ public class ExternalFlash {
                 case 0x82:
                     // read from SI into buffer1, write to memory when Flash_CS gets 1
                     setBuffer1(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 1 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
+                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
 
@@ -615,7 +615,7 @@ public class ExternalFlash {
                 case 0x85:
                     // read from SI into buffer2, write to mem when Flash_CS gets 1
                     setBuffer2(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 2 Byte: " + (short)dfByteOffset + ": " + dfTempByte);
+                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
                     dfByteOffset += 1;
                     break;
             }
@@ -623,7 +623,7 @@ public class ExternalFlash {
     }
 
     // Flash_RXD as input pin from SO
-    protected class PD2Input implements Microcontroller.Pin.Input {
+    protected class PD2Input extends Microcontroller.InputPin {
         // connected to serial output of dataflash
         public boolean read() {
             return so;
@@ -634,7 +634,7 @@ public class ExternalFlash {
         /**
          * delay while dataflash is busy
          *
-         * @see Simulator.Event#fire()
+         * @see avrora.sim.Simulator.Event#fire()
          */
         public void fire() {
             // operation finished
