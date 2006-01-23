@@ -128,6 +128,12 @@ public class ExternalFlash {
         protected Page() {
             bytes = new short[264];
         }
+		void debug() {
+			int i;
+			for(i = 0; i < 264; i++) {
+				echo("Byte " + i + " = " + bytes[i]);
+			}
+		}
     }
 
     // TODO: parameterize this class by size, page size, etc
@@ -164,6 +170,7 @@ public class ExternalFlash {
 
     private void setMemoryPage(int num, Page val) {
         this.memory.pages[num] = val;
+		this.memory.pages[num].debug();
     }
 
     private Page getBuffer1() {
@@ -372,6 +379,7 @@ public class ExternalFlash {
 
                         // <<<<<<<< high-to-low <<<<<<<<
                         if (isReading) {
+							//echo("dfByteOffset = " + dfByteOffset);
                             //set so bitwise
                             setSO();
 
@@ -384,7 +392,7 @@ public class ExternalFlash {
                                 echo("1 Byte of serial data was output on the SO: " + temp);
 
                                 // internal address counter
-                                icOffset = dfByteOffset + 8;
+                                icOffset = dfByteOffset + 1;
                                 if (icOffset > 263) {
                                     icOffset -= 264;
                                     icPage = dfPageAddress++;
@@ -554,15 +562,15 @@ public class ExternalFlash {
                     //	Buffer 1 Write
                 case 0x84:
                     setBuffer1(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset / 8) + ": " + dfTempByte);
-                    dfByteOffset += 8;
+                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    dfByteOffset += 1;
                     break;
 
                     //	Buffer 2 Write
                 case 0x87:
                     setBuffer2(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset / 8) + ": " + dfTempByte);
-                    dfByteOffset += 8;
+                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    dfByteOffset += 1;
                     break;
 
                     // Buffer 1 to Memory with Built-in Erase
@@ -599,16 +607,16 @@ public class ExternalFlash {
                 case 0x82:
                     // read from SI into buffer1, write to memory when Flash_CS gets 1
                     setBuffer1(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset / 8) + ": " + dfTempByte);
-                    dfByteOffset += 8;
+                    echo("written Buffer 1 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    dfByteOffset += 1;
                     break;
 
                     // Memory Program through Buffer 2
                 case 0x85:
                     // read from SI into buffer2, write to mem when Flash_CS gets 1
                     setBuffer2(dfByteOffset, (short) dfTempByte);
-                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset / 8) + ": " + dfTempByte);
-                    dfByteOffset += 8;
+                    echo("written Buffer 2 Byte: " + (short) (dfByteOffset) + ": " + dfTempByte);
+                    dfByteOffset += 1;
                     break;
             }
         }
